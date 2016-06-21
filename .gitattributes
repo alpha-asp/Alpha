@@ -1,0 +1,17 @@
+# Set diff modes for specific languages.
+# This is only done for files that might
+# appear in this repo by chance.
+# See list of predefined hunk headers at
+# https://www.kernel.org/pub/software/scm/git/docs/gitattributes.html#_defining_a_custom_hunk_header
+*.java diff=java
+*.html diff=html
+*.tex  diff=tex
+*.py   diff=python
+
+# Binary files to be handled by Git LFS
+*.jpg  filter=lfs diff=lfs merge=lfs binary
+*.png  filter=lfs diff=lfs merge=lfs binary
+*.pdf  filter=lfs diff=lfs merge=lfs binary
+*.tiff filter=lfs diff=lfs merge=lfs binary
+*.gpg  filter=lfs diff=lfs merge=lfs binary
+*.bin  filter=lfs diff=lfs merge=lfs binary
