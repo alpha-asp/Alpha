@@ -5,11 +5,10 @@ sudo: false
 
 language: java
 
-# Run builds against both OpenJDK and Oracle JDK.
+# Run builds against Oracle JDK.
 # https://docs.travis-ci.com/user/languages/java#Testing-Against-Multiple-JDKs
 jdk:
   - oraclejdk8
-  - openjdk8
 
 # Do not send notifications via e-mail, this gets
 # annoying pretty fast. Check Travis CI docs at
