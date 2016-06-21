@@ -6,7 +6,7 @@ Alpha is the successor of [OMiGA](http://www.kr.tuwien.ac.at/research/systems/om
 
 ## Building
 
-Alpha uses the [Gradle build automation system](gradle). Executing
+Alpha uses the [Gradle build automation system](https://gradle.org). Executing
 
 ```bash
 $ gradle build
