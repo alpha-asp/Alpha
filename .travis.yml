@@ -10,6 +10,14 @@ language: java
 jdk:
   - oraclejdk8
 
+# As of 2016-06 Travis CI is running an outdated
+# version of Gradle, so this workaround fetches
+# a given version before carrying out the build.
+before_install:
+  - wget -O gradle.zip https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip
+  - unzip gradle.zip
+  - export PATH=$PWD/gradle-$GRADLE_VERSION/bin:$PATH
+
 # Do not send notifications via e-mail, this gets
 # annoying pretty fast. Check Travis CI docs at
 # https://docs.travis-ci.com/user/notifications/#Email-notifications
