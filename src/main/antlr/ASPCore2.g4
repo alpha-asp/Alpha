@@ -1,8 +1,11 @@
-grammar ASP_Core2;
+grammar ASPCore2;
 
-/* The ASP Core 2 grammar in ANTLR v4.
-   It is extended a bit to parse widespread syntax used by gringo/clasp.
-*/
+/* The ASP-Core-2 grammar in ANTLR v4 based on
+ * https://www.mat.unical.it/aspcomp2013/files/ASP-CORE-2.01c.pdf
+ * (sections 4 and 5, pages 10-12).
+ * It is extended a bit to parse widespread syntax used by gringo/clasp,
+ * see productions "gringo_range" and "gringo_sharp".
+ */
 
 program : statements? query?;
 
@@ -59,7 +62,7 @@ term : ID (PAREN_OPEN terms? PAREN_CLOSE)?
      | term arithop term
      | gringo_range;    // syntax extension
 
-gringo_range : (NUMBER | VARIABLE | ID) DOT DOT (NUMBER | VARIABLE | ID);    // NOT Core2 syntax, but widespread
+gringo_range : (NUMBER | VARIABLE | ID) DOT DOT (NUMBER | VARIABLE | ID); // NOT Core2 syntax, but widespread
 
 gringo_sharp : SHARP ~(DOT)* DOT; // NOT Core2 syntax, but widespread, matching not perfect due to possible earlier dots
 
