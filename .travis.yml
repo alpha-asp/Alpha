@@ -1,0 +1,29 @@
+# Route our builds to Travis CI's Container Based
+# Infrastructure for shorter queue times.
+# https://docs.travis-ci.com/user/workers/container-based-infrastructure/#Routing-your-build-to-container-based-infrastructure
+sudo: false
+
+language: java
+
+# Run builds against both OpenJDK and Oracle JDK.
+# https://docs.travis-ci.com/user/languages/java#Testing-Against-Multiple-JDKs
+jdk:
+  - oraclejdk8
+  - openjdk8
+
+# Do not send notifications via e-mail, this gets
+# annoying pretty fast. Check Travis CI docs at
+# https://docs.travis-ci.com/user/notifications/#Email-notifications
+notifications:
+  email: false
+
+# before_cache and after_cache to leverage caching
+# of dependencies according to Travis CI docs, see
+# https://docs.travis-ci.com/user/languages/java#Caching
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
