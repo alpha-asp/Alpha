@@ -93,7 +93,6 @@
 			<property name="ignoreComments" value="true"/>
 		</module>
 	</module>
-	<module name="FileTabCharacter"/>
 	<module name="RegexpSingleline">
 		<property name="format" value="File \| Settings \| File Templates"/>
 	</module>
