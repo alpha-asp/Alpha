@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Main entry point for Alpha.
@@ -51,18 +52,22 @@ public class Main {
 			return;
 		}
 
-		ASPCore2Lexer lexer;
 		try {
-			lexer = new ASPCore2Lexer(new ANTLRInputStream(new FileInputStream(commandLine.getOptionValue(OPT_INPUT))));
-		} catch (FileNotFoundException fnfe) {
-			LOG.fatal(fnfe.getMessage());
+			Program p = parse(new FileInputStream(commandLine.getOptionValue(OPT_INPUT)));
+		} catch (FileNotFoundException e) {
+			LOG.fatal(e.getMessage());
 			System.exit(1);
-			return;
-		} catch (IOException ioe) {
-			LOG.fatal(ioe);
+		} catch (IOException e) {
+			LOG.fatal(e);
 			System.exit(1);
-			return;
 		}
+
+		// TODO: Do something with what we just parsed?!
+	}
+
+	static Program parse(InputStream is) throws IOException {
+		ASPCore2Lexer lexer;
+		lexer = new ASPCore2Lexer(new ANTLRInputStream(is));
 
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		ASPCore2Parser parser = new ASPCore2Parser(tokens);
@@ -72,7 +77,6 @@ public class Main {
 		ParseTreeWalker walker = new ParseTreeWalker();
 		Listener listener = new Listener();
 		walker.walk(listener, programContext);
-
-		// TODO: Do something with what we just parsed?!
+		return listener.getProgram();
 	}
 }

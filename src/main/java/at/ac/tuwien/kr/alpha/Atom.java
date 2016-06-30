@@ -3,38 +3,35 @@ package at.ac.tuwien.kr.alpha;
 import java.util.Arrays;
 
 class Atom {
-	private final Predicate predicate;
-	private final Term[] terms;
+	private final int predicate;
+	private final int[] terms;
 
-	private Atom(Predicate predicate, Term[] terms) {
+	Atom(int predicate, int[] terms) {
 		if (terms == null) {
 			throw new NullPointerException("terms must not be null");
-		}
-		if (predicate == null) {
-			throw new NullPointerException("predicate must not be null");
-		}
-		if (predicate.getArity() != terms.length) {
-			throw new IllegalArgumentException("length of terms does not match arity of predicate");
 		}
 		this.predicate = predicate;
 		this.terms = terms;
 	}
 
-	public Predicate getPredicate() {
+	public int getPredicate() {
 		return predicate;
 	}
 
-	public Term[] getTerms() {
+	public int[] getTerms() {
 		return terms;
 	}
 
-	public int getArity() {
-		return predicate.getArity();
+	public boolean isConstant(int index) {
+		return terms[index] < 0;
 	}
 
-	@Override
-	public String toString() {
-		return predicate.toString() + Arrays.toString(terms);
+	public boolean isVariable(int index) {
+		return terms[index] > 0;
+	}
+
+	public boolean isValid(int index) {
+		return terms[index] != 0;
 	}
 
 	@Override
@@ -48,15 +45,12 @@ class Atom {
 
 		Atom atom = (Atom) o;
 
-		if (!predicate.equals(atom.predicate)) {
-			return false;
-		}
-		return Arrays.equals(terms, atom.terms);
+		return predicate == atom.predicate && Arrays.equals(terms, atom.terms);
 	}
 
 	@Override
 	public int hashCode() {
-		int result = predicate.hashCode();
+		int result = predicate;
 		result = 31 * result + Arrays.hashCode(terms);
 		return result;
 	}

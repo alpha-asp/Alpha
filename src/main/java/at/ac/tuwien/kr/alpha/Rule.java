@@ -5,7 +5,10 @@ class Rule {
 	private final Atom[] bodyPos;
 	private final Atom[] bodyNeg;
 
-	public Rule(Atom head, Atom[] bodyPos, Atom[] bodyNeg) {
+	private final String[] variables;
+
+	public Rule(String[] variables, Atom head, Atom[] bodyPos, Atom[] bodyNeg) {
+		this.variables = variables;
 		this.head = head;
 		this.bodyPos = bodyPos;
 		this.bodyNeg = bodyNeg;
@@ -13,6 +16,18 @@ class Rule {
 
 	public boolean isConstraint() {
 		return head == null;
+	}
+
+	public String getVariable(int index) {
+		return variables[index];
+	}
+
+	public Atom[] getBodyPositive() {
+		return bodyPos;
+	}
+
+	public Atom[] getBodyNegative() {
+		return bodyNeg;
 	}
 
 	@Override
