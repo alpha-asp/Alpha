@@ -17,10 +17,10 @@ statements : statement statements?;
 
 query : classical_literal QUERY_MARK;
 
-statement : CONS body DOT
-          | head (CONS body?)? DOT
-          | WCONS body? DOT SQUARE_OPEN weight_at_level SQUARE_CLOSE
-          | gringo_sharp;   // syntax extension
+statement : CONS body DOT                # statement_constraint
+          | head (CONS body?)? DOT       # statement_rule
+          | WCONS body? DOT SQUARE_OPEN weight_at_level SQUARE_CLOSE # statement_weightConstraint
+          | gringo_sharp                 # statement_gringoSharp;   // syntax extension
 
 head : disjunction | choice;
 
@@ -56,15 +56,15 @@ binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
 
 terms : term (COMMA terms)?;
 
-term : ID (PAREN_OPEN terms? PAREN_CLOSE)?
-     | NUMBER
-     | STRING
-     | VARIABLE
-     | ANONYMOUS_VARIABLE
-     | PAREN_OPEN term PAREN_CLOSE
-     | MINUS term
-     | term arithop term
-     | gringo_range;    // syntax extension
+term : ID (PAREN_OPEN terms? PAREN_CLOSE)?  # term_constOrFunc
+     | NUMBER                               # term_number
+     | STRING                               # term_string
+     | VARIABLE                             # term_variable
+     | ANONYMOUS_VARIABLE                   # term_anonymousVariable
+     | PAREN_OPEN term PAREN_CLOSE          # term_parenthesisedTerm
+     | MINUS term                           # term_minusTerm
+     | term arithop term                    # term_binopTerm
+     | gringo_range                         # term_gringoRange; // syntax extension
 
 gringo_range : (NUMBER | VARIABLE | ID) DOT DOT (NUMBER | VARIABLE | ID); // NOT Core2 syntax, but widespread
 

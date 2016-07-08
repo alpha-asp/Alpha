@@ -1,8 +1,8 @@
 package at.ac.tuwien.kr.alpha;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
+import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTreeVisitor;
+import org.antlr.v4.runtime.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -53,7 +53,7 @@ public class Main {
 		}
 
 		try {
-			Program p = parse(new FileInputStream(commandLine.getOptionValue(OPT_INPUT)));
+			ParsedProgram program = parseVisit(new FileInputStream(commandLine.getOptionValue(OPT_INPUT)));
 		} catch (FileNotFoundException e) {
 			LOG.fatal(e.getMessage());
 			System.exit(1);
@@ -65,18 +65,33 @@ public class Main {
 		// TODO: Do something with what we just parsed?!
 	}
 
-	static Program parse(InputStream is) throws IOException {
-		ASPCore2Lexer lexer;
-		lexer = new ASPCore2Lexer(new ANTLRInputStream(is));
+	private static boolean parsingError;
 
+	static ParsedProgram parseVisit(InputStream is) throws IOException {
+		// prepare parser
+		ASPCore2Lexer lexer = new ASPCore2Lexer(new ANTLRInputStream(is));
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		ASPCore2Parser parser = new ASPCore2Parser(tokens);
 
+		// record eventual parsing errors
+		parsingError = false;
+		parser.addErrorListener(new BaseErrorListener() {
+			@Override
+			public void syntaxError(Recognizer<?, ?> recognizer, Object o, int i, int i1, String s, RecognitionException e) {
+				parsingError = true;
+			}
+		});
+
+		// parse program
 		ASPCore2Parser.ProgramContext programContext = parser.program();
 
-		ParseTreeWalker walker = new ParseTreeWalker();
-		Listener listener = new Listener();
-		walker.walk(listener, programContext);
-		return listener.getProgram();
+		if (parsingError) {
+			System.err.println("Error while parsing input ASP program using modules, see errors above.");
+			System.exit(-1);
+		}
+
+		// construct internal program representation
+		ParsedTreeVisitor visitor = new ParsedTreeVisitor();
+		return (ParsedProgram) visitor.visitProgram(programContext);
 	}
 }
