@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.AnswerSet;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 
 /**
@@ -8,5 +9,10 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 public class DummySolver extends AbstractSolver {
 	public DummySolver(Grounder grounder) {
 		super(grounder);
+	}
+
+	@Override
+	public AnswerSet get() {
+		return null;
 	}
 }

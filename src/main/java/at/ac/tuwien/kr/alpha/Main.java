@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.stream.Stream;
 
 /**
  * Main entry point for Alpha.
@@ -78,7 +79,8 @@ public class Main {
 
 		// initialize the solver
 		DummySolver solver = new DummySolver(grounder);
-		// TODO: Start solver
+
+		Stream.generate(solver).forEach(System.out::println);
 	}
 
 	static ParsedProgram parseVisit(InputStream is) throws IOException {
