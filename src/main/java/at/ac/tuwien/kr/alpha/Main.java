@@ -58,6 +58,9 @@ public class Main {
 		ParsedProgram program = null;
 		try {
 			program = parseVisit(new FileInputStream(commandLine.getOptionValue(OPT_INPUT)));
+		} catch (RecognitionException e) {
+			System.err.println("Error while parsing input ASP program, see errors above.");
+			System.exit(1);
 		} catch (FileNotFoundException e) {
 			LOG.fatal(e.getMessage());
 			System.exit(1);
@@ -78,32 +81,35 @@ public class Main {
 		// TODO: Start solver
 	}
 
-	private static boolean parsingError;
-
 	static ParsedProgram parseVisit(InputStream is) throws IOException {
-		// prepare parser
-		ASPCore2Lexer lexer = new ASPCore2Lexer(new ANTLRInputStream(is));
-		CommonTokenStream tokens = new CommonTokenStream(lexer);
-		ASPCore2Parser parser = new ASPCore2Parser(tokens);
+		final ASPCore2Parser parser = new ASPCore2Parser(
+			new CommonTokenStream(
+				new ASPCore2Lexer(
+					new ANTLRInputStream(is)
+				)
+			)
+		);
 
-		// record eventual parsing errors
-		parsingError = false;
-		parser.addErrorListener(new BaseErrorListener() {
-			@Override
-			public void syntaxError(Recognizer<?, ?> recognizer, Object o, int i, int i1, String s, RecognitionException e) {
-				parsingError = true;
-			}
-		});
+		final SwallowingErrorListener errorListener = new SwallowingErrorListener();
+		parser.addErrorListener(errorListener);
 
-		// parse program
 		ASPCore2Parser.ProgramContext programContext = parser.program();
 
-		if (parsingError) {
-			System.err.println("Error while parsing input ASP program using modules, see errors above.");
-			System.exit(-1);
+		// If the our SwallowingErrorListener has handled some exception during parsing
+		// just re-throw that exception.
+		// At this time, error messages will be already printed out to standard error
+		// because ANTLR by default adds an org.antlr.v4.runtime.ConsoleErrorListener
+		// to every parser.
+		// That ConsoleErrorListener will print useful messages, but not report back to
+		// our code.
+		// org.antlr.v4.runtime.BailErrorStrategy cannot be used here, because it would
+		// abruptly stop parsing as soon as the first error is reached (i.e. no recovery
+		// is attempted) and the user will only see the first error encountered.
+		if (errorListener.getRecognitionException() != null) {
+			throw errorListener.getRecognitionException();
 		}
 
-		// construct internal program representation
+		// Construct internal program representation.
 		ParsedTreeVisitor visitor = new ParsedTreeVisitor();
 		return (ParsedProgram) visitor.visitProgram(programContext);
 	}
