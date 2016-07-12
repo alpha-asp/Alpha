@@ -1,5 +1,7 @@
 package at.ac.tuwien.kr.alpha;
 
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
