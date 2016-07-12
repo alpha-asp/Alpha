@@ -1,10 +1,14 @@
 package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
+import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTreeVisitor;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityProgramTransformation;
 import at.ac.tuwien.kr.alpha.solver.DummySolver;
+import at.ac.tuwien.kr.alpha.solver.Solver;
+import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import org.antlr.v4.runtime.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.logging.Log;
@@ -24,6 +28,11 @@ public class Main {
 
 	private static final String OPT_INPUT = "input";
 	private static final String OPT_HELP  = "help";
+	private static final String OPT_GROUNDER = "grounder";
+	private static final String OPT_SOLVER = "solver";
+
+	private static final String DEFAULT_GROUNDER = "dummy";
+	private static final String DEFAULT_SOLVER = "leutgeb";
 
 	private static CommandLine commandLine;
 
@@ -38,6 +47,12 @@ public class Main {
 
 		Option helpOption = new Option("h", OPT_HELP, false, "show this help");
 		options.addOption(helpOption);
+
+		Option grounderOption = new Option("g", OPT_GROUNDER, false, "name of the grounder implementation to use");
+		options.addOption(grounderOption);
+
+		Option solverOption = new Option("s", OPT_SOLVER, false, "name of the solver implementation to use");
+		options.addOption(solverOption);
 
 		try {
 			commandLine = new DefaultParser().parse(options, args);
@@ -70,15 +85,17 @@ public class Main {
 			System.exit(1);
 		}
 
-		// apply program transformations/rewritings (currently none)
+		// Apply program transformations/rewritings (currently none).
 		IdentityProgramTransformation programTransformation = new IdentityProgramTransformation();
 		ParsedProgram transformedProgram = programTransformation.transform(program);
 
-		// initialize the grounder
-		DummyGrounder grounder = new DummyGrounder(transformedProgram);
+		Grounder grounder = GrounderFactory.getInstance(
+			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram
+		);
 
-		// initialize the solver
-		DummySolver solver = new DummySolver(grounder);
+		Solver solver = SolverFactory.getInstance(
+			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder
+		);
 
 		Stream.generate(solver).forEach(System.out::println);
 	}
