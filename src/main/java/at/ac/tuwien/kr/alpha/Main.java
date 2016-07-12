@@ -71,8 +71,7 @@ public class Main {
 		ParsedProgram transformedProgram = programTransformation.transform(program);
 
 		// initialize the grounder
-		DummyGrounder grounder = new DummyGrounder();
-		grounder.initialize(transformedProgram);
+		DummyGrounder grounder = new DummyGrounder(transformedProgram);
 
 		// initialize the solver
 		DummySolver solver = new DummySolver(grounder);
