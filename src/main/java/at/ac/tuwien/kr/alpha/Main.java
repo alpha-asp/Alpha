@@ -1,7 +1,10 @@
 package at.ac.tuwien.kr.alpha;
 
+import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTreeVisitor;
+import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityProgramTransformation;
+import at.ac.tuwien.kr.alpha.solver.DummySolver;
 import org.antlr.v4.runtime.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.logging.Log;
@@ -52,8 +55,9 @@ public class Main {
 			return;
 		}
 
+		ParsedProgram program = null;
 		try {
-			ParsedProgram program = parseVisit(new FileInputStream(commandLine.getOptionValue(OPT_INPUT)));
+			program = parseVisit(new FileInputStream(commandLine.getOptionValue(OPT_INPUT)));
 		} catch (FileNotFoundException e) {
 			LOG.fatal(e.getMessage());
 			System.exit(1);
@@ -62,7 +66,17 @@ public class Main {
 			System.exit(1);
 		}
 
-		// TODO: Do something with what we just parsed?!
+		// apply program transformations/rewritings (currently none)
+		IdentityProgramTransformation programTransformation = new IdentityProgramTransformation();
+		ParsedProgram transformedProgram = programTransformation.transform(program);
+
+		// initialize the grounder
+		DummyGrounder grounder = new DummyGrounder();
+		grounder.initialize(transformedProgram);
+
+		// initialize the solver
+		DummySolver solver = new DummySolver(grounder);
+		// TODO: Start solver
 	}
 
 	private static boolean parsingError;
