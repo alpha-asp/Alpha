@@ -3,9 +3,9 @@ package at.ac.tuwien.kr.alpha;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstant;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFunctionTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
-import org.junit.Rule;
+import org.antlr.v4.runtime.RecognitionException;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -18,9 +18,10 @@ public class MainTest {
 		return new ByteArrayInputStream(file.getBytes());
 	}
 
-	/*@Test
+	@Test
+	@Ignore
 	public void parseSimpleProgram() throws IOException {
-		Main.parse(stream(
+		Main.parseVisit(stream(
 			"p(X) :- q(X).\n" +
 			"q(a).\n" +
 			"q(b).\n"
@@ -29,27 +30,29 @@ public class MainTest {
 
 	@Test
 	public void parseProgramWithNegativeBody() throws IOException {
-		Main.parse(stream(
+		Main.parseVisit(stream(
 			"p(X) :- q(X), not q(a).\n" +
 				"q(a).\n"
 		));
 	}
 
-	/*@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = UnsupportedOperationException.class)
+	@Ignore
 	public void parseProgramWithFunction() throws IOException {
-		Main.parse(stream(
+		Main.parseVisit(stream(
 			"p(X) :- q(f(X)).\n" +
 				"q(a).\n"
 		));
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
+	@Ignore
 	public void parseProgramWithDisjunctionInHead() throws IOException {
-		Main.parse(stream(
+		Main.parseVisit(stream(
 			"r(X) | q(X) :- q(X).\n" +
 				"q(a).\n"
 		));
-	}*/
+	}
 
 	@Test
 	public void parseFact() throws IOException {
@@ -82,13 +85,8 @@ public class MainTest {
 		assertEquals("Program contains one constraint.", 1, parsedProgram.constraints.size());
 	}
 
-
-	@Rule
-	public final ExpectedSystemExit exit = ExpectedSystemExit.none();
-
-	@Test
-	public void parseBadSyntaxAndExit() throws IOException {
-		exit.expectSystemExitWithStatus(-1);
+	@Test(expected = RecognitionException.class)
+	public void parseBadSyntax() throws IOException {
 		Main.parseVisit(stream("Wrong Syntax."));
 	}
 }

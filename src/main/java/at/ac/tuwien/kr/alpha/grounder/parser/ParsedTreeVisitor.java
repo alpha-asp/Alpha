@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
-import at.ac.tuwien.kr.alpha.ASPCore2BaseVisitor;
-import at.ac.tuwien.kr.alpha.ASPCore2Parser;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
