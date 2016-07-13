@@ -23,11 +23,19 @@ public class Main {
 
 	private static final String OPT_INPUT = "input";
 	private static final String OPT_HELP  = "help";
+	private static final String OPT_NUM_AS  = "numAS";
 
 	private static CommandLine commandLine;
 
 	public static void main(String[] args) {
 		final Options options = new Options();
+
+		Option numAnswerSetsOption = new Option("n", OPT_NUM_AS, true, "the number of Answer Sets to compute");
+		numAnswerSetsOption.setArgName("number");
+		numAnswerSetsOption.setRequired(true);
+		numAnswerSetsOption.setArgs(1);
+		options.addOption(numAnswerSetsOption);
+
 
 		Option inputOption = new Option("i", OPT_INPUT, true, "read the ASP program from this file");
 		inputOption.setArgName("file");
@@ -55,6 +63,10 @@ public class Main {
 			return;
 		}
 
+		String numAnswerSetsCLI = commandLine.getOptionValue(OPT_NUM_AS, "-1");
+		int numAnswerSetsRequested = Integer.parseInt(numAnswerSetsCLI);
+
+
 		ParsedProgram program = null;
 		try {
 			program = parseVisit(new FileInputStream(commandLine.getOptionValue(OPT_INPUT)));
@@ -76,7 +88,9 @@ public class Main {
 
 		// initialize the solver
 		DummySolver solver = new DummySolver(grounder);
-		// TODO: Start solver
+
+		// start solver
+		solver.computeAnswerSets(numAnswerSetsRequested);
 	}
 
 	private static boolean parsingError;

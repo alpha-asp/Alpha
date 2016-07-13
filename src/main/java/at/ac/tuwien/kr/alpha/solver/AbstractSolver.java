@@ -7,9 +7,11 @@ import at.ac.tuwien.kr.alpha.grounder.AbstractGrounder;
  */
 public abstract class AbstractSolver {
 
-	private AbstractGrounder grounder;
+	protected AbstractGrounder grounder;
 
 	public AbstractSolver(AbstractGrounder grounder) {
 		this.grounder = grounder;
 	}
+
+	public abstract void computeAnswerSets(int numAnswerSetsRequested);
 }
