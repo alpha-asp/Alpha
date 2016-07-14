@@ -1,8 +1,12 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.AnswerSet;
+import at.ac.tuwien.kr.alpha.AnswerSetFilter;
+import at.ac.tuwien.kr.alpha.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.rete.RetePredicate;
+
+import java.util.Map;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -14,31 +18,28 @@ public class ReteGrounder extends AbstractGrounder {
 
 	private RetePredicate predicates;
 
-	@Override
-	public void initialize(ParsedProgram program) {
-		// save program for later use
-		programRules = program;
+	public ReteGrounder(ParsedProgram program) {
+		super(program);
+	}
 
-		// construct basic data structures
+
+	@Override
+	public AnswerSet assignmentToAnswerSet(AnswerSetFilter filter, int[] trueAtoms) {
+		return null;
 	}
 
 	@Override
-	public NoGood[] getMoreNoGoods() {
-		return new NoGood[0];
+	public Map<Integer, NoGood> getNoGoods() {
+		return null;
 	}
 
 	@Override
-	public void updateAssignments(int[] atomIds, boolean[] truthValues) {
-
-	}
-
-	@Override
-	public void forgetAssignments(int[] atomIds) {
+	public void updateAssignment(int[] atomIds, boolean[] truthValues) {
 
 	}
 
 	@Override
-	public void printAnswerSet(int[] trueAtomIds) {
+	public void forgetAssignment(int[] atomIds) {
 
 	}
 }

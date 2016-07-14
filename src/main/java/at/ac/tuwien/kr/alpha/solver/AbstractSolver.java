@@ -11,6 +11,4 @@ abstract class AbstractSolver implements Solver {
 	protected AbstractSolver(Grounder grounder) {
 		this.grounder = grounder;
 	}
-
-	public abstract void computeAnswerSets(int numAnswerSetsRequested);
 }

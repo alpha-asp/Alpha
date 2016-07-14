@@ -1,6 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 
 /**
@@ -12,12 +11,4 @@ public abstract class AbstractGrounder implements Grounder {
 	public AbstractGrounder(ParsedProgram program) {
 		this.program = program;
 	}
-
-	public abstract NoGood[] getMoreNoGoods();
-
-	public abstract void updateAssignments(int[] atomIds, boolean[] truthValues);
-
-	public abstract void forgetAssignments(int[] atomIds);
-
-	public abstract void printAnswerSet(int[] trueAtomIds);
 }

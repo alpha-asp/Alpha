@@ -111,10 +111,9 @@ public class Main {
 			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder
 		);
 
+		// Run solver
+		// TODO: only query for numAnswerSetsRequested
 		Stream.generate(solver).forEach(System.out::println);
-
-		// Start solver
-		solver.computeAnswerSets(numAnswerSetsRequested);
 	}
 
 	static ParsedProgram parseVisit(InputStream is) throws IOException {
