@@ -91,6 +91,7 @@ public class DummyGrounder extends AbstractGrounder {
 		NoGood ngR1h = new NoGood(2);
 		ngR1h.noGoodLiterals[0] = 4;
 		ngR1h.noGoodLiterals[1] = -3;
+		ngR1h.posHeadLiteral = 1;
 		// id: 14
 
 		// Return NoGoods depending on current assignment
