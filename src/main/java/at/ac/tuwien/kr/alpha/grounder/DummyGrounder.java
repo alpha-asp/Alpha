@@ -37,7 +37,7 @@ public class DummyGrounder extends AbstractGrounder {
 		entry(FACT_A, new NoGood(new int[]{ 1 })),
 		entry(FACT_B, new NoGood(new int[]{ -2 })),
 		entry(RULE_B, new NoGood(new int[]{ -4, 1, 2 })),
-		entry(RULE_H, new NoGood(new int[]{ 4, -3 }))
+		entry(RULE_H, new NoGood(new int[]{ 4, -3 }, 1))
 	).collect(entriesToMap());
 
 	private byte[] currentTruthValues = new byte[]{-2, -1, -1, -1, -1};
