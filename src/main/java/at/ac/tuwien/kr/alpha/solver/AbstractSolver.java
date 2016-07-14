@@ -1,15 +1,14 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.grounder.AbstractGrounder;
+import at.ac.tuwien.kr.alpha.grounder.Grounder;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public abstract class AbstractSolver {
+abstract class AbstractSolver implements Solver {
+	protected final Grounder grounder;
 
-	protected AbstractGrounder grounder;
-
-	public AbstractSolver(AbstractGrounder grounder) {
+	protected AbstractSolver(Grounder grounder) {
 		this.grounder = grounder;
 	}
 

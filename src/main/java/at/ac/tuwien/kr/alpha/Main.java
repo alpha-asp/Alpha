@@ -1,11 +1,17 @@
 package at.ac.tuwien.kr.alpha;
 
-import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
+import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTreeVisitor;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityProgramTransformation;
-import at.ac.tuwien.kr.alpha.solver.DummySolver;
-import org.antlr.v4.runtime.*;
+import at.ac.tuwien.kr.alpha.solver.Solver;
+import at.ac.tuwien.kr.alpha.solver.SolverFactory;
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RecognitionException;
 import org.apache.commons.cli.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.stream.Stream;
 
 /**
  * Main entry point for Alpha.
@@ -24,6 +31,11 @@ public class Main {
 	private static final String OPT_INPUT = "input";
 	private static final String OPT_HELP  = "help";
 	private static final String OPT_NUM_AS  = "numAS";
+	private static final String OPT_GROUNDER = "grounder";
+	private static final String OPT_SOLVER = "solver";
+
+	private static final String DEFAULT_GROUNDER = "dummy";
+	private static final String DEFAULT_SOLVER = "leutgeb";
 
 	private static CommandLine commandLine;
 
@@ -45,6 +57,12 @@ public class Main {
 
 		Option helpOption = new Option("h", OPT_HELP, false, "show this help");
 		options.addOption(helpOption);
+
+		Option grounderOption = new Option("g", OPT_GROUNDER, false, "name of the grounder implementation to use");
+		options.addOption(grounderOption);
+
+		Option solverOption = new Option("s", OPT_SOLVER, false, "name of the solver implementation to use");
+		options.addOption(solverOption);
 
 		try {
 			commandLine = new DefaultParser().parse(options, args);
@@ -70,6 +88,9 @@ public class Main {
 		ParsedProgram program = null;
 		try {
 			program = parseVisit(new FileInputStream(commandLine.getOptionValue(OPT_INPUT)));
+		} catch (RecognitionException e) {
+			System.err.println("Error while parsing input ASP program, see errors above.");
+			System.exit(1);
 		} catch (FileNotFoundException e) {
 			LOG.fatal(e.getMessage());
 			System.exit(1);
@@ -78,47 +99,54 @@ public class Main {
 			System.exit(1);
 		}
 
-		// apply program transformations/rewritings (currently none)
+		// Apply program transformations/rewritings (currently none).
 		IdentityProgramTransformation programTransformation = new IdentityProgramTransformation();
 		ParsedProgram transformedProgram = programTransformation.transform(program);
 
-		// initialize the grounder
-		DummyGrounder grounder = new DummyGrounder();
-		grounder.initialize(transformedProgram);
+		Grounder grounder = GrounderFactory.getInstance(
+			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram
+		);
 
-		// initialize the solver
-		DummySolver solver = new DummySolver(grounder);
+		Solver solver = SolverFactory.getInstance(
+			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder
+		);
 
-		// start solver
+		Stream.generate(solver).forEach(System.out::println);
+
+		// Start solver
 		solver.computeAnswerSets(numAnswerSetsRequested);
 	}
 
-	private static boolean parsingError;
-
 	static ParsedProgram parseVisit(InputStream is) throws IOException {
-		// prepare parser
-		ASPCore2Lexer lexer = new ASPCore2Lexer(new ANTLRInputStream(is));
-		CommonTokenStream tokens = new CommonTokenStream(lexer);
-		ASPCore2Parser parser = new ASPCore2Parser(tokens);
+		final ASPCore2Parser parser = new ASPCore2Parser(
+			new CommonTokenStream(
+				new ASPCore2Lexer(
+					new ANTLRInputStream(is)
+				)
+			)
+		);
 
-		// record eventual parsing errors
-		parsingError = false;
-		parser.addErrorListener(new BaseErrorListener() {
-			@Override
-			public void syntaxError(Recognizer<?, ?> recognizer, Object o, int i, int i1, String s, RecognitionException e) {
-				parsingError = true;
-			}
-		});
+		final SwallowingErrorListener errorListener = new SwallowingErrorListener();
+		parser.addErrorListener(errorListener);
 
-		// parse program
+		// Parse program
 		ASPCore2Parser.ProgramContext programContext = parser.program();
 
-		if (parsingError) {
-			System.err.println("Error while parsing input ASP program using modules, see errors above.");
-			System.exit(-1);
+		// If the our SwallowingErrorListener has handled some exception during parsing
+		// just re-throw that exception.
+		// At this time, error messages will be already printed out to standard error
+		// because ANTLR by default adds an org.antlr.v4.runtime.ConsoleErrorListener
+		// to every parser.
+		// That ConsoleErrorListener will print useful messages, but not report back to
+		// our code.
+		// org.antlr.v4.runtime.BailErrorStrategy cannot be used here, because it would
+		// abruptly stop parsing as soon as the first error is reached (i.e. no recovery
+		// is attempted) and the user will only see the first error encountered.
+		if (errorListener.getRecognitionException() != null) {
+			throw errorListener.getRecognitionException();
 		}
 
-		// construct internal program representation
+		// Construct internal program representation.
 		ParsedTreeVisitor visitor = new ParsedTreeVisitor();
 		return (ParsedProgram) visitor.visitProgram(programContext);
 	}

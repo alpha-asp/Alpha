@@ -7,10 +7,6 @@ grammar ASPCore2;
  * see productions "gringo_range" and "gringo_sharp".
  */
 
-@header {
-package at.ac.tuwien.kr.alpha;
-}
-
 program : statements? query?;
 
 statements : statement statements?;
