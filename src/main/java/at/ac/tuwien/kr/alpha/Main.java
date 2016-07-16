@@ -113,8 +113,9 @@ public class Main {
 			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram
 		);
 
+		// TODO(flowlo): Add meaningful filter here, probably by interpreting some flag.
 		Solver solver = SolverFactory.getInstance(
-			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder
+			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, p -> true
 		);
 
 		Stream.generate(solver)
