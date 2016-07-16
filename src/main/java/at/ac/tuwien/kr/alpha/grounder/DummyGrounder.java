@@ -1,37 +1,47 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.AnswerSet;
-import at.ac.tuwien.kr.alpha.AnswerSetFilter;
 import at.ac.tuwien.kr.alpha.NoGood;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
+import static at.ac.tuwien.kr.alpha.Util.entry;
 
 /**
+ * Represents a small ASP program {@code { c :- a, b.  a.  b. }}.
+ *
  * Copyright (c) 2016, the Alpha Team.
  */
 public class DummyGrounder extends AbstractGrounder {
-	public DummyGrounder(ParsedProgram program) {
-		super(program);
-		initDummy();
-	}
+	private static final Log LOG = LogFactory.getLog(AbstractGrounder.class);
 
+	private static Map<Integer, String> atomIdToString = Stream.of(
+		entry(1, "a"),
+		entry(2, "b"),
+		entry(3, "_br1"),
+		entry(4, "c")
+	).collect(entriesToMap());
 
+	private static final int FACT_A = 11; // { -a }
+	private static final int FACT_B = 12; // { -b }
+	private static final int RULE_B = 13; // { -_br1, a, b }
+	private static final int RULE_H = 14; // { -c, _br1 }
 
-	HashMap<Integer, String> atomIdToString;
-	byte[] currentTruthValues;
+	private static final Map<Integer, NoGood> noGoods = Stream.of(
+		entry(FACT_A, new NoGood(new int[]{ 1 })),
+		entry(FACT_B, new NoGood(new int[]{ -2 })),
+		entry(RULE_B, new NoGood(new int[]{ -4, 1, 2 })),
+		entry(RULE_H, new NoGood(new int[]{ 4, -3 }))
+	).collect(entriesToMap());
 
-	private void initDummy() {
-		// The dummy represents a small ASP program { c :- a, b.  a.  b. }
-		currentTruthValues = new byte[]{-2, -1, -1, -1, -1};
-		atomIdToString = new HashMap<>();
-		atomIdToString.put(1, "a");
-		atomIdToString.put(2, "b");
-		atomIdToString.put(3, "_br1");
-		atomIdToString.put(4, "c");
-	}
+	private byte[] currentTruthValues = new byte[]{-2, -1, -1, -1, -1};
+	private Set<Integer> returnedNogoods = new HashSet<>();
 
 	@Override
 	public void updateAssignment(int[] atomIds, boolean[] truthValues) {
@@ -42,78 +52,43 @@ public class DummyGrounder extends AbstractGrounder {
 
 	@Override
 	public void forgetAssignment(int[] atomIds) {
-		for (int i = 0; i < atomIds.length; i++) {
-			currentTruthValues[atomIds[i]] = -1;
+		for (int atomId : atomIds) {
+			currentTruthValues[atomId] = -1;
 		}
 	}
 
 	@Override
-	public AnswerSet assignmentToAnswerSet(AnswerSetFilter filter, int[] trueAtoms) {
-		// TODO: we need a representation for AnswerSet.
+	public AnswerSet assignmentToAnswerSet(Predicate<GrounderPredicate> filter, int[] trueAtoms) {
+		// TODO(AntoniusW): We need a representation for AnswerSet.
 
-		String result = "{ ";
-		for (int i = 0; i < trueAtoms.length; i++) {
-			if (i != 0) {
-				result += ", ";
-			}
-			result += atomIdToString.get(trueAtoms[i]);
-		}
-		result += " }\n";
-
-		// result contains now a string representation of the answer-set, may be useful during debugging.
-
+		LOG.debug(
+			// NOTE(flowlo): If this stream would map to GrounderPredicate
+			// it could be easily filtered by filter.
+			Arrays.stream(trueAtoms)
+				.mapToObj(atomIdToString::get)
+				.collect(Collectors.joining(", ", "{ ", " }"))
+		);
 		return null;
 	}
 
 	@Override
 	public Map<Integer, NoGood> getNoGoods() {
-
-		// Construct all NoGoods according to { c :- a, b.  a.  b. }
-
-		// { -a }
-		NoGood ngFa = new NoGood(1);
-		ngFa.noGoodLiterals[0] = -1;
-		// id: 11
-
-		// { -b }
-		NoGood ngFb = new NoGood(1);
-		ngFb.noGoodLiterals[0] = -2;
-		// id: 12
-
-		// { -_br1, a, b }
-		NoGood ngR1body = new NoGood(3);
-		ngR1body.noGoodLiterals[0] = -4;
-		ngR1body.noGoodLiterals[1] = 1;
-		ngR1body.noGoodLiterals[2] = 2;
-		// id: 13
-
-		// { -c, _br1 }
-		NoGood ngR1h = new NoGood(2);
-		ngR1h.noGoodLiterals[0] = 4;
-		ngR1h.noGoodLiterals[1] = -3;
-		// id: 14
-
-		// Return NoGoods depending on current assignment
+		// Return NoGoods depending on current assignment.
 		HashMap<Integer, NoGood> returnNoGoods = new HashMap<>();
 		if (currentTruthValues[1] == 1 && currentTruthValues[2] == 1) {
-			addNoGoodIfNotAlreadyReturned(returnNoGoods, 13, ngR1body);
-			addNoGoodIfNotAlreadyReturned(returnNoGoods, 14, ngR1h);
+			addNoGoodIfNotAlreadyReturned(returnNoGoods, RULE_B);
+			addNoGoodIfNotAlreadyReturned(returnNoGoods, RULE_H);
 		} else {
-			addNoGoodIfNotAlreadyReturned(returnNoGoods, 11, ngFa);
-			addNoGoodIfNotAlreadyReturned(returnNoGoods, 12, ngFb);
+			addNoGoodIfNotAlreadyReturned(returnNoGoods, FACT_A);
+			addNoGoodIfNotAlreadyReturned(returnNoGoods, FACT_B);
 		}
 		return returnNoGoods;
 	}
 
-	private HashSet<NoGood> returnedNogoods;
-	private void addNoGoodIfNotAlreadyReturned(Map<Integer, NoGood> integerNoGoodMap, Integer idNoGood, NoGood noGood) {
-		if (returnedNogoods == null) {
-			returnedNogoods = new HashSet<>();
+	private void addNoGoodIfNotAlreadyReturned(Map<Integer, NoGood> integerNoGoodMap, Integer idNoGood) {
+		if (!returnedNogoods.contains(idNoGood)) {
+			integerNoGoodMap.put(idNoGood, noGoods.get(idNoGood));
+			returnedNogoods.add(idNoGood);
 		}
-		if (!returnedNogoods.contains(noGood)) {
-			integerNoGoodMap.put(idNoGood, noGood);
-			returnedNogoods.add(noGood);
-		}
-
 	}
 }

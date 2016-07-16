@@ -8,7 +8,10 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 public abstract class AbstractGrounder implements Grounder {
 	protected ParsedProgram program;
 
-	public AbstractGrounder(ParsedProgram program) {
+	protected AbstractGrounder(ParsedProgram program) {
 		this.program = program;
+	}
+
+	protected AbstractGrounder() {
 	}
 }

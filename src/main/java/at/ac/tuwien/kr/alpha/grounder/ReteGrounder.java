@@ -1,12 +1,11 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.AnswerSet;
-import at.ac.tuwien.kr.alpha.AnswerSetFilter;
 import at.ac.tuwien.kr.alpha.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.rete.RetePredicate;
-
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -22,9 +21,8 @@ public class ReteGrounder extends AbstractGrounder {
 		super(program);
 	}
 
-
 	@Override
-	public AnswerSet assignmentToAnswerSet(AnswerSetFilter filter, int[] trueAtoms) {
+	public AnswerSet assignmentToAnswerSet(Predicate<GrounderPredicate> filter, int[] trueAtoms) {
 		return null;
 	}
 
