@@ -46,13 +46,14 @@ public class Main {
 		numAnswerSetsOption.setArgName("number");
 		numAnswerSetsOption.setRequired(true);
 		numAnswerSetsOption.setArgs(1);
+		numAnswerSetsOption.setType(Number.class);
 		options.addOption(numAnswerSetsOption);
-
 
 		Option inputOption = new Option("i", OPT_INPUT, true, "read the ASP program from this file");
 		inputOption.setArgName("file");
 		inputOption.setRequired(true);
 		inputOption.setArgs(1);
+		inputOption.setType(FileInputStream.class);
 		options.addOption(inputOption);
 
 		Option helpOption = new Option("h", OPT_HELP, false, "show this help");
@@ -81,22 +82,27 @@ public class Main {
 			return;
 		}
 
-		String numAnswerSetsCLI = commandLine.getOptionValue(OPT_NUM_AS, "-1");
-		int numAnswerSetsRequested = Integer.parseInt(numAnswerSetsCLI);
+		int limit = -1;
 
+		try {
+			limit = ((Number)commandLine.getParsedOptionValue(OPT_NUM_AS)).intValue();
+		} catch (ParseException e) {
+			bailOut("Failed to parse number of answer sets requested.");
+		}
+
+		if (limit < 1) {
+			bailOut("Number of Answer Sets Requested must be a positive integer.");
+		}
 
 		ParsedProgram program = null;
 		try {
 			program = parseVisit(new FileInputStream(commandLine.getOptionValue(OPT_INPUT)));
 		} catch (RecognitionException e) {
-			System.err.println("Error while parsing input ASP program, see errors above.");
-			System.exit(1);
+			bailOut("Error while parsing input ASP program, see errors above.");
 		} catch (FileNotFoundException e) {
-			LOG.fatal(e.getMessage());
-			System.exit(1);
+			bailOut(e.getMessage());
 		} catch (IOException e) {
-			LOG.fatal(e);
-			System.exit(1);
+			bailOut(e);
 		}
 
 		// Apply program transformations/rewritings (currently none).
@@ -107,13 +113,19 @@ public class Main {
 			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram
 		);
 
+		// TODO(flowlo): Add meaningful filter here, probably by interpreting some flag.
 		Solver solver = SolverFactory.getInstance(
-			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder
+			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, p -> true
 		);
 
-		// Run solver
-		// TODO: only query for numAnswerSetsRequested
-		Stream.generate(solver).forEach(System.out::println);
+		Stream.generate(solver)
+			.limit(limit)
+			.forEach(System.out::println);
+	}
+
+	private static void bailOut(Object o) {
+		LOG.fatal(o);
+		System.exit(1);
 	}
 
 	static ParsedProgram parseVisit(InputStream is) throws IOException {
