@@ -5,6 +5,7 @@ import at.ac.tuwien.kr.alpha.AnswerSetFilter;
 import at.ac.tuwien.kr.alpha.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.rete.RetePredicate;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Map;
 
@@ -30,6 +31,11 @@ public class ReteGrounder extends AbstractGrounder {
 
 	@Override
 	public Map<Integer, NoGood> getNoGoods() {
+		return null;
+	}
+
+	@Override
+	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
 		return null;
 	}
 

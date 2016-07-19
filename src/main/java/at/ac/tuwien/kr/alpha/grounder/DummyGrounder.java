@@ -4,6 +4,8 @@ import at.ac.tuwien.kr.alpha.AnswerSet;
 import at.ac.tuwien.kr.alpha.AnswerSetFilter;
 import at.ac.tuwien.kr.alpha.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -104,6 +106,11 @@ public class DummyGrounder extends AbstractGrounder {
 			addNoGoodIfNotAlreadyReturned(returnNoGoods, 12, ngFb);
 		}
 		return returnNoGoods;
+	}
+
+	@Override
+	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
+		return new ImmutablePair<>(new HashMap<>(), new HashMap<>());
 	}
 
 	private HashSet<NoGood> returnedNogoods;
