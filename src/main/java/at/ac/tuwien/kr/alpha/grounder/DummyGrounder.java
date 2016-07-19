@@ -4,6 +4,8 @@ import at.ac.tuwien.kr.alpha.AnswerSet;
 import at.ac.tuwien.kr.alpha.NoGood;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -90,5 +92,10 @@ public class DummyGrounder extends AbstractGrounder {
 			integerNoGoodMap.put(idNoGood, noGoods.get(idNoGood));
 			returnedNogoods.add(idNoGood);
 		}
+	}
+
+	@Override
+	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
+		return new ImmutablePair<>(new HashMap<>(), new HashMap<>());
 	}
 }
