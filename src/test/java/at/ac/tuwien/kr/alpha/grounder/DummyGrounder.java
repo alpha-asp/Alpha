@@ -20,7 +20,7 @@ import static at.ac.tuwien.kr.alpha.Util.entry;
  *
  * Copyright (c) 2016, the Alpha Team.
  */
-public class DummyGrounder extends AbstractGrounder {
+public class DummyGrounder implements Grounder {
 	private static final Log LOG = LogFactory.getLog(AbstractGrounder.class);
 
 	private static Map<Integer, String> atomIdToString = Stream.of(
@@ -94,7 +94,6 @@ public class DummyGrounder extends AbstractGrounder {
 		}
 	}
 
-	@Override
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
 		return new ImmutablePair<>(new HashMap<>(), new HashMap<>());
 	}
