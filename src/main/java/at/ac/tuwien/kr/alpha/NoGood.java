@@ -1,6 +1,8 @@
 package at.ac.tuwien.kr.alpha;
 
-public class NoGood {
+import java.util.Iterator;
+
+public class NoGood implements Iterable<Integer> {
 	private final int[] literals;
 	private final int head;
 
@@ -39,5 +41,20 @@ public class NoGood {
 
 	public boolean hasHead() {
 		return head >= 0;
+	}
+
+	@Override
+	public Iterator<Integer> iterator() {
+		return new Iterator<Integer>() {
+			private int i;
+
+			public boolean hasNext() {
+				return literals.length > i;
+			}
+
+			public Integer next() {
+				return literals[i++];
+			}
+		};
 	}
 }
