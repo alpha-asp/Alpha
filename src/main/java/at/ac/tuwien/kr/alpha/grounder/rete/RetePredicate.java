@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder.rete;
 
-import at.ac.tuwien.kr.alpha.grounder.GrounderPredicate;
+import at.ac.tuwien.kr.alpha.grounder.Predicate;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -9,7 +9,7 @@ import java.util.HashMap;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class RetePredicate implements GrounderPredicate{
+public class RetePredicate implements Predicate {
 
 	public final String predicateName;
 	public final int arity;

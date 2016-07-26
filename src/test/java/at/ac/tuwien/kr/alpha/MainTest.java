@@ -1,8 +1,12 @@
 package at.ac.tuwien.kr.alpha;
 
+import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstant;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFunctionTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
+import at.ac.tuwien.kr.alpha.solver.Solver;
+import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import org.antlr.v4.runtime.RecognitionException;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -88,5 +92,26 @@ public class MainTest {
 	@Test(expected = RecognitionException.class)
 	public void parseBadSyntax() throws IOException {
 		Main.parseVisit(stream("Wrong Syntax."));
+	}
+
+	@Test
+	public void testDummyGrounderAndSolver() {
+
+		Grounder grounder = GrounderFactory.getInstance("dummy", null);
+		Solver solver = SolverFactory.getInstance("dummy", grounder, p -> true);
+
+		int answerSetCount = 0;
+		while (true) {
+			AnswerSet as = solver.get();
+			if (as == null) {
+				break;
+			}
+			answerSetCount++;
+			//System.out.println(as.toString());
+			// Nicer printing of answer sets requires adaption of the below assertion.
+			assertEquals("Answer set is { a, b, _br1, c }.", "{ a(), b(), _br1(), c() }", as.toString());
+		}
+		assertEquals("Program has one answer set.", 1, answerSetCount);
+		//System.out.println("Found " + answerSetCount + " Answer Set(s), there are no more answer sets.");
 	}
 }

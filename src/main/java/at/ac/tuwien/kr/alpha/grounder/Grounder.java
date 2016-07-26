@@ -5,10 +5,9 @@ import at.ac.tuwien.kr.alpha.NoGood;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Map;
-import java.util.function.Predicate;
 
 public interface Grounder {
-	AnswerSet assignmentToAnswerSet(Predicate<GrounderPredicate> filter, int[] trueAtoms);
+	AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, int[] trueAtoms);
 
 	Map<Integer, NoGood> getNoGoods();
 

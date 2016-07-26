@@ -2,12 +2,10 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.AnswerSet;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.grounder.GrounderPredicate;
-
-import java.util.function.Predicate;
+import at.ac.tuwien.kr.alpha.grounder.Predicate;
 
 public class LeutgebSolver extends AbstractSolver {
-	LeutgebSolver(Grounder grounder, Predicate<GrounderPredicate> filter) {
+	LeutgebSolver(Grounder grounder, java.util.function.Predicate<Predicate> filter) {
 		super(grounder, filter);
 	}
 

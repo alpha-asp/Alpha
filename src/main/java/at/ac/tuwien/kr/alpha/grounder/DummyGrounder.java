@@ -1,12 +1,14 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.AnswerSet;
+import at.ac.tuwien.kr.alpha.BasicAnswerSet;
 import at.ac.tuwien.kr.alpha.NoGood;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,11 +35,11 @@ public class DummyGrounder extends AbstractGrounder {
 	private static final int RULE_B = 13; // { -_br1, a, b }
 	private static final int RULE_H = 14; // { -c, _br1 }
 
-	private static final Map<Integer, NoGood> noGoods = Stream.of(
-		entry(FACT_A, new NoGood(new int[]{ 1 })),
-		entry(FACT_B, new NoGood(new int[]{ -2 })),
-		entry(RULE_B, new NoGood(new int[]{ -4, 1, 2 })),
-		entry(RULE_H, new NoGood(new int[]{ 4, -3 })) // TODO: set posHeadLiteral = 1 of this NoGood
+	private static final Map<Integer, NoGood> NOGOODS = Stream.of(
+		entry(FACT_A, new NoGood(new int[]{-1 })),
+		entry(FACT_B, new NoGood(new int[]{-2 })),
+		entry(RULE_B, new NoGood(new int[]{-4, 1, 2 })),
+		entry(RULE_H, new NoGood(new int[]{-3, 4 }, 1))
 	).collect(entriesToMap());
 
 	private byte[] currentTruthValues = new byte[]{-2, -1, -1, -1, -1};
@@ -58,17 +60,44 @@ public class DummyGrounder extends AbstractGrounder {
 	}
 
 	@Override
-	public AnswerSet assignmentToAnswerSet(Predicate<GrounderPredicate> filter, int[] trueAtoms) {
-		// TODO(AntoniusW): We need a representation for AnswerSet.
+	public AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, int[] trueAtoms) {
+		// Note: This grounder only deals with 0-ary predicates, i.e., every atom is a predicate and there is
+		// 	 only one predicate instance representing 0 terms.
+		BasicAnswerSet answerSet = new BasicAnswerSet();
+
+		ArrayList<Predicate> trueAtomPredicates = new ArrayList<>();
+		for (int trueAtom : trueAtoms) {
+			BasicPredicate atomPredicate = new BasicPredicate(atomIdToString.get(trueAtom), 0);
+			if (filter.test(atomPredicate)) {
+				trueAtomPredicates.add(atomPredicate);
+			}
+		}
+
+		answerSet.setPredicateList(trueAtomPredicates);
+
+
+		// Add the 0-ary instance (it is the only one for this grounder)
+		HashMap<Integer, String> termIdStringMap = new HashMap<>();
+		termIdStringMap.put(0, "");
+		answerSet.setTermIdStringMap(termIdStringMap);
+
+		// Add the atom instances
+		HashMap<Predicate, ArrayList<Integer>> predicateInstances = new HashMap<>();
+		for (Predicate trueAtomPredicate : trueAtomPredicates) {
+			ArrayList<Integer> instances = new ArrayList<>();
+			instances.add(0);	// 0-ary predicate instance
+			predicateInstances.put(trueAtomPredicate, instances);
+		}
+		answerSet.setPredicateInstances(predicateInstances);
 
 		LOG.debug(
-			// NOTE(flowlo): If this stream would map to GrounderPredicate
+			// NOTE(flowlo): If this stream would map to Predicate
 			// it could be easily filtered by filter.
 			Arrays.stream(trueAtoms)
 				.mapToObj(atomIdToString::get)
 				.collect(Collectors.joining(", ", "{ ", " }"))
 		);
-		return null;
+		return answerSet;
 	}
 
 	@Override
@@ -85,9 +114,14 @@ public class DummyGrounder extends AbstractGrounder {
 		return returnNoGoods;
 	}
 
+	@Override
+	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
+		return new ImmutablePair<>(new HashMap<>(), new HashMap<>());
+	}
+
 	private void addNoGoodIfNotAlreadyReturned(Map<Integer, NoGood> integerNoGoodMap, Integer idNoGood) {
 		if (!returnedNogoods.contains(idNoGood)) {
-			integerNoGoodMap.put(idNoGood, noGoods.get(idNoGood));
+			integerNoGoodMap.put(idNoGood, NOGOODS.get(idNoGood));
 			returnedNogoods.add(idNoGood);
 		}
 	}

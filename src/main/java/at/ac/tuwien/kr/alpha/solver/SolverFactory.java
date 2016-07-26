@@ -1,12 +1,10 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.grounder.GrounderPredicate;
-
-import java.util.function.Predicate;
+import at.ac.tuwien.kr.alpha.grounder.Predicate;
 
 public final class SolverFactory {
-	public static Solver getInstance(String name, Grounder grounder, Predicate<GrounderPredicate> filter) {
+	public static Solver getInstance(String name, Grounder grounder, java.util.function.Predicate<Predicate> filter) {
 		switch (name.toLowerCase()) {
 			case "dummy": return new DummySolver(grounder);
 			case "leutgeb": return new LeutgebSolver(grounder, filter);

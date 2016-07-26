@@ -1,12 +1,8 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.AnswerSet;
-import at.ac.tuwien.kr.alpha.AnswerSetFilterNoFiltering;
 import at.ac.tuwien.kr.alpha.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.grounder.GrounderPredicate;
-
-import java.util.function.Predicate;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
@@ -36,17 +32,23 @@ public class DummySolver extends AbstractSolver {
 		// Get basic rules and facts from grounder
 		if (doInit) {
 			obtainNoGoodsFromGrounder();
+			decisionLevels.add(0, new ArrayList<>());
 			doInit = false;
 		} else {
 			// We already found one Answer-Set and are requested to find another one
 			doBacktrack();
+			if (exhaustedSearchSpace()) {
+				return null;
+			}
 		}
 
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		do {
-			updateGrounderAssignments();
-			obtainNoGoodsFromGrounder();
-			doUnitPropagation();
+			do {
+				updateGrounderAssignments();
+				obtainNoGoodsFromGrounder();
+				doUnitPropagation();
+			} while (!propagationFixpointReached());
 			if (!checkAssignmentSatisfiesAllNoGoods()) {
 				doBacktrack();
 				if (exhaustedSearchSpace()) {
@@ -63,6 +65,15 @@ public class DummySolver extends AbstractSolver {
 		} while (true);
 	}
 
+	boolean didChange;
+	private boolean propagationFixpointReached() {
+		// Check if anything changed.
+		// didChange is updated in places of change.
+		boolean changeCopy = didChange;
+		didChange = false;
+		return !changeCopy;
+	}
+
 	private AnswerSet getAnswerSetFromAssignment() {
 		ArrayList<Integer> trueAtoms = new ArrayList<>();
 		for (Map.Entry<Integer, Boolean> atomAssignment : truthAssignments.entrySet()) {
@@ -74,7 +85,7 @@ public class DummySolver extends AbstractSolver {
 		for (int i = 0; i < trueAtoms.size(); i++) {
 			trueAtomsIntArray[i] = trueAtoms.get(i);
 		}
-		return grounder.assignmentToAnswerSet(new AnswerSetFilterNoFiltering(), trueAtomsIntArray);
+		return grounder.assignmentToAnswerSet(predicate -> true, trueAtomsIntArray);
 	}
 
 
@@ -85,6 +96,7 @@ public class DummySolver extends AbstractSolver {
 
 	private void doChoice() {
 		decisionLevel++;
+		decisionLevels.add(decisionLevel, new ArrayList<>());
 		// We guess true for any unassigned choice atom (backtrack tries false)
 		truthAssignments.put(nextChoice, true);
 		guessedAtomIds.push(nextChoice);
@@ -154,6 +166,7 @@ public class DummySolver extends AbstractSolver {
 		for (Map.Entry<Integer, Boolean> truthAssignment : truthAssignments.entrySet()) {
 			atomIds[arrPos] = truthAssignment.getKey();
 			truthValues[arrPos] = truthAssignment.getValue();
+			arrPos++;
 		}
 		grounder.updateAssignment(atomIds, truthValues);
 	}
@@ -166,13 +179,14 @@ public class DummySolver extends AbstractSolver {
 			NoGood noGood = basicNoGoods.get(noGoodId);
 			knownNoGoods.put(noGoodId, noGood);
 			// Extract and save atomIds
-			for (int i = 0; i < noGood.noGoodLiterals.length; i++) {
-				int currentAtom = abs(noGood.noGoodLiterals[i]);
+			for (int i = 0; i < noGood.size(); i++) {
+				int currentAtom = abs(noGood.getLiteral(i));
 				if (!knownAtomIds.contains(currentAtom)) {
 					knownAtomIds.add(currentAtom);
 					orderedAtomIds.add(currentAtom);
 				}
 			}
+			didChange = true;	// Record to detect propagation fixpoint, checking if new NoGoods were reported would be better here.
 		}
 		// Record choice atoms
 		Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms = grounder.getChoiceAtoms();
@@ -195,7 +209,11 @@ public class DummySolver extends AbstractSolver {
 			noGoodIds) {
 			NoGood noGood = knownNoGoods.get(noGoodId);
 			int implied = unitPropagate(noGood);
-			int impliedLiteral = noGood.noGoodLiterals[implied];
+			if (implied == -1) {	// NoGood is not unit, skip.
+				continue;
+			}
+			didChange = true;	// Record to detect propagation fixpoint
+			int impliedLiteral = noGood.getLiteral(implied);
 			int impliedAtomId = abs(impliedLiteral);
 			boolean impliedTruthValue = !(impliedLiteral > 0);
 			truthAssignments.put(impliedAtomId, impliedTruthValue);
@@ -208,11 +226,12 @@ public class DummySolver extends AbstractSolver {
 	}
 
 	private boolean isLiteralViolated(int literal) {
+		// Check if literal of a NoGood is violated
 		int atomId = abs(literal);
 		boolean literalPolarity = literal > 0;
 		// We assume literal is assigned
 		Boolean assignedTruthValue = truthAssignments.get(atomId);
-		return literalPolarity ^ assignedTruthValue;
+		return literalPolarity == assignedTruthValue;
 	}
 
 	/**
@@ -223,8 +242,8 @@ public class DummySolver extends AbstractSolver {
 	private int unitPropagate(NoGood noGood) {
 		int unassignedLiteralsInNoGood = 0;
 		int lastUnassignedPosition = -1;
-		for (int i = 0; i < noGood.noGoodLiterals.length; i++) {
-			int currentLiteral = noGood.noGoodLiterals[i];
+		for (int i = 0; i < noGood.size(); i++) {
+			int currentLiteral = noGood.getLiteral(i);
 			if (isLiteralAssigned(currentLiteral)) {
 				if (isLiteralViolated(currentLiteral)) {
 					continue;
@@ -250,8 +269,8 @@ public class DummySolver extends AbstractSolver {
 			noGoodIds) {
 			NoGood noGood = knownNoGoods.get(noGoodId);
 			boolean isSatisfied = false;
-			for (int i = 0; i < noGood.noGoodLiterals.length; i++) {
-				int noGoodLiteral = noGood.noGoodLiterals[i];
+			for (int i = 0; i < noGood.size(); i++) {
+				int noGoodLiteral = noGood.getLiteral(i);
 				if (!isLiteralAssigned(noGoodLiteral) || !isLiteralViolated(noGoodLiteral)) {
 					isSatisfied = true;
 					break;

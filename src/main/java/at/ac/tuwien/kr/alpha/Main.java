@@ -118,9 +118,16 @@ public class Main {
 			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, p -> true
 		);
 
-		Stream.generate(solver)
-			.limit(limit)
-			.forEach(System.out::println);
+
+		if (limit == -1) {
+			// TODO: If no limit is set, the stream turns into infinite loop. Breaking from forEach is not elegantly possible.
+			/*Stream.generate(solver)
+				.forEach(System.out::println);*/
+		} else {
+			Stream.generate(solver)
+				.limit(limit)
+				.forEach(System.out::println);
+		}
 	}
 
 	private static void bailOut(Object o) {
