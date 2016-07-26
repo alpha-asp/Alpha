@@ -17,6 +17,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Spliterator;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static org.junit.Assert.*;
 
@@ -113,12 +115,8 @@ public class MainTest {
 	@Test
 	public void testGrounderChoiceAndSolver() {
 		final Spliterator<AnswerSet> spliterator = new DummySolver(new ChoiceGrounder()).spliterator();
-		final List<AnswerSet> recorder = new ArrayList<>(ChoiceGrounder.EXPECTED_ANSWER_SETS);
+		final List<AnswerSet> answerSets = StreamSupport.stream(spliterator, false).collect(Collectors.toList());
 
-		while (spliterator.tryAdvance(recorder::add)) {
-			// Consume all answer sets.
-		}
-
-		assertEquals("Program has two answer sets.", ChoiceGrounder.EXPECTED_ANSWER_SETS, recorder.size());
+		assertEquals("Program has two answer sets.", ChoiceGrounder.EXPECTED_ANSWER_SETS, answerSets.size());
 	}
 }

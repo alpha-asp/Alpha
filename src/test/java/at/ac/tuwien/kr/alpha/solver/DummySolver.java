@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.NoGood;
+import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.apache.commons.lang3.tuple.Pair;
@@ -23,10 +23,18 @@ public class DummySolver extends AbstractSolver {
 	private HashMap<Integer, Boolean> truthAssignments = new HashMap<>();
 	private ArrayList<ArrayList<Integer>> decisionLevels = new ArrayList<>();
 
-	private ArrayList<Integer> noGoodIds = new ArrayList<>();
 	private HashMap<Integer, NoGood> knownNoGoods = new HashMap<>();
 
 	boolean doInit = true;
+	boolean didChange;
+
+	private int decisionLevel;
+	private HashSet<Integer> mbtAssigned = new HashSet<>();
+
+	Map<Integer, Integer> choiceOn = new HashMap<>();
+	Map<Integer, Integer> choiceOff = new HashMap<>();
+	Integer nextChoice;
+	Stack<Integer> guessedAtomIds = new Stack<>();
 
 	@Override
 	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
@@ -57,7 +65,7 @@ public class DummySolver extends AbstractSolver {
 				}
 			} else if (choicesLeft()) {
 				doChoice();
-			} else if (noMBTValuesReamining()) {
+			} else if (noMBTValuesRemaining()) {
 				AnswerSet as = getAnswerSetFromAssignment();
 				System.out.println(reportChoiceStack());
 				action.accept(as);
@@ -71,13 +79,13 @@ public class DummySolver extends AbstractSolver {
 		}
 	}
 
-	private boolean noMBTValuesReamining() {
+	private boolean noMBTValuesRemaining() {
 		return mbtAssigned.size() == 0;
 	}
 
 	private void doMBTPropagation() {
-		boolean didPropagate = true;
-		while (didPropagate) {
+		boolean didPropagate;
+		do {
 			didPropagate = false;
 			for (Map.Entry<Integer, NoGood> noGoodEntry : knownNoGoods.entrySet()) {
 				if (propagateMBT(noGoodEntry.getValue())) {
@@ -85,7 +93,7 @@ public class DummySolver extends AbstractSolver {
 					didChange = true;
 				}
 			}
-		}
+		} while (didPropagate);
 	}
 
 	private String reportChoiceStack() {
@@ -104,7 +112,6 @@ public class DummySolver extends AbstractSolver {
 		return report;
 	}
 
-	boolean didChange;
 	private boolean propagationFixpointReached() {
 		// Check if anything changed.
 		// didChange is updated in places of change.
@@ -126,12 +133,6 @@ public class DummySolver extends AbstractSolver {
 		}
 		return grounder.assignmentToAnswerSet(predicate -> true, trueAtomsIntArray);
 	}
-
-
-	Map<Integer, Integer> choiceOn = new HashMap<>();
-	Map<Integer, Integer> choiceOff = new HashMap<>();
-	Integer nextChoice;
-	Stack<Integer> guessedAtomIds = new Stack<>();
 
 	private void doChoice() {
 		decisionLevel++;
@@ -195,11 +196,8 @@ public class DummySolver extends AbstractSolver {
 				decisionLevel--;
 				doBacktrack();
 			}
-
 		}
 	}
-
-
 
 	private void updateGrounderAssignments() {
 		int[] atomIds = new int[truthAssignments.size()];
@@ -217,7 +215,6 @@ public class DummySolver extends AbstractSolver {
 		Map<Integer, NoGood> basicNoGoods = grounder.getNoGoods();
 		for (Integer noGoodId :
 			basicNoGoods.keySet()) {
-			noGoodIds.add(noGoodId);
 			NoGood noGood = basicNoGoods.get(noGoodId);
 			knownNoGoods.put(noGoodId, noGood);
 			// Extract and save atomIds
@@ -242,14 +239,9 @@ public class DummySolver extends AbstractSolver {
 		return decisionLevel == 0;
 	}
 
-	private int decisionLevel;
-
-
 	private void doUnitPropagation() {
 		// Check each NoGood if it is unit (naive algorithm)
-		for (Integer noGoodId :
-			noGoodIds) {
-			NoGood noGood = knownNoGoods.get(noGoodId);
+		for (NoGood noGood : knownNoGoods.values()) {
 			int implied = unitPropagate(noGood);
 			if (implied == -1) {	// NoGood is not unit, skip.
 				continue;
@@ -290,9 +282,7 @@ public class DummySolver extends AbstractSolver {
 		for (int i = 0; i < noGood.size(); i++) {
 			int currentLiteral = noGood.getLiteral(i);
 			if (isLiteralAssigned(currentLiteral)) {
-				if (isLiteralViolated(currentLiteral)) {
-					continue;
-				} else {
+				if (!isLiteralViolated(currentLiteral)) {
 					// The NoGood is satisfied, hence it cannot be unit.
 					return -1;
 				}
@@ -307,8 +297,6 @@ public class DummySolver extends AbstractSolver {
 		}
 		return lastUnassignedPosition;
 	}
-
-	private HashSet<Integer> mbtAssigned = new HashSet<>();
 
 	private boolean propagateMBT(NoGood noGood) {
 		// The MBT propagation checks whether the head-indicated literal is MBT
@@ -327,9 +315,7 @@ public class DummySolver extends AbstractSolver {
 				continue;
 			}
 			int literal = noGood.getLiteral(i);
-			if (isLiteralAssigned(literal) && isLiteralViolated(literal)) {
-				continue;
-			} else {
+			if (!(isLiteralAssigned(literal) && isLiteralViolated(literal))) {
 				return false;
 			}
 		}
@@ -340,12 +326,9 @@ public class DummySolver extends AbstractSolver {
 
 	private boolean assignmentViolatesNoGoods() {
 		// Check each NoGood, if it is violated
-		for (Integer noGoodId :
-			noGoodIds) {
-			NoGood noGood = knownNoGoods.get(noGoodId);
+		for (NoGood noGood : knownNoGoods.values()) {
 			boolean isSatisfied = false;
-			for (int i = 0; i < noGood.size(); i++) {
-				int noGoodLiteral = noGood.getLiteral(i);
+			for (Integer noGoodLiteral : noGood) {
 				if (!isLiteralAssigned(noGoodLiteral) || !isLiteralViolated(noGoodLiteral)) {
 					isSatisfied = true;
 					break;
