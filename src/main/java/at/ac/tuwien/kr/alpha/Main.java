@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
@@ -20,7 +21,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.stream.Stream;
 
 /**
  * Main entry point for Alpha.
@@ -119,15 +119,18 @@ public class Main {
 		);
 
 
-		if (limit == -1) {
-			// TODO: If no limit is set, the stream turns into infinite loop. Breaking from forEach is not elegantly possible.
-			/*Stream.generate(solver)
-				.forEach(System.out::println);*/
-		} else {
-			Stream.generate(solver)
-				.limit(limit)
-				.forEach(System.out::println);
+		int answerSetCount = 0;
+		while (true) {
+			AnswerSet as = solver.get();
+			if (as == null || answerSetCount == limit) {
+				break;
+			}
+			answerSetCount++;
+			System.out.println(as);
 		}
+		/*Stream.generate(solver)
+			.limit(limit)
+			.forEach(System.out::println);*/
 	}
 
 	private static void bailOut(Object o) {
