@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder.rete;
 
-import at.ac.tuwien.kr.alpha.grounder.Predicate;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 

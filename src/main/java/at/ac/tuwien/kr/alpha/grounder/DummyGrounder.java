@@ -1,7 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.AnswerSet;
-import at.ac.tuwien.kr.alpha.BasicAnswerSet;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.NoGood;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -82,11 +81,14 @@ public class DummyGrounder extends AbstractGrounder {
 		answerSet.setTermIdStringMap(termIdStringMap);
 
 		// Add the atom instances
-		HashMap<Predicate, ArrayList<Integer>> predicateInstances = new HashMap<>();
+		HashMap<Predicate, ArrayList<PredicateInstance>> predicateInstances = new HashMap<>();
 		for (Predicate trueAtomPredicate : trueAtomPredicates) {
-			ArrayList<Integer> instances = new ArrayList<>();
-			instances.add(0);	// 0-ary predicate instance
-			predicateInstances.put(trueAtomPredicate, instances);
+			PredicateInstance predicateInstance = new PredicateInstance();
+			predicateInstance.termList = new LinkedList<>();
+			predicateInstance.predicate = trueAtomPredicate;
+			ArrayList<PredicateInstance> instanceList = new ArrayList<>();
+			instanceList.add(predicateInstance);
+			predicateInstances.put(trueAtomPredicate, instanceList);
 		}
 		answerSet.setPredicateInstances(predicateInstances);
 

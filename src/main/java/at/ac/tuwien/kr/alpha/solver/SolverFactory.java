@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.grounder.Predicate;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 
 public final class SolverFactory {
 	public static Solver getInstance(String name, Grounder grounder, java.util.function.Predicate<Predicate> filter) {

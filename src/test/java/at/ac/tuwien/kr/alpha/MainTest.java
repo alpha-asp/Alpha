@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha;
 
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstant;
@@ -107,9 +108,8 @@ public class MainTest {
 				break;
 			}
 			answerSetCount++;
-			//System.out.println(as.toString());
-			// Nicer printing of answer sets requires adaption of the below assertion.
-			assertEquals("Answer set is { a, b, _br1, c }.", "{ a(), b(), _br1(), c() }", as.toString());
+			// Adapting the printing of answer sets requires adaption of the below assertion.
+			assertEquals("Answer set is { a, b, _br1, c }.", "{ a, b, _br1, c }", as.toString());
 		}
 		assertEquals("Program has one answer set.", 1, answerSetCount);
 		//System.out.println("Found " + answerSetCount + " Answer Set(s), there are no more answer sets.");

@@ -1,8 +1,8 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.grounder.Predicate;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
