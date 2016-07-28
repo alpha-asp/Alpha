@@ -1,26 +1,32 @@
 package at.ac.tuwien.kr.alpha;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
-public class NoGood implements Iterable<Integer> {
+public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	private final int[] literals;
 	private final int head;
 
-	/**
-	 * Constructs a NoGood of specified size without a head literal.
-	 * @param size
-	 */
-	public NoGood(int size) {
-		this(new int[size], -1);
-	}
-
-	public NoGood(int[] literals) {
+	public NoGood(int... literals) {
 		this(literals, -1);
 	}
 
 	public NoGood(int[] literals, int head) {
+		if (!isSorted(literals)) {
+			throw new IllegalArgumentException("Literals are not sorted .");
+		}
+
 		this.literals = literals;
 		this.head = head;
+	}
+
+	private static boolean isSorted(int[] a) {
+		for (int i = 0; i < a.length - 1; i++) {
+			if (a[i] > a[i + 1]) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public int size() {
@@ -56,5 +62,50 @@ public class NoGood implements Iterable<Integer> {
 				return literals[i++];
 			}
 		};
+	}
+
+	@Override
+	public int compareTo(NoGood o) {
+		if (o == null) {
+			throw new NullPointerException("Cannot compare against null.");
+		}
+
+		if (o.literals.length > literals.length) {
+			return -1;
+		}
+
+		if (o.literals.length < literals.length) {
+			return +1;
+		}
+
+		for (int i = 0; i < literals.length; i++) {
+			if (o.literals[i] > literals[i]) {
+				return -1;
+			}
+			if (o.literals[i] < literals[i]) {
+				return +1;
+			}
+		}
+
+		return 0;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		NoGood noGood = (NoGood) o;
+
+		return head == noGood.head && Arrays.equals(literals, noGood.literals);
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 * Arrays.hashCode(literals) + head;
 	}
 }
