@@ -1,11 +1,12 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.NoGood;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 import static java.lang.Math.abs;
 
@@ -28,7 +29,7 @@ public class DummySolver extends AbstractSolver {
 	boolean doInit = true;
 
 	@Override
-	public AnswerSet get() {
+	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
 		// Get basic rules and facts from grounder
 		if (doInit) {
 			obtainNoGoodsFromGrounder();
@@ -38,7 +39,7 @@ public class DummySolver extends AbstractSolver {
 			// We already found one Answer-Set and are requested to find another one
 			doBacktrack();
 			if (exhaustedSearchSpace()) {
-				return null;
+				return false;
 			}
 		}
 
@@ -52,14 +53,14 @@ public class DummySolver extends AbstractSolver {
 			if (!checkAssignmentSatisfiesAllNoGoods()) {
 				doBacktrack();
 				if (exhaustedSearchSpace()) {
-					return null;
+					return false;
 				}
 			} else {
 				if (choicesLeft()) {
 					doChoice();
 				} else {
-					AnswerSet as = getAnswerSetFromAssignment();
-					return as;
+					action.accept(getAnswerSetFromAssignment());
+					return true;
 				}
 			}
 		} while (true);

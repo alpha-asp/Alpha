@@ -15,8 +15,14 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class MainTest {
 	private InputStream stream(String file) {
@@ -97,21 +103,16 @@ public class MainTest {
 
 	@Test
 	public void testDummyGrounderAndSolver() {
+		final Grounder grounder = GrounderFactory.getInstance("dummy", null);
+		final Solver solver = SolverFactory.getInstance("dummy", grounder, p -> true);
+		final List<AnswerSet> recorder = new ArrayList<>(1);
+		final Spliterator<AnswerSet> spliterator = solver.spliterator();
 
-		Grounder grounder = GrounderFactory.getInstance("dummy", null);
-		Solver solver = SolverFactory.getInstance("dummy", grounder, p -> true);
+		assertTrue(spliterator.tryAdvance(recorder::add));
+		assertEquals(1, recorder.size());
+		assertEquals("Answer set is { a, b, _br1, c }.", "{ a, b, _br1, c }", recorder.get(0).toString());
 
-		int answerSetCount = 0;
-		while (true) {
-			AnswerSet as = solver.get();
-			if (as == null) {
-				break;
-			}
-			answerSetCount++;
-			// Adapting the printing of answer sets requires adaption of the below assertion.
-			assertEquals("Answer set is { a, b, _br1, c }.", "{ a, b, _br1, c }", as.toString());
-		}
-		assertEquals("Program has one answer set.", 1, answerSetCount);
-		//System.out.println("Found " + answerSetCount + " Answer Set(s), there are no more answer sets.");
+		assertFalse(spliterator.tryAdvance(recorder::add));
+		assertEquals(1, recorder.size());
 	}
 }
