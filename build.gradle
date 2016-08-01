@@ -43,6 +43,9 @@ generateGrammarSource {
 /* Toggle comment to get verbose [unchecked] warnings.
 compileJava {
 	options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+}
+compileTestJava {
+	options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }//*/
 
 task bundledJar(type: Jar) {

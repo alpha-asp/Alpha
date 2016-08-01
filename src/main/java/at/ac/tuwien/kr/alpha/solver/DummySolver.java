@@ -43,26 +43,63 @@ public class DummySolver extends AbstractSolver {
 		}
 
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
-		do {
-			do {
+		while (true) {
+			if (!propagationFixpointReached()) {
 				updateGrounderAssignments();
 				obtainNoGoodsFromGrounder();
 				doUnitPropagation();
-			} while (!propagationFixpointReached());
-			if (!checkAssignmentSatisfiesAllNoGoods()) {
+				doMBTPropagation();
+			} else if (assignmentViolatesNoGoods()) {
 				doBacktrack();
 				if (exhaustedSearchSpace()) {
 					return null;
 				}
+			} else if (choicesLeft()) {
+				doChoice();
+			} else if (noMBTValuesReamining()) {
+				AnswerSet as = getAnswerSetFromAssignment();
+				System.out.println(reportChoiceStack());
+				return as;
 			} else {
-				if (choicesLeft()) {
-					doChoice();
-				} else {
-					AnswerSet as = getAnswerSetFromAssignment();
-					return as;
+				doBacktrack();
+				if (exhaustedSearchSpace()) {
+					return null;
 				}
 			}
-		} while (true);
+		}
+	}
+
+	private boolean noMBTValuesReamining() {
+		return mbtAssigned.size() == 0;
+	}
+
+	private void doMBTPropagation() {
+		boolean didPropagate = true;
+		while (didPropagate) {
+			didPropagate = false;
+			for (Map.Entry<Integer, NoGood> noGoodEntry : knownNoGoods.entrySet()) {
+				if (propagateMBT(noGoodEntry.getValue())) {
+					didPropagate = true;
+					didChange = true;
+				}
+			}
+		}
+	}
+
+	private String reportChoiceStack() {
+		String report = "Choice stack is: ";
+		for (Integer guessedAtomId : guessedAtomIds) {
+			report += (truthAssignments.get(guessedAtomId) ? "+" : "-") + guessedAtomId + " ";
+		}
+		return report;
+	}
+
+	private String reportTruthAssignments() {
+		String report = "Current Truth assignments: ";
+		for (Integer atomId : truthAssignments.keySet()) {
+			report += (truthAssignments.get(atomId) ? "+" : "-") + atomId + " ";
+		}
+		return report;
 	}
 
 	boolean didChange;
@@ -100,6 +137,7 @@ public class DummySolver extends AbstractSolver {
 		// We guess true for any unassigned choice atom (backtrack tries false)
 		truthAssignments.put(nextChoice, true);
 		guessedAtomIds.push(nextChoice);
+		didChange = true;	// Record change to compute propagation fixpoint again.
 	}
 
 	private boolean choicesLeft() {
@@ -149,9 +187,11 @@ public class DummySolver extends AbstractSolver {
 				guessedAtomIds.push(lastGuessedAtom);
 				truthAssignments.put(lastGuessedAtom, !lastGuessedTruthValue);
 				decisionLevels.get(decisionLevel).add(lastGuessedAtom);
+				didChange = true;
 
 			} else {
 				decisionLevel--;
+				doBacktrack();
 			}
 
 		}
@@ -218,6 +258,9 @@ public class DummySolver extends AbstractSolver {
 			boolean impliedTruthValue = !(impliedLiteral > 0);
 			truthAssignments.put(impliedAtomId, impliedTruthValue);
 			decisionLevels.get(decisionLevel).add(impliedAtomId);
+			if (impliedTruthValue) {	// Record MBT value in case true is assigned
+				mbtAssigned.add(impliedAtomId);
+			}
 		}
 	}
 
@@ -263,7 +306,37 @@ public class DummySolver extends AbstractSolver {
 		return lastUnassignedPosition;
 	}
 
-	private boolean checkAssignmentSatisfiesAllNoGoods() {
+	private HashSet<Integer> mbtAssigned = new HashSet<>();
+
+	private boolean propagateMBT(NoGood noGood) {
+		// The MBT propagation checks whether the head-indicated literal is MBT
+		// and the remaining literals are violated
+		// and none of them are MBT,
+		// then the head literal is set from MBT to true.
+
+		if (!noGood.hasHead() || !mbtAssigned.contains(abs(noGood.getLiteral(noGood.getHead())))) {
+			return false;
+		}
+
+		// Check that NoGood is violated except for the head (i.e., without the head set it would be unit)
+		// and that none of the true values is MBT.
+		for (int i = 0; i < noGood.size(); i++) {
+			if (noGood.getHead() == i) {
+				continue;
+			}
+			int literal = noGood.getLiteral(i);
+			if (isLiteralAssigned(literal) && isLiteralViolated(literal)) {
+				continue;
+			} else {
+				return false;
+			}
+		}
+		// Set truth value from MBT to true.
+		mbtAssigned.remove(abs(noGood.getLiteral(noGood.getHead())));
+		return true;
+	}
+
+	private boolean assignmentViolatesNoGoods() {
 		// Check each NoGood, if it is violated
 		for (Integer noGoodId :
 			noGoodIds) {
@@ -277,9 +350,9 @@ public class DummySolver extends AbstractSolver {
 				}
 			}
 			if (!isSatisfied) {
-				return false;
+				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 }

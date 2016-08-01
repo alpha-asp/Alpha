@@ -35,10 +35,10 @@ public class DummyGrounder extends AbstractGrounder {
 	private static final int RULE_H = 14; // { -c, _br1 }
 
 	private static final Map<Integer, NoGood> NOGOODS = Stream.of(
-		entry(FACT_A, new NoGood(new int[]{-1 })),
-		entry(FACT_B, new NoGood(new int[]{-2 })),
-		entry(RULE_B, new NoGood(new int[]{-4, 1, 2 })),
-		entry(RULE_H, new NoGood(new int[]{-3, 4 }, 1))
+		entry(FACT_A, new NoGood(new int[]{-1 }, 0)),
+		entry(FACT_B, new NoGood(new int[]{-2 }, 0)),
+		entry(RULE_B, new NoGood(new int[]{-3, 1, 2 }, 0)),
+		entry(RULE_H, new NoGood(new int[]{-4, 3 }, 0))
 	).collect(entriesToMap());
 
 	private byte[] currentTruthValues = new byte[]{-2, -1, -1, -1, -1};

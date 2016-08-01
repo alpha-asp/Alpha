@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.grounder.GrounderChoiceTest;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstant;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFunctionTerm;
@@ -112,6 +113,27 @@ public class MainTest {
 			assertEquals("Answer set is { a, b, _br1, c }.", "{ a, b, _br1, c }", as.toString());
 		}
 		assertEquals("Program has one answer set.", 1, answerSetCount);
+		//System.out.println("Found " + answerSetCount + " Answer Set(s), there are no more answer sets.");
+	}
+
+	@Test
+	public void testGrounderChoiceAndSolver() {
+
+		Grounder grounder = new GrounderChoiceTest();
+		Solver solver = SolverFactory.getInstance("dummy", grounder, p -> true);
+
+		int answerSetCount = 0;
+		while (true) {
+			AnswerSet as = solver.get();
+			if (as == null) {
+				break;
+			}
+			answerSetCount++;
+			System.out.println("AS " + answerSetCount + ": " + as.toString());
+			// Adapting the printing of answer sets requires adaption of the below assertion.
+			//assertEquals("Answer set is { a, b, _br1, c }.", "{ a, b, _br1, c }", as.toString());
+		}
+		assertEquals("Program has two answer sets.", 2, answerSetCount);
 		//System.out.println("Found " + answerSetCount + " Answer Set(s), there are no more answer sets.");
 	}
 }
