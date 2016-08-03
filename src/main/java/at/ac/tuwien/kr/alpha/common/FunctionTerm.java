@@ -9,4 +9,14 @@ public class FunctionTerm implements Term {
 
 	public Integer functionSymbol;
 	public List<Term> termList;
+
+	@Override
+	public boolean isGround() {
+		for (Term term : termList) {
+			if (!term.isGround()) {
+				return false;
+			}
+		}
+		return true;
+	}
 }

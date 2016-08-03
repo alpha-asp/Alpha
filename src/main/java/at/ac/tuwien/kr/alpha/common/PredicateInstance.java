@@ -9,4 +9,13 @@ public class PredicateInstance {
 
 	public Predicate predicate;
 	public List<Term> termList;
+
+	public boolean isGround() {
+		for (Term term : termList) {
+			if (!term.isGround()) {
+				return false;
+			}
+		}
+		return true;
+	}
 }
