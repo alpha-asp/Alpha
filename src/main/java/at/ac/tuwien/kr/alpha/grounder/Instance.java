@@ -1,0 +1,36 @@
+package at.ac.tuwien.kr.alpha.grounder;
+
+import java.util.Arrays;
+
+/**
+ * An instance is a positional association of terms, e.g., representing a variable substitution, or a ground instance of
+ * a predicate.
+ * Copyright (c) 2016, the Alpha Team.
+ */
+public class Instance {
+	public final int[] terms;
+
+	public Instance(int[] terms) {
+		this.terms = terms;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		Instance instance = (Instance) o;
+
+		return Arrays.equals(terms, instance.terms);
+
+	}
+
+	@Override
+	public int hashCode() {
+		return Arrays.hashCode(terms);
+	}
+}

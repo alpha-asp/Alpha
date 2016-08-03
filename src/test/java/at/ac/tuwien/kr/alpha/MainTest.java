@@ -1,9 +1,7 @@
 package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.grounder.GrounderChoiceTest;
-import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.grounder.*;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstant;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFunctionTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
@@ -16,8 +14,9 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class MainTest {
 	private InputStream stream(String file) {
@@ -135,5 +134,51 @@ public class MainTest {
 		}
 		assertEquals("Program has two answer sets.", 2, answerSetCount);
 		//System.out.println("Found " + answerSetCount + " Answer Set(s), there are no more answer sets.");
+	}
+
+	@Test
+	public void testIndexedInstanceStorage() {
+		IndexedInstanceStorage storage = new IndexedInstanceStorage("A test storage of arity 4", 4);
+		storage.addIndexPosition(0);
+		storage.addIndexPosition(2);
+
+		Instance badInst1 = new Instance(new int[]{1, 1, 0});
+		Instance badInst2 = new Instance(new int[]{5, 5, 5, 5, 5});
+
+		try {
+			storage.addInstance(badInst1);
+			fail();
+		} catch (Exception e) {
+			assertTrue(e.getMessage().startsWith("Instance length does not match arity of IndexedInstanceStorage"));
+		}
+
+		try {
+			storage.addInstance(badInst2);
+			fail();
+		} catch (Exception e) {
+			assertTrue(e.getMessage().startsWith("Instance length does not match arity of IndexedInstanceStorage"));
+		}
+
+		Instance inst1 = new Instance(new int[]{1, 1, 1, 1});
+		Instance inst2 = new Instance(new int[]{1, 2, 3, 4});
+		Instance inst3 = new Instance(new int[]{4, 3, 3, 5});
+		Instance inst4 = new Instance(new int[]{1, 2, 1, 1});
+		Instance inst5 = new Instance(new int[]{5, 4, 3, 2});
+
+		storage.addInstance(inst1);
+		storage.addInstance(inst2);
+		storage.addInstance(inst3);
+		storage.addInstance(inst4);
+		storage.addInstance(inst5);
+
+		List<Instance> matching3 = storage.getInstancesMatchingAtPosition(3, 2);
+		assertEquals(matching3.size(), 3);
+		assertTrue(matching3.contains(new Instance(new int[]{1, 2, 3, 4})));
+		assertTrue(matching3.contains(new Instance(new int[]{4, 3, 3, 5})));
+		assertTrue(matching3.contains(new Instance(new int[]{5, 4, 3, 2})));
+		assertFalse(matching3.contains(new Instance(new int[]{1, 1, 1, 1})));
+
+		List<Instance> matching1 = storage.getInstancesMatchingAtPosition(2, 0);
+		assertEquals(matching1, null);
 	}
 }
