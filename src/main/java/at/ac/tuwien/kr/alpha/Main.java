@@ -21,6 +21,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Main entry point for Alpha.
@@ -44,7 +46,7 @@ public class Main {
 
 		Option numAnswerSetsOption = new Option("n", OPT_NUM_AS, true, "the number of Answer Sets to compute");
 		numAnswerSetsOption.setArgName("number");
-		numAnswerSetsOption.setRequired(true);
+		numAnswerSetsOption.setRequired(false);
 		numAnswerSetsOption.setArgs(1);
 		numAnswerSetsOption.setType(Number.class);
 		options.addOption(numAnswerSetsOption);
@@ -82,16 +84,15 @@ public class Main {
 			return;
 		}
 
-		int limit = -1;
+		int limit = 0;
 
 		try {
-			limit = ((Number)commandLine.getParsedOptionValue(OPT_NUM_AS)).intValue();
+			Number n = (Number)commandLine.getParsedOptionValue(OPT_NUM_AS);
+			if (n != null) {
+				limit = n.intValue();
+			}
 		} catch (ParseException e) {
 			bailOut("Failed to parse number of answer sets requested.");
-		}
-
-		if (limit < 1) {
-			bailOut("Number of Answer Sets Requested must be a positive integer.");
 		}
 
 		ParsedProgram program = null;
@@ -118,19 +119,13 @@ public class Main {
 			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, p -> true
 		);
 
+		Stream<AnswerSet> stream = StreamSupport.stream(solver.spliterator(), false);
 
-		int answerSetCount = 0;
-		while (true) {
-			AnswerSet as = solver.get();
-			if (as == null || answerSetCount == limit) {
-				break;
-			}
-			answerSetCount++;
-			System.out.println(as);
+		if (limit > 0) {
+			stream = stream.limit(limit);
 		}
-		/*Stream.generate(solver)
-			.limit(limit)
-			.forEach(System.out::println);*/
+
+		stream.forEach(System.out::println);
 	}
 
 	private static void bailOut(Object o) {
