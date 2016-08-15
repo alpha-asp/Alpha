@@ -1,14 +1,12 @@
 package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.grounder.GrounderChoiceTest;
-import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
+import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstant;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFunctionTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
-import at.ac.tuwien.kr.alpha.solver.Solver;
-import at.ac.tuwien.kr.alpha.solver.SolverFactory;
+import at.ac.tuwien.kr.alpha.solver.DummySolver;
 import org.antlr.v4.runtime.RecognitionException;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -19,11 +17,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Spliterator;
-import java.util.function.Consumer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class MainTest {
 	private InputStream stream(String file) {
@@ -104,10 +99,8 @@ public class MainTest {
 
 	@Test
 	public void testDummyGrounderAndSolver() {
-		final Grounder grounder = GrounderFactory.getInstance("dummy", null);
-		final Solver solver = SolverFactory.getInstance("dummy", grounder, p -> true);
 		final List<AnswerSet> recorder = new ArrayList<>(1);
-		final Spliterator<AnswerSet> spliterator = solver.spliterator();
+		final Spliterator<AnswerSet> spliterator = new DummySolver(new DummyGrounder()).spliterator();
 
 		assertTrue(spliterator.tryAdvance(recorder::add));
 		assertEquals(1, recorder.size());
@@ -119,22 +112,13 @@ public class MainTest {
 
 	@Test
 	public void testGrounderChoiceAndSolver() {
+		final Spliterator<AnswerSet> spliterator = new DummySolver(new ChoiceGrounder()).spliterator();
+		final List<AnswerSet> recorder = new ArrayList<>(ChoiceGrounder.EXPECTED_ANSWER_SETS);
 
-		Grounder grounder = new GrounderChoiceTest();
-		Solver solver = SolverFactory.getInstance("dummy", grounder, p -> true);
-
-		int answerSetCount = 0;
-		while (true) {
-			AnswerSet as = solver.get();
-			if (as == null) {
-				break;
-			}
-			answerSetCount++;
-			System.out.println("AS " + answerSetCount + ": " + as.toString());
-			// Adapting the printing of answer sets requires adaption of the below assertion.
-			//assertEquals("Answer set is { a, b, _br1, c }.", "{ a, b, _br1, c }", as.toString());
+		while (spliterator.tryAdvance(recorder::add)) {
+			// Consume all answer sets.
 		}
-		assertEquals("Program has two answer sets.", 2, answerSetCount);
-		//System.out.println("Found " + answerSetCount + " Answer Set(s), there are no more answer sets.");
+
+		assertEquals("Program has two answer sets.", ChoiceGrounder.EXPECTED_ANSWER_SETS, recorder.size());
 	}
 }

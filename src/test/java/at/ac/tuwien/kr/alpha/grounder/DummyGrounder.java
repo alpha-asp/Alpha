@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.NoGood;
+import at.ac.tuwien.kr.alpha.common.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
@@ -19,7 +19,7 @@ import static at.ac.tuwien.kr.alpha.Util.entry;
  *
  * Copyright (c) 2016, the Alpha Team.
  */
-public class DummyGrounder extends AbstractGrounder {
+public class DummyGrounder implements Grounder {
 	private static final Log LOG = LogFactory.getLog(AbstractGrounder.class);
 
 	private static Map<Integer, String> atomIdToString = Stream.of(

@@ -18,7 +18,8 @@ import static at.ac.tuwien.kr.alpha.Util.entry;
  * Represents a small ASP program with guesses {@code { aa :- not bb.  bb :- not aa. }}.
  * Copyright (c) 2016, the Alpha Team.
  */
-public class GrounderChoiceTest extends AbstractGrounder {
+public class ChoiceGrounder implements Grounder {
+	public static final int EXPECTED_ANSWER_SETS = 2;
 
 	private static final int ATOM_AA = 1;
 	private static final int ATOM_BB = 2;
@@ -106,7 +107,7 @@ public class GrounderChoiceTest extends AbstractGrounder {
 		return answerSet;
 	}
 
-	boolean returnedAllNogoods;
+	private boolean returnedAllNogoods;
 	@Override
 	public Map<Integer, NoGood> getNoGoods() {
 		if (!returnedAllNogoods) {
@@ -125,11 +126,9 @@ public class GrounderChoiceTest extends AbstractGrounder {
 	@Override
 	public void updateAssignment(int[] atomIds, boolean[] truthValues) {
 		// This test grounder reports all NoGoods immediately, irrespective of any assignment.
-		return;
 	}
 
 	@Override
 	public void forgetAssignment(int[] atomIds) {
-		return;
 	}
 }

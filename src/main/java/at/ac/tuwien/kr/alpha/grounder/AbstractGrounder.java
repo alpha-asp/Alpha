@@ -11,7 +11,4 @@ public abstract class AbstractGrounder implements Grounder {
 	protected AbstractGrounder(ParsedProgram program) {
 		this.program = program;
 	}
-
-	protected AbstractGrounder() {
-	}
 }

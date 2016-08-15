@@ -60,7 +60,8 @@ public class DummySolver extends AbstractSolver {
 			} else if (noMBTValuesReamining()) {
 				AnswerSet as = getAnswerSetFromAssignment();
 				System.out.println(reportChoiceStack());
-				return as;
+				action.accept(as);
+				return true;
 			} else {
 				doBacktrack();
 				if (exhaustedSearchSpace()) {
