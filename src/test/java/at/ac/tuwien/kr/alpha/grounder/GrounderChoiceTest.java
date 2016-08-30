@@ -7,7 +7,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -86,17 +85,10 @@ public class GrounderChoiceTest extends AbstractGrounder {
 		}
 		answerSet.setPredicateList(trueAtomPredicates);
 
-		// Add the 0-ary instance (it is the only one for this grounder)
-		HashMap<Integer, String> termIdStringMap = new HashMap<>();
-		termIdStringMap.put(0, "");
-		answerSet.setTermIdStringMap(termIdStringMap);
-
 		// Add the atom instances
 		HashMap<Predicate, ArrayList<PredicateInstance>> predicateInstances = new HashMap<>();
 		for (Predicate trueAtomPredicate : trueAtomPredicates) {
-			PredicateInstance predicateInstance = new PredicateInstance();
-			predicateInstance.termList = new LinkedList<>();
-			predicateInstance.predicate = trueAtomPredicate;
+			PredicateInstance predicateInstance = new PredicateInstance(trueAtomPredicate, new Term[0]);
 			ArrayList<PredicateInstance> instanceList = new ArrayList<>();
 			instanceList.add(predicateInstance);
 			predicateInstances.put(trueAtomPredicate, instanceList);

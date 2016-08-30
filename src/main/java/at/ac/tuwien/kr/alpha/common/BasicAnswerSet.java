@@ -3,7 +3,6 @@ package at.ac.tuwien.kr.alpha.common;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -18,29 +17,25 @@ public class BasicAnswerSet implements AnswerSet {
 		this.predicateInstances = predicateInstances;
 	}
 
-	public void setTermIdStringMap(HashMap<Integer, String> termIdStringMap) {
-		this.termIdStringMap = termIdStringMap;
-	}
-
 	private ArrayList<Predicate> predicateList = new ArrayList<>();
 	private HashMap<Predicate, ArrayList<PredicateInstance>> predicateInstances = new HashMap<>();
-	private HashMap<Integer, String> termIdStringMap = new HashMap<>();
+
 
 	@Override
-	public List<Predicate> getPredicateList() {
-		return predicateList;
-	}
-
-	@Override
-	public List<String> getPredicateInstacesAsString(Predicate predicate) {
+	public List<String> getPredicateInstancesAsString(Predicate predicate) {
 		List<PredicateInstance> predicateInstances = getPredicateInstances(predicate);
 		ArrayList<String> stringInstances = new ArrayList<>();
 		for (PredicateInstance predicateInstance : predicateInstances) {
-			String stringInstance = "";
-			for (int i = 0; i < predicateInstance.termList.size(); i++) {
-				stringInstance += i != 0 ? ", " : "";
-				stringInstance += termToString(predicateInstance.termList.get(i));
+			// Predicates of arity 0 have an empty list of instances.
+			if (predicateInstance.termList.length == 0) {
+				continue;
 			}
+			String stringInstance = "";
+			for (int i = 0; i < predicateInstance.termList.length; i++) {
+				stringInstance += i != 0 ? ", " : "";
+				stringInstance += termToString(predicateInstance.termList[i]);
+			}
+			stringInstances.add(stringInstance);
 		}
 		return stringInstances;
 	}
@@ -48,9 +43,9 @@ public class BasicAnswerSet implements AnswerSet {
 	private String termToString(Term term) {
 		String stringTerm = "";
 		if (term instanceof ConstantTerm) {
-			stringTerm = termIdStringMap.get(((ConstantTerm) term).constantId);
+			stringTerm = ((ConstantTerm) term).constantSymbol.getSymbol();
 		} else if (term instanceof FunctionTerm) {
-			stringTerm = termIdStringMap.get(((FunctionTerm) term).functionSymbol);
+			stringTerm = ((FunctionTerm) term).functionSymbol.getSymbol();
 			if (((FunctionTerm) term).termList.size() > 0) {
 				stringTerm += "(";
 				boolean isFirst = true;
@@ -73,10 +68,6 @@ public class BasicAnswerSet implements AnswerSet {
 		return predicateInstances.get(predicate);
 	}
 
-	@Override
-	public Map<Integer, String> getTermIdToStringMap() {
-		return termIdStringMap;
-	}
 
 	public String toString() {
 		String ret = "{ ";
@@ -84,7 +75,7 @@ public class BasicAnswerSet implements AnswerSet {
 			ret += i != 0 ? ", "  : "";
 
 			Predicate predicate = predicateList.get(i);
-			List<String> instances = getPredicateInstacesAsString(predicate);
+			List<String> instances = getPredicateInstancesAsString(predicate);
 
 			if (instances.size() == 0) {
 				ret += predicate.getPredicateName();
@@ -92,7 +83,7 @@ public class BasicAnswerSet implements AnswerSet {
 
 				for (int j = 0; j < instances.size(); j++) {
 					ret += j != 0 ? ", " : "";
-					ret += ", " + predicate.getPredicateName() + "(" + instances.get(j) + ")";
+					ret += predicate.getPredicateName() + "(" + instances.get(j) + ")";
 				}
 			}
 		}

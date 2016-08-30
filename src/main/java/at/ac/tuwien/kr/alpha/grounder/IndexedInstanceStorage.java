@@ -1,9 +1,8 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import at.ac.tuwien.kr.alpha.common.Term;
+
+import java.util.*;
 
 /**
  * A storage for instances with a certain arity, where each position of the instance can be indexed.
@@ -16,7 +15,7 @@ public class IndexedInstanceStorage {
 	private final String description;	// An (arbitrary) description of what is stored here, mainly for debugging.
 	private final int arity;		// All instances stored have to have this number of termIds.
 	private HashSet<Instance> instances;	// A collection of all instances currently stored in this storage.
-	private ArrayList<HashMap<Integer, ArrayList<Instance>>> indices;	// For each position, a mapping of termIds to list of instances with this termId at the corresponding position
+	private ArrayList<HashMap<Term, ArrayList<Instance>>> indices;	// For each position, a mapping of termIds to list of instances with this termId at the corresponding position
 
 	public IndexedInstanceStorage(String description, int arity) {
 		this.description = description;
@@ -62,7 +61,7 @@ public class IndexedInstanceStorage {
 		instances.add(instance);
 		// Add instance to all indices.
 		for (int i = 0; i < indices.size(); i++) {
-			HashMap<Integer, ArrayList<Instance>> posIndex = indices.get(i);
+			HashMap<Term, ArrayList<Instance>> posIndex = indices.get(i);
 			if (posIndex == null) {
 				continue;
 			}
@@ -75,7 +74,7 @@ public class IndexedInstanceStorage {
 	public void removeInstance(Instance instance) {
 		// Remove from all indices
 		for (int i = 0; i < indices.size(); i++) {
-			HashMap<Integer, ArrayList<Instance>> posIndex = indices.get(i);
+			HashMap<Term, ArrayList<Instance>> posIndex = indices.get(i);
 			if (posIndex == null) {
 				continue;
 			}
@@ -98,12 +97,16 @@ public class IndexedInstanceStorage {
 	 * @param position
 	 * @return
 	 */
-	public List<Instance> getInstancesMatchingAtPosition(Integer term, int position) {
-		HashMap<Integer, ArrayList<Instance>> indexForPosition = indices.get(position);
+	public List<Instance> getInstancesMatchingAtPosition(Term term, int position) {
+		HashMap<Term, ArrayList<Instance>> indexForPosition = indices.get(position);
 		if (indexForPosition == null) {
 			throw new RuntimeException("IndexedInstanceStorage queried for position " + position + " which is not indexed.");
 		}
 		return indexForPosition.get(term);
+	}
+
+	public Set<Instance> getAllInstances() {
+		return instances;
 	}
 
 }

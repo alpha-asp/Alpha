@@ -1,5 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.common.Term;
+
 import java.util.Arrays;
 
 /**
@@ -8,9 +10,9 @@ import java.util.Arrays;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class Instance {
-	public final int[] terms;
+	public final Term[] terms;
 
-	public Instance(int[] terms) {
+	public Instance(Term[] terms) {
 		this.terms = terms;
 	}
 

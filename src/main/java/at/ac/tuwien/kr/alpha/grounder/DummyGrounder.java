@@ -74,20 +74,12 @@ public class DummyGrounder extends AbstractGrounder {
 
 		answerSet.setPredicateList(trueAtomPredicates);
 
-
-		// Add the 0-ary instance (it is the only one for this grounder)
-		HashMap<Integer, String> termIdStringMap = new HashMap<>();
-		termIdStringMap.put(0, "");
-		answerSet.setTermIdStringMap(termIdStringMap);
-
 		// Add the atom instances
 		HashMap<Predicate, ArrayList<PredicateInstance>> predicateInstances = new HashMap<>();
 		for (Predicate trueAtomPredicate : trueAtomPredicates) {
-			PredicateInstance predicateInstance = new PredicateInstance();
-			predicateInstance.termList = new LinkedList<>();
-			predicateInstance.predicate = trueAtomPredicate;
+			PredicateInstance internalPredicateInstance = new PredicateInstance(trueAtomPredicate, new Term[0]);
 			ArrayList<PredicateInstance> instanceList = new ArrayList<>();
-			instanceList.add(predicateInstance);
+			instanceList.add(internalPredicateInstance);
 			predicateInstances.put(trueAtomPredicate, instanceList);
 		}
 		answerSet.setPredicateInstances(predicateInstances);
