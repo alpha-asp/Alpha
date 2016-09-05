@@ -1,6 +1,8 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -24,6 +26,11 @@ public class ConstantTerm extends Term {
 	@Override
 	public boolean isGround() {
 		return true;
+	}
+
+	@Override
+	public List<VariableTerm> getOccurringVariables() {
+		return new LinkedList<>();
 	}
 
 	@Override

@@ -16,16 +16,22 @@ public class IndexedInstanceStorage {
 	private final int arity;		// All instances stored have to have this number of termIds.
 	private HashSet<Instance> instances;	// A collection of all instances currently stored in this storage.
 	private ArrayList<HashMap<Term, ArrayList<Instance>>> indices;	// For each position, a mapping of termIds to list of instances with this termId at the corresponding position
+	private ArrayList<Instance> recentlyAddedInstances;
 
 	public IndexedInstanceStorage(String description, int arity) {
 		this.description = description;
 		this.arity = arity;
 		instances = new HashSet<>();
+		recentlyAddedInstances = new ArrayList<>();
 		// Create list of mappings, initialize to null.
 		indices = new ArrayList<>();
 		while (indices.size() < arity) {
 			indices.add(null);
 		}
+	}
+
+	public void markRecentlyAddedInstancesDone() {
+		recentlyAddedInstances = new ArrayList<>();
 	}
 
 	public void addIndexPosition(int position) {
@@ -59,6 +65,7 @@ public class IndexedInstanceStorage {
 				+ "IndexedInstanceStorage size: " + arity);
 		}
 		instances.add(instance);
+		recentlyAddedInstances.add(instance);
 		// Add instance to all indices.
 		for (int i = 0; i < indices.size(); i++) {
 			HashMap<Term, ArrayList<Instance>> posIndex = indices.get(i);
@@ -72,6 +79,10 @@ public class IndexedInstanceStorage {
 	}
 
 	public void removeInstance(Instance instance) {
+		if (recentlyAddedInstances.size() != 0) {
+			// Hint: exception may be replaced by removing the instance also from the list of recentlyAddedInstances.
+			throw new RuntimeException("Instance is removed while there are unprocessed new instances; Result dubious.");
+		}
 		// Remove from all indices
 		for (int i = 0; i < indices.size(); i++) {
 			HashMap<Term, ArrayList<Instance>> posIndex = indices.get(i);

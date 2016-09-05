@@ -71,6 +71,11 @@ public class AtomStore {
 		}
 	}
 
+	public boolean isAtomExisting(PredicateInstance groundAtom) {
+		AtomId potentialId = predicateInstancesToAtomIds.get(groundAtom);
+		return potentialId != null;
+	}
+
 	/**
 	 * Removes the given atom from the AtomStore.
 	 * @param atomId
@@ -87,7 +92,7 @@ public class AtomStore {
 	 * @param parsedTerm
 	 * @return
 	 */
-	public Term convertFromParsedTerm(ParsedTerm parsedTerm) {
+	public static Term convertFromParsedTerm(ParsedTerm parsedTerm) {
 		if (parsedTerm instanceof ParsedConstant) {
 			String content = ((ParsedConstant) parsedTerm).content;
 			return getConstantTerm(content);

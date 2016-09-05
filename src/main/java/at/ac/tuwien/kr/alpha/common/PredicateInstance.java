@@ -1,6 +1,8 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -48,5 +50,13 @@ public class PredicateInstance {
 		int result = predicate.hashCode();
 		result = 31 * result + Arrays.hashCode(termList);
 		return result;
+	}
+
+	public List<VariableTerm> getOccurringVariables() {
+		LinkedList<VariableTerm> occurringVariables = new LinkedList<>();
+		for (Term term : termList) {
+			occurringVariables.addAll(term.getOccurringVariables());
+		}
+		return occurringVariables;
 	}
 }

@@ -1,9 +1,6 @@
 package at.ac.tuwien.kr.alpha;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.Term;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.grounder.*;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstant;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFunctionTerm;
@@ -18,6 +15,7 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -159,6 +157,16 @@ public class MainTest {
 		termList2.add(ta2);
 		FunctionTerm ft2 = FunctionTerm.getFunctionTerm("f", termList2);
 		assertTrue("Two instances of FunctionTerms for the same term symbol and equal term lists must be the same object", ft1 == ft2);
+	}
+
+	@Test
+	public void testTermVariableOccurrences() {
+		ConstantTerm ta = ConstantTerm.getConstantTerm("a");
+		VariableTerm tx = VariableTerm.getVariableTerm("X");
+		FunctionTerm tf = FunctionTerm.getFunctionTerm("f", Arrays.asList(new Term[] {ta, tx}));
+		List<VariableTerm> occurringVariables = tf.getOccurringVariables();
+
+		assertEquals("Variable occurring as subterm must be reported as occurring variable.", occurringVariables.get(0), tx);
 	}
 
 	@Test

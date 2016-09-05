@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -36,6 +37,15 @@ public class FunctionTerm extends Term {
 			}
 		}
 		return true;
+	}
+
+	@Override
+	public List<VariableTerm> getOccurringVariables() {
+		LinkedList<VariableTerm> vars = new LinkedList<>();
+		for (Term term : termList) {
+			vars.addAll(term.getOccurringVariables());
+		}
+		return vars;
 	}
 
 	@Override

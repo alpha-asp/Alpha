@@ -17,6 +17,11 @@ public class BasicAnswerSet implements AnswerSet {
 		this.predicateInstances = predicateInstances;
 	}
 
+	@Override
+	public List<Predicate> getPredicateList() {
+		return predicateList;
+	}
+
 	private ArrayList<Predicate> predicateList = new ArrayList<>();
 	private HashMap<Predicate, ArrayList<PredicateInstance>> predicateInstances = new HashMap<>();
 

@@ -1,11 +1,13 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class VariableTerm extends Term {
+public class VariableTerm extends Term implements Comparable<VariableTerm> {
 	public final String variableName;
 
 	private static HashMap<VariableTerm, VariableTerm> knownVariableTerms = new HashMap<>();
@@ -23,6 +25,13 @@ public class VariableTerm extends Term {
 	@Override
 	public boolean isGround() {
 		return false;
+	}
+
+	@Override
+	public List<VariableTerm> getOccurringVariables() {
+		LinkedList<VariableTerm> vars = new LinkedList<>();
+		vars.add(this);
+		return vars;
 	}
 
 	@Override
@@ -49,4 +58,16 @@ public class VariableTerm extends Term {
 	public int hashCode() {
 		return variableName.hashCode();
 	}
+
+	@Override
+	public int compareTo(VariableTerm o) {
+		if (this == o) {
+			return 0;
+		}
+		if (o == null) {
+			return 1;
+		}
+		return variableName.compareTo(o.variableName);
+	}
+
 }
