@@ -1,7 +1,11 @@
-package at.ac.tuwien.kr.alpha;
+package at.ac.tuwien.kr.alpha.common;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.Iterator;
+
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
 public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	private final int[] literals;
@@ -13,7 +17,7 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 
 	public NoGood(int[] literals, int head) {
 		if (!isSorted(literals)) {
-			throw new IllegalArgumentException("Literals are not sorted .");
+			throw new IllegalArgumentException("Literals are not sorted");
 		}
 
 		this.literals = literals;
@@ -31,6 +35,10 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 
 	public int size() {
 		return literals.length;
+	}
+
+	public int getAtom(int index) {
+		return atomOf(getLiteral(index));
 	}
 
 	public int getLiteral(int index) {
@@ -107,5 +115,13 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	@Override
 	public int hashCode() {
 		return 31 * Arrays.hashCode(literals) + head;
+	}
+
+	public static NoGood headFirst(int... literals) {
+		return new NoGood(literals, 0);
+	}
+
+	public static NoGood fact(int literal) {
+		return headFirst(literal);
 	}
 }
