@@ -7,12 +7,10 @@ import org.junit.Test;
 
 import java.util.stream.Stream;
 
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
-import static org.junit.Assert.*;
-import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
 import static at.ac.tuwien.kr.alpha.common.NoGood.fact;
+import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
+import static org.junit.Assert.assertEquals;
 
 public class NoGoodStoreTest {
 	private static final int DECISION_LEVEL = 0;

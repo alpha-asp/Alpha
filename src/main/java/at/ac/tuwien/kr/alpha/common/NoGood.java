@@ -1,7 +1,5 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import java.util.Arrays;
 import java.util.Iterator;
 
