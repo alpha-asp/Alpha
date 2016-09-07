@@ -5,7 +5,6 @@ import at.ac.tuwien.kr.alpha.grounder.*;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstant;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFunctionTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
-import at.ac.tuwien.kr.alpha.solver.DummySolver;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import org.antlr.v4.runtime.RecognitionException;
@@ -23,7 +22,7 @@ import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 import static org.junit.Assert.*;
 
 public class MainTest {
-	private InputStream stream(String file) {
+	public static InputStream stream(String file) {
 		return new ByteArrayInputStream(file.getBytes());
 	}
 
@@ -222,22 +221,5 @@ public class MainTest {
 		assertEquals(matching1, null);
 	}
 
-	@Test
-	public void testNaiveGrounderFactsOnlyProgram() throws IOException {
-		String testProgram = "p(a). p(b). foo(13). foo(16). q(a). q(c).";
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
-		Grounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = new DummySolver(grounder);
-		AnswerSet answerSet = solver.get();
-		AnswerSet noAnswerSet = solver.get();
 
-
-
-		assertTrue("Test program must yield one answer set (no answer-set reported)", answerSet != null);
-		assertEquals("Program must yield answer-set: { q(a), q(c), p(a), p(b), foo(13), foo(16) }", "{ q(a), q(c), p(a), p(b), foo(13), foo(16) }", answerSet.toString());
-
-		assertTrue("Test program must yield one answer set (second answer-set reported).", noAnswerSet == null);
-
-		// TODO: put small facts-only program into naiveGrounder, use dummy solver and see if we get exactly one answer-set containing the atoms from all facts.
-	}
 }

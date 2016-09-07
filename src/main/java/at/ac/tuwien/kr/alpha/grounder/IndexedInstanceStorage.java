@@ -101,6 +101,10 @@ public class IndexedInstanceStorage {
 		instances.remove(instance);
 	}
 
+	public List<Instance> getRecentlyAddedInstances() {
+		return recentlyAddedInstances;
+	}
+
 	/**
 	 * Returns a list of all instances having the given term at the given position. Returns null if no such
 	 * instances exist.

@@ -52,6 +52,24 @@ public class NonGroundRule {
 		return nonGroundRule;
 	}
 
+	/**
+	 *
+	 * @return a list of all predicates occurring in the rule (may contain duplicates).
+	 */
+	public List<Predicate> getOccurringPredicates() {
+		ArrayList<Predicate> predicateList = new ArrayList<>();
+		for (PredicateInstance predicateInstance : bodyAtomsPositive) {
+			predicateList.add(predicateInstance.predicate);
+		}
+		for (PredicateInstance predicateInstance : bodyAtomsNegative) {
+			predicateList.add(predicateInstance.predicate);
+		}
+		if (!isConstraint()) {
+			predicateList.add(headAtom.predicate);
+		}
+		return  predicateList;
+	}
+
 	private static PredicateInstance constructPredicateInstanceFromParsedAtom(ParsedAtom parsedAtom) {
 		Predicate predicate = new BasicPredicate(parsedAtom.predicate, parsedAtom.arity);
 		Term[] terms = new Term[parsedAtom.terms.size()];
@@ -129,6 +147,7 @@ public class NonGroundRule {
 				componentForAtom.atomSequence = new LinkedList<>();
 				componentForAtom.atomSequence.add(posAtom);
 				componentForAtom.numAtoms = 1;
+				componentsPositive.add(componentForAtom);
 			} else {
 				// If only one component hit, add atom to it
 				if (hittingComponents.size() == 1) {
@@ -176,6 +195,41 @@ public class NonGroundRule {
 	}
 
 	/**
+	 * Returns the predicate occurring first in the body of the rule.
+	 * @return
+	 */
+	public Predicate usedFirstBodyPredicate() {
+		if (bodyAtomsPositive.size() > 0) {
+			return bodyAtomsPositive.get(0).predicate;
+		} else if (bodyAtomsNegative.size() > 0) {
+			return bodyAtomsNegative.get(0).predicate;
+		} else {
+			throw new RuntimeException("Encountered NonGroundRule with empty body, which should have been treated as a fact.");
+		}
+	}
+
+	public boolean isFirstBodyPredicatePositive() {
+		return bodyAtomsPositive.size() > 0;
+	}
+
+	/**
+	 * Returns the n-th atom in the body of this non-ground rule.
+	 * @param atomPosition 0-based position of the body atom.
+	 * @return
+	 */
+	public PredicateInstance getBodyAtom(int atomPosition) {
+		if (atomPosition < bodyAtomsPositive.size()) {
+			return bodyAtomsPositive.get(atomPosition);
+		} else {
+			return bodyAtomsNegative.get(atomPosition - bodyAtomsPositive.size());
+		}
+	}
+
+	public boolean isBodyAtomPositive(int atomPosition) {
+		return atomPosition < bodyAtomsPositive.size();
+	}
+
+	/**
 	 * Returns all predicates occurring in the negative body of the rule.
 	 * @return
 	 */
@@ -187,10 +241,14 @@ public class NonGroundRule {
 		return usedPredicates;
 	}
 
+	public int getNumBodyAtoms() {
+		return bodyAtomsPositive.size() + bodyAtomsNegative.size();
+	}
+
 	private class SortingBodyComponent {
-		HashSet<VariableTerm> occurringVariables;
-		HashSet<PredicateInstance> atoms;
-		LinkedList<PredicateInstance> atomSequence;
+		HashSet<VariableTerm> occurringVariables = new HashSet<>();
+		HashSet<PredicateInstance> atoms = new HashSet<>();
+		LinkedList<PredicateInstance> atomSequence = new LinkedList<>();
 		int numAtoms;
 
 		public void mergeComponent(SortingBodyComponent other) {

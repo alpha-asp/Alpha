@@ -46,19 +46,16 @@ public class NaiveGrounder extends AbstractGrounder {
 
 	public NaiveGrounder(ParsedProgram program) {
 		super(program);
+
 		// initialize all facts
 		for (ParsedFact fact : this.program.facts) {
 			String predicateName = fact.fact.predicate;
 			int predicateArity = fact.fact.arity;
 			Predicate predicate = new BasicPredicate(predicateName, predicateArity);
 			// Record predicate
-			knownPredicates.add(predicate);
+			adaptWorkingMemoryForPredicate(predicate);
 
-			// Create working memory for predicate if it does not exist
-			if (!workingMemory.containsKey(predicate)) {
-				workingMemory.put(predicate, new ImmutablePair<>(new IndexedInstanceStorage(predicateName + "+", predicateArity),
-					new IndexedInstanceStorage(predicateName + "-", predicateArity)));
-			}
+
 			IndexedInstanceStorage predicateWorkingMemoryPlus = workingMemory.get(predicate).getLeft();
 
 			// Construct instance from the fact.
@@ -73,6 +70,7 @@ public class NaiveGrounder extends AbstractGrounder {
 			internalPredicateInstances.add(instance);
 		}
 		// initialize rules
+		adaptWorkingMemoryForPredicate(RULE_BODIES_PREDICATE);
 		for (ParsedRule rule : program.rules) {
 			registerRuleOrConstraint(rule);
 		}
@@ -84,22 +82,34 @@ public class NaiveGrounder extends AbstractGrounder {
 		}
 	}
 
+	private void adaptWorkingMemoryForPredicate(Predicate predicate) {
+		// Create working memory for predicate if it does not exist
+		if (!workingMemory.containsKey(predicate)) {
+			workingMemory.put(predicate, new ImmutablePair<>(new IndexedInstanceStorage(predicate.getPredicateName() + "+", predicate.getArity()),
+				new IndexedInstanceStorage(predicate.getPredicateName() + "-", predicate.getArity())));
+		}
+		knownPredicates.add(predicate);
+	}
+
 	private void registerRuleOrConstraint(ParsedRule rule) {
 		// Record the rule for later use
 		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
-		rulesFromProgram.add(nonGroundRule);
-		// Register the rule at all working memories corresponding to a predicate used in the body of the rule.
-		for (Predicate predicate : nonGroundRule.usedPositiveBodyPredicates()) {
-			IndexedInstanceStorage workingMemoryPlus = workingMemory.get(predicate).getLeft();
-			rulesUsingPredicateWorkingMemory.putIfAbsent(workingMemoryPlus, new ArrayList<>());
-			ArrayList<NonGroundRule> nonGroundRules = rulesUsingPredicateWorkingMemory.get(workingMemoryPlus);
-			nonGroundRules.add(nonGroundRule);
+		// Create working memories for all predicates occurring in the rule
+		for (Predicate predicate : nonGroundRule.getOccurringPredicates()) {
+			adaptWorkingMemoryForPredicate(predicate);
 		}
-		for (Predicate predicate : nonGroundRule.usedNegativeBodyPredicates()) {
-			IndexedInstanceStorage workingMemoryMinus = workingMemory.get(predicate).getRight();
+		rulesFromProgram.add(nonGroundRule);
+
+		// Register the rule at the working memory corresponding to its first predicate.
+		Predicate firstBodyPredicate = nonGroundRule.usedFirstBodyPredicate();
+		if (nonGroundRule.isFirstBodyPredicatePositive()) {
+			IndexedInstanceStorage workingMemoryPlus = workingMemory.get(firstBodyPredicate).getLeft();
+			rulesUsingPredicateWorkingMemory.putIfAbsent(workingMemoryPlus, new ArrayList<>());
+			rulesUsingPredicateWorkingMemory.get(workingMemoryPlus).add(nonGroundRule);
+		} else {
+			IndexedInstanceStorage workingMemoryMinus = workingMemory.get(firstBodyPredicate).getRight();
 			rulesUsingPredicateWorkingMemory.putIfAbsent(workingMemoryMinus, new ArrayList<>());
-			ArrayList<NonGroundRule> nonGroundRules = rulesUsingPredicateWorkingMemory.get(workingMemoryMinus);
-			nonGroundRules.add(nonGroundRule);
+			rulesUsingPredicateWorkingMemory.get(workingMemoryMinus).add(nonGroundRule);
 		}
 	}
 
@@ -286,7 +296,18 @@ public class NaiveGrounder extends AbstractGrounder {
 	}
 
 	class VariableSubstitution {
-		HashMap<VariableTerm, Term> substitution;
+		HashMap<VariableTerm, Term> substitution = new HashMap<>();
+
+		public VariableSubstitution() {
+		}
+
+		public VariableSubstitution(VariableSubstitution clone) {
+			this.substitution = new HashMap<>(clone.substitution);
+		}
+
+		public void replaceSubstitution(VariableSubstitution other) {
+			this.substitution = other.substitution;
+		}
 
 		/**
 		 * Prints the variable substitution in a uniform way (sorted by variable names).
@@ -307,9 +328,116 @@ public class NaiveGrounder extends AbstractGrounder {
 
 	private List<VariableSubstitution> generateGroundRulesSemiNaive(NonGroundRule nonGroundRule, IndexedInstanceStorage modifiedWorkingMemory) {
 		ArrayList<VariableSubstitution> generatedSubstitutions = new ArrayList<>();
-		// TODO: semi-naive grounding here!
+		bindNextAtom(nonGroundRule, 0, modifiedWorkingMemory.getRecentlyAddedInstances(), new VariableSubstitution(), generatedSubstitutions);
 		return generatedSubstitutions;
 	}
+
+	protected void bindNextAtom(NonGroundRule nonGroundRule, int atomPos, List<Instance> potentiallyMatchingInstances, VariableSubstitution variableSubstitution, ArrayList<VariableSubstitution> generatedSubstitutions) {
+		PredicateInstance atom = nonGroundRule.getBodyAtom(atomPos);
+		for (Instance instance : potentiallyMatchingInstances) {
+			VariableSubstitution variableSubstitutionClone = new VariableSubstitution(variableSubstitution);
+			// Check each instance if they match
+			if (unify(atom, instance, variableSubstitutionClone)) {
+				// If we are at last atom in the body, a full grounding substitution has been derived.
+				if (nonGroundRule.getNumBodyAtoms() == atomPos + 1) {
+					generatedSubstitutions.add(variableSubstitutionClone);
+					continue;	// Check other instances if they also match
+				}
+				PredicateInstance nextBodyAtom = nonGroundRule.getBodyAtom(atomPos + 1);
+				// For selection of the next atom, find ground term to select
+				int firstGroundTermIndex = 0;
+				Term firstGroundTerm = null;
+				for (int i = 0; i < nextBodyAtom.termList.length; i++) {
+					Term testTerm = SubstitutionUtil.groundTerm(nextBodyAtom.termList[i], variableSubstitutionClone);
+					if (testTerm.isGround()) {
+						firstGroundTermIndex = i;
+						firstGroundTerm = testTerm;
+						break;
+					}
+				}
+				// Get positive or negative memory depending on polarity of the atom
+				ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> workingMemory = this.workingMemory.get(nextBodyAtom.predicate);
+				IndexedInstanceStorage instanceStorage;
+				if (nonGroundRule.isBodyAtomPositive(atomPos + 1)) {
+					instanceStorage = workingMemory.getLeft();
+				} else {
+					instanceStorage = workingMemory.getRight();
+				}
+				// Select matching instances
+				List<Instance> instancesMatchingAtPosition;
+				if (firstGroundTerm != null) {
+					instancesMatchingAtPosition = instanceStorage.getInstancesMatchingAtPosition(firstGroundTerm, firstGroundTermIndex);
+				} else {
+					instancesMatchingAtPosition = instanceStorage.getInstancesMatchingAtPosition(VariableTerm.getVariableTerm("_X"), firstGroundTermIndex);
+				}
+				bindNextAtom(nonGroundRule, atomPos + 1, instancesMatchingAtPosition, variableSubstitutionClone, generatedSubstitutions);
+			}
+		}
+	}
+
+	/**
+	 * Computes the unifier of the atom and the instance and stores it in the variable substitution.
+	 * @param atom the body atom to unify
+	 * @param instance the ground instance
+	 * @param variableSubstitution if the atom does not unify, this is left unchanged.
+	 * @return true if the atom and the instance unify. False otherwise
+	 */
+	protected boolean unify(PredicateInstance atom, Instance instance, VariableSubstitution variableSubstitution) {
+		VariableSubstitution tempVariableSubstitution = new VariableSubstitution(variableSubstitution);
+		for (int i = 0; i < instance.terms.length; i++) {
+			if (instance.terms[i] == atom.termList[i] ||
+				unifyTerms(atom.termList[i], instance.terms[i], tempVariableSubstitution)) {
+				continue;
+			}
+			return false;
+		}
+		variableSubstitution.replaceSubstitution(tempVariableSubstitution);
+		return true;
+	}
+
+	/**
+	 * Checks if the left possible non-ground term unifies with the ground term.
+	 * @param termNonGround
+	 * @param termGround
+	 * @param variableSubstitution
+	 * @return
+	 */
+	boolean unifyTerms(Term termNonGround, Term termGround, VariableSubstitution variableSubstitution) {
+		if (termNonGround == termGround) {
+			// Both terms are either the same constant or the same variable term
+			return true;
+		} else if (termNonGround instanceof ConstantTerm) {
+			// Since right term is ground, both terms differ
+			return false;
+		} else if (termNonGround instanceof VariableTerm) {
+			// Left term is variable, bind it to the right term.
+			if (variableSubstitution.substitution.get(termNonGround) != null) {
+				// Variable is already bound, return true if binding is the same as the current ground term.
+				return termNonGround == variableSubstitution.substitution.get(termNonGround);
+			} else {
+				variableSubstitution.substitution.put((VariableTerm) termNonGround, termGround);
+				return true;
+			}
+		} else if (termNonGround instanceof FunctionTerm && termGround instanceof FunctionTerm) {
+			// Both terms are function terms
+			FunctionTerm ftNonGround = (FunctionTerm) termNonGround;
+			FunctionTerm ftGround = (FunctionTerm) termGround;
+			if (ftNonGround.functionSymbol == ftGround.functionSymbol && ftNonGround.termList.size() == ftGround.termList.size()) {
+				// Iterate over all subterms of both function terms
+				for (int i = 0; i < ftNonGround.termList.size(); i++) {
+					if (!unifyTerms(ftNonGround.termList.get(i), ftGround.termList.get(i), variableSubstitution)) {
+						return false;
+					}
+				}
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+
 
 	@Override
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {

@@ -138,7 +138,7 @@ public class Main {
 		System.exit(1);
 	}
 
-	static ParsedProgram parseVisit(InputStream is) throws IOException {
+	public static ParsedProgram parseVisit(InputStream is) throws IOException {
 		final ASPCore2Parser parser = new ASPCore2Parser(
 			new CommonTokenStream(
 				new ASPCore2Lexer(
