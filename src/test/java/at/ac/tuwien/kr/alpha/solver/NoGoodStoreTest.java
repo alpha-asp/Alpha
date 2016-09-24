@@ -2,7 +2,6 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.stream.Stream;
@@ -24,14 +23,15 @@ public class NoGoodStoreTest {
 	}
 
 	@Before
-	public void clear() {
+	public void setUp() {
 		store.clear();
+		store.setDecisionLevel(DECISION_LEVEL);
 	}
 
 	@Test
 	public void singleFact() {
 		store.add(fact(-1));
-		store.propagate(DECISION_LEVEL);
+		store.propagate();
 
 		assertEquals(TRUE, assignment.get(1));
 	}
@@ -39,7 +39,7 @@ public class NoGoodStoreTest {
 	@Test
 	public void single() {
 		store.add(new NoGood(-1));
-		store.propagate(DECISION_LEVEL);
+		store.propagate();
 
 		assertEquals(MBT, assignment.get(1));
 	}
@@ -49,9 +49,9 @@ public class NoGoodStoreTest {
 		assignment.assign(2, FALSE, DECISION_LEVEL);
 
 		store.add(headFirst(-1, 2));
-		store.propagate(DECISION_LEVEL);
+		store.propagate();
 
-		assertEquals(null, assignment.get(1));
+			assertEquals(null, assignment.get(1));
 	}
 
 	@Test
@@ -59,20 +59,19 @@ public class NoGoodStoreTest {
 		assignment.assign(2, TRUE, DECISION_LEVEL);
 
 		store.add(headFirst(-1, 2));
-		store.propagate(DECISION_LEVEL);
+		store.propagate();
 
 		assertEquals(TRUE, assignment.get(1));
 	}
 
 	@Test
-	@Ignore("is this correct?")
 	public void propagateBinarySecondTrue() {
 		assignment.assign(1, FALSE, DECISION_LEVEL);
 
 		store.add(new NoGood(new int[]{-1, 2}, 1));
-		store.propagate(DECISION_LEVEL);
+		store.propagate();
 
-		assertEquals(MBT, assignment.get(2));
+		assertEquals(FALSE, assignment.get(2));
 	}
 
 	@Test
@@ -80,7 +79,18 @@ public class NoGoodStoreTest {
 		assignment.assign(2, MBT, DECISION_LEVEL);
 
 		store.add(headFirst(-1, 2));
-		store.propagate(DECISION_LEVEL);
+		store.propagate();
+
+		assertEquals(MBT, assignment.get(1));
+	}
+
+	@Test
+	public void propagateBinaryMBTAfterAssignment() {
+		store.add(headFirst(-1, 2));
+		store.propagate();
+
+		store.assign(2, MBT);
+		store.propagate();
 
 		assertEquals(MBT, assignment.get(1));
 	}
@@ -92,7 +102,21 @@ public class NoGoodStoreTest {
 		store.add(new NoGood(-1, 2));
 		store.add(new NoGood(-3, 1));
 
-		store.propagate(DECISION_LEVEL);
+		store.propagate();
+
+		assertEquals(MBT, assignment.get(1));
+		assertEquals(MBT, assignment.get(3));
+	}
+
+
+	@Test
+	public void propagateBinaryMBTTwiceOutofSync() {
+		store.add(new NoGood(-1, 2));
+		store.add(new NoGood(-3, 1));
+
+		store.assign(2, MBT);
+
+		store.propagate();
 
 		assertEquals(MBT, assignment.get(1));
 		assertEquals(MBT, assignment.get(3));
@@ -104,7 +128,7 @@ public class NoGoodStoreTest {
 		assignment.assign(3, TRUE, DECISION_LEVEL);
 
 		store.add(headFirst(-1, 2, 3));
-		store.propagate(DECISION_LEVEL);
+		store.propagate();
 
 		assertEquals(TRUE, assignment.get(1));
 	}
@@ -117,7 +141,7 @@ public class NoGoodStoreTest {
 		assignment.assign(3, MBT, DECISION_LEVEL);
 
 		store.add(noGood);
-		store.propagate(DECISION_LEVEL);
+		store.propagate();
 
 		assertEquals(MBT, assignment.get(1));
 	}
@@ -130,7 +154,7 @@ public class NoGoodStoreTest {
 
 		store.add(headFirst(-1, 2, 3));
 		store.add(headFirst(-5, -4, 1));
-		store.propagate(DECISION_LEVEL);
+		store.propagate();
 
 		assertEquals(MBT, assignment.get(1));
 		assertEquals(MBT, assignment.get(5));
@@ -146,9 +170,37 @@ public class NoGoodStoreTest {
 			fact(-2)
 		)
 		.forEach(store::add);
-		store.propagate(DECISION_LEVEL);
+		store.propagate();
 
 		assertEquals(TRUE, assignment.get(1));
 		assertEquals(TRUE, assignment.get(5));
+	}
+
+	@Test
+	public void propagateNaryMBTTwiceReordered() {
+		store.add(headFirst(-1, 2, 3));
+		store.add(headFirst(-5, -4, 1));
+
+		store.assign(4, FALSE);
+		store.assign(3, MBT);
+		store.assign(2, MBT);
+
+		store.propagate();
+
+		assertEquals(MBT, assignment.get(1));
+		assertEquals(MBT, assignment.get(5));
+	}
+
+	@Test(expected = ConflictingNoGoodException.class)
+	public void conflictingFact() {
+		assignment.assign(1, TRUE, DECISION_LEVEL);
+		store.add(fact(1));
+	}
+
+	@Test(expected = ConflictingNoGoodException.class)
+	public void conflictingBinary() {
+		assignment.assign(1, TRUE, DECISION_LEVEL);
+		assignment.assign(2, TRUE, DECISION_LEVEL);
+		store.add(new NoGood(1, 2));
 	}
 }

@@ -22,6 +22,11 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 		this.head = head;
 	}
 
+	public NoGood(NoGood noGood) {
+		this.literals = noGood.literals.clone();
+		this.head = noGood.head;
+	}
+
 	private static boolean isSorted(int[] a) {
 		for (int i = 0; i < a.length - 1; i++) {
 			if (a[i] > a[i + 1]) {

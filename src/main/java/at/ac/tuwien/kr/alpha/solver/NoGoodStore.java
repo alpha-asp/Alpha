@@ -1,58 +1,110 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.nogood.WatchedMBTNoGood;
+import at.ac.tuwien.kr.alpha.solver.nogood.WatchedNoGood;
 
 import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 class NoGoodStore {
 	private final Assignment<ThriceTruth> assignment;
 
-	private final Set<NoGood> unaries = new HashSet<>();
-	private final Map<Integer, Collection<NoGood>> binaries = new HashMap<>();
-	private final Map<Integer, WatchedNoGoods> naries = new HashMap<>();
+	private final Map<Integer, Watches<Integer, WatchedNoGood>> watches = new HashMap<>();
 
-	private final Queue<NoGood> unariesToCheck = new ArrayDeque<>();
-	private final Queue<NoGood> binariesToCheck = new ArrayDeque<>();
-	private final Queue<WatchedMBTNoGood> nariesToCheck = new ArrayDeque<>();
+	private final Queue<Integer> cache = new ArrayDeque<>();
+
+	private int decisionLevel;
 
 	NoGoodStore(Assignment<ThriceTruth> assignment) {
 		this.assignment = assignment;
+		this.decisionLevel = 0;
+	}
+
+	public void setDecisionLevel(int decisionLevel) {
+		this.decisionLevel = decisionLevel;
 	}
 
 	void clear() {
 		assignment.clear();
+		cache.clear();
+		watches.clear();
+	}
 
-		unaries.clear();
-		binaries.clear();
-		naries.clear();
-
-		unariesToCheck.clear();
-		binariesToCheck.clear();
-		nariesToCheck.clear();
+	private Watches<Integer, WatchedNoGood> watches(int literal) {
+		return watches.computeIfAbsent(atomOf(literal), k -> new Watches<>());
 	}
 
 	public void add(NoGood noGood) {
 		if (noGood.size() == 1) {
-			unaries.add(noGood);
-			unariesToCheck.add(noGood);
+			addUnary(noGood);
 		} else if (noGood.size() == 2) {
-			addBinary(noGood.getLiteral(0), noGood);
-			addBinary(noGood.getLiteral(1), noGood);
-			binariesToCheck.add(noGood);
+			addBinary(noGood);
 		} else {
-			nariesToCheck.add(addWatched(noGood));
+			addWatched(noGood);
 		}
 	}
 
-	private void addBinary(int literal, NoGood noGood) {
-		binaries.computeIfAbsent(atomOf(literal), k ->  new LinkedList<>()).add(noGood);
+	private void addUnary(final NoGood noGood) {
+		final int literal = noGood.getLiteral(0);
+
+		if (assignment.contains(literal)) {
+			throw new ConflictingNoGoodException(noGood);
+		}
+
+		assign(literal, isNegated(literal) ? noGood.hasHead() ? TRUE : MBT : FALSE);
 	}
 
-	private WatchedMBTNoGood addWatched(NoGood noGood) {
+	private void addBinary(final NoGood noGood) {
+		final int a = noGood.getLiteral(0);
+		final int b = noGood.getLiteral(1);
+
+		if (!assignment.isAssigned(atomOf(a)) && !assignment.isAssigned(atomOf(b))) {
+			watches(a).binary.get(isNegated(a) ? FALSE : MBT).add(b);
+			watches(b).binary.get(isNegated(b) ? FALSE : MBT).add(a);
+		} else {
+			eat(noGood);
+		}
+	}
+
+	private boolean eat(final NoGood noGood) {
+		int lastUnassignedLiteral = 0;
+		boolean isUnit = false;
+		boolean isViolated = true;
+
+		for (Integer literal : noGood) {
+			ThriceTruth value = assignment.get(atomOf(literal));
+			if (value == null) {
+				isUnit = lastUnassignedLiteral == 0;
+				lastUnassignedLiteral = literal;
+				isViolated = false;
+			} else if (!assignment.contains(literal)) {
+				isUnit = false;
+				isViolated = false;
+			}
+		}
+
+		if (isViolated) {
+			throw new ConflictingNoGoodException(noGood);
+		}
+
+		if (isUnit) {
+			assign(lastUnassignedLiteral, isNegated(lastUnassignedLiteral) ? MBT : FALSE);
+			return true;
+		}
+
+		return false;
+	}
+
+	private WatchedNoGood addWatched(final NoGood noGood) {
+		if (eat(noGood)) {
+			return null;
+		}
+
 		Comparator<Integer> comp = Comparator.comparingInt(assignment::toPriority);
 
 		int a = 1;
@@ -81,119 +133,101 @@ class NoGoodStore {
 		// 1.c.II else, proceed as in 1.b.II
 
 		// TODO: Set c.
-		WatchedMBTNoGood wng = new WatchedMBTNoGood(noGood, a, b, 0);
+		WatchedNoGood wng = new WatchedNoGood(noGood, a, b);
 		addByIndex(wng, a);
 		addByIndex(wng, b);
 		return wng;
 	}
 
-	private void addByIndex(WatchedMBTNoGood watchedNoGood, int i) {
-		final int literal = watchedNoGood.getNoGood().getLiteral(i);
-
-		// TODO: Correctly assign truth.
-		final ThriceTruth truth = ThriceTruth.FALSE;
-
-		naries.computeIfAbsent(literal, k -> new WatchedNoGoods()).get(truth).add(watchedNoGood);
+	private void addByIndex(WatchedNoGood watchedNoGood, int i) {
+		final int literal = watchedNoGood.getLiteral(i);
+		watches(literal).nary.get(isNegated(literal) ? FALSE : MBT).add(watchedNoGood);
 	}
 
-	private void assign(int atom, ThriceTruth value, int decisionLevel) {
-		// TODO: Pass decision level.
+	public void assign(int literal, ThriceTruth value) {
+		final int atom = atomOf(literal);
 		assignment.assign(atom, value, decisionLevel);
-
-		// TODO: Optimize w.r.t. value.
-		if (binaries.containsKey(atom)) {
-			binariesToCheck.addAll(binaries.get(atom));
-		}
-
-		if (naries.containsKey(atom)) {
-			nariesToCheck.addAll(naries.get(atom).get(value));
-		}
+		cache.add(atom);
 	}
 
-	public void propagate(int decisionLevel) {
-		while (!unariesToCheck.isEmpty()) {
-			final NoGood noGood = unariesToCheck.poll();
-			final int literal = noGood.getLiteral(0);
-			if (noGood.hasHead()) {
-				// This is a fact.
-				assign(atomOf(literal), isNegated(literal) ? ThriceTruth.TRUE : ThriceTruth.FALSE, decisionLevel);
-			} else {
-				assign(atomOf(literal), isNegated(literal) ? ThriceTruth.MBT : ThriceTruth.FALSE, decisionLevel);
-			}
-		}
+	public void propagate() {
+		while (!cache.isEmpty()) {
+			final int atom = cache.poll();
+			final ThriceTruth value = assignment.get(atom);
 
-		while (!binariesToCheck.isEmpty()) {
-			final NoGood noGood = binariesToCheck.poll();
-
-			final int firstLiteral = noGood.getLiteral(0);
-			final int secondLiteral = noGood.getLiteral(1);
-
-			final int firstAtom = atomOf(firstLiteral);
-			final int secondAtom = atomOf(secondLiteral);
-
-			final boolean firstAssigned = assignment.isAssigned(firstAtom);
-			final boolean secondAssigned = assignment.isAssigned(secondAtom);
-
-			boolean someAssigned = assignment.isAssigned(firstAtom) || assignment.isAssigned(secondAtom);
-
-			if (!someAssigned || firstAssigned == secondAssigned) {
-				continue;
-			}
-
-			if (!firstAssigned) {
-				assign(firstAtom, isNegated(firstLiteral) ? ThriceTruth.MBT : ThriceTruth.FALSE, decisionLevel);
-			} else {
-				assign(secondAtom, isNegated(secondLiteral) ? ThriceTruth.MBT : ThriceTruth.FALSE, decisionLevel);
-			}
-		}
-
-		while (!nariesToCheck.isEmpty()) {
-			// Check if NoGood is unit.
-			// If it is unit, find what atom will be assigned.
-			// Alter the assignment of the atom to the value that was derived.
-			// Find the corresponding WatchedNoGoods for the atom and assignment in
-			// naries and add all of the to checkingQueue.
-
-			final WatchedMBTNoGood noGood = nariesToCheck.poll();
-
-			final int firstLiteral = noGood.getNoGood().getLiteral(noGood.getA());
-			final int secondLiteral = noGood.getNoGood().getLiteral(noGood.getB());
-
-			final int firstAtom = atomOf(noGood.getNoGood().getLiteral(noGood.getA()));
-			final int secondAtom = atomOf(noGood.getNoGood().getLiteral(noGood.getB()));
-
-			final boolean firstAssigned = assignment.isAssigned(firstAtom);
-			final boolean secondAssigned = assignment.isAssigned(secondAtom);
-
-			boolean someAssigned = assignment.isAssigned(firstAtom) || assignment.isAssigned(secondAtom);
-
-			if (!someAssigned || firstAssigned == secondAssigned) {
-				continue;
-			}
-
-			if (!firstAssigned) {
-				assign(firstAtom, isNegated(firstLiteral) ? ThriceTruth.MBT : ThriceTruth.FALSE, decisionLevel);
-			} else {
-				assign(secondAtom, isNegated(secondLiteral) ? ThriceTruth.MBT : ThriceTruth.FALSE, decisionLevel);
+			if (value == MBT || value == FALSE) {
+				propagateMBT(atom, value);
+			} else if (value == TRUE) {
+				propagateTrue(atom, value);
 			}
 		}
 	}
 
-	private static class WatchedNoGoods {
-		private Set<WatchedMBTNoGood> positive = new HashSet<>();
-		private Set<WatchedMBTNoGood> negative = new HashSet<>();
-		private Set<WatchedMBTNoGood> mustBeTrue = new HashSet<>();
+	private void propagateMBT(final int atom, final ThriceTruth value) {
+		final Watches<Integer, WatchedNoGood> w = watches(atom);
 
-		public Set<WatchedMBTNoGood> get(ThriceTruth truth) {
-			switch (truth) {
-				case FALSE:
-					return negative;
-				case TRUE:
-					return positive;
-				case MBT:
-					return mustBeTrue;
-			}
-			throw new IllegalArgumentException("invalid truth value");
+		for (Integer literal : w.binary.get(value)) {
+			assign(literal, isNegated(literal) ? MBT : FALSE);
 		}
+
+		for (WatchedNoGood noGood : w.nary.get(value)) {
+			final int assigned = noGood.getAtom(noGood.getPointer(0)) == atom ?  0 : 1;
+			final int other = assigned == 0 ? 1 : 0;
+			final int otherLiteral = noGood.getLiteral(noGood.getPointer(other));
+
+			if (!assignment.isAssigned(atomOf(otherLiteral))) {
+				assign(otherLiteral, isNegated(otherLiteral) ? MBT : FALSE);
+				continue;
+			}
+/*
+			Comparator<Integer> comp = Comparator.comparingInt(assignment::toPriority);
+
+			int max = 0;
+			for (int i = 1; i < noGood.size(); i++) {
+				final int otherAtom = noGood.getAtom(i);
+				if (i == noGood.getPointer(other)) {
+					continue;
+				}
+				if (comp.compare(otherAtom, noGood.getAtom(max)) > 0) {
+					max = i;
+				}
+			}
+
+			if (assignment.get(noGood.getAtom(max)) != null) {
+				//
+				continue;
+			}
+
+			noGood.setPointer(assigned, max);*/
+		}
+	}
+
+	private void propagateTrue(final int atom, final ThriceTruth value) {
+	}
+
+	private static class ThriceSet<T> {
+		private Set<T> pos = new HashSet<>();
+		private Set<T> neg = new HashSet<>();
+		private Set<T> mbt = new HashSet<>();
+
+		public Set<T> get(ThriceTruth truth) {
+			return truth != FALSE ? truth != MBT ? pos : mbt : neg;
+		}
+	}
+
+	/**
+	 * A simple data structure to encapsulate watched objects for an atom. It will hold two {@link ThriceSet}s, one
+	 * for references resulting from nogoods containing exactly two atoms, and one for larger nogoods.
+	 *
+	 * To enable compact storage, you will want to use a smaller/simpler type for storing references resulting from
+	 * binary nogoods (such as an {@link Integer}) whereas in the more general case, you will probably refer to some
+	 * sort of {@link WatchedNoGood}.
+	 *
+	 * @param <B> type used to resolve references resulting from binary nogoods
+	 * @param <N> type used to resolve references from nogoods sizes greater than two
+	 */
+	private static class Watches<B, N> {
+		final ThriceSet<B> binary = new ThriceSet<>();
+		final ThriceSet<N> nary = new ThriceSet<>();
 	}
 }

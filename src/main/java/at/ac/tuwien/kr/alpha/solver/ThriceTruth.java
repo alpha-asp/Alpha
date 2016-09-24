@@ -1,18 +1,18 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 public enum ThriceTruth implements Truth {
-	TRUE(true),
-	FALSE(false),
-	MBT(true);
+	TRUE(false),
+	FALSE(true),
+	MBT(false);
 
-	private final boolean containedIn;
+	private final boolean isNegative;
 
-	ThriceTruth(boolean containedIn) {
-		this.containedIn = containedIn;
+	ThriceTruth(boolean isNegative) {
+		this.isNegative = isNegative;
 	}
 
 	@Override
-	public boolean matches(boolean negated) {
-		return containedIn == negated;
+	public boolean isNegative() {
+		return isNegative;
 	}
 }

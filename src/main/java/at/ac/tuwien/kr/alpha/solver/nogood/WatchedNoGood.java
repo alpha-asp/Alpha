@@ -3,12 +3,13 @@ package at.ac.tuwien.kr.alpha.solver.nogood;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
 
-public class WatchedNoGood extends AbstractWatchedNoGood {
+public class WatchedNoGood extends NoGood {
 	protected int a;
 	protected int b;
 
 	public WatchedNoGood(NoGood noGood, int a, int b) {
 		super(noGood);
+
 		if (a == b) {
 			throw new IllegalArgumentException("a must not be b");
 		}
@@ -28,6 +29,7 @@ public class WatchedNoGood extends AbstractWatchedNoGood {
 	public int getA() {
 		return a;
 	}
+
 
 	/**
 	 * @throws IllegalArgumentException if {@code a} is negative or equals {@code b}.
@@ -63,8 +65,19 @@ public class WatchedNoGood extends AbstractWatchedNoGood {
 		this.b = b;
 	}
 
-	@Override
-	public boolean isUnit(Assignment assignment) {
-		return false;
+	public int getPointer(int index) {
+		switch (index) {
+			case 0: return getA();
+			case 1: return getB();
+			default: throw new IndexOutOfBoundsException();
+		}
+	}
+
+	public void setPointer(int index, int value) {
+		switch (index) {
+			case 0: setA(value);
+			case 1: setB(value);
+			default: throw new IndexOutOfBoundsException();
+		}
 	}
 }

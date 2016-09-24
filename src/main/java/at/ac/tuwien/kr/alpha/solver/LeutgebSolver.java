@@ -21,7 +21,8 @@ public class LeutgebSolver extends AbstractSolver {
 	@Override
 	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
 		grounder.getNoGoods().values().parallelStream().forEach(store::add);
-		store.propagate(decisionLevel);
+		store.setDecisionLevel(decisionLevel);
+		store.propagate();
 		return false;
 	}
 }

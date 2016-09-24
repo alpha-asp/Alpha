@@ -6,6 +6,8 @@ import org.apache.commons.logging.LogFactory;
 import java.util.HashMap;
 import java.util.Map;
 
+import static at.ac.tuwien.kr.alpha.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.Literals.isNegated;
 import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
 
 public class Assignment<V extends Truth> {
@@ -78,5 +80,10 @@ public class Assignment<V extends Truth> {
 		int getDecisionLevel() {
 			return decisionLevel;
 		}
+	}
+
+	public boolean contains(int literal) {
+		final V v = get(atomOf(literal));
+		return v != null && isNegated(literal) == v.isNegative();
 	}
 }
