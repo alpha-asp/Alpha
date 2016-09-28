@@ -218,7 +218,7 @@ public class MainTest {
 		assertFalse(matching3.contains(new Instance(new Term[]{t1, t1, t1, t1})));
 
 		List<Instance> matching1 = storage.getInstancesMatchingAtPosition(t2, 0);
-		assertEquals(matching1, null);
+		assertEquals(matching1.size(), 0);
 	}
 
 

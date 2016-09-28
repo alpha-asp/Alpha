@@ -13,4 +13,11 @@ public class IntIdGenerator {
 		}
 		return highestId++;
 	}
+
+	/**
+	 * Resets the internal counter. Useful for resetting before each test.
+	 */
+	public void resetGenerator() {
+		highestId = 0;
+	}
 }

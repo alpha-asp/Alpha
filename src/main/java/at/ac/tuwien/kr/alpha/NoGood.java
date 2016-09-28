@@ -1,5 +1,9 @@
 package at.ac.tuwien.kr.alpha;
 
+import at.ac.tuwien.kr.alpha.grounder.Grounder;
+
+import static java.lang.Math.abs;
+
 public class NoGood {
 	private final int[] literals;
 	private final int head;
@@ -39,5 +43,24 @@ public class NoGood {
 
 	public boolean hasHead() {
 		return head >= 0;
+	}
+
+	@Override
+	public String toString() {
+		String ret = "{";
+		for (int i = 0; i < literals.length; i++) {
+			ret += (i == 0 ? "" : ", ") + literals[i];
+		}
+		ret += "}[" + head + "]";
+		return ret;
+	}
+
+	public String toStringReadable(Grounder grounder) {
+		String ret = "{";
+		for (int i = 0; i < literals.length; i++) {
+			ret += (i == 0 ? "" : ", ") + (literals[i] < 0 ? "-" : "+") + grounder.atomIdToString(abs(literals[i]));
+		}
+		ret += "}[" + head + "]";
+		return ret;
 	}
 }

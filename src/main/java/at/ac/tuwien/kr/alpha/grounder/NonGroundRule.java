@@ -28,7 +28,7 @@ public class NonGroundRule {
 		this.ruleId = ruleId;
 	}
 
-	private static final IntIdGenerator RULE_ID_GENERATOR = new IntIdGenerator();
+	static final IntIdGenerator RULE_ID_GENERATOR = new IntIdGenerator();
 
 	public static NonGroundRule constructNonGroundRule(ParsedRule parsedRule) {
 		NonGroundRule nonGroundRule = new NonGroundRule(RULE_ID_GENERATOR.getNextId());
@@ -72,9 +72,14 @@ public class NonGroundRule {
 
 	private static PredicateInstance constructPredicateInstanceFromParsedAtom(ParsedAtom parsedAtom) {
 		Predicate predicate = new BasicPredicate(parsedAtom.predicate, parsedAtom.arity);
-		Term[] terms = new Term[parsedAtom.terms.size()];
-		for (int i = 0; i < parsedAtom.terms.size(); i++) {
-			terms[i] = AtomStore.convertFromParsedTerm(parsedAtom.terms.get(i));
+		Term[] terms;
+		if (parsedAtom.arity == 0) {
+			terms = new Term[0];
+		} else {
+			terms = new Term[parsedAtom.terms.size()];
+			for (int i = 0; i < parsedAtom.terms.size(); i++) {
+				terms[i] = AtomStore.convertFromParsedTerm(parsedAtom.terms.get(i));
+			}
 		}
 		return new PredicateInstance(predicate, terms);
 	}
@@ -243,6 +248,23 @@ public class NonGroundRule {
 
 	public int getNumBodyAtoms() {
 		return bodyAtomsPositive.size() + bodyAtomsNegative.size();
+	}
+
+	public boolean isGround() {
+		if (!isConstraint() && !headAtom.isGround()) {
+			return false;
+		}
+		for (PredicateInstance predicateInstance : bodyAtomsPositive) {
+			if (!predicateInstance.isGround()) {
+				return false;
+			}
+		}
+		for (PredicateInstance predicateInstance : bodyAtomsNegative) {
+			if (!predicateInstance.isGround()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private class SortingBodyComponent {

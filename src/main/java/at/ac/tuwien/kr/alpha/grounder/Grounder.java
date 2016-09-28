@@ -25,4 +25,6 @@ public interface Grounder {
 	void forgetAssignment(int[] atomIds);
 
 	// int[] getObsoleteAtomIds()
+
+	String atomIdToString(int atomId);
 }

@@ -59,4 +59,15 @@ public class PredicateInstance {
 		}
 		return occurringVariables;
 	}
+
+	@Override
+	public String toString() {
+		String ret = predicate.getPredicateName();
+		ret += termList.length > 0 ? "(" : "";
+		for (int i = 0; i < termList.length; i++) {
+			ret += (i == 0 ? "" : ", ") + termList[i];
+		}
+		ret += termList.length > 0 ? ")" : "";
+		return ret;
+	}
 }

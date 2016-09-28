@@ -117,7 +117,8 @@ public class IndexedInstanceStorage {
 		if (indexForPosition == null) {
 			throw new RuntimeException("IndexedInstanceStorage queried for position " + position + " which is not indexed.");
 		}
-		return indexForPosition.get(term);
+		ArrayList<Instance> matchingInstances = indexForPosition.get(term);
+		return matchingInstances == null ? new ArrayList<>() : matchingInstances;
 	}
 
 	public Set<Instance> getAllInstances() {

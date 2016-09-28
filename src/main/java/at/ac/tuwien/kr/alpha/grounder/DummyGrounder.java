@@ -59,6 +59,11 @@ public class DummyGrounder extends AbstractGrounder {
 	}
 
 	@Override
+	public String atomIdToString(int atomId) {
+		return Integer.toString(atomId);
+	}
+
+	@Override
 	public AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, int[] trueAtoms) {
 		// Note: This grounder only deals with 0-ary predicates, i.e., every atom is a predicate and there is
 		// 	 only one predicate instance representing 0 terms.

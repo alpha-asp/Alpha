@@ -35,4 +35,14 @@ public class Instance {
 	public int hashCode() {
 		return Arrays.hashCode(terms);
 	}
+
+	@Override
+	public String toString() {
+		String ret = "(";
+		for (int i = 0; i < terms.length; i++) {
+			ret += (i == 0 ? "" : ", ") + terms[i];
+		}
+		ret += ")";
+		return ret;
+	}
 }

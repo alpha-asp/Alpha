@@ -10,6 +10,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ParsedVariable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import static at.ac.tuwien.kr.alpha.common.ConstantTerm.getConstantTerm;
 import static at.ac.tuwien.kr.alpha.common.FunctionTerm.getFunctionTerm;
@@ -109,6 +110,14 @@ public class AtomStore {
 		} else {
 			throw new RuntimeException("Parsed program contains a term of unknown type: " + parsedTerm.getClass());
 		}
+	}
+
+	public String printAtomIdTermMapping() {
+		String ret = "";
+		for (Map.Entry<PredicateInstance, AtomId> entry : predicateInstancesToAtomIds.entrySet()) {
+			ret += entry.getValue().atomId + " <-> " + entry.getKey().toString() + "\n";
+		}
+		return ret;
 	}
 
 }

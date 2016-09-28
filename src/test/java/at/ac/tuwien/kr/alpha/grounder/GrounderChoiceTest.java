@@ -124,4 +124,9 @@ public class GrounderChoiceTest extends AbstractGrounder {
 	public void forgetAssignment(int[] atomIds) {
 		return;
 	}
+
+	@Override
+	public String atomIdToString(int atomId) {
+		return Integer.toString(atomId);
+	}
 }
