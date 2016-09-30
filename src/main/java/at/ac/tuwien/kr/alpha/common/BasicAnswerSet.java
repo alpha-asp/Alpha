@@ -35,12 +35,12 @@ public class BasicAnswerSet implements AnswerSet {
 			if (predicateInstance.termList.length == 0) {
 				continue;
 			}
-			String stringInstance = "";
+			StringBuilder stringInstance = new StringBuilder();
 			for (int i = 0; i < predicateInstance.termList.length; i++) {
-				stringInstance += i != 0 ? ", " : "";
-				stringInstance += termToString(predicateInstance.termList[i]);
+				stringInstance.append(i != 0 ? ", " : "");
+				stringInstance.append(termToString(predicateInstance.termList[i]));
 			}
-			stringInstances.add(stringInstance);
+			stringInstances.add(stringInstance.toString());
 		}
 		return stringInstances;
 	}
@@ -75,24 +75,28 @@ public class BasicAnswerSet implements AnswerSet {
 
 
 	public String toString() {
-		String ret = "{ ";
+		StringBuilder ret = new StringBuilder();
+		ret.append("{ ");
 		for (int i = 0; i < predicateList.size(); i++) {
-			ret += i != 0 ? ", "  : "";
+			ret.append(i != 0 ? ", "  : "");
 
 			Predicate predicate = predicateList.get(i);
 			List<String> instances = getPredicateInstancesAsString(predicate);
 
 			if (instances.size() == 0) {
-				ret += predicate.getPredicateName();
+				ret.append(predicate.getPredicateName());
 			} else {
 
 				for (int j = 0; j < instances.size(); j++) {
-					ret += j != 0 ? ", " : "";
-					ret += predicate.getPredicateName() + "(" + instances.get(j) + ")";
+					ret.append(j != 0 ? ", " : "");
+					ret.append(predicate.getPredicateName());
+					ret.append("(");
+					ret.append(instances.get(j));
+					ret.append(")");
 				}
 			}
 		}
-		ret += " }";
-		return ret;
+		ret.append(" }");
+		return ret.toString();
 	}
 }

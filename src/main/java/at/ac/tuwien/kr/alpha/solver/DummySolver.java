@@ -21,6 +21,7 @@ public class DummySolver extends AbstractSolver {
 	private HashSet<Integer> knownAtomIds = new HashSet<>();
 	private ArrayList<Integer> orderedAtomIds = new ArrayList<>();
 	private HashMap<Integer, Boolean> truthAssignments = new HashMap<>();
+	private ArrayList<Integer> newTruthAssignments = new ArrayList<>();
 	private ArrayList<ArrayList<Integer>> decisionLevels = new ArrayList<>();
 
 	private ArrayList<Integer> noGoodIds = new ArrayList<>();
@@ -157,6 +158,7 @@ public class DummySolver extends AbstractSolver {
 		mbtAssignedFromUnassigned.add(decisionLevel, new ArrayList<>());
 		// We guess true for any unassigned choice atom (backtrack tries false)
 		truthAssignments.put(nextChoice, true);
+		newTruthAssignments.add(nextChoice);
 		guessedAtomIds.push(nextChoice);
 		didChange = true;	// Record change to compute propagation fixpoint again.
 	}
@@ -218,6 +220,7 @@ public class DummySolver extends AbstractSolver {
 				// Guess false now
 				guessedAtomIds.push(lastGuessedAtom);
 				truthAssignments.put(lastGuessedAtom, !lastGuessedTruthValue);
+				newTruthAssignments.add(lastGuessedAtom);
 				decisionLevels.get(decisionLevel).add(lastGuessedAtom);
 				didChange = true;
 
@@ -232,14 +235,15 @@ public class DummySolver extends AbstractSolver {
 
 
 	private void updateGrounderAssignments() {
-		int[] atomIds = new int[truthAssignments.size()];
-		boolean[] truthValues = new boolean[truthAssignments.size()];
+		int[] atomIds = new int[newTruthAssignments.size()];
+		boolean[] truthValues = new boolean[newTruthAssignments.size()];
 		int arrPos = 0;
-		for (Map.Entry<Integer, Boolean> truthAssignment : truthAssignments.entrySet()) {
-			atomIds[arrPos] = truthAssignment.getKey();
-			truthValues[arrPos] = truthAssignment.getValue();
+		for (Integer newTruthAssignment : newTruthAssignments) {
+			atomIds[arrPos] = newTruthAssignment;
+			truthValues[arrPos] = truthAssignments.get(newTruthAssignment);
 			arrPos++;
 		}
+		newTruthAssignments = new ArrayList<>();
 		grounder.updateAssignment(atomIds, truthValues);
 	}
 
@@ -284,11 +288,15 @@ public class DummySolver extends AbstractSolver {
 			if (implied == -1) {	// NoGood is not unit, skip.
 				continue;
 			}
-			didChange = true;	// Record to detect propagation fixpoint
 			int impliedLiteral = noGood.getLiteral(implied);
 			int impliedAtomId = abs(impliedLiteral);
 			boolean impliedTruthValue = !(impliedLiteral > 0);
+			if (truthAssignments.get(impliedAtomId) != null) {	// Skip if value already was assigned.
+				continue;
+			}
 			truthAssignments.put(impliedAtomId, impliedTruthValue);
+			newTruthAssignments.add(impliedAtomId);
+			didChange = true;	// Record to detect propagation fixpoint
 			decisionLevels.get(decisionLevel).add(impliedAtomId);
 			if (impliedTruthValue) {	// Record MBT value in case true is assigned
 				mbtAssigned.add(impliedAtomId);

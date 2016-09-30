@@ -13,6 +13,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static at.ac.tuwien.kr.alpha.Main.main;
 import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 import static org.junit.Assert.assertEquals;
 
@@ -98,6 +99,10 @@ public class MainTest {
 		//System.out.println("Found " + answerSetCount + " Answer Set(s), there are no more answer sets.");
 	}
 
-
+	@Test
+	@Ignore
+	public void testLargeInputProgram() {
+		main(new String[]{"-g", "naive", "-s", "dummy", "-n", "10", "-i", "./benchmarks/omiga/omiga-testcases/locstrat/locstrat-200.txt"});
+	}
 
 }
