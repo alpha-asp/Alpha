@@ -55,6 +55,11 @@ public class NoGood {
 		return ret;
 	}
 
+	/**
+	 * Prints the NoGood such that literals are structured atoms instead of integers.
+	 * @param grounder the grounder used for resolving atomIds
+	 * @return the string representation of the NoGood.
+	 */
 	public String toStringReadable(Grounder grounder) {
 		String ret = "{";
 		for (int i = 0; i < literals.length; i++) {

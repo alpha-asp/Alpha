@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 
 import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 import static at.ac.tuwien.kr.alpha.MainTest.stream;
@@ -124,6 +125,34 @@ public class NaiveGrounderTest {
 		AnswerSet answerSet1 = solver.get();
 		AnswerSet answerSet2 = solver.get();
 		AnswerSet answerSet3 = solver.get();
+
+		HashSet<AnswerSet> obtainedAnswerSets = new HashSet<>();
+		obtainedAnswerSets.add(answerSet1);
+		obtainedAnswerSets.add(answerSet2);
+
+		// Construct first AnswerSet:
+		// { ChoiceOn(0), ChoiceOn(1), ChoiceOff(1), _R_(0, ), a }
+		AnswerSet as1 = AnswerSetUtil.constructAnswerSet(Arrays.asList(
+			new PredicateInstance(new BasicPredicate("ChoiceOn", 1), new Term[]{ConstantTerm.getConstantTerm("0")}),
+			new PredicateInstance(new BasicPredicate("ChoiceOn", 1), new Term[]{ConstantTerm.getConstantTerm("1")}),
+			new PredicateInstance(new BasicPredicate("ChoiceOff", 1), new Term[]{ConstantTerm.getConstantTerm("1")}),
+			new PredicateInstance(new BasicPredicate("_R_", 2), new Term[]{ConstantTerm.getConstantTerm("0"), ConstantTerm.getConstantTerm("")}),
+			new PredicateInstance(new BasicPredicate("a", 0), new Term[]{})
+		));
+		// { ChoiceOn(0), ChoiceOn(1), ChoiceOff(0), _R_(1, ), b }
+		AnswerSet as2 = AnswerSetUtil.constructAnswerSet(Arrays.asList(
+			new PredicateInstance(new BasicPredicate("ChoiceOn", 1), new Term[]{ConstantTerm.getConstantTerm("0")}),
+			new PredicateInstance(new BasicPredicate("ChoiceOn", 1), new Term[]{ConstantTerm.getConstantTerm("1")}),
+			new PredicateInstance(new BasicPredicate("ChoiceOff", 1), new Term[]{ConstantTerm.getConstantTerm("0")}),
+			new PredicateInstance(new BasicPredicate("_R_", 2), new Term[]{ConstantTerm.getConstantTerm("1"), ConstantTerm.getConstantTerm("")}),
+			new PredicateInstance(new BasicPredicate("b", 0), new Term[]{})
+		));
+		HashSet<AnswerSet> expectedAnswerSets = new HashSet<>();
+		expectedAnswerSets.add(as1);
+		expectedAnswerSets.add(as2);
+		assertTrue("First answer-set is not the expected.", AnswerSetUtil.areAnswerSetsEqual(answerSet1, as1));
+		assertTrue("Second answer-set is not the expected.", AnswerSetUtil.areAnswerSetsEqual(answerSet2, as2));
+		assertTrue("There must be two answer sets: { ChoiceOn(0), ChoiceOn(1), ChoiceOff(1), _R_(0, ), a } and { ChoiceOn(0), ChoiceOn(1), ChoiceOff(0), _R_(1, ), b }.", AnswerSetUtil.areSetsOfAnswerSetsEqual(expectedAnswerSets, obtainedAnswerSets));
 
 		// TODO: test depends on choice order of the employed solver.
 		// TODO: We need methods to check whether a correct set of answer-sets is returned!
