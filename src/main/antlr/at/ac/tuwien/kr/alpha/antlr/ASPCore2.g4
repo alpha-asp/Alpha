@@ -9,7 +9,7 @@ grammar ASPCore2;
 
 program : statements? query?;
 
-statements : statement statements?;
+statements : statement+;
 
 query : classical_literal QUERY_MARK;
 

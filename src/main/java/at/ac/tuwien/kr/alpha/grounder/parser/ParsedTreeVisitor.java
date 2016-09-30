@@ -75,12 +75,11 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 
 	@Override
 	public CommonParsedObject visitStatements(ASPCore2Parser.StatementsContext ctx) {
-		// statements : statement statements?;
+		// statements : statement+;
 		ListOfParsedObjects statementList = new ListOfParsedObjects();
-		CommonParsedObject statement = (CommonParsedObject) visit(ctx.statement());
-		statementList.objects.add(statement);
-		if (ctx.statements() != null) {
-			statementList.objects.addAll(((ListOfParsedObjects)visitStatements(ctx.statements())).objects);
+		for (ASPCore2Parser.StatementContext statementContext : ctx.statement()) {
+			CommonParsedObject statement = visit(statementContext);
+			statementList.objects.add(statement);
 		}
 		return statementList;
 	}
