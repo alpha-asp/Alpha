@@ -1,0 +1,46 @@
+package at.ac.tuwien.kr.alpha.common;
+
+import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+/**
+ * Copyright (c) 2016, the Alpha Team.
+ */
+public class TermTest {
+
+	@Test
+	public void testTermReferenceEquality() {
+		// Terms must have a unique representation so that reference comparison is sufficient to check
+		// whether two terms are equal.
+		ConstantTerm ta1 = ConstantTerm.getConstantTerm("a");
+		ConstantTerm ta2 = ConstantTerm.getConstantTerm("a");
+		assertTrue("Two instances of ConstantTerms for the same term symbol must be the same object", ta1 == ta2);
+
+		List<Term> termList = new LinkedList<>();
+		termList.add(ta1);
+		termList.add(ta2);
+		FunctionTerm ft1 = FunctionTerm.getFunctionTerm("f", termList);
+		List<Term> termList2 = new LinkedList<>();
+		termList2.add(ta1);
+		termList2.add(ta2);
+		FunctionTerm ft2 = FunctionTerm.getFunctionTerm("f", termList2);
+		assertTrue("Two instances of FunctionTerms for the same term symbol and equal term lists must be the same object", ft1 == ft2);
+	}
+
+	@Test
+	public void testTermVariableOccurrences() {
+		ConstantTerm ta = ConstantTerm.getConstantTerm("a");
+		VariableTerm tx = VariableTerm.getVariableTerm("X");
+		FunctionTerm tf = FunctionTerm.getFunctionTerm("f", Arrays.asList(new Term[] {ta, tx}));
+		List<VariableTerm> occurringVariables = tf.getOccurringVariables();
+
+		assertEquals("Variable occurring as subterm must be reported as occurring variable.", occurringVariables.get(0), tx);
+	}
+
+}
