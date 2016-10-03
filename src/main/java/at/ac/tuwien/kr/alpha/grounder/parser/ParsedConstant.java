@@ -9,4 +9,9 @@ public class ParsedConstant extends ParsedTerm {
 	enum TYPE {STRING, NUMBER, CONSTANT}
 
 	public TYPE type;
+
+	@Override
+	public String toString() {
+		return content;
+	}
 }

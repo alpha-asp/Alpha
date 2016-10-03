@@ -46,4 +46,9 @@ public class ReteGrounder extends AbstractGrounder {
 	public void forgetAssignment(int[] atomIds) {
 
 	}
+
+	@Override
+	public String atomIdToString(int atomId) {
+		return null;
+	}
 }

@@ -11,4 +11,14 @@ public class ParsedAtom extends CommonParsedObject{
 	public int arity;
 
 	public boolean isNegated;
+
+	@Override
+	public String toString() {
+		String ret = (isNegated ? " not " : "") + predicate + "(";
+		for (int i = 0; i < arity; i++) {
+			ret += (i == 0 ? "" : ", ") + terms.get(i);
+		}
+		ret += ")";
+		return ret;
+	}
 }

@@ -23,4 +23,29 @@ public class BasicPredicate implements Predicate {
 	public int getArity() {
 		return arity;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		BasicPredicate that = (BasicPredicate) o;
+
+		if (arity != that.arity) {
+			return false;
+		}
+		return predicateName.equals(that.predicateName);
+
+	}
+
+	@Override
+	public int hashCode() {
+		int result = predicateName.hashCode();
+		result = 31 * result + arity;
+		return result;
+	}
 }

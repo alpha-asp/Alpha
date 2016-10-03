@@ -58,6 +58,11 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
+	public String atomIdToString(int atomId) {
+		return Integer.toString(atomId);
+	}
+
+	@Override
 	public AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, int[] trueAtoms) {
 		// Note: This grounder only deals with 0-ary predicates, i.e., every atom is a predicate and there is
 		// 	 only one predicate instance representing 0 terms.
@@ -73,20 +78,12 @@ public class DummyGrounder implements Grounder {
 
 		answerSet.setPredicateList(trueAtomPredicates);
 
-
-		// Add the 0-ary instance (it is the only one for this grounder)
-		HashMap<Integer, String> termIdStringMap = new HashMap<>();
-		termIdStringMap.put(0, "");
-		answerSet.setTermIdStringMap(termIdStringMap);
-
 		// Add the atom instances
 		HashMap<Predicate, ArrayList<PredicateInstance>> predicateInstances = new HashMap<>();
 		for (Predicate trueAtomPredicate : trueAtomPredicates) {
-			PredicateInstance predicateInstance = new PredicateInstance();
-			predicateInstance.termList = new LinkedList<>();
-			predicateInstance.predicate = trueAtomPredicate;
+			PredicateInstance internalPredicateInstance = new PredicateInstance(trueAtomPredicate, new Term[0]);
 			ArrayList<PredicateInstance> instanceList = new ArrayList<>();
-			instanceList.add(predicateInstance);
+			instanceList.add(internalPredicateInstance);
 			predicateInstances.put(trueAtomPredicate, instanceList);
 		}
 		answerSet.setPredicateInstances(predicateInstances);

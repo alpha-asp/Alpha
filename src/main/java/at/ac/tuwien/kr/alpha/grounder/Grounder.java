@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -25,4 +25,6 @@ public interface Grounder {
 	void forgetAssignment(int[] atomIds);
 
 	// int[] getObsoleteAtomIds()
+
+	String atomIdToString(int atomId);
 }

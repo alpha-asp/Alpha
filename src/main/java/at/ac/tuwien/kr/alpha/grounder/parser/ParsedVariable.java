@@ -6,4 +6,9 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 public class ParsedVariable extends ParsedTerm {
 	public String variableName;
 	public boolean isAnonymous;
+
+	@Override
+	public String toString() {
+		return variableName;
+	}
 }

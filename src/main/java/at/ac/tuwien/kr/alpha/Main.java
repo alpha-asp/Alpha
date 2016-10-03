@@ -62,15 +62,21 @@ public class Main {
 		options.addOption(helpOption);
 
 		Option grounderOption = new Option("g", OPT_GROUNDER, false, "name of the grounder implementation to use");
+		grounderOption.setArgs(1);
+		grounderOption.setArgName("grounder");
 		options.addOption(grounderOption);
 
 		Option solverOption = new Option("s", OPT_SOLVER, false, "name of the solver implementation to use");
+		solverOption.setArgs(1);
+		solverOption.setArgName("solver");
 		options.addOption(solverOption);
 
 		try {
 			commandLine = new DefaultParser().parse(options, args);
 		} catch (ParseException e) {
 			System.err.println(e.getMessage());
+			HelpFormatter formatter = new HelpFormatter();
+			formatter.printHelp("java -jar alpha.jar\njava -jar alpha_bundled.jar", options);
 			System.exit(1);
 			return;
 		}
@@ -79,7 +85,7 @@ public class Main {
 			HelpFormatter formatter = new HelpFormatter();
 			// TODO(flowlo): This is quite optimistic. How do we know that the program
 			// really was invoked as "java -jar ..."?
-			formatter.printHelp("java -jar alpha.jar", options);
+			formatter.printHelp("java -jar alpha.jar OR java -jar alpha_bundled.jar", options);
 			System.exit(0);
 			return;
 		}
@@ -109,7 +115,6 @@ public class Main {
 		// Apply program transformations/rewritings (currently none).
 		IdentityProgramTransformation programTransformation = new IdentityProgramTransformation();
 		ParsedProgram transformedProgram = programTransformation.transform(program);
-
 		Grounder grounder = GrounderFactory.getInstance(
 			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram
 		);
@@ -133,7 +138,7 @@ public class Main {
 		System.exit(1);
 	}
 
-	static ParsedProgram parseVisit(InputStream is) throws IOException {
+	public static ParsedProgram parseVisit(InputStream is) throws IOException {
 		final ASPCore2Parser parser = new ASPCore2Parser(
 			new CommonTokenStream(
 				new ASPCore2Lexer(
