@@ -52,7 +52,7 @@ public class NoGoodStoreTest {
 		store.add(headFirst(-1, 2));
 		store.propagate();
 
-			assertEquals(null, assignment.get(1));
+		assertEquals(null, assignment.get(1));
 	}
 
 	@Test
@@ -87,6 +87,16 @@ public class NoGoodStoreTest {
 	}
 
 	@Test
+	public void propagateBinaryTrue() {
+		assignment.assign(2, TRUE, DECISION_LEVEL);
+
+		store.add(headFirst(-1, 2));
+		store.propagate();
+
+		assertEquals(TRUE, assignment.get(1));
+	}
+
+	@Test
 	public void propagateBinaryMBTAfterAssignment() {
 		store.add(headFirst(-1, 2));
 		store.propagate();
@@ -95,6 +105,15 @@ public class NoGoodStoreTest {
 		store.propagate();
 
 		assertEquals(MBT, assignment.get(1));
+	}
+
+	@Test
+	public void propagateBinaryTrueAfterAssignment() {
+		store.add(headFirst(-1, 2));
+		store.assign(2, TRUE);
+		store.propagate();
+
+		assertEquals(TRUE, assignment.get(1));
 	}
 
 	@Test
@@ -134,6 +153,43 @@ public class NoGoodStoreTest {
 		store.propagate();
 
 		assertEquals(TRUE, assignment.get(1));
+	}
+
+	@Test
+	public void propagateNaryFalse() {
+		assignment.assign(2, FALSE, DECISION_LEVEL);
+		assignment.assign(3, FALSE, DECISION_LEVEL);
+
+		store.add(new NoGood(new int[]{-3, -2, 1}, 2));
+		store.propagate();
+
+		assertEquals(FALSE, assignment.get(1));
+	}
+
+	@Test
+	public void addFullyAssignedBinary() {
+		assignment.assign(2, TRUE, DECISION_LEVEL);
+		assignment.assign(3, TRUE, DECISION_LEVEL);
+
+		store.add(headFirst(-2, 3));
+		store.propagate();
+
+		assertEquals(TRUE, assignment.get(2));
+		assertEquals(TRUE, assignment.get(3));
+	}
+
+	@Test
+	public void addFullyAssignedNary() {
+		assignment.assign(2, TRUE, DECISION_LEVEL);
+		assignment.assign(3, TRUE, DECISION_LEVEL);
+		assignment.assign(4, TRUE, DECISION_LEVEL);
+
+		store.add(headFirst(-2, 3, 4));
+		store.propagate();
+
+		assertEquals(TRUE, assignment.get(2));
+		assertEquals(TRUE, assignment.get(3));
+		assertEquals(TRUE, assignment.get(4));
 	}
 
 	@Test
@@ -181,14 +237,36 @@ public class NoGoodStoreTest {
 	}
 
 	@Test
-	public void propagateNaryMBTTwiceReordered() {
+	public void moveThirdPointer() {
 		store.add(headFirst(-1, 2, 3));
+		store.propagate();
+		store.add(fact(-2));
+		store.propagate();
+		assertEquals(null, assignment.get(1));
+
+		System.out.println("NOW FOR THE REEL SHIZ");
+
+		store.add(fact(-3));
+		store.propagate();
+		assertEquals(TRUE, assignment.get(1));
+	}
+
+	@Test
+	public void propagateNaryMBTTwiceReordered() {
+		// From 2 and 3 follows 1.
+		store.add(headFirst(-1, 2, 3));
+		// From -4 and 1 follows 5.
 		store.add(headFirst(-5, -4, 1));
 
+		// Assign 4 to false (first premise for 5).
 		store.assign(4, FALSE);
+
+		// Assign 3 and 2 to MBT (premises for 1).
 		store.assign(3, MBT);
 		store.assign(2, MBT);
 
+		// Now 1 must follow from 2 and 3,
+		// and 5 must follow from -4 and 1.
 		store.propagate();
 
 		assertEquals(MBT, assignment.get(1));
@@ -206,5 +284,13 @@ public class NoGoodStoreTest {
 		assignment.assign(1, TRUE, DECISION_LEVEL);
 		assignment.assign(2, TRUE, DECISION_LEVEL);
 		store.add(new NoGood(1, 2));
+	}
+
+	@Test(expected = ConflictingNoGoodException.class)
+	public void conflictingNary() {
+		assignment.assign(1, TRUE, DECISION_LEVEL);
+		assignment.assign(2, TRUE, DECISION_LEVEL);
+		assignment.assign(3, TRUE, DECISION_LEVEL);
+		store.add(new NoGood(1, 2, 3));
 	}
 }

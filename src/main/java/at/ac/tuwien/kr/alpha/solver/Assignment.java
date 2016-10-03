@@ -86,4 +86,22 @@ public class Assignment<V extends Truth> {
 		final V v = get(atomOf(literal));
 		return v != null && isNegated(literal) == v.isNegative();
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("[ ");
+		for (Map.Entry<Integer, AtomAssignment<V>> item : assignment.entrySet()) {
+			sb.append(item.getKey());
+			sb.append(" := ");
+			sb.append(item.getValue().getValue().toString());
+			sb.append("(");
+			sb.append(item.getValue().getDecisionLevel());
+			sb.append("), ");
+		}
+		sb.append("]");
+
+		return sb.toString();
+	}
 }

@@ -9,7 +9,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static java.lang.Math.abs;
 
 public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
-	private final int[] literals;
+	protected final int[] literals;
 	private final int head;
 
 	public NoGood(int... literals) {
@@ -45,9 +45,11 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 		this.head = noGood.head;
 	}
 
-	private static boolean isSorted(int[] a) {
+	private static boolean isSortedAndDistinct(int[] a) {
 		for (int i = 0; i < a.length - 1; i++) {
-			if (a[i] > a[i + 1]) {
+			// Note that checking a[i] >= a[i + 1] is not sufficient
+			// as we are looking for duplicate _atoms_ not _literals_.
+			if (a[i] > a[i + 1] || atomOf(a[i]) == atomOf(a[i + 1])) {
 				return false;
 			}
 		}
@@ -58,6 +60,9 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 		return literals.length;
 	}
 
+	/**
+	 * A shorthand for <code>Literals.atomOf(getLiteral(...))</code>
+	 */
 	public int getAtom(int index) {
 		return atomOf(getLiteral(index));
 	}
@@ -66,11 +71,15 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 		return literals[index];
 	}
 
-	public void setLiteral(int index, int value) {
-		literals[index] = value;
-	}
-
+	/**
+	 * Returns the index of the head literal, if present.
+	 * @throws IllegalStateException if there is no head.
+	 * @return the index of the head literal.
+	 */
 	public int getHead() {
+		if (head < 0) {
+			throw new IllegalStateException("NoGood has no head literal.");
+		}
 		return head;
 	}
 
@@ -148,12 +157,26 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 
 	@Override
 	public String toString() {
-		String ret = "{";
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("{ ");
+
 		for (int i = 0; i < literals.length; i++) {
-			ret += (i == 0 ? "" : ", ") + literals[i];
+			sb.append(literals[i]);
+			sb.append(" ");
 		}
-		ret += "}[" + head + "]";
-		return ret;
+
+		sb.append("}");
+
+		if (head == -1) {
+			return sb.toString();
+		}
+
+		sb.append("[");
+		sb.append(head);
+		sb.append("]");
+
+		return sb.toString();
 	}
 
 	/**
