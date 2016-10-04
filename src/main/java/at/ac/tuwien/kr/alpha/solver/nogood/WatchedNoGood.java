@@ -1,7 +1,6 @@
 package at.ac.tuwien.kr.alpha.solver.nogood;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
 
 public class WatchedNoGood extends NoGood {
 	protected int a;

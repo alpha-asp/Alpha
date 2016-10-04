@@ -1,10 +1,10 @@
 package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
+import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.grounder.GrounderChoiceTest;
-import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.solver.Solver;
+import at.ac.tuwien.kr.alpha.solver.NaiveSolver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -61,12 +61,12 @@ public class MainTest {
 	@Test
 	public void testDummyGrounderAndSolver() {
 
-		Grounder grounder = GrounderFactory.getInstance("dummy", null);
-		Solver solver = SolverFactory.getInstance("dummy", grounder, p -> true);
+		Grounder grounder = new DummyGrounder();
+		NaiveSolver solver = (NaiveSolver)SolverFactory.getInstance("naive", grounder, p -> true);
 
 		int answerSetCount = 0;
 		while (true) {
-			AnswerSet as = solver.get();
+			AnswerSet as = solver.computeNextAnswerSet();
 			if (as == null) {
 				break;
 			}
@@ -81,12 +81,12 @@ public class MainTest {
 	@Test
 	public void testGrounderChoiceAndSolver() {
 
-		Grounder grounder = new GrounderChoiceTest();
-		Solver solver = SolverFactory.getInstance("dummy", grounder, p -> true);
+		Grounder grounder = new ChoiceGrounder();
+		NaiveSolver solver = (NaiveSolver)SolverFactory.getInstance("naive", grounder, p -> true);
 
 		int answerSetCount = 0;
 		while (true) {
-			AnswerSet as = solver.get();
+			AnswerSet as = solver.computeNextAnswerSet();
 			if (as == null) {
 				break;
 			}
@@ -102,7 +102,7 @@ public class MainTest {
 	@Test
 	@Ignore
 	public void testLargeInputProgram() {
-		main(new String[]{"-g", "naive", "-s", "dummy", "-n", "10", "-i", "./benchmarks/omiga/omiga-testcases/locstrat/locstrat-200.txt"});
+		main(new String[]{"-g", "naive", "-s", "naive", "-n", "10", "-i", "./benchmarks/omiga/omiga-testcases/locstrat/locstrat-200.txt"});
 	}
 
 }

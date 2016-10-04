@@ -1,6 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.NoGood;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstraint;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFact;
@@ -126,7 +125,7 @@ public class NaiveGrounder extends AbstractGrounder {
 		HashMap<Predicate, ArrayList<PredicateInstance>> predicateInstances = new HashMap<>();
 		HashSet<Predicate> knownPredicates = new HashSet<>();
 
-		// Iterate over all true atomIds, get instances from atomStore and add them if not filtered.
+		// Iterate over all true atomIds, computeNextAnswerSet instances from atomStore and add them if not filtered.
 		for (int trueAtom : trueAtoms) {
 			PredicateInstance predicateInstance = atomStore.getPredicateInstance(new AtomId(trueAtom));
 			// Skip filtered predicates.

@@ -1,20 +1,21 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.NoGood;
 import at.ac.tuwien.kr.alpha.common.GlobalSettings;
+import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 import static java.lang.Math.abs;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class DummySolver extends AbstractSolver {
-	public DummySolver(Grounder grounder) {
+public class NaiveSolver extends AbstractSolver {
+	public NaiveSolver(Grounder grounder) {
 		super(grounder, p -> true);
 	}
 
@@ -29,8 +30,7 @@ public class DummySolver extends AbstractSolver {
 
 	boolean doInit = true;
 
-	@Override
-	public AnswerSet get() {
+	public AnswerSet computeNextAnswerSet() {
 		// Get basic rules and facts from grounder
 		if (doInit) {
 			obtainNoGoodsFromGrounder();
@@ -404,5 +404,16 @@ public class DummySolver extends AbstractSolver {
 			}
 		}
 		return false;
+	}
+
+	@Override
+	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
+		AnswerSet nextAnswerSet = computeNextAnswerSet();
+		if (nextAnswerSet != null) {
+			action.accept(nextAnswerSet);
+			return true;
+		} else {
+			return false;
+		}
 	}
 }

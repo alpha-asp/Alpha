@@ -1,9 +1,12 @@
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.grounder.Grounder;
+
 import java.util.Arrays;
 import java.util.Iterator;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static java.lang.Math.abs;
 
 public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	private final int[] literals;
@@ -15,7 +18,8 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 
 	public NoGood(int[] literals, int head) {
 		if (!isSorted(literals)) {
-			throw new IllegalArgumentException("Literals are not sorted");
+			Arrays.sort(literals);
+			//throw new IllegalArgumentException("Literals are not sorted");
 		}
 
 		this.literals = literals;
@@ -126,5 +130,29 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 
 	public static NoGood fact(int literal) {
 		return headFirst(literal);
+	}
+
+	@Override
+	public String toString() {
+		String ret = "{";
+		for (int i = 0; i < literals.length; i++) {
+			ret += (i == 0 ? "" : ", ") + literals[i];
+		}
+		ret += "}[" + head + "]";
+		return ret;
+	}
+
+	/**
+	 * Prints the NoGood such that literals are structured atoms instead of integers.
+	 * @param grounder the grounder used for resolving atomIds
+	 * @return the string representation of the NoGood.
+	 */
+	public String toStringReadable(Grounder grounder) {
+		String ret = "{";
+		for (int i = 0; i < literals.length; i++) {
+			ret += (i == 0 ? "" : ", ") + (literals[i] < 0 ? "-" : "+") + grounder.atomIdToString(abs(literals[i]));
+		}
+		ret += "}[" + head + "]";
+		return ret;
 	}
 }

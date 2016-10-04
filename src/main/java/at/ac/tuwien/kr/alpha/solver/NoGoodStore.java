@@ -193,7 +193,7 @@ class NoGoodStore {
 				}
 			}
 
-			if (assignment.get(noGood.getAtom(max)) != null) {
+			if (assignment.computeNextAnswerSet(noGood.getAtom(max)) != null) {
 				//
 				continue;
 			}

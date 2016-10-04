@@ -2,8 +2,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
-import at.ac.tuwien.kr.alpha.solver.DummySolver;
-import at.ac.tuwien.kr.alpha.solver.Solver;
+import at.ac.tuwien.kr.alpha.solver.NaiveSolver;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -57,9 +56,9 @@ public class NaiveGrounderTest {
 		String testProgram = "p(a). p(b). foo(13). foo(16). q(a). q(c).";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
 		Grounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = new DummySolver(grounder);
-		AnswerSet answerSet = solver.get();
-		AnswerSet noAnswerSet = solver.get();
+		NaiveSolver solver = new NaiveSolver(grounder);
+		AnswerSet answerSet = solver.computeNextAnswerSet();
+		AnswerSet noAnswerSet = solver.computeNextAnswerSet();
 
 		assertTrue("Test program must yield one answer set (no answer-set reported)", answerSet != null);
 		assertEquals("Program must yield answer-set: { q(a), q(c), p(a), p(b), foo(13), foo(16) }", "{ q(a), q(c), p(a), p(b), foo(13), foo(16) }", answerSet.toString());
@@ -72,9 +71,9 @@ public class NaiveGrounderTest {
 		String testProgram = "p(a). p(b). r(X) :- p(X).";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
 		Grounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = new DummySolver(grounder);
-		AnswerSet answerSet = solver.get();
-		AnswerSet noAnswerSet = solver.get();
+		NaiveSolver solver = new NaiveSolver(grounder);
+		AnswerSet answerSet = solver.computeNextAnswerSet();
+		AnswerSet noAnswerSet = solver.computeNextAnswerSet();
 
 		assertTrue("Test program must yield one answer set (no answer-set reported)", answerSet != null);
 		assertEquals("Program must yield answer-set: { p(a), p(b), _R_(0, _X:a), _R_(0, _X:b), r(a), r(b) }", "{ p(a), p(b), _R_(0, _X:a), _R_(0, _X:b), r(a), r(b) }", answerSet.toString());
@@ -90,9 +89,9 @@ public class NaiveGrounderTest {
 			"q(X) :-  p(X), p(1).";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
 		Grounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = new DummySolver(grounder);
-		AnswerSet answerSet = solver.get();
-		AnswerSet noAnswerSet = solver.get();
+		NaiveSolver solver = new NaiveSolver(grounder);
+		AnswerSet answerSet = solver.computeNextAnswerSet();
+		AnswerSet noAnswerSet = solver.computeNextAnswerSet();
 
 		assertTrue("Test program must yield one answer set (no answer-set reported)", answerSet != null);
 		assertEquals("Program must yield answer-set: { q(1), q(2), p(1), p(2), _R_(0, _X:1), _R_(0, _X:2) }", "{ q(1), q(2), p(1), p(2), _R_(0, _X:1), _R_(0, _X:2) }", answerSet.toString());
@@ -105,9 +104,9 @@ public class NaiveGrounderTest {
 		String testProgram = "a. p(X) :- b, r(X).";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
 		Grounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = new DummySolver(grounder);
-		AnswerSet answerSet = solver.get();
-		AnswerSet noAnswerSet = solver.get();
+		NaiveSolver solver = new NaiveSolver(grounder);
+		AnswerSet answerSet = solver.computeNextAnswerSet();
+		AnswerSet noAnswerSet = solver.computeNextAnswerSet();
 
 		assertTrue("Test program must yield one answer set (no answer-set reported)", answerSet != null);
 		assertEquals("Program must yield answer-set: { a }", "{ a }", answerSet.toString());
@@ -121,10 +120,10 @@ public class NaiveGrounderTest {
 		String testProgram = "a :- not b. b :- not a.";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
 		Grounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = new DummySolver(grounder);
-		AnswerSet answerSet1 = solver.get();
-		AnswerSet answerSet2 = solver.get();
-		AnswerSet answerSet3 = solver.get();
+		NaiveSolver solver = new NaiveSolver(grounder);
+		AnswerSet answerSet1 = solver.computeNextAnswerSet();
+		AnswerSet answerSet2 = solver.computeNextAnswerSet();
+		AnswerSet answerSet3 = solver.computeNextAnswerSet();
 
 		HashSet<AnswerSet> obtainedAnswerSets = new HashSet<>();
 		obtainedAnswerSets.add(answerSet1);
@@ -173,16 +172,16 @@ public class NaiveGrounderTest {
 			"q(X) :- dom(X), not p(X).";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = new DummySolver(grounder);
-		AnswerSet answerSet1 = solver.get();
-		AnswerSet answerSet2 = solver.get();
-		AnswerSet answerSet3 = solver.get();
-		AnswerSet answerSet4 = solver.get();
-		AnswerSet answerSet5 = solver.get();
-		AnswerSet answerSet6 = solver.get();
-		AnswerSet answerSet7 = solver.get();
-		AnswerSet answerSet8 = solver.get();
-		AnswerSet answerSet9 = solver.get();
+		NaiveSolver solver = new NaiveSolver(grounder);
+		AnswerSet answerSet1 = solver.computeNextAnswerSet();
+		AnswerSet answerSet2 = solver.computeNextAnswerSet();
+		AnswerSet answerSet3 = solver.computeNextAnswerSet();
+		AnswerSet answerSet4 = solver.computeNextAnswerSet();
+		AnswerSet answerSet5 = solver.computeNextAnswerSet();
+		AnswerSet answerSet6 = solver.computeNextAnswerSet();
+		AnswerSet answerSet7 = solver.computeNextAnswerSet();
+		AnswerSet answerSet8 = solver.computeNextAnswerSet();
+		AnswerSet answerSet9 = solver.computeNextAnswerSet();
 
 
 		String textAS1 = "{ dom(1), dom(2), dom(3), q(1), q(2), p(3), ChoiceOn(0), ChoiceOn(1), ChoiceOn(2), ChoiceOn(3), ChoiceOn(4), ChoiceOn(5), ChoiceOff(0), ChoiceOff(1), ChoiceOff(5), _R_(0, _X:3), _R_(1, _X:1), _R_(1, _X:2) }";
