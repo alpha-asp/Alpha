@@ -17,13 +17,27 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	}
 
 	public NoGood(int[] literals, int head) {
-		if (!isSorted(literals)) {
-			Arrays.sort(literals);
-			//throw new IllegalArgumentException("Literals are not sorted");
-		}
+		int headLiteral = head != -1 ? literals[head] : 0;
+		Arrays.sort(literals);	// HINT: this might decrease performance if NoGoods are mostly small.
 
-		this.literals = literals;
-		this.head = head;
+		// Remove duplicates and find position head was moved to in one pass.
+		int headPos = (head != -1 && headLiteral == literals[0]) ? 0 : -1;	// check for head literal at position 0.
+		int shift = 0;
+		for (int i = 1; i < literals.length; i++) {
+			if (head != -1 && headPos == -1 && literals[i] == headLiteral) {	// check for head literal at position i
+				headPos = i - shift;
+			}
+			if (literals[i - 1] == literals[i]) {	// check for duplicate
+				shift++;
+			}
+			literals[i - shift] = literals[i];	// Remove duplicates in place by shifting remaining literals.
+		}
+		this.head = headPos;
+		if (shift > 0) {
+			this.literals = Arrays.copyOf(literals, literals.length - shift);	// copy-shrink array
+		} else  {
+			this.literals = literals;
+		}
 	}
 
 	public NoGood(NoGood noGood) {
