@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Term;
 
 import java.util.Arrays;
@@ -12,7 +13,7 @@ import java.util.Arrays;
 public class Instance {
 	public final Term[] terms;
 
-	public Instance(Term[] terms) {
+	public Instance(Term... terms) {
 		this.terms = terms;
 	}
 
@@ -21,6 +22,7 @@ public class Instance {
 		if (this == o) {
 			return true;
 		}
+
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
@@ -28,7 +30,6 @@ public class Instance {
 		Instance instance = (Instance) o;
 
 		return Arrays.equals(terms, instance.terms);
-
 	}
 
 	@Override
@@ -38,11 +39,9 @@ public class Instance {
 
 	@Override
 	public String toString() {
-		String ret = "(";
-		for (int i = 0; i < terms.length; i++) {
-			ret += (i == 0 ? "" : ", ") + terms[i];
-		}
-		ret += ")";
-		return ret;
+		StringBuilder sb = new StringBuilder("(");
+		Util.appendDelimited(sb, Arrays.asList(terms));
+		sb.append(")");
+		return sb.toString();
 	}
 }

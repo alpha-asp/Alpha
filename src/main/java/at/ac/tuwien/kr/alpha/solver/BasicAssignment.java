@@ -48,7 +48,9 @@ public class BasicAssignment implements Assignment {
 			throw new IllegalArgumentException("value must not be null");
 		}
 
-		if (isAssigned(atom)) {
+		ThriceTruth currentAssignment = getTruth(atom);
+
+		if (currentAssignment != null && currentAssignment != value) {
 			throw new IllegalArgumentException("already assigned");
 		}
 

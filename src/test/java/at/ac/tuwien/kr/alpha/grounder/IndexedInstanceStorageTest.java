@@ -24,9 +24,8 @@ public class IndexedInstanceStorageTest {
 		ConstantTerm t4 = ConstantTerm.getInstance("4");
 		ConstantTerm t5 = ConstantTerm.getInstance("5");
 
-
-		Instance badInst1 = new Instance(new Term[]{t1, t1, t0});
-		Instance badInst2 = new Instance(new Term[]{t5, t5, t5, t5, t5 });
+		Instance badInst1 = new Instance(t1, t1, t0);
+		Instance badInst2 = new Instance(t5, t5, t5, t5, t5);
 
 		try {
 			storage.addInstance(badInst1);
@@ -42,11 +41,11 @@ public class IndexedInstanceStorageTest {
 			assertTrue(e.getMessage().startsWith("Instance length does not match arity of IndexedInstanceStorage"));
 		}
 
-		Instance inst1 = new Instance(new Term[]{t1, t1, t1, t1});
-		Instance inst2 = new Instance(new Term[]{t1, t2, t3, t4});
-		Instance inst3 = new Instance(new Term[]{t4, t3, t3, t5});
-		Instance inst4 = new Instance(new Term[]{t1, t2, t1, t1});
-		Instance inst5 = new Instance(new Term[]{t5, t4, t3, t2});
+		Instance inst1 = new Instance(t1, t1, t1, t1);
+		Instance inst2 = new Instance(t1, t2, t3, t4);
+		Instance inst3 = new Instance(t4, t3, t3, t5);
+		Instance inst4 = new Instance(t1, t2, t1, t1);
+		Instance inst5 = new Instance(t5, t4, t3, t2);
 
 		storage.addInstance(inst1);
 		storage.addInstance(inst2);
@@ -56,10 +55,10 @@ public class IndexedInstanceStorageTest {
 
 		List<Instance> matching3 = storage.getInstancesMatchingAtPosition(t3, 2);
 		assertEquals(matching3.size(), 3);
-		assertTrue(matching3.contains(new Instance(new Term[]{t1, t2, t3, t4})));
-		assertTrue(matching3.contains(new Instance(new Term[]{t4, t3, t3, t5})));
-		assertTrue(matching3.contains(new Instance(new Term[]{t5, t4, t3, t2})));
-		assertFalse(matching3.contains(new Instance(new Term[]{t1, t1, t1, t1})));
+		assertTrue(matching3.contains(new Instance(t1, t2, t3, t4)));
+		assertTrue(matching3.contains(new Instance(t4, t3, t3, t5)));
+		assertTrue(matching3.contains(new Instance(t5, t4, t3, t2)));
+		assertFalse(matching3.contains(new Instance(t1, t1, t1, t1)));
 
 		List<Instance> matching1 = storage.getInstancesMatchingAtPosition(t2, 0);
 		assertEquals(matching1.size(), 0);

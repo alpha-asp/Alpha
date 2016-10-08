@@ -22,7 +22,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * Main entry point for Alpha.
@@ -124,7 +123,7 @@ public class Main {
 			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, p -> true
 		);
 
-		Stream<AnswerSet> stream = StreamSupport.stream(solver.spliterator(), false);
+		Stream<AnswerSet> stream = solver.stream();
 
 		if (limit > 0) {
 			stream = stream.limit(limit);

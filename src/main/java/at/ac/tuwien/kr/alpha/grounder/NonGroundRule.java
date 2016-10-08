@@ -28,7 +28,7 @@ public class NonGroundRule {
 		this.ruleId = ruleId;
 	}
 
-	static final IntIdGenerator RULE_ID_GENERATOR = new IntIdGenerator();
+	public static final IntIdGenerator RULE_ID_GENERATOR = new IntIdGenerator();
 
 	public static NonGroundRule constructNonGroundRule(ParsedRule parsedRule) {
 		NonGroundRule nonGroundRule = new NonGroundRule(RULE_ID_GENERATOR.getNextId());

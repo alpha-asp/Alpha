@@ -54,8 +54,6 @@ public class NoGoodTest {
 		assertEquals(1, ng.getLiteral(1));
 		assertEquals(3, ng.getLiteral(2));
 
-
-
 		NoGood ng2 = new NoGood(new int[]{3, 3, -6, -1, 2, 5, 5, -6, 7}, 4);
 		assertEquals("Duplicate entries must be removed.", 6, ng2.size());
 		assertEquals("Head pointer must be moved to correct position.", 2, ng2.getHead());

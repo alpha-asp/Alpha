@@ -298,7 +298,13 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		final Set<Integer> binaries = w.b.get(TRUE);
 		for (Integer literal : binaries) {
 			propagated = true;
-			assign(literal, isNegated(literal) ? FALSE : TRUE);
+			ThriceTruth currentAssignment = assignment.getTruth(atomOf(literal));
+
+			if (isNegated(literal) && currentAssignment == null) {
+				assign(literal, FALSE);
+			} else if (!isNegated(literal) && (MBT.equals(currentAssignment) || currentAssignment == null)) {
+				assign(literal, TRUE);
+			}
 		}
 
 		final Set<WatchedNoGood> naries = w.n.get(TRUE);
