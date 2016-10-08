@@ -7,20 +7,19 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import java.util.function.Consumer;
 
 public class LeutgebSolver extends AbstractSolver {
-	private final Assignment<ThriceTruth> assignment;
-	private final NoGoodStore store;
+	private final BasicAssignment assignment;
+	private final BasicNoGoodStore store;
 	private int decisionLevel;
 
 	LeutgebSolver(Grounder grounder, java.util.function.Predicate<Predicate> filter) {
 		super(grounder, filter);
-		assignment = new Assignment<>();
-		store = new NoGoodStore(assignment);
+		assignment = new BasicAssignment();
+		store = new BasicNoGoodStore(assignment);
 		decisionLevel = 0;
 	}
 
 	@Override
 	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
-		grounder.getNoGoods().values().parallelStream().forEach(store::add);
 		store.setDecisionLevel(decisionLevel);
 		store.propagate();
 		return false;

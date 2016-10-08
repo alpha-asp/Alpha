@@ -8,6 +8,7 @@ public final class SolverFactory {
 		switch (name.toLowerCase()) {
 			case "leutgeb": return new LeutgebSolver(grounder, filter);
 			case "naive" : return new NaiveSolver(grounder);
+			case "default": return new DefaultSolver(grounder);
 		}
 		throw new IllegalArgumentException("Unknown solver requested.");
 	}

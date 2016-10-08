@@ -42,7 +42,6 @@ public class PredicateInstance {
 		}
 
 		return Arrays.equals(termList, that.termList);
-
 	}
 
 	@Override

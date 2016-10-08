@@ -1,107 +1,73 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.Literals.isNegated;
-import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 
-public class Assignment<V extends Truth> {
-	private static final Log LOG = LogFactory.getLog(Assignment.class);
+public interface Assignment {
+	/**
+	 * Delete all information stored in the assignment.
+	 */
+	void clear();
 
-	private final Map<Integer, AtomAssignment<V>> assignment;
+	/**
+	 * Backtracks to the indicated decision level. Every assignment on a higher decisionLevel is removed.
+	 * All assignments below (or equal to) decisionLevel are kept. Note that for atoms being TRUE this may require
+	 * setting the assigned value to MBT during backtracking.
+	 * @param decisionLevel the decision level to backtrack to.
+	 */
+	void backtrack(int decisionLevel);
 
-	public Assignment() {
-		this.assignment = new HashMap<>();
-	}
+	/**
+	 * Reports if the current assignment is free of must-be-true values.
+	 * @return false iff the current assignment contains only TRUE and FALSE as assigned values.
+	 */
+	boolean containsMBT();
 
-	void clear() {
-		assignment.clear();
-	}
+	/**
+	 * Assigns the given atom the given truth value at the current decision level.
+	 * @param atom the atom to assign.
+	 * @param value the truth value to assign.
+	 */
+	void assign(int atom, ThriceTruth value, int decisionLevel);
 
-	public void assign(int atom, V value, int decisionLevel) {
-		if (!isAtom(atom)) {
-			throw new IllegalArgumentException("atom must be positive");
-		}
-
-		if (value == null) {
-			throw new IllegalArgumentException("value must not be null");
-		}
-
-		final AtomAssignment<V> oldAssignment = assignment.get(atom);
-
-		if (oldAssignment != null) {
-			LOG.debug("Changing assignment of atom " + atom + " from " + oldAssignment.getValue() + " to " + value);
-		} else {
-			LOG.debug("Assigning previously unassigned atom " + atom + " to " + value);
-		}
-
-		assignment.put(atom, new AtomAssignment<V>(value, decisionLevel));
-	}
-
-	public boolean isAssigned(int atom) {
-		return assignment.containsKey(atom);
-	}
-
-	public int toPriority(int atom) {
-		final AtomAssignment atomAssignment = assignment.get(atom);
-
-		if (atomAssignment == null) {
-			return Integer.MAX_VALUE;
-		}
-		return atomAssignment.getDecisionLevel();
-	}
-
-	public V get(int atom) {
-		AtomAssignment<V> atomAssignment = assignment.get(atom);
-		if (atomAssignment != null) {
-			return atomAssignment.getValue();
+	/**
+	 * Returns the truth value assigned to an atom.
+	 * @param atom the id of the atom.
+	 * @return the truth value; null if atomId is not assigned.
+	 */
+	default ThriceTruth getTruth(int atom) {
+		final Entry entry = get(atom);
+		if (entry != null) {
+			return entry.getTruth();
 		}
 		return null;
 	}
 
-	private static final class AtomAssignment<V> {
-		private final V value;
-		private final int decisionLevel;
+	/**
+	 * Returns all atomIds that are assigned TRUE in the current assignment.
+	 * @return a list of all true assigned atoms.
+	 */
+	Set<Integer> getTrueAssignments();
 
-		AtomAssignment(V value, int decisionLevel) {
-			this.value = value;
-			this.decisionLevel = decisionLevel;
-		}
+	Entry get(int atom);
 
-		V getValue() {
-			return value;
-		}
-
-		int getDecisionLevel() {
-			return decisionLevel;
-		}
+	interface Entry {
+		ThriceTruth getTruth();
+		int getDecisionLevel();
 	}
 
-	public boolean contains(int literal) {
-		final V v = get(atomOf(literal));
-		return v != null && isNegated(literal) == v.isNegative();
+	default boolean isAssigned(int atom) {
+		return get(atom) != null;
 	}
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-
-		sb.append("[ ");
-		for (Map.Entry<Integer, AtomAssignment<V>> item : assignment.entrySet()) {
-			sb.append(item.getKey());
-			sb.append(" := ");
-			sb.append(item.getValue().getValue().toString());
-			sb.append("(");
-			sb.append(item.getValue().getDecisionLevel());
-			sb.append("), ");
+	default boolean contains(int literal) {
+		final Entry entry = get(atomOf(literal));
+		if (entry == null) {
+			return false;
 		}
-		sb.append("]");
-
-		return sb.toString();
+		return isNegated(literal) == (FALSE.equals(getTruth(atomOf(literal))));
 	}
 }
