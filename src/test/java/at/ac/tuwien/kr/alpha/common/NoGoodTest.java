@@ -9,12 +9,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class NoGoodTest {
-	@Test(expected = IllegalArgumentException.class)
-	@Ignore
-	public void constructUnsorted() throws Exception {
-		new NoGood(2, 1);
-	}
-
 	@Test
 	public void iteration() throws Exception {
 		Iterator<Integer> i = new NoGood(1).iterator();

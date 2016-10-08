@@ -8,18 +8,16 @@ import java.util.List;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class VariableTerm extends Term implements Comparable<VariableTerm> {
-	public final String variableName;
+	private final String variableName;
 
-	private static HashMap<VariableTerm, VariableTerm> knownVariableTerms = new HashMap<>();
+	private static final HashMap<String, VariableTerm> VARIABLES = new HashMap<>();
 
 	private VariableTerm(String variableName) {
 		this.variableName = variableName;
 	}
 
-	public static VariableTerm getVariableTerm(String variableName) {
-		VariableTerm variableTerm = new VariableTerm(variableName);
-		knownVariableTerms.putIfAbsent(variableTerm, variableTerm);
-		return knownVariableTerms.get(variableTerm);
+	public static VariableTerm getInstance(String variableName) {
+		return VARIABLES.computeIfAbsent(variableName, VariableTerm::new);
 	}
 
 	@Override
@@ -51,7 +49,6 @@ public class VariableTerm extends Term implements Comparable<VariableTerm> {
 		VariableTerm that = (VariableTerm) o;
 
 		return variableName.equals(that.variableName);
-
 	}
 
 	@Override
@@ -69,5 +66,4 @@ public class VariableTerm extends Term implements Comparable<VariableTerm> {
 		}
 		return variableName.compareTo(o.variableName);
 	}
-
 }

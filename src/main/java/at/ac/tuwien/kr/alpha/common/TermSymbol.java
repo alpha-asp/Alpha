@@ -15,7 +15,7 @@ public class TermSymbol {
 		this.symbol = symbol;
 	}
 
-	public static TermSymbol getTermSymbol(String symbol) {
+	public static TermSymbol getInstance(String symbol) {
 		KNOWN_SYMBOLS.putIfAbsent(symbol, new TermSymbol(symbol));
 		return KNOWN_SYMBOLS.get(symbol);
 	}
@@ -36,7 +36,6 @@ public class TermSymbol {
 		TermSymbol that = (TermSymbol) o;
 
 		return symbol.equals(that.symbol);
-
 	}
 
 	@Override

@@ -7,8 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 import static at.ac.tuwien.kr.alpha.MainTest.stream;
@@ -30,25 +29,24 @@ public class NaiveGrounderTest {
 	public void unifyTermsSimpleBinding() throws Exception {
 		NaiveGrounder grounder = new NaiveGrounder(new ParsedProgram());
 		NaiveGrounder.VariableSubstitution variableSubstitution = grounder.new VariableSubstitution();
-		Term groundTerm = ConstantTerm.getConstantTerm("abc");
-		Term nongroundTerm = VariableTerm.getVariableTerm("Y");
+		Term groundTerm = ConstantTerm.getInstance("abc");
+		Term nongroundTerm = VariableTerm.getInstance("Y");
 		grounder.unifyTerms(nongroundTerm, groundTerm, variableSubstitution);
-		assertEquals("Variable Y must bind to constant term abc", variableSubstitution.substitution.get(VariableTerm.getVariableTerm("Y")), ConstantTerm.getConstantTerm("abc"));
+		assertEquals("Variable Y must bind to constant term abc", variableSubstitution.substitution.get(VariableTerm.getInstance("Y")), ConstantTerm.getInstance("abc"));
 	}
-
 
 	@Test
 	public void unifyTermsFunctionTermBinding() throws Exception {
 		NaiveGrounder grounder = new NaiveGrounder(new ParsedProgram());
 		NaiveGrounder.VariableSubstitution variableSubstitution = grounder.new VariableSubstitution();
-		variableSubstitution.substitution.put(VariableTerm.getVariableTerm("Z"), ConstantTerm.getConstantTerm("aa"));
-		FunctionTerm groundFunctionTerm = FunctionTerm.getFunctionTerm("f", Arrays.asList(new Term[]{ConstantTerm.getConstantTerm("bb"), ConstantTerm.getConstantTerm("cc")}));
+		variableSubstitution.substitution.put(VariableTerm.getInstance("Z"), ConstantTerm.getInstance("aa"));
+		FunctionTerm groundFunctionTerm = FunctionTerm.getFunctionTerm("f", Arrays.asList(new Term[]{ConstantTerm.getInstance("bb"), ConstantTerm.getInstance("cc")}));
 
-		Term nongroundFunctionTerm = FunctionTerm.getFunctionTerm("f", Arrays.asList(new Term[]{ConstantTerm.getConstantTerm("bb"), VariableTerm.getVariableTerm("X")}));
+		Term nongroundFunctionTerm = FunctionTerm.getFunctionTerm("f", Arrays.asList(ConstantTerm.getInstance("bb"), VariableTerm.getInstance("X")));
 		grounder.unifyTerms(nongroundFunctionTerm, groundFunctionTerm, variableSubstitution);
-		assertEquals("Variable X must bind to constant term cc", variableSubstitution.substitution.get(VariableTerm.getVariableTerm("X")), ConstantTerm.getConstantTerm("cc"));
+		assertEquals("Variable X must bind to constant term cc", variableSubstitution.substitution.get(VariableTerm.getInstance("X")), ConstantTerm.getInstance("cc"));
 
-		assertEquals("Variable Z must bind to constant term aa", variableSubstitution.substitution.get(VariableTerm.getVariableTerm("Z")), ConstantTerm.getConstantTerm("aa"));
+		assertEquals("Variable Z must bind to constant term aa", variableSubstitution.substitution.get(VariableTerm.getInstance("Z")), ConstantTerm.getInstance("aa"));
 	}
 
 	@Test
@@ -116,7 +114,6 @@ public class NaiveGrounderTest {
 
 	@Test
 	public void testGuessingGroundProgram() throws Exception {
-
 		String testProgram = "a :- not b. b :- not a.";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
 		Grounder grounder = new NaiveGrounder(parsedProgram);
@@ -131,27 +128,27 @@ public class NaiveGrounderTest {
 
 		// Construct first AnswerSet:
 		// { ChoiceOn(0), ChoiceOn(1), ChoiceOff(1), _R_(0, ), a }
-		AnswerSet as1 = AnswerSetUtil.constructAnswerSet(Arrays.asList(
-			new PredicateInstance(new BasicPredicate("ChoiceOn", 1), new Term[]{ConstantTerm.getConstantTerm("0")}),
-			new PredicateInstance(new BasicPredicate("ChoiceOn", 1), new Term[]{ConstantTerm.getConstantTerm("1")}),
-			new PredicateInstance(new BasicPredicate("ChoiceOff", 1), new Term[]{ConstantTerm.getConstantTerm("1")}),
-			new PredicateInstance(new BasicPredicate("_R_", 2), new Term[]{ConstantTerm.getConstantTerm("0"), ConstantTerm.getConstantTerm("")}),
-			new PredicateInstance(new BasicPredicate("a", 0), new Term[]{})
+		AnswerSet as1 = constructAnswerSet(Arrays.asList(
+			new PredicateInstance(new BasicPredicate("ChoiceOn", 1), ConstantTerm.getInstance("0")),
+			new PredicateInstance(new BasicPredicate("ChoiceOn", 1), ConstantTerm.getInstance("1")),
+			new PredicateInstance(new BasicPredicate("ChoiceOff", 1), ConstantTerm.getInstance("1")),
+			new PredicateInstance(new BasicPredicate("_R_", 2), ConstantTerm.getInstance("0"), ConstantTerm.getInstance("")),
+			new PredicateInstance(new BasicPredicate("a", 0))
 		));
 		// { ChoiceOn(0), ChoiceOn(1), ChoiceOff(0), _R_(1, ), b }
-		AnswerSet as2 = AnswerSetUtil.constructAnswerSet(Arrays.asList(
-			new PredicateInstance(new BasicPredicate("ChoiceOn", 1), new Term[]{ConstantTerm.getConstantTerm("0")}),
-			new PredicateInstance(new BasicPredicate("ChoiceOn", 1), new Term[]{ConstantTerm.getConstantTerm("1")}),
-			new PredicateInstance(new BasicPredicate("ChoiceOff", 1), new Term[]{ConstantTerm.getConstantTerm("0")}),
-			new PredicateInstance(new BasicPredicate("_R_", 2), new Term[]{ConstantTerm.getConstantTerm("1"), ConstantTerm.getConstantTerm("")}),
-			new PredicateInstance(new BasicPredicate("b", 0), new Term[]{})
+		AnswerSet as2 = constructAnswerSet(Arrays.asList(
+			new PredicateInstance(new BasicPredicate("ChoiceOn", 1), ConstantTerm.getInstance("0")),
+			new PredicateInstance(new BasicPredicate("ChoiceOn", 1), ConstantTerm.getInstance("1")),
+			new PredicateInstance(new BasicPredicate("ChoiceOff", 1), ConstantTerm.getInstance("0")),
+			new PredicateInstance(new BasicPredicate("_R_", 2), ConstantTerm.getInstance("1"), ConstantTerm.getInstance("")),
+			new PredicateInstance(new BasicPredicate("b", 0))
 		));
 		HashSet<AnswerSet> expectedAnswerSets = new HashSet<>();
 		expectedAnswerSets.add(as1);
 		expectedAnswerSets.add(as2);
-		assertTrue("First answer-set is not the expected.", AnswerSetUtil.areAnswerSetsEqual(answerSet1, as1));
-		assertTrue("Second answer-set is not the expected.", AnswerSetUtil.areAnswerSetsEqual(answerSet2, as2));
-		assertTrue("There must be two answer sets: { ChoiceOn(0), ChoiceOn(1), ChoiceOff(1), _R_(0, ), a } and { ChoiceOn(0), ChoiceOn(1), ChoiceOff(0), _R_(1, ), b }.", AnswerSetUtil.areSetsOfAnswerSetsEqual(expectedAnswerSets, obtainedAnswerSets));
+		assertEquals(as1, answerSet1);
+		assertEquals(as2, answerSet2);
+		assertEquals(expectedAnswerSets, obtainedAnswerSets);
 
 		// TODO: test depends on choice order of the employed solver.
 		// TODO: We need methods to check whether a correct set of answer-sets is returned!
@@ -219,5 +216,19 @@ public class NaiveGrounderTest {
 
 		assertTrue("Test program must yield no more than 8 answer sets (ninth answer-set reported)", answerSet9 == null);
 	}
-
+	/**
+	 * Constructs an answer set from a list of atoms.
+	 * @param atoms the atoms contained in the answer set.
+	 * @return the constructed answer set.
+	 */
+	private static AnswerSet constructAnswerSet(List<PredicateInstance> atoms) {
+		HashSet<Predicate> predicates = new HashSet<>();
+		Map<Predicate, Set<PredicateInstance>> instances = new HashMap<>();
+		for (PredicateInstance atom : atoms) {
+			predicates.add(atom.predicate);
+			instances.putIfAbsent(atom.predicate, new HashSet<>());
+			instances.get(atom.predicate).add(atom);
+		}
+		return new BasicAnswerSet(new ArrayList<>(predicates), instances);
+	}
 }

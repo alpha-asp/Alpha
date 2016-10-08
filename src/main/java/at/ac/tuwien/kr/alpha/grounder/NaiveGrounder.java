@@ -122,7 +122,7 @@ public class NaiveGrounder extends AbstractGrounder {
 	@Override
 	public AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, int[] trueAtoms) {
 
-		HashMap<Predicate, ArrayList<PredicateInstance>> predicateInstances = new HashMap<>();
+		Map<Predicate, Set<PredicateInstance>> predicateInstances = new HashMap<>();
 		HashSet<Predicate> knownPredicates = new HashSet<>();
 
 		// Iterate over all true atomIds, computeNextAnswerSet instances from atomStore and add them if not filtered.
@@ -134,18 +134,14 @@ public class NaiveGrounder extends AbstractGrounder {
 			}
 
 			knownPredicates.add(predicateInstance.predicate);
-			predicateInstances.putIfAbsent(predicateInstance.predicate, new ArrayList<>());
-			ArrayList<PredicateInstance> instances = predicateInstances.get(predicateInstance.predicate);
+			predicateInstances.putIfAbsent(predicateInstance.predicate, new HashSet<>());
+			Set<PredicateInstance> instances = predicateInstances.get(predicateInstance.predicate);
 			instances.add(predicateInstance);
 		}
 		ArrayList<Predicate> predicateList = new ArrayList<>();
 		predicateList.addAll(knownPredicates);
 
-		BasicAnswerSet answerSet = new BasicAnswerSet();
-		answerSet.setPredicateList(predicateList);
-		answerSet.setPredicateInstances(predicateInstances);
-
-		return answerSet;
+		return new BasicAnswerSet(predicateList, predicateInstances);
 	}
 
 	/**
@@ -263,8 +259,8 @@ public class NaiveGrounder extends AbstractGrounder {
 		} else {
 			// Prepare atom representing the rule body
 			PredicateInstance ruleBodyRepresentingPredicate = new PredicateInstance(RULE_BODIES_PREDICATE,
-				new Term[]{ConstantTerm.getConstantTerm(Integer.toString(nonGroundRule.getRuleId())),
-					ConstantTerm.getConstantTerm(variableSubstitution.toUniformString())});
+				new Term[]{ConstantTerm.getInstance(Integer.toString(nonGroundRule.getRuleId())),
+					ConstantTerm.getInstance(variableSubstitution.toUniformString())});
 			// Check uniqueness of ground rule by testing whether the body representing atom already has an id
 			if (atomStore.isAtomExisting(ruleBodyRepresentingPredicate)) {
 				// The current ground instance already exists, therefore all NoGoods have already been created.
@@ -307,7 +303,7 @@ public class NaiveGrounder extends AbstractGrounder {
 					choiceOnLiterals[i++] = atomId.atomId;
 				}
 				int choiceId = choiceAtomsGenerator.getNextId();
-				PredicateInstance choiceOnAtom =  new PredicateInstance(CHOICE_ON_PREDICATE, new Term[]{ConstantTerm.getConstantTerm(Integer.toString(choiceId))});
+				PredicateInstance choiceOnAtom =  new PredicateInstance(CHOICE_ON_PREDICATE, new Term[]{ConstantTerm.getInstance(Integer.toString(choiceId))});
 				int choiceOnAtomIdInt = atomStore.createAtomId(choiceOnAtom).atomId;
 				choiceOnLiterals[0] = -choiceOnAtomIdInt;
 				// Add corresponding NoGood and ChoiceOn
@@ -315,7 +311,7 @@ public class NaiveGrounder extends AbstractGrounder {
 				newChoiceOn.put(choiceOnAtomIdInt, bodyRepresentingAtomId.atomId);
 
 				// ChoiceOff if some negative body atom is contradicted
-				PredicateInstance choiceOffAtom =  new PredicateInstance(CHOICE_OFF_PREDICATE, new Term[]{ConstantTerm.getConstantTerm(Integer.toString(choiceId))});
+				PredicateInstance choiceOffAtom =  new PredicateInstance(CHOICE_OFF_PREDICATE, new Term[]{ConstantTerm.getInstance(Integer.toString(choiceId))});
 				int choiceOffAtomIdInt = atomStore.createAtomId(choiceOffAtom).atomId;
 				for (AtomId negAtomId : bodyAtomsNegative) {
 					// Choice is off if any of the negative atoms is assigned true, hence we add one NoGood for each such atom.

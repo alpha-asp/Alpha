@@ -18,8 +18,8 @@ public class TermTest {
 	public void testTermReferenceEquality() {
 		// Terms must have a unique representation so that reference comparison is sufficient to check
 		// whether two terms are equal.
-		ConstantTerm ta1 = ConstantTerm.getConstantTerm("a");
-		ConstantTerm ta2 = ConstantTerm.getConstantTerm("a");
+		ConstantTerm ta1 = ConstantTerm.getInstance("a");
+		ConstantTerm ta2 = ConstantTerm.getInstance("a");
 		assertTrue("Two instances of ConstantTerms for the same term symbol must be the same object", ta1 == ta2);
 
 		List<Term> termList = new LinkedList<>();
@@ -35,8 +35,8 @@ public class TermTest {
 
 	@Test
 	public void testTermVariableOccurrences() {
-		ConstantTerm ta = ConstantTerm.getConstantTerm("a");
-		VariableTerm tx = VariableTerm.getVariableTerm("X");
+		ConstantTerm ta = ConstantTerm.getInstance("a");
+		VariableTerm tx = VariableTerm.getInstance("X");
 		FunctionTerm tf = FunctionTerm.getFunctionTerm("f", Arrays.asList(new Term[] {ta, tx}));
 		List<VariableTerm> occurringVariables = tf.getOccurringVariables();
 

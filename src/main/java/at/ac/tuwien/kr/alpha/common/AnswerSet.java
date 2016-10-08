@@ -1,12 +1,10 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import java.util.List;
+import java.util.Set;
 
 public interface AnswerSet {
+	List<Predicate> getPredicates();
 
-	List<Predicate> getPredicateList();
-
-	List<String> getPredicateInstancesAsString(Predicate predicate);
-
-	List<PredicateInstance> getPredicateInstances(Predicate predicate);
+	Set<PredicateInstance> getPredicateInstances(Predicate predicate);
 }

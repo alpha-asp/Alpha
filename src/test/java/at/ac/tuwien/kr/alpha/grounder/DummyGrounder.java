@@ -66,7 +66,6 @@ public class DummyGrounder implements Grounder {
 	public AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, int[] trueAtoms) {
 		// Note: This grounder only deals with 0-ary predicates, i.e., every atom is a predicate and there is
 		// 	 only one predicate instance representing 0 terms.
-		BasicAnswerSet answerSet = new BasicAnswerSet();
 
 		ArrayList<Predicate> trueAtomPredicates = new ArrayList<>();
 		for (int trueAtom : trueAtoms) {
@@ -76,17 +75,14 @@ public class DummyGrounder implements Grounder {
 			}
 		}
 
-		answerSet.setPredicateList(trueAtomPredicates);
-
 		// Add the atom instances
-		HashMap<Predicate, ArrayList<PredicateInstance>> predicateInstances = new HashMap<>();
+		Map<Predicate, Set<PredicateInstance>> predicateInstances = new HashMap<>();
 		for (Predicate trueAtomPredicate : trueAtomPredicates) {
-			PredicateInstance internalPredicateInstance = new PredicateInstance(trueAtomPredicate, new Term[0]);
-			ArrayList<PredicateInstance> instanceList = new ArrayList<>();
+			PredicateInstance internalPredicateInstance = new PredicateInstance(trueAtomPredicate);
+			Set<PredicateInstance> instanceList = new HashSet<>();
 			instanceList.add(internalPredicateInstance);
 			predicateInstances.put(trueAtomPredicate, instanceList);
 		}
-		answerSet.setPredicateInstances(predicateInstances);
 
 		LOG.debug(
 			// NOTE(flowlo): If this stream would map to Predicate
@@ -95,7 +91,8 @@ public class DummyGrounder implements Grounder {
 				.mapToObj(atomIdToString::get)
 				.collect(Collectors.joining(", ", "{ ", " }"))
 		);
-		return answerSet;
+
+		return  new BasicAnswerSet(trueAtomPredicates, predicateInstances);
 	}
 
 	@Override

@@ -99,23 +99,15 @@ public class BasicAssignment implements Assignment {
 		public int getDecisionLevel() {
 			return decisionLevel;
 		}
+
+		@Override
+		public String toString() {
+			return value.toString() + "(" + decisionLevel + ")";
+		}
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-
-		sb.append("[ ");
-		for (Map.Entry<Integer, Entry> item : assignment.entrySet()) {
-			sb.append(item.getKey());
-			sb.append(" := ");
-			sb.append(item.getValue().getTruth().toString());
-			sb.append("(");
-			sb.append(item.getValue().getDecisionLevel());
-			sb.append("), ");
-		}
-		sb.append("]");
-
-		return sb.toString();
+		return Arrays.toString(assignment.entrySet().toArray());
 	}
 }

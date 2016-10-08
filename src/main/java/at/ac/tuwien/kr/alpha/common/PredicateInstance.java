@@ -1,5 +1,7 @@
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.Util;
+
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -8,11 +10,10 @@ import java.util.List;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class PredicateInstance {
-
 	public final Predicate predicate;
 	public final Term[] termList;
 
-	public PredicateInstance(Predicate predicate, Term[] termList) {
+	public PredicateInstance(Predicate predicate, Term... termList) {
 		this.predicate = predicate;
 		this.termList = termList;
 	}
@@ -46,9 +47,7 @@ public class PredicateInstance {
 
 	@Override
 	public int hashCode() {
-		int result = predicate.hashCode();
-		result = 31 * result + Arrays.hashCode(termList);
-		return result;
+		return 31 * predicate.hashCode() + Arrays.hashCode(termList);
 	}
 
 	public List<VariableTerm> getOccurringVariables() {
@@ -61,12 +60,13 @@ public class PredicateInstance {
 
 	@Override
 	public String toString() {
-		String ret = predicate.getPredicateName();
-		ret += termList.length > 0 ? "(" : "";
-		for (int i = 0; i < termList.length; i++) {
-			ret += (i == 0 ? "" : ", ") + termList[i];
+		if (termList.length == 0) {
+			return predicate.getPredicateName();
 		}
-		ret += termList.length > 0 ? ")" : "";
-		return ret;
+
+		final StringBuilder sb = new StringBuilder("(");
+		Util.appendDelimited(sb, Arrays.asList(termList));
+		sb.append(")");
+		return sb.toString();
 	}
 }

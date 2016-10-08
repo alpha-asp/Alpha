@@ -18,12 +18,12 @@ public class IndexedInstanceStorageTest {
 		IndexedInstanceStorage storage = new IndexedInstanceStorage("A test storage of arity 4", 4);
 		storage.addIndexPosition(0);
 		storage.addIndexPosition(2);
-		ConstantTerm t0 = ConstantTerm.getConstantTerm("0");
-		ConstantTerm t1 = ConstantTerm.getConstantTerm("1");
-		ConstantTerm t2 = ConstantTerm.getConstantTerm("2");
-		ConstantTerm t3 = ConstantTerm.getConstantTerm("3");
-		ConstantTerm t4 = ConstantTerm.getConstantTerm("4");
-		ConstantTerm t5 = ConstantTerm.getConstantTerm("5");
+		ConstantTerm t0 = ConstantTerm.getInstance("0");
+		ConstantTerm t1 = ConstantTerm.getInstance("1");
+		ConstantTerm t2 = ConstantTerm.getInstance("2");
+		ConstantTerm t3 = ConstantTerm.getInstance("3");
+		ConstantTerm t4 = ConstantTerm.getInstance("4");
+		ConstantTerm t5 = ConstantTerm.getInstance("5");
 
 
 		Instance badInst1 = new Instance(new Term[]{t1, t1, t0});

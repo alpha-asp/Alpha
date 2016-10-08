@@ -1,8 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.BasicPredicate;
-import at.ac.tuwien.kr.alpha.common.PredicateInstance;
-import at.ac.tuwien.kr.alpha.common.Term;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstant;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFunctionTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTerm;
@@ -12,9 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static at.ac.tuwien.kr.alpha.common.ConstantTerm.getConstantTerm;
 import static at.ac.tuwien.kr.alpha.common.FunctionTerm.getFunctionTerm;
-import static at.ac.tuwien.kr.alpha.common.VariableTerm.getVariableTerm;
 
 /**
  * This class stores ground atoms and provides the translation from an (integer) atomId to a (structured) predicate instance.
@@ -86,7 +82,6 @@ public class AtomStore {
 		// HINT: Additionally removing the terms used in the instance might be beneficial in some cases.
 	}
 
-
 	/**
 	 * Converts a parsed term into a common term, replacing constants and function symbols with integer Ids. The
 	 * Ids are recorded.
@@ -96,7 +91,7 @@ public class AtomStore {
 	public static Term convertFromParsedTerm(ParsedTerm parsedTerm) {
 		if (parsedTerm instanceof ParsedConstant) {
 			String content = ((ParsedConstant) parsedTerm).content;
-			return getConstantTerm(content);
+			return ConstantTerm.getInstance(content);
 		} else if (parsedTerm instanceof ParsedFunctionTerm) {
 			String functionName = ((ParsedFunctionTerm) parsedTerm).functionName;
 			ArrayList<Term> termlist = new ArrayList<>();
@@ -106,7 +101,7 @@ public class AtomStore {
 			}
 			return getFunctionTerm(functionName, termlist);
 		} else if (parsedTerm instanceof ParsedVariable) {
-			return getVariableTerm(((ParsedVariable) parsedTerm).variableName);
+			return VariableTerm.getInstance(((ParsedVariable) parsedTerm).variableName);
 		} else {
 			throw new RuntimeException("Parsed program contains a term of unknown type: " + parsedTerm.getClass());
 		}
@@ -119,5 +114,4 @@ public class AtomStore {
 		}
 		return ret;
 	}
-
 }

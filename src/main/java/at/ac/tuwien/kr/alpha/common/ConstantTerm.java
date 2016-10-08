@@ -8,19 +8,16 @@ import java.util.List;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ConstantTerm extends Term {
+	private final TermSymbol constantSymbol;
 
-	public final TermSymbol constantSymbol;
+	private static final HashMap<String, ConstantTerm> CONSTANTS = new HashMap<>();
 
-	private static HashMap<ConstantTerm, ConstantTerm> knownConstantTerms = new HashMap<>();
-
-	private ConstantTerm(TermSymbol constantSymbol) {
-		this.constantSymbol = constantSymbol;
+	private ConstantTerm(String constantSymbol) {
+		this.constantSymbol = TermSymbol.getInstance(constantSymbol);
 	}
 
-	public static ConstantTerm getConstantTerm(String constantSymbol) {
-		ConstantTerm constantTerm = new ConstantTerm(TermSymbol.getTermSymbol(constantSymbol));
-		knownConstantTerms.putIfAbsent(constantTerm, constantTerm);
-		return knownConstantTerms.get(constantTerm);
+	public static ConstantTerm getInstance(String constantSymbol) {
+		return CONSTANTS.computeIfAbsent(constantSymbol, ConstantTerm::new);
 	}
 
 	@Override

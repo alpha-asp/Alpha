@@ -4,9 +4,7 @@ import at.ac.tuwien.kr.alpha.common.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
@@ -72,10 +70,6 @@ public class ChoiceGrounder implements Grounder {
 
 	@Override
 	public AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, int[] trueAtoms) {
-		// Note: This grounder only deals with 0-ary predicates, i.e., every atom is a predicate and there is
-		// 	 only one predicate instance representing 0 terms.
-		BasicAnswerSet answerSet = new BasicAnswerSet();
-
 		ArrayList<Predicate> trueAtomPredicates = new ArrayList<>();
 		for (int trueAtom : trueAtoms) {
 			BasicPredicate atomPredicate = new BasicPredicate(atomIdToString.get(trueAtom), 0);
@@ -83,19 +77,19 @@ public class ChoiceGrounder implements Grounder {
 				trueAtomPredicates.add(atomPredicate);
 			}
 		}
-		answerSet.setPredicateList(trueAtomPredicates);
 
 		// Add the atom instances
-		HashMap<Predicate, ArrayList<PredicateInstance>> predicateInstances = new HashMap<>();
+		Map<Predicate, Set<PredicateInstance>> predicateInstances = new HashMap<>();
 		for (Predicate trueAtomPredicate : trueAtomPredicates) {
-			PredicateInstance predicateInstance = new PredicateInstance(trueAtomPredicate, new Term[0]);
-			ArrayList<PredicateInstance> instanceList = new ArrayList<>();
+			PredicateInstance predicateInstance = new PredicateInstance(trueAtomPredicate);
+			Set<PredicateInstance> instanceList = new HashSet<>();
 			instanceList.add(predicateInstance);
 			predicateInstances.put(trueAtomPredicate, instanceList);
 		}
-		answerSet.setPredicateInstances(predicateInstances);
 
-		return answerSet;
+		// Note: This grounder only deals with 0-ary predicates, i.e., every atom is a predicate and there is
+		// 	 only one predicate instance representing 0 terms.
+		return new BasicAnswerSet(trueAtomPredicates, predicateInstances);
 	}
 
 	private boolean returnedAllNogoods;
