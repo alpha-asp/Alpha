@@ -15,11 +15,6 @@ import static org.junit.Assert.assertEquals;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class NaiveGrounderTest {
-	@Before
-	public void resetCounters() {
-		NonGroundRule.RULE_ID_GENERATOR.resetGenerator();
-	}
-
 	@Test
 	public void unifyTermsSimpleBinding() throws Exception {
 		NaiveGrounder grounder = new NaiveGrounder(new ParsedProgram());

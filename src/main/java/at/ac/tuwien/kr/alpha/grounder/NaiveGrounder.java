@@ -32,6 +32,8 @@ public class NaiveGrounder extends AbstractGrounder {
 
 	private ArrayList<NonGroundRule> rulesFromProgram = new ArrayList<>();
 
+	private final IntIdGenerator intIdGenerator = new IntIdGenerator();
+
 	protected AtomStore atomStore = new AtomStore();
 
 	private HashSet<IndexedInstanceStorage> modifiedWorkingMemories = new HashSet<>();
@@ -99,7 +101,7 @@ public class NaiveGrounder extends AbstractGrounder {
 
 	private void registerRuleOrConstraint(ParsedRule rule) {
 		// Record the rule for later use
-		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
+		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(intIdGenerator, rule);
 		// Create working memories for all predicates occurring in the rule
 		for (Predicate predicate : nonGroundRule.getOccurringPredicates()) {
 			adaptWorkingMemoryForPredicate(predicate);

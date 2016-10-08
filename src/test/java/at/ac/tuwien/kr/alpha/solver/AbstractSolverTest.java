@@ -20,14 +20,6 @@ import static at.ac.tuwien.kr.alpha.MainTest.stream;
 import static org.junit.Assert.assertEquals;
 
 public abstract class AbstractSolverTest {
-	@Before
-	public void resetCounters() {
-		// NOTE(flowlo): NonGroundRule leaks state, this is
-		// a workaround to reset it's internal state before
-		// executing each test case.
-		NonGroundRule.RULE_ID_GENERATOR.resetGenerator();
-	}
-
 	protected abstract Solver getInstance(Grounder grounder);
 
 	@Test

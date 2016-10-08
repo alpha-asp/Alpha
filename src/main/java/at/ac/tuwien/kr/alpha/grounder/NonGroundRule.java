@@ -28,10 +28,8 @@ public class NonGroundRule {
 		this.ruleId = ruleId;
 	}
 
-	public static final IntIdGenerator RULE_ID_GENERATOR = new IntIdGenerator();
-
-	public static NonGroundRule constructNonGroundRule(ParsedRule parsedRule) {
-		NonGroundRule nonGroundRule = new NonGroundRule(RULE_ID_GENERATOR.getNextId());
+	public static NonGroundRule constructNonGroundRule(IntIdGenerator intIdGenerator, ParsedRule parsedRule) {
+		NonGroundRule nonGroundRule = new NonGroundRule(intIdGenerator.getNextId());
 
 		for (ParsedAtom parsedAtom : parsedRule.body) {
 			PredicateInstance predicateInstance = constructPredicateInstanceFromParsedAtom(parsedAtom);
