@@ -4,7 +4,10 @@ import at.ac.tuwien.kr.alpha.common.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
@@ -70,7 +73,7 @@ public class ChoiceGrounder implements Grounder {
 
 	@Override
 	public AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, int[] trueAtoms) {
-		ArrayList<Predicate> trueAtomPredicates = new ArrayList<>();
+		Set<Predicate> trueAtomPredicates = new HashSet<>();
 		for (int trueAtom : trueAtoms) {
 			BasicPredicate atomPredicate = new BasicPredicate(atomIdToString.get(trueAtom), 0);
 			if (filter.test(atomPredicate)) {

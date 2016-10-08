@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 /**
@@ -16,11 +16,11 @@ public class BasicAnswerSetTest {
 	public BasicAnswerSetTest() {
 		BasicPredicate a = new BasicPredicate("a", 0);
 		BasicPredicate foo = new BasicPredicate("foo", 1);
-		List<Predicate> fooAndA = Arrays.asList(foo, a);
+		Set<Predicate> fooAndA = new HashSet<>(Arrays.asList(foo, a));
 
 		BasicPredicate q = new BasicPredicate("q", 0);
 		BasicPredicate p = new BasicPredicate("p", 1);
-		List<Predicate> qAndP = Arrays.asList(q, p);
+		Set<Predicate> qAndP = new HashSet<>(Arrays.asList(q, p));
 
 		ConstantTerm bar = ConstantTerm.getInstance("bar");
 		ConstantTerm baz = ConstantTerm.getInstance("baz");

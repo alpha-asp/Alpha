@@ -8,11 +8,15 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 import static at.ac.tuwien.kr.alpha.MainTest.stream;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static java.util.Arrays.asList;
+import static junit.framework.TestCase.assertNull;
+import static org.junit.Assert.*;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -40,9 +44,9 @@ public class NaiveGrounderTest {
 		NaiveGrounder grounder = new NaiveGrounder(new ParsedProgram());
 		NaiveGrounder.VariableSubstitution variableSubstitution = grounder.new VariableSubstitution();
 		variableSubstitution.substitution.put(VariableTerm.getInstance("Z"), ConstantTerm.getInstance("aa"));
-		FunctionTerm groundFunctionTerm = FunctionTerm.getFunctionTerm("f", Arrays.asList(new Term[]{ConstantTerm.getInstance("bb"), ConstantTerm.getInstance("cc")}));
+		FunctionTerm groundFunctionTerm = FunctionTerm.getFunctionTerm("f", asList(new Term[]{ConstantTerm.getInstance("bb"), ConstantTerm.getInstance("cc")}));
 
-		Term nongroundFunctionTerm = FunctionTerm.getFunctionTerm("f", Arrays.asList(ConstantTerm.getInstance("bb"), VariableTerm.getInstance("X")));
+		Term nongroundFunctionTerm = FunctionTerm.getFunctionTerm("f", asList(ConstantTerm.getInstance("bb"), VariableTerm.getInstance("X")));
 		grounder.unifyTerms(nongroundFunctionTerm, groundFunctionTerm, variableSubstitution);
 		assertEquals("Variable X must bind to constant term cc", variableSubstitution.substitution.get(VariableTerm.getInstance("X")), ConstantTerm.getInstance("cc"));
 
@@ -55,13 +59,19 @@ public class NaiveGrounderTest {
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
 		Grounder grounder = new NaiveGrounder(parsedProgram);
 		NaiveSolver solver = new NaiveSolver(grounder);
-		AnswerSet answerSet = solver.computeNextAnswerSet();
-		AnswerSet noAnswerSet = solver.computeNextAnswerSet();
 
-		assertTrue("Test program must yield one answer set (no answer-set reported)", answerSet != null);
-		assertEquals("Program must yield answer-set: { q(a), q(c), p(a), p(b), foo(13), foo(16) }", "{ q(a), q(c), p(a), p(b), foo(13), foo(16) }", answerSet.toString());
+		Stream<AnswerSet> stream = StreamSupport.stream(solver.spliterator(), false);
+		List<AnswerSet> recorder = stream.collect(Collectors.toList());
 
-		assertTrue("Test program must yield one answer set (second answer-set reported).", noAnswerSet == null);
+		assertEquals(1, recorder.size());
+
+		AnswerSet expected = new BasicAnswerSet.Builder()
+			.predicate("q").instance("a").instance("c")
+			.predicate("p").instance("a").instance("b")
+			.predicate("foo").instance("13").instance("16")
+			.build();
+
+		assertEquals(expected, recorder.get(0));
 	}
 
 	@Test
@@ -73,28 +83,42 @@ public class NaiveGrounderTest {
 		AnswerSet answerSet = solver.computeNextAnswerSet();
 		AnswerSet noAnswerSet = solver.computeNextAnswerSet();
 
-		assertTrue("Test program must yield one answer set (no answer-set reported)", answerSet != null);
-		assertEquals("Program must yield answer-set: { p(a), p(b), _R_(0, _X:a), _R_(0, _X:b), r(a), r(b) }", "{ p(a), p(b), _R_(0, _X:a), _R_(0, _X:b), r(a), r(b) }", answerSet.toString());
+		AnswerSet expected = new BasicAnswerSet.Builder()
+			.predicate("p").instance("a").instance("b")
+			.predicate("_R_").instance("0", "_X:a").instance("0", "_X:b")
+			.predicate("r").instance("a").instance("b")
+			.build();
 
-		assertTrue("Test program must yield one answer set (second answer-set reported).", noAnswerSet == null);
+		assertNotNull("Test program must yield one answer set (no answer-set reported)", answerSet);
+		assertEquals(expected, answerSet);
+
+		assertNull("Test program must yield one answer set (second answer-set reported).", noAnswerSet);
 	}
 
 	@Test
 	public void testSimpleRuleWithGroundPart() throws Exception {
 		String testProgram =
 			"p(1)." +
-			"p(2)." +
-			"q(X) :-  p(X), p(1).";
+				"p(2)." +
+				"q(X) :-  p(X), p(1).";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
 		Grounder grounder = new NaiveGrounder(parsedProgram);
 		NaiveSolver solver = new NaiveSolver(grounder);
 		AnswerSet answerSet = solver.computeNextAnswerSet();
 		AnswerSet noAnswerSet = solver.computeNextAnswerSet();
 
-		assertTrue("Test program must yield one answer set (no answer-set reported)", answerSet != null);
-		assertEquals("Program must yield answer-set: { q(1), q(2), p(1), p(2), _R_(0, _X:1), _R_(0, _X:2) }", "{ q(1), q(2), p(1), p(2), _R_(0, _X:1), _R_(0, _X:2) }", answerSet.toString());
+		assertNotNull("Test program must yield one answer set (no answer-set reported)", answerSet);
 
-		assertTrue("Test program must yield one answer set (second answer-set reported).", noAnswerSet == null);
+
+		AnswerSet expected = new BasicAnswerSet.Builder()
+			.predicate("q").instance("1").instance("2")
+			.predicate("p").instance("1").instance("2")
+			.predicate("_R_").instance("0", "_X:1").instance("0", "_X:2")
+			.build();
+
+		assertEquals(expected, answerSet);
+
+		assertNull("Test program must yield one answer set (second answer-set reported).", noAnswerSet);
 	}
 
 	@Test
@@ -106,10 +130,15 @@ public class NaiveGrounderTest {
 		AnswerSet answerSet = solver.computeNextAnswerSet();
 		AnswerSet noAnswerSet = solver.computeNextAnswerSet();
 
-		assertTrue("Test program must yield one answer set (no answer-set reported)", answerSet != null);
-		assertEquals("Program must yield answer-set: { a }", "{ a }", answerSet.toString());
+		assertNotNull("Test program must yield one answer set (no answer-set reported)", answerSet);
 
-		assertTrue("Test program must yield one answer set (second answer-set reported).", noAnswerSet == null);
+		AnswerSet expected = new BasicAnswerSet.Builder()
+			.predicate("a")
+			.build();
+
+		assertEquals(expected, answerSet);
+
+		assertNull("Test program must yield one answer set (second answer-set reported).", noAnswerSet);
 	}
 
 	@Test
@@ -118,48 +147,35 @@ public class NaiveGrounderTest {
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
 		Grounder grounder = new NaiveGrounder(parsedProgram);
 		NaiveSolver solver = new NaiveSolver(grounder);
-		AnswerSet answerSet1 = solver.computeNextAnswerSet();
-		AnswerSet answerSet2 = solver.computeNextAnswerSet();
-		AnswerSet answerSet3 = solver.computeNextAnswerSet();
 
-		HashSet<AnswerSet> obtainedAnswerSets = new HashSet<>();
-		obtainedAnswerSets.add(answerSet1);
-		obtainedAnswerSets.add(answerSet2);
+		// NOTE(flowlo): Empty string?!
 
-		// Construct first AnswerSet:
-		// { ChoiceOn(0), ChoiceOn(1), ChoiceOff(1), _R_(0, ), a }
-		AnswerSet as1 = constructAnswerSet(Arrays.asList(
-			new PredicateInstance(new BasicPredicate("ChoiceOn", 1), ConstantTerm.getInstance("0")),
-			new PredicateInstance(new BasicPredicate("ChoiceOn", 1), ConstantTerm.getInstance("1")),
-			new PredicateInstance(new BasicPredicate("ChoiceOff", 1), ConstantTerm.getInstance("1")),
-			new PredicateInstance(new BasicPredicate("_R_", 2), ConstantTerm.getInstance("0"), ConstantTerm.getInstance("")),
-			new PredicateInstance(new BasicPredicate("a", 0))
+		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
+			// { ChoiceOn(0), ChoiceOn(1), ChoiceOff(1), _R_(0, ), a }
+			new BasicAnswerSet.Builder()
+			.predicate("ChoiceOn").instance("0").instance("1")
+			.predicate("ChoiceOff").instance("1")
+			.predicate("_R_").instance("0", "")
+			.predicate("a")
+			.build(),
+			// { ChoiceOn(0), ChoiceOn(1), ChoiceOff(0), _R_(1, ), b }
+			new BasicAnswerSet.Builder()
+			.predicate("ChoiceOn").instance("0").instance("1")
+			.predicate("ChoiceOff").instance("0")
+			.predicate("_R_").instance("1", "")
+			.predicate("b")
+			.build()
 		));
-		// { ChoiceOn(0), ChoiceOn(1), ChoiceOff(0), _R_(1, ), b }
-		AnswerSet as2 = constructAnswerSet(Arrays.asList(
-			new PredicateInstance(new BasicPredicate("ChoiceOn", 1), ConstantTerm.getInstance("0")),
-			new PredicateInstance(new BasicPredicate("ChoiceOn", 1), ConstantTerm.getInstance("1")),
-			new PredicateInstance(new BasicPredicate("ChoiceOff", 1), ConstantTerm.getInstance("0")),
-			new PredicateInstance(new BasicPredicate("_R_", 2), ConstantTerm.getInstance("1"), ConstantTerm.getInstance("")),
-			new PredicateInstance(new BasicPredicate("b", 0))
-		));
-		HashSet<AnswerSet> expectedAnswerSets = new HashSet<>();
-		expectedAnswerSets.add(as1);
-		expectedAnswerSets.add(as2);
-		assertEquals(as1, answerSet1);
-		assertEquals(as2, answerSet2);
-		assertEquals(expectedAnswerSets, obtainedAnswerSets);
 
-		// TODO: test depends on choice order of the employed solver.
-		// TODO: We need methods to check whether a correct set of answer-sets is returned!
+		Set<AnswerSet> recorder = StreamSupport.stream(solver.spliterator(), false).collect(Collectors.toSet());
 
-		assertTrue("Test program must yield an answer set (no answer-set reported)", answerSet1 != null);
-		assertEquals("Program must yield answer-set: { ChoiceOn(0), ChoiceOn(1), ChoiceOff(1), _R_(0, ), a }", "{ ChoiceOn(0), ChoiceOn(1), ChoiceOff(1), _R_(0, ), a }", answerSet1.toString());
+		assertEquals(expected, recorder);
+	}
 
-		assertTrue("Test program must yield a second answer set (only one answer-set reported)", answerSet2 != null);
-		assertEquals("Program must yield answer-set: { ChoiceOn(0), ChoiceOn(1), ChoiceOff(0), _R_(1, ), b }", "{ ChoiceOn(0), ChoiceOn(1), ChoiceOff(0), _R_(1, ), b }", answerSet2.toString());
-
-		assertTrue("Test program must yield two answer sets (third answer-set reported)", answerSet3 == null);
+	private static BasicAnswerSet.Builder base() {
+		return new BasicAnswerSet.Builder()
+			.predicate("dom").instance("1").instance("2").instance("3")
+			.predicate("ChoiceOn").instance("0").instance("1").instance("2").instance("3").instance("4").instance("5");
 	}
 
 	@Test
@@ -170,54 +186,69 @@ public class NaiveGrounderTest {
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		NaiveSolver solver = new NaiveSolver(grounder);
-		AnswerSet answerSet1 = solver.computeNextAnswerSet();
-		AnswerSet answerSet2 = solver.computeNextAnswerSet();
-		AnswerSet answerSet3 = solver.computeNextAnswerSet();
-		AnswerSet answerSet4 = solver.computeNextAnswerSet();
-		AnswerSet answerSet5 = solver.computeNextAnswerSet();
-		AnswerSet answerSet6 = solver.computeNextAnswerSet();
-		AnswerSet answerSet7 = solver.computeNextAnswerSet();
-		AnswerSet answerSet8 = solver.computeNextAnswerSet();
-		AnswerSet answerSet9 = solver.computeNextAnswerSet();
 
+		List<AnswerSet> expected = Arrays.asList(
+			base()
+				.predicate("q").instance("1").instance("2")
+				.predicate("p").instance("3")
+				.predicate("ChoiceOff").instance("0").instance("1").instance("5")
+				.predicate("_R_").instance("0", "_X:3").instance("1", "_X:1").instance("1", "_X:2")
+				.build(),
+			base()
+				.predicate("q").instance("1")
+				.predicate("p").instance("2").instance("3")
+				.predicate("ChoiceOff").instance("0").instance("4").instance("5")
+				.predicate("_R_").instance("0", "_X:2").instance("0", "_X:3").instance("1", "_X:1")
+				.build(),
+			base()
+				.predicate("q").instance("2")
+				.predicate("p").instance("1").instance("3")
+				.predicate("ChoiceOff").instance("1").instance("3").instance("5")
+				.predicate("_R_").instance("0", "_X:1").instance("0", "_X:3").instance("1", "_X:2")
+				.build(),
+			base()
+				.predicate("p").instance("1").instance("2").instance("3")
+				.predicate("ChoiceOff").instance("3").instance("4").instance("5")
+				.predicate("_R_").instance("0", "_X:1").instance("0", "_X:3").instance("0", "_X:2")
+				.build(),
+			base()
+				.predicate("q").instance("1").instance("2").instance("3")
+				.predicate("ChoiceOff").instance("0").instance("1").instance("2")
+				.predicate("_R_").instance("1", "_X:1").instance("1", "_X:2").instance("1", "_X:3")
+				.build(),
+			base()
+				.predicate("q").instance("1").instance("3")
+				.predicate("p").instance("2")
+				.predicate("ChoiceOff").instance("0").instance("2").instance("4")
+				.predicate("_R_").instance("0", "_X:2").instance("1", "_X:1").instance("1", "_X:3")
+				.build(),
+			base()
+				.predicate("q").instance("2").instance("3")
+				.predicate("p").instance("1")
+				.predicate("ChoiceOff").instance("1").instance("2").instance("3")
+				.predicate("_R_").instance("0", "_X:1").instance("1", "_X:2").instance("1", "_X:3")
+				.build(),
+			base()
+				.predicate("q").instance("3")
+				.predicate("p").instance("1").instance("2")
+				.predicate("ChoiceOff").instance("2").instance("3").instance("4")
+				.predicate("_R_").instance("0", "_X:1").instance("0", "_X:2").instance("1", "_X:3")
+				.build()
+		);
 
-		String textAS1 = "{ dom(1), dom(2), dom(3), q(1), q(2), p(3), ChoiceOn(0), ChoiceOn(1), ChoiceOn(2), ChoiceOn(3), ChoiceOn(4), ChoiceOn(5), ChoiceOff(0), ChoiceOff(1), ChoiceOff(5), _R_(0, _X:3), _R_(1, _X:1), _R_(1, _X:2) }";
-		String textAS2 = "{ dom(1), dom(2), dom(3), q(1), p(2), p(3), ChoiceOn(0), ChoiceOn(1), ChoiceOn(2), ChoiceOn(3), ChoiceOn(4), ChoiceOn(5), ChoiceOff(0), ChoiceOff(4), ChoiceOff(5), _R_(0, _X:2), _R_(0, _X:3), _R_(1, _X:1) }";
-		String textAS3 = "{ dom(1), dom(2), dom(3), q(2), p(1), p(3), ChoiceOn(0), ChoiceOn(1), ChoiceOn(2), ChoiceOn(3), ChoiceOn(4), ChoiceOn(5), ChoiceOff(1), ChoiceOff(3), ChoiceOff(5), _R_(0, _X:1), _R_(0, _X:3), _R_(1, _X:2) }";
-		String textAS4 = "{ dom(1), dom(2), dom(3), p(1), p(2), p(3), ChoiceOn(0), ChoiceOn(1), ChoiceOn(2), ChoiceOn(3), ChoiceOn(4), ChoiceOn(5), ChoiceOff(3), ChoiceOff(4), ChoiceOff(5), _R_(0, _X:1), _R_(0, _X:2), _R_(0, _X:3) }";
-		String textAS5 = "{ dom(1), dom(2), dom(3), q(1), q(2), q(3), ChoiceOn(0), ChoiceOn(1), ChoiceOn(2), ChoiceOn(3), ChoiceOn(4), ChoiceOn(5), ChoiceOff(0), ChoiceOff(1), ChoiceOff(2), _R_(1, _X:1), _R_(1, _X:2), _R_(1, _X:3) }";
-		String textAS6 = "{ dom(1), dom(2), dom(3), q(1), q(3), p(2), ChoiceOn(0), ChoiceOn(1), ChoiceOn(2), ChoiceOn(3), ChoiceOn(4), ChoiceOn(5), ChoiceOff(0), ChoiceOff(2), ChoiceOff(4), _R_(0, _X:2), _R_(1, _X:1), _R_(1, _X:3) }";
-		String textAS7 = "{ dom(1), dom(2), dom(3), q(2), q(3), p(1), ChoiceOn(0), ChoiceOn(1), ChoiceOn(2), ChoiceOn(3), ChoiceOn(4), ChoiceOn(5), ChoiceOff(1), ChoiceOff(2), ChoiceOff(3), _R_(0, _X:1), _R_(1, _X:2), _R_(1, _X:3) }";
-		String textAS8 = "{ dom(1), dom(2), dom(3), q(3), p(1), p(2), ChoiceOn(0), ChoiceOn(1), ChoiceOn(2), ChoiceOn(3), ChoiceOn(4), ChoiceOn(5), ChoiceOff(2), ChoiceOff(3), ChoiceOff(4), _R_(0, _X:1), _R_(0, _X:2), _R_(1, _X:3) }";
+		Stream<AnswerSet> stream = StreamSupport.stream(solver.spliterator(), false);
+		List<AnswerSet> recorder = stream.collect(Collectors.toList());
 
-		assertTrue("Test program must yield 8 answer sets (no answer-set reported)", answerSet1 != null);
-		assertEquals("Program must yield answer-set: " + textAS1, textAS1, answerSet1.toString());
+		assertTrue("Solver generated exactly " + expected.size() + " Anser-Sets.", recorder.size() == expected.size());
 
-		assertTrue("Test program must yield 8 answer sets.", answerSet2 != null);
-		assertEquals("Program must yield answer-set: " + textAS2, textAS2, answerSet2.toString());
-
-		assertTrue("Test program must yield 8 answer sets.", answerSet3 != null);
-		assertEquals("Program must yield answer-set: " + textAS3, textAS3, answerSet3.toString());
-
-		assertTrue("Test program must yield 8 answer sets.", answerSet4 != null);
-		assertEquals("Program must yield answer-set: " + textAS4, textAS4, answerSet4.toString());
-
-		assertTrue("Test program must yield 8 answer sets.", answerSet5 != null);
-		assertEquals("Program must yield answer-set: " + textAS5, textAS5, answerSet5.toString());
-
-		assertTrue("Test program must yield 8 answer sets.", answerSet6 != null);
-		assertEquals("Program must yield answer-set: " + textAS6, textAS6, answerSet6.toString());
-
-		assertTrue("Test program must yield 8 answer sets.", answerSet7 != null);
-		assertEquals("Program must yield answer-set: " + textAS7, textAS7, answerSet7.toString());
-
-		assertTrue("Test program must yield 8 answer sets.", answerSet8 != null);
-		assertEquals("Program must yield answer-set: " + textAS8, textAS8, answerSet8.toString());
-
-		assertTrue("Test program must yield no more than 8 answer sets (ninth answer-set reported)", answerSet9 == null);
+		for (int i = 0; i < expected.size(); i++) {
+			assertEquals(expected.get(i), recorder.get(i));
+		}
 	}
+
 	/**
 	 * Constructs an answer set from a list of atoms.
+	 *
 	 * @param atoms the atoms contained in the answer set.
 	 * @return the constructed answer set.
 	 */
@@ -229,6 +260,6 @@ public class NaiveGrounderTest {
 			instances.putIfAbsent(atom.predicate, new HashSet<>());
 			instances.get(atom.predicate).add(atom);
 		}
-		return new BasicAnswerSet(new ArrayList<>(predicates), instances);
+		return new BasicAnswerSet(predicates, instances);
 	}
 }

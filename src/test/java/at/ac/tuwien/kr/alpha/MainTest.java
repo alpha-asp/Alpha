@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
@@ -60,9 +61,15 @@ public class MainTest {
 
 	@Test
 	public void testDummyGrounderAndSolver() {
-
 		Grounder grounder = new DummyGrounder();
 		NaiveSolver solver = (NaiveSolver)SolverFactory.getInstance("naive", grounder, p -> true);
+
+		AnswerSet expected = new BasicAnswerSet.Builder()
+			.predicate("a")
+			.predicate("b")
+			.predicate("_br1")
+			.predicate("c")
+			.build();
 
 		int answerSetCount = 0;
 		while (true) {
@@ -72,7 +79,7 @@ public class MainTest {
 			}
 			answerSetCount++;
 			// Adapting the printing of answer sets requires adaption of the below assertion.
-			assertEquals("Answer set is { a, b, _br1, c }.", "{ a, b, _br1, c }", as.toString());
+			assertEquals(expected, as);
 		}
 		assertEquals("Program has one answer set.", 1, answerSetCount);
 		//System.out.println("Found " + answerSetCount + " Answer Set(s), there are no more answer sets.");

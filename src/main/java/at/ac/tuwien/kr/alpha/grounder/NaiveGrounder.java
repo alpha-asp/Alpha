@@ -138,7 +138,7 @@ public class NaiveGrounder extends AbstractGrounder {
 			Set<PredicateInstance> instances = predicateInstances.get(predicateInstance.predicate);
 			instances.add(predicateInstance);
 		}
-		ArrayList<Predicate> predicateList = new ArrayList<>();
+		Set<Predicate> predicateList = new HashSet<>();
 		predicateList.addAll(knownPredicates);
 
 		return new BasicAnswerSet(predicateList, predicateInstances);

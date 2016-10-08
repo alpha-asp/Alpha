@@ -2,12 +2,7 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.common.NoGood.fact;
 import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;

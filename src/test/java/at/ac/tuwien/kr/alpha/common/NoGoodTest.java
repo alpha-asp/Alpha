@@ -1,6 +1,5 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Iterator;

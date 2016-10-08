@@ -67,7 +67,7 @@ public class DummyGrounder implements Grounder {
 		// Note: This grounder only deals with 0-ary predicates, i.e., every atom is a predicate and there is
 		// 	 only one predicate instance representing 0 terms.
 
-		ArrayList<Predicate> trueAtomPredicates = new ArrayList<>();
+		Set<Predicate> trueAtomPredicates = new HashSet<>();
 		for (int trueAtom : trueAtoms) {
 			BasicPredicate atomPredicate = new BasicPredicate(atomIdToString.get(trueAtom), 0);
 			if (filter.test(atomPredicate)) {

@@ -4,7 +4,6 @@ package at.ac.tuwien.kr.alpha.common;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class BasicPredicate implements Predicate {
-
 	private final String predicateName;
 	private final int arity;
 
@@ -12,7 +11,6 @@ public class BasicPredicate implements Predicate {
 		this.predicateName = predicateName;
 		this.arity = arity;
 	}
-
 
 	@Override
 	public String getPredicateName() {
@@ -39,7 +37,6 @@ public class BasicPredicate implements Predicate {
 			return false;
 		}
 		return predicateName.equals(that.predicateName);
-
 	}
 
 	@Override

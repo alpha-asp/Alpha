@@ -1,8 +1,5 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
-
-import java.util.HashMap;
 import java.util.List;
 
 /**

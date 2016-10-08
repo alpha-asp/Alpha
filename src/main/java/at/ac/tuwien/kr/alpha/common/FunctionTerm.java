@@ -1,7 +1,5 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.Util;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
