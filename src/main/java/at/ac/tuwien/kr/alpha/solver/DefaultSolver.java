@@ -105,7 +105,6 @@ public class DefaultSolver extends AbstractSolver {
 		}
 	}
 
-
 	private void updateGrounderAssignments() {
 		Map<Integer, ThriceTruth> changedAssignments = store.getChangedAssignments();
 		int[] atomIds = new int[changedAssignments.size()];

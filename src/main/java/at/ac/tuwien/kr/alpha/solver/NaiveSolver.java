@@ -17,6 +17,10 @@ import static java.lang.Math.abs;
 public class NaiveSolver extends AbstractSolver {
 	public NaiveSolver(Grounder grounder) {
 		super(grounder, p -> true);
+
+		decisionLevels.add(0, new ArrayList<>());
+		mbtAssignedFromUnassigned.add(0, new ArrayList<>());
+		trueAssignedFromMbt.add(0, new ArrayList<>());
 	}
 
 	private HashSet<Integer> knownAtomIds = new HashSet<>();
@@ -29,14 +33,17 @@ public class NaiveSolver extends AbstractSolver {
 	private HashMap<Integer, NoGood> knownNoGoods = new HashMap<>();
 
 	boolean doInit = true;
+	private int decisionLevel;
+
+	Map<Integer, Integer> choiceOn = new HashMap<>();
+	Map<Integer, Integer> choiceOff = new HashMap<>();
+	Integer nextChoice;
+	Stack<Integer> guessedAtomIds = new Stack<>();
 
 	public AnswerSet computeNextAnswerSet() {
 		// Get basic rules and facts from grounder
 		if (doInit) {
 			obtainNoGoodsFromGrounder();
-			decisionLevels.add(0, new ArrayList<>());
-			mbtAssignedFromUnassigned.add(0, new ArrayList<>());
-			trueAssignedFromMbt.add(0, new ArrayList<>());
 			doInit = false;
 		} else {
 			// We already found one Answer-Set and are requested to find another one
@@ -145,12 +152,6 @@ public class NaiveSolver extends AbstractSolver {
 		return grounder.assignmentToAnswerSet(predicate -> true, trueAtomsIntArray);
 	}
 
-
-	Map<Integer, Integer> choiceOn = new HashMap<>();
-	Map<Integer, Integer> choiceOff = new HashMap<>();
-	Integer nextChoice;
-	Stack<Integer> guessedAtomIds = new Stack<>();
-
 	private void doChoice() {
 		decisionLevel++;
 		decisionLevels.add(decisionLevel, new ArrayList<>());
@@ -194,45 +195,46 @@ public class NaiveSolver extends AbstractSolver {
 	}
 
 	private void doBacktrack() {
-		if (decisionLevel > 0) {
-			Integer lastGuessedAtom = guessedAtomIds.pop();
-			Boolean lastGuessedTruthValue = truthAssignments.get(lastGuessedAtom);
+		if (decisionLevel <= 0) {
+			return;
+		}
 
-			// Remove truth assignments of current decision level
-			for (Integer atomId : decisionLevels.get(decisionLevel)) {
-				truthAssignments.remove(atomId);
-			}
-			// Handle MBT assigned values:
-			// First, restore mbt when it got assigned true in this decision level
-			for (Integer atomId : trueAssignedFromMbt.get(decisionLevel)) {
-				mbtAssigned.add(atomId);
-			}
-			// Second, remove mbt indicator for values that were unassigned
-			for (Integer atomId : mbtAssignedFromUnassigned.get(decisionLevel)) {
-				mbtAssigned.remove(atomId);
-			}
-			// Clear atomIds in current decision level
-			decisionLevels.set(decisionLevel, new ArrayList<>());
-			mbtAssignedFromUnassigned.set(decisionLevel, new ArrayList<>());
-			trueAssignedFromMbt.set(decisionLevel, new ArrayList<>());
+		Integer lastGuessedAtom = guessedAtomIds.pop();
+		Boolean lastGuessedTruthValue = truthAssignments.get(lastGuessedAtom);
 
-			if (lastGuessedTruthValue) {
-				// Guess false now
-				guessedAtomIds.push(lastGuessedAtom);
-				truthAssignments.put(lastGuessedAtom, !lastGuessedTruthValue);
-				newTruthAssignments.add(lastGuessedAtom);
-				decisionLevels.get(decisionLevel).add(lastGuessedAtom);
-				didChange = true;
+		// Remove truth assignments of current decision level
+		for (Integer atomId : decisionLevels.get(decisionLevel)) {
+			truthAssignments.remove(atomId);
+		}
 
-			} else {
-				decisionLevel--;
-				doBacktrack();
-			}
+		// Handle MBT assigned values:
+		// First, restore mbt when it got assigned true in this decision level
+		for (Integer atomId : trueAssignedFromMbt.get(decisionLevel)) {
+			mbtAssigned.add(atomId);
+		}
 
+		// Second, remove mbt indicator for values that were unassigned
+		for (Integer atomId : mbtAssignedFromUnassigned.get(decisionLevel)) {
+			mbtAssigned.remove(atomId);
+		}
+
+		// Clear atomIds in current decision level
+		decisionLevels.set(decisionLevel, new ArrayList<>());
+		mbtAssignedFromUnassigned.set(decisionLevel, new ArrayList<>());
+		trueAssignedFromMbt.set(decisionLevel, new ArrayList<>());
+
+		if (lastGuessedTruthValue) {
+			// Guess false now
+			guessedAtomIds.push(lastGuessedAtom);
+			truthAssignments.put(lastGuessedAtom, !lastGuessedTruthValue);
+			newTruthAssignments.add(lastGuessedAtom);
+			decisionLevels.get(decisionLevel).add(lastGuessedAtom);
+			didChange = true;
+		} else {
+			decisionLevel--;
+			doBacktrack();
 		}
 	}
-
-
 
 	private void updateGrounderAssignments() {
 		int[] atomIds = new int[newTruthAssignments.size()];
@@ -275,9 +277,6 @@ public class NaiveSolver extends AbstractSolver {
 	private boolean exhaustedSearchSpace() {
 		return decisionLevel == 0;
 	}
-
-	private int decisionLevel;
-
 
 	private void doUnitPropagation() {
 		// Check each NoGood if it is unit (naive algorithm)
