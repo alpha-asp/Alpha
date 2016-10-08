@@ -3,8 +3,8 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,7 +19,7 @@ import static at.ac.tuwien.kr.alpha.Util.entry;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class DummyGrounder implements Grounder {
-	private static final Log LOG = LogFactory.getLog(AbstractGrounder.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGrounder.class);
 
 	private static Map<Integer, String> atomIdToString = Stream.of(
 		entry(1, "a"),
@@ -84,7 +84,7 @@ public class DummyGrounder implements Grounder {
 			predicateInstances.put(trueAtomPredicate, instanceList);
 		}
 
-		LOG.debug(
+		LOGGER.debug(
 			// NOTE(flowlo): If this stream would map to Predicate
 			// it could be easily filtered by filter.
 			Arrays.stream(trueAtoms)

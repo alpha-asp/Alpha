@@ -1,10 +1,11 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.GlobalSettings;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -15,6 +16,8 @@ import static java.lang.Math.abs;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class NaiveSolver extends AbstractSolver {
+	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveSolver.class);
+
 	public NaiveSolver(Grounder grounder) {
 		super(grounder, p -> true);
 
@@ -61,9 +64,9 @@ public class NaiveSolver extends AbstractSolver {
 				doUnitPropagation();
 				doMBTPropagation();
 			} else if (assignmentViolatesNoGoods()) {
-				if (GlobalSettings.DEBUG_OUTPUTS) {
-					System.out.println("Backtracking from wrong choices:");
-					System.out.println(reportChoiceStack());
+				System.out.println("Backtracking from wrong choices:");
+				if (LOGGER.isTraceEnabled()) {
+					LOGGER.trace(reportChoiceStack());
 				}
 				doBacktrack();
 				if (exhaustedSearchSpace()) {
@@ -73,20 +76,19 @@ public class NaiveSolver extends AbstractSolver {
 				doChoice();
 			} else if (noMBTValuesReamining()) {
 				AnswerSet as = getAnswerSetFromAssignment();
-				if (GlobalSettings.DEBUG_OUTPUTS) {
-					System.out.println("Answer-Set found: " + as.toString());
-					System.out.println(reportChoiceStack());
+				LOGGER.info("Answer-Set found: {}", as);
+				if (LOGGER.isTraceEnabled()) {
+					LOGGER.trace(reportChoiceStack());
 				}
 				return as;
 			} else {
-				if (GlobalSettings.DEBUG_OUTPUTS) {
-					System.out.println("Backtracking from wrong choices (MBT remaining):");
-					System.out.println("Currently MBT are:");
+				LOGGER.debug("Backtracking from wrong choices (MBT remaining):");
+				if (LOGGER.isTraceEnabled()) {
+					LOGGER.trace("Currently MBT:");
 					for (Integer integer : mbtAssigned) {
-						System.out.print(grounder.atomIdToString(integer) + " ");
+						LOGGER.trace(grounder.atomIdToString(integer));
 					}
-					System.out.println();
-					System.out.println(reportChoiceStack());
+					LOGGER.trace(reportChoiceStack());
 				}
 				doBacktrack();
 				if (exhaustedSearchSpace()) {

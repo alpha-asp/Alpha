@@ -1,12 +1,13 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.GlobalSettings;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -18,12 +19,19 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class DefaultSolver extends AbstractSolver {
+	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolver.class);
+
 	private NoGoodStore<ThriceTruth> store;
 	private Assignment assignment;
 
 	private boolean doInit = true;
 	private boolean didChange;
 	private int decisionLevel;
+
+	Map<Integer, Integer> choiceOn = new LinkedHashMap<>();
+	Map<Integer, Integer> choiceOff = new HashMap<>();
+	Integer nextChoice;
+	Stack<Pair<Integer, Boolean>> choiceStack = new Stack<>();
 
 	public DefaultSolver(Grounder grounder) {
 		super(grounder, p -> true);
@@ -53,9 +61,9 @@ public class DefaultSolver extends AbstractSolver {
 					didChange = true;
 				}
 			} else if (store.isNoGoodViolated()) {
-				if (GlobalSettings.DEBUG_OUTPUTS) {
-					System.out.println("Backtracking from wrong choices:");
-					System.out.println(reportChoiceStack());
+				LOGGER.debug("Backtracking from wrong choices:");
+				if (LOGGER.isTraceEnabled()) {
+					LOGGER.trace(reportChoiceStack());
 				}
 				doBacktrack();
 				if (exhaustedSearchSpace()) {
@@ -65,15 +73,15 @@ public class DefaultSolver extends AbstractSolver {
 				doChoice();
 			} else if (!assignment.containsMBT()) {
 				AnswerSet as = getAnswerSetFromAssignment();
-				if (GlobalSettings.DEBUG_OUTPUTS) {
-					System.out.println("Answer-Set found: " + as.toString());
-					System.out.println(reportChoiceStack());
+				LOGGER.info("Answer-Set found: {}", as);
+				if (LOGGER.isTraceEnabled()) {
+					LOGGER.trace(reportChoiceStack());
 				}
 				return as;
 			} else {
-				if (GlobalSettings.DEBUG_OUTPUTS) {
-					System.out.println("Backtracking from wrong choices (MBT remaining).");
-					System.out.println(reportChoiceStack());
+				LOGGER.debug("Backtracking from wrong choices (MBT remaining).");
+				if (LOGGER.isTraceEnabled()) {
+					LOGGER.trace(reportChoiceStack());
 				}
 				doBacktrack();
 				if (exhaustedSearchSpace()) {
@@ -101,7 +109,6 @@ public class DefaultSolver extends AbstractSolver {
 				decisionLevel--;
 				doBacktrack();
 			}
-
 		}
 	}
 
@@ -147,16 +154,10 @@ public class DefaultSolver extends AbstractSolver {
 		return !changeCopy;
 	}
 
-
 	private AnswerSet getAnswerSetFromAssignment() {
 		Set<Integer> trueAssignments = assignment.getTrueAssignments();
 		return grounder.assignmentToAnswerSet(predicate -> true, ArrayUtils.toPrimitive(trueAssignments.toArray(new Integer[trueAssignments.size()])));
 	}
-
-	Map<Integer, Integer> choiceOn = new LinkedHashMap<>();
-	Map<Integer, Integer> choiceOff = new HashMap<>();
-	Integer nextChoice;
-	Stack<Pair<Integer, Boolean>> choiceStack = new Stack<>();
 
 	private void doChoice() {
 		decisionLevel++;

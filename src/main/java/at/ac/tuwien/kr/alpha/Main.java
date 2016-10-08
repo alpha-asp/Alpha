@@ -14,8 +14,8 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
 import org.apache.commons.cli.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -27,7 +27,7 @@ import java.util.stream.Stream;
  * Main entry point for Alpha.
  */
 public class Main {
-	private static final Log LOG = LogFactory.getLog(Main.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
 	private static final String OPT_INPUT = "input";
 	private static final String OPT_HELP  = "help";
@@ -97,18 +97,18 @@ public class Main {
 				limit = n.intValue();
 			}
 		} catch (ParseException e) {
-			bailOut("Failed to parse number of answer sets requested.");
+			bailOut("Failed to parse number of answer sets requested.", e);
 		}
 
 		ParsedProgram program = null;
 		try {
 			program = parseVisit(new FileInputStream(commandLine.getOptionValue(OPT_INPUT)));
 		} catch (RecognitionException e) {
-			bailOut("Error while parsing input ASP program, see errors above.");
+			bailOut("Error while parsing input ASP program, see errors above.", e);
 		} catch (FileNotFoundException e) {
 			bailOut(e.getMessage());
 		} catch (IOException e) {
-			bailOut(e);
+			bailOut("Failed to parse program.", e);
 		}
 
 		// Apply program transformations/rewritings (currently none).
@@ -132,8 +132,8 @@ public class Main {
 		stream.forEach(System.out::println);
 	}
 
-	private static void bailOut(Object o) {
-		LOG.fatal(o);
+	private static void bailOut(String format, Object... arguments) {
+		LOGGER.error(format, arguments);
 		System.exit(1);
 	}
 
