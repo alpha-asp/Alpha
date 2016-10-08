@@ -4,9 +4,7 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;

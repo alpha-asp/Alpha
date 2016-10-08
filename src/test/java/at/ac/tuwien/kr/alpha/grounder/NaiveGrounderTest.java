@@ -5,7 +5,6 @@ import at.ac.tuwien.kr.alpha.common.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.Term;
 import at.ac.tuwien.kr.alpha.common.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
-import org.junit.Before;
 import org.junit.Test;
 
 import static java.util.Arrays.asList;
