@@ -1,5 +1,8 @@
 package at.ac.tuwien.kr.alpha.solver;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
@@ -8,34 +11,42 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 public class BasicAssignment implements Assignment {
 	private final Map<Integer, Entry> assignment = new HashMap<>();
-	private final List<Set<Integer>> decisionLevels = new ArrayList<>();
+	private final List<DecisionLevelState> decisionLevels = new ArrayList<>();
 	private final Set<Integer> trueAssignments = new HashSet<>();
-	private int mbts;
+	private int mbtCount;
 
 	@Override
 	public void clear() {
 		trueAssignments.clear();
 		decisionLevels.clear();
 		assignment.clear();
-		mbts = 0;
+		mbtCount = 0;
 	}
 
 	@Override
 	public void backtrack(int decisionLevel) {
 		for (int i = decisionLevel + 1; i < decisionLevels.size(); i++) {
-			for (Integer atom : decisionLevels.remove(i)) {
+			DecisionLevelState state = decisionLevels.remove(i);
+
+			for (Map.Entry<Integer, Integer> entry : state.mbtToTrue.entrySet()) {
+				final int atom = entry.getKey();
+				mbtCount++;
+				assignment.put(atom, new Entry(MBT, entry.getValue()));
+				trueAssignments.remove(atom);
+			}
+
+			for (Integer atom : state.unassignedToAssigned) {
 				if (MBT.equals(getTruth(atom))) {
-					mbts--;
+					mbtCount--;
 				}
 				assignment.remove(atom);
-				trueAssignments.remove(atom);
 			}
 		}
 	}
 
 	@Override
-	public boolean containsMBT() {
-		return mbts > 0;
+	public int getMBTCount() {
+		return mbtCount;
 	}
 
 	@Override
@@ -48,29 +59,64 @@ public class BasicAssignment implements Assignment {
 			throw new IllegalArgumentException("value must not be null");
 		}
 
-		ThriceTruth currentAssignment = getTruth(atom);
+		Entry current = get(atom);
 
-		if (currentAssignment != null && currentAssignment != value) {
+		final boolean unassignedToAssigned = current == null;
+		final boolean mbtToTrue = !unassignedToAssigned && MBT.equals(current.getTruth()) && TRUE.equals(value);
+
+		/* NOTE(flowlo):
+		 * Following code handles what might happen if we're asked to modify an
+		 * already existing assignment.
+		 * Initially this would throw an IllegalArgumentException, then
+		 * exceptions were made for cases when BasicNoGoodStore would assign the
+		 * same truth value more than once.
+		 * Additionally, DefaultSolver needs to modify truth directly when it
+		 * guesses an assignment.
+		 * These few lines stay here until we found a resolution on how to treat
+		 * that case.
+		 * Possible solutions:
+		 *  1. Allow overriding (encourages bad code).
+		 *  2. Add separate method to "flip" an assignment for guessing.
+		 *  3. ?
+
+		if (current != null && current.getTruth().equals(value)) {
+			return;
+		}
+
+		if (!unassignedToAssigned && !mbtToTrue) {
 			throw new IllegalArgumentException("already assigned");
 		}
 
+		*/
+
+		DecisionLevelState state;
+
+		// If we're at a new decision level, set up state.
 		if (decisionLevel == decisionLevels.size()) {
-			final HashSet<Integer> set = new HashSet<>();
-			set.add(atom);
-			decisionLevels.add(set);
+			state = new DecisionLevelState();
+			decisionLevels.add(state);
 		} else if (decisionLevel == decisionLevels.size() - 1) {
-			decisionLevels.get(decisionLevel).add(atom);
+			state = decisionLevels.get(decisionLevel);
 		} else {
 			throw new IllegalArgumentException("Wrong decision level!");
 		}
 
-		assignment.put(atom, new Entry(value, decisionLevel));
-
 		if (TRUE.equals(value)) {
 			trueAssignments.add(atom);
-		} else if (MBT.equals(value)) {
-			mbts++;
+			if (mbtToTrue) {
+				mbtCount--;
+				state.mbtToTrue.put(atom, current.getDecisionLevel());
+			}
+		} else {
+			if (MBT.equals(value)) {
+				mbtCount++;
+			}
+			if (unassignedToAssigned) {
+				state.unassignedToAssigned.add(atom);
+			}
 		}
+
+		assignment.put(atom, new Entry(value, decisionLevel));
 	}
 
 	@Override
@@ -111,5 +157,10 @@ public class BasicAssignment implements Assignment {
 	@Override
 	public String toString() {
 		return Arrays.toString(assignment.entrySet().toArray());
+	}
+
+	private class DecisionLevelState {
+		final Set<Integer> unassignedToAssigned = new HashSet<>();
+		final Map<Integer, Integer> mbtToTrue = new HashMap<>();
 	}
 }
