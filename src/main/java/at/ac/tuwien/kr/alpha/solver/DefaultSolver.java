@@ -40,7 +40,8 @@ public class DefaultSolver extends AbstractSolver {
 		this.store = new BasicNoGoodStore(assignment);
 	}
 
-	public AnswerSet computeNextAnswerSet() {
+	@Override
+	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
 		// Get basic rules and facts from grounder
 		if (doInit) {
 			obtainNoGoodsFromGrounder();
@@ -49,13 +50,13 @@ public class DefaultSolver extends AbstractSolver {
 			// We already found one Answer-Set and are requested to find another one
 			doBacktrack();
 			if (exhaustedSearchSpace()) {
-				return null;
+				return false;
 			}
 		}
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
 			if (!propagationFixpointReached()) {
-				updateGrounderAssignments();	// After a choice, it would be more efficient to propagate first and only then ask the grounder.
+				updateGrounderAssignment();	// After a choice, it would be more efficient to propagate first and only then ask the grounder.
 				obtainNoGoodsFromGrounder();
 				if (store.propagate()) {
 					didChange = true;
@@ -67,17 +68,18 @@ public class DefaultSolver extends AbstractSolver {
 				}
 				doBacktrack();
 				if (exhaustedSearchSpace()) {
-					return null;
+					return false;
 				}
 			} else if (choicesLeft()) {
 				doChoice();
-			} else if (!assignment.containsMBT()) {
+			} else if (assignment.getMBTCount() == 0) {
 				AnswerSet as = getAnswerSetFromAssignment();
 				LOGGER.info("Answer-Set found: {}", as);
 				if (LOGGER.isTraceEnabled()) {
 					LOGGER.trace(reportChoiceStack());
 				}
-				return as;
+				action.accept(as);
+				return true;
 			} else {
 				LOGGER.debug("Backtracking from wrong choices (MBT remaining).");
 				if (LOGGER.isTraceEnabled()) {
@@ -85,46 +87,47 @@ public class DefaultSolver extends AbstractSolver {
 				}
 				doBacktrack();
 				if (exhaustedSearchSpace()) {
-					return null;
+					return false;
 				}
 			}
 		}
 	}
 
 	private void doBacktrack() {
-		if (decisionLevel > 0) {
-			assignment.backtrack(decisionLevel - 1);
-			Pair<Integer, Boolean> lastChoice = choiceStack.pop();
+		if (decisionLevel <= 0) {
+			return;
+		}
 
-			Integer lastGuessedAtom = lastChoice.getLeft();
-			Boolean lastGuessedTruthValue = lastChoice.getRight();
+		assignment.backtrack(decisionLevel - 1);
+		Pair<Integer, Boolean> lastChoice = choiceStack.pop();
 
-			if (lastGuessedTruthValue) {
-				// Guess false now
-				choiceStack.push(new ImmutablePair<>(lastGuessedAtom, !lastGuessedTruthValue));
-				store.assign(lastGuessedAtom, lastGuessedTruthValue ? ThriceTruth.TRUE : FALSE);
+		Integer lastGuessedAtom = lastChoice.getLeft();
+		Boolean lastGuessedTruthValue = lastChoice.getRight();
 
-				didChange = true;
-			} else {
-				decisionLevel--;
-				doBacktrack();
-			}
+		if (lastGuessedTruthValue) {
+			// Guess false now
+			choiceStack.push(new ImmutablePair<>(lastGuessedAtom, false));
+			store.assign(lastGuessedAtom, FALSE);
+
+			didChange = true;
+		} else {
+			decisionLevel--;
+			doBacktrack();
 		}
 	}
 
-	private void updateGrounderAssignments() {
-		Map<Integer, ThriceTruth> changedAssignments = store.getChangedAssignments();
+	private void updateGrounderAssignment() {
+		final Map<Integer, ThriceTruth> changedAssignments = store.getChangedAssignments();
 		int[] atomIds = new int[changedAssignments.size()];
 		boolean[] truthValues = new boolean[changedAssignments.size()];
-		int arrPos = 0;
+		int i = 0;
 		for (Map.Entry<Integer, ThriceTruth> assignment : changedAssignments.entrySet()) {
-			atomIds[arrPos] = assignment.getKey();
-			truthValues[arrPos] = !(FALSE.equals(assignment.getValue()));
-			arrPos++;
+			atomIds[i] = assignment.getKey();
+			truthValues[i] = assignment.getValue().toBoolean();
+			i++;
 		}
 		grounder.updateAssignment(atomIds, truthValues);
 	}
-
 
 	private void obtainNoGoodsFromGrounder() {
 		// Obtain and record NoGoods
@@ -133,14 +136,13 @@ public class DefaultSolver extends AbstractSolver {
 			store.add(noGoodEntry.getKey(), noGoodEntry.getValue());
 		}
 		if (!basicNoGoods.isEmpty()) {
-			didChange = true;        // Record to detect propagation fixpoint, checking if new NoGoods were reported might be better here.
+			// Record to detect propagation fixpoint, checking if new NoGoods were reported might be better here.
+			didChange = true;
 		}
 		// Record choice atoms
 		Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms = grounder.getChoiceAtoms();
-		Map<Integer, Integer> choiceOn = choiceAtoms.getKey();
-		Map<Integer, Integer> choiceOff = choiceAtoms.getValue();
-		this.choiceOn.putAll(choiceOn);
-		this.choiceOff.putAll(choiceOff);
+		this.choiceOn.putAll(choiceAtoms.getKey());
+		this.choiceOff.putAll(choiceAtoms.getValue());
 	}
 
 	private boolean exhaustedSearchSpace() {
@@ -172,28 +174,29 @@ public class DefaultSolver extends AbstractSolver {
 		// Check if there is an enabled choice that is not also disabled
 		// HINT: tracking changes of ChoiceOn, ChoiceOff directly could increase performance (analyze store.getChangedAssignments()).
 		for (Integer enablerAtom : choiceOn.keySet()) {
-			if (!(FALSE.equals(assignment.getTruth(enablerAtom)))) {
-				Integer nextChoiceCandidate = choiceOn.get(enablerAtom);
+			if (FALSE.equals(assignment.getTruth(enablerAtom))) {
+				continue;
+			}
+			Integer nextChoiceCandidate = choiceOn.get(enablerAtom);
 
-				// Only consider unassigned choices
-				if (assignment.getTruth(nextChoiceCandidate) != null) {
-					continue;
-				}
+			// Only consider unassigned choices
+			if (assignment.getTruth(nextChoiceCandidate) != null) {
+				continue;
+			}
 
-				// Check that candidate is not disabled already
-				boolean isDisabled = false;
-				for (Map.Entry<Integer, Integer> disablerAtom : choiceOff.entrySet()) {
-					if (nextChoiceCandidate.equals(disablerAtom.getValue())
-						&& assignment.getTruth(disablerAtom.getKey()) != null
-						&& !(FALSE.equals(assignment.getTruth(disablerAtom.getKey())))) {
-						isDisabled = true;
-						break;
-					}
+			// Check that candidate is not disabled already
+			boolean isDisabled = false;
+			for (Map.Entry<Integer, Integer> disablerAtom : choiceOff.entrySet()) {
+				if (nextChoiceCandidate.equals(disablerAtom.getValue())
+					&& assignment.getTruth(disablerAtom.getKey()) != null
+					&& !(FALSE.equals(assignment.getTruth(disablerAtom.getKey())))) {
+					isDisabled = true;
+					break;
 				}
-				if (!isDisabled) {
-					nextChoice = nextChoiceCandidate;
-					return true;
-				}
+			}
+			if (!isDisabled) {
+				nextChoice = nextChoiceCandidate;
+				return true;
 			}
 		}
 		return false;
@@ -205,16 +208,5 @@ public class DefaultSolver extends AbstractSolver {
 			ret.append(choice.getRight() ? "+" : "-").append(grounder.atomIdToString(choice.getLeft())).append(" ");
 		}
 		return ret.toString();
-	}
-
-	@Override
-	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
-		AnswerSet nextAnswerSet = computeNextAnswerSet();
-		if (nextAnswerSet != null) {
-			action.accept(nextAnswerSet);
-			return true;
-		} else {
-			return false;
-		}
 	}
 }
