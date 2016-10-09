@@ -64,7 +64,7 @@ public class NaiveSolver extends AbstractSolver {
 				doUnitPropagation();
 				doMBTPropagation();
 			} else if (assignmentViolatesNoGoods()) {
-				System.out.println("Backtracking from wrong choices:");
+				LOGGER.info("Backtracking from wrong choices:");
 				if (LOGGER.isTraceEnabled()) {
 					LOGGER.trace(reportChoiceStack());
 				}
@@ -228,6 +228,7 @@ public class NaiveSolver extends AbstractSolver {
 		if (lastGuessedTruthValue) {
 			// Guess false now
 			guessedAtomIds.push(lastGuessedAtom);
+
 			truthAssignments.put(lastGuessedAtom, !lastGuessedTruthValue);
 			newTruthAssignments.add(lastGuessedAtom);
 			decisionLevels.get(decisionLevel).add(lastGuessedAtom);

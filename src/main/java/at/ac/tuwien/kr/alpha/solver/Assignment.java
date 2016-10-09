@@ -21,10 +21,12 @@ public interface Assignment {
 	void backtrack(int decisionLevel);
 
 	/**
-	 * Reports if the current assignment is free of must-be-true values.
-	 * @return false iff the current assignment contains only TRUE and FALSE as assigned values.
+	 * Reports how many atoms are assigned to must-be-true currently. If this method returns
+	 * zero, the assignment is guaranteed to be free of must-be-true values (i.e. it only
+	 * contains assignments to either true or false).
+	 * @return the count of must-be-true values in the asignment.
 	 */
-	boolean containsMBT();
+	int getMBTCount();
 
 	/**
 	 * Assigns the given atom the given truth value at the current decision level.
@@ -32,19 +34,6 @@ public interface Assignment {
 	 * @param value the truth value to assign.
 	 */
 	void assign(int atom, ThriceTruth value, int decisionLevel);
-
-	/**
-	 * Returns the truth value assigned to an atom.
-	 * @param atom the id of the atom.
-	 * @return the truth value; null if atomId is not assigned.
-	 */
-	default ThriceTruth getTruth(int atom) {
-		final Entry entry = get(atom);
-		if (entry != null) {
-			return entry.getTruth();
-		}
-		return null;
-	}
 
 	/**
 	 * Returns all atomIds that are assigned TRUE in the current assignment.
@@ -59,15 +48,22 @@ public interface Assignment {
 		int getDecisionLevel();
 	}
 
+	/**
+	 * Returns the truth value assigned to an atom.
+	 * @param atom the id of the atom.
+	 * @return the truth value; null if atomId is not assigned.
+	 */
+	default ThriceTruth getTruth(int atom) {
+		final Entry entry = get(atom);
+		return entry == null ? null : entry.getTruth();
+	}
+
 	default boolean isAssigned(int atom) {
 		return get(atom) != null;
 	}
 
 	default boolean contains(int literal) {
 		final Entry entry = get(atomOf(literal));
-		if (entry == null) {
-			return false;
-		}
-		return isNegated(literal) == (FALSE.equals(getTruth(atomOf(literal))));
+		return entry != null && isNegated(literal) == (FALSE.equals(entry.getTruth()));
 	}
 }
