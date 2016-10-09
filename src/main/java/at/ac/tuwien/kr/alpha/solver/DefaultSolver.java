@@ -164,6 +164,7 @@ public class DefaultSolver extends AbstractSolver {
 		store.setDecisionLevel(decisionLevel);
 		// We guess true for any unassigned choice atom (backtrack tries false)
 		store.assign(nextChoice, ThriceTruth.TRUE);
+		choiceStack.push(new ImmutablePair<>(nextChoice, true));
 		didChange = true;	// Record change to compute propagation fixpoint again.
 	}
 
