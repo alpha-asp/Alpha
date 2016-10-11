@@ -44,6 +44,16 @@ public class BasicNoGoodStoreTest {
 	}
 
 	@Test
+	public void addNotCausingAssignment() {
+		assignment.assign(1, TRUE, 0);
+		assignment.assign(2, TRUE, 0);
+		assignment.assign(3, TRUE, 0);
+		store.add(3, new NoGood(new int[] {-5, -4, 1}, 0));
+
+		assertEquals(null, assignment.getTruth(5));
+	}
+
+	@Test
 	public void propBinary() {
 		assignment.assign(2, FALSE, DECISION_LEVEL);
 
