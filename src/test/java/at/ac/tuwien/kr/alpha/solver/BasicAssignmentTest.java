@@ -1,7 +1,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -9,8 +8,7 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 public class BasicAssignmentTest {
 	private final BasicAssignment assignment;
@@ -34,15 +32,14 @@ public class BasicAssignmentTest {
 		assignment.assign(-1, null, 0);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	@Ignore("See note in BasicAssignment.assign")
+	@Test
 	public void alreadyAssignedThrows() throws Exception {
-		assignment.assign(1, MBT, 0);
-		assignment.assign(1, FALSE, 0);
+		assertTrue(assignment.assign(1, MBT, 0));
+		assertFalse(assignment.assign(1, FALSE, 0));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void skippedDecisionLevelthrows() throws Exception {
+	public void skippedDecisionLevelThrows() throws Exception {
 		assignment.assign(1, MBT, 0);
 		assignment.assign(1, TRUE, 2);
 	}

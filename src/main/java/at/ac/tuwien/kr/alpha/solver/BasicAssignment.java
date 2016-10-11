@@ -1,8 +1,5 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
@@ -12,12 +9,10 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 public class BasicAssignment implements Assignment {
 	private final Map<Integer, Entry> assignment = new HashMap<>();
 	private final List<DecisionLevelState> decisionLevels = new ArrayList<>();
-	private final Set<Integer> trueAssignments = new HashSet<>();
 	private int mbtCount;
 
 	@Override
 	public void clear() {
-		trueAssignments.clear();
 		decisionLevels.clear();
 		assignment.clear();
 		mbtCount = 0;
@@ -32,7 +27,6 @@ public class BasicAssignment implements Assignment {
 				final int atom = entry.getKey();
 				mbtCount++;
 				assignment.put(atom, new Entry(MBT, entry.getValue()));
-				trueAssignments.remove(atom);
 			}
 
 			for (Integer atom : state.unassignedToAssigned) {
@@ -50,7 +44,7 @@ public class BasicAssignment implements Assignment {
 	}
 
 	@Override
-	public void assign(int atom, ThriceTruth value, int decisionLevel) {
+	public boolean assign(int atom, ThriceTruth value, int decisionLevel) {
 		if (!isAtom(atom)) {
 			throw new IllegalArgumentException("atom must be positive");
 		}
@@ -59,35 +53,18 @@ public class BasicAssignment implements Assignment {
 			throw new IllegalArgumentException("value must not be null");
 		}
 
-		Entry current = get(atom);
+		final Entry current = get(atom);
+
+		if (current != null && current.getTruth().equals(value)) {
+			return true;
+		}
 
 		final boolean unassignedToAssigned = current == null;
 		final boolean mbtToTrue = !unassignedToAssigned && MBT.equals(current.getTruth()) && TRUE.equals(value);
 
-		/* NOTE(flowlo):
-		 * Following code handles what might happen if we're asked to modify an
-		 * already existing assignment.
-		 * Initially this would throw an IllegalArgumentException, then
-		 * exceptions were made for cases when BasicNoGoodStore would assign the
-		 * same truth value more than once.
-		 * Additionally, DefaultSolver needs to modify truth directly when it
-		 * guesses an assignment.
-		 * These few lines stay here until we found a resolution on how to treat
-		 * that case.
-		 * Possible solutions:
-		 *  1. Allow overriding (encourages bad code).
-		 *  2. Add separate method to "flip" an assignment for guessing.
-		 *  3. ?
-
-		if (current != null && current.getTruth().equals(value)) {
-			return;
-		}
-
 		if (!unassignedToAssigned && !mbtToTrue) {
-			throw new IllegalArgumentException("already assigned");
+			return false;
 		}
-
-		*/
 
 		DecisionLevelState state;
 
@@ -102,7 +79,6 @@ public class BasicAssignment implements Assignment {
 		}
 
 		if (TRUE.equals(value)) {
-			trueAssignments.add(atom);
 			if (mbtToTrue) {
 				mbtCount--;
 				state.mbtToTrue.put(atom, current.getDecisionLevel());
@@ -117,11 +93,18 @@ public class BasicAssignment implements Assignment {
 		}
 
 		assignment.put(atom, new Entry(value, decisionLevel));
+		return true;
 	}
 
 	@Override
 	public Set<Integer> getTrueAssignments() {
-		return Collections.unmodifiableSet(trueAssignments);
+		Set<Integer> result = new HashSet<>();
+		for (Map.Entry<Integer, Entry> entry : assignment.entrySet()) {
+			if (TRUE.equals(entry.getValue().getTruth())) {
+				result.add(entry.getKey());
+			}
+		}
+		return result;
 	}
 
 	@Override

@@ -20,20 +20,20 @@ public interface NoGoodStore<T extends ThriceTruth> {
 	 * @param atom the atom to assign.
 	 * @param value the truth value to assign.
 	 */
-	void assign(int atom, T value);
+	boolean assign(int atom, T value);
 
 	/**
 	 * Adds a nogood with the given id.
 	 * @param id the unique identifier of the nogood.
 	 * @param noGood the nogood to add.
 	 */
-	void add(int id, NoGood noGood);
+	boolean add(int id, NoGood noGood);
 
 	/**
-	 * Returns whether the current assignment violates some nogood.
-	 * @return true iff there exists a nogood that is violated by the current assignment.
+	 * Returns whether a set of nogoods that are violated by the current assignment.
+	 * @return the set of violated nogoods.
 	 */
-	boolean isNoGoodViolated();
+	NoGood getViolatedNoGood();
 
 	/**
 	 * Apply unit-propagation and mbt-propagation. Propagation should stop as soon as some NoGood is violated.

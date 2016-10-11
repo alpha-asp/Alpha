@@ -4,7 +4,6 @@ import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.Literals.isNegated;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 
 public interface Assignment {
 	/**
@@ -29,11 +28,11 @@ public interface Assignment {
 	int getMBTCount();
 
 	/**
-	 * Assigns the given atom the given truth value at the current decision level.
+	 * Assigns the given atom the given truth value at the given decision level.
 	 * @param atom the atom to assign.
 	 * @param value the truth value to assign.
 	 */
-	void assign(int atom, ThriceTruth value, int decisionLevel);
+	boolean assign(int atom, ThriceTruth value, int decisionLevel);
 
 	/**
 	 * Returns all atomIds that are assigned TRUE in the current assignment.
@@ -64,6 +63,6 @@ public interface Assignment {
 
 	default boolean contains(int literal) {
 		final Entry entry = get(atomOf(literal));
-		return entry != null && isNegated(literal) == (FALSE.equals(entry.getTruth()));
+		return entry != null && isNegated(literal) == !entry.getTruth().toBoolean();
 	}
 }

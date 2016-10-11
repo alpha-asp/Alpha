@@ -61,7 +61,7 @@ public class DefaultSolver extends AbstractSolver {
 				if (store.propagate()) {
 					didChange = true;
 				}
-			} else if (store.isNoGoodViolated()) {
+			} else if (store.getViolatedNoGood() != null) {
 				LOGGER.debug("Backtracking from wrong choices:");
 				if (LOGGER.isTraceEnabled()) {
 					LOGGER.trace(reportChoiceStack());

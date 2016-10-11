@@ -156,7 +156,9 @@ public class NaiveSolver extends AbstractSolver {
 
 	private void doChoice() {
 		decisionLevel++;
-		decisionLevels.add(decisionLevel, new ArrayList<>());
+		ArrayList<Integer> list = new ArrayList<>();
+		list.add(nextChoice);
+		decisionLevels.add(decisionLevel, list);
 		trueAssignedFromMbt.add(decisionLevel, new ArrayList<>());
 		mbtAssignedFromUnassigned.add(decisionLevel, new ArrayList<>());
 		// We guess true for any unassigned choice atom (backtrack tries false)
