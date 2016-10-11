@@ -203,6 +203,10 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private String reportChoiceStack() {
+		if (choiceStack.isEmpty()) {
+			return "Choice stack is empty.";
+		}
+
 		StringBuilder ret = new StringBuilder("Choice stack is: ");
 		for (Pair<Integer, Boolean> choice : choiceStack) {
 			ret.append(choice.getRight() ? "+" : "-").append(grounder.atomIdToString(choice.getLeft())).append(" ");

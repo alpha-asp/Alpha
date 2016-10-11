@@ -116,6 +116,10 @@ public class NaiveSolver extends AbstractSolver {
 	}
 
 	private String reportChoiceStack() {
+		if (guessedAtomIds.isEmpty()) {
+			return "Choice stack is empty.";
+		}
+
 		String report = "Choice stack is: ";
 		for (Integer guessedAtomId : guessedAtomIds) {
 			report += (truthAssignments.get(guessedAtomId) ? "+" : "-") + guessedAtomId + " [" + grounder.atomIdToString(guessedAtomId) + "] ";
