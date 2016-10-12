@@ -6,8 +6,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
@@ -63,7 +65,7 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
-	public AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, int[] trueAtoms) {
+	public AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, Iterable<Integer> trueAtoms) {
 		// Note: This grounder only deals with 0-ary predicates, i.e., every atom is a predicate and there is
 		// 	 only one predicate instance representing 0 terms.
 
@@ -83,14 +85,6 @@ public class DummyGrounder implements Grounder {
 			instanceList.add(internalPredicateInstance);
 			predicateInstances.put(trueAtomPredicate, instanceList);
 		}
-
-		LOGGER.debug(
-			// NOTE(flowlo): If this stream would map to Predicate
-			// it could be easily filtered by filter.
-			Arrays.stream(trueAtoms)
-				.mapToObj(atomIdToString::get)
-				.collect(Collectors.joining(", ", "{ ", " }"))
-		);
 
 		return  new BasicAnswerSet(trueAtomPredicates, predicateInstances);
 	}

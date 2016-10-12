@@ -72,7 +72,7 @@ public class ChoiceGrounder implements Grounder {
 	).collect(entriesToMap());
 
 	@Override
-	public AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, int[] trueAtoms) {
+	public AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, Iterable<Integer> trueAtoms) {
 		Set<Predicate> trueAtomPredicates = new HashSet<>();
 		for (int trueAtom : trueAtoms) {
 			BasicPredicate atomPredicate = new BasicPredicate(atomIdToString.get(trueAtom), 0);

@@ -29,6 +29,15 @@ public interface NoGoodStore<T extends ThriceTruth> {
 	 */
 	boolean add(int id, NoGood noGood);
 
+	default boolean addAll(Map<Integer, ? extends NoGood> m) {
+		for (Map.Entry<Integer, ? extends NoGood> e : m.entrySet()) {
+			if (!add(e.getKey(), e.getValue())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	/**
 	 * Returns whether a set of nogoods that are violated by the current assignment.
 	 * @return the set of violated nogoods.

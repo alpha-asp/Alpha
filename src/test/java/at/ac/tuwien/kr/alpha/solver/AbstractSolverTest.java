@@ -2,6 +2,9 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
+import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
@@ -18,7 +21,11 @@ import static at.ac.tuwien.kr.alpha.MainTest.stream;
 import static org.junit.Assert.assertEquals;
 
 public abstract class AbstractSolverTest {
-	protected abstract Solver getInstance(Grounder grounder);
+	protected abstract Solver getInstance(Grounder grounder, java.util.function.Predicate<Predicate> filter);
+
+	private Solver getInstance(Grounder grounder) {
+		return getInstance(grounder, p -> true);
+	}
 
 	@Test
 	public void testFactsOnlyProgram() throws IOException {
@@ -125,9 +132,7 @@ public abstract class AbstractSolverTest {
 				.build()
 		));
 
-		Set<AnswerSet> answerSets = solver.collectSet();
-
-		assertEquals(expected, answerSets);
+		assertEquals(expected, solver.collectSet());
 	}
 
 	private static BasicAnswerSet.Builder base() {
@@ -194,8 +199,28 @@ public abstract class AbstractSolverTest {
 				.build()
 		);
 
-		List<AnswerSet> answerSets = solver.collectList();
+		assertEquals(expected, solver.collectList());
+	}
 
-		assertEquals(expected, answerSets);
+
+	@Test
+	public void withDummyGrounder() {
+		final Solver solver = getInstance(new DummyGrounder());
+
+		AnswerSet expected = new BasicAnswerSet.Builder()
+			.predicate("a")
+			.predicate("b")
+			.predicate("_br1")
+			.predicate("c")
+			.build();
+
+		List<AnswerSet> answerSets = solver.collectList();
+		assertEquals(1, answerSets.size());
+		assertEquals(expected, answerSets.get(0));
+	}
+
+	@Test
+	public void withChoiceGrounder() {
+		assertEquals(2, getInstance(new ChoiceGrounder()).collectList().size());
 	}
 }

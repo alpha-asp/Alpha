@@ -2,17 +2,21 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Stack;
 import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 /**
  * The new default solver employed in Alpha.
@@ -33,8 +37,8 @@ public class DefaultSolver extends AbstractSolver {
 	Integer nextChoice;
 	Stack<Pair<Integer, Boolean>> choiceStack = new Stack<>();
 
-	public DefaultSolver(Grounder grounder) {
-		super(grounder, p -> true);
+	public DefaultSolver(Grounder grounder, java.util.function.Predicate<Predicate> filter) {
+		super(grounder, filter);
 
 		this.assignment = new BasicAssignment();
 		this.store = new BasicNoGoodStore(assignment);
@@ -73,7 +77,7 @@ public class DefaultSolver extends AbstractSolver {
 			} else if (choicesLeft()) {
 				doChoice();
 			} else if (assignment.getMBTCount() == 0) {
-				AnswerSet as = getAnswerSetFromAssignment();
+				AnswerSet as = translate(assignment.getTrueAssignments());
 				LOGGER.info("Answer-Set found: {}", as);
 				if (LOGGER.isTraceEnabled()) {
 					LOGGER.trace(reportChoiceStack());
@@ -130,19 +134,19 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private void obtainNoGoodsFromGrounder() {
-		// Obtain and record NoGoods
-		Map<Integer, NoGood> basicNoGoods = grounder.getNoGoods();
-		for (Map.Entry<Integer, NoGood> noGoodEntry : basicNoGoods.entrySet()) {
-			store.add(noGoodEntry.getKey(), noGoodEntry.getValue());
-		}
-		if (!basicNoGoods.isEmpty()) {
-			// Record to detect propagation fixpoint, checking if new NoGoods were reported might be better here.
+		Map<Integer, NoGood> obtained = grounder.getNoGoods();
+
+		if (!obtained.isEmpty()) {
+			// Record to detect propagation fixpoint, checking if new NoGoods were reported would be better here.
 			didChange = true;
 		}
+
+		store.addAll(obtained);
+
 		// Record choice atoms
-		Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms = grounder.getChoiceAtoms();
-		this.choiceOn.putAll(choiceAtoms.getKey());
-		this.choiceOff.putAll(choiceAtoms.getValue());
+		final Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms = grounder.getChoiceAtoms();
+		choiceOn.putAll(choiceAtoms.getKey());
+		choiceOff.putAll(choiceAtoms.getValue());
 	}
 
 	private boolean exhaustedSearchSpace() {
@@ -156,18 +160,14 @@ public class DefaultSolver extends AbstractSolver {
 		return !changeCopy;
 	}
 
-	private AnswerSet getAnswerSetFromAssignment() {
-		Set<Integer> trueAssignments = assignment.getTrueAssignments();
-		return grounder.assignmentToAnswerSet(predicate -> true, ArrayUtils.toPrimitive(trueAssignments.toArray(new Integer[trueAssignments.size()])));
-	}
-
 	private void doChoice() {
 		decisionLevel++;
 		store.setDecisionLevel(decisionLevel);
 		// We guess true for any unassigned choice atom (backtrack tries false)
-		store.assign(nextChoice, ThriceTruth.TRUE);
+		store.assign(nextChoice, TRUE);
 		choiceStack.push(new ImmutablePair<>(nextChoice, true));
-		didChange = true;	// Record change to compute propagation fixpoint again.
+		// Record change to compute propagation fixpoint again.
+		didChange = true;
 	}
 
 	private boolean choicesLeft() {
