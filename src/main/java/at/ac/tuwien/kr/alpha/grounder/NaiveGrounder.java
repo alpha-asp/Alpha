@@ -122,8 +122,7 @@ public class NaiveGrounder extends AbstractGrounder {
 	}
 
 	@Override
-	public AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, int[] trueAtoms) {
-
+	public AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, Iterable<Integer> trueAtoms) {
 		Map<Predicate, Set<PredicateInstance>> predicateInstances = new HashMap<>();
 		HashSet<Predicate> knownPredicates = new HashSet<>();
 

@@ -1,143 +1,146 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.GlobalSettings;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 /**
  * The new default solver employed in Alpha.
  * Copyright (c) 2016, the Alpha Team.
  */
 public class DefaultSolver extends AbstractSolver {
-	private NoGoodStore<ThriceTruth> store;
-	private Assignment assignment;
+	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolver.class);
 
-	private boolean doInit = true;
-	private boolean didChange;
+	private final NoGoodStore<ThriceTruth> store;
+	private final Map<Integer, Integer> choiceOn = new LinkedHashMap<>();
+	private final Map<Integer, Integer> choiceOff = new HashMap<>();
+	private final ChoiceStack choiceStack;
+	private final Assignment assignment;
+
 	private int decisionLevel;
 
-	public DefaultSolver(Grounder grounder) {
-		super(grounder, p -> true);
+	private boolean didChange;
+
+	public DefaultSolver(Grounder grounder, java.util.function.Predicate<Predicate> filter) {
+		super(grounder, filter);
 
 		this.assignment = new BasicAssignment();
-		this.store = new BasicNoGoodStore(assignment);
+		this.store = new BasicNoGoodStore(assignment, grounder);
+		this.choiceStack = new ChoiceStack(grounder);
 	}
 
-	public AnswerSet computeNextAnswerSet() {
+	@Override
+	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
 		// Get basic rules and facts from grounder
-		if (doInit) {
+		if (store.isEmpty()) {
 			obtainNoGoodsFromGrounder();
-			doInit = false;
 		} else {
 			// We already found one Answer-Set and are requested to find another one
 			doBacktrack();
-			if (exhaustedSearchSpace()) {
-				return null;
+			if (isSearchSpaceExhausted()) {
+				return false;
 			}
 		}
+
+		int nextChoice;
+
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
 			if (!propagationFixpointReached()) {
-				updateGrounderAssignments();	// After a choice, it would be more efficient to propagate first and only then ask the grounder.
+				// After a choice, it would be more efficient to propagate first and only then ask the grounder.
+				updateGrounderAssignment();
 				obtainNoGoodsFromGrounder();
 				if (store.propagate()) {
 					didChange = true;
 				}
-			} else if (store.isNoGoodViolated()) {
-				if (GlobalSettings.DEBUG_OUTPUTS) {
-					System.out.println("Backtracking from wrong choices:");
-					System.out.println(reportChoiceStack());
-				}
+			} else if (store.getViolatedNoGood() != null) {
+				LOGGER.trace("Backtracking from wrong choices ({} violated): {}", store.getViolatedNoGood(), choiceStack);
 				doBacktrack();
-				if (exhaustedSearchSpace()) {
-					return null;
+				if (isSearchSpaceExhausted()) {
+					return false;
 				}
-			} else if (choicesLeft()) {
-				doChoice();
-			} else if (!assignment.containsMBT()) {
-				AnswerSet as = getAnswerSetFromAssignment();
-				if (GlobalSettings.DEBUG_OUTPUTS) {
-					System.out.println("Answer-Set found: " + as.toString());
-					System.out.println(reportChoiceStack());
-				}
-				return as;
+			} else if ((nextChoice = computeChoice()) != 0) {
+				doChoice(nextChoice);
+			} else if (assignment.getMBTCount() == 0) {
+				AnswerSet as = translate(assignment.getTrueAssignments());
+				LOGGER.debug("Answer-Set found: {}", as);
+				LOGGER.trace("Choices: {}", choiceStack);
+				action.accept(as);
+				return true;
 			} else {
-				if (GlobalSettings.DEBUG_OUTPUTS) {
-					System.out.println("Backtracking from wrong choices (MBT remaining).");
-					System.out.println(reportChoiceStack());
-				}
+				LOGGER.debug("Backtracking from wrong choices ({} MBTs): {}", assignment.getMBTCount(), choiceStack);
 				doBacktrack();
-				if (exhaustedSearchSpace()) {
-					return null;
+				if (isSearchSpaceExhausted()) {
+					return false;
 				}
 			}
 		}
 	}
 
 	private void doBacktrack() {
-		if (decisionLevel > 0) {
-			assignment.backtrack(decisionLevel - 1);
-			Pair<Integer, Boolean> lastChoice = choiceStack.pop();
+		if (decisionLevel <= 0) {
+			return;
+		}
 
-			Integer lastGuessedAtom = lastChoice.getLeft();
-			Boolean lastGuessedTruthValue = lastChoice.getRight();
+		assignment.backtrack(decisionLevel - 1);
 
-			if (lastGuessedTruthValue) {
-				// Guess false now
-				choiceStack.push(new ImmutablePair<>(lastGuessedAtom, !lastGuessedTruthValue));
-				store.assign(lastGuessedAtom, lastGuessedTruthValue ? ThriceTruth.TRUE : FALSE);
+		int lastGuessedAtom = choiceStack.peekAtom();
+		boolean lastGuessedValue = choiceStack.peekValue();
+		choiceStack.remove();
 
-				didChange = true;
-			} else {
-				decisionLevel--;
-				doBacktrack();
-			}
-
+		if (lastGuessedValue) {
+			store.assign(lastGuessedAtom, FALSE);
+			choiceStack.push(lastGuessedAtom, false);
+			didChange = true;
+		} else {
+			decisionLevel--;
+			store.setDecisionLevel(decisionLevel);
+			doBacktrack();
 		}
 	}
 
-
-	private void updateGrounderAssignments() {
-		Map<Integer, ThriceTruth> changedAssignments = store.getChangedAssignments();
+	private void updateGrounderAssignment() {
+		final Map<Integer, ThriceTruth> changedAssignments = store.getChangedAssignments();
 		int[] atomIds = new int[changedAssignments.size()];
 		boolean[] truthValues = new boolean[changedAssignments.size()];
-		int arrPos = 0;
+		int i = 0;
 		for (Map.Entry<Integer, ThriceTruth> assignment : changedAssignments.entrySet()) {
-			atomIds[arrPos] = assignment.getKey();
-			truthValues[arrPos] = !(FALSE.equals(assignment.getValue()));
-			arrPos++;
+			atomIds[i] = assignment.getKey();
+			truthValues[i] = assignment.getValue().toBoolean();
+			i++;
 		}
 		grounder.updateAssignment(atomIds, truthValues);
 	}
 
-
 	private void obtainNoGoodsFromGrounder() {
-		// Obtain and record NoGoods
-		Map<Integer, NoGood> basicNoGoods = grounder.getNoGoods();
-		for (Map.Entry<Integer, NoGood> noGoodEntry : basicNoGoods.entrySet()) {
-			store.add(noGoodEntry.getKey(), noGoodEntry.getValue());
+		Map<Integer, NoGood> obtained = grounder.getNoGoods();
+
+		if (!obtained.isEmpty()) {
+			// Record to detect propagation fixpoint, checking if new NoGoods were reported would be better here.
+			didChange = true;
 		}
-		if (!basicNoGoods.isEmpty()) {
-			didChange = true;        // Record to detect propagation fixpoint, checking if new NoGoods were reported might be better here.
-		}
-		// Record choice atoms
-		Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms = grounder.getChoiceAtoms();
-		Map<Integer, Integer> choiceOn = choiceAtoms.getKey();
-		Map<Integer, Integer> choiceOff = choiceAtoms.getValue();
-		this.choiceOn.putAll(choiceOn);
-		this.choiceOff.putAll(choiceOff);
+
+		store.addAll(obtained);
+
+		// Record choice atoms.
+		final Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms = grounder.getChoiceAtoms();
+		choiceOn.putAll(choiceAtoms.getKey());
+		choiceOff.putAll(choiceAtoms.getValue());
 	}
 
-	private boolean exhaustedSearchSpace() {
+	private boolean isSearchSpaceExhausted() {
 		return decisionLevel == 0;
 	}
 
@@ -148,72 +151,47 @@ public class DefaultSolver extends AbstractSolver {
 		return !changeCopy;
 	}
 
-
-	private AnswerSet getAnswerSetFromAssignment() {
-		Set<Integer> trueAssignments = assignment.getTrueAssignments();
-		return grounder.assignmentToAnswerSet(predicate -> true, ArrayUtils.toPrimitive(trueAssignments.toArray(new Integer[trueAssignments.size()])));
-	}
-
-	Map<Integer, Integer> choiceOn = new LinkedHashMap<>();
-	Map<Integer, Integer> choiceOff = new HashMap<>();
-	Integer nextChoice;
-	Stack<Pair<Integer, Boolean>> choiceStack = new Stack<>();
-
-	private void doChoice() {
+	private void doChoice(int nextChoice) {
 		decisionLevel++;
 		store.setDecisionLevel(decisionLevel);
 		// We guess true for any unassigned choice atom (backtrack tries false)
-		store.assign(nextChoice, ThriceTruth.TRUE);
-		didChange = true;	// Record change to compute propagation fixpoint again.
+		store.assign(nextChoice, TRUE);
+		choiceStack.push(nextChoice, true);
+		// Record change to compute propagation fixpoint again.
+		didChange = true;
 	}
 
-	private boolean choicesLeft() {
+	private int computeChoice() {
 		// Check if there is an enabled choice that is not also disabled
-		// HINT: tracking changes of ChoiceOn, ChoiceOff directly could increase performance (analyze store.getChangedAssignments()).
+		// HINT: tracking changes of ChoiceOn, ChoiceOff directly could
+		// increase performance (analyze store.getChangedAssignments()).
 		for (Integer enablerAtom : choiceOn.keySet()) {
-			if (!(FALSE.equals(assignment.getTruth(enablerAtom)))) {
-				Integer nextChoiceCandidate = choiceOn.get(enablerAtom);
+			if (FALSE.equals(assignment.getTruth(enablerAtom))) {
+				continue;
+			}
 
-				// Only consider unassigned choices
-				if (assignment.getTruth(nextChoiceCandidate) != null) {
-					continue;
-				}
+			Integer nextChoiceCandidate = choiceOn.get(enablerAtom);
 
-				// Check that candidate is not disabled already
-				boolean isDisabled = false;
-				for (Map.Entry<Integer, Integer> disablerAtom : choiceOff.entrySet()) {
-					if (nextChoiceCandidate.equals(disablerAtom.getValue())
-						&& assignment.getTruth(disablerAtom.getKey()) != null
-						&& !(FALSE.equals(assignment.getTruth(disablerAtom.getKey())))) {
-						isDisabled = true;
-						break;
-					}
-				}
-				if (!isDisabled) {
-					nextChoice = nextChoiceCandidate;
-					return true;
+			// Only consider unassigned choices
+			if (assignment.getTruth(nextChoiceCandidate) != null) {
+				continue;
+			}
+
+			// Check that candidate is not disabled already
+			boolean isDisabled = false;
+			for (Map.Entry<Integer, Integer> disablerAtom : choiceOff.entrySet()) {
+				if (nextChoiceCandidate.equals(disablerAtom.getValue())
+					&& assignment.getTruth(disablerAtom.getKey()) != null
+					&& !(FALSE.equals(assignment.getTruth(disablerAtom.getKey())))) {
+					isDisabled = true;
+					break;
 				}
 			}
-		}
-		return false;
-	}
 
-	private String reportChoiceStack() {
-		StringBuilder ret = new StringBuilder("Choice stack is: ");
-		for (Pair<Integer, Boolean> choice : choiceStack) {
-			ret.append(choice.getRight() ? "+" : "-").append(grounder.atomIdToString(choice.getLeft())).append(" ");
+			if (!isDisabled) {
+				return nextChoiceCandidate;
+			}
 		}
-		return ret.toString();
-	}
-
-	@Override
-	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
-		AnswerSet nextAnswerSet = computeNextAnswerSet();
-		if (nextAnswerSet != null) {
-			action.accept(nextAnswerSet);
-			return true;
-		} else {
-			return false;
-		}
+		return 0;
 	}
 }

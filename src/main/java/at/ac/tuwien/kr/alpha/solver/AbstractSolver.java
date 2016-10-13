@@ -20,7 +20,7 @@ abstract class AbstractSolver implements Solver {
 		this.filter = filter;
 	}
 
-	protected AnswerSet translate(int[] assignment) {
+	protected AnswerSet translate(Iterable<Integer> assignment) {
 		return grounder.assignmentToAnswerSet(filter, assignment);
 	}
 

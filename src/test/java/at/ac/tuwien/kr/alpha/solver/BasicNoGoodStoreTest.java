@@ -8,6 +8,7 @@ import static at.ac.tuwien.kr.alpha.common.NoGood.fact;
 import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class BasicNoGoodStoreTest {
 	private static final int DECISION_LEVEL = 0;
@@ -43,6 +44,40 @@ public class BasicNoGoodStoreTest {
 	}
 
 	@Test
+	public void addNotCausingAssignment() {
+		assignment.assign(1, TRUE, 0);
+		store.add(3, headFirst(-3, -2, 1));
+
+		assertEquals(null, assignment.getTruth(3));
+	}
+
+	@Test
+	public void addNotCausingAssignmentUnassigned() {
+		assignment.assign(1, TRUE, 0);
+		store.add(3, headFirst(-5, 4, 1));
+
+		assertEquals(null, assignment.getTruth(5));
+	}
+
+	@Test
+	public void addNotCausingAssignmentFalse() {
+		assignment.assign(1, FALSE, 0);
+		assignment.assign(4, TRUE, 0);
+		store.add(3, headFirst(-5, 4, -1));
+
+		assertEquals(TRUE, assignment.getTruth(5));
+	}
+
+	@Test
+	public void addNotCausingAssignmentTrue() {
+		assignment.assign(1, TRUE, 0);
+		assignment.assign(2, TRUE, 0);
+		store.add(1, headFirst(-3, 2, -1));
+
+		assertEquals(null, assignment.getTruth(3));
+	}
+
+	@Test
 	public void propBinary() {
 		assignment.assign(2, FALSE, DECISION_LEVEL);
 
@@ -58,7 +93,6 @@ public class BasicNoGoodStoreTest {
 
 		store.add(1, headFirst(-1, 2));
 		store.propagate();
-
 		assertEquals(TRUE, assignment.getTruth(1));
 	}
 
@@ -144,7 +178,8 @@ public class BasicNoGoodStoreTest {
 		assignment.assign(2, TRUE, DECISION_LEVEL);
 		assignment.assign(3, TRUE, DECISION_LEVEL);
 
-		store.add(1, headFirst(-1, 2, 3));
+		assertTrue(store.add(1, headFirst(-1, 2, 3)));
+
 		store.propagate();
 
 		assertEquals(TRUE, assignment.getTruth(1));
@@ -217,16 +252,19 @@ public class BasicNoGoodStoreTest {
 	@Test
 	public void propagateNaryFactsMultiple() {
 		NoGood[] noGoods = new NoGood[]{
-			headFirst(-1, 2, 3),
-			headFirst(-5, -4, 1),
-			fact(4),
-			fact(-3),
-			fact(-2)
+			headFirst(-1, 2, 3),  // 1 <-  2, 3.
+			headFirst(-5, -4, 1), // 5 <- -4, 1.
+			fact(4),              // -4.
+			fact(-3),             // 3.
+			fact(-2)              // 2.
 		};
 		for (int i = 0; i < noGoods.length; i++) {
-			store.add(i + 1, noGoods[i]);
+			assertTrue(store.add(i + 1, noGoods[i]));
 		}
-		store.propagate();
+
+		// First deduce 1 from 2 and 3, then deduce
+		// 5 from -4 and 1.
+		assertTrue(store.propagate());
 
 		assertEquals(TRUE, assignment.getTruth(1));
 		assertEquals(TRUE, assignment.getTruth(5));
@@ -267,24 +305,30 @@ public class BasicNoGoodStoreTest {
 		assertEquals(MBT, assignment.getTruth(5));
 	}
 
-	@Test(expected = ConflictingNoGoodException.class)
+	@Test
 	public void conflictingFact() {
+		final NoGood noGood = fact(1);
 		assignment.assign(1, TRUE, DECISION_LEVEL);
-		store.add(1, fact(1));
+		store.add(1, noGood);
+		assertEquals(noGood, store.getViolatedNoGood());
 	}
 
-	@Test(expected = ConflictingNoGoodException.class)
+	@Test
 	public void conflictingBinary() {
+		final NoGood noGood = new NoGood(1, 2);
 		assignment.assign(1, TRUE, DECISION_LEVEL);
 		assignment.assign(2, TRUE, DECISION_LEVEL);
-		store.add(1, new NoGood(1, 2));
+		store.add(1, noGood);
+		assertEquals(noGood, store.getViolatedNoGood());
 	}
 
-	@Test(expected = ConflictingNoGoodException.class)
+	@Test
 	public void conflictingNary() {
+		final NoGood noGood = new NoGood(1, 2, 3);
 		assignment.assign(1, TRUE, DECISION_LEVEL);
 		assignment.assign(2, TRUE, DECISION_LEVEL);
 		assignment.assign(3, TRUE, DECISION_LEVEL);
-		store.add(1, new NoGood(1, 2, 3));
+		store.add(1, noGood);
+		assertEquals(noGood, store.getViolatedNoGood());
 	}
 }

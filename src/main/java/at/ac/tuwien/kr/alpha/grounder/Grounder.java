@@ -8,7 +8,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.Map;
 
 public interface Grounder {
-	AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, int[] trueAtoms);
+	AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, Iterable<Integer> trueAtoms);
 
 	Map<Integer, NoGood> getNoGoods();
 

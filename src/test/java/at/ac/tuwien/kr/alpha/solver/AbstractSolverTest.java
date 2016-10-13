@@ -2,6 +2,9 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
+import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
@@ -18,7 +21,17 @@ import static at.ac.tuwien.kr.alpha.MainTest.stream;
 import static org.junit.Assert.assertEquals;
 
 public abstract class AbstractSolverTest {
-	protected abstract Solver getInstance(Grounder grounder);
+	private static BasicAnswerSet.Builder base() {
+		return new BasicAnswerSet.Builder()
+			.predicate("dom").instance("1").instance("2").instance("3")
+			.predicate("ChoiceOn").instance("0").instance("1").instance("2").instance("3").instance("4").instance("5");
+	}
+
+	protected abstract Solver getInstance(Grounder grounder, java.util.function.Predicate<Predicate> filter);
+
+	private Solver getInstance(Grounder grounder) {
+		return getInstance(grounder, p -> true);
+	}
 
 	@Test
 	public void testFactsOnlyProgram() throws IOException {
@@ -101,12 +114,7 @@ public abstract class AbstractSolverTest {
 
 	@Test
 	public void testGuessingGroundProgram() throws Exception {
-		String testProgram = "a :- not b. b :- not a.";
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
-		Grounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-
-		// NOTE(flowlo): Empty string?!
+		Solver solver = getInstance(new NaiveGrounder(parseVisit(stream("a :- not b. b :- not a."))));
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
 			// { ChoiceOn(0), ChoiceOn(1), ChoiceOff(1), _R_(0, ), a }
@@ -125,15 +133,7 @@ public abstract class AbstractSolverTest {
 				.build()
 		));
 
-		Set<AnswerSet> answerSets = solver.collectSet();
-
-		assertEquals(expected, answerSets);
-	}
-
-	private static BasicAnswerSet.Builder base() {
-		return new BasicAnswerSet.Builder()
-			.predicate("dom").instance("1").instance("2").instance("3")
-			.predicate("ChoiceOn").instance("0").instance("1").instance("2").instance("3").instance("4").instance("5");
+		assertEquals(expected, solver.collectSet());
 	}
 
 	@Test
@@ -194,8 +194,28 @@ public abstract class AbstractSolverTest {
 				.build()
 		);
 
-		List<AnswerSet> answerSets = solver.collectList();
+		assertEquals(expected, solver.collectList());
+	}
 
-		assertEquals(expected, answerSets);
+
+	@Test
+	public void withDummyGrounder() {
+		final Solver solver = getInstance(new DummyGrounder());
+
+		AnswerSet expected = new BasicAnswerSet.Builder()
+			.predicate("a")
+			.predicate("b")
+			.predicate("_br1")
+			.predicate("c")
+			.build();
+
+		List<AnswerSet> answerSets = solver.collectList();
+		assertEquals(1, answerSets.size());
+		assertEquals(expected, answerSets.get(0));
+	}
+
+	@Test
+	public void withChoiceGrounder() {
+		assertEquals(2, getInstance(new ChoiceGrounder()).collectList().size());
 	}
 }

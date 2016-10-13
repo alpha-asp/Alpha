@@ -60,11 +60,8 @@ public class PredicateInstance {
 
 	@Override
 	public String toString() {
-		if (termList.length == 0) {
-			return predicate.getPredicateName();
-		}
-
-		final StringBuilder sb = new StringBuilder("(");
+		final StringBuilder sb = new StringBuilder(predicate.getPredicateName());
+		sb.append("(");
 		Util.appendDelimited(sb, Arrays.asList(termList));
 		sb.append(")");
 		return sb.toString();

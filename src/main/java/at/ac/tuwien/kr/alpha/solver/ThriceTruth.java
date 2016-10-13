@@ -4,4 +4,8 @@ enum ThriceTruth {
 	TRUE,
 	FALSE,
 	MBT;
+
+	public boolean toBoolean() {
+		return !FALSE.equals(this);
+	}
 }
