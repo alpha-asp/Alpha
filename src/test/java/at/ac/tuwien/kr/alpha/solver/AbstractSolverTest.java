@@ -21,6 +21,12 @@ import static at.ac.tuwien.kr.alpha.MainTest.stream;
 import static org.junit.Assert.assertEquals;
 
 public abstract class AbstractSolverTest {
+	private static BasicAnswerSet.Builder base() {
+		return new BasicAnswerSet.Builder()
+			.predicate("dom").instance("1").instance("2").instance("3")
+			.predicate("ChoiceOn").instance("0").instance("1").instance("2").instance("3").instance("4").instance("5");
+	}
+
 	protected abstract Solver getInstance(Grounder grounder, java.util.function.Predicate<Predicate> filter);
 
 	private Solver getInstance(Grounder grounder) {
@@ -108,12 +114,7 @@ public abstract class AbstractSolverTest {
 
 	@Test
 	public void testGuessingGroundProgram() throws Exception {
-		String testProgram = "a :- not b. b :- not a.";
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
-		Grounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-
-		// NOTE(flowlo): Empty string?!
+		Solver solver = getInstance(new NaiveGrounder(parseVisit(stream("a :- not b. b :- not a."))));
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
 			// { ChoiceOn(0), ChoiceOn(1), ChoiceOff(1), _R_(0, ), a }
@@ -133,12 +134,6 @@ public abstract class AbstractSolverTest {
 		));
 
 		assertEquals(expected, solver.collectSet());
-	}
-
-	private static BasicAnswerSet.Builder base() {
-		return new BasicAnswerSet.Builder()
-			.predicate("dom").instance("1").instance("2").instance("3")
-			.predicate("ChoiceOn").instance("0").instance("1").instance("2").instance("3").instance("4").instance("5");
 	}
 
 	@Test

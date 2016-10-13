@@ -102,5 +102,28 @@ public class BasicAssignmentTest {
 
 		assertFalse(assignment.isAssigned(4));
 		assertFalse(assignment.isAssigned(5));
+
+		assignment.assign(4, TRUE, 1);
+
+		assertEquals(TRUE, assignment.getTruth(4));
+
+		assignment.backtrack(0);
+
+		assertNull(assignment.getTruth(4));
+	}
+
+	@Test
+	public void testContains() {
+		assignment.assign(1, TRUE, 0);
+		assertTrue(assignment.contains(+1));
+		assertFalse(assignment.contains(-1));
+
+		assignment.assign(2, FALSE, 0);
+		assertTrue(assignment.contains(-2));
+		assertFalse(assignment.contains(+2));
+
+		assignment.assign(1, MBT, 0);
+		assertTrue(assignment.contains(+1));
+		assertFalse(assignment.contains(-1));
 	}
 }

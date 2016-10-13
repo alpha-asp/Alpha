@@ -16,30 +16,6 @@ public class BasicAnswerSet implements AnswerSet {
 		this.predicateInstances = predicateInstances;
 	}
 
-	public BasicAnswerSet(Map<String, Set<List<String>>> stringed) {
-		this.predicateInstances = new HashMap<>();
-		this.predicates = new HashSet<>();
-		for (Map.Entry<String, Set<List<String>>> entry : stringed.entrySet()) {
-			final Set<List<String>> instances = entry.getValue();
-
-			int guessedArity = instances.isEmpty() ? 0 : instances.iterator().next().size();
-
-			final Predicate predicate = new BasicPredicate(entry.getKey(), guessedArity);
-
-			this.predicates.add(predicate);
-
-			Set<PredicateInstance> realInstances = new HashSet<>(instances.size());
-			for (List<String> stringInstance : instances) {
-				final Term[] terms = new Term[stringInstance.size()];
-				for (int i = 0; i < stringInstance.size(); i++) {
-					terms[i] = ConstantTerm.getInstance(stringInstance.get(i));
-				}
-				realInstances.add(new PredicateInstance(predicate, terms));
-			}
-			predicateInstances.put(predicate, realInstances);
-		}
-	}
-
 	@Override
 	public Set<Predicate> getPredicates() {
 		return predicates;
@@ -62,7 +38,6 @@ public class BasicAnswerSet implements AnswerSet {
 			}
 
 			for (Iterator<PredicateInstance> instanceIterator = instances.iterator(); instanceIterator.hasNext();) {
-				sb.append(predicate.getPredicateName());
 				sb.append(instanceIterator.next());
 				if (instanceIterator.hasNext()) {
 					sb.append(", ");

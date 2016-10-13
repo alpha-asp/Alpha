@@ -56,4 +56,6 @@ public interface NoGoodStore<T extends ThriceTruth> {
 	 * @return a map of all assignments done by propagation.
 	 */
 	Map<Integer, ThriceTruth> getChangedAssignments();
+
+	boolean isEmpty();
 }

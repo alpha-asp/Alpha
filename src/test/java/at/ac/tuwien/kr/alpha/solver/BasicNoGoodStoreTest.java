@@ -46,11 +46,35 @@ public class BasicNoGoodStoreTest {
 	@Test
 	public void addNotCausingAssignment() {
 		assignment.assign(1, TRUE, 0);
-		assignment.assign(2, TRUE, 0);
-		assignment.assign(3, TRUE, 0);
-		store.add(3, new NoGood(new int[] {-5, -4, 1}, 0));
+		store.add(3, headFirst(-3, -2, 1));
+
+		assertEquals(null, assignment.getTruth(3));
+	}
+
+	@Test
+	public void addNotCausingAssignmentUnassigned() {
+		assignment.assign(1, TRUE, 0);
+		store.add(3, headFirst(-5, 4, 1));
 
 		assertEquals(null, assignment.getTruth(5));
+	}
+
+	@Test
+	public void addNotCausingAssignmentFalse() {
+		assignment.assign(1, FALSE, 0);
+		assignment.assign(4, TRUE, 0);
+		store.add(3, headFirst(-5, 4, -1));
+
+		assertEquals(TRUE, assignment.getTruth(5));
+	}
+
+	@Test
+	public void addNotCausingAssignmentTrue() {
+		assignment.assign(1, TRUE, 0);
+		assignment.assign(2, TRUE, 0);
+		store.add(1, headFirst(-3, 2, -1));
+
+		assertEquals(null, assignment.getTruth(3));
 	}
 
 	@Test
@@ -69,7 +93,6 @@ public class BasicNoGoodStoreTest {
 
 		store.add(1, headFirst(-1, 2));
 		store.propagate();
-
 		assertEquals(TRUE, assignment.getTruth(1));
 	}
 
@@ -155,7 +178,8 @@ public class BasicNoGoodStoreTest {
 		assignment.assign(2, TRUE, DECISION_LEVEL);
 		assignment.assign(3, TRUE, DECISION_LEVEL);
 
-		store.add(1, headFirst(-1, 2, 3));
+		assertTrue(store.add(1, headFirst(-1, 2, 3)));
+
 		store.propagate();
 
 		assertEquals(TRUE, assignment.getTruth(1));

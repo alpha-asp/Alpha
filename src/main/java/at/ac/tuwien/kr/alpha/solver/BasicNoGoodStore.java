@@ -1,6 +1,9 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -9,23 +12,26 @@ import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
 class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
+	private static final Logger LOGGER = LoggerFactory.getLogger(BasicNoGoodStore.class);
+
+	private final Grounder grounder;
 	private final Assignment assignment;
-
-	private final Map<Integer, Watches<BinaryWatch, WatchedNoGood>> watches = new HashMap<>();
-
 	private final Queue<Integer> cache = new ArrayDeque<>();
-
-	private Map<Integer, ThriceTruth> changedAssignments = new HashMap<>();
-
-	private Map<Integer, NoGood> binaries = new HashMap<>();
+	private final Map<Integer, Watches<BinaryWatch, WatchedNoGood>> watches = new HashMap<>();
+	private final Map<Integer, ThriceTruth> changedAssignments = new HashMap<>();
+	private final Map<Integer, NoGood> binaries = new HashMap<>();
 
 	private NoGood violated;
-
 	private int decisionLevel;
 
-	BasicNoGoodStore(Assignment assignment) {
+	BasicNoGoodStore(Assignment assignment, Grounder grounder) {
 		this.assignment = assignment;
 		this.decisionLevel = 0;
+		this.grounder = grounder;
+	}
+
+	BasicNoGoodStore(Assignment assignment) {
+		this(assignment, null);
 	}
 
 	public void setDecisionLevel(int decisionLevel) {
@@ -48,6 +54,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 	@Override
 	public boolean add(int id, NoGood noGood) {
+		LOGGER.trace("Adding {}", noGood);
 		if (noGood.size() == 1) {
 			return addUnary(noGood);
 		} else if (noGood.size() == 2) {
@@ -133,12 +140,14 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	 */
 	private boolean addAndWatch(final NoGood noGood) {
 		boolean isViolated = true;
+		boolean fireHead = true;
 		int[] unassigned = new int[] {-1, -1};
 		int positive = -1;
 		int priority = -1;
 
 		for (int i = 0; i < noGood.size(); i++) {
 			final int literal = noGood.getLiteral(i);
+			final ThriceTruth value = assignment.getTruth(atomOf(literal));
 
 			if (!isNegated(literal) && noGood.hasHead() && noGood.getHead() != i) {
 				int candidatePriority = toPriority(noGood.getAtom(i));
@@ -147,8 +156,6 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 					priority = candidatePriority;
 				}
 			}
-
-			final ThriceTruth value = assignment.getTruth(atomOf(literal));
 
 			if (value == null) {
 				if (unassigned[0] == -1) {
@@ -159,6 +166,9 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 				// A noGood that has an unassigned literal cannot be violated.
 				isViolated = false;
+				if (noGood.hasHead() && noGood.getHead() != i) {
+					fireHead = false;
+				}
 			} else {
 				// The literal we're looking at is assigned.
 				if (!assignment.contains(literal)) {
@@ -172,19 +182,21 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			return false;
 		}
 
-		if (positive != -1 && noGood.hasHead() && TRUE.equals(assignment.getTruth(noGood.getAtom(positive)))) {
+		if (fireHead && positive != -1 && noGood.hasHead() && TRUE.equals(assignment.getTruth(noGood.getAtom(positive)))) {
 			final int head = noGood.getLiteral(noGood.getHead());
-			if (!assign(head, isNegated(head) ? TRUE : FALSE)) {
-				violated = noGood;
-				return false;
+			if (isContainedExcept(noGood, noGood.getHead())) {
+				if (!assign(head, isNegated(head) ? TRUE : FALSE)) {
+					violated = noGood;
+					return false;
+				}
 			}
 		} else if (unassigned[0] != -1 && unassigned[1] == -1) {
 			int unassignedLiteral = noGood.getLiteral(unassigned[0]);
-			if (!assign(unassignedLiteral, isNegated(unassignedLiteral) ? MBT : FALSE)) {
-				violated = noGood;
-				WatchedNoGood wng = new WatchedNoGood(noGood, unassigned[0], unassigned[1], positive);
-				watch(wng);
-				return false;
+			if (isContainedExcept(noGood, unassigned[0])) {
+				if (!assign(unassignedLiteral, isNegated(unassignedLiteral) ? MBT : FALSE)) {
+					violated = noGood;
+					return false;
+				}
 			}
 		}
 
@@ -197,6 +209,18 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		}
 
 		watch(new WatchedNoGood(noGood, unassigned[0], unassigned[1], positive));
+		return true;
+	}
+
+	private boolean isContainedExcept(NoGood noGood, int index) {
+		for (int i = 0; i < noGood.size(); i++) {
+			if (i == index) {
+				continue;
+			}
+			if (!assignment.contains(noGood.getLiteral(i))) {
+				return false;
+			}
+		}
 		return true;
 	}
 
@@ -239,15 +263,27 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	@Override
 	public boolean propagate() {
 		boolean propagated = false;
+		if (!cache.isEmpty()) {
+			LOGGER.trace("Assignment before propagation: {}", assignment);
+		}
 		while (!cache.isEmpty()) {
 			final int atom = cache.poll();
 			final ThriceTruth value = assignment.getTruth(atom);
+			boolean atomPropagated = false;
 
 			if (value == MBT || value == FALSE) {
-				propagated |= propagateMBT(atom, value);
+				atomPropagated = propagateMBT(atom, value);
 			} else if (value == TRUE) {
-				propagated |= propagateTrue(atom);
+				atomPropagated = propagateTrue(atom);
 			}
+
+			if (atomPropagated) {
+				LOGGER.trace("Assignment after propagation of {}: {}", atom, assignment);
+			} else {
+				LOGGER.trace("Assignment did not change after checking {}", atom);
+			}
+
+			propagated |= atomPropagated;
 		}
 		return propagated;
 	}
@@ -259,6 +295,11 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		return result;
 	}
 
+	@Override
+	public boolean isEmpty() {
+		return watches.isEmpty() && cache.isEmpty() && binaries.isEmpty();
+	}
+
 	private boolean propagateMBT(final int atom, final ThriceTruth value) {
 		boolean propagated = false;
 		final Watches<BinaryWatch, WatchedNoGood> w = watches(atom);
@@ -268,6 +309,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		// unit and an assignment can be synthesized.
 		for (BinaryWatch watch : w.b.get(value)) {
 			final int literal = watch.getOtherLiteral();
+
 			if (!assign(literal, isNegated(literal) ? MBT : FALSE)) {
 				violated = binaries.get(watch.getId());
 				return false;
@@ -297,6 +339,9 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 			// Propagate in case the pointer could not be moved.
 			if (!moved) {
+				if (!isContainedExcept(noGood, otherIndex)) {
+					continue;
+				}
 				final int otherLiteral = noGood.getLiteral(otherIndex);
 				if (!assign(otherLiteral, isNegated(otherLiteral) ? MBT : FALSE)) {
 					violated = noGood;
@@ -323,8 +368,13 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 		for (BinaryWatch watch : w.b.get(TRUE)) {
 			final int literal = watch.getOtherLiteral();
-			ThriceTruth currentAssignment = assignment.getTruth(atomOf(literal));
+			final NoGood noGood = binaries.get(watch.getId());
 
+			if (!isContainedExcept(noGood, noGood.getLiteral(0) == literal ? 1 : 0)) {
+				continue;
+			}
+
+			ThriceTruth currentAssignment = assignment.getTruth(atomOf(literal));
 			boolean assignWentWell = true;
 			if (isNegated(literal) && currentAssignment == null) {
 				assignWentWell = assign(literal, FALSE);
@@ -332,7 +382,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 				assignWentWell = assign(literal, TRUE);
 			}
 			if (!assignWentWell) {
-				violated = binaries.get(watch.getId());
+				violated = noGood;
 				return false;
 			}
 			propagated = true;
@@ -367,6 +417,9 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			// If we did not find anything with priority, we cannot move the pointer. So propagate
 			// (meaning assign TRUE to the head)!
 			if (priority == -1) {
+				if (!isContainedExcept(noGood, noGood.getHead())) {
+					continue;
+				}
 				if (!assign(noGood.getLiteral(noGood.getHead()), TRUE)) {
 					violated = noGood;
 					return false;
@@ -440,4 +493,33 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			return otherLiteral;
 		}
 	}
+
+	/* When you find yourself going down the dark road, take these as your vicious companions.
+
+	private String atomToString(int atom) {
+		if (grounder != null) {
+			return grounder.atomIdToString(atom);
+		}
+		return String.valueOf(atom);
+	}
+
+	private String literalToString(int literal) {
+		return (isNegated(literal) ? "-" : "+") + atomToString(atomOf(literal));
+	}
+
+	private <T extends NoGood> String noGoodToString(T noGood) {
+		StringBuilder sb = new StringBuilder("{");
+
+		for (Iterator<Integer> iterator = noGood.iterator(); iterator.hasNext();) {
+			sb.append(literalToString(iterator.next()));
+
+			if (iterator.hasNext()) {
+				sb.append(", ");
+			}
+		}
+
+		sb.append("}");
+		return sb.toString();
+	}
+	 */
 }

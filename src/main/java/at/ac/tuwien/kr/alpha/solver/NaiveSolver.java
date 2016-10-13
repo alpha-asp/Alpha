@@ -8,7 +8,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.Literals.atomOf;
@@ -19,15 +22,7 @@ import static at.ac.tuwien.kr.alpha.Literals.isNegated;
  */
 public class NaiveSolver extends AbstractSolver {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveSolver.class);
-
-	NaiveSolver(Grounder grounder, java.util.function.Predicate<Predicate> filter) {
-		super(grounder, filter);
-
-		decisionLevels.add(0, new ArrayList<>());
-		mbtAssignedFromUnassigned.add(0, new ArrayList<>());
-		trueAssignedFromMbt.add(0, new ArrayList<>());
-	}
-
+	private final ChoiceStack choiceStack;
 	private HashMap<Integer, Boolean> truthAssignments = new HashMap<>();
 	private ArrayList<Integer> newTruthAssignments = new ArrayList<>();
 	private ArrayList<ArrayList<Integer>> decisionLevels = new ArrayList<>();
@@ -41,11 +36,19 @@ public class NaiveSolver extends AbstractSolver {
 	private Map<Integer, Integer> choiceOn = new HashMap<>();
 	private Map<Integer, Integer> choiceOff = new HashMap<>();
 	private Integer nextChoice;
-	private Stack<Integer> guessedAtomIds = new Stack<>();
-
 	private HashSet<Integer> mbtAssigned = new HashSet<>();
 	private ArrayList<ArrayList<Integer>> mbtAssignedFromUnassigned = new ArrayList<>();
 	private ArrayList<ArrayList<Integer>> trueAssignedFromMbt = new ArrayList<>();
+
+	NaiveSolver(Grounder grounder, java.util.function.Predicate<Predicate> filter) {
+		super(grounder, filter);
+
+		this.choiceStack = new ChoiceStack(grounder);
+
+		decisionLevels.add(0, new ArrayList<>());
+		mbtAssignedFromUnassigned.add(0, new ArrayList<>());
+		trueAssignedFromMbt.add(0, new ArrayList<>());
+	}
 
 	@Override
 	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
@@ -70,9 +73,7 @@ public class NaiveSolver extends AbstractSolver {
 				doMBTPropagation();
 			} else if (assignmentViolatesNoGoods()) {
 				LOGGER.info("Backtracking from wrong choices:");
-				if (LOGGER.isTraceEnabled()) {
-					LOGGER.trace(reportChoiceStack());
-				}
+				LOGGER.trace("Choice stack: {}", choiceStack);
 				doBacktrack();
 				if (isSearchSpaceExhausted()) {
 					return false;
@@ -81,10 +82,8 @@ public class NaiveSolver extends AbstractSolver {
 				doChoice();
 			} else if (noMBTValuesReamining()) {
 				AnswerSet as = getAnswerSetFromAssignment();
-				LOGGER.info("Answer-Set found: {}", as);
-				if (LOGGER.isTraceEnabled()) {
-					LOGGER.trace(reportChoiceStack());
-				}
+				LOGGER.debug("Answer-Set found: {}", as);
+				LOGGER.trace("Choice stack: {}", choiceStack);
 				action.accept(as);
 				return true;
 			} else {
@@ -94,7 +93,7 @@ public class NaiveSolver extends AbstractSolver {
 					for (Integer integer : mbtAssigned) {
 						LOGGER.trace(grounder.atomIdToString(integer));
 					}
-					LOGGER.trace(reportChoiceStack());
+					LOGGER.trace("Choice stack: {}", choiceStack);
 				}
 				doBacktrack();
 				if (isSearchSpaceExhausted()) {
@@ -121,18 +120,6 @@ public class NaiveSolver extends AbstractSolver {
 		}
 	}
 
-	private String reportChoiceStack() {
-		if (guessedAtomIds.isEmpty()) {
-			return "Choice stack is empty.";
-		}
-
-		String report = "Choice stack is: ";
-		for (Integer guessedAtomId : guessedAtomIds) {
-			report += (truthAssignments.get(guessedAtomId) ? "+" : "-") + guessedAtomId + " [" + grounder.atomIdToString(guessedAtomId) + "] ";
-		}
-		return report;
-	}
-
 	private String reportTruthAssignments() {
 		String report = "Current Truth assignments: ";
 		for (Integer atomId : truthAssignments.keySet()) {
@@ -140,7 +127,6 @@ public class NaiveSolver extends AbstractSolver {
 		}
 		return report;
 	}
-
 
 	private boolean propagationFixpointReached() {
 		// Check if anything changed.
@@ -170,7 +156,7 @@ public class NaiveSolver extends AbstractSolver {
 		// We guess true for any unassigned choice atom (backtrack tries false)
 		truthAssignments.put(nextChoice, true);
 		newTruthAssignments.add(nextChoice);
-		guessedAtomIds.push(nextChoice);
+		choiceStack.push(nextChoice, true);
 		// Record change to compute propagation fixpoint again.
 		didChange = true;
 	}
@@ -213,8 +199,9 @@ public class NaiveSolver extends AbstractSolver {
 			return;
 		}
 
-		Integer lastGuessedAtom = guessedAtomIds.pop();
-		Boolean lastGuessedTruthValue = truthAssignments.get(lastGuessedAtom);
+		int lastGuessedAtom = choiceStack.peekAtom();
+		boolean lastGuessedTruthValue = choiceStack.peekValue();
+		choiceStack.remove();
 
 		// Remove truth assignments of current decision level
 		for (Integer atomId : decisionLevels.get(decisionLevel)) {
@@ -239,8 +226,8 @@ public class NaiveSolver extends AbstractSolver {
 
 		if (lastGuessedTruthValue) {
 			// Guess false now
-			guessedAtomIds.push(lastGuessedAtom);
 			truthAssignments.put(lastGuessedAtom, false);
+			choiceStack.push(lastGuessedAtom, false);
 			newTruthAssignments.add(lastGuessedAtom);
 			decisionLevels.get(decisionLevel).add(lastGuessedAtom);
 			didChange = true;

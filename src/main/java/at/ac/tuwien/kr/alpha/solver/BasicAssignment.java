@@ -9,6 +9,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 public class BasicAssignment implements Assignment {
 	private final Map<Integer, Entry> assignment = new HashMap<>();
 	private final List<DecisionLevelState> decisionLevels = new ArrayList<>();
+
 	private int mbtCount;
 
 	@Override
@@ -82,6 +83,8 @@ public class BasicAssignment implements Assignment {
 			if (mbtToTrue) {
 				mbtCount--;
 				state.mbtToTrue.put(atom, current.getDecisionLevel());
+			} else {
+				state.unassignedToAssigned.add(atom);
 			}
 		} else {
 			if (MBT.equals(value)) {
@@ -112,6 +115,11 @@ public class BasicAssignment implements Assignment {
 		return assignment.get(atom);
 	}
 
+	@Override
+	public String toString() {
+		return Arrays.toString(assignment.entrySet().toArray());
+	}
+
 	private static final class Entry implements Assignment.Entry {
 		private final ThriceTruth value;
 		private final int decisionLevel;
@@ -135,11 +143,6 @@ public class BasicAssignment implements Assignment {
 		public String toString() {
 			return value.toString() + "(" + decisionLevel + ")";
 		}
-	}
-
-	@Override
-	public String toString() {
-		return Arrays.toString(assignment.entrySet().toArray());
 	}
 
 	private class DecisionLevelState {
