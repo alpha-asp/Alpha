@@ -54,7 +54,9 @@ public class MainTest {
 	@Test
 	@Ignore
 	public void testLargeInputProgram() {
-		main(new String[]{"-g", "naive", "-s", "naive", "-n", "10", "-i", "./benchmarks/omiga/omiga-testcases/locstrat/locstrat-200.txt"});
+		//main(new String[]{"-g", "naive", "-s", "default", "-n", "10", "-i", "./benchmarks/omiga/omiga-testcases/locstrat/locstrat-200.txt"});
+
+		main(new String[]{"-g", "naive", "-s", "default", "-n", "10", "-i", "./benchmarks/omiga/omiga-testcases/reach/reach-4.txt"});
 	}
 
 }

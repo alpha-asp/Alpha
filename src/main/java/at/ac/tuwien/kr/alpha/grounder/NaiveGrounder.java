@@ -5,8 +5,6 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstraint;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFact;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedRule;
-import org.apache.commons.collections4.BidiMap;
-import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -24,7 +22,7 @@ public class NaiveGrounder extends AbstractGrounder {
 	private static final BasicPredicate CHOICE_ON_PREDICATE = new BasicPredicate("ChoiceOn", 1);
 	private static final BasicPredicate CHOICE_OFF_PREDICATE = new BasicPredicate("ChoiceOff", 1);
 
-	protected BidiMap<NoGood, Integer> nogoodIdentifiers = new DualHashBidiMap<>();
+	protected Map<NoGood, Integer> nogoodIdentifiers = new HashMap<>();
 	private IntIdGenerator nogoodIdGenerator = new IntIdGenerator();
 
 	private HashMap<Predicate, ArrayList<Instance>> factsFromProgram = new HashMap<>();

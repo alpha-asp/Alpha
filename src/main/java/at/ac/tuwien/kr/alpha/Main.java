@@ -35,8 +35,8 @@ public class Main {
 	private static final String OPT_GROUNDER = "grounder";
 	private static final String OPT_SOLVER = "solver";
 
-	private static final String DEFAULT_GROUNDER = "dummy";
-	private static final String DEFAULT_SOLVER = "leutgeb";
+	private static final String DEFAULT_GROUNDER = "naive";
+	private static final String DEFAULT_SOLVER = "default";
 
 	private static CommandLine commandLine;
 
