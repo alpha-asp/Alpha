@@ -44,6 +44,13 @@ public class BasicNoGoodStoreTest {
 	}
 
 	@Test
+	public void constraintWithAssignment() {
+		assignment.assign(123, MBT, 0);
+		assignment.assign(23, TRUE, 0);
+		store.add(3, new NoGood(-123, 22, 23));
+	}
+
+	@Test
 	public void addNotCausingAssignment() {
 		assignment.assign(1, TRUE, 0);
 		store.add(3, headFirst(-3, -2, 1));
