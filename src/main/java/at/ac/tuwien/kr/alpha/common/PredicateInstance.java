@@ -1,8 +1,6 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.grounder.AtomStore;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedAtom;
 
 import java.util.Arrays;
 import java.util.LinkedList;

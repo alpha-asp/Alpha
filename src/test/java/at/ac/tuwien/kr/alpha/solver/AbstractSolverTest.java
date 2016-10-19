@@ -176,4 +176,41 @@ public abstract class AbstractSolverTest {
 	public void choiceGrounder() {
 		assertEquals(ChoiceGrounder.EXPECTED, getInstance(new ChoiceGrounder()).collectSet());
 	}
+
+	@Test
+	public void noEmptyAnswerSet() throws IOException {
+		String testProgram = "a :- not b, not c." +
+			"b :- not a, not c." +
+			"c :- not a, not b.";
+
+		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
+			new BasicAnswerSet.Builder()
+				.predicate("a")
+				.build(),
+			new BasicAnswerSet.Builder()
+				.predicate("b")
+				.build(),
+			new BasicAnswerSet.Builder()
+				.predicate("c")
+				.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
+
+	@Test
+	public void emptyProgramYieldsEmptyAnswerSet() throws IOException {
+		ParsedProgram parsedProgram = parseVisit(stream(""));
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+
+		List<AnswerSet> answerSets = getInstance(grounder).collectList();
+		assertEquals(1, answerSets.size());
+		assertEquals(BasicAnswerSet.EMPTY, answerSets.get(0));
+	}
 }

@@ -16,7 +16,7 @@ import static java.util.Arrays.asList;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ChoiceGrounder implements Grounder {
-	public static Set<AnswerSet> EXPECTED = new HashSet<>(asList(
+	public static final Set<AnswerSet> EXPECTED = new HashSet<>(asList(
 		new BasicAnswerSet.Builder()
 			.predicate("aa")
 			.build(),

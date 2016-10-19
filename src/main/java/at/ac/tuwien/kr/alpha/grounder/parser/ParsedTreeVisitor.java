@@ -54,10 +54,13 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 		if (ctx.query() != null) {
 			notSupportedSyntax(ctx.query());
 		}
+
+		final ParsedProgram program = new ParsedProgram();
+
 		if (ctx.statements() == null) {
-			throw new RuntimeException("Input program is empty.");
+			return program;
 		}
-		ParsedProgram program = new ParsedProgram();
+
 		for (CommonParsedObject parsedObject :
 			((ListOfParsedObjects)visitStatements(ctx.statements())).objects) {
 			if (parsedObject instanceof ParsedFact) {

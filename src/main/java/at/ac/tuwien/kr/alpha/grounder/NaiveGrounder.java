@@ -119,6 +119,10 @@ public class NaiveGrounder extends AbstractGrounder {
 		Map<Predicate, Set<PredicateInstance>> predicateInstances = new HashMap<>();
 		HashSet<Predicate> knownPredicates = new HashSet<>();
 
+		if (!trueAtoms.iterator().hasNext()) {
+			return BasicAnswerSet.EMPTY;
+		}
+
 		// Iterate over all true atomIds, computeNextAnswerSet instances from atomStore and add them if not filtered.
 		for (int trueAtom : trueAtoms) {
 			PredicateInstance predicateInstance = atomStore.getPredicateInstance(new AtomId(trueAtom));
@@ -138,10 +142,12 @@ public class NaiveGrounder extends AbstractGrounder {
 			Set<PredicateInstance> instances = predicateInstances.get(predicateInstance.predicate);
 			instances.add(predicateInstance);
 		}
-		Set<Predicate> predicateList = new HashSet<>();
-		predicateList.addAll(knownPredicates);
 
-		return new BasicAnswerSet(predicateList, predicateInstances);
+		if (knownPredicates.isEmpty()) {
+			return null;
+		}
+
+		return new BasicAnswerSet(knownPredicates, predicateInstances);
 	}
 
 	/**

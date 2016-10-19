@@ -4,10 +4,11 @@ import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedRule;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
-import org.apache.commons.collections4.ListUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a non-ground rule or a constraint for the semi-naive grounder.
