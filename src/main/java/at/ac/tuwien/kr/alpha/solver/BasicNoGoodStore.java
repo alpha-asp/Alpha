@@ -206,6 +206,9 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 		if (unassigned[1] == -1) {
 			unassigned[1] = noGood.size() / 2;
+			if (unassigned[1] == unassigned[0]) {
+				unassigned[1] = noGood.size() - 1;
+			}
 		}
 
 		watch(new WatchedNoGood(noGood, unassigned[0], unassigned[1], positive));
