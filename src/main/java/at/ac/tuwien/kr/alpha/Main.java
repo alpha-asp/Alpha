@@ -10,9 +10,9 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTreeVisitor;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityProgramTransformation;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.atn.PredictionMode;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -138,19 +138,46 @@ public class Main {
 	}
 
 	public static ParsedProgram parseVisit(InputStream is) throws IOException {
-		final ASPCore2Parser parser = new ASPCore2Parser(
-			new CommonTokenStream(
-				new ASPCore2Lexer(
-					new ANTLRInputStream(is)
-				)
+		/*
+		// In order to require less memory: use unbuffered streams and avoid constructing a full parse tree.
+		ASPCore2Lexer lexer = new ASPCore2Lexer(new UnbufferedCharStream(is));
+		lexer.setTokenFactory(new CommonTokenFactory(true));
+		final ASPCore2Parser parser = new ASPCore2Parser(new UnbufferedTokenStream<>(lexer));
+		parser.setBuildParseTree(false);
+		*/
+		CommonTokenStream tokens = new CommonTokenStream(
+			new ASPCore2Lexer(
+				new ANTLRInputStream(is)
 			)
 		);
+		final ASPCore2Parser parser = new ASPCore2Parser(tokens);
+
+		// Try SLL parsing mode (faster but may terminate incorrectly).
+		parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
+		parser.removeErrorListeners();
+		parser.setErrorHandler(new BailErrorStrategy());
 
 		final SwallowingErrorListener errorListener = new SwallowingErrorListener();
-		parser.addErrorListener(errorListener);
 
-		// Parse program
-		ASPCore2Parser.ProgramContext programContext = parser.program();
+		ASPCore2Parser.ProgramContext programContext;
+		try {
+			// Parse program
+			programContext = parser.program();
+		} catch (ParseCancellationException e) {
+			// Recognition exception may be caused simply by SLL parsing failing,
+			// retry with LL parser and DefaultErrorStrategy printing errors to console.
+			if (e.getCause() instanceof RecognitionException) {
+				tokens.reset();
+				parser.addErrorListener(errorListener);
+				parser.addErrorListener(ConsoleErrorListener.INSTANCE);
+				parser.setErrorHandler(new DefaultErrorStrategy());
+				parser.getInterpreter().setPredictionMode(PredictionMode.LL);
+				// Re-run parse.
+				programContext = parser.program();
+			} else {
+				throw e;
+			}
+		}
 
 		// If the our SwallowingErrorListener has handled some exception during parsing
 		// just re-throw that exception.
