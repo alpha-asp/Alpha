@@ -30,6 +30,7 @@ public class DefaultSolver extends AbstractSolver {
 	private final Assignment assignment;
 
 	private int decisionLevel;
+	private boolean initialize = true;
 
 	private boolean didChange;
 
@@ -44,8 +45,9 @@ public class DefaultSolver extends AbstractSolver {
 	@Override
 	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
 		// Get basic rules and facts from grounder
-		if (store.isEmpty()) {
+		if (initialize) {
 			obtainNoGoodsFromGrounder();
+			initialize = false;
 		} else {
 			// We already found one Answer-Set and are requested to find another one
 			doBacktrack();
@@ -75,6 +77,11 @@ public class DefaultSolver extends AbstractSolver {
 				doChoice(nextChoice);
 			} else if (assignment.getMBTCount() == 0) {
 				AnswerSet as = translate(assignment.getTrueAssignments());
+
+				if (as == null) {
+					return true;
+				}
+
 				LOGGER.debug("Answer-Set found: {}", as);
 				LOGGER.trace("Choices: {}", choiceStack);
 				action.accept(as);
