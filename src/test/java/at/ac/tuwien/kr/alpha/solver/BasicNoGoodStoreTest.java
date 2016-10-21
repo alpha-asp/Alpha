@@ -7,8 +7,7 @@ import org.junit.Test;
 import static at.ac.tuwien.kr.alpha.common.NoGood.fact;
 import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class BasicNoGoodStoreTest {
 	private static final int DECISION_LEVEL = 0;
@@ -337,5 +336,26 @@ public class BasicNoGoodStoreTest {
 		assignment.assign(3, TRUE, DECISION_LEVEL);
 		store.add(1, noGood);
 		assertEquals(noGood, store.getViolatedNoGood());
+	}
+
+	@Test
+	public void propagateViolatedConstraint() {
+		assertTrue(store.add(1, headFirst(-3, -2, -1)));
+		assertTrue(store.assign(1, FALSE));
+		assertTrue(store.assign(2, FALSE));
+		assertTrue(store.assign(3, FALSE));
+		assertFalse(store.propagate());
+		assertNotNull(store.getViolatedNoGood());
+	}
+
+	@Test
+	public void noViolation() {
+		assertTrue(store.add(1, headFirst(-7, -4, -2)));
+		assertTrue(store.assign(4, TRUE));
+		assertTrue(store.assign(2, FALSE));
+		assertTrue(store.assign(7, FALSE));
+		assertNull(store.getViolatedNoGood());
+		store.propagate();
+		assertNull(store.getViolatedNoGood());
 	}
 }

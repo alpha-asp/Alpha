@@ -56,7 +56,7 @@ public class BasicAssignment implements Assignment {
 
 		final Entry current = get(atom);
 
-		if (current != null && current.getTruth().equals(value)) {
+		if (current != null && (current.getTruth().equals(value) || (TRUE.equals(current.getTruth()) && MBT.equals(value)))) {
 			return true;
 		}
 
