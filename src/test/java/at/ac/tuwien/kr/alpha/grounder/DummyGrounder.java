@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
 import static at.ac.tuwien.kr.alpha.Util.entry;
+import static java.util.Collections.singletonList;
 
 /**
  * Represents a small ASP program {@code { c :- a, b.  a.  b. }}.
@@ -21,7 +22,12 @@ import static at.ac.tuwien.kr.alpha.Util.entry;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class DummyGrounder implements Grounder {
-	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGrounder.class);
+	public static final Set<AnswerSet> EXPECTED = new HashSet<>(singletonList(new BasicAnswerSet.Builder()
+		.predicate("a")
+		.predicate("b")
+		.predicate("c")
+		.build()
+	));
 
 	private static Map<Integer, String> atomIdToString = Stream.of(
 		entry(1, "a"),
@@ -72,21 +78,25 @@ public class DummyGrounder implements Grounder {
 		Set<Predicate> trueAtomPredicates = new HashSet<>();
 		for (int trueAtom : trueAtoms) {
 			BasicPredicate atomPredicate = new BasicPredicate(atomIdToString.get(trueAtom), 0);
-			if (filter.test(atomPredicate)) {
-				trueAtomPredicates.add(atomPredicate);
+			if (!filter.test(atomPredicate)) {
+				continue;
 			}
+			if ("_br1".equals(atomPredicate.getPredicateName())) {
+				continue;
+			}
+			trueAtomPredicates.add(atomPredicate);
 		}
 
 		// Add the atom instances
 		Map<Predicate, Set<PredicateInstance>> predicateInstances = new HashMap<>();
 		for (Predicate trueAtomPredicate : trueAtomPredicates) {
-			PredicateInstance internalPredicateInstance = new PredicateInstance(trueAtomPredicate);
+			PredicateInstance internalPredicateInstance = new PredicateInstance<>(trueAtomPredicate);
 			Set<PredicateInstance> instanceList = new HashSet<>();
 			instanceList.add(internalPredicateInstance);
 			predicateInstances.put(trueAtomPredicate, instanceList);
 		}
 
-		return  new BasicAnswerSet(trueAtomPredicates, predicateInstances);
+		return new BasicAnswerSet(trueAtomPredicates, predicateInstances);
 	}
 
 	@Override

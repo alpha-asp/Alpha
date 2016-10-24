@@ -27,7 +27,7 @@ public class SubstitutionUtil {
 			}
 			groundTermList[i] = groundTerm;
 		}
-		PredicateInstance groundAtom = new PredicateInstance(nonGroundAtom.predicate, groundTermList);
+		PredicateInstance groundAtom = new PredicateInstance<>(nonGroundAtom.predicate, groundTermList);
 		return atomStore.createAtomId(groundAtom);
 	}
 
@@ -75,19 +75,19 @@ public class SubstitutionUtil {
 				isGround = false;
 			}
 		}
-		PredicateInstance substitutedAtom = new PredicateInstance(nonGroundAtom.predicate, substitutedTerms);
+		PredicateInstance substitutedAtom = new PredicateInstance<>(nonGroundAtom.predicate, substitutedTerms);
 		return new ImmutablePair<>(isGround, substitutedAtom);
 	}
 
-	public static String groundAndPrintRule(NonGroundRule rule, NaiveGrounder.VariableSubstitution substitution) {
+	public static String groundAndPrintRule(NonGroundRule<? extends Predicate> rule, NaiveGrounder.VariableSubstitution substitution) {
 		String ret = "";
 		if (!rule.isConstraint()) {
-			PredicateInstance groundHead = substitute(rule.headAtom, substitution).getRight();
+			PredicateInstance groundHead = substitute(rule.getHeadAtom(), substitution).getRight();
 			ret += groundHead.toString();
 		}
 		ret += " :- ";
 		boolean isFirst = true;
-		for (PredicateInstance bodyAtom : rule.bodyAtomsPositive) {
+		for (PredicateInstance bodyAtom : rule.getBodyAtomsPositive()) {
 			if (!isFirst) {
 				ret += ", ";
 			}
@@ -95,7 +95,7 @@ public class SubstitutionUtil {
 			ret += groundBodyAtom.toString();
 			isFirst = false;
 		}
-		for (PredicateInstance bodyAtom : rule.bodyAtomsNegative) {
+		for (PredicateInstance bodyAtom : rule.getBodyAtomsNegative()) {
 			if (!isFirst) {
 				ret += ", ";
 			}

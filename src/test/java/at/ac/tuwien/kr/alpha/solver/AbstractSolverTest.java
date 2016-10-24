@@ -23,8 +23,7 @@ import static org.junit.Assert.assertEquals;
 public abstract class AbstractSolverTest {
 	private static BasicAnswerSet.Builder base() {
 		return new BasicAnswerSet.Builder()
-			.predicate("dom").instance("1").instance("2").instance("3")
-			.predicate("ChoiceOn").instance("0").instance("1").instance("2").instance("3").instance("4").instance("5");
+			.predicate("dom").instance("1").instance("2").instance("3");
 	}
 
 	protected abstract Solver getInstance(Grounder grounder, java.util.function.Predicate<Predicate> filter);
@@ -64,7 +63,6 @@ public abstract class AbstractSolverTest {
 
 		AnswerSet expected = new BasicAnswerSet.Builder()
 			.predicate("p").instance("a").instance("b")
-			.predicate("_R_").instance("0", "_X:a").instance("0", "_X:b")
 			.predicate("r").instance("a").instance("b")
 			.build();
 
@@ -88,7 +86,6 @@ public abstract class AbstractSolverTest {
 		AnswerSet expected = new BasicAnswerSet.Builder()
 			.predicate("q").instance("1").instance("2")
 			.predicate("p").instance("1").instance("2")
-			.predicate("_R_").instance("0", "_X:1").instance("0", "_X:2")
 			.build();
 
 		assertEquals(expected, answerSets.get(0));
@@ -117,20 +114,8 @@ public abstract class AbstractSolverTest {
 		Solver solver = getInstance(new NaiveGrounder(parseVisit(stream("a :- not b. b :- not a."))));
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			// { ChoiceOn(0), ChoiceOn(1), ChoiceOff(1), _R_(0, ), a }
-			new BasicAnswerSet.Builder()
-				.predicate("ChoiceOn").instance("0").instance("1")
-				.predicate("ChoiceOff").instance("1")
-				.predicate("_R_").instance("0", "")
-				.predicate("a")
-				.build(),
-			// { ChoiceOn(0), ChoiceOn(1), ChoiceOff(0), _R_(1, ), b }
-			new BasicAnswerSet.Builder()
-				.predicate("ChoiceOn").instance("0").instance("1")
-				.predicate("ChoiceOff").instance("0")
-				.predicate("_R_").instance("1", "")
-				.predicate("b")
-				.build()
+			new BasicAnswerSet.Builder().predicate("a").build(),
+			new BasicAnswerSet.Builder().predicate("b").build()
 		));
 
 		assertEquals(expected, solver.collectSet());
@@ -149,48 +134,32 @@ public abstract class AbstractSolverTest {
 			base()
 				.predicate("q").instance("1").instance("2")
 				.predicate("p").instance("3")
-				.predicate("ChoiceOff").instance("0").instance("1").instance("5")
-				.predicate("_R_").instance("0", "_X:3").instance("1", "_X:1").instance("1", "_X:2")
 				.build(),
 			base()
 				.predicate("q").instance("1")
 				.predicate("p").instance("2").instance("3")
-				.predicate("ChoiceOff").instance("0").instance("4").instance("5")
-				.predicate("_R_").instance("0", "_X:2").instance("0", "_X:3").instance("1", "_X:1")
 				.build(),
 			base()
 				.predicate("q").instance("2")
 				.predicate("p").instance("1").instance("3")
-				.predicate("ChoiceOff").instance("1").instance("3").instance("5")
-				.predicate("_R_").instance("0", "_X:1").instance("0", "_X:3").instance("1", "_X:2")
 				.build(),
 			base()
 				.predicate("p").instance("1").instance("2").instance("3")
-				.predicate("ChoiceOff").instance("3").instance("4").instance("5")
-				.predicate("_R_").instance("0", "_X:1").instance("0", "_X:3").instance("0", "_X:2")
 				.build(),
 			base()
 				.predicate("q").instance("1").instance("2").instance("3")
-				.predicate("ChoiceOff").instance("0").instance("1").instance("2")
-				.predicate("_R_").instance("1", "_X:1").instance("1", "_X:2").instance("1", "_X:3")
 				.build(),
 			base()
 				.predicate("q").instance("1").instance("3")
 				.predicate("p").instance("2")
-				.predicate("ChoiceOff").instance("0").instance("2").instance("4")
-				.predicate("_R_").instance("0", "_X:2").instance("1", "_X:1").instance("1", "_X:3")
 				.build(),
 			base()
 				.predicate("q").instance("2").instance("3")
 				.predicate("p").instance("1")
-				.predicate("ChoiceOff").instance("1").instance("2").instance("3")
-				.predicate("_R_").instance("0", "_X:1").instance("1", "_X:2").instance("1", "_X:3")
 				.build(),
 			base()
 				.predicate("q").instance("3")
 				.predicate("p").instance("1").instance("2")
-				.predicate("ChoiceOff").instance("2").instance("3").instance("4")
-				.predicate("_R_").instance("0", "_X:1").instance("0", "_X:2").instance("1", "_X:3")
 				.build()
 		);
 
@@ -199,23 +168,12 @@ public abstract class AbstractSolverTest {
 
 
 	@Test
-	public void withDummyGrounder() {
-		final Solver solver = getInstance(new DummyGrounder());
-
-		AnswerSet expected = new BasicAnswerSet.Builder()
-			.predicate("a")
-			.predicate("b")
-			.predicate("_br1")
-			.predicate("c")
-			.build();
-
-		List<AnswerSet> answerSets = solver.collectList();
-		assertEquals(1, answerSets.size());
-		assertEquals(expected, answerSets.get(0));
+	public void dummyGrounder() {
+		assertEquals(DummyGrounder.EXPECTED, getInstance(new DummyGrounder()).collectSet());
 	}
 
 	@Test
-	public void withChoiceGrounder() {
-		assertEquals(2, getInstance(new ChoiceGrounder()).collectList().size());
+	public void choiceGrounder() {
+		assertEquals(ChoiceGrounder.EXPECTED, getInstance(new ChoiceGrounder()).collectSet());
 	}
 }

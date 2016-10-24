@@ -4,21 +4,26 @@ import at.ac.tuwien.kr.alpha.common.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
 import static at.ac.tuwien.kr.alpha.Util.entry;
+import static java.util.Arrays.asList;
 
 /**
  * Represents a small ASP program with guesses {@code { aa :- not bb.  bb :- not aa. }}.
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ChoiceGrounder implements Grounder {
-	public static final int EXPECTED_ANSWER_SETS = 2;
+	public static Set<AnswerSet> EXPECTED = new HashSet<>(asList(
+		new BasicAnswerSet.Builder()
+			.predicate("aa")
+			.build(),
+		new BasicAnswerSet.Builder()
+			.predicate("bb")
+			.build()
+	));
 
 	private static final int ATOM_AA = 1;
 	private static final int ATOM_BB = 2;
@@ -76,15 +81,19 @@ public class ChoiceGrounder implements Grounder {
 		Set<Predicate> trueAtomPredicates = new HashSet<>();
 		for (int trueAtom : trueAtoms) {
 			BasicPredicate atomPredicate = new BasicPredicate(atomIdToString.get(trueAtom), 0);
-			if (filter.test(atomPredicate)) {
-				trueAtomPredicates.add(atomPredicate);
+			if (!filter.test(atomPredicate)) {
+				continue;
 			}
+			if (atomPredicate.getPredicateName().startsWith("_")) {
+				continue;
+			}
+			trueAtomPredicates.add(atomPredicate);
 		}
 
 		// Add the atom instances
 		Map<Predicate, Set<PredicateInstance>> predicateInstances = new HashMap<>();
 		for (Predicate trueAtomPredicate : trueAtomPredicates) {
-			PredicateInstance predicateInstance = new PredicateInstance(trueAtomPredicate);
+			PredicateInstance predicateInstance = new PredicateInstance<>(trueAtomPredicate);
 			Set<PredicateInstance> instanceList = new HashSet<>();
 			instanceList.add(predicateInstance);
 			predicateInstances.put(trueAtomPredicate, instanceList);
