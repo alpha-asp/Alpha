@@ -2,12 +2,14 @@ package at.ac.tuwien.kr.alpha.common;
 
 import java.util.*;
 
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
 public class BasicAnswerSet implements AnswerSet {
+	public static final BasicAnswerSet EMPTY = new BasicAnswerSet(emptySet(), emptyMap());
+
 	private final Set<Predicate> predicates;
 	private final Map<Predicate, Set<PredicateInstance>> predicateInstances;
 

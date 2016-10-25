@@ -215,6 +215,49 @@ public abstract class AbstractSolverTest {
 	}
 
 	@Test
+	public void noEmptyAnswerSet() throws IOException {
+		String testProgram = "a :- not b, not c." +
+			"b :- not a, not c." +
+			"c :- not a, not b.";
+
+		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+
+		Solver solver = getInstance(grounder, p -> {
+			final String name = p.getPredicateName();
+			return !("ChoiceOn".equals(name) || "ChoiceOff".equals(name));
+		});
+
+		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
+			new BasicAnswerSet.Builder()
+				.predicate("_R_").instance("0", "")
+				.predicate("a")
+				.build(),
+			new BasicAnswerSet.Builder()
+				.predicate("_R_").instance("1", "")
+				.predicate("b")
+				.build(),
+			new BasicAnswerSet.Builder()
+				.predicate("_R_").instance("2", "")
+				.predicate("c")
+				.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
+
+	@Test
+	public void emptyProgramYieldsEmptyAnswerSet() throws IOException {
+		ParsedProgram parsedProgram = parseVisit(stream(""));
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+
+		List<AnswerSet> answerSets = getInstance(grounder).collectList();
+		assertEquals(1, answerSets.size());
+		assertEquals(BasicAnswerSet.EMPTY, answerSets.get(0));
+	}
+
+	@Test
 	public void withChoiceGrounder() {
 		assertEquals(2, getInstance(new ChoiceGrounder()).collectList().size());
 	}
