@@ -8,14 +8,12 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.Literals.isNegated;
+import static java.lang.Math.abs;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -67,10 +65,12 @@ public class NaiveSolver extends AbstractSolver {
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
 			if (!propagationFixpointReached()) {
+				LOGGER.trace("Propagating.");
 				updateGrounderAssignments();	// After a choice, it would be more efficient to propagate first and only then ask the grounder.
 				obtainNoGoodsFromGrounder();
 				doUnitPropagation();
 				doMBTPropagation();
+				LOGGER.trace("Assignment after propagation is: {}", truthAssignments);
 			} else if (assignmentViolatesNoGoods()) {
 				LOGGER.info("Backtracking from wrong choices:");
 				LOGGER.trace("Choice stack: {}", choiceStack);
@@ -80,6 +80,10 @@ public class NaiveSolver extends AbstractSolver {
 				}
 			} else if (choicesLeft()) {
 				doChoice();
+			} else if (!allAtomsAssigned()) {
+				LOGGER.trace("Closing unassigned known atoms (assigning FALSE).");
+				assignUnassignedToFalse();
+				didChange = true;
 			} else if (noMBTValuesReamining()) {
 				AnswerSet as = getAnswerSetFromAssignment();
 
@@ -106,6 +110,31 @@ public class NaiveSolver extends AbstractSolver {
 				}
 			}
 		}
+	}
+
+	private void assignUnassignedToFalse() {
+		for (Integer atom : unassignedAtoms) {
+			truthAssignments.put(atom, false);
+			newTruthAssignments.add(atom);
+			decisionLevels.get(decisionLevel).add(atom);
+		}
+	}
+
+	private List<Integer> unassignedAtoms;
+	private boolean allAtomsAssigned() {
+		unassignedAtoms = new ArrayList<>();
+		HashSet<Integer> knownAtoms = new HashSet<>();
+		for (Map.Entry<Integer, NoGood> entry : knownNoGoods.entrySet()) {
+			for (Integer integer : entry.getValue()) {
+				knownAtoms.add(abs(integer));
+			}
+		}
+		for (Integer atom : knownAtoms) {
+			if (!truthAssignments.containsKey(atom)) {
+				unassignedAtoms.add(atom);
+			}
+		}
+		return unassignedAtoms.isEmpty();
 	}
 
 	private boolean noMBTValuesReamining() {
@@ -378,6 +407,7 @@ public class NaiveSolver extends AbstractSolver {
 				}
 			}
 			if (!isSatisfied) {
+				LOGGER.trace("Violated NoGood: {}", noGood);
 				return true;
 			}
 		}
