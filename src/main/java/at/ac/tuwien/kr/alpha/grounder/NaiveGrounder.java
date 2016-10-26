@@ -5,6 +5,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstraint;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFact;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedRule;
+import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -575,6 +576,18 @@ public class NaiveGrounder extends AbstractGrounder {
 	@Override
 	public String atomIdToString(int atomId) {
 		return atomStore.getPredicateInstance(new AtomId(atomId)).toString();
+	}
+
+	@Override
+	public List<Integer> getUnassignedAtoms(Assignment assignment) {
+		List<Integer> unassignedAtoms = new ArrayList<>();
+		// Check all known atoms: assumption is that AtomStore assigned continuous values and 0 is no valid atomId.
+		for (int i = 1; i <= atomStore.getHighestAtomId().atomId; i++) {
+			if (!assignment.isAssigned(i)) {
+				unassignedAtoms.add(i);
+			}
+		}
+		return unassignedAtoms;
 	}
 
 	private HashMap<NonGroundRule, HashSet<VariableSubstitution>> knownGroundingSubstitutions = new HashMap<>();

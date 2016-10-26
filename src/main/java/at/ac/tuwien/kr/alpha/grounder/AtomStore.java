@@ -28,6 +28,10 @@ public class AtomStore {
 		createAtomId(new PredicateInstance(new BasicPredicate("\u22A5", 0), new Term[0]));
 	}
 
+	public AtomId getHighestAtomId() {
+		return new AtomId(atomIdsToInternalPredicateInstances.size() - 1);
+	}
+
 	/**
 	 * Returns the AtomId associated with a given ground predicate instance (=ground atom).
 	 * @param groundAtom

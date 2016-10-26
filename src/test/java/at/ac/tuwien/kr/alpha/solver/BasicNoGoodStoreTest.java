@@ -51,6 +51,17 @@ public class BasicNoGoodStoreTest {
 	}
 
 	@Test
+	public void assignment() {
+		store.add(3, headFirst(-7, -4, -2));
+		store.assign(4, TRUE);
+		store.assign(2, FALSE);
+		store.assign(7, FALSE);
+		store.propagate();
+		assertEquals(null, store.getViolatedNoGood());
+	}
+
+
+	@Test
 	public void addNotCausingAssignment() {
 		assignment.assign(1, TRUE, 0);
 		store.add(3, headFirst(-3, -2, 1));

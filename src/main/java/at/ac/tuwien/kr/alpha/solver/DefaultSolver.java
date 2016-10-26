@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -73,6 +74,11 @@ public class DefaultSolver extends AbstractSolver {
 				}
 			} else if ((nextChoice = computeChoice()) != 0) {
 				doChoice(nextChoice);
+				// TODO: else if set all remaining known assignments to FALSE!
+			} else if (!allAtomsAssigned()) {
+				LOGGER.trace("Closing unassigned known atoms (assigning FALSE).");
+				assignUnassignedToFalse();
+				didChange = true;
 			} else if (assignment.getMBTCount() == 0) {
 				AnswerSet as = translate(assignment.getTrueAssignments());
 				LOGGER.debug("Answer-Set found: {}", as);
@@ -87,6 +93,18 @@ public class DefaultSolver extends AbstractSolver {
 				}
 			}
 		}
+	}
+
+	private void assignUnassignedToFalse() {
+		for (Integer atom : unassignedAtoms) {
+			store.assign(atom, FALSE);
+		}
+	}
+
+	private List<Integer> unassignedAtoms;
+	private boolean allAtomsAssigned() {
+		unassignedAtoms = grounder.getUnassignedAtoms(assignment);
+		return unassignedAtoms.isEmpty();
 	}
 
 	private void doBacktrack() {
@@ -166,7 +184,7 @@ public class DefaultSolver extends AbstractSolver {
 		// HINT: tracking changes of ChoiceOn, ChoiceOff directly could
 		// increase performance (analyze store.getChangedAssignments()).
 		for (Integer enablerAtom : choiceOn.keySet()) {
-			if (FALSE.equals(assignment.getTruth(enablerAtom))) {
+			if (assignment.getTruth(enablerAtom) == null || FALSE.equals(assignment.getTruth(enablerAtom))) {
 				continue;
 			}
 

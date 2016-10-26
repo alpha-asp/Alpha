@@ -197,6 +197,42 @@ public abstract class AbstractSolverTest {
 		assertEquals(expected, solver.collectList());
 	}
 
+	@Test
+	public void guessingProgram3Way() throws IOException {
+		String testProgram =
+			"a :- not b, not c." +
+			"b :- not a, not c." +
+			"c :- not a, not b.";
+		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
+			//{ ChoiceOn(1), ChoiceOn(0), ChoiceOn(2), ChoiceOff(2), ChoiceOff(1), _R_(0, ), a() }
+			new BasicAnswerSet.Builder()
+				.predicate("ChoiceOn").instance("1").instance("0").instance("2")
+				.predicate("ChoiceOff").instance("2").instance("1")
+				.predicate("_R_").instance("0", "")
+				.predicate("a")
+				.build(),
+			//{ ChoiceOn(1), ChoiceOn(0), ChoiceOn(2), ChoiceOff(2), ChoiceOff(0), _R_(1, ), b() }
+			new BasicAnswerSet.Builder()
+				.predicate("ChoiceOn").instance("1").instance("0").instance("2")
+				.predicate("ChoiceOff").instance("2").instance("0")
+				.predicate("_R_").instance("1", "")
+				.predicate("b")
+				.build(),
+			//{ ChoiceOn(1), ChoiceOn(0), ChoiceOn(2), ChoiceOff(1), ChoiceOff(0), _R_(2, ), c() }
+			new BasicAnswerSet.Builder()
+				.predicate("ChoiceOn").instance("1").instance("0").instance("2")
+				.predicate("ChoiceOff").instance("0").instance("1")
+				.predicate("_R_").instance("2", "")
+				.predicate("c")
+				.build()
+		));
+
+		assertEquals(expected, solver.collectSet());
+	}
+
 
 	@Test
 	public void withDummyGrounder() {

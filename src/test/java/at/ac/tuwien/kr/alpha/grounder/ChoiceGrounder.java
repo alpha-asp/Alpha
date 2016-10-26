@@ -1,13 +1,11 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
@@ -123,5 +121,17 @@ public class ChoiceGrounder implements Grounder {
 	@Override
 	public String atomIdToString(int atomId) {
 		return Integer.toString(atomId);
+	}
+
+	@Override
+	public List<Integer> getUnassignedAtoms(Assignment assignment) {
+		List<Integer> unassigned = new ArrayList<>();
+		List<Integer> knownAtomIds = new ArrayList<>(atomIdToString.keySet());
+		for (Integer atomId : knownAtomIds) {
+			if (!assignment.isAssigned(atomId)) {
+				unassigned.add(atomId);
+			}
+		}
+		return unassigned;
 	}
 }
