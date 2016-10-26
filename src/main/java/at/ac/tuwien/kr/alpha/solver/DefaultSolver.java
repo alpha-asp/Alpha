@@ -76,18 +76,12 @@ public class DefaultSolver extends AbstractSolver {
 				}
 			} else if ((nextChoice = computeChoice()) != 0) {
 				doChoice(nextChoice);
-				// TODO: else if set all remaining known assignments to FALSE!
 			} else if (!allAtomsAssigned()) {
 				LOGGER.trace("Closing unassigned known atoms (assigning FALSE).");
 				assignUnassignedToFalse();
 				didChange = true;
 			} else if (assignment.getMBTCount() == 0) {
 				AnswerSet as = translate(assignment.getTrueAssignments());
-
-				if (as == null) {
-					return true;
-				}
-
 				LOGGER.debug("Answer-Set found: {}", as);
 				LOGGER.trace("Choices: {}", choiceStack);
 				action.accept(as);

@@ -86,11 +86,6 @@ public class NaiveSolver extends AbstractSolver {
 				didChange = true;
 			} else if (noMBTValuesReamining()) {
 				AnswerSet as = getAnswerSetFromAssignment();
-
-				if (as == null) {
-					return true;
-				}
-
 				LOGGER.debug("Answer-Set found: {}", as);
 				LOGGER.trace("Choice stack: {}", choiceStack);
 				action.accept(as);
