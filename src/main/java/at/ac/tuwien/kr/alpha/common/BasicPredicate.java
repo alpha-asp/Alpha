@@ -4,17 +4,17 @@ package at.ac.tuwien.kr.alpha.common;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class BasicPredicate implements Predicate {
-	private final String predicateName;
+	private final String name;
 	private final int arity;
 
-	public BasicPredicate(String predicateName, int arity) {
-		this.predicateName = predicateName;
+	public BasicPredicate(String name, int arity) {
+		this.name = name;
 		this.arity = arity;
 	}
 
 	@Override
 	public String getPredicateName() {
-		return predicateName;
+		return name;
 	}
 
 	@Override
@@ -36,13 +36,12 @@ public class BasicPredicate implements Predicate {
 		if (arity != that.arity) {
 			return false;
 		}
-		return predicateName.equals(that.predicateName);
+
+		return name.equals(that.name);
 	}
 
 	@Override
 	public int hashCode() {
-		int result = predicateName.hashCode();
-		result = 31 * result + arity;
-		return result;
+		return 31 * name.hashCode() + arity;
 	}
 }

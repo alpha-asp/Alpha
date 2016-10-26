@@ -9,11 +9,11 @@ import java.util.List;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class PredicateInstance {
-	public final Predicate predicate;
+public class PredicateInstance<P extends Predicate> {
+	public final P predicate;
 	public final Term[] termList;
 
-	public PredicateInstance(Predicate predicate, Term... termList) {
+	public PredicateInstance(P predicate, Term... termList) {
 		this.predicate = predicate;
 		this.termList = termList;
 	}
