@@ -294,6 +294,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	@Override
 	public Map<Integer, ThriceTruth> getChangedAssignments() {
 		Map<Integer, ThriceTruth> result = Collections.unmodifiableMap(new HashMap<>(changedAssignments));
+		// TODO: why the new HashMap (cloning) above? unmodifiableMap can hold just a reference. But below code must be adapted, clearing the map does not work.
 		changedAssignments.clear();
 		return result;
 	}
