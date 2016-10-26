@@ -8,7 +8,9 @@ import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
+import ch.qos.logback.classic.Logger;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -24,6 +26,14 @@ public abstract class AbstractSolverTest {
 	private static BasicAnswerSet.Builder base() {
 		return new BasicAnswerSet.Builder()
 			.predicate("dom").instance("1").instance("2").instance("3");
+	}
+
+	/**
+	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
+	 */
+	private static void enableTracing() {
+		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+		root.setLevel(ch.qos.logback.classic.Level.TRACE);
 	}
 
 	protected abstract Solver getInstance(Grounder grounder, java.util.function.Predicate<Predicate> filter);
@@ -167,43 +177,6 @@ public abstract class AbstractSolverTest {
 	}
 
 	@Test
-	public void guessingProgram3Way() throws IOException {
-		String testProgram =
-			"a :- not b, not c." +
-			"b :- not a, not c." +
-			"c :- not a, not b.";
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			//{ ChoiceOn(1), ChoiceOn(0), ChoiceOn(2), ChoiceOff(2), ChoiceOff(1), _R_(0, ), a() }
-			new BasicAnswerSet.Builder()
-				.predicate("ChoiceOn").instance("1").instance("0").instance("2")
-				.predicate("ChoiceOff").instance("2").instance("1")
-				.predicate("_R_").instance("0", "")
-				.predicate("a")
-				.build(),
-			//{ ChoiceOn(1), ChoiceOn(0), ChoiceOn(2), ChoiceOff(2), ChoiceOff(0), _R_(1, ), b() }
-			new BasicAnswerSet.Builder()
-				.predicate("ChoiceOn").instance("1").instance("0").instance("2")
-				.predicate("ChoiceOff").instance("2").instance("0")
-				.predicate("_R_").instance("1", "")
-				.predicate("b")
-				.build(),
-			//{ ChoiceOn(1), ChoiceOn(0), ChoiceOn(2), ChoiceOff(1), ChoiceOff(0), _R_(2, ), c() }
-			new BasicAnswerSet.Builder()
-				.predicate("ChoiceOn").instance("1").instance("0").instance("2")
-				.predicate("ChoiceOff").instance("0").instance("1")
-				.predicate("_R_").instance("2", "")
-				.predicate("c")
-				.build()
-		));
-
-		assertEquals(expected, solver.collectSet());
-	}
-
-
-	@Test
 	public void dummyGrounder() {
 		assertEquals(DummyGrounder.EXPECTED, getInstance(new DummyGrounder()).collectSet());
 	}
@@ -214,7 +187,7 @@ public abstract class AbstractSolverTest {
 	}
 
 	@Test
-	public void noEmptyAnswerSet() throws IOException {
+	public void guessingProgram3Way() throws IOException {
 		String testProgram = "a :- not b, not c." +
 			"b :- not a, not c." +
 			"c :- not a, not b.";
