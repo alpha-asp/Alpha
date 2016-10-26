@@ -177,7 +177,6 @@ public class NaiveGrounder extends AbstractGrounder {
 				}
 			}
 		}
-		// TODO: generate noGoods for ground rules! Especially ground rule with empty positive body which yield choices.
 		return noGoodsFromFacts;
 	}
 
@@ -384,10 +383,6 @@ public class NaiveGrounder extends AbstractGrounder {
 
 	protected void bindNextAtom(NonGroundRule nonGroundRule, int atomPos, List<Instance> potentiallyMatchingInstances, VariableSubstitution variableSubstitution, ArrayList<VariableSubstitution> generatedSubstitutions) {
 		PredicateInstance atom = nonGroundRule.getBodyAtom(atomPos);
-		// TODO: if variableSubstitution already yields a nonground rule, a valid substitution has been found
-		// TODO: for negative body this is sufficient and must yield NoGoods (to guess on).
-		// TODO: if current atomPos is inside negative body (and body is sorted such that negatives come last), then the substitution is sufficient (by the rule being safe).
-		// TODO: potential solution: skip atoms that are ground given the variableSubstitution, only check potentiallyMatchingInstances for non-ground ones.
 		for (Instance instance : potentiallyMatchingInstances) {
 			VariableSubstitution variableSubstitutionClone = new VariableSubstitution(variableSubstitution);
 			// Check each instance if they match
