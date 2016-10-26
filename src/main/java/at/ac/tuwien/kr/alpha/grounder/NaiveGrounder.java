@@ -28,15 +28,15 @@ public class NaiveGrounder extends AbstractGrounder {
 	private IntIdGenerator nogoodIdGenerator = new IntIdGenerator();
 	private HashMap<Predicate, ArrayList<Instance>> factsFromProgram = new HashMap<>();
 	private boolean outputFactNogoods = true;
-	private ArrayList<NonGroundRule> rulesFromProgram = new ArrayList<>();
+	private ArrayList<NonGroundRule<BasicPredicate>> rulesFromProgram = new ArrayList<>();
 	private HashSet<IndexedInstanceStorage> modifiedWorkingMemories = new HashSet<>();
-	private HashMap<IndexedInstanceStorage, ArrayList<NonGroundRule>> rulesUsingPredicateWorkingMemory = new HashMap<>();
+	private HashMap<IndexedInstanceStorage, ArrayList<NonGroundRule<BasicPredicate>>> rulesUsingPredicateWorkingMemory = new HashMap<>();
 
 	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newChoiceAtoms = new ImmutablePair<>(new HashMap<>(), new HashMap<>());
 	private IntIdGenerator choiceAtomsGenerator = new IntIdGenerator();
 
 	private HashSet<Predicate> knownPredicates = new HashSet<>();
-	private HashMap<NonGroundRule<? extends Predicate>, HashSet<VariableSubstitution>> knownGroundingSubstitutions = new HashMap<>(); // TODO: check where it is used!
+	private HashMap<NonGroundRule<? extends Predicate>, HashSet<VariableSubstitution>> knownGroundingSubstitutions = new HashMap<>();
 
 	public NaiveGrounder(ParsedProgram program) {
 		super(program);
@@ -48,9 +48,6 @@ public class NaiveGrounder extends AbstractGrounder {
 			BasicPredicate predicate = new BasicPredicate(predicateName, predicateArity);
 			// Record predicate
 			adaptWorkingMemoryForPredicate(predicate);
-
-
-			IndexedInstanceStorage predicateWorkingMemoryPlus = workingMemory.get(predicate).getLeft();
 
 			// Construct instance from the fact.
 			ArrayList<Term> termList = new ArrayList<>();
@@ -95,7 +92,7 @@ public class NaiveGrounder extends AbstractGrounder {
 
 	private void registerRuleOrConstraint(ParsedRule rule) {
 		// Record the rule for later use
-		NonGroundRule<? extends Predicate> nonGroundRule = NonGroundRule.constructNonGroundRule(intIdGenerator, rule);
+		NonGroundRule<BasicPredicate> nonGroundRule = NonGroundRule.constructNonGroundRule(intIdGenerator, rule);
 		// Create working memories for all predicates occurring in the rule
 		for (Predicate predicate : nonGroundRule.getOccurringPredicates()) {
 			adaptWorkingMemoryForPredicate(predicate);
@@ -167,7 +164,7 @@ public class NaiveGrounder extends AbstractGrounder {
 				noGoodsFromFacts.put(noGoodId, noGood);
 			}
 		}
-		for (NonGroundRule nonGroundRule : rulesFromProgram) {
+		for (NonGroundRule<BasicPredicate> nonGroundRule : rulesFromProgram) {
 			if (nonGroundRule.isGround()) {
 				List<NoGood> noGoods = generateNoGoodsFromGroundSubstitution(nonGroundRule, new VariableSubstitution());
 				for (NoGood noGood : noGoods) {
@@ -196,12 +193,12 @@ public class NaiveGrounder extends AbstractGrounder {
 		for (IndexedInstanceStorage modifiedWorkingMemory : modifiedWorkingMemories) {
 
 			// Iterate over all rules whose body contains the predicate corresponding to the current workingMemory.
-			ArrayList<NonGroundRule> nonGroundRules = rulesUsingPredicateWorkingMemory.get(modifiedWorkingMemory);
+			ArrayList<NonGroundRule<BasicPredicate>> nonGroundRules = rulesUsingPredicateWorkingMemory.get(modifiedWorkingMemory);
 			// Skip working memories that are not used by any rule.
 			if (nonGroundRules == null) {
 				continue;
 			}
-			for (NonGroundRule nonGroundRule : nonGroundRules) {
+			for (NonGroundRule<BasicPredicate> nonGroundRule : nonGroundRules) {
 				List<VariableSubstitution> variableSubstitutions = //generateGroundRulesSemiNaive(nonGroundRule, modifiedWorkingMemory);
 				bindNextAtomInRule(nonGroundRule, 0, new VariableSubstitution());
 				for (VariableSubstitution variableSubstitution : variableSubstitutions) {
@@ -545,7 +542,6 @@ public class NaiveGrounder extends AbstractGrounder {
 		return unassignedAtoms;
 	}
 
-	private HashMap<NonGroundRule, HashSet<VariableSubstitution>> knownGroundingSubstitutions = new HashMap<>();
 	public void printCurrentlyKnownGroundRules() {
 		System.out.println("Printing known ground rules:");
 		for (Map.Entry<NonGroundRule<? extends Predicate>, HashSet<VariableSubstitution>> ruleSubstitutionsEntry : knownGroundingSubstitutions.entrySet()) {

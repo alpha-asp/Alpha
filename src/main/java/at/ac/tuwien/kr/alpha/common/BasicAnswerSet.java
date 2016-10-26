@@ -88,7 +88,7 @@ public class BasicAnswerSet implements AnswerSet {
 			if (firstInstance) {
 				predicate = new BasicPredicate(predicateSymbol, 0);
 				predicates.add(predicate);
-				predicateInstances.put(predicate, new HashSet<>(singletonList(new PredicateInstance(predicate))));
+				predicateInstances.put(predicate, new HashSet<>(singletonList(new PredicateInstance<>(predicate))));
 			} else {
 				predicateInstances.put(predicate, new HashSet<>(instances));
 			}
@@ -116,7 +116,7 @@ public class BasicAnswerSet implements AnswerSet {
 			for (int i = 0; i < constantSymbols.length; i++) {
 				terms[i] = ConstantTerm.getInstance(constantSymbols[i]);
 			}
-			instances.add(new PredicateInstance(predicate, terms));
+			instances.add(new PredicateInstance<>(predicate, terms));
 			return this;
 		}
 

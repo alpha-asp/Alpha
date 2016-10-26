@@ -25,7 +25,7 @@ public class AtomStore {
 
 	public AtomStore() {
 		// Create atomId for falsum (currently not needed, but it gets atomId 0, which cannot represent a negated literal).
-		createAtomId(new PredicateInstance(new BasicPredicate("\u22A5", 0), new Term[0]));
+		createAtomId(new PredicateInstance<>(new BasicPredicate("\u22A5", 0), new Term[0]));
 	}
 
 	public AtomId getHighestAtomId() {
