@@ -2,12 +2,14 @@ package at.ac.tuwien.kr.alpha.common;
 
 import java.util.*;
 
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
 public class BasicAnswerSet implements AnswerSet {
+	public static final BasicAnswerSet EMPTY = new BasicAnswerSet(emptySet(), emptyMap());
+
 	private final Set<Predicate> predicates;
 	private final Map<Predicate, Set<PredicateInstance>> predicateInstances;
 
@@ -86,7 +88,7 @@ public class BasicAnswerSet implements AnswerSet {
 			if (firstInstance) {
 				predicate = new BasicPredicate(predicateSymbol, 0);
 				predicates.add(predicate);
-				predicateInstances.put(predicate, new HashSet<>(singletonList(new PredicateInstance(predicate))));
+				predicateInstances.put(predicate, new HashSet<>(singletonList(new PredicateInstance<>(predicate))));
 			} else {
 				predicateInstances.put(predicate, new HashSet<>(instances));
 			}
@@ -114,7 +116,7 @@ public class BasicAnswerSet implements AnswerSet {
 			for (int i = 0; i < constantSymbols.length; i++) {
 				terms[i] = ConstantTerm.getInstance(constantSymbols[i]);
 			}
-			instances.add(new PredicateInstance(predicate, terms));
+			instances.add(new PredicateInstance<>(predicate, terms));
 			return this;
 		}
 

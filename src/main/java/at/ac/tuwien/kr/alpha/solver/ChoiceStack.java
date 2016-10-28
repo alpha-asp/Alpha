@@ -33,6 +33,10 @@ class ChoiceStack {
 		return delegate.toString();
 	}
 
+	public int size() {
+		return delegate.size();
+	}
+
 	private class Pair {
 		int atom;
 		boolean value;

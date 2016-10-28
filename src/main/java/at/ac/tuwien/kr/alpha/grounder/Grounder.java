@@ -3,8 +3,10 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.List;
 import java.util.Map;
 
 public interface Grounder {
@@ -27,4 +29,11 @@ public interface Grounder {
 	// int[] getObsoleteAtomIds()
 
 	String atomIdToString(int atomId);
+
+	/**
+	 * Returns a list of currently known but unassigned.
+	 * @param assignment the current assignment.
+	 * @return a list of atoms not having assigned a truth value.
+	 */
+	List<Integer> getUnassignedAtoms(Assignment assignment);
 }

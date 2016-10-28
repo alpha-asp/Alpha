@@ -56,7 +56,7 @@ public class BasicAssignment implements Assignment {
 
 		final Entry current = get(atom);
 
-		if (current != null && current.getTruth().equals(value)) {
+		if (current != null && (current.getTruth().equals(value) || (TRUE.equals(current.getTruth()) && MBT.equals(value)))) {
 			return true;
 		}
 
@@ -117,7 +117,19 @@ public class BasicAssignment implements Assignment {
 
 	@Override
 	public String toString() {
-		return Arrays.toString(assignment.entrySet().toArray());
+		StringBuffer sb = new StringBuffer("[");
+		for (Iterator<Map.Entry<Integer, Entry>> iterator = assignment.entrySet().iterator(); iterator.hasNext();) {
+			Map.Entry<Integer, Entry> assignmentEntry = iterator.next();
+			String valueShorthand = assignmentEntry.getValue().getTruth().toStringShorthand();
+			int decisionLevel = assignmentEntry.getValue().getDecisionLevel();
+			sb.append(valueShorthand + "_" + assignmentEntry.getKey() + "@" + decisionLevel);
+			if (iterator.hasNext()) {
+				sb.append(", ");
+			}
+		}
+		sb.append("]");
+		return sb.toString();
+		//return Arrays.toString(assignment.entrySet().toArray());
 	}
 
 	private static final class Entry implements Assignment.Entry {

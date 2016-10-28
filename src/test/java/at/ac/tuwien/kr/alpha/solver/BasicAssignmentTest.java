@@ -54,10 +54,12 @@ public class BasicAssignmentTest {
 	@Test
 	public void checkToString() {
 		assignment.assign(1, FALSE, 0);
-		assertEquals("[1=FALSE(0)]", assignment.toString());
+		assertEquals("[F_1@0]", assignment.toString());
+		//assertEquals("[1=FALSE(0)]", assignment.toString());
 
 		assignment.assign(2, TRUE, 0);
-		assertEquals("[1=FALSE(0), 2=TRUE(0)]", assignment.toString());
+		assertEquals("[F_1@0, T_2@0]", assignment.toString());
+		// assertEquals("[1=FALSE(0), 2=TRUE(0)]", assignment.toString());
 	}
 
 	@Test

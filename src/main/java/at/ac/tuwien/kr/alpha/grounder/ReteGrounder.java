@@ -5,8 +5,10 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.rete.RetePredicate;
+import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -50,6 +52,11 @@ public class ReteGrounder extends AbstractGrounder {
 
 	@Override
 	public String atomIdToString(int atomId) {
+		return null;
+	}
+
+	@Override
+	public List<Integer> getUnassignedAtoms(Assignment assignment) {
 		return null;
 	}
 }
