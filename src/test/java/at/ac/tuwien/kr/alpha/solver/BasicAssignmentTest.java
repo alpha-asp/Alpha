@@ -117,15 +117,15 @@ public class BasicAssignmentTest {
 	@Test
 	public void testContains() {
 		assignment.assign(1, TRUE, 0);
-		assertTrue(assignment.contains(+1));
-		assertFalse(assignment.contains(-1));
+		assertTrue(assignment.containsRelaxed(+1));
+		assertFalse(assignment.containsRelaxed(-1));
 
 		assignment.assign(2, FALSE, 0);
-		assertTrue(assignment.contains(-2));
-		assertFalse(assignment.contains(+2));
+		assertTrue(assignment.containsRelaxed(-2));
+		assertFalse(assignment.containsRelaxed(+2));
 
 		assignment.assign(1, MBT, 0);
-		assertTrue(assignment.contains(+1));
-		assertFalse(assignment.contains(-1));
+		assertTrue(assignment.containsRelaxed(+1));
+		assertFalse(assignment.containsRelaxed(-1));
 	}
 }

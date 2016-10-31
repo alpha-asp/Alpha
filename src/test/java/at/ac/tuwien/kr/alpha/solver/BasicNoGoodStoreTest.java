@@ -259,6 +259,8 @@ public class BasicNoGoodStoreTest {
 		assignment.assign(2, MBT, DECISION_LEVEL);
 
 		store.add(1, headFirst(-1, 2, 3));
+		assertEquals(MBT, assignment.getTruth(1));
+
 		store.add(2, headFirst(-5, -4, 1));
 		store.propagate();
 

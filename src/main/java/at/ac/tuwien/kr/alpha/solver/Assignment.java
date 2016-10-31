@@ -6,6 +6,8 @@ import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 public interface Assignment {
 	/**
@@ -58,9 +60,18 @@ public interface Assignment {
 		return get(atom) != null;
 	}
 
-	default boolean contains(int literal) {
+	default boolean containsRelaxed(int literal) {
 		final Entry entry = get(atomOf(literal));
 		return entry != null && isNegated(literal) == !entry.getTruth().toBoolean();
+	}
+
+	default boolean containsRelaxed(NoGood noGood, int index) {
+		return containsRelaxed(noGood.getLiteral(index));
+	}
+
+	default boolean contains(int literal) {
+		final Entry entry = get(atomOf(literal));
+		return entry != null && (isNegated(literal) ? FALSE : TRUE).equals(entry.getTruth());
 	}
 
 	default boolean contains(NoGood noGood, int index) {

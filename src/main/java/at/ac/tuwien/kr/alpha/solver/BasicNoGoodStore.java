@@ -102,7 +102,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		final int b = noGood.getLiteral(1);
 
 		// Check for violation.
-		if (assignment.contains(a) && assignment.contains(b)) {
+		if (assignment.containsRelaxed(a) && assignment.containsRelaxed(b)) {
 			violated = noGood;
 			return false;
 		}
@@ -157,7 +157,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			// First check whether the assigned literal is really
 			// contained in the assignment (otherwise the nogood
 			// cannot be unit) and then just go ahead and assign.
-			if (assignment.contains(noGood, aAssigned ? 0 : 1) && !assign(noGood, aAssigned ? 1 : 0, MBT)) {
+			if (assignment.containsRelaxed(noGood, aAssigned ? 0 : 1) && !assign(noGood, aAssigned ? 1 : 0, MBT)) {
 				violated = noGood;
 				return false;
 			}
@@ -182,7 +182,8 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		// there must be at most one unassigned literal and all other literals must be
 		// contained in the assignment.
 		boolean isViolated = true;
-		boolean propagates = true;
+		boolean propagatesMbt = true;
+		boolean propagatesTrue = true;
 
 		// Along the way keep pointers to the first two
 		// unassigned literals encountered and the index
@@ -207,16 +208,24 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			final ThriceTruth value = assignment.getTruth(atomOf(literal));
 
 			// Once we found a literal that is not contained in the assignment, we
-			// can be sure that the nogood is not violated. If the literal also is
-			// assigned, we can further deduce that it will not propagate.
-			if (!assignment.contains(literal)) {
+			// can be sure that the nogood is not violated.
+			if (!(isNegated(literal) ? FALSE : TRUE).equals(value)) {
 				isViolated = false;
 				if (value != null) {
-					propagates = false;
+					// If the literal also is assigned, we can further
+					// deduce that it will not propagate.
+					propagatesTrue = false;
+
+					// Regular unit propagation is has weaker constraints,
+					// MBT is allowed for positive literals, so check this
+					// separately.
+					if (value.toBoolean() == isNegated(literal)) {
+						propagatesMbt = false;
+					}
 				}
 			}
 
-			// Look at all unassigned literals closer and record their index.
+			// Look closely at all unassigned literals and record their index.
 			if (value == null) {
 				if (pointers[0] == -1) {
 					pointers[0] = i;
@@ -225,7 +234,8 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 					// In case there are two unassigned literals,
 					// the nogood will not propagate.
-					propagates = false;
+					propagatesMbt = false;
+					propagatesTrue = false;
 				}
 			}
 		}
@@ -237,18 +247,16 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 		// "propagates" makes sure that there is at most one unassigned literal, and all other literals are
 		// contained in the assignment.
-		if (propagates) {
-			if ((pointers[0] == noGood.getHead() || pointers[0] == -1) && pointers[2] != -1 && TRUE.equals(assignment.getTruth(noGood.getAtom(pointers[2])))) {
-				// In case there is no unassigned literal, or the only unassigned literal is the head,
-				// and furthermore the third pointer points at a TRUE atom, propagate TRUE for the head.
-				if (!assign(noGood, noGood.getHead(), TRUE)) {
-					return false;
-				}
-			} else if (pointers[0] != -1) {
-				// If there is exactly one unassigned literal, perform regular unit propagation.
-				if (!assign(noGood, pointers[0], MBT)) {
-					return false;
-				}
+		if (propagatesTrue && (pointers[0] == noGood.getHead() || pointers[0] == -1) && pointers[2] != -1) {
+			// In case there is no unassigned literal, or the only unassigned literal is the head,
+			// and furthermore the third pointer points at a TRUE atom, propagate TRUE for the head.
+			if (!assign(noGood, noGood.getHead(), TRUE)) {
+				return false;
+			}
+		} else if (propagatesMbt && pointers[0] != -1 && pointers[1] == -1) {
+			// If there is exactly one unassigned literal, perform regular unit propagation.
+			if (!assign(noGood, pointers[0], MBT)) {
+				return false;
 			}
 		}
 
@@ -302,7 +310,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		return false;
 	}
 
-	public boolean assign(final NoGood noGood, final int index, final ThriceTruth negated) {
+	private boolean assign(final NoGood noGood, final int index, final ThriceTruth negated) {
 		int literal = noGood.getLiteral(index);
 		if (!assign(literal, isNegated(literal) ? negated : FALSE)) {
 			violated = noGood;
@@ -372,7 +380,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 				final int literalAtIndex = noGood.getLiteral(index);
 
-				if (!assignment.isAssigned(atomOf(literalAtIndex)) || !assignment.contains(literalAtIndex)) {
+				if (!assignment.isAssigned(atomOf(literalAtIndex)) || !assignment.containsRelaxed(literalAtIndex)) {
 					noGood.setPointer(assignedPointer, index);
 					break;
 				}
@@ -407,7 +415,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			final int otherLiteralIndex = watch.getOtherLiteralIndex();
 			final NoGood noGood = binaries.get(watch.getId());
 
-			if (!assignment.contains(noGood, otherLiteralIndex == 1 ? 0 : 1)) {
+			if (!assignment.containsRelaxed(noGood, otherLiteralIndex == 1 ? 0 : 1)) {
 				continue;
 			}
 
