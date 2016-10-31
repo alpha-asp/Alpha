@@ -418,7 +418,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			propagated = true;
 		}
 
-		for (Iterator<WatchedNoGood> iterator = w.n.get(TRUE).iterator(); iterator.hasNext(); ) {
+		for (Iterator<WatchedNoGood> iterator = w.n.get(TRUE).iterator(); iterator.hasNext();) {
 			final WatchedNoGood noGood = iterator.next();
 
 			int bestIndex = -1;
