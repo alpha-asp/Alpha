@@ -47,7 +47,7 @@ public class BasicAssignment implements Assignment {
 	@Override
 	public boolean assign(int atom, ThriceTruth value, int decisionLevel) {
 		if (!isAtom(atom)) {
-			throw new IllegalArgumentException("atom must be positive");
+			throw new IllegalArgumentException("not an atom");
 		}
 
 		if (value == null) {
@@ -117,19 +117,21 @@ public class BasicAssignment implements Assignment {
 
 	@Override
 	public String toString() {
-		StringBuffer sb = new StringBuffer("[");
+		StringBuilder sb = new StringBuilder("[");
 		for (Iterator<Map.Entry<Integer, Entry>> iterator = assignment.entrySet().iterator(); iterator.hasNext();) {
 			Map.Entry<Integer, Entry> assignmentEntry = iterator.next();
-			String valueShorthand = assignmentEntry.getValue().getTruth().toStringShorthand();
-			int decisionLevel = assignmentEntry.getValue().getDecisionLevel();
-			sb.append(valueShorthand + "_" + assignmentEntry.getKey() + "@" + decisionLevel);
+			sb.append(assignmentEntry.getValue().getTruth());
+			sb.append("_");
+			sb.append(assignmentEntry.getKey());
+			sb.append("@");
+			sb.append(assignmentEntry.getValue().getDecisionLevel());
+
 			if (iterator.hasNext()) {
 				sb.append(", ");
 			}
 		}
 		sb.append("]");
 		return sb.toString();
-		//return Arrays.toString(assignment.entrySet().toArray());
 	}
 
 	private static final class Entry implements Assignment.Entry {
@@ -157,8 +159,8 @@ public class BasicAssignment implements Assignment {
 		}
 	}
 
-	private class DecisionLevelState {
-		final Set<Integer> unassignedToAssigned = new HashSet<>();
-		final Map<Integer, Integer> mbtToTrue = new HashMap<>();
+	private static final class DecisionLevelState {
+		private final Set<Integer> unassignedToAssigned = new HashSet<>();
+		private final Map<Integer, Integer> mbtToTrue = new HashMap<>();
 	}
 }

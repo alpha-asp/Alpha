@@ -1,22 +1,24 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 enum ThriceTruth {
-	TRUE,
-	FALSE,
-	MBT;
+	TRUE("T", true),
+	FALSE("F", false),
+	MBT("M", true);
 
-	public boolean toBoolean() {
-		return !FALSE.equals(this);
+	private final String asString;
+	private final boolean asBoolean;
+
+	ThriceTruth(String asString, boolean asBoolean) {
+		this.asString = asString;
+		this.asBoolean = asBoolean;
 	}
 
-	public String toStringShorthand() {
-		if (TRUE.equals(this)) {
-			return "T";
-		} else if (FALSE.equals(this)) {
-			return "F";
-		} else if (MBT.equals(this)) {
-			return "M";
-		}
-		return "Unknown";
+	public boolean toBoolean() {
+		return asBoolean;
+	}
+
+	@Override
+	public String toString() {
+		return asString;
 	}
 }

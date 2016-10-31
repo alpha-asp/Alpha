@@ -289,14 +289,19 @@ public class BasicNoGoodStoreTest {
 
 	@Test
 	public void moveThirdPointer() {
+		// 1 <- 2, 3.
 		store.add(1, headFirst(-1, 2, 3));
-		store.propagate();
-		store.add(2, fact(-2));
-		store.propagate();
-		assertEquals(null, assignment.getTruth(1));
+		assertFalse(store.propagate());
 
+		// 2.
+		store.add(2, fact(-2));
+		assertFalse(store.propagate());
+		assertNull(assignment.getTruth(1));
+
+		// 3.
 		store.add(3, fact(-3));
-		store.propagate();
+		assertTrue(store.propagate());
+
 		assertEquals(TRUE, assignment.getTruth(1));
 	}
 
@@ -351,12 +356,13 @@ public class BasicNoGoodStoreTest {
 
 	@Test
 	public void propagateViolatedConstraint() {
-		assertTrue(store.add(1, headFirst(-3, -2, -1)));
+		NoGood noGood = headFirst(-3, -2, -1);
+		assertTrue(store.add(1, noGood));
 		assertTrue(store.assign(1, FALSE));
 		assertTrue(store.assign(2, FALSE));
 		assertTrue(store.assign(3, FALSE));
 		assertFalse(store.propagate());
-		assertNotNull(store.getViolatedNoGood());
+		assertEquals(noGood, new NoGood(store.getViolatedNoGood()));
 	}
 
 	@Test

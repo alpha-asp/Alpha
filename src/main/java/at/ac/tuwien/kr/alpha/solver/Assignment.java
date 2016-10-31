@@ -1,5 +1,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.common.NoGood;
+
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Literals.atomOf;
@@ -42,11 +44,6 @@ public interface Assignment {
 
 	Entry get(int atom);
 
-	interface Entry {
-		ThriceTruth getTruth();
-		int getDecisionLevel();
-	}
-
 	/**
 	 * Returns the truth value assigned to an atom.
 	 * @param atom the id of the atom.
@@ -64,5 +61,15 @@ public interface Assignment {
 	default boolean contains(int literal) {
 		final Entry entry = get(atomOf(literal));
 		return entry != null && isNegated(literal) == !entry.getTruth().toBoolean();
+	}
+
+	default boolean contains(NoGood noGood, int index) {
+		return contains(noGood.getLiteral(index));
+	}
+
+	interface Entry {
+		ThriceTruth getTruth();
+
+		int getDecisionLevel();
 	}
 }

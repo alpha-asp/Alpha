@@ -6,8 +6,17 @@ public final class WatchedNoGood extends NoGood {
 	private final int[] pointers;
 
 	public WatchedNoGood(NoGood noGood, int a, int b, int c) {
+		this(noGood, new int[]{a, b, c});
+	}
+
+	public WatchedNoGood(NoGood noGood, int... pointers) {
 		super(noGood);
-		this.pointers = new int[] {a, b, c};
+
+		if (pointers.length != 3) {
+			throw new IllegalArgumentException("must pass exactly three pointers");
+		}
+
+		this.pointers = pointers;
 		checkPointers();
 	}
 

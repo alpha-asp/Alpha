@@ -56,6 +56,14 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 		return true;
 	}
 
+	public static NoGood headFirst(int... literals) {
+		return new NoGood(literals, 0);
+	}
+
+	public static NoGood fact(int literal) {
+		return headFirst(literal);
+	}
+
 	public int size() {
 		return literals.length;
 	}
@@ -77,9 +85,6 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	 * @return the index of the head literal.
 	 */
 	public int getHead() {
-		if (head < 0) {
-			throw new IllegalStateException("NoGood has no head literal.");
-		}
 		return head;
 	}
 
@@ -145,14 +150,6 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	@Override
 	public int hashCode() {
 		return 31 * Arrays.hashCode(literals) + head;
-	}
-
-	public static NoGood headFirst(int... literals) {
-		return new NoGood(literals, 0);
-	}
-
-	public static NoGood fact(int literal) {
-		return headFirst(literal);
 	}
 
 	@Override
