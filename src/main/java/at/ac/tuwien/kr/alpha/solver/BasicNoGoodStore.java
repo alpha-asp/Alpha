@@ -18,9 +18,9 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	private final Assignment assignment;
 	private final Queue<Integer> cache = new ArrayDeque<>();
 	private final Map<Integer, Watches<BinaryWatch, WatchedNoGood>> watches = new HashMap<>();
-	private final Map<Integer, ThriceTruth> changedAssignments = new HashMap<>();
 	private final Map<Integer, NoGood> binaries = new HashMap<>();
 
+	private Map<Integer, ThriceTruth> changedAssignments = new HashMap<>();
 	private NoGood violated;
 	private int decisionLevel;
 
@@ -50,10 +50,8 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 	@Override
 	public Map<Integer, ThriceTruth> getChangedAssignments() {
-		Map<Integer, ThriceTruth> result = Collections.unmodifiableMap(new HashMap<>(changedAssignments));
-		// TODO(AntoniusW): Why the new HashMap (cloning) above? unmodifiableMap can hold just a reference.
-		//                  But below code must be adapted, clearing the map does not work.
-		changedAssignments.clear();
+		Map<Integer, ThriceTruth> result = Collections.unmodifiableMap(changedAssignments);
+		changedAssignments = new HashMap<>();
 		return result;
 	}
 
