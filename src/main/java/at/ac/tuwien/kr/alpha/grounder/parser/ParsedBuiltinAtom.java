@@ -1,17 +1,34 @@
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
+import java.util.ArrayList;
+
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class ParsedBuiltinAtom extends CommonParsedObject {
-	public ParsedAtom left;
-	public ParsedAtom right;
+public class ParsedBuiltinAtom extends ParsedAtom {
 	public BINOP binop;
-	public enum BINOP {EQUAL, UNEQUAL, LESS, GREATER, LESS_OR_EQ, GREATER_OR_EQ};
+	public enum BINOP {EQUAL, UNEQUAL, LESS, GREATER, LESS_OR_EQ, GREATER_OR_EQ;
 
-	public ParsedBuiltinAtom(ParsedAtom left, BINOP binop, ParsedAtom right) {
-		this.left = left;
-		this.right = right;
+		@Override
+		public String toString() {
+			switch (this) {
+				case EQUAL: return "=";
+				case UNEQUAL: return "!=";
+				case LESS: return "<";
+				case GREATER: return ">";
+				case LESS_OR_EQ: return "<=";
+				case GREATER_OR_EQ: return ">=";
+			}
+			return null;
+		}
+	};
+
+	public ParsedBuiltinAtom(ParsedTerm left, BINOP binop, ParsedTerm right) {
+		this.predicate = binop.toString();
+		this.arity = 2;
+		this.terms = new ArrayList<>();
+		this.terms.add(left);
+		this.terms.add(right);
 		this.binop = binop;
 	}
 
@@ -38,5 +55,11 @@ public class ParsedBuiltinAtom extends CommonParsedObject {
 			default:
 				throw new RuntimeException("Unknown BINOP encountered, cannot negate it.");
 		}
+	}
+
+
+	@Override
+	public String toString() {
+		return terms.get(0) + " " + binop + " " + terms.get(1);
 	}
 }

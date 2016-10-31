@@ -164,8 +164,8 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 	@Override
 	public CommonParsedObject visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
 		// builtin_atom : term binop term;
-		ParsedAtom left = (ParsedAtom) visit(ctx.term(0));
-		ParsedAtom right = (ParsedAtom) visit(ctx.term(1));
+		ParsedTerm left = (ParsedTerm) visit(ctx.term(0));
+		ParsedTerm right = (ParsedTerm) visit(ctx.term(1));
 		ParsedBuiltinAtom.BINOP binop;
 		ASPCore2Parser.BinopContext parsedBinop = ctx.binop();
 		// binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;

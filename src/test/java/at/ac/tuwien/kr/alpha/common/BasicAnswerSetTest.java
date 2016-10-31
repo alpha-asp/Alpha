@@ -25,36 +25,36 @@ public class BasicAnswerSetTest {
 		ConstantTerm bar = ConstantTerm.getInstance("bar");
 		ConstantTerm baz = ConstantTerm.getInstance("baz");
 
-		Map<Predicate, Set<PredicateInstance>> inst1 = new HashMap<>();
-		inst1.put(a, new HashSet<>(Collections.singletonList(new PredicateInstance<>(a))));
-		inst1.put(foo, new HashSet<>(Arrays.asList(new PredicateInstance[] {
-			new PredicateInstance<>(foo, bar),
-			new PredicateInstance<>(foo, baz)
+		Map<Predicate, Set<BasicAtom>> inst1 = new HashMap<>();
+		inst1.put(a, new HashSet<>(Collections.singletonList(new BasicAtom(a))));
+		inst1.put(foo, new HashSet<>(Arrays.asList(new BasicAtom[] {
+			new BasicAtom(foo, bar),
+			new BasicAtom(foo, baz)
 		})));
 		// as1 = { a, foo(bar), foo(baz) }
 
-		Map<Predicate, Set<PredicateInstance>> inst2 = new HashMap<>();
-		inst2.put(a, new HashSet<>(Collections.singletonList(new PredicateInstance<>(a))));
-		inst2.put(foo, new HashSet<>(Arrays.asList(new PredicateInstance[] {
-			new PredicateInstance<>(foo, baz),
-			new PredicateInstance<>(foo, bar)
+		Map<Predicate, Set<BasicAtom>> inst2 = new HashMap<>();
+		inst2.put(a, new HashSet<>(Collections.singletonList(new BasicAtom(a))));
+		inst2.put(foo, new HashSet<>(Arrays.asList(new BasicAtom[] {
+			new BasicAtom(foo, baz),
+			new BasicAtom(foo, bar)
 		})));
 		// as1 = { a, foo(baz), foo(bar) }
 
-		Map<Predicate, Set<PredicateInstance>> inst3 = new HashMap<>();
-		inst3.put(q, new HashSet<>(Collections.singletonList(new PredicateInstance<>(q))));
+		Map<Predicate, Set<BasicAtom>> inst3 = new HashMap<>();
+		inst3.put(q, new HashSet<>(Collections.singletonList(new BasicAtom(q))));
 		inst3.put(p, new HashSet<>(Arrays.asList(
-			new PredicateInstance<>(p, bar),
-			new PredicateInstance<>(p, baz)
+			new BasicAtom(p, bar),
+			new BasicAtom(p, baz)
 		)));
 		// as3 = { q, p(bar), p(baz) }
 
-		Map<Predicate, Set<PredicateInstance>> inst4 = new HashMap<>();
-		inst4.put(a, new HashSet<>(Collections.singletonList(new PredicateInstance<>(a))));
+		Map<Predicate, Set<BasicAtom>> inst4 = new HashMap<>();
+		inst4.put(a, new HashSet<>(Collections.singletonList(new BasicAtom(a))));
 		inst4.put(foo, new HashSet<>(Arrays.asList(
-			new PredicateInstance<>(foo, bar),
-			new PredicateInstance<>(foo, baz),
-			new PredicateInstance<>(foo, ConstantTerm.getInstance("batsinga"))
+			new BasicAtom(foo, bar),
+			new BasicAtom(foo, baz),
+			new BasicAtom(foo, ConstantTerm.getInstance("batsinga"))
 		)));
 		// as4 = { a, foo(bar), foo(baz), foo(batsinga) }
 

@@ -41,7 +41,7 @@ generateGrammarSource {
 	]
 }
 
-/* Toggle comment to get verbose [unchecked] warnings.
+//* Toggle comment to get verbose [unchecked] warnings.
 compileJava {
 	options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }

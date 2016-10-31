@@ -222,4 +222,53 @@ public abstract class AbstractSolverTest {
 		assertEquals(1, answerSets.size());
 		assertEquals(BasicAnswerSet.EMPTY, answerSets.get(0));
 	}
+
+	@Test
+	public void builtinAtoms() throws IOException {
+		String testProgram = "dom(1). dom(2). dom(3). dom(4). dom(5)." +
+			"p(X) :- dom(X), X = 4." +
+			"r(Y) :- dom(Y), Y <= 2.";
+		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
+			new BasicAnswerSet.Builder()
+				.predicate("dom")
+				.instance("1")
+				.instance("2")
+				.instance("3")
+				.instance("4")
+				.instance("5")
+				.predicate("p")
+				.instance("4")
+				.predicate("r")
+				.instance("1")
+				.instance("2")
+				.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
+
+	@Test
+	public void builtinAtomsGroundRule() throws IOException {
+		String testProgram = "a :- 13 != 4." +
+			"b :- 2 != 3, 2 = 3." +
+			"c :- 2 <= 3, not 2 > 3.";
+		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
+			new BasicAnswerSet.Builder()
+				.predicate("a")
+				.predicate("c")
+				.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
 }

@@ -17,7 +17,7 @@ public class SubstitutionUtil {
 	 * @param variableSubstitution the variable substitution to apply.
 	 * @return the AtomId of the corresponding substituted ground atom.
 	 */
-	public static AtomId groundingSubstitute(AtomStore atomStore, PredicateInstance nonGroundAtom, NaiveGrounder.VariableSubstitution variableSubstitution) {
+	public static AtomId groundingSubstitute(AtomStore atomStore, BasicAtom nonGroundAtom, NaiveGrounder.VariableSubstitution variableSubstitution) {
 		Term[] groundTermList = new Term[nonGroundAtom.termList.length];
 		for (int i = 0; i < nonGroundAtom.termList.length; i++) {
 			Term nonGroundTerm = nonGroundAtom.termList[i];
@@ -27,7 +27,7 @@ public class SubstitutionUtil {
 			}
 			groundTermList[i] = groundTerm;
 		}
-		PredicateInstance groundAtom = new PredicateInstance<>(nonGroundAtom.predicate, groundTermList);
+		BasicAtom groundAtom = new BasicAtom(nonGroundAtom.predicate, groundTermList);
 		return atomStore.createAtomId(groundAtom);
 	}
 
@@ -62,11 +62,11 @@ public class SubstitutionUtil {
 	 * This method applies a substitution to a potentially non-ground atom. The resulting atom may be non-ground.
 	 * @param nonGroundAtom the (non-ground) atom to apply the substitution to (parameter is not  modified).
 	 * @param variableSubstitution the variable substitution to apply.
-	 * @return a pair <Boolean>isGround</Boolean>, <PredicateInstance>substitutedAtom</PredicateInstance> where
+	 * @return a pair <Boolean>isGround</Boolean>, <BasicAtom>substitutedAtom</BasicAtom> where
 	 * isGround true if the substitutedAtom is ground and substitutedAtom is the atom resulting from the applying
 	 * the substitution.
 	 */
-	public static Pair<Boolean, PredicateInstance> substitute(PredicateInstance nonGroundAtom, NaiveGrounder.VariableSubstitution variableSubstitution) {
+	public static Pair<Boolean, BasicAtom> substitute(BasicAtom nonGroundAtom, NaiveGrounder.VariableSubstitution variableSubstitution) {
 		Term[] substitutedTerms = new Term[nonGroundAtom.termList.length];
 		boolean isGround = true;
 		for (int i = 0; i < nonGroundAtom.termList.length; i++) {
@@ -75,35 +75,36 @@ public class SubstitutionUtil {
 				isGround = false;
 			}
 		}
-		PredicateInstance substitutedAtom = new PredicateInstance<>(nonGroundAtom.predicate, substitutedTerms);
+		BasicAtom substitutedAtom = new BasicAtom(nonGroundAtom.predicate, substitutedTerms);
 		return new ImmutablePair<>(isGround, substitutedAtom);
 	}
 
 	public static String groundAndPrintRule(NonGroundRule<? extends Predicate> rule, NaiveGrounder.VariableSubstitution substitution) {
 		String ret = "";
 		if (!rule.isConstraint()) {
-			PredicateInstance groundHead = substitute(rule.getHeadAtom(), substitution).getRight();
+			BasicAtom groundHead = substitute(rule.getHeadAtom(), substitution).getRight();
 			ret += groundHead.toString();
 		}
 		ret += " :- ";
 		boolean isFirst = true;
-		for (PredicateInstance bodyAtom : rule.getBodyAtomsPositive()) {
-			if (!isFirst) {
-				ret += ", ";
-			}
-			PredicateInstance groundBodyAtom = substitute(bodyAtom, substitution).getRight();
-			ret += groundBodyAtom.toString();
+		for (Atom bodyAtom : rule.getBodyAtomsPositive()) {
+			ret += groundAtomToString(bodyAtom, false, substitution, isFirst);
 			isFirst = false;
 		}
-		for (PredicateInstance bodyAtom : rule.getBodyAtomsNegative()) {
-			if (!isFirst) {
-				ret += ", ";
-			}
-			PredicateInstance groundBodyAtom = substitute(bodyAtom, substitution).getRight();
-			ret += "not " + groundBodyAtom.toString();
+		for (Atom bodyAtom : rule.getBodyAtomsNegative()) {
+			ret += groundAtomToString(bodyAtom, true, substitution, isFirst);
 			isFirst = false;
 		}
 		ret += ".";
 		return ret;
+	}
+
+	private static String groundAtomToString(Atom bodyAtom, boolean isNegative, NaiveGrounder.VariableSubstitution substitution, boolean isFirst) {
+		if (bodyAtom instanceof BuiltinAtom) {
+			return (isFirst ? ", " : "") + bodyAtom.toString();
+		} else {
+			BasicAtom groundBodyAtom = substitute((BasicAtom) bodyAtom, substitution).getRight();
+			return  (isFirst ? ", " : "") + (isNegative ? "not " : "") + groundBodyAtom.toString();
+		}
 	}
 }

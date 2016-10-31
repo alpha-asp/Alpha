@@ -96,11 +96,11 @@ public class DummyGrounder implements Grounder {
 		}
 
 		// Add the atom instances
-		Map<Predicate, Set<PredicateInstance>> predicateInstances = new HashMap<>();
+		Map<Predicate, Set<BasicAtom>> predicateInstances = new HashMap<>();
 		for (Predicate trueAtomPredicate : trueAtomPredicates) {
-			PredicateInstance internalPredicateInstance = new PredicateInstance<>(trueAtomPredicate);
-			Set<PredicateInstance> instanceList = new HashSet<>();
-			instanceList.add(internalPredicateInstance);
+			BasicAtom internalBasicAtom = new BasicAtom(trueAtomPredicate);
+			Set<BasicAtom> instanceList = new HashSet<>();
+			instanceList.add(internalBasicAtom);
 			predicateInstances.put(trueAtomPredicate, instanceList);
 		}
 
