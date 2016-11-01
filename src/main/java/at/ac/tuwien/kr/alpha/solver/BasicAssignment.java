@@ -1,5 +1,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.common.NoGood;
+
 import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
@@ -8,7 +10,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 public class BasicAssignment implements Assignment {
 	private final Map<Integer, Entry> assignment = new HashMap<>();
-	private final List<DecisionLevelState> decisionLevels = new ArrayList<>();
+	private final List<List<Integer>> decisionLevels = new ArrayList<>();
 
 	private int mbtCount;
 
@@ -22,19 +24,19 @@ public class BasicAssignment implements Assignment {
 	@Override
 	public void backtrack(int decisionLevel) {
 		for (int i = decisionLevel + 1; i < decisionLevels.size(); i++) {
-			DecisionLevelState state = decisionLevels.remove(i);
+			for (Integer atom : decisionLevels.remove(i)) {
+				Entry entry = assignment.get(atom);
+				Entry previous = entry.getPrevious();
 
-			for (Map.Entry<Integer, Integer> entry : state.mbtToTrue.entrySet()) {
-				final int atom = entry.getKey();
-				mbtCount++;
-				assignment.put(atom, new Entry(MBT, entry.getValue()));
-			}
-
-			for (Integer atom : state.unassignedToAssigned) {
-				if (MBT.equals(getTruth(atom))) {
-					mbtCount--;
+				if (previous != null && MBT.equals(previous.getTruth()) && TRUE.equals(entry.getTruth())) {
+					mbtCount++;
+					assignment.put(atom, previous);
+				} else {
+					if (MBT.equals(entry.getTruth())) {
+						mbtCount--;
+					}
+					assignment.remove(atom);
 				}
-				assignment.remove(atom);
 			}
 		}
 	}
@@ -46,6 +48,11 @@ public class BasicAssignment implements Assignment {
 
 	@Override
 	public boolean assign(int atom, ThriceTruth value, int decisionLevel) {
+		return assign(atom, value, decisionLevel, null);
+	}
+
+	@Override
+	public boolean assign(int atom, ThriceTruth value, int decisionLevel, NoGood impliedBy) {
 		if (!isAtom(atom)) {
 			throw new IllegalArgumentException("not an atom");
 		}
@@ -67,11 +74,11 @@ public class BasicAssignment implements Assignment {
 			return false;
 		}
 
-		DecisionLevelState state;
+		List<Integer> state;
 
 		// If we're at a new decision level, set up state.
 		if (decisionLevel == decisionLevels.size()) {
-			state = new DecisionLevelState();
+			state = new ArrayList<>();
 			decisionLevels.add(state);
 		} else if (decisionLevel == decisionLevels.size() - 1) {
 			state = decisionLevels.get(decisionLevel);
@@ -79,23 +86,15 @@ public class BasicAssignment implements Assignment {
 			throw new IllegalArgumentException("Wrong decision level!");
 		}
 
-		if (TRUE.equals(value)) {
-			if (mbtToTrue) {
-				mbtCount--;
-				state.mbtToTrue.put(atom, current.getDecisionLevel());
-			} else {
-				state.unassignedToAssigned.add(atom);
-			}
-		} else {
-			if (MBT.equals(value)) {
-				mbtCount++;
-			}
-			if (unassignedToAssigned) {
-				state.unassignedToAssigned.add(atom);
-			}
+		if (mbtToTrue) {
+			mbtCount--;
+		} else if (MBT.equals(value)) {
+			mbtCount++;
 		}
 
-		assignment.put(atom, new Entry(value, decisionLevel));
+		final Entry next = new Entry(value, decisionLevel, impliedBy, current);
+		state.add(atom);
+		assignment.put(atom, next);
 		return true;
 	}
 
@@ -137,10 +136,22 @@ public class BasicAssignment implements Assignment {
 	private static final class Entry implements Assignment.Entry {
 		private final ThriceTruth value;
 		private final int decisionLevel;
+		private final Entry previous;
+		private final NoGood impliedBy;
 
-		Entry(ThriceTruth value, int decisionLevel) {
+		Entry(ThriceTruth value, int decisionLevel, NoGood noGood, Entry previous) {
 			this.value = value;
 			this.decisionLevel = decisionLevel;
+			this.impliedBy = noGood;
+			this.previous = previous;
+		}
+
+		Entry(ThriceTruth value, int decisionLevel, NoGood noGood) {
+			this(value, decisionLevel, noGood, null);
+		}
+
+		Entry(ThriceTruth value, int decisionLevel) {
+			this(value, decisionLevel, null);
 		}
 
 		@Override
@@ -153,14 +164,17 @@ public class BasicAssignment implements Assignment {
 			return decisionLevel;
 		}
 
+		public NoGood getImpliedBy() {
+			return impliedBy;
+		}
+
+		public Entry getPrevious() {
+			return previous;
+		}
+
 		@Override
 		public String toString() {
 			return value.toString() + "(" + decisionLevel + ")";
 		}
-	}
-
-	private static final class DecisionLevelState {
-		private final Set<Integer> unassignedToAssigned = new HashSet<>();
-		private final Map<Integer, Integer> mbtToTrue = new HashMap<>();
 	}
 }

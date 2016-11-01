@@ -38,6 +38,8 @@ public interface Assignment {
 	 */
 	boolean assign(int atom, ThriceTruth value, int decisionLevel);
 
+	boolean assign(int atom, ThriceTruth value, int decisionLevel, NoGood impliedBy);
+
 	/**
 	 * Returns all atomIds that are assigned TRUE in the current assignment.
 	 * @return a list of all true assigned atoms.
