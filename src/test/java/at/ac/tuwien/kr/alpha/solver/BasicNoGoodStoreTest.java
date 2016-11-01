@@ -379,12 +379,24 @@ public class BasicNoGoodStoreTest {
 	}
 
 	@Test
-	public void propagateViolatedConstraintTrue() {
+	public void propagateViolatedConstraintHeadless() {
 		NoGood noGood = new NoGood(3, 11, 19);
 		assertTrue(store.add(24, noGood));
 		assertTrue(store.assign(3, TRUE));
 		assertTrue(store.assign(11, TRUE));
 		assertTrue(store.assign(19, TRUE));
+		assertFalse(store.propagate());
+		assertNotNull(store.getViolatedNoGood());
+		assertEquals(noGood, new NoGood(store.getViolatedNoGood()));
+	}
+
+	@Test
+	public void propagateViolatedConstraintHeadlessMbt() {
+		NoGood noGood = new NoGood(3, 11, 19);
+		assertTrue(store.add(24, noGood));
+		assertTrue(store.assign(3, MBT));
+		assertTrue(store.assign(11, MBT));
+		assertTrue(store.assign(19, MBT));
 		assertFalse(store.propagate());
 		assertNotNull(store.getViolatedNoGood());
 		assertEquals(noGood, new NoGood(store.getViolatedNoGood()));
