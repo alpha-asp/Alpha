@@ -72,7 +72,7 @@ public class NaiveSolver extends AbstractSolver {
 				doMBTPropagation();
 				LOGGER.trace("Assignment after propagation is: {}", truthAssignments);
 			} else if (assignmentViolatesNoGoods()) {
-				LOGGER.info("Backtracking from wrong choices:");
+				LOGGER.trace("Backtracking from wrong choices:");
 				LOGGER.trace("Choice stack: {}", choiceStack);
 				doBacktrack();
 				if (isSearchSpaceExhausted()) {
