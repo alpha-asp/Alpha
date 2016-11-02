@@ -58,6 +58,15 @@ public class IndexedInstanceStorage {
 		indices.set(position, null);
 	}
 
+	/**
+	 * Returns whether an instance is already contained in the storage.
+	 * @param instance the instance to check for containment.
+	 * @return true if the instance is already contained in the storage.
+	 */
+	public boolean containsInstance(Instance instance) {
+		return instances.contains(instance);
+	}
+
 	public void addInstance(Instance instance) {
 		if (instance.terms.length != arity) {
 			throw new RuntimeException("Instance length does not match arity of IndexedInstanceStorage: " +

@@ -73,6 +73,7 @@ public class NaiveGrounder extends AbstractGrounder {
 			constraintWrappingRule.body = constraint.body;
 			registerRuleOrConstraint(constraintWrappingRule);
 		}
+		// Hint: Could clear this.program to free memory.
 	}
 
 	private void adaptWorkingMemoryForPredicate(Predicate predicate) {
@@ -506,11 +507,15 @@ public class NaiveGrounder extends AbstractGrounder {
 			IndexedInstanceStorage workingMemoryPlus = workingMemoryPlusMinus.getLeft();
 			IndexedInstanceStorage workingMemoryMinus = workingMemoryPlusMinus.getRight();
 			if (truthValue) {
-				workingMemoryPlus.addInstance(instance);
-				modifiedWorkingMemories.add(workingMemoryPlus);
+				if (!workingMemoryPlus.containsInstance(instance)) {
+					workingMemoryPlus.addInstance(instance);
+					modifiedWorkingMemories.add(workingMemoryPlus);
+				}
 			} else {
-				workingMemoryMinus.addInstance(instance);
-				modifiedWorkingMemories.add(workingMemoryMinus);
+				if (!workingMemoryMinus.containsInstance(instance)) {
+					workingMemoryMinus.addInstance(instance);
+					modifiedWorkingMemories.add(workingMemoryMinus);
+				}
 			}
 		}
 	}
