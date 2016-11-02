@@ -8,6 +8,7 @@ import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,11 @@ public abstract class AbstractSolverTest {
 	private static void enableTracing() {
 		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		root.setLevel(ch.qos.logback.classic.Level.TRACE);
+	}
+
+	private static void enableDebugLog() {
+		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+		root.setLevel(Level.DEBUG);
 	}
 
 	protected abstract Solver getInstance(Grounder grounder, java.util.function.Predicate<Predicate> filter);
@@ -221,5 +227,62 @@ public abstract class AbstractSolverTest {
 		List<AnswerSet> answerSets = getInstance(grounder).collectList();
 		assertEquals(1, answerSets.size());
 		assertEquals(BasicAnswerSet.EMPTY, answerSets.get(0));
+	}
+
+	@Test
+	public void guessingMultipleAnswerSets() throws IOException {
+		String testProgram = "a :- not nota.\n" +
+			"nota :- not a.\n" +
+			"b :- not notb.\n" +
+			"notb :- not b.\n" +
+			"c :- not notc.\n" +
+			"notc :- not c.\n" +
+			":- nota,notb,notc.";
+
+		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
+			new BasicAnswerSet.Builder()
+				.predicate("a")
+				.predicate("b")
+				.predicate("c")
+				.build(),
+			new BasicAnswerSet.Builder()
+				.predicate("nota")
+				.predicate("b")
+				.predicate("c")
+				.build(),
+			new BasicAnswerSet.Builder()
+				.predicate("a")
+				.predicate("notb")
+				.predicate("c")
+				.build(),
+			new BasicAnswerSet.Builder()
+				.predicate("nota")
+				.predicate("notb")
+				.predicate("c")
+				.build(),
+			new BasicAnswerSet.Builder()
+				.predicate("a")
+				.predicate("b")
+				.predicate("notc")
+				.build(),
+			new BasicAnswerSet.Builder()
+				.predicate("nota")
+				.predicate("b")
+				.predicate("notc")
+				.build(),
+			new BasicAnswerSet.Builder()
+				.predicate("a")
+				.predicate("notb")
+				.predicate("notc")
+				.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
 	}
 }

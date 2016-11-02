@@ -336,7 +336,8 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			if (value == MBT || value == FALSE) {
 				atomPropagated = propagateMBT(atom, value);
 			} else if (value == TRUE) {
-				atomPropagated = propagateTrue(atom);
+				atomPropagated = propagateMBT(atom, MBT);
+				atomPropagated |= propagateTrue(atom);
 			}
 
 			if (atomPropagated) {

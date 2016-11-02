@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 /**
@@ -77,8 +78,8 @@ public class DefaultSolver extends AbstractSolver {
 					return false;
 				}
 			} else if ((nextChoice = computeChoice()) != 0) {
+				LOGGER.debug("Doing choice.");
 				doChoice(nextChoice);
-				LOGGER.debug("Choice: stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 			} else if (!allAtomsAssigned()) {
 				LOGGER.debug("Closing unassigned known atoms (assigning FALSE).");
 				assignUnassignedToFalse();
@@ -86,7 +87,7 @@ public class DefaultSolver extends AbstractSolver {
 			} else if (assignment.getMBTCount() == 0) {
 				AnswerSet as = translate(assignment.getTrueAssignments());
 				LOGGER.debug("Answer-Set found: {}", as);
-				LOGGER.debug("Choices: {}", choiceStack);
+				LOGGER.debug("Choices of Answer-Set were: {}", choiceStack);
 				action.accept(as);
 				return true;
 			} else {
@@ -117,23 +118,35 @@ public class DefaultSolver extends AbstractSolver {
 		}
 
 		decisionLevel--;
+		LOGGER.debug("Backtrack: Removing last choice, setting decision level to {}.", decisionLevel);
 		assignment.backtrack(decisionLevel);
 		store.setDecisionLevel(decisionLevel);
 
 		int lastGuessedAtom = choiceStack.peekAtom();
 		boolean lastGuessedValue = choiceStack.peekValue();
 		choiceStack.remove();
+		LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
+
 
 		if (lastGuessedValue) {
 			// Chronological backtracking: guess FALSE now.
+			// Guess FALSE if the previous guess was for TRUE and the atom was not already MBT at that time.
+			if (MBT.equals(assignment.getTruth(lastGuessedAtom))) {
+				LOGGER.debug("Backtrack: inverting last guess not possible, atom was MBT before guessing TRUE.");
+				LOGGER.debug("Recursive backtracking.");
+				doBacktrack();
+				return;
+			}
 			decisionLevel++;
+			LOGGER.debug("Backtrack: setting decision level to {}.", decisionLevel);
+			LOGGER.debug("Backtrack: inverting last guess. Now: {}=FALSE@{}", lastGuessedAtom, decisionLevel);
 			store.setDecisionLevel(decisionLevel);
 			store.assign(lastGuessedAtom, FALSE);
 			choiceStack.push(lastGuessedAtom, false);
 			didChange = true;
-			LOGGER.debug("Backtr: stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
+			LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 		} else {
-			LOGGER.debug("Backtr: stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
+			LOGGER.debug("Recursive backtracking.");
 			doBacktrack();
 		}
 	}
@@ -181,11 +194,13 @@ public class DefaultSolver extends AbstractSolver {
 	private void doChoice(int nextChoice) {
 		decisionLevel++;
 		store.setDecisionLevel(decisionLevel);
+		LOGGER.debug("Choice: Guessing {}=TRUE@{}.", nextChoice, decisionLevel);
 		// We guess true for any unassigned choice atom (backtrack tries false)
 		store.assign(nextChoice, TRUE);
 		choiceStack.push(nextChoice, true);
 		// Record change to compute propagation fixpoint again.
 		didChange = true;
+		LOGGER.debug("Choice: stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 	}
 
 	private int computeChoice() {
@@ -199,8 +214,8 @@ public class DefaultSolver extends AbstractSolver {
 
 			Integer nextChoiceCandidate = choiceOn.get(enablerAtom);
 
-			// Only consider unassigned choices
-			if (assignment.getTruth(nextChoiceCandidate) != null) {
+			// Only consider unassigned choices or choices currently MBT (and changing to TRUE following the guess)
+			if (assignment.getTruth(nextChoiceCandidate) != null && !MBT.equals(assignment.getTruth(nextChoiceCandidate))) {
 				continue;
 			}
 
