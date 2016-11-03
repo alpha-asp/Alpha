@@ -44,4 +44,9 @@ public class BasicPredicate implements Predicate {
 	public int hashCode() {
 		return 31 * name.hashCode() + arity;
 	}
+
+	@Override
+	public String toString() {
+		return name + "/" + arity;
+	}
 }

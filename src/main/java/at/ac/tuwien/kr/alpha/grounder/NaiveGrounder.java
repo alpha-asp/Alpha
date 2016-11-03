@@ -74,6 +74,7 @@ public class NaiveGrounder extends AbstractGrounder {
 			registerRuleOrConstraint(constraintWrappingRule);
 		}
 		// Hint: Could clear this.program to free memory.
+		this.program = null;
 	}
 
 	private void adaptWorkingMemoryForPredicate(Predicate predicate) {
@@ -286,6 +287,8 @@ public class NaiveGrounder extends AbstractGrounder {
 			}
 			NoGood ruleBody = new NoGood(bodyLiterals, 0);
 
+			// TODO: generate reverse noGoods for the body: if body is true, each literal must be true/false accordingly, i.e., nogoods of the form { bodyRepresentingAtom, literal_i }
+
 			// Create NoGood for head.
 			NoGood ruleHead = new NoGood(new int[]{-headAtomId.atomId, bodyRepresentingAtomId.atomId}, 0);
 
@@ -340,8 +343,20 @@ public class NaiveGrounder extends AbstractGrounder {
 			PredicateInstance currentBodyAtom = rule.getBodyAtom(atomPos);
 			Pair<Boolean, PredicateInstance> substitute = SubstitutionUtil.substitute(currentBodyAtom, partialVariableSubstitution);
 			if (substitute.getLeft()) {
-				// substituted atom is ground
-				return bindNextAtomInRule(rule, atomPos + 1, partialVariableSubstitution);
+				// Substituted atom is ground, in case it is positive, only ground if it also holds true
+				if (rule.isBodyAtomPositive(atomPos)) {
+					IndexedInstanceStorage wm =  workingMemory.get(currentBodyAtom.predicate).getLeft();
+					if (wm.containsInstance(new Instance(substitute.getRight().termList))) {
+						// Ground literal holds, continue finding a variable substitution.
+						return bindNextAtomInRule(rule, atomPos + 1, partialVariableSubstitution);
+					} else {
+						// Generate no variable substitution.
+						return new ArrayList<>();
+					}
+				} else {
+					// Atom occurs negated in the rule, continue grounding
+					return bindNextAtomInRule(rule, atomPos + 1, partialVariableSubstitution);
+				}
 			} else {
 				// substituted atom contains variables
 				ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> wms = workingMemory.get(currentBodyAtom.predicate);
