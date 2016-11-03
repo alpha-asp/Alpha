@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
 
+import java.util.Map;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Literals.atomOf;
@@ -9,7 +10,7 @@ import static at.ac.tuwien.kr.alpha.Literals.isNegated;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
-public interface Assignment {
+public interface Assignment extends Iterable<Map.Entry<Integer, Assignment.Entry>> {
 	/**
 	 * Delete all information stored in the assignment.
 	 */
@@ -19,9 +20,8 @@ public interface Assignment {
 	 * Backtracks to the indicated decision level. Every assignment on a higher decisionLevel is removed.
 	 * All assignments below (or equal to) decisionLevel are kept. Note that for atoms being TRUE this may require
 	 * setting the assigned value to MBT during backtracking.
-	 * @param decisionLevel the decision level to backtrack to.
 	 */
-	void backtrack(int decisionLevel);
+	void backtrack();
 
 	/**
 	 * Reports how many atoms are assigned to must-be-true currently. If this method returns
@@ -31,14 +31,13 @@ public interface Assignment {
 	 */
 	int getMBTCount();
 
-	/**
-	 * Assigns the given atom the given truth value at the given decision level.
-	 * @param atom the atom to assign.
-	 * @param value the truth value to assign.
-	 */
-	boolean assign(int atom, ThriceTruth value, int decisionLevel);
+	boolean assign(int atom, ThriceTruth value, NoGood impliedBy);
 
-	boolean assign(int atom, ThriceTruth value, int decisionLevel, NoGood impliedBy);
+	default boolean assign(int atom, ThriceTruth value) {
+		return assign(atom, value, null);
+	}
+
+	boolean guess(int atom, ThriceTruth value);
 
 	/**
 	 * Returns all atomIds that are assigned TRUE in the current assignment.
@@ -47,6 +46,8 @@ public interface Assignment {
 	Set<Integer> getTrueAssignments();
 
 	Entry get(int atom);
+
+	int getDecisionLevel();
 
 	/**
 	 * Returns the truth value assigned to an atom.

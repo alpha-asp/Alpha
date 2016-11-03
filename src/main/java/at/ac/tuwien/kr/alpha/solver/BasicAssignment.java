@@ -1,6 +1,8 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -9,35 +11,49 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 public class BasicAssignment implements Assignment {
+	private static final Logger LOGGER = LoggerFactory.getLogger(BasicAssignment.class);
 	private final Map<Integer, Entry> assignment = new HashMap<>();
-	private final List<List<Integer>> decisionLevels = new ArrayList<>();
+	private final List<List<Integer>> decisionLevels;
+	private final List<BasicAssignmentIterator> iterators = new ArrayList<>();
 
 	private int mbtCount;
+
+	public BasicAssignment() {
+		this.decisionLevels = new ArrayList<>();
+		this.decisionLevels.add(new ArrayList<>());
+	}
 
 	@Override
 	public void clear() {
 		decisionLevels.clear();
+		decisionLevels.add(new ArrayList<>());
 		assignment.clear();
 		mbtCount = 0;
 	}
 
 	@Override
-	public void backtrack(int decisionLevel) {
-		for (int i = decisionLevel + 1; i < decisionLevels.size(); i++) {
-			for (Integer atom : decisionLevels.remove(i)) {
-				Entry entry = assignment.get(atom);
-				Entry previous = entry.getPrevious();
+	public void backtrack() {
+		for (BasicAssignmentIterator it : iterators) {
+			it.backtrack();
+		}
 
-				if (previous != null && MBT.equals(previous.getTruth()) && TRUE.equals(entry.getTruth())) {
-					mbtCount++;
-					assignment.put(atom, previous);
-				} else {
-					if (MBT.equals(entry.getTruth())) {
-						mbtCount--;
-					}
-					assignment.remove(atom);
+		for (Integer atom : decisionLevels.remove(decisionLevels.size() - 1)) {
+			Entry entry = assignment.get(atom);
+			Entry previous = entry.getPrevious();
+
+			if (previous != null && MBT.equals(previous.getTruth()) && TRUE.equals(entry.getTruth())) {
+				mbtCount++;
+				assignment.put(atom, previous);
+			} else {
+				if (MBT.equals(entry.getTruth())) {
+					mbtCount--;
 				}
+				assignment.remove(atom);
 			}
+		}
+
+		if (decisionLevels.isEmpty()) {
+			decisionLevels.add(new ArrayList<>());
 		}
 	}
 
@@ -47,12 +63,13 @@ public class BasicAssignment implements Assignment {
 	}
 
 	@Override
-	public boolean assign(int atom, ThriceTruth value, int decisionLevel) {
-		return assign(atom, value, decisionLevel, null);
+	public boolean guess(int atom, ThriceTruth value) {
+		decisionLevels.add(new ArrayList<>());
+		return assign(atom, value, null);
 	}
 
 	@Override
-	public boolean assign(int atom, ThriceTruth value, int decisionLevel, NoGood impliedBy) {
+	public boolean assign(int atom, ThriceTruth value, NoGood impliedBy) {
 		if (!isAtom(atom)) {
 			throw new IllegalArgumentException("not an atom");
 		}
@@ -74,17 +91,7 @@ public class BasicAssignment implements Assignment {
 			return false;
 		}
 
-		List<Integer> state;
-
-		// If we're at a new decision level, set up state.
-		if (decisionLevel == decisionLevels.size()) {
-			state = new ArrayList<>();
-			decisionLevels.add(state);
-		} else if (decisionLevel == decisionLevels.size() - 1) {
-			state = decisionLevels.get(decisionLevel);
-		} else {
-			throw new IllegalArgumentException("Wrong decision level!");
-		}
+		final int decisionLevel = getDecisionLevel();
 
 		if (mbtToTrue) {
 			mbtCount--;
@@ -93,7 +100,8 @@ public class BasicAssignment implements Assignment {
 		}
 
 		final Entry next = new Entry(value, decisionLevel, impliedBy, current);
-		state.add(atom);
+		LOGGER.trace("Recording assignment {}: {}", atom, next);
+		decisionLevels.get(decisionLevel).add(atom);
 		assignment.put(atom, next);
 		return true;
 	}
@@ -115,6 +123,11 @@ public class BasicAssignment implements Assignment {
 	}
 
 	@Override
+	public int getDecisionLevel() {
+		return decisionLevels.size() - 1;
+	}
+
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("[");
 		for (Iterator<Map.Entry<Integer, Entry>> iterator = assignment.entrySet().iterator(); iterator.hasNext();) {
@@ -131,6 +144,13 @@ public class BasicAssignment implements Assignment {
 		}
 		sb.append("]");
 		return sb.toString();
+	}
+
+	@Override
+	public Iterator<Map.Entry<Integer, Assignment.Entry>> iterator() {
+		BasicAssignmentIterator it = new BasicAssignmentIterator();
+		iterators.add(it);
+		return it;
 	}
 
 	private static final class Entry implements Assignment.Entry {
@@ -175,6 +195,46 @@ public class BasicAssignment implements Assignment {
 		@Override
 		public String toString() {
 			return value.toString() + "(" + decisionLevel + ")";
+		}
+	}
+
+	private class BasicAssignmentIterator implements java.util.Iterator<Map.Entry<Integer, Assignment.Entry>> {
+		private int decisionLevel;
+		private int index;
+		private int prevIndex;
+
+		private void backtrack() {
+			if (decisionLevel <= 0) {
+				return;
+			}
+			if (decisionLevel != decisionLevels.size() - 1) {
+				return;
+			}
+			this.decisionLevel--;
+			this.index = prevIndex;
+			this.prevIndex = 0;
+		}
+
+		@Override
+		public boolean hasNext() {
+			// There is at least one more decision level.
+			if (decisionLevel < decisionLevels.size() - 1) {
+				return true;
+			}
+
+			return index < decisionLevels.get(decisionLevel).size();
+		}
+
+		@Override
+		public Map.Entry<Integer, Assignment.Entry> next() {
+			List<Integer> current = decisionLevels.get(decisionLevel);
+			if (index == current.size()) {
+				decisionLevel++;
+				prevIndex = index;
+				index = 0;
+			}
+			final int atom = decisionLevels.get(decisionLevel).get(index++);
+			return new AbstractMap.SimpleEntry<>(atom, get(atom));
 		}
 	}
 }

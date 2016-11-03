@@ -23,7 +23,6 @@ public class BasicNoGoodStoreTest {
 	@Before
 	public void setUp() {
 		store.clear();
-		store.setDecisionLevel(DECISION_LEVEL);
 	}
 
 	@Test
@@ -44,17 +43,17 @@ public class BasicNoGoodStoreTest {
 
 	@Test
 	public void constraintWithAssignment() {
-		assignment.assign(123, MBT, 0);
-		assignment.assign(23, TRUE, 0);
+		assignment.assign(123, MBT);
+		assignment.assign(23, TRUE);
 		store.add(3, new NoGood(-123, 22, 23));
 	}
 
 	@Test
 	public void assignment() {
 		store.add(3, headFirst(-7, -4, -2));
-		store.assign(4, TRUE);
-		store.assign(2, FALSE);
-		store.assign(7, FALSE);
+		assignment.assign(4, TRUE);
+		assignment.assign(2, FALSE);
+		assignment.assign(7, FALSE);
 		store.propagate();
 		assertEquals(null, store.getViolatedNoGood());
 	}
@@ -62,7 +61,7 @@ public class BasicNoGoodStoreTest {
 
 	@Test
 	public void addNotCausingAssignment() {
-		assignment.assign(1, TRUE, 0);
+		assignment.assign(1, TRUE);
 		store.add(3, headFirst(-3, -2, 1));
 
 		assertEquals(null, assignment.getTruth(3));
@@ -70,7 +69,7 @@ public class BasicNoGoodStoreTest {
 
 	@Test
 	public void addNotCausingAssignmentUnassigned() {
-		assignment.assign(1, TRUE, 0);
+		assignment.assign(1, TRUE);
 		store.add(3, headFirst(-5, 4, 1));
 
 		assertEquals(null, assignment.getTruth(5));
@@ -78,8 +77,8 @@ public class BasicNoGoodStoreTest {
 
 	@Test
 	public void addNotCausingAssignmentFalse() {
-		assignment.assign(1, FALSE, 0);
-		assignment.assign(4, TRUE, 0);
+		assignment.assign(1, FALSE);
+		assignment.assign(4, TRUE);
 		store.add(3, headFirst(-5, 4, -1));
 
 		assertEquals(TRUE, assignment.getTruth(5));
@@ -87,8 +86,8 @@ public class BasicNoGoodStoreTest {
 
 	@Test
 	public void addNotCausingAssignmentTrue() {
-		assignment.assign(1, TRUE, 0);
-		assignment.assign(2, TRUE, 0);
+		assignment.assign(1, TRUE);
+		assignment.assign(2, TRUE);
 		store.add(1, headFirst(-3, 2, -1));
 
 		assertEquals(null, assignment.getTruth(3));
@@ -96,7 +95,7 @@ public class BasicNoGoodStoreTest {
 
 	@Test
 	public void propBinary() {
-		assignment.assign(2, FALSE, DECISION_LEVEL);
+		assignment.assign(2, FALSE);
 
 		store.add(1, headFirst(-1, 2));
 		store.propagate();
@@ -106,7 +105,7 @@ public class BasicNoGoodStoreTest {
 
 	@Test
 	public void propagateBinaryFirstTrue() {
-		assignment.assign(2, TRUE, DECISION_LEVEL);
+		assignment.assign(2, TRUE);
 
 		store.add(1, headFirst(-1, 2));
 		store.propagate();
@@ -115,7 +114,7 @@ public class BasicNoGoodStoreTest {
 
 	@Test
 	public void propagateBinarySecondTrue() {
-		assignment.assign(1, FALSE, DECISION_LEVEL);
+		assignment.assign(1, FALSE);
 
 		store.add(1, new NoGood(new int[]{-1, 2}, 1));
 		store.propagate();
@@ -125,7 +124,7 @@ public class BasicNoGoodStoreTest {
 
 	@Test
 	public void propagateBinaryMBT() {
-		assignment.assign(2, MBT, DECISION_LEVEL);
+		assignment.assign(2, MBT);
 
 		store.add(1, headFirst(-1, 2));
 		store.propagate();
@@ -135,7 +134,7 @@ public class BasicNoGoodStoreTest {
 
 	@Test
 	public void propagateBinaryTrue() {
-		assignment.assign(2, TRUE, DECISION_LEVEL);
+		assignment.assign(2, TRUE);
 
 		store.add(1, headFirst(-1, 2));
 		store.propagate();
@@ -148,7 +147,7 @@ public class BasicNoGoodStoreTest {
 		store.add(1, headFirst(-1, 2));
 		store.propagate();
 
-		store.assign(2, MBT);
+		assignment.assign(2, MBT);
 		store.propagate();
 
 		assertEquals(MBT, assignment.getTruth(1));
@@ -157,7 +156,7 @@ public class BasicNoGoodStoreTest {
 	@Test
 	public void propagateBinaryTrueAfterAssignment() {
 		store.add(1, headFirst(-1, 2));
-		store.assign(2, TRUE);
+		assignment.assign(2, TRUE);
 		store.propagate();
 
 		assertEquals(TRUE, assignment.getTruth(1));
@@ -165,7 +164,7 @@ public class BasicNoGoodStoreTest {
 
 	@Test
 	public void propagateBinaryMBTTwice() {
-		assignment.assign(2, MBT, DECISION_LEVEL);
+		assignment.assign(2, MBT);
 
 		store.add(1, new NoGood(-1, 2));
 		store.add(2, new NoGood(-3, 1));
@@ -182,7 +181,7 @@ public class BasicNoGoodStoreTest {
 		store.add(1, new NoGood(-1, 2));
 		store.add(2, new NoGood(-3, 1));
 
-		store.assign(2, MBT);
+		assignment.assign(2, MBT);
 
 		store.propagate();
 
@@ -192,8 +191,8 @@ public class BasicNoGoodStoreTest {
 
 	@Test
 	public void propagateNaryTrue() {
-		assignment.assign(2, TRUE, DECISION_LEVEL);
-		assignment.assign(3, TRUE, DECISION_LEVEL);
+		assignment.assign(2, TRUE);
+		assignment.assign(3, TRUE);
 
 		assertTrue(store.add(1, headFirst(-1, 2, 3)));
 
@@ -204,8 +203,8 @@ public class BasicNoGoodStoreTest {
 
 	@Test
 	public void propagateNaryFalse() {
-		assignment.assign(2, FALSE, DECISION_LEVEL);
-		assignment.assign(3, FALSE, DECISION_LEVEL);
+		assignment.assign(2, FALSE);
+		assignment.assign(3, FALSE);
 
 		store.add(1, new NoGood(new int[]{-3, -2, 1}, 2));
 		store.propagate();
@@ -215,8 +214,8 @@ public class BasicNoGoodStoreTest {
 
 	@Test
 	public void addFullyAssignedBinary() {
-		assignment.assign(2, TRUE, DECISION_LEVEL);
-		assignment.assign(3, TRUE, DECISION_LEVEL);
+		assignment.assign(2, TRUE);
+		assignment.assign(3, TRUE);
 
 		store.add(1, headFirst(-2, 3));
 		store.propagate();
@@ -227,9 +226,9 @@ public class BasicNoGoodStoreTest {
 
 	@Test
 	public void addFullyAssignedNary() {
-		assignment.assign(2, TRUE, DECISION_LEVEL);
-		assignment.assign(3, TRUE, DECISION_LEVEL);
-		assignment.assign(4, TRUE, DECISION_LEVEL);
+		assignment.assign(2, TRUE);
+		assignment.assign(3, TRUE);
+		assignment.assign(4, TRUE);
 
 		store.add(1, headFirst(-2, 3, 4));
 		store.propagate();
@@ -243,8 +242,8 @@ public class BasicNoGoodStoreTest {
 	public void propagateNaryMBT() {
 		final NoGood noGood = headFirst(-1, 2, 3);
 
-		assignment.assign(2, MBT, DECISION_LEVEL);
-		assignment.assign(3, MBT, DECISION_LEVEL);
+		assignment.assign(2, MBT);
+		assignment.assign(3, MBT);
 
 		store.add(1, noGood);
 		store.propagate();
@@ -254,9 +253,9 @@ public class BasicNoGoodStoreTest {
 
 	@Test
 	public void propagateNaryMBTTwice() {
-		assignment.assign(4, FALSE, DECISION_LEVEL);
-		assignment.assign(3, MBT, DECISION_LEVEL);
-		assignment.assign(2, MBT, DECISION_LEVEL);
+		assignment.assign(4, FALSE);
+		assignment.assign(3, MBT);
+		assignment.assign(2, MBT);
 
 		store.add(1, headFirst(-1, 2, 3));
 		assertEquals(MBT, assignment.getTruth(1));
@@ -315,11 +314,11 @@ public class BasicNoGoodStoreTest {
 		store.add(2, headFirst(-5, -4, 1));
 
 		// Assign 4 to false (first premise for 5).
-		store.assign(4, FALSE);
+		assignment.assign(4, FALSE);
 
 		// Assign 3 and 2 to MBT (premises for 1).
-		store.assign(3, MBT);
-		store.assign(2, MBT);
+		assignment.assign(3, MBT);
+		assignment.assign(2, MBT);
 
 		// Now 1 must follow from 2 and 3,
 		// and 5 must follow from -4 and 1.
@@ -332,7 +331,7 @@ public class BasicNoGoodStoreTest {
 	@Test
 	public void conflictingFact() {
 		final NoGood noGood = fact(1);
-		assignment.assign(1, TRUE, DECISION_LEVEL);
+		assignment.assign(1, TRUE);
 		store.add(1, noGood);
 		assertEquals(noGood, store.getViolatedNoGood());
 	}
@@ -340,8 +339,8 @@ public class BasicNoGoodStoreTest {
 	@Test
 	public void conflictingBinary() {
 		final NoGood noGood = new NoGood(1, 2);
-		assignment.assign(1, TRUE, DECISION_LEVEL);
-		assignment.assign(2, TRUE, DECISION_LEVEL);
+		assignment.assign(1, TRUE);
+		assignment.assign(2, TRUE);
 		store.add(1, noGood);
 		assertEquals(noGood, store.getViolatedNoGood());
 	}
@@ -349,9 +348,9 @@ public class BasicNoGoodStoreTest {
 	@Test
 	public void conflictingNary() {
 		final NoGood noGood = new NoGood(1, 2, 3);
-		assignment.assign(1, TRUE, DECISION_LEVEL);
-		assignment.assign(2, TRUE, DECISION_LEVEL);
-		assignment.assign(3, TRUE, DECISION_LEVEL);
+		assignment.assign(1, TRUE);
+		assignment.assign(2, TRUE);
+		assignment.assign(3, TRUE);
 		store.add(1, noGood);
 		assertEquals(noGood, store.getViolatedNoGood());
 	}
@@ -360,9 +359,9 @@ public class BasicNoGoodStoreTest {
 	public void propagateViolatedConstraint() {
 		NoGood noGood = headFirst(-3, -2, -1);
 		assertTrue(store.add(1, noGood));
-		assertTrue(store.assign(1, FALSE));
-		assertTrue(store.assign(2, FALSE));
-		assertTrue(store.assign(3, FALSE));
+		assertTrue(assignment.assign(1, FALSE));
+		assertTrue(assignment.assign(2, FALSE));
+		assertTrue(assignment.assign(3, FALSE));
 		assertFalse(store.propagate());
 		assertEquals(noGood, new NoGood(store.getViolatedNoGood()));
 	}
@@ -370,9 +369,9 @@ public class BasicNoGoodStoreTest {
 	@Test
 	public void noViolation() {
 		assertTrue(store.add(1, headFirst(-7, -4, -2)));
-		assertTrue(store.assign(4, TRUE));
-		assertTrue(store.assign(2, FALSE));
-		assertTrue(store.assign(7, FALSE));
+		assertTrue(assignment.assign(4, TRUE));
+		assertTrue(assignment.assign(2, FALSE));
+		assertTrue(assignment.assign(7, FALSE));
 		assertNull(store.getViolatedNoGood());
 		store.propagate();
 		assertNull(store.getViolatedNoGood());
@@ -382,9 +381,9 @@ public class BasicNoGoodStoreTest {
 	public void propagateViolatedConstraintHeadless() {
 		NoGood noGood = new NoGood(3, 11, 19);
 		assertTrue(store.add(24, noGood));
-		assertTrue(store.assign(3, TRUE));
-		assertTrue(store.assign(11, TRUE));
-		assertTrue(store.assign(19, TRUE));
+		assertTrue(assignment.assign(3, TRUE));
+		assertTrue(assignment.assign(11, TRUE));
+		assertTrue(assignment.assign(19, TRUE));
 		assertFalse(store.propagate());
 		assertNotNull(store.getViolatedNoGood());
 		assertEquals(noGood, new NoGood(store.getViolatedNoGood()));
@@ -394,9 +393,9 @@ public class BasicNoGoodStoreTest {
 	public void propagateViolatedConstraintHeadlessMbt() {
 		NoGood noGood = new NoGood(3, 11, 19);
 		assertTrue(store.add(24, noGood));
-		assertTrue(store.assign(3, MBT));
-		assertTrue(store.assign(11, MBT));
-		assertTrue(store.assign(19, MBT));
+		assertTrue(assignment.assign(3, MBT));
+		assertTrue(assignment.assign(11, MBT));
+		assertTrue(assignment.assign(19, MBT));
 		assertFalse(store.propagate());
 		assertNotNull(store.getViolatedNoGood());
 		assertEquals(noGood, new NoGood(store.getViolatedNoGood()));
