@@ -371,7 +371,7 @@ public class NaiveGrounder extends AbstractGrounder {
 			if (substitute.getLeft()) {
 				// Substituted atom is ground, in case it is positive, only ground if it also holds true
 				if (rule.isBodyAtomPositive(atomPos)) {
-					IndexedInstanceStorage wm =  workingMemory.get(currentBodyAtom.predicate).getLeft();
+					IndexedInstanceStorage wm = workingMemory.get(currentBasicAtom.predicate).getLeft();
 					if (wm.containsInstance(new Instance(substitute.getRight().termList))) {
 						// Ground literal holds, continue finding a variable substitution.
 						return bindNextAtomInRule(rule, atomPos + 1, partialVariableSubstitution);
