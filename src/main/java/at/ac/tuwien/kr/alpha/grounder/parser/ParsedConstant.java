@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
 /**
- * Created by Antonius Weinzierl on 7/5/16.
+ * Copyright (c) 2016, the Alpha Team.
  */
 public class ParsedConstant extends ParsedTerm {
 	public String content;

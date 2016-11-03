@@ -57,4 +57,11 @@ public class ParserTest {
 		parseVisit(stream("Wrong Syntax."));
 	}
 
+	@Test
+	public void parseBuiltinAtom() throws IOException {
+		ParsedProgram parsedProgram = parseVisit(stream("a :- p(X), X != Y, q(Y)."));
+		assertEquals(1, parsedProgram.rules.size());
+		assertEquals(3, parsedProgram.rules.get(0).body.size());
+	}
+
 }

@@ -8,6 +8,8 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ParsedRule;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -16,6 +18,7 @@ import java.util.*;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class NaiveGrounder extends AbstractGrounder {
+	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
 
 	private static final BasicPredicate RULE_BODIES_PREDICATE = new BasicPredicate("_R_", 2); // atoms corresponding
 	// to rule bodies use this predicate, first term is rule number, second is a term containing variable substitutions
@@ -27,6 +30,7 @@ public class NaiveGrounder extends AbstractGrounder {
 	protected AtomStore atomStore = new AtomStore();
 	private IntIdGenerator nogoodIdGenerator = new IntIdGenerator();
 	private HashMap<Predicate, ArrayList<Instance>> factsFromProgram = new HashMap<>();
+	private HashSet<NonGroundRule<BasicPredicate>> groundRulesFromProgram = new HashSet<>();
 	private boolean outputFactNogoods = true;
 	private ArrayList<NonGroundRule<BasicPredicate>> rulesFromProgram = new ArrayList<>();
 	private HashSet<IndexedInstanceStorage> modifiedWorkingMemories = new HashSet<>();
@@ -52,7 +56,7 @@ public class NaiveGrounder extends AbstractGrounder {
 			// Construct instance from the fact.
 			ArrayList<Term> termList = new ArrayList<>();
 			for (int i = 0; i < predicateArity; i++) {
-				termList.add(AtomStore.convertFromParsedTerm(fact.fact.terms.get(i)));
+				termList.add(Term.convertFromParsedTerm(fact.fact.terms.get(i)));
 			}
 			Instance instance = new Instance(termList.toArray(new Term[0]));
 			// Add instance to corresponding list of facts
@@ -103,6 +107,10 @@ public class NaiveGrounder extends AbstractGrounder {
 
 		// Register the rule at the working memory corresponding to its first predicate.
 		Predicate firstBodyPredicate = nonGroundRule.usedFirstBodyPredicate();
+		if (firstBodyPredicate == null) {
+			// No ordinary first body predicate, hence it only contains ground builtin predicates.
+			return;
+		}
 		if (nonGroundRule.isFirstBodyPredicatePositive()) {
 			IndexedInstanceStorage workingMemoryPlus = workingMemory.get(firstBodyPredicate).getLeft();
 			rulesUsingPredicateWorkingMemory.putIfAbsent(workingMemoryPlus, new ArrayList<>());
@@ -116,7 +124,7 @@ public class NaiveGrounder extends AbstractGrounder {
 
 	@Override
 	public AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, Iterable<Integer> trueAtoms) {
-		Map<Predicate, Set<PredicateInstance>> predicateInstances = new HashMap<>();
+		Map<Predicate, Set<BasicAtom>> predicateInstances = new HashMap<>();
 		HashSet<Predicate> knownPredicates = new HashSet<>();
 
 		if (!trueAtoms.iterator().hasNext()) {
@@ -125,22 +133,22 @@ public class NaiveGrounder extends AbstractGrounder {
 
 		// Iterate over all true atomIds, computeNextAnswerSet instances from atomStore and add them if not filtered.
 		for (int trueAtom : trueAtoms) {
-			PredicateInstance predicateInstance = atomStore.getPredicateInstance(new AtomId(trueAtom));
+			BasicAtom basicAtom = atomStore.getBasicAtom(new AtomId(trueAtom));
 
 			// Skip internal predicates.
-			if (predicateInstance.predicate.equals(CHOICE_OFF_PREDICATE) || predicateInstance.predicate.equals(CHOICE_ON_PREDICATE) || predicateInstance.predicate.equals(RULE_BODIES_PREDICATE)) {
+			if (basicAtom.predicate.equals(CHOICE_OFF_PREDICATE) || basicAtom.predicate.equals(CHOICE_ON_PREDICATE) || basicAtom.predicate.equals(RULE_BODIES_PREDICATE)) {
 				continue;
 			}
 
 			// Skip filtered predicates.
-			if (!filter.test(predicateInstance.predicate)) {
+			if (!filter.test(basicAtom.predicate)) {
 				continue;
 			}
 
-			knownPredicates.add(predicateInstance.predicate);
-			predicateInstances.putIfAbsent(predicateInstance.predicate, new HashSet<>());
-			Set<PredicateInstance> instances = predicateInstances.get(predicateInstance.predicate);
-			instances.add(predicateInstance);
+			knownPredicates.add(basicAtom.predicate);
+			predicateInstances.putIfAbsent(basicAtom.predicate, new HashSet<>());
+			Set<BasicAtom> instances = predicateInstances.get(basicAtom.predicate);
+			instances.add(basicAtom);
 		}
 
 		if (knownPredicates.isEmpty()) {
@@ -158,7 +166,7 @@ public class NaiveGrounder extends AbstractGrounder {
 		HashMap<Integer, NoGood> noGoodsFromFacts = new HashMap<>();
 		for (Predicate predicate : factsFromProgram.keySet()) {
 			for (Instance instance : factsFromProgram.get(predicate)) {
-				AtomId atomIdFactAtom = atomStore.createAtomId(new PredicateInstance<>(predicate, instance.terms));
+				AtomId atomIdFactAtom = atomStore.createAtomId(new BasicAtom(predicate, instance.terms));
 				NoGood noGood = new NoGood(new int[]{-atomIdFactAtom.atomId}, 0);
 				// The noGood is assumed to be new.
 				int noGoodId = nogoodIdGenerator.getNextId();
@@ -229,21 +237,33 @@ public class NaiveGrounder extends AbstractGrounder {
 	 * @return
 	 */
 	private List<NoGood> generateNoGoodsFromGroundSubstitution(NonGroundRule<BasicPredicate> nonGroundRule, VariableSubstitution variableSubstitution) {
-		// Debugging helper: record known grounding substitutions.
-		knownGroundingSubstitutions.putIfAbsent(nonGroundRule, new HashSet<>());
-		knownGroundingSubstitutions.get(nonGroundRule).add(variableSubstitution);
-		// End debugging helper.
+		if (LOGGER.isDebugEnabled()) {
+			// Debugging helper: record known grounding substitutions.
+			knownGroundingSubstitutions.putIfAbsent(nonGroundRule, new HashSet<>());
+			knownGroundingSubstitutions.get(nonGroundRule).add(variableSubstitution);
+		}
 
 		List<NoGood> generatedNoGoods = new ArrayList<>();
 		// Collect ground atoms in the body
 		ArrayList<AtomId> bodyAtomsPositive = new ArrayList<>();
 		ArrayList<AtomId> bodyAtomsNegative = new ArrayList<>();
-		for (PredicateInstance predicateInstance : nonGroundRule.getBodyAtomsPositive()) {
-			AtomId groundAtomPositive = SubstitutionUtil.groundingSubstitute(atomStore, predicateInstance, variableSubstitution);
+		for (Atom basicAtom : nonGroundRule.getBodyAtomsPositive()) {
+			if (basicAtom instanceof BuiltinAtom) {
+				// Truth of builtin atoms does not depend on any assignment
+				// hence, they need not be represented as long as they evaluate to true
+				if (BuiltinAtom.evaluateBuiltinAtom((BuiltinAtom) basicAtom, variableSubstitution)) {
+					continue;
+				} else {
+					// Rule body is always false, skip the whole rule.
+					return new ArrayList<>(0);
+				}
+			}
+			AtomId groundAtomPositive = SubstitutionUtil.groundingSubstitute(atomStore, (BasicAtom)basicAtom, variableSubstitution);
 			bodyAtomsPositive.add(groundAtomPositive);
+
 		}
-		for (PredicateInstance predicateInstance : nonGroundRule.getBodyAtomsNegative()) {
-			AtomId groundAtomNegative = SubstitutionUtil.groundingSubstitute(atomStore, predicateInstance, variableSubstitution);
+		for (Atom basicAtom : nonGroundRule.getBodyAtomsNegative()) {
+			AtomId groundAtomNegative = SubstitutionUtil.groundingSubstitute(atomStore, (BasicAtom)basicAtom, variableSubstitution);
 			bodyAtomsNegative.add(groundAtomNegative);
 		}
 		int bodySize = bodyAtomsPositive.size() + bodyAtomsNegative.size();
@@ -262,7 +282,7 @@ public class NaiveGrounder extends AbstractGrounder {
 			generatedNoGoods.add(constraintNoGood);
 		} else {
 			// Prepare atom representing the rule body
-			PredicateInstance ruleBodyRepresentingPredicate = new PredicateInstance<>(RULE_BODIES_PREDICATE,
+			BasicAtom ruleBodyRepresentingPredicate = new BasicAtom(RULE_BODIES_PREDICATE,
 				ConstantTerm.getInstance(Integer.toString(nonGroundRule.getRuleId())),
 				ConstantTerm.getInstance(variableSubstitution.toUniformString()));
 			// Check uniqueness of ground rule by testing whether the body representing atom already has an id
@@ -309,7 +329,7 @@ public class NaiveGrounder extends AbstractGrounder {
 					choiceOnLiterals[i++] = atomId.atomId;
 				}
 				int choiceId = choiceAtomsGenerator.getNextId();
-				PredicateInstance choiceOnAtom =  new PredicateInstance<>(CHOICE_ON_PREDICATE, ConstantTerm.getInstance(Integer.toString(choiceId)));
+				BasicAtom choiceOnAtom =  new BasicAtom(CHOICE_ON_PREDICATE, ConstantTerm.getInstance(Integer.toString(choiceId)));
 				int choiceOnAtomIdInt = atomStore.createAtomId(choiceOnAtom).atomId;
 				choiceOnLiterals[0] = -choiceOnAtomIdInt;
 				// Add corresponding NoGood and ChoiceOn
@@ -317,7 +337,7 @@ public class NaiveGrounder extends AbstractGrounder {
 				newChoiceOn.put(choiceOnAtomIdInt, bodyRepresentingAtomId.atomId);
 
 				// ChoiceOff if some negative body atom is contradicted
-				PredicateInstance choiceOffAtom =  new PredicateInstance<>(CHOICE_OFF_PREDICATE, ConstantTerm.getInstance(Integer.toString(choiceId)));
+				BasicAtom choiceOffAtom =  new BasicAtom(CHOICE_OFF_PREDICATE, ConstantTerm.getInstance(Integer.toString(choiceId)));
 				int choiceOffAtomIdInt = atomStore.createAtomId(choiceOffAtom).atomId;
 				for (AtomId negAtomId : bodyAtomsNegative) {
 					// Choice is off if any of the negative atoms is assigned true, hence we add one NoGood for each such atom.
@@ -329,19 +349,25 @@ public class NaiveGrounder extends AbstractGrounder {
 		return generatedNoGoods;
 	}
 
-	private List<VariableSubstitution> generateGroundRulesSemiNaive(NonGroundRule nonGroundRule, IndexedInstanceStorage modifiedWorkingMemory) {
-		ArrayList<VariableSubstitution> generatedSubstitutions = new ArrayList<>();
-		bindNextAtom(nonGroundRule, 0, modifiedWorkingMemory.getRecentlyAddedInstances(), new VariableSubstitution(), generatedSubstitutions);
-		return generatedSubstitutions;
-	}
-
 	private List<VariableSubstitution> bindNextAtomInRule(NonGroundRule rule, int atomPos, VariableSubstitution partialVariableSubstitution) {
 		if (atomPos == rule.getNumBodyAtoms()) {
 			return Collections.singletonList(partialVariableSubstitution);
 		} else {
+			Atom currentAtom = rule.getBodyAtom(atomPos);
+			if (currentAtom instanceof BuiltinAtom) {
+				// Assumption: all variables occurring in the builtin atom are already bound
+				// (as ensured by the body atom sorting)
+				if (BuiltinAtom.evaluateBuiltinAtom((BuiltinAtom)currentAtom, partialVariableSubstitution)) {
+					// Builtin is true, continue with next atom in rule body.
+					return bindNextAtomInRule(rule, atomPos + 1, partialVariableSubstitution);
+				} else {
+					// Builtin is false, return no bindings.
+					return new ArrayList<>();
+				}
+			}
 			// check if partialVariableSubstitution already yields a ground atom
-			PredicateInstance currentBodyAtom = rule.getBodyAtom(atomPos);
-			Pair<Boolean, PredicateInstance> substitute = SubstitutionUtil.substitute(currentBodyAtom, partialVariableSubstitution);
+			BasicAtom currentBasicAtom = (BasicAtom)currentAtom;
+			Pair<Boolean, BasicAtom> substitute = SubstitutionUtil.substitute(currentBasicAtom, partialVariableSubstitution);
 			if (substitute.getLeft()) {
 				// Substituted atom is ground, in case it is positive, only ground if it also holds true
 				if (rule.isBodyAtomPositive(atomPos)) {
@@ -359,7 +385,7 @@ public class NaiveGrounder extends AbstractGrounder {
 				}
 			} else {
 				// substituted atom contains variables
-				ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> wms = workingMemory.get(currentBodyAtom.predicate);
+				ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> wms = workingMemory.get(currentBasicAtom.predicate);
 				IndexedInstanceStorage storage = rule.isBodyAtomPositive(atomPos) ? wms.getLeft() : wms.getRight();
 				List<Instance> instances;
 				if (partialVariableSubstitution.substitution.isEmpty()) {
@@ -397,49 +423,6 @@ public class NaiveGrounder extends AbstractGrounder {
 		}
 	}
 
-	protected void bindNextAtom(NonGroundRule nonGroundRule, int atomPos, List<Instance> potentiallyMatchingInstances, VariableSubstitution variableSubstitution, ArrayList<VariableSubstitution> generatedSubstitutions) {
-		PredicateInstance atom = nonGroundRule.getBodyAtom(atomPos);
-		for (Instance instance : potentiallyMatchingInstances) {
-			VariableSubstitution variableSubstitutionClone = new VariableSubstitution(variableSubstitution);
-			// Check each instance if they match
-			if (unify(atom, instance, variableSubstitutionClone)) {
-				// If we are at last atom in the body, a full grounding substitution has been derived.
-				if (nonGroundRule.getNumBodyAtoms() == atomPos + 1) {
-					generatedSubstitutions.add(variableSubstitutionClone);
-					continue;	// Check other instances if they also match
-				}
-				PredicateInstance nextBodyAtom = nonGroundRule.getBodyAtom(atomPos + 1);
-				// For selection of the next atom, find ground term to select
-				int firstGroundTermIndex = 0;
-				Term firstGroundTerm = null;
-				for (int i = 0; i < nextBodyAtom.termList.length; i++) {
-					Term testTerm = SubstitutionUtil.groundTerm(nextBodyAtom.termList[i], variableSubstitutionClone);
-					if (testTerm.isGround()) {
-						firstGroundTermIndex = i;
-						firstGroundTerm = testTerm;
-						break;
-					}
-				}
-				// Get positive or negative memory depending on polarity of the atom
-				ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> workingMemory = this.workingMemory.get(nextBodyAtom.predicate);
-				IndexedInstanceStorage instanceStorage;
-				if (nonGroundRule.isBodyAtomPositive(atomPos + 1)) {
-					instanceStorage = workingMemory.getLeft();
-				} else {
-					instanceStorage = workingMemory.getRight();
-				}
-				// Select matching instances
-				List<Instance> instancesMatchingAtPosition;
-				if (firstGroundTerm != null) {
-					instancesMatchingAtPosition = instanceStorage.getInstancesMatchingAtPosition(firstGroundTerm, firstGroundTermIndex);
-				} else {
-					instancesMatchingAtPosition = new ArrayList<>(instanceStorage.getAllInstances());
-				}
-				bindNextAtom(nonGroundRule, atomPos + 1, instancesMatchingAtPosition, variableSubstitutionClone, generatedSubstitutions);
-			}
-		}
-	}
-
 	/**
 	 * Computes the unifier of the atom and the instance and stores it in the variable substitution.
 	 * @param atom the body atom to unify
@@ -447,7 +430,7 @@ public class NaiveGrounder extends AbstractGrounder {
 	 * @param variableSubstitution if the atom does not unify, this is left unchanged.
 	 * @return true if the atom and the instance unify. False otherwise
 	 */
-	protected boolean unify(PredicateInstance atom, Instance instance, VariableSubstitution variableSubstitution) {
+	protected boolean unify(BasicAtom atom, Instance instance, VariableSubstitution variableSubstitution) {
 		VariableSubstitution tempVariableSubstitution = new VariableSubstitution(variableSubstitution);
 		for (int i = 0; i < instance.terms.length; i++) {
 			if (instance.terms[i] == atom.termList[i] ||
@@ -515,10 +498,10 @@ public class NaiveGrounder extends AbstractGrounder {
 	public void updateAssignment(int[] atomIds, boolean[] truthValues) {
 		for (int i = 0; i < atomIds.length; i++) {
 			AtomId atomId = new AtomId(atomIds[i]);
-			PredicateInstance predicateInstance = atomStore.getPredicateInstance(atomId);
-			Instance instance = new Instance(predicateInstance.termList);
+			BasicAtom basicAtom = atomStore.getBasicAtom(atomId);
+			Instance instance = new Instance(basicAtom.termList);
 			boolean truthValue = truthValues[i];
-			ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> workingMemoryPlusMinus = workingMemory.get(predicateInstance.predicate);
+			ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> workingMemoryPlusMinus = workingMemory.get(basicAtom.predicate);
 			IndexedInstanceStorage workingMemoryPlus = workingMemoryPlusMinus.getLeft();
 			IndexedInstanceStorage workingMemoryMinus = workingMemoryPlusMinus.getRight();
 			if (truthValue) {
@@ -542,7 +525,7 @@ public class NaiveGrounder extends AbstractGrounder {
 
 	@Override
 	public String atomIdToString(int atomId) {
-		return atomStore.getPredicateInstance(new AtomId(atomId)).toString();
+		return atomStore.getBasicAtom(new AtomId(atomId)).toString();
 	}
 
 	@Override
@@ -575,7 +558,7 @@ public class NaiveGrounder extends AbstractGrounder {
 		}
 	}
 
-	class VariableSubstitution {
+	public class VariableSubstitution {
 		HashMap<VariableTerm, Term> substitution = new HashMap<>();
 
 		public VariableSubstitution() {
@@ -623,6 +606,10 @@ public class NaiveGrounder extends AbstractGrounder {
 		@Override
 		public int hashCode() {
 			return substitution != null ? substitution.hashCode() : 0;
+		}
+
+		public Term eval(VariableTerm variableTerm) {
+			return this.substitution.get(variableTerm);
 		}
 	}
 }

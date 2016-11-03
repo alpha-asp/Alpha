@@ -162,11 +162,42 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 	}
 
 	@Override
-	public CommonParsedObject visitNaf_literal(ASPCore2Parser.Naf_literalContext ctx) {
-		if (ctx.builtin_atom() != null) {
-			notSupportedSyntax(ctx.builtin_atom());
+	public CommonParsedObject visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
+		// builtin_atom : term binop term;
+		ParsedTerm left = (ParsedTerm) visit(ctx.term(0));
+		ParsedTerm right = (ParsedTerm) visit(ctx.term(1));
+		ParsedBuiltinAtom.BINOP binop;
+		ASPCore2Parser.BinopContext parsedBinop = ctx.binop();
+		// binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
+		if (parsedBinop.EQUAL() != null) {
+			binop = ParsedBuiltinAtom.BINOP.EQUAL;
+		} else if (parsedBinop.UNEQUAL() != null) {
+			binop = ParsedBuiltinAtom.BINOP.UNEQUAL;
+		} else if (parsedBinop.LESS() != null) {
+			binop = ParsedBuiltinAtom.BINOP.LESS;
+		} else if (parsedBinop.GREATER() != null) {
+			binop = ParsedBuiltinAtom.BINOP.GREATER;
+		} else if (parsedBinop.LESS_OR_EQ() != null) {
+			binop = ParsedBuiltinAtom.BINOP.LESS_OR_EQ;
+		} else if (parsedBinop.GREATER_OR_EQ() != null) {
+			binop = ParsedBuiltinAtom.BINOP.GREATER_OR_EQ;
+		} else {
+			throw new RuntimeException("Unknown binop encountered.");
 		}
+		return new ParsedBuiltinAtom(left, binop, right);
+	}
+
+	@Override
+	public CommonParsedObject visitNaf_literal(ASPCore2Parser.Naf_literalContext ctx) {
+		// naf_literal : NAF? (classical_literal | builtin_atom);
 		boolean isNegated = ctx.NAF() != null;
+		if (ctx.builtin_atom() != null) {
+			ParsedBuiltinAtom builtinAtom = (ParsedBuiltinAtom) visitBuiltin_atom(ctx.builtin_atom());
+			if (isNegated) {
+				builtinAtom.negateBinop();
+			}
+			return builtinAtom;
+		}
 		ParsedAtom atom = (ParsedAtom)visitClassical_literal(ctx.classical_literal());
 		atom.isNegated = isNegated;
 		return atom;
