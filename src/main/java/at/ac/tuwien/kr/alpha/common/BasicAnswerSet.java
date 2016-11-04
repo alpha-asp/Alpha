@@ -84,6 +84,18 @@ public class BasicAnswerSet implements AnswerSet {
 		private Set<BasicAtom> instances = new HashSet<>();
 		private Map<Predicate, Set<BasicAtom>> predicateInstances = new HashMap<>();
 
+		public Builder() {
+		}
+
+		public Builder(Builder copy) {
+			this.firstInstance = copy.firstInstance;
+			this.predicateSymbol = copy.predicateSymbol;
+			this.predicate = copy.predicate;
+			this.predicates = new HashSet<>(copy.predicates);
+			this.instances = new HashSet<>(copy.instances);
+			this.predicateInstances = new HashMap<>(copy.predicateInstances);
+		}
+
 		private void flush() {
 			if (firstInstance) {
 				predicate = new BasicPredicate(predicateSymbol, 0);

@@ -34,7 +34,19 @@ public class NaiveGrounder extends AbstractGrounder {
 	private boolean outputFactNogoods = true;
 	private ArrayList<NonGroundRule<BasicPredicate>> rulesFromProgram = new ArrayList<>();
 	private HashSet<IndexedInstanceStorage> modifiedWorkingMemories = new HashSet<>();
-	private HashMap<IndexedInstanceStorage, ArrayList<NonGroundRule<BasicPredicate>>> rulesUsingPredicateWorkingMemory = new HashMap<>();
+	private HashMap<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
+
+	private class FirstBindingAtom {
+		public NonGroundRule<BasicPredicate> rule;
+		public int firstBindingAtomPos;
+		public BasicAtom firstBindingAtom;
+
+		public FirstBindingAtom(NonGroundRule<BasicPredicate> rule, int firstBindingAtomPos, BasicAtom firstBindingAtom) {
+			this.rule = rule;
+			this.firstBindingAtomPos = firstBindingAtomPos;
+			this.firstBindingAtom = firstBindingAtom;
+		}
+	}
 
 	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newChoiceAtoms = new ImmutablePair<>(new HashMap<>(), new HashMap<>());
 	private IntIdGenerator choiceAtomsGenerator = new IntIdGenerator();
@@ -111,14 +123,32 @@ public class NaiveGrounder extends AbstractGrounder {
 			// No ordinary first body predicate, hence it only contains ground builtin predicates.
 			return;
 		}
-		if (nonGroundRule.isFirstBodyPredicatePositive()) {
-			IndexedInstanceStorage workingMemoryPlus = workingMemory.get(firstBodyPredicate).getLeft();
-			rulesUsingPredicateWorkingMemory.putIfAbsent(workingMemoryPlus, new ArrayList<>());
-			rulesUsingPredicateWorkingMemory.get(workingMemoryPlus).add(nonGroundRule);
-		} else {
-			IndexedInstanceStorage workingMemoryMinus = workingMemory.get(firstBodyPredicate).getRight();
-			rulesUsingPredicateWorkingMemory.putIfAbsent(workingMemoryMinus, new ArrayList<>());
-			rulesUsingPredicateWorkingMemory.get(workingMemoryMinus).add(nonGroundRule);
+		// Register each predicate occurring in the body of the rule at its corresponding working memory.
+		HashSet<Predicate> registeredPositivePredicates = new HashSet<>();
+		for (Atom bodyAtom : nonGroundRule.getBodyAtomsPositive()) {
+			registerRuleAtWorkingMemory(true, nonGroundRule, registeredPositivePredicates, bodyAtom);
+		}
+		HashSet<Predicate> registeredNegativePredicates = new HashSet<>();
+		for (Atom bodyAtom : nonGroundRule.getBodyAtomsNegative()) {
+			registerRuleAtWorkingMemory(false, nonGroundRule, registeredNegativePredicates, bodyAtom);
+		}
+	}
+
+	/**
+	 * Registers an atom occurring in a rule at its corresponding working memory if it has not already been treated this way.
+	 * @param isPositive indicates whether the atom occurs positively or negatively in the rule.
+	 * @param nonGroundRule the rule into which the atom occurs.
+	 * @param registeredPredicates a set of already registered predicates (will skip if the predicate of the current atom occurs in this set). This set will be extended by the current atom.
+	 * @param bodyAtom the current body atom.
+	 */
+	private void registerRuleAtWorkingMemory(boolean isPositive, NonGroundRule<BasicPredicate> nonGroundRule, HashSet<Predicate> registeredPredicates, Atom bodyAtom) {
+		if (bodyAtom instanceof BasicAtom && !registeredPredicates.contains(((BasicAtom) bodyAtom).predicate)) {
+			Predicate predicate = ((BasicAtom) bodyAtom).predicate;
+			registeredPredicates.add(predicate);
+			IndexedInstanceStorage workingMemory = isPositive ? this.workingMemory.get(predicate).getLeft() : this.workingMemory.get(predicate).getRight();
+			rulesUsingPredicateWorkingMemory.putIfAbsent(workingMemory, new ArrayList<>());
+			rulesUsingPredicateWorkingMemory.get(workingMemory).add(
+				new FirstBindingAtom(nonGroundRule, nonGroundRule.getFirstOccurrenceOfPredicate(predicate), (BasicAtom) bodyAtom));
 		}
 	}
 
@@ -202,14 +232,23 @@ public class NaiveGrounder extends AbstractGrounder {
 		for (IndexedInstanceStorage modifiedWorkingMemory : modifiedWorkingMemories) {
 
 			// Iterate over all rules whose body contains the predicate corresponding to the current workingMemory.
-			ArrayList<NonGroundRule<BasicPredicate>> nonGroundRules = rulesUsingPredicateWorkingMemory.get(modifiedWorkingMemory);
+			ArrayList<FirstBindingAtom> firstBindingAtoms = rulesUsingPredicateWorkingMemory.get(modifiedWorkingMemory);
 			// Skip working memories that are not used by any rule.
-			if (nonGroundRules == null) {
+			if (firstBindingAtoms == null) {
 				continue;
 			}
-			for (NonGroundRule<BasicPredicate> nonGroundRule : nonGroundRules) {
-				List<VariableSubstitution> variableSubstitutions = //generateGroundRulesSemiNaive(nonGroundRule, modifiedWorkingMemory);
-				bindNextAtomInRule(nonGroundRule, 0, new VariableSubstitution());
+			for (FirstBindingAtom firstBindingAtom : firstBindingAtoms) {
+				// Use the recently added instances from the modified working memory to construct an initial variableSubstitution
+				NonGroundRule<BasicPredicate> nonGroundRule = firstBindingAtom.rule;
+				List<VariableSubstitution> variableSubstitutions = new ArrayList<>();
+				// Generate variableSubstitutions from each recent instance.
+				for (Instance instance : modifiedWorkingMemory.getRecentlyAddedInstances()) {
+					// Check instance if it matches with the atom.
+					VariableSubstitution partialVariableSubstitution = new VariableSubstitution();
+					if (unify(firstBindingAtom.firstBindingAtom, instance, partialVariableSubstitution)) {
+						variableSubstitutions.addAll(bindNextAtomInRule(nonGroundRule, 0, firstBindingAtom.firstBindingAtomPos, partialVariableSubstitution));
+					}
+				}
 				for (VariableSubstitution variableSubstitution : variableSubstitutions) {
 					List<NoGood> noGoods = generateNoGoodsFromGroundSubstitution(nonGroundRule, variableSubstitution);
 					for (NoGood noGood : noGoods) {
@@ -307,7 +346,10 @@ public class NaiveGrounder extends AbstractGrounder {
 			}
 			NoGood ruleBody = new NoGood(bodyLiterals, 0);
 
-			// TODO: generate reverse noGoods for the body: if body is true, each literal must be true/false accordingly, i.e., nogoods of the form { bodyRepresentingAtom, literal_i }
+			// Generate NoGoods such that the atom representing the body is true iff the body is true.
+			for (int j = 1; j < bodyLiterals.length; j++) {
+				generatedNoGoods.add(new NoGood(bodyRepresentingAtomId.atomId, -bodyLiterals[j]));
+			}
 
 			// Create NoGood for head.
 			NoGood ruleHead = new NoGood(new int[]{-headAtomId.atomId, bodyRepresentingAtomId.atomId}, 0);
@@ -349,17 +391,21 @@ public class NaiveGrounder extends AbstractGrounder {
 		return generatedNoGoods;
 	}
 
-	private List<VariableSubstitution> bindNextAtomInRule(NonGroundRule rule, int atomPos, VariableSubstitution partialVariableSubstitution) {
+	private List<VariableSubstitution> bindNextAtomInRule(NonGroundRule rule, int atomPos, int firstBindingPos, VariableSubstitution partialVariableSubstitution) {
 		if (atomPos == rule.getNumBodyAtoms()) {
 			return Collections.singletonList(partialVariableSubstitution);
 		} else {
+			if (atomPos == firstBindingPos) {
+				// Binding for this position was already computed, skip it.
+				return bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, partialVariableSubstitution);
+			}
 			Atom currentAtom = rule.getBodyAtom(atomPos);
 			if (currentAtom instanceof BuiltinAtom) {
 				// Assumption: all variables occurring in the builtin atom are already bound
 				// (as ensured by the body atom sorting)
 				if (BuiltinAtom.evaluateBuiltinAtom((BuiltinAtom)currentAtom, partialVariableSubstitution)) {
 					// Builtin is true, continue with next atom in rule body.
-					return bindNextAtomInRule(rule, atomPos + 1, partialVariableSubstitution);
+					return bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, partialVariableSubstitution);
 				} else {
 					// Builtin is false, return no bindings.
 					return new ArrayList<>();
@@ -374,23 +420,23 @@ public class NaiveGrounder extends AbstractGrounder {
 					IndexedInstanceStorage wm = workingMemory.get(currentBasicAtom.predicate).getLeft();
 					if (wm.containsInstance(new Instance(substitute.getRight().termList))) {
 						// Ground literal holds, continue finding a variable substitution.
-						return bindNextAtomInRule(rule, atomPos + 1, partialVariableSubstitution);
+						return bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, partialVariableSubstitution);
 					} else {
 						// Generate no variable substitution.
 						return new ArrayList<>();
 					}
 				} else {
 					// Atom occurs negated in the rule, continue grounding
-					return bindNextAtomInRule(rule, atomPos + 1, partialVariableSubstitution);
+					return bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, partialVariableSubstitution);
 				}
 			} else {
 				// substituted atom contains variables
 				ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> wms = workingMemory.get(currentBasicAtom.predicate);
 				IndexedInstanceStorage storage = rule.isBodyAtomPositive(atomPos) ? wms.getLeft() : wms.getRight();
-				List<Instance> instances;
+				Collection<Instance> instances;
 				if (partialVariableSubstitution.substitution.isEmpty()) {
-					// this is the first atom to bind variables, consider only recently added instances.
-					instances = storage.getRecentlyAddedInstances();
+					// No variables are bound, but first atom in the body became recently true, consider all instances now.
+					instances = storage.getAllInstances();
 				} else {
 					// For selection of the instances, find ground term on which to select
 					int firstGroundTermPos = 0;
@@ -415,7 +461,7 @@ public class NaiveGrounder extends AbstractGrounder {
 					// Check each instance if it matches with the atom.
 					VariableSubstitution variableSubstitutionClone = new VariableSubstitution(partialVariableSubstitution);
 					if (unify(substitute.getRight(), instance, variableSubstitutionClone)) {
-						generatedSubstitutions.addAll(bindNextAtomInRule(rule, atomPos + 1, variableSubstitutionClone));
+						generatedSubstitutions.addAll(bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, variableSubstitutionClone));
 					}
 				}
 				return generatedSubstitutions;

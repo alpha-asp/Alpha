@@ -176,6 +176,7 @@ public class NonGroundRule<P extends Predicate> {
 
 			// Merge all components that are hit by the current atom
 			SortingBodyComponent firstComponent = hits.iterator().next();
+			firstComponent.add((BasicAtom) atom);
 			for (SortingBodyComponent hitComponent : hits) {
 				if (hitComponent != firstComponent) {
 					firstComponent.merge(hitComponent);
@@ -231,6 +232,18 @@ public class NonGroundRule<P extends Predicate> {
 		} else {
 			return bodyAtomsNegative.get(atomPosition - bodyAtomsPositive.size());
 		}
+	}
+
+	public int getFirstOccurrenceOfPredicate(Predicate predicate) {
+		for (int i = 0; i < getNumBodyAtoms(); i++) {
+			Atom bodyAtom = getBodyAtom(i);
+			if (bodyAtom instanceof BasicAtom) {
+				if (((BasicAtom) bodyAtom).predicate.equals(predicate)) {
+					return i;
+				}
+			}
+		}
+		throw new RuntimeException("Predicate " + predicate + " does not occur in rule " + this.toString());
 	}
 
 	public boolean isBodyAtomPositive(int atomPosition) {
@@ -291,8 +304,12 @@ public class NonGroundRule<P extends Predicate> {
 
 		sb.append(":- ");
 		Util.appendDelimited(sb, bodyAtomsPositive);
-		sb.append(" ");
-		Util.appendDelimited(sb, bodyAtomsNegative);
+		if (bodyAtomsPositive.size() > 0 && bodyAtomsNegative.size() > 0) {
+			sb.append(", ");
+		} else {
+			sb.append(" ");
+		}
+		Util.appendDelimitedPrefix(sb, "not ", bodyAtomsNegative);
 		sb.append(".\n");
 
 		return sb.toString();

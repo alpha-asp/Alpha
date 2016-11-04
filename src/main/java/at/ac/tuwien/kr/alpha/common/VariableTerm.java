@@ -1,5 +1,7 @@
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,6 +13,8 @@ public class VariableTerm extends Term implements Comparable<VariableTerm> {
 	private final String variableName;
 
 	private static final HashMap<String, VariableTerm> VARIABLES = new HashMap<>();
+	private static final String ANONYMOUS_VARIABLE_PREFIX = "_";
+	private static final IntIdGenerator ANONYMOUS_VARIABLE_COUNTER = new IntIdGenerator();
 
 	private VariableTerm(String variableName) {
 		this.variableName = variableName;
@@ -18,6 +22,12 @@ public class VariableTerm extends Term implements Comparable<VariableTerm> {
 
 	public static VariableTerm getInstance(String variableName) {
 		return VARIABLES.computeIfAbsent(variableName, VariableTerm::new);
+	}
+
+	public static VariableTerm getNewAnonymousVariable() {
+		VariableTerm newAnonymousVariable = new VariableTerm(ANONYMOUS_VARIABLE_PREFIX + ANONYMOUS_VARIABLE_COUNTER.getNextId());
+		VARIABLES.put(newAnonymousVariable.variableName, newAnonymousVariable);
+		return newAnonymousVariable;
 	}
 
 	@Override

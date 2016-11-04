@@ -43,33 +43,81 @@ public class BuiltinAtom implements Atom {
 	}
 
 	public static boolean evaluateBuiltinAtom(BuiltinAtom builtinAtom, NaiveGrounder.VariableSubstitution variableSubstitution) {
-		int left = evaluateExpression(builtinAtom.left, variableSubstitution);
-		int right = evaluateExpression(builtinAtom.right, variableSubstitution);
+		NumberOrTerm left = evaluateExpression(builtinAtom.left, variableSubstitution);
+		NumberOrTerm right = evaluateExpression(builtinAtom.right, variableSubstitution);
 		switch (builtinAtom.binop) {
 			case EQUAL:
-				return  left == right;
+				if (left.isNumber != right.isNumber) {
+					throw new RuntimeException("BuiltinAtom: cannot compare terms of different types: " + left + builtinAtom.binop + right);
+				} else if (left.isNumber) {
+					return left.number == right.number;
+				} else {
+					return left.term.equals(right);
+				}
 			case UNEQUAL:
-				return  left != right;
+				if (left.isNumber != right.isNumber) {
+					throw new RuntimeException("BuiltinAtom: cannot compare terms of different types: " + left + builtinAtom.binop + right);
+				} else if (left.isNumber) {
+					return left.number != right.number;
+				} else {
+					return !left.term.equals(right);
+				}
 			case GREATER:
-				return  left > right;
+				if (left.isNumber && right.isNumber) {
+					return  left.number > right.number;
+				}
+				throw new RuntimeException("BuiltinAtom: can only compare number terms: " + left + builtinAtom.binop + right);
 			case LESS:
-				return left < right;
+				if (left.isNumber && right.isNumber) {
+					return  left.number < right.number;
+				}
+				throw new RuntimeException("BuiltinAtom: can only compare number terms: " + left + builtinAtom.binop + right);
 			case GREATER_OR_EQ:
-				return left >= right;
+				if (left.isNumber && right.isNumber) {
+					return  left.number >= right.number;
+				}
+				throw new RuntimeException("BuiltinAtom: can only compare number terms: " + left + builtinAtom.binop + right);
 			case LESS_OR_EQ:
-				return left <= right;
+				if (left.isNumber && right.isNumber) {
+					return  left.number <= right.number;
+				}
+				throw new RuntimeException("BuiltinAtom: can only compare number terms: " + left + builtinAtom.binop + right);
 		}
 		throw new RuntimeException("Unknown binop: " + builtinAtom.binop);
 	}
 
-	private static int evaluateExpression(Term term, NaiveGrounder.VariableSubstitution variableSubstitution) {
+
+	private static class NumberOrTerm {
+		public final int number;
+		public final Term term;
+		public final boolean isNumber;
+
+		public NumberOrTerm(int number) {
+			this.number = number;
+			this.isNumber = true;
+			this.term = null;
+		}
+
+		public NumberOrTerm(Term term) {
+			this.term = term;
+			this.isNumber = false;
+			this.number = 0;
+		}
+
+		@Override
+		public String toString() {
+			return isNumber ? Integer.toString(number) : term.toString();
+		}
+	}
+
+	private static NumberOrTerm evaluateExpression(Term term, NaiveGrounder.VariableSubstitution variableSubstitution) {
 		if (term instanceof VariableTerm) {
 			return evaluateExpression(variableSubstitution.eval((VariableTerm) term), variableSubstitution);
 		} else if (term instanceof ConstantTerm) {
 			try {
-				return Integer.parseInt(term.toString());
+				return new NumberOrTerm(Integer.parseInt(term.toString()));
 			} catch (NumberFormatException e) {
-				throw new RuntimeException("Could not convert term " + term + " to a number.", e);
+				return new NumberOrTerm(term);
 			}
 		} else {
 			throw new RuntimeException("Not supported term structure in builtin atom encountered: " + term);

@@ -23,4 +23,14 @@ public class Util {
 			}
 		}
 	}
+
+	public static <E> void appendDelimitedPrefix(StringBuilder sb, String prefix, Iterable<E> iterable) {
+		for (Iterator<E> iterator = iterable.iterator(); iterator.hasNext();) {
+			sb.append(prefix);
+			sb.append(iterator.next());
+			if (iterator.hasNext()) {
+				sb.append(", ");
+			}
+		}
+	}
 }

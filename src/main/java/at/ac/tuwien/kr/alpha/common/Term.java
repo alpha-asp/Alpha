@@ -36,7 +36,11 @@ public abstract class Term {
 			}
 			return getFunctionTerm(functionName, termlist);
 		} else if (parsedTerm instanceof ParsedVariable) {
-			return VariableTerm.getInstance(((ParsedVariable) parsedTerm).variableName);
+			if (((ParsedVariable) parsedTerm).isAnonymous) {
+				return VariableTerm.getNewAnonymousVariable();
+			} else {
+				return VariableTerm.getInstance(((ParsedVariable) parsedTerm).variableName);
+			}
 		} else {
 			throw new RuntimeException("Parsed program contains a term of unknown type: " + parsedTerm.getClass());
 		}

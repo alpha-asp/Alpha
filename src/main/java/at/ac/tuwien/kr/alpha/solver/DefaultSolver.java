@@ -36,6 +36,8 @@ public class DefaultSolver extends AbstractSolver {
 
 	private boolean didChange;
 
+	private int decisionCounter;
+
 	public DefaultSolver(Grounder grounder, java.util.function.Predicate<Predicate> filter) {
 		super(grounder, filter);
 
@@ -137,6 +139,7 @@ public class DefaultSolver extends AbstractSolver {
 				doBacktrack();
 				return;
 			}
+			decisionCounter++;
 			decisionLevel++;
 			LOGGER.debug("Backtrack: setting decision level to {}.", decisionLevel);
 			LOGGER.debug("Backtrack: inverting last guess. Now: {}=FALSE@{}", lastGuessedAtom, decisionLevel);
@@ -192,6 +195,7 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private void doChoice(int nextChoice) {
+		decisionCounter++;
 		decisionLevel++;
 		store.setDecisionLevel(decisionLevel);
 		LOGGER.debug("Choice: Guessing {}=TRUE@{}.", nextChoice, decisionLevel);

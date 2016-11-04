@@ -14,10 +14,7 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 import static at.ac.tuwien.kr.alpha.MainTest.stream;
@@ -328,6 +325,167 @@ public abstract class AbstractSolverTest {
 			new BasicAnswerSet.Builder()
 				.predicate("a")
 				.predicate("c")
+				.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
+
+	@Test
+	public void guessingProgramConstraint() throws IOException {
+		String testProgram =
+			"eq(1,1).\n" +
+			"eq(2,2).\n" +
+			"eq(3,3).\n" +
+			"var(1).\n" +
+			"var(2).\n" +
+			"var(3).\n" +
+			"val(VAR,1):-var(VAR),not val(VAR,2),not val(VAR,3).\n" +
+			"val(VAR,2):-var(VAR),not val(VAR,1),not val(VAR,3).\n" +
+			"val(VAR,3):-var(VAR),not val(VAR,1),not val(VAR,2).\n" +
+			"%:- val(VAR1,VAL1), val(VAR2,VAL2), eq(VAL1,VAL2), not eq(VAR1,VAR2).\n" +
+			":- eq(VAL1,VAL2), not eq(VAR1,VAR2), val(VAR1,VAL1), val(VAR2,VAL2).";
+		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+		BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
+			.predicate("eq")
+			.instance("1", "1")
+			.instance("2", "2")
+			.instance("3", "3")
+			.predicate("var")
+			.instance("1")
+			.instance("2")
+			.instance("3");
+
+		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
+			new BasicAnswerSet.Builder(base)
+				.predicate("val")
+				.instance("1", "1")
+				.instance("2", "2")
+				.instance("3", "3")
+				.build(),
+			new BasicAnswerSet.Builder(base)
+				.predicate("val")
+				.instance("1", "1")
+				.instance("3", "2")
+				.instance("2", "3")
+				.build(),
+			new BasicAnswerSet.Builder(base)
+				.predicate("val")
+				.instance("2", "1")
+				.instance("1", "2")
+				.instance("3", "3")
+				.build(),
+			new BasicAnswerSet.Builder(base)
+				.predicate("val")
+				.instance("2", "1")
+				.instance("3", "2")
+				.instance("1", "3")
+				.build(),
+			new BasicAnswerSet.Builder(base)
+				.predicate("val")
+				.instance("3", "1")
+				.instance("1", "2")
+				.instance("2", "3")
+				.build(),
+			new BasicAnswerSet.Builder(base)
+				.predicate("val")
+				.instance("3", "1")
+				.instance("2", "2")
+				.instance("1", "3")
+				.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
+
+	@Test
+	public void guessingProgramConstraintPermutation() throws IOException {
+		String testProgram =
+			"eq(1,1).\n" +
+				"eq(2,2).\n" +
+				"eq(3,3).\n" +
+				"var(1).\n" +
+				"var(2).\n" +
+				"var(3).\n" +
+				"val(VAR,1):-var(VAR),not val(VAR,2),not val(VAR,3).\n" +
+				"val(VAR,2):-var(VAR),not val(VAR,1),not val(VAR,3).\n" +
+				"val(VAR,3):-var(VAR),not val(VAR,1),not val(VAR,2).\n" +
+				":- val(VAR1,VAL1), val(VAR2,VAL2), eq(VAL1,VAL2), not eq(VAR1,VAR2).\n" +
+				"%:- eq(VAL1,VAL2), not eq(VAR1,VAR2), val(VAR1,VAL1), val(VAR2,VAL2).";
+		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+		BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
+			.predicate("eq")
+			.instance("1", "1")
+			.instance("2", "2")
+			.instance("3", "3")
+			.predicate("var")
+			.instance("1")
+			.instance("2")
+			.instance("3");
+
+		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
+			new BasicAnswerSet.Builder(base)
+				.predicate("val")
+				.instance("1", "1")
+				.instance("2", "2")
+				.instance("3", "3")
+				.build(),
+			new BasicAnswerSet.Builder(base)
+				.predicate("val")
+				.instance("1", "1")
+				.instance("3", "2")
+				.instance("2", "3")
+				.build(),
+			new BasicAnswerSet.Builder(base)
+				.predicate("val")
+				.instance("2", "1")
+				.instance("1", "2")
+				.instance("3", "3")
+				.build(),
+			new BasicAnswerSet.Builder(base)
+				.predicate("val")
+				.instance("2", "1")
+				.instance("3", "2")
+				.instance("1", "3")
+				.build(),
+			new BasicAnswerSet.Builder(base)
+				.predicate("val")
+				.instance("3", "1")
+				.instance("1", "2")
+				.instance("2", "3")
+				.build(),
+			new BasicAnswerSet.Builder(base)
+				.predicate("val")
+				.instance("3", "1")
+				.instance("2", "2")
+				.instance("1", "3")
+				.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
+
+	@Test
+	public void simpleNoPropagation() throws IOException {
+		String testProgram = "val(1,1).\n" +
+			"val(2,2).\n" +
+			"something:- val(VAR1,VAL1), val(VAR2,VAL2), anything(VAL1,VAL2).";
+		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
+			new BasicAnswerSet.Builder()
+				.predicate("val")
+				.instance("1", "1")
+				.instance("2", "2")
 				.build()
 		));
 
