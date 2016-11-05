@@ -334,6 +334,7 @@ public abstract class AbstractSolverTest {
 
 	@Test
 	public void guessingProgramConstraint() throws IOException {
+		enableDebugLog();
 		String testProgram =
 			"eq(1,1).\n" +
 			"eq(2,2).\n" +

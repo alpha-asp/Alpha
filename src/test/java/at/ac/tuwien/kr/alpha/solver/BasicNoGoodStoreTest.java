@@ -400,4 +400,15 @@ public class BasicNoGoodStoreTest {
 		assertNotNull(store.getViolatedNoGood());
 		assertEquals(noGood, new NoGood(store.getViolatedNoGood()));
 	}
+
+	@Test
+	public void neverViolatedNoGood() {
+		NoGood noGood = new NoGood(-44, 10, 13, 44);
+		assertTrue(store.add(80, noGood));
+		assertTrue(assignment.assign(10, TRUE));
+		assertTrue(assignment.assign(13, TRUE));
+		assertTrue(assignment.assign(44, FALSE));
+		store.propagate();
+		assertNull(store.getViolatedNoGood());
+	}
 }
