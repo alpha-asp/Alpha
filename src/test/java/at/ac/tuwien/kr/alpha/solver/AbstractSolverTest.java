@@ -21,11 +21,6 @@ import static at.ac.tuwien.kr.alpha.MainTest.stream;
 import static org.junit.Assert.assertEquals;
 
 public abstract class AbstractSolverTest {
-	private static BasicAnswerSet.Builder base() {
-		return new BasicAnswerSet.Builder()
-			.predicate("dom").instance("1").instance("2").instance("3");
-	}
-
 	/**
 	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
 	 */
@@ -143,34 +138,37 @@ public abstract class AbstractSolverTest {
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
+		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
+			.predicate("dom").instance("1").instance("2").instance("3");
+
 		List<AnswerSet> expected = Arrays.asList(
-			base()
+			new BasicAnswerSet.Builder(base)
 				.predicate("q").instance("1").instance("2")
 				.predicate("p").instance("3")
 				.build(),
-			base()
+			new BasicAnswerSet.Builder(base)
 				.predicate("q").instance("1")
 				.predicate("p").instance("2").instance("3")
 				.build(),
-			base()
+			new BasicAnswerSet.Builder(base)
 				.predicate("q").instance("2")
 				.predicate("p").instance("1").instance("3")
 				.build(),
-			base()
+			new BasicAnswerSet.Builder(base)
 				.predicate("p").instance("1").instance("2").instance("3")
 				.build(),
-			base()
+			new BasicAnswerSet.Builder(base)
 				.predicate("q").instance("1").instance("2").instance("3")
 				.build(),
-			base()
+			new BasicAnswerSet.Builder(base)
 				.predicate("q").instance("1").instance("3")
 				.predicate("p").instance("2")
 				.build(),
-			base()
+			new BasicAnswerSet.Builder(base)
 				.predicate("q").instance("2").instance("3")
 				.predicate("p").instance("1")
 				.build(),
-			base()
+			new BasicAnswerSet.Builder(base)
 				.predicate("q").instance("3")
 				.predicate("p").instance("1").instance("2")
 				.build()
@@ -350,7 +348,8 @@ public abstract class AbstractSolverTest {
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
-		BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
+
+		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
 			.predicate("eq")
 			.instance("1", "1")
 			.instance("2", "2")
@@ -420,7 +419,8 @@ public abstract class AbstractSolverTest {
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
-		BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
+
+		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
 			.predicate("eq")
 			.instance("1", "1")
 			.instance("2", "2")

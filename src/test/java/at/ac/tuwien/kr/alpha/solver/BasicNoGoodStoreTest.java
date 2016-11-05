@@ -363,6 +363,7 @@ public class BasicNoGoodStoreTest {
 		assertTrue(assignment.assign(2, FALSE));
 		assertTrue(assignment.assign(3, FALSE));
 		assertFalse(store.propagate());
+		assertNotNull(store.getViolatedNoGood());
 		assertEquals(noGood, new NoGood(store.getViolatedNoGood()));
 	}
 

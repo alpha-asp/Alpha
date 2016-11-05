@@ -43,6 +43,10 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		watches.clear();
 	}
 
+	private void setViolated(final NoGood noGood) {
+		violated = noGood;
+	}
+
 	@Override
 	public boolean isEmpty() {
 		return watches.isEmpty() && binaries.isEmpty();
@@ -76,7 +80,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	private boolean addUnary(final NoGood noGood) {
 		final int literal = noGood.getLiteral(0);
 		if (!assignment.assign(atomOf(literal), isNegated(literal) ? noGood.hasHead() ? TRUE : MBT : FALSE, noGood)) {
-			violated = noGood;
+			setViolated(noGood);
 			return false;
 		}
 		return true;
@@ -87,9 +91,13 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		final int a = noGood.getLiteral(0);
 		final int b = noGood.getLiteral(1);
 
+		if (a != b && atomOf(a) == atomOf(b)) {
+			return true;
+		}
+
 		// Check for violation.
 		if (assignment.containsRelaxed(a) && assignment.containsRelaxed(b)) {
-			violated = noGood;
+			setViolated(noGood);
 			return false;
 		}
 
@@ -144,7 +152,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			// contained in the assignment (otherwise the nogood
 			// cannot be unit) and then just go ahead and assign.
 			if (assignment.containsRelaxed(noGood, aAssigned ? 0 : 1) && !assign(noGood, aAssigned ? 1 : 0, MBT)) {
-				violated = noGood;
+				setViolated(noGood);
 				return false;
 			}
 		}
@@ -171,6 +179,8 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		boolean propagatesMbt = true;
 		boolean propagatesTrue = true;
 
+		Map<Integer, Boolean> mapRep = new HashMap<>();
+
 		// Along the way keep pointers to the first two
 		// unassigned literals encountered and the index
 		// and priority for placing the third pointer in
@@ -180,6 +190,14 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 		for (int i = 0; i < noGood.size(); i++) {
 			final int literal = noGood.getLiteral(i);
+
+			if (mapRep.containsKey(atomOf(literal))) {
+				if (mapRep.get(atomOf(literal)) != isNegated(literal)) {
+					return true;
+				}
+			} else {
+				mapRep.put(atomOf(literal), isNegated(literal));
+			}
 
 			// Third pointer comes into play if there's a head literal. It may
 			// not point at the head literal, though. Also it must not be negated.
@@ -227,7 +245,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		}
 
 		if (isViolated) {
-			violated = noGood;
+			setViolated(noGood);
 			return false;
 		}
 
@@ -274,7 +292,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	private boolean assign(final NoGood noGood, final int index, final ThriceTruth negated) {
 		int literal = noGood.getLiteral(index);
 		if (!assignment.assign(atomOf(literal), isNegated(literal) ? negated : FALSE, noGood)) {
-			violated = noGood;
+			setViolated(noGood);
 			return false;
 		}
 		return true;
