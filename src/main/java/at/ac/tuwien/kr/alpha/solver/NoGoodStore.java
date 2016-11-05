@@ -10,19 +10,6 @@ import java.util.Map;
  */
 public interface NoGoodStore<T extends ThriceTruth> {
 	/**
-	 * Sets the current decision level to the given one.
-	 * @param decisionLevel the decision level.
-	 */
-	void setDecisionLevel(int decisionLevel);
-
-	/**
-	 * Assigns the given atom the given truth value at the current decision level.
-	 * @param atom the atom to assign.
-	 * @param value the truth value to assign.
-	 */
-	boolean assign(int atom, T value);
-
-	/**
 	 * Adds a nogood with the given id.
 	 * @param id the unique identifier of the nogood.
 	 * @param noGood the nogood to add.
@@ -50,12 +37,7 @@ public interface NoGoodStore<T extends ThriceTruth> {
 	 */
 	boolean propagate();
 
-	/**
-	 * Returns the assignments that have changed since the last call to getChangedAssignments, i.e. it returns all
-	 * assignments done by doPropagation() and assign(..)
-	 * @return a map of all assignments done by propagation.
-	 */
-	Map<Integer, ThriceTruth> getChangedAssignments();
-
 	boolean isEmpty();
+
+	void backtrack();
 }

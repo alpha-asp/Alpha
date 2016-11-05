@@ -16,17 +16,15 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 	private final Grounder grounder;
 	private final Assignment assignment;
-	private final Queue<Integer> cache = new ArrayDeque<>();
 	private final Map<Integer, Watches<BinaryWatch, WatchedNoGood>> watches = new HashMap<>();
-	private final Map<Integer, ThriceTruth> changedAssignments = new HashMap<>();
 	private final Map<Integer, NoGood> binaries = new HashMap<>();
+	private final Iterator<Map.Entry<Integer, Assignment.Entry>> assignmentIterator;
 
 	private NoGood violated;
-	private int decisionLevel;
 
 	BasicNoGoodStore(Assignment assignment, Grounder grounder) {
 		this.assignment = assignment;
-		this.decisionLevel = 0;
+		this.assignmentIterator = assignment.iterator();
 		this.grounder = grounder;
 	}
 
@@ -34,32 +32,20 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		this(assignment, null);
 	}
 
-	public void setDecisionLevel(int decisionLevel) {
-		if (decisionLevel < this.decisionLevel) {
-			// When backtracking, forget any violation.
-			violated = null;
-		}
-		this.decisionLevel = decisionLevel;
+	@Override
+	public void backtrack() {
+		violated = null;
+		assignment.backtrack();
 	}
 
 	void clear() {
 		assignment.clear();
-		cache.clear();
 		watches.clear();
 	}
 
 	@Override
-	public Map<Integer, ThriceTruth> getChangedAssignments() {
-		Map<Integer, ThriceTruth> result = Collections.unmodifiableMap(new HashMap<>(changedAssignments));
-		// TODO(AntoniusW): Why the new HashMap (cloning) above? unmodifiableMap can hold just a reference.
-		//                  But below code must be adapted, clearing the map does not work.
-		changedAssignments.clear();
-		return result;
-	}
-
-	@Override
 	public boolean isEmpty() {
-		return watches.isEmpty() && cache.isEmpty() && binaries.isEmpty();
+		return watches.isEmpty() && binaries.isEmpty();
 	}
 
 	private Watches<BinaryWatch, WatchedNoGood> watches(int literal) {
@@ -89,7 +75,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	 */
 	private boolean addUnary(final NoGood noGood) {
 		final int literal = noGood.getLiteral(0);
-		if (!assign(literal, isNegated(literal) ? noGood.hasHead() ? TRUE : MBT : FALSE)) {
+		if (!assignment.assign(atomOf(literal), isNegated(literal) ? noGood.hasHead() ? TRUE : MBT : FALSE, noGood)) {
 			violated = noGood;
 			return false;
 		}
@@ -285,59 +271,42 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		return true;
 	}
 
-	/**
-	 * Passes on the assignment of a given literal and value to {@link #assignment} and adds the corresponding atom
-	 * to {@link #cache} for checking later on.
-	 * @param literal the literal (or atom, for this matter) to be assigned.
-	 * @param value the value to be assigned to the atom
-	 */
-	@Override
-	public boolean assign(final int literal, final ThriceTruth value) {
-		final int atom = atomOf(literal);
-		final ThriceTruth current = assignment.getTruth(atom);
-
-		// NOTE(flowlo): There's a similar check in BasicAssignment.
-		// Maybe move cache bookkeeping to the assignment?
-		if (current != null && (current.equals(value) || (TRUE.equals(current) && MBT.equals(value)))) {
-			return true;
-		}
-
-		if (assignment.assign(atom, value, decisionLevel)) {
-			cache.add(atom);
-			changedAssignments.put(atom, value);
-			return true;
-		}
-		return false;
-	}
-
 	private boolean assign(final NoGood noGood, final int index, final ThriceTruth negated) {
 		int literal = noGood.getLiteral(index);
-		if (!assign(literal, isNegated(literal) ? negated : FALSE)) {
+		if (!assignment.assign(atomOf(literal), isNegated(literal) ? negated : FALSE, noGood)) {
 			violated = noGood;
 			return false;
 		}
 		return true;
 	}
 
-	/**
-	 * Cleans up {@link #cache} and checks all new assignments for possible unit propagations in watched nogoods.
-	 */
 	@Override
 	public boolean propagate() {
 		boolean propagated = false;
-		if (!cache.isEmpty()) {
-			LOGGER.trace("Assignment before propagation: {}", assignment);
-		}
-		while (!cache.isEmpty()) {
-			final int atom = cache.poll();
-			final ThriceTruth value = assignment.getTruth(atom);
+
+		while (assignmentIterator.hasNext()) {
+			final Map.Entry<Integer, Assignment.Entry> entry = assignmentIterator.next();
+			final int atom = entry.getKey();
+
+			LOGGER.trace("Looking for propagation from {}", atom);
+
+			final ThriceTruth value = entry.getValue().getTruth();
 			boolean atomPropagated = false;
 
 			if (value == MBT || value == FALSE) {
 				atomPropagated = propagateMBT(atom, value);
+				if (violated != null) {
+					return false;
+				}
 			} else if (value == TRUE) {
 				atomPropagated = propagateMBT(atom, MBT);
+				if (violated != null) {
+					return false;
+				}
 				atomPropagated |= propagateTrue(atom);
+				if (violated != null) {
+					return false;
+				}
 			}
 
 			if (atomPropagated) {

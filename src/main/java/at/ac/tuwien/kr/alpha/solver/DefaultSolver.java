@@ -4,19 +4,15 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
 /**
  * The new default solver employed in Alpha.
@@ -30,8 +26,8 @@ public class DefaultSolver extends AbstractSolver {
 	private final Map<Integer, Integer> choiceOff = new HashMap<>();
 	private final ChoiceStack choiceStack;
 	private final Assignment assignment;
+	private final Iterator<Map.Entry<Integer, Assignment.Entry>> assignmentIterator;
 
-	private int decisionLevel;
 	private boolean initialize = true;
 
 	private boolean didChange;
@@ -42,6 +38,7 @@ public class DefaultSolver extends AbstractSolver {
 		super(grounder, filter);
 
 		this.assignment = new BasicAssignment();
+		this.assignmentIterator = this.assignment.iterator();
 		this.store = new BasicNoGoodStore(assignment, grounder);
 		this.choiceStack = new ChoiceStack(grounder);
 	}
@@ -104,7 +101,7 @@ public class DefaultSolver extends AbstractSolver {
 
 	private void assignUnassignedToFalse() {
 		for (Integer atom : unassignedAtoms) {
-			store.assign(atom, FALSE);
+			assignment.assign(atom, FALSE, null);
 		}
 	}
 
@@ -115,20 +112,17 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private void doBacktrack() {
-		if (decisionLevel <= 0) {
+		if (isSearchSpaceExhausted()) {
 			return;
 		}
 
-		decisionLevel--;
-		LOGGER.debug("Backtrack: Removing last choice, setting decision level to {}.", decisionLevel);
-		assignment.backtrack(decisionLevel);
-		store.setDecisionLevel(decisionLevel);
+		store.backtrack();
+		LOGGER.debug("Backtrack: Removing last choice, setting decision level to {}.", assignment.getDecisionLevel());
 
 		int lastGuessedAtom = choiceStack.peekAtom();
 		boolean lastGuessedValue = choiceStack.peekValue();
 		choiceStack.remove();
 		LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
-
 
 		if (lastGuessedValue) {
 			// Chronological backtracking: guess FALSE now.
@@ -140,11 +134,9 @@ public class DefaultSolver extends AbstractSolver {
 				return;
 			}
 			decisionCounter++;
-			decisionLevel++;
-			LOGGER.debug("Backtrack: setting decision level to {}.", decisionLevel);
-			LOGGER.debug("Backtrack: inverting last guess. Now: {}=FALSE@{}", lastGuessedAtom, decisionLevel);
-			store.setDecisionLevel(decisionLevel);
-			store.assign(lastGuessedAtom, FALSE);
+			assignment.guess(lastGuessedAtom, FALSE);
+			LOGGER.debug("Backtrack: setting decision level to {}.", assignment.getDecisionLevel());
+			LOGGER.debug("Backtrack: inverting last guess. Now: {}=FALSE@{}", lastGuessedAtom, assignment.getDecisionLevel());
 			choiceStack.push(lastGuessedAtom, false);
 			didChange = true;
 			LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
@@ -155,16 +147,15 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private void updateGrounderAssignment() {
-		final Map<Integer, ThriceTruth> changedAssignments = store.getChangedAssignments();
-		int[] atomIds = new int[changedAssignments.size()];
-		boolean[] truthValues = new boolean[changedAssignments.size()];
-		int i = 0;
-		for (Map.Entry<Integer, ThriceTruth> assignment : changedAssignments.entrySet()) {
-			atomIds[i] = assignment.getKey();
-			truthValues[i] = assignment.getValue().toBoolean();
-			i++;
+		List<Integer> atomIds = new ArrayList<>();
+		List<Boolean> truthValues = new ArrayList<>();
+
+		while (assignmentIterator.hasNext()) {
+			Map.Entry<Integer, Assignment.Entry> e = assignmentIterator.next();
+			atomIds.add(e.getKey());
+			truthValues.add(e.getValue().getTruth().toBoolean());
 		}
-		grounder.updateAssignment(atomIds, truthValues);
+		grounder.updateAssignment(ArrayUtils.toPrimitive(atomIds.toArray(new Integer[atomIds.size()])), ArrayUtils.toPrimitive(truthValues.toArray(new Boolean[truthValues.size()])));
 	}
 
 	private void obtainNoGoodsFromGrounder() {
@@ -184,7 +175,7 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private boolean isSearchSpaceExhausted() {
-		return decisionLevel == 0;
+		return assignment.getDecisionLevel() == 0;
 	}
 
 	private boolean propagationFixpointReached() {
@@ -196,11 +187,8 @@ public class DefaultSolver extends AbstractSolver {
 
 	private void doChoice(int nextChoice) {
 		decisionCounter++;
-		decisionLevel++;
-		store.setDecisionLevel(decisionLevel);
-		LOGGER.debug("Choice: Guessing {}=TRUE@{}.", nextChoice, decisionLevel);
 		// We guess true for any unassigned choice atom (backtrack tries false)
-		store.assign(nextChoice, TRUE);
+		assignment.guess(nextChoice, TRUE);
 		choiceStack.push(nextChoice, true);
 		// Record change to compute propagation fixpoint again.
 		didChange = true;
