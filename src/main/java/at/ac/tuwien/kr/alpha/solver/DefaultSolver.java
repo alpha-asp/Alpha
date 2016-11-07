@@ -112,39 +112,46 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private void doBacktrack() {
-		if (isSearchSpaceExhausted()) {
-			return;
-		}
-
-		store.backtrack();
-		LOGGER.debug("Backtrack: Removing last choice, setting decision level to {}.", assignment.getDecisionLevel());
-
-		int lastGuessedAtom = choiceStack.peekAtom();
-		boolean lastGuessedValue = choiceStack.peekValue();
-		choiceStack.remove();
-		LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
-
-		if (lastGuessedValue) {
-			// Chronological backtracking: guess FALSE now.
-			// Guess FALSE if the previous guess was for TRUE and the atom was not already MBT at that time.
-			if (MBT.equals(assignment.getTruth(lastGuessedAtom))) {
-				LOGGER.debug("Backtrack: inverting last guess not possible, atom was MBT before guessing TRUE.");
-				LOGGER.debug("Recursive backtracking.");
-				doBacktrack();
+		boolean repeatBacktrack;	// Iterative implementation of recursive backtracking.
+		do {
+			repeatBacktrack = false;
+			if (isSearchSpaceExhausted()) {
 				return;
 			}
-			decisionCounter++;
-			assignment.guess(lastGuessedAtom, FALSE);
-			LOGGER.debug("Backtrack: setting decision level to {}.", assignment.getDecisionLevel());
-			LOGGER.debug("Backtrack: inverting last guess. Now: {}=FALSE@{}", lastGuessedAtom, assignment.getDecisionLevel());
-			choiceStack.push(lastGuessedAtom, false);
-			didChange = true;
+
+			store.backtrack();
+			LOGGER.debug("Backtrack: Removing last choice, setting decision level to {}.", assignment.getDecisionLevel());
+
+			int lastGuessedAtom = choiceStack.peekAtom();
+			boolean lastGuessedValue = choiceStack.peekValue();
+			choiceStack.remove();
 			LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
-			LOGGER.debug("Backtrack: {} choices so far.", decisionCounter);
-		} else {
-			LOGGER.debug("Recursive backtracking.");
-			doBacktrack();
-		}
+
+			if (lastGuessedValue) {
+				// Chronological backtracking: guess FALSE now.
+				// Guess FALSE if the previous guess was for TRUE and the atom was not already MBT at that time.
+				if (MBT.equals(assignment.getTruth(lastGuessedAtom))) {
+					LOGGER.debug("Backtrack: inverting last guess not possible, atom was MBT before guessing TRUE.");
+					LOGGER.debug("Recursive backtracking.");
+					repeatBacktrack = true;
+					continue;
+					//doBacktrack();
+					//return;
+				}
+				decisionCounter++;
+				assignment.guess(lastGuessedAtom, FALSE);
+				LOGGER.debug("Backtrack: setting decision level to {}.", assignment.getDecisionLevel());
+				LOGGER.debug("Backtrack: inverting last guess. Now: {}=FALSE@{}", lastGuessedAtom, assignment.getDecisionLevel());
+				choiceStack.push(lastGuessedAtom, false);
+				didChange = true;
+				LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
+				LOGGER.debug("Backtrack: {} choices so far.", decisionCounter);
+			} else {
+				LOGGER.debug("Recursive backtracking.");
+				repeatBacktrack = true;
+				//doBacktrack();
+			}
+		} while (repeatBacktrack);
 	}
 
 	private void updateGrounderAssignment() {
