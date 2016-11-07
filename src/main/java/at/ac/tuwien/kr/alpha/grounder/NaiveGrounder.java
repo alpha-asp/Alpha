@@ -128,9 +128,12 @@ public class NaiveGrounder extends AbstractGrounder {
 		for (Atom bodyAtom : nonGroundRule.getBodyAtomsPositive()) {
 			registerRuleAtWorkingMemory(true, nonGroundRule, registeredPositivePredicates, bodyAtom);
 		}
-		HashSet<Predicate> registeredNegativePredicates = new HashSet<>();
-		for (Atom bodyAtom : nonGroundRule.getBodyAtomsNegative()) {
-			registerRuleAtWorkingMemory(false, nonGroundRule, registeredNegativePredicates, bodyAtom);
+		// Register negative literals only if the rule contains no positive literals (necessary grounding is ensured by safety of rules).
+		if (nonGroundRule.getBodyAtomsPositive().size() == 0) {
+			HashSet<Predicate> registeredNegativePredicates = new HashSet<>();
+			for (Atom bodyAtom : nonGroundRule.getBodyAtomsNegative()) {
+				registerRuleAtWorkingMemory(false, nonGroundRule, registeredNegativePredicates, bodyAtom);
+			}
 		}
 	}
 
