@@ -26,13 +26,13 @@ public class DefaultSolver extends AbstractSolver {
 	private final ChoiceStack choiceStack;
 	private final Assignment assignment;
 	private final Iterator<OrdinaryAssignment> assignmentIterator;
+	private final GroundConflictNoGoodLearner learner;
 
 	private boolean initialize = true;
 
 	private boolean didChange;
 
 	private int decisionCounter;
-	private List<Integer> unassignedAtoms;
 
 	public DefaultSolver(Grounder grounder) {
 		super(grounder);
@@ -41,6 +41,7 @@ public class DefaultSolver extends AbstractSolver {
 		this.assignmentIterator = this.assignment.ordinaryIterator();
 		this.store = new BasicNoGoodStore(assignment, grounder);
 		this.choiceStack = new ChoiceStack(grounder);
+		this.learner = new GroundConflictNoGoodLearner(assignment, store);
 	}
 
 	@Override
@@ -71,9 +72,15 @@ public class DefaultSolver extends AbstractSolver {
 				LOGGER.debug("Assignment after propagation is: {}", assignment);
 			} else if (store.getViolatedNoGood() != null) {
 				if (LOGGER.isDebugEnabled()) {
-					LOGGER.debug("Backtracking from wrong choices ({} violated): {}", grounder.noGoodToString(store.getViolatedNoGood()), choiceStack);
+					LOGGER.debug("NoGood violated ({}) by wrong choices ({} violated): {}", grounder.noGoodToString(store.getViolatedNoGood()), choiceStack);
 				}
 				LOGGER.debug("Violating assignment is: {}", assignment);
+				LOGGER.debug("Analyzing conflict.");
+				learner.analyzeConflict(store.getViolatedNoGood());
+				NoGood learnedNoGood = learner.obtainLearnedNoGood();
+				LOGGER.debug("Learned NoGood is: {}", learnedNoGood);
+				// TODO: do backjumping based on the learnedNoGood
+				// TODO: store.add(grounder.getNewNoGoodId(), learnedNoGood);
 				doBacktrack();
 				if (isSearchSpaceExhausted()) {
 					return false;
@@ -107,6 +114,7 @@ public class DefaultSolver extends AbstractSolver {
 		}
 	}
 
+	private List<Integer> unassignedAtoms;
 	private boolean allAtomsAssigned() {
 		unassignedAtoms = grounder.getUnassignedAtoms(assignment);
 		return unassignedAtoms.isEmpty();
