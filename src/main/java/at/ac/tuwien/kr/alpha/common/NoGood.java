@@ -11,6 +11,7 @@ import static java.lang.Math.abs;
 public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	protected final int[] literals;
 	private final int head;
+	public static Grounder grounder;	// If grounder != null, then toString() prints actual names of literals
 
 	public NoGood(int... literals) {
 		this(literals, -1);
@@ -159,7 +160,12 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 		sb.append("{ ");
 
 		for (int i = 0; i < literals.length; i++) {
-			sb.append(literals[i]);
+			if (grounder != null) {
+				sb.append(literals[i] < 0 ? "-" : "");
+				sb.append(grounder.atomIdToString(abs(literals[i])));
+			} else {
+				sb.append(literals[i]);
+			}
 			sb.append(" ");
 		}
 

@@ -12,7 +12,7 @@ public class BasicAssignmentTest {
 	private final BasicAssignment assignment;
 
 	public BasicAssignmentTest() {
-		assignment = new BasicAssignment();
+		assignment = new BasicAssignment(null);
 	}
 
 	@Before

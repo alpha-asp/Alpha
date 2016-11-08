@@ -16,7 +16,7 @@ public class BasicNoGoodStoreTest {
 	private final BasicNoGoodStore store;
 
 	public BasicNoGoodStoreTest() {
-		assignment = new BasicAssignment();
+		assignment = new BasicAssignment(null);
 		store = new BasicNoGoodStore(assignment);
 	}
 

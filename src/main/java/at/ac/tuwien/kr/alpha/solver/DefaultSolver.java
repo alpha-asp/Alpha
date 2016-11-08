@@ -37,10 +37,11 @@ public class DefaultSolver extends AbstractSolver {
 	public DefaultSolver(Grounder grounder, java.util.function.Predicate<Predicate> filter) {
 		super(grounder, filter);
 
-		this.assignment = new BasicAssignment();
+		this.assignment = new BasicAssignment(grounder);
 		this.assignmentIterator = this.assignment.iterator();
 		this.store = new BasicNoGoodStore(assignment, grounder);
 		this.choiceStack = new ChoiceStack(grounder);
+		NoGood.grounder = grounder;
 	}
 
 	@Override
@@ -141,7 +142,7 @@ public class DefaultSolver extends AbstractSolver {
 				decisionCounter++;
 				assignment.guess(lastGuessedAtom, FALSE);
 				LOGGER.debug("Backtrack: setting decision level to {}.", assignment.getDecisionLevel());
-				LOGGER.debug("Backtrack: inverting last guess. Now: {}=FALSE@{}", lastGuessedAtom, assignment.getDecisionLevel());
+				LOGGER.debug("Backtrack: inverting last guess. Now: {}=FALSE@{}", grounder.atomIdToString(lastGuessedAtom), assignment.getDecisionLevel());
 				choiceStack.push(lastGuessedAtom, false);
 				didChange = true;
 				LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
@@ -200,7 +201,7 @@ public class DefaultSolver extends AbstractSolver {
 		choiceStack.push(nextChoice, true);
 		// Record change to compute propagation fixpoint again.
 		didChange = true;
-		LOGGER.debug("Choice: guessing {}=TRUE@{}", nextChoice, assignment.getDecisionLevel());
+		LOGGER.debug("Choice: guessing {}=TRUE@{}", grounder.atomIdToString(nextChoice), assignment.getDecisionLevel());
 		LOGGER.debug("Choice: stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 		LOGGER.debug("Choice: {} choices so far.", decisionCounter);
 	}

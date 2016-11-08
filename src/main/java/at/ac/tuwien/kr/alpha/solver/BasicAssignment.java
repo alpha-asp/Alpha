@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,10 +16,12 @@ public class BasicAssignment implements Assignment {
 	private final Map<Integer, Entry> assignment = new HashMap<>();
 	private final List<List<Integer>> decisionLevels;
 	private final List<BasicAssignmentIterator> iterators = new ArrayList<>();
+	private final Grounder grounder;
 
 	private int mbtCount;
 
-	public BasicAssignment() {
+	public BasicAssignment(Grounder grounder) {
+		this.grounder = grounder;
 		this.decisionLevels = new ArrayList<>();
 		this.decisionLevels.add(new ArrayList<>());
 	}
@@ -134,7 +137,11 @@ public class BasicAssignment implements Assignment {
 			Map.Entry<Integer, Entry> assignmentEntry = iterator.next();
 			sb.append(assignmentEntry.getValue().getTruth());
 			sb.append("_");
-			sb.append(assignmentEntry.getKey());
+			if (grounder != null) {
+				sb.append(grounder.atomIdToString(assignmentEntry.getKey()));
+			} else {
+				sb.append(assignmentEntry.getKey());
+			}
 			sb.append("@");
 			sb.append(assignmentEntry.getValue().getDecisionLevel());
 
