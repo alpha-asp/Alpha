@@ -2,9 +2,9 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.OrdinaryAssignment;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,19 +26,20 @@ public class DefaultSolver extends AbstractSolver {
 	private final Map<Integer, Integer> choiceOff = new HashMap<>();
 	private final ChoiceStack choiceStack;
 	private final Assignment assignment;
-	private final Iterator<Map.Entry<Integer, Assignment.Entry>> assignmentIterator;
+	private final Iterator<OrdinaryAssignment> assignmentIterator;
 
 	private boolean initialize = true;
 
 	private boolean didChange;
 
 	private int decisionCounter;
+	private List<Integer> unassignedAtoms;
 
 	public DefaultSolver(Grounder grounder, java.util.function.Predicate<Predicate> filter) {
 		super(grounder, filter);
 
 		this.assignment = new BasicAssignment(grounder);
-		this.assignmentIterator = this.assignment.iterator();
+		this.assignmentIterator = this.assignment.ordinaryIterator();
 		this.store = new BasicNoGoodStore(assignment, grounder);
 		this.choiceStack = new ChoiceStack(grounder);
 	}
@@ -107,7 +108,6 @@ public class DefaultSolver extends AbstractSolver {
 		}
 	}
 
-	private List<Integer> unassignedAtoms;
 	private boolean allAtomsAssigned() {
 		unassignedAtoms = grounder.getUnassignedAtoms(assignment);
 		return unassignedAtoms.isEmpty();
@@ -157,15 +157,7 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private void updateGrounderAssignment() {
-		List<Integer> atomIds = new ArrayList<>();
-		List<Boolean> truthValues = new ArrayList<>();
-
-		while (assignmentIterator.hasNext()) {
-			Map.Entry<Integer, Assignment.Entry> e = assignmentIterator.next();
-			atomIds.add(e.getKey());
-			truthValues.add(e.getValue().getTruth().toBoolean());
-		}
-		grounder.updateAssignment(ArrayUtils.toPrimitive(atomIds.toArray(new Integer[atomIds.size()])), ArrayUtils.toPrimitive(truthValues.toArray(new Boolean[truthValues.size()])));
+		grounder.updateAssignment(assignmentIterator);
 	}
 
 	private void obtainNoGoodsFromGrounder() {

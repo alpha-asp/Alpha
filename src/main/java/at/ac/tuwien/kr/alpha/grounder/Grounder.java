@@ -1,12 +1,10 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.AtomTranslator;
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +21,7 @@ public interface Grounder extends AtomTranslator {
 	 */
 	Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms();
 
-	void updateAssignment(int[] atomIds, boolean[] truthValues);
+	void updateAssignment(Iterator<OrdinaryAssignment> it);
 
 	void forgetAssignment(int[] atomIds);
 

@@ -2,12 +2,14 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.OrdinaryAssignment;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.rete.RetePredicate;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -41,8 +43,7 @@ public class ReteGrounder extends AbstractGrounder {
 	}
 
 	@Override
-	public void updateAssignment(int[] atomIds, boolean[] truthValues) {
-
+	public void updateAssignment(Iterator<OrdinaryAssignment> it) {
 	}
 
 	@Override

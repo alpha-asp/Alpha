@@ -1,7 +1,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AtomTranslator;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
 
 import java.util.Stack;
 

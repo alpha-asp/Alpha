@@ -35,25 +35,10 @@ public class NaiveGrounder extends AbstractGrounder {
 	private ArrayList<NonGroundRule<BasicPredicate>> rulesFromProgram = new ArrayList<>();
 	private HashSet<IndexedInstanceStorage> modifiedWorkingMemories = new HashSet<>();
 	private HashMap<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
-
-	private class FirstBindingAtom {
-		public NonGroundRule<BasicPredicate> rule;
-		public int firstBindingAtomPos;
-		public BasicAtom firstBindingAtom;
-
-		public FirstBindingAtom(NonGroundRule<BasicPredicate> rule, int firstBindingAtomPos, BasicAtom firstBindingAtom) {
-			this.rule = rule;
-			this.firstBindingAtomPos = firstBindingAtomPos;
-			this.firstBindingAtom = firstBindingAtom;
-		}
-	}
-
 	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newChoiceAtoms = new ImmutablePair<>(new HashMap<>(), new HashMap<>());
 	private IntIdGenerator choiceAtomsGenerator = new IntIdGenerator();
-
 	private HashSet<Predicate> knownPredicates = new HashSet<>();
 	private HashMap<NonGroundRule<? extends Predicate>, HashSet<VariableSubstitution>> knownGroundingSubstitutions = new HashMap<>();
-
 	public NaiveGrounder(ParsedProgram program) {
 		super(program);
 
@@ -535,7 +520,6 @@ public class NaiveGrounder extends AbstractGrounder {
 		}
 	}
 
-
 	@Override
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
 		Pair<Map<Integer, Integer>, Map<Integer, Integer>> currentChoiceAtoms = newChoiceAtoms;
@@ -544,12 +528,13 @@ public class NaiveGrounder extends AbstractGrounder {
 	}
 
 	@Override
-	public void updateAssignment(int[] atomIds, boolean[] truthValues) {
-		for (int i = 0; i < atomIds.length; i++) {
-			AtomId atomId = new AtomId(atomIds[i]);
+	public void updateAssignment(Iterator<OrdinaryAssignment> it) {
+		while (it.hasNext()) {
+			OrdinaryAssignment assignment = it.next();
+			AtomId atomId = new AtomId(assignment.getAtom());
 			BasicAtom basicAtom = atomStore.getBasicAtom(atomId);
 			Instance instance = new Instance(basicAtom.termList);
-			boolean truthValue = truthValues[i];
+			boolean truthValue = assignment.getTruthValue();
 			ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> workingMemoryPlusMinus = workingMemory.get(basicAtom.predicate);
 			IndexedInstanceStorage workingMemoryPlus = workingMemoryPlusMinus.getLeft();
 			IndexedInstanceStorage workingMemoryMinus = workingMemoryPlusMinus.getRight();
@@ -604,6 +589,18 @@ public class NaiveGrounder extends AbstractGrounder {
 		System.out.println("Printing known NoGoods:");
 		for (Map.Entry<NoGood, Integer> noGoodEntry : nogoodIdentifiers.entrySet()) {
 			System.out.println(noGoodEntry.getKey().toStringReadable(this));
+		}
+	}
+
+	private class FirstBindingAtom {
+		public NonGroundRule<BasicPredicate> rule;
+		public int firstBindingAtomPos;
+		public BasicAtom firstBindingAtom;
+
+		public FirstBindingAtom(NonGroundRule<BasicPredicate> rule, int firstBindingAtomPos, BasicAtom firstBindingAtom) {
+			this.rule = rule;
+			this.firstBindingAtomPos = firstBindingAtomPos;
+			this.firstBindingAtom = firstBindingAtom;
 		}
 	}
 

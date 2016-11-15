@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.OrdinaryAssignment;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.apache.commons.lang3.tuple.Pair;
@@ -37,6 +38,7 @@ public class NaiveSolver extends AbstractSolver {
 	private HashSet<Integer> mbtAssigned = new HashSet<>();
 	private ArrayList<ArrayList<Integer>> mbtAssignedFromUnassigned = new ArrayList<>();
 	private ArrayList<ArrayList<Integer>> trueAssignedFromMbt = new ArrayList<>();
+	private List<Integer> unassignedAtoms;
 
 	NaiveSolver(Grounder grounder, java.util.function.Predicate<Predicate> filter) {
 		super(grounder, filter);
@@ -115,7 +117,6 @@ public class NaiveSolver extends AbstractSolver {
 		}
 	}
 
-	private List<Integer> unassignedAtoms;
 	private boolean allAtomsAssigned() {
 		unassignedAtoms = new ArrayList<>();
 		HashSet<Integer> knownAtoms = new HashSet<>();
@@ -267,15 +268,10 @@ public class NaiveSolver extends AbstractSolver {
 	}
 
 	private void updateGrounderAssignments() {
-		int[] atomIds = new int[newTruthAssignments.size()];
-		boolean[] truthValues = new boolean[newTruthAssignments.size()];
-		for (int i = 0; i < newTruthAssignments.size(); i++) {
-			final Integer newTruthAssignment = newTruthAssignments.get(i);
-			atomIds[i] = newTruthAssignment;
-			truthValues[i] = truthAssignments.get(newTruthAssignment);
-		}
+		grounder.updateAssignment(newTruthAssignments.stream().map(atom -> {
+			return new OrdinaryAssignment(atom, truthAssignments.get(atom));
+		}).iterator());
 		newTruthAssignments.clear();
-		grounder.updateAssignment(atomIds, truthValues);
 	}
 
 	private void obtainNoGoodsFromGrounder() {

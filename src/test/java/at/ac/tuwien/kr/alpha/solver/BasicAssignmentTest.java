@@ -3,7 +3,10 @@ package at.ac.tuwien.kr.alpha.solver;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 import static org.junit.Assert.*;
@@ -125,19 +128,19 @@ public class BasicAssignmentTest {
 	public void iterator() throws Exception {
 		assignment.assign(1, MBT);
 
-		Iterator<Map.Entry<Integer, Assignment.Entry>> it = assignment.iterator();
-		assertEquals((int)it.next().getKey(), 1);
+		Iterator<Assignment.Entry> it = assignment.iterator();
+		assertEquals(it.next().getAtom(), 1);
 
 		assignment.guess(2, MBT);
 		assignment.guess(1, TRUE);
 
-		assertEquals((int)it.next().getKey(), 2);
-		assertEquals((int)it.next().getKey(), 1);
+		assertEquals(it.next().getAtom(), 2);
+		assertEquals(it.next().getAtom(), 1);
 
 		it = assignment.iterator();
-		assertEquals((int)it.next().getKey(), 1);
-		assertEquals((int)it.next().getKey(), 2);
-		assertEquals((int)it.next().getKey(), 1);
+		assertEquals(it.next().getAtom(), 1);
+		assertEquals(it.next().getAtom(), 2);
+		assertEquals(it.next().getAtom(), 1);
 
 		int count = 0;
 
@@ -145,13 +148,13 @@ public class BasicAssignmentTest {
 		while (it.hasNext()) {
 			switch (count) {
 				case 0:
-					assertEquals((int) it.next().getKey(), 1);
+					assertEquals(it.next().getAtom(), 1);
 					break;
 				case 1:
-					assertEquals((int) it.next().getKey(), 2);
+					assertEquals(it.next().getAtom(), 2);
 					break;
 				case 2:
-					assertEquals((int) it.next().getKey(), 1);
+					assertEquals(it.next().getAtom(), 1);
 					break;
 			}
 			count++;
@@ -162,20 +165,20 @@ public class BasicAssignmentTest {
 
 	@Test
 	public void iteratorAndBacktracking() throws Exception {
-		Iterator<Map.Entry<Integer, Assignment.Entry>> it = assignment.iterator();
+		Iterator<Assignment.Entry> it = assignment.iterator();
 
 		assignment.assign(1, MBT);
-		assertEquals((int)it.next().getKey(), 1);
+		assertEquals(it.next().getAtom(), 1);
 
 		assignment.guess(2, MBT);
-		assertEquals((int)it.next().getKey(), 2);
+		assertEquals(it.next().getAtom(), 2);
 
 		assignment.guess(1, TRUE);
-		assertEquals((int)it.next().getKey(), 1);
+		assertEquals(it.next().getAtom(), 1);
 
 		assignment.backtrack();
 
 		assignment.assign(3, FALSE);
-		assertEquals((int)it.next().getKey(), 3);
+		assertEquals(it.next().getAtom(), 3);
 	}
 }

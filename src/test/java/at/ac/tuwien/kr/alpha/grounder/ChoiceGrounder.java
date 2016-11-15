@@ -34,18 +34,6 @@ public class ChoiceGrounder implements Grounder {
 	private static final int ATOM_EN_BR2 = 6;
 	private static final int ATOM_DIS_BR1 = 7;
 	private static final int ATOM_DIS_BR2 = 8;
-
-	private static Map<Integer, String> atomIdToString = Stream.of(
-		entry(ATOM_AA, "aa"),
-		entry(ATOM_BB, "bb"),
-		entry(ATOM_BR1, "_br1"),
-		entry(ATOM_BR2, "_br2"),
-		entry(ATOM_EN_BR1, "_en_br1"),
-		entry(ATOM_EN_BR2, "_en_br2"),
-		entry(ATOM_DIS_BR1, "_dis_br1"),
-		entry(ATOM_DIS_BR2, "_dis_br2")
-	).collect(entriesToMap());
-
 	private static final int RULE_AA = 11; // { -aa, _br1 }
 	private static final int BRULE_AA = 12; // { -_br1, -bb }
 	private static final int RULE_BB = 13; // { -bb, _br2 }
@@ -54,8 +42,6 @@ public class ChoiceGrounder implements Grounder {
 	private static final int CHOICE_EN_BR2 = 16; // { -_en_br2 }
 	private static final int CHOICE_DIS_BR1 = 17; // { -_dis_br1,  bb}
 	private static final int CHOICE_DIS_BR2 = 18; // { -dis_br2, aa }
-
-
 	private static final Map<Integer, NoGood> NOGOODS = Stream.of(
 		entry(RULE_AA, new NoGood(new int[]{-ATOM_AA, ATOM_BR1}, 0)),
 		entry(BRULE_AA, new NoGood(new int[]{-ATOM_BR1, -ATOM_BB}, 0)),
@@ -66,16 +52,25 @@ public class ChoiceGrounder implements Grounder {
 		entry(CHOICE_DIS_BR1, new NoGood(new int[]{-ATOM_DIS_BR1, ATOM_BB}, 0)),
 		entry(CHOICE_DIS_BR2, new NoGood(new int[]{-ATOM_DIS_BR2, ATOM_AA}, 0))
 	).collect(entriesToMap());
-
 	private static final Map<Integer, Integer> CHOICE_ENABLE = Stream.of(
 		entry(ATOM_EN_BR1, ATOM_BR1),
 		entry(ATOM_EN_BR2, ATOM_BR2)
 	).collect(entriesToMap());
-
 	private static final Map<Integer, Integer> CHOICE_DISABLE = Stream.of(
 		entry(ATOM_DIS_BR1, ATOM_BR1),
 		entry(ATOM_DIS_BR2, ATOM_BR2)
 	).collect(entriesToMap());
+	private static Map<Integer, String> atomIdToString = Stream.of(
+		entry(ATOM_AA, "aa"),
+		entry(ATOM_BB, "bb"),
+		entry(ATOM_BR1, "_br1"),
+		entry(ATOM_BR2, "_br2"),
+		entry(ATOM_EN_BR1, "_en_br1"),
+		entry(ATOM_EN_BR2, "_en_br2"),
+		entry(ATOM_DIS_BR1, "_dis_br1"),
+		entry(ATOM_DIS_BR2, "_dis_br2")
+	).collect(entriesToMap());
+	private boolean returnedAllNogoods;
 
 	@Override
 	public AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, Iterable<Integer> trueAtoms) {
@@ -105,7 +100,6 @@ public class ChoiceGrounder implements Grounder {
 		return new BasicAnswerSet(trueAtomPredicates, predicateInstances);
 	}
 
-	private boolean returnedAllNogoods;
 	@Override
 	public Map<Integer, NoGood> getNoGoods() {
 		if (!returnedAllNogoods) {
@@ -122,7 +116,7 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public void updateAssignment(int[] atomIds, boolean[] truthValues) {
+	public void updateAssignment(Iterator<OrdinaryAssignment> it) {
 		// This test grounder reports all NoGoods immediately, irrespective of any assignment.
 	}
 

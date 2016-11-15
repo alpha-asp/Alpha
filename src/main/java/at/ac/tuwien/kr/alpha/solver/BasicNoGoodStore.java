@@ -19,7 +19,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	private final Assignment assignment;
 	private final Map<Integer, Watches<BinaryWatch, WatchedNoGood>> watches = new HashMap<>();
 	private final Map<Integer, NoGood> binaries = new HashMap<>();
-	private final Iterator<Map.Entry<Integer, Assignment.Entry>> assignmentIterator;
+	private final Iterator<Assignment.Entry> assignmentIterator;
 
 	private NoGood violated;
 
@@ -304,14 +304,14 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		boolean propagated = false;
 
 		while (assignmentIterator.hasNext()) {
-			final Map.Entry<Integer, Assignment.Entry> entry = assignmentIterator.next();
-			final int atom = entry.getKey();
+			final Assignment.Entry entry = assignmentIterator.next();
+			final int atom = entry.getAtom();
 
 			LOGGER.trace("Looking for propagation from {}", atom);
 
-			final ThriceTruth value = entry.getValue().getTruth();
+			final ThriceTruth value = entry.getTruth();
 
-			final Assignment.Entry previous = entry.getValue().getPrevious();
+			final Assignment.Entry previous = entry.getPrevious();
 			final ThriceTruth prevValue = previous != null ? previous.getTruth() : null;
 
 			boolean atomPropagated = false;

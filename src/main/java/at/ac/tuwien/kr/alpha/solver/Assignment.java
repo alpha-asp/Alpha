@@ -1,8 +1,9 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.OrdinaryAssignment;
 
-import java.util.Map;
+import java.util.Iterator;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
@@ -10,7 +11,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
-public interface Assignment extends Iterable<Map.Entry<Integer, Assignment.Entry>> {
+public interface Assignment extends Iterable<Assignment.Entry> {
 	/**
 	 * Delete all information stored in the assignment.
 	 */
@@ -81,10 +82,14 @@ public interface Assignment extends Iterable<Map.Entry<Integer, Assignment.Entry
 		return contains(noGood.getLiteral(index));
 	}
 
+	Iterator<OrdinaryAssignment> ordinaryIterator();
+
 	interface Entry {
 		ThriceTruth getTruth();
 		int getDecisionLevel();
 		Entry getPrevious();
 		NoGood getImpliedBy();
+
+		int getAtom();
 	}
 }
