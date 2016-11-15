@@ -83,7 +83,8 @@ public interface Assignment extends Iterable<Map.Entry<Integer, Assignment.Entry
 
 	interface Entry {
 		ThriceTruth getTruth();
-
 		int getDecisionLevel();
+		Entry getPrevious();
+		NoGood getImpliedBy();
 	}
 }

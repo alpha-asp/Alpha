@@ -310,6 +310,10 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			LOGGER.trace("Looking for propagation from {}", atom);
 
 			final ThriceTruth value = entry.getValue().getTruth();
+
+			final Assignment.Entry previous = entry.getValue().getPrevious();
+			final ThriceTruth prevValue = previous != null ? previous.getTruth() : null;
+
 			boolean atomPropagated = false;
 
 			if (value == MBT || value == FALSE) {
@@ -318,9 +322,11 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 					return false;
 				}
 			} else if (value == TRUE) {
-				atomPropagated = propagateMBT(atom, MBT);
-				if (violated != null) {
-					return false;
+				if (!MBT.equals(prevValue)) {
+					atomPropagated = propagateMBT(atom, MBT);
+					if (violated != null) {
+						return false;
+					}
 				}
 				atomPropagated |= propagateTrue(atom);
 				if (violated != null) {

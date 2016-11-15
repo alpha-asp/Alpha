@@ -177,14 +177,6 @@ public class BasicAssignment implements Assignment {
 			this.previous = previous;
 		}
 
-		Entry(ThriceTruth value, int decisionLevel, NoGood noGood) {
-			this(value, decisionLevel, noGood, null);
-		}
-
-		Entry(ThriceTruth value, int decisionLevel) {
-			this(value, decisionLevel, null);
-		}
-
 		@Override
 		public ThriceTruth getTruth() {
 			return value;
@@ -195,10 +187,12 @@ public class BasicAssignment implements Assignment {
 			return decisionLevel;
 		}
 
+		@Override
 		public NoGood getImpliedBy() {
 			return impliedBy;
 		}
 
+		@Override
 		public Entry getPrevious() {
 			return previous;
 		}
