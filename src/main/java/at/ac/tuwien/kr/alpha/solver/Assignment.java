@@ -5,8 +5,8 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import java.util.Map;
 import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 

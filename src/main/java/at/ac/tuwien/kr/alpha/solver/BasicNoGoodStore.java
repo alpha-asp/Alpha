@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.slf4j.Logger;
@@ -14,7 +15,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BasicNoGoodStore.class);
 
-	private final Grounder grounder;
+	private final AtomTranslator translator;
 	private final Assignment assignment;
 	private final Map<Integer, Watches<BinaryWatch, WatchedNoGood>> watches = new HashMap<>();
 	private final Map<Integer, NoGood> binaries = new HashMap<>();
@@ -22,10 +23,10 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 	private NoGood violated;
 
-	BasicNoGoodStore(Assignment assignment, Grounder grounder) {
+	BasicNoGoodStore(Assignment assignment, Grounder translator) {
 		this.assignment = assignment;
 		this.assignmentIterator = assignment.iterator();
-		this.grounder = grounder;
+		this.translator = translator;
 	}
 
 	BasicNoGoodStore(Assignment assignment) {
@@ -403,10 +404,6 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			final int otherLiteralIndex = watch.getOtherLiteralIndex();
 			final NoGood noGood = binaries.get(watch.getId());
 
-			if (!assignment.containsRelaxed(noGood, otherLiteralIndex == 1 ? 0 : 1)) {
-				continue;
-			}
-
 			if (!assign(noGood, otherLiteralIndex, TRUE)) {
 				return false;
 			}
@@ -433,7 +430,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 					unit = false;
 				}
 
-				if (!isNegated(literalAtIndex) && !TRUE.equals(assignment.getTruth(atomOf(literalAtIndex)))) {
+				if (!isNegated(literalAtIndex) && !assignment.contains(literalAtIndex)) {
 					final int itemPriority = toPriority(noGood.getAtom(index));
 					if (itemPriority > priority) {
 						bestIndex = index;
@@ -526,33 +523,4 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		private final ThriceSet<B> b = new ThriceSet<>();
 		private final ThriceSet<N> n = new ThriceSet<>();
 	}
-
-	/* When you find yourself going down the dark road, take these as your vicious companions.
-
-	private String atomToString(int atom) {
-		if (grounder != null) {
-			return grounder.atomIdToString(atom);
-		}
-		return String.valueOf(atom);
-	}
-
-	private String literalToString(int literal) {
-		return (isNegated(literal) ? "-" : "+") + atomToString(atomOf(literal));
-	}
-
-	private <T extends NoGood> String noGoodToString(T noGood) {
-		StringBuilder sb = new StringBuilder("{");
-
-		for (Iterator<Integer> iterator = noGood.iterator(); iterator.hasNext();) {
-			sb.append(literalToString(iterator.next()));
-
-			if (iterator.hasNext()) {
-				sb.append(", ");
-			}
-		}
-
-		sb.append("}");
-		return sb.toString();
-	}
-	 */
 }

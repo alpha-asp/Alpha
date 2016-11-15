@@ -51,7 +51,7 @@ public class ReteGrounder extends AbstractGrounder {
 	}
 
 	@Override
-	public String atomIdToString(int atomId) {
+	public String atomToString(int atomId) {
 		return null;
 	}
 

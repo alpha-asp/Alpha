@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
@@ -9,7 +10,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.List;
 import java.util.Map;
 
-public interface Grounder {
+public interface Grounder extends AtomTranslator {
 	AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, Iterable<Integer> trueAtoms);
 
 	Map<Integer, NoGood> getNoGoods();
@@ -27,8 +28,6 @@ public interface Grounder {
 	void forgetAssignment(int[] atomIds);
 
 	// int[] getObsoleteAtomIds()
-
-	String atomIdToString(int atomId);
 
 	/**
 	 * Returns a list of currently known but unassigned.

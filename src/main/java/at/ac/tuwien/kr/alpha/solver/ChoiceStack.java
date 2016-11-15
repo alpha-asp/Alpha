@@ -1,15 +1,16 @@
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 
 import java.util.Stack;
 
 class ChoiceStack {
-	private final Grounder grounder;
+	private final AtomTranslator translator;
 	private final Stack<Pair> delegate = new Stack<>();
 
-	ChoiceStack(Grounder grounder) {
-		this.grounder = grounder;
+	ChoiceStack(AtomTranslator translator) {
+		this.translator = translator;
 	}
 
 	public void push(int atom, boolean value) {
@@ -48,7 +49,7 @@ class ChoiceStack {
 
 		@Override
 		public String toString() {
-			return grounder.atomIdToString(atom) + "=" + (value ? "TRUE" : "FALSE");
+			return translator.atomToString(atom) + "=" + (value ? "TRUE" : "FALSE");
 		}
 	}
 }

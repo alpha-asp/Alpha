@@ -62,7 +62,7 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
-	public String atomIdToString(int atomId) {
+	public String atomToString(int atomId) {
 		return Integer.toString(atomId);
 	}
 

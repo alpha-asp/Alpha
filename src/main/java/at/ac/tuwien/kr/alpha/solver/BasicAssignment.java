@@ -26,6 +26,10 @@ public class BasicAssignment implements Assignment {
 		this.decisionLevels.add(new ArrayList<>());
 	}
 
+	public BasicAssignment() {
+		this(null);
+	}
+
 	@Override
 	public void clear() {
 		decisionLevels.clear();
@@ -138,7 +142,7 @@ public class BasicAssignment implements Assignment {
 			sb.append(assignmentEntry.getValue().getTruth());
 			sb.append("_");
 			if (grounder != null) {
-				sb.append(grounder.atomIdToString(assignmentEntry.getKey()));
+				sb.append(grounder.atomToString(assignmentEntry.getKey()));
 			} else {
 				sb.append(assignmentEntry.getKey());
 			}

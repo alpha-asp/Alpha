@@ -11,50 +11,38 @@ import static java.lang.Math.abs;
 public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	protected final int[] literals;
 	private final int head;
-	public static Grounder grounder;	// If grounder != null, then toString() prints actual names of literals
 
 	public NoGood(int... literals) {
 		this(literals, -1);
 	}
 
 	public NoGood(int[] literals, int head) {
-		int headLiteral = head != -1 ? literals[head] : 0;
-		Arrays.sort(literals);	// HINT: this might decrease performance if NoGoods are mostly small.
+		final int headLiteral = head != -1 ? literals[head] : 0;
+
+		// HINT: this might decrease performance if NoGoods are mostly small.
+		Arrays.sort(literals);
 
 		// Remove duplicates and find position head was moved to in one pass.
-		int headPos = (head != -1 && headLiteral == literals[0]) ? 0 : -1;	// check for head literal at position 0.
+		int headPos = (head != -1 && headLiteral == literals[0]) ? 0 : -1; // check for head literal at position 0.
 		int shift = 0;
 		for (int i = 1; i < literals.length; i++) {
-			if (head != -1 && headPos == -1 && literals[i] == headLiteral) {	// check for head literal at position i
+			if (head != -1 && headPos == -1 && literals[i] == headLiteral) { // check for head literal at position i
 				headPos = i - shift;
 			}
-			if (literals[i - 1] == literals[i]) {	// check for duplicate
+			if (literals[i - 1] == literals[i]) { // check for duplicate
 				shift++;
 			}
-			literals[i - shift] = literals[i];	// Remove duplicates in place by shifting remaining literals.
+			literals[i - shift] = literals[i]; // Remove duplicates in place by shifting remaining literals.
 		}
 		this.head = headPos;
-		if (shift > 0) {
-			this.literals = Arrays.copyOf(literals, literals.length - shift);	// copy-shrink array
-		} else  {
-			this.literals = literals;
-		}
+
+		// copy-shrink array if needed.
+		this.literals = shift <= 0 ? literals : Arrays.copyOf(literals, literals.length - shift);
 	}
 
 	public NoGood(NoGood noGood) {
 		this.literals = noGood.literals.clone();
 		this.head = noGood.head;
-	}
-
-	private static boolean isSortedAndDistinct(int[] a) {
-		for (int i = 0; i < a.length - 1; i++) {
-			// Note that checking a[i] >= a[i + 1] is not sufficient
-			// as we are looking for duplicate _atoms_ not _literals_.
-			if (a[i] > a[i + 1] || atomOf(a[i]) == atomOf(a[i + 1])) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	public static NoGood headFirst(int... literals) {
@@ -160,12 +148,7 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 		sb.append("{ ");
 
 		for (int i = 0; i < literals.length; i++) {
-			if (grounder != null) {
-				sb.append(literals[i] < 0 ? "-" : "");
-				sb.append(grounder.atomIdToString(abs(literals[i])));
-			} else {
-				sb.append(literals[i]);
-			}
+			sb.append(literals[i]);
 			sb.append(" ");
 		}
 
@@ -190,7 +173,7 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	public String toStringReadable(Grounder grounder) {
 		String ret = "{";
 		for (int i = 0; i < literals.length; i++) {
-			ret += (i == 0 ? "" : ", ") + (literals[i] < 0 ? "-" : "+") + grounder.atomIdToString(abs(literals[i]));
+			ret += (i == 0 ? "" : ", ") + (literals[i] < 0 ? "-" : "+") + grounder.atomToString(abs(literals[i]));
 		}
 		ret += "}[" + head + "]";
 		return ret;

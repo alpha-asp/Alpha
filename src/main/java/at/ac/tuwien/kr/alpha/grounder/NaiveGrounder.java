@@ -573,7 +573,7 @@ public class NaiveGrounder extends AbstractGrounder {
 	}
 
 	@Override
-	public String atomIdToString(int atomId) {
+	public String atomToString(int atomId) {
 		return atomStore.getBasicAtom(new AtomId(atomId)).toString();
 	}
 

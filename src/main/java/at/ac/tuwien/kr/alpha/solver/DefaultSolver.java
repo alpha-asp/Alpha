@@ -41,7 +41,6 @@ public class DefaultSolver extends AbstractSolver {
 		this.assignmentIterator = this.assignment.iterator();
 		this.store = new BasicNoGoodStore(assignment, grounder);
 		this.choiceStack = new ChoiceStack(grounder);
-		NoGood.grounder = grounder;
 	}
 
 	@Override
@@ -71,7 +70,9 @@ public class DefaultSolver extends AbstractSolver {
 				}
 				LOGGER.debug("Assignment after propagation is: {}", assignment);
 			} else if (store.getViolatedNoGood() != null) {
-				LOGGER.debug("Backtracking from wrong choices ({} violated): {}", store.getViolatedNoGood(), choiceStack);
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug("Backtracking from wrong choices ({} violated): {}", grounder.noGoodToString(store.getViolatedNoGood()), choiceStack);
+				}
 				LOGGER.debug("Violating assignment is: {}", assignment);
 				doBacktrack();
 				if (isSearchSpaceExhausted()) {
@@ -142,7 +143,7 @@ public class DefaultSolver extends AbstractSolver {
 				decisionCounter++;
 				assignment.guess(lastGuessedAtom, FALSE);
 				LOGGER.debug("Backtrack: setting decision level to {}.", assignment.getDecisionLevel());
-				LOGGER.debug("Backtrack: inverting last guess. Now: {}=FALSE@{}", grounder.atomIdToString(lastGuessedAtom), assignment.getDecisionLevel());
+				LOGGER.debug("Backtrack: inverting last guess. Now: {}=FALSE@{}", grounder.atomToString(lastGuessedAtom), assignment.getDecisionLevel());
 				choiceStack.push(lastGuessedAtom, false);
 				didChange = true;
 				LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
@@ -201,7 +202,7 @@ public class DefaultSolver extends AbstractSolver {
 		choiceStack.push(nextChoice, true);
 		// Record change to compute propagation fixpoint again.
 		didChange = true;
-		LOGGER.debug("Choice: guessing {}=TRUE@{}", grounder.atomIdToString(nextChoice), assignment.getDecisionLevel());
+		LOGGER.debug("Choice: guessing {}=TRUE@{}", grounder.atomToString(nextChoice), assignment.getDecisionLevel());
 		LOGGER.debug("Choice: stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 		LOGGER.debug("Choice: {} choices so far.", decisionCounter);
 	}

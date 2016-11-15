@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static at.ac.tuwien.kr.alpha.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 import static java.lang.Math.abs;
 
 /**
@@ -95,7 +95,7 @@ public class NaiveSolver extends AbstractSolver {
 				if (LOGGER.isTraceEnabled()) {
 					LOGGER.trace("Currently MBT:");
 					for (Integer integer : mbtAssigned) {
-						LOGGER.trace(grounder.atomIdToString(integer));
+						LOGGER.trace(grounder.atomToString(integer));
 					}
 					LOGGER.trace("Choice stack: {}", choiceStack);
 				}
