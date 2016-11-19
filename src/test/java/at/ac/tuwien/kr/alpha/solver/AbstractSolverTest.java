@@ -2,7 +2,6 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
