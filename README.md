@@ -1,6 +1,6 @@
 # Alpha
 
-[![Build Status](https://travis-ci.org/AntoniusW/Alpha.svg?branch=master)](https://travis-ci.org/AntoniusW/Alpha)
+[![Build Status](https://travis-ci.org/AntoniusW/Alpha.svg?branch=master)](https://travis-ci.org/AntoniusW/Alpha) [![Code Quality Status](https://codebeat.co/badges/7538d939-2394-4e3d-8e50-1f93e39d2acf)](https://codebeat.co/projects/github-com-antoniusw-alpha)
 
 Alpha is the successor of [OMiGA](http://www.kr.tuwien.ac.at/research/systems/omiga/) and currently in development.
 
