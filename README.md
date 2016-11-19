@@ -30,7 +30,7 @@ and pick up `build/libs/alpha-bundled.jar`.
 
 Solve 3-colorability for some benchmarking instance and filter for color predicates:
 
-``bash
+```bash
 $ java -jar alpha.jar -i benchmarks/omiga/omiga-testcases/3col/3col-10-18.txt -fblue -fred -fgreen
 ```
 
