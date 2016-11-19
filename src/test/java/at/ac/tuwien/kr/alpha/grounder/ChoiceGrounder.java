@@ -1,11 +1,13 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
+import java.util.function.*;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
@@ -72,8 +74,18 @@ public class ChoiceGrounder implements Grounder {
 	).collect(entriesToMap());
 	private boolean returnedAllNogoods;
 
+	private final java.util.function.Predicate<Predicate> filter;
+
+	public ChoiceGrounder() {
+		this(p -> true);
+	}
+
+	public ChoiceGrounder(java.util.function.Predicate<Predicate> filter) {
+		this.filter = filter;
+	}
+
 	@Override
-	public AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, Iterable<Integer> trueAtoms) {
+	public AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms) {
 		Set<Predicate> trueAtomPredicates = new HashSet<>();
 		for (int trueAtom : trueAtoms) {
 			BasicPredicate atomPredicate = new BasicPredicate(atomIdToString.get(trueAtom), 0);

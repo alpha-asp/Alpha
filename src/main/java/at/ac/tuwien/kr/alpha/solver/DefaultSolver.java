@@ -35,8 +35,8 @@ public class DefaultSolver extends AbstractSolver {
 	private int decisionCounter;
 	private List<Integer> unassignedAtoms;
 
-	public DefaultSolver(Grounder grounder, java.util.function.Predicate<Predicate> filter) {
-		super(grounder, filter);
+	public DefaultSolver(Grounder grounder) {
+		super(grounder);
 
 		this.assignment = new BasicAssignment(grounder);
 		this.assignmentIterator = this.assignment.ordinaryIterator();

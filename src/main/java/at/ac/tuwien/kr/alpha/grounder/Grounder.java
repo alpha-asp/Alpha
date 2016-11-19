@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface Grounder extends AtomTranslator {
-	AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, Iterable<Integer> trueAtoms);
+	AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms);
 
 	Map<Integer, NoGood> getNoGoods();
 

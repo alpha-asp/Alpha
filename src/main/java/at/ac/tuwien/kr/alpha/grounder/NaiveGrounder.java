@@ -39,8 +39,13 @@ public class NaiveGrounder extends AbstractGrounder {
 	private IntIdGenerator choiceAtomsGenerator = new IntIdGenerator();
 	private HashSet<Predicate> knownPredicates = new HashSet<>();
 	private HashMap<NonGroundRule<? extends Predicate>, HashSet<VariableSubstitution>> knownGroundingSubstitutions = new HashMap<>();
+
 	public NaiveGrounder(ParsedProgram program) {
-		super(program);
+		this(program, p -> true);
+	}
+
+	public NaiveGrounder(ParsedProgram program, java.util.function.Predicate<Predicate> filter) {
+		super(program, filter);
 
 		// initialize all facts
 		for (ParsedFact fact : this.program.facts) {
@@ -141,7 +146,7 @@ public class NaiveGrounder extends AbstractGrounder {
 	}
 
 	@Override
-	public AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, Iterable<Integer> trueAtoms) {
+	public AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms) {
 		Map<Predicate, Set<BasicAtom>> predicateInstances = new HashMap<>();
 		HashSet<Predicate> knownPredicates = new HashSet<>();
 

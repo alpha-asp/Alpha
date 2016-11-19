@@ -3,7 +3,6 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.OrdinaryAssignment;
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -40,8 +39,8 @@ public class NaiveSolver extends AbstractSolver {
 	private ArrayList<ArrayList<Integer>> trueAssignedFromMbt = new ArrayList<>();
 	private List<Integer> unassignedAtoms;
 
-	NaiveSolver(Grounder grounder, java.util.function.Predicate<Predicate> filter) {
-		super(grounder, filter);
+	NaiveSolver(Grounder grounder) {
+		super(grounder);
 
 		this.choiceStack = new ChoiceStack(grounder);
 

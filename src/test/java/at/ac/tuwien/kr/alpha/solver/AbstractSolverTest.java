@@ -34,11 +34,7 @@ public abstract class AbstractSolverTest {
 		root.setLevel(Level.DEBUG);
 	}
 
-	protected abstract Solver getInstance(Grounder grounder, java.util.function.Predicate<Predicate> filter);
-
-	private Solver getInstance(Grounder grounder) {
-		return getInstance(grounder, p -> true);
-	}
+	protected abstract Solver getInstance(Grounder grounder);
 
 	@Test
 	public void testFactsOnlyProgram() throws IOException {

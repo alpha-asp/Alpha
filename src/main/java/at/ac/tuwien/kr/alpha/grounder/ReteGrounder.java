@@ -23,12 +23,12 @@ public class ReteGrounder extends AbstractGrounder {
 
 	private RetePredicate predicates;
 
-	public ReteGrounder(ParsedProgram program) {
-		super(program);
+	public ReteGrounder(ParsedProgram program, java.util.function.Predicate<Predicate> filter) {
+		super(program, filter);
 	}
 
 	@Override
-	public AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, Iterable<Integer> trueAtoms) {
+	public AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms) {
 		return null;
 	}
 

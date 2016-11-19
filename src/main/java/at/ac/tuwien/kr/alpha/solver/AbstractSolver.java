@@ -1,7 +1,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 
 import java.util.Spliterator;
@@ -13,15 +12,13 @@ import java.util.function.Consumer;
  */
 abstract class AbstractSolver implements Solver {
 	protected final Grounder grounder;
-	protected final java.util.function.Predicate<Predicate> filter;
 
-	protected AbstractSolver(Grounder grounder, java.util.function.Predicate<Predicate> filter) {
+	protected AbstractSolver(Grounder grounder) {
 		this.grounder = grounder;
-		this.filter = filter;
 	}
 
 	protected AnswerSet translate(Iterable<Integer> assignment) {
-		return grounder.assignmentToAnswerSet(filter, assignment);
+		return grounder.assignmentToAnswerSet(assignment);
 	}
 
 	protected abstract boolean tryAdvance(Consumer<? super AnswerSet> action);

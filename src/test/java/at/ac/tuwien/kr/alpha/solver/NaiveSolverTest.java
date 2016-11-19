@@ -5,7 +5,7 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 
 public class NaiveSolverTest extends AbstractSolverTest {
 	@Override
-	protected Solver getInstance(Grounder grounder, java.util.function.Predicate<Predicate> filter) {
-		return new NaiveSolver(grounder, filter);
+	protected Solver getInstance(Grounder grounder) {
+		return new NaiveSolver(grounder);
 	}
 }

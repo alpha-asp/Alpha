@@ -28,7 +28,16 @@ public class BasicAnswerSet implements AnswerSet {
 		return predicateInstances.get(predicate);
 	}
 
+	@Override
+	public boolean isEmpty() {
+		return predicates.isEmpty();
+	}
+
 	public String toString() {
+		if (predicates.isEmpty()) {
+			return "{}";
+		}
+
 		final StringBuilder sb = new StringBuilder("{ ");
 		for (Iterator<Predicate> iterator = predicates.iterator(); iterator.hasNext();) {
 			Predicate predicate = iterator.next();

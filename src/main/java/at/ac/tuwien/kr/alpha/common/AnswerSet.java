@@ -6,4 +6,6 @@ public interface AnswerSet {
 	Set<Predicate> getPredicates();
 
 	Set<BasicAtom> getPredicateInstances(Predicate predicate);
+
+	boolean isEmpty();
 }

@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
@@ -21,6 +22,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -34,6 +38,7 @@ public class Main {
 	private static final String OPT_NUM_AS  = "numAS";
 	private static final String OPT_GROUNDER = "grounder";
 	private static final String OPT_SOLVER = "solver";
+	private static final String OPT_FILTER = "filter";
 
 	private static final String DEFAULT_GROUNDER = "naive";
 	private static final String DEFAULT_SOLVER = "default";
@@ -70,6 +75,12 @@ public class Main {
 		solverOption.setArgName("solver");
 		options.addOption(solverOption);
 
+		Option filterOption = new Option("f", OPT_FILTER, true, "predicates to show when printing answer sets");
+		filterOption.setArgs(1);
+		filterOption.setArgName("filter");
+		filterOption.setValueSeparator(',');
+		options.addOption(filterOption);
+
 		try {
 			commandLine = new DefaultParser().parse(options, args);
 		} catch (ParseException e) {
@@ -87,6 +98,15 @@ public class Main {
 			formatter.printHelp("java -jar alpha.jar OR java -jar alpha_bundled.jar", options);
 			System.exit(0);
 			return;
+		}
+
+		java.util.function.Predicate<Predicate> filter = p -> true;
+
+		if (commandLine.hasOption(OPT_FILTER)) {
+			Set<String> desiredPredicates = new HashSet<>(Arrays.asList(commandLine.getOptionValues(OPT_FILTER)));
+			filter = p -> {
+				return desiredPredicates.contains(p.getPredicateName());
+			};
 		}
 
 		int limit = 0;
@@ -115,12 +135,11 @@ public class Main {
 		IdentityProgramTransformation programTransformation = new IdentityProgramTransformation();
 		ParsedProgram transformedProgram = programTransformation.transform(program);
 		Grounder grounder = GrounderFactory.getInstance(
-			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram
+			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram, filter
 		);
 
-		// TODO(flowlo): Add meaningful filter here, probably by interpreting some flag.
 		Solver solver = SolverFactory.getInstance(
-			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, p -> true
+			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder
 		);
 
 		Stream<AnswerSet> stream = solver.stream();

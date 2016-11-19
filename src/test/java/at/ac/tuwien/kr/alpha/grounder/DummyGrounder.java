@@ -1,11 +1,13 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
+import java.util.function.*;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
@@ -40,8 +42,17 @@ public class DummyGrounder implements Grounder {
 		entry(3, "_br1"),
 		entry(4, "c")
 	).collect(entriesToMap());
+	private final java.util.function.Predicate<Predicate> filter;
 	private byte[] currentTruthValues = new byte[]{-2, -1, -1, -1, -1};
 	private Set<Integer> returnedNogoods = new HashSet<>();
+
+	public DummyGrounder() {
+		this(p -> true);
+	}
+
+	public DummyGrounder(java.util.function.Predicate<Predicate> filter) {
+		this.filter = filter;
+	}
 
 	@Override
 	public void forgetAssignment(int[] atomIds) {
@@ -68,7 +79,7 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
-	public AnswerSet assignmentToAnswerSet(java.util.function.Predicate<Predicate> filter, Iterable<Integer> trueAtoms) {
+	public AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms) {
 		// Note: This grounder only deals with 0-ary predicates, i.e., every atom is a predicate and there is
 		// 	 only one predicate instance representing 0 terms.
 
