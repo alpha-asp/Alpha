@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
@@ -18,13 +19,8 @@ import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -39,6 +35,7 @@ public class Main {
 	private static final String OPT_GROUNDER = "grounder";
 	private static final String OPT_SOLVER = "solver";
 	private static final String OPT_FILTER = "filter";
+	private static final String OPT_STRING = "str";
 
 	private static final String DEFAULT_GROUNDER = "naive";
 	private static final String DEFAULT_SOLVER = "default";
@@ -57,7 +54,6 @@ public class Main {
 
 		Option inputOption = new Option("i", OPT_INPUT, true, "read the ASP program from this file");
 		inputOption.setArgName("file");
-		inputOption.setRequired(true);
 		inputOption.setArgs(1);
 		inputOption.setType(FileInputStream.class);
 		options.addOption(inputOption);
@@ -80,6 +76,12 @@ public class Main {
 		filterOption.setArgName("filter");
 		filterOption.setValueSeparator(',');
 		options.addOption(filterOption);
+
+		Option strOption = new Option("str", OPT_STRING, true, "provide the ASP program in form of a string");
+		inputOption.setArgName("string");
+		inputOption.setArgs(1);
+		inputOption.setType(String.class);
+		options.addOption(strOption);
 
 		try {
 			commandLine = new DefaultParser().parse(options, args);
@@ -122,7 +124,14 @@ public class Main {
 
 		ParsedProgram program = null;
 		try {
-			program = parseVisit(new FileInputStream(commandLine.getOptionValue(OPT_INPUT)));
+			if (commandLine.hasOption(OPT_STRING)) {
+				program = parseVisit(new ByteArrayInputStream(commandLine.getOptionValue(OPT_STRING).getBytes()));
+			} else if (commandLine.hasOption(OPT_INPUT)) {
+				program = parseVisit(new FileInputStream(commandLine.getOptionValue(OPT_INPUT)));
+			} else {
+				System.out.println("Error: no input provided");
+				System.exit(1);
+			}
 		} catch (RecognitionException e) {
 			bailOut("Error while parsing input ASP program, see errors above.", e);
 		} catch (FileNotFoundException e) {
@@ -142,14 +151,32 @@ public class Main {
 			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder
 		);
 
-		Stream<AnswerSet> stream = solver.stream();
+		if (commandLine.hasOption(OPT_STRING)) {
+			List<String[]> results = new ArrayList<>();
 
-		if (limit > 0) {
-			stream = stream.limit(limit);
+			List<AnswerSet> answerSets = solver.collectList();
+			for (AnswerSet answerSet : answerSets) {
+				List<String> answerSetList = ((BasicAnswerSet)answerSet).toList();
+				results.add(answerSetList.toArray(new String[answerSetList.size()]));
+			}
+
+			String[][] resultsArray = results.toArray(new String[results.size()][]);
+
+			sendResults(resultsArray);
+			externalAtomsQuery(new String[]{"a(b)"}, new String[]{"c(b)"});
+		} else if (commandLine.hasOption(OPT_INPUT)) {
+			Stream<AnswerSet> stream = solver.stream();
+
+			if (limit > 0) {
+				stream = stream.limit(limit);
+			}
+			stream.forEach(System.out::println);
 		}
-
-		stream.forEach(System.out::println);
 	}
+
+	public static native void sendResults(String[][] resultsArray);
+
+	public static native void externalAtomsQuery(String[] trueAtoms, String[] falseAtoms);
 
 	private static void bailOut(String format, Object... arguments) {
 		LOGGER.error(format, arguments);
