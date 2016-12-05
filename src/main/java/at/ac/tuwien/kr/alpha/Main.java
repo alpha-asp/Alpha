@@ -163,7 +163,6 @@ public class Main {
 			String[][] resultsArray = results.toArray(new String[results.size()][]);
 
 			sendResults(resultsArray);
-			externalAtomsQuery(new String[]{"a(b)"}, new String[]{"c(b)"});
 		} else if (commandLine.hasOption(OPT_INPUT)) {
 			Stream<AnswerSet> stream = solver.stream();
 
@@ -176,7 +175,7 @@ public class Main {
 
 	public static native void sendResults(String[][] resultsArray);
 
-	public static native void externalAtomsQuery(String[] trueAtoms, String[] falseAtoms);
+	public static native String[][] externalAtomsQuery(String[] trueAtoms, String[] falseAtoms);
 
 	private static void bailOut(String format, Object... arguments) {
 		LOGGER.error(format, arguments);
