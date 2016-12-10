@@ -59,6 +59,7 @@ public class DefaultSolver extends AbstractSolver {
 		}
 
 		int nextChoice;
+		boolean afterAllAtomsAssigned = false;
 
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
@@ -75,22 +76,27 @@ public class DefaultSolver extends AbstractSolver {
 					LOGGER.debug("NoGood violated ({}) by wrong choices ({} violated): {}", grounder.noGoodToString(store.getViolatedNoGood()), choiceStack);
 				}
 				LOGGER.debug("Violating assignment is: {}", assignment);
-				LOGGER.debug("Analyzing conflict.");
-				learner.analyzeConflict(store.getViolatedNoGood());
-				NoGood learnedNoGood = learner.obtainLearnedNoGood();
-				LOGGER.debug("Learned NoGood is: {}", learnedNoGood);
-				// TODO: do backjumping based on the learnedNoGood
-				// TODO: store.add(grounder.getNewNoGoodId(), learnedNoGood);
-				doBacktrack();
-				if (isSearchSpaceExhausted()) {
-					return false;
+
+				if (!afterAllAtomsAssigned) {
+					learnBackjumpAddFromConflict();
+					didChange = true;
+				} else {
+					// Will not learn from violated NoGood, do simple backtrack.
+					LOGGER.debug("NoGood was violated after all unassigned atoms were assigned to false; will not learn from it; skipping.");
+					doBacktrack();
+					afterAllAtomsAssigned = false;
+					if (isSearchSpaceExhausted()) {
+						return false;
+					}
 				}
 			} else if ((nextChoice = computeChoice()) != 0) {
 				LOGGER.debug("Doing choice.");
 				doChoice(nextChoice);
 			} else if (!allAtomsAssigned()) {
 				LOGGER.debug("Closing unassigned known atoms (assigning FALSE).");
+				//assignNextUnassignedToFalse();
 				assignUnassignedToFalse();
+				afterAllAtomsAssigned = true;
 				didChange = true;
 			} else if (assignment.getMBTCount() == 0) {
 				AnswerSet as = translate(assignment.getTrueAssignments());
@@ -101,10 +107,34 @@ public class DefaultSolver extends AbstractSolver {
 			} else {
 				LOGGER.debug("Backtracking from wrong choices ({} MBTs): {}", assignment.getMBTCount(), choiceStack);
 				doBacktrack();
+				afterAllAtomsAssigned = false;
 				if (isSearchSpaceExhausted()) {
 					return false;
 				}
 			}
+		}
+	}
+
+	private void learnBackjumpAddFromConflict() {
+		LOGGER.debug("Analyzing conflict.");
+		learner.analyzeConflict(store.getViolatedNoGood());
+		NoGood learnedNoGood = learner.obtainLearnedNoGood();
+		LOGGER.debug("Learned NoGood is: {}", learnedNoGood);
+		int backjumpingDecisionLevel = learner.computeBackjumpingDecisionLevel(learnedNoGood);
+		LOGGER.debug("Computed backjumping level: {}", backjumpingDecisionLevel);
+		doBackjump(backjumpingDecisionLevel);
+		int learnedNoGoodId = grounder.registerOutsideNoGood(learnedNoGood);
+		boolean isNotViolated = store.add(learnedNoGoodId, learnedNoGood);
+		if (!isNotViolated) {
+			throw new RuntimeException("Learned NoGood is violated after backjumping, should not happen.");
+		}
+	}
+
+	private void doBackjump(int backjumpingDecisionLevel) {
+		// Remove everything above the backjumpingDecisionLevel, but keep the backjumpingDecisionLevel unchanged.
+		while (assignment.getDecisionLevel() > backjumpingDecisionLevel) {
+			store.backtrack();
+			choiceStack.remove();
 		}
 	}
 
@@ -175,7 +205,10 @@ public class DefaultSolver extends AbstractSolver {
 			didChange = true;
 		}
 
-		store.addAll(obtained);
+		while (!store.addAll(obtained)) {
+			LOGGER.debug("ObtainNoGoodsFromGrounder: added noGood violates current assignment: learning, backjumping, and adding again.");
+			learnBackjumpAddFromConflict();
+		}
 
 		// Record choice atoms.
 		final Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms = grounder.getChoiceAtoms();

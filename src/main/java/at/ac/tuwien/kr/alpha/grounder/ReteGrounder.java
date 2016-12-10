@@ -60,4 +60,9 @@ public class ReteGrounder extends AbstractGrounder {
 	public List<Integer> getUnassignedAtoms(Assignment assignment) {
 		return null;
 	}
+
+	@Override
+	public int registerOutsideNoGood(NoGood noGood) {
+		return 0;
+	}
 }

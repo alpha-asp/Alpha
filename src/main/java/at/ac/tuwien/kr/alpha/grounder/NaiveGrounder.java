@@ -585,6 +585,16 @@ public class NaiveGrounder extends AbstractGrounder {
 		return unassignedAtoms;
 	}
 
+	@Override
+	public int registerOutsideNoGood(NoGood noGood) {
+		if (!nogoodIdentifiers.containsKey(noGood)) {
+			int noGoodId = nogoodIdGenerator.getNextId();
+			nogoodIdentifiers.put(noGood, noGoodId);
+			return noGoodId;
+		}
+		return nogoodIdentifiers.get(noGood);
+	}
+
 	public void printCurrentlyKnownGroundRules() {
 		System.out.println("Printing known ground rules:");
 		for (Map.Entry<NonGroundRule<? extends Predicate>, HashSet<VariableSubstitution>> ruleSubstitutionsEntry : knownGroundingSubstitutions.entrySet()) {

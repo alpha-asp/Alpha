@@ -152,4 +152,9 @@ public class ChoiceGrounder implements Grounder {
 		}
 		return unassigned;
 	}
+
+	@Override
+	public int registerOutsideNoGood(NoGood noGood) {
+		throw  new RuntimeException("Not implemented for ChoiceGrounder.");
+	}
 }

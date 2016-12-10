@@ -33,4 +33,11 @@ public interface Grounder extends AtomTranslator {
 	 * @return a list of atoms not having assigned a truth value.
 	 */
 	List<Integer> getUnassignedAtoms(Assignment assignment);
+
+	/**
+	 * Registers the given NoGood and returns the identifier of it.
+	 * @param noGood
+	 * @return
+	 */
+	int registerOutsideNoGood(NoGood noGood);
 }
