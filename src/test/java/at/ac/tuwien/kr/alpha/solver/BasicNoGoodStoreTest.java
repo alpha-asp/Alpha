@@ -412,4 +412,146 @@ public class BasicNoGoodStoreTest {
 		store.propagate();
 		assertNull(store.getViolatedNoGood());
 	}
+
+	@Test
+	public void naryNoGoodViolatedAfterAddition() {
+		NoGood noGood = new NoGood(1, 2, 3);
+		assertTrue(store.add(11, noGood));
+		assertTrue(assignment.assign(1, MBT));
+		assertTrue(assignment.assign(2, MBT));
+		assertTrue(assignment.assign(3, MBT));
+		store.propagate();
+		assertNotNull(store.getViolatedNoGood());
+	}
+
+	@Test
+	public void naryNoGoodViolatedDuringAdditionAllTrue() {
+		NoGood noGood = new NoGood(1, 2, 3);
+		assertTrue(assignment.assign(1, TRUE));
+		assertTrue(assignment.assign(2, TRUE));
+		assertTrue(assignment.assign(3, TRUE));
+		assertFalse(store.add(11, noGood));
+		assertNotNull(store.getViolatedNoGood());
+	}
+
+	@Test
+	public void naryNoGoodViolatedDuringAdditionAllMbt() {
+		NoGood noGood = new NoGood(1, 2, 3);
+		assertTrue(assignment.assign(1, MBT));
+		assertTrue(assignment.assign(2, MBT));
+		assertTrue(assignment.assign(3, MBT));
+		assertFalse(store.add(11, noGood));
+		assertNotNull(store.getViolatedNoGood());
+	}
+
+	@Test
+	public void binaryNoGoodViolatedAfterAddition() {
+		NoGood noGood = new NoGood(1, 2);
+		assertTrue(store.add(11, noGood));
+		assertTrue(assignment.assign(1, MBT));
+		assertTrue(assignment.assign(2, MBT));
+		store.propagate();
+		assertNotNull(store.getViolatedNoGood());
+	}
+
+	@Test
+	public void binaryNoGoodViolatedDuringAdditionAllTrue() {
+		NoGood noGood = new NoGood(1, 2);
+		assertTrue(assignment.assign(1, TRUE));
+		assertTrue(assignment.assign(2, TRUE));
+		assertFalse(store.add(11, noGood));
+		assertNotNull(store.getViolatedNoGood());
+	}
+
+	@Test
+	public void binaryNoGoodViolatedDuringAdditionAllMbt() {
+		NoGood noGood = new NoGood(1, 2);
+		assertTrue(assignment.assign(1, MBT));
+		assertTrue(assignment.assign(2, MBT));
+		assertFalse(store.add(11, noGood));
+		assertNotNull(store.getViolatedNoGood());
+	}
+
+	@Test
+	public void addedViolatedBinaryNoGoodPropagatesAfterBacktracking() {
+		NoGood noGood = new NoGood(70, 195);
+		assertTrue(assignment.guess(70, MBT));
+		assertTrue(assignment.guess(195, MBT));
+		assertFalse(store.add(3, noGood));
+		assignment.backtrack();
+		assertTrue(store.add(3, noGood));
+		store.propagate();
+		assertTrue(FALSE.equals(assignment.getTruth(195)));
+	}
+
+	@Test
+	public void addedViolatedNaryNoGoodPropagatesAfterBacktracking() {
+		NoGood noGood = new NoGood(70, 195, 36);
+		assertTrue(assignment.guess(70, MBT));
+		assertTrue(assignment.guess(195, MBT));
+		assertTrue(assignment.guess(36, MBT));
+		assertFalse(store.add(3, noGood));
+		assignment.backtrack();
+		assertTrue(store.add(3, noGood));
+		store.propagate();
+		assertTrue(FALSE.equals(assignment.getTruth(36)));
+	}
+
+	@Test
+	public void binaryNoGoodPropagatesTrueFromFalse() {
+		NoGood noGood = headFirst(-11, -12);
+		assertTrue(store.add(5, noGood));
+		assertTrue(assignment.guess(12, FALSE));
+		store.propagate();
+		assertTrue(TRUE.equals(assignment.getTruth(11)));
+	}
+
+	@Test
+	public void binaryNoGoodPropagatesTrueFromTrue() {
+		NoGood noGood = headFirst(-11, 12);
+		assertTrue(store.add(5, noGood));
+		assertTrue(assignment.guess(12, TRUE));
+		store.propagate();
+		assertTrue(TRUE.equals(assignment.getTruth(11)));
+	}
+
+
+	@Test
+	public void addedBinaryNoGoodPropagatesTrueFromFalse() {
+		NoGood noGood = headFirst(-11, -12);
+		assertTrue(assignment.guess(12, FALSE));
+		assertTrue(store.add(5, noGood));
+		assertTrue(TRUE.equals(assignment.getTruth(11)));
+	}
+
+	@Test
+	public void addedBinaryNoGoodPropagatesTrueFromTrue() {
+		NoGood noGood = headFirst(-11, 12);
+		assertTrue(assignment.guess(12, TRUE));
+		assertTrue(store.add(5, noGood));
+		store.propagate();
+		assertTrue(TRUE.equals(assignment.getTruth(11)));
+	}
+
+	@Test
+	public void naryNoGoodPropagatesTrueFromFalse() {
+		NoGood noGood = headFirst(-1, 2, -3);
+		assertTrue(store.add(10, noGood));
+		assertTrue(assignment.assign(2, TRUE));
+		store.propagate();
+		assertTrue(assignment.assign(3, FALSE));
+		store.propagate();
+		assertTrue(TRUE.equals(assignment.getTruth(1)));
+	}
+
+	@Test
+	public void naryNoGoodPropagatesTrueFromTrue() {
+		NoGood noGood = headFirst(-1, 2, -3);
+		assertTrue(store.add(10, noGood));
+		assertTrue(assignment.assign(3, FALSE));
+		store.propagate();
+		assertTrue(assignment.assign(2, TRUE));
+		store.propagate();
+		assertTrue(TRUE.equals(assignment.getTruth(1)));
+	}
 }
