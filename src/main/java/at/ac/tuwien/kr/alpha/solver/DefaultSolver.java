@@ -186,6 +186,29 @@ public class DefaultSolver extends AbstractSolver {
 		return !changeCopy;
 	}
 
+	boolean isAtomActiveChoicePoint(int atom) {
+		// Find potential enabler of the choice point.
+		for (Map.Entry<Integer, Integer> enabler : choiceOn.entrySet()) {
+			ThriceTruth enablerAssignedTruth = assignment.getTruth(enabler.getKey());
+			// Check if choice point is enabled.
+			if (enabler.getValue() == atom && (TRUE.equals(enablerAssignedTruth) || MBT.equals(enablerAssignedTruth))) {
+				// Ensure it is not disabled.
+				boolean isDisabled = false;
+				for (Map.Entry<Integer, Integer> disablerAtom : choiceOff.entrySet()) {
+					if (atom == disablerAtom.getValue()
+						&& assignment.getTruth(disablerAtom.getKey()) != null
+						&& !(FALSE.equals(assignment.getTruth(disablerAtom.getKey())))) {
+						isDisabled = true;
+						break;
+					}
+				}
+				return !isDisabled;
+			}
+		}
+		// No enabler of the atom found, not an active choice point.
+		return false;
+	}
+
 	private void doChoice(int nextChoice) {
 		decisionCounter++;
 		// We guess true for any unassigned choice atom (backtrack tries false)
