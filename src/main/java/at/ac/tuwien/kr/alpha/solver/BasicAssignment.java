@@ -77,7 +77,23 @@ public class BasicAssignment implements Assignment {
 	}
 
 	@Override
+	public boolean assignSubDL(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
+		// TODO: in case that the assigned value is TRUE while it previously was MBT, the information for backtracking (setting TRUE to either MBT or unassigned) must be adapted.
+		if (decisionLevel > getDecisionLevel()) {
+			throw new IllegalArgumentException("Given decisionLevel is greater than current one.");
+		}
+		if (decisionLevel < getDecisionLevel()) {
+			LOGGER.debug("AssignSubDL called with lower decision level.");
+		}
+		return assignWithDecisionLevel(atom, value, impliedBy, decisionLevel);
+	}
+
+	@Override
 	public boolean assign(int atom, ThriceTruth value, NoGood impliedBy) {
+		return assignWithDecisionLevel(atom, value, impliedBy, getDecisionLevel());
+	}
+
+	private boolean assignWithDecisionLevel(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
 		if (!isAtom(atom)) {
 			throw new IllegalArgumentException("not an atom");
 		}
@@ -99,7 +115,7 @@ public class BasicAssignment implements Assignment {
 			return false;
 		}
 
-		final int decisionLevel = getDecisionLevel();
+		final int propagationLevel = decisionLevels.get(decisionLevel).size();
 
 		if (mbtToTrue) {
 			mbtCount--;
@@ -107,7 +123,7 @@ public class BasicAssignment implements Assignment {
 			mbtCount++;
 		}
 
-		final Entry next = new Entry(value, decisionLevel, impliedBy, current, atom);
+		final Entry next = new Entry(value, decisionLevel, propagationLevel, impliedBy, current, atom);
 		LOGGER.trace("Recording assignment {}: {}", atom, next);
 		decisionLevels.get(decisionLevel).add(next);
 		assignment.put(atom, next);
@@ -173,17 +189,27 @@ public class BasicAssignment implements Assignment {
 	private static final class Entry implements Assignment.Entry {
 		private final ThriceTruth value;
 		private final int decisionLevel;
+		private final int propagationLevel;
 		private final Entry previous;
 		private final NoGood impliedBy;
 		private final int atom;
 
-		Entry(ThriceTruth value, int decisionLevel, NoGood noGood, Entry previous, int atom) {
+		Entry(ThriceTruth value, int decisionLevel, int propagationLevel, NoGood noGood, Entry previous, int atom) {
 			this.value = value;
 			this.decisionLevel = decisionLevel;
+			this.propagationLevel = propagationLevel;
 			this.impliedBy = noGood;
 			this.previous = previous;
 			this.atom = atom;
 		}
+
+		/*Entry(ThriceTruth value, int decisionLevel, int propagationLevel, NoGood noGood) {
+			this(value, decisionLevel, propagationLevel, noGood, null);
+		}
+
+		Entry(ThriceTruth value, int decisionLevel, int propagationLevel) {
+			this(value, decisionLevel, propagationLevel, null);
+		}*/
 
 		@Override
 		public ThriceTruth getTruth() {
@@ -211,8 +237,13 @@ public class BasicAssignment implements Assignment {
 		}
 
 		@Override
+		public int getPropagationLevel() {
+			return propagationLevel;
+		}
+
+		@Override
 		public String toString() {
-			return value.toString() + "(" + decisionLevel + ")";
+			return value.toString() + "(" + decisionLevel + ", " + propagationLevel + ")";
 		}
 	}
 

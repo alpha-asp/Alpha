@@ -23,4 +23,8 @@ public final class Literals {
 	public static boolean isNegated(int literal) {
 		return literal < 0;
 	}
+
+	public static boolean isPositive(int literal) {
+		return literal > 0;
+	}
 }

@@ -34,6 +34,16 @@ public interface Assignment extends Iterable<Assignment.Entry> {
 
 	boolean assign(int atom, ThriceTruth value, NoGood impliedBy);
 
+	/**
+	 * Assigns an atom some value on a lower decision level than the current one.
+	 * @param atom
+	 * @param value
+	 * @param impliedBy
+	 * @param decisionLevel
+	 * @return
+	 */
+	boolean assignSubDL(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel);
+
 	default boolean assign(int atom, ThriceTruth value) {
 		return assign(atom, value, null);
 	}
@@ -91,5 +101,7 @@ public interface Assignment extends Iterable<Assignment.Entry> {
 		NoGood getImpliedBy();
 
 		int getAtom();
+
+		int getPropagationLevel();
 	}
 }
