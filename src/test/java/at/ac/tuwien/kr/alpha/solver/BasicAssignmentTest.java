@@ -112,16 +112,16 @@ public class BasicAssignmentTest {
 	@Test
 	public void testContains() {
 		assignment.assign(1, TRUE);
-		assertTrue(assignment.containsRelaxed(+1));
-		assertFalse(assignment.containsRelaxed(-1));
+		assertTrue(assignment.containsWeakComplement(+1));
+		assertFalse(assignment.containsWeakComplement(-1));
 
 		assignment.assign(2, FALSE);
-		assertTrue(assignment.containsRelaxed(-2));
-		assertFalse(assignment.containsRelaxed(+2));
+		assertTrue(assignment.containsWeakComplement(-2));
+		assertFalse(assignment.containsWeakComplement(+2));
 
 		assignment.assign(1, MBT);
-		assertTrue(assignment.containsRelaxed(+1));
-		assertFalse(assignment.containsRelaxed(-1));
+		assertTrue(assignment.containsWeakComplement(+1));
+		assertFalse(assignment.containsWeakComplement(-1));
 	}
 
 	@Test

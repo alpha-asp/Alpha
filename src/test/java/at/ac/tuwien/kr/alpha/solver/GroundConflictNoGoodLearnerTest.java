@@ -3,7 +3,7 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -19,35 +19,57 @@ public class GroundConflictNoGoodLearnerTest {
 	}
 
 	@Test
-	public void oneResolutionStep() {
-		NoGood n1 = new NoGood(1, -2);
-		NoGood n2 = new NoGood(2, 3);
-		assignment.guess(1, ThriceTruth.TRUE);
-		assignment.guess(3, ThriceTruth.TRUE);
-		store.add(10, n1);
-		store.propagate();
-		assertEquals(assignment.get(2).getTruth(), ThriceTruth.MBT);
-		store.add(11, n2);
-		store.propagate();
-		assertEquals(store.getViolatedNoGood(), n2);
+	public void smallConflictNonTrivial1UIP() {
 		GroundConflictNoGoodLearner learner = new GroundConflictNoGoodLearner(assignment, store);
-		learner.analyzeConflict(store.getViolatedNoGood());
-		NoGood learnedNoGood = learner.obtainLearnedNoGood();
-		assertEquals(learnedNoGood, new NoGood(1, 3));
-		int backjumpingDecisionLevel = learner.computeBackjumpingDecisionLevel(learnedNoGood);
-		assertEquals(backjumpingDecisionLevel, 1);
+
+		NoGood n1 = new NoGood(2, -8, 1);
+		NoGood n2 = new NoGood(-1, -7);
+		NoGood n3 = new NoGood(-3, 1);
+		NoGood n4 = new NoGood(5, 3);
+		NoGood n5 = new NoGood(6, -5);
+		NoGood n6 = new NoGood(4, -2);
+		NoGood n7 = new NoGood(-6, -4);
+		store.add(10, n1);
+		store.add(11, n2);
+		store.add(12, n3);
+		store.add(13, n4);
+		store.add(14, n5);
+		store.add(15, n6);
+		store.add(16, n7);
+
+		assignment.guess(9, ThriceTruth.TRUE);
+		assignment.guess(8, ThriceTruth.FALSE);
+		assertFalse(store.propagate());
+		assignment.guess(7, ThriceTruth.FALSE);
+		assertEquals(true, store.propagate());
+
+		NoGood violatedNoGood = store.getViolatedNoGood();
+		assertNotNull(violatedNoGood);
+		assertTrue(violatedNoGood.equals(n5) || violatedNoGood.equals(n7));
+		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(violatedNoGood);
+		NoGood learnedNoGood = analysisResult.learnedNoGood;
+		assertEquals(new NoGood(1, -8), learnedNoGood);
+		int backjumpingDecisionLevel = analysisResult.backjumpLevel;
+		assertEquals(backjumpingDecisionLevel, 2);
+		assertFalse(analysisResult.clearLastGuessAfterBackjump);
 	}
 
 	@Test
-	public void resolveTreeLike() {
-		NoGood n1 = new NoGood();
-		NoGood n2 = new NoGood();
-		NoGood n3 = new NoGood();
-		NoGood n4 = new NoGood();
-		// TODO: create test with three NoGoods that resolve tree-like.
+	public void subCurrentDLPropagationWithGuessCauseOfConflict() {
+		NoGood n1 = new NoGood(1, -2);
+		NoGood n2 = new NoGood(2, 3);
+		store.add(10, n1);
+		assignment.guess(1, ThriceTruth.TRUE);
+		assignment.guess(3, ThriceTruth.TRUE);
+		store.propagate();
+		assertEquals(ThriceTruth.MBT, assignment.get(2).getTruth());
+		assertEquals(1, assignment.get(2).getDecisionLevel());
+		NoGoodStore.ConflictCause conflictCause = store.add(11, n2);
+		assertNotNull(conflictCause);
+		//store.propagate();
+		assertNotNull(conflictCause.violatedGuess);
+		assertEquals(3, conflictCause.violatedGuess.getAtom());
+		assertEquals(2, conflictCause.violatedGuess.getDecisionLevel());
+		assertNull(conflictCause.violatedNoGood);
 	}
-
-
-
-	// TODO: create test for 1UIP resolution.
 }

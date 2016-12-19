@@ -42,13 +42,22 @@ public interface Assignment extends Iterable<Assignment.Entry> {
 	 * @param decisionLevel
 	 * @return
 	 */
-	boolean assignSubDL(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel);
+	boolean assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel);
 
 	default boolean assign(int atom, ThriceTruth value) {
 		return assign(atom, value, null);
 	}
 
 	boolean guess(int atom, ThriceTruth value);
+
+	/**
+	 * In case that assign fails (i.e., it returns false) the NoGood violated by the assignment can be obtained by this method.
+	 * The returned value is arbitrary if the previous assign did not fail.
+	 * @return
+	 */
+	NoGood getNoGoodViolatedByAssign();
+
+	Assignment.Entry getGuessViolatedByAssign();
 
 	/**
 	 * Returns all atomIds that are assigned TRUE in the current assignment.
@@ -74,13 +83,13 @@ public interface Assignment extends Iterable<Assignment.Entry> {
 		return get(atom) != null;
 	}
 
-	default boolean containsRelaxed(int literal) {
+	default boolean containsWeakComplement(int literal) {
 		final Entry entry = get(atomOf(literal));
 		return entry != null && isNegated(literal) == !entry.getTruth().toBoolean();
 	}
 
-	default boolean containsRelaxed(NoGood noGood, int index) {
-		return containsRelaxed(noGood.getLiteral(index));
+	default boolean containsWeakComplement(NoGood noGood, int index) {
+		return containsWeakComplement(noGood.getLiteral(index));
 	}
 
 	default boolean contains(int literal) {

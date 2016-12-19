@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -77,10 +78,9 @@ public class BasicAssignment implements Assignment {
 	}
 
 	@Override
-	public boolean assignSubDL(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
-		// TODO: in case that the assigned value is TRUE while it previously was MBT, the information for backtracking (setting TRUE to either MBT or unassigned) must be adapted.
-		if (decisionLevel > getDecisionLevel()) {
-			throw new IllegalArgumentException("Given decisionLevel is greater than current one.");
+	public boolean assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
+		if (decisionLevel > getDecisionLevel() || decisionLevel < 0) {
+			throw new IllegalArgumentException("Given decisionLevel is outside range of possible decision levels. Given decisionLevel is: " + decisionLevel);
 		}
 		if (decisionLevel < getDecisionLevel()) {
 			LOGGER.debug("AssignSubDL called with lower decision level.");
@@ -93,6 +93,20 @@ public class BasicAssignment implements Assignment {
 		return assignWithDecisionLevel(atom, value, impliedBy, getDecisionLevel());
 	}
 
+	private NoGood violatedByAssign;
+
+	@Override
+	public NoGood getNoGoodViolatedByAssign() {
+		return violatedByAssign;
+	}
+
+	private Entry guessViolatedByAssign;
+
+	@Override
+	public Assignment.Entry getGuessViolatedByAssign() {
+		return guessViolatedByAssign;
+	}
+
 	private boolean assignWithDecisionLevel(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
 		if (!isAtom(atom)) {
 			throw new IllegalArgumentException("not an atom");
@@ -103,31 +117,155 @@ public class BasicAssignment implements Assignment {
 		}
 
 		final Entry current = get(atom);
+		// Check whether the atom is assigned.
+		if (current == null) {
+			// Atom is unassigned.
 
-		if (current != null && (current.getTruth().equals(value) || (TRUE.equals(current.getTruth()) && MBT.equals(value)))) {
+			// If assigned value is MBT, increase counter.
+			if (MBT.equals(value)) {
+				mbtCount++;
+			}
+
+			// Create and record new assignment entry.
+			final int propagationLevel = decisionLevels.get(decisionLevel).size();
+			final Entry next = new Entry(value, decisionLevel, propagationLevel, impliedBy, null, atom);
+			LOGGER.trace("Recording assignment {}: {}", atom, next);
+			decisionLevels.get(decisionLevel).add(next);
+			assignment.put(atom, next);
 			return true;
+		} else {
+			// The atom is already assigned, need to check whether the current one is contradictory.
+
+			if (current.getDecisionLevel() <= decisionLevel) {
+				// Assignment is for current decision level, or the current assignment is from a lower decision level than the new one.
+
+				final boolean mbtToTrue = MBT.equals(current.getTruth()) && TRUE.equals(value);
+				if (mbtToTrue) {
+					// MBT becoming true is fine.
+					mbtCount--;
+
+					final int propagationLevel = decisionLevels.get(decisionLevel).size();
+					final Entry next = new Entry(value, decisionLevel, propagationLevel, impliedBy, current, atom);
+					LOGGER.trace("Recording assignment {}: {}", atom, next);
+					decisionLevels.get(decisionLevel).add(next);
+					assignment.put(atom, next);
+					return true;
+				} else if (current.getTruth() == value || (TRUE.equals(current.getTruth()) && MBT.equals(value))) {
+					// Skip if the assigned truth value already has been assigned, or if the value is already TRUE and MBT is to be assigned.
+					return true;
+				} else {
+					// All other cases are contradictory.
+					violatedByAssign = impliedBy;
+					return false;
+				}
+			} else {
+				// Assignment is for lower-than-current decision level.
+
+				// Compute previous truth value.
+				ThriceTruth previousTruthValue = null;
+				final Entry previousEntry = current.getPrevious();
+				if (previousEntry != null && previousEntry.getDecisionLevel() <= decisionLevel) {
+					// Previous entry was holding on the decision level of the new assignment.
+					previousTruthValue = previousEntry.getTruth();
+				}
+
+				// Switch on one of the 21 (possible) combinations of:
+				// current assignment, assignment on the lower decision level, and new assignment.
+
+				// If the atom was unassigned at the lower decision level, assign it now to the given value and check for a conflict.
+				if (previousTruthValue == null) {
+					// Update entry (remove previous, add new)
+					LOGGER.trace("Removing current assignment {}: {}", atom, current);
+					decisionLevels.get(current.decisionLevel).remove(current);
+
+					// Increment mbtCount in case the assigned value is MBT and current one is not.
+					if (MBT.equals(value) && !MBT.equals(current.getTruth())) {
+						mbtCount++;
+					}
+
+					// Add new assignment entry.
+					final int propagationLevel = decisionLevels.get(decisionLevel).size();
+					final Entry next = new Entry(value, decisionLevel, propagationLevel, impliedBy, null, atom);
+					LOGGER.trace("Recording new assignment at lower decision level {}: {}@{}", atom, next, decisionLevel);
+					decisionLevels.get(decisionLevel).add(next);
+					assignment.put(atom, next);
+
+					// Check whether the assignment on the lower decision level now contradicts the current one.
+					switch (current.getTruth()) {
+						case FALSE:
+							if (MBT.equals(value) || TRUE.equals(value)) {
+								violatedByAssign = current.getImpliedBy();
+								if (violatedByAssign == null) {
+									guessViolatedByAssign = current;
+								}
+								return false;
+							} else {
+								return true;
+							}
+						case MBT:
+						case TRUE:
+							if (FALSE.equals(value)) {
+								violatedByAssign = current.getImpliedBy();
+								if (violatedByAssign == null) {
+									guessViolatedByAssign = current;
+								}
+								return false;
+							} else {
+								return true;
+							}
+					}
+				} else {
+					// Previous truth value was assigned.
+
+					// Switch first on current truth value:
+					switch (current.getTruth()) {
+						case FALSE:
+							// Previous truth value must be false.
+							if (!FALSE.equals(previousTruthValue)) {
+								throw new RuntimeException("Encountered impossible combination of current and previous truth values. Error in algorithm.");
+							}
+							if (FALSE.equals(value)) {
+								return true;
+							} else {
+								violatedByAssign = impliedBy;
+								return false;
+							}
+						case MBT:
+							// Previous truth value must be MBT.
+							if (!MBT.equals(previousTruthValue)) {
+								throw new RuntimeException("Encountered impossible combination of current and previous truth values. Error in algorithm.");
+							}
+							switch (value) {
+								case FALSE:
+									violatedByAssign = impliedBy;
+									return false;
+								case MBT:
+									return true;
+								case TRUE:
+									// MBT to TRUE, on lower decision level.
+									mbtCount--;
+
+									final int propagationLevel = decisionLevels.get(decisionLevel).size();
+									final Entry next = new Entry(value, decisionLevel, propagationLevel, impliedBy, previousEntry, atom);
+									LOGGER.trace("Recording assignment {}: {}", atom, next);
+									decisionLevels.get(decisionLevel).add(next);
+									assignment.put(atom, next);
+									return true;
+							}
+						case TRUE:
+							switch (previousTruthValue) {
+								case FALSE:
+									violatedByAssign = impliedBy;
+									return false;
+								case MBT:
+								case TRUE:
+									return true;
+							}
+					}
+				}
+			}
 		}
-
-		final boolean unassignedToAssigned = current == null;
-		final boolean mbtToTrue = !unassignedToAssigned && MBT.equals(current.getTruth()) && TRUE.equals(value);
-
-		if (!unassignedToAssigned && !mbtToTrue) {
-			return false;
-		}
-
-		final int propagationLevel = decisionLevels.get(decisionLevel).size();
-
-		if (mbtToTrue) {
-			mbtCount--;
-		} else if (MBT.equals(value)) {
-			mbtCount++;
-		}
-
-		final Entry next = new Entry(value, decisionLevel, propagationLevel, impliedBy, current, atom);
-		LOGGER.trace("Recording assignment {}: {}", atom, next);
-		decisionLevels.get(decisionLevel).add(next);
-		assignment.put(atom, next);
-		return true;
+		throw new RuntimeException("Statement should be unreachable, algorithm misses some case.");
 	}
 
 	@Override
@@ -248,6 +386,7 @@ public class BasicAssignment implements Assignment {
 	}
 
 	private class BasicAssignmentIterator implements java.util.Iterator<Assignment.Entry> {
+		// TODO: BasicAssignmentIterator needs adaption to new entries added on lower decision levels.
 		private int decisionLevel;
 		private int index;
 		private int prevIndex;
