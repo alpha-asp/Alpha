@@ -7,6 +7,7 @@ public final class SolverFactory {
 		switch (name.toLowerCase()) {
 			case "naive" : return new NaiveSolver(grounder);
 			case "default": return new DefaultSolver(grounder);
+			case "alphahex": return new AlphahexSolver(grounder);
 		}
 		throw new IllegalArgumentException("Unknown solver requested.");
 	}

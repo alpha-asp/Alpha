@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-enum ThriceTruth {
+public enum ThriceTruth {
 	TRUE("T", true),
 	FALSE("F", false),
 	MBT("M", true);

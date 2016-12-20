@@ -37,8 +37,8 @@ public class Main {
 	private static final String OPT_FILTER = "filter";
 	private static final String OPT_STRING = "str";
 
-	private static final String DEFAULT_GROUNDER = "naive";
-	private static final String DEFAULT_SOLVER = "default";
+	private static final String DEFAULT_GROUNDER = "alphahex";
+	private static final String DEFAULT_SOLVER = "alphahex";
 
 	private static CommandLine commandLine;
 

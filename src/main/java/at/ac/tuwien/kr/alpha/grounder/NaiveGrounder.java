@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.Main;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstraint;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFact;
@@ -24,17 +25,17 @@ public class NaiveGrounder extends AbstractGrounder {
 	 * Atoms corresponding to rule bodies use this predicate, first term is rule number,
 	 * second is a term containing variable substitutions.
 	 */
-	private static final BasicPredicate RULE_BODIES_PREDICATE = new BasicPredicate("_R_", 2);
+	static final BasicPredicate RULE_BODIES_PREDICATE = new BasicPredicate("_R_", 2);
 
-	private static final BasicPredicate CHOICE_ON_PREDICATE = new BasicPredicate("ChoiceOn", 1);
-	private static final BasicPredicate CHOICE_OFF_PREDICATE = new BasicPredicate("ChoiceOff", 1);
+	static final BasicPredicate CHOICE_ON_PREDICATE = new BasicPredicate("ChoiceOn", 1);
+	static final BasicPredicate CHOICE_OFF_PREDICATE = new BasicPredicate("ChoiceOff", 1);
 
-	protected HashMap<Predicate, ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage>> workingMemory = new HashMap<>();
-	protected Map<NoGood, Integer> nogoodIdentifiers = new HashMap<>();
-	protected AtomStore atomStore = new AtomStore();
+	HashMap<Predicate, ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage>> workingMemory = new HashMap<>();
+	Map<NoGood, Integer> nogoodIdentifiers = new HashMap<>();
+	AtomStore atomStore = new AtomStore();
 
 	private final IntIdGenerator intIdGenerator = new IntIdGenerator();
-	private IntIdGenerator nogoodIdGenerator = new IntIdGenerator();
+	IntIdGenerator nogoodIdGenerator = new IntIdGenerator();
 	private IntIdGenerator choiceAtomsGenerator = new IntIdGenerator();
 
 	private HashMap<Predicate, ArrayList<Instance>> factsFromProgram = new HashMap<>();
