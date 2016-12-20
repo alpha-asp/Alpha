@@ -4,19 +4,13 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 
 public final class WatchedNoGood extends NoGood {
 	private final int[] pointers;
+	private int alpha;
 
-	public WatchedNoGood(NoGood noGood, int a, int b, int c) {
-		this(noGood, new int[]{a, b, c});
-	}
-
-	public WatchedNoGood(NoGood noGood, int... pointers) {
+	public WatchedNoGood(NoGood noGood, int a, int b, int alpha) {
 		super(noGood);
 
-		if (pointers.length != 3) {
-			throw new IllegalArgumentException("must pass exactly three pointers");
-		}
-
-		this.pointers = pointers;
+		this.pointers = new int[] {a, b};
+		this.alpha = alpha;
 		checkPointers();
 	}
 
@@ -25,20 +19,22 @@ public final class WatchedNoGood extends NoGood {
 			throw new IllegalArgumentException("first two pointers must not point at the same literal");
 		}
 
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < pointers.length; i++) {
 			if (pointers[i] < 0) {
 				throw new IllegalArgumentException("first two pointers must be non-negative");
 			}
-		}
 
-		for (int i = 0; i < pointers.length; i++) {
 			if (pointers[i] >= literals.length) {
 				throw new IllegalArgumentException("all pointers must not be within upper bound of nogood size");
 			}
 		}
 
-		if (pointers[2] < -1) {
-			throw new IllegalArgumentException("c must not be smaller than -1");
+		if (alpha >= literals.length) {
+			throw new IllegalArgumentException("all pointers must not be within upper bound of nogood size");
+		}
+
+		if (alpha < -1) {
+			throw new IllegalArgumentException("alpha pointer must not be smaller than -1");
 		}
 	}
 
@@ -51,8 +47,17 @@ public final class WatchedNoGood extends NoGood {
 		checkPointers();
 	}
 
+	public int getAlphaPointer() {
+		return alpha;
+	}
+
+	public void setAlphaPointer(int value) {
+		alpha = value;
+		checkPointers();
+	}
+
 	@Override
 	public String toString() {
-		return super.toString() + "{ " + pointers[0] + " " + pointers[1] + " " + pointers[2] + " }";
+		return super.toString() + "{ " + pointers[0] + " " + pointers[1] + " " + alpha + " }";
 	}
 }
