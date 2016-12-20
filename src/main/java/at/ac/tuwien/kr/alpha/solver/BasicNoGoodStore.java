@@ -19,13 +19,12 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	private final AtomTranslator translator;
 	private final Assignment assignment;
 	private final Map<Integer, Watches<BinaryWatch, WatchedNoGood>> watches = new HashMap<>();
-	private final Iterator<Assignment.Entry> assignmentIterator;
 
 	private NoGood violated;
 
 	BasicNoGoodStore(Assignment assignment, Grounder translator) {
 		this.assignment = assignment;
-		this.assignmentIterator = assignment.iterator();
+		//this.assignmentIterator = assignment.iterator();
 		this.translator = translator;
 	}
 
@@ -388,9 +387,11 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	@Override
 	public boolean propagate() {
 		boolean propagated = false;
+		Queue<Assignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
 
-		while (assignmentIterator.hasNext()) {
-			final Assignment.Entry entry = assignmentIterator.next();
+		while (!assignmentsToProcess.isEmpty()) {
+		//while (assignmentIterator.hasNext()) {
+			final Assignment.Entry entry = assignmentsToProcess.remove(); //assignmentIterator.next();
 			final int atom = entry.getAtom();
 
 			LOGGER.trace("Looking for propagation from {}", atom);

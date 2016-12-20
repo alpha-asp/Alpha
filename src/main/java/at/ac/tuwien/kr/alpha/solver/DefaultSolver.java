@@ -2,13 +2,15 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.OrdinaryAssignment;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
@@ -25,7 +27,6 @@ public class DefaultSolver extends AbstractSolver {
 	private final Map<Integer, Integer> choiceOff = new HashMap<>();
 	private final ChoiceStack choiceStack;
 	private final Assignment assignment;
-	private final Iterator<OrdinaryAssignment> assignmentIterator;
 	private final GroundConflictNoGoodLearner learner;
 
 	private boolean initialize = true;
@@ -38,7 +39,7 @@ public class DefaultSolver extends AbstractSolver {
 		super(grounder);
 
 		this.assignment = new BasicAssignment(grounder);
-		this.assignmentIterator = this.assignment.ordinaryIterator();
+		//this.assignmentIterator = this.assignment.ordinaryIterator();
 		this.store = new BasicNoGoodStore(assignment, grounder);
 		this.choiceStack = new ChoiceStack(grounder);
 		this.learner = new GroundConflictNoGoodLearner(assignment, store);
@@ -106,8 +107,6 @@ public class DefaultSolver extends AbstractSolver {
 				LOGGER.debug("Answer-Set found: {}", as);
 				LOGGER.debug("Choices of Answer-Set were: {}", choiceStack);
 				action.accept(as);
-				//ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-				//root.setLevel(Level.DEBUG);
 				return true;
 			} else {
 				LOGGER.debug("Backtracking from wrong choices ({} MBTs): {}", assignment.getMBTCount(), choiceStack);
@@ -213,7 +212,7 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private void updateGrounderAssignment() {
-		grounder.updateAssignment(assignmentIterator);
+		grounder.updateAssignment(assignment.getNewAssignmentsIterator());
 	}
 
 	private void obtainNoGoodsFromGrounder() {

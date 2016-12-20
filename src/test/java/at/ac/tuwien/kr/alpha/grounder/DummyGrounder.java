@@ -7,7 +7,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
-import java.util.function.*;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
@@ -132,10 +131,11 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<OrdinaryAssignment> it) {
+	public void updateAssignment(Iterator<Assignment.Entry> it) {
 		while (it.hasNext()) {
-			OrdinaryAssignment assignment = it.next();
-			currentTruthValues[assignment.getAtom()] = assignment.getTruthValue() ? (byte) 1 : (byte) 0;
+			Assignment.Entry assignment = it.next();
+			BooleanTruth truthValue = assignment.getTruth();
+			currentTruthValues[assignment.getAtom()] = truthValue.isTrue() ? (byte) 1 : (byte) 0;
 		}
 	}
 

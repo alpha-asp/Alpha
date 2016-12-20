@@ -1,9 +1,9 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.OrdinaryAssignment;
 
 import java.util.Iterator;
+import java.util.Queue;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
@@ -11,7 +11,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
-public interface Assignment extends Iterable<Assignment.Entry> {
+public interface Assignment {
 	/**
 	 * Delete all information stored in the assignment.
 	 */
@@ -59,6 +59,8 @@ public interface Assignment extends Iterable<Assignment.Entry> {
 
 	Assignment.Entry getGuessViolatedByAssign();
 
+	Queue<Entry> getAssignmentsToProcess();
+
 	/**
 	 * Returns all atomIds that are assigned TRUE in the current assignment.
 	 * @return a list of all true assigned atoms.
@@ -101,7 +103,11 @@ public interface Assignment extends Iterable<Assignment.Entry> {
 		return contains(noGood.getLiteral(index));
 	}
 
-	Iterator<OrdinaryAssignment> ordinaryIterator();
+	/**
+	 * Returns an iterator over all new assignments. New assignments are only returned once.
+	 * @return
+	 */
+	Iterator<Entry> getNewAssignmentsIterator();
 
 	interface Entry {
 		ThriceTruth getTruth();

@@ -1,6 +1,8 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-enum ThriceTruth {
+import at.ac.tuwien.kr.alpha.common.BooleanTruth;
+
+enum ThriceTruth implements BooleanTruth {
 	TRUE("T", true),
 	FALSE("F", false),
 	MBT("M", true);
@@ -20,5 +22,10 @@ enum ThriceTruth {
 	@Override
 	public String toString() {
 		return asString;
+	}
+
+	@Override
+	public boolean isFalse() {
+		return this.equals(FALSE);
 	}
 }

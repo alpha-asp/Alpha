@@ -545,14 +545,15 @@ public class NaiveGrounder extends AbstractGrounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<OrdinaryAssignment> it) {
+	public void updateAssignment(Iterator<Assignment.Entry> it) {
 		while (it.hasNext()) {
-			OrdinaryAssignment assignment = it.next();
+			Assignment.Entry assignment = it.next();
+			BooleanTruth truthValue = assignment.getTruth();
 			AtomId atomId = new AtomId(assignment.getAtom());
 			BasicAtom basicAtom = atomStore.getBasicAtom(atomId);
 			ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> workingMemory = this.workingMemory.get(basicAtom.predicate);
 
-			final IndexedInstanceStorage storage = assignment.getTruthValue() ? workingMemory.getLeft() : workingMemory.getRight();
+			final IndexedInstanceStorage storage = truthValue.isTrue() ? workingMemory.getLeft() : workingMemory.getRight();
 
 			Instance instance = new Instance(basicAtom.termList);
 

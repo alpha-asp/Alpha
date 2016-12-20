@@ -1,7 +1,10 @@
 package at.ac.tuwien.kr.alpha;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -54,9 +57,13 @@ public class MainTest {
 	@Test
 	@Ignore
 	public void testLargeInputProgram() {
-		//main(new String[]{"-g", "naive", "-s", "default", "-n", "10", "-i", "./benchmarks/omiga/omiga-testcases/locstrat/locstrat-200.txt"});
-
-		main(new String[]{"-g", "naive", "-s", "default", "-n", "10", "-i", "./benchmarks/omiga/omiga-testcases/reach/reach-4.txt"});
+		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+		root.setLevel(Level.DEBUG);
+		//main(new String[]{"-g", "naive", "-s", "default", "-n", "2", "-i", "./benchmarks/omiga/omiga-testcases/locstrat/locstrat-200.txt"});
+		//main(new String[]{"-g", "naive", "-s", "default", "-n", "2", "-i", "./benchmarks/omiga/omiga-testcases/cutedge/cutedge-100-50.txt"});
+		//main(new String[]{"-g", "naive", "-s", "default", "-n", "10", "-i", "./benchmarks/omiga/omiga-testcases/3col/3col-20-38.txt"});
+		//main(new String[]{"-g", "naive", "-s", "naive", "-n", "10", "-i", "./benchmarks/omiga/omiga-testcases/reach/reach-1.txt"});
+		main(new String[]{"-g", "naive", "-s", "default", "-n", "1", "-i", "./benchmarks/siemens/vehicle_normal_small.asp"});
 	}
 
 }
