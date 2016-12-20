@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class ReteGrounder extends AbstractGrounder {
+public abstract class ReteGrounder extends AbstractGrounder {
 	private ParsedProgram programRules;
 
 	private byte[] recentTruthAssignments;

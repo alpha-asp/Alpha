@@ -156,4 +156,9 @@ public class ChoiceGrounder implements Grounder {
 	public int registerOutsideNoGood(NoGood noGood) {
 		throw  new RuntimeException("Not implemented for ChoiceGrounder.");
 	}
+
+	@Override
+	public boolean isAtomChoicePoint(int atom) {
+		return atom == ATOM_BR1 || atom == ATOM_BR2;
+	}
 }

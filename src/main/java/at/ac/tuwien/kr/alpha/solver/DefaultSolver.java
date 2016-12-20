@@ -277,6 +277,10 @@ public class DefaultSolver extends AbstractSolver {
 		return !changeCopy;
 	}
 
+	boolean isAtomChoicePoint(int atom) {
+		return grounder.isAtomChoicePoint(atom);
+	}
+
 	boolean isAtomActiveChoicePoint(int atom) {
 		// Find potential enabler of the choice point.
 		for (Map.Entry<Integer, Integer> enabler : choiceOn.entrySet()) {

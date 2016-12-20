@@ -4,8 +4,10 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.ResolutionSequence;
 import org.apache.commons.lang3.NotImplementedException;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
@@ -21,11 +23,13 @@ public class GroundConflictNoGoodLearner {
 		public NoGood learnedNoGood;
 		public int backjumpLevel;
 		public boolean clearLastGuessAfterBackjump;
+		public Set<NoGood> noGoodsResponsibleForConflict;
 
-		public ConflictAnalysisResult(NoGood learnedNoGood, int backjumpLevel, boolean clearLastGuessAfterBackjump) {
+		public ConflictAnalysisResult(NoGood learnedNoGood, int backjumpLevel, boolean clearLastGuessAfterBackjump, Set<NoGood> noGoodsResponsibleForConflict) {
 			this.learnedNoGood = learnedNoGood;
 			this.backjumpLevel = backjumpLevel;
 			this.clearLastGuessAfterBackjump = clearLastGuessAfterBackjump;
+			this.noGoodsResponsibleForConflict = noGoodsResponsibleForConflict;
 		}
 	}
 
@@ -36,6 +40,8 @@ public class GroundConflictNoGoodLearner {
 
 	public ConflictAnalysisResult analyzeConflictingNoGood(NoGood violatedNoGood) {
 		NoGood learnedNoGood;
+		Set<NoGood> noGoodsResponsible = new HashSet<>();
+		noGoodsResponsible.add(violatedNoGood);
 		NoGood currentResolutionNoGood = new NoGood(violatedNoGood.getLiteralsClone(), -1);	// Clone violated NoGood and remove potential head.
 		LinkedList<Integer> sortedLiteralsToProcess = new LinkedList<>();
 		// Find decision level where conflict occurs (i.e., highest decision level of violatedNoGood).
@@ -64,12 +70,13 @@ public class GroundConflictNoGoodLearner {
 			NoGood otherContributingNoGood = atomAssignementEntry.getImpliedBy();
 			if (otherContributingNoGood == null) {
 				// Case b), the other assignment is a decision.
-				return new ConflictAnalysisResult(null, atomAssignementEntry.getDecisionLevel(), true);
+				return new ConflictAnalysisResult(null, atomAssignementEntry.getDecisionLevel(), true, noGoodsResponsible);
 			}
 			// Case a) take other implying NoGood into account.
 			currentResolutionNoGood = new NoGood(
 				resolveNoGoods(sortedLiteralsToProcess,	currentResolutionNoGood, otherContributingNoGood, singleLiteralInCurrentDL, conflictDecisionLevel),
 				-1);
+			noGoodsResponsible.add(otherContributingNoGood);
 
 			// TODO: create/edit ResolutionSequence
 		}
@@ -79,7 +86,7 @@ public class GroundConflictNoGoodLearner {
 			if (sortedLiteralsToProcess.size() == 1) {
 				// Only one remaining literals to process, we reached 1UIP.
 				learnedNoGood = currentResolutionNoGood;
-				return new ConflictAnalysisResult(learnedNoGood, computeBackjumpingDecisionLevel(learnedNoGood), false);
+				return new ConflictAnalysisResult(learnedNoGood, computeBackjumpingDecisionLevel(learnedNoGood), false, noGoodsResponsible);
 			}
 
 			// Resolve next NoGood based on current literal
@@ -93,6 +100,7 @@ public class GroundConflictNoGoodLearner {
 			// TODO: add entry in ResolutionSequence.
 
 			currentResolutionNoGood = new NoGood(resolveNoGoods(sortedLiteralsToProcess, currentResolutionNoGood, impliedByNoGood, literal, conflictDecisionLevel), -1);
+			noGoodsResponsible.add(impliedByNoGood);
 		}
 	}
 

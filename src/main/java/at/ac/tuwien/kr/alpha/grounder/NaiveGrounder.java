@@ -596,6 +596,11 @@ public class NaiveGrounder extends AbstractGrounder {
 		return nogoodIdentifiers.get(noGood);
 	}
 
+	@Override
+	public boolean isAtomChoicePoint(int atom) {
+		return atomStore.getBasicAtom(new AtomId(atom)).predicate.equals(RULE_BODIES_PREDICATE);
+	}
+
 	public void printCurrentlyKnownGroundRules() {
 		System.out.println("Printing known ground rules:");
 		for (Map.Entry<NonGroundRule<? extends Predicate>, HashSet<VariableSubstitution>> ruleSubstitutionsEntry : knownGroundingSubstitutions.entrySet()) {

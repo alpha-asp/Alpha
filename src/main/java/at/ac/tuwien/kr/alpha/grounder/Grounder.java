@@ -40,4 +40,11 @@ public interface Grounder extends AtomTranslator {
 	 * @return
 	 */
 	int registerOutsideNoGood(NoGood noGood);
+
+	/**
+	 * Returns true whenever the atom is a valid choice point (i.e., it represents a rule body).
+	 * @param atom
+	 * @return
+	 */
+	boolean isAtomChoicePoint(int atom);
 }
