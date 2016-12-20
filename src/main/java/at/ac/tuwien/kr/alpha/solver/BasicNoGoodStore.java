@@ -19,7 +19,6 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	private final AtomTranslator translator;
 	private final Assignment assignment;
 	private final Map<Integer, Watches<BinaryWatch, WatchedNoGood>> watches = new HashMap<>();
-	private final Map<Integer, NoGood> binaries = new HashMap<>();
 	private final Iterator<Assignment.Entry> assignmentIterator;
 
 	private NoGood violated;
@@ -51,7 +50,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 	@Override
 	public boolean isEmpty() {
-		return watches.isEmpty() && binaries.isEmpty();
+		return watches.isEmpty();
 	}
 
 	private Watches<BinaryWatch, WatchedNoGood> watches(int literal) {
@@ -103,14 +102,11 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			return false;
 		}
 
-		// Store this nogood for referencing it by ID later.
-		binaries.put(id, noGood);
-
 		// Set up watches, so that in case either a or b is assigned,
 		// an assignment for the respective other can be generated
 		// by unit propagation.
-		watches(a).b.get(isNegated(a) ? FALSE : MBT).add(new BinaryWatch(id, 1));
-		watches(b).b.get(isNegated(b) ? FALSE : MBT).add(new BinaryWatch(id, 0));
+		watches(a).b.get(a).add(new BinaryWatch(noGood, 1));
+		watches(b).b.get(b).add(new BinaryWatch(noGood, 0));
 
 		// If the nogood has a head literal, take extra care as it
 		// might propagate TRUE (and not only FALSE or MBT, which
@@ -119,14 +115,14 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			final int head = noGood.getHead();
 			final int bodyLiteral = noGood.getLiteral(head == 0 ? 1 : 0);
 
-			ThriceTruth complementValue;
-			if (!isNegated(bodyLiteral)) {
-				complementValue = TRUE;
-			} else {
-				complementValue = FALSE;
-			}
 			// Set up watch.
-			watches(bodyLiteral).b.get(complementValue).add(new BinaryWatch(id, head));
+			Set<BinaryWatch> w;
+			if (!isNegated(bodyLiteral)) {
+				w = watches(bodyLiteral).b.getAlpha();
+			} else {
+				w = watches(bodyLiteral).b.get(FALSE);
+			}
+			w.add(new BinaryWatch(noGood, head));
 
 			// If the body already is assigned TRUE or FALSE,
 			// directly perform propagation.
@@ -176,28 +172,30 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		int posPositiveMBTAssignedLiteralExceptHead = -1;
 		int posHighestDecisionLevel = -1;
 		int highestDecisionLevel = -1;
-		int secondHighestDecisionLevel = -1;
-		int posSecondHighestDecisionLevel = -1;
+		int secondHighestPriority = -1;
+		int posSecondHighestPriority = -1;
 		int posPositiveUnassigned = -1;
-		int posPositiveTrueHighestDecisionLevel = -1;
-		int positiveTrueHighestDecisionLevel = -1;
+		int posPositiveTrueHighestPriority = -1;
+		int positiveTrueHighestPriority = -1;
 
-		Map<Integer, Boolean> occurringLiterals = new HashMap<>();	// Used to detect always-satisfied NoGoods of form { L, -L, ... }.
+		// Used to detect always-satisfied NoGoods of form { L, -L, ... }.
+		Map<Integer, Boolean> occurringLiterals = new HashMap<>();
 
 		// Iterate whole noGood and set above pointers.
 		for (int i = 0; i < noGood.size(); i++) {
 			final int literal = noGood.getLiteral(i);
-			Assignment.Entry entry = assignment.get(atomOf(literal));
+			final int atom = atomOf(literal);
+			Assignment.Entry entry = assignment.get(atom);
 
 			// Check if NoGood can never be violated (atom occurring positive and negative)
-			if (occurringLiterals.containsKey(atomOf(literal))) {
-				if (occurringLiterals.get(atomOf(literal)) != isNegated(literal)) {
+			if (occurringLiterals.containsKey(atom)) {
+				if (occurringLiterals.get(atom) != isNegated(literal)) {
 					// NoGood cannot be violated or propagate, ignore it.
 					LOGGER.debug("Added NoGood can never propagate or be violated, ignoring it. NoGood is: " + noGood);
 					return true;
 				}
 			} else {
-				occurringLiterals.put(atomOf(literal), isNegated(literal));
+				occurringLiterals.put(atom, isNegated(literal));
 			}
 
 			// Inspect literal and potentially assigned values.
@@ -205,10 +203,8 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 				// Literal is unassigned, record in first/second unassigned pointer.
 				if (posFirstUnassigned == -1) {
 					posFirstUnassigned = i;
-				} else {
-					if (posSecondUnassigned == -1) {
-						posSecondUnassigned = i;
-					}
+				} else if (posSecondUnassigned == -1) {
+					posSecondUnassigned = i;
 				}
 				// Record if it occurs positively in the noGood.
 				if (!isNegated(literal)) {
@@ -225,65 +221,63 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 				if (MBT.equals(entry.getTruth()) && i != noGood.getHead() && !isNegated(literal)) {
 					posPositiveMBTAssignedLiteralExceptHead = i;
 				}
+
+				int priority = toPriority(entry);
+
 				// Check if literal has highest decision level (so far).
-				if (entry.getDecisionLevel() >= highestDecisionLevel) {
+				if (priority >= highestDecisionLevel) {
 					// Move former highest down to second highest.
-					secondHighestDecisionLevel = highestDecisionLevel;
-					posSecondHighestDecisionLevel = posHighestDecisionLevel;
+					secondHighestPriority = highestDecisionLevel;
+					posSecondHighestPriority = posHighestDecisionLevel;
 					// Record highest decision level.
-					highestDecisionLevel = entry.getDecisionLevel();
+					highestDecisionLevel = priority;
 					posHighestDecisionLevel = i;
 					continue;
 				}
 				// Check if literal has second highest decision level (only reached if smaller than highest decision level).
-				if (entry.getDecisionLevel() > secondHighestDecisionLevel) {
-					secondHighestDecisionLevel = entry.getDecisionLevel();
-					posSecondHighestDecisionLevel = i;
+				if (priority > secondHighestPriority) {
+					secondHighestPriority = priority;
+					posSecondHighestPriority = i;
 				}
 				// Check if literal is positive, assigned TRUE and has highest decision level
-				if (TRUE.equals(entry.getTruth()) && entry.getDecisionLevel() > positiveTrueHighestDecisionLevel) {
-					positiveTrueHighestDecisionLevel = entry.getDecisionLevel();
-					posPositiveTrueHighestDecisionLevel = i;
+				if (TRUE.equals(entry.getTruth()) && priority > positiveTrueHighestPriority) {
+					positiveTrueHighestPriority = priority;
+					posPositiveTrueHighestPriority = i;
 				}
 			}
 		}
 
-		// The MBT pointer points at a positive literal that is either unassigned or MBT;
+		// The alpha pointer points at a positive literal that is either unassigned or MBT;
 		// if all positive literals are assigned TRUE, it points to the one with highest decision level;
 		// if the noGood has no head, it is -1.
-		int potentialMbtPointer = -1;
+		int potentialAlphaPointer = -1;
 		if (noGood.hasHead()) {
-			potentialMbtPointer = posPositiveMBTAssignedLiteralExceptHead != -1 ? posPositiveMBTAssignedLiteralExceptHead : posPositiveUnassigned;
-			if (potentialMbtPointer == -1) {
+			potentialAlphaPointer = posPositiveMBTAssignedLiteralExceptHead != -1 ? posPositiveMBTAssignedLiteralExceptHead : posPositiveUnassigned;
+			if (potentialAlphaPointer == -1) {
 				// All positives are assigned true, point to highest one
-				potentialMbtPointer = posPositiveTrueHighestDecisionLevel;
+				potentialAlphaPointer = posPositiveTrueHighestPriority;
 			}
 		}
-
 
 		// Match cases 1) - 5) above and process accordingly. Note: the order of cases below matters.
 		if (posFirstUnassigned != -1 && posSecondUnassigned != -1) {
 			// Case 5)
-			int pointers[] = {posFirstUnassigned, posSecondUnassigned, potentialMbtPointer};
-			setWatches(noGood, pointers);
+			setWatches(noGood, posFirstUnassigned, posSecondUnassigned, potentialAlphaPointer);
 		} else if (posFirstUnassigned == -1 && posSatisfyingLiteral == -1) {
 			// Case 1)
 			setViolated(noGood);
 			return false;
 		} else if (posSatisfyingLiteral != -1) {
 			// Case 2)
-			int pointers[] = {posHighestDecisionLevel, posSecondHighestDecisionLevel, potentialMbtPointer};
-			setWatches(noGood, pointers);
+			setWatches(noGood, posHighestDecisionLevel, posSecondHighestPriority, potentialAlphaPointer);
 		} else if (noGood.hasHead() && posPositiveMBTAssignedLiteralExceptHead == -1 && (posFirstUnassigned == noGood.getHead() || posFirstUnassigned == -1)) {
 			// Case 4)
 			assignSubDl(noGood, noGood.getHead(), TRUE, highestDecisionLevel);
-			int pointers[] = {posFirstUnassigned, posHighestDecisionLevel, potentialMbtPointer};
-			setWatches(noGood, pointers);
+			setWatches(noGood, posFirstUnassigned, posHighestDecisionLevel, potentialAlphaPointer);
 		} else if (posFirstUnassigned != -1 && posSecondUnassigned == -1) {
 			// Case 3)
 			assignSubDl(noGood, posFirstUnassigned, MBT, highestDecisionLevel);
-			int pointers[] = {posFirstUnassigned, posHighestDecisionLevel, potentialMbtPointer};
-			setWatches(noGood, pointers);
+			setWatches(noGood, posFirstUnassigned, posHighestDecisionLevel, potentialAlphaPointer);
 		} else {
 			// Should never be reached.
 			throw new RuntimeException("Bug in algorithm, added NoGood not matched by any cases. Forgotten case? NoGood is: " + noGood);
@@ -292,18 +286,18 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		return true;
 	}
 
-	private void setWatches(NoGood noGood, int[] pointers) {
-		final WatchedNoGood wng = new WatchedNoGood(noGood, pointers);
+	private void setWatches(NoGood noGood, int a, int b, int alpha) {
+		final WatchedNoGood wng = new WatchedNoGood(noGood, a, b, alpha);
 
 		for (int i = 0; i < 2; i++) {
-			final int literal = noGood.getLiteral(pointers[i]);
-			watches(literal).n.get(isNegated(literal) ? FALSE : MBT).add(wng);
+			final int literal = wng.getLiteral(wng.getPointer(i));
+			watches(literal).n.get(literal).add(wng);
 		}
 
-		// Only look at the third pointer if it points at a legal index. It might not
+		// Only look at the alpha pointer if it points at a legal index. It might not
 		// in case the nogood has no head or no positive literal.
-		if (pointers[2] != -1) {
-			watches(noGood.getLiteral(pointers[2])).n.get(TRUE).add(wng);
+		if (alpha != -1) {
+			watches(wng.getLiteral(alpha)).n.getAlpha().add(wng);
 		}
 	}
 
@@ -421,17 +415,17 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			pointers[1] = (pointers[0] + noGood.size() / 2) % noGood.size();
 		}
 
-		final WatchedNoGood wng = new WatchedNoGood(noGood, pointers);
+		final WatchedNoGood wng = new WatchedNoGood(noGood, pointers[0], pointers[1], pointers[2]);
 
 		for (int i = 0; i < 2; i++) {
 			final int literal = noGood.getLiteral(pointers[i]);
-			watches(literal).n.get(isNegated(literal) ? FALSE : MBT).add(wng);
+			watches(literal).n.get(literal).add(wng);
 		}
 
 		// Only look at the third pointer if it points at a legal index. It might not
 		// in case the nogood has no head or no positive literal.
 		if (pointers[2] != -1) {
-			watches(noGood.getLiteral(pointers[2])).n.get(TRUE).add(wng);
+			watches(noGood.getLiteral(pointers[2])).n.getAlpha().add(wng);
 		}
 		return true;
 	}
@@ -472,18 +466,18 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			boolean atomPropagated = false;
 
 			if (value == MBT || value == FALSE) {
-				atomPropagated = propagateMBT(atom, value);
+				atomPropagated = propagateUnassigned(atom, value);
 				if (violated != null) {
 					return false;
 				}
 			} else if (value == TRUE) {
 				if (!MBT.equals(prevValue)) {
-					atomPropagated = propagateMBT(atom, MBT);
+					atomPropagated = propagateUnassigned(atom, MBT);
 					if (violated != null) {
 						return false;
 					}
 				}
-				atomPropagated |= propagateTrue(atom);
+				atomPropagated |= propagateAssigned(atom);
 				if (violated != null) {
 					return false;
 				}
@@ -500,7 +494,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		return propagated;
 	}
 
-	private boolean propagateMBT(final int atom, final ThriceTruth value) {
+	private boolean propagateUnassigned(final int atom, final ThriceTruth value) {
 		boolean propagated = false;
 		final Watches<BinaryWatch, WatchedNoGood> w = watches(atom);
 
@@ -508,7 +502,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		// If one of the two literals is assigned, the NoGood must be
 		// unit and an assignment can be synthesized.
 		for (BinaryWatch watch : w.b.get(value)) {
-			NoGood binaryNoGood = binaries.get(watch.getId());
+			NoGood binaryNoGood = watch.getNoGood();
 			// If NoGood has head, head is the literal to assign, and the value of the currently assigned atom is FALSE, then set the head to TRUE.
 			if (binaryNoGood.hasHead() && binaryNoGood.getHead() == watch.getOtherLiteralIndex() && FALSE.equals(value)) {
 				if (!assign(binaryNoGood, watch.getOtherLiteralIndex(), TRUE)) {
@@ -574,18 +568,18 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			// atom the pointer points at now.
 			iterator.remove();
 			final int repointedLiteral = noGood.getLiteral(noGood.getPointer(assignedPointer));
-			watches(repointedLiteral).n.get(isNegated(repointedLiteral) ? FALSE : MBT).add(noGood);
+			watches(repointedLiteral).n.get(repointedLiteral).add(noGood);
 		}
 		return propagated;
 	}
 
-	private boolean propagateTrue(final int atom) {
+	private boolean propagateAssigned(final int atom) {
 		boolean propagated = false;
 		final Watches<BinaryWatch, WatchedNoGood> w = watches(atom);
 
-		for (BinaryWatch watch : w.b.get(TRUE)) {
+		for (BinaryWatch watch : w.b.getAlpha()) {
 			final int otherLiteralIndex = watch.getOtherLiteralIndex();
-			final NoGood noGood = binaries.get(watch.getId());
+			final NoGood noGood = watch.getNoGood();
 
 			if (!assign(noGood, otherLiteralIndex, TRUE)) {
 				return false;
@@ -594,7 +588,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			propagated = true;
 		}
 
-		for (Iterator<WatchedNoGood> iterator = w.n.get(TRUE).iterator(); iterator.hasNext();) {
+		for (Iterator<WatchedNoGood> iterator = w.n.getAlpha().iterator(); iterator.hasNext();) {
 			final WatchedNoGood noGood = iterator.next();
 
 			int bestIndex = -1;
@@ -602,18 +596,29 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 			boolean unit = true;
 			for (int offset = 1; offset < noGood.size(); offset++) {
-				final int index = (noGood.getPointer(2) + offset) % noGood.size();
+				final int index = (noGood.getAlphaPointer() + offset) % noGood.size();
 				final int literalAtIndex = noGood.getLiteral(index);
 
+				// The alpha pointer must never point at the head, because the head is
+				// its "counterpart" that will propagate once the alpha pointer cannot
+				// be moved elsewhere.
 				if (index == noGood.getHead()) {
 					continue;
 				}
 
-				if (!assignment.contains(literalAtIndex)) {
+				final boolean literalAtIndexContained = assignment.contains(literalAtIndex);
+
+				// If there is a literal that is not contained in the assignment (and that is not the
+				// head, which was excluded above), the nogood is not unit.
+				if (!literalAtIndexContained) {
 					unit = false;
 				}
 
-				if (!isNegated(literalAtIndex) && !assignment.contains(literalAtIndex)) {
+				// Looking for a new position for the alpha pointer, we have to place it on a
+				// positive literal that is not (strictly) contained in the assignment.
+				// That is, the atom should be either unassigned or assigned to MBT to qualify
+				// as a location for the alpha pointer.
+				if (!isNegated(literalAtIndex) && !literalAtIndexContained) {
 					final int itemPriority = toPriority(noGood.getAtom(index));
 					if (itemPriority > priority) {
 						bestIndex = index;
@@ -642,11 +647,15 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			}
 
 			// The pointer can be moved to thirdPointer.
-			noGood.setPointer(2, bestIndex);
+			noGood.setAlphaPointer(bestIndex);
 			iterator.remove();
-			watches(noGood.getLiteral(noGood.getPointer(2))).n.get(TRUE).add(noGood);
+			watches(noGood.getLiteral(noGood.getAlphaPointer())).n.getAlpha().add(noGood);
 		}
 		return propagated;
+	}
+
+	private int toPriority(Assignment.Entry entry) {
+		return entry.getDecisionLevel();
 	}
 
 	private int toPriority(int atom) {
@@ -654,20 +663,20 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		if (entry == null) {
 			return Integer.MAX_VALUE;
 		}
-		return entry.getDecisionLevel();
+		return toPriority(entry);
 	}
 
 	private static final class BinaryWatch {
-		private final int id;
+		private final NoGood noGood;
 		private final int otherLiteralIndex;
 
-		private BinaryWatch(int id, int otherLiteralIndex) {
-			this.id = id;
+		private BinaryWatch(NoGood noGood, int otherLiteralIndex) {
+			this.noGood = noGood;
 			this.otherLiteralIndex = otherLiteralIndex;
 		}
 
-		private int getId() {
-			return id;
+		private NoGood getNoGood() {
+			return noGood;
 		}
 
 		private int getOtherLiteralIndex() {
@@ -684,10 +693,22 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	private class ThriceSet<T> {
 		private final Set<T> pos = new HashSet<>();
 		private final Set<T> neg = new HashSet<>();
-		private final Set<T> mbt = new HashSet<>();
+		private final Set<T> alpha = new HashSet<>();
+
+		public Set<T> get(int literal) {
+			return get(!isNegated(literal));
+		}
 
 		public Set<T> get(ThriceTruth truth) {
-			return truth != FALSE ? truth != MBT ? pos : mbt : neg;
+			return get(truth.toBoolean());
+		}
+
+		public Set<T> getAlpha() {
+			return alpha;
+		}
+
+		private Set<T> get(boolean truth) {
+			return truth ? pos : neg;
 		}
 	}
 
