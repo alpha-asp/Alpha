@@ -8,9 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
-import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.common.Literals.*;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
 class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
@@ -195,8 +193,8 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		int secondHighestPriority = -1;
 		int posSecondHighestPriority = -1;
 		int posPositiveUnassigned = -1;
-		int posPositiveTrueHighestPriority = -1;
-		int positiveTrueHighestPriority = -1;
+		int posPositiveTrueHighestDecisionLevel = -1;
+		int positiveTrueHighestDecisionLevel = -1;
 
 		// Used to detect always-satisfied NoGoods of form { L, -L, ... }.
 		Map<Integer, Boolean> occurringLiterals = new HashMap<>();
@@ -252,27 +250,27 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 					posPositiveMBTAssignedLiteralExceptHead = i;
 				}
 
-				int priority = toPriority(entry);
+				int dl = entry.getDecisionLevel();
 
 				// Check if literal has highest decision level (so far).
-				if (priority >= highestDecisionLevel) {
+				if (dl >= highestDecisionLevel) {
 					// Move former highest down to second highest.
 					secondHighestPriority = highestDecisionLevel;
 					posSecondHighestPriority = posHighestDecisionLevel;
 					// Record highest decision level.
-					highestDecisionLevel = priority;
+					highestDecisionLevel = dl;
 					posHighestDecisionLevel = i;
 					continue;
 				}
 				// Check if literal has second highest decision level (only reached if smaller than highest decision level).
-				if (priority > secondHighestPriority) {
-					secondHighestPriority = priority;
+				if (dl > secondHighestPriority) {
+					secondHighestPriority = dl;
 					posSecondHighestPriority = i;
 				}
 				// Check if literal is positive, assigned TRUE and has highest decision level
-				if (TRUE.equals(entry.getTruth()) && priority > positiveTrueHighestPriority) {
-					positiveTrueHighestPriority = priority;
-					posPositiveTrueHighestPriority = i;
+				if (TRUE.equals(entry.getTruth()) && dl > positiveTrueHighestDecisionLevel) {
+					positiveTrueHighestDecisionLevel = dl;
+					posPositiveTrueHighestDecisionLevel = i;
 				}
 			}
 		}
@@ -285,7 +283,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			potentialAlphaPointer = posPositiveMBTAssignedLiteralExceptHead != -1 ? posPositiveMBTAssignedLiteralExceptHead : posPositiveUnassigned;
 			if (potentialAlphaPointer == -1) {
 				// All positives are assigned true, point to highest one
-				potentialAlphaPointer = posPositiveTrueHighestPriority;
+				potentialAlphaPointer = posPositiveTrueHighestDecisionLevel;
 			}
 		}
 
@@ -462,7 +460,8 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			final int assignedIndex = noGood.getPointer(assignedPointer);
 			final int otherIndex = noGood.getPointer(assignedPointer == 0 ? 1 : 0);
 			int highestDecisionLevel = atomDecisionLevel;
-			boolean containsMBT = MBT.equals(value);	// If value is MBT, this is one occurrence of a positive literal assigned MBT.
+			// If value is MBT, this is one occurrence of a positive literal assigned MBT.
+			boolean containsMBT = MBT.equals(value);
 
 			for (int offset = 1; offset < noGood.size(); offset++) {
 				final int index = (assignedIndex + offset) % noGood.size();
@@ -535,8 +534,6 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			final WatchedNoGood noGood = iterator.next();
 
 			int bestIndex = -1;
-			int priority = -1;
-
 			boolean unit = true;
 			for (int offset = 1; offset < noGood.size(); offset++) {
 				final int index = (noGood.getAlphaPointer() + offset) % noGood.size();
@@ -555,18 +552,18 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 				// head, which was excluded above), the nogood is not unit.
 				if (!literalAtIndexContained) {
 					unit = false;
+
+					// Looking for a new position for the alpha pointer, we have to place it on a
+					// positive literal that is not (strictly) contained in the assignment.
+					// That is, the atom should be either unassigned or assigned to MBT to qualify
+					// as a location for the alpha pointer.
+					if (!isNegated(literalAtIndex)) {
+						bestIndex = index;
+					}
 				}
 
-				// Looking for a new position for the alpha pointer, we have to place it on a
-				// positive literal that is not (strictly) contained in the assignment.
-				// That is, the atom should be either unassigned or assigned to MBT to qualify
-				// as a location for the alpha pointer.
-				if (!isNegated(literalAtIndex) && !literalAtIndexContained) {
-					final int itemPriority = toPriority(noGood.getAtom(index));
-					if (itemPriority > priority) {
-						bestIndex = index;
-						priority = itemPriority;
-					}
+				if (!unit && bestIndex != -1) {
+					break;
 				}
 			}
 
@@ -585,7 +582,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 				continue;
 			}
 
-			if (priority == -1) {
+			if (bestIndex == -1) {
 				continue;
 			}
 
@@ -595,18 +592,6 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			watches(noGood.getLiteral(noGood.getAlphaPointer())).n.getAlpha().add(noGood);
 		}
 		return propagated;
-	}
-
-	private int toPriority(Assignment.Entry entry) {
-		return entry.getDecisionLevel();
-	}
-
-	private int toPriority(int atom) {
-		final Assignment.Entry entry = assignment.get(atom);
-		if (entry == null) {
-			return Integer.MAX_VALUE;
-		}
-		return toPriority(entry);
 	}
 
 	private static final class BinaryWatch {
