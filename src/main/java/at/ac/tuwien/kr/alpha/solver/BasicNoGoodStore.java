@@ -53,6 +53,15 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		return watches.computeIfAbsent(atomOf(literal), k -> new Watches<>());
 	}
 
+	private void addPosNegWatch(WatchedNoGood wng, int pointer) {
+		final int literal = wng.getLiteral(wng.getPointer(pointer));
+		watches(literal).n.get(literal).add(wng);
+	}
+
+	private void addAlphaWatch(WatchedNoGood wng) {
+		watches(wng.getLiteralAtAlpha()).n.getAlpha().add(wng);
+	}
+
 	@Override
 	public ConflictCause add(int id, NoGood noGood) {
 		LOGGER.trace("Adding {}", noGood);
@@ -152,13 +161,9 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			final int bodyLiteral = noGood.getLiteral(head == 0 ? 1 : 0);
 
 			// Set up watch.
-			Set<BinaryWatch> w;
 			if (!isNegated(bodyLiteral)) {
-				w = watches(bodyLiteral).b.getAlpha();
-			} else {
-				w = watches(bodyLiteral).b.get(FALSE);
+				watches(bodyLiteral).b.getAlpha().add(new BinaryWatch(noGood, head));
 			}
-			w.add(new BinaryWatch(noGood, head));
 		}
 		return null;
 	}
@@ -338,14 +343,13 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		final WatchedNoGood wng = new WatchedNoGood(noGood, a, b, alpha);
 
 		for (int i = 0; i < 2; i++) {
-			final int literal = wng.getLiteral(wng.getPointer(i));
-			watches(literal).n.get(literal).add(wng);
+			addPosNegWatch(wng, i);
 		}
 
 		// Only look at the alpha pointer if it points at a legal index. It might not
 		// in case the nogood has no head or no positive literal.
 		if (alpha != -1) {
-			watches(wng.getLiteral(alpha)).n.getAlpha().add(wng);
+			addAlphaWatch(wng);
 		}
 	}
 
@@ -509,8 +513,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			// Remove the NoGood from the current watchlist and add it to the watches for the
 			// atom the pointer points at now.
 			iterator.remove();
-			final int repointedLiteral = noGood.getLiteral(noGood.getPointer(assignedPointer));
-			watches(repointedLiteral).n.get(repointedLiteral).add(noGood);
+			addPosNegWatch(noGood, assignedPointer);
 		}
 		return propagated;
 	}
@@ -520,10 +523,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		final Watches<BinaryWatch, WatchedNoGood> w = watches(atom);
 
 		for (BinaryWatch watch : w.b.getAlpha()) {
-			final int otherLiteralIndex = watch.getOtherLiteralIndex();
-			final NoGood noGood = watch.getNoGood();
-
-			if (!assign(noGood, otherLiteralIndex, TRUE)) {
+			if (!assign(watch.getNoGood(), watch.getOtherLiteralIndex(), TRUE)) {
 				return false;
 			}
 
@@ -589,7 +589,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			// The pointer can be moved to thirdPointer.
 			noGood.setAlphaPointer(bestIndex);
 			iterator.remove();
-			watches(noGood.getLiteral(noGood.getAlphaPointer())).n.getAlpha().add(noGood);
+			addAlphaWatch(noGood);
 		}
 		return propagated;
 	}
