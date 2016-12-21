@@ -3,10 +3,10 @@
 # appear in this repo by chance.
 # See list of predefined hunk headers at
 # https://www.kernel.org/pub/software/scm/git/docs/gitattributes.html#_defining_a_custom_hunk_header
-*.java diff=java
-*.html diff=html
-*.tex  diff=tex
-*.py   diff=python
+*.java text diff=java
+*.html text diff=html
+*.tex  text diff=tex
+*.py   text diff=python
 
 # Binary files to be handled by Git LFS
 *.jpg  filter=lfs diff=lfs merge=lfs binary
