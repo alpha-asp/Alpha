@@ -9,12 +9,9 @@ import java.io.InputStream;
 
 import static at.ac.tuwien.kr.alpha.Main.main;
 import static at.ac.tuwien.kr.alpha.Main.parseVisit;
+import static at.ac.tuwien.kr.alpha.Util.stream;
 
 public class MainTest {
-	public static InputStream stream(String file) {
-		return new ByteArrayInputStream(file.getBytes());
-	}
-
 	@Test
 	@Ignore
 	public void parseSimpleProgram() throws IOException {

@@ -1,5 +1,7 @@
 package at.ac.tuwien.kr.alpha;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.AbstractMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,5 +34,9 @@ public class Util {
 				sb.append(", ");
 			}
 		}
+	}
+
+	public static InputStream stream(String file) {
+		return new ByteArrayInputStream(file.getBytes());
 	}
 }

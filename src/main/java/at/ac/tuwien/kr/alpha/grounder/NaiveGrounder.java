@@ -1,6 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.Main;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstraint;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFact;
@@ -18,7 +17,7 @@ import java.util.*;
  * A semi-naive grounder.
  * Copyright (c) 2016, the Alpha Team.
  */
-public class NaiveGrounder extends AbstractGrounder {
+public class NaiveGrounder extends BridgedGrounder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
 
 	/**
@@ -32,8 +31,7 @@ public class NaiveGrounder extends AbstractGrounder {
 
 	HashMap<Predicate, ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage>> workingMemory = new HashMap<>();
 	Map<NoGood, Integer> nogoodIdentifiers = new HashMap<>();
-	AtomStore atomStore = new AtomStore();
-
+	private AtomStore atomStore = new AtomStore();
 	private final IntIdGenerator intIdGenerator = new IntIdGenerator();
 	IntIdGenerator nogoodIdGenerator = new IntIdGenerator();
 	private IntIdGenerator choiceAtomsGenerator = new IntIdGenerator();
@@ -196,7 +194,7 @@ public class NaiveGrounder extends AbstractGrounder {
 		HashMap<Integer, NoGood> noGoodsFromFacts = new HashMap<>();
 		for (Predicate predicate : factsFromProgram.keySet()) {
 			for (Instance instance : factsFromProgram.get(predicate)) {
-				AtomId atomIdFactAtom = atomStore.createAtomId(new BasicAtom(predicate, instance.terms));
+				AtomId atomIdFactAtom = atomStore.createAtomId(new BasicAtom(predicate, false, instance.terms));
 				NoGood noGood = new NoGood(new int[]{-atomIdFactAtom.atomId}, 0);
 				// The noGood is assumed to be new.
 				int noGoodId = nogoodIdGenerator.getNextId();
@@ -216,6 +214,7 @@ public class NaiveGrounder extends AbstractGrounder {
 					nogoodIdentifiers.put(noGood, noGoodId);
 					noGoodsFromFacts.put(noGoodId, noGood);
 				}
+				registerIfNeeded(noGood, noGoodsFromFacts);
 			}
 		}
 		return noGoodsFromFacts;
@@ -254,11 +253,7 @@ public class NaiveGrounder extends AbstractGrounder {
 					List<NoGood> noGoods = generateNoGoodsFromGroundSubstitution(nonGroundRule, variableSubstitution);
 					for (NoGood noGood : noGoods) {
 						// Check if noGood was already derived earlier, add if it is new
-						if (!nogoodIdentifiers.containsKey(noGood)) {
-							int noGoodId = nogoodIdGenerator.getNextId();
-							nogoodIdentifiers.put(noGood, noGoodId);
-							newNoGoods.put(noGoodId, noGood);
-						}
+						registerIfNeeded(noGood, newNoGoods);
 					}
 				}
 			}
@@ -266,6 +261,9 @@ public class NaiveGrounder extends AbstractGrounder {
 			// Mark instances added by updateAssignment as done
 			modifiedWorkingMemory.markRecentlyAddedInstancesDone();
 		}
+
+		// TODO(flowlo): Somewhere around here, we should call collectExternal to resolve external stuff.
+
 		modifiedWorkingMemories = new HashSet<>();
 		return newNoGoods;
 	}
@@ -323,7 +321,7 @@ public class NaiveGrounder extends AbstractGrounder {
 		} else {
 			// Prepare atom representing the rule body
 			BasicAtom ruleBodyRepresentingPredicate = new BasicAtom(RULE_BODIES_PREDICATE,
-				ConstantTerm.getInstance(Integer.toString(nonGroundRule.getRuleId())),
+				true, ConstantTerm.getInstance(Integer.toString(nonGroundRule.getRuleId())),
 				ConstantTerm.getInstance(variableSubstitution.toUniformString()));
 			// Check uniqueness of ground rule by testing whether the body representing atom already has an id
 			if (atomStore.isAtomExisting(ruleBodyRepresentingPredicate)) {
@@ -372,7 +370,7 @@ public class NaiveGrounder extends AbstractGrounder {
 					choiceOnLiterals[i++] = atomId.atomId;
 				}
 				int choiceId = choiceAtomsGenerator.getNextId();
-				BasicAtom choiceOnAtom =  new BasicAtom(CHOICE_ON_PREDICATE, ConstantTerm.getInstance(Integer.toString(choiceId)));
+				BasicAtom choiceOnAtom =  new BasicAtom(CHOICE_ON_PREDICATE, true, ConstantTerm.getInstance(Integer.toString(choiceId)));
 				int choiceOnAtomIdInt = atomStore.createAtomId(choiceOnAtom).atomId;
 				choiceOnLiterals[0] = -choiceOnAtomIdInt;
 				// Add corresponding NoGood and ChoiceOn
@@ -380,7 +378,7 @@ public class NaiveGrounder extends AbstractGrounder {
 				newChoiceOn.put(choiceOnAtomIdInt, bodyRepresentingAtomId.atomId);
 
 				// ChoiceOff if some negative body atom is contradicted
-				BasicAtom choiceOffAtom =  new BasicAtom(CHOICE_OFF_PREDICATE, ConstantTerm.getInstance(Integer.toString(choiceId)));
+				BasicAtom choiceOffAtom =  new BasicAtom(CHOICE_OFF_PREDICATE, true, ConstantTerm.getInstance(Integer.toString(choiceId)));
 				int choiceOffAtomIdInt = atomStore.createAtomId(choiceOffAtom).atomId;
 				for (AtomId negAtomId : bodyAtomsNegative) {
 					// Choice is off if any of the negative atoms is assigned true, hence we add one NoGood for each such atom.
@@ -602,6 +600,16 @@ public class NaiveGrounder extends AbstractGrounder {
 		for (Map.Entry<NoGood, Integer> noGoodEntry : nogoodIdentifiers.entrySet()) {
 			System.out.println(noGoodEntry.getKey().toStringReadable(this));
 		}
+	}
+
+	private boolean registerIfNeeded(NoGood noGood, Map<Integer, NoGood> target) {
+		if (nogoodIdentifiers.containsKey(noGood)) {
+			return false;
+		}
+		int noGoodId = nogoodIdGenerator.getNextId();
+		nogoodIdentifiers.put(noGood, noGoodId);
+		target.put(noGoodId, noGood);
+		return true;
 	}
 
 	private class FirstBindingAtom {

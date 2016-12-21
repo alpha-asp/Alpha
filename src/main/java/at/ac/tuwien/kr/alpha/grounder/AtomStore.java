@@ -6,6 +6,7 @@ import at.ac.tuwien.kr.alpha.common.Term;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.ListIterator;
 import java.util.Map;
 
 /**
@@ -21,7 +22,7 @@ public class AtomStore {
 
 	public AtomStore() {
 		// Create atomId for falsum (currently not needed, but it gets atomId 0, which cannot represent a negated literal).
-		createAtomId(new BasicAtom(new BasicPredicate("\u22A5", 0), new Term[0]));
+		createAtomId(new BasicAtom(new BasicPredicate("\u22A5", 0), true, new Term[0]));
 	}
 
 	public AtomId getHighestAtomId() {
@@ -48,6 +49,10 @@ public class AtomStore {
 		} catch (IndexOutOfBoundsException e) {
 			throw new RuntimeException("AtomStore: Unknown atomId encountered: " + atomId.atomId);
 		}
+	}
+
+	public ListIterator<BasicAtom> listIterator() {
+		return atomIdsToInternalBasicAtoms.listIterator();
 	}
 
 	/**

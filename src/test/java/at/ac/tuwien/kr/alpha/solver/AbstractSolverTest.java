@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Main.parseVisit;
-import static at.ac.tuwien.kr.alpha.MainTest.stream;
+import static at.ac.tuwien.kr.alpha.Util.stream;
 import static org.junit.Assert.assertEquals;
 
 public abstract class AbstractSolverTest {

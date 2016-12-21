@@ -13,14 +13,20 @@ import java.util.List;
 public class BasicAtom implements Atom {
 	public final Predicate predicate;
 	public final Term[] termList;
+	private final boolean internal;
 
-	public BasicAtom(Predicate predicate, Term... termList) {
+	public BasicAtom(Predicate predicate, boolean internal, Term... termList) {
 		this.predicate = predicate;
+		this.internal = internal;
 		this.termList = termList;
 	}
 
+	public BasicAtom(Predicate predicate, Term... termList) {
+		this(predicate, false, termList);
+	}
+
 	public static BasicAtom fromParsedAtom(ParsedAtom parsedAtom) {
-		return new BasicAtom(new BasicPredicate(parsedAtom.predicate, parsedAtom.arity), terms(parsedAtom));
+		return new BasicAtom(new BasicPredicate(parsedAtom.predicate, parsedAtom.arity), false, terms(parsedAtom));
 	}
 
 	private static Term[] terms(ParsedAtom parsedAtom) {
@@ -43,6 +49,10 @@ public class BasicAtom implements Atom {
 			}
 		}
 		return true;
+	}
+
+	public boolean isInternal() {
+		return internal;
 	}
 
 	@Override

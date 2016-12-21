@@ -19,7 +19,10 @@ import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -125,12 +128,11 @@ public class Main {
 		ParsedProgram program = null;
 		try {
 			if (commandLine.hasOption(OPT_STRING)) {
-				program = parseVisit(new ByteArrayInputStream(commandLine.getOptionValue(OPT_STRING).getBytes()));
+				program = parseVisit(Util.stream(commandLine.getOptionValue(OPT_STRING)));
 			} else if (commandLine.hasOption(OPT_INPUT)) {
 				program = parseVisit(new FileInputStream(commandLine.getOptionValue(OPT_INPUT)));
 			} else {
-				System.out.println("Error: no input provided");
-				System.exit(1);
+				bailOut("Error: no input provided");
 			}
 		} catch (RecognitionException e) {
 			bailOut("Error while parsing input ASP program, see errors above.", e);
@@ -162,20 +164,17 @@ public class Main {
 
 			String[][] resultsArray = results.toArray(new String[results.size()][]);
 
-			sendResults(resultsArray);
+			//sendResults(resultsArray);
 		} else if (commandLine.hasOption(OPT_INPUT)) {
 			Stream<AnswerSet> stream = solver.stream();
 
 			if (limit > 0) {
 				stream = stream.limit(limit);
 			}
+
 			stream.forEach(System.out::println);
 		}
 	}
-
-	public static native void sendResults(String[][] resultsArray);
-
-	public static native String[][] externalAtomsQuery(String[] trueAtoms, String[] falseAtoms);
 
 	private static void bailOut(String format, Object... arguments) {
 		LOGGER.error(format, arguments);
