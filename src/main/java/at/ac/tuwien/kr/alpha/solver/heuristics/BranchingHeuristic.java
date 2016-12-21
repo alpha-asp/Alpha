@@ -1,8 +1,6 @@
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016 Siemens AG
  * All rights reserved.
- * 
- * Additional changes made by Siemens.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,31 +23,49 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-public enum ThriceTruth {
-	TRUE("T", true),
-	FALSE("F", false),
-	MBT("M", true);
+import at.ac.tuwien.kr.alpha.common.NoGood;
 
-	private final String asString;
-	private final boolean asBoolean;
+import java.util.Collection;
 
-	ThriceTruth(String asString, boolean asBoolean) {
-		this.asString = asString;
-		this.asBoolean = asBoolean;
-	}
+/**
+ * A heuristic that selects an atom to choose on.
+ * 
+ * Copyright (c) 2016 Siemens AG
+ *
+ */
+public interface BranchingHeuristic {
 
-	public boolean toBoolean() {
-		return asBoolean;
-	}
+	/**
+	 * Stores a newly violated {@link NoGood} and updates associated activity and sign counters.
+	 * 
+	 * @param violatedNoGood
+	 */
+	void violatedNoGood(NoGood violatedNoGood);
 
-	@Override
-	public String toString() {
-		return asString;
-	}
+	/**
+	 * Stores a newly grounded {@link NoGood} and updates associated activity counters.
+	 * 
+	 * @param newNoGood
+	 */
+	void newNoGood(NoGood newNoGood);
+	
+	/**
+	 * @see #newNoGood(NoGood)
+	 */
+	void newNoGoods(Collection<NoGood> newNoGoods);
 
-	public static ThriceTruth valueOf(boolean value) {
-		return value ? TRUE : FALSE;
-	}
+	double getActivity(int literal);
+	
+	/**
+	 * Determines an atom to choose on.
+	 */
+	int chooseAtom();
+
+	/**
+	 * Chooses a truth value for the given atom.
+	 */
+	boolean chooseSign(int atom);
+
 }
