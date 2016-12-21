@@ -39,7 +39,6 @@ public class GroundConflictNoGoodLearner {
 	}
 
 	public ConflictAnalysisResult analyzeConflictingNoGood(NoGood violatedNoGood) {
-		NoGood learnedNoGood;
 		Set<NoGood> noGoodsResponsible = new HashSet<>();
 		noGoodsResponsible.add(violatedNoGood);
 		NoGood currentResolutionNoGood = new NoGood(violatedNoGood.getLiteralsClone(), -1);	// Clone violated NoGood and remove potential head.
@@ -85,8 +84,12 @@ public class GroundConflictNoGoodLearner {
 			// Check if 1UIP was reached.
 			if (sortedLiteralsToProcess.size() == 1) {
 				// Only one remaining literals to process, we reached 1UIP.
-				learnedNoGood = currentResolutionNoGood;
-				return new ConflictAnalysisResult(learnedNoGood, computeBackjumpingDecisionLevel(learnedNoGood), false, noGoodsResponsible);
+				return new ConflictAnalysisResult(currentResolutionNoGood, computeBackjumpingDecisionLevel(currentResolutionNoGood), false, noGoodsResponsible);
+			} else if (sortedLiteralsToProcess.size() < 1) {
+				// This can happen if some NoGood implied a literal at a higher decision level and later the implying literals become (re-)assigned at lower decision levels.
+				// Lowering the decision level may be possible but requires further analysis.
+				// For the moment, just report the learned NoGood.
+				return new ConflictAnalysisResult(currentResolutionNoGood, computeBackjumpingDecisionLevel(currentResolutionNoGood), false, noGoodsResponsible);
 			}
 
 			// Resolve next NoGood based on current literal

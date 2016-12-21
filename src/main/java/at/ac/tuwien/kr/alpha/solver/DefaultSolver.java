@@ -235,7 +235,7 @@ public class DefaultSolver extends AbstractSolver {
 		for (Map.Entry<Integer, NoGood> noGoodEntry : obtained.entrySet()) {
 			NoGoodStore.ConflictCause conflictCause = store.add(noGoodEntry.getKey(), noGoodEntry.getValue());
 			if (conflictCause != null) {
-				LOGGER.debug("Adding obtained NoGoods from grounder violates current assignment: learning, backjumping, and adding again.");
+				LOGGER.debug("Adding obtained NoGoods from grounder violates current assignment; learning, backjumping, and adding again. Added NoGood is: {}", noGoodEntry.getValue());
 				if (conflictCause.violatedGuess != null) {
 					LOGGER.debug("Added NoGood {} violates guess {}.", noGoodEntry.getKey(), conflictCause.violatedGuess);
 					LOGGER.debug("Backjumping to decision level: {}", conflictCause.violatedGuess.getDecisionLevel());

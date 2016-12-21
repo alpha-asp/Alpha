@@ -102,8 +102,8 @@ public class BasicAssignment implements Assignment {
 		if (decisionLevel > getDecisionLevel() || decisionLevel < 0) {
 			throw new IllegalArgumentException("Given decisionLevel is outside range of possible decision levels. Given decisionLevel is: " + decisionLevel);
 		}
-		if (decisionLevel < getDecisionLevel()) {
-			LOGGER.debug("Assign called with lower decision level. Atom: {}, value: {}, decisionLevel: {}.", atom, value, decisionLevel);
+		if (decisionLevel < getDecisionLevel() && LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Assign called with lower decision level. Atom: {}_{}@{}.", value, grounder.atomToString(atom), decisionLevel);
 		}
 		return assignWithDecisionLevel(atom, value, impliedBy, decisionLevel);
 	}
