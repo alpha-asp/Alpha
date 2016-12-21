@@ -31,7 +31,6 @@ public interface NoGoodStore<T extends ThriceTruth> {
 	 */
 	NoGood getViolatedNoGood();
 
-
 	/**
 	 * Apply unit-propagation and mbt-propagation. Propagation should stop as soon as some NoGood is violated.
 	 * @return true iff the propagation derived new assignment(s).
