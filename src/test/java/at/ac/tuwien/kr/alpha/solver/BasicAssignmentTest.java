@@ -196,4 +196,22 @@ public class BasicAssignmentTest {
 		assignment.assign(3, FALSE);
 		assertEquals(3, assignmentsToProcess.remove().getAtom());
 	}
+
+	@Test
+	public void mbtCounterAssignMbtToFalseOnLowerDecisionLevel() {
+		assertTrue(assignment.guess(1, TRUE));
+		assertTrue(assignment.guess(2, FALSE));
+
+		assertTrue(assignment.assign(3, MBT, null, 2));
+		assertEquals(1, assignment.getMBTCount());
+
+		assertTrue(assignment.guess(4, TRUE));
+
+		assertFalse(assignment.assign(3, FALSE, null, 1));
+
+		assignment.backtrack();
+		assignment.backtrack();
+
+		assertEquals(0, assignment.getMBTCount());
+	}
 }

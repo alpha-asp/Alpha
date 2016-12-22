@@ -105,7 +105,11 @@ public class BasicAssignment implements Assignment {
 		if (decisionLevel < getDecisionLevel() && LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Assign called with lower decision level. Atom: {}_{}@{}.", value, grounder.atomToString(atom), decisionLevel);
 		}
-		return assignWithDecisionLevel(atom, value, impliedBy, decisionLevel);
+		boolean isConflictFree = assignWithDecisionLevel(atom, value, impliedBy, decisionLevel);
+		if (!isConflictFree) {
+			LOGGER.debug("Assign is conflicting: atom: {}, value: {}, impliedBy: {}.", atom, value, impliedBy);
+		}
+		return isConflictFree;
 	}
 
 	@Override
@@ -195,6 +199,11 @@ public class BasicAssignment implements Assignment {
 					// Increment mbtCount in case the assigned value is MBT and current one is not.
 					if (MBT.equals(value) && !MBT.equals(current.getTruth())) {
 						mbtCount++;
+					}
+
+					// Decrement mbtCount in case the assigned value is non-MBT while the current one is.
+					if (!MBT.equals(value) && MBT.equals(current.getTruth())) {
+						mbtCount--;
 					}
 
 					// Add new assignment entry.

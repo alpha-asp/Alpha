@@ -7,10 +7,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
@@ -179,11 +176,13 @@ public class DefaultSolver extends AbstractSolver {
 				return;
 			}
 
+			int lastGuessedAtom = choiceStack.peekAtom();
+			boolean lastGuessedValue = choiceStack.peekValue();
+			Assignment.Entry lastChoiceEntry = assignment.get(lastGuessedAtom);
+
 			store.backtrack();
 			LOGGER.debug("Backtrack: Removing last choice, setting decision level to {}.", assignment.getDecisionLevel());
 
-			int lastGuessedAtom = choiceStack.peekAtom();
-			boolean lastGuessedValue = choiceStack.peekValue();
 			choiceStack.remove();
 			LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 
@@ -196,6 +195,18 @@ public class DefaultSolver extends AbstractSolver {
 					repeatBacktrack = true;
 					continue;
 				}
+				// If choice was assigned at lower decision level (due to added NoGoods), no inverted guess should be done.
+				if (lastChoiceEntry.getImpliedBy() != null) {
+					LOGGER.debug("Last choice now is implied by: {}.", lastChoiceEntry.getImpliedBy());
+					if (lastChoiceEntry.getDecisionLevel() == assignment.getDecisionLevel()) {
+						throw new RuntimeException("Choice was assigned but not at a lower decision level. This should not happen.");
+					}
+					LOGGER.debug("Choice was assigned at a lower decision level");
+					LOGGER.debug("Recursive backtracking.");
+					repeatBacktrack = true;
+					continue;
+				}
+
 				decisionCounter++;
 				assignment.guess(lastGuessedAtom, FALSE);
 				LOGGER.debug("Backtrack: setting decision level to {}.", assignment.getDecisionLevel());
