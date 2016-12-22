@@ -20,16 +20,16 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 public class DefaultSolver extends AbstractSolver {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolver.class);
 
-	final NoGoodStore<ThriceTruth> store;
-	final Map<Integer, Integer> choiceOn = new LinkedHashMap<>();
-	final Map<Integer, Integer> choiceOff = new HashMap<>();
+	private final NoGoodStore<ThriceTruth> store;
+	private final Map<Integer, Integer> choiceOn = new LinkedHashMap<>();
+	private final Map<Integer, Integer> choiceOff = new HashMap<>();
 	private final ChoiceStack choiceStack;
 	protected final Assignment assignment;
 	private final Iterator<OrdinaryAssignment> assignmentIterator;
 
 	private boolean initialize = true;
 
-	boolean didChange;
+	private boolean didChange;
 
 	private int decisionCounter;
 	private List<Integer> unassignedAtoms;
@@ -159,7 +159,7 @@ public class DefaultSolver extends AbstractSolver {
 		grounder.updateAssignment(assignmentIterator);
 	}
 
-	protected void obtainNoGoodsFromGrounder() {
+	private void obtainNoGoodsFromGrounder() {
 		Map<Integer, NoGood> obtained = grounder.getNoGoods(assignment);
 
 		if (!obtained.isEmpty()) {

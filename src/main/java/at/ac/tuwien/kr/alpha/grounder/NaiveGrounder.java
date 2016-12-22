@@ -29,11 +29,11 @@ public class NaiveGrounder extends BridgedGrounder {
 	static final BasicPredicate CHOICE_ON_PREDICATE = new BasicPredicate("ChoiceOn", 1);
 	static final BasicPredicate CHOICE_OFF_PREDICATE = new BasicPredicate("ChoiceOff", 1);
 
-	HashMap<Predicate, ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage>> workingMemory = new HashMap<>();
-	Map<NoGood, Integer> nogoodIdentifiers = new HashMap<>();
+	private HashMap<Predicate, ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage>> workingMemory = new HashMap<>();
+	private Map<NoGood, Integer> nogoodIdentifiers = new HashMap<>();
 	private AtomStore atomStore = new AtomStore();
 	private final IntIdGenerator intIdGenerator = new IntIdGenerator();
-	IntIdGenerator nogoodIdGenerator = new IntIdGenerator();
+	private IntIdGenerator nogoodIdGenerator = new IntIdGenerator();
 	private IntIdGenerator choiceAtomsGenerator = new IntIdGenerator();
 
 	private HashMap<Predicate, ArrayList<Instance>> factsFromProgram = new HashMap<>();
