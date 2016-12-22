@@ -245,34 +245,37 @@ public class DefaultSolver extends AbstractSolver {
 	private void addAllNoGoodsAndTreatContradictions(Map<Integer, NoGood> obtained) {
 		for (Map.Entry<Integer, NoGood> noGoodEntry : obtained.entrySet()) {
 			NoGoodStore.ConflictCause conflictCause = store.add(noGoodEntry.getKey(), noGoodEntry.getValue());
-			if (conflictCause != null) {
-				LOGGER.debug("Adding obtained NoGoods from grounder violates current assignment; learning, backjumping, and adding again. Added NoGood is: {}", noGoodEntry.getValue());
-				if (conflictCause.violatedGuess != null) {
-					LOGGER.debug("Added NoGood {} violates guess {}.", noGoodEntry.getKey(), conflictCause.violatedGuess);
-					LOGGER.debug("Backjumping to decision level: {}", conflictCause.violatedGuess.getDecisionLevel());
-					doBackjump(conflictCause.violatedGuess.getDecisionLevel());
+			if (conflictCause == null) {
+				// There is no conflict, all is fine. Just skip conflict treatment and carry on.
+				continue;
+			}
+
+			LOGGER.debug("Adding obtained NoGoods from grounder violates current assignment: learning, backjumping, and adding again.");
+			if (conflictCause.violatedGuess != null) {
+				LOGGER.debug("Added NoGood {} violates guess {}.", noGoodEntry.getKey(), conflictCause.violatedGuess);
+				LOGGER.debug("Backjumping to decision level: {}", conflictCause.violatedGuess.getDecisionLevel());
+				doBackjump(conflictCause.violatedGuess.getDecisionLevel());
+				store.backtrack();
+				LOGGER.debug("Backtrack: Removing last choice because of conflict with newly added NoGoods, setting decision level to {}.", assignment.getDecisionLevel());
+				choiceStack.remove();
+				LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
+			} else {
+				GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.violatedNoGood);
+				doBackjump(conflictAnalysisResult.backjumpLevel);
+				if (conflictAnalysisResult.clearLastGuessAfterBackjump) {
 					store.backtrack();
 					LOGGER.debug("Backtrack: Removing last choice because of conflict with newly added NoGoods, setting decision level to {}.", assignment.getDecisionLevel());
 					choiceStack.remove();
 					LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
-				} else {
-					GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.violatedNoGood);
-					doBackjump(conflictAnalysisResult.backjumpLevel);
-					if (conflictAnalysisResult.clearLastGuessAfterBackjump) {
-						store.backtrack();
-						LOGGER.debug("Backtrack: Removing last choice because of conflict with newly added NoGoods, setting decision level to {}.", assignment.getDecisionLevel());
-						choiceStack.remove();
-						LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
-					}
-					if (conflictAnalysisResult.learnedNoGood != null) {
-						if (store.add(grounder.registerOutsideNoGood(conflictAnalysisResult.learnedNoGood), conflictAnalysisResult.learnedNoGood) != null) {
-							throw new RuntimeException("Adding learned NoGood from conflict again results in conflict. This should not happen.");
-						}
+				}
+				if (conflictAnalysisResult.learnedNoGood != null) {
+					if (store.add(grounder.registerOutsideNoGood(conflictAnalysisResult.learnedNoGood), conflictAnalysisResult.learnedNoGood) != null) {
+						throw new RuntimeException("Adding learned NoGood from conflict again results in conflict. This should not happen.");
 					}
 				}
-				if (store.add(noGoodEntry.getKey(), noGoodEntry.getValue()) != null) {
-					throw new RuntimeException("Re-adding of obtained NoGood still causes conflicts. This should not happen.");
-				}
+			}
+			if (store.add(noGoodEntry.getKey(), noGoodEntry.getValue()) != null) {
+				throw new RuntimeException("Re-adding of obtained NoGood still causes conflicts. This should not happen.");
 			}
 		}
 	}

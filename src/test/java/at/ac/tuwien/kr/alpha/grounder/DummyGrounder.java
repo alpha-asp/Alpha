@@ -140,8 +140,8 @@ public class DummyGrounder implements Grounder {
 	public void updateAssignment(Iterator<Assignment.Entry> it) {
 		while (it.hasNext()) {
 			Assignment.Entry assignment = it.next();
-			BooleanTruth truthValue = assignment.getTruth();
-			currentTruthValues[assignment.getAtom()] = truthValue.isTrue() ? (byte) 1 : (byte) 0;
+			Truth truthValue = assignment.getTruth();
+			currentTruthValues[assignment.getAtom()] = (byte)(truthValue.toBoolean() ? 1 : 0);
 		}
 	}
 

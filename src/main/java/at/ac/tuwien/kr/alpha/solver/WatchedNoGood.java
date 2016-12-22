@@ -3,56 +3,73 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 
 public final class WatchedNoGood extends NoGood {
-	private final int[] pointers;
+	private int a;
+	private int b;
+	private int alpha;
 
-	public WatchedNoGood(NoGood noGood, int a, int b, int c) {
-		this(noGood, new int[]{a, b, c});
-	}
-
-	public WatchedNoGood(NoGood noGood, int... pointers) {
+	public WatchedNoGood(NoGood noGood, int a, int b, int alpha) {
 		super(noGood);
 
-		if (pointers.length != 3) {
-			throw new IllegalArgumentException("must pass exactly three pointers");
-		}
-
-		this.pointers = pointers;
+		this.a = a;
+		this.b = b;
+		this.alpha = alpha;
 		checkPointers();
 	}
 
 	private void checkPointers() {
-		if (pointers[0] == pointers[1]) {
+		if (a == b) {
 			throw new IllegalArgumentException("first two pointers must not point at the same literal");
 		}
 
-		for (int i = 0; i < 2; i++) {
-			if (pointers[i] < 0) {
-				throw new IllegalArgumentException("first two pointers must be non-negative");
-			}
-		}
-
-		for (int i = 0; i < pointers.length; i++) {
-			if (pointers[i] >= literals.length) {
-				throw new IllegalArgumentException("all pointers must not be within upper bound of nogood size");
-			}
-		}
-
-		if (pointers[2] < -1) {
-			throw new IllegalArgumentException("c must not be smaller than -1");
+		if (a < 0 || b < 0 || alpha < -1 || a >= literals.length || b >= literals.length || alpha >= literals.length) {
+			throw new IllegalArgumentException("points must be within bounds");
 		}
 	}
 
 	public int getPointer(int index) {
-		return pointers[index];
+		switch (index) {
+			case 0:
+				return a;
+			case 1:
+				return b;
+			default:
+				throw new IndexOutOfBoundsException();
+		}
 	}
 
 	public void setPointer(int index, int value) {
-		pointers[index] = value;
+		switch (index) {
+			case 0:
+				a = value;
+				break;
+			case 1:
+				b = value;
+				break;
+			default:
+				throw new IndexOutOfBoundsException();
+		}
 		checkPointers();
+	}
+
+	public int getLiteralAtPointer(int index) {
+		return getLiteral(getPointer(index));
+	}
+
+	public int getAlphaPointer() {
+		return alpha;
+	}
+
+	public void setAlphaPointer(int value) {
+		alpha = value;
+		checkPointers();
+	}
+
+	public int getLiteralAtAlpha() {
+		return getLiteral(getAlphaPointer());
 	}
 
 	@Override
 	public String toString() {
-		return super.toString() + "{ " + pointers[0] + " " + pointers[1] + " " + pointers[2] + " }";
+		return super.toString() + "{ " + a + " " + b + " " + alpha + " }";
 	}
 }
