@@ -160,7 +160,7 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	protected void obtainNoGoodsFromGrounder() {
-		Map<Integer, NoGood> obtained = grounder.getNoGoods();
+		Map<Integer, NoGood> obtained = grounder.getNoGoods(assignment);
 
 		if (!obtained.isEmpty()) {
 			// Record to detect propagation fixpoint, checking if new NoGoods were reported would be better here.

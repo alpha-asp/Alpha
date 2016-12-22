@@ -1,8 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -112,7 +110,7 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public Map<Integer, NoGood> getNoGoods() {
+	public Map<Integer, NoGood> getNoGoods(ImmutableAssignment assignment) {
 		if (!returnedAllNogoods) {
 			returnedAllNogoods = true;
 			return NOGOODS;
@@ -141,7 +139,7 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public List<Integer> getUnassignedAtoms(Assignment assignment) {
+	public List<Integer> getUnassignedAtoms(ImmutableAssignment assignment) {
 		List<Integer> unassigned = new ArrayList<>();
 		List<Integer> knownAtomIds = new ArrayList<>(atomIdToString.keySet());
 		for (Integer atomId : knownAtomIds) {

@@ -6,7 +6,6 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstraint;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFact;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedRule;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -222,7 +221,7 @@ public class NaiveGrounder extends BridgedGrounder {
 	}
 
 	@Override
-	public Map<Integer, NoGood> getNoGoods() {
+	public Map<Integer, NoGood> getNoGoods(ImmutableAssignment assignment) {
 		// First call, output all NoGoods from facts.
 		if (outputFactNogoods) {
 			outputFactNogoods = false;
@@ -263,7 +262,9 @@ public class NaiveGrounder extends BridgedGrounder {
 			modifiedWorkingMemory.markRecentlyAddedInstancesDone();
 		}
 
-		// TODO(flowlo): Somewhere around here, we should call collectExternal to resolve external stuff.
+		for (NoGood noGood : collectExternal(assignment, atomStore)) {
+			registerIfNeeded(noGood, newNoGoods);
+		}
 
 		modifiedWorkingMemories = new HashSet<>();
 		return newNoGoods;
@@ -574,7 +575,7 @@ public class NaiveGrounder extends BridgedGrounder {
 	}
 
 	@Override
-	public List<Integer> getUnassignedAtoms(Assignment assignment) {
+	public List<Integer> getUnassignedAtoms(ImmutableAssignment assignment) {
 		List<Integer> unassignedAtoms = new ArrayList<>();
 		// Check all known atoms: assumption is that AtomStore assigned continuous values and 0 is no valid atomId.
 		for (int i = 1; i <= atomStore.getHighestAtomId().atomId; i++) {

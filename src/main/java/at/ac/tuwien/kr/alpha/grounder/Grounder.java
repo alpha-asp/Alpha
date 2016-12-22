@@ -1,10 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.AtomTranslator;
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.OrdinaryAssignment;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.common.*;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Iterator;
@@ -14,7 +10,7 @@ import java.util.Map;
 public interface Grounder extends AtomTranslator {
 	AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms);
 
-	Map<Integer, NoGood> getNoGoods();
+	Map<Integer, NoGood> getNoGoods(ImmutableAssignment assignment);
 
 	/**
 	 *
@@ -35,5 +31,5 @@ public interface Grounder extends AtomTranslator {
 	 * @param assignment the current assignment.
 	 * @return a list of atoms not having assigned a truth value.
 	 */
-	List<Integer> getUnassignedAtoms(Assignment assignment);
+	List<Integer> getUnassignedAtoms(ImmutableAssignment assignment);
 }
