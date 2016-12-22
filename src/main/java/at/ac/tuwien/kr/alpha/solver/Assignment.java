@@ -1,3 +1,30 @@
+/**
+ * Copyright (c) 2016, the Alpha Team.
+ * All rights reserved.
+ * 
+ * Additional changes made by Siemens.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1) Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 
+ * 2) Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
@@ -50,6 +77,10 @@ public interface Assignment extends Iterable<Assignment.Entry> {
 
 	boolean guess(int atom, ThriceTruth value);
 
+	default boolean guess(int atom, boolean value) {
+		return guess(atom, ThriceTruth.valueOf(value));
+	}
+
 	/**
 	 * Returns all atomIds that are assigned TRUE in the current assignment.
 	 * @return a list of all true assigned atoms.
@@ -90,6 +121,35 @@ public interface Assignment extends Iterable<Assignment.Entry> {
 
 	default boolean contains(NoGood noGood, int index) {
 		return contains(noGood.getLiteral(index));
+	}
+
+	/**
+	 * Determines if the given {@code noGood} is violated in the current assignment.
+	 * @param noGood
+	 * @return {@code true} iff all literals in {@code noGood} evaluate to true in the current assignment.
+	 */
+	default boolean isViolated(NoGood noGood) {
+		for (Integer literal : noGood) {
+			if (!contains(literal)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Determines if the given {@code noGood} is undefined in the current assignment.
+	 * 
+	 * @param noGood
+	 * @return {@code true} iff at least one literal in {@code noGood} is unassigned.
+	 */
+	default boolean isUndefined(NoGood noGood) {
+		for (Integer literal : noGood) {
+			if (!isAssigned(atomOf(literal))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	Iterator<OrdinaryAssignment> ordinaryIterator();

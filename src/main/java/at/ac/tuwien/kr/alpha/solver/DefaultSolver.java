@@ -1,9 +1,38 @@
+/**
+ * Copyright (c) 2016, the Alpha Team.
+ * All rights reserved.
+ * 
+ * Additional changes made by Siemens.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1) Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 
+ * 2) Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.OrdinaryAssignment;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BerkMin;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +55,7 @@ public class DefaultSolver extends AbstractSolver {
 	private final ChoiceStack choiceStack;
 	private final Assignment assignment;
 	private final Iterator<OrdinaryAssignment> assignmentIterator;
+	private final BranchingHeuristic branchingHeuristic;
 
 	private boolean initialize = true;
 
@@ -41,6 +71,7 @@ public class DefaultSolver extends AbstractSolver {
 		this.assignmentIterator = this.assignment.ordinaryIterator();
 		this.store = new BasicNoGoodStore(assignment, grounder);
 		this.choiceStack = new ChoiceStack(grounder);
+		this.branchingHeuristic = new BerkMin(assignment, this::isAtomActiveChoicePoint);
 	}
 
 	@Override
@@ -70,10 +101,10 @@ public class DefaultSolver extends AbstractSolver {
 				}
 				LOGGER.debug("Assignment after propagation is: {}", assignment);
 			} else if (store.getViolatedNoGood() != null) {
-				if (LOGGER.isDebugEnabled()) {
-					LOGGER.debug("Backtracking from wrong choices ({} violated): {}", grounder.noGoodToString(store.getViolatedNoGood()), choiceStack);
-				}
+				NoGood violatedNoGood = store.getViolatedNoGood();
+				LOGGER.debug("Backtracking from wrong choices ({} violated): {}", violatedNoGood, choiceStack);
 				LOGGER.debug("Violating assignment is: {}", assignment);
+				branchingHeuristic.violatedNoGood(violatedNoGood);
 				doBacktrack();
 				if (isSearchSpaceExhausted()) {
 					return false;
@@ -125,13 +156,14 @@ public class DefaultSolver extends AbstractSolver {
 
 			int lastGuessedAtom = choiceStack.peekAtom();
 			boolean lastGuessedValue = choiceStack.peekValue();
+			boolean backtrackedAlready = choiceStack.peekBacktracked();
 			choiceStack.remove();
 			LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 
-			if (lastGuessedValue) {
-				// Chronological backtracking: guess FALSE now.
+			if (!backtrackedAlready) {
+				// Chronological backtracking: guess inverse now.
 				// Guess FALSE if the previous guess was for TRUE and the atom was not already MBT at that time.
-				if (MBT.equals(assignment.getTruth(lastGuessedAtom))) {
+				if (lastGuessedValue && MBT.equals(assignment.getTruth(lastGuessedAtom))) {
 					LOGGER.debug("Backtrack: inverting last guess not possible, atom was MBT before guessing TRUE.");
 					LOGGER.debug("Recursive backtracking.");
 					repeatBacktrack = true;
@@ -140,10 +172,11 @@ public class DefaultSolver extends AbstractSolver {
 					//return;
 				}
 				decisionCounter++;
-				assignment.guess(lastGuessedAtom, FALSE);
+				boolean newGuess = !lastGuessedValue;
+				assignment.guess(lastGuessedAtom, newGuess);
 				LOGGER.debug("Backtrack: setting decision level to {}.", assignment.getDecisionLevel());
-				LOGGER.debug("Backtrack: inverting last guess. Now: {}=FALSE@{}", grounder.atomToString(lastGuessedAtom), assignment.getDecisionLevel());
-				choiceStack.push(lastGuessedAtom, false);
+				LOGGER.debug("Backtrack: inverting last guess. Now: {}={}@{}", grounder.atomToString(lastGuessedAtom), newGuess, assignment.getDecisionLevel());
+				choiceStack.pushBacktrack(lastGuessedAtom, newGuess);
 				didChange = true;
 				LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 				LOGGER.debug("Backtrack: {} choices so far.", decisionCounter);
@@ -168,6 +201,7 @@ public class DefaultSolver extends AbstractSolver {
 		}
 
 		store.addAll(obtained);
+		branchingHeuristic.newNoGoods(obtained.values());
 
 		// Record choice atoms.
 		final Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms = grounder.getChoiceAtoms();
@@ -211,17 +245,25 @@ public class DefaultSolver extends AbstractSolver {
 
 	private void doChoice(int nextChoice) {
 		decisionCounter++;
-		// We guess true for any unassigned choice atom (backtrack tries false)
-		assignment.guess(nextChoice, TRUE);
-		choiceStack.push(nextChoice, true);
+		boolean sign = branchingHeuristic.chooseSign(nextChoice);
+		assignment.guess(nextChoice, sign);
+		choiceStack.push(nextChoice, sign);
 		// Record change to compute propagation fixpoint again.
 		didChange = true;
-		LOGGER.debug("Choice: guessing {}=TRUE@{}", grounder.atomToString(nextChoice), assignment.getDecisionLevel());
+		LOGGER.debug("Choice: guessing {}={}@{}", grounder.atomToString(nextChoice), sign, assignment.getDecisionLevel());
 		LOGGER.debug("Choice: stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 		LOGGER.debug("Choice: {} choices so far.", decisionCounter);
 	}
 
 	private int computeChoice() {
+		int berkminChoice = branchingHeuristic.chooseAtom();
+		if (berkminChoice != BerkMin.DEFAULT_CHOICE_ATOM) {
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("Atom chosen by BerkMin: {}", grounder.atomToString(berkminChoice));
+			}
+			return berkminChoice;
+		}
+		
 		// Check if there is an enabled choice that is not also disabled
 		// HINT: tracking changes of ChoiceOn, ChoiceOff directly could
 		// increase performance (analyze store.getChangedAssignments()).
