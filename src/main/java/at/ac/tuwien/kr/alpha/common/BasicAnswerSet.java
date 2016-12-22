@@ -63,32 +63,6 @@ public class BasicAnswerSet implements AnswerSet {
 		return sb.toString();
 	}
 
-	public List<String> toList() {
-		List<String> answerSetList = new ArrayList<String>();
-		if (predicates.isEmpty()) {
-			return answerSetList;
-		}
-
-		for (Iterator<Predicate> iterator = predicates.iterator(); iterator.hasNext();) {
-			Predicate predicate = iterator.next();
-			Set<BasicAtom> instances = getPredicateInstances(predicate);
-
-			if (instances == null || instances.isEmpty()) {
-				answerSetList.add(predicate.getPredicateName());
-				continue;
-			}
-
-			for (Iterator<BasicAtom> instanceIterator = instances.iterator(); instanceIterator.hasNext();) {
-				String fact = instanceIterator.next().toString();
-				fact = fact.replace(" ","");
-				fact = fact.replace("()","");
-				answerSetList.add(fact);
-			}
-		}
-		return answerSetList;
-	}
-
-
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {

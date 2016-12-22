@@ -3,9 +3,7 @@ package at.ac.tuwien.kr.alpha;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 import static at.ac.tuwien.kr.alpha.Main.main;
 import static at.ac.tuwien.kr.alpha.Main.parseVisit;
