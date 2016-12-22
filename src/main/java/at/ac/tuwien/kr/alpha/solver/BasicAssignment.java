@@ -65,7 +65,7 @@ public class BasicAssignment implements Assignment {
 				throw new RuntimeException("Entry not in current assignment. Should not happen.");
 			}
 			// If assignment was moved to lower decision level, do not remove it while backtracking from previously higher decision level.
-			if (current.getDecisionLevel() < getDecisionLevel()) {
+			if (current.getDecisionLevel() < entry.getDecisionLevel()) {
 				continue;
 			}
 			Entry previous = current.getPrevious();
@@ -110,7 +110,11 @@ public class BasicAssignment implements Assignment {
 
 	@Override
 	public boolean assign(int atom, ThriceTruth value, NoGood impliedBy) {
-		return assignWithDecisionLevel(atom, value, impliedBy, getDecisionLevel());
+		boolean isConflictFree = assignWithDecisionLevel(atom, value, impliedBy, getDecisionLevel());
+		if (!isConflictFree) {
+			LOGGER.debug("Assign is conflicting: atom: {}, value: {}, impliedBy: {}.", atom, value, impliedBy);
+		}
+		return isConflictFree;
 	}
 
 	private NoGood violatedByAssign;
@@ -271,6 +275,10 @@ public class BasicAssignment implements Assignment {
 	}
 
 	private void recordAssignment(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel, Entry previous) {
+		Entry oldEntry = get(atom);
+		if (oldEntry != null && decisionLevel >= oldEntry.getDecisionLevel() && !(TRUE.equals(value) && MBT.equals(oldEntry.getTruth()))) {
+			throw new RuntimeException("Assigning value into higher decision level. Should not happen.");
+		}
 		// Create and record new assignment entry.
 		final int propagationLevel = decisionLevels.get(decisionLevel).size();
 		final Entry next = new Entry(value, decisionLevel, propagationLevel, impliedBy, previous, atom);
