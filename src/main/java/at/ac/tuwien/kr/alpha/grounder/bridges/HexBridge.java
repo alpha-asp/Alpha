@@ -20,16 +20,12 @@ public class HexBridge implements Bridge {
 			int id = it.nextIndex();
 			BasicAtom basicAtom = it.next();
 
-			if (id == 0 || !assignment.contains(id)) {
+			if (!assignment.contains(id) || basicAtom.isInternal()) {
 				continue;
 			}
 
-			if (basicAtom.predicate.getPredicateName() != "_R_" &&
-				basicAtom.predicate.getPredicateName() != "ChoiceOn" &&
-				basicAtom.predicate.getPredicateName() != "ChoiceOff") {
-				List<String> l = assignment.get(id).getTruth().toBoolean() ? trueAtoms : falseAtoms;
-				l.add(basicAtom.toString().replace(" ", "").replace("()", ""));
-			}
+			List<String> l = assignment.get(id).getTruth().toBoolean() ? trueAtoms : falseAtoms;
+			l.add(basicAtom.toString().replace(" ", "").replace("()", ""));
 		}
 
 		String[][] externalNogoods = externalAtomsQuery(trueAtoms.toArray(new String[trueAtoms.size()]), falseAtoms.toArray(new String[falseAtoms.size()]));
