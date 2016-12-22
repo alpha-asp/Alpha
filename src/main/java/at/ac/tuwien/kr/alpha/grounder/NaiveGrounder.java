@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstraint;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFact;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
@@ -45,12 +46,12 @@ public class NaiveGrounder extends BridgedGrounder {
 	private HashSet<Predicate> knownPredicates = new HashSet<>();
 	private HashMap<NonGroundRule<? extends Predicate>, HashSet<VariableSubstitution>> knownGroundingSubstitutions = new HashMap<>();
 
-	public NaiveGrounder(ParsedProgram program) {
-		this(program, p -> true);
+	public NaiveGrounder(ParsedProgram program, Bridge... bridges) {
+		this(program, p -> true, bridges);
 	}
 
-	public NaiveGrounder(ParsedProgram program, java.util.function.Predicate<Predicate> filter) {
-		super(program, filter);
+	public NaiveGrounder(ParsedProgram program, java.util.function.Predicate<Predicate> filter, Bridge... bridges) {
+		super(program, filter, bridges);
 
 		// initialize all facts
 		for (ParsedFact fact : this.program.facts) {

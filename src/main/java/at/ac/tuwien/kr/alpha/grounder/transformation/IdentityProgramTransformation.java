@@ -10,6 +10,4 @@ public class IdentityProgramTransformation extends ProgramTransformationBase {
 	public ParsedProgram transform(ParsedProgram inputProgram) {
 		return inputProgram;
 	}
-
-
 }

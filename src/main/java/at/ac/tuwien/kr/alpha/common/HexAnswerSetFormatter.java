@@ -2,13 +2,13 @@ package at.ac.tuwien.kr.alpha.common;
 
 import java.util.*;
 
-public class HexAnswerSetFormatter implements AnswerSetFormatter<List<String>> {
+public class HexAnswerSetFormatter implements AnswerSetFormatter<String[]> {
 	@Override
-	public List<String> format(AnswerSet answerSet) {
+	public String[] format(AnswerSet answerSet) {
 		Set<Predicate> predicates = answerSet.getPredicates();
 
 		if (predicates.isEmpty()) {
-			return Collections.emptyList();
+			return new String[0];
 		}
 
 		List<String> result = new ArrayList<String>();
@@ -25,6 +25,6 @@ public class HexAnswerSetFormatter implements AnswerSetFormatter<List<String>> {
 				result.add(instanceIterator.next().toString().replace(" ", "").replace("()", ""));
 			}
 		}
-		return result;
+		return result.toArray(new String[result.size()]);
 	}
 }

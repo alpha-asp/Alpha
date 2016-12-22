@@ -8,7 +8,7 @@ import at.ac.tuwien.kr.alpha.solver.Assignment;
 import java.util.*;
 
 public class HexBridge implements Bridge {
-	private static native void sendResults(String[][] resultsArray);
+	public static native void sendResults(String[][] resultsArray);
 	private static native String[][] externalAtomsQuery(String[] trueAtoms, String[] falseAtoms);
 
 	public Collection<NoGood> getNoGoods(Assignment assignment, AtomStore atomStore) {

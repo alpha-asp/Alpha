@@ -2,11 +2,11 @@ package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
-import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
+import at.ac.tuwien.kr.alpha.grounder.bridges.HexBridge;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTreeVisitor;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityProgramTransformation;
@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -39,6 +40,7 @@ public class Main {
 	private static final String OPT_SOLVER = "solver";
 	private static final String OPT_FILTER = "filter";
 	private static final String OPT_STRING = "str";
+	private static final String OPT_HEX = "hex";
 
 	private static final String DEFAULT_GROUNDER = "alphahex";
 	private static final String DEFAULT_SOLVER = "alphahex";
@@ -81,10 +83,13 @@ public class Main {
 		options.addOption(filterOption);
 
 		Option strOption = new Option("str", OPT_STRING, true, "provide the ASP program in form of a string");
-		inputOption.setArgName("string");
 		inputOption.setArgs(1);
+		inputOption.setArgName("string");
 		inputOption.setType(String.class);
 		options.addOption(strOption);
+
+		Option hexOption = new Option("x", OPT_HEX, true, "resolve external atoms via Hex and report back answer sets");
+		options.addOption(hexOption);
 
 		try {
 			commandLine = new DefaultParser().parse(options, args);
@@ -112,6 +117,12 @@ public class Main {
 			filter = p -> {
 				return desiredPredicates.contains(p.getPredicateName());
 			};
+		}
+
+		Bridge[] bridges = new Bridge[0];
+
+		if (commandLine.hasOption(OPT_HEX)) {
+			bridges = new Bridge[] {new HexBridge()};
 		}
 
 		int limit = 0;
@@ -146,33 +157,31 @@ public class Main {
 		IdentityProgramTransformation programTransformation = new IdentityProgramTransformation();
 		ParsedProgram transformedProgram = programTransformation.transform(program);
 		Grounder grounder = GrounderFactory.getInstance(
-			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram, filter
+			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram, filter, bridges
 		);
 
 		Solver solver = SolverFactory.getInstance(
 			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder
 		);
 
-		if (commandLine.hasOption(OPT_STRING)) {
-			List<String[]> results = new ArrayList<>();
+		Stream<AnswerSet> stream = solver.stream();
 
-			List<AnswerSet> answerSets = solver.collectList();
-			for (AnswerSet answerSet : answerSets) {
-				List<String> answerSetList = ((BasicAnswerSet)answerSet).toList();
-				results.add(answerSetList.toArray(new String[answerSetList.size()]));
-			}
+		if (limit > 0) {
+			stream = stream.limit(limit);
+		}
 
-			String[][] resultsArray = results.toArray(new String[results.size()][]);
+		if (commandLine.hasOption(OPT_HEX)) {
+			// If running in hex mode, do not print to standard output
+			// but instead report back via the bridge.
+			List<String[]> answerSets = stream
+				.map(new HexAnswerSetFormatter()::format)
+				.collect(Collectors.toList());
 
-			//sendResults(resultsArray);
-		} else if (commandLine.hasOption(OPT_INPUT)) {
-			Stream<AnswerSet> stream = solver.stream();
-
-			if (limit > 0) {
-				stream = stream.limit(limit);
-			}
-
-			stream.forEach(System.out::println);
+			HexBridge.sendResults(answerSets.toArray(new String[answerSets.size()][]));
+		} else {
+			stream
+				.map(new DefaultAnswerSetFormatter()::format)
+				.forEach(System.out::println);
 		}
 	}
 
