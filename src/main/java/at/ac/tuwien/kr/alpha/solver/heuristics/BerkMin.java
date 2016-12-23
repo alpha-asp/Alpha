@@ -174,8 +174,6 @@ public class BerkMin implements BranchingHeuristic {
 	}
 
 	private void pushToStack(NoGood violatedNoGood) {
-		// TODO: stackOfNoGoods should not only contain violated nogoods, but ALL nogoods!
-		// TODO: ... or not. In Wasp, it seems that the stack contains only learned nogoods, while the polarity counters know of all "rules" (nogoods).
 		stackOfNoGoods.push(violatedNoGood);
 	}
 
