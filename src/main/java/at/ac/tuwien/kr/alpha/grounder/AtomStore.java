@@ -2,27 +2,23 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.BasicPredicate;
-import at.ac.tuwien.kr.alpha.common.Term;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.ListIterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This class stores ground atoms and provides the translation from an (integer) atomId to a (structured) predicate instance.
  * Copyright (c) 2016, the Alpha Team.
  */
 public class AtomStore {
-	private ArrayList<BasicAtom> atomIdsToInternalBasicAtoms = new ArrayList<>();
-	private HashMap<BasicAtom, Integer> predicateInstancesToAtomIds = new HashMap<>();
+	private List<BasicAtom> atomIdsToInternalBasicAtoms = new ArrayList<>();
+	private Map<BasicAtom, Integer> predicateInstancesToAtomIds = new HashMap<>();
 	private IntIdGenerator atomIdGenerator = new IntIdGenerator();
 
-	private ArrayList<Integer> releasedAtomIds = new ArrayList<>();	// contains atomIds ready to be garbage collected if necessary.
+	private List<Integer> releasedAtomIds = new ArrayList<>();	// contains atomIds ready to be garbage collected if necessary.
 
 	public AtomStore() {
 		// Create atomId for falsum (currently not needed, but it gets atomId 0, which cannot represent a negated literal).
-		createAtomId(new BasicAtom(new BasicPredicate("\u22A5", 0), true));
+		add(new BasicAtom(new BasicPredicate("\u22A5", 0), true));
 	}
 
 	public int getHighestAtomId() {
@@ -43,16 +39,12 @@ public class AtomStore {
 	 * @param atomId
 	 * @return
 	 */
-	public BasicAtom getBasicAtom(int atomId) {
+	public BasicAtom get(int atomId) {
 		try {
 			return atomIdsToInternalBasicAtoms.get(atomId);
 		} catch (IndexOutOfBoundsException e) {
-			throw new RuntimeException("AtomStore: Unknown atomId encountered: " + atomId);
+			throw new RuntimeException("AtomStore: Unknown atomId encountered: " + atomId, e);
 		}
-	}
-
-	public ListIterator<BasicAtom> listIterator() {
-		return atomIdsToInternalBasicAtoms.listIterator();
 	}
 
 	/**
@@ -61,20 +53,24 @@ public class AtomStore {
 	 * @param groundAtom
 	 * @return
 	 */
-	public int createAtomId(BasicAtom groundAtom) {
-		Integer potentialId = predicateInstancesToAtomIds.get(groundAtom);
-		if (potentialId == null) {
-			int newAtomId = atomIdGenerator.getNextId();
-			predicateInstancesToAtomIds.put(groundAtom, newAtomId);
-			atomIdsToInternalBasicAtoms.add(newAtomId, groundAtom);
-			return newAtomId;
-		} else {
-			return potentialId;
+	public int add(BasicAtom groundAtom) {
+		Integer id = predicateInstancesToAtomIds.get(groundAtom);
+
+		if (id == null) {
+			id = atomIdGenerator.getNextId();
+			predicateInstancesToAtomIds.put(groundAtom, id);
+			atomIdsToInternalBasicAtoms.add(id, groundAtom);
 		}
+
+		return id;
 	}
 
-	public boolean isAtomExisting(BasicAtom groundAtom) {
+	public boolean contains(BasicAtom groundAtom) {
 		return predicateInstancesToAtomIds.containsKey(groundAtom);
+	}
+
+	public ListIterator<BasicAtom> listIterator() {
+		return atomIdsToInternalBasicAtoms.listIterator();
 	}
 
 	/**

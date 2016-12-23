@@ -51,7 +51,7 @@ public class HexBridge implements Bridge {
 				}
 
 				BasicAtom atom = new BasicAtom(new BasicPredicate(literal[0], literal.length - 1), false, terms);
-				int atomId = atomStore.createAtomId(atom);
+				int atomId = atomStore.add(atom);
 
 				if (isNegative) {
 					externalNgLiterals[k] = -atomId;

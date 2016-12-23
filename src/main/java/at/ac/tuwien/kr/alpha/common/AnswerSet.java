@@ -5,7 +5,7 @@ import java.util.Set;
 public interface AnswerSet {
 	Set<Predicate> getPredicates();
 
-	Set<BasicAtom> getPredicateInstances(Predicate predicate);
+	Set<Atom> getPredicateInstances(Predicate predicate);
 
 	boolean isEmpty();
 }

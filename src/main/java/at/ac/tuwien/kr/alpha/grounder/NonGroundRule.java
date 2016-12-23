@@ -50,7 +50,7 @@ public class NonGroundRule<P extends Predicate> {
 				pos.add(new BuiltinAtom((ParsedBuiltinAtom) parsedAtom));
 			} else {
 				final BasicAtom basicAtom = BasicAtom.fromParsedAtom(parsedAtom);
-				if (parsedAtom.isNegated) {
+				if (parsedAtom.isNegated()) {
 					neg.add(basicAtom);
 				} else {
 					pos.add(basicAtom);

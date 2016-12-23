@@ -28,7 +28,7 @@ public class SubstitutionUtil {
 			groundTermList[i] = groundTerm;
 		}
 		BasicAtom groundAtom = new BasicAtom(nonGroundAtom.predicate, false, groundTermList);
-		return atomStore.createAtomId(groundAtom);
+		return atomStore.add(groundAtom);
 	}
 
 	/**

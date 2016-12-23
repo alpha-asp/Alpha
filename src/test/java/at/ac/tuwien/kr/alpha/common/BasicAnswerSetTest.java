@@ -25,7 +25,7 @@ public class BasicAnswerSetTest {
 		ConstantTerm bar = ConstantTerm.getInstance("bar");
 		ConstantTerm baz = ConstantTerm.getInstance("baz");
 
-		Map<Predicate, Set<BasicAtom>> inst1 = new HashMap<>();
+		Map<Predicate, Set<Atom>> inst1 = new HashMap<>();
 		inst1.put(a, new HashSet<>(Collections.singletonList(new BasicAtom(a))));
 		inst1.put(foo, new HashSet<>(Arrays.asList(new BasicAtom[] {
 			new BasicAtom(foo, bar),
@@ -33,7 +33,7 @@ public class BasicAnswerSetTest {
 		})));
 		// as1 = { a, foo(bar), foo(baz) }
 
-		Map<Predicate, Set<BasicAtom>> inst2 = new HashMap<>();
+		Map<Predicate, Set<Atom>> inst2 = new HashMap<>();
 		inst2.put(a, new HashSet<>(Collections.singletonList(new BasicAtom(a))));
 		inst2.put(foo, new HashSet<>(Arrays.asList(new BasicAtom[] {
 			new BasicAtom(foo, baz),
@@ -41,7 +41,7 @@ public class BasicAnswerSetTest {
 		})));
 		// as1 = { a, foo(baz), foo(bar) }
 
-		Map<Predicate, Set<BasicAtom>> inst3 = new HashMap<>();
+		Map<Predicate, Set<Atom>> inst3 = new HashMap<>();
 		inst3.put(q, new HashSet<>(Collections.singletonList(new BasicAtom(q))));
 		inst3.put(p, new HashSet<>(Arrays.asList(
 			new BasicAtom(p, bar),
@@ -49,7 +49,7 @@ public class BasicAnswerSetTest {
 		)));
 		// as3 = { q, p(bar), p(baz) }
 
-		Map<Predicate, Set<BasicAtom>> inst4 = new HashMap<>();
+		Map<Predicate, Set<Atom>> inst4 = new HashMap<>();
 		inst4.put(a, new HashSet<>(Collections.singletonList(new BasicAtom(a))));
 		inst4.put(foo, new HashSet<>(Arrays.asList(
 			new BasicAtom(foo, bar),

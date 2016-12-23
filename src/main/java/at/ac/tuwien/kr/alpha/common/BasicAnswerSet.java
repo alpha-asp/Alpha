@@ -11,9 +11,9 @@ public class BasicAnswerSet implements AnswerSet {
 	public static final BasicAnswerSet EMPTY = new BasicAnswerSet(emptySet(), emptyMap());
 
 	private final Set<Predicate> predicates;
-	private final Map<Predicate, Set<BasicAtom>> predicateInstances;
+	private final Map<Predicate, Set<Atom>> predicateInstances;
 
-	public BasicAnswerSet(Set<Predicate> predicates, Map<Predicate, Set<BasicAtom>> predicateInstances) {
+	public BasicAnswerSet(Set<Predicate> predicates, Map<Predicate, Set<Atom>> predicateInstances) {
 		this.predicates = predicates;
 		this.predicateInstances = predicateInstances;
 	}
@@ -24,7 +24,7 @@ public class BasicAnswerSet implements AnswerSet {
 	}
 
 	@Override
-	public Set<BasicAtom> getPredicateInstances(Predicate predicate) {
+	public Set<Atom> getPredicateInstances(Predicate predicate) {
 		return predicateInstances.get(predicate);
 	}
 
@@ -41,14 +41,14 @@ public class BasicAnswerSet implements AnswerSet {
 		final StringBuilder sb = new StringBuilder("{ ");
 		for (Iterator<Predicate> iterator = predicates.iterator(); iterator.hasNext();) {
 			Predicate predicate = iterator.next();
-			Set<BasicAtom> instances = getPredicateInstances(predicate);
+			Set<Atom> instances = getPredicateInstances(predicate);
 
 			if (instances == null || instances.isEmpty()) {
 				sb.append(predicate.getPredicateName());
 				continue;
 			}
 
-			for (Iterator<BasicAtom> instanceIterator = instances.iterator(); instanceIterator.hasNext();) {
+			for (Iterator<Atom> instanceIterator = instances.iterator(); instanceIterator.hasNext();) {
 				sb.append(instanceIterator.next());
 				if (instanceIterator.hasNext()) {
 					sb.append(", ");
@@ -90,8 +90,8 @@ public class BasicAnswerSet implements AnswerSet {
 		private String predicateSymbol;
 		private Predicate predicate;
 		private Set<Predicate> predicates = new HashSet<>();
-		private Set<BasicAtom> instances = new HashSet<>();
-		private Map<Predicate, Set<BasicAtom>> predicateInstances = new HashMap<>();
+		private Set<Atom> instances = new HashSet<>();
+		private Map<Predicate, Set<Atom>> predicateInstances = new HashMap<>();
 
 		public Builder() {
 		}

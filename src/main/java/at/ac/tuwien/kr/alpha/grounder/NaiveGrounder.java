@@ -54,8 +54,8 @@ public class NaiveGrounder extends BridgedGrounder {
 
 		// initialize all facts
 		for (ParsedFact fact : this.program.facts) {
-			String predicateName = fact.fact.predicate;
-			int predicateArity = fact.fact.arity;
+			String predicateName = fact.fact.getPredicate();
+			int predicateArity = fact.fact.getArity();
 			BasicPredicate predicate = new BasicPredicate(predicateName, predicateArity);
 			// Record predicate
 			adaptWorkingMemoryForPredicate(predicate);
@@ -63,7 +63,7 @@ public class NaiveGrounder extends BridgedGrounder {
 			// Construct instance from the fact.
 			ArrayList<Term> termList = new ArrayList<>();
 			for (int i = 0; i < predicateArity; i++) {
-				termList.add(Term.convertFromParsedTerm(fact.fact.terms.get(i)));
+				termList.add(Term.convertFromParsedTerm(fact.fact.getTerms().get(i)));
 			}
 			Instance instance = new Instance(termList.toArray(new Term[0]));
 			// Add instance to corresponding list of facts
@@ -152,7 +152,7 @@ public class NaiveGrounder extends BridgedGrounder {
 
 	@Override
 	public AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms) {
-		Map<Predicate, Set<BasicAtom>> predicateInstances = new HashMap<>();
+		Map<Predicate, Set<Atom>> predicateInstances = new HashMap<>();
 		HashSet<Predicate> knownPredicates = new HashSet<>();
 
 		if (!trueAtoms.iterator().hasNext()) {
@@ -161,21 +161,17 @@ public class NaiveGrounder extends BridgedGrounder {
 
 		// Iterate over all true atomIds, computeNextAnswerSet instances from atomStore and add them if not filtered.
 		for (int trueAtom : trueAtoms) {
-			BasicAtom basicAtom = atomStore.getBasicAtom(trueAtom);
+			Atom basicAtom = atomStore.get(trueAtom);
+			Predicate predicate = basicAtom.getPredicate();
 
-			// Skip internal predicates.
-			if (basicAtom.predicate.equals(CHOICE_OFF_PREDICATE) || basicAtom.predicate.equals(CHOICE_ON_PREDICATE) || basicAtom.predicate.equals(RULE_BODIES_PREDICATE)) {
+			// Skip internal atoms and filtered predicates.
+			if (basicAtom.isInternal() || !filter.test(predicate)) {
 				continue;
 			}
 
-			// Skip filtered predicates.
-			if (!filter.test(basicAtom.predicate)) {
-				continue;
-			}
-
-			knownPredicates.add(basicAtom.predicate);
-			predicateInstances.putIfAbsent(basicAtom.predicate, new HashSet<>());
-			Set<BasicAtom> instances = predicateInstances.get(basicAtom.predicate);
+			knownPredicates.add(predicate);
+			predicateInstances.putIfAbsent(predicate, new HashSet<>());
+			Set<Atom> instances = predicateInstances.get(predicate);
 			instances.add(basicAtom);
 		}
 
@@ -194,7 +190,7 @@ public class NaiveGrounder extends BridgedGrounder {
 		HashMap<Integer, NoGood> noGoodsFromFacts = new HashMap<>();
 		for (Predicate predicate : factsFromProgram.keySet()) {
 			for (Instance instance : factsFromProgram.get(predicate)) {
-				int atomIdFactAtom = atomStore.createAtomId(new BasicAtom(predicate, false, instance.terms));
+				int atomIdFactAtom = atomStore.add(new BasicAtom(predicate, false, instance.terms));
 				NoGood noGood = new NoGood(new int[]{-atomIdFactAtom}, 0);
 				// The noGood is assumed to be new.
 				int noGoodId = nogoodIdGenerator.getNextId();
@@ -326,11 +322,11 @@ public class NaiveGrounder extends BridgedGrounder {
 				true, ConstantTerm.getInstance(Integer.toString(nonGroundRule.getRuleId())),
 				ConstantTerm.getInstance(variableSubstitution.toUniformString()));
 			// Check uniqueness of ground rule by testing whether the body representing atom already has an id
-			if (atomStore.isAtomExisting(ruleBodyRepresentingPredicate)) {
+			if (atomStore.contains(ruleBodyRepresentingPredicate)) {
 				// The current ground instance already exists, therefore all NoGoods have already been created.
 				return generatedNoGoods;
 			}
-			int bodyRepresentingAtomId = atomStore.createAtomId(ruleBodyRepresentingPredicate);
+			int bodyRepresentingAtomId = atomStore.add(ruleBodyRepresentingPredicate);
 
 			// Prepare head atom
 			int headAtomId = SubstitutionUtil.groundingSubstitute(atomStore, nonGroundRule.getHeadAtom(), variableSubstitution);
@@ -373,7 +369,7 @@ public class NaiveGrounder extends BridgedGrounder {
 				}
 				int choiceId = choiceAtomsGenerator.getNextId();
 				BasicAtom choiceOnAtom =  new BasicAtom(CHOICE_ON_PREDICATE, true, ConstantTerm.getInstance(Integer.toString(choiceId)));
-				int choiceOnAtomIdInt = atomStore.createAtomId(choiceOnAtom);
+				int choiceOnAtomIdInt = atomStore.add(choiceOnAtom);
 				choiceOnLiterals[0] = -choiceOnAtomIdInt;
 				// Add corresponding NoGood and ChoiceOn
 				generatedNoGoods.add(new NoGood(choiceOnLiterals, 0));	// ChoiceOn and ChoiceOff NoGoods avoid MBT and directly set to true, hence the rule head pointer.
@@ -381,7 +377,7 @@ public class NaiveGrounder extends BridgedGrounder {
 
 				// ChoiceOff if some negative body atom is contradicted
 				BasicAtom choiceOffAtom =  new BasicAtom(CHOICE_OFF_PREDICATE, true, ConstantTerm.getInstance(Integer.toString(choiceId)));
-				int choiceOffAtomIdInt = atomStore.createAtomId(choiceOffAtom);
+				int choiceOffAtomIdInt = atomStore.add(choiceOffAtom);
 				for (Integer negAtomId : bodyAtomsNegative) {
 					// Choice is off if any of the negative atoms is assigned true, hence we add one NoGood for each such atom.
 					generatedNoGoods.add(new NoGood(new int[]{-choiceOffAtomIdInt, negAtomId}, 0));
@@ -550,7 +546,7 @@ public class NaiveGrounder extends BridgedGrounder {
 		while (it.hasNext()) {
 			OrdinaryAssignment assignment = it.next();
 			int atomId = assignment.getAtom();
-			BasicAtom basicAtom = atomStore.getBasicAtom(atomId);
+			BasicAtom basicAtom = atomStore.get(atomId);
 			ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> workingMemory = this.workingMemory.get(basicAtom.predicate);
 
 			final IndexedInstanceStorage storage = assignment.getTruthValue() ? workingMemory.getLeft() : workingMemory.getRight();
@@ -571,7 +567,7 @@ public class NaiveGrounder extends BridgedGrounder {
 
 	@Override
 	public String atomToString(int atomId) {
-		return atomStore.getBasicAtom(atomId).toString();
+		return atomStore.get(atomId).toString();
 	}
 
 	@Override

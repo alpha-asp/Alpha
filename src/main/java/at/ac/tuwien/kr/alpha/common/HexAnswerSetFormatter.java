@@ -14,14 +14,14 @@ public class HexAnswerSetFormatter implements AnswerSetFormatter<String[]> {
 		List<String> result = new ArrayList<String>();
 		for (Iterator<Predicate> iterator = predicates.iterator(); iterator.hasNext();) {
 			Predicate predicate = iterator.next();
-			Set<BasicAtom> instances = answerSet.getPredicateInstances(predicate);
+			Set<Atom> instances = answerSet.getPredicateInstances(predicate);
 
 			if (instances == null || instances.isEmpty()) {
 				result.add(predicate.getPredicateName());
 				continue;
 			}
 
-			for (Iterator<BasicAtom> instanceIterator = instances.iterator(); instanceIterator.hasNext();) {
+			for (Iterator<Atom> instanceIterator = instances.iterator(); instanceIterator.hasNext();) {
 				result.add(instanceIterator.next().toString().replace(" ", "").replace("()", ""));
 			}
 		}

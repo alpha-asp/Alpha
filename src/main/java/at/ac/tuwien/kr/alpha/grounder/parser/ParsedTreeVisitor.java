@@ -6,6 +6,8 @@ import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -168,23 +170,23 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 		ParsedTerm right = (ParsedTerm) visit(ctx.term(1));
 		ParsedBuiltinAtom.BINOP binop;
 		ASPCore2Parser.BinopContext parsedBinop = ctx.binop();
-		// binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
+		// binop : EQ | NE | LT | GT | LE | GE;
 		if (parsedBinop.EQUAL() != null) {
-			binop = ParsedBuiltinAtom.BINOP.EQUAL;
+			binop = ParsedBuiltinAtom.BINOP.EQ;
 		} else if (parsedBinop.UNEQUAL() != null) {
-			binop = ParsedBuiltinAtom.BINOP.UNEQUAL;
+			binop = ParsedBuiltinAtom.BINOP.NE;
 		} else if (parsedBinop.LESS() != null) {
-			binop = ParsedBuiltinAtom.BINOP.LESS;
+			binop = ParsedBuiltinAtom.BINOP.LT;
 		} else if (parsedBinop.GREATER() != null) {
-			binop = ParsedBuiltinAtom.BINOP.GREATER;
+			binop = ParsedBuiltinAtom.BINOP.GT;
 		} else if (parsedBinop.LESS_OR_EQ() != null) {
-			binop = ParsedBuiltinAtom.BINOP.LESS_OR_EQ;
+			binop = ParsedBuiltinAtom.BINOP.LE;
 		} else if (parsedBinop.GREATER_OR_EQ() != null) {
-			binop = ParsedBuiltinAtom.BINOP.GREATER_OR_EQ;
+			binop = ParsedBuiltinAtom.BINOP.GE;
 		} else {
 			throw new RuntimeException("Unknown binop encountered.");
 		}
-		return new ParsedBuiltinAtom(left, binop, right);
+		return new ParsedBuiltinAtom(binop, Arrays.asList(left, right));
 	}
 
 	@Override
@@ -194,7 +196,7 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 		if (ctx.builtin_atom() != null) {
 			ParsedBuiltinAtom builtinAtom = (ParsedBuiltinAtom) visitBuiltin_atom(ctx.builtin_atom());
 			if (isNegated) {
-				builtinAtom.negateBinop();
+				return builtinAtom.getNegation();
 			}
 			return builtinAtom;
 		}
@@ -210,19 +212,14 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 			notSupportedSyntax(ctx);
 		}
 
-		ParsedAtom atom = new ParsedAtom();
-		atom.predicate = ctx.ID().getText();
+		List<ParsedTerm> terms = new ArrayList<>();
 		if (ctx.terms() != null) {
-			atom.terms = new ArrayList<>();
 			for (CommonParsedObject term:
 				((ListOfParsedObjects) visitTerms(ctx.terms())).objects) {
-				atom.terms.add((ParsedTerm) term);
+				terms.add((ParsedTerm) term);
 			}
-			atom.arity = atom.terms.size();
-		} else {
-			atom.arity = 0;
 		}
-		return atom;
+		return new ParsedAtom(ctx.ID().getText(), terms);
 	}
 
 	@Override

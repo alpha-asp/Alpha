@@ -96,10 +96,10 @@ public class ChoiceGrounder implements Grounder {
 		}
 
 		// Add the atom instances
-		Map<Predicate, Set<BasicAtom>> predicateInstances = new HashMap<>();
+		Map<Predicate, Set<Atom>> predicateInstances = new HashMap<>();
 		for (Predicate trueAtomPredicate : trueAtomPredicates) {
 			BasicAtom basicAtom = new BasicAtom(trueAtomPredicate);
-			Set<BasicAtom> instanceList = new HashSet<>();
+			Set<Atom> instanceList = new HashSet<>();
 			instanceList.add(basicAtom);
 			predicateInstances.put(trueAtomPredicate, instanceList);
 		}
