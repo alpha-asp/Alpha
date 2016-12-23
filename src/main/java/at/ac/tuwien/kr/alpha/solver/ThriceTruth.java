@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2016, the Alpha Team.
  * All rights reserved.
- * 
+ *
  * Additional changes made by Siemens.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -27,7 +27,9 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-public enum ThriceTruth {
+import at.ac.tuwien.kr.alpha.common.Truth;
+
+public enum ThriceTruth implements Truth {
 	TRUE("T", true),
 	FALSE("F", false),
 	MBT("M", true);
@@ -40,6 +42,7 @@ public enum ThriceTruth {
 		this.asBoolean = asBoolean;
 	}
 
+	@Override
 	public boolean toBoolean() {
 		return asBoolean;
 	}

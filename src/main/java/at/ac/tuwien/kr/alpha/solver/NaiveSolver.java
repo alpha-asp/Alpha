@@ -29,7 +29,6 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.OrdinaryAssignment;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -40,6 +39,8 @@ import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static java.lang.Math.abs;
 
 /**
@@ -295,9 +296,55 @@ public class NaiveSolver extends AbstractSolver {
 
 	private void updateGrounderAssignments() {
 		grounder.updateAssignment(newTruthAssignments.stream().map(atom -> {
-			return new OrdinaryAssignment(atom, truthAssignments.get(atom));
+			return (Assignment.Entry)new Entry(atom, truthAssignments.get(atom) ? TRUE : FALSE);
 		}).iterator());
 		newTruthAssignments.clear();
+	}
+
+
+	private static final class Entry implements Assignment.Entry {
+		private final ThriceTruth value;
+		private final int atom;
+
+		Entry(int atom, ThriceTruth value) {
+			this.value = value;
+			this.atom = atom;
+		}
+
+		@Override
+		public ThriceTruth getTruth() {
+			return value;
+		}
+
+		@Override
+		public int getDecisionLevel() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public NoGood getImpliedBy() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Entry getPrevious() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public int getAtom() {
+			return atom;
+		}
+
+		@Override
+		public int getPropagationLevel() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public String toString() {
+			throw new UnsupportedOperationException();
+		}
 	}
 
 	private void obtainNoGoodsFromGrounder() {

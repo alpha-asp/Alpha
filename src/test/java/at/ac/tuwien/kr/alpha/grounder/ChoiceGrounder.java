@@ -7,7 +7,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
-import java.util.function.*;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
@@ -128,7 +127,7 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<OrdinaryAssignment> it) {
+	public void updateAssignment(Iterator<Assignment.Entry> it) {
 		// This test grounder reports all NoGoods immediately, irrespective of any assignment.
 	}
 
@@ -151,5 +150,15 @@ public class ChoiceGrounder implements Grounder {
 			}
 		}
 		return unassigned;
+	}
+
+	@Override
+	public int registerOutsideNoGood(NoGood noGood) {
+		throw  new RuntimeException("Not implemented for ChoiceGrounder.");
+	}
+
+	@Override
+	public boolean isAtomChoicePoint(int atom) {
+		return atom == ATOM_BR1 || atom == ATOM_BR2;
 	}
 }

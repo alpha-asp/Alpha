@@ -85,6 +85,10 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 		return literals.length;
 	}
 
+	public int[] getLiteralsClone() {
+		return literals.clone();
+	}
+
 	/**
 	 * A shorthand for <code>Literals.atomOf(getLiteral(...))</code>
 	 */

@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2016, the Alpha Team.
  * All rights reserved.
- * 
+ *
  * Additional changes made by Siemens.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -28,9 +28,9 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.OrdinaryAssignment;
 
 import java.util.Iterator;
+import java.util.Queue;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
@@ -38,7 +38,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
-public interface Assignment extends Iterable<Assignment.Entry> {
+public interface Assignment {
 	/**
 	 * Delete all information stored in the assignment.
 	 */
@@ -69,7 +69,7 @@ public interface Assignment extends Iterable<Assignment.Entry> {
 	 * @param decisionLevel
 	 * @return
 	 */
-	boolean assignSubDL(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel);
+	boolean assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel);
 
 	default boolean assign(int atom, ThriceTruth value) {
 		return assign(atom, value, null);
@@ -80,6 +80,17 @@ public interface Assignment extends Iterable<Assignment.Entry> {
 	default boolean guess(int atom, boolean value) {
 		return guess(atom, ThriceTruth.valueOf(value));
 	}
+
+	/**
+	 * In case that assign fails (i.e., it returns false) the NoGood violated by the assignment can be obtained by this method.
+	 * The returned value is arbitrary if the previous assign did not fail.
+	 * @return
+	 */
+	NoGood getNoGoodViolatedByAssign();
+
+	Assignment.Entry getGuessViolatedByAssign();
+
+	Queue<Entry> getAssignmentsToProcess();
 
 	/**
 	 * Returns all atomIds that are assigned TRUE in the current assignment.
@@ -105,13 +116,13 @@ public interface Assignment extends Iterable<Assignment.Entry> {
 		return get(atom) != null;
 	}
 
-	default boolean containsRelaxed(int literal) {
+	default boolean containsWeakComplement(int literal) {
 		final Entry entry = get(atomOf(literal));
 		return entry != null && isNegated(literal) == !entry.getTruth().toBoolean();
 	}
 
-	default boolean containsRelaxed(NoGood noGood, int index) {
-		return containsRelaxed(noGood.getLiteral(index));
+	default boolean containsWeakComplement(NoGood noGood, int index) {
+		return containsWeakComplement(noGood.getLiteral(index));
 	}
 
 	default boolean contains(int literal) {
@@ -139,7 +150,7 @@ public interface Assignment extends Iterable<Assignment.Entry> {
 
 	/**
 	 * Determines if the given {@code noGood} is undefined in the current assignment.
-	 * 
+	 *
 	 * @param noGood
 	 * @return {@code true} iff at least one literal in {@code noGood} is unassigned.
 	 */
@@ -152,7 +163,11 @@ public interface Assignment extends Iterable<Assignment.Entry> {
 		return false;
 	}
 
-	Iterator<OrdinaryAssignment> ordinaryIterator();
+	/**
+	 * Returns an iterator over all new assignments. New assignments are only returned once.
+	 * @return
+	 */
+	Iterator<Entry> getNewAssignmentsIterator();
 
 	interface Entry {
 		ThriceTruth getTruth();
