@@ -1,7 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder.bridges;
 
 import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.grounder.AtomId;
 import at.ac.tuwien.kr.alpha.grounder.AtomStore;
 
 import java.util.*;
@@ -52,12 +51,12 @@ public class HexBridge implements Bridge {
 				}
 
 				BasicAtom atom = new BasicAtom(new BasicPredicate(literal[0], literal.length - 1), false, terms);
-				AtomId atomId = atomStore.createAtomId(atom);
+				int atomId = atomStore.createAtomId(atom);
 
 				if (isNegative) {
-					externalNgLiterals[k] = -atomId.atomId;
+					externalNgLiterals[k] = -atomId;
 				} else {
-					externalNgLiterals[k] = atomId.atomId;
+					externalNgLiterals[k] = atomId;
 				}
 			}
 

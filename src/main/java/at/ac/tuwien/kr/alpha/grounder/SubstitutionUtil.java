@@ -17,7 +17,7 @@ public class SubstitutionUtil {
 	 * @param variableSubstitution the variable substitution to apply.
 	 * @return the AtomId of the corresponding substituted ground atom.
 	 */
-	public static AtomId groundingSubstitute(AtomStore atomStore, BasicAtom nonGroundAtom, NaiveGrounder.VariableSubstitution variableSubstitution) {
+	public static int groundingSubstitute(AtomStore atomStore, BasicAtom nonGroundAtom, NaiveGrounder.VariableSubstitution variableSubstitution) {
 		Term[] groundTermList = new Term[nonGroundAtom.termList.length];
 		for (int i = 0; i < nonGroundAtom.termList.length; i++) {
 			Term nonGroundTerm = nonGroundAtom.termList[i];
