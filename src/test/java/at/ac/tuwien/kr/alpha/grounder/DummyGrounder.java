@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -76,6 +77,17 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
+	public int registerOutsideNoGood(NoGood noGood) {
+		throw  new RuntimeException("Not implemented for DummyGrounder.");
+	}
+
+	@Override
+	public boolean isAtomChoicePoint(int atom) {
+		// No choice points here.
+		return false;
+	}
+
+	@Override
 	public AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms) {
 		// Note: This grounder only deals with 0-ary predicates, i.e., every atom is a predicate and there is
 		// 	 only one predicate instance representing 0 terms.
@@ -124,10 +136,11 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<OrdinaryAssignment> it) {
+	public void updateAssignment(Iterator<Assignment.Entry> it) {
 		while (it.hasNext()) {
-			OrdinaryAssignment assignment = it.next();
-			currentTruthValues[assignment.getAtom()] = assignment.getTruthValue() ? (byte) 1 : (byte) 0;
+			Assignment.Entry assignment = it.next();
+			Truth truthValue = assignment.getTruth();
+			currentTruthValues[assignment.getAtom()] = (byte)(truthValue.toBoolean() ? 1 : 0);
 		}
 	}
 

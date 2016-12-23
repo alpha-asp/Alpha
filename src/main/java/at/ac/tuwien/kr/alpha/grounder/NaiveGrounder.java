@@ -6,6 +6,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstraint;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFact;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedRule;
+import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -24,10 +25,10 @@ public class NaiveGrounder extends BridgedGrounder {
 	 * Atoms corresponding to rule bodies use this predicate, first term is rule number,
 	 * second is a term containing variable substitutions.
 	 */
-	static final BasicPredicate RULE_BODIES_PREDICATE = new BasicPredicate("_R_", 2);
+	private static final BasicPredicate RULE_BODIES_PREDICATE = new BasicPredicate("_R_", 2);
 
-	static final BasicPredicate CHOICE_ON_PREDICATE = new BasicPredicate("ChoiceOn", 1);
-	static final BasicPredicate CHOICE_OFF_PREDICATE = new BasicPredicate("ChoiceOff", 1);
+	private static final BasicPredicate CHOICE_ON_PREDICATE = new BasicPredicate("ChoiceOn", 1);
+	private static final BasicPredicate CHOICE_OFF_PREDICATE = new BasicPredicate("ChoiceOff", 1);
 
 	private HashMap<Predicate, ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage>> workingMemory = new HashMap<>();
 	private Map<NoGood, Integer> nogoodIdentifiers = new HashMap<>();
@@ -542,14 +543,15 @@ public class NaiveGrounder extends BridgedGrounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<OrdinaryAssignment> it) {
+	public void updateAssignment(Iterator<Assignment.Entry> it) {
 		while (it.hasNext()) {
-			OrdinaryAssignment assignment = it.next();
+			Assignment.Entry assignment = it.next();
+			Truth truthValue = assignment.getTruth();
 			int atomId = assignment.getAtom();
 			BasicAtom basicAtom = atomStore.get(atomId);
 			ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> workingMemory = this.workingMemory.get(basicAtom.predicate);
 
-			final IndexedInstanceStorage storage = assignment.getTruthValue() ? workingMemory.getLeft() : workingMemory.getRight();
+			final IndexedInstanceStorage storage = truthValue.toBoolean() ? workingMemory.getLeft() : workingMemory.getRight();
 
 			Instance instance = new Instance(basicAtom.termList);
 
@@ -580,6 +582,21 @@ public class NaiveGrounder extends BridgedGrounder {
 			}
 		}
 		return unassignedAtoms;
+	}
+
+	@Override
+	public int registerOutsideNoGood(NoGood noGood) {
+		if (!nogoodIdentifiers.containsKey(noGood)) {
+			int noGoodId = nogoodIdGenerator.getNextId();
+			nogoodIdentifiers.put(noGood, noGoodId);
+			return noGoodId;
+		}
+		return nogoodIdentifiers.get(noGood);
+	}
+
+	@Override
+	public boolean isAtomChoicePoint(int atom) {
+		return atomStore.get(atom).predicate.equals(RULE_BODIES_PREDICATE);
 	}
 
 	public void printCurrentlyKnownGroundRules() {

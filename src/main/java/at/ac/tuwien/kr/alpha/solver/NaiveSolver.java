@@ -1,8 +1,34 @@
+/**
+ * Copyright (c) 2016, the Alpha Team.
+ * All rights reserved.
+ * 
+ * Additional changes made by Siemens.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1) Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 
+ * 2) Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.OrdinaryAssignment;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -13,6 +39,8 @@ import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static java.lang.Math.abs;
 
 /**
@@ -256,7 +284,7 @@ public class NaiveSolver extends AbstractSolver {
 		if (lastGuessedTruthValue) {
 			// Guess false now
 			truthAssignments.put(lastGuessedAtom, false);
-			choiceStack.push(lastGuessedAtom, false);
+			choiceStack.pushBacktrack(lastGuessedAtom, false);
 			newTruthAssignments.add(lastGuessedAtom);
 			decisionLevels.get(decisionLevel).add(lastGuessedAtom);
 			didChange = true;
@@ -268,9 +296,55 @@ public class NaiveSolver extends AbstractSolver {
 
 	private void updateGrounderAssignments() {
 		grounder.updateAssignment(newTruthAssignments.stream().map(atom -> {
-			return new OrdinaryAssignment(atom, truthAssignments.get(atom));
+			return (Assignment.Entry)new Entry(atom, truthAssignments.get(atom) ? TRUE : FALSE);
 		}).iterator());
 		newTruthAssignments.clear();
+	}
+
+
+	private static final class Entry implements Assignment.Entry {
+		private final ThriceTruth value;
+		private final int atom;
+
+		Entry(int atom, ThriceTruth value) {
+			this.value = value;
+			this.atom = atom;
+		}
+
+		@Override
+		public ThriceTruth getTruth() {
+			return value;
+		}
+
+		@Override
+		public int getDecisionLevel() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public NoGood getImpliedBy() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Entry getPrevious() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public int getAtom() {
+			return atom;
+		}
+
+		@Override
+		public int getPropagationLevel() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public String toString() {
+			throw new UnsupportedOperationException();
+		}
 	}
 
 	private void obtainNoGoodsFromGrounder() {

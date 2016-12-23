@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -125,7 +126,7 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<OrdinaryAssignment> it) {
+	public void updateAssignment(Iterator<Assignment.Entry> it) {
 		// This test grounder reports all NoGoods immediately, irrespective of any assignment.
 	}
 
@@ -148,5 +149,15 @@ public class ChoiceGrounder implements Grounder {
 			}
 		}
 		return unassigned;
+	}
+
+	@Override
+	public int registerOutsideNoGood(NoGood noGood) {
+		throw  new RuntimeException("Not implemented for ChoiceGrounder.");
+	}
+
+	@Override
+	public boolean isAtomChoicePoint(int atom) {
+		return atom == ATOM_BR1 || atom == ATOM_BR2;
 	}
 }

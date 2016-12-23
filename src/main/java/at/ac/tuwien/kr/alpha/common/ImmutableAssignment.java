@@ -2,7 +2,6 @@ package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
-import java.util.Iterator;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
@@ -43,25 +42,38 @@ public interface ImmutableAssignment {
 		return get(atom) != null;
 	}
 
-	default boolean containsRelaxed(int literal) {
+	default boolean contains(int literal) {
+		final Entry entry = get(atomOf(literal));
+		return entry != null && (isNegated(literal) ? FALSE : TRUE).equals(entry.getTruth());
+	}
+
+	default boolean containsWeakComplement(int literal) {
 		final Entry entry = get(atomOf(literal));
 		return entry != null && isNegated(literal) == !entry.getTruth().toBoolean();
 	}
 
-	default boolean containsRelaxed(NoGood noGood, int index) {
-		return containsRelaxed(noGood.getLiteral(index));
-	}
-
-	default boolean contains(int literal) {
-		final Entry entry = get(atomOf(literal));
-		return entry != null && (isNegated(literal) ? FALSE : TRUE).equals(entry.getTruth());
+	default boolean containsWeakComplement(NoGood noGood, int index) {
+		return containsWeakComplement(noGood.getLiteral(index));
 	}
 
 	default boolean contains(NoGood noGood, int index) {
 		return contains(noGood.getLiteral(index));
 	}
 
-	Iterator<OrdinaryAssignment> ordinaryIterator();
+	/**
+	 * Determines if the given {@code noGood} is undefined in the current assignment.
+	 *
+	 * @param noGood
+	 * @return {@code true} iff at least one literal in {@code noGood} is unassigned.
+	 */
+	default boolean isUndefined(NoGood noGood) {
+		for (Integer literal : noGood) {
+			if (!isAssigned(atomOf(literal))) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	interface Entry {
 		ThriceTruth getTruth();

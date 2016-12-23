@@ -1,9 +1,37 @@
+/**
+ * Copyright (c) 2016, the Alpha Team.
+ * All rights reserved.
+ *
+ * Additional changes made by Siemens.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1) Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ * 2) Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.OrdinaryAssignment;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BerkMin;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,23 +52,25 @@ public class DefaultSolver extends AbstractSolver {
 	private final Map<Integer, Integer> choiceOn = new LinkedHashMap<>();
 	private final Map<Integer, Integer> choiceOff = new HashMap<>();
 	private final ChoiceStack choiceStack;
-	protected final Assignment assignment;
-	private final Iterator<OrdinaryAssignment> assignmentIterator;
+	private final Assignment assignment;
+	private final GroundConflictNoGoodLearner learner;
+	private final BranchingHeuristic branchingHeuristic;
 
 	private boolean initialize = true;
 
 	private boolean didChange;
 
 	private int decisionCounter;
-	private List<Integer> unassignedAtoms;
 
 	public DefaultSolver(Grounder grounder) {
 		super(grounder);
 
 		this.assignment = new BasicAssignment(grounder);
-		this.assignmentIterator = this.assignment.ordinaryIterator();
+		//this.assignmentIterator = this.assignment.ordinaryIterator();
 		this.store = new BasicNoGoodStore(assignment, grounder);
 		this.choiceStack = new ChoiceStack(grounder);
+		this.learner = new GroundConflictNoGoodLearner(assignment, store);
+		this.branchingHeuristic = new BerkMin(assignment, this::isAtomActiveChoicePoint);
 	}
 
 	@Override
@@ -58,11 +88,12 @@ public class DefaultSolver extends AbstractSolver {
 		}
 
 		int nextChoice;
+		boolean afterAllAtomsAssigned = false;
 
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
 			if (!propagationFixpointReached()) {
-				// After a choice, it would be more efficient to propagate first and only then ask the grounder.
+				// Ask the grounder for new NoGoods, then propagate (again).
 				updateGrounderAssignment();
 				obtainNoGoodsFromGrounder();
 				if (store.propagate()) {
@@ -70,20 +101,36 @@ public class DefaultSolver extends AbstractSolver {
 				}
 				LOGGER.debug("Assignment after propagation is: {}", assignment);
 			} else if (store.getViolatedNoGood() != null) {
+				NoGood violatedNoGood = store.getViolatedNoGood();
 				if (LOGGER.isDebugEnabled()) {
-					LOGGER.debug("Backtracking from wrong choices ({} violated): {}", grounder.noGoodToString(store.getViolatedNoGood()), choiceStack);
+					LOGGER.debug("NoGood violated ({}) by wrong choices ({} violated): {}", grounder.noGoodToString(violatedNoGood), choiceStack);
 				}
 				LOGGER.debug("Violating assignment is: {}", assignment);
-				doBacktrack();
-				if (isSearchSpaceExhausted()) {
-					return false;
+				branchingHeuristic.violatedNoGood(violatedNoGood);
+
+				if (!afterAllAtomsAssigned) {
+					learnBackjumpAddFromConflict();
+					didChange = true;
+				} else {
+					// Will not learn from violated NoGood, do simple backtrack.
+					LOGGER.debug("NoGood was violated after all unassigned atoms were assigned to false; will not learn from it; skipping.");
+					doBacktrack();
+					afterAllAtomsAssigned = false;
+					if (isSearchSpaceExhausted()) {
+						return false;
+					}
 				}
 			} else if ((nextChoice = computeChoice()) != 0) {
 				LOGGER.debug("Doing choice.");
 				doChoice(nextChoice);
+				// Directly propagate after choice.
+				if (store.propagate()) {
+					didChange = true;
+				}
 			} else if (!allAtomsAssigned()) {
 				LOGGER.debug("Closing unassigned known atoms (assigning FALSE).");
 				assignUnassignedToFalse();
+				afterAllAtomsAssigned = true;
 				didChange = true;
 			} else if (assignment.getMBTCount() == 0) {
 				AnswerSet as = translate(assignment.getTrueAssignments());
@@ -94,10 +141,51 @@ public class DefaultSolver extends AbstractSolver {
 			} else {
 				LOGGER.debug("Backtracking from wrong choices ({} MBTs): {}", assignment.getMBTCount(), choiceStack);
 				doBacktrack();
+				afterAllAtomsAssigned = false;
 				if (isSearchSpaceExhausted()) {
 					return false;
 				}
 			}
+		}
+	}
+
+	private void learnBackjumpAddFromConflict() {
+		LOGGER.debug("Analyzing conflict.");
+		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(store.getViolatedNoGood());
+		if (analysisResult.learnedNoGood == null) {
+			LOGGER.debug("Conflict results from wrong guess, backjumping and removing guess.");
+			LOGGER.debug("Backjumping to decision level: {}", analysisResult.backjumpLevel);
+			doBackjump(analysisResult.backjumpLevel);
+			store.backtrack();
+			LOGGER.debug("Backtrack: Removing last choice because of conflict, setting decision level to {}.", assignment.getDecisionLevel());
+			choiceStack.remove();
+			LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
+			if (!store.propagate()) {
+				throw new RuntimeException("Nothing to propagate after backtracking from conflict-causing guess. Should not happen.");
+			}
+		} else {
+			NoGood learnedNoGood = analysisResult.learnedNoGood;
+			LOGGER.debug("Learned NoGood is: {}", learnedNoGood);
+			int backjumpingDecisionLevel = analysisResult.backjumpLevel;
+			LOGGER.debug("Computed backjumping level: {}", backjumpingDecisionLevel);
+			doBackjump(backjumpingDecisionLevel);
+
+			int learnedNoGoodId = grounder.registerOutsideNoGood(learnedNoGood);
+			NoGoodStore.ConflictCause conflictCause = store.add(learnedNoGoodId, learnedNoGood);
+			if (conflictCause != null) {
+				throw new RuntimeException("Learned NoGood is violated after backjumping, should not happen.");
+			}
+		}
+	}
+
+	private void doBackjump(int backjumpingDecisionLevel) {
+		if (backjumpingDecisionLevel < 0) {
+			throw new RuntimeException("Backjumping decision level less than 0, should not happen.");
+		}
+		// Remove everything above the backjumpingDecisionLevel, but keep the backjumpingDecisionLevel unchanged.
+		while (assignment.getDecisionLevel() > backjumpingDecisionLevel) {
+			store.backtrack();
+			choiceStack.remove();
 		}
 	}
 
@@ -107,6 +195,7 @@ public class DefaultSolver extends AbstractSolver {
 		}
 	}
 
+	private List<Integer> unassignedAtoms;
 	private boolean allAtomsAssigned() {
 		unassignedAtoms = grounder.getUnassignedAtoms(assignment);
 		return unassignedAtoms.isEmpty();
@@ -120,43 +209,56 @@ public class DefaultSolver extends AbstractSolver {
 				return;
 			}
 
+			int lastGuessedAtom = choiceStack.peekAtom();
+			boolean lastGuessedValue = choiceStack.peekValue();
+			Assignment.Entry lastChoiceEntry = assignment.get(lastGuessedAtom);
+
 			store.backtrack();
 			LOGGER.debug("Backtrack: Removing last choice, setting decision level to {}.", assignment.getDecisionLevel());
 
-			int lastGuessedAtom = choiceStack.peekAtom();
-			boolean lastGuessedValue = choiceStack.peekValue();
+			boolean backtrackedAlready = choiceStack.peekBacktracked();
 			choiceStack.remove();
 			LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 
-			if (lastGuessedValue) {
-				// Chronological backtracking: guess FALSE now.
+			if (!backtrackedAlready) {
+				// Chronological backtracking: guess inverse now.
 				// Guess FALSE if the previous guess was for TRUE and the atom was not already MBT at that time.
-				if (MBT.equals(assignment.getTruth(lastGuessedAtom))) {
+				if (lastGuessedValue && MBT.equals(assignment.getTruth(lastGuessedAtom))) {
 					LOGGER.debug("Backtrack: inverting last guess not possible, atom was MBT before guessing TRUE.");
 					LOGGER.debug("Recursive backtracking.");
 					repeatBacktrack = true;
 					continue;
-					//doBacktrack();
-					//return;
 				}
+				// If choice was assigned at lower decision level (due to added NoGoods), no inverted guess should be done.
+				if (lastChoiceEntry.getImpliedBy() != null) {
+					LOGGER.debug("Last choice now is implied by: {}.", lastChoiceEntry.getImpliedBy());
+					if (lastChoiceEntry.getDecisionLevel() == assignment.getDecisionLevel()) {
+						throw new RuntimeException("Choice was assigned but not at a lower decision level. This should not happen.");
+					}
+					LOGGER.debug("Choice was assigned at a lower decision level");
+					LOGGER.debug("Recursive backtracking.");
+					repeatBacktrack = true;
+					continue;
+				}
+
 				decisionCounter++;
-				assignment.guess(lastGuessedAtom, FALSE);
+				boolean newGuess = !lastGuessedValue;
+				assignment.guess(lastGuessedAtom, newGuess);
 				LOGGER.debug("Backtrack: setting decision level to {}.", assignment.getDecisionLevel());
-				LOGGER.debug("Backtrack: inverting last guess. Now: {}=FALSE@{}", grounder.atomToString(lastGuessedAtom), assignment.getDecisionLevel());
-				choiceStack.push(lastGuessedAtom, false);
+				LOGGER.debug("Backtrack: inverting last guess. Now: {}={}@{}", grounder.atomToString(lastGuessedAtom), newGuess, assignment.getDecisionLevel());
+				choiceStack.pushBacktrack(lastGuessedAtom, newGuess);
 				didChange = true;
 				LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 				LOGGER.debug("Backtrack: {} choices so far.", decisionCounter);
 			} else {
 				LOGGER.debug("Recursive backtracking.");
 				repeatBacktrack = true;
-				//doBacktrack();
 			}
 		} while (repeatBacktrack);
 	}
 
 	private void updateGrounderAssignment() {
-		grounder.updateAssignment(assignmentIterator);
+		grounder.updateAssignment(assignment.getNewAssignmentsIterator());
 	}
 
 	private void obtainNoGoodsFromGrounder() {
@@ -167,12 +269,51 @@ public class DefaultSolver extends AbstractSolver {
 			didChange = true;
 		}
 
-		store.addAll(obtained);
+		addAllNoGoodsAndTreatContradictions(obtained);
+		branchingHeuristic.newNoGoods(obtained.values());
 
 		// Record choice atoms.
 		final Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms = grounder.getChoiceAtoms();
 		choiceOn.putAll(choiceAtoms.getKey());
 		choiceOff.putAll(choiceAtoms.getValue());
+	}
+
+	private void addAllNoGoodsAndTreatContradictions(Map<Integer, NoGood> obtained) {
+		for (Map.Entry<Integer, NoGood> noGoodEntry : obtained.entrySet()) {
+			NoGoodStore.ConflictCause conflictCause = store.add(noGoodEntry.getKey(), noGoodEntry.getValue());
+			if (conflictCause == null) {
+				// There is no conflict, all is fine. Just skip conflict treatment and carry on.
+				continue;
+			}
+
+			LOGGER.debug("Adding obtained NoGoods from grounder violates current assignment: learning, backjumping, and adding again.");
+			if (conflictCause.violatedGuess != null) {
+				LOGGER.debug("Added NoGood {} violates guess {}.", noGoodEntry.getKey(), conflictCause.violatedGuess);
+				LOGGER.debug("Backjumping to decision level: {}", conflictCause.violatedGuess.getDecisionLevel());
+				doBackjump(conflictCause.violatedGuess.getDecisionLevel());
+				store.backtrack();
+				LOGGER.debug("Backtrack: Removing last choice because of conflict with newly added NoGoods, setting decision level to {}.", assignment.getDecisionLevel());
+				choiceStack.remove();
+				LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
+			} else {
+				GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.violatedNoGood);
+				doBackjump(conflictAnalysisResult.backjumpLevel);
+				if (conflictAnalysisResult.clearLastGuessAfterBackjump) {
+					store.backtrack();
+					LOGGER.debug("Backtrack: Removing last choice because of conflict with newly added NoGoods, setting decision level to {}.", assignment.getDecisionLevel());
+					choiceStack.remove();
+					LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
+				}
+				if (conflictAnalysisResult.learnedNoGood != null) {
+					if (store.add(grounder.registerOutsideNoGood(conflictAnalysisResult.learnedNoGood), conflictAnalysisResult.learnedNoGood) != null) {
+						throw new RuntimeException("Adding learned NoGood from conflict again results in conflict. This should not happen.");
+					}
+				}
+			}
+			if (store.add(noGoodEntry.getKey(), noGoodEntry.getValue()) != null) {
+				throw new RuntimeException("Re-adding of obtained NoGood still causes conflicts. This should not happen.");
+			}
+		}
 	}
 
 	private boolean isSearchSpaceExhausted() {
@@ -184,6 +325,10 @@ public class DefaultSolver extends AbstractSolver {
 		boolean changeCopy = didChange;
 		didChange = false;
 		return !changeCopy;
+	}
+
+	boolean isAtomChoicePoint(int atom) {
+		return grounder.isAtomChoicePoint(atom);
 	}
 
 	boolean isAtomActiveChoicePoint(int atom) {
@@ -211,17 +356,25 @@ public class DefaultSolver extends AbstractSolver {
 
 	private void doChoice(int nextChoice) {
 		decisionCounter++;
-		// We guess true for any unassigned choice atom (backtrack tries false)
-		assignment.guess(nextChoice, TRUE);
-		choiceStack.push(nextChoice, true);
+		boolean sign = branchingHeuristic.chooseSign(nextChoice);
+		assignment.guess(nextChoice, sign);
+		choiceStack.push(nextChoice, sign);
 		// Record change to compute propagation fixpoint again.
 		didChange = true;
-		LOGGER.debug("Choice: guessing {}=TRUE@{}", grounder.atomToString(nextChoice), assignment.getDecisionLevel());
+		LOGGER.debug("Choice: guessing {}={}@{}", grounder.atomToString(nextChoice), sign, assignment.getDecisionLevel());
 		LOGGER.debug("Choice: stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 		LOGGER.debug("Choice: {} choices so far.", decisionCounter);
 	}
 
 	private int computeChoice() {
+		int berkminChoice = branchingHeuristic.chooseAtom();
+		if (berkminChoice != BerkMin.DEFAULT_CHOICE_ATOM) {
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("Atom chosen by BerkMin: {}", grounder.atomToString(berkminChoice));
+			}
+			return berkminChoice;
+		}
+
 		// Check if there is an enabled choice that is not also disabled
 		// HINT: tracking changes of ChoiceOn, ChoiceOff directly could
 		// increase performance (analyze store.getChangedAssignments()).

@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.rete.RetePredicate;
+import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Iterator;
@@ -12,7 +13,7 @@ import java.util.Map;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class ReteGrounder extends AbstractGrounder {
+public abstract class ReteGrounder extends AbstractGrounder {
 	private ParsedProgram programRules;
 
 	private byte[] recentTruthAssignments;
@@ -39,7 +40,7 @@ public class ReteGrounder extends AbstractGrounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<OrdinaryAssignment> it) {
+	public void updateAssignment(Iterator<Assignment.Entry> it) {
 	}
 
 	@Override
@@ -55,5 +56,10 @@ public class ReteGrounder extends AbstractGrounder {
 	@Override
 	public List<Integer> getUnassignedAtoms(ImmutableAssignment assignment) {
 		return null;
+	}
+
+	@Override
+	public int registerOutsideNoGood(NoGood noGood) {
+		return 0;
 	}
 }

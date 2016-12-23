@@ -3,10 +3,7 @@ package at.ac.tuwien.kr.alpha.solver;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 import static org.junit.Assert.*;
@@ -112,73 +109,109 @@ public class BasicAssignmentTest {
 	@Test
 	public void testContains() {
 		assignment.assign(1, TRUE);
-		assertTrue(assignment.containsRelaxed(+1));
-		assertFalse(assignment.containsRelaxed(-1));
+		assertTrue(assignment.containsWeakComplement(+1));
+		assertFalse(assignment.containsWeakComplement(-1));
 
 		assignment.assign(2, FALSE);
-		assertTrue(assignment.containsRelaxed(-2));
-		assertFalse(assignment.containsRelaxed(+2));
+		assertTrue(assignment.containsWeakComplement(-2));
+		assertFalse(assignment.containsWeakComplement(+2));
 
 		assignment.assign(1, MBT);
-		assertTrue(assignment.containsRelaxed(+1));
-		assertFalse(assignment.containsRelaxed(-1));
+		assertTrue(assignment.containsWeakComplement(+1));
+		assertFalse(assignment.containsWeakComplement(-1));
 	}
 
 	@Test
-	public void iterator() throws Exception {
+	public void assignmentsToProcess() throws Exception {
 		assignment.assign(1, MBT);
 
-		Iterator<Assignment.Entry> it = assignment.iterator();
-		assertEquals(it.next().getAtom(), 1);
+		Queue<Assignment.Entry> queue = assignment.getAssignmentsToProcess();
+		assertEquals(1, queue.remove().getAtom());
 
 		assignment.guess(2, MBT);
 		assignment.guess(1, TRUE);
 
-		assertEquals(it.next().getAtom(), 2);
-		assertEquals(it.next().getAtom(), 1);
+		assertEquals(2, queue.remove().getAtom());
+		assertEquals(1, queue.element().getAtom());
 
-		it = assignment.iterator();
-		assertEquals(it.next().getAtom(), 1);
-		assertEquals(it.next().getAtom(), 2);
-		assertEquals(it.next().getAtom(), 1);
+		queue = assignment.getAssignmentsToProcess();
+		assertEquals(1, queue.remove().getAtom());
+	}
 
-		int count = 0;
+	@Test
+	public void newAssignmentsIteratorAndBacktracking() throws Exception {
 
-		it = assignment.iterator();
-		while (it.hasNext()) {
-			switch (count) {
-				case 0:
-					assertEquals(it.next().getAtom(), 1);
-					break;
-				case 1:
-					assertEquals(it.next().getAtom(), 2);
-					break;
-				case 2:
-					assertEquals(it.next().getAtom(), 1);
-					break;
-			}
-			count++;
-		}
+		Iterator<Assignment.Entry> newAssignmentsIterator;
 
-		assertEquals(3, count);
+		assignment.assign(1, MBT);
+		assignment.guess(2, MBT);
+
+		newAssignmentsIterator = assignment.getNewAssignmentsIterator();
+
+		assertEquals(1, newAssignmentsIterator.next().getAtom());
+		assertEquals(2, newAssignmentsIterator.next().getAtom());
+		assertFalse(newAssignmentsIterator.hasNext());
+
+
+		assignment.guess(1, TRUE);
+		assignment.backtrack();
+		assignment.assign(3, FALSE);
+
+		newAssignmentsIterator = assignment.getNewAssignmentsIterator();
+		assertEquals(3, newAssignmentsIterator.next().getAtom());
+		assertFalse(newAssignmentsIterator.hasNext());
+	}
+
+	@Test
+	public void newAssignmentsIteratorLowerDecisionLevelAndBacktracking() throws Exception {
+
+		Iterator<Assignment.Entry> newAssignmentsIterator;
+
+		assignment.guess(1, MBT);
+		assignment.guess(2, MBT);
+		assignment.assign(3, MBT, null, 1);
+		assignment.backtrack();
+
+		newAssignmentsIterator = assignment.getNewAssignmentsIterator();
+		assertEquals(1, newAssignmentsIterator.next().getAtom());
+		assertEquals(3, newAssignmentsIterator.next().getAtom());
+		assertFalse(newAssignmentsIterator.hasNext());
 	}
 
 	@Test
 	public void iteratorAndBacktracking() throws Exception {
-		Iterator<Assignment.Entry> it = assignment.iterator();
+		Queue<Assignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
 
 		assignment.assign(1, MBT);
-		assertEquals(it.next().getAtom(), 1);
+		assertEquals(1, assignmentsToProcess.remove().getAtom());
 
 		assignment.guess(2, MBT);
-		assertEquals(it.next().getAtom(), 2);
+		assertEquals(2, assignmentsToProcess.remove().getAtom());
 
 		assignment.guess(1, TRUE);
-		assertEquals(it.next().getAtom(), 1);
+		assertEquals(1, assignmentsToProcess.remove().getAtom());
 
 		assignment.backtrack();
 
 		assignment.assign(3, FALSE);
-		assertEquals(it.next().getAtom(), 3);
+		assertEquals(3, assignmentsToProcess.remove().getAtom());
+	}
+
+	@Test
+	public void mbtCounterAssignMbtToFalseOnLowerDecisionLevel() {
+		assertTrue(assignment.guess(1, TRUE));
+		assertTrue(assignment.guess(2, FALSE));
+
+		assertTrue(assignment.assign(3, MBT, null, 2));
+		assertEquals(1, assignment.getMBTCount());
+
+		assertTrue(assignment.guess(4, TRUE));
+
+		assertFalse(assignment.assign(3, FALSE, null, 1));
+
+		assignment.backtrack();
+		assignment.backtrack();
+
+		assertEquals(0, assignment.getMBTCount());
 	}
 }

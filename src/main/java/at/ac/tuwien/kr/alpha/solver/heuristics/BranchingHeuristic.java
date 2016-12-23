@@ -1,19 +1,17 @@
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016 Siemens AG
  * All rights reserved.
- *
- * Additional changes made by Siemens.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *
+ * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,52 +23,49 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.ImmutableAssignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 
-import java.util.Iterator;
-import java.util.Queue;
+import java.util.Collection;
 
-public interface Assignment extends ImmutableAssignment {
-	/**
-	 * Delete all information stored in the assignment.
-	 */
-	void clear();
-
-	/**
-	 * Backtracks to the indicated decision level. Every assignment on a higher decisionLevel is removed.
-	 * All assignments below (or equal to) decisionLevel are kept. Note that for atoms being TRUE this may require
-	 * setting the assigned value to MBT during backtracking.
-	 */
-	void backtrack();
-
-	boolean assign(int atom, ThriceTruth value, NoGood impliedBy);
+/**
+ * A heuristic that selects an atom to choose on.
+ * 
+ * Copyright (c) 2016 Siemens AG
+ *
+ */
+public interface BranchingHeuristic {
 
 	/**
-	 * Assigns an atom some value on a lower decision level than the current one.
-	 * @param atom
-	 * @param value
-	 * @param impliedBy
-	 * @param decisionLevel
-	 * @return
+	 * Stores a newly violated {@link NoGood} and updates associated activity and sign counters.
+	 * 
+	 * @param violatedNoGood
 	 */
-	boolean assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel);
+	void violatedNoGood(NoGood violatedNoGood);
 
-	default boolean assign(int atom, ThriceTruth value) {
-		return assign(atom, value, null);
-	}
+	/**
+	 * Stores a newly grounded {@link NoGood} and updates associated activity counters.
+	 * 
+	 * @param newNoGood
+	 */
+	void newNoGood(NoGood newNoGood);
+	
+	/**
+	 * @see #newNoGood(NoGood)
+	 */
+	void newNoGoods(Collection<NoGood> newNoGoods);
 
-	boolean guess(int atom, ThriceTruth value);
+	double getActivity(int literal);
+	
+	/**
+	 * Determines an atom to choose on.
+	 */
+	int chooseAtom();
 
-	default boolean guess(int atom, boolean value) {
-		return guess(atom, ThriceTruth.valueOf(value));
-	}
+	/**
+	 * Chooses a truth value for the given atom.
+	 */
+	boolean chooseSign(int atom);
 
-	NoGood getNoGoodViolatedByAssign();
-	Assignment.Entry getGuessViolatedByAssign();
-
-	Queue<Entry> getAssignmentsToProcess();
-	Iterator<Entry> getNewAssignmentsIterator();
 }
