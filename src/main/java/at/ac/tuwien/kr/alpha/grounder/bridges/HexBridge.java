@@ -20,7 +20,7 @@ public class HexBridge implements Bridge {
 			int id = it.nextIndex();
 			BasicAtom basicAtom = it.next();
 
-			if (!assignment.contains(id) || basicAtom.isInternal()) {
+			if (basicAtom.isInternal() || !assignment.contains(id)) {
 				continue;
 			}
 
