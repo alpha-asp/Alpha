@@ -28,6 +28,7 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.solver.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 import java.util.*;
@@ -103,11 +104,16 @@ public class BerkMin implements BranchingHeuristic {
 	@Override
 	public void violatedNoGood(NoGood violatedNoGood) {
 		pushToStack(violatedNoGood);
-		for (Integer literal : violatedNoGood) {
-			incrementActivityCounter(literal);
-			// TODO: actually we should not count the conflict nogood itself, but nogoods responsible for
-			// the conflict!
-			incrementSignCounter(literal);
+	}
+
+	@Override
+	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
+		pushToStack(analysisResult.learnedNoGood);
+		for (NoGood noGood : analysisResult.noGoodsResponsibleForConflict) {
+			for (Integer literal : noGood) {
+				incrementActivityCounter(literal);
+				incrementSignCounter(literal);
+			}
 		}
 		decayAllIfTimeHasCome();
 	}
@@ -173,8 +179,10 @@ public class BerkMin implements BranchingHeuristic {
 		}
 	}
 
-	private void pushToStack(NoGood violatedNoGood) {
-		stackOfNoGoods.push(violatedNoGood);
+	private void pushToStack(NoGood noGood) {
+		if (noGood != null) {
+			stackOfNoGoods.push(noGood);
+		}
 	}
 
 	private void incrementActivityCounter(int literal) {

@@ -36,10 +36,15 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 /**
  * The new default solver employed in Alpha.
@@ -152,6 +157,8 @@ public class DefaultSolver extends AbstractSolver {
 	private void learnBackjumpAddFromConflict() {
 		LOGGER.debug("Analyzing conflict.");
 		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(store.getViolatedNoGood());
+		branchingHeuristic.analyzedConflict(analysisResult);
+
 		if (analysisResult.learnedNoGood == null) {
 			LOGGER.debug("Conflict results from wrong guess, backjumping and removing guess.");
 			LOGGER.debug("Backjumping to decision level: {}", analysisResult.backjumpLevel);
