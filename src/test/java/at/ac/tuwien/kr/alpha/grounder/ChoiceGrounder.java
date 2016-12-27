@@ -111,7 +111,7 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public Map<Integer, NoGood> getNoGoods(ImmutableAssignment assignment) {
+	public Map<Integer, NoGood> getNoGoods(ReadableAssignment assignment) {
 		if (!returnedAllNogoods) {
 			returnedAllNogoods = true;
 			return NOGOODS;
@@ -140,7 +140,7 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public List<Integer> getUnassignedAtoms(ImmutableAssignment assignment) {
+	public List<Integer> getUnassignedAtoms(ReadableAssignment assignment) {
 		List<Integer> unassigned = new ArrayList<>();
 		List<Integer> knownAtomIds = new ArrayList<>(atomIdToString.keySet());
 		for (Integer atomId : knownAtomIds) {

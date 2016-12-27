@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.ImmutableAssignment;
+import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
@@ -22,7 +22,7 @@ public abstract class BridgedGrounder extends AbstractGrounder {
 		this.bridges = bridges;
 	}
 
-	protected Set<NoGood> collectExternal(ImmutableAssignment assignment, AtomStore atomStore) {
+	protected Set<NoGood> collectExternal(ReadableAssignment assignment, AtomStore atomStore) {
 		Set<NoGood> collectedNoGoods = new HashSet<>();
 
 		for (Bridge bridge : bridges) {

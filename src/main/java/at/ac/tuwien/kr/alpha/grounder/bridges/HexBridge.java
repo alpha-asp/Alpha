@@ -9,7 +9,7 @@ public class HexBridge implements Bridge {
 	public static native void sendResults(String[][] resultsArray);
 	private static native String[][] externalAtomsQuery(String[] trueAtoms, String[] falseAtoms);
 
-	public Collection<NoGood> getNoGoods(ImmutableAssignment assignment, AtomStore atomStore) {
+	public Collection<NoGood> getNoGoods(ReadableAssignment assignment, AtomStore atomStore) {
 		Set<NoGood> nogoods = new HashSet<>();
 
 		List<String> trueAtoms = new ArrayList<>();

@@ -9,7 +9,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
-public interface ImmutableAssignment {
+public interface ReadableAssignment {
 	/**
 	 * Reports how many atoms are assigned to must-be-true currently. If this method returns
 	 * zero, the assignment is guaranteed to be free of must-be-true values (i.e. it only

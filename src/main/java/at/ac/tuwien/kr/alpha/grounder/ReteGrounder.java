@@ -30,7 +30,7 @@ public abstract class ReteGrounder extends AbstractGrounder {
 	}
 
 	@Override
-	public Map<Integer, NoGood> getNoGoods(ImmutableAssignment assignment) {
+	public Map<Integer, NoGood> getNoGoods(ReadableAssignment assignment) {
 		return null;
 	}
 
@@ -54,7 +54,7 @@ public abstract class ReteGrounder extends AbstractGrounder {
 	}
 
 	@Override
-	public List<Integer> getUnassignedAtoms(ImmutableAssignment assignment) {
+	public List<Integer> getUnassignedAtoms(ReadableAssignment assignment) {
 		return null;
 	}
 

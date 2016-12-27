@@ -27,13 +27,13 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.ImmutableAssignment;
+import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 
 import java.util.Iterator;
 import java.util.Queue;
 
-public interface Assignment extends ImmutableAssignment {
+public interface Assignment extends ReadableAssignment {
 	/**
 	 * Delete all information stored in the assignment.
 	 */

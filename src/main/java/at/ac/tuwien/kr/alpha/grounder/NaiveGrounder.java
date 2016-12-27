@@ -218,7 +218,7 @@ public class NaiveGrounder extends BridgedGrounder {
 	}
 
 	@Override
-	public Map<Integer, NoGood> getNoGoods(ImmutableAssignment assignment) {
+	public Map<Integer, NoGood> getNoGoods(ReadableAssignment assignment) {
 		// First call, output all NoGoods from facts.
 		if (outputFactNogoods) {
 			outputFactNogoods = false;
@@ -573,7 +573,7 @@ public class NaiveGrounder extends BridgedGrounder {
 	}
 
 	@Override
-	public List<Integer> getUnassignedAtoms(ImmutableAssignment assignment) {
+	public List<Integer> getUnassignedAtoms(ReadableAssignment assignment) {
 		List<Integer> unassignedAtoms = new ArrayList<>();
 		// Check all known atoms: assumption is that AtomStore assigned continuous values and 0 is no valid atomId.
 		for (int i = 1; i <= atomStore.getHighestAtomId(); i++) {

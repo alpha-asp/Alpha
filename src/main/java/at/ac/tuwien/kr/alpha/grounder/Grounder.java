@@ -11,7 +11,7 @@ import java.util.Map;
 public interface Grounder extends AtomTranslator {
 	AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms);
 
-	Map<Integer, NoGood> getNoGoods(ImmutableAssignment assignment);
+	Map<Integer, NoGood> getNoGoods(ReadableAssignment assignment);
 
 	/**
 	 *
@@ -32,7 +32,7 @@ public interface Grounder extends AtomTranslator {
 	 * @param assignment the current assignment.
 	 * @return a list of atoms not having assigned a truth value.
 	 */
-	List<Integer> getUnassignedAtoms(ImmutableAssignment assignment);
+	List<Integer> getUnassignedAtoms(ReadableAssignment assignment);
 
 	/**
 	 * Registers the given NoGood and returns the identifier of it.
