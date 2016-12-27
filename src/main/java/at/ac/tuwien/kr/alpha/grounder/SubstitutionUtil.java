@@ -17,17 +17,18 @@ public class SubstitutionUtil {
 	 * @param variableSubstitution the variable substitution to apply.
 	 * @return the AtomId of the corresponding substituted ground atom.
 	 */
-	public static int groundingSubstitute(AtomStore atomStore, BasicAtom nonGroundAtom, NaiveGrounder.VariableSubstitution variableSubstitution) {
-		Term[] groundTermList = new Term[nonGroundAtom.termList.length];
-		for (int i = 0; i < nonGroundAtom.termList.length; i++) {
-			Term nonGroundTerm = nonGroundAtom.termList[i];
+	public static int groundingSubstitute(AtomStore atomStore, Atom nonGroundAtom, NaiveGrounder.VariableSubstitution variableSubstitution) {
+		final Term[] terms = nonGroundAtom.getTerms();
+		Term[] groundTermList = new Term[terms.length];
+		for (int i = 0; i < terms.length; i++) {
+			Term nonGroundTerm = terms[i];
 			Term groundTerm = groundTerm(nonGroundTerm, variableSubstitution);
 			if (!groundTerm.isGround()) {
 				throw new RuntimeException("Grounding substitution yields a non-ground term: " + groundTerm + "\nShould not happen, aborting.");
 			}
 			groundTermList[i] = groundTerm;
 		}
-		BasicAtom groundAtom = new BasicAtom(nonGroundAtom.predicate, false, groundTermList);
+		BasicAtom groundAtom = new BasicAtom(nonGroundAtom.getPredicate(), false, groundTermList);
 		return atomStore.add(groundAtom);
 	}
 
@@ -66,20 +67,21 @@ public class SubstitutionUtil {
 	 * isGround true if the substitutedAtom is ground and substitutedAtom is the atom resulting from the applying
 	 * the substitution.
 	 */
-	public static Pair<Boolean, BasicAtom> substitute(BasicAtom nonGroundAtom, NaiveGrounder.VariableSubstitution variableSubstitution) {
-		Term[] substitutedTerms = new Term[nonGroundAtom.termList.length];
+	public static Pair<Boolean, BasicAtom> substitute(Atom nonGroundAtom, NaiveGrounder.VariableSubstitution variableSubstitution) {
+		final Term[] terms = nonGroundAtom.getTerms();
+		Term[] substitutedTerms = new Term[terms.length];
 		boolean isGround = true;
-		for (int i = 0; i < nonGroundAtom.termList.length; i++) {
-			substitutedTerms[i] = groundTerm(nonGroundAtom.termList[i], variableSubstitution);
+		for (int i = 0; i < nonGroundAtom.getTerms().length; i++) {
+			substitutedTerms[i] = groundTerm(terms[i], variableSubstitution);
 			if (isGround && !substitutedTerms[i].isGround()) {
 				isGround = false;
 			}
 		}
-		BasicAtom substitutedAtom = new BasicAtom(nonGroundAtom.predicate, false, substitutedTerms);
+		BasicAtom substitutedAtom = new BasicAtom(nonGroundAtom.getPredicate(), false, substitutedTerms);
 		return new ImmutablePair<>(isGround, substitutedAtom);
 	}
 
-	public static String groundAndPrintRule(NonGroundRule<? extends Predicate> rule, NaiveGrounder.VariableSubstitution substitution) {
+	public static String groundAndPrintRule(NonGroundRule rule, NaiveGrounder.VariableSubstitution substitution) {
 		String ret = "";
 		if (!rule.isConstraint()) {
 			BasicAtom groundHead = substitute(rule.getHeadAtom(), substitution).getRight();

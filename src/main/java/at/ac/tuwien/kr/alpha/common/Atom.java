@@ -7,6 +7,7 @@ import java.util.List;
  */
 public interface Atom {
 	Predicate getPredicate();
+	Term[] getTerms();
 
 	boolean isGround();
 	boolean isInternal();

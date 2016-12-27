@@ -47,6 +47,11 @@ public class BasicAtom implements Atom {
 		return predicate;
 	}
 
+	@Override
+	public Term[] getTerms() {
+		return termList;
+	}
+
 	public boolean isGround() {
 		for (Term term : termList) {
 			if (!term.isGround()) {

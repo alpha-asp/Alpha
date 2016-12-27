@@ -10,9 +10,9 @@ import java.util.List;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class BuiltinAtom implements Atom {
-	public final Term left;
-	public final Term right;
-	public final ParsedBuiltinAtom.BINOP binop;
+	private final Term left;
+	private final Term right;
+	private final ParsedBuiltinAtom.BINOP binop;
 
 	public BuiltinAtom(ParsedBuiltinAtom parsedBuiltinAtom) {
 		binop = parsedBuiltinAtom.binop;
@@ -28,6 +28,11 @@ public class BuiltinAtom implements Atom {
 	@Override
 	public Predicate getPredicate() {
 		return binop.toPredicate();
+	}
+
+	@Override
+	public Term[] getTerms() {
+		return new Term[]{left, right};
 	}
 
 	@Override

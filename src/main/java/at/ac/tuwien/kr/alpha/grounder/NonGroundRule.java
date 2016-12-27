@@ -11,18 +11,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static at.ac.tuwien.kr.alpha.common.BasicAtom.fromParsedAtom;
+
 /**
  * Represents a non-ground rule or a constraint for the semi-naive grounder.
  * Copyright (c) 2016, the Alpha Team.
  */
-public class NonGroundRule<P extends Predicate> {
+public class NonGroundRule {
 	private final int ruleId;
 
 	private final List<Atom> bodyAtomsPositive;
 	private final List<Atom> bodyAtomsNegative;
-	private final BasicAtom headAtom;
+	private final Atom headAtom;
 
-	public NonGroundRule(int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, BasicAtom headAtom) {
+	public NonGroundRule(int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
 		this.ruleId = ruleId;
 
 		// Sort for better join order.
@@ -41,7 +43,7 @@ public class NonGroundRule<P extends Predicate> {
 		}
 	}
 
-	public static NonGroundRule<BasicPredicate> constructNonGroundRule(IntIdGenerator intIdGenerator, ParsedRule parsedRule) {
+	public static NonGroundRule constructNonGroundRule(IntIdGenerator intIdGenerator, ParsedRule parsedRule) {
 		final List<Atom> pos = new ArrayList<>(parsedRule.body.size() / 2);
 		final List<Atom> neg = new ArrayList<>(parsedRule.body.size() / 2);
 
@@ -49,19 +51,19 @@ public class NonGroundRule<P extends Predicate> {
 			if (parsedAtom instanceof ParsedBuiltinAtom) {
 				pos.add(new BuiltinAtom((ParsedBuiltinAtom) parsedAtom));
 			} else {
-				final BasicAtom basicAtom = BasicAtom.fromParsedAtom(parsedAtom);
+				final Atom atom = fromParsedAtom(parsedAtom);
 				if (parsedAtom.isNegated()) {
-					neg.add(basicAtom);
+					neg.add(atom);
 				} else {
-					pos.add(basicAtom);
+					pos.add(atom);
 				}
 			}
 		}
 
 		// Construct head if the given parsedRule is no constraint
-		final BasicAtom head = parsedRule.head != null ? BasicAtom.fromParsedAtom(parsedRule.head) : null;
+		final Atom head = parsedRule.head != null ? fromParsedAtom(parsedRule.head) : null;
 
-		return new NonGroundRule<>(
+		return new NonGroundRule(
 			intIdGenerator.getNextId(),
 			pos,
 			neg,
@@ -80,17 +82,13 @@ public class NonGroundRule<P extends Predicate> {
 	public List<Predicate> getOccurringPredicates() {
 		ArrayList<Predicate> predicateList = new ArrayList<>(bodyAtomsPositive.size() + bodyAtomsNegative.size() + 1);
 		for (Atom posAtom : bodyAtomsPositive) {
-			if (posAtom instanceof BasicAtom) {
-				predicateList.add(((BasicAtom)posAtom).predicate);
-			}
+			predicateList.add(posAtom.getPredicate());
 		}
 		for (Atom negAtom : bodyAtomsNegative) {
-			if (negAtom instanceof BasicAtom) {
-				predicateList.add(((BasicAtom) negAtom).predicate);
-			}
+			predicateList.add(negAtom.getPredicate());
 		}
 		if (!isConstraint()) {
-			predicateList.add(headAtom.predicate);
+			predicateList.add(headAtom.getPredicate());
 		}
 		return predicateList;
 	}
@@ -106,6 +104,8 @@ public class NonGroundRule<P extends Predicate> {
 
 		// Check that all negative variables occur in the positive body.
 		for (Atom posAtom : bodyAtomsPositive) {
+			// FIXME: The following five lines depend on concrete
+			// implementations of the Atom interface. Not nice.
 			if (posAtom instanceof BasicAtom) {
 				positiveVariables.addAll(posAtom.getOccurringVariables());
 			} else if (posAtom instanceof BuiltinAtom) {
@@ -142,8 +142,9 @@ public class NonGroundRule<P extends Predicate> {
 	 * Note that the below sorting can be improved to yield smaller joins.
 	 */
 	private List<Atom> sortAtoms(List<Atom> atoms) {
-		Set<SortingBodyComponent> components = new HashSet<>();
-		Set<BuiltinAtom> builtinAtoms = new HashSet<>();
+		final Set<SortingBodyComponent> components = new HashSet<>();
+		final Set<BuiltinAtom> builtinAtoms = new HashSet<>();
+
 		for (Atom atom : atoms) {
 			if (atom instanceof BuiltinAtom) {
 				// Sort out builtin atoms (we consider them as not creating new bindings)
@@ -164,19 +165,19 @@ public class NonGroundRule<P extends Predicate> {
 
 			// If no components were hit, create new component, else merge components
 			if (hits.isEmpty()) {
-				components.add(new SortingBodyComponent((BasicAtom) atom));
+				components.add(new SortingBodyComponent(atom));
 				continue;
 			}
 
 			// If only one component hit, add atom to it
 			if (hits.size() == 1) {
-				hits.iterator().next().add((BasicAtom) atom);
+				hits.iterator().next().add(atom);
 				continue;
 			}
 
 			// Merge all components that are hit by the current atom
 			SortingBodyComponent firstComponent = hits.iterator().next();
-			firstComponent.add((BasicAtom) atom);
+			firstComponent.add(atom);
 			for (SortingBodyComponent hitComponent : hits) {
 				if (hitComponent != firstComponent) {
 					firstComponent.merge(hitComponent);
@@ -195,24 +196,15 @@ public class NonGroundRule<P extends Predicate> {
 		return sortedPositiveBodyAtoms;
 	}
 
-
 	/**
 	 * Returns the predicate occurring first in the body of the rule.
 	 * @return the first predicate of the body or null if the first predicate is a builtin predicate.
 	 */
 	public Predicate usedFirstBodyPredicate() {
 		if (!bodyAtomsPositive.isEmpty()) {
-			if (bodyAtomsPositive.get(0) instanceof BasicAtom) {
-				return ((BasicAtom)bodyAtomsPositive.get(0)).predicate;
-			} else {
-				return null;
-			}
+			return (bodyAtomsPositive.get(0)).getPredicate();
 		} else if (!bodyAtomsNegative.isEmpty()) {
-			if (bodyAtomsNegative.get(0) instanceof BasicAtom) {
-				return ((BasicAtom)bodyAtomsNegative.get(0)).predicate;
-			} else {
-				return null;
-			}
+			return (bodyAtomsNegative.get(0)).getPredicate();
 		}
 		throw new RuntimeException("Encountered NonGroundRule with empty body, which should have been treated as a fact.");
 	}
@@ -236,14 +228,11 @@ public class NonGroundRule<P extends Predicate> {
 
 	public int getFirstOccurrenceOfPredicate(Predicate predicate) {
 		for (int i = 0; i < getNumBodyAtoms(); i++) {
-			Atom bodyAtom = getBodyAtom(i);
-			if (bodyAtom instanceof BasicAtom) {
-				if (((BasicAtom) bodyAtom).predicate.equals(predicate)) {
-					return i;
-				}
+			if (getBodyAtom(i).getPredicate().equals(predicate)) {
+				return i;
 			}
 		}
-		throw new RuntimeException("Predicate " + predicate + " does not occur in rule " + this.toString());
+		throw new RuntimeException("Predicate " + predicate + " does not occur in rule " + this);
 	}
 
 	public boolean isBodyAtomPositive(int atomPosition) {
@@ -255,11 +244,9 @@ public class NonGroundRule<P extends Predicate> {
 	 * @return
 	 */
 	public List<Predicate> usedNegativeBodyPredicates() {
-		ArrayList<Predicate> usedPredicates = new ArrayList<>();
+		ArrayList<Predicate> usedPredicates = new ArrayList<>(bodyAtomsNegative.size());
 		for (Atom basicAtom : bodyAtomsNegative) {
-			if (basicAtom instanceof BasicAtom) {
-				usedPredicates.add(((BasicAtom) basicAtom).predicate);
-			}
+			usedPredicates.add(basicAtom.getPredicate());
 		}
 		return usedPredicates;
 	}
@@ -272,13 +259,13 @@ public class NonGroundRule<P extends Predicate> {
 		if (!isConstraint() && !headAtom.isGround()) {
 			return false;
 		}
-		for (Atom basicAtom : bodyAtomsPositive) {
-			if (!basicAtom.isGround()) {
+		for (Atom atom : bodyAtomsPositive) {
+			if (!atom.isGround()) {
 				return false;
 			}
 		}
-		for (Atom basicAtom : bodyAtomsNegative) {
-			if (!basicAtom.isGround()) {
+		for (Atom atom : bodyAtomsNegative) {
+			if (!atom.isGround()) {
 				return false;
 			}
 		}
@@ -317,11 +304,11 @@ public class NonGroundRule<P extends Predicate> {
 
 	private class SortingBodyComponent {
 		private final Set<VariableTerm> occurringVariables;
-		private final Set<BasicAtom> atoms;
-		private final List<BasicAtom> atomSequence;
+		private final Set<Atom> atoms;
+		private final List<Atom> atomSequence;
 		int numAtoms;
 
-		SortingBodyComponent(BasicAtom atom) {
+		SortingBodyComponent(Atom atom) {
 			this.occurringVariables = new HashSet<>(atom.getOccurringVariables());
 			this.atoms = new HashSet<>();
 			this.atoms.add(atom);
@@ -330,7 +317,7 @@ public class NonGroundRule<P extends Predicate> {
 			this.numAtoms = 1;
 		}
 
-		void add(BasicAtom atom) {
+		void add(Atom atom) {
 			this.atoms.add(atom);
 			this.atomSequence.add(atom);
 			this.occurringVariables.addAll(atom.getOccurringVariables());
@@ -353,7 +340,7 @@ public class NonGroundRule<P extends Predicate> {
 		return bodyAtomsNegative;
 	}
 
-	public BasicAtom getHeadAtom() {
+	public Atom getHeadAtom() {
 		return headAtom;
 	}
 }
