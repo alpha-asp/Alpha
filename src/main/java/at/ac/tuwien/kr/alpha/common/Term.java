@@ -8,8 +8,6 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ParsedVariable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static at.ac.tuwien.kr.alpha.common.FunctionTerm.getFunctionTerm;
-
 /**
  * Common representation of Terms. Terms are constructed such that each term is represented by a unique object, hence
  * term equality can be checked by object reference comparison. Each concrete subclass of a Term must implement a
@@ -34,10 +32,10 @@ public abstract class Term {
 				Term term = convertFromParsedTerm(((ParsedFunctionTerm) parsedTerm).termList.get(i));
 				termlist.add(term);
 			}
-			return getFunctionTerm(functionName, termlist);
+			return FunctionTerm.getInstance(functionName, termlist);
 		} else if (parsedTerm instanceof ParsedVariable) {
 			if (((ParsedVariable) parsedTerm).isAnonymous) {
-				return VariableTerm.getNewAnonymousVariable();
+				return VariableTerm.getAnonymousInstance();
 			} else {
 				return VariableTerm.getInstance(((ParsedVariable) parsedTerm).variableName);
 			}

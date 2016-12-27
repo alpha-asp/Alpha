@@ -20,14 +20,14 @@ public class FunctionTerm extends Term {
 		this.termList = termList;
 	}
 
-	public static FunctionTerm getFunctionTerm(TermSymbol functionSymbol, List<Term> termList) {
+	public static FunctionTerm getInstance(TermSymbol functionSymbol, List<Term> termList) {
 		FunctionTerm functionTerm = new FunctionTerm(functionSymbol, termList);
 		knownFunctionTerms.putIfAbsent(functionTerm, functionTerm);
 		return knownFunctionTerms.get(functionTerm);
 	}
 
-	public static FunctionTerm getFunctionTerm(String functionSymbol, List<Term> termList) {
-		return getFunctionTerm(TermSymbol.getInstance(functionSymbol), termList);
+	public static FunctionTerm getInstance(String functionSymbol, List<Term> termList) {
+		return getInstance(TermSymbol.getInstance(functionSymbol), termList);
 	}
 
 	@Override

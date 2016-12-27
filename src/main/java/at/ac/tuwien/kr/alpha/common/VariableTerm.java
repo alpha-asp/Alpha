@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,10 +25,8 @@ public class VariableTerm extends Term implements Comparable<VariableTerm> {
 		return VARIABLES.computeIfAbsent(variableName, VariableTerm::new);
 	}
 
-	public static VariableTerm getNewAnonymousVariable() {
-		VariableTerm newAnonymousVariable = new VariableTerm(ANONYMOUS_VARIABLE_PREFIX + ANONYMOUS_VARIABLE_COUNTER.getNextId());
-		VARIABLES.put(newAnonymousVariable.variableName, newAnonymousVariable);
-		return newAnonymousVariable;
+	public static VariableTerm getAnonymousInstance() {
+		return getInstance(ANONYMOUS_VARIABLE_PREFIX + ANONYMOUS_VARIABLE_COUNTER.getNextId());
 	}
 
 	@Override
@@ -37,9 +36,7 @@ public class VariableTerm extends Term implements Comparable<VariableTerm> {
 
 	@Override
 	public List<VariableTerm> getOccurringVariables() {
-		LinkedList<VariableTerm> vars = new LinkedList<>();
-		vars.add(this);
-		return vars;
+		return Collections.singletonList(this);
 	}
 
 	@Override
@@ -52,6 +49,7 @@ public class VariableTerm extends Term implements Comparable<VariableTerm> {
 		if (this == o) {
 			return true;
 		}
+
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}

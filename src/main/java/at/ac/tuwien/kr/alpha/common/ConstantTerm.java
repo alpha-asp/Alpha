@@ -40,6 +40,7 @@ public class ConstantTerm extends Term {
 		if (this == o) {
 			return true;
 		}
+
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
@@ -47,7 +48,6 @@ public class ConstantTerm extends Term {
 		ConstantTerm that = (ConstantTerm) o;
 
 		return constantSymbol.equals(that.constantSymbol);
-
 	}
 
 	@Override

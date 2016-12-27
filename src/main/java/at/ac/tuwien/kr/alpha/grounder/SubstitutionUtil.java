@@ -52,7 +52,7 @@ public class SubstitutionUtil {
 			for (Term term : ((FunctionTerm) nonGroundTerm).termList) {
 				groundTermList.add(groundTerm(term, variableSubstitution));
 			}
-			return FunctionTerm.getFunctionTerm(((FunctionTerm) nonGroundTerm).functionSymbol, groundTermList);
+			return FunctionTerm.getInstance(((FunctionTerm) nonGroundTerm).functionSymbol, groundTermList);
 		} else {
 			throw new RuntimeException("SubstitutionUtil: Unknown term type encountered.");
 		}
