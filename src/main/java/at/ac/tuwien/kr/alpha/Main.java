@@ -9,7 +9,7 @@ import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.bridges.HexBridge;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTreeVisitor;
-import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityProgramTransformation;
+import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityTransformation;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import org.antlr.v4.runtime.*;
@@ -154,7 +154,7 @@ public class Main {
 		}
 
 		// Apply program transformations/rewritings (currently none).
-		IdentityProgramTransformation programTransformation = new IdentityProgramTransformation();
+		IdentityTransformation programTransformation = new IdentityTransformation();
 		ParsedProgram transformedProgram = programTransformation.transform(program);
 		Grounder grounder = GrounderFactory.getInstance(
 			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram, filter, bridges
