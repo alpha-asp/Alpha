@@ -25,7 +25,6 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.BasicAssignment;
 import at.ac.tuwien.kr.alpha.solver.GroundConflictNoGoodLearner.ConflictAnalysisResult;
@@ -173,22 +172,7 @@ public class BerkMinTest {
 		assertEquals(learnedNoGood, berkmin.getCurrentTopClause());
 	}
 
-	private static class PseudoAnalysisResult extends ConflictAnalysisResult {
-
-		/**
-		 * Creates an analysis result where the only nogood responsible for the
-		 * conflict is the given one, for testing purposes.
-		 * 
-		 * @param noGood
-		 */
-		PseudoAnalysisResult(NoGood noGood) {
-			super(null, 0, false, Util.set(noGood));
-		}
-
+	private static ConflictAnalysisResult pseudo(NoGood noGood) {
+		return new ConflictAnalysisResult(null, 0, false, Collections.singleton(noGood));
 	}
-
-	private static PseudoAnalysisResult pseudo(NoGood noGood) {
-		return new PseudoAnalysisResult(noGood);
-	}
-
 }
