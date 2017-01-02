@@ -25,10 +25,10 @@ public class NaiveGrounder extends BridgedGrounder {
 	 * Atoms corresponding to rule bodies use this predicate, first term is rule number,
 	 * second is a term containing variable substitutions.
 	 */
-	private static final BasicPredicate RULE_BODIES_PREDICATE = new BasicPredicate("_R_", 2);
+	public static final BasicPredicate RULE_BODIES_PREDICATE = new BasicPredicate("_R_", 2);
 
-	private static final BasicPredicate CHOICE_ON_PREDICATE = new BasicPredicate("ChoiceOn", 1);
-	private static final BasicPredicate CHOICE_OFF_PREDICATE = new BasicPredicate("ChoiceOff", 1);
+	public static final BasicPredicate CHOICE_ON_PREDICATE = new BasicPredicate("ChoiceOn", 1);
+	public static final BasicPredicate CHOICE_OFF_PREDICATE = new BasicPredicate("ChoiceOff", 1);
 
 	private final IntIdGenerator intIdGenerator = new IntIdGenerator();
 	private final IntIdGenerator nogoodIdGenerator = new IntIdGenerator();
@@ -264,16 +264,8 @@ public class NaiveGrounder extends BridgedGrounder {
 		}
 
 		// Import additional noGoods from external sources
-		for (NoGood noGood : collectExternalNogoods(assignment, atomStore)) {
+		for (NoGood noGood : collectExternalNogoods(assignment, atomStore, newChoiceAtoms, choiceAtomsGenerator)) {
 			registerIfNeeded(noGood, newNoGoods);
-		}
-
-		// Import additional ground rules from external sources and generate corresponding noGoods
-		for (NonGroundRule rule : collectExternalRules(assignment, atomStore, intIdGenerator)) {
-			List<NoGood> noGoods = generateNoGoodsFromGroundSubstitution(rule, new VariableSubstitution());
-			for (NoGood noGood : noGoods) {
-				registerIfNeeded(noGood, newNoGoods);
-			}
 		}
 
 		modifiedWorkingMemories = new HashSet<>();
