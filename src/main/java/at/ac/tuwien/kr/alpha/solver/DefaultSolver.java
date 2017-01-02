@@ -152,6 +152,8 @@ public class DefaultSolver extends AbstractSolver {
 	private void learnBackjumpAddFromConflict() {
 		LOGGER.debug("Analyzing conflict.");
 		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(store.getViolatedNoGood());
+		branchingHeuristic.analyzedConflict(analysisResult);
+
 		if (analysisResult.learnedNoGood == null) {
 			LOGGER.debug("Conflict results from wrong guess, backjumping and removing guess.");
 			LOGGER.debug("Backjumping to decision level: {}", analysisResult.backjumpLevel);

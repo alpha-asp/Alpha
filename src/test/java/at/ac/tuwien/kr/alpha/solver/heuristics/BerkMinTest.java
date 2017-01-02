@@ -25,13 +25,16 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import static org.junit.Assert.assertEquals;
-
+import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.solver.BasicAssignment;
+import at.ac.tuwien.kr.alpha.solver.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 import org.junit.Before;
 import org.junit.Test;
 
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.BasicAssignment;
+import java.util.Collections;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests {@link BerkMin}.
@@ -57,6 +60,7 @@ public class BerkMinTest {
 	public void countPositiveLiteralsOnce() {
 		NoGood violatedNoGood = new NoGood(1, 2);
 		berkmin.violatedNoGood(violatedNoGood);
+		berkmin.analyzedConflict(pseudo(violatedNoGood));
 		assertEquals(1, berkmin.getActivity(1), EPSILON);
 		assertEquals(1, berkmin.getActivity(2), EPSILON);
 	}
@@ -65,6 +69,7 @@ public class BerkMinTest {
 	public void countNegativeLiteralsOnce() {
 		NoGood violatedNoGood = new NoGood(-1, -2);
 		berkmin.violatedNoGood(violatedNoGood);
+		berkmin.analyzedConflict(pseudo(violatedNoGood));
 		assertEquals(1, berkmin.getActivity(-1), EPSILON);
 		assertEquals(1, berkmin.getActivity(-2), EPSILON);
 	}
@@ -73,7 +78,9 @@ public class BerkMinTest {
 	public void countPositiveLiteralsTwice() {
 		NoGood violatedNoGood = new NoGood(1, 2);
 		berkmin.violatedNoGood(violatedNoGood);
+		berkmin.analyzedConflict(pseudo(violatedNoGood));
 		berkmin.violatedNoGood(violatedNoGood);
+		berkmin.analyzedConflict(pseudo(violatedNoGood));
 		assertEquals(2, berkmin.getActivity(1), EPSILON);
 		assertEquals(2, berkmin.getActivity(2), EPSILON);
 	}
@@ -82,7 +89,9 @@ public class BerkMinTest {
 	public void countNegativeLiteralsTwice() {
 		NoGood violatedNoGood = new NoGood(-1, -2);
 		berkmin.violatedNoGood(violatedNoGood);
+		berkmin.analyzedConflict(pseudo(violatedNoGood));
 		berkmin.violatedNoGood(violatedNoGood);
+		berkmin.analyzedConflict(pseudo(violatedNoGood));
 		assertEquals(2, berkmin.getActivity(-1), EPSILON);
 		assertEquals(2, berkmin.getActivity(-2), EPSILON);
 	}
@@ -91,15 +100,21 @@ public class BerkMinTest {
 	public void countMixedLiteralsTwice() {
 		NoGood violatedNoGood = new NoGood(1, -2);
 		berkmin.violatedNoGood(violatedNoGood);
+		berkmin.analyzedConflict(pseudo(violatedNoGood));
 		berkmin.violatedNoGood(violatedNoGood);
+		berkmin.analyzedConflict(pseudo(violatedNoGood));
 		assertEquals(2, berkmin.getActivity(1), EPSILON);
 		assertEquals(2, berkmin.getActivity(-2), EPSILON);
 	}
 	
 	@Test
 	public void countPositiveLiteralsThenNegativeLiterals() {
-		berkmin.violatedNoGood(new NoGood(1, 2));
-		berkmin.violatedNoGood(new NoGood(-1, -2));
+		NoGood violatedNoGood = new NoGood(1, 2);
+		berkmin.violatedNoGood(violatedNoGood);
+		berkmin.analyzedConflict(pseudo(violatedNoGood));
+		violatedNoGood = new NoGood(-1, -2);
+		berkmin.violatedNoGood(violatedNoGood);
+		berkmin.analyzedConflict(pseudo(violatedNoGood));
 		assertEquals(2, berkmin.getActivity(1), EPSILON);
 		assertEquals(2, berkmin.getActivity(2), EPSILON);
 	}
@@ -110,12 +125,15 @@ public class BerkMinTest {
 		berkmin.setDecayFactor(1.0 / 3);
 		NoGood violatedNoGood = new NoGood(1, 2);
 		berkmin.violatedNoGood(violatedNoGood);
+		berkmin.analyzedConflict(pseudo(violatedNoGood));
 		assertEquals(1, berkmin.getActivity(1), EPSILON);
 		assertEquals(1, berkmin.getActivity(2), EPSILON);
 		berkmin.violatedNoGood(violatedNoGood);
+		berkmin.analyzedConflict(pseudo(violatedNoGood));
 		assertEquals(2, berkmin.getActivity(1), EPSILON);
 		assertEquals(2, berkmin.getActivity(2), EPSILON);
 		berkmin.violatedNoGood(violatedNoGood);
+		berkmin.analyzedConflict(pseudo(violatedNoGood));
 		assertEquals(1, berkmin.getActivity(1), EPSILON);
 		assertEquals(1, berkmin.getActivity(2), EPSILON);
 	}
@@ -126,17 +144,35 @@ public class BerkMinTest {
 		berkmin.setDecayFactor(0.75);
 		NoGood violatedNoGood = new NoGood(1, 2);
 		berkmin.violatedNoGood(violatedNoGood);
+		berkmin.analyzedConflict(pseudo(violatedNoGood));
 		assertEquals(1, berkmin.getActivity(1), EPSILON);
 		assertEquals(1, berkmin.getActivity(2), EPSILON);
 		berkmin.violatedNoGood(violatedNoGood);
+		berkmin.analyzedConflict(pseudo(violatedNoGood));
 		assertEquals(1.5, berkmin.getActivity(1), EPSILON);
 		assertEquals(1.5, berkmin.getActivity(2), EPSILON);
 		berkmin.violatedNoGood(violatedNoGood);
+		berkmin.analyzedConflict(pseudo(violatedNoGood));
 		assertEquals(2.5, berkmin.getActivity(1), EPSILON);
 		assertEquals(2.5, berkmin.getActivity(2), EPSILON);
 		berkmin.violatedNoGood(violatedNoGood);
+		berkmin.analyzedConflict(pseudo(violatedNoGood));
 		assertEquals(2.625, berkmin.getActivity(1), EPSILON);
 		assertEquals(2.625, berkmin.getActivity(2), EPSILON);
 	}
 	
+	@Test
+	public void learnNoGood() {
+		NoGood learnedNoGood = new NoGood(1, 2);
+		int backjumpLevel = 1;
+		boolean clearLastGuessAfterBackjump = true;
+		Set<NoGood> noGoodsResponsibleForConflict = Collections.emptySet();
+		berkmin.analyzedConflict(new ConflictAnalysisResult(learnedNoGood, backjumpLevel, clearLastGuessAfterBackjump,
+				noGoodsResponsibleForConflict));
+		assertEquals(learnedNoGood, berkmin.getCurrentTopClause());
+	}
+
+	private static ConflictAnalysisResult pseudo(NoGood noGood) {
+		return new ConflictAnalysisResult(null, 0, false, Collections.singleton(noGood));
+	}
 }

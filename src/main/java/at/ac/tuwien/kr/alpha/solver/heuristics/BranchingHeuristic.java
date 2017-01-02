@@ -26,6 +26,7 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.solver.GroundConflictNoGoodLearner;
 
 import java.util.Collection;
 
@@ -43,6 +44,15 @@ public interface BranchingHeuristic {
 	 * @param violatedNoGood
 	 */
 	void violatedNoGood(NoGood violatedNoGood);
+
+	/**
+	 * Processes the result of a conflict analysis, i.e. counts literals in
+	 * {@link NoGood}s responsible for the conflict and stores a newly learned
+	 * {@link NoGood}.
+	 * 
+	 * @param analysisResult
+	 */
+	void analyzedConflict(GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult);
 
 	/**
 	 * Stores a newly grounded {@link NoGood} and updates associated activity counters.
