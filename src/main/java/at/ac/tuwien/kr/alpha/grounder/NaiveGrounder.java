@@ -263,8 +263,17 @@ public class NaiveGrounder extends BridgedGrounder {
 			modifiedWorkingMemory.markRecentlyAddedInstancesDone();
 		}
 
-		for (NoGood noGood : collectExternal(assignment, atomStore)) {
+		// Import additional noGoods from external sources
+		for (NoGood noGood : collectExternalNogoods(assignment, atomStore)) {
 			registerIfNeeded(noGood, newNoGoods);
+		}
+
+		// Import additional ground rules from external sources and generate corresponding noGoods
+		for (NonGroundRule rule : collectExternalRules(assignment, atomStore, intIdGenerator)) {
+			List<NoGood> noGoods = generateNoGoodsFromGroundSubstitution(rule, new VariableSubstitution());
+			for (NoGood noGood : noGoods) {
+				registerIfNeeded(noGood, newNoGoods);
+			}
 		}
 
 		modifiedWorkingMemories = new HashSet<>();

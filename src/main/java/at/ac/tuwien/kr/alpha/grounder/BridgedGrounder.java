@@ -22,11 +22,21 @@ public abstract class BridgedGrounder extends AbstractGrounder {
 		this.bridges = bridges;
 	}
 
-	protected Set<NoGood> collectExternal(ReadableAssignment assignment, AtomStore atomStore) {
+	protected Set<NoGood> collectExternalNogoods(ReadableAssignment assignment, AtomStore atomStore) {
 		Set<NoGood> collectedNoGoods = new HashSet<>();
 
 		for (Bridge bridge : bridges) {
 			collectedNoGoods.addAll(bridge.getNoGoods(assignment, atomStore));
+		}
+
+		return collectedNoGoods;
+	}
+
+	protected Set<NonGroundRule> collectExternalRules(ReadableAssignment assignment, AtomStore atomStore, IntIdGenerator intIdGenerator) {
+		Set<NonGroundRule> collectedNoGoods = new HashSet<>();
+
+		for (Bridge bridge : bridges) {
+			collectedNoGoods.addAll(bridge.getRules(assignment, atomStore, intIdGenerator));
 		}
 
 		return collectedNoGoods;
