@@ -154,7 +154,7 @@ public class HexBridge implements Bridge {
 			int id = it.nextIndex();
 			BasicAtom basicAtom = it.next();
 
-			if (basicAtom.isInternal() || !assignment.contains(id)) {
+			if (basicAtom.isInternal() || !assignment.isAssigned(id)) {
 				continue;
 			}
 
@@ -174,6 +174,6 @@ public class HexBridge implements Bridge {
 			string += strings[i];
 		}
 
-		return (Integer.toString(string.hashCode()));
+		return string;
 	}
 }
