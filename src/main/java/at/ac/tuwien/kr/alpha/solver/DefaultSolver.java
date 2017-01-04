@@ -92,8 +92,9 @@ public class DefaultSolver extends AbstractSolver {
 
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
-			if (!propagationFixpointReached()) {
+			if (!propagationFixpointReached() && store.getViolatedNoGood() == null) {
 				// Ask the grounder for new NoGoods, then propagate (again).
+				LOGGER.trace("Doing propagation step.");
 				updateGrounderAssignment();
 				obtainNoGoodsFromGrounder();
 				if (store.propagate()) {
@@ -179,6 +180,7 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private void doBackjump(int backjumpingDecisionLevel) {
+		LOGGER.debug("Backjumping to decisionLevel: {}.", backjumpingDecisionLevel);
 		if (backjumpingDecisionLevel < 0) {
 			throw new RuntimeException("Backjumping decision level less than 0, should not happen.");
 		}
@@ -279,7 +281,9 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private void addAllNoGoodsAndTreatContradictions(Map<Integer, NoGood> obtained) {
-		for (Map.Entry<Integer, NoGood> noGoodEntry : obtained.entrySet()) {
+		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
+		while (!noGoodsToAdd.isEmpty()) {
+			Map.Entry<Integer, NoGood> noGoodEntry = noGoodsToAdd.poll();
 			NoGoodStore.ConflictCause conflictCause = store.add(noGoodEntry.getKey(), noGoodEntry.getValue());
 			if (conflictCause == null) {
 				// There is no conflict, all is fine. Just skip conflict treatment and carry on.
@@ -296,7 +300,9 @@ public class DefaultSolver extends AbstractSolver {
 				choiceStack.remove();
 				LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 			} else {
+				LOGGER.debug("Violated NoGood is {}. Analyzing the conflict.", conflictCause.violatedNoGood);
 				GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.violatedNoGood);
+				LOGGER.debug("Backjumping to decision level: {}", conflictAnalysisResult.backjumpLevel);
 				doBackjump(conflictAnalysisResult.backjumpLevel);
 				if (conflictAnalysisResult.clearLastGuessAfterBackjump) {
 					store.backtrack();
@@ -304,14 +310,14 @@ public class DefaultSolver extends AbstractSolver {
 					choiceStack.remove();
 					LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 				}
+				// If NoGood was learned, add it to the store.
+				// Note that the learned NoGood may cause further conflicts, since propagation on lower decision levels is lazy, hence backtracking once might not be enough to remove the real conflict cause.
 				if (conflictAnalysisResult.learnedNoGood != null) {
-					if (store.add(grounder.registerOutsideNoGood(conflictAnalysisResult.learnedNoGood), conflictAnalysisResult.learnedNoGood) != null) {
-						throw new RuntimeException("Adding learned NoGood from conflict again results in conflict. This should not happen.");
-					}
+					noGoodsToAdd.addFirst(new AbstractMap.SimpleEntry<>(grounder.registerOutsideNoGood(conflictAnalysisResult.learnedNoGood), conflictAnalysisResult.learnedNoGood));
 				}
 			}
 			if (store.add(noGoodEntry.getKey(), noGoodEntry.getValue()) != null) {
-				throw new RuntimeException("Re-adding of obtained NoGood still causes conflicts. This should not happen.");
+				throw new RuntimeException("Re-adding of former conflicting NoGood still causes conflicts. This should not happen.");
 			}
 		}
 	}
