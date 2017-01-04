@@ -18,11 +18,11 @@ public final class WatchedNoGood extends NoGood {
 
 	private void checkPointers() {
 		if (a == b) {
-			throw new IllegalArgumentException("first two pointers must not point at the same literal");
+			throw new IllegalArgumentException("First two pointers must not point at the same literal.");
 		}
 
 		if (a < 0 || b < 0 || alpha < -1 || a >= literals.length || b >= literals.length || alpha >= literals.length) {
-			throw new IllegalArgumentException("points must be within bounds");
+			throw new IllegalArgumentException("Pointers must be within bounds.");
 		}
 	}
 
