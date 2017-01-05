@@ -1,3 +1,30 @@
+/**
+ * Copyright (c) 2016-2017, the Alpha Team.
+ * All rights reserved.
+ * 
+ * Additional changes made by Siemens.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1) Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 
+ * 2) Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
@@ -44,14 +71,14 @@ public class ChoiceGrounder implements Grounder {
 	private static final int CHOICE_DIS_BR1 = 17; // { -_dis_br1,  bb}
 	private static final int CHOICE_DIS_BR2 = 18; // { -dis_br2, aa }
 	private static final Map<Integer, NoGood> NOGOODS = Stream.of(
-		entry(RULE_AA, new NoGood(new int[]{-ATOM_AA, ATOM_BR1}, 0)),
-		entry(BRULE_AA, new NoGood(new int[]{-ATOM_BR1, -ATOM_BB}, 0)),
-		entry(RULE_BB, new NoGood(new int[]{-ATOM_BB, ATOM_BR2}, 0)),
-		entry(BRULE_BB, new NoGood(new int[]{-ATOM_BR2, -ATOM_AA}, 0)),
-		entry(CHOICE_EN_BR1, new NoGood(new int[]{-ATOM_EN_BR1}, 0)),
-		entry(CHOICE_EN_BR2, new NoGood(new int[]{-ATOM_EN_BR2}, 0)),
-		entry(CHOICE_DIS_BR1, new NoGood(new int[]{-ATOM_DIS_BR1, ATOM_BB}, 0)),
-		entry(CHOICE_DIS_BR2, new NoGood(new int[]{-ATOM_DIS_BR2, ATOM_AA}, 0))
+		entry(RULE_AA, NoGood.headFirst(-ATOM_AA, ATOM_BR1)),
+		entry(BRULE_AA, NoGood.headFirst(-ATOM_BR1, -ATOM_BB)),
+		entry(RULE_BB, NoGood.headFirst(-ATOM_BB, ATOM_BR2)),
+		entry(BRULE_BB, NoGood.headFirst(-ATOM_BR2, -ATOM_AA)),
+		entry(CHOICE_EN_BR1, NoGood.headFirst(-ATOM_EN_BR1)),
+		entry(CHOICE_EN_BR2, NoGood.headFirst(-ATOM_EN_BR2)),
+		entry(CHOICE_DIS_BR1, NoGood.headFirst(-ATOM_DIS_BR1, ATOM_BB)),
+		entry(CHOICE_DIS_BR2, NoGood.headFirst(-ATOM_DIS_BR2, ATOM_AA))
 	).collect(entriesToMap());
 	private static final Map<Integer, Integer> CHOICE_ENABLE = Stream.of(
 		entry(ATOM_EN_BR1, ATOM_BR1),

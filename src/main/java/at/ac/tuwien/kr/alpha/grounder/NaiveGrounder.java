@@ -1,10 +1,34 @@
+/**
+ * Copyright (c) 2016-2017, the Alpha Team.
+ * All rights reserved.
+ * 
+ * Additional changes made by Siemens.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1) Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 
+ * 2) Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstraint;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFact;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedRule;
+import at.ac.tuwien.kr.alpha.grounder.parser.*;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -196,7 +220,7 @@ public class NaiveGrounder extends AbstractGrounder {
 		for (Predicate predicate : factsFromProgram.keySet()) {
 			for (Instance instance : factsFromProgram.get(predicate)) {
 				AtomId atomIdFactAtom = atomStore.createAtomId(new BasicAtom(predicate, instance.terms));
-				NoGood noGood = new NoGood(new int[]{-atomIdFactAtom.atomId}, 0);
+				NoGood noGood = NoGood.headFirst(-atomIdFactAtom.atomId);
 				// The noGood is assumed to be new.
 				int noGoodId = nogoodIdGenerator.getNextId();
 				nogoodIdentifiers.put(noGood, noGoodId);
@@ -344,7 +368,7 @@ public class NaiveGrounder extends AbstractGrounder {
 			for (AtomId atomId : bodyAtomsNegative) {
 				bodyLiterals[i++] = -atomId.atomId;
 			}
-			NoGood ruleBody = new NoGood(bodyLiterals, 0);
+			NoGood ruleBody = NoGood.headFirst(bodyLiterals);
 
 			// Generate NoGoods such that the atom representing the body is true iff the body is true.
 			for (int j = 1; j < bodyLiterals.length; j++) {
@@ -352,7 +376,7 @@ public class NaiveGrounder extends AbstractGrounder {
 			}
 
 			// Create NoGood for head.
-			NoGood ruleHead = new NoGood(new int[]{-headAtomId.atomId, bodyRepresentingAtomId.atomId}, 0);
+			NoGood ruleHead = NoGood.headFirst(-headAtomId.atomId, bodyRepresentingAtomId.atomId);
 
 			generatedNoGoods.add(ruleBody);
 			generatedNoGoods.add(ruleHead);
@@ -375,7 +399,7 @@ public class NaiveGrounder extends AbstractGrounder {
 				int choiceOnAtomIdInt = atomStore.createAtomId(choiceOnAtom).atomId;
 				choiceOnLiterals[0] = -choiceOnAtomIdInt;
 				// Add corresponding NoGood and ChoiceOn
-				generatedNoGoods.add(new NoGood(choiceOnLiterals, 0));	// ChoiceOn and ChoiceOff NoGoods avoid MBT and directly set to true, hence the rule head pointer.
+				generatedNoGoods.add(NoGood.headFirst(choiceOnLiterals));	// ChoiceOn and ChoiceOff NoGoods avoid MBT and directly set to true, hence the rule head pointer.
 				newChoiceOn.put(choiceOnAtomIdInt, bodyRepresentingAtomId.atomId);
 
 				// ChoiceOff if some negative body atom is contradicted
@@ -383,7 +407,7 @@ public class NaiveGrounder extends AbstractGrounder {
 				int choiceOffAtomIdInt = atomStore.createAtomId(choiceOffAtom).atomId;
 				for (AtomId negAtomId : bodyAtomsNegative) {
 					// Choice is off if any of the negative atoms is assigned true, hence we add one NoGood for each such atom.
-					generatedNoGoods.add(new NoGood(new int[]{-choiceOffAtomIdInt, negAtomId.atomId}, 0));
+					generatedNoGoods.add(NoGood.headFirst(-choiceOffAtomIdInt, negAtomId.atomId));
 				}
 				newChoiceOff.put(choiceOffAtomIdInt, bodyRepresentingAtomId.atomId);
 			}
@@ -619,7 +643,7 @@ public class NaiveGrounder extends AbstractGrounder {
 		}
 	}
 
-	private class FirstBindingAtom {
+	private static class FirstBindingAtom {
 		public NonGroundRule<BasicPredicate> rule;
 		public int firstBindingAtomPos;
 		public BasicAtom firstBindingAtom;
@@ -631,7 +655,7 @@ public class NaiveGrounder extends AbstractGrounder {
 		}
 	}
 
-	public class VariableSubstitution {
+	public static class VariableSubstitution {
 		HashMap<VariableTerm, Term> substitution = new HashMap<>();
 
 		public VariableSubstitution() {
@@ -654,11 +678,14 @@ public class NaiveGrounder extends AbstractGrounder {
 			List<VariableTerm> variablesInSubstitution = new ArrayList<>(substitution.size());
 			variablesInSubstitution.addAll(substitution.keySet());
 			Collections.sort(variablesInSubstitution); // Hint: Maybe this is a performance issue later, better have sorted/well-defined insertion into VariableSubstitution.
-			String ret = "";
+			StringBuilder ret = new StringBuilder();
 			for (VariableTerm variableTerm : variablesInSubstitution) {
-				ret += "_" + variableTerm + ":" + substitution.get(variableTerm);
+				ret.append("_")
+					.append(variableTerm)
+					.append(":")
+					.append(substitution.get(variableTerm));
 			}
-			return ret;
+			return ret.toString();
 		}
 
 		@Override
