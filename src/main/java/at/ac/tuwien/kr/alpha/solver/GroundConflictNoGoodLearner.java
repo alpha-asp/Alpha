@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2017, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -68,7 +68,7 @@ public class GroundConflictNoGoodLearner {
 	public ConflictAnalysisResult analyzeConflictingNoGood(NoGood violatedNoGood) {
 		Set<NoGood> noGoodsResponsible = new HashSet<>();
 		noGoodsResponsible.add(violatedNoGood);
-		NoGood currentResolutionNoGood = new NoGood(violatedNoGood.getLiteralsClone(), -1);	// Clone violated NoGood and remove potential head.
+		NoGood currentResolutionNoGood = new NoGood(violatedNoGood.getLiteralsClone());	// Clone violated NoGood and remove potential head.
 		LinkedList<Integer> sortedLiteralsToProcess = new LinkedList<>();
 		// Find decision level where conflict occurs (i.e., highest decision level of violatedNoGood).
 		int conflictDecisionLevel = -1;
@@ -100,8 +100,7 @@ public class GroundConflictNoGoodLearner {
 			}
 			// Case a) take other implying NoGood into account.
 			currentResolutionNoGood = new NoGood(
-				resolveNoGoods(sortedLiteralsToProcess,	currentResolutionNoGood, otherContributingNoGood, singleLiteralInCurrentDL, conflictDecisionLevel),
-				-1);
+				resolveNoGoods(sortedLiteralsToProcess,	currentResolutionNoGood, otherContributingNoGood, singleLiteralInCurrentDL, conflictDecisionLevel));
 			noGoodsResponsible.add(otherContributingNoGood);
 
 			// TODO: create/edit ResolutionSequence
@@ -129,7 +128,7 @@ public class GroundConflictNoGoodLearner {
 			}
 			// TODO: add entry in ResolutionSequence.
 
-			currentResolutionNoGood = new NoGood(resolveNoGoods(sortedLiteralsToProcess, currentResolutionNoGood, impliedByNoGood, literal, conflictDecisionLevel), -1);
+			currentResolutionNoGood = new NoGood(resolveNoGoods(sortedLiteralsToProcess, currentResolutionNoGood, impliedByNoGood, literal, conflictDecisionLevel));
 			noGoodsResponsible.add(impliedByNoGood);
 		}
 	}

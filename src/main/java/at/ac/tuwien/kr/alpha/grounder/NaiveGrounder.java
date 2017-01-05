@@ -220,7 +220,7 @@ public class NaiveGrounder extends AbstractGrounder {
 		for (Predicate predicate : factsFromProgram.keySet()) {
 			for (Instance instance : factsFromProgram.get(predicate)) {
 				AtomId atomIdFactAtom = atomStore.createAtomId(new BasicAtom(predicate, instance.terms));
-				NoGood noGood = new NoGood(new int[]{-atomIdFactAtom.atomId}, 0);
+				NoGood noGood = NoGood.headFirst(-atomIdFactAtom.atomId);
 				// The noGood is assumed to be new.
 				int noGoodId = nogoodIdGenerator.getNextId();
 				nogoodIdentifiers.put(noGood, noGoodId);
@@ -368,7 +368,7 @@ public class NaiveGrounder extends AbstractGrounder {
 			for (AtomId atomId : bodyAtomsNegative) {
 				bodyLiterals[i++] = -atomId.atomId;
 			}
-			NoGood ruleBody = new NoGood(bodyLiterals, 0);
+			NoGood ruleBody = NoGood.headFirst(bodyLiterals);
 
 			// Generate NoGoods such that the atom representing the body is true iff the body is true.
 			for (int j = 1; j < bodyLiterals.length; j++) {
@@ -376,7 +376,7 @@ public class NaiveGrounder extends AbstractGrounder {
 			}
 
 			// Create NoGood for head.
-			NoGood ruleHead = new NoGood(new int[]{-headAtomId.atomId, bodyRepresentingAtomId.atomId}, 0);
+			NoGood ruleHead = NoGood.headFirst(-headAtomId.atomId, bodyRepresentingAtomId.atomId);
 
 			generatedNoGoods.add(ruleBody);
 			generatedNoGoods.add(ruleHead);
@@ -399,7 +399,7 @@ public class NaiveGrounder extends AbstractGrounder {
 				int choiceOnAtomIdInt = atomStore.createAtomId(choiceOnAtom).atomId;
 				choiceOnLiterals[0] = -choiceOnAtomIdInt;
 				// Add corresponding NoGood and ChoiceOn
-				generatedNoGoods.add(new NoGood(choiceOnLiterals, 0));	// ChoiceOn and ChoiceOff NoGoods avoid MBT and directly set to true, hence the rule head pointer.
+				generatedNoGoods.add(NoGood.headFirst(choiceOnLiterals));	// ChoiceOn and ChoiceOff NoGoods avoid MBT and directly set to true, hence the rule head pointer.
 				newChoiceOn.put(choiceOnAtomIdInt, bodyRepresentingAtomId.atomId);
 
 				// ChoiceOff if some negative body atom is contradicted
@@ -407,7 +407,7 @@ public class NaiveGrounder extends AbstractGrounder {
 				int choiceOffAtomIdInt = atomStore.createAtomId(choiceOffAtom).atomId;
 				for (AtomId negAtomId : bodyAtomsNegative) {
 					// Choice is off if any of the negative atoms is assigned true, hence we add one NoGood for each such atom.
-					generatedNoGoods.add(new NoGood(new int[]{-choiceOffAtomIdInt, negAtomId.atomId}, 0));
+					generatedNoGoods.add(NoGood.headFirst(-choiceOffAtomIdInt, negAtomId.atomId));
 				}
 				newChoiceOff.put(choiceOffAtomIdInt, bodyRepresentingAtomId.atomId);
 			}
