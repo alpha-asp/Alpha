@@ -70,7 +70,7 @@ public class DefaultSolver extends AbstractSolver {
 		this.store = new BasicNoGoodStore(assignment, grounder);
 		this.choiceStack = new ChoiceStack(grounder);
 		this.learner = new GroundConflictNoGoodLearner(assignment, store);
-		this.branchingHeuristic = new BerkMin(assignment, this::isAtomActiveChoicePoint);
+		this.branchingHeuristic = new BerkMin(assignment, this::isAtomChoicePoint, this::isAtomActiveChoicePoint);
 	}
 
 	@Override
