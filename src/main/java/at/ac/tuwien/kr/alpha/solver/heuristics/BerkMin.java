@@ -56,6 +56,8 @@ public class BerkMin implements BranchingHeuristic {
 	public static final int DEFAULT_DECAY_AGE = 10;
 	public static final double DEFAULT_DECAY_FACTOR = 0.25;
 
+	private final Random rand;
+
 	private Assignment assignment;
 	private Map<Integer, Double> activityCounters = new HashMap<>();
 	private Map<Integer, Integer> signCounters = new HashMap<>();
@@ -63,18 +65,22 @@ public class BerkMin implements BranchingHeuristic {
 	private int decayAge;
 	private double decayFactor;
 	private int stepsSinceLastDecay;
-	private Random rand = new Random();
 	private Predicate<? super Integer> isAtomActiveChoicePoint;
 
-	public BerkMin(Assignment assignment, Predicate<? super Integer> isAtomActiveChoicePoint, int decayAge, double decayFactor) {
+	public BerkMin(Assignment assignment, Predicate<? super Integer> isAtomActiveChoicePoint, int decayAge, double decayFactor, Random random) {
 		this.assignment = assignment;
 		this.isAtomActiveChoicePoint = isAtomActiveChoicePoint;
 		this.decayAge = decayAge;
 		this.decayFactor = decayFactor;
+		this.rand = random;
+	}
+
+	public BerkMin(Assignment assignment, Predicate<? super Integer> isAtomActiveChoicePoint, Random random) {
+		this(assignment, isAtomActiveChoicePoint, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random);
 	}
 
 	public BerkMin(Assignment assignment, Predicate<? super Integer> isAtomActiveChoicePoint) {
-		this(assignment, isAtomActiveChoicePoint, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR);
+		this(assignment, isAtomActiveChoicePoint, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, new Random());
 	}
 
 	/**
