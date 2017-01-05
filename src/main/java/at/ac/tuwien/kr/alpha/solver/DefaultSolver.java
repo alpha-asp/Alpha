@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2017, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -30,8 +30,7 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BerkMin;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +54,7 @@ public class DefaultSolver extends AbstractSolver {
 	private final Assignment assignment;
 	private final GroundConflictNoGoodLearner learner;
 	private final BranchingHeuristic branchingHeuristic;
+	private final BranchingHeuristic fallbackBranchingHeuristic;
 
 	private boolean initialize = true;
 
@@ -71,6 +71,7 @@ public class DefaultSolver extends AbstractSolver {
 		this.choiceStack = new ChoiceStack(grounder);
 		this.learner = new GroundConflictNoGoodLearner(assignment, store);
 		this.branchingHeuristic = new BerkMin(assignment, this::isAtomChoicePoint, this::isAtomActiveChoicePoint);
+		this.fallbackBranchingHeuristic = new NaiveHeuristic(assignment, choiceOn, choiceOff);
 	}
 
 	@Override
@@ -377,36 +378,7 @@ public class DefaultSolver extends AbstractSolver {
 			return berkminChoice;
 		}
 
-		// Check if there is an enabled choice that is not also disabled
-		// HINT: tracking changes of ChoiceOn, ChoiceOff directly could
-		// increase performance (analyze store.getChangedAssignments()).
-		for (Integer enablerAtom : choiceOn.keySet()) {
-			if (assignment.getTruth(enablerAtom) == null || FALSE.equals(assignment.getTruth(enablerAtom))) {
-				continue;
-			}
-
-			Integer nextChoiceCandidate = choiceOn.get(enablerAtom);
-
-			// Only consider unassigned choices or choices currently MBT (and changing to TRUE following the guess)
-			if (assignment.getTruth(nextChoiceCandidate) != null && !MBT.equals(assignment.getTruth(nextChoiceCandidate))) {
-				continue;
-			}
-
-			// Check that candidate is not disabled already
-			boolean isDisabled = false;
-			for (Map.Entry<Integer, Integer> disablerAtom : choiceOff.entrySet()) {
-				if (nextChoiceCandidate.equals(disablerAtom.getValue())
-					&& assignment.getTruth(disablerAtom.getKey()) != null
-					&& !(FALSE.equals(assignment.getTruth(disablerAtom.getKey())))) {
-					isDisabled = true;
-					break;
-				}
-			}
-
-			if (!isDisabled) {
-				return nextChoiceCandidate;
-			}
-		}
-		return 0;
+		//TODO: remove fallback as soon as we are sure that BerkMin will always choose an atom
+		return fallbackBranchingHeuristic.chooseAtom();
 	}
 }
