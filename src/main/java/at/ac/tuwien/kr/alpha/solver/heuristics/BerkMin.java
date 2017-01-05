@@ -208,9 +208,8 @@ public class BerkMin implements BranchingHeuristic {
 	}
 	
 	private void incrementSignCounter(Integer literal) {
-		int atom = atomOf(literal);
-		if (isAtomChoicePoint.test(atom)) {
-			signCounters.compute(atomOf(literal), (k, v) -> (v == null ? DEFAULT_SIGN_COUNTER : v) + 1);
+		if (isAtomChoicePoint.test(atomOf(literal))) {
+			signCounters.compute(literal, (k, v) -> (v == null ? DEFAULT_SIGN_COUNTER : v) + 1);
 		}
 	}
 
