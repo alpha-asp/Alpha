@@ -147,10 +147,14 @@ public class Main {
 			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram, filter
 		);
 
-		final Random random = commandLine.hasOption(OPT_DETERMINISTIC) ? new Random(0) : new Random();
+		// NOTE: Using time as seed is fine as the internal heuristics
+		// do not need to by cryptographically securely randomized.
+		long seed = commandLine.hasOption(OPT_DETERMINISTIC) ? 0 : System.nanoTime();
+
+		LOGGER.info("Seed for pseudorandomization is {}.", seed);
 
 		Solver solver = SolverFactory.getInstance(
-			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, random
+			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, new Random(seed)
 		);
 
 		Stream<AnswerSet> stream = solver.stream();
