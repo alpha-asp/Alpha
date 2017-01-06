@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.common;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,6 +29,10 @@ public class FunctionTerm extends Term {
 
 	public static FunctionTerm getFunctionTerm(String functionSymbol, List<Term> termList) {
 		return getFunctionTerm(TermSymbol.getInstance(functionSymbol), termList);
+	}
+
+	public static FunctionTerm getFunctionTerm(String functionSymbol, Term... terms) {
+		return getFunctionTerm(TermSymbol.getInstance(functionSymbol), Arrays.asList(terms));
 	}
 
 	@Override

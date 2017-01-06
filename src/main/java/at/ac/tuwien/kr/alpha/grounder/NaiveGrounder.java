@@ -88,7 +88,7 @@ public class NaiveGrounder extends AbstractGrounder {
 			// Construct instance from the fact.
 			ArrayList<Term> termList = new ArrayList<>();
 			for (int i = 0; i < predicateArity; i++) {
-				termList.add(Term.convertFromParsedTerm(fact.fact.terms.get(i)));
+				termList.add(fact.fact.terms.get(i).toTerm());
 			}
 			Instance instance = new Instance(termList.toArray(new Term[0]));
 			// Add instance to corresponding list of facts

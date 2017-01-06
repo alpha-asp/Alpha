@@ -30,7 +30,7 @@ public class BasicAtom implements Atom {
 		} else {
 			terms = new Term[parsedAtom.terms.size()];
 			for (int i = 0; i < parsedAtom.terms.size(); i++) {
-				terms[i] = Term.convertFromParsedTerm(parsedAtom.terms.get(i));
+				terms[i] = parsedAtom.terms.get(i).toTerm();
 			}
 		}
 		return terms;

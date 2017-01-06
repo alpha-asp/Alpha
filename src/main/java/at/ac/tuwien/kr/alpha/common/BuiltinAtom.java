@@ -16,8 +16,8 @@ public class BuiltinAtom implements Atom {
 
 	public BuiltinAtom(ParsedBuiltinAtom parsedBuiltinAtom) {
 		binop = parsedBuiltinAtom.binop;
-		left = Term.convertFromParsedTerm(parsedBuiltinAtom.terms.get(0));
-		right = Term.convertFromParsedTerm(parsedBuiltinAtom.terms.get(1));
+		left = parsedBuiltinAtom.terms.get(0).toTerm();
+		right = parsedBuiltinAtom.terms.get(1).toTerm();
 	}
 
 	@Override

@@ -54,9 +54,9 @@ public class NaiveGrounderTest {
 		NaiveGrounder grounder = new NaiveGrounder(new ParsedProgram());
 		VariableSubstitution variableSubstitution = new VariableSubstitution();
 		variableSubstitution.substitution.put(VariableTerm.getInstance("Z"), ConstantTerm.getInstance("aa"));
-		FunctionTerm groundFunctionTerm = FunctionTerm.getFunctionTerm("f", asList(new Term[]{ConstantTerm.getInstance("bb"), ConstantTerm.getInstance("cc")}));
+		FunctionTerm groundFunctionTerm = FunctionTerm.getFunctionTerm("f", ConstantTerm.getInstance("bb"), ConstantTerm.getInstance("cc"));
 
-		Term nongroundFunctionTerm = FunctionTerm.getFunctionTerm("f", asList(ConstantTerm.getInstance("bb"), VariableTerm.getInstance("X")));
+		Term nongroundFunctionTerm = FunctionTerm.getFunctionTerm("f", ConstantTerm.getInstance("bb"), VariableTerm.getInstance("X"));
 		grounder.unifyTerms(nongroundFunctionTerm, groundFunctionTerm, variableSubstitution);
 		assertEquals("Variable X must bind to constant term cc", variableSubstitution.substitution.get(VariableTerm.getInstance("X")), ConstantTerm.getInstance("cc"));
 
