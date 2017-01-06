@@ -119,35 +119,35 @@ public class NaiveGrounder extends AbstractGrounder {
 			// No ordinary first body predicate, hence it only contains ground builtin predicates.
 			return;
 		}
-		// Register each predicate occurring in the body of the rule at its corresponding working memory.
-		HashSet<Predicate> registeredPositivePredicates = new HashSet<>();
-		for (Atom bodyAtom : nonGroundRule.getBodyAtomsPositive()) {
-			registerRuleAtWorkingMemory(true, nonGroundRule, registeredPositivePredicates, bodyAtom);
+		// Register each atom occurring in the body of the rule at its corresponding working memory.
+		HashSet<BasicAtom> registeredPositiveAtoms = new HashSet<>();
+		for (int i = 0; i < nonGroundRule.getBodyAtomsPositive().size(); i++) {
+			registerAtomAtWorkingMemory(true, nonGroundRule, registeredPositiveAtoms, i);
 		}
 		// Register negative literals only if the rule contains no positive literals (necessary grounding is ensured by safety of rules).
 		if (nonGroundRule.getBodyAtomsPositive().size() == 0) {
-			HashSet<Predicate> registeredNegativePredicates = new HashSet<>();
-			for (Atom bodyAtom : nonGroundRule.getBodyAtomsNegative()) {
-				registerRuleAtWorkingMemory(false, nonGroundRule, registeredNegativePredicates, bodyAtom);
+			HashSet<BasicAtom> registeredNegativeAtoms = new HashSet<>();
+			for (int i = 0; i < nonGroundRule.getBodyAtomsNegative().size(); i++) {
+				registerAtomAtWorkingMemory(false, nonGroundRule, registeredNegativeAtoms, i);
 			}
 		}
 	}
-
 	/**
 	 * Registers an atom occurring in a rule at its corresponding working memory if it has not already been treated this way.
 	 * @param isPositive indicates whether the atom occurs positively or negatively in the rule.
 	 * @param nonGroundRule the rule into which the atom occurs.
-	 * @param registeredPredicates a set of already registered predicates (will skip if the predicate of the current atom occurs in this set). This set will be extended by the current atom.
-	 * @param bodyAtom the current body atom.
+	 * @param registeredAtoms a set of already registered atoms (will skip if the predicate of the current atom occurs in this set). This set will be extended by the current atom.
+	 * @param atomPos the position in the rule of the atom.
 	 */
-	private void registerRuleAtWorkingMemory(boolean isPositive, NonGroundRule<BasicPredicate> nonGroundRule, HashSet<Predicate> registeredPredicates, Atom bodyAtom) {
-		if (bodyAtom instanceof BasicAtom && !registeredPredicates.contains(((BasicAtom) bodyAtom).predicate)) {
+	private void registerAtomAtWorkingMemory(boolean isPositive, NonGroundRule<BasicPredicate> nonGroundRule, HashSet<BasicAtom> registeredAtoms, int atomPos) {
+		Atom bodyAtom = isPositive ? nonGroundRule.getBodyAtomsPositive().get(atomPos) : nonGroundRule.getBodyAtomsNegative().get(atomPos);
+		if ((bodyAtom instanceof BasicAtom) && !registeredAtoms.contains(bodyAtom)) {
 			Predicate predicate = ((BasicAtom) bodyAtom).predicate;
-			registeredPredicates.add(predicate);
+			registeredAtoms.add((BasicAtom) bodyAtom);
 			IndexedInstanceStorage workingMemory = isPositive ? this.workingMemory.get(predicate).getLeft() : this.workingMemory.get(predicate).getRight();
 			rulesUsingPredicateWorkingMemory.putIfAbsent(workingMemory, new ArrayList<>());
 			rulesUsingPredicateWorkingMemory.get(workingMemory).add(
-				new FirstBindingAtom(nonGroundRule, nonGroundRule.getFirstOccurrenceOfPredicate(predicate), (BasicAtom) bodyAtom));
+				new FirstBindingAtom(nonGroundRule, atomPos, (BasicAtom) bodyAtom));
 		}
 	}
 
