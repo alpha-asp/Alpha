@@ -7,16 +7,24 @@ import at.ac.tuwien.kr.alpha.common.Term;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ParsedConstant extends ParsedTerm {
-	public String content;
+	enum Type { STRING, NUMBER, CONSTANT }
+
+	private final String content;
+
+	private final Type type;
+	public ParsedConstant(String content, Type type) {
+		this.content = content;
+		this.type = type;
+	}
+
+	public String getContent() {
+		return content;
+	}
 
 	@Override
 	public Term toTerm() {
 		return ConstantTerm.getInstance(content);
 	}
-
-	enum TYPE {STRING, NUMBER, CONSTANT}
-
-	public TYPE type;
 
 	@Override
 	public String toString() {

@@ -8,7 +8,7 @@ import java.util.List;
  * factory-like method to obtain instances.
  * Copyright (c) 2016, the Alpha Team.
  */
-public abstract class Term {
+public abstract class Term implements Comparable<Term> {
 	public abstract boolean isGround();
 
 	public abstract List<VariableTerm> getOccurringVariables();

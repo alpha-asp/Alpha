@@ -3,7 +3,8 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Term;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.common.FunctionTerm.getFunctionTerm;
@@ -12,9 +13,17 @@ import static at.ac.tuwien.kr.alpha.common.FunctionTerm.getFunctionTerm;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ParsedFunctionTerm extends ParsedTerm {
-	public String functionName;
-	public int arity;
-	public ArrayList<ParsedTerm> termList;
+	private final String functionName;
+	private final List<ParsedTerm> termList;
+
+	public ParsedFunctionTerm(String functionName, List<ParsedTerm> termList) {
+		this.functionName = functionName;
+		this.termList = Collections.unmodifiableList(termList);
+	}
+
+	public String getFunctionName() {
+		return functionName;
+	}
 
 	@Override
 	public String toString() {

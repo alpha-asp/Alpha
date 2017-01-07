@@ -27,12 +27,14 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.FunctionTerm;
+import at.ac.tuwien.kr.alpha.common.Term;
+import at.ac.tuwien.kr.alpha.common.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder.VariableSubstitution;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import org.junit.Test;
 
-import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -41,7 +43,7 @@ import static org.junit.Assert.assertEquals;
 public class NaiveGrounderTest {
 	@Test
 	public void unifyTermsSimpleBinding() throws Exception {
-		NaiveGrounder grounder = new NaiveGrounder(new ParsedProgram());
+		NaiveGrounder grounder = new NaiveGrounder(ParsedProgram.EMPTY);
 		VariableSubstitution variableSubstitution = new VariableSubstitution();
 		Term groundTerm = ConstantTerm.getInstance("abc");
 		Term nongroundTerm = VariableTerm.getInstance("Y");
@@ -51,7 +53,7 @@ public class NaiveGrounderTest {
 
 	@Test
 	public void unifyTermsFunctionTermBinding() throws Exception {
-		NaiveGrounder grounder = new NaiveGrounder(new ParsedProgram());
+		NaiveGrounder grounder = new NaiveGrounder(ParsedProgram.EMPTY);
 		VariableSubstitution variableSubstitution = new VariableSubstitution();
 		variableSubstitution.substitution.put(VariableTerm.getInstance("Z"), ConstantTerm.getInstance("aa"));
 		FunctionTerm groundFunctionTerm = FunctionTerm.getFunctionTerm("f", ConstantTerm.getInstance("bb"), ConstantTerm.getInstance("cc"));

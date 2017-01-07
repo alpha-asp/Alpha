@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class BasicAtom implements Atom {
+public class BasicAtom implements Atom, Comparable<BasicAtom> {
 	public final Predicate predicate;
 	public final Term[] termList;
 
@@ -19,13 +19,13 @@ public class BasicAtom implements Atom {
 		this.termList = termList;
 	}
 
-	public static BasicAtom fromParsedAtom(ParsedAtom parsedAtom) {
-		return new BasicAtom(new BasicPredicate(parsedAtom.predicate, parsedAtom.arity), terms(parsedAtom));
+	public BasicAtom(ParsedAtom parsedAtom) {
+		this(new BasicPredicate(parsedAtom.predicate, parsedAtom.getArity()), terms(parsedAtom));
 	}
 
 	private static Term[] terms(ParsedAtom parsedAtom) {
 		Term[] terms;
-		if (parsedAtom.arity == 0) {
+		if (parsedAtom.getArity() == 0) {
 			terms = new Term[0];
 		} else {
 			terms = new Term[parsedAtom.terms.size()];
@@ -83,5 +83,27 @@ public class BasicAtom implements Atom {
 		Util.appendDelimited(sb, Arrays.asList(termList));
 		sb.append(")");
 		return sb.toString();
+	}
+
+	@Override
+	public int compareTo(BasicAtom o) {
+		if (this.termList.length != o.termList.length) {
+			return this.termList.length - o.termList.length;
+		}
+
+		int result = this.predicate.compareTo(o.predicate);
+
+		if (result != 0) {
+			return result;
+		}
+
+		for (int i = 0; i < termList.length; i++) {
+			result = termList[i].compareTo(o.termList[i]);
+			if (result != 0) {
+				return result;
+			}
+		}
+
+		return 0;
 	}
 }

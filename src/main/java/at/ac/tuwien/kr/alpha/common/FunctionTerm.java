@@ -87,4 +87,35 @@ public class FunctionTerm extends Term {
 	public int hashCode() {
 		return 31 * functionSymbol.hashCode() + termList.hashCode();
 	}
+
+	@Override
+	public int compareTo(Term o) {
+		if (!(o instanceof FunctionTerm)) {
+			return -1;
+		}
+		FunctionTerm other = (FunctionTerm)o;
+
+		int result = functionSymbol.compareTo(other.functionSymbol);
+
+		if (result != 0) {
+			return result;
+		}
+
+		if (termList.size() != other.termList.size()) {
+			return termList.size() - other.termList.size();
+		}
+
+		if (termList.isEmpty() && other.termList.isEmpty()) {
+			return 0;
+		}
+
+		for (int i = 0; i < termList.size(); i++) {
+			result = termList.get(i).compareTo(other.termList.get(i));
+			if (result != 0) {
+				return result;
+			}
+		}
+
+		return 0;
+	}
 }

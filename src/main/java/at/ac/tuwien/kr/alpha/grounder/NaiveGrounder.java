@@ -79,8 +79,8 @@ public class NaiveGrounder extends AbstractGrounder {
 
 		// initialize all facts
 		for (ParsedFact fact : this.program.facts) {
-			String predicateName = fact.fact.predicate;
-			int predicateArity = fact.fact.arity;
+			String predicateName = fact.getFact().predicate;
+			int predicateArity = fact.getFact().getArity();
 			BasicPredicate predicate = new BasicPredicate(predicateName, predicateArity);
 			// Record predicate
 			adaptWorkingMemoryForPredicate(predicate);
@@ -88,7 +88,7 @@ public class NaiveGrounder extends AbstractGrounder {
 			// Construct instance from the fact.
 			ArrayList<Term> termList = new ArrayList<>();
 			for (int i = 0; i < predicateArity; i++) {
-				termList.add(fact.fact.terms.get(i).toTerm());
+				termList.add(fact.getFact().terms.get(i).toTerm());
 			}
 			Instance instance = new Instance(termList.toArray(new Term[0]));
 			// Add instance to corresponding list of facts
@@ -105,9 +105,7 @@ public class NaiveGrounder extends AbstractGrounder {
 		}
 		// initialize constraints
 		for (ParsedConstraint constraint : program.constraints) {
-			ParsedRule constraintWrappingRule = new ParsedRule();
-			constraintWrappingRule.body = constraint.body;
-			registerRuleOrConstraint(constraintWrappingRule);
+			registerRuleOrConstraint(new ParsedRule(constraint.body));
 		}
 		// Hint: Could clear this.program to free memory.
 		this.program = null;
@@ -177,8 +175,8 @@ public class NaiveGrounder extends AbstractGrounder {
 
 	@Override
 	public AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms) {
-		Map<Predicate, Set<BasicAtom>> predicateInstances = new HashMap<>();
-		HashSet<Predicate> knownPredicates = new HashSet<>();
+		Map<Predicate, SortedSet<BasicAtom>> predicateInstances = new HashMap<>();
+		SortedSet<Predicate> knownPredicates = new TreeSet<>();
 
 		if (!trueAtoms.iterator().hasNext()) {
 			return BasicAnswerSet.EMPTY;
@@ -199,7 +197,7 @@ public class NaiveGrounder extends AbstractGrounder {
 			}
 
 			knownPredicates.add(basicAtom.predicate);
-			predicateInstances.putIfAbsent(basicAtom.predicate, new HashSet<>());
+			predicateInstances.putIfAbsent(basicAtom.predicate, new TreeSet<>());
 			Set<BasicAtom> instances = predicateInstances.get(basicAtom.predicate);
 			instances.add(basicAtom);
 		}
@@ -314,7 +312,7 @@ public class NaiveGrounder extends AbstractGrounder {
 			if (basicAtom instanceof BuiltinAtom) {
 				// Truth of builtin atoms does not depend on any assignment
 				// hence, they need not be represented as long as they evaluate to true
-				if (BuiltinAtom.evaluateBuiltinAtom((BuiltinAtom) basicAtom, variableSubstitution)) {
+				if (((BuiltinAtom) basicAtom).evaluate(variableSubstitution)) {
 					continue;
 				} else {
 					// Rule body is always false, skip the whole rule.
@@ -323,7 +321,6 @@ public class NaiveGrounder extends AbstractGrounder {
 			}
 			AtomId groundAtomPositive = SubstitutionUtil.groundingSubstitute(atomStore, (BasicAtom)basicAtom, variableSubstitution);
 			bodyAtomsPositive.add(groundAtomPositive);
-
 		}
 		for (Atom basicAtom : nonGroundRule.getBodyAtomsNegative()) {
 			AtomId groundAtomNegative = SubstitutionUtil.groundingSubstitute(atomStore, (BasicAtom)basicAtom, variableSubstitution);
@@ -429,7 +426,7 @@ public class NaiveGrounder extends AbstractGrounder {
 		if (currentAtom instanceof BuiltinAtom) {
 			// Assumption: all variables occurring in the builtin atom are already bound
 			// (as ensured by the body atom sorting)
-			if (BuiltinAtom.evaluateBuiltinAtom((BuiltinAtom)currentAtom, partialVariableSubstitution)) {
+			if (((BuiltinAtom)currentAtom).evaluate(partialVariableSubstitution)) {
 				// Builtin is true, continue with next atom in rule body.
 				return bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, partialVariableSubstitution);
 			}

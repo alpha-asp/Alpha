@@ -2,7 +2,6 @@ package at.ac.tuwien.kr.alpha.common;
 
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 

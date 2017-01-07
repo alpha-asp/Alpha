@@ -639,7 +639,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	}
 
 	/**
-	 * A simple data structure to encapsulate watched objects by truth value tailored to {@link ThriceTruth}. It
+	 * A simple data structure to encapsulate watched delegate by truth value tailored to {@link ThriceTruth}. It
 	 * holds three separate sets that are used to refer to propagation based on assignment of one of the three truth
 	 * values.
 	 * @param <T> type used for referencing.
@@ -667,7 +667,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	}
 
 	/**
-	 * A simple data structure to encapsulate watched objects for an atom. It will hold two {@link ThriceSet}s, one
+	 * A simple data structure to encapsulate watched delegate for an atom. It will hold two {@link ThriceSet}s, one
 	 * for references resulting from nogoods containing exactly two atoms, and one for larger nogoods.
 	 *
 	 * To enable compact storage, you will want to use a smaller/simpler type for storing references resulting from

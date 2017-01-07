@@ -26,10 +26,10 @@ public class ParserTest {
 		ParsedProgram parsedProgram = parseVisit(stream("p(a,b)."));
 
 		assertEquals("Program contains one fact.", 1, parsedProgram.facts.size());
-		assertEquals("Predicate name of fact is p.", "p", parsedProgram.facts.get(0).fact.predicate);
-		assertEquals("Fact has two terms.", 2, parsedProgram.facts.get(0).fact.arity);
-		assertEquals("First term is a.", "a", ((ParsedConstant)parsedProgram.facts.get(0).fact.terms.get(0)).content);
-		assertEquals("Second term is b.", "b", ((ParsedConstant)parsedProgram.facts.get(0).fact.terms.get(1)).content);
+		assertEquals("Predicate name of fact is p.", "p", parsedProgram.facts.get(0).getFact().predicate);
+		assertEquals("Fact has two terms.", 2, parsedProgram.facts.get(0).getFact().getArity());
+		assertEquals("First term is a.", "a", ((ParsedConstant)parsedProgram.facts.get(0).getFact().terms.get(0)).getContent());
+		assertEquals("Second term is b.", "b", ((ParsedConstant)parsedProgram.facts.get(0).getFact().terms.get(1)).getContent());
 	}
 
 	@Test
@@ -37,10 +37,10 @@ public class ParserTest {
 		ParsedProgram parsedProgram = parseVisit(stream("p(f(a),g(h(Y)))."));
 
 		assertEquals("Program contains one fact.", 1, parsedProgram.facts.size());
-		assertEquals("Predicate name of fact is p.", "p", parsedProgram.facts.get(0).fact.predicate);
-		assertEquals("Fact has two terms.", 2, parsedProgram.facts.get(0).fact.arity);
-		assertEquals("First term is function term f.", "f", ((ParsedFunctionTerm)parsedProgram.facts.get(0).fact.terms.get(0)).functionName);
-		assertEquals("Second term is function term g.", "g", ((ParsedFunctionTerm)parsedProgram.facts.get(0).fact.terms.get(1)).functionName);
+		assertEquals("Predicate name of fact is p.", "p", parsedProgram.facts.get(0).getFact().predicate);
+		assertEquals("Fact has two terms.", 2, parsedProgram.facts.get(0).getFact().getArity());
+		assertEquals("First term is function term f.", "f", ((ParsedFunctionTerm)parsedProgram.facts.get(0).getFact().terms.get(0)).getFunctionName());
+		assertEquals("Second term is function term g.", "g", ((ParsedFunctionTerm)parsedProgram.facts.get(0).getFact().terms.get(1)).getFunctionName());
 	}
 
 	@Test

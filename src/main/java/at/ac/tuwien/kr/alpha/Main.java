@@ -39,6 +39,7 @@ public class Main {
 	private static final String OPT_GROUNDER = "grounder";
 	private static final String OPT_SOLVER = "solver";
 	private static final String OPT_FILTER = "filter";
+	private static final String OPT_SORT = "sort";
 
 	private static final String DEFAULT_GROUNDER = "naive";
 	private static final String DEFAULT_SOLVER = "default";
@@ -80,6 +81,9 @@ public class Main {
 		filterOption.setArgName("filter");
 		filterOption.setValueSeparator(',');
 		options.addOption(filterOption);
+
+		Option sortOption = new Option("s", OPT_SORT, false, "sort answer sets");
+		options.addOption(sortOption);
 
 		try {
 			commandLine = new DefaultParser().parse(options, args);
@@ -146,6 +150,10 @@ public class Main {
 
 		if (limit > 0) {
 			stream = stream.limit(limit);
+		}
+
+		if (options.hasOption(OPT_SORT)) {
+			stream = stream.sorted();
 		}
 
 		stream.forEach(System.out::println);

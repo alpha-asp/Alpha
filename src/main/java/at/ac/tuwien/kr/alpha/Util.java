@@ -70,4 +70,27 @@ public class Util {
 		set.add(element);
 		return set;
 	}
+
+	public static <T extends Comparable<T>> int compareSortedSets(SortedSet<T> a, SortedSet<T> b) {
+		if (a.size() != b.size()) {
+			return a.size() - b.size();
+		}
+
+		if (a.isEmpty() && b.isEmpty()) {
+			return 0;
+		}
+
+		final Iterator<T> ita = a.iterator();
+		final Iterator<T> itb = b.iterator();
+
+		do {
+			final int result = ita.next().compareTo(itb.next());
+
+			if (result != 0) {
+				return result;
+			}
+		} while (ita.hasNext() && itb.hasNext());
+
+		return 0;
+	}
 }
