@@ -53,7 +53,7 @@ public class BerkMinTest {
 	
 	@Before
 	public void setUp() {
-		this.berkmin = new BerkMin(new BasicAssignment(), a -> true);
+		this.berkmin = new BerkMin(new BasicAssignment(), a -> true, a -> true);
 	}
 	
 	@Test
