@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016 Siemens AG
+ * Copyright (c) 2016-2017 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -77,10 +77,6 @@ public class BerkMin implements BranchingHeuristic {
 
 	public BerkMin(Assignment assignment, Predicate<? super Integer> isAtomActiveChoicePoint, Random random) {
 		this(assignment, isAtomActiveChoicePoint, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random);
-	}
-
-	public BerkMin(Assignment assignment, Predicate<? super Integer> isAtomActiveChoicePoint) {
-		this(assignment, isAtomActiveChoicePoint, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, new Random());
 	}
 
 	/**
