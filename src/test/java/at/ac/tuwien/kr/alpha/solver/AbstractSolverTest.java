@@ -615,4 +615,16 @@ public abstract class AbstractSolverTest {
 		Set<AnswerSet> answerSets = solver.collectSet();
 		assertEquals(expected, answerSets);
 	}
+
+	@Test
+	public void testUnsatisfiableProgram() throws IOException {
+		String testProgram = "p(a). p(b). :- p(a), p(b).";
+		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		Grounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		List<AnswerSet> answerSets = solver.collectList();
+
+		assertEquals(0, answerSets.size());
+	}
 }

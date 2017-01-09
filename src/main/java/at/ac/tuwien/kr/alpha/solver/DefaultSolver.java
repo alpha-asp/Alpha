@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016, 2017 the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -75,9 +75,12 @@ public class DefaultSolver extends AbstractSolver {
 
 	@Override
 	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
-		// Get basic rules and facts from grounder
+		// Initially, get NoGoods from grounder.
 		if (initialize) {
-			obtainNoGoodsFromGrounder();
+			if (!obtainNoGoodsFromGrounder()) {
+				// NoGoods are unsatisfiable.
+				return false;
+			}
 			initialize = false;
 		} else {
 			// We already found one Answer-Set and are requested to find another one
@@ -96,7 +99,10 @@ public class DefaultSolver extends AbstractSolver {
 				// Ask the grounder for new NoGoods, then propagate (again).
 				LOGGER.trace("Doing propagation step.");
 				updateGrounderAssignment();
-				obtainNoGoodsFromGrounder();
+				if (!obtainNoGoodsFromGrounder()) {
+					// NoGoods are unsatisfiable.
+					return false;
+				}
 				if (store.propagate()) {
 					didChange = true;
 				}
@@ -110,7 +116,10 @@ public class DefaultSolver extends AbstractSolver {
 				branchingHeuristic.violatedNoGood(violatedNoGood);
 
 				if (!afterAllAtomsAssigned) {
-					learnBackjumpAddFromConflict();
+					if (!learnBackjumpAddFromConflict()) {
+						// NoGoods are unsatisfiable.
+						return false;
+					}
 					didChange = true;
 				} else {
 					// Will not learn from violated NoGood, do simple backtrack.
@@ -150,9 +159,18 @@ public class DefaultSolver extends AbstractSolver {
 		}
 	}
 
-	private void learnBackjumpAddFromConflict() {
+	/**
+	 * Analyzes the conflict and either learns a new NoGood (causing backjumping and addition to the NoGood store),
+	 * or backtracks the guess causing the conflict.
+	 * @return false iff the analysis result shows that the set of NoGoods is unsatisfiable.
+	 */
+	private boolean learnBackjumpAddFromConflict() {
 		LOGGER.debug("Analyzing conflict.");
 		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(store.getViolatedNoGood());
+		if (analysisResult.isUnsatisfiable) {
+			// Halt if unsatisfiable.
+			return false;
+		}
 		if (analysisResult.learnedNoGood == null) {
 			LOGGER.debug("Conflict results from wrong guess, backjumping and removing guess.");
 			LOGGER.debug("Backjumping to decision level: {}", analysisResult.backjumpLevel);
@@ -177,6 +195,7 @@ public class DefaultSolver extends AbstractSolver {
 				throw new RuntimeException("Learned NoGood is violated after backjumping, should not happen.");
 			}
 		}
+		return true;
 	}
 
 	private void doBackjump(int backjumpingDecisionLevel) {
@@ -263,24 +282,38 @@ public class DefaultSolver extends AbstractSolver {
 		grounder.updateAssignment(assignment.getNewAssignmentsIterator());
 	}
 
-	private void obtainNoGoodsFromGrounder() {
+	/**
+	 * Obtains new NoGoods from grounder and adds them to the NoGoodStore and the heuristics.
+	 * @return false iff the set of NoGoods is detected to be unsatisfiable.
+	 */
+	private boolean obtainNoGoodsFromGrounder() {
 		Map<Integer, NoGood> obtained = grounder.getNoGoods();
+		LOGGER.debug("Obtained NoGoods from grounder: {}", obtained);
 
 		if (!obtained.isEmpty()) {
 			// Record to detect propagation fixpoint, checking if new NoGoods were reported would be better here.
 			didChange = true;
 		}
 
-		addAllNoGoodsAndTreatContradictions(obtained);
+		if (!addAllNoGoodsAndTreatContradictions(obtained)) {
+			return false;
+		}
 		branchingHeuristic.newNoGoods(obtained.values());
 
 		// Record choice atoms.
 		final Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms = grounder.getChoiceAtoms();
 		choiceOn.putAll(choiceAtoms.getKey());
 		choiceOff.putAll(choiceAtoms.getValue());
+		return true;
 	}
 
-	private void addAllNoGoodsAndTreatContradictions(Map<Integer, NoGood> obtained) {
+	/**
+	 * Adds all NoGoods in the given map to the NoGoodStore and treats eventual contradictions.
+	 * If the set of NoGoods is unsatisfiable, this method returns false.
+	 * @param obtained
+	 * @return false iff the new set of NoGoods is detected to be unsatisfiable.
+	 */
+	private boolean addAllNoGoodsAndTreatContradictions(Map<Integer, NoGood> obtained) {
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
 		while (!noGoodsToAdd.isEmpty()) {
 			Map.Entry<Integer, NoGood> noGoodEntry = noGoodsToAdd.poll();
@@ -301,7 +334,12 @@ public class DefaultSolver extends AbstractSolver {
 				LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 			} else {
 				LOGGER.debug("Violated NoGood is {}. Analyzing the conflict.", conflictCause.violatedNoGood);
-				GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.violatedNoGood);
+				GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = null;
+				conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.violatedNoGood);
+				if (conflictAnalysisResult.isUnsatisfiable) {
+					// Halt if unsatisfiable.
+					return false;
+				}
 				LOGGER.debug("Backjumping to decision level: {}", conflictAnalysisResult.backjumpLevel);
 				doBackjump(conflictAnalysisResult.backjumpLevel);
 				if (conflictAnalysisResult.clearLastGuessAfterBackjump) {
@@ -320,6 +358,7 @@ public class DefaultSolver extends AbstractSolver {
 				throw new RuntimeException("Re-adding of former conflicting NoGood still causes conflicts. This should not happen.");
 			}
 		}
+		return true;
 	}
 
 	private boolean isSearchSpaceExhausted() {

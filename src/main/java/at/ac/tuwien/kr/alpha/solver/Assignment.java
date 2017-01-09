@@ -178,5 +178,6 @@ public interface Assignment {
 		int getAtom();
 
 		int getPropagationLevel();
+		boolean isReassignAtLowerDecisionLevel();
 	}
 }
