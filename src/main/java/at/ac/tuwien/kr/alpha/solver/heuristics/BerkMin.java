@@ -65,18 +65,21 @@ public class BerkMin implements BranchingHeuristic {
 	private int decayAge;
 	private double decayFactor;
 	private int stepsSinceLastDecay;
+	private Predicate<? super Integer> isAtomChoicePoint;
 	private Predicate<? super Integer> isAtomActiveChoicePoint;
 
-	public BerkMin(Assignment assignment, Predicate<? super Integer> isAtomActiveChoicePoint, int decayAge, double decayFactor, Random random) {
+	public BerkMin(Assignment assignment, Predicate<? super Integer> isAtomChoicePoint,
+			Predicate<? super Integer> isAtomActiveChoicePoint, int decayAge, double decayFactor, Random random) {
 		this.assignment = assignment;
+		this.isAtomChoicePoint = isAtomChoicePoint;
 		this.isAtomActiveChoicePoint = isAtomActiveChoicePoint;
 		this.decayAge = decayAge;
 		this.decayFactor = decayFactor;
 		this.rand = random;
 	}
 
-	public BerkMin(Assignment assignment, Predicate<? super Integer> isAtomActiveChoicePoint, Random random) {
-		this(assignment, isAtomActiveChoicePoint, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random);
+	public BerkMin(Assignment assignment, Predicate<? super Integer> isAtomChoicePoint, Predicate<? super Integer> isAtomActiveChoicePoint, Random random) {
+		this(assignment, isAtomChoicePoint, isAtomActiveChoicePoint, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random);
 	}
 
 	/**
@@ -152,7 +155,7 @@ public class BerkMin implements BranchingHeuristic {
 	@Override
 	public int chooseAtom() {
 		for (NoGood noGood : stackOfNoGoods) {
-			if (assignment.isUndefined(noGood)) {
+			if (assignment.isUndefined(noGood)) { // TODO: is this really necessary?
 				int mostActiveAtom = getMostActiveChoosableAtom(noGood);
 				if (mostActiveAtom != DEFAULT_CHOICE_ATOM) {
 					return mostActiveAtom;
@@ -191,11 +194,24 @@ public class BerkMin implements BranchingHeuristic {
 	}
 
 	private void incrementActivityCounter(int literal) {
-		activityCounters.compute(atomOf(literal), (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + 1);
+		int atom = atomOf(literal);
+		if (isAtomChoicePoint.test(atom)) {
+			activityCounters.compute(atom, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + 1);
+		}
+		// TODO: check performance
+		// note that here (and in incrementSignCounter) we only count atoms that are
+		// choice points, which might affect performance.
+		// alternative approaches:
+		// 1. count everything and from time to time do a garbage collection (i.e.
+		// remove atoms that are no choice points)
+		// 2. make check cheaper, e.g. by using dedicated atom IDs (e.g. even
+		// integers for rule bodies, uneven for other atoms)
 	}
 	
 	private void incrementSignCounter(Integer literal) {
-		signCounters.compute(atomOf(literal), (k, v) -> (v == null ? DEFAULT_SIGN_COUNTER : v) + 1);
+		if (isAtomChoicePoint.test(atomOf(literal))) {
+			signCounters.compute(literal, (k, v) -> (v == null ? DEFAULT_SIGN_COUNTER : v) + 1);
+		}
 	}
 
 	private void decayAllIfTimeHasCome() {
