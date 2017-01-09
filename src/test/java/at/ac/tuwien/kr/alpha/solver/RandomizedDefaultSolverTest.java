@@ -2,9 +2,11 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 
-public class DefaultSolverTest extends AbstractSolverTest {
+import java.util.Random;
+
+public class RandomizedDefaultSolverTest extends AbstractSolverTest {
 	@Override
 	protected Solver getInstance(Grounder grounder) {
-		return new DefaultSolver(grounder);
+		return new DefaultSolver(grounder, new Random());
 	}
 }

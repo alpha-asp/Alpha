@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016 Siemens AG
+ * Copyright (c) 2016-2017 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -56,6 +56,8 @@ public class BerkMin implements BranchingHeuristic {
 	public static final int DEFAULT_DECAY_AGE = 10;
 	public static final double DEFAULT_DECAY_FACTOR = 0.25;
 
+	private final Random rand;
+
 	private Assignment assignment;
 	private Map<Integer, Double> activityCounters = new HashMap<>();
 	private Map<Integer, Integer> signCounters = new HashMap<>();
@@ -63,22 +65,21 @@ public class BerkMin implements BranchingHeuristic {
 	private int decayAge;
 	private double decayFactor;
 	private int stepsSinceLastDecay;
-	private Random rand = new Random();
 	private Predicate<? super Integer> isAtomChoicePoint;
 	private Predicate<? super Integer> isAtomActiveChoicePoint;
 
 	public BerkMin(Assignment assignment, Predicate<? super Integer> isAtomChoicePoint,
-			Predicate<? super Integer> isAtomActiveChoicePoint, int decayAge, double decayFactor) {
+			Predicate<? super Integer> isAtomActiveChoicePoint, int decayAge, double decayFactor, Random random) {
 		this.assignment = assignment;
 		this.isAtomChoicePoint = isAtomChoicePoint;
 		this.isAtomActiveChoicePoint = isAtomActiveChoicePoint;
 		this.decayAge = decayAge;
 		this.decayFactor = decayFactor;
+		this.rand = random;
 	}
 
-	public BerkMin(Assignment assignment, Predicate<? super Integer> isAtomChoicePoint,
-			Predicate<? super Integer> isAtomActiveChoicePoint) {
-		this(assignment, isAtomChoicePoint, isAtomActiveChoicePoint, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR);
+	public BerkMin(Assignment assignment, Predicate<? super Integer> isAtomChoicePoint, Predicate<? super Integer> isAtomActiveChoicePoint, Random random) {
+		this(assignment, isAtomChoicePoint, isAtomActiveChoicePoint, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random);
 	}
 
 	/**

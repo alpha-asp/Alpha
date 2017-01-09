@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -40,6 +41,7 @@ public class Main {
 	private static final String OPT_SOLVER = "solver";
 	private static final String OPT_FILTER = "filter";
 	private static final String OPT_SORT = "sort";
+	private static final String OPT_DETERMINISTIC = "deterministic";
 
 	private static final String DEFAULT_GROUNDER = "naive";
 	private static final String DEFAULT_SOLVER = "default";
@@ -84,6 +86,9 @@ public class Main {
 
 		Option sortOption = new Option("s", OPT_SORT, false, "sort answer sets");
 		options.addOption(sortOption);
+
+		Option deterministicOption = new Option("d", OPT_DETERMINISTIC, false, "disable randomness");
+		options.addOption(deterministicOption);
 
 		try {
 			commandLine = new DefaultParser().parse(options, args);
@@ -142,8 +147,14 @@ public class Main {
 			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram, filter
 		);
 
+		// NOTE: Using time as seed is fine as the internal heuristics
+		// do not need to by cryptographically securely randomized.
+		long seed = commandLine.hasOption(OPT_DETERMINISTIC) ? 0 : System.nanoTime();
+
+		LOGGER.info("Seed for pseudorandomization is {}.", seed);
+
 		Solver solver = SolverFactory.getInstance(
-			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder
+			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, new Random(seed)
 		);
 
 		Stream<AnswerSet> stream = solver.stream();

@@ -62,7 +62,7 @@ public class DefaultSolver extends AbstractSolver {
 
 	private int decisionCounter;
 
-	public DefaultSolver(Grounder grounder) {
+	public DefaultSolver(Grounder grounder, Random random) {
 		super(grounder);
 
 		this.assignment = new BasicAssignment(grounder);
@@ -70,7 +70,7 @@ public class DefaultSolver extends AbstractSolver {
 		this.store = new BasicNoGoodStore(assignment, grounder);
 		this.choiceStack = new ChoiceStack(grounder);
 		this.learner = new GroundConflictNoGoodLearner(assignment, store);
-		this.branchingHeuristic = new BerkMin(assignment, this::isAtomChoicePoint, this::isAtomActiveChoicePoint);
+		this.branchingHeuristic = new BerkMin(assignment, this::isAtomChoicePoint, this::isAtomActiveChoicePoint, random);
 		this.fallbackBranchingHeuristic = new NaiveHeuristic(assignment, choiceOn, choiceOff);
 	}
 

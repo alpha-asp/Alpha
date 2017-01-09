@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016 Siemens AG
+ * Copyright (c) 2016-2017 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -31,8 +31,7 @@ import at.ac.tuwien.kr.alpha.solver.GroundConflictNoGoodLearner.ConflictAnalysis
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -53,7 +52,7 @@ public class BerkMinTest {
 	
 	@Before
 	public void setUp() {
-		this.berkmin = new BerkMin(new BasicAssignment(), a -> true, a -> true);
+		this.berkmin = new BerkMin(new BasicAssignment(), a -> true, a -> true, new Random());
 	}
 	
 	@Test
