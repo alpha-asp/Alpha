@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.ResolutionSequence;
 import org.apache.commons.lang3.NotImplementedException;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
@@ -43,10 +44,9 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class GroundConflictNoGoodLearner {
-	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GroundConflictNoGoodLearner.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(GroundConflictNoGoodLearner.class);
 
 	private final Assignment assignment;
-	private final NoGoodStore<ThriceTruth> noGoodStore;
 
 	public static class ConflictAnalysisResult {
 		public final NoGood learnedNoGood;
@@ -56,20 +56,20 @@ public class GroundConflictNoGoodLearner {
 		public final boolean isUnsatisfiable;
 
 		public ConflictAnalysisResult(NoGood learnedNoGood, int backjumpLevel, boolean clearLastGuessAfterBackjump, Set<NoGood> noGoodsResponsibleForConflict, boolean isUnsatisfiable) {
+			if (backjumpLevel < 0) {
+				throw new IllegalArgumentException("Backjumping level must be at least 0.");
+			}
+
 			this.learnedNoGood = learnedNoGood;
 			this.backjumpLevel = backjumpLevel;
 			this.clearLastGuessAfterBackjump = clearLastGuessAfterBackjump;
 			this.noGoodsResponsibleForConflict = noGoodsResponsibleForConflict;
 			this.isUnsatisfiable = isUnsatisfiable;
-			if (backjumpLevel < 0) {
-				throw new RuntimeException("Backjumping level is less than 0. Should not happen");
-			}
 		}
 	}
 
-	public GroundConflictNoGoodLearner(Assignment assignment, NoGoodStore<ThriceTruth> noGoodStore) {
+	public GroundConflictNoGoodLearner(Assignment assignment) {
 		this.assignment = assignment;
-		this.noGoodStore = noGoodStore;
 	}
 
 	public ConflictAnalysisResult analyzeConflictingNoGood(NoGood violatedNoGood) {

@@ -9,34 +9,16 @@ import java.util.Set;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class FirstUIPPriorityQueue {
-	private final PriorityQueue<Assignment.Entry> delegate = new PriorityQueue<>(new EntryComparatorPropagationLevel());
-	private final Set<Assignment.Entry> alreadyAdded = new HashSet<>();
+	private final PriorityQueue<Assignment.Entry> delegate;
+	private final Set<Assignment.Entry> alreadyAdded;
 	private final int decisionLevel;
 
 	private int lastPollPropagationLevel = Integer.MAX_VALUE;
 
 	public FirstUIPPriorityQueue(int decisionLevel) {
 		this.decisionLevel = decisionLevel;
-	}
-
-	private class EntryComparatorPropagationLevel implements Comparator<Assignment.Entry> {
-
-		@Override
-		public int compare(Assignment.Entry o1, Assignment.Entry o2) {
-			if (o1 == null) {
-				return o2 == null ? 0 : +1;
-			} else if (o2 == null) {
-				return -1;
-			} else if (o1.equals(o2)) {
-				return 0;
-			} else if (o1.getPropagationLevel() > o2.getPropagationLevel()) {
-				return -1;
-			} else if (o1.getPropagationLevel() < o2.getPropagationLevel()) {
-				return +1;
-			} else {
-				throw new RuntimeException("Incomparable assignment entries given. Should not happen.");
-			}
-		}
+		this.delegate = new PriorityQueue<>(Comparator.comparing(Assignment.Entry::getPropagationLevel).reversed());
+		this.alreadyAdded = new HashSet<>();
 	}
 
 	/**
@@ -47,7 +29,7 @@ public class FirstUIPPriorityQueue {
 	 */
 	public void add(Assignment.Entry entry) {
 		if (entry.getDecisionLevel() != decisionLevel) {
-			// Ignore assignments from lower decision levels..
+			// Ignore assignments from lower decision levels.
 			return;
 		}
 		if (entry.getPropagationLevel() > lastPollPropagationLevel) {
@@ -63,7 +45,7 @@ public class FirstUIPPriorityQueue {
 
 	/**
 	 * Retrieves the first element (i.e., the entry with the highest propagationLevel) from the queue and removes it.
-	 * @return null if the queue is entry.
+	 * @return null if the queue is empty.
 	 */
 	public Assignment.Entry poll() {
 		Assignment.Entry firstEntry = delegate.poll();
@@ -81,5 +63,4 @@ public class FirstUIPPriorityQueue {
 	public int size() {
 		return delegate.size();
 	}
-
 }
