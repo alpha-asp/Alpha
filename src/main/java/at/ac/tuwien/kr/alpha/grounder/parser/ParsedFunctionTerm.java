@@ -1,22 +1,39 @@
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
-import java.util.ArrayList;
+import at.ac.tuwien.kr.alpha.Util;
+import at.ac.tuwien.kr.alpha.common.Term;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static at.ac.tuwien.kr.alpha.common.FunctionTerm.getFunctionTerm;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ParsedFunctionTerm extends ParsedTerm {
-	public String functionName;
-	public int arity;
-	public ArrayList<ParsedTerm> termList;
+	private final String functionName;
+	private final List<ParsedTerm> termList;
+
+	public ParsedFunctionTerm(String functionName, List<ParsedTerm> termList) {
+		this.functionName = functionName;
+		this.termList = Collections.unmodifiableList(termList);
+	}
+
+	public String getFunctionName() {
+		return functionName;
+	}
 
 	@Override
 	public String toString() {
-		String ret = functionName + "(";
-		for (int i = 0; i < arity; i++) {
-			ret += (i == 0 ? "" : ", ") + termList.get(i);
-		}
-		ret += ")";
-		return ret;
+		StringBuilder sb = new StringBuilder(functionName).append("(");
+		Util.appendDelimited(sb, termList);
+		return sb.append(")").toString();
+	}
+
+	@Override
+	public Term toTerm() {
+		return getFunctionTerm(functionName, termList.stream().map(ParsedTerm::toTerm).collect(Collectors.toList()));
 	}
 }

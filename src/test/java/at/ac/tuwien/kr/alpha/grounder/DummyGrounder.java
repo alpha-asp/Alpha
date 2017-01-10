@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
 import static at.ac.tuwien.kr.alpha.Util.entry;
+import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 
 /**
@@ -93,7 +94,7 @@ public class DummyGrounder implements Grounder {
 		// Note: This grounder only deals with 0-ary predicates, i.e., every atom is a predicate and there is
 		// 	 only one predicate instance representing 0 terms.
 
-		Set<Predicate> trueAtomPredicates = new HashSet<>();
+		SortedSet<Predicate> trueAtomPredicates = new TreeSet<>();
 		for (int trueAtom : trueAtoms) {
 			BasicPredicate atomPredicate = new BasicPredicate(atomIdToString.get(trueAtom), 0);
 			if (!filter.test(atomPredicate)) {
@@ -106,12 +107,10 @@ public class DummyGrounder implements Grounder {
 		}
 
 		// Add the atom instances
-		Map<Predicate, Set<BasicAtom>> predicateInstances = new HashMap<>();
+		Map<Predicate, SortedSet<BasicAtom>> predicateInstances = new HashMap<>();
 		for (Predicate trueAtomPredicate : trueAtomPredicates) {
 			BasicAtom internalBasicAtom = new BasicAtom(trueAtomPredicate);
-			Set<BasicAtom> instanceList = new HashSet<>();
-			instanceList.add(internalBasicAtom);
-			predicateInstances.put(trueAtomPredicate, instanceList);
+			predicateInstances.put(trueAtomPredicate, new TreeSet<>(singleton(internalBasicAtom)));
 		}
 
 		return new BasicAnswerSet(trueAtomPredicates, predicateInstances);

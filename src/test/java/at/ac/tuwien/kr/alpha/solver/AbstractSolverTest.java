@@ -312,7 +312,7 @@ public abstract class AbstractSolverTest {
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
-		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
 			new BasicAnswerSet.Builder()
 				.predicate("dom")
 				.instance("1")
@@ -341,7 +341,7 @@ public abstract class AbstractSolverTest {
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
-		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
 			new BasicAnswerSet.Builder()
 				.predicate("a")
 				.predicate("c")
