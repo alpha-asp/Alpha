@@ -175,7 +175,7 @@ public class BasicAssignment implements Assignment {
 					recordAssignment(atom, value, impliedBy, decisionLevel, current);
 					return true;
 				} else if (current.getTruth() == value || (TRUE.equals(current.getTruth()) && MBT.equals(value))) {
-					LOGGER.debug("Skipping assignment of {} with {}.", atom, value);
+					LOGGER.debug("Skipping assignment of {} with {} at {}, currently is: {}", atom, decisionLevel, value, current);
 					// Skip if the assigned truth value already has been assigned, or if the value is already TRUE and MBT is to be assigned.
 					return true;
 				} else {
@@ -200,21 +200,27 @@ public class BasicAssignment implements Assignment {
 				// If the atom was unassigned at the lower decision level, assign it now to the given value and check for a conflict.
 				if (previousTruthValue == null) {
 					// Update entry (remove previous, add new)
-					LOGGER.trace("Removing current assignment {}: {}", atom, current);
-					decisionLevels.get(current.decisionLevel).remove(current);
+					// For MBT assigned below TRUE, keep TRUE and modify its previous entry to MBT
+					if (TRUE.equals(current.getTruth()) &&  MBT.equals(value)) {
+						LOGGER.debug("Updating current assignment {}: {} new MBT below at {}.", atom, current, decisionLevel);
+						recordMBTBelowTrue(atom, value, impliedBy, decisionLevel);
+					} else {
+						LOGGER.trace("Removing current assignment {}: {}", atom, current);
+						decisionLevels.get(current.decisionLevel).remove(current);
 
-					// Increment mbtCount in case the assigned value is MBT and current one is not.
-					if (MBT.equals(value) && !MBT.equals(current.getTruth())) {
-						mbtCount++;
+						// Increment mbtCount in case the assigned value is MBT and current one is not.
+						if (MBT.equals(value) && !MBT.equals(current.getTruth())) {
+							mbtCount++;
+						}
+
+						// Decrement mbtCount in case the assigned value is non-MBT while the current one is.
+						if (!MBT.equals(value) && MBT.equals(current.getTruth())) {
+							mbtCount--;
+						}
+
+						// Add new assignment entry.
+						recordAssignment(atom, value, impliedBy, decisionLevel, null);
 					}
-
-					// Decrement mbtCount in case the assigned value is non-MBT while the current one is.
-					if (!MBT.equals(value) && MBT.equals(current.getTruth())) {
-						mbtCount--;
-					}
-
-					// Add new assignment entry.
-					recordAssignment(atom, value, impliedBy, decisionLevel, null);
 
 					// Check whether the assignment on the lower decision level now contradicts the current one.
 					switch (current.getTruth()) {
@@ -288,6 +294,22 @@ public class BasicAssignment implements Assignment {
 			}
 		}
 		throw new RuntimeException("Statement should be unreachable, algorithm misses some case.");
+	}
+
+	private void recordMBTBelowTrue(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
+		Entry oldEntry = get(atom);
+		if (!TRUE.equals(oldEntry.getTruth()) || !MBT.equals(value)) {
+			throw new RuntimeException("Recording MBT below TRUE but truth values do not match. Should not happen.");
+		}
+		final int previousPropagationLevel = decisionLevels.get(decisionLevel).size();
+		final Entry previous = new Entry(value, decisionLevel, previousPropagationLevel, impliedBy, null, atom, true);
+		decisionLevels.get(decisionLevel).add(previous);
+		assignmentsToProcess.add(previous); // Process MBT on lower decision level.
+		// Replace the current TRUE entry with one where previous is set correctly.
+		decisionLevels.get(oldEntry.getDecisionLevel()).remove(oldEntry);
+		Entry trueEntry = new Entry(oldEntry.getTruth(), oldEntry.getDecisionLevel(), oldEntry.getPropagationLevel(), oldEntry.getImpliedBy(), previous, atom, oldEntry.isReassignAtLowerDecisionLevel());
+		decisionLevels.get(oldEntry.getDecisionLevel()).add(trueEntry);
+		assignment.put(atom, trueEntry);
 	}
 
 	private void recordAssignment(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel, Entry previous) {
