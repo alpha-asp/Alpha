@@ -31,7 +31,6 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.*;
 
@@ -69,7 +68,7 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 
 	@Override
 	public void unassign(int atom) {
-		throw new NotImplementedException();
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -425,7 +424,7 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 
 	@Override
 	public Iterator<Map.Entry<Integer, ThriceTruth>> iterator() {
-		throw new NotImplementedException();
+		throw new UnsupportedOperationException();
 	}
 
 	private static final class Entry implements Assignment.Entry<ThriceTruth> {

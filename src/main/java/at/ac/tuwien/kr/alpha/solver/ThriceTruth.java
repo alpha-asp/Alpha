@@ -59,7 +59,9 @@ public enum ThriceTruth implements Truth {
 	}
 
 	@Override
-	public boolean isBoolean() { return isBoolean; }
+	public boolean isBoolean() {
+		return isBoolean;
+	}
 
 	/**
 	 * Returns true if the two truth values are not compatible with each other.

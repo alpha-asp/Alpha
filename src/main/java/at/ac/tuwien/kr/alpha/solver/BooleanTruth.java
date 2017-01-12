@@ -22,5 +22,7 @@ public enum BooleanTruth implements Truth {
 	}
 
 	@Override
-	public boolean isBoolean() { return true; }
+	public boolean isBoolean() {
+		return true;
+	}
 }
