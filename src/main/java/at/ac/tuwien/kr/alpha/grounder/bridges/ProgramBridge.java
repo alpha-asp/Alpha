@@ -18,12 +18,6 @@ import java.util.*;
 public class ProgramBridge implements Bridge {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ProgramBridge.class);
 
-	/**
-	 * Atoms corresponding to rule bodies use this predicate, first term is rule number,
-	 * second is a term containing variable substitutions.
-	 */
-	public static final BasicPredicate RULE_BODIES_PREDICATE = new BasicPredicate("_R_", 2);
-
 	private boolean outputFactNogoods = true;
 
 	private final HashMap<Predicate, ArrayList<Instance>> factsFromProgram = new HashMap<>();
@@ -59,7 +53,7 @@ public class ProgramBridge implements Bridge {
 			internalPredicateInstances.add(instance);
 		}
 		// initialize rules
-		adaptWorkingMemoryForPredicate(RULE_BODIES_PREDICATE);
+		adaptWorkingMemoryForPredicate(RuleAtom.PREDICATE);
 		adaptWorkingMemoryForPredicate(ChoiceAtom.OFF);
 		adaptWorkingMemoryForPredicate(ChoiceAtom.ON);
 		for (ParsedRule rule : program.rules) {
@@ -262,9 +256,7 @@ public class ProgramBridge implements Bridge {
 		}
 
 		// Prepare atom representing the rule body
-		BasicAtom ruleBodyRepresentingPredicate = new BasicAtom(RULE_BODIES_PREDICATE,
-			true, ConstantTerm.getInstance(Integer.toString(nonGroundRule.getRuleId())),
-			ConstantTerm.getInstance(variableSubstitution.toUniformString()));
+		Atom ruleBodyRepresentingPredicate = new RuleAtom(nonGroundRule, variableSubstitution);
 
 		// Check uniqueness of ground rule by testing whether the body representing atom already has an id
 		if (atomStore.contains(ruleBodyRepresentingPredicate)) {

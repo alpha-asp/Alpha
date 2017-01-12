@@ -26,7 +26,7 @@ public class HexBridge implements Bridge {
 
 				if (externalNogoods[m][k].charAt(0) == '-') {
 					isNegative = true;
-					externalNogoods[m][k] = externalNogoods[m][k].substring(1, externalNogoods[m][k].length());
+					externalNogoods[m][k] = externalNogoods[m][k].substring(1);
 				}
 
 				BasicAtom atom = atomFromLiteral(externalNogoods[m][k]);
@@ -42,7 +42,7 @@ public class HexBridge implements Bridge {
 
 			int bodySize = bodyAtomsPositive.size() + bodyAtomsNegative.size();
 
-			if (externalNogoods[m][0].substring(0, 6).equals("aux_r_")) {
+			if (externalNogoods[m][0].startsWith("aux_r_")) {
 				// A constraint is represented by one NoGood.
 				int[] constraintLiterals = new int[bodySize + 1];
 				int i = 0;
@@ -59,10 +59,9 @@ public class HexBridge implements Bridge {
 
 				NoGood constraintNoGood = new NoGood(constraintLiterals);
 				noGoods.add(constraintNoGood);
-			} else if (externalNogoods[m][0].substring(0, 6).equals("aux_n_")) {
+			} else if (externalNogoods[m][0].startsWith("aux_n_")) {
 				// Prepare atom representing the external rule body
-				BasicAtom ruleBodyRepresentingPredicate = new BasicAtom(ProgramBridge.RULE_BODIES_PREDICATE,
-					true, ConstantTerm.getInstance("aux"), ConstantTerm.getInstance(uniformString(externalNogoods[m])));
+				Atom ruleBodyRepresentingPredicate = new RuleAtom(ConstantTerm.getInstance("aux"), ConstantTerm.getInstance(uniformString(externalNogoods[m])));
 
 				// Check uniqueness of ground rule by testing whether the body representing atom already has an id
 				if (atomStore.contains(ruleBodyRepresentingPredicate)) {
