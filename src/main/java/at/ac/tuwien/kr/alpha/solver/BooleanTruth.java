@@ -12,7 +12,7 @@ public enum BooleanTruth implements Truth {
 		this.asBoolean = asBoolean;
 	}
 
-	public static BooleanTruth wrap(boolean value) {
+	public static BooleanTruth valueOf(boolean value) {
 		return value ? TRUE : FALSE;
 	}
 
@@ -20,4 +20,7 @@ public enum BooleanTruth implements Truth {
 	public boolean toBoolean() {
 		return asBoolean;
 	}
+
+	@Override
+	public boolean isBoolean() { return true; }
 }

@@ -1,7 +1,5 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.Truth;
-
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -16,19 +14,24 @@ public class SimpleAssignmentImpl implements SimpleAssignment<BooleanTruth> {
 	}
 
 	@Override
-	public Truth getTruth(int atom) {
+	public BooleanTruth getTruth(int atom) {
 		Boolean truth = delegate.get(atom);
 
 		if (truth == null) {
 			return null;
 		}
 
-		return BooleanTruth.wrap(truth);
+		return BooleanTruth.valueOf(truth);
 	}
 
 	@Override
-	public void assign(int atom, BooleanTruth value) {
-		assign(atom, value.toBoolean());
+	public void clear() {
+		delegate.clear();
+	}
+
+	@Override
+	public boolean assign(int atom, BooleanTruth value) {
+		return assign(atom, value.toBoolean());
 	}
 
 	@Override
@@ -36,14 +39,15 @@ public class SimpleAssignmentImpl implements SimpleAssignment<BooleanTruth> {
 		delegate.remove(atom);
 	}
 
-	public void assign(int atom, boolean value) {
+	public boolean assign(int atom, boolean value) {
 		delegate.put(atom, value);
+		return true;
 	}
 
 	@Override
 	public Iterator<Map.Entry<Integer, BooleanTruth>> iterator() {
 		return delegate.entrySet().stream()
-			.map(e -> (Map.Entry<Integer, BooleanTruth>) new AbstractMap.SimpleEntry<>(e.getKey(), BooleanTruth.wrap(e.getValue())))
+			.map(e -> (Map.Entry<Integer, BooleanTruth>) new AbstractMap.SimpleEntry<>(e.getKey(), BooleanTruth.valueOf(e.getValue())))
 			.iterator();
 	}
 }

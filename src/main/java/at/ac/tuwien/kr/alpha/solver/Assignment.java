@@ -31,12 +31,7 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 import at.ac.tuwien.kr.alpha.common.Truth;
 
-public interface Assignment<T extends Truth> extends ReadableAssignment<T> {
-	/**
-	 * Delete all information stored in the assignment.
-	 */
-	void clear();
-
+public interface Assignment<T extends Truth> extends ReadableAssignment<T>, SimpleAssignment<T> {
 	/**
 	 * Backtracks to the indicated decision level. Every assignment on a higher decisionLevel is removed.
 	 * All assignments below (or equal to) decisionLevel are kept. Note that for atoms being TRUE this may require

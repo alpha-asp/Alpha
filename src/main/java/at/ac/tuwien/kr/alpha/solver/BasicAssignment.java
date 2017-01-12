@@ -31,6 +31,7 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.*;
 
@@ -64,6 +65,11 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 		decisionLevels.add(new ArrayList<>());
 		assignment.clear();
 		mbtCount = 0;
+	}
+
+	@Override
+	public void unassign(int atom) {
+		throw new NotImplementedException();
 	}
 
 	@Override
@@ -415,6 +421,11 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 		Iterator<Assignment.Entry<ThriceTruth>> it = newAssignments.iterator();
 		newAssignments = new LinkedList<>();
 		return it;
+	}
+
+	@Override
+	public Iterator<Map.Entry<Integer, ThriceTruth>> iterator() {
+		throw new NotImplementedException();
 	}
 
 	private static final class Entry implements Assignment.Entry<ThriceTruth> {

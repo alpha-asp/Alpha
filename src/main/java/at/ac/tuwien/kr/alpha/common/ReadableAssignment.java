@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.solver.SimpleReadableAssignment;
 
 import java.util.Iterator;
 import java.util.Queue;
@@ -11,7 +12,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
-public interface ReadableAssignment<T extends Truth> {
+public interface ReadableAssignment<T extends Truth> extends SimpleReadableAssignment<T> {
 	/**
 	 * Reports how many atoms are assigned to must-be-true currently. If this method returns
 	 * zero, the assignment is guaranteed to be free of must-be-true values (i.e. it only
