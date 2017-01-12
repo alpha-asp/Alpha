@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.solver.Choices;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -80,14 +81,12 @@ public class ChoiceGrounder implements Grounder {
 		entry(CHOICE_DIS_BR1, NoGood.headFirst(-ATOM_DIS_BR1, ATOM_BB)),
 		entry(CHOICE_DIS_BR2, NoGood.headFirst(-ATOM_DIS_BR2, ATOM_AA))
 	).collect(entriesToMap());
-	private static final Map<Integer, Integer> CHOICE_ENABLE = Stream.of(
-		entry(ATOM_BR1, ATOM_EN_BR1),
-		entry(ATOM_BR2, ATOM_EN_BR2)
-	).collect(entriesToMap());
-	private static final Map<Integer, Integer> CHOICE_DISABLE = Stream.of(
-		entry(ATOM_BR1, ATOM_DIS_BR1),
-		entry(ATOM_BR2, ATOM_DIS_BR2)
-	).collect(entriesToMap());
+
+	private static final Choices CHOICES = new Choices(Stream.of(
+		entry(ATOM_BR1, (Pair<Integer, Integer>) new ImmutablePair<>(ATOM_EN_BR1, ATOM_DIS_BR1)),
+		entry(ATOM_BR2, (Pair<Integer, Integer>) new ImmutablePair<>(ATOM_EN_BR2, ATOM_DIS_BR2))
+	).collect(entriesToMap()));
+
 	private static Map<Integer, String> atomIdToString = Stream.of(
 		entry(ATOM_AA, "aa"),
 		entry(ATOM_BB, "bb"),
@@ -147,8 +146,8 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
-		return new ImmutablePair<>(CHOICE_ENABLE, CHOICE_DISABLE);
+	public Choices getChoices() {
+		return CHOICES;
 	}
 
 	@Override
@@ -180,10 +179,5 @@ public class ChoiceGrounder implements Grounder {
 	@Override
 	public int registerOutsideNoGood(NoGood noGood) {
 		throw  new RuntimeException("Not implemented for ChoiceGrounder.");
-	}
-
-	@Override
-	public boolean isAtomChoicePoint(int atom) {
-		return atom == ATOM_BR1 || atom == ATOM_BR2;
 	}
 }

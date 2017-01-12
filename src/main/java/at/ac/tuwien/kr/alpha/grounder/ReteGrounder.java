@@ -7,7 +7,7 @@ import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.rete.RetePredicate;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
-import org.apache.commons.lang3.tuple.Pair;
+import at.ac.tuwien.kr.alpha.solver.Choices;
 
 import java.util.Iterator;
 import java.util.List;
@@ -38,7 +38,7 @@ public abstract class ReteGrounder extends AbstractGrounder {
 	}
 
 	@Override
-	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
+	public Choices getChoices() {
 		return null;
 	}
 

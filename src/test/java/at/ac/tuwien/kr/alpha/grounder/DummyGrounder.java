@@ -2,8 +2,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+import at.ac.tuwien.kr.alpha.solver.Choices;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -25,24 +24,30 @@ public class DummyGrounder implements Grounder {
 		.predicate("c")
 		.build()
 	));
+
 	private static final int FACT_A = 11; // { -a }
 	private static final int FACT_B = 12; // { -b }
 	private static final int RULE_B = 13; // { -_br1, a, b }
 	private static final int RULE_H = 14; // { -c, _br1 }
+
 	private static final Map<Integer, NoGood> NOGOODS = Stream.of(
 		entry(FACT_A, new NoGood(new int[]{-1 }, 0)),
 		entry(FACT_B, new NoGood(new int[]{-2 }, 0)),
 		entry(RULE_B, new NoGood(new int[]{-3, 1, 2 }, 0)),
 		entry(RULE_H, new NoGood(new int[]{-4, 3 }, 0))
 	).collect(entriesToMap());
+
 	private static Map<Integer, String> atomIdToString = Stream.of(
 		entry(1, "a"),
 		entry(2, "b"),
 		entry(3, "_br1"),
 		entry(4, "c")
 	).collect(entriesToMap());
+
 	private final java.util.function.Predicate<Predicate> filter;
+
 	private byte[] currentTruthValues = new byte[]{-2, -1, -1, -1, -1};
+
 	private Set<Integer> returnedNogoods = new HashSet<>();
 
 	public DummyGrounder() {
@@ -80,12 +85,6 @@ public class DummyGrounder implements Grounder {
 	@Override
 	public int registerOutsideNoGood(NoGood noGood) {
 		throw  new RuntimeException("Not implemented for DummyGrounder.");
-	}
-
-	@Override
-	public boolean isAtomChoicePoint(int atom) {
-		// No choice points here.
-		return false;
 	}
 
 	@Override
@@ -130,8 +129,8 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
-	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
-		return new ImmutablePair<>(new HashMap<>(), new HashMap<>());
+	public Choices getChoices() {
+		return new Choices();
 	}
 
 	@Override

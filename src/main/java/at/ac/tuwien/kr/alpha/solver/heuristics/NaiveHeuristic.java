@@ -29,8 +29,10 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Truth;
+import at.ac.tuwien.kr.alpha.solver.Choices;
 import at.ac.tuwien.kr.alpha.solver.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 import at.ac.tuwien.kr.alpha.solver.SimpleReadableAssignment;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Collection;
 import java.util.Map;
@@ -41,13 +43,11 @@ import java.util.Map;
  */
 public class NaiveHeuristic implements BranchingHeuristic {
 	private SimpleReadableAssignment<? extends Truth> assignment;
-	private Map<Integer, Integer> choiceOn;
-	private Map<Integer, Integer> choiceOff;
+	private Choices choices;
 
-	public NaiveHeuristic(SimpleReadableAssignment<? extends Truth> assignment, Map<Integer, Integer> choiceOn, Map<Integer, Integer> choiceOff) {
+	public NaiveHeuristic(SimpleReadableAssignment<? extends Truth> assignment, Choices choices) {
 		this.assignment = assignment;
-		this.choiceOn = choiceOn;
-		this.choiceOff = choiceOff;
+		this.choices = choices;
 	}
 
 	@Override
@@ -78,7 +78,7 @@ public class NaiveHeuristic implements BranchingHeuristic {
 		// increase performance (analyze store.getChangedAssignments()).
 
 		// Check if there is an enabled choice that is not also disabled
-		for (Map.Entry<Integer, Integer> e : choiceOn.entrySet()) {
+		for (Map.Entry<Integer, Pair<Integer, Integer>> e : choices) {
 			final int atom = e.getKey();
 
 			Truth truth = assignment.getTruth(atom);
@@ -89,7 +89,7 @@ public class NaiveHeuristic implements BranchingHeuristic {
 			}
 
 			// Check that candidate is not disabled already
-			truth = assignment.getTruth(choiceOff.getOrDefault(atom, 0));
+			truth = assignment.getTruth(e.getValue().getRight());
 			if (truth == null || !truth.toBoolean()) {
 				return atom;
 			}

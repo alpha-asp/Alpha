@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.common.Atom;
 import at.ac.tuwien.kr.alpha.common.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.BasicPredicate;
 
@@ -10,8 +11,8 @@ import java.util.*;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class AtomStore {
-	private List<BasicAtom> atomIdsToInternalBasicAtoms = new ArrayList<>();
-	private Map<BasicAtom, Integer> predicateInstancesToAtomIds = new HashMap<>();
+	private List<Atom> atomIdsToInternalBasicAtoms = new ArrayList<>();
+	private Map<Atom, Integer> predicateInstancesToAtomIds = new HashMap<>();
 	private IntIdGenerator atomIdGenerator = new IntIdGenerator();
 
 	private List<Integer> releasedAtomIds = new ArrayList<>();	// contains atomIds ready to be garbage collected if necessary.
@@ -39,7 +40,7 @@ public class AtomStore {
 	 * @param atomId
 	 * @return
 	 */
-	public BasicAtom get(int atomId) {
+	public Atom get(int atomId) {
 		try {
 			return atomIdsToInternalBasicAtoms.get(atomId);
 		} catch (IndexOutOfBoundsException e) {
@@ -53,7 +54,7 @@ public class AtomStore {
 	 * @param groundAtom
 	 * @return
 	 */
-	public int add(BasicAtom groundAtom) {
+	public int add(Atom groundAtom) {
 		Integer id = predicateInstancesToAtomIds.get(groundAtom);
 
 		if (id == null) {
@@ -69,7 +70,7 @@ public class AtomStore {
 		return predicateInstancesToAtomIds.containsKey(groundAtom);
 	}
 
-	public ListIterator<BasicAtom> listIterator() {
+	public ListIterator<Atom> listIterator() {
 		return atomIdsToInternalBasicAtoms.listIterator();
 	}
 
@@ -84,7 +85,7 @@ public class AtomStore {
 
 	public String printAtomIdTermMapping() {
 		String ret = "";
-		for (Map.Entry<BasicAtom, Integer> entry : predicateInstancesToAtomIds.entrySet()) {
+		for (Map.Entry<Atom, Integer> entry : predicateInstancesToAtomIds.entrySet()) {
 			ret += entry.getValue() + " <-> " + entry.getKey().toString() + "\n";
 		}
 		return ret;

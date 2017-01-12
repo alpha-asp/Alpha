@@ -5,7 +5,7 @@ import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
-import org.apache.commons.lang3.tuple.Pair;
+import at.ac.tuwien.kr.alpha.solver.Choices;
 
 import java.util.Iterator;
 import java.util.List;
@@ -21,7 +21,7 @@ public interface Grounder extends AtomTranslator {
 	 * choiceOn maps enabling atomIds to enabled atomIds to guess on, while
 	 * choiceOff maps disabling atomIds to guessable atomIds.
 	 */
-	Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms();
+	Choices getChoices();
 
 	void updateAssignment(Iterator<? extends Assignment.Entry> it);
 
@@ -42,11 +42,4 @@ public interface Grounder extends AtomTranslator {
 	 * @return
 	 */
 	int registerOutsideNoGood(NoGood noGood);
-
-	/**
-	 * Returns true whenever the atom is a valid choice point (i.e., it represents a rule body).
-	 * @param atom
-	 * @return
-	 */
-	boolean isAtomChoicePoint(int atom);
 }

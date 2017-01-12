@@ -33,7 +33,6 @@ import at.ac.tuwien.kr.alpha.common.Truth;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,8 +59,7 @@ public class NaiveSolver extends AbstractSolver {
 	private boolean didChange;
 	private int decisionLevel;
 
-	private Map<Integer, Integer> choiceOn = new HashMap<>();
-	private Map<Integer, Integer> choiceOff = new HashMap<>();
+	private Choices choices = new Choices();
 	private Integer nextChoice;
 	private HashSet<Integer> mbtAssigned = new HashSet<>();
 	private ArrayList<ArrayList<Integer>> mbtAssignedFromUnassigned = new ArrayList<>();
@@ -79,7 +77,7 @@ public class NaiveSolver extends AbstractSolver {
 		mbtAssignedFromUnassigned.add(0, new ArrayList<>());
 		trueAssignedFromMbt.add(0, new ArrayList<>());
 
-		heuristic = new NaiveHeuristic(assignment, choiceOn, choiceOff);
+		heuristic = new NaiveHeuristic(assignment, choices);
 	}
 
 	@Override
@@ -332,9 +330,7 @@ public class NaiveSolver extends AbstractSolver {
 		}
 
 		// Record choice atoms
-		final Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms = grounder.getChoiceAtoms();
-		choiceOn.putAll(choiceAtoms.getKey());
-		choiceOff.putAll(choiceAtoms.getValue());
+		choices.putAll(grounder.getChoices());
 	}
 
 	private boolean isSearchSpaceExhausted() {

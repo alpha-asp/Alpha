@@ -33,14 +33,14 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BerkMin;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Consumer;
 
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 
 /**
  * The new default solver employed in Alpha.
@@ -50,8 +50,7 @@ public class DefaultSolver extends AbstractSolver {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolver.class);
 
 	private final NoGoodStore<ThriceTruth> store;
-	private final Map<Integer, Integer> choiceOn = new LinkedHashMap<>();
-	private final Map<Integer, Integer> choiceOff = new HashMap<>();
+	private final Choices choices = new Choices();
 	private final ChoiceStack choiceStack;
 	private final Assignment<ThriceTruth> assignment;
 	private final GroundConflictNoGoodLearner learner;
@@ -72,8 +71,8 @@ public class DefaultSolver extends AbstractSolver {
 		this.store = new BasicNoGoodStore(assignment, grounder);
 		this.choiceStack = new ChoiceStack(grounder);
 		this.learner = new GroundConflictNoGoodLearner(assignment);
-		this.branchingHeuristic = new BerkMin(assignment, this::isAtomChoicePoint, this::isAtomActiveChoicePoint, random);
-		this.fallbackBranchingHeuristic = new NaiveHeuristic(assignment, choiceOn, choiceOff);
+		this.branchingHeuristic = new BerkMin(assignment, choices::is, this::isAtomActiveChoicePoint, random);
+		this.fallbackBranchingHeuristic = new NaiveHeuristic(assignment, choices);
 	}
 
 	@Override
@@ -314,9 +313,7 @@ public class DefaultSolver extends AbstractSolver {
 		branchingHeuristic.newNoGoods(obtained.values());
 
 		// Record choice atoms.
-		final Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms = grounder.getChoiceAtoms();
-		choiceOn.putAll(choiceAtoms.getKey());
-		choiceOff.putAll(choiceAtoms.getValue());
+		choices.putAll(grounder.getChoices());
 		return true;
 	}
 
@@ -385,25 +382,8 @@ public class DefaultSolver extends AbstractSolver {
 		return !changeCopy;
 	}
 
-	private boolean isAtomChoicePoint(int atom) {
-		return grounder.isAtomChoicePoint(atom);
-	}
-
 	private boolean isAtomActiveChoicePoint(int atom) {
-		if (!choiceOn.containsKey(atom)) {
-			return false;
-		}
-
-		ThriceTruth truth = assignment.getTruth(choiceOn.get(atom));
-
-		// Check if choice point is enabled.
-		if (!TRUE.equals(truth) && !MBT.equals(truth)) {
-			return false;
-		}
-
-		// Ensure it is not disabled.
-		truth = assignment.getTruth(choiceOff.get(atom));
-		return truth == null || FALSE.equals(truth);
+		return choices.isActive(atom, assignment);
 	}
 
 	private void doChoice(int nextChoice) {

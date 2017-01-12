@@ -4,7 +4,7 @@ import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.grounder.AtomStore;
 import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import org.apache.commons.lang3.tuple.Pair;
+import at.ac.tuwien.kr.alpha.solver.Choices;
 
 import java.util.*;
 
@@ -12,7 +12,7 @@ public class HexBridge implements Bridge {
 	public static native void sendResults(String[][] resultsArray);
 	private static native String[][] externalAtomsQuery(String[] trueAtoms, String[] falseAtoms);
 
-	public Collection<NoGood> getNoGoods(ReadableAssignment assignment, AtomStore atomStore, Pair<Map<Integer, Integer>, Map<Integer, Integer>> newChoiceAtoms, IntIdGenerator choiceAtomsGenerator) {
+	public Collection<NoGood> getNoGoods(ReadableAssignment assignment, AtomStore atomStore, Choices choices, IntIdGenerator choiceAtomsGenerator) {
 		Set<NoGood> noGoods = new HashSet<>();
 
 		String[][] externalNogoods = getExternalNoGoods(assignment, atomStore);
@@ -99,8 +99,6 @@ public class HexBridge implements Bridge {
 
 				// Check if the body of the rule contains negation, add choices then
 				if (bodyAtomsNegative.size() != 0) {
-					Map<Integer, Integer> newChoiceOn = newChoiceAtoms.getLeft();
-					Map<Integer, Integer> newChoiceOff = newChoiceAtoms.getRight();
 					// Choice is on the body representing atom
 
 					// ChoiceOn if all positive body atoms are satisfied
@@ -110,24 +108,20 @@ public class HexBridge implements Bridge {
 						choiceOnLiterals[i++] = atomId;
 					}
 					int choiceId = choiceAtomsGenerator.getNextId();
-					BasicAtom choiceOnAtom = new BasicAtom(NaiveGrounder.CHOICE_ON_PREDICATE, true, ConstantTerm.getInstance(Integer.toString(choiceId)));
-					int choiceOnAtomIdInt = atomStore.add(choiceOnAtom);
+					int choiceOnAtomIdInt = atomStore.add(ChoiceAtom.on(choiceId));
 					choiceOnLiterals[0] = -choiceOnAtomIdInt;
 					// Add corresponding NoGood and ChoiceOn
 					noGoods.add(NoGood.headFirst(choiceOnLiterals));        // ChoiceOn and ChoiceOff NoGoods avoid MBT and directly set to true, hence the rule head pointer.
-					newChoiceOn.put(bodyRepresentingAtomId, choiceOnAtomIdInt);
 
 					// ChoiceOff if some negative body atom is contradicted
-					BasicAtom choiceOffAtom = new BasicAtom(NaiveGrounder.CHOICE_OFF_PREDICATE, true, ConstantTerm.getInstance(Integer.toString(choiceId)));
-					int choiceOffAtomIdInt = atomStore.add(choiceOffAtom);
+					int choiceOffAtomIdInt = atomStore.add(ChoiceAtom.off(choiceId));
 					for (Integer negAtomId : bodyAtomsNegative) {
 						// Choice is off if any of the negative atoms is assigned true, hence we add one NoGood for each such atom.
 						noGoods.add(NoGood.headFirst(-choiceOffAtomIdInt, negAtomId));
 					}
-					newChoiceOff.put(bodyRepresentingAtomId, choiceOffAtomIdInt);
 
+					choices.put(bodyRepresentingAtomId, choiceOnAtomIdInt, choiceOffAtomIdInt);
 				}
-
 			}
 		}
 
@@ -149,16 +143,16 @@ public class HexBridge implements Bridge {
 		List<String> trueAtoms = new ArrayList<>();
 		List<String> falseAtoms = new ArrayList<>();
 
-		for (ListIterator<BasicAtom> it = atomStore.listIterator(); it.hasNext();) {
+		for (ListIterator<Atom> it = atomStore.listIterator(); it.hasNext();) {
 			int id = it.nextIndex();
-			BasicAtom basicAtom = it.next();
+			Atom atom = it.next();
 
-			if (basicAtom.isInternal() || !assignment.isAssigned(id)) {
+			if (atom.isInternal() || !assignment.isAssigned(id)) {
 				continue;
 			}
 
 			List<String> l = assignment.get(id).getTruth().toBoolean() ? trueAtoms : falseAtoms;
-			l.add(basicAtom.toString().replace(" ", "").replace("()", ""));
+			l.add(atom.toString().replace(" ", "").replace("()", ""));
 		}
 
 		return externalAtomsQuery(trueAtoms.toArray(new String[trueAtoms.size()]), falseAtoms.toArray(new String[falseAtoms.size()]));

@@ -34,6 +34,8 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFact;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedRule;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.solver.Choices;
+import com.google.common.collect.Iterables;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -74,7 +76,7 @@ public class NaiveGrounder extends BridgedGrounder {
 	private boolean outputFactNogoods = true;
 
 	private HashSet<IndexedInstanceStorage> modifiedWorkingMemories = new HashSet<>();
-	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newChoiceAtoms = new ImmutablePair<>(new HashMap<>(), new HashMap<>());
+	private Choices choices = new Choices();
 
 	public NaiveGrounder(ParsedProgram program, Bridge... bridges) {
 		this(program, p -> true, bridges);
@@ -291,7 +293,7 @@ public class NaiveGrounder extends BridgedGrounder {
 		}
 
 		// Import additional noGoods from external sources
-		for (NoGood noGood : collectExternalNogoods(assignment, atomStore, newChoiceAtoms, choiceAtomsGenerator)) {
+		for (NoGood noGood : collectExternalNogoods(assignment, atomStore, choices, choiceAtomsGenerator)) {
 			registerIfNeeded(noGood, newNoGoods);
 		}
 
@@ -312,110 +314,102 @@ public class NaiveGrounder extends BridgedGrounder {
 			knownGroundingSubstitutions.get(nonGroundRule).add(variableSubstitution);
 		}
 
-		List<NoGood> generatedNoGoods = new ArrayList<>();
 		// Collect ground atoms in the body
 		ArrayList<Integer> bodyAtomsPositive = new ArrayList<>();
 		ArrayList<Integer> bodyAtomsNegative = new ArrayList<>();
-		for (Atom basicAtom : nonGroundRule.getBodyAtomsPositive()) {
-			if (basicAtom instanceof BuiltinAtom) {
+
+		for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
+			if (atom instanceof BuiltinAtom) {
 				// Truth of builtin atoms does not depend on any assignment
 				// hence, they need not be represented as long as they evaluate to true
-				if (((BuiltinAtom) basicAtom).evaluate(variableSubstitution)) {
+				if (((BuiltinAtom) atom).evaluate(variableSubstitution)) {
 					continue;
 				} else {
 					// Rule body is always false, skip the whole rule.
-					return new ArrayList<>(0);
+					return Collections.emptyList();
 				}
 			}
-			int groundAtomPositive = SubstitutionUtil.groundingSubstitute(atomStore, (BasicAtom)basicAtom, variableSubstitution);
+			int groundAtomPositive = SubstitutionUtil.groundingSubstitute(atomStore, atom, variableSubstitution);
 			bodyAtomsPositive.add(groundAtomPositive);
 		}
+
 		for (Atom basicAtom : nonGroundRule.getBodyAtomsNegative()) {
-			int groundAtomNegative = SubstitutionUtil.groundingSubstitute(atomStore, (BasicAtom)basicAtom, variableSubstitution);
-			bodyAtomsNegative.add(groundAtomNegative);
+			int groundAtomNegative = SubstitutionUtil.groundingSubstitute(atomStore, basicAtom, variableSubstitution);
+			bodyAtomsNegative.add(-groundAtomNegative);
 		}
-		int bodySize = bodyAtomsPositive.size() + bodyAtomsNegative.size();
+
+		final int bodySize = bodyAtomsPositive.size() + bodyAtomsNegative.size();
 
 		if (nonGroundRule.isConstraint()) {
 			// A constraint is represented by one NoGood.
 			int[] constraintLiterals = new int[bodySize];
 			int i = 0;
-			for (Integer atomId : bodyAtomsPositive) {
+			for (Integer atomId : Iterables.concat(bodyAtomsPositive, bodyAtomsNegative)) {
 				constraintLiterals[i++] = atomId;
 			}
-			for (Integer atomId : bodyAtomsNegative) {
-				constraintLiterals[i++] = -atomId;
-			}
-			NoGood constraintNoGood = new NoGood(constraintLiterals);
-			generatedNoGoods.add(constraintNoGood);
-		} else {
-			// Prepare atom representing the rule body
-			BasicAtom ruleBodyRepresentingPredicate = new BasicAtom(RULE_BODIES_PREDICATE,
-				true, ConstantTerm.getInstance(Integer.toString(nonGroundRule.getRuleId())),
-				ConstantTerm.getInstance(variableSubstitution.toUniformString()));
-			// Check uniqueness of ground rule by testing whether the body representing atom already has an id
-			if (atomStore.contains(ruleBodyRepresentingPredicate)) {
-				// The current ground instance already exists, therefore all NoGoods have already been created.
-				return generatedNoGoods;
-			}
-			int bodyRepresentingAtomId = atomStore.add(ruleBodyRepresentingPredicate);
 
-			// Prepare head atom
-			int headAtomId = SubstitutionUtil.groundingSubstitute(atomStore, nonGroundRule.getHeadAtom(), variableSubstitution);
+			return Collections.singletonList(new NoGood(constraintLiterals));
+		}
 
-			// Create NoGood for body.
-			int[] bodyLiterals = new int[bodySize + 1];
-			bodyLiterals[0] = -bodyRepresentingAtomId;
-			int i = 1;
+		// Prepare atom representing the rule body
+		BasicAtom ruleBodyRepresentingPredicate = new BasicAtom(RULE_BODIES_PREDICATE,
+			true, ConstantTerm.getInstance(Integer.toString(nonGroundRule.getRuleId())),
+			ConstantTerm.getInstance(variableSubstitution.toUniformString()));
+
+		// Check uniqueness of ground rule by testing whether the body representing atom already has an id
+		if (atomStore.contains(ruleBodyRepresentingPredicate)) {
+			// The current ground instance already exists, therefore all NoGoods have already been created.
+			return Collections.emptyList();
+		}
+
+		int bodyRepresentingAtomId = atomStore.add(ruleBodyRepresentingPredicate);
+
+		// Prepare head atom
+		int headAtomId = SubstitutionUtil.groundingSubstitute(atomStore, nonGroundRule.getHeadAtom(), variableSubstitution);
+
+		// Create NoGood for body.
+		int[] bodyLiterals = new int[bodySize + 1];
+		bodyLiterals[0] = -bodyRepresentingAtomId;
+		int i = 1;
+		for (Integer atomId : Iterables.concat(bodyAtomsPositive, bodyAtomsNegative)) {
+			bodyLiterals[i++] = atomId;
+		}
+
+		final int capacity = 2 + bodyLiterals.length - 1 + (bodyAtomsNegative.isEmpty() ? 0 : bodyAtomsNegative.size() + 1);
+
+		List<NoGood> generatedNoGoods = new ArrayList<>(capacity);
+
+		generatedNoGoods.add(NoGood.headFirst(bodyLiterals));
+		generatedNoGoods.add(NoGood.headFirst(-headAtomId, bodyRepresentingAtomId));
+
+		// Generate NoGoods such that the atom representing the body is true iff the body is true.
+		for (int j = 1; j < bodyLiterals.length; j++) {
+			generatedNoGoods.add(new NoGood(bodyRepresentingAtomId, -bodyLiterals[j]));
+		}
+
+		// Check if the body of the rule contains negation, add choices then
+		if (!bodyAtomsNegative.isEmpty()) {
+			// Choice is on the body representing atom
+			int choiceId = choiceAtomsGenerator.getNextId();
+
+			// ChoiceOn if all positive body atoms are satisfied
+			int choiceOnAtomIdInt = atomStore.add(ChoiceAtom.on(choiceId));
+			int[] choiceOnLiterals = new int[bodyAtomsPositive.size() + 1];
+			choiceOnLiterals[0] = -choiceOnAtomIdInt;
+			i = 1;
 			for (Integer atomId : bodyAtomsPositive) {
-				bodyLiterals[i++] = atomId;
+				choiceOnLiterals[i++] = atomId;
 			}
-			for (Integer atomId : bodyAtomsNegative) {
-				bodyLiterals[i++] = -atomId;
+			// Add corresponding NoGood and ChoiceOn
+			generatedNoGoods.add(NoGood.headFirst(choiceOnLiterals));	// ChoiceOn and ChoiceOff NoGoods avoid MBT and directly set to true, hence the rule head pointer.
+
+			// ChoiceOff if some negative body atom is contradicted
+			int choiceOffAtomIdInt = atomStore.add(ChoiceAtom.off(choiceId));
+			for (Integer negAtomId : bodyAtomsNegative) {
+				// Choice is off if any of the negative atoms is assigned true, hence we add one NoGood for each such atom.
+				generatedNoGoods.add(NoGood.headFirst(-choiceOffAtomIdInt, -negAtomId));
 			}
-			NoGood ruleBody = NoGood.headFirst(bodyLiterals);
-
-			// Generate NoGoods such that the atom representing the body is true iff the body is true.
-			for (int j = 1; j < bodyLiterals.length; j++) {
-				generatedNoGoods.add(new NoGood(bodyRepresentingAtomId, -bodyLiterals[j]));
-			}
-
-			// Create NoGood for head.
-			NoGood ruleHead = NoGood.headFirst(-headAtomId, bodyRepresentingAtomId);
-
-			generatedNoGoods.add(ruleBody);
-			generatedNoGoods.add(ruleHead);
-
-
-			// Check if the body of the rule contains negation, add choices then
-			if (bodyAtomsNegative.size() != 0) {
-				Map<Integer, Integer> newChoiceOn = newChoiceAtoms.getLeft();
-				Map<Integer, Integer> newChoiceOff = newChoiceAtoms.getRight();
-				// Choice is on the body representing atom
-
-				// ChoiceOn if all positive body atoms are satisfied
-				int[] choiceOnLiterals = new int[bodyAtomsPositive.size() + 1];
-				i = 1;
-				for (Integer atomId : bodyAtomsPositive) {
-					choiceOnLiterals[i++] = atomId;
-				}
-				int choiceId = choiceAtomsGenerator.getNextId();
-				BasicAtom choiceOnAtom =  new BasicAtom(CHOICE_ON_PREDICATE, true, ConstantTerm.getInstance(Integer.toString(choiceId)));
-				int choiceOnAtomIdInt = atomStore.add(choiceOnAtom);
-				choiceOnLiterals[0] = -choiceOnAtomIdInt;
-				// Add corresponding NoGood and ChoiceOn
-				generatedNoGoods.add(NoGood.headFirst(choiceOnLiterals));	// ChoiceOn and ChoiceOff NoGoods avoid MBT and directly set to true, hence the rule head pointer.
-				newChoiceOn.put(bodyRepresentingAtomId, choiceOnAtomIdInt);
-
-				// ChoiceOff if some negative body atom is contradicted
-				BasicAtom choiceOffAtom =  new BasicAtom(CHOICE_OFF_PREDICATE, true, ConstantTerm.getInstance(Integer.toString(choiceId)));
-				int choiceOffAtomIdInt = atomStore.add(choiceOffAtom);
-				for (Integer negAtomId : bodyAtomsNegative) {
-					// Choice is off if any of the negative atoms is assigned true, hence we add one NoGood for each such atom.
-					generatedNoGoods.add(NoGood.headFirst(-choiceOffAtomIdInt, negAtomId));
-				}
-				newChoiceOff.put(bodyRepresentingAtomId, choiceOffAtomIdInt);
-			}
+			choices.put(bodyRepresentingAtomId, choiceOnAtomIdInt, choiceOffAtomIdInt);
 		}
 		return generatedNoGoods;
 	}
@@ -567,10 +561,8 @@ public class NaiveGrounder extends BridgedGrounder {
 	}
 
 	@Override
-	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
-		Pair<Map<Integer, Integer>, Map<Integer, Integer>> currentChoiceAtoms = newChoiceAtoms;
-		newChoiceAtoms = new ImmutablePair<>(new HashMap<>(), new HashMap<>());
-		return currentChoiceAtoms;
+	public Choices getChoices() {
+		return choices;
 	}
 
 	@Override
@@ -579,12 +571,12 @@ public class NaiveGrounder extends BridgedGrounder {
 			Assignment.Entry assignment = it.next();
 			Truth truthValue = assignment.getTruth();
 			int atomId = assignment.getAtom();
-			BasicAtom basicAtom = atomStore.get(atomId);
-			ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> workingMemory = this.workingMemory.get(basicAtom.predicate);
+			Atom atom = atomStore.get(atomId);
+			ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> workingMemory = this.workingMemory.get(atom.getPredicate());
 
 			final IndexedInstanceStorage storage = truthValue.toBoolean() ? workingMemory.getLeft() : workingMemory.getRight();
 
-			Instance instance = new Instance(basicAtom.termList);
+			Instance instance = new Instance(atom.getTerms());
 
 			if (!storage.containsInstance(instance)) {
 				storage.addInstance(instance);
@@ -623,11 +615,6 @@ public class NaiveGrounder extends BridgedGrounder {
 			return noGoodId;
 		}
 		return nogoodIdentifiers.get(noGood);
-	}
-
-	@Override
-	public boolean isAtomChoicePoint(int atom) {
-		return atomStore.get(atom).predicate.equals(RULE_BODIES_PREDICATE);
 	}
 
 	public void printCurrentlyKnownGroundRules() {
