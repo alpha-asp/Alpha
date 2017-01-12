@@ -85,7 +85,6 @@ public class NaiveGrounder extends BridgedGrounder {
 
 		// initialize all facts
 		for (ParsedFact fact : this.program.facts) {
-
 			String predicateName = fact.getFact().getPredicate();
 			int predicateArity = fact.getFact().getArity();
 

@@ -45,7 +45,7 @@ public class HexBridge implements Bridge {
 
 			if (externalNogoods[m][0].substring(0, 6).equals("aux_r_")) {
 				// A constraint is represented by one NoGood.
-				int[] constraintLiterals = new int[bodySize+1];
+				int[] constraintLiterals = new int[bodySize + 1];
 				int i = 0;
 				for (Integer atomId : bodyAtomsPositive) {
 					constraintLiterals[i++] = atomId;
@@ -97,7 +97,6 @@ public class HexBridge implements Bridge {
 				noGoods.add(ruleBody);
 				noGoods.add(ruleHead);
 
-
 				// Check if the body of the rule contains negation, add choices then
 				if (bodyAtomsNegative.size() != 0) {
 					Map<Integer, Integer> newChoiceOn = newChoiceAtoms.getLeft();
@@ -115,17 +114,17 @@ public class HexBridge implements Bridge {
 					int choiceOnAtomIdInt = atomStore.add(choiceOnAtom);
 					choiceOnLiterals[0] = -choiceOnAtomIdInt;
 					// Add corresponding NoGood and ChoiceOn
-					noGoods.add(new NoGood(choiceOnLiterals, 0));        // ChoiceOn and ChoiceOff NoGoods avoid MBT and directly set to true, hence the rule head pointer.
-					newChoiceOn.put(choiceOnAtomIdInt, bodyRepresentingAtomId);
+					noGoods.add(NoGood.headFirst(choiceOnLiterals));        // ChoiceOn and ChoiceOff NoGoods avoid MBT and directly set to true, hence the rule head pointer.
+					newChoiceOn.put(bodyRepresentingAtomId, choiceOnAtomIdInt);
 
 					// ChoiceOff if some negative body atom is contradicted
 					BasicAtom choiceOffAtom = new BasicAtom(NaiveGrounder.CHOICE_OFF_PREDICATE, true, ConstantTerm.getInstance(Integer.toString(choiceId)));
 					int choiceOffAtomIdInt = atomStore.add(choiceOffAtom);
 					for (Integer negAtomId : bodyAtomsNegative) {
 						// Choice is off if any of the negative atoms is assigned true, hence we add one NoGood for each such atom.
-						noGoods.add(new NoGood(new int[]{-choiceOffAtomIdInt, negAtomId}, 0));
+						noGoods.add(NoGood.headFirst(-choiceOffAtomIdInt, negAtomId));
 					}
-					newChoiceOff.put(choiceOffAtomIdInt, bodyRepresentingAtomId);
+					newChoiceOff.put(bodyRepresentingAtomId, choiceOffAtomIdInt);
 
 				}
 
@@ -150,7 +149,7 @@ public class HexBridge implements Bridge {
 		List<String> trueAtoms = new ArrayList<>();
 		List<String> falseAtoms = new ArrayList<>();
 
-		for (ListIterator<BasicAtom> it = atomStore.listIterator(); it.hasNext(); ) {
+		for (ListIterator<BasicAtom> it = atomStore.listIterator(); it.hasNext();) {
 			int id = it.nextIndex();
 			BasicAtom basicAtom = it.next();
 
