@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.common;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,6 +29,10 @@ public class FunctionTerm extends Term {
 
 	public static FunctionTerm getInstance(String functionSymbol, List<Term> termList) {
 		return getInstance(TermSymbol.getInstance(functionSymbol), termList);
+	}
+
+	public static FunctionTerm getInstance(String functionSymbol, Term... terms) {
+		return getInstance(TermSymbol.getInstance(functionSymbol), Arrays.asList(terms));
 	}
 
 	@Override
@@ -81,5 +86,36 @@ public class FunctionTerm extends Term {
 	@Override
 	public int hashCode() {
 		return 31 * functionSymbol.hashCode() + termList.hashCode();
+	}
+
+	@Override
+	public int compareTo(Term o) {
+		if (!(o instanceof FunctionTerm)) {
+			return -1;
+		}
+		FunctionTerm other = (FunctionTerm)o;
+
+		int result = functionSymbol.compareTo(other.functionSymbol);
+
+		if (result != 0) {
+			return result;
+		}
+
+		if (termList.size() != other.termList.size()) {
+			return termList.size() - other.termList.size();
+		}
+
+		if (termList.isEmpty() && other.termList.isEmpty()) {
+			return 0;
+		}
+
+		for (int i = 0; i < termList.size(); i++) {
+			result = termList.get(i).compareTo(other.termList.get(i));
+			if (result != 0) {
+				return result;
+			}
+		}
+
+		return 0;
 	}
 }

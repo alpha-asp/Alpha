@@ -2,7 +2,6 @@ package at.ac.tuwien.kr.alpha.common;
 
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -37,7 +36,7 @@ public class TermTest {
 	public void testTermVariableOccurrences() {
 		ConstantTerm ta = ConstantTerm.getInstance("a");
 		VariableTerm tx = VariableTerm.getInstance("X");
-		FunctionTerm tf = FunctionTerm.getInstance("f", Arrays.asList(ta, tx));
+		FunctionTerm tf = FunctionTerm.getInstance("f", ta, tx);
 		List<VariableTerm> occurringVariables = tf.getOccurringVariables();
 
 		assertEquals("Variable occurring as subterm must be reported as occurring variable.", occurringVariables.get(0), tx);

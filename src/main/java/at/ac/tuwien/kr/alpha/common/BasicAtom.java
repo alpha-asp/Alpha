@@ -36,7 +36,7 @@ public class BasicAtom implements Atom {
 		} else {
 			terms = new Term[parsedAtom.getTerms().size()];
 			for (int i = 0; i < parsedAtom.getTerms().size(); i++) {
-				terms[i] = Term.convertFromParsedTerm(parsedAtom.getTerms().get(i));
+				terms[i] = parsedAtom.getTerms().get(i).toTerm();
 			}
 		}
 		return terms;
@@ -103,5 +103,27 @@ public class BasicAtom implements Atom {
 		Util.appendDelimited(sb, Arrays.asList(termList));
 		sb.append(")");
 		return sb.toString();
+	}
+
+	@Override
+	public int compareTo(Atom o) {
+		if (this.termList.length != o.getTerms().length) {
+			return this.termList.length - o.getTerms().length;
+		}
+
+		int result = this.predicate.compareTo(o.getPredicate());
+
+		if (result != 0) {
+			return result;
+		}
+
+		for (int i = 0; i < termList.length; i++) {
+			result = termList[i].compareTo(o.getTerms()[i]);
+			if (result != 0) {
+				return result;
+			}
+		}
+
+		return 0;
 	}
 }

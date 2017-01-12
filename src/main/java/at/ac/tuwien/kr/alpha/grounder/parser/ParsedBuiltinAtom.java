@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 import at.ac.tuwien.kr.alpha.common.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -50,8 +51,12 @@ public class ParsedBuiltinAtom extends ParsedAtom {
 	};
 
 	public ParsedBuiltinAtom(BINOP binop, List<ParsedTerm> terms) {
-		super(binop.toString(), 2, terms);
+		super(binop.toString(), terms);
 		this.binop = binop;
+	}
+
+	public ParsedBuiltinAtom(ParsedTerm left, BINOP binop, ParsedTerm right) {
+		this(binop, Arrays.asList(left, right));
 	}
 
 	@Override

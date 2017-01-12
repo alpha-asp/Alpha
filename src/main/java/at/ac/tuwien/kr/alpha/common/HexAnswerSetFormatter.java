@@ -1,6 +1,9 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 public class HexAnswerSetFormatter implements AnswerSetFormatter<String[]> {
 	@Override

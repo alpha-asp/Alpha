@@ -6,8 +6,8 @@ import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -20,9 +20,7 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 
 	@Override
 	public CommonParsedObject visitTerminal(TerminalNode node) {
-		ParsedTerminal ret = new ParsedTerminal();
-		ret.terminal = node.getText();
-		return ret;
+		return new ParsedTerminal(node.getText());
 	}
 
 	@Override
@@ -35,21 +33,23 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 		ListOfParsedObjects aggList;
 		if (aggregate instanceof ListOfParsedObjects) {
 			aggList = (ListOfParsedObjects) aggregate;
-			((ListOfParsedObjects) aggregate).objects.add(nextResult);
+			((ListOfParsedObjects) aggregate).add(nextResult);
 		}  else {
-			aggList = new ListOfParsedObjects();
+			aggList = new ListOfParsedObjects(new ArrayList<>());
 		}
+
 		if (aggregate != null) {	// default result is null, ignore it
-			aggList.objects.add(aggregate);
+			aggList.add(aggregate);
 		}
+
 		if (nextResult instanceof ListOfParsedObjects) {
-			aggList.objects.addAll(((ListOfParsedObjects) nextResult).objects);
+			aggList.addAll((ListOfParsedObjects) nextResult);
 		} else {
-			aggList.objects.add(nextResult);
+			aggList.add(nextResult);
 		}
+
 		return aggList;
 	}
-
 
 	@Override
 	public CommonParsedObject visitProgram(ASPCore2Parser.ProgramContext ctx) {
@@ -57,76 +57,61 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 			notSupportedSyntax(ctx.query());
 		}
 
-		final ParsedProgram program = new ParsedProgram();
-
 		if (ctx.statements() == null) {
-			return program;
+			return ParsedProgram.EMPTY;
 		}
 
-		for (CommonParsedObject parsedObject :
-			((ListOfParsedObjects)visitStatements(ctx.statements())).objects) {
-			if (parsedObject instanceof ParsedFact) {
-				program.facts.add((ParsedFact) parsedObject);
-			} else if (parsedObject instanceof ParsedConstraint) {
-				program.constraints.add((ParsedConstraint) parsedObject);
-			} else if (parsedObject instanceof ParsedRule) {
-				program.rules.add((ParsedRule) parsedObject);
-			} else {
-				throw new UnsupportedOperationException("Unknown parsed object encountered during program parsing: " + parsedObject);
-			}
-		}
-		return program;
+		return new ParsedProgram((ListOfParsedObjects) visitStatements(ctx.statements()));
 	}
 
 	@Override
 	public CommonParsedObject visitStatements(ASPCore2Parser.StatementsContext ctx) {
 		// statements : statement+;
-		ListOfParsedObjects statementList = new ListOfParsedObjects();
-		for (ASPCore2Parser.StatementContext statementContext : ctx.statement()) {
-			CommonParsedObject statement = visit(statementContext);
-			statementList.objects.add(statement);
-		}
-		return statementList;
+		return new ListOfParsedObjects(
+			ctx.statement()
+				.parallelStream()
+				.map(this::visit)
+				.collect(Collectors.toList())
+		);
 	}
 
 	@Override
 	public CommonParsedObject visitBody(ASPCore2Parser.BodyContext ctx) {
 		// body : ( naf_literal | NAF? aggregate ) (COMMA body)?;
-		ListOfParsedObjects bodyList = new ListOfParsedObjects();
-		if (ctx.naf_literal() != null) {
-			ParsedAtom nafLiteral = (ParsedAtom) visitNaf_literal(ctx.naf_literal());
-			bodyList.objects.add(nafLiteral);
-		} else {
+
+		if (ctx.naf_literal() == null) {
 			notSupportedSyntax(ctx.aggregate());
 		}
+
+		List<CommonParsedObject> body = new ArrayList<>();
+
+		body.add(visitNaf_literal(ctx.naf_literal()));
+
 		if (ctx.body() != null) {
-			bodyList.objects.addAll(((ListOfParsedObjects) visitBody(ctx.body())).objects);
+			body.addAll((ListOfParsedObjects) visitBody(ctx.body()));
 		}
-		return bodyList;
+
+		return new ListOfParsedObjects(body);
 	}
 
 	@Override
 	public CommonParsedObject visitStatement_constraint(ASPCore2Parser.Statement_constraintContext ctx) {
 		// CONS body DOT
-		ParsedConstraint cons = new ParsedConstraint();
-		ListOfParsedObjects bodyList = (ListOfParsedObjects) visitBody(ctx.body());
-		cons.body = new ArrayList<>();
-		for (CommonParsedObject atom :
-			bodyList.objects) {
-			cons.body.add((ParsedAtom) atom);
-		}
-		return cons;
+		final ListOfParsedObjects bodyList = (ListOfParsedObjects) visitBody(ctx.body());
+		return new ParsedConstraint(bodyList.parallelStream().map(o -> (ParsedAtom)o).collect(Collectors.toList()));
 	}
 
 	@Override
 	public CommonParsedObject visitDisjunction(ASPCore2Parser.DisjunctionContext ctx) {
 		//disjunction : classical_literal (OR disjunction)?;
-		ListOfParsedObjects disjunctList = new ListOfParsedObjects();
-		disjunctList.objects.add(visitClassical_literal(ctx.classical_literal()));
+		List<CommonParsedObject> disjunctList = new ArrayList<>();
+		disjunctList.add(visitClassical_literal(ctx.classical_literal()));
+
 		if (ctx.disjunction() != null) {
-			disjunctList.objects.addAll(((ListOfParsedObjects) visitDisjunction(ctx.disjunction())).objects);
+			disjunctList.addAll((ListOfParsedObjects) visitDisjunction(ctx.disjunction()));
 		}
-		return disjunctList;
+
+		return new ListOfParsedObjects(disjunctList);
 	}
 
 	@Override
@@ -134,21 +119,15 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 		// head (CONS body?)? DOT
 		if (ctx.body() == null) {
 			// fact
-			ParsedFact fact = new ParsedFact();
-			fact.fact = (ParsedAtom) ((ListOfParsedObjects)visitHead(ctx.head())).objects.get(0);
-			return fact;
-
-		} else {
-			// rule
-			ParsedRule rule = new ParsedRule();
-			rule.head = (ParsedAtom)((ListOfParsedObjects)visitHead(ctx.head())).objects.get(0);
-			ListOfParsedObjects bodyList = (ListOfParsedObjects) visitBody(ctx.body());
-			for (CommonParsedObject atom :
-				bodyList.objects) {
-				rule.body.add((ParsedAtom) atom);
-			}
-			return rule;
+			return new ParsedFact((ParsedAtom) ((ListOfParsedObjects)visitHead(ctx.head())).get(0));
 		}
+
+		// rule
+		List<ParsedAtom> bodyList = new ArrayList<>();
+		for (CommonParsedObject atom : (ListOfParsedObjects) visitBody(ctx.body())) {
+			bodyList.add((ParsedAtom) atom);
+		}
+		return new ParsedRule(bodyList, (ParsedAtom)((ListOfParsedObjects)visitHead(ctx.head())).get(0));
 	}
 
 	@Override
@@ -186,7 +165,7 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 		} else {
 			throw new RuntimeException("Unknown binop encountered.");
 		}
-		return new ParsedBuiltinAtom(binop, Arrays.asList(left, right));
+		return new ParsedBuiltinAtom(left, binop, right);
 	}
 
 	@Override
@@ -214,8 +193,7 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 
 		List<ParsedTerm> terms = new ArrayList<>();
 		if (ctx.terms() != null) {
-			for (CommonParsedObject term:
-				((ListOfParsedObjects) visitTerms(ctx.terms())).objects) {
+			for (CommonParsedObject term : (ListOfParsedObjects) visitTerms(ctx.terms())) {
 				terms.add((ParsedTerm) term);
 			}
 		}
@@ -225,60 +203,43 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 	@Override
 	public CommonParsedObject visitTerms(ASPCore2Parser.TermsContext ctx) {
 		// terms : term (COMMA terms)?;
-		ListOfParsedObjects termlist = new ListOfParsedObjects();
-		termlist.objects.add(visit(ctx.term()));
+		List<CommonParsedObject> terms = new ArrayList<>();
+		terms.add(visit(ctx.term()));
 		if (ctx.terms() != null) {
-			termlist.objects.addAll(((ListOfParsedObjects)visitTerms(ctx.terms())).objects);
+			terms.addAll((ListOfParsedObjects) visitTerms(ctx.terms()));
 		}
-		return termlist;
+		return new ListOfParsedObjects(terms);
 	}
 
 	@Override
 	public CommonParsedObject visitTerm_number(ASPCore2Parser.Term_numberContext ctx) {
-		ParsedConstant ret = new ParsedConstant();
-		ret.type = ParsedConstant.TYPE.NUMBER;
-		ret.content = ctx.NUMBER().getText();
-		return ret;
+		return new ParsedConstant(ctx.NUMBER().getText(), ParsedConstant.Type.NUMBER);
 	}
 
 	@Override
 	public CommonParsedObject visitTerm_constOrFunc(ASPCore2Parser.Term_constOrFuncContext ctx) {
 		// ID (PAREN_OPEN terms? PAREN_CLOSE)?
-		if (ctx.PAREN_OPEN() != null) {
-			// function term
-			ParsedFunctionTerm funcTerm = new ParsedFunctionTerm();
-			funcTerm.functionName = ctx.ID().getText();
-
-			funcTerm.termList = new ArrayList<>();
-			for (CommonParsedObject commonTerm :
-				((ListOfParsedObjects)visitTerms(ctx.terms())).objects) {
-				funcTerm.termList.add((ParsedTerm)commonTerm);
-			}
-			funcTerm.arity = funcTerm.termList.size();
-			return funcTerm;
-
-		} else {
+		if (ctx.PAREN_OPEN() == null) {
 			// constant
-			ParsedConstant constant = new ParsedConstant();
-			constant.type = ParsedConstant.TYPE.CONSTANT;
-			constant.content = ctx.ID().getText();
-			return constant;
+			return new ParsedConstant(ctx.ID().getText(), ParsedConstant.Type.CONSTANT);
 		}
+
+		// function term
+		final List<ParsedTerm> terms = new ArrayList<>();
+		for (CommonParsedObject commonTerm : (ListOfParsedObjects)visitTerms(ctx.terms())) {
+			terms.add((ParsedTerm)commonTerm);
+		}
+		return new ParsedFunctionTerm(ctx.ID().getText(), terms);
 	}
 
 	@Override
 	public CommonParsedObject visitTerm_anonymousVariable(ASPCore2Parser.Term_anonymousVariableContext ctx) {
-		ParsedVariable ret = new ParsedVariable();
-		ret.isAnonymous = true;
-		ret.variableName = null;
-		return ret;
+		return ParsedVariable.ANONYMOUS;
 	}
 
 	@Override
 	public CommonParsedObject visitTerm_variable(ASPCore2Parser.Term_variableContext ctx) {
-		ParsedVariable ret = new ParsedVariable();
-		ret.variableName = ctx.VARIABLE().getText();
-		return ret;
+		return new ParsedVariable(ctx.VARIABLE().getText());
 	}
 
 	@Override
@@ -301,10 +262,7 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 
 	@Override
 	public CommonParsedObject visitTerm_string(ASPCore2Parser.Term_stringContext ctx) {
-		ParsedConstant ret = new ParsedConstant();
-		ret.type = ParsedConstant.TYPE.STRING;
-		ret.content = ctx.STRING().getText();
-		return ret;
+		return new ParsedConstant(ctx.STRING().getText(), ParsedConstant.Type.STRING);
 	}
 
 	@Override

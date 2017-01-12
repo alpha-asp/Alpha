@@ -11,12 +11,6 @@ public class ParsedAtom extends CommonParsedObject {
 	protected final int arity;
 	protected boolean isNegated;
 
-	public ParsedAtom(String predicate, int arity, List<ParsedTerm> terms) {
-		this.predicate = predicate;
-		this.arity = arity;
-		this.terms = terms;
-	}
-
 	public ParsedAtom(String predicate, List<ParsedTerm> terms) {
 		this.predicate = predicate;
 		this.arity = terms.size();
@@ -42,7 +36,7 @@ public class ParsedAtom extends CommonParsedObject {
 	@Override
 	public String toString() {
 		String ret = (isNegated ? " not " : "") + predicate + "(";
-		for (int i = 0; i < arity; i++) {
+		for (int i = 0; i < terms.size(); i++) {
 			ret += (i == 0 ? "" : ", ") + terms.get(i);
 		}
 		ret += ")";

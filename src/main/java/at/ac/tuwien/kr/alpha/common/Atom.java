@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public interface Atom {
+public interface Atom extends Comparable<Atom> {
 	Predicate getPredicate();
 	Term[] getTerms();
 

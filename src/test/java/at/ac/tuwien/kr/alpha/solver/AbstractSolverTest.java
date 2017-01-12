@@ -312,7 +312,7 @@ public abstract class AbstractSolverTest {
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
-		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
 			new BasicAnswerSet.Builder()
 				.predicate("dom")
 				.instance("1")
@@ -341,7 +341,7 @@ public abstract class AbstractSolverTest {
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
-		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
 			new BasicAnswerSet.Builder()
 				.predicate("a")
 				.predicate("c")
@@ -513,5 +513,118 @@ public abstract class AbstractSolverTest {
 
 		Set<AnswerSet> answerSets = solver.collectSet();
 		assertEquals(expected, answerSets);
+	}
+
+	@Test
+	public void guessingAndPropagationAfterwards() throws IOException {
+		String testProgram = "node(a).\n" +
+			"node(b).\n" +
+			"in(X) :- not out(X), node(X).\n" +
+			"out(X) :- not in(X), node(X).\n" +
+			"pair(X,Y) :- in(X), in(Y).";
+		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
+			.predicate("node")
+			.instance("a")
+			.instance("b");
+
+		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
+			new BasicAnswerSet.Builder(base)
+				.predicate("in")
+				.instance("a")
+				.instance("b")
+				.predicate("pair")
+				.instance("a", "a")
+				.instance("a", "b")
+				.instance("b", "a")
+				.instance("b", "b")
+				.build(),
+			new BasicAnswerSet.Builder(base)
+				.predicate("in")
+				.instance("b")
+				.predicate("out")
+				.instance("a")
+				.predicate("pair")
+				.instance("b", "b")
+				.build(),
+			new BasicAnswerSet.Builder(base)
+				.predicate("in")
+				.instance("a")
+				.predicate("out")
+				.instance("b")
+				.predicate("pair")
+				.instance("a", "a")
+				.build(),
+			new BasicAnswerSet.Builder(base)
+				.predicate("out")
+				.instance("a")
+				.instance("b")
+				.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
+
+	@Test
+	public void guessingAndConstraints() throws IOException {
+		String testProgram = "node(a).\n" +
+			"node(b).\n" +
+			"edge(b,a).\n" +
+			"in(X) :- not out(X), node(X).\n" +
+			"out(X) :- not in(X), node(X).\n" +
+			":- in(X), in(Y), edge(X,Y).";
+		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
+			.predicate("node")
+			.instance("a")
+			.instance("b");
+
+		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
+			new BasicAnswerSet.Builder(base)
+				.predicate("in")
+				.instance("b")
+				.predicate("out")
+				.instance("a")
+				.predicate("edge")
+				.instance("b", "a")
+				.build(),
+			new BasicAnswerSet.Builder(base)
+				.predicate("in")
+				.instance("a")
+				.predicate("out")
+				.instance("b")
+				.predicate("edge")
+				.instance("b", "a")
+				.build(),
+			new BasicAnswerSet.Builder(base)
+				.predicate("out")
+				.instance("a")
+				.instance("b")
+				.predicate("edge")
+				.instance("b", "a")
+				.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
+
+	@Test
+	public void testUnsatisfiableProgram() throws IOException {
+		String testProgram = "p(a). p(b). :- p(a), p(b).";
+		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		Grounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		List<AnswerSet> answerSets = solver.collectList();
+
+		assertEquals(0, answerSets.size());
 	}
 }

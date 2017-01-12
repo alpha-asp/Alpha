@@ -1,6 +1,9 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AtomTranslator;
+import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -14,14 +17,13 @@ public interface Grounder extends AtomTranslator {
 	Map<Integer, NoGood> getNoGoods(ReadableAssignment assignment);
 
 	/**
-	 *
 	 * @return a pair (choiceOn, choiceOff) of two maps from atomIds to atomIds,
 	 * choiceOn maps enabling atomIds to enabled atomIds to guess on, while
 	 * choiceOff maps disabling atomIds to guessable atomIds.
 	 */
 	Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms();
 
-	void updateAssignment(Iterator<Assignment.Entry> it);
+	void updateAssignment(Iterator<? extends Assignment.Entry> it);
 
 	void forgetAssignment(int[] atomIds);
 

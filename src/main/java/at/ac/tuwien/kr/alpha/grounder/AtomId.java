@@ -1,19 +1,19 @@
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2017, the Alpha Team.
  * All rights reserved.
- *
+ * 
  * Additional changes made by Siemens.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *
+ * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,40 +25,21 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
-import at.ac.tuwien.kr.alpha.common.Truth;
+/**
+ * This class represents atom identifiers, i.e., it wraps an integer.
+ * Copyright (c) 2016, the Alpha Team.
+ */
+public class AtomId {
+	public final int atomId;
 
-public interface Assignment<T extends Truth> extends ReadableAssignment<T> {
-	/**
-	 * Delete all information stored in the assignment.
-	 */
-	void clear();
-
-	/**
-	 * Backtracks to the indicated decision level. Every assignment on a higher decisionLevel is removed.
-	 * All assignments below (or equal to) decisionLevel are kept. Note that for atoms being TRUE this may require
-	 * setting the assigned value to MBT during backtracking.
-	 */
-	void backtrack();
-
-	boolean assign(int atom, T value, NoGood impliedBy);
-
-	/**
-	 * Assigns an atom some value on a lower decision level than the current one.
-	 * @param atom
-	 * @param value
-	 * @param impliedBy
-	 * @param decisionLevel
-	 * @return
-	 */
-	boolean assign(int atom, T value, NoGood impliedBy, int decisionLevel);
-
-	default boolean assign(int atom, T value) {
-		return assign(atom, value, null);
+	public AtomId(int atomId) {
+		this.atomId = atomId;
 	}
 
-	boolean guess(int atom, T value);
+	@Override
+	public String toString() {
+		return Integer.toString(atomId);
+	}
 }

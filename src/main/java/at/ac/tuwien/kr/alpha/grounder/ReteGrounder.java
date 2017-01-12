@@ -1,6 +1,9 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.rete.RetePredicate;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
@@ -40,7 +43,7 @@ public abstract class ReteGrounder extends AbstractGrounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<Assignment.Entry> it) {
+	public void updateAssignment(Iterator<? extends Assignment.Entry> it) {
 	}
 
 	@Override

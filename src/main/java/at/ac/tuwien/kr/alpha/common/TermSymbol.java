@@ -6,7 +6,7 @@ import java.util.HashMap;
  * Provides a unique representation of each function and constant symbol.
  * Copyright (c) 2016, the Alpha Team.
  */
-public class TermSymbol {
+public class TermSymbol implements Comparable<TermSymbol> {
 	private static final HashMap<String, TermSymbol> KNOWN_SYMBOLS = new HashMap<>();
 
 	private final String symbol;
@@ -41,5 +41,10 @@ public class TermSymbol {
 	@Override
 	public int hashCode() {
 		return symbol.hashCode();
+	}
+
+	@Override
+	public int compareTo(TermSymbol o) {
+		return symbol.compareTo(o.symbol);
 	}
 }

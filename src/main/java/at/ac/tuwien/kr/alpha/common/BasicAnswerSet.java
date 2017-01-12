@@ -8,23 +8,23 @@ import static java.util.Collections.*;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class BasicAnswerSet implements AnswerSet {
-	public static final BasicAnswerSet EMPTY = new BasicAnswerSet(emptySet(), emptyMap());
+	public static final BasicAnswerSet EMPTY = new BasicAnswerSet(emptySortedSet(), emptyMap());
 
-	private final Set<Predicate> predicates;
-	private final Map<Predicate, Set<Atom>> predicateInstances;
+	private final SortedSet<Predicate> predicates;
+	private final Map<Predicate, SortedSet<Atom>> predicateInstances;
 
-	public BasicAnswerSet(Set<Predicate> predicates, Map<Predicate, Set<Atom>> predicateInstances) {
+	public BasicAnswerSet(SortedSet<Predicate> predicates, Map<Predicate, SortedSet<Atom>> predicateInstances) {
 		this.predicates = predicates;
 		this.predicateInstances = predicateInstances;
 	}
 
 	@Override
-	public Set<Predicate> getPredicates() {
+	public SortedSet<Predicate> getPredicates() {
 		return predicates;
 	}
 
 	@Override
-	public Set<Atom> getPredicateInstances(Predicate predicate) {
+	public SortedSet<Atom> getPredicateInstances(Predicate predicate) {
 		return predicateInstances.get(predicate);
 	}
 
@@ -77,6 +77,7 @@ public class BasicAnswerSet implements AnswerSet {
 		if (!predicates.equals(that.predicates)) {
 			return false;
 		}
+
 		return predicateInstances.equals(that.predicateInstances);
 	}
 
@@ -89,9 +90,9 @@ public class BasicAnswerSet implements AnswerSet {
 		private boolean firstInstance = true;
 		private String predicateSymbol;
 		private Predicate predicate;
-		private Set<Predicate> predicates = new HashSet<>();
-		private Set<Atom> instances = new HashSet<>();
-		private Map<Predicate, Set<Atom>> predicateInstances = new HashMap<>();
+		private SortedSet<Predicate> predicates = new TreeSet<>();
+		private SortedSet<Atom> instances = new TreeSet<>();
+		private Map<Predicate, SortedSet<Atom>> predicateInstances = new HashMap<>();
 
 		public Builder() {
 		}
@@ -100,8 +101,8 @@ public class BasicAnswerSet implements AnswerSet {
 			this.firstInstance = copy.firstInstance;
 			this.predicateSymbol = copy.predicateSymbol;
 			this.predicate = copy.predicate;
-			this.predicates = new HashSet<>(copy.predicates);
-			this.instances = new HashSet<>(copy.instances);
+			this.predicates = new TreeSet<>(copy.predicates);
+			this.instances = new TreeSet<>(copy.instances);
 			this.predicateInstances = new HashMap<>(copy.predicateInstances);
 		}
 
@@ -109,9 +110,9 @@ public class BasicAnswerSet implements AnswerSet {
 			if (firstInstance) {
 				predicate = new BasicPredicate(predicateSymbol, 0);
 				predicates.add(predicate);
-				predicateInstances.put(predicate, new HashSet<>(singletonList(new BasicAtom(predicate))));
+				predicateInstances.put(predicate, new TreeSet<>(singletonList(new BasicAtom(predicate))));
 			} else {
-				predicateInstances.put(predicate, new HashSet<>(instances));
+				predicateInstances.put(predicate, new TreeSet<>(instances));
 			}
 			firstInstance = true;
 			instances.clear();

@@ -2,7 +2,10 @@ package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.DefaultAnswerSetFormatter;
+import at.ac.tuwien.kr.alpha.common.HexAnswerSetFormatter;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
@@ -41,6 +44,8 @@ public class Main {
 	private static final String OPT_FILTER = "filter";
 	private static final String OPT_STRING = "str";
 	private static final String OPT_HEX = "hex";
+	private static final String OPT_SORT = "sort";
+	private static final String OPT_DETERMINISTIC = "deterministic";
 
 	private static final String DEFAULT_GROUNDER = "naive";
 	private static final String DEFAULT_SOLVER = "default";
@@ -90,6 +95,12 @@ public class Main {
 
 		Option hexOption = new Option("x", OPT_HEX, true, "resolve external atoms via Hex and report back answer sets");
 		options.addOption(hexOption);
+
+		Option sortOption = new Option("s", OPT_SORT, false, "sort answer sets");
+		options.addOption(sortOption);
+
+		Option deterministicOption = new Option("d", OPT_DETERMINISTIC, false, "disable randomness");
+		options.addOption(deterministicOption);
 
 		try {
 			commandLine = new DefaultParser().parse(options, args);
@@ -160,14 +171,24 @@ public class Main {
 			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram, filter, bridges
 		);
 
+		// NOTE: Using time as seed is fine as the internal heuristics
+		// do not need to by cryptographically securely randomized.
+		long seed = commandLine.hasOption(OPT_DETERMINISTIC) ? 0 : System.nanoTime();
+
+		LOGGER.info("Seed for pseudorandomization is {}.", seed);
+
 		Solver solver = SolverFactory.getInstance(
-			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder
+			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, new Random(seed)
 		);
 
 		Stream<AnswerSet> stream = solver.stream();
 
 		if (limit > 0) {
 			stream = stream.limit(limit);
+		}
+
+		if (options.hasOption(OPT_SORT)) {
+			stream = stream.sorted();
 		}
 
 		if (commandLine.hasOption(OPT_HEX)) {

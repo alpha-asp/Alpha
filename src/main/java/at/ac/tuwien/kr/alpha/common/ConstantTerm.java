@@ -54,4 +54,12 @@ public class ConstantTerm extends Term {
 	public int hashCode() {
 		return constantSymbol.hashCode();
 	}
+
+	@Override
+	public int compareTo(Term o) {
+		if (o instanceof ConstantTerm) {
+			return constantSymbol.compareTo(((ConstantTerm) o).constantSymbol);
+		}
+		return 1;
+	}
 }

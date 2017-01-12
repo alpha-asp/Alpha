@@ -9,8 +9,7 @@ import static org.junit.Assert.*;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class GroundConflictNoGoodLearnerTest {
-
-	private final Assignment assignment;
+	private final Assignment<ThriceTruth> assignment;
 	private final NoGoodStore<ThriceTruth> store;
 
 	public GroundConflictNoGoodLearnerTest() {
@@ -20,7 +19,7 @@ public class GroundConflictNoGoodLearnerTest {
 
 	@Test
 	public void smallConflictNonTrivial1UIP() {
-		GroundConflictNoGoodLearner learner = new GroundConflictNoGoodLearner(assignment, store);
+		GroundConflictNoGoodLearner learner = new GroundConflictNoGoodLearner(assignment);
 
 		NoGood n1 = new NoGood(2, -8, 1);
 		NoGood n2 = new NoGood(-1, -7);

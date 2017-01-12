@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class VariableTerm extends Term implements Comparable<VariableTerm> {
+public class VariableTerm extends Term {
 	private final String variableName;
 
 	private static final HashMap<String, VariableTerm> VARIABLES = new HashMap<>();
@@ -64,13 +64,20 @@ public class VariableTerm extends Term implements Comparable<VariableTerm> {
 	}
 
 	@Override
-	public int compareTo(VariableTerm o) {
+	public int compareTo(Term o) {
 		if (this == o) {
 			return 0;
 		}
 		if (o == null) {
 			return 1;
 		}
-		return variableName.compareTo(o.variableName);
+
+		if (!(o instanceof VariableTerm)) {
+			return -1;
+		}
+
+		VariableTerm other = (VariableTerm)o;
+
+		return variableName.compareTo(other.variableName);
 	}
 }
