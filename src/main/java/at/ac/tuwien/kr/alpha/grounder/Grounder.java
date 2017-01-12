@@ -14,7 +14,6 @@ public interface Grounder extends AtomTranslator {
 	Map<Integer, NoGood> getNoGoods();
 
 	/**
-	 *
 	 * @return a pair (choiceOn, choiceOff) of two maps from atomIds to atomIds,
 	 * choiceOn maps enabling atomIds to enabled atomIds to guess on, while
 	 * choiceOff maps disabling atomIds to guessable atomIds.
