@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
+import at.ac.tuwien.kr.alpha.grounder.VariableSubstitution;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedBuiltinAtom;
 
 import java.util.ArrayList;
@@ -58,7 +58,7 @@ public class BuiltinAtom implements Atom {
 		return vars;
 	}
 
-	public boolean evaluate(NaiveGrounder.VariableSubstitution variableSubstitution) {
+	public boolean evaluate(VariableSubstitution variableSubstitution) {
 		NumberOrTerm left = evaluateExpression(this.left, variableSubstitution);
 		NumberOrTerm right = evaluateExpression(this.right, variableSubstitution);
 		switch (binop) {
@@ -148,7 +148,7 @@ public class BuiltinAtom implements Atom {
 		}
 	}
 
-	private static NumberOrTerm evaluateExpression(Term term, NaiveGrounder.VariableSubstitution variableSubstitution) {
+	private static NumberOrTerm evaluateExpression(Term term, VariableSubstitution variableSubstitution) {
 		if (term instanceof VariableTerm) {
 			return evaluateExpression(variableSubstitution.eval((VariableTerm) term), variableSubstitution);
 		} else if (term instanceof ConstantTerm) {

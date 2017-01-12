@@ -4,22 +4,21 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.solver.Choices;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class BridgedGrounder extends AbstractGrounder {
+public abstract class BridgedGrounder extends FilteringGrounder {
 	protected final Bridge[] bridges;
 
-	protected BridgedGrounder(ParsedProgram program, java.util.function.Predicate<Predicate> filter, Bridge... bridges) {
-		super(program, filter);
+	protected BridgedGrounder(java.util.function.Predicate<Predicate> filter, Bridge... bridges) {
+		super(filter);
 		this.bridges = bridges;
 	}
 
-	protected BridgedGrounder(ParsedProgram program, Bridge... bridges) {
-		super(program);
+	protected BridgedGrounder(Bridge... bridges) {
+		super();
 		this.bridges = bridges;
 	}
 

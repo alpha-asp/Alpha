@@ -3,7 +3,6 @@ package at.ac.tuwien.kr.alpha.grounder.bridges;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.grounder.AtomStore;
 import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
-import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.solver.Choices;
 
 import java.util.*;
@@ -62,7 +61,7 @@ public class HexBridge implements Bridge {
 				noGoods.add(constraintNoGood);
 			} else if (externalNogoods[m][0].substring(0, 6).equals("aux_n_")) {
 				// Prepare atom representing the external rule body
-				BasicAtom ruleBodyRepresentingPredicate = new BasicAtom(NaiveGrounder.RULE_BODIES_PREDICATE,
+				BasicAtom ruleBodyRepresentingPredicate = new BasicAtom(ProgramBridge.RULE_BODIES_PREDICATE,
 					true, ConstantTerm.getInstance("aux"), ConstantTerm.getInstance(uniformString(externalNogoods[m])));
 
 				// Check uniqueness of ground rule by testing whether the body representing atom already has an id
@@ -128,6 +127,10 @@ public class HexBridge implements Bridge {
 		return noGoods;
 	}
 
+	@Override
+	public void updateAssignment(Atom atom, Truth truth) {
+	}
+
 	private BasicAtom atomFromLiteral(String literal) {
 		String[] lit = literal.split("\\(|,|\\)");
 		Term[] terms = new Term[lit.length - 1];
@@ -161,12 +164,6 @@ public class HexBridge implements Bridge {
 	private String uniformString(String[] str) {
 		String[] strings = str.clone();
 		Arrays.sort(strings);
-		String string = "";
-
-		for (int i = 0; i < strings.length; i++) {
-			string += strings[i];
-		}
-
-		return string;
+		return String.join("", strings);
 	}
 }
