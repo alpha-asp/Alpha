@@ -66,7 +66,7 @@ public class AtomStore {
 		return id;
 	}
 
-	public boolean contains(BasicAtom groundAtom) {
+	public boolean contains(Atom groundAtom) {
 		return predicateInstancesToAtomIds.containsKey(groundAtom);
 	}
 

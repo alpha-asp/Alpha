@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.common;
 
+import java.util.Collections;
 import java.util.List;
 
 public class ChoiceAtom implements Atom {
@@ -38,7 +39,8 @@ public class ChoiceAtom implements Atom {
 
 	@Override
 	public boolean isGround() {
-		return terms[0].isGround();
+		// NOTE: Term is a ConstantTerm, which is ground by definition.
+		return true;
 	}
 
 	@Override
@@ -48,11 +50,20 @@ public class ChoiceAtom implements Atom {
 
 	@Override
 	public List<VariableTerm> getOccurringVariables() {
-		return terms[0].getOccurringVariables();
+		// NOTE: Term is a ConstantTerm, which has no variables by definition.
+		return Collections.emptyList();
 	}
 
 	@Override
 	public int compareTo(Atom o) {
-		return 0;
+		if (!(o instanceof  ChoiceAtom)) {
+			return 1;
+		}
+		ChoiceAtom other = (ChoiceAtom)o;
+		int result = predicate.compareTo(other.predicate);
+		if (result != 0) {
+			return result;
+		}
+		return terms[0].compareTo(other.terms[0]);
 	}
 }

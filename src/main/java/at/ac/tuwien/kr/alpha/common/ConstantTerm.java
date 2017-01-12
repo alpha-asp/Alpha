@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.common;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,7 +28,7 @@ public class ConstantTerm extends Term {
 
 	@Override
 	public List<VariableTerm> getOccurringVariables() {
-		return new LinkedList<>();
+		return Collections.emptyList();
 	}
 
 	@Override
