@@ -25,13 +25,13 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.grounder;
+package at.ac.tuwien.kr.alpha.grounder.bridges;
 
 import at.ac.tuwien.kr.alpha.common.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.Term;
 import at.ac.tuwien.kr.alpha.common.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder.VariableSubstitution;
+import at.ac.tuwien.kr.alpha.grounder.VariableSubstitution;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import org.junit.Test;
 
@@ -40,27 +40,27 @@ import static org.junit.Assert.assertEquals;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class NaiveGrounderTest {
+public class ProgramBridgeTest {
 	@Test
 	public void unifyTermsSimpleBinding() throws Exception {
-		NaiveGrounder grounder = new NaiveGrounder(ParsedProgram.EMPTY);
+		ProgramBridge programBridge = new ProgramBridge(ParsedProgram.EMPTY);
 		VariableSubstitution variableSubstitution = new VariableSubstitution();
 		Term groundTerm = ConstantTerm.getInstance("abc");
 		Term nongroundTerm = VariableTerm.getInstance("Y");
-		grounder.unifyTerms(nongroundTerm, groundTerm, variableSubstitution);
-		assertEquals("Variable Y must bind to constant term abc", variableSubstitution.substitution.get(VariableTerm.getInstance("Y")), ConstantTerm.getInstance("abc"));
+		programBridge.unifyTerms(nongroundTerm, groundTerm, variableSubstitution);
+		assertEquals("Variable Y must bind to constant term abc", variableSubstitution.eval(VariableTerm.getInstance("Y")), ConstantTerm.getInstance("abc"));
 	}
 
 	@Test
 	public void unifyTermsFunctionTermBinding() throws Exception {
-		NaiveGrounder grounder = new NaiveGrounder(ParsedProgram.EMPTY);
+		ProgramBridge programBridge = new ProgramBridge(ParsedProgram.EMPTY);
 		VariableSubstitution variableSubstitution = new VariableSubstitution();
-		variableSubstitution.substitution.put(VariableTerm.getInstance("Z"), ConstantTerm.getInstance("aa"));
+		variableSubstitution.put(VariableTerm.getInstance("Z"), ConstantTerm.getInstance("aa"));
 		FunctionTerm groundFunctionTerm = FunctionTerm.getInstance("f", ConstantTerm.getInstance("bb"), ConstantTerm.getInstance("cc"));
 		Term nongroundFunctionTerm = FunctionTerm.getInstance("f", ConstantTerm.getInstance("bb"), VariableTerm.getInstance("X"));
-		grounder.unifyTerms(nongroundFunctionTerm, groundFunctionTerm, variableSubstitution);
-		assertEquals("Variable X must bind to constant term cc", variableSubstitution.substitution.get(VariableTerm.getInstance("X")), ConstantTerm.getInstance("cc"));
+		programBridge.unifyTerms(nongroundFunctionTerm, groundFunctionTerm, variableSubstitution);
+		assertEquals("Variable X must bind to constant term cc", variableSubstitution.eval(VariableTerm.getInstance("X")), ConstantTerm.getInstance("cc"));
 
-		assertEquals("Variable Z must bind to constant term aa", variableSubstitution.substitution.get(VariableTerm.getInstance("Z")), ConstantTerm.getInstance("aa"));
+		assertEquals("Variable Z must bind to constant term aa", variableSubstitution.eval(VariableTerm.getInstance("Z")), ConstantTerm.getInstance("aa"));
 	}
 }

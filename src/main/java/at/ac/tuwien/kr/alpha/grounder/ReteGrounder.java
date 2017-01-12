@@ -15,15 +15,15 @@ import java.util.Map;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public abstract class ReteGrounder extends AbstractGrounder {
+public abstract class ReteGrounder extends FilteringGrounder {
 	private ParsedProgram programRules;
 
 	private byte[] recentTruthAssignments;
 
 	private RetePredicate predicates;
 
-	public ReteGrounder(ParsedProgram program, java.util.function.Predicate<Predicate> filter) {
-		super(program, filter);
+	public ReteGrounder(java.util.function.Predicate<Predicate> filter) {
+		super(filter);
 	}
 
 	@Override

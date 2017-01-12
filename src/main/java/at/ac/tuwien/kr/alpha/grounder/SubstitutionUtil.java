@@ -17,7 +17,7 @@ public class SubstitutionUtil {
 	 * @param variableSubstitution the variable substitution to apply.
 	 * @return the AtomId of the corresponding substituted ground atom.
 	 */
-	public static int groundingSubstitute(AtomStore atomStore, Atom nonGroundAtom, NaiveGrounder.VariableSubstitution variableSubstitution) {
+	public static int groundingSubstitute(AtomStore atomStore, Atom nonGroundAtom, VariableSubstitution variableSubstitution) {
 		final Term[] terms = nonGroundAtom.getTerms();
 		Term[] groundTermList = new Term[terms.length];
 		for (int i = 0; i < terms.length; i++) {
@@ -38,7 +38,7 @@ public class SubstitutionUtil {
 	 * @param variableSubstitution the variable substitution to apply.
 	 * @return the non-ground term where all variable substitutions have been applied.
 	 */
-	public static Term groundTerm(Term nonGroundTerm, NaiveGrounder.VariableSubstitution variableSubstitution) {
+	public static Term groundTerm(Term nonGroundTerm, VariableSubstitution variableSubstitution) {
 		if (nonGroundTerm instanceof ConstantTerm) {
 			return nonGroundTerm;
 		} else if (nonGroundTerm instanceof VariableTerm) {
@@ -67,7 +67,7 @@ public class SubstitutionUtil {
 	 * isGround true if the substitutedAtom is ground and substitutedAtom is the atom resulting from the applying
 	 * the substitution.
 	 */
-	public static Pair<Boolean, BasicAtom> substitute(Atom nonGroundAtom, NaiveGrounder.VariableSubstitution variableSubstitution) {
+	public static Pair<Boolean, BasicAtom> substitute(Atom nonGroundAtom, VariableSubstitution variableSubstitution) {
 		final Term[] terms = nonGroundAtom.getTerms();
 		Term[] substitutedTerms = new Term[terms.length];
 		boolean isGround = true;
@@ -81,7 +81,7 @@ public class SubstitutionUtil {
 		return new ImmutablePair<>(isGround, substitutedAtom);
 	}
 
-	public static String groundAndPrintRule(NonGroundRule rule, NaiveGrounder.VariableSubstitution substitution) {
+	public static String groundAndPrintRule(NonGroundRule rule, VariableSubstitution substitution) {
 		String ret = "";
 		if (!rule.isConstraint()) {
 			BasicAtom groundHead = substitute(rule.getHeadAtom(), substitution).getRight();
@@ -101,7 +101,7 @@ public class SubstitutionUtil {
 		return ret;
 	}
 
-	private static String groundAtomToString(Atom bodyAtom, boolean isNegative, NaiveGrounder.VariableSubstitution substitution, boolean isFirst) {
+	private static String groundAtomToString(Atom bodyAtom, boolean isNegative, VariableSubstitution substitution, boolean isFirst) {
 		if (bodyAtom instanceof BuiltinAtom) {
 			return (isFirst ? ", " : "") + bodyAtom.toString();
 		} else {

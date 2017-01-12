@@ -33,6 +33,7 @@ import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
+import at.ac.tuwien.kr.alpha.grounder.bridges.ProgramBridge;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -64,7 +65,7 @@ public class SolverTests extends AbstractSolverTests {
 	public void testFactsOnlyProgram() throws IOException {
 		String testProgram = "p(a). p(b). foo(13). foo(16). q(a). q(c).";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
-		Grounder grounder = new NaiveGrounder(parsedProgram);
+		Grounder grounder = new NaiveGrounder(new ProgramBridge(parsedProgram));
 		Solver solver = getInstance(grounder);
 
 		List<AnswerSet> answerSets = solver.collectList();
@@ -84,7 +85,7 @@ public class SolverTests extends AbstractSolverTests {
 	public void testSimpleRule() throws Exception {
 		String testProgram = "p(a). p(b). r(X) :- p(X).";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
-		Grounder grounder = new NaiveGrounder(parsedProgram);
+		Grounder grounder = new NaiveGrounder(new ProgramBridge(parsedProgram));
 		Solver solver = getInstance(grounder);
 
 		List<AnswerSet> answerSets = solver.collectList();
@@ -105,7 +106,7 @@ public class SolverTests extends AbstractSolverTests {
 				"p(2)." +
 				"q(X) :-  p(X), p(1).";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
-		Grounder grounder = new NaiveGrounder(parsedProgram);
+		Grounder grounder = new NaiveGrounder(new ProgramBridge(parsedProgram));
 		Solver solver = getInstance(grounder);
 
 		List<AnswerSet> answerSets = solver.collectList();
@@ -123,7 +124,7 @@ public class SolverTests extends AbstractSolverTests {
 	public void testProgramZeroArityPredicates() throws Exception {
 		String testProgram = "a. p(X) :- b, r(X).";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
-		Grounder grounder = new NaiveGrounder(parsedProgram);
+		Grounder grounder = new NaiveGrounder(new ProgramBridge(parsedProgram));
 		Solver solver = getInstance(grounder);
 
 		List<AnswerSet> answerSets = solver.collectList();
@@ -139,7 +140,7 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void testGuessingGroundProgram() throws Exception {
-		Solver solver = getInstance(new NaiveGrounder(parseVisit(stream("a :- not b. b :- not a."))));
+		Solver solver = getInstance(new NaiveGrounder(new ProgramBridge(parseVisit(stream("a :- not b. b :- not a.")))));
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
 			new BasicAnswerSet.Builder().predicate("a").build(),
@@ -155,7 +156,7 @@ public class SolverTests extends AbstractSolverTests {
 			"p(X) :- dom(X), not q(X)." +
 			"q(X) :- dom(X), not p(X).";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		NaiveGrounder grounder = new NaiveGrounder(new ProgramBridge(parsedProgram));
 		Solver solver = getInstance(grounder);
 
 		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
@@ -214,7 +215,7 @@ public class SolverTests extends AbstractSolverTests {
 			"c :- not a, not b.";
 
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		NaiveGrounder grounder = new NaiveGrounder(new ProgramBridge(parsedProgram));
 
 		Solver solver = getInstance(grounder);
 
@@ -237,7 +238,7 @@ public class SolverTests extends AbstractSolverTests {
 	@Test
 	public void emptyProgramYieldsEmptyAnswerSet() throws IOException {
 		ParsedProgram parsedProgram = parseVisit(stream(""));
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		NaiveGrounder grounder = new NaiveGrounder(new ProgramBridge(parsedProgram));
 
 		List<AnswerSet> answerSets = getInstance(grounder).collectList();
 		assertEquals(1, answerSets.size());
@@ -255,7 +256,7 @@ public class SolverTests extends AbstractSolverTests {
 			":- nota,notb,notc.";
 
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		NaiveGrounder grounder = new NaiveGrounder(new ProgramBridge(parsedProgram));
 
 		Solver solver = getInstance(grounder);
 
@@ -307,7 +308,7 @@ public class SolverTests extends AbstractSolverTests {
 			"p(X) :- dom(X), X = 4." +
 			"r(Y) :- dom(Y), Y <= 2.";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		NaiveGrounder grounder = new NaiveGrounder(new ProgramBridge(parsedProgram));
 		Solver solver = getInstance(grounder);
 
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
@@ -336,7 +337,7 @@ public class SolverTests extends AbstractSolverTests {
 			"b :- 2 != 3, 2 = 3." +
 			"c :- 2 <= 3, not 2 > 3.";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		NaiveGrounder grounder = new NaiveGrounder(new ProgramBridge(parsedProgram));
 		Solver solver = getInstance(grounder);
 
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
@@ -365,7 +366,7 @@ public class SolverTests extends AbstractSolverTests {
 			"%:- val(VAR1,VAL1), val(VAR2,VAL2), eq(VAL1,VAL2), not eq(VAR1,VAR2).\n" +
 			":- eq(VAL1,VAL2), not eq(VAR1,VAR2), val(VAR1,VAL1), val(VAR2,VAL2).";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		NaiveGrounder grounder = new NaiveGrounder(new ProgramBridge(parsedProgram));
 		Solver solver = getInstance(grounder);
 
 		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
@@ -436,7 +437,7 @@ public class SolverTests extends AbstractSolverTests {
 				":- val(VAR1,VAL1), val(VAR2,VAL2), eq(VAL1,VAL2), not eq(VAR1,VAR2).\n" +
 				"%:- eq(VAL1,VAL2), not eq(VAR1,VAR2), val(VAR1,VAL1), val(VAR2,VAL2).";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		NaiveGrounder grounder = new NaiveGrounder(new ProgramBridge(parsedProgram));
 		Solver solver = getInstance(grounder);
 
 		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
@@ -498,7 +499,7 @@ public class SolverTests extends AbstractSolverTests {
 			"val(2,2).\n" +
 			"something:- val(VAR1,VAL1), val(VAR2,VAL2), anything(VAL1,VAL2).";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		NaiveGrounder grounder = new NaiveGrounder(new ProgramBridge(parsedProgram));
 		Solver solver = getInstance(grounder);
 
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
@@ -521,7 +522,7 @@ public class SolverTests extends AbstractSolverTests {
 			"out(X) :- not in(X), node(X).\n" +
 			"pair(X,Y) :- in(X), in(Y).";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		NaiveGrounder grounder = new NaiveGrounder(new ProgramBridge(parsedProgram));
 		Solver solver = getInstance(grounder);
 
 		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
@@ -576,7 +577,7 @@ public class SolverTests extends AbstractSolverTests {
 			"out(X) :- not in(X), node(X).\n" +
 			":- in(X), in(Y), edge(X,Y).";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		NaiveGrounder grounder = new NaiveGrounder(new ProgramBridge(parsedProgram));
 		Solver solver = getInstance(grounder);
 
 		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
@@ -618,7 +619,7 @@ public class SolverTests extends AbstractSolverTests {
 	public void testUnsatisfiableProgram() throws IOException {
 		String testProgram = "p(a). p(b). :- p(a), p(b).";
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
-		Grounder grounder = new NaiveGrounder(parsedProgram);
+		Grounder grounder = new NaiveGrounder(new ProgramBridge(parsedProgram));
 		Solver solver = getInstance(grounder);
 
 		List<AnswerSet> answerSets = solver.collectList();
