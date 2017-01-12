@@ -600,17 +600,17 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	@Override
 	public boolean propagate() {
 		boolean propagated = false;
-		Queue<Assignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
+		Queue<Assignment.Entry<ThriceTruth>> assignmentsToProcess = assignment.getAssignmentsToProcess();
 
 		while (!assignmentsToProcess.isEmpty()) {
-			final Assignment.Entry entry = assignmentsToProcess.remove();
+			final Assignment.Entry<ThriceTruth> entry = assignmentsToProcess.remove();
 			final int atom = entry.getAtom();
 
 			LOGGER.trace("Looking for propagation from {} with {}.", atom, entry);
 
 			final ThriceTruth value = entry.getTruth();
 
-			final Assignment.Entry previous = entry.getPrevious();
+			final Assignment.Entry<ThriceTruth> previous = entry.getPrevious();
 			final ThriceTruth prevValue = previous != null ? previous.getTruth() : null;
 			propagateAssigned = false;
 

@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.Truth;
 
 import java.util.Iterator;
 import java.util.Queue;
@@ -38,7 +39,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
-public interface Assignment {
+public interface Assignment<T extends Truth> {
 	/**
 	 * Delete all information stored in the assignment.
 	 */
@@ -59,7 +60,7 @@ public interface Assignment {
 	 */
 	int getMBTCount();
 
-	boolean assign(int atom, ThriceTruth value, NoGood impliedBy);
+	boolean assign(int atom, T value, NoGood impliedBy);
 
 	/**
 	 * Assigns an atom some value on a lower decision level than the current one.
@@ -69,17 +70,13 @@ public interface Assignment {
 	 * @param decisionLevel
 	 * @return
 	 */
-	boolean assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel);
+	boolean assign(int atom, T value, NoGood impliedBy, int decisionLevel);
 
-	default boolean assign(int atom, ThriceTruth value) {
+	default boolean assign(int atom, T value) {
 		return assign(atom, value, null);
 	}
 
-	boolean guess(int atom, ThriceTruth value);
-
-	default boolean guess(int atom, boolean value) {
-		return guess(atom, ThriceTruth.valueOf(value));
-	}
+	boolean guess(int atom, T value);
 
 	/**
 	 * In case that assign fails (i.e., it returns false) the NoGood violated by the assignment can be obtained by this method.
@@ -90,7 +87,7 @@ public interface Assignment {
 
 	Assignment.Entry getGuessViolatedByAssign();
 
-	Queue<Entry> getAssignmentsToProcess();
+	Queue<Entry<T>> getAssignmentsToProcess();
 
 	/**
 	 * Returns all atomIds that are assigned TRUE in the current assignment.
@@ -98,7 +95,7 @@ public interface Assignment {
 	 */
 	Set<Integer> getTrueAssignments();
 
-	Entry get(int atom);
+	Entry<T> get(int atom);
 
 	int getDecisionLevel();
 
@@ -107,8 +104,8 @@ public interface Assignment {
 	 * @param atom the id of the atom.
 	 * @return the truth value; null if atomId is not assigned.
 	 */
-	default ThriceTruth getTruth(int atom) {
-		final Entry entry = get(atom);
+	default T getTruth(int atom) {
+		final Entry<T> entry = get(atom);
 		return entry == null ? null : entry.getTruth();
 	}
 
@@ -117,7 +114,7 @@ public interface Assignment {
 	}
 
 	default boolean containsWeakComplement(int literal) {
-		final Entry entry = get(atomOf(literal));
+		final Entry<T> entry = get(atomOf(literal));
 		return entry != null && isNegated(literal) == !entry.getTruth().toBoolean();
 	}
 
@@ -167,10 +164,10 @@ public interface Assignment {
 	 * Returns an iterator over all new assignments. New assignments are only returned once.
 	 * @return
 	 */
-	Iterator<Entry> getNewAssignmentsIterator();
+	Iterator<Entry<T>> getNewAssignmentsIterator();
 
-	interface Entry {
-		ThriceTruth getTruth();
+	interface Entry<T extends Truth> {
+		T getTruth();
 		int getDecisionLevel();
 		Entry getPrevious();
 		NoGood getImpliedBy();

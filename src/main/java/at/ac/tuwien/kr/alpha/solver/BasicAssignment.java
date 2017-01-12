@@ -38,12 +38,12 @@ import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
-public class BasicAssignment implements Assignment {
+public class BasicAssignment implements Assignment<ThriceTruth> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BasicAssignment.class);
 	private final Map<Integer, Entry> assignment = new HashMap<>();
 	private final List<List<Entry>> decisionLevels;
-	private final Queue<Assignment.Entry> assignmentsToProcess = new LinkedList<>();
-	private Queue<Assignment.Entry> newAssignments = new LinkedList<>();
+	private final Queue<Assignment.Entry<ThriceTruth>> assignmentsToProcess = new LinkedList<>();
+	private Queue<Assignment.Entry<ThriceTruth>> newAssignments = new LinkedList<>();
 	private final Grounder grounder;
 
 	private int mbtCount;
@@ -67,20 +67,20 @@ public class BasicAssignment implements Assignment {
 	}
 
 	@Override
-	public Queue<Assignment.Entry> getAssignmentsToProcess() {
+	public Queue<Assignment.Entry<ThriceTruth>> getAssignmentsToProcess() {
 		return assignmentsToProcess;
 	}
 
 	@Override
 	public void backtrack() {
 		// Remove all assignments on the current decision level from the queue of assignments to process.
-		for (Iterator<Assignment.Entry> iterator = assignmentsToProcess.iterator(); iterator.hasNext();) {
+		for (Iterator<Assignment.Entry<ThriceTruth>> iterator = assignmentsToProcess.iterator(); iterator.hasNext();) {
 			Assignment.Entry entry = iterator.next();
 			if (entry.getDecisionLevel() == getDecisionLevel()) {
 				iterator.remove();
 			}
 		}
-		for (Iterator<Assignment.Entry> iterator = newAssignments.iterator(); iterator.hasNext();) {
+		for (Iterator<Assignment.Entry<ThriceTruth>> iterator = newAssignments.iterator(); iterator.hasNext();) {
 			Assignment.Entry entry = iterator.next();
 			if (entry.getDecisionLevel() == getDecisionLevel()) {
 				iterator.remove();
@@ -411,13 +411,13 @@ public class BasicAssignment implements Assignment {
 	}
 
 	@Override
-	public Iterator<Assignment.Entry> getNewAssignmentsIterator() {
-		Iterator<Assignment.Entry> it = newAssignments.iterator();
+	public Iterator<Assignment.Entry<ThriceTruth>> getNewAssignmentsIterator() {
+		Iterator<Assignment.Entry<ThriceTruth>> it = newAssignments.iterator();
 		newAssignments = new LinkedList<>();
 		return it;
 	}
 
-	private static final class Entry implements Assignment.Entry {
+	private static final class Entry implements Assignment.Entry<ThriceTruth> {
 		private final ThriceTruth value;
 		private final int decisionLevel;
 		private final int propagationLevel;

@@ -51,7 +51,7 @@ public class DefaultSolver extends AbstractSolver {
 	private final Map<Integer, Integer> choiceOn = new LinkedHashMap<>();
 	private final Map<Integer, Integer> choiceOff = new HashMap<>();
 	private final ChoiceStack choiceStack;
-	private final Assignment assignment;
+	private final Assignment<ThriceTruth> assignment;
 	private final GroundConflictNoGoodLearner learner;
 	private final BranchingHeuristic branchingHeuristic;
 	private final BranchingHeuristic fallbackBranchingHeuristic;
@@ -267,7 +267,7 @@ public class DefaultSolver extends AbstractSolver {
 
 				decisionCounter++;
 				boolean newGuess = !lastGuessedValue;
-				assignment.guess(lastGuessedAtom, newGuess);
+				assignment.guess(lastGuessedAtom, ThriceTruth.valueOf(newGuess));
 				LOGGER.debug("Backtrack: setting decision level to {}.", assignment.getDecisionLevel());
 				LOGGER.debug("Backtrack: inverting last guess. Now: {}={}@{}", grounder.atomToString(lastGuessedAtom), newGuess, assignment.getDecisionLevel());
 				choiceStack.pushBacktrack(lastGuessedAtom, newGuess);
@@ -399,7 +399,7 @@ public class DefaultSolver extends AbstractSolver {
 	private void doChoice(int nextChoice) {
 		decisionCounter++;
 		boolean sign = branchingHeuristic.chooseSign(nextChoice);
-		assignment.guess(nextChoice, sign);
+		assignment.guess(nextChoice, ThriceTruth.valueOf(sign));
 		choiceStack.push(nextChoice, sign);
 		// Record change to compute propagation fixpoint again.
 		didChange = true;

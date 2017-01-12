@@ -43,11 +43,11 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
  *
  */
 public class NaiveHeuristic implements BranchingHeuristic {
-	private Assignment assignment;
+	private Assignment<ThriceTruth> assignment;
 	private Map<Integer, Integer> choiceOn;
 	private Map<Integer, Integer> choiceOff;
 
-	public NaiveHeuristic(Assignment assignment, Map<Integer, Integer> choiceOn, Map<Integer, Integer> choiceOff) {
+	public NaiveHeuristic(Assignment<ThriceTruth> assignment, Map<Integer, Integer> choiceOn, Map<Integer, Integer> choiceOff) {
 		this.assignment = assignment;
 		this.choiceOn = choiceOn;
 		this.choiceOff = choiceOff;

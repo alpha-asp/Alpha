@@ -34,6 +34,7 @@ import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
@@ -48,38 +49,37 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
  * Copyright (c) 2016 Siemens AG
  */
 public class BerkMin implements BranchingHeuristic {
-	
-	public static final double DEFAULT_ACTIVITY = 0.0;
-	public static final int DEFAULT_SIGN_COUNTER = 0;
-	public static final int DEFAULT_CHOICE_ATOM = 0;
-
 	public static final int DEFAULT_DECAY_AGE = 10;
 	public static final double DEFAULT_DECAY_FACTOR = 0.25;
 
+	private static final double DEFAULT_ACTIVITY = 0.0;
+	private static final int DEFAULT_SIGN_COUNTER = 0;
+	private static final int DEFAULT_CHOICE_ATOM = 0;
+
+	private final Assignment<ThriceTruth> assignment;
+	private final Predicate<? super Integer> isAtomChoicePoint;
+	private final Predicate<? super Integer> isAtomActiveChoicePoint;
 	private final Random rand;
 
-	private Assignment assignment;
 	private Map<Integer, Double> activityCounters = new HashMap<>();
 	private Map<Integer, Integer> signCounters = new HashMap<>();
 	private Deque<NoGood> stackOfNoGoods = new ArrayDeque<>();
 	private int decayAge;
 	private double decayFactor;
 	private int stepsSinceLastDecay;
-	private Predicate<? super Integer> isAtomChoicePoint;
-	private Predicate<? super Integer> isAtomActiveChoicePoint;
 
-	public BerkMin(Assignment assignment, Predicate<? super Integer> isAtomChoicePoint,
-			Predicate<? super Integer> isAtomActiveChoicePoint, int decayAge, double decayFactor, Random random) {
+	public BerkMin(Assignment<ThriceTruth> assignment, Predicate<? super Integer> isAtomChoicePoint,
+			Predicate<? super Integer> isAtomActiveChoicePoint, Random random, int decayAge, double decayFactor) {
 		this.assignment = assignment;
 		this.isAtomChoicePoint = isAtomChoicePoint;
 		this.isAtomActiveChoicePoint = isAtomActiveChoicePoint;
+		this.rand = random;
 		this.decayAge = decayAge;
 		this.decayFactor = decayFactor;
-		this.rand = random;
 	}
 
-	public BerkMin(Assignment assignment, Predicate<? super Integer> isAtomChoicePoint, Predicate<? super Integer> isAtomActiveChoicePoint, Random random) {
-		this(assignment, isAtomChoicePoint, isAtomActiveChoicePoint, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random);
+	public BerkMin(Assignment<ThriceTruth> assignment, Predicate<? super Integer> isAtomChoicePoint, Predicate<? super Integer> isAtomActiveChoicePoint, Random random) {
+		this(assignment, isAtomChoicePoint, isAtomActiveChoicePoint, random, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR);
 	}
 
 	/**
@@ -178,13 +178,11 @@ public class BerkMin implements BranchingHeuristic {
 		int positiveCounter = signCounters.getOrDefault(+atom, DEFAULT_SIGN_COUNTER);
 		int negativeCounter = signCounters.getOrDefault(-atom, DEFAULT_SIGN_COUNTER);
 
-		if (positiveCounter > negativeCounter) {
-			return false;
-		} else if (negativeCounter > positiveCounter) {
-			return true;
-		} else {
+		if (positiveCounter == negativeCounter) {
 			return rand.nextBoolean();
 		}
+
+		return negativeCounter > positiveCounter;
 	}
 
 	private void pushToStack(NoGood noGood) {
@@ -227,7 +225,7 @@ public class BerkMin implements BranchingHeuristic {
 	 * Gets the most recent conflict that is still violated.
 	 * @return the violated nogood closest to the top of the stack of nogoods.
 	 */
-	NoGood getCurrentTopClause() {
+	public NoGood getCurrentTopClause() {
 		for (NoGood noGood : stackOfNoGoods) {
 			if (assignment.isUndefined(noGood)) {
 				return noGood;
@@ -237,20 +235,15 @@ public class BerkMin implements BranchingHeuristic {
 	}
 	
 	/**
-	 * If {@code noGood != null}, returns the most active unassigned literal from {@code noGood}. Else, returns the most active atom of all the known atoms.
+	 * If {@code noGood != null}, returns the most active unassigned literal from {@code noGood}.
+	 * Else, returns the most active atom of all the known atoms.
 	 * @param noGood
 	 * @return
 	 */
 	private int getMostActiveChoosableAtom(NoGood noGood) {
-		if (noGood != null) {
-			return getMostActiveChoosableAtom(noGood.stream().boxed());
-		} else {
-			return getMostActiveChoosableAtom(activityCounters.keySet().stream());
-		}
-	}
-	
-	private int getMostActiveChoosableAtom(Stream<Integer> streamOfLiterals) {
-		return streamOfLiterals
+		final Iterable<Integer> candidates = noGood != null ? noGood : activityCounters.keySet();
+
+		return StreamSupport.stream(candidates.spliterator(), true)
 			.map(Literals::atomOf)
 			.filter(this::isUnassigned)
 			.filter(isAtomActiveChoicePoint)

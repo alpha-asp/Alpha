@@ -17,7 +17,7 @@ public class FirstUIPPriorityQueue {
 
 	public FirstUIPPriorityQueue(int decisionLevel) {
 		this.decisionLevel = decisionLevel;
-		this.delegate = new PriorityQueue<>(Comparator.comparing(Assignment.Entry::getPropagationLevel).reversed());
+		this.delegate = new PriorityQueue<>(Comparator.comparing((Assignment.Entry e) -> { return e.getPropagationLevel(); }).reversed());
 		this.alreadyAdded = new HashSet<>();
 	}
 

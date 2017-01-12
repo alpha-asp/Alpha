@@ -20,7 +20,7 @@ public interface Grounder extends AtomTranslator {
 	 */
 	Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms();
 
-	void updateAssignment(Iterator<Assignment.Entry> it);
+	void updateAssignment(Iterator<? extends Assignment.Entry> it);
 
 	void forgetAssignment(int[] atomIds);
 

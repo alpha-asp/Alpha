@@ -566,7 +566,7 @@ public class NaiveGrounder extends AbstractGrounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<Assignment.Entry> it) {
+	public void updateAssignment(Iterator<? extends Assignment.Entry> it) {
 		while (it.hasNext()) {
 			Assignment.Entry assignment = it.next();
 			Truth truthValue = assignment.getTruth();
