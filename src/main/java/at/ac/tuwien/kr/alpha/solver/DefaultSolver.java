@@ -69,7 +69,7 @@ public class DefaultSolver extends AbstractSolver {
 		//this.assignmentIterator = this.assignment.ordinaryIterator();
 		this.store = new BasicNoGoodStore(assignment, grounder);
 		this.choiceStack = new ChoiceStack(grounder);
-		this.learner = new GroundConflictNoGoodLearner(assignment, store);
+		this.learner = new GroundConflictNoGoodLearner(assignment);
 		this.branchingHeuristic = new BerkMin(assignment, this::isAtomChoicePoint, this::isAtomActiveChoicePoint, random);
 		this.fallbackBranchingHeuristic = new NaiveHeuristic(assignment, choiceOn, choiceOff);
 	}
@@ -375,11 +375,11 @@ public class DefaultSolver extends AbstractSolver {
 		return !changeCopy;
 	}
 
-	boolean isAtomChoicePoint(int atom) {
+	private boolean isAtomChoicePoint(int atom) {
 		return grounder.isAtomChoicePoint(atom);
 	}
 
-	boolean isAtomActiveChoicePoint(int atom) {
+	private boolean isAtomActiveChoicePoint(int atom) {
 		// Find potential enabler of the choice point.
 		for (Map.Entry<Integer, Integer> enabler : choiceOn.entrySet()) {
 			ThriceTruth enablerAssignedTruth = assignment.getTruth(enabler.getKey());
