@@ -380,26 +380,20 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private boolean isAtomActiveChoicePoint(int atom) {
-		// Find potential enabler of the choice point.
-		for (Map.Entry<Integer, Integer> enabler : choiceOn.entrySet()) {
-			ThriceTruth enablerAssignedTruth = assignment.getTruth(enabler.getKey());
-			// Check if choice point is enabled.
-			if (enabler.getValue() == atom && (TRUE.equals(enablerAssignedTruth) || MBT.equals(enablerAssignedTruth))) {
-				// Ensure it is not disabled.
-				boolean isDisabled = false;
-				for (Map.Entry<Integer, Integer> disablerAtom : choiceOff.entrySet()) {
-					if (atom == disablerAtom.getValue()
-						&& assignment.getTruth(disablerAtom.getKey()) != null
-						&& !(FALSE.equals(assignment.getTruth(disablerAtom.getKey())))) {
-						isDisabled = true;
-						break;
-					}
-				}
-				return !isDisabled;
-			}
+		if (!choiceOn.containsKey(atom)) {
+			return false;
 		}
-		// No enabler of the atom found, not an active choice point.
-		return false;
+
+		ThriceTruth truth = assignment.getTruth(choiceOn.get(atom));
+
+		// Check if choice point is enabled.
+		if (!TRUE.equals(truth) && !MBT.equals(truth)) {
+			return false;
+		}
+
+		// Ensure it is not disabled.
+		truth = assignment.getTruth(choiceOff.get(atom));
+		return truth == null || FALSE.equals(truth);
 	}
 
 	private void doChoice(int nextChoice) {
@@ -415,15 +409,15 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private int computeChoice() {
-		int berkminChoice = branchingHeuristic.chooseAtom();
-		if (berkminChoice != BerkMin.DEFAULT_CHOICE_ATOM) {
+		int heuristicChoice = branchingHeuristic.chooseAtom();
+		if (heuristicChoice != 0) {
 			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("Atom chosen by BerkMin: {}", grounder.atomToString(berkminChoice));
+				LOGGER.debug("Atom chosen by branching heuristic: {}", grounder.atomToString(heuristicChoice));
 			}
-			return berkminChoice;
+			return heuristicChoice;
 		}
 
-		//TODO: remove fallback as soon as we are sure that BerkMin will always choose an atom
+		// TODO: remove fallback as soon as we are sure that BerkMin will always choose an atom
 		return fallbackBranchingHeuristic.chooseAtom();
 	}
 }

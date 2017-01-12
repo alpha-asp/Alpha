@@ -82,12 +82,12 @@ public class ChoiceGrounder implements Grounder {
 		entry(CHOICE_DIS_BR2, NoGood.headFirst(-ATOM_DIS_BR2, ATOM_AA))
 	).collect(entriesToMap());
 	private static final Map<Integer, Integer> CHOICE_ENABLE = Stream.of(
-		entry(ATOM_EN_BR1, ATOM_BR1),
-		entry(ATOM_EN_BR2, ATOM_BR2)
+		entry(ATOM_BR1, ATOM_EN_BR1),
+		entry(ATOM_BR2, ATOM_EN_BR2)
 	).collect(entriesToMap());
 	private static final Map<Integer, Integer> CHOICE_DISABLE = Stream.of(
-		entry(ATOM_DIS_BR1, ATOM_BR1),
-		entry(ATOM_DIS_BR2, ATOM_BR2)
+		entry(ATOM_BR1, ATOM_DIS_BR1),
+		entry(ATOM_BR2, ATOM_DIS_BR2)
 	).collect(entriesToMap());
 	private static Map<Integer, String> atomIdToString = Stream.of(
 		entry(ATOM_AA, "aa"),
