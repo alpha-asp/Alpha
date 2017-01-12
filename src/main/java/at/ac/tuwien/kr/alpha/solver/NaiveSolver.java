@@ -31,6 +31,8 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Truth;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +68,8 @@ public class NaiveSolver extends AbstractSolver {
 	private ArrayList<ArrayList<Integer>> trueAssignedFromMbt = new ArrayList<>();
 	private List<Integer> unassignedAtoms;
 
+	BranchingHeuristic heuristic;
+
 	NaiveSolver(Grounder grounder) {
 		super(grounder);
 
@@ -74,6 +78,8 @@ public class NaiveSolver extends AbstractSolver {
 		decisionLevels.add(0, new ArrayList<>());
 		mbtAssignedFromUnassigned.add(0, new ArrayList<>());
 		trueAssignedFromMbt.add(0, new ArrayList<>());
+
+		heuristic = new NaiveHeuristic(assignment, choiceOn, choiceOff);
 	}
 
 	@Override
@@ -106,7 +112,7 @@ public class NaiveSolver extends AbstractSolver {
 				if (isSearchSpaceExhausted()) {
 					return false;
 				}
-			} else if (choicesLeft()) {
+			} else if ((nextChoice = heuristic.chooseAtom()) != 0) {
 				doChoice();
 			} else if (!allAtomsAssigned()) {
 				LOGGER.trace("Closing unassigned known atoms (assigning FALSE).");
@@ -215,27 +221,6 @@ public class NaiveSolver extends AbstractSolver {
 		choiceStack.push(nextChoice, true);
 		// Record change to compute propagation fixpoint again.
 		didChange = true;
-	}
-
-	private boolean choicesLeft() {
-		// Check if there is an enabled choice that is not also disabled
-		for (Map.Entry<Integer, Integer> e : choiceOn.entrySet()) {
-			final int atom = e.getKey();
-
-			// Only consider unassigned choices
-			if (assignment.isAssigned(atom) || !assignment.getTruth(e.getValue()).toBoolean()) {
-				continue;
-			}
-
-			Truth truth = assignment.getTruth(choiceOff.getOrDefault(atom, 0));
-
-			// Check that candidate is not disabled already
-			if (truth == null || !truth.toBoolean()) {
-				nextChoice = atom;
-				return true;
-			}
-		}
-		return false;
 	}
 
 	private void doBacktrack() {
