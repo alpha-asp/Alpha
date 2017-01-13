@@ -34,6 +34,7 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BerkMin;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
+import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -337,19 +338,19 @@ public class DefaultSolver extends AbstractSolver {
 			}
 
 			LOGGER.debug("Adding obtained NoGoods from grounder violates current assignment: learning, backjumping, and adding again.");
-			if (conflictCause.violatedGuess != null) {
-				LOGGER.debug("Added NoGood {} violates guess {}.", noGoodEntry.getKey(), conflictCause.violatedGuess);
-				LOGGER.debug("Backjumping to decision level: {}", conflictCause.violatedGuess.getDecisionLevel());
-				doBackjump(conflictCause.violatedGuess.getDecisionLevel());
+			if (conflictCause.getViolatedGuess() != null) {
+				LOGGER.debug("Added NoGood {} violates guess {}.", noGoodEntry.getKey(), conflictCause.getViolatedGuess());
+				LOGGER.debug("Backjumping to decision level: {}", conflictCause.getViolatedGuess().getDecisionLevel());
+				doBackjump(conflictCause.getViolatedGuess().getDecisionLevel());
 				store.backtrack();
 				LOGGER.debug("Backtrack: Removing last choice because of conflict with newly added NoGoods, setting decision level to {}.", assignment.getDecisionLevel());
 				choiceStack.remove();
 				choiceManager.backtrack();
 				LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 			} else {
-				LOGGER.debug("Violated NoGood is {}. Analyzing the conflict.", conflictCause.violatedNoGood);
+				LOGGER.debug("Violated NoGood is {}. Analyzing the conflict.", conflictCause.getViolatedGuess());
 				GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = null;
-				conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.violatedNoGood);
+				conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.getViolatedNoGood());
 				if (conflictAnalysisResult.isUnsatisfiable) {
 					// Halt if unsatisfiable.
 					return false;

@@ -27,7 +27,7 @@ public interface ReadableAssignment<T extends Truth> extends SimpleReadableAssig
 	Set<Integer> getTrueAssignments();
 
 	Queue<ReadableAssignment.Entry<T>> getAssignmentsToProcess();
-	ReadableAssignment.Entry getGuessViolatedByAssign();
+	ReadableAssignment.Entry<T> getGuessViolatedByAssign();
 	NoGood getNoGoodViolatedByAssign();
 
 	/**

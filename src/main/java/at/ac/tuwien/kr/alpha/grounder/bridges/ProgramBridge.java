@@ -1,6 +1,8 @@
 package at.ac.tuwien.kr.alpha.grounder.bridges;
 
 import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.atoms.*;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.*;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstraint;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFact;
@@ -95,13 +97,13 @@ public class ProgramBridge implements Bridge {
 			return;
 		}
 		// Register each atom occurring in the body of the rule at its corresponding working memory.
-		HashSet<BasicAtom> registeredPositiveAtoms = new HashSet<>();
+		HashSet<Atom> registeredPositiveAtoms = new HashSet<>();
 		for (int i = 0; i < nonGroundRule.getBodyAtomsPositive().size(); i++) {
 			registerAtomAtWorkingMemory(true, nonGroundRule, registeredPositiveAtoms, i);
 		}
 		// Register negative literals only if the rule contains no positive literals (necessary grounding is ensured by safety of rules).
 		if (nonGroundRule.getBodyAtomsPositive().size() == 0) {
-			HashSet<BasicAtom> registeredNegativeAtoms = new HashSet<>();
+			HashSet<Atom> registeredNegativeAtoms = new HashSet<>();
 			for (int i = 0; i < nonGroundRule.getBodyAtomsNegative().size(); i++) {
 				registerAtomAtWorkingMemory(false, nonGroundRule, registeredNegativeAtoms, i);
 			}
@@ -115,15 +117,15 @@ public class ProgramBridge implements Bridge {
 	 * @param registeredAtoms a set of already registered atoms (will skip if the predicate of the current atom occurs in this set). This set will be extended by the current atom.
 	 * @param atomPos the position in the rule of the atom.
 	 */
-	private void registerAtomAtWorkingMemory(boolean isPositive, NonGroundRule nonGroundRule, HashSet<BasicAtom> registeredAtoms, int atomPos) {
+	private void registerAtomAtWorkingMemory(boolean isPositive, NonGroundRule nonGroundRule, HashSet<Atom> registeredAtoms, int atomPos) {
 		Atom bodyAtom = isPositive ? nonGroundRule.getBodyAtomsPositive().get(atomPos) : nonGroundRule.getBodyAtomsNegative().get(atomPos);
-		if ((bodyAtom instanceof BasicAtom) && !registeredAtoms.contains(bodyAtom)) {
-			Predicate predicate = ((BasicAtom) bodyAtom).predicate;
-			registeredAtoms.add((BasicAtom) bodyAtom);
+		if (!registeredAtoms.contains(bodyAtom)) {
+			Predicate predicate = bodyAtom.getPredicate();
+			registeredAtoms.add(bodyAtom);
 			IndexedInstanceStorage workingMemory = isPositive ? this.workingMemory.get(predicate).getLeft() : this.workingMemory.get(predicate).getRight();
 			rulesUsingPredicateWorkingMemory.putIfAbsent(workingMemory, new ArrayList<>());
 			rulesUsingPredicateWorkingMemory.get(workingMemory).add(
-				new FirstBindingAtom(nonGroundRule, atomPos, (BasicAtom) bodyAtom));
+				new FirstBindingAtom(nonGroundRule, atomPos, bodyAtom));
 		}
 	}
 
@@ -397,7 +399,6 @@ public class ProgramBridge implements Bridge {
 		return generatedSubstitutions;
 	}
 
-
 	/**
 	 * Computes the unifier of the atom and the instance and stores it in the variable substitution.
 	 * @param atom the body atom to unify
@@ -409,7 +410,7 @@ public class ProgramBridge implements Bridge {
 		Substitution tempSubstitution = new Substitution(substitution);
 		for (int i = 0; i < instance.terms.size(); i++) {
 			if (instance.terms.get(i) == atom.getTerms().get(i) ||
-				unifyTerms(atom.getTerms().get(i), instance.terms.get(i), tempSubstitution)) {
+				tempSubstitution.unifyTerms(atom.getTerms().get(i), instance.terms.get(i))) {
 				continue;
 			}
 			return false;
@@ -418,59 +419,13 @@ public class ProgramBridge implements Bridge {
 		return true;
 	}
 
-	/**
-	 * Checks if the left possible non-ground term unifies with the ground term.
-	 * @param termNonGround
-	 * @param termGround
-	 * @param substitution
-	 * @return
-	 */
-	boolean unifyTerms(Term termNonGround, Term termGround, Substitution substitution) {
-		if (termNonGround == termGround) {
-			// Both terms are either the same constant or the same variable term
-			return true;
-		} else if (termNonGround instanceof ConstantTerm) {
-			// Since right term is ground, both terms differ
-			return false;
-		} else if (termNonGround instanceof VariableTerm) {
-			VariableTerm variableTerm = (VariableTerm)termNonGround;
-			// Left term is variable, bind it to the right term.
-			if (substitution.eval(variableTerm) != null) {
-				// Variable is already bound, return true if binding is the same as the current ground term.
-				return termNonGround == substitution.eval(variableTerm);
-			} else {
-				substitution.put(variableTerm, termGround);
-				return true;
-			}
-		} else if (termNonGround instanceof FunctionTerm && termGround instanceof FunctionTerm) {
-			// Both terms are function terms
-			FunctionTerm ftNonGround = (FunctionTerm) termNonGround;
-			FunctionTerm ftGround = (FunctionTerm) termGround;
-
-			if (ftNonGround.functionSymbol != ftGround.functionSymbol || ftNonGround.termList.size() != ftGround.termList.size()) {
-				return false;
-			}
-
-			// Iterate over all subterms of both function terms
-			for (int i = 0; i < ftNonGround.termList.size(); i++) {
-				if (!unifyTerms(ftNonGround.termList.get(i), ftGround.termList.get(i), substitution)) {
-					return false;
-				}
-			}
-
-			return true;
-		}
-		return false;
-	}
-
-
 	private static class FirstBindingAtom {
 		public NonGroundRule rule;
 
 		public int firstBindingAtomPos;
-		public BasicAtom firstBindingAtom;
+		public Atom firstBindingAtom;
 
-		public FirstBindingAtom(NonGroundRule rule, int firstBindingAtomPos, BasicAtom firstBindingAtom) {
+		public FirstBindingAtom(NonGroundRule rule, int firstBindingAtomPos, Atom firstBindingAtom) {
 			this.rule = rule;
 			this.firstBindingAtomPos = firstBindingAtomPos;
 			this.firstBindingAtom = firstBindingAtom;

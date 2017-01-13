@@ -1,6 +1,9 @@
-package at.ac.tuwien.kr.alpha.common;
+package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.Util;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Arrays;
@@ -13,8 +16,8 @@ import java.util.stream.Collectors;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class BasicAtom implements Atom {
-	public final Predicate predicate;
-	public final List<Term> terms;
+	private final Predicate predicate;
+	private final List<Term> terms;
 	private final boolean ground;
 
 	public BasicAtom(Predicate predicate, List<Term> terms) {

@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
-import at.ac.tuwien.kr.alpha.common.Term;
-import at.ac.tuwien.kr.alpha.common.VariableTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
 /**
  * Copyright (c) 2016, the Alpha Team.

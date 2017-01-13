@@ -39,7 +39,7 @@ import java.util.*;
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
-class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
+public class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BasicNoGoodStore.class);
 
 	private final AtomTranslator translator;
@@ -54,7 +54,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		this.translator = translator;
 	}
 
-	BasicNoGoodStore(Assignment<ThriceTruth> assignment) {
+	public BasicNoGoodStore(Assignment<ThriceTruth> assignment) {
 		this(assignment, null);
 	}
 

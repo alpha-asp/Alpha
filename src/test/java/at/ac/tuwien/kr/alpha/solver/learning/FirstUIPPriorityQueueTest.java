@@ -1,6 +1,8 @@
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.solver.learning;
 
 import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
+import at.ac.tuwien.kr.alpha.solver.BasicAssignment;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.junit.Before;
 import org.junit.Test;
 

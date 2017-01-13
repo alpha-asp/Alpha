@@ -343,7 +343,7 @@ public class BasicNoGoodStoreTest {
 		assignment.assign(1, TRUE);
 		assignment.assign(2, TRUE);
 		NoGoodStore.ConflictCause conflictCause = store.add(1, noGood);
-		assertEquals(noGood, conflictCause.violatedNoGood);
+		assertEquals(noGood, conflictCause.getViolatedNoGood());
 	}
 
 	@Test
@@ -353,7 +353,7 @@ public class BasicNoGoodStoreTest {
 		assignment.assign(2, TRUE);
 		assignment.assign(3, TRUE);
 		NoGoodStore.ConflictCause conflictCause = store.add(1, noGood);
-		assertEquals(noGood, conflictCause.violatedNoGood);
+		assertEquals(noGood, conflictCause.getViolatedNoGood());
 	}
 
 	@Test
@@ -433,7 +433,7 @@ public class BasicNoGoodStoreTest {
 		assertTrue(assignment.assign(3, TRUE));
 		NoGoodStore.ConflictCause conflictCause = store.add(11, noGood);
 		assertNotNull(conflictCause);
-		assertNotNull(conflictCause.violatedNoGood);
+		assertNotNull(conflictCause.getViolatedNoGood());
 	}
 
 	@Test
@@ -444,7 +444,7 @@ public class BasicNoGoodStoreTest {
 		assertTrue(assignment.assign(3, MBT));
 		NoGoodStore.ConflictCause conflictCause = store.add(11, noGood);
 		assertNotNull(conflictCause);
-		assertNotNull(conflictCause.violatedNoGood);
+		assertNotNull(conflictCause.getViolatedNoGood());
 	}
 
 	@Test
@@ -464,7 +464,7 @@ public class BasicNoGoodStoreTest {
 		assertTrue(assignment.assign(2, TRUE));
 		NoGoodStore.ConflictCause conflictCause = store.add(11, noGood);
 		assertNotNull(conflictCause);
-		assertNotNull(conflictCause.violatedNoGood);
+		assertNotNull(conflictCause.getViolatedNoGood());
 	}
 
 	@Test
@@ -474,7 +474,7 @@ public class BasicNoGoodStoreTest {
 		assertTrue(assignment.assign(2, MBT));
 		NoGoodStore.ConflictCause conflictCause = store.add(11, noGood);
 		assertNotNull(conflictCause);
-		assertNotNull(conflictCause.violatedNoGood);
+		assertNotNull(conflictCause.getViolatedNoGood());
 	}
 
 	@Test
