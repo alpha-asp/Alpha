@@ -6,6 +6,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 public class Choices implements Iterable<Map.Entry<Integer, Pair<Integer, Integer>>> {
 	private final Map<Integer, Pair<Integer, Integer>> choices;
@@ -16,6 +17,10 @@ public class Choices implements Iterable<Map.Entry<Integer, Pair<Integer, Intege
 
 	public Choices() {
 		this(new HashMap<>());
+	}
+
+	public Set<Integer> getAtoms() {
+		return choices.keySet();
 	}
 
 	public void put(int atom, int enabler, int disabler) {
