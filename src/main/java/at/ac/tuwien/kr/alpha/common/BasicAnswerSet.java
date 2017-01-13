@@ -1,6 +1,8 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Collections.*;
 
@@ -134,10 +136,7 @@ public class BasicAnswerSet implements AnswerSet {
 				predicates.add(predicate);
 			}
 
-			final Term[] terms = new Term[constantSymbols.length];
-			for (int i = 0; i < constantSymbols.length; i++) {
-				terms[i] = ConstantTerm.getInstance(constantSymbols[i]);
-			}
+			List<Term> terms = Stream.of(constantSymbols).map(ConstantTerm::getInstance).collect(Collectors.toList());
 			instances.add(new BasicAtom(predicate, terms));
 			return this;
 		}

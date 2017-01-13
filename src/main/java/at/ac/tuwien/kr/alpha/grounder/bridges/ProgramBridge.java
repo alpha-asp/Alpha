@@ -9,7 +9,6 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ParsedRule;
 import at.ac.tuwien.kr.alpha.solver.Choices;
 import com.google.common.collect.Iterables;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +23,7 @@ public class ProgramBridge implements Bridge {
 	private final ArrayList<NonGroundRule> rulesFromProgram = new ArrayList<>();
 	private final HashMap<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
 	private final HashSet<Predicate> knownPredicates = new HashSet<>();
-	private final HashMap<NonGroundRule, HashSet<VariableSubstitution>> knownGroundingSubstitutions = new HashMap<>();
+	private final HashMap<NonGroundRule, HashSet<Substitution>> knownGroundingSubstitutions = new HashMap<>();
 	private final IntIdGenerator intIdGenerator = new IntIdGenerator();
 
 	private HashSet<IndexedInstanceStorage> modifiedWorkingMemories = new HashSet<>();
@@ -46,7 +45,7 @@ public class ProgramBridge implements Bridge {
 			for (int i = 0; i < predicateArity; i++) {
 				termList.add(fact.getFact().getTerms().get(i).toTerm());
 			}
-			Instance instance = new Instance(termList.toArray(new Term[0]));
+			Instance instance = new Instance(termList);
 			// Add instance to corresponding list of facts
 			factsFromProgram.putIfAbsent(predicate, new ArrayList<>());
 			ArrayList<Instance> internalPredicateInstances = factsFromProgram.get(predicate);
@@ -163,17 +162,17 @@ public class ProgramBridge implements Bridge {
 			for (FirstBindingAtom firstBindingAtom : firstBindingAtoms) {
 				// Use the recently added instances from the modified working memory to construct an initial variableSubstitution
 				NonGroundRule nonGroundRule = firstBindingAtom.rule;
-				List<VariableSubstitution> variableSubstitutions = new ArrayList<>();
+				List<Substitution> substitutions = new ArrayList<>();
 				// Generate variableSubstitutions from each recent instance.
 				for (Instance instance : modifiedWorkingMemory.getRecentlyAddedInstances()) {
 					// Check instance if it matches with the atom.
-					VariableSubstitution partialVariableSubstitution = new VariableSubstitution();
-					if (unify(firstBindingAtom.firstBindingAtom, instance, partialVariableSubstitution)) {
-						variableSubstitutions.addAll(bindNextAtomInRule(nonGroundRule, 0, firstBindingAtom.firstBindingAtomPos, partialVariableSubstitution));
+					Substitution partialSubstitution = new Substitution();
+					if (unify(firstBindingAtom.firstBindingAtom, instance, partialSubstitution)) {
+						substitutions.addAll(bindNextAtomInRule(nonGroundRule, 0, firstBindingAtom.firstBindingAtomPos, partialSubstitution));
 					}
 				}
-				for (VariableSubstitution variableSubstitution : variableSubstitutions) {
-					newNoGoods.addAll(generateNoGoodsFromGroundSubstitution(nonGroundRule, variableSubstitution, atomStore, choices, choiceAtomsGenerator));
+				for (Substitution substitution : substitutions) {
+					newNoGoods.addAll(generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution, atomStore, choices, choiceAtomsGenerator));
 				}
 			}
 
@@ -193,14 +192,14 @@ public class ProgramBridge implements Bridge {
 		for (Predicate predicate : factsFromProgram.keySet()) {
 			for (Instance instance : factsFromProgram.get(predicate)) {
 				// The noGood is assumed to be new.
-				noGoodsFromFacts.add(NoGood.headFirst(-atomStore.add(new BasicAtom(predicate, false, instance.terms))));
+				noGoodsFromFacts.add(NoGood.headFirst(-atomStore.add(new BasicAtom(predicate, instance.terms))));
 			}
 		}
 		for (NonGroundRule nonGroundRule : rulesFromProgram) {
 			if (!nonGroundRule.isGround()) {
 				continue;
 			}
-			noGoodsFromFacts.addAll(generateNoGoodsFromGroundSubstitution(nonGroundRule, new VariableSubstitution(), atomStore, choices, choiceAtomsGenerator));
+			noGoodsFromFacts.addAll(generateNoGoodsFromGroundSubstitution(nonGroundRule, new Substitution(), atomStore, choices, choiceAtomsGenerator));
 		}
 		return noGoodsFromFacts;
 	}
@@ -208,14 +207,14 @@ public class ProgramBridge implements Bridge {
 	/**
 	 * Generates all NoGoods resulting from a non-ground rule and a variable substitution.
 	 * @param nonGroundRule
-	 * @param variableSubstitution
+	 * @param substitution
 	 * @return
 	 */
-	private List<NoGood> generateNoGoodsFromGroundSubstitution(NonGroundRule nonGroundRule, VariableSubstitution variableSubstitution, AtomStore atomStore, Choices choices, IntIdGenerator choiceAtomsGenerator) {
+	private List<NoGood> generateNoGoodsFromGroundSubstitution(NonGroundRule nonGroundRule, Substitution substitution, AtomStore atomStore, Choices choices, IntIdGenerator choiceAtomsGenerator) {
 		if (LOGGER.isDebugEnabled()) {
 			// Debugging helper: record known grounding substitutions.
 			knownGroundingSubstitutions.putIfAbsent(nonGroundRule, new HashSet<>());
-			knownGroundingSubstitutions.get(nonGroundRule).add(variableSubstitution);
+			knownGroundingSubstitutions.get(nonGroundRule).add(substitution);
 		}
 
 		// Collect ground atoms in the body
@@ -226,19 +225,19 @@ public class ProgramBridge implements Bridge {
 			if (atom instanceof BuiltinAtom) {
 				// Truth of builtin atoms does not depend on any assignment
 				// hence, they need not be represented as long as they evaluate to true
-				if (((BuiltinAtom) atom).evaluate(variableSubstitution)) {
+				if (((BuiltinAtom) atom).evaluate(substitution)) {
 					continue;
 				} else {
 					// Rule body is always false, skip the whole rule.
 					return Collections.emptyList();
 				}
 			}
-			int groundAtomPositive = SubstitutionUtil.groundingSubstitute(atomStore, atom, variableSubstitution);
+			int groundAtomPositive = atomStore.add(atom, substitution);
 			bodyAtomsPositive.add(groundAtomPositive);
 		}
 
 		for (Atom basicAtom : nonGroundRule.getBodyAtomsNegative()) {
-			int groundAtomNegative = SubstitutionUtil.groundingSubstitute(atomStore, basicAtom, variableSubstitution);
+			int groundAtomNegative = atomStore.add(basicAtom, substitution);
 			bodyAtomsNegative.add(-groundAtomNegative);
 		}
 
@@ -256,7 +255,7 @@ public class ProgramBridge implements Bridge {
 		}
 
 		// Prepare atom representing the rule body
-		Atom ruleBodyRepresentingPredicate = new RuleAtom(nonGroundRule, variableSubstitution);
+		Atom ruleBodyRepresentingPredicate = new RuleAtom(nonGroundRule, substitution);
 
 		// Check uniqueness of ground rule by testing whether the body representing atom already has an id
 		if (atomStore.contains(ruleBodyRepresentingPredicate)) {
@@ -267,7 +266,7 @@ public class ProgramBridge implements Bridge {
 		int bodyRepresentingAtomId = atomStore.add(ruleBodyRepresentingPredicate);
 
 		// Prepare head atom
-		int headAtomId = SubstitutionUtil.groundingSubstitute(atomStore, nonGroundRule.getHeadAtom(), variableSubstitution);
+		int headAtomId = atomStore.add(nonGroundRule.getHeadAtom(), substitution);
 
 		// Create NoGood for body.
 		int[] bodyLiterals = new int[bodySize + 1];
@@ -316,23 +315,23 @@ public class ProgramBridge implements Bridge {
 		return generatedNoGoods;
 	}
 
-	private List<VariableSubstitution> bindNextAtomInRule(NonGroundRule rule, int atomPos, int firstBindingPos, VariableSubstitution partialVariableSubstitution) {
+	private List<Substitution> bindNextAtomInRule(NonGroundRule rule, int atomPos, int firstBindingPos, Substitution partialSubstitution) {
 		if (atomPos == rule.getNumBodyAtoms()) {
-			return Collections.singletonList(partialVariableSubstitution);
+			return Collections.singletonList(partialSubstitution);
 		}
 
 		if (atomPos == firstBindingPos) {
 			// Binding for this position was already computed, skip it.
-			return bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, partialVariableSubstitution);
+			return bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, partialSubstitution);
 		}
 
 		Atom currentAtom = rule.getBodyAtom(atomPos);
 		if (currentAtom instanceof BuiltinAtom) {
 			// Assumption: all variables occurring in the builtin atom are already bound
 			// (as ensured by the body atom sorting)
-			if (((BuiltinAtom)currentAtom).evaluate(partialVariableSubstitution)) {
+			if (((BuiltinAtom)currentAtom).evaluate(partialSubstitution)) {
 				// Builtin is true, continue with next atom in rule body.
-				return bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, partialVariableSubstitution);
+				return bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, partialSubstitution);
 			}
 
 			// Builtin is false, return no bindings.
@@ -340,15 +339,15 @@ public class ProgramBridge implements Bridge {
 		}
 
 		// check if partialVariableSubstitution already yields a ground atom
-		BasicAtom currentBasicAtom = (BasicAtom)currentAtom;
-		Pair<Boolean, BasicAtom> substitute = SubstitutionUtil.substitute(currentBasicAtom, partialVariableSubstitution);
-		if (substitute.getLeft()) {
+		final Atom substitute = currentAtom.substitute(partialSubstitution);
+
+		if (substitute.isGround()) {
 			// Substituted atom is ground, in case it is positive, only ground if it also holds true
 			if (rule.isBodyAtomPositive(atomPos)) {
-				IndexedInstanceStorage wm = workingMemory.get(currentBasicAtom.predicate).getLeft();
-				if (wm.containsInstance(new Instance(substitute.getRight().termList))) {
+				IndexedInstanceStorage wm = workingMemory.get(currentAtom.getPredicate()).getLeft();
+				if (wm.containsInstance(new Instance(substitute.getTerms()))) {
 					// Ground literal holds, continue finding a variable substitution.
-					return bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, partialVariableSubstitution);
+					return bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, partialSubstitution);
 				}
 
 				// Generate no variable substitution.
@@ -356,22 +355,22 @@ public class ProgramBridge implements Bridge {
 			}
 
 			// Atom occurs negated in the rule, continue grounding
-			return bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, partialVariableSubstitution);
+			return bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, partialSubstitution);
 		}
 
 		// substituted atom contains variables
-		ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> wms = workingMemory.get(currentBasicAtom.predicate);
+		ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> wms = workingMemory.get(currentAtom.getPredicate());
 		IndexedInstanceStorage storage = rule.isBodyAtomPositive(atomPos) ? wms.getLeft() : wms.getRight();
 		Collection<Instance> instances;
-		if (partialVariableSubstitution.isEmpty()) {
+		if (partialSubstitution.isEmpty()) {
 			// No variables are bound, but first atom in the body became recently true, consider all instances now.
 			instances = storage.getAllInstances();
 		} else {
 			// For selection of the instances, find ground term on which to select
 			int firstGroundTermPos = 0;
 			Term firstGroundTerm = null;
-			for (int i = 0; i < substitute.getRight().termList.length; i++) {
-				Term testTerm = substitute.getRight().termList[i];
+			for (int i = 0; i < substitute.getTerms().size(); i++) {
+				Term testTerm = substitute.getTerms().get(i);
 				if (testTerm.isGround()) {
 					firstGroundTermPos = i;
 					firstGroundTerm = testTerm;
@@ -386,12 +385,12 @@ public class ProgramBridge implements Bridge {
 			}
 		}
 
-		ArrayList<VariableSubstitution> generatedSubstitutions = new ArrayList<>();
+		ArrayList<Substitution> generatedSubstitutions = new ArrayList<>();
 		for (Instance instance : instances) {
 			// Check each instance if it matches with the atom.
-			VariableSubstitution variableSubstitutionClone = new VariableSubstitution(partialVariableSubstitution);
-			if (unify(substitute.getRight(), instance, variableSubstitutionClone)) {
-				generatedSubstitutions.addAll(bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, variableSubstitutionClone));
+			Substitution substitutionClone = new Substitution(partialSubstitution);
+			if (unify(substitute, instance, substitutionClone)) {
+				generatedSubstitutions.addAll(bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, substitutionClone));
 			}
 		}
 
@@ -402,20 +401,20 @@ public class ProgramBridge implements Bridge {
 	/**
 	 * Computes the unifier of the atom and the instance and stores it in the variable substitution.
 	 * @param atom the body atom to unify
-	 * @param instance the ground instance
-	 * @param variableSubstitution if the atom does not unify, this is left unchanged.
+	 * @param instance the substitute instance
+	 * @param substitution if the atom does not unify, this is left unchanged.
 	 * @return true if the atom and the instance unify. False otherwise
 	 */
-	protected boolean unify(BasicAtom atom, Instance instance, VariableSubstitution variableSubstitution) {
-		VariableSubstitution tempVariableSubstitution = new VariableSubstitution(variableSubstitution);
-		for (int i = 0; i < instance.terms.length; i++) {
-			if (instance.terms[i] == atom.termList[i] ||
-				unifyTerms(atom.termList[i], instance.terms[i], tempVariableSubstitution)) {
+	protected boolean unify(Atom atom, Instance instance, Substitution substitution) {
+		Substitution tempSubstitution = new Substitution(substitution);
+		for (int i = 0; i < instance.terms.size(); i++) {
+			if (instance.terms.get(i) == atom.getTerms().get(i) ||
+				unifyTerms(atom.getTerms().get(i), instance.terms.get(i), tempSubstitution)) {
 				continue;
 			}
 			return false;
 		}
-		variableSubstitution.replaceSubstitution(tempVariableSubstitution);
+		substitution.replaceSubstitution(tempSubstitution);
 		return true;
 	}
 
@@ -423,10 +422,10 @@ public class ProgramBridge implements Bridge {
 	 * Checks if the left possible non-ground term unifies with the ground term.
 	 * @param termNonGround
 	 * @param termGround
-	 * @param variableSubstitution
+	 * @param substitution
 	 * @return
 	 */
-	boolean unifyTerms(Term termNonGround, Term termGround, VariableSubstitution variableSubstitution) {
+	boolean unifyTerms(Term termNonGround, Term termGround, Substitution substitution) {
 		if (termNonGround == termGround) {
 			// Both terms are either the same constant or the same variable term
 			return true;
@@ -436,11 +435,11 @@ public class ProgramBridge implements Bridge {
 		} else if (termNonGround instanceof VariableTerm) {
 			VariableTerm variableTerm = (VariableTerm)termNonGround;
 			// Left term is variable, bind it to the right term.
-			if (variableSubstitution.eval(variableTerm) != null) {
+			if (substitution.eval(variableTerm) != null) {
 				// Variable is already bound, return true if binding is the same as the current ground term.
-				return termNonGround == variableSubstitution.eval(variableTerm);
+				return termNonGround == substitution.eval(variableTerm);
 			} else {
-				variableSubstitution.put(variableTerm, termGround);
+				substitution.put(variableTerm, termGround);
 				return true;
 			}
 		} else if (termNonGround instanceof FunctionTerm && termGround instanceof FunctionTerm) {
@@ -454,7 +453,7 @@ public class ProgramBridge implements Bridge {
 
 			// Iterate over all subterms of both function terms
 			for (int i = 0; i < ftNonGround.termList.size(); i++) {
-				if (!unifyTerms(ftNonGround.termList.get(i), ftGround.termList.get(i), variableSubstitution)) {
+				if (!unifyTerms(ftNonGround.termList.get(i), ftGround.termList.get(i), substitution)) {
 					return false;
 				}
 			}
@@ -480,12 +479,37 @@ public class ProgramBridge implements Bridge {
 
 	public void printCurrentlyKnownGroundRules() {
 		System.out.println("Printing known ground rules:");
-		for (Map.Entry<NonGroundRule, HashSet<VariableSubstitution>> ruleSubstitutionsEntry : knownGroundingSubstitutions.entrySet()) {
+		for (Map.Entry<NonGroundRule, HashSet<Substitution>> ruleSubstitutionsEntry : knownGroundingSubstitutions.entrySet()) {
 			NonGroundRule nonGroundRule = ruleSubstitutionsEntry.getKey();
-			HashSet<VariableSubstitution> variableSubstitutions = ruleSubstitutionsEntry.getValue();
-			for (VariableSubstitution variableSubstitution : variableSubstitutions) {
-				System.out.println(SubstitutionUtil.groundAndPrintRule(nonGroundRule, variableSubstitution));
+			HashSet<Substitution> substitutions = ruleSubstitutionsEntry.getValue();
+			for (Substitution substitution : substitutions) {
+				System.out.println(groundAndPrintRule(nonGroundRule, substitution));
 			}
 		}
+	}
+
+	public static String groundAndPrintRule(NonGroundRule rule, Substitution substitution) {
+		String ret = "";
+		if (!rule.isConstraint()) {
+			Atom groundHead = rule.getHeadAtom().substitute(substitution);
+			ret += groundHead.toString();
+		}
+		ret += " :- ";
+		boolean isFirst = true;
+		for (Atom bodyAtom : rule.getBodyAtomsPositive()) {
+			ret += groundAtomToString(bodyAtom, false, substitution, isFirst);
+			isFirst = false;
+		}
+		for (Atom bodyAtom : rule.getBodyAtomsNegative()) {
+			ret += groundAtomToString(bodyAtom, true, substitution, isFirst);
+			isFirst = false;
+		}
+		ret += ".";
+		return ret;
+	}
+
+	private static String groundAtomToString(Atom bodyAtom, boolean isNegative, Substitution substitution, boolean isFirst) {
+		Atom groundBodyAtom = bodyAtom.substitute(substitution);
+		return  (isFirst ? ", " : "") + (isNegative ? "not " : "") + groundBodyAtom.toString();
 	}
 }

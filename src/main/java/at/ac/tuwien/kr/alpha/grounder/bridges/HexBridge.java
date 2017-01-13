@@ -6,6 +6,8 @@ import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.solver.Choices;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class HexBridge implements Bridge {
 	public static native void sendResults(String[][] resultsArray);
@@ -132,13 +134,8 @@ public class HexBridge implements Bridge {
 
 	private BasicAtom atomFromLiteral(String literal) {
 		String[] lit = literal.split("\\(|,|\\)");
-		Term[] terms = new Term[lit.length - 1];
-
-		for (int j = 1; j < lit.length; j++) {
-			terms[j - 1] = ConstantTerm.getInstance(lit[j]);
-		}
-
-		return new BasicAtom(new BasicPredicate(lit[0], lit.length - 1), false, terms);
+		List<Term> terms = Stream.of(lit).skip(1).map(ConstantTerm::getInstance).collect(Collectors.toList());
+		return new BasicAtom(new BasicPredicate(lit[0], lit.length - 1), terms);
 	}
 
 	private String[][] getExternalNoGoods(ReadableAssignment assignment, AtomStore atomStore) {

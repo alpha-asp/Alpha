@@ -8,18 +8,24 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-public class VariableSubstitution {
-	HashMap<VariableTerm, Term> substitution = new HashMap<>();
+public class Substitution {
+	private final HashMap<VariableTerm, Term> substitution;
 
-	public VariableSubstitution() {
+	public Substitution(HashMap<VariableTerm, Term> substitution) {
+		this.substitution = substitution;
 	}
 
-	public VariableSubstitution(VariableSubstitution clone) {
-		this.substitution = new HashMap<>(clone.substitution);
+	public Substitution() {
+		this(new HashMap<>());
 	}
 
-	public void replaceSubstitution(VariableSubstitution other) {
-		this.substitution = other.substitution;
+	public Substitution(Substitution clone) {
+		this(new HashMap<>(clone.substitution));
+	}
+
+	public void replaceSubstitution(Substitution other) {
+		substitution.clear();
+		substitution.putAll(other.substitution);
 	}
 
 	/**
@@ -50,7 +56,7 @@ public class VariableSubstitution {
 			return false;
 		}
 
-		VariableSubstitution that = (VariableSubstitution) o;
+		Substitution that = (Substitution) o;
 
 		return substitution != null ? substitution.equals(that.substitution) : that.substitution == null;
 	}

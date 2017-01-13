@@ -1,8 +1,9 @@
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
+
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -29,6 +30,11 @@ public class ConstantTerm extends Term {
 	@Override
 	public List<VariableTerm> getOccurringVariables() {
 		return Collections.emptyList();
+	}
+
+	@Override
+	public Term substitute(Substitution substitution) {
+		return this;
 	}
 
 	@Override

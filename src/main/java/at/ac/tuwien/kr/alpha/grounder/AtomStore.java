@@ -2,7 +2,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.Atom;
 import at.ac.tuwien.kr.alpha.common.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.Term;
 
 import java.util.*;
 
@@ -19,7 +19,7 @@ public class AtomStore {
 
 	public AtomStore() {
 		// Create atomId for falsum (currently not needed, but it gets atomId 0, which cannot represent a negated literal).
-		add(new BasicAtom(new BasicPredicate("\u22A5", 0), true));
+		add(null);
 	}
 
 	public int getHighestAtomId() {
@@ -64,6 +64,23 @@ public class AtomStore {
 		}
 
 		return id;
+	}
+
+	/**
+	 * This method applies a substitution to an atom and returns the AtomId of the substitute atom.
+	 * @param substitution the variable substitution to apply.
+	 * @return the AtomId of the corresponding substituted substitute atom.
+	 */
+	public int add(Atom nonGroundAtom, Substitution substitution) {
+		List<Term> groundTermList = new ArrayList<>();
+		for (Term nonGroundTerm : nonGroundAtom.getTerms()) {
+			Term groundTerm = nonGroundTerm.substitute(substitution);
+			if (!groundTerm.isGround()) {
+				throw new RuntimeException("Grounding substitution yields a non-substitute term: " + groundTerm + "\nShould not happen, aborting.");
+			}
+			groundTermList.add(groundTerm);
+		}
+		return add(new BasicAtom(nonGroundAtom.getPredicate(), groundTermList));
 	}
 
 	public boolean contains(Atom groundAtom) {

@@ -4,6 +4,7 @@ import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Term;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * An instance is a positional association of terms, e.g., representing a variable substitution, or a ground instance of
@@ -11,9 +12,13 @@ import java.util.Arrays;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class Instance {
-	public final Term[] terms;
+	public final List<Term> terms;
 
 	public Instance(Term... terms) {
+		this(Arrays.asList(terms));
+	}
+
+	public Instance(List<Term> terms) {
 		this.terms = terms;
 	}
 
@@ -27,20 +32,18 @@ public class Instance {
 			return false;
 		}
 
-		Instance instance = (Instance) o;
-
-		return Arrays.equals(terms, instance.terms);
+		return terms.equals(((Instance) o).terms);
 	}
 
 	@Override
 	public int hashCode() {
-		return Arrays.hashCode(terms);
+		return terms.hashCode();
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("(");
-		Util.appendDelimited(sb, Arrays.asList(terms));
+		Util.appendDelimited(sb, terms);
 		sb.append(")");
 		return sb.toString();
 	}

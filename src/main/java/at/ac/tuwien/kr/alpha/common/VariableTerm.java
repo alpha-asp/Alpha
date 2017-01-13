@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,6 +37,16 @@ public class VariableTerm extends Term {
 	@Override
 	public List<VariableTerm> getOccurringVariables() {
 		return Collections.singletonList(this);
+	}
+
+	@Override
+	public Term substitute(Substitution substitution) {
+		Term groundTerm = substitution.eval(this);
+		if (groundTerm == null) {
+			// If variable is not substituted, keep term as is.
+			return this;
+		}
+		return  groundTerm;
 	}
 
 	@Override
