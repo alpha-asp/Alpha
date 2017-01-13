@@ -26,7 +26,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import ch.qos.logback.classic.Level;
@@ -46,7 +45,7 @@ import static org.junit.Assert.assertEquals;
  * Tests {@link AbstractSolver} using some pigeon-hole test cases (see https://en.wikipedia.org/wiki/Pigeonhole_principle).
  *
  */
-public abstract class PigeonHoleTest {
+public class PigeonHoleTest extends AbstractSolverTests {
 	/**
 	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
 	 */
@@ -59,8 +58,6 @@ public abstract class PigeonHoleTest {
 		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		root.setLevel(Level.DEBUG);
 	}
-
-	protected abstract Solver getInstance(Grounder grounder);
 
 	@Test(timeout = 1000)
 	public void test2Pigeons2Holes() throws IOException {
