@@ -1,5 +1,7 @@
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;

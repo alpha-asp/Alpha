@@ -1,8 +1,8 @@
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.Term;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 import java.util.Collections;
 import java.util.List;

@@ -1,6 +1,7 @@
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.solver.learning;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.solver.*;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -66,9 +67,9 @@ public class GroundConflictNoGoodLearnerTest {
 		NoGoodStore.ConflictCause conflictCause = store.add(11, n2);
 		assertNotNull(conflictCause);
 		//store.propagate();
-		assertNotNull(conflictCause.violatedGuess);
-		assertEquals(3, conflictCause.violatedGuess.getAtom());
-		assertEquals(2, conflictCause.violatedGuess.getDecisionLevel());
-		assertNull(conflictCause.violatedNoGood);
+		assertNotNull(conflictCause.getViolatedGuess());
+		assertEquals(3, conflictCause.getViolatedGuess().getAtom());
+		assertEquals(2, conflictCause.getViolatedGuess().getDecisionLevel());
+		assertNull(conflictCause.getViolatedNoGood());
 	}
 }

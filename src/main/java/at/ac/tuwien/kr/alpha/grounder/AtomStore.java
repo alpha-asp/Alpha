@@ -1,8 +1,8 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.Atom;
-import at.ac.tuwien.kr.alpha.common.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.Term;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 import java.util.*;
 

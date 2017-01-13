@@ -1,25 +1,27 @@
-package at.ac.tuwien.kr.alpha.common;
+package at.ac.tuwien.kr.alpha.common.terms;
 
+import at.ac.tuwien.kr.alpha.common.Symbol;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ConstantTerm extends Term {
-	private final TermSymbol constantSymbol;
+	private static final Interner<ConstantTerm> INTERNER = Interners.newStrongInterner();
 
-	private static final HashMap<String, ConstantTerm> CONSTANTS = new HashMap<>();
+	private final Symbol symbol;
 
-	private ConstantTerm(String constantSymbol) {
-		this.constantSymbol = TermSymbol.getInstance(constantSymbol);
+	private ConstantTerm(String symbol) {
+		this.symbol = Symbol.getInstance(symbol);
 	}
 
 	public static ConstantTerm getInstance(String constantSymbol) {
-		return CONSTANTS.computeIfAbsent(constantSymbol, ConstantTerm::new);
+		return INTERNER.intern(new ConstantTerm(constantSymbol));
 	}
 
 	@Override
@@ -39,7 +41,7 @@ public class ConstantTerm extends Term {
 
 	@Override
 	public String toString() {
-		return constantSymbol.getSymbol();
+		return symbol.getSymbol();
 	}
 
 	@Override
@@ -54,18 +56,18 @@ public class ConstantTerm extends Term {
 
 		ConstantTerm that = (ConstantTerm) o;
 
-		return constantSymbol.equals(that.constantSymbol);
+		return symbol.equals(that.symbol);
 	}
 
 	@Override
 	public int hashCode() {
-		return constantSymbol.hashCode();
+		return symbol.hashCode();
 	}
 
 	@Override
 	public int compareTo(Term o) {
 		if (o instanceof ConstantTerm) {
-			return constantSymbol.compareTo(((ConstantTerm) o).constantSymbol);
+			return symbol.compareTo(((ConstantTerm) o).symbol);
 		}
 		return 1;
 	}

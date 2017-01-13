@@ -28,8 +28,8 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
 import at.ac.tuwien.kr.alpha.solver.Choices;
 
 import java.util.*;
@@ -44,7 +44,7 @@ public class NaiveGrounder extends BridgedGrounder {
 
 	private final Map<NoGood, Integer> nogoodIdentifiers = new HashMap<>();
 	private final AtomStore atomStore = new AtomStore();
-	private final Choices choices = new Choices();
+	private Choices choices = new Choices();
 
 	public NaiveGrounder(Bridge... bridges) {
 		this(p -> true, bridges);
@@ -100,13 +100,15 @@ public class NaiveGrounder extends BridgedGrounder {
 
 	@Override
 	public Choices getChoices() {
-		return choices;
+		Choices currentChoices = choices;
+		choices = new Choices();
+		return currentChoices;
 	}
 
 	@Override
 	public void updateAssignment(Iterator<? extends ReadableAssignment.Entry> it) {
 		while (it.hasNext()) {
-			Assignment.Entry assignment = it.next();
+			ReadableAssignment.Entry assignment = it.next();
 			for (Bridge bridge : bridges) {
 				bridge.updateAssignment(atomStore.get(assignment.getAtom()), assignment.getTruth());
 			}

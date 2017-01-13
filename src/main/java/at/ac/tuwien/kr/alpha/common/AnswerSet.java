@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.Util;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 
 import java.util.SortedSet;
 

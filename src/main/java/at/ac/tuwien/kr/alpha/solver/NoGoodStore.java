@@ -17,12 +17,20 @@ public interface NoGoodStore<T extends ThriceTruth> {
 	ConflictCause add(int id, NoGood noGood);
 
 	class ConflictCause {
-		NoGood violatedNoGood;
-		ReadableAssignment.Entry violatedGuess;
+		private final NoGood violatedNoGood;
+		private final ReadableAssignment.Entry<? extends ThriceTruth> violatedGuess;
 
-		public ConflictCause(NoGood violatedNoGood, ReadableAssignment.Entry violatedGuess) {
+		public ConflictCause(NoGood violatedNoGood, ReadableAssignment.Entry<? extends  ThriceTruth> violatedGuess) {
 			this.violatedNoGood = violatedNoGood;
 			this.violatedGuess = violatedGuess;
+		}
+
+		public ReadableAssignment.Entry<? extends ThriceTruth> getViolatedGuess() {
+			return violatedGuess;
+		}
+
+		public NoGood getViolatedNoGood() {
+			return violatedNoGood;
 		}
 	}
 

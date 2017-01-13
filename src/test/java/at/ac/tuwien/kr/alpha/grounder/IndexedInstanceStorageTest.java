@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import org.junit.Test;
 
 import java.util.List;

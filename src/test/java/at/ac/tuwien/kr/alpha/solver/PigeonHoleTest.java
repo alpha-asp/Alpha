@@ -27,6 +27,7 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
+import at.ac.tuwien.kr.alpha.grounder.bridges.ProgramBridge;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -111,7 +112,7 @@ public class PigeonHoleTest extends AbstractSolverTests {
 		System.out.println(testProgram);
 
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram.toString()));
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		NaiveGrounder grounder = new NaiveGrounder(new ProgramBridge(parsedProgram));
 		Solver solver = getInstance(grounder);
 
 		Set<AnswerSet> answerSets = solver.collectSet();

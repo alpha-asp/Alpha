@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
+import static at.ac.tuwien.kr.alpha.common.atoms.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
@@ -175,7 +175,7 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 	private Entry guessViolatedByAssign;
 
 	@Override
-	public ReadableAssignment.Entry getGuessViolatedByAssign() {
+	public ReadableAssignment.Entry<ThriceTruth> getGuessViolatedByAssign() {
 		return guessViolatedByAssign;
 	}
 

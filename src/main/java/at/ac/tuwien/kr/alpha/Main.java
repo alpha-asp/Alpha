@@ -176,7 +176,7 @@ public class Main {
 		IdentityTransformation programTransformation = new IdentityTransformation();
 		ParsedProgram transformedProgram = programTransformation.transform(program);
 		Grounder grounder = GrounderFactory.getInstance(
-			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram, filter, bridges
+			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), filter, bridges
 		);
 
 		// NOTE: Using time as seed is fine as the internal heuristics

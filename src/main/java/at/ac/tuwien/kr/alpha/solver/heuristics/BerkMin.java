@@ -28,14 +28,14 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
-import at.ac.tuwien.kr.alpha.solver.GroundConflictNoGoodLearner.ConflictAnalysisResult;
+import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.StreamSupport;
 
-import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
+import static at.ac.tuwien.kr.alpha.common.atoms.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
