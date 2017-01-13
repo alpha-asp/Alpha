@@ -28,14 +28,10 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 
 import java.util.Collection;
-import java.util.Map;
-
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 
 /**
  * The default heuristic that had been used by {@link at.ac.tuwien.kr.alpha.solver.DefaultSolver} before {@link BerkMin} was implemented.
@@ -43,14 +39,10 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
  */
 public class NaiveHeuristic implements BranchingHeuristic {
 
-	private Assignment assignment;
-	private Map<Integer, Integer> choiceOn;
-	private Map<Integer, Integer> choiceOff;
+	private final ChoiceManager choiceManager;
 
-	public NaiveHeuristic(Assignment assignment, Map<Integer, Integer> choiceOn, Map<Integer, Integer> choiceOff) {
-		this.assignment = assignment;
-		this.choiceOn = choiceOn;
-		this.choiceOff = choiceOff;
+	public NaiveHeuristic(ChoiceManager choiceManager) {
+		this.choiceManager = choiceManager;
 	}
 
 	@Override
@@ -76,36 +68,7 @@ public class NaiveHeuristic implements BranchingHeuristic {
 
 	@Override
 	public int chooseAtom() {
-		// Check if there is an enabled choice that is not also disabled
-		// HINT: tracking changes of ChoiceOn, ChoiceOff directly could
-		// increase performance (analyze store.getChangedAssignments()).
-		for (Integer enablerAtom : choiceOn.keySet()) {
-			if (assignment.getTruth(enablerAtom) == null || FALSE.equals(assignment.getTruth(enablerAtom))) {
-				continue;
-			}
-
-			Integer nextChoiceCandidate = choiceOn.get(enablerAtom);
-
-			// Only consider unassigned choices or choices currently MBT (and changing to TRUE following the guess)
-			if (assignment.getTruth(nextChoiceCandidate) != null && !MBT.equals(assignment.getTruth(nextChoiceCandidate))) {
-				continue;
-			}
-
-			// Check that candidate is not disabled already
-			boolean isDisabled = false;
-			for (Map.Entry<Integer, Integer> disablerAtom : choiceOff.entrySet()) {
-				if (nextChoiceCandidate.equals(disablerAtom.getValue()) && assignment.getTruth(disablerAtom.getKey()) != null
-						&& !(FALSE.equals(assignment.getTruth(disablerAtom.getKey())))) {
-					isDisabled = true;
-					break;
-				}
-			}
-
-			if (!isDisabled) {
-				return nextChoiceCandidate;
-			}
-		}
-		return 0;
+		return choiceManager.getNextActiveChoiceAtom();
 	}
 
 	@Override
