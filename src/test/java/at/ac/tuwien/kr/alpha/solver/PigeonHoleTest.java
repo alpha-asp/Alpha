@@ -36,6 +36,7 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Random;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Main.parseVisit;
@@ -46,7 +47,7 @@ import static org.junit.Assert.assertEquals;
  * Tests {@link AbstractSolver} using some pigeon-hole test cases (see https://en.wikipedia.org/wiki/Pigeonhole_principle).
  *
  */
-public abstract class PigeonHoleTest {
+public class PigeonHoleTest {
 	/**
 	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
 	 */
@@ -60,7 +61,9 @@ public abstract class PigeonHoleTest {
 		root.setLevel(Level.DEBUG);
 	}
 
-	protected abstract Solver getInstance(Grounder grounder);
+	protected Solver getInstance(Grounder grounder) {
+		return new DefaultSolver(grounder, new Random(0));
+	}
 
 	@Test(timeout = 1000)
 	public void test2Pigeons2Holes() throws IOException {
