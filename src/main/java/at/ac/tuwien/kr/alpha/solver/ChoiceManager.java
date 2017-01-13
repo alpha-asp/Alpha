@@ -3,7 +3,6 @@ package at.ac.tuwien.kr.alpha.solver;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 
@@ -104,17 +103,20 @@ public class ChoiceManager {
 		// Assumption: we get all enabler/disabler pairs in one call.
 		Map<Integer, Integer> enablers = choiceAtoms.getLeft();
 		// Invert disablers map.
-		Map<Integer, Integer> disablers = choiceAtoms.getRight().entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
-		for (Map.Entry<Integer, Integer> enablerToAtom : enablers.entrySet()) {
+		Map<Integer, Integer> disablers = choiceAtoms.getRight();
+		for (Map.Entry<Integer, Integer> atomToEnabler : enablers.entrySet()) {
 			// Construct and record ChoicePoint.
-			Integer atom = enablerToAtom.getValue();
+			Integer atom = atomToEnabler.getKey();
+			if (atom == null) {
+				throw new RuntimeException("Incomplete choice point description found (no atom). Should not happen.");
+			}
 			if (influencers.get(atom) != null) {
 				throw new RuntimeException("Received choice information repeatedly. Should not happen.");
 			}
-			Integer enabler = enablerToAtom.getKey();
+			Integer enabler = atomToEnabler.getValue();
 			Integer disabler = disablers.get(atom);
-			if (atom == null || enabler == null || disabler == null) {
-				throw new RuntimeException("Incomplete choice point description found. Should not happen.");
+			if (enabler == null || disabler == null) {
+				throw new RuntimeException("Incomplete choice point description found (no enabler or disabler). Should not happen.");
 			}
 			ChoicePoint choicePoint = new ChoicePoint(atom, enabler, disabler);
 			influencers.put(atom, choicePoint);
