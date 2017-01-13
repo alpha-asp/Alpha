@@ -11,7 +11,6 @@ import java.util.*;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class IndexedInstanceStorage {
-
 	private final String description;	// An (arbitrary) description of what is stored here, mainly for debugging.
 	private final int arity;		// All instances stored have to have this number of termIds.
 	private HashSet<Instance> instances;	// A collection of all instances currently stored in this storage.
@@ -44,8 +43,8 @@ public class IndexedInstanceStorage {
 
 		// Initialize index with all instances currently used.
 		for (Instance instance : instances) {
-			indices.get(position).putIfAbsent(instance.terms[position], new ArrayList<>());
-			ArrayList<Instance> instancesAtPosition = indices.get(position).get(instance.terms[position]);
+			indices.get(position).putIfAbsent(instance.terms.get(position), new ArrayList<>());
+			ArrayList<Instance> instancesAtPosition = indices.get(position).get(instance.terms.get(position));
 			instancesAtPosition.add(instance);
 		}
 	}
@@ -68,9 +67,9 @@ public class IndexedInstanceStorage {
 	}
 
 	public void addInstance(Instance instance) {
-		if (instance.terms.length != arity) {
+		if (instance.terms.size() != arity) {
 			throw new RuntimeException("Instance length does not match arity of IndexedInstanceStorage: " +
-				"instance size: " + instance.terms.length
+				"instance size: " + instance.terms.size()
 				+ "IndexedInstanceStorage size: " + arity);
 		}
 		instances.add(instance);
@@ -81,8 +80,8 @@ public class IndexedInstanceStorage {
 			if (posIndex == null) {
 				continue;
 			}
-			posIndex.putIfAbsent(instance.terms[i], new ArrayList<>());
-			ArrayList<Instance> matchingInstancesAtPos = posIndex.get(instance.terms[i]);
+			posIndex.putIfAbsent(instance.terms.get(i), new ArrayList<>());
+			ArrayList<Instance> matchingInstancesAtPos = posIndex.get(instance.terms.get(i));
 			matchingInstancesAtPos.add(instance);	// Add instance
 		}
 	}
@@ -98,13 +97,13 @@ public class IndexedInstanceStorage {
 			if (posIndex == null) {
 				continue;
 			}
-			ArrayList<Instance> matchingInstancesAtPos = posIndex.get(instance.terms[i]);
+			ArrayList<Instance> matchingInstancesAtPos = posIndex.get(instance.terms.get(i));
 			matchingInstancesAtPos.remove(instance);	// Remove instance
 
 			// If there are no more instances having the term at the current position,
 			// remove the entry from the hash.
 			if (matchingInstancesAtPos.size() == 0) {
-				posIndex.remove(instance.terms[i]);
+				posIndex.remove(instance.terms.get(i));
 			}
 		}
 		instances.remove(instance);

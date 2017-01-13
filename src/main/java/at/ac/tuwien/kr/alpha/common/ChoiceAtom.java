@@ -1,5 +1,7 @@
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -8,11 +10,11 @@ public class ChoiceAtom implements Atom {
 	public static final Predicate OFF = new BasicPredicate("ChoiceOff", 1);
 
 	private final Predicate predicate;
-	private final Term[] terms;
+	private final List<Term> terms;
 
 	private ChoiceAtom(Predicate predicate, Term term) {
 		this.predicate = predicate;
-		this.terms = new Term[]{term};
+		this.terms = Collections.singletonList(term);
 	}
 
 	private ChoiceAtom(Predicate predicate, int id) {
@@ -33,7 +35,7 @@ public class ChoiceAtom implements Atom {
 	}
 
 	@Override
-	public Term[] getTerms() {
+	public List<Term> getTerms() {
 		return terms;
 	}
 
@@ -55,6 +57,11 @@ public class ChoiceAtom implements Atom {
 	}
 
 	@Override
+	public Atom substitute(Substitution substitution) {
+		return this;
+	}
+
+	@Override
 	public int compareTo(Atom o) {
 		if (!(o instanceof  ChoiceAtom)) {
 			return 1;
@@ -64,6 +71,6 @@ public class ChoiceAtom implements Atom {
 		if (result != 0) {
 			return result;
 		}
-		return terms[0].compareTo(other.terms[0]);
+		return terms.get(0).compareTo(other.terms.get(0));
 	}
 }

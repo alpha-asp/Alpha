@@ -1,9 +1,8 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
+
+import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Util.appendDelimited;
 
@@ -15,10 +14,20 @@ public class FunctionTerm extends Term {
 
 	public final TermSymbol functionSymbol;
 	public final List<Term> termList;
+	private final boolean ground;
 
 	private FunctionTerm(TermSymbol functionSymbol, List<Term> termList) {
 		this.functionSymbol = functionSymbol;
 		this.termList = termList;
+
+		boolean ground = true;
+		for (Term term : termList) {
+			if (!term.isGround()) {
+				ground = false;
+				break;
+			}
+		}
+		this.ground = ground;
 	}
 
 	public static FunctionTerm getInstance(TermSymbol functionSymbol, List<Term> termList) {
@@ -37,12 +46,7 @@ public class FunctionTerm extends Term {
 
 	@Override
 	public boolean 	isGround() {
-		for (Term term : termList) {
-			if (!term.isGround()) {
-				return false;
-			}
-		}
-		return true;
+		return ground;
 	}
 
 	@Override
@@ -52,6 +56,15 @@ public class FunctionTerm extends Term {
 			vars.addAll(term.getOccurringVariables());
 		}
 		return vars;
+	}
+
+	@Override
+	public Term substitute(Substitution substitution) {
+		List<Term> groundTermList = new ArrayList<>(termList.size());
+		for (Term term : termList) {
+			groundTermList.add(term.substitute(substitution));
+		}
+		return FunctionTerm.getInstance(functionSymbol, groundTermList);
 	}
 
 	@Override
