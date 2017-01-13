@@ -44,6 +44,7 @@ public class BasicAssignment implements Assignment {
 	private final List<List<Entry>> decisionLevels;
 	private final Queue<Assignment.Entry> assignmentsToProcess = new LinkedList<>();
 	private Queue<Assignment.Entry> newAssignments = new LinkedList<>();
+	private Queue<Assignment.Entry> newAssignments2 = new LinkedList<>();
 	private final Grounder grounder;
 
 	private int mbtCount;
@@ -81,6 +82,12 @@ public class BasicAssignment implements Assignment {
 			}
 		}
 		for (Iterator<Assignment.Entry> iterator = newAssignments.iterator(); iterator.hasNext();) {
+			Assignment.Entry entry = iterator.next();
+			if (entry.getDecisionLevel() == getDecisionLevel()) {
+				iterator.remove();
+			}
+		}
+		for (Iterator<Assignment.Entry> iterator = newAssignments2.iterator(); iterator.hasNext();) {
 			Assignment.Entry entry = iterator.next();
 			if (entry.getDecisionLevel() == getDecisionLevel()) {
 				iterator.remove();
@@ -360,6 +367,7 @@ public class BasicAssignment implements Assignment {
 		decisionLevels.get(decisionLevel).add(next);
 		assignmentsToProcess.add(next);
 		newAssignments.add(next);
+		newAssignments2.add(next);
 		assignment.put(atom, next);
 	}
 
@@ -414,6 +422,13 @@ public class BasicAssignment implements Assignment {
 	public Iterator<Assignment.Entry> getNewAssignmentsIterator() {
 		Iterator<Assignment.Entry> it = newAssignments.iterator();
 		newAssignments = new LinkedList<>();
+		return it;
+	}
+
+	@Override
+	public Iterator<Assignment.Entry> getNewAssignmentsIterator2() {
+		Iterator<Assignment.Entry> it = newAssignments2.iterator();
+		newAssignments2 = new LinkedList<>();
 		return it;
 	}
 
