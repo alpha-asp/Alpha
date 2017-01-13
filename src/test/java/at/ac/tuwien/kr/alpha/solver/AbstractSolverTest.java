@@ -33,7 +33,6 @@ import at.ac.tuwien.kr.alpha.grounder.*;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
@@ -511,98 +510,6 @@ public abstract class AbstractSolverTest {
 
 		Set<AnswerSet> answerSets = solver.collectSet();
 		assertEquals(expected, answerSets);
-	}
-
-	@Test(timeout = 1000)
-	public void test2Pigeons2Holes() throws IOException {
-		testPigeonsHoles(2, 2);
-	}
-
-	@Test(timeout = 1000)
-	public void test3Pigeons2Holes() throws IOException {
-		testPigeonsHoles(3, 2);
-	}
-
-	@Test(timeout = 1000)
-	public void test2Pigeons3Holes() throws IOException {
-		testPigeonsHoles(2, 3);
-	}
-
-	@Test(timeout = 5000)
-	public void test3Pigeons3Holes() throws IOException {
-		testPigeonsHoles(3, 3);
-	}
-
-	@Test(timeout = 10000)
-	@Ignore("currently not possible within time limit") // TODO
-	public void test4Pigeons3Holes() throws IOException {
-		testPigeonsHoles(4, 3);
-	}
-
-	@Test(timeout = 10000)
-	@Ignore("currently not possible within time limit") // TODO
-	public void test3Pigeons4Holes() throws IOException {
-		testPigeonsHoles(3, 4);
-	}
-
-	/**
-	 * Tries to solve the problem of assigning P pigeons to H holes.
-	 */
-	private void testPigeonsHoles(int pigeons, int holes) throws IOException {
-		String ls = System.lineSeparator();
-		StringBuilder testProgram = new StringBuilder();
-		testProgram.append("n(N) :- pigeon(N).").append(ls);
-		testProgram.append("n(N) :- hole(N).").append(ls);
-		testProgram.append("eq(N,N) :- n(N).").append(ls);
-		testProgram.append("in(P,H) :- pigeon(P), hole(H), not not_in(P,H).").append(ls);
-		testProgram.append("not_in(P,H) :- pigeon(P), hole(H), not in(P,H).").append(ls);
-		testProgram.append(":- in(P,H1), in(P,H2), not eq(H1,H2).").append(ls);
-		testProgram.append(":- in(P1,H), in(P2,H), not eq(P1,P2).").append(ls);
-		testProgram.append("assigned(P) :- pigeon(P), in(P,H).").append(ls);
-		testProgram.append(":- pigeon(P), not assigned(P).").append(ls);
-		addPigeons(testProgram, pigeons);
-		addHoles(testProgram, holes);
-		System.out.println(testProgram);
-
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram.toString()));
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(numberOfSolutions(pigeons, holes), answerSets.size());
-	}
-
-	private void addPigeons(StringBuilder testProgram, int pigeons) {
-		addFacts(testProgram, "pigeon", 1, pigeons);
-	}
-
-	private void addHoles(StringBuilder testProgram, int holes) {
-		addFacts(testProgram, "hole", 1, holes);
-	}
-
-	private void addFacts(StringBuilder testProgram, String predicateName, int from, int to) {
-		String ls = System.lineSeparator();
-		for (int i = from; i <= to; i++) {
-			testProgram.append(String.format("%s(%d).%s", predicateName, i, ls));
-		}
-	}
-
-	private long numberOfSolutions(int pigeons, int holes) {
-		if (pigeons > holes) {
-			return 0;
-		} else if (pigeons == holes) {
-			return factorial(pigeons);
-		} else {
-			return factorial(holes) / factorial(holes - pigeons);
-			// could be replaced by more efficient implementaton (but performance is not so important here)
-		}
-	}
-
-	private long factorial(int n) {
-		return n <= 1 ? 1 : n * factorial(n - 1);
-		// could be replaced by more efficient implementaton (but performance is not so important here)
-		// see http://www.luschny.de/math/factorial/FastFactorialFunctions.htm
-		// TODO: we could use Apache Commons Math
 	}
 
 }
