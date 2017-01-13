@@ -102,7 +102,6 @@ public class ChoiceManager {
 	void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms) {
 		// Assumption: we get all enabler/disabler pairs in one call.
 		Map<Integer, Integer> enablers = choiceAtoms.getLeft();
-		// Invert disablers map.
 		Map<Integer, Integer> disablers = choiceAtoms.getRight();
 		for (Map.Entry<Integer, Integer> atomToEnabler : enablers.entrySet()) {
 			// Construct and record ChoicePoint.
