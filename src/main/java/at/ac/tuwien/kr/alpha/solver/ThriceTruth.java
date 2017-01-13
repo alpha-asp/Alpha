@@ -55,4 +55,16 @@ public enum ThriceTruth implements Truth {
 	public static ThriceTruth valueOf(boolean value) {
 		return value ? TRUE : FALSE;
 	}
+
+	/**
+	 * Returns true if the two truth values are not compatible with each other.
+	 * Each truth value is compatible with itself and both MBT and TRUE are compatible. All other combinations are
+	 * conflicting.
+	 * @param value1 the first truth value.
+	 * @param value2 the second truth value.
+	 * @return true iff first and second truth value are conflicting (i.e., not compatible).
+	 */
+	public static boolean isConflicting(ThriceTruth value1, ThriceTruth value2) {
+		return (FALSE.equals(value1) || FALSE.equals(value2)) && !value1.equals(value2);
+	}
 }

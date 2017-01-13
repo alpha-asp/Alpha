@@ -221,30 +221,16 @@ public class NaiveSolver extends AbstractSolver {
 	private boolean choicesLeft() {
 		// Check if there is an enabled choice that is not also disabled
 		for (Map.Entry<Integer, Integer> e : choiceOn.entrySet()) {
-			if (!truthAssignments.get(e.getKey())) {
-				continue;
-			}
-
-			Integer nextChoiceCandidate = choiceOn.get(e.getKey());
+			final int atom = e.getKey();
 
 			// Only consider unassigned choices
-			if (truthAssignments.containsKey(nextChoiceCandidate)) {
+			if (truthAssignments.containsKey(atom) || !truthAssignments.get(e.getValue())) {
 				continue;
 			}
 
 			// Check that candidate is not disabled already
-			boolean isDisabled = false;
-			for (Map.Entry<Integer, Integer> disablerAtom : choiceOff.entrySet()) {
-				if (!disablerAtom.getValue().equals(nextChoiceCandidate)) {
-					continue;
-				}
-				if (truthAssignments.containsKey(disablerAtom.getKey())  && truthAssignments.get(disablerAtom.getKey())) {
-					isDisabled = true;
-					break;
-				}
-			}
-			if (!isDisabled) {
-				nextChoice = nextChoiceCandidate;
+			if (!truthAssignments.getOrDefault(choiceOff.getOrDefault(atom, 0), false)) {
+				nextChoice = atom;
 				return true;
 			}
 		}
@@ -338,6 +324,11 @@ public class NaiveSolver extends AbstractSolver {
 
 		@Override
 		public int getPropagationLevel() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean isReassignAtLowerDecisionLevel() {
 			throw new UnsupportedOperationException();
 		}
 

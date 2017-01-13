@@ -1,12 +1,13 @@
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ParsedBuiltinAtom extends ParsedAtom {
 	public BINOP binop;
+
 	public enum BINOP {EQUAL, UNEQUAL, LESS, GREATER, LESS_OR_EQ, GREATER_OR_EQ;
 
 		@Override
@@ -24,11 +25,7 @@ public class ParsedBuiltinAtom extends ParsedAtom {
 	};
 
 	public ParsedBuiltinAtom(ParsedTerm left, BINOP binop, ParsedTerm right) {
-		this.predicate = binop.toString();
-		this.arity = 2;
-		this.terms = new ArrayList<>();
-		this.terms.add(left);
-		this.terms.add(right);
+		super(binop.toString(), Arrays.asList(left, right));
 		this.binop = binop;
 	}
 
@@ -56,7 +53,6 @@ public class ParsedBuiltinAtom extends ParsedAtom {
 				throw new RuntimeException("Unknown BINOP encountered, cannot negate it.");
 		}
 	}
-
 
 	@Override
 	public String toString() {

@@ -49,7 +49,7 @@ public class NonGroundRule<P extends Predicate> {
 			if (parsedAtom instanceof ParsedBuiltinAtom) {
 				pos.add(new BuiltinAtom((ParsedBuiltinAtom) parsedAtom));
 			} else {
-				final BasicAtom basicAtom = BasicAtom.fromParsedAtom(parsedAtom);
+				final BasicAtom basicAtom = new BasicAtom(parsedAtom);
 				if (parsedAtom.isNegated) {
 					neg.add(basicAtom);
 				} else {
@@ -59,7 +59,7 @@ public class NonGroundRule<P extends Predicate> {
 		}
 
 		// Construct head if the given parsedRule is no constraint
-		final BasicAtom head = parsedRule.head != null ? BasicAtom.fromParsedAtom(parsedRule.head) : null;
+		final BasicAtom head = parsedRule.head != null ? new BasicAtom(parsedRule.head) : null;
 
 		return new NonGroundRule<>(
 			intIdGenerator.getNextId(),

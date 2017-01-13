@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2017, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -30,8 +30,7 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BerkMin;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +54,7 @@ public class DefaultSolver extends AbstractSolver {
 	private final Assignment assignment;
 	private final GroundConflictNoGoodLearner learner;
 	private final BranchingHeuristic branchingHeuristic;
+	private final BranchingHeuristic fallbackBranchingHeuristic;
 
 	private boolean initialize = true;
 
@@ -62,22 +62,26 @@ public class DefaultSolver extends AbstractSolver {
 
 	private int decisionCounter;
 
-	public DefaultSolver(Grounder grounder) {
+	public DefaultSolver(Grounder grounder, Random random) {
 		super(grounder);
 
 		this.assignment = new BasicAssignment(grounder);
 		//this.assignmentIterator = this.assignment.ordinaryIterator();
 		this.store = new BasicNoGoodStore(assignment, grounder);
 		this.choiceStack = new ChoiceStack(grounder);
-		this.learner = new GroundConflictNoGoodLearner(assignment, store);
-		this.branchingHeuristic = new BerkMin(assignment, this::isAtomActiveChoicePoint);
+		this.learner = new GroundConflictNoGoodLearner(assignment);
+		this.branchingHeuristic = new BerkMin(assignment, this::isAtomChoicePoint, this::isAtomActiveChoicePoint, random);
+		this.fallbackBranchingHeuristic = new NaiveHeuristic(assignment, choiceOn, choiceOff);
 	}
 
 	@Override
 	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
-		// Get basic rules and facts from grounder
+		// Initially, get NoGoods from grounder.
 		if (initialize) {
-			obtainNoGoodsFromGrounder();
+			if (!obtainNoGoodsFromGrounder()) {
+				// NoGoods are unsatisfiable.
+				return false;
+			}
 			initialize = false;
 		} else {
 			// We already found one Answer-Set and are requested to find another one
@@ -92,10 +96,14 @@ public class DefaultSolver extends AbstractSolver {
 
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
-			if (!propagationFixpointReached()) {
+			if (!propagationFixpointReached() && store.getViolatedNoGood() == null) {
 				// Ask the grounder for new NoGoods, then propagate (again).
+				LOGGER.trace("Doing propagation step.");
 				updateGrounderAssignment();
-				obtainNoGoodsFromGrounder();
+				if (!obtainNoGoodsFromGrounder()) {
+					// NoGoods are unsatisfiable.
+					return false;
+				}
 				if (store.propagate()) {
 					didChange = true;
 				}
@@ -109,7 +117,10 @@ public class DefaultSolver extends AbstractSolver {
 				branchingHeuristic.violatedNoGood(violatedNoGood);
 
 				if (!afterAllAtomsAssigned) {
-					learnBackjumpAddFromConflict();
+					if (!learnBackjumpAddFromConflict()) {
+						// NoGoods are unsatisfiable.
+						return false;
+					}
 					didChange = true;
 				} else {
 					// Will not learn from violated NoGood, do simple backtrack.
@@ -149,11 +160,20 @@ public class DefaultSolver extends AbstractSolver {
 		}
 	}
 
-	private void learnBackjumpAddFromConflict() {
+	/**
+	 * Analyzes the conflict and either learns a new NoGood (causing backjumping and addition to the NoGood store),
+	 * or backtracks the guess causing the conflict.
+	 * @return false iff the analysis result shows that the set of NoGoods is unsatisfiable.
+	 */
+	private boolean learnBackjumpAddFromConflict() {
 		LOGGER.debug("Analyzing conflict.");
 		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(store.getViolatedNoGood());
-		branchingHeuristic.analyzedConflict(analysisResult);
+		if (analysisResult.isUnsatisfiable) {
+			// Halt if unsatisfiable.
+			return false;
+		}
 
+		branchingHeuristic.analyzedConflict(analysisResult);
 		if (analysisResult.learnedNoGood == null) {
 			LOGGER.debug("Conflict results from wrong guess, backjumping and removing guess.");
 			LOGGER.debug("Backjumping to decision level: {}", analysisResult.backjumpLevel);
@@ -178,9 +198,11 @@ public class DefaultSolver extends AbstractSolver {
 				throw new RuntimeException("Learned NoGood is violated after backjumping, should not happen.");
 			}
 		}
+		return true;
 	}
 
 	private void doBackjump(int backjumpingDecisionLevel) {
+		LOGGER.debug("Backjumping to decisionLevel: {}.", backjumpingDecisionLevel);
 		if (backjumpingDecisionLevel < 0) {
 			throw new RuntimeException("Backjumping decision level less than 0, should not happen.");
 		}
@@ -263,25 +285,41 @@ public class DefaultSolver extends AbstractSolver {
 		grounder.updateAssignment(assignment.getNewAssignmentsIterator());
 	}
 
-	private void obtainNoGoodsFromGrounder() {
+	/**
+	 * Obtains new NoGoods from grounder and adds them to the NoGoodStore and the heuristics.
+	 * @return false iff the set of NoGoods is detected to be unsatisfiable.
+	 */
+	private boolean obtainNoGoodsFromGrounder() {
 		Map<Integer, NoGood> obtained = grounder.getNoGoods();
+		LOGGER.debug("Obtained NoGoods from grounder: {}", obtained);
 
 		if (!obtained.isEmpty()) {
 			// Record to detect propagation fixpoint, checking if new NoGoods were reported would be better here.
 			didChange = true;
 		}
 
-		addAllNoGoodsAndTreatContradictions(obtained);
+		if (!addAllNoGoodsAndTreatContradictions(obtained)) {
+			return false;
+		}
 		branchingHeuristic.newNoGoods(obtained.values());
 
 		// Record choice atoms.
 		final Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms = grounder.getChoiceAtoms();
 		choiceOn.putAll(choiceAtoms.getKey());
 		choiceOff.putAll(choiceAtoms.getValue());
+		return true;
 	}
 
-	private void addAllNoGoodsAndTreatContradictions(Map<Integer, NoGood> obtained) {
-		for (Map.Entry<Integer, NoGood> noGoodEntry : obtained.entrySet()) {
+	/**
+	 * Adds all NoGoods in the given map to the NoGoodStore and treats eventual contradictions.
+	 * If the set of NoGoods is unsatisfiable, this method returns false.
+	 * @param obtained
+	 * @return false iff the new set of NoGoods is detected to be unsatisfiable.
+	 */
+	private boolean addAllNoGoodsAndTreatContradictions(Map<Integer, NoGood> obtained) {
+		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
+		while (!noGoodsToAdd.isEmpty()) {
+			Map.Entry<Integer, NoGood> noGoodEntry = noGoodsToAdd.poll();
 			NoGoodStore.ConflictCause conflictCause = store.add(noGoodEntry.getKey(), noGoodEntry.getValue());
 			if (conflictCause == null) {
 				// There is no conflict, all is fine. Just skip conflict treatment and carry on.
@@ -298,7 +336,14 @@ public class DefaultSolver extends AbstractSolver {
 				choiceStack.remove();
 				LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 			} else {
-				GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.violatedNoGood);
+				LOGGER.debug("Violated NoGood is {}. Analyzing the conflict.", conflictCause.violatedNoGood);
+				GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = null;
+				conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.violatedNoGood);
+				if (conflictAnalysisResult.isUnsatisfiable) {
+					// Halt if unsatisfiable.
+					return false;
+				}
+				LOGGER.debug("Backjumping to decision level: {}", conflictAnalysisResult.backjumpLevel);
 				doBackjump(conflictAnalysisResult.backjumpLevel);
 				if (conflictAnalysisResult.clearLastGuessAfterBackjump) {
 					store.backtrack();
@@ -306,16 +351,17 @@ public class DefaultSolver extends AbstractSolver {
 					choiceStack.remove();
 					LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 				}
+				// If NoGood was learned, add it to the store.
+				// Note that the learned NoGood may cause further conflicts, since propagation on lower decision levels is lazy, hence backtracking once might not be enough to remove the real conflict cause.
 				if (conflictAnalysisResult.learnedNoGood != null) {
-					if (store.add(grounder.registerOutsideNoGood(conflictAnalysisResult.learnedNoGood), conflictAnalysisResult.learnedNoGood) != null) {
-						throw new RuntimeException("Adding learned NoGood from conflict again results in conflict. This should not happen.");
-					}
+					noGoodsToAdd.addFirst(new AbstractMap.SimpleEntry<>(grounder.registerOutsideNoGood(conflictAnalysisResult.learnedNoGood), conflictAnalysisResult.learnedNoGood));
 				}
 			}
 			if (store.add(noGoodEntry.getKey(), noGoodEntry.getValue()) != null) {
-				throw new RuntimeException("Re-adding of obtained NoGood still causes conflicts. This should not happen.");
+				throw new RuntimeException("Re-adding of former conflicting NoGood still causes conflicts. This should not happen.");
 			}
 		}
+		return true;
 	}
 
 	private boolean isSearchSpaceExhausted() {
@@ -329,31 +375,25 @@ public class DefaultSolver extends AbstractSolver {
 		return !changeCopy;
 	}
 
-	boolean isAtomChoicePoint(int atom) {
+	private boolean isAtomChoicePoint(int atom) {
 		return grounder.isAtomChoicePoint(atom);
 	}
 
-	boolean isAtomActiveChoicePoint(int atom) {
-		// Find potential enabler of the choice point.
-		for (Map.Entry<Integer, Integer> enabler : choiceOn.entrySet()) {
-			ThriceTruth enablerAssignedTruth = assignment.getTruth(enabler.getKey());
-			// Check if choice point is enabled.
-			if (enabler.getValue() == atom && (TRUE.equals(enablerAssignedTruth) || MBT.equals(enablerAssignedTruth))) {
-				// Ensure it is not disabled.
-				boolean isDisabled = false;
-				for (Map.Entry<Integer, Integer> disablerAtom : choiceOff.entrySet()) {
-					if (atom == disablerAtom.getValue()
-						&& assignment.getTruth(disablerAtom.getKey()) != null
-						&& !(FALSE.equals(assignment.getTruth(disablerAtom.getKey())))) {
-						isDisabled = true;
-						break;
-					}
-				}
-				return !isDisabled;
-			}
+	private boolean isAtomActiveChoicePoint(int atom) {
+		if (!choiceOn.containsKey(atom)) {
+			return false;
 		}
-		// No enabler of the atom found, not an active choice point.
-		return false;
+
+		ThriceTruth truth = assignment.getTruth(choiceOn.get(atom));
+
+		// Check if choice point is enabled.
+		if (!TRUE.equals(truth) && !MBT.equals(truth)) {
+			return false;
+		}
+
+		// Ensure it is not disabled.
+		truth = assignment.getTruth(choiceOff.get(atom));
+		return truth == null || FALSE.equals(truth);
 	}
 
 	private void doChoice(int nextChoice) {
@@ -369,44 +409,15 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private int computeChoice() {
-		int berkminChoice = branchingHeuristic.chooseAtom();
-		if (berkminChoice != BerkMin.DEFAULT_CHOICE_ATOM) {
+		int heuristicChoice = branchingHeuristic.chooseAtom();
+		if (heuristicChoice != 0) {
 			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("Atom chosen by BerkMin: {}", grounder.atomToString(berkminChoice));
+				LOGGER.debug("Atom chosen by branching heuristic: {}", grounder.atomToString(heuristicChoice));
 			}
-			return berkminChoice;
+			return heuristicChoice;
 		}
 
-		// Check if there is an enabled choice that is not also disabled
-		// HINT: tracking changes of ChoiceOn, ChoiceOff directly could
-		// increase performance (analyze store.getChangedAssignments()).
-		for (Integer enablerAtom : choiceOn.keySet()) {
-			if (assignment.getTruth(enablerAtom) == null || FALSE.equals(assignment.getTruth(enablerAtom))) {
-				continue;
-			}
-
-			Integer nextChoiceCandidate = choiceOn.get(enablerAtom);
-
-			// Only consider unassigned choices or choices currently MBT (and changing to TRUE following the guess)
-			if (assignment.getTruth(nextChoiceCandidate) != null && !MBT.equals(assignment.getTruth(nextChoiceCandidate))) {
-				continue;
-			}
-
-			// Check that candidate is not disabled already
-			boolean isDisabled = false;
-			for (Map.Entry<Integer, Integer> disablerAtom : choiceOff.entrySet()) {
-				if (nextChoiceCandidate.equals(disablerAtom.getValue())
-					&& assignment.getTruth(disablerAtom.getKey()) != null
-					&& !(FALSE.equals(assignment.getTruth(disablerAtom.getKey())))) {
-					isDisabled = true;
-					break;
-				}
-			}
-
-			if (!isDisabled) {
-				return nextChoiceCandidate;
-			}
-		}
-		return 0;
+		// TODO: remove fallback as soon as we are sure that BerkMin will always choose an atom
+		return fallbackBranchingHeuristic.chooseAtom();
 	}
 }

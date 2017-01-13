@@ -70,6 +70,8 @@ public interface BranchingHeuristic {
 	
 	/**
 	 * Determines an atom to choose on.
+	 *
+	 * @return the atom to choose on, or zero if no such atom can be determined.
 	 */
 	int chooseAtom();
 
