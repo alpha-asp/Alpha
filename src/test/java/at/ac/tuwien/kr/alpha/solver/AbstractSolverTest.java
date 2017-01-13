@@ -623,5 +623,5 @@ public abstract class AbstractSolverTest {
 		List<AnswerSet> answerSets = solver.collectList();
 
 		assertEquals(0, answerSets.size());
-  }
+	}
 }
