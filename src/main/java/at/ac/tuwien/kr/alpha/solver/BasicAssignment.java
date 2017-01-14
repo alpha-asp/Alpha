@@ -237,7 +237,7 @@ public class BasicAssignment implements Assignment {
 					// Update entry (remove previous, add new)
 					// For MBT assigned below TRUE, keep TRUE and modify its previous entry to MBT
 					if (TRUE.equals(current.getTruth()) &&  MBT.equals(value)) {
-						LOGGER.debug("Updating current assignment {}: {} new MBT below at {}.", atom, current, decisionLevel);
+						LOGGER.debug("Updating current assignment {}: {} new MBT below at {}, impliedBy: {}.", atom, current, decisionLevel, impliedBy);
 						recordMBTBelowTrue(atom, value, impliedBy, decisionLevel);
 					} else {
 						LOGGER.trace("Removing current assignment {}: {}", atom, current);
