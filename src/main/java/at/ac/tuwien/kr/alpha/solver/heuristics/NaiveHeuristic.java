@@ -28,26 +28,20 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.Truth;
-import at.ac.tuwien.kr.alpha.solver.Choices;
+import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.GroundConflictNoGoodLearner.ConflictAnalysisResult;
-import at.ac.tuwien.kr.alpha.solver.SimpleReadableAssignment;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Collection;
-import java.util.Map;
 
 /**
  * The default heuristic that had been used by {@link at.ac.tuwien.kr.alpha.solver.DefaultSolver} before {@link BerkMin} was implemented.
  *
  */
 public class NaiveHeuristic implements BranchingHeuristic {
-	private SimpleReadableAssignment<? extends Truth> assignment;
-	private Choices choices;
+	private final ChoiceManager choiceManager;
 
-	public NaiveHeuristic(SimpleReadableAssignment<? extends Truth> assignment, Choices choices) {
-		this.assignment = assignment;
-		this.choices = choices;
+	public NaiveHeuristic(ChoiceManager choiceManager) {
+		this.choiceManager = choiceManager;
 	}
 
 	@Override
@@ -73,28 +67,7 @@ public class NaiveHeuristic implements BranchingHeuristic {
 
 	@Override
 	public int chooseAtom() {
-		// Check if there is an enabled choice that is not also disabled
-		// HINT: tracking changes of ChoiceOn, ChoiceOff directly could
-		// increase performance (analyze store.getChangedAssignments()).
-
-		// Check if there is an enabled choice that is not also disabled
-		for (Map.Entry<Integer, Pair<Integer, Integer>> e : choices) {
-			final int atom = e.getKey();
-
-			Truth truth = assignment.getTruth(atom);
-
-			// Only consider unassigned choices or choices currently MBT (and changing to TRUE following the guess)
-			if (truth != null && truth.isBoolean()) {
-				continue;
-			}
-
-			// Check that candidate is not disabled already
-			truth = assignment.getTruth(e.getValue().getRight());
-			if (truth == null || !truth.toBoolean()) {
-				return atom;
-			}
-		}
-		return 0;
+		return choiceManager.getNextActiveChoiceAtom();
 	}
 
 	@Override

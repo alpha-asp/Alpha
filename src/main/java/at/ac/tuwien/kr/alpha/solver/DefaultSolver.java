@@ -50,12 +50,12 @@ public class DefaultSolver extends AbstractSolver {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolver.class);
 
 	private final NoGoodStore<ThriceTruth> store;
-	private final Choices choices = new Choices();
 	private final ChoiceStack choiceStack;
 	private final Assignment<ThriceTruth> assignment;
 	private final GroundConflictNoGoodLearner learner;
 	private final BranchingHeuristic branchingHeuristic;
 	private final BranchingHeuristic fallbackBranchingHeuristic;
+	private final ChoiceManager choiceManager;
 
 	private boolean initialize = true;
 
@@ -67,12 +67,12 @@ public class DefaultSolver extends AbstractSolver {
 		super(grounder);
 
 		this.assignment = new BasicAssignment(grounder);
-		//this.assignmentIterator = this.assignment.ordinaryIterator();
 		this.store = new BasicNoGoodStore(assignment, grounder);
 		this.choiceStack = new ChoiceStack(grounder);
 		this.learner = new GroundConflictNoGoodLearner(assignment);
-		this.branchingHeuristic = new BerkMin(assignment, choices::is, this::isAtomActiveChoicePoint, random);
-		this.fallbackBranchingHeuristic = new NaiveHeuristic(assignment, choices);
+		this.branchingHeuristic = new BerkMin(assignment, this::isAtomChoicePoint, this::isAtomActiveChoicePoint, random);
+		this.choiceManager = new ChoiceManager(assignment);
+		this.fallbackBranchingHeuristic = new NaiveHeuristic(choiceManager);
 	}
 
 	@Override
@@ -182,6 +182,7 @@ public class DefaultSolver extends AbstractSolver {
 			store.backtrack();
 			LOGGER.debug("Backtrack: Removing last choice because of conflict, setting decision level to {}.", assignment.getDecisionLevel());
 			choiceStack.remove();
+			choiceManager.backtrack();
 			LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 			if (!store.propagate()) {
 				throw new RuntimeException("Nothing to propagate after backtracking from conflict-causing guess. Should not happen.");
@@ -211,6 +212,7 @@ public class DefaultSolver extends AbstractSolver {
 		while (assignment.getDecisionLevel() > backjumpingDecisionLevel) {
 			store.backtrack();
 			choiceStack.remove();
+			choiceManager.backtrack();
 		}
 	}
 
@@ -251,6 +253,7 @@ public class DefaultSolver extends AbstractSolver {
 
 			boolean backtrackedAlready = choiceStack.peekBacktracked();
 			choiceStack.remove();
+			choiceManager.backtrack();
 			LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 
 			if (!backtrackedAlready) {
@@ -280,6 +283,7 @@ public class DefaultSolver extends AbstractSolver {
 				LOGGER.debug("Backtrack: setting decision level to {}.", assignment.getDecisionLevel());
 				LOGGER.debug("Backtrack: inverting last guess. Now: {}={}@{}", grounder.atomToString(lastGuessedAtom), newGuess, assignment.getDecisionLevel());
 				choiceStack.pushBacktrack(lastGuessedAtom, newGuess);
+				choiceManager.nextDecisionLevel();
 				didChange = true;
 				LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 				LOGGER.debug("Backtrack: {} choices so far.", decisionCounter);
@@ -313,7 +317,7 @@ public class DefaultSolver extends AbstractSolver {
 		branchingHeuristic.newNoGoods(obtained.values());
 
 		// Record choice atoms.
-		choices.putAll(grounder.getChoices());
+		choiceManager.addChoiceInformation(grounder.getChoices());
 		return true;
 	}
 
@@ -341,6 +345,7 @@ public class DefaultSolver extends AbstractSolver {
 				store.backtrack();
 				LOGGER.debug("Backtrack: Removing last choice because of conflict with newly added NoGoods, setting decision level to {}.", assignment.getDecisionLevel());
 				choiceStack.remove();
+				choiceManager.backtrack();
 				LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 			} else {
 				LOGGER.debug("Violated NoGood is {}. Analyzing the conflict.", conflictCause.violatedNoGood);
@@ -356,6 +361,7 @@ public class DefaultSolver extends AbstractSolver {
 					store.backtrack();
 					LOGGER.debug("Backtrack: Removing last choice because of conflict with newly added NoGoods, setting decision level to {}.", assignment.getDecisionLevel());
 					choiceStack.remove();
+					choiceManager.backtrack();
 					LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 				}
 				// If NoGood was learned, add it to the store.
@@ -382,8 +388,12 @@ public class DefaultSolver extends AbstractSolver {
 		return !changeCopy;
 	}
 
+	private boolean isAtomChoicePoint(int atom) {
+		return choiceManager.isAtomChoice(atom);
+	}
+
 	private boolean isAtomActiveChoicePoint(int atom) {
-		return choices.isActive(atom, assignment);
+		return choiceManager.isActiveChoiceAtom(atom);
 	}
 
 	private void doChoice(int nextChoice) {
@@ -391,6 +401,7 @@ public class DefaultSolver extends AbstractSolver {
 		boolean sign = branchingHeuristic.chooseSign(nextChoice);
 		assignment.guess(nextChoice, ThriceTruth.valueOf(sign));
 		choiceStack.push(nextChoice, sign);
+		choiceManager.nextDecisionLevel();
 		// Record change to compute propagation fixpoint again.
 		didChange = true;
 		LOGGER.debug("Choice: guessing {}={}@{}", grounder.atomToString(nextChoice), sign, assignment.getDecisionLevel());
@@ -399,6 +410,12 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private int computeChoice() {
+		// Update ChoiceManager.
+		Iterator<Assignment.Entry<ThriceTruth>> it = assignment.getNewAssignmentsIterator2();
+		while (it.hasNext()) {
+			choiceManager.updateAssignment(it.next().getAtom());
+		}
+		// Run Heuristics.
 		int heuristicChoice = branchingHeuristic.chooseAtom();
 		if (heuristicChoice != 0) {
 			if (LOGGER.isDebugEnabled()) {
@@ -408,6 +425,7 @@ public class DefaultSolver extends AbstractSolver {
 		}
 
 		// TODO: remove fallback as soon as we are sure that BerkMin will always choose an atom
+		LOGGER.debug("Falling back to NaiveHeuristics.");
 		return fallbackBranchingHeuristic.chooseAtom();
 	}
 }

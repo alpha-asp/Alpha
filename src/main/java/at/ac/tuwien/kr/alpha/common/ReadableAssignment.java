@@ -37,6 +37,8 @@ public interface ReadableAssignment<T extends Truth> extends SimpleReadableAssig
 	 */
 	Iterator<Assignment.Entry<T>> getNewAssignmentsIterator();
 
+	Iterator<Assignment.Entry<T>> getNewAssignmentsIterator2();
+
 	Entry<T> get(int atom);
 
 	int getDecisionLevel();

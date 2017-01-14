@@ -44,6 +44,7 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 	private final List<List<Entry>> decisionLevels;
 	private final Queue<Assignment.Entry<ThriceTruth>> assignmentsToProcess = new LinkedList<>();
 	private Queue<Assignment.Entry<ThriceTruth>> newAssignments = new LinkedList<>();
+	private Queue<Assignment.Entry<ThriceTruth>> newAssignments2 = new LinkedList<>();
 	private final Grounder grounder;
 
 	private int mbtCount;
@@ -86,6 +87,12 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 			}
 		}
 		for (Iterator<Assignment.Entry<ThriceTruth>> iterator = newAssignments.iterator(); iterator.hasNext();) {
+			Assignment.Entry entry = iterator.next();
+			if (entry.getDecisionLevel() == getDecisionLevel()) {
+				iterator.remove();
+			}
+		}
+		for (Iterator<Assignment.Entry<ThriceTruth>> iterator = newAssignments2.iterator(); iterator.hasNext();) {
 			Assignment.Entry entry = iterator.next();
 			if (entry.getDecisionLevel() == getDecisionLevel()) {
 				iterator.remove();
@@ -365,6 +372,7 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 		decisionLevels.get(decisionLevel).add(next);
 		assignmentsToProcess.add(next);
 		newAssignments.add(next);
+		newAssignments2.add(next);
 		assignment.put(atom, next);
 	}
 
@@ -425,6 +433,12 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 	@Override
 	public Iterator<Map.Entry<Integer, ThriceTruth>> iterator() {
 		throw new UnsupportedOperationException();
+	}
+
+	public Iterator<Assignment.Entry<ThriceTruth>> getNewAssignmentsIterator2() {
+		Iterator<Assignment.Entry<ThriceTruth>> it = newAssignments2.iterator();
+		newAssignments2 = new LinkedList<>();
+		return it;
 	}
 
 	private static final class Entry implements Assignment.Entry<ThriceTruth> {

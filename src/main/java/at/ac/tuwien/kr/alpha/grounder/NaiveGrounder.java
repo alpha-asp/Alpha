@@ -562,7 +562,9 @@ public class NaiveGrounder extends BridgedGrounder {
 
 	@Override
 	public Choices getChoices() {
-		return choices;
+		Choices currentChoices = choices;
+		choices = new Choices();
+		return currentChoices;
 	}
 
 	@Override

@@ -59,7 +59,7 @@ public class NaiveSolver extends AbstractSolver {
 	private boolean didChange;
 	private int decisionLevel;
 
-	private Choices choices = new Choices();
+	private ChoiceManager choiceManager;
 	private Integer nextChoice;
 	private HashSet<Integer> mbtAssigned = new HashSet<>();
 	private ArrayList<ArrayList<Integer>> mbtAssignedFromUnassigned = new ArrayList<>();
@@ -77,7 +77,9 @@ public class NaiveSolver extends AbstractSolver {
 		mbtAssignedFromUnassigned.add(0, new ArrayList<>());
 		trueAssignedFromMbt.add(0, new ArrayList<>());
 
-		heuristic = new NaiveHeuristic(assignment, choices);
+		choiceManager = new ChoiceManager(assignment);
+
+		heuristic = new NaiveHeuristic(choiceManager);
 	}
 
 	@Override
@@ -330,7 +332,7 @@ public class NaiveSolver extends AbstractSolver {
 		}
 
 		// Record choice atoms
-		choices.putAll(grounder.getChoices());
+		choiceManager.addChoiceInformation(grounder.getChoices());
 	}
 
 	private boolean isSearchSpaceExhausted() {

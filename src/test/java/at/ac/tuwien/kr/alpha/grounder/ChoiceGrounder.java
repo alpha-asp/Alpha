@@ -145,9 +145,16 @@ public class ChoiceGrounder implements Grounder {
 		}
 	}
 
+	private boolean isFirst = true;
+
 	@Override
 	public Choices getChoices() {
-		return CHOICES;
+		if (isFirst) {
+			isFirst = false;
+			return CHOICES;
+		} else {
+			return new Choices();
+		}
 	}
 
 	@Override
