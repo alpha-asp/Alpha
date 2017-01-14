@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BerkMin;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
@@ -246,7 +247,7 @@ public class DefaultSolver extends AbstractSolver {
 
 			int lastGuessedAtom = choiceStack.peekAtom();
 			boolean lastGuessedValue = choiceStack.peekValue();
-			Assignment.Entry lastChoiceEntry = assignment.get(lastGuessedAtom);
+			ReadableAssignment.Entry lastChoiceEntry = assignment.get(lastGuessedAtom);
 
 			store.backtrack();
 			LOGGER.debug("Backtrack: Removing last choice, setting decision level to {}.", assignment.getDecisionLevel());
@@ -411,7 +412,7 @@ public class DefaultSolver extends AbstractSolver {
 
 	private int computeChoice() {
 		// Update ChoiceManager.
-		Iterator<Assignment.Entry<ThriceTruth>> it = assignment.getNewAssignmentsIterator2();
+		Iterator<? extends SimpleReadableAssignment.Entry<ThriceTruth>> it = assignment.getNewAssignmentsIterator2();
 		while (it.hasNext()) {
 			choiceManager.updateAssignment(it.next().getAtom());
 		}

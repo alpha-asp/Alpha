@@ -29,10 +29,12 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 import at.ac.tuwien.kr.alpha.common.Truth;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,7 +114,7 @@ public class NaiveSolver extends AbstractSolver {
 				if (isSearchSpaceExhausted()) {
 					return false;
 				}
-			} else if ((nextChoice = heuristic.chooseAtom()) != 0) {
+			} else if ((nextChoice = choose()) != 0) {
 				doChoice();
 			} else if (!allAtomsAssigned()) {
 				LOGGER.trace("Closing unassigned known atoms (assigning FALSE).");
@@ -139,6 +141,15 @@ public class NaiveSolver extends AbstractSolver {
 				}
 			}
 		}
+	}
+
+	private int choose() {
+		// Update ChoiceManager.
+		Iterator<? extends SimpleReadableAssignment.Entry<BooleanTruth>> it = assignment.getNewAssignmentsIterator2();
+		while (it.hasNext()) {
+			choiceManager.updateAssignment(it.next().getAtom());
+		}
+		return heuristic.chooseAtom();
 	}
 
 	private void assignUnassignedToFalse() {
@@ -219,6 +230,7 @@ public class NaiveSolver extends AbstractSolver {
 		assignment.assign(nextChoice, true);
 		newTruthAssignments.add(nextChoice);
 		choiceStack.push(nextChoice, true);
+		choiceManager.nextDecisionLevel();
 		// Record change to compute propagation fixpoint again.
 		didChange = true;
 	}
@@ -248,6 +260,8 @@ public class NaiveSolver extends AbstractSolver {
 			mbtAssigned.remove(atomId);
 		}
 
+		choiceManager.backtrack();
+
 		// Clear atomIds in current decision level
 		decisionLevels.set(decisionLevel, new ArrayList<>());
 		mbtAssignedFromUnassigned.set(decisionLevel, new ArrayList<>());
@@ -273,7 +287,7 @@ public class NaiveSolver extends AbstractSolver {
 		newTruthAssignments.clear();
 	}
 
-	private static final class Entry implements Assignment.Entry {
+	private static final class Entry implements ReadableAssignment.Entry {
 		private final Truth value;
 		private final int atom;
 

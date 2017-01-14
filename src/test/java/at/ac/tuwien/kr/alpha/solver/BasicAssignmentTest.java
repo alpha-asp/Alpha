@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -125,7 +126,7 @@ public class BasicAssignmentTest {
 	public void assignmentsToProcess() throws Exception {
 		assignment.assign(1, MBT);
 
-		Queue<Assignment.Entry<ThriceTruth>> queue = assignment.getAssignmentsToProcess();
+		Queue<ReadableAssignment.Entry<ThriceTruth>> queue = assignment.getAssignmentsToProcess();
 		assertEquals(1, queue.remove().getAtom());
 
 		assignment.guess(2, MBT);
@@ -141,7 +142,7 @@ public class BasicAssignmentTest {
 	@Test
 	public void newAssignmentsIteratorAndBacktracking() throws Exception {
 
-		Iterator<Assignment.Entry<ThriceTruth>> newAssignmentsIterator;
+		Iterator<ReadableAssignment.Entry<ThriceTruth>> newAssignmentsIterator;
 
 		assignment.assign(1, MBT);
 		assignment.guess(2, MBT);
@@ -165,7 +166,7 @@ public class BasicAssignmentTest {
 	@Test
 	public void newAssignmentsIteratorLowerDecisionLevelAndBacktracking() throws Exception {
 
-		Iterator<Assignment.Entry<ThriceTruth>> newAssignmentsIterator;
+		Iterator<ReadableAssignment.Entry<ThriceTruth>> newAssignmentsIterator;
 
 		assignment.guess(1, MBT);
 		assignment.guess(2, MBT);
@@ -180,7 +181,7 @@ public class BasicAssignmentTest {
 
 	@Test
 	public void iteratorAndBacktracking() throws Exception {
-		Queue<Assignment.Entry<ThriceTruth>> assignmentsToProcess = assignment.getAssignmentsToProcess();
+		Queue<ReadableAssignment.Entry<ThriceTruth>> assignmentsToProcess = assignment.getAssignmentsToProcess();
 
 		assignment.assign(1, MBT);
 		assertEquals(1, assignmentsToProcess.remove().getAtom());

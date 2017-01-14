@@ -23,7 +23,7 @@ public interface Grounder extends AtomTranslator {
 	 */
 	Choices getChoices();
 
-	void updateAssignment(Iterator<? extends Assignment.Entry> it);
+	void updateAssignment(Iterator<? extends ReadableAssignment.Entry> it);
 
 	void forgetAssignment(int[] atomIds);
 

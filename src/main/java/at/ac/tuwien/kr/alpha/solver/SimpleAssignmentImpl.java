@@ -1,12 +1,10 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class SimpleAssignmentImpl implements SimpleAssignment<BooleanTruth> {
 	private HashMap<Integer, Boolean> delegate = new HashMap<>();
+	private LinkedList<SimpleReadableAssignment.Entry<BooleanTruth>> newAssignments2 = new LinkedList<>();
 
 	@Override
 	public boolean isAssigned(int atom) {
@@ -40,6 +38,7 @@ public class SimpleAssignmentImpl implements SimpleAssignment<BooleanTruth> {
 	}
 
 	public boolean assign(int atom, boolean value) {
+		newAssignments2.add(new Entry(atom, value));
 		delegate.put(atom, value);
 		return true;
 	}
@@ -49,5 +48,32 @@ public class SimpleAssignmentImpl implements SimpleAssignment<BooleanTruth> {
 		return delegate.entrySet().stream()
 			.map(e -> (Map.Entry<Integer, BooleanTruth>) new AbstractMap.SimpleEntry<>(e.getKey(), BooleanTruth.valueOf(e.getValue())))
 			.iterator();
+	}
+
+	@Override
+ 	public Iterator<SimpleReadableAssignment.Entry<BooleanTruth>> getNewAssignmentsIterator2() {
+		Iterator<SimpleReadableAssignment.Entry<BooleanTruth>> it = newAssignments2.iterator();
+		newAssignments2 = new LinkedList<>();
+		return it;
+	}
+
+	private static class Entry implements SimpleReadableAssignment.Entry<BooleanTruth> {
+		private final int atom;
+		private final BooleanTruth truth;
+
+		private Entry(int atom, boolean truth) {
+			this.atom = atom;
+			this.truth = BooleanTruth.valueOf(truth);
+		}
+
+		@Override
+		public int getAtom() {
+			return atom;
+		}
+
+		@Override
+		public BooleanTruth getTruth() {
+			return truth;
+		}
 	}
 }

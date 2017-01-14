@@ -568,9 +568,9 @@ public class NaiveGrounder extends BridgedGrounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<? extends Assignment.Entry> it) {
+	public void updateAssignment(Iterator<? extends ReadableAssignment.Entry> it) {
 		while (it.hasNext()) {
-			Assignment.Entry assignment = it.next();
+			ReadableAssignment.Entry assignment = it.next();
 			Truth truthValue = assignment.getTruth();
 			int atomId = assignment.getAtom();
 			Atom atom = atomStore.get(atomId);

@@ -27,17 +27,15 @@ public interface ReadableAssignment<T extends Truth> extends SimpleReadableAssig
 	 */
 	Set<Integer> getTrueAssignments();
 
-	Queue<Assignment.Entry<T>> getAssignmentsToProcess();
-	Assignment.Entry getGuessViolatedByAssign();
+	Queue<ReadableAssignment.Entry<T>> getAssignmentsToProcess();
+	ReadableAssignment.Entry getGuessViolatedByAssign();
 	NoGood getNoGoodViolatedByAssign();
 
 	/**
 	 * Returns an iterator over all new assignments. New assignments are only returned once.
 	 * @return
 	 */
-	Iterator<Assignment.Entry<T>> getNewAssignmentsIterator();
-
-	Iterator<Assignment.Entry<T>> getNewAssignmentsIterator2();
+	Iterator<ReadableAssignment.Entry<T>> getNewAssignmentsIterator();
 
 	Entry<T> get(int atom);
 
@@ -104,13 +102,10 @@ public interface ReadableAssignment<T extends Truth> extends SimpleReadableAssig
 		return false;
 	}
 
-	interface Entry<T extends Truth> {
-		T getTruth();
+	interface Entry<T extends Truth> extends SimpleReadableAssignment.Entry<T> {
 		int getDecisionLevel();
 		Entry<T> getPrevious();
 		NoGood getImpliedBy();
-
-		int getAtom();
 
 		int getPropagationLevel();
 		boolean isReassignAtLowerDecisionLevel();

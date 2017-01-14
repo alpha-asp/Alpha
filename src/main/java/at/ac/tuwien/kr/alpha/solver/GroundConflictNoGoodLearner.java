@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 import at.ac.tuwien.kr.alpha.common.ResolutionSequence;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
@@ -106,7 +107,7 @@ public class GroundConflictNoGoodLearner {
 			// For a) we need to work also with the other NoGood.
 			// For b) we need to backtrack the wrong guess.
 
-			Assignment.Entry atomAssignmentEntry = firstUIPPriorityQueue.poll();
+			ReadableAssignment.Entry atomAssignmentEntry = firstUIPPriorityQueue.poll();
 			NoGood otherContributingNoGood = atomAssignmentEntry.getImpliedBy();
 			if (otherContributingNoGood == null) {
 				// Case b), the other assignment is a decision.
@@ -135,7 +136,7 @@ public class GroundConflictNoGoodLearner {
 			}
 
 			// Resolve next NoGood based on current literal
-			Assignment.Entry currentLiteralAssignment = firstUIPPriorityQueue.poll();
+			ReadableAssignment.Entry currentLiteralAssignment = firstUIPPriorityQueue.poll();
 			// Get NoGood it was implied by.
 			NoGood impliedByNoGood = currentLiteralAssignment.getImpliedBy();
 			if (impliedByNoGood == null) {
@@ -175,7 +176,7 @@ public class GroundConflictNoGoodLearner {
 	 * @param resolutionLiteral
 	 * @return
 	 */
-	private int[] resolveNoGoods(FirstUIPPriorityQueue firstUIPPriorityQueue, NoGood firstNoGood, NoGood secondNoGood, Assignment.Entry resolutionLiteral) {
+	private int[] resolveNoGoods(FirstUIPPriorityQueue firstUIPPriorityQueue, NoGood firstNoGood, NoGood secondNoGood, ReadableAssignment.Entry resolutionLiteral) {
 		// Resolve implied nogood into current resolution.
 		int resolvedLiterals[] = new int[secondNoGood.size() + firstNoGood.size() - 2];
 		int resolvedCounter = 0;
@@ -191,7 +192,7 @@ public class GroundConflictNoGoodLearner {
 				resolvedLiterals[resolvedCounter++] = secondNoGood.getLiteral(i);
 
 				// Sort literal also into queue for further processing.
-				Assignment.Entry newLiteral = assignment.get(atomOf(secondNoGood.getLiteral(i)));
+				ReadableAssignment.Entry newLiteral = assignment.get(atomOf(secondNoGood.getLiteral(i)));
 				// Check for special case where literal was assigned from MBT to TRUE on the same decisionLevel and the propagationLevel of TRUE is higher than the one of the resolutionLiteral.
 				if (newLiteral.getDecisionLevel() == resolutionLiteral.getDecisionLevel()
 					&& newLiteral.getPropagationLevel() > resolutionLiteral.getPropagationLevel()) {
@@ -232,7 +233,7 @@ public class GroundConflictNoGoodLearner {
 			return singleLiteralDecisionLevel - 1 >= 0 ? singleLiteralDecisionLevel - 1 : 0;
 		}
 		for (Integer integer : learnedNoGood) {
-			Assignment.Entry assignmentEntry = assignment.get(atomOf(integer));
+			ReadableAssignment.Entry assignmentEntry = assignment.get(atomOf(integer));
 			int atomDecisionLevel = assignmentEntry.getDecisionLevel();
 			if (TRUE.equals(assignmentEntry.getTruth()) && assignmentEntry.getPrevious() != null) {
 				// Literal is assigned TRUE and was MBT before, it gets unassigned only if the MBT assignment is backtracked.

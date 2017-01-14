@@ -43,7 +43,7 @@ public abstract class ReteGrounder extends AbstractGrounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<? extends Assignment.Entry> it) {
+	public void updateAssignment(Iterator<? extends ReadableAssignment.Entry> it) {
 	}
 
 	@Override
