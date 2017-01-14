@@ -46,7 +46,7 @@ import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 import static at.ac.tuwien.kr.alpha.MainTest.stream;
 import static org.junit.Assert.assertEquals;
 
-public abstract class AbstractSolverTest {
+public class SolverTests extends AbstractSolverTests {
 	/**
 	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
 	 */
@@ -59,8 +59,6 @@ public abstract class AbstractSolverTest {
 		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		root.setLevel(Level.DEBUG);
 	}
-
-	protected abstract Solver getInstance(Grounder grounder);
 
 	@Test
 	public void testFactsOnlyProgram() throws IOException {
