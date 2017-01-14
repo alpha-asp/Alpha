@@ -774,9 +774,9 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	private boolean propagateAssigned(final int atom) {
 		final Watches<BinaryWatch, WatchedNoGood> w = watches(atom);
 
+		int atomDecisionLevel = assignment.get(atom).getDecisionLevel();
 		for (BinaryWatch watch : w.b.getAlpha()) {
-			int decisionLevel = assignment.get(atom).getDecisionLevel();
-			if (!assignStrongComplement(watch.getOtherLiteralIndex(), watch.getNoGood(), decisionLevel)) {
+			if (!assignStrongComplement(watch.getOtherLiteralIndex(), watch.getNoGood(), atomDecisionLevel)) {
 				return false;
 			}
 
@@ -788,7 +788,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 			int bestIndex = -1;
 			boolean unit = true;
-			int highestDecisionLevel = -1;
+			int highestDecisionLevel = atomDecisionLevel;
 			for (int offset = 1; offset < noGood.size(); offset++) {
 				final int index = (noGood.getAlphaPointer() + offset) % noGood.size();
 				final int literalAtIndex = noGood.getLiteral(index);
