@@ -28,29 +28,21 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.GroundConflictNoGoodLearner.ConflictAnalysisResult;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 import java.util.Collection;
-import java.util.Map;
-
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 
 /**
  * The default heuristic that had been used by {@link at.ac.tuwien.kr.alpha.solver.DefaultSolver} before {@link BerkMin} was implemented.
  *
  */
 public class NaiveHeuristic implements BranchingHeuristic {
-	private Assignment assignment;
-	private Map<Integer, Integer> choiceOn;
-	private Map<Integer, Integer> choiceOff;
 
-	public NaiveHeuristic(Assignment assignment, Map<Integer, Integer> choiceOn, Map<Integer, Integer> choiceOff) {
-		this.assignment = assignment;
-		this.choiceOn = choiceOn;
-		this.choiceOff = choiceOff;
+	private final ChoiceManager choiceManager;
+
+	public NaiveHeuristic(ChoiceManager choiceManager) {
+		this.choiceManager = choiceManager;
 	}
 
 	@Override
@@ -76,28 +68,7 @@ public class NaiveHeuristic implements BranchingHeuristic {
 
 	@Override
 	public int chooseAtom() {
-		// Check if there is an enabled choice that is not also disabled
-		// HINT: tracking changes of ChoiceOn, ChoiceOff directly could
-		// increase performance (analyze store.getChangedAssignments()).
-
-		// Check if there is an enabled choice that is not also disabled
-		for (Map.Entry<Integer, Integer> e : choiceOn.entrySet()) {
-			final int atom = e.getKey();
-
-			ThriceTruth truth = assignment.getTruth(atom);
-
-			// Only consider unassigned choices or choices currently MBT (and changing to TRUE following the guess)
-			if (truth != null && !MBT.equals(truth)) {
-				continue;
-			}
-
-			// Check that candidate is not disabled already
-			truth = assignment.getTruth(choiceOff.getOrDefault(atom, 0));
-			if (truth == null || FALSE.equals(truth)) {
-				return atom;
-			}
-		}
-		return 0;
+		return choiceManager.getNextActiveChoiceAtom();
 	}
 
 	@Override

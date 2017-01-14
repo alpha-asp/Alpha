@@ -147,9 +147,16 @@ public class ChoiceGrounder implements Grounder {
 		}
 	}
 
+	private boolean isFirst = true;
+
 	@Override
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
-		return new ImmutablePair<>(CHOICE_ENABLE, CHOICE_DISABLE);
+		if (isFirst) {
+			isFirst = false;
+			return new ImmutablePair<>(CHOICE_ENABLE, CHOICE_DISABLE);
+		} else {
+			return new ImmutablePair<>(new HashMap<>(), new HashMap<>());
+		}
 	}
 
 	@Override
