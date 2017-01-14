@@ -149,7 +149,7 @@ public class ChoiceManager {
 
 	boolean isActiveChoiceAtom(int atom) {
 		ChoicePoint choicePoint = influencers.get(atom);
-		return choicePoint != null && choicePoint.isActive;
+		return choicePoint != null && choicePoint.isActive && choicePoint.atom == atom;
 	}
 
 	public int getNextActiveChoiceAtom() {
