@@ -1,6 +1,5 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.solver.Assignment;
 import at.ac.tuwien.kr.alpha.solver.SimpleReadableAssignment;
 
 import java.util.Iterator;

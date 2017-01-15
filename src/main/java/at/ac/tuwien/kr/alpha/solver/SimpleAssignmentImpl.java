@@ -51,7 +51,7 @@ public class SimpleAssignmentImpl implements SimpleAssignment<BooleanTruth> {
 	}
 
 	@Override
- 	public Iterator<SimpleReadableAssignment.Entry<BooleanTruth>> getNewAssignmentsIterator2() {
+	public Iterator<SimpleReadableAssignment.Entry<BooleanTruth>> getNewAssignmentsIterator2() {
 		Iterator<SimpleReadableAssignment.Entry<BooleanTruth>> it = newAssignments2.iterator();
 		newAssignments2 = new LinkedList<>();
 		return it;

@@ -6,7 +6,6 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.rete.RetePredicate;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
 import at.ac.tuwien.kr.alpha.solver.Choices;
 
 import java.util.Iterator;

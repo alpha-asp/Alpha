@@ -33,7 +33,6 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstraint;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFact;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedRule;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
 import at.ac.tuwien.kr.alpha.solver.Choices;
 import com.google.common.collect.Iterables;
 import org.apache.commons.lang3.tuple.ImmutablePair;

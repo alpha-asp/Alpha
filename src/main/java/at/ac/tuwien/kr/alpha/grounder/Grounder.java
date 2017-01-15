@@ -4,7 +4,6 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
 import at.ac.tuwien.kr.alpha.solver.Choices;
 
 import java.util.Iterator;

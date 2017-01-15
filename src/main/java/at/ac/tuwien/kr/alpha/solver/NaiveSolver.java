@@ -32,9 +32,7 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 import at.ac.tuwien.kr.alpha.common.Truth;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
-import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
-import com.sun.org.apache.xpath.internal.operations.Bool;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,14 +59,12 @@ public class NaiveSolver extends AbstractSolver {
 	private boolean didChange;
 	private int decisionLevel;
 
-	private ChoiceManager choiceManager;
+	private Choices choices = new Choices();
 	private Integer nextChoice;
 	private HashSet<Integer> mbtAssigned = new HashSet<>();
 	private ArrayList<ArrayList<Integer>> mbtAssignedFromUnassigned = new ArrayList<>();
 	private ArrayList<ArrayList<Integer>> trueAssignedFromMbt = new ArrayList<>();
 	private List<Integer> unassignedAtoms;
-
-	BranchingHeuristic heuristic;
 
 	NaiveSolver(Grounder grounder) {
 		super(grounder);
@@ -78,10 +74,6 @@ public class NaiveSolver extends AbstractSolver {
 		decisionLevels.add(0, new ArrayList<>());
 		mbtAssignedFromUnassigned.add(0, new ArrayList<>());
 		trueAssignedFromMbt.add(0, new ArrayList<>());
-
-		choiceManager = new ChoiceManager(assignment);
-
-		heuristic = new NaiveHeuristic(choiceManager);
 	}
 
 	@Override
@@ -114,7 +106,7 @@ public class NaiveSolver extends AbstractSolver {
 				if (isSearchSpaceExhausted()) {
 					return false;
 				}
-			} else if ((nextChoice = choose()) != 0) {
+			} else if (choicesLeft()) {
 				doChoice();
 			} else if (!allAtomsAssigned()) {
 				LOGGER.trace("Closing unassigned known atoms (assigning FALSE).");
@@ -141,15 +133,6 @@ public class NaiveSolver extends AbstractSolver {
 				}
 			}
 		}
-	}
-
-	private int choose() {
-		// Update ChoiceManager.
-		Iterator<? extends SimpleReadableAssignment.Entry<BooleanTruth>> it = assignment.getNewAssignmentsIterator2();
-		while (it.hasNext()) {
-			choiceManager.updateAssignment(it.next().getAtom());
-		}
-		return heuristic.chooseAtom();
 	}
 
 	private void assignUnassignedToFalse() {
@@ -230,9 +213,33 @@ public class NaiveSolver extends AbstractSolver {
 		assignment.assign(nextChoice, true);
 		newTruthAssignments.add(nextChoice);
 		choiceStack.push(nextChoice, true);
-		choiceManager.nextDecisionLevel();
 		// Record change to compute propagation fixpoint again.
 		didChange = true;
+	}
+
+	private boolean choicesLeft() {
+		// Check if there is an enabled choice that is not also disabled
+		for (Map.Entry<Integer, Pair<Integer, Integer>> e : choices) {
+			final int atom = e.getKey();
+
+			// Only consider unassigned choices
+			if (assignment.isAssigned(atom)) {
+				continue;
+			}
+
+			BooleanTruth truth = assignment.getTruth(e.getValue().getLeft());
+			if (truth == null || !truth.toBoolean()) {
+				continue;
+			}
+
+			// Check that candidate is not disabled already
+			truth = assignment.getTruth(e.getValue().getRight());
+			if (truth == null || !truth.toBoolean()) {
+				nextChoice = atom;
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private void doBacktrack() {
@@ -259,8 +266,6 @@ public class NaiveSolver extends AbstractSolver {
 		for (Integer atomId : mbtAssignedFromUnassigned.get(decisionLevel)) {
 			mbtAssigned.remove(atomId);
 		}
-
-		choiceManager.backtrack();
 
 		// Clear atomIds in current decision level
 		decisionLevels.set(decisionLevel, new ArrayList<>());
@@ -346,7 +351,7 @@ public class NaiveSolver extends AbstractSolver {
 		}
 
 		// Record choice atoms
-		choiceManager.addChoiceInformation(grounder.getChoices());
+		choices.putAll(grounder.getChoices());
 	}
 
 	private boolean isSearchSpaceExhausted() {
