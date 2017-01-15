@@ -218,16 +218,8 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private void assignUnassignedToFalse() {
-		boolean isFirst = true;
 		for (Integer atom : unassignedAtoms) {
-			decisionCounter++;
-			if (isFirst) {
-				assignment.guess(atom, FALSE);
-				choiceStack.pushBacktrack(atom, false);
-				isFirst = false;
-			} else {
-				assignment.assign(atom, FALSE);
-			}
+			assignment.assign(atom, FALSE, null);
 		}
 	}
 
