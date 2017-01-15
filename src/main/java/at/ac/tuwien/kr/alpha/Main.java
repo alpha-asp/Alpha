@@ -49,6 +49,7 @@ public class Main {
 
 	private static final String DEFAULT_GROUNDER = "naive";
 	private static final String DEFAULT_SOLVER = "default";
+	private static final String OPT_SEED = "seed";
 
 	private static CommandLine commandLine;
 
@@ -101,6 +102,13 @@ public class Main {
 
 		Option deterministicOption = new Option("d", OPT_DETERMINISTIC, false, "disable randomness");
 		options.addOption(deterministicOption);
+
+		Option seedOption = new Option("e", OPT_SEED, true, "set seed");
+		seedOption.setArgName("number");
+		seedOption.setRequired(false);
+		seedOption.setArgs(1);
+		seedOption.setType(Number.class);
+		options.addOption(seedOption);
 
 		try {
 			commandLine = new DefaultParser().parse(options, args);
@@ -174,6 +182,15 @@ public class Main {
 		// NOTE: Using time as seed is fine as the internal heuristics
 		// do not need to by cryptographically securely randomized.
 		long seed = commandLine.hasOption(OPT_DETERMINISTIC) ? 0 : System.nanoTime();
+
+		try {
+			Number s = (Number)commandLine.getParsedOptionValue(OPT_SEED);
+			if (s != null) {
+				seed = s.longValue();
+			}
+		} catch (ParseException e) {
+			bailOut("Failed to parse seed.", e);
+		}
 
 		LOGGER.info("Seed for pseudorandomization is {}.", seed);
 
