@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.solver.learning;
 
 import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 import java.util.Comparator;
 import java.util.HashSet;

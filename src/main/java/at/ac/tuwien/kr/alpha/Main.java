@@ -10,6 +10,7 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.bridges.HexBridge;
+import at.ac.tuwien.kr.alpha.grounder.bridges.ProgramBridge;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTreeVisitor;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityTransformation;
@@ -138,12 +139,6 @@ public class Main {
 			};
 		}
 
-		Bridge[] bridges = new Bridge[0];
-
-		if (commandLine.hasOption(OPT_HEX)) {
-			bridges = new Bridge[] {new HexBridge()};
-		}
-
 		int limit = 0;
 
 		try {
@@ -175,6 +170,14 @@ public class Main {
 		// Apply program transformations/rewritings (currently none).
 		IdentityTransformation programTransformation = new IdentityTransformation();
 		ParsedProgram transformedProgram = programTransformation.transform(program);
+
+		Bridge[] bridges;
+		if (commandLine.hasOption(OPT_HEX)) {
+			bridges = new Bridge[] {new ProgramBridge(transformedProgram), new HexBridge()};
+		} else {
+			bridges = new Bridge[] {new ProgramBridge(transformedProgram)};
+		}
+
 		Grounder grounder = GrounderFactory.getInstance(
 			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), filter, bridges
 		);
