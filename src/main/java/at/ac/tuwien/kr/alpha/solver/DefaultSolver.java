@@ -264,7 +264,7 @@ public class DefaultSolver extends AbstractSolver {
 				// If choice was assigned at lower decision level (due to added NoGoods), no inverted guess should be done.
 				if (lastChoiceEntry.getImpliedBy() != null) {
 					LOGGER.debug("Last choice now is implied by: {}.", lastChoiceEntry.getImpliedBy());
-					if (lastChoiceEntry.getDecisionLevel() == assignment.getDecisionLevel()) {
+					if (lastChoiceEntry.getDecisionLevel() == assignment.getDecisionLevel() + 1) {
 						throw new RuntimeException("Choice was assigned but not at a lower decision level. This should not happen.");
 					}
 					LOGGER.debug("Choice was assigned at a lower decision level");
