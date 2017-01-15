@@ -79,6 +79,7 @@ public class DefaultSolver extends AbstractSolver {
 		if (initialize) {
 			if (!obtainNoGoodsFromGrounder()) {
 				// NoGoods are unsatisfiable.
+				LOGGER.info("{} decisions done.", decisionCounter);
 				return false;
 			}
 			initialize = false;
@@ -86,6 +87,7 @@ public class DefaultSolver extends AbstractSolver {
 			// We already found one Answer-Set and are requested to find another one
 			doBacktrack();
 			if (isSearchSpaceExhausted()) {
+				LOGGER.info("{} decisions done.", decisionCounter);
 				return false;
 			}
 		}
@@ -101,6 +103,7 @@ public class DefaultSolver extends AbstractSolver {
 				updateGrounderAssignment();
 				if (!obtainNoGoodsFromGrounder()) {
 					// NoGoods are unsatisfiable.
+					LOGGER.info("{} decisions done.", decisionCounter);
 					return false;
 				}
 				if (store.propagate()) {
@@ -118,6 +121,7 @@ public class DefaultSolver extends AbstractSolver {
 				if (!afterAllAtomsAssigned) {
 					if (!learnBackjumpAddFromConflict()) {
 						// NoGoods are unsatisfiable.
+						LOGGER.info("{} decisions done.", decisionCounter);
 						return false;
 					}
 					didChange = true;
@@ -127,6 +131,7 @@ public class DefaultSolver extends AbstractSolver {
 					doBacktrack();
 					afterAllAtomsAssigned = false;
 					if (isSearchSpaceExhausted()) {
+						LOGGER.info("{} decisions done.", decisionCounter);
 						return false;
 					}
 				}
@@ -153,6 +158,7 @@ public class DefaultSolver extends AbstractSolver {
 				doBacktrack();
 				afterAllAtomsAssigned = false;
 				if (isSearchSpaceExhausted()) {
+					LOGGER.info("{} decisions done.", decisionCounter);
 					return false;
 				}
 			}
