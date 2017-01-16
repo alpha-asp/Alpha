@@ -108,7 +108,6 @@ public class PigeonHoleTest extends AbstractSolverTests {
 		testProgram.append(":- pigeon(P), not assigned(P).").append(ls);
 		addPigeons(testProgram, pigeons);
 		addHoles(testProgram, holes);
-		System.out.println(testProgram);
 
 		ParsedProgram parsedProgram = parseVisit(stream(testProgram.toString()));
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);

@@ -28,11 +28,11 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.StreamSupport;
 
 import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
@@ -56,8 +56,8 @@ public class BerkMin implements BranchingHeuristic {
 	private static final int DEFAULT_CHOICE_ATOM = 0;
 
 	private final Assignment<ThriceTruth> assignment;
-	private final Predicate<? super Integer> isAtomChoicePoint;
-	private final Predicate<? super Integer> isAtomActiveChoicePoint;
+	private final ChoiceManager choiceManager;
+
 	private final Random rand;
 
 	private Map<Integer, Double> activityCounters = new HashMap<>();
@@ -67,18 +67,16 @@ public class BerkMin implements BranchingHeuristic {
 	private double decayFactor;
 	private int stepsSinceLastDecay;
 
-	public BerkMin(Assignment<ThriceTruth> assignment, Predicate<? super Integer> isAtomChoicePoint,
-			Predicate<? super Integer> isAtomActiveChoicePoint, Random random, int decayAge, double decayFactor) {
+	public BerkMin(Assignment<ThriceTruth> assignment, ChoiceManager choiceManager, Random random, int decayAge, double decayFactor) {
 		this.assignment = assignment;
-		this.isAtomChoicePoint = isAtomChoicePoint;
-		this.isAtomActiveChoicePoint = isAtomActiveChoicePoint;
 		this.rand = random;
+		this.choiceManager = choiceManager;
 		this.decayAge = decayAge;
 		this.decayFactor = decayFactor;
 	}
 
-	public BerkMin(Assignment<ThriceTruth> assignment, Predicate<? super Integer> isAtomChoicePoint, Predicate<? super Integer> isAtomActiveChoicePoint, Random random) {
-		this(assignment, isAtomChoicePoint, isAtomActiveChoicePoint, random, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR);
+	public BerkMin(Assignment<ThriceTruth> assignment, ChoiceManager choiceManager, Random random) {
+		this(assignment, choiceManager, random, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR);
 	}
 
 	/**
@@ -192,7 +190,7 @@ public class BerkMin implements BranchingHeuristic {
 
 	private void incrementActivityCounter(int literal) {
 		int atom = atomOf(literal);
-		if (isAtomChoicePoint.test(atom)) {
+		if (choiceManager.isAtomChoice(atom)) {
 			activityCounters.compute(atom, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + 1);
 		}
 		// TODO: check performance
@@ -206,7 +204,7 @@ public class BerkMin implements BranchingHeuristic {
 	}
 	
 	private void incrementSignCounter(Integer literal) {
-		if (isAtomChoicePoint.test(atomOf(literal))) {
+		if (choiceManager.isAtomChoice(atomOf(literal))) {
 			signCounters.compute(literal, (k, v) -> (v == null ? DEFAULT_SIGN_COUNTER : v) + 1);
 		}
 	}
@@ -245,7 +243,7 @@ public class BerkMin implements BranchingHeuristic {
 		return StreamSupport.stream(candidates.spliterator(), true)
 			.map(Literals::atomOf)
 			.filter(this::isUnassigned)
-			.filter(isAtomActiveChoicePoint)
+			.filter(choiceManager::isActiveChoiceAtom)
 			.max(Comparator.comparingDouble(this::getActivity))
 			.orElse(DEFAULT_CHOICE_ATOM);
 	}
