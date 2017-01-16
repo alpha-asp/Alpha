@@ -152,6 +152,7 @@ public class DefaultSolver extends AbstractSolver {
 				LOGGER.debug("Answer-Set found: {}", as);
 				LOGGER.debug("Choices of Answer-Set were: {}", choiceStack);
 				action.accept(as);
+				LOGGER.info("{} decisions done.", decisionCounter);
 				return true;
 			} else {
 				LOGGER.debug("Backtracking from wrong choices ({} MBTs): {}", assignment.getMBTCount(), choiceStack);
