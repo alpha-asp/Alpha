@@ -38,7 +38,8 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 
 /**
  * The new default solver employed in Alpha.
@@ -61,15 +62,15 @@ public class DefaultSolver extends AbstractSolver {
 
 	private int decisionCounter;
 
-	public DefaultSolver(Grounder grounder, Random random) {
+	public DefaultSolver(Grounder grounder, Random random, String branchingHeuristicName) {
 		super(grounder);
 
 		this.assignment = new BasicAssignment(grounder);
 		this.store = new BasicNoGoodStore(assignment, grounder);
 		this.choiceStack = new ChoiceStack(grounder);
 		this.learner = new GroundConflictNoGoodLearner(assignment);
-		this.branchingHeuristic = new BerkMin(assignment, this::isAtomChoicePoint, this::isAtomActiveChoicePoint, random);
 		this.choiceManager = new ChoiceManager(assignment);
+		this.branchingHeuristic = BranchingHeuristicFactory.getInstance(branchingHeuristicName, assignment, choiceManager, random);
 		this.fallbackBranchingHeuristic = new NaiveHeuristic(choiceManager);
 	}
 
@@ -152,6 +153,7 @@ public class DefaultSolver extends AbstractSolver {
 				LOGGER.debug("Answer-Set found: {}", as);
 				LOGGER.debug("Choices of Answer-Set were: {}", choiceStack);
 				action.accept(as);
+				LOGGER.info("{} decisions done.", decisionCounter);
 				return true;
 			} else {
 				LOGGER.debug("Backtracking from wrong choices ({} MBTs): {}", assignment.getMBTCount(), choiceStack);
@@ -383,14 +385,6 @@ public class DefaultSolver extends AbstractSolver {
 		boolean changeCopy = didChange;
 		didChange = false;
 		return !changeCopy;
-	}
-
-	private boolean isAtomChoicePoint(int atom) {
-		return choiceManager.isAtomChoice(atom);
-	}
-
-	private boolean isAtomActiveChoicePoint(int atom) {
-		return choiceManager.isActiveChoiceAtom(atom);
 	}
 
 	private void doChoice(int nextChoice) {
