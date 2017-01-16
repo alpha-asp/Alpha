@@ -63,7 +63,11 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		violated = null;
 		assignment.backtrack();
 		if (LOGGER.isTraceEnabled()) {
-			new WatchedNoGoodsChecker().doWatchesCheck();
+			if (assignment.getAssignmentsToProcess().isEmpty()) {
+				new WatchedNoGoodsChecker().doWatchesCheck();
+			} else {
+				LOGGER.trace("Skipping watches check since there are assignments to process first.");
+			}
 		}
 	}
 
@@ -288,6 +292,11 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 				int dl = entry.getDecisionLevel();
 
+				// Check if literal is positive, assigned TRUE and has highest decision level
+				if (TRUE.equals(entry.getTruth()) && dl > positiveTrueHighestDecisionLevel) {
+					positiveTrueHighestDecisionLevel = dl;
+					posPositiveTrueHighestDecisionLevel = i;
+				}
 				// Check if literal has highest decision level (so far).
 				if (dl >= highestDecisionLevel) {
 					// Move former highest down to second highest.
@@ -302,11 +311,6 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 				if (dl > secondHighestPriority) {
 					secondHighestPriority = dl;
 					posSecondHighestPriority = i;
-				}
-				// Check if literal is positive, assigned TRUE and has highest decision level
-				if (TRUE.equals(entry.getTruth()) && dl > positiveTrueHighestDecisionLevel) {
-					positiveTrueHighestDecisionLevel = dl;
-					posPositiveTrueHighestDecisionLevel = i;
 				}
 			}
 		}
@@ -938,39 +942,52 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		}
 
 		private void checkAlphaWatchesInvariant(int atom, BasicNoGoodStore.Watches<BasicNoGoodStore.BinaryWatch, WatchedNoGood> watches) {
-			ReadableAssignment.Entry atomEntry = assignment.get(atom);
-			int atomDecisionLevel = atomEntry != null ? atomEntry.getDecisionLevel() : -1;
+			ReadableAssignment.Entry<ThriceTruth> atomEntry = assignment.get(atom);
+			int atomDecisionLevel = atomEntry != null && TRUE.equals(atomEntry.getTruth()) ? atomEntry.getDecisionLevel() : -1;
 			for (BasicNoGoodStore.BinaryWatch binaryWatch : watches.b.getAlpha()) {
-				int otherAtom = binaryWatch.getNoGood().getAtom(binaryWatch.getOtherLiteralIndex());
-				ReadableAssignment.Entry otherEntry = assignment.get(otherAtom);
-				int otherDecisionLevel = otherEntry != null ? otherEntry.getDecisionLevel() : -1;
-				if (atomEntry == null && otherEntry == null) {
+				// Ensure if watched is TRUE, so the head is TRUE and if head is TRUE, it is on lower-or-equal decision level as the watched.
+				int headAtom = binaryWatch.getNoGood().getAtom(binaryWatch.getOtherLiteralIndex());
+				ReadableAssignment.Entry<ThriceTruth> headEntry = assignment.get(headAtom);
+				int headDecisionLevel = headEntry != null && TRUE.equals(headEntry.getTruth()) ? headEntry.getDecisionLevel() : -1;
+				boolean isHeadTrue = headDecisionLevel != -1;
+				if (atomEntry == null || !TRUE.equals(atomEntry.getTruth())) {
+					// Watch is not TRUE.
 					continue;
 				}
-				if (atomDecisionLevel == otherDecisionLevel && atomDecisionLevel != -1) {
+				if (isHeadTrue && headDecisionLevel <= atomDecisionLevel) {
+					// Head is TRUE on lower-or-equal decision level.
 					continue;
 				}
-				if (isNoGoodSatisfied(binaryWatch.getNoGood())) {
-					continue;
-				}
-				throw new RuntimeException("Watch invariant violated. Should not happen.");
+				throw new RuntimeException("Watch invariant (alpha) violated. Should not happen.");
 			}
+			watchesloop:
 			for (WatchedNoGood watchedNoGood : watches.n.getAlpha()) {
-				// Ensure both watches either unassigned, or one satisfies NoGood, or both are on highest decision level.
-				int otherPointer = atom ==  watchedNoGood.getAtom(watchedNoGood.getPointer(1)) ? 0 : 1;
-				int otherAtom = watchedNoGood.getAtom(watchedNoGood.getPointer(otherPointer));
-				ReadableAssignment.Entry otherEntry = assignment.get(otherAtom);
-				int otherDecisionLevel = otherEntry != null ? otherEntry.getDecisionLevel() : -1;
-				if (atomEntry == null && otherEntry == null) {
+				// Ensure if watched is TRUE, then either the head is TRUE or there is an unassigned negative literal; furthermore, if head is TRUE, it is on lower-or-equal decision level as the watched.
+				int headAtom = watchedNoGood.getAtom(watchedNoGood.getHead());
+				ReadableAssignment.Entry<ThriceTruth> headEntry = assignment.get(headAtom);
+				int headDecisionLevel = headEntry != null && TRUE.equals(headEntry.getTruth()) ? headEntry.getDecisionLevel() : -1;
+				boolean isHeadTrue = headDecisionLevel != -1;
+				if (atomEntry == null || !TRUE.equals(atomEntry.getTruth())) {
+					// Watch is not TRUE.
 					continue;
 				}
-				if (atomDecisionLevel == otherDecisionLevel && atomDecisionLevel != -1) {
+				if (isHeadTrue && headDecisionLevel <= atomDecisionLevel) {
+					// Head is TRUE on lower-or-equal decision level.
 					continue;
 				}
 				if (isNoGoodSatisfied(watchedNoGood)) {
 					continue;
 				}
-				throw new RuntimeException("Watch invariant violated. Should not happen.");
+				// Iterate over all literals and check if one is negated and unassigned or assigned MBT/TRUE and satisfying the NoGood.
+				for (Integer literal : watchedNoGood) {
+					if (atomOf(literal) == atom) {
+						continue;
+					}
+					if (isNegated(literal) && (assignment.getTruth(atomOf(literal)) == null /*|| assignment.getTruth(atomOf(literal)).toBoolean()*/)) {
+						continue watchesloop;
+					}
+				}
+				throw new RuntimeException("Watch invariant (alpha) violated. Should not happen.");
 			}
 		}
 

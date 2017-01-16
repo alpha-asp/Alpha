@@ -82,6 +82,7 @@ public class DefaultSolver extends AbstractSolver {
 		if (initialize) {
 			if (!obtainNoGoodsFromGrounder()) {
 				// NoGoods are unsatisfiable.
+				LOGGER.info("{} decisions done.", decisionCounter);
 				return false;
 			}
 			initialize = false;
@@ -89,6 +90,7 @@ public class DefaultSolver extends AbstractSolver {
 			// We already found one Answer-Set and are requested to find another one
 			doBacktrack();
 			if (isSearchSpaceExhausted()) {
+				LOGGER.info("{} decisions done.", decisionCounter);
 				return false;
 			}
 		}
@@ -104,6 +106,7 @@ public class DefaultSolver extends AbstractSolver {
 				updateGrounderAssignment();
 				if (!obtainNoGoodsFromGrounder()) {
 					// NoGoods are unsatisfiable.
+					LOGGER.info("{} decisions done.", decisionCounter);
 					return false;
 				}
 				if (store.propagate()) {
@@ -121,6 +124,7 @@ public class DefaultSolver extends AbstractSolver {
 				if (!afterAllAtomsAssigned) {
 					if (!learnBackjumpAddFromConflict()) {
 						// NoGoods are unsatisfiable.
+						LOGGER.info("{} decisions done.", decisionCounter);
 						return false;
 					}
 					didChange = true;
@@ -130,6 +134,7 @@ public class DefaultSolver extends AbstractSolver {
 					doBacktrack();
 					afterAllAtomsAssigned = false;
 					if (isSearchSpaceExhausted()) {
+						LOGGER.info("{} decisions done.", decisionCounter);
 						return false;
 					}
 				}
@@ -156,6 +161,7 @@ public class DefaultSolver extends AbstractSolver {
 				doBacktrack();
 				afterAllAtomsAssigned = false;
 				if (isSearchSpaceExhausted()) {
+					LOGGER.info("{} decisions done.", decisionCounter);
 					return false;
 				}
 			}
@@ -261,7 +267,7 @@ public class DefaultSolver extends AbstractSolver {
 				// If choice was assigned at lower decision level (due to added NoGoods), no inverted guess should be done.
 				if (lastChoiceEntry.getImpliedBy() != null) {
 					LOGGER.debug("Last choice now is implied by: {}.", lastChoiceEntry.getImpliedBy());
-					if (lastChoiceEntry.getDecisionLevel() == assignment.getDecisionLevel()) {
+					if (lastChoiceEntry.getDecisionLevel() == assignment.getDecisionLevel() + 1) {
 						throw new RuntimeException("Choice was assigned but not at a lower decision level. This should not happen.");
 					}
 					LOGGER.debug("Choice was assigned at a lower decision level");
@@ -397,9 +403,11 @@ public class DefaultSolver extends AbstractSolver {
 		choiceManager.nextDecisionLevel();
 		// Record change to compute propagation fixpoint again.
 		didChange = true;
-		LOGGER.debug("Choice: guessing {}={}@{}", grounder.atomToString(nextChoice), sign, assignment.getDecisionLevel());
-		LOGGER.debug("Choice: stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
-		LOGGER.debug("Choice: {} choices so far.", decisionCounter);
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Choice: guessing {}={}@{}", grounder.atomToString(nextChoice), sign, assignment.getDecisionLevel());
+			LOGGER.debug("Choice: stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
+			LOGGER.debug("Choice: {} choices so far.", decisionCounter);
+		}
 	}
 
 	private int computeChoice() {

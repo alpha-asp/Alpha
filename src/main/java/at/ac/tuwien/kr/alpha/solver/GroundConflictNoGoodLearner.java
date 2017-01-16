@@ -47,7 +47,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 public class GroundConflictNoGoodLearner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(GroundConflictNoGoodLearner.class);
 
-	private final Assignment assignment;
+	private final Assignment<ThriceTruth> assignment;
 
 	public static class ConflictAnalysisResult {
 		public final NoGood learnedNoGood;
@@ -69,7 +69,7 @@ public class GroundConflictNoGoodLearner {
 		}
 	}
 
-	public GroundConflictNoGoodLearner(Assignment assignment) {
+	public GroundConflictNoGoodLearner(Assignment<ThriceTruth> assignment) {
 		this.assignment = assignment;
 	}
 
@@ -83,7 +83,8 @@ public class GroundConflictNoGoodLearner {
 		// Find decision level where conflict occurs (i.e., highest decision level of violatedNoGood).
 		int conflictDecisionLevel = -1;
 		for (Integer literal : currentResolutionNoGood) {
-			int literalDL = assignment.get(atomOf(literal)).getDecisionLevel();
+			ReadableAssignment.Entry<ThriceTruth> literalEntry = getAssignmentEntryRespectingLowerMBT(literal);
+			int literalDL = literalEntry.getDecisionLevel();
 			if (literalDL > conflictDecisionLevel) {
 				conflictDecisionLevel = literalDL;
 			}
@@ -94,7 +95,7 @@ public class GroundConflictNoGoodLearner {
 		}
 		FirstUIPPriorityQueue firstUIPPriorityQueue = new FirstUIPPriorityQueue(conflictDecisionLevel);
 		for (Integer literal : currentResolutionNoGood) {
-			firstUIPPriorityQueue.add(assignment.get(atomOf(literal)));
+			firstUIPPriorityQueue.add(getAssignmentEntryRespectingLowerMBT(literal));
 			//sortLiteralToProcessIntoList(sortedLiteralsToProcess, literal, conflictDecisionLevel);
 		}
 		// TODO: create ResolutionSequence
@@ -136,7 +137,7 @@ public class GroundConflictNoGoodLearner {
 			}
 
 			// Resolve next NoGood based on current literal
-			ReadableAssignment.Entry currentLiteralAssignment = firstUIPPriorityQueue.poll();
+			ReadableAssignment.Entry<ThriceTruth> currentLiteralAssignment = firstUIPPriorityQueue.poll();
 			// Get NoGood it was implied by.
 			NoGood impliedByNoGood = currentLiteralAssignment.getImpliedBy();
 			if (impliedByNoGood == null) {
@@ -146,7 +147,7 @@ public class GroundConflictNoGoodLearner {
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.debug("ImpliedBy NoGood is: {}.", impliedByNoGood);
 				for (Integer literal : impliedByNoGood) {
-					LOGGER.debug("Literal assignment: {}={}.", atomOf(literal), assignment.get(atomOf(literal)));
+					LOGGER.debug("Literal assignment: {}={}, previously {}.", atomOf(literal), assignment.get(atomOf(literal)), assignment.get(atomOf(literal)).getPrevious());
 				}
 			}
 			// TODO: add entry in ResolutionSequence.
@@ -154,6 +155,20 @@ public class GroundConflictNoGoodLearner {
 			currentResolutionNoGood = new NoGood(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, impliedByNoGood, currentLiteralAssignment));
 			noGoodsResponsible.add(impliedByNoGood);
 		}
+	}
+
+	/**
+	 * Returns the Assignment.Entry of a literal. If the literal is TRUE but was MBT before, the (previous) MBT entry is returned.
+	 * @param literal
+	 * @return
+	 */
+	private ReadableAssignment.Entry<ThriceTruth> getAssignmentEntryRespectingLowerMBT(Integer literal) {
+		ReadableAssignment.Entry<ThriceTruth> literalEntry = assignment.get(atomOf(literal));
+		// If current assignment is TRUE and previous was MBT, take previous decision level.
+		if (literalEntry.getPrevious() != null) {
+			literalEntry = literalEntry.getPrevious();
+		}
+		return literalEntry;
 	}
 
 	private ConflictAnalysisResult repeatAnalysisIfNotAssigning(NoGood learnedNoGood, Set<NoGood> noGoodsResponsibleForConflict) {
@@ -192,7 +207,7 @@ public class GroundConflictNoGoodLearner {
 				resolvedLiterals[resolvedCounter++] = secondNoGood.getLiteral(i);
 
 				// Sort literal also into queue for further processing.
-				ReadableAssignment.Entry newLiteral = assignment.get(atomOf(secondNoGood.getLiteral(i)));
+				ReadableAssignment.Entry<ThriceTruth> newLiteral = getAssignmentEntryRespectingLowerMBT(secondNoGood.getLiteral(i));
 				// Check for special case where literal was assigned from MBT to TRUE on the same decisionLevel and the propagationLevel of TRUE is higher than the one of the resolutionLiteral.
 				if (newLiteral.getDecisionLevel() == resolutionLiteral.getDecisionLevel()
 					&& newLiteral.getPropagationLevel() > resolutionLiteral.getPropagationLevel()) {
