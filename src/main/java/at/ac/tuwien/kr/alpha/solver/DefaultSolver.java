@@ -401,9 +401,11 @@ public class DefaultSolver extends AbstractSolver {
 		choiceManager.nextDecisionLevel();
 		// Record change to compute propagation fixpoint again.
 		didChange = true;
-		LOGGER.debug("Choice: guessing {}={}@{}", grounder.atomToString(nextChoice), sign, assignment.getDecisionLevel());
-		LOGGER.debug("Choice: stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
-		LOGGER.debug("Choice: {} choices so far.", decisionCounter);
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Choice: guessing {}={}@{}", grounder.atomToString(nextChoice), sign, assignment.getDecisionLevel());
+			LOGGER.debug("Choice: stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
+			LOGGER.debug("Choice: {} choices so far.", decisionCounter);
+		}
 	}
 
 	private int computeChoice() {

@@ -82,7 +82,8 @@ public class GroundConflictNoGoodLearner {
 		// Find decision level where conflict occurs (i.e., highest decision level of violatedNoGood).
 		int conflictDecisionLevel = -1;
 		for (Integer literal : currentResolutionNoGood) {
-			int literalDL = assignment.get(atomOf(literal)).getDecisionLevel();
+			Assignment.Entry literalEntry = getAssignmentEntryRespectingLowerMBT(literal);
+			int literalDL = literalEntry.getDecisionLevel();
 			if (literalDL > conflictDecisionLevel) {
 				conflictDecisionLevel = literalDL;
 			}
@@ -93,7 +94,7 @@ public class GroundConflictNoGoodLearner {
 		}
 		FirstUIPPriorityQueue firstUIPPriorityQueue = new FirstUIPPriorityQueue(conflictDecisionLevel);
 		for (Integer literal : currentResolutionNoGood) {
-			firstUIPPriorityQueue.add(assignment.get(atomOf(literal)));
+			firstUIPPriorityQueue.add(getAssignmentEntryRespectingLowerMBT(literal));
 			//sortLiteralToProcessIntoList(sortedLiteralsToProcess, literal, conflictDecisionLevel);
 		}
 		// TODO: create ResolutionSequence
@@ -145,7 +146,7 @@ public class GroundConflictNoGoodLearner {
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.debug("ImpliedBy NoGood is: {}.", impliedByNoGood);
 				for (Integer literal : impliedByNoGood) {
-					LOGGER.debug("Literal assignment: {}={}.", atomOf(literal), assignment.get(atomOf(literal)));
+					LOGGER.debug("Literal assignment: {}={}, previously {}.", atomOf(literal), assignment.get(atomOf(literal)), assignment.get(atomOf(literal)).getPrevious());
 				}
 			}
 			// TODO: add entry in ResolutionSequence.
@@ -153,6 +154,20 @@ public class GroundConflictNoGoodLearner {
 			currentResolutionNoGood = new NoGood(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, impliedByNoGood, currentLiteralAssignment));
 			noGoodsResponsible.add(impliedByNoGood);
 		}
+	}
+
+	/**
+	 * Returns the Assignment.Entry of a literal. If the literal is TRUE but was MBT before, the (previous) MBT entry is returned.
+	 * @param literal
+	 * @return
+	 */
+	private Assignment.Entry getAssignmentEntryRespectingLowerMBT(Integer literal) {
+		Assignment.Entry literalEntry = assignment.get(atomOf(literal));
+		// If current assignment is TRUE and previous was MBT, take previous decision level.
+		if (literalEntry.getPrevious() != null) {
+			literalEntry = literalEntry.getPrevious();
+		}
+		return literalEntry;
 	}
 
 	private ConflictAnalysisResult repeatAnalysisIfNotAssigning(NoGood learnedNoGood, Set<NoGood> noGoodsResponsibleForConflict) {
@@ -191,7 +206,7 @@ public class GroundConflictNoGoodLearner {
 				resolvedLiterals[resolvedCounter++] = secondNoGood.getLiteral(i);
 
 				// Sort literal also into queue for further processing.
-				Assignment.Entry newLiteral = assignment.get(atomOf(secondNoGood.getLiteral(i)));
+				Assignment.Entry newLiteral = getAssignmentEntryRespectingLowerMBT(secondNoGood.getLiteral(i));
 				// Check for special case where literal was assigned from MBT to TRUE on the same decisionLevel and the propagationLevel of TRUE is higher than the one of the resolutionLiteral.
 				if (newLiteral.getDecisionLevel() == resolutionLiteral.getDecisionLevel()
 					&& newLiteral.getPropagationLevel() > resolutionLiteral.getPropagationLevel()) {
