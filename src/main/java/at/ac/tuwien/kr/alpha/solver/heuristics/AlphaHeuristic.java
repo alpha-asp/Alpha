@@ -27,14 +27,12 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.solver.*;
 import at.ac.tuwien.kr.alpha.solver.GroundConflictNoGoodLearner.ConflictAnalysisResult;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
@@ -59,17 +57,16 @@ public class AlphaHeuristic implements BranchingHeuristic {
 	public static final int DEFAULT_DECAY_AGE = 10;
 	public static final double DEFAULT_DECAY_FACTOR = 0.25;
 
+	private final Assignment assignment;
+	private final ChoiceManager choiceManager;
 	private final Random rand;
 
-	private Assignment assignment;
 	private Map<Integer, Double> activityCounters = new HashMap<>();
 	private Map<Integer, Integer> signCounters = new HashMap<>();
 	private Deque<NoGood> stackOfNoGoods = new ArrayDeque<>();
 	private int decayAge;
 	private double decayFactor;
 	private int stepsSinceLastDecay;
-	private Predicate<? super Integer> isAtomChoicePoint;
-	private Predicate<? super Integer> isAtomActiveChoicePoint;
 
 	/**
 	 * Maps body-representing atoms to rule heads.
@@ -86,18 +83,16 @@ public class AlphaHeuristic implements BranchingHeuristic {
 	 */
 	private MultiValuedMap<Integer, Integer> atomsToBodies = new HashSetValuedHashMap<>();
 
-	public AlphaHeuristic(Assignment assignment, Predicate<? super Integer> isAtomChoicePoint,
-			Predicate<? super Integer> isAtomActiveChoicePoint, int decayAge, double decayFactor, Random random) {
+	public AlphaHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
 		this.assignment = assignment;
-		this.isAtomChoicePoint = isAtomChoicePoint;
-		this.isAtomActiveChoicePoint = isAtomActiveChoicePoint;
+		this.choiceManager = choiceManager;
 		this.decayAge = decayAge;
 		this.decayFactor = decayFactor;
 		this.rand = random;
 	}
 
-	public AlphaHeuristic(Assignment assignment, Predicate<? super Integer> isAtomChoicePoint, Predicate<? super Integer> isAtomActiveChoicePoint, Random random) {
-		this(assignment, isAtomChoicePoint, isAtomActiveChoicePoint, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random);
+	public AlphaHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
+		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random);
 	}
 
 	/**
@@ -172,7 +167,7 @@ public class AlphaHeuristic implements BranchingHeuristic {
 		for (NoGood noGood : stackOfNoGoods) {
 			int mostActiveAtom = getMostActiveAtom(noGood);
 			Collection<Integer> bodies = atomsToBodies.get(mostActiveAtom);
-			Optional<Integer> mostActiveBody = bodies.stream().filter(this::isUnassigned).filter(isAtomActiveChoicePoint)
+			Optional<Integer> mostActiveBody = bodies.stream().filter(this::isUnassigned).filter(choiceManager::isActiveChoiceAtom)
 					.max(Comparator.comparingDouble(this::getBodyActivity));
 			if (mostActiveBody.isPresent()) {
 				return mostActiveBody.get();
@@ -210,14 +205,14 @@ public class AlphaHeuristic implements BranchingHeuristic {
 	}
 
 	private void handleSpecialNoGood(NoGood noGood) {
-		if (noGood.isBodyNotHead(isAtomChoicePoint)) {
+		if (noGood.isBodyNotHead(choiceManager::isAtomChoice)) {
 			int headIndex = noGood.getHead();
 			int bodyIndex = headIndex != 0 ? 0 : 1;
 			int body = noGood.getAtom(bodyIndex);
 			int head = noGood.getAtom(headIndex);
 			bodyToHead.put(body, head);
 			atomsToBodies.put(head, body);
-		} else if (noGood.isBodyElementsNotBody(isAtomChoicePoint)) {
+		} else if (noGood.isBodyElementsNotBody(choiceManager::isAtomChoice)) {
 			Set<Integer> literals = new HashSet<>();
 			int bodyAtom = 0;
 			for (int i = 0; i < noGood.size(); i++) {
@@ -247,7 +242,7 @@ public class AlphaHeuristic implements BranchingHeuristic {
 
 	private void incrementActivityCounter(int literal) {
 		int atom = atomOf(literal);
-		if (isAtomChoicePoint.test(atom)) {
+		if (choiceManager.isAtomChoice(atom)) {
 			activityCounters.compute(atom, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + 1);
 		}
 		// TODO: check performance
@@ -261,7 +256,7 @@ public class AlphaHeuristic implements BranchingHeuristic {
 	}
 	
 	private void incrementSignCounter(Integer literal) {
-		if (isAtomChoicePoint.test(atomOf(literal))) {
+		if (choiceManager.isAtomChoice(atomOf(literal))) {
 			signCounters.compute(literal, (k, v) -> (v == null ? DEFAULT_SIGN_COUNTER : v) + 1);
 		}
 	}
