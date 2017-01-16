@@ -358,6 +358,9 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 		if (oldEntry != null && decisionLevel >= oldEntry.getDecisionLevel() && !(TRUE.equals(value) && MBT.equals(oldEntry.getTruth()))) {
 			throw new RuntimeException("Assigning value into higher decision level. Should not happen.");
 		}
+		if (previous != null && (!TRUE.equals(value) || !MBT.equals(previous.getTruth()))) {
+			throw new RuntimeException("Assignment has previous value, but truth values are not MBT (previously) and TRUE (now). Should not happen.");
+		}
 		// Create and record new assignment entry.
 		final int propagationLevel = decisionLevels.get(decisionLevel).size();
 		final boolean isReassignAtLowerDecisionLevel = oldEntry != null && oldEntry.getDecisionLevel() > decisionLevel && !isConflicting(oldEntry.getTruth(), value);

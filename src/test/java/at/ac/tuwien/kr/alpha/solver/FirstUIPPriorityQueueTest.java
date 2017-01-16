@@ -29,10 +29,10 @@ public class FirstUIPPriorityQueueTest {
 		assignment.assign(3, ThriceTruth.FALSE);
 		assignment.assign(4, ThriceTruth.MBT);
 
-		ReadableAssignment.Entry entry1 = assignment.get(1);
-		ReadableAssignment.Entry entry2 = assignment.get(2);
-		ReadableAssignment.Entry entry3 = assignment.get(3);
-		ReadableAssignment.Entry entry4 = assignment.get(4);
+		ReadableAssignment.Entry<ThriceTruth> entry1 = assignment.get(1);
+		ReadableAssignment.Entry<ThriceTruth> entry2 = assignment.get(2);
+		ReadableAssignment.Entry<ThriceTruth> entry3 = assignment.get(3);
+		ReadableAssignment.Entry<ThriceTruth> entry4 = assignment.get(4);
 		assertTrue(entry1.getDecisionLevel() == entry2.getDecisionLevel() && entry2.getDecisionLevel() == entry3.getDecisionLevel() && entry3.getDecisionLevel() == entry4.getDecisionLevel());
 		assertTrue(entry1.getPropagationLevel() < entry2.getPropagationLevel());
 		assertTrue(entry2.getPropagationLevel() < entry3.getPropagationLevel());
@@ -55,9 +55,9 @@ public class FirstUIPPriorityQueueTest {
 		assignment.assign(2, ThriceTruth.TRUE);
 		assignment.assign(3, ThriceTruth.FALSE);
 
-		ReadableAssignment.Entry entry1 = assignment.get(1);
-		ReadableAssignment.Entry entry2 = assignment.get(2);
-		ReadableAssignment.Entry entry3 = assignment.get(3);
+		ReadableAssignment.Entry<ThriceTruth> entry1 = assignment.get(1);
+		ReadableAssignment.Entry<ThriceTruth> entry2 = assignment.get(2);
+		ReadableAssignment.Entry<ThriceTruth> entry3 = assignment.get(3);
 
 		FirstUIPPriorityQueue firstUIPPriorityQueue = new FirstUIPPriorityQueue(entry1.getDecisionLevel());
 		firstUIPPriorityQueue.add(entry1);
