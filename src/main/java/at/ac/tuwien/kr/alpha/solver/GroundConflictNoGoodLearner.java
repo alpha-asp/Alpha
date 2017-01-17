@@ -33,7 +33,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
@@ -73,7 +73,7 @@ public class GroundConflictNoGoodLearner {
 	}
 
 	public ConflictAnalysisResult analyzeConflictingNoGood(NoGood violatedNoGood) {
-		return analyzeConflictingNoGoodRepetition(violatedNoGood, new HashSet<>());
+		return analyzeConflictingNoGoodRepetition(violatedNoGood, new LinkedHashSet<>());
 	}
 
 	private ConflictAnalysisResult analyzeConflictingNoGoodRepetition(NoGood violatedNoGood, Set<NoGood> noGoodsResponsible) {

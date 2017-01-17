@@ -54,21 +54,21 @@ public class NaiveGrounder extends AbstractGrounder {
 	private static final BasicPredicate CHOICE_OFF_PREDICATE = new BasicPredicate("ChoiceOff", 1);
 
 	protected HashMap<Predicate, ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage>> workingMemory = new HashMap<>();
-	protected Map<NoGood, Integer> nogoodIdentifiers = new HashMap<>();
+	protected Map<NoGood, Integer> nogoodIdentifiers = new LinkedHashMap<>();
 	protected AtomStore atomStore = new AtomStore();
 
 	private final IntIdGenerator intIdGenerator = new IntIdGenerator();
 	private IntIdGenerator nogoodIdGenerator = new IntIdGenerator();
 	private IntIdGenerator choiceAtomsGenerator = new IntIdGenerator();
 
-	private HashMap<Predicate, ArrayList<Instance>> factsFromProgram = new HashMap<>();
+	private HashMap<Predicate, ArrayList<Instance>> factsFromProgram = new LinkedHashMap<>();
 	private boolean outputFactNogoods = true;
 	private ArrayList<NonGroundRule<BasicPredicate>> rulesFromProgram = new ArrayList<>();
-	private HashSet<IndexedInstanceStorage> modifiedWorkingMemories = new HashSet<>();
+	private HashSet<IndexedInstanceStorage> modifiedWorkingMemories = new LinkedHashSet<>();
 	private HashMap<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
-	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newChoiceAtoms = new ImmutablePair<>(new HashMap<>(), new HashMap<>());
+	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newChoiceAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
 	private HashSet<Predicate> knownPredicates = new HashSet<>();
-	private HashMap<NonGroundRule<? extends Predicate>, HashSet<VariableSubstitution>> knownGroundingSubstitutions = new HashMap<>();
+	private HashMap<NonGroundRule<? extends Predicate>, HashSet<VariableSubstitution>> knownGroundingSubstitutions = new LinkedHashMap<>();
 
 	public NaiveGrounder(ParsedProgram program) {
 		this(program, p -> true);
@@ -175,7 +175,7 @@ public class NaiveGrounder extends AbstractGrounder {
 
 	@Override
 	public AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms) {
-		Map<Predicate, SortedSet<BasicAtom>> predicateInstances = new HashMap<>();
+		Map<Predicate, SortedSet<BasicAtom>> predicateInstances = new LinkedHashMap<>();
 		SortedSet<Predicate> knownPredicates = new TreeSet<>();
 
 		if (!trueAtoms.iterator().hasNext()) {
@@ -214,7 +214,7 @@ public class NaiveGrounder extends AbstractGrounder {
 	 * @return
 	 */
 	private Map<Integer, NoGood> noGoodsFromFacts() {
-		HashMap<Integer, NoGood> noGoodsFromFacts = new HashMap<>();
+		HashMap<Integer, NoGood> noGoodsFromFacts = new LinkedHashMap<>();
 		for (Predicate predicate : factsFromProgram.keySet()) {
 			for (Instance instance : factsFromProgram.get(predicate)) {
 				AtomId atomIdFactAtom = atomStore.createAtomId(new BasicAtom(predicate, instance.terms));
@@ -250,7 +250,7 @@ public class NaiveGrounder extends AbstractGrounder {
 			return noGoodsFromFacts();
 		}
 		// Compute new ground rule (evaluate joins with newly changed atoms)
-		HashMap<Integer, NoGood> newNoGoods = new HashMap<>();
+		HashMap<Integer, NoGood> newNoGoods = new LinkedHashMap<>();
 		for (IndexedInstanceStorage modifiedWorkingMemory : modifiedWorkingMemories) {
 
 			// Iterate over all rules whose body contains the predicate corresponding to the current workingMemory.
@@ -287,7 +287,7 @@ public class NaiveGrounder extends AbstractGrounder {
 			// Mark instances added by updateAssignment as done
 			modifiedWorkingMemory.markRecentlyAddedInstancesDone();
 		}
-		modifiedWorkingMemories = new HashSet<>();
+		modifiedWorkingMemories = new LinkedHashSet<>();
 		return newNoGoods;
 	}
 
@@ -300,7 +300,7 @@ public class NaiveGrounder extends AbstractGrounder {
 	private List<NoGood> generateNoGoodsFromGroundSubstitution(NonGroundRule<BasicPredicate> nonGroundRule, VariableSubstitution variableSubstitution) {
 		if (LOGGER.isDebugEnabled()) {
 			// Debugging helper: record known grounding substitutions.
-			knownGroundingSubstitutions.putIfAbsent(nonGroundRule, new HashSet<>());
+			knownGroundingSubstitutions.putIfAbsent(nonGroundRule, new LinkedHashSet<>());
 			knownGroundingSubstitutions.get(nonGroundRule).add(variableSubstitution);
 		}
 
@@ -561,7 +561,7 @@ public class NaiveGrounder extends AbstractGrounder {
 	@Override
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
 		Pair<Map<Integer, Integer>, Map<Integer, Integer>> currentChoiceAtoms = newChoiceAtoms;
-		newChoiceAtoms = new ImmutablePair<>(new HashMap<>(), new HashMap<>());
+		newChoiceAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
 		return currentChoiceAtoms;
 	}
 
@@ -653,13 +653,13 @@ public class NaiveGrounder extends AbstractGrounder {
 	}
 
 	public static class VariableSubstitution {
-		HashMap<VariableTerm, Term> substitution = new HashMap<>();
+		HashMap<VariableTerm, Term> substitution = new LinkedHashMap<>();
 
 		public VariableSubstitution() {
 		}
 
 		public VariableSubstitution(VariableSubstitution clone) {
-			this.substitution = new HashMap<>(clone.substitution);
+			this.substitution = new LinkedHashMap<>(clone.substitution);
 		}
 
 		public void replaceSubstitution(VariableSubstitution other) {

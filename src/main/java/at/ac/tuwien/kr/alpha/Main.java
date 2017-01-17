@@ -68,6 +68,7 @@ public class Main {
 	private static final String DEFAULT_GROUNDER = "naive";
 	private static final String DEFAULT_SOLVER = "default";
 	private static final String OPT_SEED = "seed";
+	private static final String OPT_DEBUG_INTERNAL_CHECKS = "DEBUG-enableInternalChecks";
 
 	private static CommandLine commandLine;
 
@@ -120,6 +121,9 @@ public class Main {
 		seedOption.setType(Number.class);
 		options.addOption(seedOption);
 
+		Option debugFlags = new Option(OPT_DEBUG_INTERNAL_CHECKS, "run additional (time-consuming) safety checks.");
+		options.addOption(debugFlags);
+
 		try {
 			commandLine = new DefaultParser().parse(options, args);
 		} catch (ParseException e) {
@@ -159,6 +163,8 @@ public class Main {
 			bailOut("Failed to parse number of answer sets requested.", e);
 		}
 
+		boolean debugInternalChecks = commandLine.hasOption(OPT_DEBUG_INTERNAL_CHECKS);
+
 		ParsedProgram program = null;
 		try {
 			program = parseVisit(new FileInputStream(commandLine.getOptionValue(OPT_INPUT)));
@@ -193,7 +199,7 @@ public class Main {
 		LOGGER.info("Seed for pseudorandomization is {}.", seed);
 
 		Solver solver = SolverFactory.getInstance(
-			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, new Random(seed), BranchingHeuristicFactory.BERKMIN // TODO: see issue #18
+			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, new Random(seed), BranchingHeuristicFactory.BERKMINLITERAL, debugInternalChecks // TODO: see issue #18
 		);
 
 		Stream<AnswerSet> stream = solver.stream();

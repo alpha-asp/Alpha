@@ -41,7 +41,7 @@ public class ChoiceManager {
 	private final Assignment assignment;
 
 	// Active choice points and all atoms that influence a choice point (enabler, disabler, choice atom itself).
-	private final Set<ChoicePoint> activeChoicePoints = new HashSet<>();
+	private final Set<ChoicePoint> activeChoicePoints = new LinkedHashSet<>();
 	private final Map<Integer, ChoicePoint> influencers = new HashMap<>();
 
 	// Backtracking information.
