@@ -68,7 +68,7 @@ public class Main {
 	private static final String DEFAULT_GROUNDER = "naive";
 	private static final String DEFAULT_SOLVER = "default";
 	private static final String OPT_SEED = "seed";
-	private static final String OPT_DEBUG_INTERNAL_CHECKS = "DEBUG-enableInternalChecks";
+	private static final String OPT_DEBUG_INTERNAL_CHECKS = "DebugEnableInternalChecks";
 
 	private static CommandLine commandLine;
 
@@ -108,7 +108,7 @@ public class Main {
 		filterOption.setValueSeparator(',');
 		options.addOption(filterOption);
 
-		Option sortOption = new Option("s", OPT_SORT, false, "sort answer sets");
+		Option sortOption = new Option("sort", OPT_SORT, false, "sort answer sets");
 		options.addOption(sortOption);
 
 		Option deterministicOption = new Option("d", OPT_DETERMINISTIC, false, "disable randomness");
@@ -208,7 +208,7 @@ public class Main {
 			stream = stream.limit(limit);
 		}
 
-		if (options.hasOption(OPT_SORT)) {
+		if (commandLine.hasOption(OPT_SORT)) {
 			stream = stream.sorted();
 		}
 
