@@ -29,6 +29,8 @@ import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.*;
 import at.ac.tuwien.kr.alpha.solver.GroundConflictNoGoodLearner.ConflictAnalysisResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -46,26 +48,27 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
  * Copyright (c) 2016 Siemens AG
  */
 public class BerkMin implements BranchingHeuristic {
+	private static final Logger LOGGER = LoggerFactory.getLogger(BerkMin.class);
 	
-	public static final double DEFAULT_ACTIVITY = 0.0;
-	public static final int DEFAULT_SIGN_COUNTER = 0;
-	public static final int DEFAULT_CHOICE_ATOM = 0;
+	static final double DEFAULT_ACTIVITY = 0.0;
+	static final int DEFAULT_SIGN_COUNTER = 0;
+	static final int DEFAULT_CHOICE_ATOM = 0;
 
-	public static final int DEFAULT_DECAY_AGE = 10;
-	public static final double DEFAULT_DECAY_FACTOR = 0.25;
+	static final int DEFAULT_DECAY_AGE = 10;
+	static final double DEFAULT_DECAY_FACTOR = 0.25;
 
-	private final Assignment assignment;
-	private final ChoiceManager choiceManager;
-	private final Random rand;
+	final Assignment assignment;
+	final ChoiceManager choiceManager;
+	final Random rand;
 
-	private Map<Integer, Double> activityCounters = new HashMap<>();
-	private Map<Integer, Integer> signCounters = new HashMap<>();
+	private Map<Integer, Double> activityCounters = new LinkedHashMap<>();
+	private Map<Integer, Integer> signCounters = new LinkedHashMap<>();
 	private Deque<NoGood> stackOfNoGoods = new ArrayDeque<>();
 	private int decayAge;
 	private double decayFactor;
 	private int stepsSinceLastDecay;
 
-	public BerkMin(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
+	BerkMin(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
 		this.decayAge = decayAge;
@@ -73,7 +76,7 @@ public class BerkMin implements BranchingHeuristic {
 		this.rand = random;
 	}
 
-	public BerkMin(Assignment assignment, ChoiceManager choiceManager, Random random) {
+	BerkMin(Assignment assignment, ChoiceManager choiceManager, Random random) {
 		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random);
 	}
 
@@ -114,6 +117,9 @@ public class BerkMin implements BranchingHeuristic {
 	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
 		pushToStack(analysisResult.learnedNoGood);
 		for (NoGood noGood : analysisResult.noGoodsResponsibleForConflict) {
+			if (LOGGER.isTraceEnabled()) {
+				LOGGER.trace("NoGood responsible with {} choice points", numChoicePoints(noGood));
+			}
 			for (Integer literal : noGood) {
 				incrementActivityCounter(literal);
 				incrementSignCounter(literal);
@@ -128,6 +134,16 @@ public class BerkMin implements BranchingHeuristic {
 		for (Integer literal : newNoGood) {
 			incrementSignCounter(literal);
 		}
+	}
+
+	private int numChoicePoints(NoGood noGood) {
+		int numChoicePoints = 0;
+		for (Integer literal : noGood) {
+			if (choiceManager.isAtomChoice(literal)) {
+				numChoicePoints++;
+			}
+		}
+		return numChoicePoints;
 	}
 
 	@Override
