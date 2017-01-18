@@ -167,7 +167,22 @@ public class Main {
 
 		ParsedProgram program = null;
 		try {
-			program = parseVisit(new FileInputStream(commandLine.getOptionValue(OPT_INPUT)));
+			InputStream input;
+
+			String[] inputFileNames = commandLine.getOptionValues(OPT_INPUT);
+
+			if (inputFileNames.length == 1) {
+				input = new FileInputStream(inputFileNames[0]);
+			} else {
+				List<InputStream> inputFileStreams = new ArrayList<>(inputFileNames.length);
+				for (String inputFileName : inputFileNames) {
+					inputFileStreams.add(new FileInputStream(inputFileName));
+				}
+
+				input = new SequenceInputStream(Collections.enumeration(inputFileStreams));
+			}
+
+			program = parseVisit(input);
 		} catch (RecognitionException e) {
 			bailOut("Error while parsing input ASP program, see errors above.", e);
 		} catch (FileNotFoundException e) {
