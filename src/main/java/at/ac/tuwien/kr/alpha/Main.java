@@ -169,13 +169,13 @@ public class Main {
 		try {
 			// Parse all input files and accumulate their results in one ParsedProgram.
 			String[] inputFileNames = commandLine.getOptionValues(OPT_INPUT);
-			program = parseVisit(new FileInputStream(inputFileNames[0]));
+			program = parseVisit(new ANTLRFileStream(inputFileNames[0]));
 
 			for (int i = 1; i < inputFileNames.length; i++) {
-				program.accumulate(parseVisit(new FileInputStream(inputFileNames[i])));
+				program.accumulate(parseVisit(new ANTLRFileStream(inputFileNames[i])));
 			}
 		} catch (RecognitionException e) {
-			bailOut("Error while parsing input ASP program, see errors above.", e);
+			System.exit(1);
 		} catch (FileNotFoundException e) {
 			bailOut(e.getMessage());
 		} catch (IOException e) {
@@ -226,7 +226,11 @@ public class Main {
 		System.exit(1);
 	}
 
-	public static ParsedProgram parseVisit(InputStream is) throws IOException {
+	public static ParsedProgram parseVisit(String input) throws IOException {
+		return parseVisit(new ANTLRInputStream(input));
+	}
+
+	public static ParsedProgram parseVisit(ANTLRInputStream is) throws IOException {
 		/*
 		// In order to require less memory: use unbuffered streams and avoid constructing a full parse tree.
 		ASPCore2Lexer lexer = new ASPCore2Lexer(new UnbufferedCharStream(is));
@@ -235,9 +239,7 @@ public class Main {
 		parser.setBuildParseTree(false);
 		*/
 		CommonTokenStream tokens = new CommonTokenStream(
-			new ASPCore2Lexer(
-				new ANTLRInputStream(is)
-			)
+			new ASPCore2Lexer(is)
 		);
 		final ASPCore2Parser parser = new ASPCore2Parser(tokens);
 
@@ -246,7 +248,7 @@ public class Main {
 		parser.removeErrorListeners();
 		parser.setErrorHandler(new BailErrorStrategy());
 
-		final SwallowingErrorListener errorListener = new SwallowingErrorListener();
+		final CustomErrorListener errorListener = new CustomErrorListener(is.getSourceName());
 
 		ASPCore2Parser.ProgramContext programContext;
 		try {
@@ -258,7 +260,6 @@ public class Main {
 			if (e.getCause() instanceof RecognitionException) {
 				tokens.reset();
 				parser.addErrorListener(errorListener);
-				parser.addErrorListener(ConsoleErrorListener.INSTANCE);
 				parser.setErrorHandler(new DefaultErrorStrategy());
 				parser.getInterpreter().setPredictionMode(PredictionMode.LL);
 				// Re-run parse.

@@ -21,37 +21,37 @@ public class MainTest {
 	@Test
 	@Ignore
 	public void parseSimpleProgram() throws IOException {
-		parseVisit(stream(
+		parseVisit(
 			"p(X) :- q(X).\n" +
 			"q(a).\n" +
 			"q(b).\n"
-		));
+		);
 	}
 
 	@Test
 	public void parseProgramWithNegativeBody() throws IOException {
-		parseVisit(stream(
+		parseVisit(
 			"p(X) :- q(X), not q(a).\n" +
 				"q(a).\n"
-		));
+		);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
 	@Ignore
 	public void parseProgramWithFunction() throws IOException {
-		parseVisit(stream(
+		parseVisit(
 			"p(X) :- q(f(X)).\n" +
 				"q(a).\n"
-		));
+		);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
 	@Ignore
 	public void parseProgramWithDisjunctionInHead() throws IOException {
-		parseVisit(stream(
+		parseVisit(
 			"r(X) | q(X) :- q(X).\n" +
 				"q(a).\n"
-		));
+		);
 	}
 
 	@Test
