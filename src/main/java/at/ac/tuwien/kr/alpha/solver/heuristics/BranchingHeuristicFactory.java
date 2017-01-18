@@ -35,6 +35,7 @@ public final class BranchingHeuristicFactory {
 	public static final String NAIVE = "naive";
 	public static final String BERKMIN = "berkmin";
 	public static final String BERKMINLITERAL = "berkminliteral";
+	public static final String ALPHA = "alpha";
 
 	public static BranchingHeuristic getInstance(String name, Assignment assignment, ChoiceManager choiceManager, Random random) {
 		switch (name.toLowerCase()) {
@@ -44,6 +45,8 @@ public final class BranchingHeuristicFactory {
 				return new BerkMin(assignment, choiceManager, random);
 			case BERKMINLITERAL:
 				return new BerkMinLiteral(assignment, choiceManager, random);
+		case ALPHA:
+			return new AlphaHeuristic(assignment, choiceManager, random);
 		}
 		throw new IllegalArgumentException("Unknown branching heuristic requested.");
 	}

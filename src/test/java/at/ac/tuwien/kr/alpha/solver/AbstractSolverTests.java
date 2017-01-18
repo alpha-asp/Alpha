@@ -48,6 +48,18 @@ public abstract class AbstractSolverTests {
 				(Function<Grounder, Solver>) NaiveSolver::new
 			},
 			{
+				"DefaultSolver (random AlphaHeuristic)",
+				(Function<Grounder, Solver>) g -> {
+					return new DefaultSolver(g, new Random(), BranchingHeuristicFactory.ALPHA);
+				}
+			},
+			{
+				"DefaultSolver (deterministic AlphaHeuristic)",
+				(Function<Grounder, Solver>) g -> {
+					return new DefaultSolver(g, new Random(0), BranchingHeuristicFactory.ALPHA);
+				}
+			},
+			{
 				"DefaultSolver (random BerkMin)",
 				(Function<Grounder, Solver>) g -> {
 					return new DefaultSolver(g, new Random(), BranchingHeuristicFactory.BERKMIN, enableAdditionalInternalChecks);
