@@ -19,15 +19,15 @@ onG(K, N1, N) :- ongoal(N, N1), steps(K).
 
 % Specify a valid move (only for T<t)
 % pick a disk to move
-move(T, N) :- disk(N), steps(K), time(T), T < K, not noMove(T, N).
-noMove(T, N) :- disk(N), steps(K), time(T), T < K, not move(T, N).
+move(T, N) :- disk(N), time(T), steps(K), T < K, not noMove(T, N).
+noMove(T, N) :- disk(N), time(T), steps(K), T < K, not move(T, N).
 :- move(T, N1), move(T, N2), N1 != N2.
 :- time(T), steps(K), T < K, not diskMoved(T).
 diskMoved(T) :- move(T, Fv1).
 
 % pick a disk onto which to move
-where(T, N) :- disk(N), steps(K), time(T), T < K, not noWhere(T, N).
-noWhere(T, N) :- disk(N), steps(K), time(T), T < K, not where(T, N).
+where(T, N) :- disk(N), time(T), steps(K), T < K, not noWhere(T, N).
+noWhere(T, N) :- disk(N), time(T), steps(K), T < K, not where(T, N).
 :- where(T, N1), where(T, N2), N1 != N2.
 :- time(T), steps(K), T < K, not diskWhere(T).
 diskWhere(T) :- where(T, Fv1).
@@ -46,7 +46,7 @@ diskWhere(T) :- where(T, Fv1).
 
 % Specify effects of a move
 on(TP1, N1, N) :- move(T, N), where(T, N1), succ(T,TP1).
-on(TP1, N, N1) :- steps(K), time(T), T < K, on(T, N, N1), not move(T, N1), succ(T,TP1).
+on(TP1, N, N1) :- time(T), steps(K), T < K, on(T, N, N1), not move(T, N1), succ(T,TP1).
 
 % Goal description
 :- not on(K, N, N1), onG(K, N, N1), steps(K).
@@ -56,7 +56,6 @@ on(TP1, N, N1) :- steps(K), time(T), T < K, on(T, N, N1), not move(T, N1), succ(
 put(T, M, N) :- move(T, N), where(T, M), steps(K), T < K.
 
 % ADDITIONS FOR ALPHA:
-succ(0,1) :- time(0).
 succ(1,2) :- time(1).
 succ(2,3) :- time(2).
 succ(3,4) :- time(3).

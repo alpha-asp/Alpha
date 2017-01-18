@@ -48,7 +48,6 @@ import static org.junit.Assert.assertTrue;
  * Tests {@link AbstractSolver} using some hanoi tower test cases (see https://en.wikipedia.org/wiki/Tower_of_Hanoi).
  *
  */
-@Ignore("disabled to save resources during CI")
 public class HanoiTowerTest extends AbstractSolverTests {
 	private final ProgramParser parser = new ProgramParser();
 
