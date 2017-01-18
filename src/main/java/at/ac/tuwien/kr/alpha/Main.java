@@ -175,6 +175,9 @@ public class Main {
 				program.accumulate(parseVisit(new ANTLRFileStream(inputFileNames[i])));
 			}
 		} catch (RecognitionException e) {
+			// In case a recognitionexception occured, parseVisit will
+			// already have printed an error message, so we just exit
+			// at this point without further logging.
 			System.exit(1);
 		} catch (FileNotFoundException e) {
 			bailOut(e.getMessage());
