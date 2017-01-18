@@ -167,22 +167,13 @@ public class Main {
 
 		ParsedProgram program = null;
 		try {
-			InputStream input;
-
+			// Parse all input files and accumulate their results in one ParsedProgram.
 			String[] inputFileNames = commandLine.getOptionValues(OPT_INPUT);
+			program = parseVisit(new FileInputStream(inputFileNames[0]));
 
-			if (inputFileNames.length == 1) {
-				input = new FileInputStream(inputFileNames[0]);
-			} else {
-				List<InputStream> inputFileStreams = new ArrayList<>(inputFileNames.length);
-				for (String inputFileName : inputFileNames) {
-					inputFileStreams.add(new FileInputStream(inputFileName));
-				}
-
-				input = new SequenceInputStream(Collections.enumeration(inputFileStreams));
+			for (int i = 1; i < inputFileNames.length; i++) {
+				program.accumulate(parseVisit(new FileInputStream(inputFileNames[i])));
 			}
-
-			program = parseVisit(input);
 		} catch (RecognitionException e) {
 			bailOut("Error while parsing input ASP program, see errors above.", e);
 		} catch (FileNotFoundException e) {
