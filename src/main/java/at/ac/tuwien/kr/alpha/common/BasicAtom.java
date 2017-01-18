@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class BasicAtom implements Atom, Comparable<BasicAtom> {
+public class BasicAtom implements Atom {
 	public final Predicate predicate;
 	public final Term[] termList;
 
@@ -34,6 +34,16 @@ public class BasicAtom implements Atom, Comparable<BasicAtom> {
 			}
 		}
 		return terms;
+	}
+
+	@Override
+	public Predicate getPredicate() {
+		return predicate;
+	}
+
+	@Override
+	public Term[] getTerms() {
+		return termList;
 	}
 
 	public boolean isGround() {
@@ -86,19 +96,19 @@ public class BasicAtom implements Atom, Comparable<BasicAtom> {
 	}
 
 	@Override
-	public int compareTo(BasicAtom o) {
-		if (this.termList.length != o.termList.length) {
-			return this.termList.length - o.termList.length;
+	public int compareTo(Atom o) {
+		if (this.termList.length != o.getTerms().length) {
+			return this.termList.length - o.getTerms().length;
 		}
 
-		int result = this.predicate.compareTo(o.predicate);
+		int result = this.predicate.compareTo(o.getPredicate());
 
 		if (result != 0) {
 			return result;
 		}
 
 		for (int i = 0; i < termList.length; i++) {
-			result = termList[i].compareTo(o.termList[i]);
+			result = termList[i].compareTo(o.getTerms()[i]);
 			if (result != 0) {
 				return result;
 			}

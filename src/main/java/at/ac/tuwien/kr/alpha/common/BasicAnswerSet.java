@@ -11,9 +11,9 @@ public class BasicAnswerSet implements AnswerSet {
 	public static final BasicAnswerSet EMPTY = new BasicAnswerSet(emptySortedSet(), emptyMap());
 
 	private final SortedSet<Predicate> predicates;
-	private final Map<Predicate, SortedSet<BasicAtom>> predicateInstances;
+	private final Map<Predicate, SortedSet<Atom>> predicateInstances;
 
-	public BasicAnswerSet(SortedSet<Predicate> predicates, Map<Predicate, SortedSet<BasicAtom>> predicateInstances) {
+	public BasicAnswerSet(SortedSet<Predicate> predicates, Map<Predicate, SortedSet<Atom>> predicateInstances) {
 		this.predicates = predicates;
 		this.predicateInstances = predicateInstances;
 	}
@@ -24,7 +24,7 @@ public class BasicAnswerSet implements AnswerSet {
 	}
 
 	@Override
-	public SortedSet<BasicAtom> getPredicateInstances(Predicate predicate) {
+	public SortedSet<Atom> getPredicateInstances(Predicate predicate) {
 		return predicateInstances.get(predicate);
 	}
 
@@ -41,14 +41,14 @@ public class BasicAnswerSet implements AnswerSet {
 		final StringBuilder sb = new StringBuilder("{ ");
 		for (Iterator<Predicate> iterator = predicates.iterator(); iterator.hasNext();) {
 			Predicate predicate = iterator.next();
-			Set<BasicAtom> instances = getPredicateInstances(predicate);
+			Set<Atom> instances = getPredicateInstances(predicate);
 
 			if (instances == null || instances.isEmpty()) {
 				sb.append(predicate.getPredicateName());
 				continue;
 			}
 
-			for (Iterator<BasicAtom> instanceIterator = instances.iterator(); instanceIterator.hasNext();) {
+			for (Iterator<Atom> instanceIterator = instances.iterator(); instanceIterator.hasNext();) {
 				sb.append(instanceIterator.next());
 				if (instanceIterator.hasNext()) {
 					sb.append(", ");
@@ -91,8 +91,8 @@ public class BasicAnswerSet implements AnswerSet {
 		private String predicateSymbol;
 		private Predicate predicate;
 		private SortedSet<Predicate> predicates = new TreeSet<>();
-		private SortedSet<BasicAtom> instances = new TreeSet<>();
-		private Map<Predicate, SortedSet<BasicAtom>> predicateInstances = new HashMap<>();
+		private SortedSet<Atom> instances = new TreeSet<>();
+		private Map<Predicate, SortedSet<Atom>> predicateInstances = new HashMap<>();
 
 		public Builder() {
 		}

@@ -175,7 +175,7 @@ public class NaiveGrounder extends AbstractGrounder {
 
 	@Override
 	public AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms) {
-		Map<Predicate, SortedSet<BasicAtom>> predicateInstances = new LinkedHashMap<>();
+		Map<Predicate, SortedSet<Atom>> predicateInstances = new LinkedHashMap<>();
 		SortedSet<Predicate> knownPredicates = new TreeSet<>();
 
 		if (!trueAtoms.iterator().hasNext()) {
@@ -198,7 +198,7 @@ public class NaiveGrounder extends AbstractGrounder {
 
 			knownPredicates.add(basicAtom.predicate);
 			predicateInstances.putIfAbsent(basicAtom.predicate, new TreeSet<>());
-			Set<BasicAtom> instances = predicateInstances.get(basicAtom.predicate);
+			Set<Atom> instances = predicateInstances.get(basicAtom.predicate);
 			instances.add(basicAtom);
 		}
 

@@ -10,9 +10,9 @@ import java.util.List;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class BuiltinAtom implements Atom {
-	public final Term left;
-	public final Term right;
-	public final ParsedBuiltinAtom.BINOP binop;
+	private final Term left;
+	private final Term right;
+	private final ParsedBuiltinAtom.BINOP binop;
 
 	public BuiltinAtom(ParsedBuiltinAtom parsedBuiltinAtom) {
 		binop = parsedBuiltinAtom.binop;
@@ -23,6 +23,16 @@ public class BuiltinAtom implements Atom {
 	@Override
 	public String toString() {
 		return left + " " + binop + " " + right;
+	}
+
+	@Override
+	public Predicate getPredicate() {
+		return binop.toPredicate();
+	}
+
+	@Override
+	public Term[] getTerms() {
+		return new Term[]{left, right};
 	}
 
 	@Override
@@ -46,44 +56,67 @@ public class BuiltinAtom implements Atom {
 		NumberOrTerm left = evaluateExpression(this.left, variableSubstitution);
 		NumberOrTerm right = evaluateExpression(this.right, variableSubstitution);
 		switch (binop) {
-			case EQUAL:
+			case EQ:
 				if (left.isNumber != right.isNumber) {
 					throw new RuntimeException("BuiltinAtom: cannot compare terms of different types: " + left + binop + right);
 				} else if (left.isNumber) {
 					return left.number == right.number;
 				} else {
-					return left.term.equals(right);
+					return left.term.equals(right.term);
 				}
-			case UNEQUAL:
+			case NE:
 				if (left.isNumber != right.isNumber) {
 					throw new RuntimeException("BuiltinAtom: cannot compare terms of different types: " + left + binop + right);
 				} else if (left.isNumber) {
 					return left.number != right.number;
 				} else {
-					return !left.term.equals(right);
+					return !left.term.equals(right.term);
 				}
-			case GREATER:
+			case GT:
 				if (left.isNumber && right.isNumber) {
 					return  left.number > right.number;
 				}
 				throw new RuntimeException("BuiltinAtom: can only compare number terms: " + left + binop + right);
-			case LESS:
+			case LT:
 				if (left.isNumber && right.isNumber) {
 					return  left.number < right.number;
 				}
 				throw new RuntimeException("BuiltinAtom: can only compare number terms: " + left + binop + right);
-			case GREATER_OR_EQ:
+			case GE:
 				if (left.isNumber && right.isNumber) {
 					return  left.number >= right.number;
 				}
 				throw new RuntimeException("BuiltinAtom: can only compare number terms: " + left + binop + right);
-			case LESS_OR_EQ:
+			case LE:
 				if (left.isNumber && right.isNumber) {
 					return  left.number <= right.number;
 				}
 				throw new RuntimeException("BuiltinAtom: can only compare number terms: " + left + binop + right);
 		}
 		throw new RuntimeException("Unknown binop: " + binop);
+	}
+
+	@Override
+	public int compareTo(Atom o) {
+		if (!(o instanceof BuiltinAtom)) {
+			return 1;
+		}
+
+		BuiltinAtom other = (BuiltinAtom)o;
+
+		int result = binop.compareTo(other.binop);
+
+		if (result != 0) {
+			return result;
+		}
+
+		result = left.compareTo(other.left);
+
+		if (result != 0) {
+			return result;
+		}
+
+		return right.compareTo(other.right);
 	}
 
 	private static class NumberOrTerm {

@@ -1,6 +1,10 @@
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
+import at.ac.tuwien.kr.alpha.common.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -8,54 +12,59 @@ import java.util.Arrays;
 public class ParsedBuiltinAtom extends ParsedAtom {
 	public BINOP binop;
 
-	public enum BINOP {EQUAL, UNEQUAL, LESS, GREATER, LESS_OR_EQ, GREATER_OR_EQ;
+	public enum BINOP {
+		EQ("=",  new BasicPredicate("=",  2)),
+		NE("!=", new BasicPredicate("!=", 2)),
+		LT("<",  new BasicPredicate("<",  2)),
+		GT(">",  new BasicPredicate(">",  2)),
+		LE("<=", new BasicPredicate("<=", 2)),
+		GE(">=", new BasicPredicate(">=", 2));
+
+		private String asString;
+		private Predicate asPredicate;
+
+		BINOP(String asString, Predicate asPredicate) {
+			this.asString = asString;
+			this.asPredicate = asPredicate;
+		}
 
 		@Override
 		public String toString() {
+			return asString;
+		}
+
+		public Predicate toPredicate() {
+			return asPredicate;
+		}
+
+		public BINOP getNegation() {
 			switch (this) {
-				case EQUAL: return "=";
-				case UNEQUAL: return "!=";
-				case LESS: return "<";
-				case GREATER: return ">";
-				case LESS_OR_EQ: return "<=";
-				case GREATER_OR_EQ: return ">=";
+				case EQ: return NE;
+				case NE: return EQ;
+				case LT: return GE;
+				case GT: return LE;
+				case LE: return GT;
+				case GE: return LT;
 			}
-			return null;
+			throw new RuntimeException("Unknown BINOP encountered, cannot negate it.");
 		}
 	};
 
-	public ParsedBuiltinAtom(ParsedTerm left, BINOP binop, ParsedTerm right) {
-		super(binop.toString(), Arrays.asList(left, right));
+	public ParsedBuiltinAtom(BINOP binop, List<ParsedTerm> terms) {
+		super(binop.toString(), terms);
 		this.binop = binop;
 	}
 
-	public void negateBinop() {
-		switch (binop) {
-			case EQUAL:
-				binop = BINOP.UNEQUAL;
-				break;
-			case UNEQUAL:
-				binop = BINOP.EQUAL;
-				break;
-			case LESS:
-				binop = BINOP.GREATER_OR_EQ;
-				break;
-			case GREATER:
-				binop = BINOP.LESS_OR_EQ;
-				break;
-			case LESS_OR_EQ:
-				binop = BINOP.GREATER;
-				break;
-			case GREATER_OR_EQ:
-				binop = BINOP.LESS;
-				break;
-			default:
-				throw new RuntimeException("Unknown BINOP encountered, cannot negate it.");
-		}
+	public ParsedBuiltinAtom(ParsedTerm left, BINOP binop, ParsedTerm right) {
+		this(binop, Arrays.asList(left, right));
 	}
 
 	@Override
 	public String toString() {
 		return terms.get(0) + " " + binop + " " + terms.get(1);
+	}
+
+	public ParsedBuiltinAtom getNegation() {
+		return new ParsedBuiltinAtom(binop.getNegation(), terms);
 	}
 }
