@@ -39,4 +39,9 @@ public interface NoGoodStore<T extends ThriceTruth> {
 	boolean propagate();
 
 	void backtrack();
+
+	/**
+	 * Enables (time-consuming) additional sanity checks.
+	 */
+	void enableInternalChecks();
 }

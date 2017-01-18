@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Main.parseVisit;
-import static at.ac.tuwien.kr.alpha.Util.stream;
 import static org.junit.Assert.assertEquals;
 
 public class SolverTests extends AbstractSolverTests {
@@ -63,7 +62,7 @@ public class SolverTests extends AbstractSolverTests {
 	@Test
 	public void testFactsOnlyProgram() throws IOException {
 		String testProgram = "p(a). p(b). foo(13). foo(16). q(a). q(c).";
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		ParsedProgram parsedProgram = parseVisit(testProgram);
 		Grounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -83,7 +82,7 @@ public class SolverTests extends AbstractSolverTests {
 	@Test
 	public void testSimpleRule() throws Exception {
 		String testProgram = "p(a). p(b). r(X) :- p(X).";
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		ParsedProgram parsedProgram = parseVisit(testProgram);
 		Grounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -104,7 +103,7 @@ public class SolverTests extends AbstractSolverTests {
 			"p(1)." +
 				"p(2)." +
 				"q(X) :-  p(X), p(1).";
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		ParsedProgram parsedProgram = parseVisit(testProgram);
 		Grounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -122,7 +121,7 @@ public class SolverTests extends AbstractSolverTests {
 	@Test
 	public void testProgramZeroArityPredicates() throws Exception {
 		String testProgram = "a. p(X) :- b, r(X).";
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		ParsedProgram parsedProgram = parseVisit(testProgram);
 		Grounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -139,7 +138,7 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void testGuessingGroundProgram() throws Exception {
-		Solver solver = getInstance(new NaiveGrounder(parseVisit(stream("a :- not b. b :- not a."))));
+		Solver solver = getInstance(new NaiveGrounder(parseVisit("a :- not b. b :- not a.")));
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
 			new BasicAnswerSet.Builder().predicate("a").build(),
@@ -154,7 +153,7 @@ public class SolverTests extends AbstractSolverTests {
 		String testProgram = "dom(1). dom(2). dom(3)." +
 			"p(X) :- dom(X), not q(X)." +
 			"q(X) :- dom(X), not p(X).";
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		ParsedProgram parsedProgram = parseVisit(testProgram);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -213,7 +212,7 @@ public class SolverTests extends AbstractSolverTests {
 			"b :- not a, not c." +
 			"c :- not a, not b.";
 
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		ParsedProgram parsedProgram = parseVisit(testProgram);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 
 		Solver solver = getInstance(grounder);
@@ -236,7 +235,7 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void emptyProgramYieldsEmptyAnswerSet() throws IOException {
-		ParsedProgram parsedProgram = parseVisit(stream(""));
+		ParsedProgram parsedProgram = parseVisit("");
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 
 		List<AnswerSet> answerSets = getInstance(grounder).collectList();
@@ -254,7 +253,7 @@ public class SolverTests extends AbstractSolverTests {
 			"notc :- not c.\n" +
 			":- nota,notb,notc.";
 
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		ParsedProgram parsedProgram = parseVisit(testProgram);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 
 		Solver solver = getInstance(grounder);
@@ -306,7 +305,7 @@ public class SolverTests extends AbstractSolverTests {
 		String testProgram = "dom(1). dom(2). dom(3). dom(4). dom(5)." +
 			"p(X) :- dom(X), X = 4." +
 			"r(Y) :- dom(Y), Y <= 2.";
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		ParsedProgram parsedProgram = parseVisit(testProgram);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -335,7 +334,7 @@ public class SolverTests extends AbstractSolverTests {
 		String testProgram = "a :- 13 != 4." +
 			"b :- 2 != 3, 2 = 3." +
 			"c :- 2 <= 3, not 2 > 3.";
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		ParsedProgram parsedProgram = parseVisit(testProgram);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -364,7 +363,7 @@ public class SolverTests extends AbstractSolverTests {
 			"val(VAR,3):-var(VAR),not val(VAR,1),not val(VAR,2).\n" +
 			"%:- val(VAR1,VAL1), val(VAR2,VAL2), eq(VAL1,VAL2), not eq(VAR1,VAR2).\n" +
 			":- eq(VAL1,VAL2), not eq(VAR1,VAR2), val(VAR1,VAL1), val(VAR2,VAL2).";
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		ParsedProgram parsedProgram = parseVisit(testProgram);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -435,7 +434,7 @@ public class SolverTests extends AbstractSolverTests {
 				"val(VAR,3):-var(VAR),not val(VAR,1),not val(VAR,2).\n" +
 				":- val(VAR1,VAL1), val(VAR2,VAL2), eq(VAL1,VAL2), not eq(VAR1,VAR2).\n" +
 				"%:- eq(VAL1,VAL2), not eq(VAR1,VAR2), val(VAR1,VAL1), val(VAR2,VAL2).";
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		ParsedProgram parsedProgram = parseVisit(testProgram);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -497,7 +496,7 @@ public class SolverTests extends AbstractSolverTests {
 		String testProgram = "val(1,1).\n" +
 			"val(2,2).\n" +
 			"something:- val(VAR1,VAL1), val(VAR2,VAL2), anything(VAL1,VAL2).";
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		ParsedProgram parsedProgram = parseVisit(testProgram);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -520,7 +519,7 @@ public class SolverTests extends AbstractSolverTests {
 			"in(X) :- not out(X), node(X).\n" +
 			"out(X) :- not in(X), node(X).\n" +
 			"pair(X,Y) :- in(X), in(Y).";
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		ParsedProgram parsedProgram = parseVisit(testProgram);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -575,7 +574,7 @@ public class SolverTests extends AbstractSolverTests {
 			"in(X) :- not out(X), node(X).\n" +
 			"out(X) :- not in(X), node(X).\n" +
 			":- in(X), in(Y), edge(X,Y).";
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		ParsedProgram parsedProgram = parseVisit(testProgram);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -617,7 +616,7 @@ public class SolverTests extends AbstractSolverTests {
 	@Test
 	public void testUnsatisfiableProgram() throws IOException {
 		String testProgram = "p(a). p(b). :- p(a), p(b).";
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		ParsedProgram parsedProgram = parseVisit(testProgram);
 		Grounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 

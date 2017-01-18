@@ -78,6 +78,7 @@ public class Main {
 	private static final String DEFAULT_GROUNDER = "naive";
 	private static final String DEFAULT_SOLVER = "default";
 	private static final String OPT_SEED = "seed";
+	private static final String OPT_DEBUG_INTERNAL_CHECKS = "DebugEnableInternalChecks";
 
 	private static CommandLine commandLine;
 
@@ -125,7 +126,7 @@ public class Main {
 		Option hexOption = new Option("x", OPT_HEX, true, "resolve external atoms via Hex and report back answer sets");
 		options.addOption(hexOption);
 
-		Option sortOption = new Option("s", OPT_SORT, false, "sort answer sets");
+		Option sortOption = new Option("sort", OPT_SORT, false, "sort answer sets");
 		options.addOption(sortOption);
 
 		Option deterministicOption = new Option("d", OPT_DETERMINISTIC, false, "disable randomness");
@@ -137,6 +138,9 @@ public class Main {
 		seedOption.setArgs(1);
 		seedOption.setType(Number.class);
 		options.addOption(seedOption);
+
+		Option debugFlags = new Option(OPT_DEBUG_INTERNAL_CHECKS, "run additional (time-consuming) safety checks.");
+		options.addOption(debugFlags);
 
 		try {
 			commandLine = new DefaultParser().parse(options, args);
@@ -183,17 +187,28 @@ public class Main {
 			bailOut("Failed to parse number of answer sets requested.", e);
 		}
 
+		boolean debugInternalChecks = commandLine.hasOption(OPT_DEBUG_INTERNAL_CHECKS);
+
 		ParsedProgram program = null;
 		try {
 			if (commandLine.hasOption(OPT_STRING)) {
-				program = parseVisit(Util.stream(commandLine.getOptionValue(OPT_STRING)));
+				program = parseVisit(commandLine.getOptionValue(OPT_STRING));
 			} else if (commandLine.hasOption(OPT_INPUT)) {
-				program = parseVisit(new FileInputStream(commandLine.getOptionValue(OPT_INPUT)));
+				// Parse all input files and accumulate their results in one ParsedProgram.
+				String[] inputFileNames = commandLine.getOptionValues(OPT_INPUT);
+				program = parseVisit(new ANTLRFileStream(inputFileNames[0]));
+
+				for (int i = 1; i < inputFileNames.length; i++) {
+					program.accumulate(parseVisit(new ANTLRFileStream(inputFileNames[i])));
+				}
 			} else {
 				bailOut("Error: no input provided");
 			}
 		} catch (RecognitionException e) {
-			bailOut("Error while parsing input ASP program, see errors above.", e);
+			// In case a recognitionexception occured, parseVisit will
+			// already have printed an error message, so we just exit
+			// at this point without further logging.
+			System.exit(1);
 		} catch (FileNotFoundException e) {
 			bailOut(e.getMessage());
 		} catch (IOException e) {
@@ -223,7 +238,7 @@ public class Main {
 		LOGGER.info("Seed for pseudorandomization is {}.", seed);
 
 		Solver solver = SolverFactory.getInstance(
-			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, new Random(seed), BranchingHeuristicFactory.BERKMIN // TODO: see issue #18
+			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, new Random(seed), BranchingHeuristicFactory.BERKMINLITERAL, debugInternalChecks // TODO: see issue #18
 		);
 
 		Stream<AnswerSet> stream = solver.stream();
@@ -232,7 +247,7 @@ public class Main {
 			stream = stream.limit(limit);
 		}
 
-		if (options.hasOption(OPT_SORT)) {
+		if (commandLine.hasOption(OPT_SORT)) {
 			stream = stream.sorted();
 		}
 
@@ -256,7 +271,11 @@ public class Main {
 		System.exit(1);
 	}
 
-	public static ParsedProgram parseVisit(InputStream is) throws IOException {
+	public static ParsedProgram parseVisit(String input) throws IOException {
+		return parseVisit(new ANTLRInputStream(input));
+	}
+
+	public static ParsedProgram parseVisit(ANTLRInputStream is) throws IOException {
 		/*
 		// In order to require less memory: use unbuffered streams and avoid constructing a full parse tree.
 		ASPCore2Lexer lexer = new ASPCore2Lexer(new UnbufferedCharStream(is));
@@ -265,9 +284,7 @@ public class Main {
 		parser.setBuildParseTree(false);
 		*/
 		CommonTokenStream tokens = new CommonTokenStream(
-			new ASPCore2Lexer(
-				new ANTLRInputStream(is)
-			)
+			new ASPCore2Lexer(is)
 		);
 		final ASPCore2Parser parser = new ASPCore2Parser(tokens);
 
@@ -276,7 +293,7 @@ public class Main {
 		parser.removeErrorListeners();
 		parser.setErrorHandler(new BailErrorStrategy());
 
-		final SwallowingErrorListener errorListener = new SwallowingErrorListener();
+		final CustomErrorListener errorListener = new CustomErrorListener(is.getSourceName());
 
 		ASPCore2Parser.ProgramContext programContext;
 		try {
@@ -288,7 +305,6 @@ public class Main {
 			if (e.getCause() instanceof RecognitionException) {
 				tokens.reset();
 				parser.addErrorListener(errorListener);
-				parser.addErrorListener(ConsoleErrorListener.INSTANCE);
 				parser.setErrorHandler(new DefaultErrorStrategy());
 				parser.getInterpreter().setPredictionMode(PredictionMode.LL);
 				// Re-run parse.

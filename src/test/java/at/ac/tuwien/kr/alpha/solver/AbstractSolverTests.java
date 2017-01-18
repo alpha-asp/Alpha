@@ -41,6 +41,7 @@ import java.util.function.Function;
 public abstract class AbstractSolverTests {
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> factories() {
+		boolean enableAdditionalInternalChecks = false;
 		return Arrays.asList(new Object[][]{
 			{
 				"NaiveSolver",
@@ -49,25 +50,37 @@ public abstract class AbstractSolverTests {
 			{
 				"DefaultSolver (random BerkMin)",
 				(Function<Grounder, Solver>) g -> {
-					return new DefaultSolver(g, new Random(), BranchingHeuristicFactory.BERKMIN);
+					return new DefaultSolver(g, new Random(), BranchingHeuristicFactory.BERKMIN, enableAdditionalInternalChecks);
 				}
 			},
 			{
 				"DefaultSolver (deterministic BerkMin)",
 				(Function<Grounder, Solver>) g -> {
-					return new DefaultSolver(g, new Random(0), BranchingHeuristicFactory.BERKMIN);
+					return new DefaultSolver(g, new Random(0), BranchingHeuristicFactory.BERKMIN, enableAdditionalInternalChecks);
+				}
+			},
+			{
+				"DefaultSolver (random BerkMinLiteral)",
+				(Function<Grounder, Solver>) g -> {
+					return new DefaultSolver(g, new Random(), BranchingHeuristicFactory.BERKMINLITERAL, enableAdditionalInternalChecks);
+				}
+			},
+			{
+				"DefaultSolver (deterministic BerkMinLiteral)",
+				(Function<Grounder, Solver>) g -> {
+					return new DefaultSolver(g, new Random(0), BranchingHeuristicFactory.BERKMINLITERAL, enableAdditionalInternalChecks);
 				}
 			},
 			{
 				"DefaultSolver (random Naive)",
 				(Function<Grounder, Solver>) g -> {
-					return new DefaultSolver(g, new Random(), BranchingHeuristicFactory.NAIVE);
+					return new DefaultSolver(g, new Random(), BranchingHeuristicFactory.NAIVE, enableAdditionalInternalChecks);
 				}
 			},
 			{
 				"DefaultSolver (deterministic Naive)",
 				(Function<Grounder, Solver>) g -> {
-					return new DefaultSolver(g, new Random(0), BranchingHeuristicFactory.NAIVE);
+					return new DefaultSolver(g, new Random(0), BranchingHeuristicFactory.NAIVE, enableAdditionalInternalChecks);
 				}
 			},
 		});

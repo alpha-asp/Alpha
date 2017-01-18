@@ -64,11 +64,14 @@ public class DefaultSolver extends AbstractSolver {
 
 	private int decisionCounter;
 
-	public DefaultSolver(Grounder grounder, Random random, String branchingHeuristicName) {
+	public DefaultSolver(Grounder grounder, Random random, String branchingHeuristicName, boolean debugInternalChecks) {
 		super(grounder);
 
 		this.assignment = new BasicAssignment(grounder);
 		this.store = new BasicNoGoodStore(assignment, grounder);
+		if (debugInternalChecks) {
+			store.enableInternalChecks();
+		}
 		this.choiceStack = new ChoiceStack(grounder);
 		this.learner = new GroundConflictNoGoodLearner(assignment);
 		this.choiceManager = new ChoiceManager(assignment);
@@ -100,34 +103,22 @@ public class DefaultSolver extends AbstractSolver {
 
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
-			if (!propagationFixpointReached() && store.getViolatedNoGood() == null) {
-				// Ask the grounder for new NoGoods, then propagate (again).
-				LOGGER.trace("Doing propagation step.");
-				updateGrounderAssignment();
-				if (!obtainNoGoodsFromGrounder()) {
-					// NoGoods are unsatisfiable.
-					LOGGER.info("{} decisions done.", decisionCounter);
-					return false;
-				}
-				if (store.propagate()) {
-					didChange = true;
-				}
-				LOGGER.debug("Assignment after propagation is: {}", assignment);
-			} else if (store.getViolatedNoGood() != null) {
+			didChange |= store.propagate();
+			LOGGER.debug("Assignment after propagation is: {}", assignment);
+			if (store.getViolatedNoGood() != null) {
+				// Learn from conflict.
 				NoGood violatedNoGood = store.getViolatedNoGood();
 				if (LOGGER.isDebugEnabled()) {
 					LOGGER.debug("NoGood violated ({}) by wrong choices ({} violated): {}", grounder.noGoodToString(violatedNoGood), choiceStack);
 				}
 				LOGGER.debug("Violating assignment is: {}", assignment);
 				branchingHeuristic.violatedNoGood(violatedNoGood);
-
 				if (!afterAllAtomsAssigned) {
 					if (!learnBackjumpAddFromConflict()) {
 						// NoGoods are unsatisfiable.
 						LOGGER.info("{} decisions done.", decisionCounter);
 						return false;
 					}
-					didChange = true;
 				} else {
 					// Will not learn from violated NoGood, do simple backtrack.
 					LOGGER.debug("NoGood was violated after all unassigned atoms were assigned to false; will not learn from it; skipping.");
@@ -138,13 +129,20 @@ public class DefaultSolver extends AbstractSolver {
 						return false;
 					}
 				}
+			} else if (!propagationFixpointReached()) {
+				// Ask the grounder for new NoGoods, then propagate (again).
+				LOGGER.trace("Doing propagation step.");
+				updateGrounderAssignment();
+				if (!obtainNoGoodsFromGrounder()) {
+					// NoGoods are unsatisfiable.
+					LOGGER.info("{} decisions done.", decisionCounter);
+					return false;
+				}
 			} else if ((nextChoice = computeChoice()) != 0) {
 				LOGGER.debug("Doing choice.");
 				doChoice(nextChoice);
 				// Directly propagate after choice.
-				if (store.propagate()) {
-					didChange = true;
-				}
+				//didChange |= store.propagate();
 			} else if (!allAtomsAssigned()) {
 				LOGGER.debug("Closing unassigned known atoms (assigning FALSE).");
 				assignUnassignedToFalse();

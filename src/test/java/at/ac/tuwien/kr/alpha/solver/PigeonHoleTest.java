@@ -38,7 +38,6 @@ import java.io.IOException;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Main.parseVisit;
-import static at.ac.tuwien.kr.alpha.Util.stream;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -109,7 +108,7 @@ public class PigeonHoleTest extends AbstractSolverTests {
 		addPigeons(testProgram, pigeons);
 		addHoles(testProgram, holes);
 
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram.toString()));
+		ParsedProgram parsedProgram = parseVisit(testProgram.toString());
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 

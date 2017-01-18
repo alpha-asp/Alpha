@@ -35,13 +35,16 @@ public final class BranchingHeuristicFactory {
 
 	public static final String NAIVE = "naive";
 	public static final String BERKMIN = "berkmin";
+	public static final String BERKMINLITERAL = "berkminliteral";
 
 	public static BranchingHeuristic getInstance(String name, Assignment<ThriceTruth> assignment, ChoiceManager choiceManager, Random random) {
 		switch (name.toLowerCase()) {
-		case NAIVE:
-			return new NaiveHeuristic(choiceManager);
-		case BERKMIN:
-			return new BerkMin(assignment, choiceManager, random);
+			case NAIVE:
+				return new NaiveHeuristic(choiceManager);
+			case BERKMIN:
+				return new BerkMin(assignment, choiceManager, random);
+			case BERKMINLITERAL:
+				return new BerkMinLiteral(assignment, choiceManager, random);
 		}
 		throw new IllegalArgumentException("Unknown branching heuristic requested.");
 	}
