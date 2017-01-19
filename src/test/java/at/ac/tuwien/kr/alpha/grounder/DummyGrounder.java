@@ -78,9 +78,15 @@ public class DummyGrounder implements Grounder {
 		return unassigned;
 	}
 
+	private int solverDerivedNoGoodIdCounter = 20;
+	private Map<NoGood, Integer> solverDerivedNoGoods = new HashMap<>();
+
 	@Override
 	public int registerOutsideNoGood(NoGood noGood) {
-		throw  new RuntimeException("Not implemented for DummyGrounder.");
+		if (!solverDerivedNoGoods.containsKey(noGood)) {
+			solverDerivedNoGoods.put(noGood, solverDerivedNoGoodIdCounter++);
+		}
+		return solverDerivedNoGoods.get(noGood);
 	}
 
 	@Override

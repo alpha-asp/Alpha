@@ -185,9 +185,15 @@ public class ChoiceGrounder implements Grounder {
 		return unassigned;
 	}
 
+	private int solverDerivedNoGoodIdCounter = 20;
+	private Map<NoGood, Integer> solverDerivedNoGoods = new HashMap<>();
+
 	@Override
 	public int registerOutsideNoGood(NoGood noGood) {
-		throw  new RuntimeException("Not implemented for ChoiceGrounder.");
+		if (!solverDerivedNoGoods.containsKey(noGood)) {
+			solverDerivedNoGoods.put(noGood, solverDerivedNoGoodIdCounter++);
+		}
+		return solverDerivedNoGoods.get(noGood);
 	}
 
 	@Override

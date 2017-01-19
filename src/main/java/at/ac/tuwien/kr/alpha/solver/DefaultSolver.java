@@ -88,9 +88,17 @@ public class DefaultSolver extends AbstractSolver {
 			}
 			initialize = false;
 		} else {
-			// We already found one Answer-Set and are requested to find another one
-			doBacktrack();
-			if (isSearchSpaceExhausted()) {
+			// We already found one Answer-Set and are requested to find another one.
+			// Create enumeration NoGood to avoid finding the same Answer-Set twice.
+			if (!isSearchSpaceExhausted()) {
+				NoGood enumerationNoGood = createEnumerationNoGood();
+				// Backjump instead of backtrack, enumerationNoGood will invert lass guess.
+				doBackjump(assignment.getDecisionLevel() - 1);
+				LOGGER.debug("Adding enumeration NoGood: {}", enumerationNoGood);
+				if (store.add(grounder.registerOutsideNoGood(enumerationNoGood), enumerationNoGood) != null) {
+					throw new RuntimeException("Adding enumeration NoGood causes conflicts. Should not happen.");
+				}
+			} else {
 				LOGGER.info("{} decisions done.", decisionCounter);
 				return false;
 			}
@@ -163,6 +171,15 @@ public class DefaultSolver extends AbstractSolver {
 				}
 			}
 		}
+	}
+
+	private NoGood createEnumerationNoGood() {
+		int[] enumerationLiterals = new int[choiceStack.size()];
+		int enumerationPos = 0;
+		for (Integer integer : choiceStack) {
+			enumerationLiterals[enumerationPos++] = integer;
+		}
+		return new NoGood(enumerationLiterals, -1);
 	}
 
 	/**
