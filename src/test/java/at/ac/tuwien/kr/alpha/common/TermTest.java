@@ -24,11 +24,11 @@ public class TermTest {
 		List<Term> termList = new LinkedList<>();
 		termList.add(ta1);
 		termList.add(ta2);
-		FunctionTerm ft1 = FunctionTerm.getFunctionTerm("f", termList);
+		FunctionTerm ft1 = FunctionTerm.getInstance("f", termList);
 		List<Term> termList2 = new LinkedList<>();
 		termList2.add(ta1);
 		termList2.add(ta2);
-		FunctionTerm ft2 = FunctionTerm.getFunctionTerm("f", termList2);
+		FunctionTerm ft2 = FunctionTerm.getInstance("f", termList2);
 		assertTrue("Two instances of FunctionTerms for the same term symbol and equal term lists must be the same object", ft1 == ft2);
 	}
 
@@ -36,7 +36,7 @@ public class TermTest {
 	public void testTermVariableOccurrences() {
 		ConstantTerm ta = ConstantTerm.getInstance("a");
 		VariableTerm tx = VariableTerm.getInstance("X");
-		FunctionTerm tf = FunctionTerm.getFunctionTerm("f", ta, tx);
+		FunctionTerm tf = FunctionTerm.getInstance("f", ta, tx);
 		List<VariableTerm> occurringVariables = tf.getOccurringVariables();
 
 		assertEquals("Variable occurring as subterm must be reported as occurring variable.", occurringVariables.get(0), tx);

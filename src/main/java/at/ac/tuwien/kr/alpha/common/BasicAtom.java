@@ -1,39 +1,42 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedAtom;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
 public class BasicAtom implements Atom {
-	public final Predicate predicate;
-	public final Term[] termList;
+	private final Predicate predicate;
+	private final List<Term> terms;
+	private final boolean ground;
 
-	public BasicAtom(Predicate predicate, Term... termList) {
+	public BasicAtom(Predicate predicate, List<Term> terms) {
 		this.predicate = predicate;
-		this.termList = termList;
-	}
+		this.terms = terms;
 
-	public BasicAtom(ParsedAtom parsedAtom) {
-		this(new BasicPredicate(parsedAtom.predicate, parsedAtom.getArity()), terms(parsedAtom));
-	}
-
-	private static Term[] terms(ParsedAtom parsedAtom) {
-		Term[] terms;
-		if (parsedAtom.getArity() == 0) {
-			terms = new Term[0];
-		} else {
-			terms = new Term[parsedAtom.terms.size()];
-			for (int i = 0; i < parsedAtom.terms.size(); i++) {
-				terms[i] = parsedAtom.terms.get(i).toTerm();
+		boolean ground = true;
+		for (Term term : terms) {
+			if (!term.isGround()) {
+				ground = false;
+				break;
 			}
 		}
-		return terms;
+		this.ground = ground;
+	}
+
+	public BasicAtom(Predicate predicate, Term... terms) {
+		this(predicate, Arrays.asList(terms));
+	}
+
+	public BasicAtom(Predicate predicate) {
+		this(predicate, Collections.emptyList());
 	}
 
 	@Override
@@ -42,17 +45,16 @@ public class BasicAtom implements Atom {
 	}
 
 	@Override
-	public Term[] getTerms() {
-		return termList;
+	public List<Term> getTerms() {
+		return terms;
 	}
 
 	public boolean isGround() {
-		for (Term term : termList) {
-			if (!term.isGround()) {
-				return false;
-			}
-		}
-		return true;
+		return ground;
+	}
+
+	public boolean isInternal() {
+		return false;
 	}
 
 	@Override
@@ -70,35 +72,42 @@ public class BasicAtom implements Atom {
 			return false;
 		}
 
-		return Arrays.equals(termList, that.termList);
+		return terms.equals(that.terms);
 	}
 
 	@Override
 	public int hashCode() {
-		return 31 * predicate.hashCode() + Arrays.hashCode(termList);
+		return 31 * predicate.hashCode() + terms.hashCode();
 	}
 
 	public List<VariableTerm> getOccurringVariables() {
 		LinkedList<VariableTerm> occurringVariables = new LinkedList<>();
-		for (Term term : termList) {
+		for (Term term : terms) {
 			occurringVariables.addAll(term.getOccurringVariables());
 		}
 		return occurringVariables;
 	}
 
 	@Override
+	public Atom substitute(Substitution substitution) {
+		return new BasicAtom(predicate, terms.stream().map(t -> {
+			return t.substitute(substitution);
+		}).collect(Collectors.toList()));
+	}
+
+	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder(predicate.getPredicateName());
 		sb.append("(");
-		Util.appendDelimited(sb, Arrays.asList(termList));
+		Util.appendDelimited(sb, terms);
 		sb.append(")");
 		return sb.toString();
 	}
 
 	@Override
 	public int compareTo(Atom o) {
-		if (this.termList.length != o.getTerms().length) {
-			return this.termList.length - o.getTerms().length;
+		if (this.terms.size() != o.getTerms().size()) {
+			return this.terms.size() - o.getTerms().size();
 		}
 
 		int result = this.predicate.compareTo(o.getPredicate());
@@ -107,8 +116,8 @@ public class BasicAtom implements Atom {
 			return result;
 		}
 
-		for (int i = 0; i < termList.length; i++) {
-			result = termList[i].compareTo(o.getTerms()[i]);
+		for (int i = 0; i < terms.size(); i++) {
+			result = terms.get(i).compareTo(o.getTerms().get(i));
 			if (result != 0) {
 				return result;
 			}
