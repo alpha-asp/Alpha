@@ -16,6 +16,10 @@ public class BuiltinAtom implements Atom {
 	private final ParsedBuiltinAtom.BINOP binop;
 
 	protected BuiltinAtom(ParsedBuiltinAtom.BINOP binop, List<Term> terms) {
+		if (terms.size() != 2) {
+			throw new IllegalArgumentException("terms must be of size 2");
+		}
+
 		this.binop = binop;
 		this.terms = terms;
 	}
