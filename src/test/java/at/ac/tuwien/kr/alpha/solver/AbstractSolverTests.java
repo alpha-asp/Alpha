@@ -60,6 +60,18 @@ public abstract class AbstractSolverTests {
 				}
 			},
 			{
+				"DefaultSolver (random AlphaHeuristicRandomSign)",
+				(Function<Grounder, Solver>) g -> {
+					return new DefaultSolver(g, new Random(), BranchingHeuristicFactory.ALPHA_RANDOM_SIGN, enableAdditionalInternalChecks);
+				}
+			},
+			{
+				"DefaultSolver (deterministic AlphaHeuristicRandomSign)",
+				(Function<Grounder, Solver>) g -> {
+					return new DefaultSolver(g, new Random(0), BranchingHeuristicFactory.ALPHA_RANDOM_SIGN, enableAdditionalInternalChecks);
+				}
+			},
+			{
 				"DefaultSolver (random BerkMin)",
 				(Function<Grounder, Solver>) g -> {
 					return new DefaultSolver(g, new Random(), BranchingHeuristicFactory.BERKMIN, enableAdditionalInternalChecks);

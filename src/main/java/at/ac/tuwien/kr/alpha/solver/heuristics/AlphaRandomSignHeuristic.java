@@ -26,32 +26,38 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
-import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.solver.*;
 
 import java.util.Random;
 
-public final class BranchingHeuristicFactory {
+import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
 
-	public static final String NAIVE = "naive";
-	public static final String BERKMIN = "berkmin";
-	public static final String BERKMINLITERAL = "berkminliteral";
-	public static final String ALPHA = "alpha";
-	public static final String ALPHA_RANDOM_SIGN = "alpha-rs";
+public class AlphaRandomSignHeuristic extends AlphaHeuristic {
 
-	public static BranchingHeuristic getInstance(String name, Grounder grounder, Assignment assignment, ChoiceManager choiceManager, Random random) {
-		switch (name.toLowerCase()) {
-		case NAIVE:
-			return new NaiveHeuristic(choiceManager);
-		case BERKMIN:
-			return new BerkMin(assignment, choiceManager, random);
-		case BERKMINLITERAL:
-			return new BerkMinLiteral(assignment, choiceManager, random);
-		case ALPHA:
-			return new AlphaHeuristic(grounder, assignment, choiceManager, random);
-		case ALPHA_RANDOM_SIGN:
-			return new AlphaRandomSignHeuristic(grounder, assignment, choiceManager, random);
-		}
-		throw new IllegalArgumentException("Unknown branching heuristic requested.");
+	public AlphaRandomSignHeuristic(Grounder grounder, Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
+		super(grounder, assignment, choiceManager, decayAge, decayFactor, random);
 	}
+
+	public AlphaRandomSignHeuristic(Grounder grounder, Assignment assignment, ChoiceManager choiceManager, Random random) {
+		super(grounder, assignment, choiceManager, random);
+	}
+
+	@Override
+	protected void incrementSignCounter(Integer literal) {
+		; // do nothing
+	}
+
+	@Override
+	public boolean chooseSign(int atom) {
+		if (!isAtom(atom)) {
+			throw new IllegalArgumentException("Atom must be a positive integer.");
+		}
+
+		if (assignment.getTruth(atom) == ThriceTruth.MBT) {
+			return true;
+		}
+
+		return rand.nextBoolean();
+	}
+
 }

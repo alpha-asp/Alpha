@@ -58,10 +58,10 @@ public class AlphaHeuristic implements BranchingHeuristic {
 	public static final int DEFAULT_DECAY_AGE = 10;
 	public static final double DEFAULT_DECAY_FACTOR = 0.25;
 
-	private final Assignment assignment;
-	private final ChoiceManager choiceManager;
-	private final Random rand;
-	private final Grounder grounder; // TODO: this is a temporary workaround (see https://github.com/AntoniusW/Alpha/issues/39)
+	protected final Assignment assignment;
+	protected final ChoiceManager choiceManager;
+	protected final Random rand;
+	protected final Grounder grounder; // TODO: this is a temporary workaround (see https://github.com/AntoniusW/Alpha/issues/39)
 
 	private Map<Integer, Double> activityCounters = new HashMap<>();
 	private Map<Integer, Integer> signCounters = new HashMap<>();
@@ -267,7 +267,7 @@ public class AlphaHeuristic implements BranchingHeuristic {
 		// integers for rule bodies, uneven for other atoms)
 	}
 	
-	private void incrementSignCounter(Integer literal) {
+	protected void incrementSignCounter(Integer literal) {
 		signCounters.compute(literal, (k, v) -> (v == null ? DEFAULT_SIGN_COUNTER : v) + 1);
 	}
 
