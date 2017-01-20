@@ -27,6 +27,7 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.*;
 import at.ac.tuwien.kr.alpha.solver.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 import org.apache.commons.collections4.MultiValuedMap;
@@ -60,6 +61,7 @@ public class AlphaHeuristic implements BranchingHeuristic {
 	private final Assignment assignment;
 	private final ChoiceManager choiceManager;
 	private final Random rand;
+	private final Grounder grounder; // TODO: this is a temporary workaround (see https://github.com/AntoniusW/Alpha/issues/39)
 
 	private Map<Integer, Double> activityCounters = new HashMap<>();
 	private Map<Integer, Integer> signCounters = new HashMap<>();
@@ -83,7 +85,8 @@ public class AlphaHeuristic implements BranchingHeuristic {
 	 */
 	private MultiValuedMap<Integer, Integer> atomsToBodies = new HashSetValuedHashMap<>();
 
-	public AlphaHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
+	public AlphaHeuristic(Grounder grounder, Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
+		this.grounder = grounder;
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
 		this.decayAge = decayAge;
@@ -91,8 +94,8 @@ public class AlphaHeuristic implements BranchingHeuristic {
 		this.rand = random;
 	}
 
-	public AlphaHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
-		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random);
+	public AlphaHeuristic(Grounder grounder, Assignment assignment, ChoiceManager choiceManager, Random random) {
+		this(grounder, assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random);
 	}
 
 	/**
@@ -188,6 +191,11 @@ public class AlphaHeuristic implements BranchingHeuristic {
 			throw new IllegalArgumentException("Atom must be a positive integer.");
 		}
 
+		Integer head = bodyToHead.get(atom);
+		if (head != null) {
+			atom = head; // head atom can give more relevant information than atom representing rule body
+		}
+
 		if (assignment.getTruth(atom) == ThriceTruth.MBT) {
 			return true;
 		}
@@ -205,14 +213,18 @@ public class AlphaHeuristic implements BranchingHeuristic {
 	}
 
 	private void handleSpecialNoGood(NoGood noGood) {
-		if (noGood.isBodyNotHead(choiceManager::isAtomChoice)) {
+		// if (noGood.isBodyNotHead(choiceManager::isAtomChoice)) {
+		// TODO: this is a temporary workaround (see https://github.com/AntoniusW/Alpha/issues/39)
+		if (noGood.isBodyNotHead(grounder::isAtomChoicePoint)) {
 			int headIndex = noGood.getHead();
 			int bodyIndex = headIndex != 0 ? 0 : 1;
 			int body = noGood.getAtom(bodyIndex);
 			int head = noGood.getAtom(headIndex);
 			bodyToHead.put(body, head);
 			atomsToBodies.put(head, body);
-		} else if (noGood.isBodyElementsNotBody(choiceManager::isAtomChoice)) {
+			// } else if (noGood.isBodyElementsNotBody(choiceManager::isAtomChoice)) {
+			// TODO: this is a temporary workaround (see https://github.com/AntoniusW/Alpha/issues/39)
+		} else if (noGood.isBodyElementsNotBody(grounder::isAtomChoicePoint)) {
 			Set<Integer> literals = new HashSet<>();
 			int bodyAtom = 0;
 			for (int i = 0; i < noGood.size(); i++) {
@@ -256,9 +268,7 @@ public class AlphaHeuristic implements BranchingHeuristic {
 	}
 	
 	private void incrementSignCounter(Integer literal) {
-		if (choiceManager.isAtomChoice(atomOf(literal))) {
-			signCounters.compute(literal, (k, v) -> (v == null ? DEFAULT_SIGN_COUNTER : v) + 1);
-		}
+		signCounters.compute(literal, (k, v) -> (v == null ? DEFAULT_SIGN_COUNTER : v) + 1);
 	}
 
 	private void decayAllIfTimeHasCome() {

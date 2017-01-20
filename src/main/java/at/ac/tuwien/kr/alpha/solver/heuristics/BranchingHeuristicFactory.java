@@ -25,6 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 
@@ -37,7 +38,7 @@ public final class BranchingHeuristicFactory {
 	public static final String BERKMINLITERAL = "berkminliteral";
 	public static final String ALPHA = "alpha";
 
-	public static BranchingHeuristic getInstance(String name, Assignment assignment, ChoiceManager choiceManager, Random random) {
+	public static BranchingHeuristic getInstance(String name, Grounder grounder, Assignment assignment, ChoiceManager choiceManager, Random random) {
 		switch (name.toLowerCase()) {
 			case NAIVE:
 				return new NaiveHeuristic(choiceManager);
@@ -46,7 +47,7 @@ public final class BranchingHeuristicFactory {
 			case BERKMINLITERAL:
 				return new BerkMinLiteral(assignment, choiceManager, random);
 		case ALPHA:
-			return new AlphaHeuristic(assignment, choiceManager, random);
+			return new AlphaHeuristic(grounder, assignment, choiceManager, random);
 		}
 		throw new IllegalArgumentException("Unknown branching heuristic requested.");
 	}
