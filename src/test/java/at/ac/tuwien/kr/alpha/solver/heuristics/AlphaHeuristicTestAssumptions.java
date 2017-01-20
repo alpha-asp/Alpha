@@ -29,15 +29,18 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
+import at.ac.tuwien.kr.alpha.solver.*;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.function.Predicate;
 
 import static at.ac.tuwien.kr.alpha.Main.parseVisit;
-import static at.ac.tuwien.kr.alpha.MainTest.stream;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests assumptions made by {@link AlphaHeuristic}. Even if these test cases do not test {@link AlphaHeuristic} directly, it will break if these test cases
@@ -49,25 +52,38 @@ import static org.junit.Assert.assertEquals;
 public class AlphaHeuristicTestAssumptions {
 
 	private Grounder grounder;
+	private Assignment assignment;
+	private ChoiceManager choiceManager;
 	
 	@Before
 	public void setUp() throws IOException {
 		String testProgram = "h :- b1, b2, not b3, not b4.";
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram));
+		ParsedProgram parsedProgram = parseVisit(testProgram);
 		this.grounder = new NaiveGrounder(parsedProgram);
+		this.assignment = new BasicAssignment();
+		this.choiceManager = new ChoiceManager(assignment);
 	}
 
 	@Test
-	public void testNumbersOfNoGoods() {
+	public void testNumbersOfNoGoods_GrounderIsAtomChoicePoint() {
+		testNumbersOfNoGoods(grounder::isAtomChoicePoint);
+	}
+
+	@Test
+	public void testNumbersOfNoGoods_ChoiceManagerIsAtomChoice() {
+		testNumbersOfNoGoods(choiceManager::isAtomChoice);
+	}
+
+	private void testNumbersOfNoGoods(Predicate<? super Integer> isRuleBody) {
 		int n = 0, bodyNotHead = 0, bodyElementsNotBody = 0, noHead = 0, other = 0;
 		for (NoGood noGood : getNoGoods()) {
 			n++;
 			boolean knownType = false;
-			if (noGood.isBodyNotHead(grounder::isAtomChoicePoint)) {
+			if (noGood.isBodyNotHead(isRuleBody)) {
 				bodyNotHead++;
 				knownType = true;
 			}
-			if (noGood.isBodyElementsNotBody(grounder::isAtomChoicePoint)) {
+			if (noGood.isBodyElementsNotBody(isRuleBody)) {
 				bodyElementsNotBody++;
 				knownType = true;
 			}
@@ -87,6 +103,28 @@ public class AlphaHeuristicTestAssumptions {
 		// there may be other nogoods (e.g. for ChoiceOn, ChoiceOff) which we do not care for here
 		System.out.println("Total number of NoGoods: " + n);
 		System.out.println("Number of NoGoods of unknown type: " + other);
+	}
+
+	@Test
+	public void testIsAtomChoice_GrounderIsAtomChoicePoint() {
+		testIsAtomChoice(grounder::isAtomChoicePoint);
+	}
+
+	@Test
+	public void testIsAtomChoice_ChoiceManagerIsAtomChoice() {
+		testIsAtomChoice(choiceManager::isAtomChoice);
+	}
+
+	private void testIsAtomChoice(Predicate<? super Integer> isRuleBody) {
+		for (NoGood noGood : getNoGoods()) {
+			for (Integer literal : noGood) {
+				int atom = atomOf(literal);
+				String atomToString = grounder.atomToString(atom);
+				if (atomToString.startsWith("_R_")) {
+					assertTrue("Atom not choice: " + atomToString, isRuleBody.test(atom));
+				}
+			}
+		}
 	}
 
 	private Collection<NoGood> getNoGoods() {
