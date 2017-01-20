@@ -50,13 +50,13 @@ public abstract class AbstractSolverTests {
 			{
 				"DefaultSolver (random AlphaHeuristic)",
 				(Function<Grounder, Solver>) g -> {
-					return new DefaultSolver(g, new Random(), BranchingHeuristicFactory.ALPHA);
+					return new DefaultSolver(g, new Random(), BranchingHeuristicFactory.ALPHA, enableAdditionalInternalChecks);
 				}
 			},
 			{
 				"DefaultSolver (deterministic AlphaHeuristic)",
 				(Function<Grounder, Solver>) g -> {
-					return new DefaultSolver(g, new Random(0), BranchingHeuristicFactory.ALPHA);
+					return new DefaultSolver(g, new Random(0), BranchingHeuristicFactory.ALPHA, enableAdditionalInternalChecks);
 				}
 			},
 			{
