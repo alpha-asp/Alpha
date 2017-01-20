@@ -58,7 +58,7 @@ public class Substitution {
 			FunctionTerm ftNonGround = (FunctionTerm) termNonGround;
 			FunctionTerm ftGround = (FunctionTerm) termGround;
 
-			if (!(ftNonGround.isSimilar(ftGround))) {
+			if (!(ftNonGround.getSymbol().equals(ftGround.getSymbol()))) {
 				return false;
 			}
 

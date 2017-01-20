@@ -56,10 +56,6 @@ public class FunctionTerm extends Term {
 		return symbol;
 	}
 
-	public boolean isSimilar(FunctionTerm other) {
-		return symbol.equals(other.symbol);
-	}
-
 	@Override
 	public boolean isGround() {
 		return ground;
