@@ -56,6 +56,7 @@ on(TP1, N, N1) :- time(T), steps(K), T < K, on(T, N, N1), not move(T, N1), succ(
 put(T, M, N) :- move(T, N), where(T, M), steps(K), T < K.
 
 % ADDITIONS FOR ALPHA:
+succ(0,1) :- time(0).
 succ(1,2) :- time(1).
 succ(2,3) :- time(2).
 succ(3,4) :- time(3).
