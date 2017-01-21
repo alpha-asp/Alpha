@@ -147,13 +147,10 @@ public class DefaultSolver extends AbstractSolver {
 			} else if ((nextChoice = computeChoice()) != 0) {
 				LOGGER.debug("Doing choice.");
 				doChoice(nextChoice);
-				// Directly propagate after choice.
-				//didChange |= store.propagate();
 			} else if (!allAtomsAssigned()) {
 				LOGGER.debug("Closing unassigned known atoms (assigning FALSE).");
 				assignUnassignedToFalse();
 				afterAllAtomsAssigned = true;
-				didChange = true;
 			} else if (assignment.getMBTCount() == 0) {
 				AnswerSet as = translate(assignment.getTrueAssignments());
 				LOGGER.debug("Answer-Set found: {}", as);
@@ -297,7 +294,6 @@ public class DefaultSolver extends AbstractSolver {
 				LOGGER.debug("Backtrack: inverting last guess. Now: {}={}@{}", grounder.atomToString(lastGuessedAtom), newGuess, assignment.getDecisionLevel());
 				choiceStack.pushBacktrack(lastGuessedAtom, newGuess);
 				choiceManager.nextDecisionLevel();
-				didChange = true;
 				LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 				LOGGER.debug("Backtrack: {} choices so far.", decisionCounter);
 			} else {
@@ -408,8 +404,6 @@ public class DefaultSolver extends AbstractSolver {
 		assignment.guess(nextChoice, sign);
 		choiceStack.push(nextChoice, sign);
 		choiceManager.nextDecisionLevel();
-		// Record change to compute propagation fixpoint again.
-		didChange = true;
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Choice: guessing {}={}@{}", grounder.atomToString(nextChoice), sign, assignment.getDecisionLevel());
 			LOGGER.debug("Choice: stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
