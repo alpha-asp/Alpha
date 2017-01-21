@@ -26,6 +26,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
@@ -57,7 +58,6 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 	}
 
 	private Grounder grounder;
-	private Assignment assignment;
 	private ChoiceManager choiceManager;
 
 	@Before
@@ -65,7 +65,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 		String testProgram = "h :- b1, b2, not b3, not b4.";
 		ParsedProgram parsedProgram = parseVisit(testProgram);
 		this.grounder = new NaiveGrounder(parsedProgram);
-		this.assignment = new BasicAssignment();
+		Assignment assignment = new BasicAssignment();
 		this.choiceManager = new ChoiceManager(assignment);
 	}
 
@@ -77,7 +77,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 			for (Integer literal : noGood) {
 				int atom = atomOf(literal);
 				String atomToString = grounder.atomToString(atom);
-				if (atomToString.startsWith("_R_")) {
+				if (atomToString.startsWith(RuleAtom.PREDICATE.getPredicateName())) {
 					assertTrue("Atom not choice: " + atomToString, choiceManager.isAtomChoice(atom));
 				}
 			}
