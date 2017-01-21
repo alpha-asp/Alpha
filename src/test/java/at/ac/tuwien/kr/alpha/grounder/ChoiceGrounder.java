@@ -29,6 +29,8 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Atom;
+import at.ac.tuwien.kr.alpha.common.BasicAtom;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -126,7 +128,7 @@ public class ChoiceGrounder implements Grounder {
 		}
 
 		// Add the atom instances
-		Map<Predicate, SortedSet<BasicAtom>> predicateInstances = new HashMap<>();
+		Map<Predicate, SortedSet<Atom>> predicateInstances = new HashMap<>();
 		for (Predicate trueAtomPredicate : trueAtomPredicates) {
 			BasicAtom basicAtom = new BasicAtom(trueAtomPredicate);
 			predicateInstances.put(trueAtomPredicate, new TreeSet<>(singleton(basicAtom)));

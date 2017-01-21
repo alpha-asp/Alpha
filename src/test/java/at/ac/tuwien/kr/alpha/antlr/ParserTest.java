@@ -20,10 +20,10 @@ public class ParserTest {
 		ParsedProgram parsedProgram = parseVisit("p(a,b).");
 
 		assertEquals("Program contains one fact.", 1, parsedProgram.facts.size());
-		assertEquals("Predicate name of fact is p.", "p", parsedProgram.facts.get(0).getFact().predicate);
+		assertEquals("Predicate name of fact is p.", "p", parsedProgram.facts.get(0).getFact().getPredicate());
 		assertEquals("Fact has two terms.", 2, parsedProgram.facts.get(0).getFact().getArity());
-		assertEquals("First term is a.", "a", ((ParsedConstant)parsedProgram.facts.get(0).getFact().terms.get(0)).getContent());
-		assertEquals("Second term is b.", "b", ((ParsedConstant)parsedProgram.facts.get(0).getFact().terms.get(1)).getContent());
+		assertEquals("First term is a.", "a", ((ParsedConstant)parsedProgram.facts.get(0).getFact().getTerms().get(0)).getContent());
+		assertEquals("Second term is b.", "b", ((ParsedConstant)parsedProgram.facts.get(0).getFact().getTerms().get(1)).getContent());
 	}
 
 	@Test
@@ -31,10 +31,10 @@ public class ParserTest {
 		ParsedProgram parsedProgram = parseVisit("p(f(a),g(h(Y))).");
 
 		assertEquals("Program contains one fact.", 1, parsedProgram.facts.size());
-		assertEquals("Predicate name of fact is p.", "p", parsedProgram.facts.get(0).getFact().predicate);
+		assertEquals("Predicate name of fact is p.", "p", parsedProgram.facts.get(0).getFact().getPredicate());
 		assertEquals("Fact has two terms.", 2, parsedProgram.facts.get(0).getFact().getArity());
-		assertEquals("First term is function term f.", "f", ((ParsedFunctionTerm)parsedProgram.facts.get(0).getFact().terms.get(0)).getFunctionName());
-		assertEquals("Second term is function term g.", "g", ((ParsedFunctionTerm)parsedProgram.facts.get(0).getFact().terms.get(1)).getFunctionName());
+		assertEquals("First term is function term f.", "f", ((ParsedFunctionTerm)parsedProgram.facts.get(0).getFact().getTerms().get(0)).getFunctionName());
+		assertEquals("Second term is function term g.", "g", ((ParsedFunctionTerm)parsedProgram.facts.get(0).getFact().getTerms().get(1)).getFunctionName());
 	}
 
 	@Test

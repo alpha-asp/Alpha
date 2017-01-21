@@ -28,6 +28,6 @@ public class ParsedVariable extends ParsedTerm {
 
 	@Override
 	public Term toTerm() {
-		return isAnonymous ? VariableTerm.getNewAnonymousVariable() : VariableTerm.getInstance(variableName);
+		return isAnonymous ? VariableTerm.getAnonymousInstance() : VariableTerm.getInstance(variableName);
 	}
 }

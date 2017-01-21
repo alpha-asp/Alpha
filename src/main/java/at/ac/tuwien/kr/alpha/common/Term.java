@@ -1,5 +1,7 @@
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
+
 import java.util.List;
 
 /**
@@ -12,6 +14,13 @@ public abstract class Term implements Comparable<Term> {
 	public abstract boolean isGround();
 
 	public abstract List<VariableTerm> getOccurringVariables();
+
+	/**
+	 * Applies a substitution, result may be nonground.
+	 * @param substitution the variable substitution to apply.
+	 * @return the non-substitute term where all variable substitutions have been applied.
+	 */
+	public abstract Term substitute(Substitution substitution);
 
 	@Override
 	public abstract String toString();

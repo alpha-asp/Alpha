@@ -1,31 +1,28 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.common.Atom;
 import at.ac.tuwien.kr.alpha.common.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.BasicPredicate;
-import at.ac.tuwien.kr.alpha.common.Term;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This class stores ground atoms and provides the translation from an (integer) atomId to a (structured) predicate instance.
  * Copyright (c) 2016, the Alpha Team.
  */
 public class AtomStore {
-	private ArrayList<BasicAtom> atomIdsToInternalBasicAtoms = new ArrayList<>();
-	private HashMap<BasicAtom, AtomId> predicateInstancesToAtomIds = new HashMap<>();
-	private IntIdGenerator atomIdGenerator = new IntIdGenerator();
+	private List<Atom> atomIdsToInternalBasicAtoms = new ArrayList<>();
+	private Map<Atom, Integer> predicateInstancesToAtomIds = new HashMap<>();
+	private IntIdGenerator atomIdGenerator = new IntIdGenerator(1);
 
-	private ArrayList<AtomId> releasedAtomIds = new ArrayList<>();	// contains atomIds ready to be garbage collected if necessary.
+	private List<Integer> releasedAtomIds = new ArrayList<>();	// contains atomIds ready to be garbage collected if necessary.
 
 	public AtomStore() {
 		// Create atomId for falsum (currently not needed, but it gets atomId 0, which cannot represent a negated literal).
-		createAtomId(new BasicAtom(new BasicPredicate("\u22A5", 0), new Term[0]));
+		atomIdsToInternalBasicAtoms.add(null);
 	}
 
-	public AtomId getHighestAtomId() {
-		return new AtomId(atomIdsToInternalBasicAtoms.size() - 1);
+	public int getHighestAtomId() {
+		return atomIdsToInternalBasicAtoms.size() - 1;
 	}
 
 	/**
@@ -33,7 +30,7 @@ public class AtomStore {
 	 * @param groundAtom
 	 * @return
 	 */
-	public AtomId getAtomId(BasicAtom groundAtom) {
+	public int getAtomId(BasicAtom groundAtom) {
 		return predicateInstancesToAtomIds.get(groundAtom);
 	}
 
@@ -42,11 +39,11 @@ public class AtomStore {
 	 * @param atomId
 	 * @return
 	 */
-	public BasicAtom getBasicAtom(AtomId atomId) {
+	public Atom get(int atomId) {
 		try {
-			return atomIdsToInternalBasicAtoms.get(atomId.atomId);
+			return atomIdsToInternalBasicAtoms.get(atomId);
 		} catch (IndexOutOfBoundsException e) {
-			throw new RuntimeException("AtomStore: Unknown atomId encountered: " + atomId.atomId);
+			throw new RuntimeException("AtomStore: Unknown atomId encountered: " + atomId, e);
 		}
 	}
 
@@ -56,36 +53,43 @@ public class AtomStore {
 	 * @param groundAtom
 	 * @return
 	 */
-	public AtomId createAtomId(BasicAtom groundAtom) {
-		AtomId potentialId = predicateInstancesToAtomIds.get(groundAtom);
-		if (potentialId == null) {
-			AtomId newAtomId = new AtomId(atomIdGenerator.getNextId());
-			predicateInstancesToAtomIds.put(groundAtom, newAtomId);
-			atomIdsToInternalBasicAtoms.add(newAtomId.atomId, groundAtom);
-			return newAtomId;
-		} else {
-			return potentialId;
+	public int add(Atom groundAtom) {
+		if (!groundAtom.isGround()) {
+			throw new IllegalArgumentException("atom must be ground");
 		}
+
+		Integer id = predicateInstancesToAtomIds.get(groundAtom);
+
+		if (id == null) {
+			id = atomIdGenerator.getNextId();
+			predicateInstancesToAtomIds.put(groundAtom, id);
+			atomIdsToInternalBasicAtoms.add(id, groundAtom);
+		}
+
+		return id;
 	}
 
-	public boolean isAtomExisting(BasicAtom groundAtom) {
-		AtomId potentialId = predicateInstancesToAtomIds.get(groundAtom);
-		return potentialId != null;
+	public boolean contains(Atom groundAtom) {
+		return predicateInstancesToAtomIds.containsKey(groundAtom);
+	}
+
+	public ListIterator<Atom> listIterator() {
+		return atomIdsToInternalBasicAtoms.listIterator();
 	}
 
 	/**
 	 * Removes the given atom from the AtomStore.
 	 * @param atomId
 	 */
-	public void releaseAtomId(AtomId atomId) {
+	public void releaseAtomId(int atomId) {
 		releasedAtomIds.add(atomId);
 		// HINT: Additionally removing the terms used in the instance might be beneficial in some cases.
 	}
 
 	public String printAtomIdTermMapping() {
 		String ret = "";
-		for (Map.Entry<BasicAtom, AtomId> entry : predicateInstancesToAtomIds.entrySet()) {
-			ret += entry.getValue().atomId + " <-> " + entry.getKey().toString() + "\n";
+		for (Map.Entry<Atom, Integer> entry : predicateInstancesToAtomIds.entrySet()) {
+			ret += entry.getValue() + " <-> " + entry.getKey().toString() + "\n";
 		}
 		return ret;
 	}

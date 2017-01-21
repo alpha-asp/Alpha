@@ -7,7 +7,7 @@ import java.util.SortedSet;
 public interface AnswerSet extends Comparable<AnswerSet> {
 	SortedSet<Predicate> getPredicates();
 
-	SortedSet<BasicAtom> getPredicateInstances(Predicate predicate);
+	SortedSet<Atom> getPredicateInstances(Predicate predicate);
 
 	boolean isEmpty();
 
