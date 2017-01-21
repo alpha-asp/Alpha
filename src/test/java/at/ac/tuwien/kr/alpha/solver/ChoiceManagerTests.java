@@ -71,8 +71,9 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 
 	@Test
 	public void testIsAtomChoice() {
+		Collection<NoGood> noGoods = getNoGoods();
 		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
-		for (NoGood noGood : getNoGoods()) {
+		for (NoGood noGood : noGoods) {
 			for (Integer literal : noGood) {
 				int atom = atomOf(literal);
 				String atomToString = grounder.atomToString(atom);
