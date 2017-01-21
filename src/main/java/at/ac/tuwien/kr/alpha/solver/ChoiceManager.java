@@ -99,6 +99,11 @@ public class ChoiceManager {
 				}
 			}
 		}
+
+		@Override
+		public String toString() {
+			return String.valueOf(atom);
+		}
 	}
 
 	public void updateAssignment(int atom) {
