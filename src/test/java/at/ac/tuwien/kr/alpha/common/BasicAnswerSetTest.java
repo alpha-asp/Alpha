@@ -27,7 +27,7 @@ public class BasicAnswerSetTest {
 		ConstantTerm bar = getInstance("bar");
 		ConstantTerm baz = getInstance("baz");
 
-		Map<Predicate, SortedSet<BasicAtom>> inst1 = new HashMap<>();
+		Map<Predicate, SortedSet<Atom>> inst1 = new HashMap<>();
 		inst1.put(a, new TreeSet<>(singleton(new BasicAtom(a))));
 		inst1.put(foo, new TreeSet<>(asList(
 			new BasicAtom(foo, bar),
@@ -35,7 +35,7 @@ public class BasicAnswerSetTest {
 		)));
 		// as1 = { a, foo(bar), foo(baz) }
 
-		Map<Predicate, SortedSet<BasicAtom>> inst2 = new HashMap<>();
+		Map<Predicate, SortedSet<Atom>> inst2 = new HashMap<>();
 		inst2.put(a, new TreeSet<>(singleton(new BasicAtom(a))));
 		inst2.put(foo, new TreeSet<>(asList(
 			new BasicAtom(foo, baz),
@@ -43,7 +43,7 @@ public class BasicAnswerSetTest {
 		)));
 		// as1 = { a, foo(baz), foo(bar) }
 
-		Map<Predicate, SortedSet<BasicAtom>> inst3 = new HashMap<>();
+		Map<Predicate, SortedSet<Atom>> inst3 = new HashMap<>();
 		inst3.put(q, new TreeSet<>(singleton(new BasicAtom(q))));
 		inst3.put(p, new TreeSet<>(asList(
 			new BasicAtom(p, bar),
@@ -51,7 +51,7 @@ public class BasicAnswerSetTest {
 		)));
 		// as3 = { q, p(bar), p(baz) }
 
-		Map<Predicate, SortedSet<BasicAtom>> inst4 = new HashMap<>();
+		Map<Predicate, SortedSet<Atom>> inst4 = new HashMap<>();
 		inst4.put(a, new TreeSet<>(singleton(new BasicAtom(a))));
 		inst4.put(foo, new TreeSet<>(asList(
 			new BasicAtom(foo, bar),

@@ -1,33 +1,34 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
 public class VariableTerm extends Term {
-	private final String variableName;
+	private static final Interner<VariableTerm> INTERNER = Interners.newStrongInterner();
 
-	private static final HashMap<String, VariableTerm> VARIABLES = new HashMap<>();
 	private static final String ANONYMOUS_VARIABLE_PREFIX = "_";
 	private static final IntIdGenerator ANONYMOUS_VARIABLE_COUNTER = new IntIdGenerator();
+
+	private final String variableName;
 
 	private VariableTerm(String variableName) {
 		this.variableName = variableName;
 	}
 
 	public static VariableTerm getInstance(String variableName) {
-		return VARIABLES.computeIfAbsent(variableName, VariableTerm::new);
+		return INTERNER.intern(new VariableTerm(variableName));
 	}
 
-	public static VariableTerm getNewAnonymousVariable() {
-		VariableTerm newAnonymousVariable = new VariableTerm(ANONYMOUS_VARIABLE_PREFIX + ANONYMOUS_VARIABLE_COUNTER.getNextId());
-		VARIABLES.put(newAnonymousVariable.variableName, newAnonymousVariable);
-		return newAnonymousVariable;
+	public static VariableTerm getAnonymousInstance() {
+		return getInstance(ANONYMOUS_VARIABLE_PREFIX + ANONYMOUS_VARIABLE_COUNTER.getNextId());
 	}
 
 	@Override
@@ -37,9 +38,17 @@ public class VariableTerm extends Term {
 
 	@Override
 	public List<VariableTerm> getOccurringVariables() {
-		LinkedList<VariableTerm> vars = new LinkedList<>();
-		vars.add(this);
-		return vars;
+		return Collections.singletonList(this);
+	}
+
+	@Override
+	public Term substitute(Substitution substitution) {
+		Term groundTerm = substitution.eval(this);
+		if (groundTerm == null) {
+			// If variable is not substituted, keep term as is.
+			return this;
+		}
+		return  groundTerm;
 	}
 
 	@Override
@@ -52,6 +61,7 @@ public class VariableTerm extends Term {
 		if (this == o) {
 			return true;
 		}
+
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}

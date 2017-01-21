@@ -1,84 +1,111 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedBuiltinAtom;
+import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTerm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
 public class BuiltinAtom implements Atom {
-	public final Term left;
-	public final Term right;
-	public final ParsedBuiltinAtom.BINOP binop;
+	private final List<Term> terms;
+	private final ParsedBuiltinAtom.BINOP binop;
+
+	protected BuiltinAtom(ParsedBuiltinAtom.BINOP binop, List<Term> terms) {
+		if (terms.size() != 2) {
+			throw new IllegalArgumentException("terms must be of size 2");
+		}
+
+		this.binop = binop;
+		this.terms = terms;
+	}
 
 	public BuiltinAtom(ParsedBuiltinAtom parsedBuiltinAtom) {
-		binop = parsedBuiltinAtom.binop;
-		left = parsedBuiltinAtom.terms.get(0).toTerm();
-		right = parsedBuiltinAtom.terms.get(1).toTerm();
+		this(parsedBuiltinAtom.binop, parsedBuiltinAtom.getTerms().stream().map(ParsedTerm::toTerm).collect(Collectors.toList()));
 	}
 
 	@Override
 	public String toString() {
-		return left + " " + binop + " " + right;
+		return terms.get(0) + " " + binop + " " + terms.get(1);
+	}
+
+	@Override
+	public Predicate getPredicate() {
+		return binop.toPredicate();
+	}
+
+	@Override
+	public List<Term> getTerms() {
+		return terms;
 	}
 
 	@Override
 	public boolean isGround() {
-		return left.isGround() && right.isGround();
+		return terms.get(0).isGround() && terms.get(1).isGround();
+	}
+
+	@Override
+	public boolean isInternal() {
+		return false;
 	}
 
 	@Override
 	public List<VariableTerm> getOccurringVariables() {
 		List<VariableTerm> vars = new ArrayList<>(2);
-		if (left instanceof VariableTerm) {
-			vars.add((VariableTerm) left);
-		}
-		if (right instanceof VariableTerm) {
-			vars.add((VariableTerm) right);
+		for (Term term : terms) {
+			vars.addAll(term.getOccurringVariables());
 		}
 		return vars;
 	}
 
-	public boolean evaluate(NaiveGrounder.VariableSubstitution variableSubstitution) {
-		NumberOrTerm left = evaluateExpression(this.left, variableSubstitution);
-		NumberOrTerm right = evaluateExpression(this.right, variableSubstitution);
+	@Override
+	public Atom substitute(Substitution substitution) {
+		return new BuiltinAtom(binop, terms.stream().map(t -> {
+			return t.substitute(substitution);
+		}).collect(Collectors.toList()));
+	}
+
+	public boolean evaluate(Substitution substitution) {
+		NumberOrTerm left = evaluateExpression(terms.get(0), substitution);
+		NumberOrTerm right = evaluateExpression(terms.get(1), substitution);
 		switch (binop) {
-			case EQUAL:
-				if (left.isNumber != right.isNumber) {
+			case EQ:
+				if (left.isNumber() != right.isNumber()) {
 					throw new RuntimeException("BuiltinAtom: cannot compare terms of different types: " + left + binop + right);
-				} else if (left.isNumber) {
+				} else if (left.isNumber()) {
 					return left.number == right.number;
 				} else {
-					return left.term.equals(right);
+					return left.term.equals(right.term);
 				}
-			case UNEQUAL:
-				if (left.isNumber != right.isNumber) {
+			case NE:
+				if (left.isNumber() != right.isNumber()) {
 					throw new RuntimeException("BuiltinAtom: cannot compare terms of different types: " + left + binop + right);
-				} else if (left.isNumber) {
+				} else if (left.isNumber()) {
 					return left.number != right.number;
 				} else {
-					return !left.term.equals(right);
+					return !left.term.equals(right.term);
 				}
-			case GREATER:
-				if (left.isNumber && right.isNumber) {
+			case GT:
+				if (left.isNumber() && right.isNumber()) {
 					return  left.number > right.number;
 				}
 				throw new RuntimeException("BuiltinAtom: can only compare number terms: " + left + binop + right);
-			case LESS:
-				if (left.isNumber && right.isNumber) {
+			case LT:
+				if (left.isNumber() && right.isNumber()) {
 					return  left.number < right.number;
 				}
 				throw new RuntimeException("BuiltinAtom: can only compare number terms: " + left + binop + right);
-			case GREATER_OR_EQ:
-				if (left.isNumber && right.isNumber) {
+			case GE:
+				if (left.isNumber() && right.isNumber()) {
 					return  left.number >= right.number;
 				}
 				throw new RuntimeException("BuiltinAtom: can only compare number terms: " + left + binop + right);
-			case LESS_OR_EQ:
-				if (left.isNumber && right.isNumber) {
+			case LE:
+				if (left.isNumber() && right.isNumber()) {
 					return  left.number <= right.number;
 				}
 				throw new RuntimeException("BuiltinAtom: can only compare number terms: " + left + binop + right);
@@ -86,32 +113,56 @@ public class BuiltinAtom implements Atom {
 		throw new RuntimeException("Unknown binop: " + binop);
 	}
 
+	@Override
+	public int compareTo(Atom o) {
+		if (!(o instanceof BuiltinAtom)) {
+			return 1;
+		}
+
+		BuiltinAtom other = (BuiltinAtom)o;
+
+		int result = binop.compareTo(other.binop);
+
+		if (result != 0) {
+			return result;
+		}
+
+		result = terms.get(0).compareTo(other.terms.get(0));
+
+		if (result != 0) {
+			return result;
+		}
+
+		return terms.get(1).compareTo(other.terms.get(1));
+	}
+
 	private static class NumberOrTerm {
 		public final int number;
 		public final Term term;
-		public final boolean isNumber;
 
 		public NumberOrTerm(int number) {
 			this.number = number;
-			this.isNumber = true;
 			this.term = null;
 		}
 
 		public NumberOrTerm(Term term) {
 			this.term = term;
-			this.isNumber = false;
 			this.number = 0;
+		}
+
+		public boolean isNumber() {
+			return term == null;
 		}
 
 		@Override
 		public String toString() {
-			return isNumber ? Integer.toString(number) : term.toString();
+			return term == null ? Integer.toString(number) : term.toString();
 		}
 	}
 
-	private static NumberOrTerm evaluateExpression(Term term, NaiveGrounder.VariableSubstitution variableSubstitution) {
+	private static NumberOrTerm evaluateExpression(Term term, Substitution substitution) {
 		if (term instanceof VariableTerm) {
-			return evaluateExpression(variableSubstitution.eval((VariableTerm) term), variableSubstitution);
+			return evaluateExpression(substitution.eval((VariableTerm) term), substitution);
 		} else if (term instanceof ConstantTerm) {
 			try {
 				return new NumberOrTerm(Integer.parseInt(term.toString()));
