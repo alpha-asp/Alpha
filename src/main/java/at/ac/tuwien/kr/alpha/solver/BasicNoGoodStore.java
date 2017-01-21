@@ -527,40 +527,53 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			alphaNoGoodLoop:
 			for (Iterator<WatchedNoGood> iterator = w.n.getAlpha().iterator(); iterator.hasNext();) {
 				final WatchedNoGood noGood = iterator.next();
-				final Assignment.Entry headEntry = assignment.get(noGood.getAtom(noGood.getHead()));
 
-				if (headEntry == null || !TRUE.equals(headEntry.getTruth())) {
-					throw new RuntimeException("Processing Re-assignment of entry for TRUE, but encountered a NoGood where alpha propagation was not done. Should not happen.");
-				}
-
-				final int headDecisionLevel = headEntry.getDecisionLevel();
-
-				// Skip NoGood if head is not assigned on higher decision level.
-				if (headDecisionLevel <= atomDecisionLevel) {
+				// Skip not-yet unit NoGood.
+				if (assignment.get(atomOf(noGood.getLiteralAtPointer(0))) == null && assignment.get(atomOf(noGood.getLiteralAtPointer(1))) == null) {
 					continue;
 				}
 
+				// Head entry may be null (e.g. if NoGood is satisfied).
+				final Assignment.Entry headEntry = assignment.get(noGood.getAtom(noGood.getHead()));
+				final int headDecisionLevel = headEntry != null ? headEntry.getDecisionLevel() : Integer.MAX_VALUE;
+
+				// Skip NoGood if head is not assigned on higher decision level.
+				if (headEntry == null || headDecisionLevel <= atomDecisionLevel) {
+					continue;
+				}
+
+				int highestAlphaDecisionLevel = atomDecisionLevel;
 				int highestDecisionLevel = atomDecisionLevel;
-				int posHighestAlphaLiteral = -1;
+				int posHighestAlphaLiteral = noGood.getAlphaPointer();
+				boolean isViolatedExceptingHead = true;
 				for (int i = 0; i < noGood.size(); i++) {
+					// Skip head and current alpha pointed literal.
 					if (i == noGood.getHead() || i == noGood.getAlphaPointer()) {
 						continue;
 					}
-
 					int otherLiteral = noGood.getLiteral(i);
 					Assignment.Entry otherEntry = assignment.get(atomOf(otherLiteral));
-					if (otherEntry == null) {
-						throw new RuntimeException("Found unassigned literal while moving watches for previously unit NoGood. Should not happen.");
+					if (otherEntry == null
+						|| isPositive(otherLiteral) != otherEntry.getTruth().toBoolean()
+						|| MBT.equals(otherEntry.getTruth())) {
+						isViolatedExceptingHead = false;
+					}
+					// Compute decision level (MBT is considered as unassigned).
+					int otherDecisionLevel = (otherEntry != null || MBT.equals(otherEntry.getTruth())) ?
+						otherEntry.getDecisionLevel() : Integer.MAX_VALUE;
+					if (otherDecisionLevel > highestDecisionLevel) {
+						highestDecisionLevel = otherEntry.getDecisionLevel();
+					}
+					// Skip below for negative literals.
+					if (!isPositive(otherLiteral)) {
+						continue;
 					}
 					// Record decision level and potential candidate for the alpha pointer.
-					int otherDecisionLevel = otherEntry.getDecisionLevel();
-					if (otherDecisionLevel > highestDecisionLevel) {
-						highestDecisionLevel = otherDecisionLevel;
-						if (isPositive(otherLiteral)) {
-							posHighestAlphaLiteral = i;
-						}
+					if (otherDecisionLevel > highestAlphaDecisionLevel) {
+						highestAlphaDecisionLevel = otherDecisionLevel;
+						posHighestAlphaLiteral = i;
 					}
-					if (isPositive(otherLiteral) && otherDecisionLevel >= headDecisionLevel) {
+					if (otherDecisionLevel >= headDecisionLevel) {
 						// There is a positive literal with high-enough decision level; point the alpha pointer to it.
 						noGood.setAlphaPointer(i);
 						iterator.remove();
@@ -569,13 +582,18 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 					}
 				}
 
-				// Could not just move the alpha pointer, re-assign head at lower decision level and move alpha pointer to highest positive literal.
-				noGood.setAlphaPointer(posHighestAlphaLiteral);
-				iterator.remove();
-				addAlphaWatch(noGood);
-				propagateAssigned = true;
-				if (!assignStrongComplement(noGood.getHead(), noGood, highestDecisionLevel)) {
-					return false;
+				// Could not just move the alpha pointer, move alpha pointer to highest positive literal.
+				if (posHighestAlphaLiteral != noGood.getAlphaPointer()) {
+					noGood.setAlphaPointer(posHighestAlphaLiteral);
+					iterator.remove();
+					addAlphaWatch(noGood);
+				}
+				// Re-assign head at lower decision level if the NoGood is unit at lower decision level now.
+				if (isViolatedExceptingHead) {
+					propagateAssigned = true;
+					if (!assignStrongComplement(noGood.getHead(), noGood, highestDecisionLevel)) {
+						return false;
+					}
 				}
 			}
 		}
