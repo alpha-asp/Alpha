@@ -323,11 +323,11 @@ public class DefaultSolver extends AbstractSolver {
 		if (!addAllNoGoodsAndTreatContradictions(obtained)) {
 			return false;
 		}
-		branchingHeuristic.newNoGoods(obtained.values());
-
 		// Record choice atoms.
 		final Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms = grounder.getChoiceAtoms();
 		choiceManager.addChoiceInformation(choiceAtoms);
+		// Inform heuristics.
+		branchingHeuristic.newNoGoods(obtained.values());
 		return true;
 	}
 
