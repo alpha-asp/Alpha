@@ -223,8 +223,8 @@ public class NaiveSolver extends AbstractSolver {
 		for (Map.Entry<Integer, Integer> e : choiceOn.entrySet()) {
 			final int atom = e.getKey();
 
-			// Only consider unassigned choices
-			if (truthAssignments.containsKey(atom) || !truthAssignments.get(e.getValue())) {
+			// Only consider unassigned choices that are enabled.
+			if (truthAssignments.containsKey(atom) || !truthAssignments.getOrDefault(e.getValue(), false)) {
 				continue;
 			}
 
