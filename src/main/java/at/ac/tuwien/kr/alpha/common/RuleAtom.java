@@ -84,4 +84,9 @@ public class RuleAtom implements Atom {
 		}
 		return terms.get(1).compareTo(other.terms.get(1));
 	}
+
+	@Override
+	public String toString() {
+		return PREDICATE.getPredicateName() + "(" + terms.get(0) + "," + terms.get(1) + ')';
+	}
 }
