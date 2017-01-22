@@ -61,6 +61,8 @@ public class NaiveGrounder extends AbstractGrounder {
 	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newChoiceAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
 	private HashSet<Predicate> knownPredicates = new HashSet<>();
 	private HashMap<NonGroundRule, HashSet<Substitution>> knownGroundingSubstitutions = new LinkedHashMap<>();
+	private Set<NonGroundRule> uniqueGroundRulePerGroundHead = new HashSet<>();
+	private Map<Predicate, HashSet<NonGroundRule>> ruleHeadsToDefiningRules = new HashMap<>();
 
 	public NaiveGrounder(ParsedProgram program) {
 		this(program, p -> true);
@@ -101,6 +103,31 @@ public class NaiveGrounder extends AbstractGrounder {
 		}
 		// Hint: Could clear this.program to free memory.
 		this.program = null;
+		// Record all unique rule heads.
+		for (Map.Entry<Predicate, HashSet<NonGroundRule>> headDefiningRules : ruleHeadsToDefiningRules.entrySet()) {
+			if (headDefiningRules.getValue().size() == 1) {
+				NonGroundRule nonGroundRule = headDefiningRules.getValue().iterator().next();
+				// Check that all variables of the body also occur in the head (otherwise grounding is not unique).
+				Atom headAtom = nonGroundRule.getHeadAtom();
+
+				// Rule is not guaranteed unique if there are facts for it.
+				ArrayList<Instance> potentialFacts = factsFromProgram.get(headAtom.getPredicate());
+				if (potentialFacts != null && !potentialFacts.isEmpty()) {
+					continue;
+				}
+				// Collect head and body variables.
+				HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.getOccurringVariables());
+				HashSet<VariableTerm> occurringVariablesBody = new HashSet<>();
+				for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
+					occurringVariablesBody.addAll(atom.getOccurringVariables());
+				}
+				occurringVariablesBody.removeAll(occurringVariablesHead);
+				// Check if ever body variables occurs in the head.
+				if (occurringVariablesBody.isEmpty()) {
+					uniqueGroundRulePerGroundHead.add(nonGroundRule);
+				}
+			}
+		}
 	}
 
 	private void adaptWorkingMemoryForPredicate(Predicate predicate) {
@@ -121,6 +148,13 @@ public class NaiveGrounder extends AbstractGrounder {
 	private void registerRuleOrConstraint(ParsedRule rule) {
 		// Record the rule for later use
 		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(intIdGenerator, rule);
+		// Record defining rules for each predicate.
+		if (nonGroundRule.getHeadAtom() != null) {
+			Predicate headPredicate = nonGroundRule.getHeadAtom().getPredicate();
+			ruleHeadsToDefiningRules.putIfAbsent(headPredicate, new HashSet<>());
+			ruleHeadsToDefiningRules.get(headPredicate).add(nonGroundRule);
+		}
+
 		// Create working memories for all predicates occurring in the rule
 		for (Predicate predicate : nonGroundRule.getOccurringPredicates()) {
 			adaptWorkingMemoryForPredicate(predicate);
@@ -225,6 +259,10 @@ public class NaiveGrounder extends AbstractGrounder {
 			register(generateNoGoodsFromGroundSubstitution(nonGroundRule, new Substitution()), noGoodsFromFacts);
 		}
 		return noGoodsFromFacts;
+	}
+
+	private NoGood supportednessNoGoodUniqueRule(int headAtom, int ruleBodyAtom) {
+		return new NoGood(headAtom, -ruleBodyAtom);
 	}
 
 	@Override
@@ -362,6 +400,11 @@ public class NaiveGrounder extends AbstractGrounder {
 
 			generatedNoGoods.add(ruleBody);
 			generatedNoGoods.add(ruleHead);
+
+			// Check if the rule head is unique, add support then:
+			if (uniqueGroundRulePerGroundHead.contains(nonGroundRule)) {
+				generatedNoGoods.add(supportednessNoGoodUniqueRule(headAtomId, bodyRepresentingAtomId));
+			}
 
 			// Check if the body of the rule contains negation, add choices then
 			if (bodyAtomsNegative.size() != 0) {
