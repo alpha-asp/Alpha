@@ -38,6 +38,8 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 
@@ -92,11 +94,16 @@ public class DefaultSolver extends AbstractSolver {
 			// Create enumeration NoGood to avoid finding the same Answer-Set twice.
 			if (!isSearchSpaceExhausted()) {
 				NoGood enumerationNoGood = createEnumerationNoGood();
+				int backjumpLevel = computeMinimumConflictLevel(enumerationNoGood);
+				if (backjumpLevel == -1) {
+					throw new RuntimeException("Enumeration NoGood is currently not violated. Should not happen.");
+				}
 				// Backjump instead of backtrack, enumerationNoGood will invert lass guess.
-				doBackjump(assignment.getDecisionLevel() - 1);
+				doBackjump(backjumpLevel - 1);
 				LOGGER.debug("Adding enumeration NoGood: {}", enumerationNoGood);
-				if (store.add(grounder.registerOutsideNoGood(enumerationNoGood), enumerationNoGood) != null) {
-					throw new RuntimeException("Adding enumeration NoGood causes conflicts. Should not happen.");
+				NoGoodStore.ConflictCause conflictCause = store.add(grounder.registerOutsideNoGood(enumerationNoGood), enumerationNoGood);
+				if (conflictCause != null) {
+					throw new RuntimeException("Adding enumeration NoGood causes conflicts after backjump. Should not happen.");
 				}
 			} else {
 				LOGGER.info("{} decisions done.", decisionCounter);
@@ -177,6 +184,22 @@ public class DefaultSolver extends AbstractSolver {
 			enumerationLiterals[enumerationPos++] = integer;
 		}
 		return new NoGood(enumerationLiterals, -1);
+	}
+
+
+	private int computeMinimumConflictLevel(NoGood noGood) {
+		int minimumConflictLevel = -1;
+		for (Integer literal : noGood) {
+			Assignment.Entry entry = assignment.get(atomOf(literal));
+			if (entry == null || isPositive(literal) != entry.getTruth().toBoolean()) {
+				return -1;
+			}
+			int literalDecisionLevel = entry.getPrevious() != null ? entry.getPrevious().getDecisionLevel() : entry.getDecisionLevel();
+			if (literalDecisionLevel > minimumConflictLevel) {
+				minimumConflictLevel = literalDecisionLevel;
+			}
+		}
+		return minimumConflictLevel;
 	}
 
 	/**
