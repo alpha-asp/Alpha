@@ -298,7 +298,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 				int dl = entry.getDecisionLevel();
 
 				// Check if literal is positive, assigned TRUE and has highest decision level
-				if (TRUE.equals(entry.getTruth()) && dl > positiveTrueHighestDecisionLevel) {
+				if (isPositive(literal) && TRUE.equals(entry.getTruth()) && dl > positiveTrueHighestDecisionLevel) {
 					positiveTrueHighestDecisionLevel = dl;
 					posPositiveTrueHighestDecisionLevel = i;
 				}
@@ -984,6 +984,10 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			for (BasicNoGoodStore.BinaryWatch binaryWatch : watches.b.getAlpha()) {
 				// Ensure if watched is TRUE, so the head is TRUE and if head is TRUE, it is on lower-or-equal decision level as the watched.
 				int headAtom = binaryWatch.getNoGood().getAtom(binaryWatch.getOtherLiteralIndex());
+				int watchedLiteral = binaryWatch.getNoGood().getLiteral(1 - binaryWatch.getOtherLiteralIndex());
+				if (isNegated(watchedLiteral)) {
+					throw new RuntimeException("Alpha watch is for negated literal. Should not happen");
+				}
 				Assignment.Entry headEntry = assignment.get(headAtom);
 				int headDecisionLevel = headEntry != null && TRUE.equals(headEntry.getTruth()) ? headEntry.getDecisionLevel() : -1;
 				boolean isHeadTrue = headDecisionLevel != -1;
@@ -1002,6 +1006,10 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 				// Ensure if watched is TRUE, then either the head is TRUE or there is an unassigned negative literal; furthermore, if head is TRUE, it is on lower-or-equal decision level as the watched.
 				int headAtom = watchedNoGood.getAtom(watchedNoGood.getHead());
 				Assignment.Entry headEntry = assignment.get(headAtom);
+				int watchedLiteral = watchedNoGood.getLiteralAtAlpha();
+				if (isNegated(watchedLiteral)) {
+					throw new RuntimeException("Alpha watch is for negated literal. Should not happen");
+				}
 				int headDecisionLevel = headEntry != null && TRUE.equals(headEntry.getTruth()) ? headEntry.getDecisionLevel() : -1;
 				boolean isHeadTrue = headDecisionLevel != -1;
 				if (atomEntry == null || !TRUE.equals(atomEntry.getTruth())) {

@@ -186,5 +186,6 @@ public interface Assignment {
 
 		int getPropagationLevel();
 		boolean isReassignAtLowerDecisionLevel();
+		void setReassignFalse();
 	}
 }

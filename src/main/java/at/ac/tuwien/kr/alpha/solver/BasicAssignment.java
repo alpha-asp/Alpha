@@ -75,10 +75,19 @@ public class BasicAssignment implements Assignment {
 	@Override
 	public void backtrack() {
 		// Remove all assignments on the current decision level from the queue of assignments to process.
+		HashSet<Integer> removedEntries = new HashSet<>();
 		for (Iterator<Assignment.Entry> iterator = assignmentsToProcess.iterator(); iterator.hasNext();) {
 			Assignment.Entry entry = iterator.next();
 			if (entry.getDecisionLevel() == getDecisionLevel()) {
 				iterator.remove();
+				removedEntries.add(entry.getAtom());
+			}
+		}
+		// If backtracking removed the first assigning entry, any reassignment becomes an ordinary (first) assignment.
+		for (Assignment.Entry entry : assignmentsToProcess) {
+			// NOTE: this check is most often not needed, perhaps there is a better way to realize this check?
+			if (entry.isReassignAtLowerDecisionLevel() && removedEntries.contains(entry.getAtom())) {
+				entry.setReassignFalse();
 			}
 		}
 		for (Iterator<Assignment.Entry> iterator = newAssignments.iterator(); iterator.hasNext();) {
@@ -442,7 +451,7 @@ public class BasicAssignment implements Assignment {
 		private final Entry previous;
 		private final NoGood impliedBy;
 		private final int atom;
-		private final boolean isReassignAtLowerDecisionLevel;
+		private boolean isReassignAtLowerDecisionLevel;
 
 		Entry(ThriceTruth value, int decisionLevel, int propagationLevel, NoGood noGood, Entry previous, int atom, boolean isReassignAtLowerDecisionLevel) {
 			this.value = value;
@@ -487,6 +496,11 @@ public class BasicAssignment implements Assignment {
 		@Override
 		public boolean isReassignAtLowerDecisionLevel() {
 			return isReassignAtLowerDecisionLevel;
+		}
+
+		@Override
+		public void setReassignFalse() {
+			this.isReassignAtLowerDecisionLevel = false;
 		}
 
 		@Override

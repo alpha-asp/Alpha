@@ -333,6 +333,11 @@ public class NaiveSolver extends AbstractSolver {
 		}
 
 		@Override
+		public void setReassignFalse() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
 		public String toString() {
 			throw new UnsupportedOperationException();
 		}
