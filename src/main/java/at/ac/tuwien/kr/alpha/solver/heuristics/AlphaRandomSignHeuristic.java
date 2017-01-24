@@ -25,7 +25,6 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.*;
 
 import java.util.Random;
@@ -34,12 +33,12 @@ import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
 
 public class AlphaRandomSignHeuristic extends AlphaHeuristic {
 
-	public AlphaRandomSignHeuristic(Grounder grounder, Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
-		super(grounder, assignment, choiceManager, decayAge, decayFactor, random);
+	public AlphaRandomSignHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
+		super(assignment, choiceManager, decayAge, decayFactor, random);
 	}
 
-	public AlphaRandomSignHeuristic(Grounder grounder, Assignment assignment, ChoiceManager choiceManager, Random random) {
-		super(grounder, assignment, choiceManager, random);
+	public AlphaRandomSignHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
+		super(assignment, choiceManager, random);
 	}
 
 	@Override

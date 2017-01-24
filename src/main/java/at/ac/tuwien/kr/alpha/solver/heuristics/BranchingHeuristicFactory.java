@@ -48,9 +48,9 @@ public final class BranchingHeuristicFactory {
 		case BERKMINLITERAL:
 			return new BerkMinLiteral(assignment, choiceManager, random);
 		case ALPHA:
-			return new AlphaHeuristic(grounder, assignment, choiceManager, random);
+			return new AlphaHeuristic(assignment, choiceManager, random);
 		case ALPHA_RANDOM_SIGN:
-			return new AlphaRandomSignHeuristic(grounder, assignment, choiceManager, random);
+			return new AlphaRandomSignHeuristic(assignment, choiceManager, random);
 		}
 		throw new IllegalArgumentException("Unknown branching heuristic requested.");
 	}
