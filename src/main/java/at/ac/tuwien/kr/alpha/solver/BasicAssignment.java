@@ -219,7 +219,7 @@ public class BasicAssignment implements Assignment {
 					recordAssignment(atom, value, impliedBy, decisionLevel, current);
 					return true;
 				} else if (current.getTruth() == value || (TRUE.equals(current.getTruth()) && MBT.equals(value))) {
-					LOGGER.debug("Skipping assignment of {} with {} at {}, currently is: {}", atom, decisionLevel, value, current);
+					LOGGER.trace("Skipping assignment of {} with {} at {}, currently is: {}", atom, decisionLevel, value, current);
 					// Skip if the assigned truth value already has been assigned, or if the value is already TRUE and MBT is to be assigned.
 					return true;
 				} else {
