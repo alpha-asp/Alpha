@@ -61,9 +61,9 @@ public class AlphaHeuristic implements BranchingHeuristic {
 	protected final ChoiceManager choiceManager;
 	protected final Random rand;
 
-	private Map<Integer, Double> activityCounters = new HashMap<>();
-	private Map<Integer, Integer> signCounters = new HashMap<>();
-	private Deque<NoGood> stackOfNoGoods = new ArrayDeque<>();
+	protected final Map<Integer, Double> activityCounters = new HashMap<>();
+	protected final Map<Integer, Integer> signCounters = new HashMap<>();
+	protected final Deque<NoGood> stackOfNoGoods = new ArrayDeque<>();
 	private int decayAge;
 	private double decayFactor;
 	private int stepsSinceLastDecay;
@@ -71,17 +71,17 @@ public class AlphaHeuristic implements BranchingHeuristic {
 	/**
 	 * Maps body-representing atoms to rule heads.
 	 */
-	private Map<Integer, Integer> bodyToHead = new HashMap<>();
+	protected final Map<Integer, Integer> bodyToHead = new HashMap<>();
 
 	/**
 	 * Maps body-representing atoms to literals occuring in the rule body.
 	 */
-	private Map<Integer, Set<Integer>> bodyToLiterals = new HashMap<>();
+	protected final Map<Integer, Set<Integer>> bodyToLiterals = new HashMap<>();
 
 	/**
 	 * Maps atoms to atoms representing bodies of rules in which the former atoms occur (in the head or the body).
 	 */
-	private MultiValuedMap<Integer, Integer> atomsToBodies = new HashSetValuedHashMap<>();
+	protected final MultiValuedMap<Integer, Integer> atomsToBodies = new HashSetValuedHashMap<>();
 
 	public AlphaHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
 		this.assignment = assignment;
@@ -176,10 +176,9 @@ public class AlphaHeuristic implements BranchingHeuristic {
 		return DEFAULT_CHOICE_ATOM;
 	}
 	
-	private double getBodyActivity(int bodyRepresentingAtom) {
+	protected double getBodyActivity(int bodyRepresentingAtom) {
 		return bodyToLiterals.get(bodyRepresentingAtom).stream().mapToDouble(this::getActivity).sum();
 		// TODO: other aggregate functions apart from sum
-		// TODO: make more performant by counting when bodies arrive
 	}
 
 	@Override
@@ -245,7 +244,7 @@ public class AlphaHeuristic implements BranchingHeuristic {
 		}
 	}
 
-	private void incrementActivityCounter(int literal) {
+	protected void incrementActivityCounter(int literal) {
 		int atom = atomOf(literal);
 		if (choiceManager.isAtomChoice(atom)) {
 			activityCounters.compute(atom, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + 1);

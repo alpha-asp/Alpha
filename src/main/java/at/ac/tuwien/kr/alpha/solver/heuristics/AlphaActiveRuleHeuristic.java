@@ -25,36 +25,41 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 
 import java.util.Random;
 
-public final class BranchingHeuristicFactory {
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
-	public static final String NAIVE = "naive";
-	public static final String BERKMIN = "berkmin";
-	public static final String BERKMINLITERAL = "berkminliteral";
-	public static final String ALPHA = "alpha";
-	public static final String ALPHA_RANDOM_SIGN = "alpha-rs";
-	public static final String ALPHA_ACTIVE_RULE = "alpha-ar";
+/**
+ * A variant of {@link AlphaHeuristic} that counts the activity of non-body-representing atoms towards bodies of rules in which they occur.
+ */
+public class AlphaActiveRuleHeuristic extends AlphaHeuristic {
 
-	public static BranchingHeuristic getInstance(String name, Grounder grounder, Assignment assignment, ChoiceManager choiceManager, Random random) {
-		switch (name.toLowerCase()) {
-		case NAIVE:
-			return new NaiveHeuristic(choiceManager);
-		case BERKMIN:
-			return new BerkMin(assignment, choiceManager, random);
-		case BERKMINLITERAL:
-			return new BerkMinLiteral(assignment, choiceManager, random);
-		case ALPHA:
-			return new AlphaHeuristic(assignment, choiceManager, random);
-		case ALPHA_RANDOM_SIGN:
-			return new AlphaRandomSignHeuristic(assignment, choiceManager, random);
-		case ALPHA_ACTIVE_RULE:
-			return new AlphaActiveRuleHeuristic(assignment, choiceManager, random);
-		}
-		throw new IllegalArgumentException("Unknown branching heuristic requested.");
+	public AlphaActiveRuleHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
+		super(assignment, choiceManager, decayAge, decayFactor, random);
 	}
+
+	public AlphaActiveRuleHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
+		super(assignment, choiceManager, random);
+	}
+
+	@Override
+	protected void incrementActivityCounter(int literal) {
+		int atom = atomOf(literal);
+		if (choiceManager.isAtomChoice(atom)) {
+			activityCounters.compute(atom, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + 1);
+		} else {
+			for (int body : atomsToBodies.get(atom)) {
+				activityCounters.compute(body, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + 1);
+			}
+		}
+	}
+
+	@Override
+	protected double getBodyActivity(int bodyRepresentingAtom) {
+		return activityCounters.getOrDefault(bodyRepresentingAtom, DEFAULT_ACTIVITY);
+	}
+
 }
