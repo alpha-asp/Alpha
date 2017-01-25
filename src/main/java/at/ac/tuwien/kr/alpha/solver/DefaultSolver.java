@@ -119,7 +119,7 @@ public class DefaultSolver extends AbstractSolver {
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
 			didChange |= store.propagate();
-			LOGGER.debug("Assignment after propagation is: {}", assignment);
+			LOGGER.trace("Assignment after propagation is: {}", assignment);
 			if (store.getViolatedNoGood() != null) {
 				// Learn from conflict.
 				NoGood violatedNoGood = store.getViolatedNoGood();

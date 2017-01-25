@@ -42,6 +42,7 @@ public class BasicAssignment implements Assignment {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BasicAssignment.class);
 	private final Map<Integer, Entry> assignment = new HashMap<>();
 	private final List<List<Entry>> decisionLevels;
+	private final ArrayList<Integer> propagationCounterPerDecisionLevel;
 	private final Queue<Assignment.Entry> assignmentsToProcess = new LinkedList<>();
 	private Queue<Assignment.Entry> newAssignments = new LinkedList<>();
 	private Queue<Assignment.Entry> newAssignments2 = new LinkedList<>();
@@ -53,6 +54,8 @@ public class BasicAssignment implements Assignment {
 		this.grounder = grounder;
 		this.decisionLevels = new ArrayList<>();
 		this.decisionLevels.add(new ArrayList<>());
+		this.propagationCounterPerDecisionLevel = new ArrayList<>();
+		this.propagationCounterPerDecisionLevel.add(0);
 	}
 
 	public BasicAssignment() {
@@ -130,6 +133,7 @@ public class BasicAssignment implements Assignment {
 		if (decisionLevels.isEmpty()) {
 			decisionLevels.add(new ArrayList<>());
 		}
+		propagationCounterPerDecisionLevel.remove(propagationCounterPerDecisionLevel.size() - 1);
 	}
 
 	@Override
@@ -140,6 +144,7 @@ public class BasicAssignment implements Assignment {
 	@Override
 	public boolean guess(int atom, ThriceTruth value) {
 		decisionLevels.add(new ArrayList<>());
+		propagationCounterPerDecisionLevel.add(0);
 		return assign(atom, value, null);
 	}
 
@@ -150,7 +155,7 @@ public class BasicAssignment implements Assignment {
 		}
 		if (decisionLevel < getDecisionLevel() && LOGGER.isDebugEnabled()) {
 			String atomString = grounder != null ? grounder.atomToString(atom) : Integer.toString(atom);
-			LOGGER.debug("Assign called with lower decision level. Atom: {}_{}@{}.", value, atomString, decisionLevel);
+			LOGGER.trace("Assign called with lower decision level. Atom: {}_{}@{}.", value, atomString, decisionLevel);
 		}
 		boolean isConflictFree = assignWithDecisionLevel(atom, value, impliedBy, decisionLevel);
 		if (!isConflictFree) {
@@ -219,7 +224,7 @@ public class BasicAssignment implements Assignment {
 					recordAssignment(atom, value, impliedBy, decisionLevel, current);
 					return true;
 				} else if (current.getTruth() == value || (TRUE.equals(current.getTruth()) && MBT.equals(value))) {
-					LOGGER.debug("Skipping assignment of {} with {} at {}, currently is: {}", atom, decisionLevel, value, current);
+					LOGGER.trace("Skipping assignment of {} with {} at {}, currently is: {}", atom, decisionLevel, value, current);
 					// Skip if the assigned truth value already has been assigned, or if the value is already TRUE and MBT is to be assigned.
 					return true;
 				} else {
@@ -365,7 +370,8 @@ public class BasicAssignment implements Assignment {
 			throw new RuntimeException("Assignment has previous value, but truth values are not MBT (previously) and TRUE (now). Should not happen.");
 		}
 		// Create and record new assignment entry.
-		final int propagationLevel = decisionLevels.get(decisionLevel).size();
+		final int propagationLevel = propagationCounterPerDecisionLevel.get(decisionLevel);
+		propagationCounterPerDecisionLevel.set(decisionLevel, propagationLevel + 1);
 		final boolean isReassignAtLowerDecisionLevel = oldEntry != null && oldEntry.getDecisionLevel() > decisionLevel && !isConflicting(oldEntry.getTruth(), value);
 		final Entry next = new Entry(value, decisionLevel, propagationLevel, impliedBy, previous, atom, isReassignAtLowerDecisionLevel);
 		if (LOGGER.isTraceEnabled()) {
