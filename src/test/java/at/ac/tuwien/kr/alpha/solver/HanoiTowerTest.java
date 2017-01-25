@@ -66,7 +66,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		testHanoiTower(3);
 	}
 
-	@Test(timeout = 10000)
+	@Test // (timeout = 10000)
 	public void testInstance4() throws IOException {
 		testHanoiTower(4);
 	}
