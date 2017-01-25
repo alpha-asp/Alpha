@@ -39,6 +39,7 @@ public final class BranchingHeuristicFactory {
 	public static final String ALPHA = "alpha";
 	public static final String ALPHA_RANDOM_SIGN = "alpha-rs";
 	public static final String ALPHA_ACTIVE_RULE = "alpha-ar";
+	public static final String ALPHA_HEAD_MBT = "alpha-hmbt";
 
 	public static BranchingHeuristic getInstance(String name, Grounder grounder, Assignment assignment, ChoiceManager choiceManager, Random random) {
 		switch (name.toLowerCase()) {
@@ -54,6 +55,8 @@ public final class BranchingHeuristicFactory {
 			return new AlphaRandomSignHeuristic(assignment, choiceManager, random);
 		case ALPHA_ACTIVE_RULE:
 			return new AlphaActiveRuleHeuristic(assignment, choiceManager, random);
+		case ALPHA_HEAD_MBT:
+			return new AlphaHeadMustBeTrueHeuristic(assignment, choiceManager, random);
 		}
 		throw new IllegalArgumentException("Unknown branching heuristic requested.");
 	}

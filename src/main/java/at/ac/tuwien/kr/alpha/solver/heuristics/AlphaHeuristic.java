@@ -74,6 +74,11 @@ public class AlphaHeuristic implements BranchingHeuristic {
 	protected final Map<Integer, Integer> bodyToHead = new HashMap<>();
 
 	/**
+	 * Maps rule heads to atoms representing corresponding bodies.
+	 */
+	protected final MultiValuedMap<Integer, Integer> headToBodies = new HashSetValuedHashMap<>();
+
+	/**
 	 * Maps body-representing atoms to literals occuring in the rule body.
 	 */
 	protected final Map<Integer, Set<Integer>> bodyToLiterals = new HashMap<>();
@@ -215,6 +220,7 @@ public class AlphaHeuristic implements BranchingHeuristic {
 			int body = noGood.getAtom(bodyIndex);
 			int head = noGood.getAtom(headIndex);
 			bodyToHead.put(body, head);
+			headToBodies.put(head, body);
 			atomsToBodies.put(head, body);
 		} else if (noGood.isBodyElementsNotBody(choiceManager::isAtomChoice)) {
 			Set<Integer> literals = new HashSet<>();
@@ -285,7 +291,7 @@ public class AlphaHeuristic implements BranchingHeuristic {
 		return null;
 	}
 
-	private boolean isUnassigned(int atom) {
+	protected boolean isUnassigned(int atom) {
 		ThriceTruth truth = assignment.getTruth(atom);
 		return truth != FALSE && truth != TRUE; // do not use assignment.isAssigned(atom) because we may also choose MBTs
 	}

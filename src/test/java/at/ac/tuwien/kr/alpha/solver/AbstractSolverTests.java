@@ -84,6 +84,18 @@ public abstract class AbstractSolverTests {
 				}
 			},
 			{
+				"DefaultSolver (random AlphaHeadMustBeTrueHeuristic)",
+				(Function<Grounder, Solver>) g -> {
+					return new DefaultSolver(g, new Random(), BranchingHeuristicFactory.ALPHA_HEAD_MBT, enableAdditionalInternalChecks);
+				}
+			},
+			{
+				"DefaultSolver (deterministic AlphaHeadMustBeTrueHeuristic)",
+				(Function<Grounder, Solver>) g -> {
+					return new DefaultSolver(g, new Random(0), BranchingHeuristicFactory.ALPHA_HEAD_MBT, enableAdditionalInternalChecks);
+				}
+			},
+			{
 				"DefaultSolver (random BerkMin)",
 				(Function<Grounder, Solver>) g -> {
 					return new DefaultSolver(g, new Random(), BranchingHeuristicFactory.BERKMIN, enableAdditionalInternalChecks);
