@@ -25,39 +25,51 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.solver.*;
+import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.heuristics.body_activity.BodyActivityProviderFactory.BodyActivityType;
 
-import java.util.Random;
+import java.util.*;
 
-import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
-public class AlphaRandomSignHeuristic extends DependencyDrivenHeuristic {
+public class GeneralizedDependencyDrivenHeuristic extends DependencyDrivenHeuristic {
 
-	public AlphaRandomSignHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
-		super(assignment, choiceManager, decayAge, decayFactor, random, BodyActivityType.DEFAULT);
+	public GeneralizedDependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random,
+			BodyActivityType bodyActivityType) {
+		super(assignment, choiceManager, decayAge, decayFactor, random, bodyActivityType);
 	}
 
-	public AlphaRandomSignHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
+	public GeneralizedDependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random, BodyActivityType bodyActivityType) {
+		super(assignment, choiceManager, random, bodyActivityType);
+	}
+
+	public GeneralizedDependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
 		super(assignment, choiceManager, random);
 	}
 
 	@Override
-	protected void incrementSignCounter(Integer literal) {
-		; // do nothing
+	protected void recordAtomRelationships(NoGood noGood) {
+		int body = DEFAULT_CHOICE_ATOM;
+		Set<Integer> others = new HashSet<>();
+		for (int literal : noGood) {
+			int atom = atomOf(literal);
+			if (body == DEFAULT_CHOICE_ATOM && choiceManager.isAtomChoice(atom)) {
+				body = atom;
+			} else {
+				others.add(atom);
+			}
+		}
+		for (Integer atom : others) {
+			atomsToBodies.put(atom, body);
+			bodyToLiterals.put(body, atom);
+		}
 	}
 
 	@Override
-	public boolean chooseSign(int atom) {
-		if (!isAtom(atom)) {
-			throw new IllegalArgumentException("Atom must be a positive integer.");
-		}
-
-		if (assignment.getTruth(atom) == ThriceTruth.MBT) {
-			return true;
-		}
-
-		return rand.nextBoolean();
+	protected int getAtomForChooseSign(int atom) {
+		return atom;
 	}
 
 }

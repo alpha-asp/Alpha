@@ -27,19 +27,20 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.solver.*;
+import at.ac.tuwien.kr.alpha.solver.heuristics.body_activity.BodyActivityProviderFactory.BodyActivityType;
 
 import java.util.*;
 import java.util.stream.Stream;
 
 /**
- * A variant of {@link AlphaHeuristic} that prefers to choose atoms representing bodies of rules whose heads are assigned {@link ThriceTruth#MBT}.
+ * A variant of {@link DependencyDrivenHeuristic} that prefers to choose atoms representing bodies of rules whose heads are assigned {@link ThriceTruth#MBT}.
  */
-public class AlphaHeadMustBeTrueHeuristic extends AlphaHeuristic {
+public class AlphaHeadMustBeTrueHeuristic extends DependencyDrivenHeuristic {
 
 	private int rememberedAtom;
 
 	public AlphaHeadMustBeTrueHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
-		super(assignment, choiceManager, decayAge, decayFactor, random);
+		super(assignment, choiceManager, decayAge, decayFactor, random, BodyActivityType.DEFAULT);
 	}
 
 	public AlphaHeadMustBeTrueHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
@@ -51,8 +52,9 @@ public class AlphaHeadMustBeTrueHeuristic extends AlphaHeuristic {
 		Set<Integer> heads = headToBodies.keySet();
 		Stream<Integer> bodiesOfMbtHeads = heads.stream().map(Literals::atomOf).filter(assignment::isMBT).flatMap(h -> headToBodies.get(h).stream());
 		Optional<Integer> mostActiveBody = bodiesOfMbtHeads.filter(this::isUnassigned).filter(choiceManager::isActiveChoiceAtom)
-				.max(Comparator.comparingDouble(this::getBodyActivity));
+				.max(Comparator.comparingDouble(bodyActivity::get));
 		if (mostActiveBody.isPresent()) {
+			// System.out.println("!"); // TODO: at the moment, this heuristic does NOTHING except call super! So either there is a bug or it is just useless.
 			rememberedAtom = mostActiveBody.get();
 			return rememberedAtom;
 		}

@@ -29,6 +29,9 @@ import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.*;
 import at.ac.tuwien.kr.alpha.solver.GroundConflictNoGoodLearner.ConflictAnalysisResult;
+import at.ac.tuwien.kr.alpha.solver.heuristics.body_activity.BodyActivityProvider;
+import at.ac.tuwien.kr.alpha.solver.heuristics.body_activity.BodyActivityProviderFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.body_activity.BodyActivityProviderFactory.BodyActivityType;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 
@@ -48,7 +51,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
  * 
  * Copyright (c) 2017 Siemens AG
  */
-public class AlphaHeuristic implements BranchingHeuristic {
+public class DependencyDrivenHeuristic implements BranchingHeuristic {
 	
 	public static final double DEFAULT_ACTIVITY = 0.0;
 	public static final int DEFAULT_SIGN_COUNTER = 0;
@@ -60,6 +63,7 @@ public class AlphaHeuristic implements BranchingHeuristic {
 	protected final Assignment assignment;
 	protected final ChoiceManager choiceManager;
 	protected final Random rand;
+	protected final BodyActivityProvider bodyActivity;
 
 	protected final Map<Integer, Double> activityCounters = new HashMap<>();
 	protected final Map<Integer, Integer> signCounters = new HashMap<>();
@@ -81,23 +85,29 @@ public class AlphaHeuristic implements BranchingHeuristic {
 	/**
 	 * Maps body-representing atoms to literals occuring in the rule body.
 	 */
-	protected final Map<Integer, Set<Integer>> bodyToLiterals = new HashMap<>();
+	protected final MultiValuedMap<Integer, Integer> bodyToLiterals = new HashSetValuedHashMap<>();
 
 	/**
 	 * Maps atoms to atoms representing bodies of rules in which the former atoms occur (in the head or the body).
 	 */
 	protected final MultiValuedMap<Integer, Integer> atomsToBodies = new HashSetValuedHashMap<>();
 
-	public AlphaHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
+	public DependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random,
+			BodyActivityType bodyActivityType) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
 		this.decayAge = decayAge;
 		this.decayFactor = decayFactor;
 		this.rand = random;
+		this.bodyActivity = BodyActivityProviderFactory.getInstance(bodyActivityType, bodyToLiterals, activityCounters, DEFAULT_ACTIVITY);
 	}
 
-	public AlphaHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
-		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random);
+	public DependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random, BodyActivityType bodyActivityType) {
+		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random, bodyActivityType);
+	}
+
+	public DependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
+		this(assignment, choiceManager, random, BodyActivityType.DEFAULT);
 	}
 
 	/**
@@ -142,12 +152,13 @@ public class AlphaHeuristic implements BranchingHeuristic {
 				incrementSignCounter(literal);
 			}
 		}
+		// TODO: incrementSignCounter also for learnedNoGood?!
 		decayAllIfTimeHasCome();
 	}
 
 	@Override
 	public void newNoGood(NoGood newNoGood) {
-		handleSpecialNoGood(newNoGood);
+		recordAtomRelationships(newNoGood);
 		pushToStack(newNoGood);
 		for (Integer literal : newNoGood) {
 			incrementSignCounter(literal);
@@ -171,19 +182,18 @@ public class AlphaHeuristic implements BranchingHeuristic {
 	public int chooseAtom() {
 		for (NoGood noGood : stackOfNoGoods) {
 			int mostActiveAtom = getMostActiveAtom(noGood);
+			if (choiceManager.isActiveChoiceAtom(mostActiveAtom)) {
+				return mostActiveAtom;
+			}
+
 			Collection<Integer> bodies = atomsToBodies.get(mostActiveAtom);
 			Optional<Integer> mostActiveBody = bodies.stream().filter(this::isUnassigned).filter(choiceManager::isActiveChoiceAtom)
-					.max(Comparator.comparingDouble(this::getBodyActivity));
+					.max(Comparator.comparingDouble(bodyActivity::get));
 			if (mostActiveBody.isPresent()) {
 				return mostActiveBody.get();
 			}
 		}
 		return DEFAULT_CHOICE_ATOM;
-	}
-	
-	protected double getBodyActivity(int bodyRepresentingAtom) {
-		return bodyToLiterals.get(bodyRepresentingAtom).stream().mapToDouble(this::getActivity).sum();
-		// TODO: other aggregate functions apart from sum
 	}
 
 	@Override
@@ -191,11 +201,7 @@ public class AlphaHeuristic implements BranchingHeuristic {
 		if (!isAtom(atom)) {
 			throw new IllegalArgumentException("Atom must be a positive integer.");
 		}
-
-		Integer head = bodyToHead.get(atom);
-		if (head != null) {
-			atom = head; // head atom can give more relevant information than atom representing rule body
-		}
+		atom = getAtomForChooseSign(atom);
 
 		if (assignment.getTruth(atom) == ThriceTruth.MBT) {
 			return true;
@@ -213,7 +219,15 @@ public class AlphaHeuristic implements BranchingHeuristic {
 		}
 	}
 
-	private void handleSpecialNoGood(NoGood noGood) {
+	protected int getAtomForChooseSign(int atom) {
+		Integer head = bodyToHead.get(atom);
+		if (head != null) {
+			atom = head; // head atom can give more relevant information than atom representing rule body
+		}
+		return atom;
+	}
+
+	protected void recordAtomRelationships(NoGood noGood) {
 		if (noGood.isBodyNotHead(choiceManager::isAtomChoice)) {
 			int headIndex = noGood.getHead();
 			int bodyIndex = headIndex != 0 ? 0 : 1;
@@ -240,7 +254,7 @@ public class AlphaHeuristic implements BranchingHeuristic {
 				// TODO: make more performant (maybe head could always come first in NoGood?)
 			}
 			assert bodyAtom != 0;
-			bodyToLiterals.put(bodyAtom, literals);
+			bodyToLiterals.putAll(bodyAtom, literals);
 		}
 	}
 

@@ -27,18 +27,19 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.solver.Assignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.solver.heuristics.body_activity.BodyActivityProviderFactory.BodyActivityType;
 
 import java.util.Random;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
 /**
- * A variant of {@link AlphaHeuristic} that counts the activity of non-body-representing atoms towards bodies of rules in which they occur.
+ * A variant of {@link DependencyDrivenHeuristic} that counts the activity of non-body-representing atoms towards bodies of rules in which they occur.
  */
-public class AlphaActiveRuleHeuristic extends AlphaHeuristic {
+public class AlphaActiveRuleHeuristic extends DependencyDrivenHeuristic {
 
 	public AlphaActiveRuleHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
-		super(assignment, choiceManager, decayAge, decayFactor, random);
+		super(assignment, choiceManager, decayAge, decayFactor, random, BodyActivityType.DEFAULT);
 	}
 
 	public AlphaActiveRuleHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
@@ -55,11 +56,6 @@ public class AlphaActiveRuleHeuristic extends AlphaHeuristic {
 				activityCounters.compute(body, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + 1);
 			}
 		}
-	}
-
-	@Override
-	protected double getBodyActivity(int bodyRepresentingAtom) {
-		return activityCounters.getOrDefault(bodyRepresentingAtom, DEFAULT_ACTIVITY);
 	}
 
 }

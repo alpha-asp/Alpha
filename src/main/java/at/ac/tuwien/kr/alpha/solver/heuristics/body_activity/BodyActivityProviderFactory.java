@@ -23,41 +23,35 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver.heuristics;
+package at.ac.tuwien.kr.alpha.solver.heuristics.body_activity;
 
-import at.ac.tuwien.kr.alpha.solver.*;
-import at.ac.tuwien.kr.alpha.solver.heuristics.body_activity.BodyActivityProviderFactory.BodyActivityType;
+import org.apache.commons.collections4.MultiValuedMap;
 
-import java.util.Random;
+import java.util.Map;
 
-import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
+public final class BodyActivityProviderFactory {
 
-public class AlphaRandomSignHeuristic extends DependencyDrivenHeuristic {
-
-	public AlphaRandomSignHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
-		super(assignment, choiceManager, decayAge, decayFactor, random, BodyActivityType.DEFAULT);
+	public enum BodyActivityType {
+		DEFAULT, SUM, AVG, MAX, MIN
 	}
 
-	public AlphaRandomSignHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
-		super(assignment, choiceManager, random);
-	}
-
-	@Override
-	protected void incrementSignCounter(Integer literal) {
-		; // do nothing
-	}
-
-	@Override
-	public boolean chooseSign(int atom) {
-		if (!isAtom(atom)) {
-			throw new IllegalArgumentException("Atom must be a positive integer.");
+	public static BodyActivityProvider getInstance(BodyActivityType type, MultiValuedMap<Integer, Integer> bodyToLiterals, Map<Integer, Double> activityCounters,
+			double defaultActivity) {
+		switch (type) {
+		case DEFAULT:
+			return new DefaultBodyActivityProvider(bodyToLiterals, activityCounters, defaultActivity);
+		case SUM:
+			return new SumBodyActivityProvider(bodyToLiterals, activityCounters, defaultActivity);
+		case AVG:
+			return new AvgBodyActivityProvider(bodyToLiterals, activityCounters, defaultActivity);
+		case MAX:
+			return new MaxBodyActivityProvider(bodyToLiterals, activityCounters, defaultActivity);
+		case MIN:
+			return new MinBodyActivityProvider(bodyToLiterals, activityCounters, defaultActivity);
+		default:
+			assert false : "Unknown BodyActivityType: " + type;
+			return null;
 		}
-
-		if (assignment.getTruth(atom) == ThriceTruth.MBT) {
-			return true;
-		}
-
-		return rand.nextBoolean();
 	}
 
 }

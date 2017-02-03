@@ -39,6 +39,7 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityProgramTransformati
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
@@ -208,7 +209,7 @@ public class Main {
 		LOGGER.info("Seed for pseudorandomization is {}.", seed);
 
 		Solver solver = SolverFactory.getInstance(
-			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, new Random(seed), BranchingHeuristicFactory.BERKMINLITERAL, debugInternalChecks // TODO: see issue #18
+			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, new Random(seed), Heuristic.BERKMINLITERAL, debugInternalChecks // TODO: see issue #18
 		);
 
 		Stream<AnswerSet> stream = solver.stream();

@@ -28,31 +28,68 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.solver.heuristics.body_activity.BodyActivityProviderFactory.BodyActivityType;
 
 import java.util.Random;
 
 public final class BranchingHeuristicFactory {
 
-	public static final String NAIVE = "naive";
-	public static final String BERKMIN = "berkmin";
-	public static final String BERKMINLITERAL = "berkminliteral";
-	public static final String ALPHA = "alpha";
-	public static final String ALPHA_RANDOM_SIGN = "alpha-rs";
-	public static final String ALPHA_ACTIVE_RULE = "alpha-ar";
-	public static final String ALPHA_HEAD_MBT = "alpha-hmbt";
+	public enum Heuristic {
+		NAIVE("naive"),
+		BERKMIN("berkmin"),
+		BERKMINLITERAL("berkminliteral"),
+		DD("dd"),
+		DD_SUM("dd-sum"),
+		DD_AVG("dd-avg"),
+		DD_MAX("dd-max"),
+		DD_MIN("dd-min"),
+		GDD("gdd"),
+		GDD_SUM("gdd-sum"),
+		GDD_AVG("gdd-avg"),
+		GDD_MAX("gdd-max"),
+		GDD_MIN("gdd-min"),
+		ALPHA_ACTIVE_RULE("alpha-ar"),
+		ALPHA_HEAD_MBT("alpha-hmbt");
+		
+		private String name;
+		private Heuristic(String name) {
+			this.name = name;
+		}
 
-	public static BranchingHeuristic getInstance(String name, Grounder grounder, Assignment assignment, ChoiceManager choiceManager, Random random) {
-		switch (name.toLowerCase()) {
+		@Override
+		public String toString() {
+			return name;
+		}
+	}
+
+	public static BranchingHeuristic getInstance(Heuristic name, Grounder grounder, Assignment assignment, ChoiceManager choiceManager, Random random) {
+		switch (name) {
 		case NAIVE:
 			return new NaiveHeuristic(choiceManager);
 		case BERKMIN:
 			return new BerkMin(assignment, choiceManager, random);
 		case BERKMINLITERAL:
 			return new BerkMinLiteral(assignment, choiceManager, random);
-		case ALPHA:
-			return new AlphaHeuristic(assignment, choiceManager, random);
-		case ALPHA_RANDOM_SIGN:
-			return new AlphaRandomSignHeuristic(assignment, choiceManager, random);
+		case DD:
+			return new DependencyDrivenHeuristic(assignment, choiceManager, random, BodyActivityType.DEFAULT);
+		case DD_SUM:
+			return new DependencyDrivenHeuristic(assignment, choiceManager, random, BodyActivityType.SUM);
+		case DD_AVG:
+			return new DependencyDrivenHeuristic(assignment, choiceManager, random, BodyActivityType.AVG);
+		case DD_MAX:
+			return new DependencyDrivenHeuristic(assignment, choiceManager, random, BodyActivityType.MAX);
+		case DD_MIN:
+			return new DependencyDrivenHeuristic(assignment, choiceManager, random, BodyActivityType.MIN);
+		case GDD:
+			return new GeneralizedDependencyDrivenHeuristic(assignment, choiceManager, random, BodyActivityType.DEFAULT);
+		case GDD_SUM:
+			return new GeneralizedDependencyDrivenHeuristic(assignment, choiceManager, random, BodyActivityType.SUM);
+		case GDD_AVG:
+			return new GeneralizedDependencyDrivenHeuristic(assignment, choiceManager, random, BodyActivityType.AVG);
+		case GDD_MAX:
+			return new GeneralizedDependencyDrivenHeuristic(assignment, choiceManager, random, BodyActivityType.MAX);
+		case GDD_MIN:
+			return new GeneralizedDependencyDrivenHeuristic(assignment, choiceManager, random, BodyActivityType.MIN);
 		case ALPHA_ACTIVE_RULE:
 			return new AlphaActiveRuleHeuristic(assignment, choiceManager, random);
 		case ALPHA_HEAD_MBT:

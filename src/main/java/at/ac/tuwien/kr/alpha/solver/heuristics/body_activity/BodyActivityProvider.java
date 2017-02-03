@@ -23,41 +23,30 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver.heuristics;
+package at.ac.tuwien.kr.alpha.solver.heuristics.body_activity;
 
-import at.ac.tuwien.kr.alpha.solver.*;
-import at.ac.tuwien.kr.alpha.solver.heuristics.body_activity.BodyActivityProviderFactory.BodyActivityType;
+import org.apache.commons.collections4.MultiValuedMap;
 
-import java.util.Random;
+import java.util.Map;
 
-import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
-public class AlphaRandomSignHeuristic extends DependencyDrivenHeuristic {
+public abstract class BodyActivityProvider {
 
-	public AlphaRandomSignHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
-		super(assignment, choiceManager, decayAge, decayFactor, random, BodyActivityType.DEFAULT);
+	protected final MultiValuedMap<Integer, Integer> bodyToLiterals;
+	protected final Map<Integer, Double> activityCounters;
+	protected final double defaultActivity;
+
+	public BodyActivityProvider(MultiValuedMap<Integer, Integer> bodyToLiterals, Map<Integer, Double> activityCounters, double defaultActivity) {
+		this.bodyToLiterals = bodyToLiterals;
+		this.activityCounters = activityCounters;
+		this.defaultActivity = defaultActivity;
 	}
 
-	public AlphaRandomSignHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
-		super(assignment, choiceManager, random);
-	}
+	public abstract double get(int bodyRepresentingAtom);
 
-	@Override
-	protected void incrementSignCounter(Integer literal) {
-		; // do nothing
-	}
-
-	@Override
-	public boolean chooseSign(int atom) {
-		if (!isAtom(atom)) {
-			throw new IllegalArgumentException("Atom must be a positive integer.");
-		}
-
-		if (assignment.getTruth(atom) == ThriceTruth.MBT) {
-			return true;
-		}
-
-		return rand.nextBoolean();
+	protected double getActivity(int literal) {
+		return activityCounters.getOrDefault(atomOf(literal), defaultActivity);
 	}
 
 }
