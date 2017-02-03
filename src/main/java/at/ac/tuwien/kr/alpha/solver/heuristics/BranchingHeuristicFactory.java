@@ -43,11 +43,13 @@ public final class BranchingHeuristicFactory {
 		DD_AVG("dd-avg"),
 		DD_MAX("dd-max"),
 		DD_MIN("dd-min"),
+		DD_PYRO("dd-pyro"),
 		GDD("gdd"),
 		GDD_SUM("gdd-sum"),
 		GDD_AVG("gdd-avg"),
 		GDD_MAX("gdd-max"),
 		GDD_MIN("gdd-min"),
+		GDD_PYRO("gdd-pyro"),
 		ALPHA_ACTIVE_RULE("alpha-ar"),
 		ALPHA_HEAD_MBT("alpha-hmbt");
 		
@@ -80,6 +82,8 @@ public final class BranchingHeuristicFactory {
 			return new DependencyDrivenHeuristic(assignment, choiceManager, random, BodyActivityType.MAX);
 		case DD_MIN:
 			return new DependencyDrivenHeuristic(assignment, choiceManager, random, BodyActivityType.MIN);
+		case DD_PYRO:
+			return new DependencyDrivenPyroHeuristic(assignment, choiceManager, random, BodyActivityType.DEFAULT);
 		case GDD:
 			return new GeneralizedDependencyDrivenHeuristic(assignment, choiceManager, random, BodyActivityType.DEFAULT);
 		case GDD_SUM:
@@ -90,6 +94,8 @@ public final class BranchingHeuristicFactory {
 			return new GeneralizedDependencyDrivenHeuristic(assignment, choiceManager, random, BodyActivityType.MAX);
 		case GDD_MIN:
 			return new GeneralizedDependencyDrivenHeuristic(assignment, choiceManager, random, BodyActivityType.MIN);
+		case GDD_PYRO:
+			return new GeneralizedDependencyDrivenPyroHeuristic(assignment, choiceManager, random, BodyActivityType.DEFAULT);
 		case ALPHA_ACTIVE_RULE:
 			return new AlphaActiveRuleHeuristic(assignment, choiceManager, random);
 		case ALPHA_HEAD_MBT:
