@@ -30,9 +30,7 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
-import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -345,15 +343,13 @@ public class DefaultSolver extends AbstractSolver {
 			didChange = true;
 		}
 
-		if (!addAllNoGoodsAndTreatContradictions(obtained)) {
-			return false;
-		}
 		// Record choice atoms.
 		final Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms = grounder.getChoiceAtoms();
 		choiceManager.addChoiceInformation(choiceAtoms);
 		// Inform heuristics.
 		branchingHeuristic.newNoGoods(obtained.values());
-		return true;
+
+		return addAllNoGoodsAndTreatContradictions(obtained);
 	}
 
 	/**
@@ -390,6 +386,7 @@ public class DefaultSolver extends AbstractSolver {
 					// Halt if unsatisfiable.
 					return false;
 				}
+				branchingHeuristic.analyzedConflict(conflictAnalysisResult);
 				LOGGER.debug("Backjumping to decision level: {}", conflictAnalysisResult.backjumpLevel);
 				doBackjump(conflictAnalysisResult.backjumpLevel);
 				if (conflictAnalysisResult.clearLastGuessAfterBackjump) {
