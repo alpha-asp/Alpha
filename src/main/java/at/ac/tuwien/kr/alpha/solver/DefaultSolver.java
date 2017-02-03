@@ -31,6 +31,7 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.*;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +65,7 @@ public class DefaultSolver extends AbstractSolver {
 
 	private int decisionCounter;
 
-	public DefaultSolver(Grounder grounder, Random random, String branchingHeuristicName, boolean debugInternalChecks) {
+	public DefaultSolver(Grounder grounder, Random random, Heuristic branchingHeuristic, boolean debugInternalChecks) {
 		super(grounder);
 
 		this.assignment = new BasicAssignment(grounder);
@@ -75,7 +76,7 @@ public class DefaultSolver extends AbstractSolver {
 		this.choiceStack = new ChoiceStack(grounder);
 		this.learner = new GroundConflictNoGoodLearner(assignment);
 		this.choiceManager = new ChoiceManager(assignment);
-		this.branchingHeuristic = BranchingHeuristicFactory.getInstance(branchingHeuristicName, grounder, assignment, choiceManager, random);
+		this.branchingHeuristic = BranchingHeuristicFactory.getInstance(branchingHeuristic, grounder, assignment, choiceManager, random);
 		this.fallbackBranchingHeuristic = new NaiveHeuristic(choiceManager);
 	}
 
