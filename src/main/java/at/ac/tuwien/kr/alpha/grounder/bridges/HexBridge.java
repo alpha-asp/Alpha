@@ -23,22 +23,16 @@ public class HexBridge implements Bridge {
 			ArrayList<Integer> bodyAtomsNegative = new ArrayList<>();
 
 			for (int k = 1; k < externalNogoods[m].length; k++) {
-				boolean isNegative = false;
 
 				if (externalNogoods[m][k].charAt(0) == '-') {
-					isNegative = true;
-					externalNogoods[m][k] = externalNogoods[m][k].substring(1, externalNogoods[m][k].length());
+					externalNogoods[m][k] = "aux_not_" + externalNogoods[m][k].substring(1, externalNogoods[m][k].length());
 				}
 
 				BasicAtom atom = atomFromLiteral(externalNogoods[m][k]);
 
 				int atomId = atomStore.add(atom);
 
-				if (isNegative) {
-					bodyAtomsNegative.add(atomId);
-				} else {
-					bodyAtomsPositive.add(atomId);
-				}
+				bodyAtomsPositive.add(atomId);
 			}
 
 			int bodySize = bodyAtomsPositive.size() + bodyAtomsNegative.size();
@@ -151,8 +145,18 @@ public class HexBridge implements Bridge {
 				continue;
 			}
 
-			List<String> l = assignment.get(id).getTruth().toBoolean() ? trueAtoms : falseAtoms;
-			l.add(atom.toString().replace(" ", "").replace("()", ""));
+			assignment.get(id).getTruth().toBoolean();
+
+			if(assignment.get(id).getTruth().toBoolean()) {
+				String atomstring = atom.toString().replace(" ", "").replace("()", "");
+				if(atomstring.length() < 8 || !atomstring.substring(0, 8).equals("aux_ext_")) {
+					if (atomstring.length() >= 8 && atomstring.substring(0, 8).equals("aux_not_")) {
+						falseAtoms.add(atomstring.substring(8, atomstring.length()));
+					} else {
+						trueAtoms.add(atomstring);
+					}
+				}
+			}
 		}
 
 		return externalAtomsQuery(trueAtoms.toArray(new String[trueAtoms.size()]), falseAtoms.toArray(new String[falseAtoms.size()]));
