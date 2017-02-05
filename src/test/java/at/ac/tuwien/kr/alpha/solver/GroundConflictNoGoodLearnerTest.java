@@ -9,7 +9,8 @@ import static org.junit.Assert.*;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class GroundConflictNoGoodLearnerTest {
-	private final Assignment<ThriceTruth> assignment;
+
+	private final Assignment assignment;
 	private final NoGoodStore<ThriceTruth> store;
 
 	public GroundConflictNoGoodLearnerTest() {

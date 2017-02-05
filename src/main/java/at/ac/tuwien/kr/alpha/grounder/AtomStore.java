@@ -2,7 +2,6 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.Atom;
 import at.ac.tuwien.kr.alpha.common.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.BasicPredicate;
 
 import java.util.*;
 
@@ -13,13 +12,13 @@ import java.util.*;
 public class AtomStore {
 	private List<Atom> atomIdsToInternalBasicAtoms = new ArrayList<>();
 	private Map<Atom, Integer> predicateInstancesToAtomIds = new HashMap<>();
-	private IntIdGenerator atomIdGenerator = new IntIdGenerator();
+	private IntIdGenerator atomIdGenerator = new IntIdGenerator(1);
 
 	private List<Integer> releasedAtomIds = new ArrayList<>();	// contains atomIds ready to be garbage collected if necessary.
 
 	public AtomStore() {
 		// Create atomId for falsum (currently not needed, but it gets atomId 0, which cannot represent a negated literal).
-		add(new BasicAtom(new BasicPredicate("\u22A5", 0), true));
+		atomIdsToInternalBasicAtoms.add(null);
 	}
 
 	public int getHighestAtomId() {
@@ -55,6 +54,10 @@ public class AtomStore {
 	 * @return
 	 */
 	public int add(Atom groundAtom) {
+		if (!groundAtom.isGround()) {
+			throw new IllegalArgumentException("atom must be ground");
+		}
+
 		Integer id = predicateInstancesToAtomIds.get(groundAtom);
 
 		if (id == null) {
@@ -66,7 +69,7 @@ public class AtomStore {
 		return id;
 	}
 
-	public boolean contains(BasicAtom groundAtom) {
+	public boolean contains(Atom groundAtom) {
 		return predicateInstancesToAtomIds.containsKey(groundAtom);
 	}
 

@@ -27,7 +27,6 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.solver.Assignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 import java.util.Random;
 
@@ -37,7 +36,7 @@ public final class BranchingHeuristicFactory {
 	public static final String BERKMIN = "berkmin";
 	public static final String BERKMINLITERAL = "berkminliteral";
 
-	public static BranchingHeuristic getInstance(String name, Assignment<ThriceTruth> assignment, ChoiceManager choiceManager, Random random) {
+	public static BranchingHeuristic getInstance(String name, Assignment assignment, ChoiceManager choiceManager, Random random) {
 		switch (name.toLowerCase()) {
 			case NAIVE:
 				return new NaiveHeuristic(choiceManager);

@@ -31,9 +31,7 @@ import at.ac.tuwien.kr.alpha.solver.GroundConflictNoGoodLearner.ConflictAnalysis
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -180,7 +178,7 @@ public class BerkMinTest {
 
 	private static class PseudoChoiceManager extends ChoiceManager {
 
-		public PseudoChoiceManager(Assignment<ThriceTruth> assignment) {
+		public PseudoChoiceManager(Assignment assignment) {
 			super(assignment);
 		}
 

@@ -149,7 +149,7 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 		ParsedTerm right = (ParsedTerm) visit(ctx.term(1));
 		ParsedBuiltinAtom.BINOP binop;
 		ASPCore2Parser.BinopContext parsedBinop = ctx.binop();
-		// binop : EQ | NE | LT | GT | LE | GE;
+		// binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
 		if (parsedBinop.EQUAL() != null) {
 			binop = ParsedBuiltinAtom.BINOP.EQ;
 		} else if (parsedBinop.UNEQUAL() != null) {
@@ -174,10 +174,7 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 		boolean isNegated = ctx.NAF() != null;
 		if (ctx.builtin_atom() != null) {
 			ParsedBuiltinAtom builtinAtom = (ParsedBuiltinAtom) visitBuiltin_atom(ctx.builtin_atom());
-			if (isNegated) {
-				return builtinAtom.getNegation();
-			}
-			return builtinAtom;
+			return isNegated ? builtinAtom.getNegation() : builtinAtom;
 		}
 		ParsedAtom atom = (ParsedAtom)visitClassical_literal(ctx.classical_literal());
 		atom.isNegated = isNegated;
@@ -190,6 +187,7 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 		if (ctx.MINUS() != null) {
 			notSupportedSyntax(ctx);
 		}
+
 
 		List<ParsedTerm> terms = new ArrayList<>();
 		if (ctx.terms() != null) {

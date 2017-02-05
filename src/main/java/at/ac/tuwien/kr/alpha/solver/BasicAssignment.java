@@ -28,7 +28,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,13 +38,14 @@ import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
-public class BasicAssignment implements Assignment<ThriceTruth> {
+public class BasicAssignment implements Assignment {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BasicAssignment.class);
 	private final Map<Integer, Entry> assignment = new HashMap<>();
 	private final List<List<Entry>> decisionLevels;
-	private final Queue<ReadableAssignment.Entry<ThriceTruth>> assignmentsToProcess = new LinkedList<>();
-	private Queue<ReadableAssignment.Entry<ThriceTruth>> newAssignments = new LinkedList<>();
-	private Queue<ReadableAssignment.Entry<ThriceTruth>> newAssignments2 = new LinkedList<>();
+	private final ArrayList<Integer> propagationCounterPerDecisionLevel;
+	private final Queue<Assignment.Entry> assignmentsToProcess = new LinkedList<>();
+	private Queue<Assignment.Entry> newAssignments = new LinkedList<>();
+	private Queue<Assignment.Entry> newAssignments2 = new LinkedList<>();
 	private final Grounder grounder;
 
 	private int mbtCount;
@@ -54,6 +54,8 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 		this.grounder = grounder;
 		this.decisionLevels = new ArrayList<>();
 		this.decisionLevels.add(new ArrayList<>());
+		this.propagationCounterPerDecisionLevel = new ArrayList<>();
+		this.propagationCounterPerDecisionLevel.add(0);
 	}
 
 	public BasicAssignment() {
@@ -69,32 +71,36 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 	}
 
 	@Override
-	public void unassign(int atom) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Queue<ReadableAssignment.Entry<ThriceTruth>> getAssignmentsToProcess() {
+	public Queue<Assignment.Entry> getAssignmentsToProcess() {
 		return assignmentsToProcess;
 	}
 
 	@Override
 	public void backtrack() {
 		// Remove all assignments on the current decision level from the queue of assignments to process.
-		for (Iterator<ReadableAssignment.Entry<ThriceTruth>> iterator = assignmentsToProcess.iterator(); iterator.hasNext();) {
-			ReadableAssignment.Entry entry = iterator.next();
+		HashSet<Integer> removedEntries = new HashSet<>();
+		for (Iterator<Assignment.Entry> iterator = assignmentsToProcess.iterator(); iterator.hasNext();) {
+			Assignment.Entry entry = iterator.next();
+			if (entry.getDecisionLevel() == getDecisionLevel()) {
+				iterator.remove();
+				removedEntries.add(entry.getAtom());
+			}
+		}
+		// If backtracking removed the first assigning entry, any reassignment becomes an ordinary (first) assignment.
+		for (Assignment.Entry entry : assignmentsToProcess) {
+			// NOTE: this check is most often not needed, perhaps there is a better way to realize this check?
+			if (entry.isReassignAtLowerDecisionLevel() && removedEntries.contains(entry.getAtom())) {
+				entry.setReassignFalse();
+			}
+		}
+		for (Iterator<Assignment.Entry> iterator = newAssignments.iterator(); iterator.hasNext();) {
+			Assignment.Entry entry = iterator.next();
 			if (entry.getDecisionLevel() == getDecisionLevel()) {
 				iterator.remove();
 			}
 		}
-		for (Iterator<ReadableAssignment.Entry<ThriceTruth>> iterator = newAssignments.iterator(); iterator.hasNext();) {
-			ReadableAssignment.Entry entry = iterator.next();
-			if (entry.getDecisionLevel() == getDecisionLevel()) {
-				iterator.remove();
-			}
-		}
-		for (Iterator<ReadableAssignment.Entry<ThriceTruth>> iterator = newAssignments2.iterator(); iterator.hasNext();) {
-			ReadableAssignment.Entry entry = iterator.next();
+		for (Iterator<Assignment.Entry> iterator = newAssignments2.iterator(); iterator.hasNext();) {
+			Assignment.Entry entry = iterator.next();
 			if (entry.getDecisionLevel() == getDecisionLevel()) {
 				iterator.remove();
 			}
@@ -127,6 +133,7 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 		if (decisionLevels.isEmpty()) {
 			decisionLevels.add(new ArrayList<>());
 		}
+		propagationCounterPerDecisionLevel.remove(propagationCounterPerDecisionLevel.size() - 1);
 	}
 
 	@Override
@@ -137,6 +144,7 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 	@Override
 	public boolean guess(int atom, ThriceTruth value) {
 		decisionLevels.add(new ArrayList<>());
+		propagationCounterPerDecisionLevel.add(0);
 		return assign(atom, value, null);
 	}
 
@@ -147,7 +155,7 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 		}
 		if (decisionLevel < getDecisionLevel() && LOGGER.isDebugEnabled()) {
 			String atomString = grounder != null ? grounder.atomToString(atom) : Integer.toString(atom);
-			LOGGER.debug("Assign called with lower decision level. Atom: {}_{}@{}.", value, atomString, decisionLevel);
+			LOGGER.trace("Assign called with lower decision level. Atom: {}_{}@{}.", value, atomString, decisionLevel);
 		}
 		boolean isConflictFree = assignWithDecisionLevel(atom, value, impliedBy, decisionLevel);
 		if (!isConflictFree) {
@@ -175,7 +183,7 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 	private Entry guessViolatedByAssign;
 
 	@Override
-	public ReadableAssignment.Entry getGuessViolatedByAssign() {
+	public Assignment.Entry getGuessViolatedByAssign() {
 		return guessViolatedByAssign;
 	}
 
@@ -216,7 +224,7 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 					recordAssignment(atom, value, impliedBy, decisionLevel, current);
 					return true;
 				} else if (current.getTruth() == value || (TRUE.equals(current.getTruth()) && MBT.equals(value))) {
-					LOGGER.debug("Skipping assignment of {} with {} at {}, currently is: {}", atom, decisionLevel, value, current);
+					LOGGER.trace("Skipping assignment of {} with {} at {}, currently is: {}", atom, decisionLevel, value, current);
 					// Skip if the assigned truth value already has been assigned, or if the value is already TRUE and MBT is to be assigned.
 					return true;
 				} else {
@@ -362,7 +370,8 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 			throw new RuntimeException("Assignment has previous value, but truth values are not MBT (previously) and TRUE (now). Should not happen.");
 		}
 		// Create and record new assignment entry.
-		final int propagationLevel = decisionLevels.get(decisionLevel).size();
+		final int propagationLevel = propagationCounterPerDecisionLevel.get(decisionLevel);
+		propagationCounterPerDecisionLevel.set(decisionLevel, propagationLevel + 1);
 		final boolean isReassignAtLowerDecisionLevel = oldEntry != null && oldEntry.getDecisionLevel() > decisionLevel && !isConflicting(oldEntry.getTruth(), value);
 		final Entry next = new Entry(value, decisionLevel, propagationLevel, impliedBy, previous, atom, isReassignAtLowerDecisionLevel);
 		if (LOGGER.isTraceEnabled()) {
@@ -428,31 +437,27 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 	}
 
 	@Override
-	public Iterator<ReadableAssignment.Entry<ThriceTruth>> getNewAssignmentsIterator() {
-		Iterator<ReadableAssignment.Entry<ThriceTruth>> it = newAssignments.iterator();
+	public Iterator<Assignment.Entry> getNewAssignmentsIterator() {
+		Iterator<Assignment.Entry> it = newAssignments.iterator();
 		newAssignments = new LinkedList<>();
 		return it;
 	}
 
 	@Override
-	public Iterator<Map.Entry<Integer, ThriceTruth>> iterator() {
-		throw new UnsupportedOperationException();
-	}
-
-	public Iterator<? extends SimpleReadableAssignment.Entry<ThriceTruth>> getNewAssignmentsIterator2() {
-		Iterator<? extends SimpleReadableAssignment.Entry<ThriceTruth>> it = newAssignments2.iterator();
+	public Iterator<Assignment.Entry> getNewAssignmentsIterator2() {
+		Iterator<Assignment.Entry> it = newAssignments2.iterator();
 		newAssignments2 = new LinkedList<>();
 		return it;
 	}
 
-	private static final class Entry implements ReadableAssignment.Entry<ThriceTruth> {
+	private static final class Entry implements Assignment.Entry {
 		private final ThriceTruth value;
 		private final int decisionLevel;
 		private final int propagationLevel;
 		private final Entry previous;
 		private final NoGood impliedBy;
 		private final int atom;
-		private final boolean isReassignAtLowerDecisionLevel;
+		private boolean isReassignAtLowerDecisionLevel;
 
 		Entry(ThriceTruth value, int decisionLevel, int propagationLevel, NoGood noGood, Entry previous, int atom, boolean isReassignAtLowerDecisionLevel) {
 			this.value = value;
@@ -497,6 +502,11 @@ public class BasicAssignment implements Assignment<ThriceTruth> {
 		@Override
 		public boolean isReassignAtLowerDecisionLevel() {
 			return isReassignAtLowerDecisionLevel;
+		}
+
+		@Override
+		public void setReassignFalse() {
+			this.isReassignAtLowerDecisionLevel = false;
 		}
 
 		@Override

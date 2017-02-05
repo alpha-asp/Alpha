@@ -29,8 +29,6 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
-import at.ac.tuwien.kr.alpha.common.Truth;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -41,6 +39,8 @@ import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static java.lang.Math.abs;
 
 /**
@@ -49,7 +49,7 @@ import static java.lang.Math.abs;
 public class NaiveSolver extends AbstractSolver {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveSolver.class);
 	private final ChoiceStack choiceStack;
-	private SimpleAssignmentImpl assignment = new SimpleAssignmentImpl();
+	private HashMap<Integer, Boolean> truthAssignments = new HashMap<>();
 	private ArrayList<Integer> newTruthAssignments = new ArrayList<>();
 	private ArrayList<ArrayList<Integer>> decisionLevels = new ArrayList<>();
 
@@ -59,7 +59,8 @@ public class NaiveSolver extends AbstractSolver {
 	private boolean didChange;
 	private int decisionLevel;
 
-	private Choices choices = new Choices();
+	private Map<Integer, Integer> choiceOn = new HashMap<>();
+	private Map<Integer, Integer> choiceOff = new HashMap<>();
 	private Integer nextChoice;
 	private HashSet<Integer> mbtAssigned = new HashSet<>();
 	private ArrayList<ArrayList<Integer>> mbtAssignedFromUnassigned = new ArrayList<>();
@@ -98,7 +99,7 @@ public class NaiveSolver extends AbstractSolver {
 				obtainNoGoodsFromGrounder();
 				doUnitPropagation();
 				doMBTPropagation();
-				LOGGER.trace("Assignment after propagation is: {}", assignment);
+				LOGGER.trace("Assignment after propagation is: {}", truthAssignments);
 			} else if (assignmentViolatesNoGoods()) {
 				LOGGER.trace("Backtracking from wrong choices:");
 				LOGGER.trace("Choice stack: {}", choiceStack);
@@ -137,7 +138,7 @@ public class NaiveSolver extends AbstractSolver {
 
 	private void assignUnassignedToFalse() {
 		for (Integer atom : unassignedAtoms) {
-			assignment.assign(atom, false);
+			truthAssignments.put(atom, false);
 			newTruthAssignments.add(atom);
 			decisionLevels.get(decisionLevel).add(atom);
 		}
@@ -152,7 +153,7 @@ public class NaiveSolver extends AbstractSolver {
 			}
 		}
 		for (Integer atom : knownAtoms) {
-			if (!assignment.isAssigned(atom)) {
+			if (!truthAssignments.containsKey(atom)) {
 				unassignedAtoms.add(atom);
 			}
 		}
@@ -178,8 +179,8 @@ public class NaiveSolver extends AbstractSolver {
 
 	private String reportTruthAssignments() {
 		String report = "Current Truth assignments: ";
-		for (Map.Entry<Integer, BooleanTruth> entry : assignment) {
-			report += (entry.getValue().toBoolean() ? "+" : "-") + entry.getKey() + " ";
+		for (Integer atomId : truthAssignments.keySet()) {
+			report += (truthAssignments.get(atomId) ? "+" : "-") + atomId + " ";
 		}
 		return report;
 	}
@@ -194,9 +195,9 @@ public class NaiveSolver extends AbstractSolver {
 
 	private AnswerSet getAnswerSetFromAssignment() {
 		ArrayList<Integer> trueAtoms = new ArrayList<>();
-		for (Map.Entry<Integer, BooleanTruth> entry : assignment) {
-			if (entry.getValue().toBoolean()) {
-				trueAtoms.add(entry.getKey());
+		for (Map.Entry<Integer, Boolean> atomAssignment : truthAssignments.entrySet()) {
+			if (atomAssignment.getValue()) {
+				trueAtoms.add(atomAssignment.getKey());
 			}
 		}
 		return translate(trueAtoms);
@@ -210,7 +211,7 @@ public class NaiveSolver extends AbstractSolver {
 		trueAssignedFromMbt.add(decisionLevel, new ArrayList<>());
 		mbtAssignedFromUnassigned.add(decisionLevel, new ArrayList<>());
 		// We guess true for any unassigned choice atom (backtrack tries false)
-		assignment.assign(nextChoice, true);
+		truthAssignments.put(nextChoice, true);
 		newTruthAssignments.add(nextChoice);
 		choiceStack.push(nextChoice, true);
 		// Record change to compute propagation fixpoint again.
@@ -219,22 +220,16 @@ public class NaiveSolver extends AbstractSolver {
 
 	private boolean choicesLeft() {
 		// Check if there is an enabled choice that is not also disabled
-		for (Map.Entry<Integer, Pair<Integer, Integer>> e : choices) {
+		for (Map.Entry<Integer, Integer> e : choiceOn.entrySet()) {
 			final int atom = e.getKey();
 
-			// Only consider unassigned choices
-			if (assignment.isAssigned(atom)) {
-				continue;
-			}
-
-			BooleanTruth truth = assignment.getTruth(e.getValue().getLeft());
-			if (truth == null || !truth.toBoolean()) {
+			// Only consider unassigned choices that are enabled.
+			if (truthAssignments.containsKey(atom) || !truthAssignments.getOrDefault(e.getValue(), false)) {
 				continue;
 			}
 
 			// Check that candidate is not disabled already
-			truth = assignment.getTruth(e.getValue().getRight());
-			if (truth == null || !truth.toBoolean()) {
+			if (!truthAssignments.getOrDefault(choiceOff.getOrDefault(atom, 0), false)) {
 				nextChoice = atom;
 				return true;
 			}
@@ -253,7 +248,7 @@ public class NaiveSolver extends AbstractSolver {
 
 		// Remove truth assignments of current decision level
 		for (Integer atomId : decisionLevels.get(decisionLevel)) {
-			assignment.unassign(atomId);
+			truthAssignments.remove(atomId);
 		}
 
 		// Handle MBT assigned values:
@@ -274,7 +269,7 @@ public class NaiveSolver extends AbstractSolver {
 
 		if (lastGuessedTruthValue) {
 			// Guess false now
-			assignment.assign(lastGuessedAtom, false);
+			truthAssignments.put(lastGuessedAtom, false);
 			choiceStack.pushBacktrack(lastGuessedAtom, false);
 			newTruthAssignments.add(lastGuessedAtom);
 			decisionLevels.get(decisionLevel).add(lastGuessedAtom);
@@ -287,22 +282,23 @@ public class NaiveSolver extends AbstractSolver {
 
 	private void updateGrounderAssignments() {
 		grounder.updateAssignment(newTruthAssignments.stream().map(atom -> {
-			return new Entry(atom, assignment.getTruth(atom));
+			return (Assignment.Entry)new Entry(atom, truthAssignments.get(atom) ? TRUE : FALSE);
 		}).iterator());
 		newTruthAssignments.clear();
 	}
 
-	private static final class Entry implements ReadableAssignment.Entry {
-		private final Truth value;
+
+	private static final class Entry implements Assignment.Entry {
+		private final ThriceTruth value;
 		private final int atom;
 
-		Entry(int atom, Truth value) {
+		Entry(int atom, ThriceTruth value) {
 			this.value = value;
 			this.atom = atom;
 		}
 
 		@Override
-		public Truth getTruth() {
+		public ThriceTruth getTruth() {
 			return value;
 		}
 
@@ -337,6 +333,11 @@ public class NaiveSolver extends AbstractSolver {
 		}
 
 		@Override
+		public void setReassignFalse() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
 		public String toString() {
 			throw new UnsupportedOperationException();
 		}
@@ -351,7 +352,9 @@ public class NaiveSolver extends AbstractSolver {
 		}
 
 		// Record choice atoms
-		choices.putAll(grounder.getChoices());
+		final Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms = grounder.getChoiceAtoms();
+		choiceOn.putAll(choiceAtoms.getKey());
+		choiceOff.putAll(choiceAtoms.getValue());
 	}
 
 	private boolean isSearchSpaceExhausted() {
@@ -368,10 +371,10 @@ public class NaiveSolver extends AbstractSolver {
 			int impliedLiteral = noGood.getLiteral(implied);
 			int impliedAtomId = atomOf(impliedLiteral);
 			boolean impliedTruthValue = isNegated(impliedLiteral);
-			if (assignment.isAssigned(impliedAtomId)) {	// Skip if value already was assigned.
+			if (truthAssignments.get(impliedAtomId) != null) {	// Skip if value already was assigned.
 				continue;
 			}
-			assignment.assign(impliedAtomId, impliedTruthValue);
+			truthAssignments.put(impliedAtomId, impliedTruthValue);
 			newTruthAssignments.add(impliedAtomId);
 			didChange = true;	// Record to detect propagation fixpoint
 			decisionLevels.get(decisionLevel).add(impliedAtomId);
@@ -383,15 +386,15 @@ public class NaiveSolver extends AbstractSolver {
 	}
 
 	private boolean isLiteralAssigned(int literal) {
-		return assignment.isAssigned(atomOf(literal));
+		return truthAssignments.get(atomOf(literal)) != null;
 	}
 
 	private boolean isLiteralViolated(int literal) {
 		final int atom = atomOf(literal);
-		final Truth assignment = this.assignment.getTruth(atom);
+		final Boolean assignment = truthAssignments.get(atom);
 
 		// For unassigned atoms, any literal is not violated.
-		return assignment != null && isNegated(literal) != assignment.toBoolean();
+		return assignment != null && isNegated(literal) != assignment;
 	}
 
 	/**

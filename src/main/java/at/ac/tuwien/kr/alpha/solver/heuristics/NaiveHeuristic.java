@@ -38,6 +38,7 @@ import java.util.Collection;
  *
  */
 public class NaiveHeuristic implements BranchingHeuristic {
+
 	private final ChoiceManager choiceManager;
 
 	public NaiveHeuristic(ChoiceManager choiceManager) {

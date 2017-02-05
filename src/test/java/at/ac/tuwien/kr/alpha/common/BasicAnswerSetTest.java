@@ -27,7 +27,6 @@ public class BasicAnswerSetTest {
 		ConstantTerm bar = getInstance("bar");
 		ConstantTerm baz = getInstance("baz");
 
-
 		Map<Predicate, SortedSet<Atom>> inst1 = new HashMap<>();
 		inst1.put(a, new TreeSet<>(singleton(new BasicAtom(a))));
 		inst1.put(foo, new TreeSet<>(asList(

@@ -1,7 +1,5 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
-
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.PriorityQueue;
@@ -11,15 +9,15 @@ import java.util.Set;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class FirstUIPPriorityQueue {
-	private final PriorityQueue<ReadableAssignment.Entry<ThriceTruth>> delegate;
-	private final Set<ReadableAssignment.Entry> alreadyAdded;
+	private final PriorityQueue<Assignment.Entry> delegate;
+	private final Set<Assignment.Entry> alreadyAdded;
 	private final int decisionLevel;
 
 	private int lastPollPropagationLevel = Integer.MAX_VALUE;
 
 	public FirstUIPPriorityQueue(int decisionLevel) {
 		this.decisionLevel = decisionLevel;
-		this.delegate = new PriorityQueue<>(Comparator.comparing((ReadableAssignment.Entry<ThriceTruth> e) -> { return e.getPropagationLevel(); }).reversed());
+		this.delegate = new PriorityQueue<>(Comparator.comparing(Assignment.Entry::getPropagationLevel).reversed());
 		this.alreadyAdded = new HashSet<>();
 	}
 
@@ -29,7 +27,7 @@ public class FirstUIPPriorityQueue {
 	 * FirstUIPPriorityQueue, the entry is ignored. Duplicate entries are ignored.
 	 * @param entry the entry to add.
 	 */
-	public void add(ReadableAssignment.Entry<ThriceTruth> entry) {
+	public void add(Assignment.Entry entry) {
 		if (entry.getDecisionLevel() != decisionLevel) {
 			// Ignore assignments from lower decision levels.
 			return;
@@ -49,8 +47,8 @@ public class FirstUIPPriorityQueue {
 	 * Retrieves the first element (i.e., the entry with the highest propagationLevel) from the queue and removes it.
 	 * @return null if the queue is empty.
 	 */
-	public ReadableAssignment.Entry<ThriceTruth> poll() {
-		ReadableAssignment.Entry<ThriceTruth> firstEntry = delegate.poll();
+	public Assignment.Entry poll() {
+		Assignment.Entry firstEntry = delegate.poll();
 		if (firstEntry == null) {
 			return null;
 		}

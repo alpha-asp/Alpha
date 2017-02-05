@@ -29,7 +29,6 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,19 +43,18 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	private boolean internalChecksEnabled;
 
 	private final AtomTranslator translator;
-
-	private final Assignment<ThriceTruth> assignment;
+	private final Assignment assignment;
 	private final Map<Integer, Watches<BinaryWatch, WatchedNoGood>> watches = new LinkedHashMap<>();
 
 	private NoGood violated;
 
-	BasicNoGoodStore(Assignment<ThriceTruth> assignment, Grounder translator) {
+	BasicNoGoodStore(Assignment assignment, Grounder translator) {
 		this.assignment = assignment;
 		//this.assignmentIterator = assignment.iterator();
 		this.translator = translator;
 	}
 
-	BasicNoGoodStore(Assignment<ThriceTruth> assignment) {
+	BasicNoGoodStore(Assignment assignment) {
 		this(assignment, null);
 	}
 
@@ -151,8 +149,8 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		boolean isViolatedA = assignment.containsWeakComplement(a);
 		boolean isViolatedB = assignment.containsWeakComplement(b);
 
-		ReadableAssignment.Entry entryA = assignment.get(atomOf(a));
-		ReadableAssignment.Entry entryB = assignment.get(atomOf(b));
+		Assignment.Entry entryA = assignment.get(atomOf(a));
+		Assignment.Entry entryB = assignment.get(atomOf(b));
 
 		// Check for violation.
 		if (isViolatedA && isViolatedB && entryA.getDecisionLevel() == entryB.getDecisionLevel()) {
@@ -161,7 +159,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 		// If one literal is violated on lower decision level than the other is assigned or the other is unassigned, the NoGood propagates.
 		int propagatedLiteral = -1;
-		ReadableAssignment.Entry propagatee = null;
+		Assignment.Entry propagatee = null;
 		int propagationDecisionLevel = -1;
 		if (isViolatedA && (entryB == null || entryA.getDecisionLevel() < entryB.getDecisionLevel())) {
 			// Literal a is violated and propagates b.
@@ -250,7 +248,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		for (int i = 0; i < noGood.size(); i++) {
 			final int literal = noGood.getLiteral(i);
 			final int atom = atomOf(literal);
-			ReadableAssignment.Entry entry = assignment.get(atom);
+			Assignment.Entry entry = assignment.get(atom);
 
 			// Check if NoGood can never be violated (atom occurring positive and negative)
 			if (occurringLiterals.containsKey(atom)) {
@@ -300,7 +298,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 				int dl = entry.getDecisionLevel();
 
 				// Check if literal is positive, assigned TRUE and has highest decision level
-				if (TRUE.equals(entry.getTruth()) && dl > positiveTrueHighestDecisionLevel) {
+				if (isPositive(literal) && TRUE.equals(entry.getTruth()) && dl > positiveTrueHighestDecisionLevel) {
 					positiveTrueHighestDecisionLevel = dl;
 					posPositiveTrueHighestDecisionLevel = i;
 				}
@@ -411,7 +409,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	private boolean ensureWatchInvariantAfterAssignAtLowerDL(int atom, ThriceTruth truth) {
 		// We assume that unit-propagation has been done already, both watches point to already assigned literals.
 		final Watches<BinaryWatch, WatchedNoGood> w = watches(atom);
-		final ReadableAssignment.Entry atomEntry = assignment.get(atom);
+		final Assignment.Entry atomEntry = assignment.get(atom);
 		// The decision level is that of the entry except if MBT was assigned and the current assignment is TRUE, then the previous (MBT) is used.
 		final int atomDecisionLevel = MBT.equals(truth) && TRUE.equals(atomEntry.getTruth()) ? atomEntry.getPrevious().getDecisionLevel() : atomEntry.getDecisionLevel();
 		// Check all NoGoods that are watched on atom.
@@ -420,7 +418,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			final NoGood binaryNoGood = watch.getNoGood();
 			final int otherLiteral = binaryNoGood.getLiteral(watch.getOtherLiteralIndex());
 			final int otherAtom = atomOf(otherLiteral);
-			final ReadableAssignment.Entry otherEntry = assignment.get(otherAtom);
+			final Assignment.Entry otherEntry = assignment.get(otherAtom);
 			if (otherEntry == null) {
 				throw new RuntimeException("Processing re-assignment of an entry, but encountered a NoGood where unit propagation was not done. Should not happen.");
 			}
@@ -451,7 +449,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			final int atomPointer = 1 - otherPointer;
 			final int otherLiteral = noGood.getLiteralAtPointer(otherPointer);
 
-			final ReadableAssignment.Entry otherEntry = assignment.get(atomOf(otherLiteral));
+			final Assignment.Entry otherEntry = assignment.get(atomOf(otherLiteral));
 			final int otherLiteralDecisionLevel = otherEntry.getDecisionLevel();
 
 			// Skip if other assignment is not on lower decision level.
@@ -469,7 +467,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 					continue;
 				}
 
-				ReadableAssignment.Entry entry = assignment.get(noGood.getAtom(i));
+				Assignment.Entry entry = assignment.get(noGood.getAtom(i));
 				if (entry == null) {
 					throw new RuntimeException("Found unassigned literal while moving watches for previously unit NoGood. Should not happen.");
 				}
@@ -514,7 +512,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		if (TRUE.equals(truth)) {
 			// Check binary NoGoods.
 			for (BinaryWatch watch : w.b.getAlpha()) {
-				final ReadableAssignment.Entry otherEntry = assignment.get(watch.getNoGood().getAtom(watch.getOtherLiteralIndex()));
+				final Assignment.Entry otherEntry = assignment.get(watch.getNoGood().getAtom(watch.getOtherLiteralIndex()));
 				final int otherDecisionLevel = otherEntry.getDecisionLevel();
 				if (otherDecisionLevel > atomDecisionLevel) {
 					propagateAssigned = true;
@@ -529,40 +527,53 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			alphaNoGoodLoop:
 			for (Iterator<WatchedNoGood> iterator = w.n.getAlpha().iterator(); iterator.hasNext();) {
 				final WatchedNoGood noGood = iterator.next();
-				final ReadableAssignment.Entry headEntry = assignment.get(noGood.getAtom(noGood.getHead()));
 
-				if (headEntry == null || !TRUE.equals(headEntry.getTruth())) {
-					throw new RuntimeException("Processing Re-assignment of entry for TRUE, but encountered a NoGood where alpha propagation was not done. Should not happen.");
-				}
-
-				final int headDecisionLevel = headEntry.getDecisionLevel();
-
-				// Skip NoGood if head is not assigned on higher decision level.
-				if (headDecisionLevel <= atomDecisionLevel) {
+				// Skip not-yet unit NoGood.
+				if (assignment.get(atomOf(noGood.getLiteralAtPointer(0))) == null && assignment.get(atomOf(noGood.getLiteralAtPointer(1))) == null) {
 					continue;
 				}
 
+				// Head entry may be null (e.g. if NoGood is satisfied).
+				final Assignment.Entry headEntry = assignment.get(noGood.getAtom(noGood.getHead()));
+				final int headDecisionLevel = headEntry != null ? headEntry.getDecisionLevel() : Integer.MAX_VALUE;
+
+				// Skip NoGood if head is not assigned on higher decision level.
+				if (headEntry == null || headDecisionLevel <= atomDecisionLevel) {
+					continue;
+				}
+
+				int highestAlphaDecisionLevel = atomDecisionLevel;
 				int highestDecisionLevel = atomDecisionLevel;
-				int posHighestAlphaLiteral = -1;
+				int posHighestAlphaLiteral = noGood.getAlphaPointer();
+				boolean isViolatedExceptingHead = true;
 				for (int i = 0; i < noGood.size(); i++) {
+					// Skip head and current alpha pointed literal.
 					if (i == noGood.getHead() || i == noGood.getAlphaPointer()) {
 						continue;
 					}
-
 					int otherLiteral = noGood.getLiteral(i);
-					ReadableAssignment.Entry otherEntry = assignment.get(atomOf(otherLiteral));
-					if (otherEntry == null) {
-						throw new RuntimeException("Found unassigned literal while moving watches for previously unit NoGood. Should not happen.");
+					Assignment.Entry otherEntry = assignment.get(atomOf(otherLiteral));
+					if (otherEntry == null
+						|| isPositive(otherLiteral) != otherEntry.getTruth().toBoolean()
+						|| MBT.equals(otherEntry.getTruth())) {
+						isViolatedExceptingHead = false;
+					}
+					// Compute decision level (MBT is considered as unassigned).
+					int otherDecisionLevel = (otherEntry != null || MBT.equals(otherEntry.getTruth())) ?
+						otherEntry.getDecisionLevel() : Integer.MAX_VALUE;
+					if (otherDecisionLevel > highestDecisionLevel) {
+						highestDecisionLevel = otherEntry.getDecisionLevel();
+					}
+					// Skip below for negative literals.
+					if (!isPositive(otherLiteral)) {
+						continue;
 					}
 					// Record decision level and potential candidate for the alpha pointer.
-					int otherDecisionLevel = otherEntry.getDecisionLevel();
-					if (otherDecisionLevel > highestDecisionLevel) {
-						highestDecisionLevel = otherDecisionLevel;
-						if (isPositive(otherLiteral)) {
-							posHighestAlphaLiteral = i;
-						}
+					if (otherDecisionLevel > highestAlphaDecisionLevel) {
+						highestAlphaDecisionLevel = otherDecisionLevel;
+						posHighestAlphaLiteral = i;
 					}
-					if (isPositive(otherLiteral) && otherDecisionLevel >= headDecisionLevel) {
+					if (otherDecisionLevel >= headDecisionLevel) {
 						// There is a positive literal with high-enough decision level; point the alpha pointer to it.
 						noGood.setAlphaPointer(i);
 						iterator.remove();
@@ -571,13 +582,18 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 					}
 				}
 
-				// Could not just move the alpha pointer, re-assign head at lower decision level and move alpha pointer to highest positive literal.
-				noGood.setAlphaPointer(posHighestAlphaLiteral);
-				iterator.remove();
-				addAlphaWatch(noGood);
-				propagateAssigned = true;
-				if (!assignStrongComplement(noGood.getHead(), noGood, highestDecisionLevel)) {
-					return false;
+				// Could not just move the alpha pointer, move alpha pointer to highest positive literal.
+				if (posHighestAlphaLiteral != noGood.getAlphaPointer()) {
+					noGood.setAlphaPointer(posHighestAlphaLiteral);
+					iterator.remove();
+					addAlphaWatch(noGood);
+				}
+				// Re-assign head at lower decision level if the NoGood is unit at lower decision level now.
+				if (isViolatedExceptingHead) {
+					propagateAssigned = true;
+					if (!assignStrongComplement(noGood.getHead(), noGood, highestDecisionLevel)) {
+						return false;
+					}
 				}
 			}
 		}
@@ -615,17 +631,17 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	@Override
 	public boolean propagate() {
 		boolean propagated = false;
-		Queue<ReadableAssignment.Entry<ThriceTruth>> assignmentsToProcess = assignment.getAssignmentsToProcess();
+		Queue<Assignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
 
 		while (!assignmentsToProcess.isEmpty()) {
-			final ReadableAssignment.Entry<ThriceTruth> entry = assignmentsToProcess.remove();
+			final Assignment.Entry entry = assignmentsToProcess.remove();
 			final int atom = entry.getAtom();
 
 			LOGGER.trace("Looking for propagation from {} with {}.", atom, entry);
 
 			final ThriceTruth value = entry.getTruth();
 
-			final ReadableAssignment.Entry<ThriceTruth> previous = entry.getPrevious();
+			final Assignment.Entry previous = entry.getPrevious();
 			final ThriceTruth prevValue = previous != null ? previous.getTruth() : null;
 			propagateAssigned = false;
 
@@ -674,7 +690,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 	private boolean propagateUnassigned(final int atom, final ThriceTruth value) {
 		final Watches<BinaryWatch, WatchedNoGood> w = watches(atom);
-		ReadableAssignment.Entry atomEntry = assignment.get(atom);
+		Assignment.Entry atomEntry = assignment.get(atom);
 		final int atomDecisionLevel = atomEntry.getDecisionLevel();
 
 		// If the atom is TRUE and previously was MBT, we use the MBT decision level for assigning weak complements.
@@ -705,7 +721,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			final int assignedPointer = noGood.getAtom(noGood.getPointer(0)) == atom ?  0 : 1;
 			final int assignedIndex = noGood.getPointer(assignedPointer);
 			final int otherIndex = noGood.getPointer(assignedPointer == 0 ? 1 : 0);
-			ReadableAssignment.Entry otherEntry = assignment.get(noGood.getAtom(otherIndex));
+			Assignment.Entry otherEntry = assignment.get(noGood.getAtom(otherIndex));
 			int highestDecisionLevel = atomDecisionLevel;
 			int posHighestDecisionLevel = -1;
 			int highestMBTDecisionLevel = atomMBTDecisionLevel;
@@ -729,7 +745,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 					noGood.setPointer(assignedPointer, index);
 					break;
 				}
-				ReadableAssignment.Entry assignmentLiteralAtIndex = assignment.get(atomOf(literalAtIndex));
+				Assignment.Entry assignmentLiteralAtIndex = assignment.get(atomOf(literalAtIndex));
 				int assignmentLiteralAtIndexDecisionLevel = assignmentLiteralAtIndex != null ? assignmentLiteralAtIndex.getDecisionLevel() : -1;
 				int assignmentLiteralAtIndexMBTDecisionLevel = (assignmentLiteralAtIndex != null && TRUE.equals(assignmentLiteralAtIndex.getTruth())
 					&& assignmentLiteralAtIndex.getPrevious() != null) ? assignmentLiteralAtIndex.getPrevious().getDecisionLevel() : -1;
@@ -963,12 +979,16 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		}
 
 		private void checkAlphaWatchesInvariant(int atom, BasicNoGoodStore.Watches<BasicNoGoodStore.BinaryWatch, WatchedNoGood> watches) {
-			ReadableAssignment.Entry<ThriceTruth> atomEntry = assignment.get(atom);
+			Assignment.Entry atomEntry = assignment.get(atom);
 			int atomDecisionLevel = atomEntry != null && TRUE.equals(atomEntry.getTruth()) ? atomEntry.getDecisionLevel() : -1;
 			for (BasicNoGoodStore.BinaryWatch binaryWatch : watches.b.getAlpha()) {
 				// Ensure if watched is TRUE, so the head is TRUE and if head is TRUE, it is on lower-or-equal decision level as the watched.
 				int headAtom = binaryWatch.getNoGood().getAtom(binaryWatch.getOtherLiteralIndex());
-				ReadableAssignment.Entry<ThriceTruth> headEntry = assignment.get(headAtom);
+				int watchedLiteral = binaryWatch.getNoGood().getLiteral(1 - binaryWatch.getOtherLiteralIndex());
+				if (isNegated(watchedLiteral)) {
+					throw new RuntimeException("Alpha watch is for negated literal. Should not happen");
+				}
+				Assignment.Entry headEntry = assignment.get(headAtom);
 				int headDecisionLevel = headEntry != null && TRUE.equals(headEntry.getTruth()) ? headEntry.getDecisionLevel() : -1;
 				boolean isHeadTrue = headDecisionLevel != -1;
 				if (atomEntry == null || !TRUE.equals(atomEntry.getTruth())) {
@@ -985,7 +1005,11 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 			for (WatchedNoGood watchedNoGood : watches.n.getAlpha()) {
 				// Ensure if watched is TRUE, then either the head is TRUE or there is an unassigned negative literal; furthermore, if head is TRUE, it is on lower-or-equal decision level as the watched.
 				int headAtom = watchedNoGood.getAtom(watchedNoGood.getHead());
-				ReadableAssignment.Entry<ThriceTruth> headEntry = assignment.get(headAtom);
+				Assignment.Entry headEntry = assignment.get(headAtom);
+				int watchedLiteral = watchedNoGood.getLiteralAtAlpha();
+				if (isNegated(watchedLiteral)) {
+					throw new RuntimeException("Alpha watch is for negated literal. Should not happen");
+				}
 				int headDecisionLevel = headEntry != null && TRUE.equals(headEntry.getTruth()) ? headEntry.getDecisionLevel() : -1;
 				boolean isHeadTrue = headDecisionLevel != -1;
 				if (atomEntry == null || !TRUE.equals(atomEntry.getTruth())) {
@@ -1014,7 +1038,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 		private boolean isNoGoodSatisfied(NoGood noGood) {
 			for (Integer literal : noGood) {
-				ReadableAssignment.Entry entry = assignment.get(atomOf(literal));
+				Assignment.Entry entry = assignment.get(atomOf(literal));
 				if (entry == null) {
 					continue;
 				}
@@ -1027,7 +1051,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 
 		private boolean isNoGoodSatisfiedAndWatchedHigher(NoGood noGood, int watchedLowestDecisionLevel) {
 			for (Integer literal : noGood) {
-				ReadableAssignment.Entry<ThriceTruth> entry = assignment.get(atomOf(literal));
+				Assignment.Entry entry = assignment.get(atomOf(literal));
 				if (entry == null) {
 					continue;
 				}
@@ -1042,12 +1066,12 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		}
 
 		private void checkWatchesInvariant(int atom, BasicNoGoodStore.Watches<BasicNoGoodStore.BinaryWatch, WatchedNoGood> watches, ThriceTruth truth) {
-			ReadableAssignment.Entry atomEntry = assignment.get(atom);
+			Assignment.Entry atomEntry = assignment.get(atom);
 			int atomDecisionLevel = atomEntry != null ? atomEntry.getDecisionLevel() : -1;
 			for (BasicNoGoodStore.BinaryWatch binaryWatch : watches.b.get(truth)) {
 				// Ensure both watches either unassigned, or one satisfies NoGood, or both are on highest decision level.
 				int otherAtom = binaryWatch.getNoGood().getAtom(binaryWatch.getOtherLiteralIndex());
-				ReadableAssignment.Entry otherEntry = assignment.get(otherAtom);
+				Assignment.Entry otherEntry = assignment.get(otherAtom);
 				int otherDecisionLevel = otherEntry != null ? otherEntry.getDecisionLevel() : -1;
 				if (atomEntry == null && otherEntry == null) {
 					continue;
@@ -1065,7 +1089,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 				// Ensure both watches either unassigned, or one satisfies NoGood, or both are on highest decision level.
 				int otherPointer = atom ==  watchedNoGood.getAtom(watchedNoGood.getPointer(1)) ? 0 : 1;
 				int otherAtom = watchedNoGood.getAtom(watchedNoGood.getPointer(otherPointer));
-				ReadableAssignment.Entry otherEntry = assignment.get(otherAtom);
+				Assignment.Entry otherEntry = assignment.get(otherAtom);
 				int otherDecisionLevel = otherEntry != null ? otherEntry.getDecisionLevel() : -1;
 				if (atomEntry == null && otherEntry == null) {
 					continue;
@@ -1089,7 +1113,7 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 		private int highestDecisionLevel(NoGood noGood) {
 			int highestDecisionlevel = -1;
 			for (Integer literal : noGood) {
-				ReadableAssignment.Entry<ThriceTruth> entry = assignment.get(atomOf(literal));
+				Assignment.Entry entry = assignment.get(atomOf(literal));
 				if (entry != null && entry.getDecisionLevel() > highestDecisionlevel) {
 					highestDecisionlevel = entry.getDecisionLevel();
 				}

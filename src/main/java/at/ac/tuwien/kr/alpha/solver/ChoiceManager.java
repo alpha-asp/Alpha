@@ -27,7 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.Truth;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
@@ -39,7 +38,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class ChoiceManager {
-	private final SimpleReadableAssignment<? extends Truth> assignment;
+	private final Assignment assignment;
 
 	// Active choice points and all atoms that influence a choice point (enabler, disabler, choice atom itself).
 	private final Set<ChoicePoint> activeChoicePoints = new LinkedHashSet<>();
@@ -52,7 +51,7 @@ public class ChoiceManager {
 	// The total number of modifications this ChoiceManager received (avoids re-computation in ChoicePoints).
 	private long modCount;
 
-	public ChoiceManager(SimpleReadableAssignment<? extends Truth> assignment) {
+	public ChoiceManager(Assignment assignment) {
 		this.assignment = assignment;
 		modifiedInDecisionLevel.put(0, new ArrayList<>());
 		highestDecisionLevel = 0;
@@ -74,15 +73,15 @@ public class ChoiceManager {
 		}
 
 		private boolean isActiveChoicePoint() {
-			Truth enablerTruth = assignment.getTruth(enabler);
-			Truth disablerTruth = assignment.getTruth(disabler);
-			return  enablerTruth != null && enablerTruth.toBoolean()
-				&& (disablerTruth == null || !disablerTruth.toBoolean());
+			Assignment.Entry enablerEntry = assignment.get(enabler);
+			Assignment.Entry disablerEntry = assignment.get(disabler);
+			return  enablerEntry != null && enablerEntry.getTruth().toBoolean()
+				&& (disablerEntry == null || !disablerEntry.getTruth().toBoolean());
 		}
 
 		private boolean isNotChosen() {
-			Truth truth = assignment.getTruth(atom);
-			return truth == null || MBT.equals(truth);
+			Assignment.Entry entry = assignment.get(atom);
+			return entry == null || MBT.equals(entry.getTruth());
 		}
 
 		void recomputeActive() {
@@ -99,6 +98,11 @@ public class ChoiceManager {
 					activeChoicePoints.remove(this);
 				}
 			}
+		}
+
+		@Override
+		public String toString() {
+			return String.valueOf(atom);
 		}
 	}
 
@@ -125,28 +129,6 @@ public class ChoiceManager {
 			choicePoint.recomputeActive();
 		}
 		highestDecisionLevel--;
-	}
-
-	public void addChoiceInformation(Choices choices) {
-		for (Map.Entry<Integer, Pair<Integer, Integer>> entry : choices) {
-			// Construct and record ChoicePoint.
-			Integer atom = entry.getKey();
-			if (atom == null) {
-				throw new RuntimeException("Incomplete choice point description found (no atom). Should not happen.");
-			}
-			if (influencers.get(atom) != null) {
-				throw new RuntimeException("Received choice information repeatedly. Should not happen.");
-			}
-			Integer enabler = entry.getValue().getLeft();
-			Integer disabler = entry.getValue().getRight();
-			if (enabler == null || disabler == null) {
-				throw new RuntimeException("Incomplete choice point description found (no enabler or disabler). Should not happen.");
-			}
-			ChoicePoint choicePoint = new ChoicePoint(atom, enabler, disabler);
-			influencers.put(atom, choicePoint);
-			influencers.put(enabler, choicePoint);
-			influencers.put(disabler, choicePoint);
-		}
 	}
 
 	void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms) {

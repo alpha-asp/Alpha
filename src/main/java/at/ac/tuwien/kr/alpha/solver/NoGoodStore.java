@@ -1,7 +1,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 
 /**
  * A (temporary) interface defining the use of a NoGoodStore.
@@ -18,9 +17,9 @@ public interface NoGoodStore<T extends ThriceTruth> {
 
 	class ConflictCause {
 		NoGood violatedNoGood;
-		ReadableAssignment.Entry violatedGuess;
+		Assignment.Entry violatedGuess;
 
-		public ConflictCause(NoGood violatedNoGood, ReadableAssignment.Entry violatedGuess) {
+		public ConflictCause(NoGood violatedNoGood, Assignment.Entry violatedGuess) {
 			this.violatedNoGood = violatedNoGood;
 			this.violatedGuess = violatedGuess;
 		}

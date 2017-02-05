@@ -2,16 +2,14 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.Atom;
+import at.ac.tuwien.kr.alpha.common.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.BuiltinAtom;
+import at.ac.tuwien.kr.alpha.common.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedAtom;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedBuiltinAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedRule;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static at.ac.tuwien.kr.alpha.common.BasicAtom.fromParsedAtom;
+import java.util.*;
 
 /**
  * Represents a non-ground rule or a constraint for the semi-naive grounder.
@@ -28,12 +26,12 @@ public class NonGroundRule {
 		this.ruleId = ruleId;
 
 		// Sort for better join order.
-		this.bodyAtomsPositive = sortAtoms(bodyAtomsPositive);
+		this.bodyAtomsPositive = Collections.unmodifiableList(sortAtoms(bodyAtomsPositive));
 
 		// Since rule is safe, all variables in the negative body are already bound,
 		// i.e., joining them cannot degenerate into cross-product.
 		// Hence, there is no need to sort them.
-		this.bodyAtomsNegative = bodyAtomsNegative;
+		this.bodyAtomsNegative = Collections.unmodifiableList(bodyAtomsNegative);
 
 		this.headAtom = headAtom;
 
@@ -47,21 +45,12 @@ public class NonGroundRule {
 		final List<Atom> pos = new ArrayList<>(parsedRule.body.size() / 2);
 		final List<Atom> neg = new ArrayList<>(parsedRule.body.size() / 2);
 
-		for (ParsedAtom parsedAtom : parsedRule.body) {
-			if (parsedAtom instanceof ParsedBuiltinAtom) {
-				pos.add(new BuiltinAtom((ParsedBuiltinAtom) parsedAtom));
-			} else {
-				final Atom atom = fromParsedAtom(parsedAtom);
-				if (parsedAtom.isNegated()) {
-					neg.add(atom);
-				} else {
-					pos.add(atom);
-				}
-			}
+		for (ParsedAtom bodyAtom : parsedRule.body) {
+			(bodyAtom.isNegated() ? neg : pos).add(bodyAtom.toAtom());
 		}
 
 		// Construct head if the given parsedRule is no constraint
-		final Atom head = parsedRule.head != null ? fromParsedAtom(parsedRule.head) : null;
+		final Atom head = parsedRule.head != null ? parsedRule.head.toAtom() : null;
 
 		return new NonGroundRule(
 			intIdGenerator.getNextId(),

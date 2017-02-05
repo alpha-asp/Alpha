@@ -30,18 +30,16 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.Truth;
 
 public enum ThriceTruth implements Truth {
-	TRUE("T", true, true),
-	FALSE("F", false, true),
-	MBT("M", true, false);
+	TRUE("T", true),
+	FALSE("F", false),
+	MBT("M", true);
 
 	private final String asString;
 	private final boolean asBoolean;
-	private final boolean isBoolean;
 
-	ThriceTruth(String asString, boolean asBoolean, boolean isBoolean) {
+	ThriceTruth(String asString, boolean asBoolean) {
 		this.asString = asString;
 		this.asBoolean = asBoolean;
-		this.isBoolean = isBoolean;
 	}
 
 	@Override
@@ -56,11 +54,6 @@ public enum ThriceTruth implements Truth {
 
 	public static ThriceTruth valueOf(boolean value) {
 		return value ? TRUE : FALSE;
-	}
-
-	@Override
-	public boolean isBoolean() {
-		return isBoolean;
 	}
 
 	/**

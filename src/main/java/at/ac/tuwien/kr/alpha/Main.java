@@ -30,7 +30,6 @@ package at.ac.tuwien.kr.alpha;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.DefaultAnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.common.HexAnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
@@ -39,7 +38,7 @@ import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.bridges.HexBridge;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTreeVisitor;
-import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityTransformation;
+import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityProgramTransformation;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
@@ -53,7 +52,6 @@ import org.slf4j.LoggerFactory;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -193,7 +191,7 @@ public class Main {
 		try {
 			if (commandLine.hasOption(OPT_STRING)) {
 				program = parseVisit(commandLine.getOptionValue(OPT_STRING));
-			} else if (commandLine.hasOption(OPT_INPUT)) {
+			} else {
 				// Parse all input files and accumulate their results in one ParsedProgram.
 				String[] inputFileNames = commandLine.getOptionValues(OPT_INPUT);
 				program = parseVisit(new ANTLRFileStream(inputFileNames[0]));
@@ -201,8 +199,6 @@ public class Main {
 				for (int i = 1; i < inputFileNames.length; i++) {
 					program.accumulate(parseVisit(new ANTLRFileStream(inputFileNames[i])));
 				}
-			} else {
-				bailOut("Error: no input provided");
 			}
 		} catch (RecognitionException e) {
 			// In case a recognitionexception occured, parseVisit will
@@ -216,7 +212,7 @@ public class Main {
 		}
 
 		// Apply program transformations/rewritings (currently none).
-		IdentityTransformation programTransformation = new IdentityTransformation();
+		IdentityProgramTransformation programTransformation = new IdentityProgramTransformation();
 		ParsedProgram transformedProgram = programTransformation.transform(program);
 		Grounder grounder = GrounderFactory.getInstance(
 			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram, filter, bridges
@@ -250,7 +246,6 @@ public class Main {
 		if (commandLine.hasOption(OPT_SORT)) {
 			stream = stream.sorted();
 		}
-
 		if (commandLine.hasOption(OPT_HEX)) {
 			// If running in hex mode, do not print to standard output
 			// but instead report back via the bridge.
@@ -260,9 +255,7 @@ public class Main {
 
 			HexBridge.sendResults(answerSets.toArray(new String[answerSets.size()][]));
 		} else {
-			stream
-				.map(new DefaultAnswerSetFormatter()::format)
-				.forEach(System.out::println);
+			stream.forEach(System.out::println);
 		}
 	}
 

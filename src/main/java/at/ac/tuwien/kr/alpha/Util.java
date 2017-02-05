@@ -27,12 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.AbstractMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.SortedSet;
+import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -62,10 +57,6 @@ public class Util {
 				sb.append(", ");
 			}
 		}
-	}
-
-	public static InputStream stream(String file) {
-		return new ByteArrayInputStream(file.getBytes());
 	}
 
 	public static <T extends Comparable<T>> int compareSortedSets(SortedSet<T> a, SortedSet<T> b) {
