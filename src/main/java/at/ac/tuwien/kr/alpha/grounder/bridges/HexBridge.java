@@ -19,6 +19,13 @@ public class HexBridge implements Bridge {
 
 		String[][] externalNogoods = getExternalNoGoods(assignment, atomStore);
 
+/*		for (String[] stra : externalNogoods) {
+			for (String str : stra) {
+				System.out.print(str + " ");
+			}
+			System.out.println();
+		}*/
+
 		for (int m = 0; m < externalNogoods.length; m++) {
 			// Collect ground atoms in the body
 			List<Atom> bodyAtoms = new ArrayList<>();
@@ -77,7 +84,12 @@ public class HexBridge implements Bridge {
 			}
 
 			if(assignment.get(id).getTruth().toBoolean()) {
-				String atomString = atom.toString().replace(" ", "").replace("()", "");
+				String atomString = atom.toString().replace("()", "");
+
+				String regex = "\\s*(?=([^\"]*\"[^\"]*\")*[^\"]*$)";
+
+				atomString = atomString.replaceAll(regex, "");
+
 				if(atomString.length() < 8 || !atomString.substring(0, 8).equals("aux_ext_")) {
 					if (atomString.length() >= 8 && atomString.substring(0, 8).equals("aux_not_")) {
 						falseAtoms.add(atomString.substring(8, atomString.length()));
