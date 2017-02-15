@@ -304,12 +304,24 @@ public class NaiveGrounder extends BridgedGrounder {
 		}
 
 		// Import additional rules from external sources
+		//for (NonGroundRule externalRule : collectExternalRules(assignment, atomStore, intIdGenerator)) {
+		//	register(generateNoGoodsFromGroundSubstitution(externalRule, new Substitution()), newNoGoods);
+		//}
+
+
+		modifiedWorkingMemories = new LinkedHashSet<>();
+		return newNoGoods;
+	}
+
+	@Override
+	public Map<Integer, NoGood> getHexNoGoods(Assignment assignment) {
+		HashMap<Integer, NoGood> newNoGoods = new LinkedHashMap<>();
+
+		// Import additional rules from external sources
 		for (NonGroundRule externalRule : collectExternalRules(assignment, atomStore, intIdGenerator)) {
 			register(generateNoGoodsFromGroundSubstitution(externalRule, new Substitution()), newNoGoods);
 		}
 
-
-		modifiedWorkingMemories = new LinkedHashSet<>();
 		return newNoGoods;
 	}
 
