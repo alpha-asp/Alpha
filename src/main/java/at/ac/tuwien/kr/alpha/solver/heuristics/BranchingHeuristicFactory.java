@@ -28,7 +28,7 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.heuristics.body_activity.BodyActivityProviderFactory.BodyActivityType;
+import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
 
 import java.util.Random;
 

@@ -29,9 +29,9 @@ import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.*;
 import at.ac.tuwien.kr.alpha.solver.GroundConflictNoGoodLearner.ConflictAnalysisResult;
-import at.ac.tuwien.kr.alpha.solver.heuristics.body_activity.BodyActivityProvider;
-import at.ac.tuwien.kr.alpha.solver.heuristics.body_activity.BodyActivityProviderFactory;
-import at.ac.tuwien.kr.alpha.solver.heuristics.body_activity.BodyActivityProviderFactory.BodyActivityType;
+import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProvider;
+import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 
