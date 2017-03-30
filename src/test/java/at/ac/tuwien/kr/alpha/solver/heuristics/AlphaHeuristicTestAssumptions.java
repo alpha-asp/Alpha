@@ -43,7 +43,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests assumptions made by {@link DependencyDrivenHeuristic}. Even if these test cases do not test {@link DependencyDrivenHeuristic} directly, it will break if these test cases
+ * Tests assumptions made by {@link AlphaHeuristic}. Even if these test cases do not test {@link AlphaHeuristic} directly, it will break if these test cases
  * break.
  * 
  * Copyright (c) 2017 Siemens AG
@@ -53,7 +53,7 @@ public class AlphaHeuristicTestAssumptions {
 
 	private Grounder grounder;
 	private Assignment assignment;
-	private ChoiceManager choiceManager;
+	private TestableChoiceManager choiceManager;
 	
 	@Before
 	public void setUp() throws IOException {
@@ -61,7 +61,7 @@ public class AlphaHeuristicTestAssumptions {
 		ParsedProgram parsedProgram = parseVisit(testProgram);
 		this.grounder = new NaiveGrounder(parsedProgram);
 		this.assignment = new BasicAssignment();
-		this.choiceManager = new ChoiceManager(assignment);
+		this.choiceManager = new TestableChoiceManager(assignment);
 	}
 
 	@Test
@@ -81,7 +81,9 @@ public class AlphaHeuristicTestAssumptions {
 		int noHead = 0;
 		int other = 0;
 
-		for (NoGood noGood : getNoGoods()) {
+		Collection<NoGood> noGoods = getNoGoods();
+		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
+		for (NoGood noGood : noGoods) {
 			n++;
 			boolean knownType = false;
 			if (noGood.isBodyNotHead(isRuleBody)) {
@@ -103,7 +105,7 @@ public class AlphaHeuristicTestAssumptions {
 
 		assertEquals("Unexpected number of bodyNotHead nogoods", 1, bodyNotHead);
 		assertEquals("Unexpected number of bodyElementsNotBody nogoods", 1, bodyElementsNotBody);
-		assertEquals("Unexpected number of nogoods without head", 4, noHead);
+		assertGreaterThan("Unexpected number of nogoods without head", 4, noHead);
 
 		// there may be other nogoods (e.g. for ChoiceOn, ChoiceOff) which we do not care for here
 		System.out.println("Total number of NoGoods: " + n);
@@ -121,7 +123,9 @@ public class AlphaHeuristicTestAssumptions {
 	}
 
 	private void testIsAtomChoice(Predicate<? super Integer> isRuleBody) {
-		for (NoGood noGood : getNoGoods()) {
+		Collection<NoGood> noGoods = getNoGoods();
+		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
+		for (NoGood noGood : noGoods) {
 			for (Integer literal : noGood) {
 				int atom = atomOf(literal);
 				String atomToString = grounder.atomToString(atom);
@@ -134,5 +138,9 @@ public class AlphaHeuristicTestAssumptions {
 
 	private Collection<NoGood> getNoGoods() {
 		return grounder.getNoGoods().values();
+	}
+
+	private void assertGreaterThan(String message, long expected, long actual) {
+		assertTrue(message, actual > expected);
 	}
 }
