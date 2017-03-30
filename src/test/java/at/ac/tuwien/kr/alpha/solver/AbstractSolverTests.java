@@ -43,18 +43,18 @@ public abstract class AbstractSolverTests {
 	public static Collection<Object[]> factories() {
 		boolean enableAdditionalInternalChecks = false;
 		Collection<Object[]> factories = new ArrayList<>();
-		factories.add(new Object[] { "NaiveSolver", (Function<Grounder, Solver>) NaiveSolver::new });
+		factories.add(new Object[] {"NaiveSolver", (Function<Grounder, Solver>) NaiveSolver::new});
 		for (Heuristic heuristic : Heuristic.values()) {
 			String name = "DefaultSolver (random " + heuristic + ")";
 			Function<Grounder, Solver> instantiator = g -> {
 				return new DefaultSolver(g, new Random(), heuristic, enableAdditionalInternalChecks);
 			};
-			factories.add(new Object[] { name, instantiator });
+			factories.add(new Object[] {name, instantiator});
 			name = "DefaultSolver (deterministic " + heuristic + ")";
 			instantiator = g -> {
 				return new DefaultSolver(g, new Random(0), heuristic, enableAdditionalInternalChecks);
 			};
-			factories.add(new Object[] { name, instantiator });
+			factories.add(new Object[] {name, instantiator});
 		}
 		return factories;
 	}

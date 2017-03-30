@@ -75,7 +75,12 @@ public class AlphaHeuristicTestAssumptions {
 	}
 
 	private void testNumbersOfNoGoods(Predicate<? super Integer> isRuleBody) {
-		int n = 0, bodyNotHead = 0, bodyElementsNotBody = 0, noHead = 0, other = 0;
+		int n = 0;
+		int bodyNotHead = 0;
+		int bodyElementsNotBody = 0;
+		int noHead = 0;
+		int other = 0;
+
 		for (NoGood noGood : getNoGoods()) {
 			n++;
 			boolean knownType = false;
