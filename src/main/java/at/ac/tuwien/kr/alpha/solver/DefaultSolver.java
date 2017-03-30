@@ -63,6 +63,7 @@ public class DefaultSolver extends AbstractSolver {
 	private boolean didChange;
 
 	private int decisionCounter;
+	private int conflictCounter;
 
 	public DefaultSolver(Grounder grounder, Random random, String branchingHeuristicName, boolean debugInternalChecks) {
 		super(grounder);
@@ -79,13 +80,20 @@ public class DefaultSolver extends AbstractSolver {
 		this.fallbackBranchingHeuristic = new NaiveHeuristic(choiceManager);
 	}
 
+	public int getDecisionCounter() {
+		return decisionCounter;
+	}
+
+	public int getConflictCounter() {
+		return conflictCounter;
+	}
+
 	@Override
 	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
 		// Initially, get NoGoods from grounder.
 		if (initialize) {
 			if (!obtainNoGoodsFromGrounder()) {
-				// NoGoods are unsatisfiable.
-				LOGGER.info("{} decisions done.", decisionCounter);
+				logSizeOfSearchTree();
 				return false;
 			}
 			initialize = false;
@@ -106,7 +114,7 @@ public class DefaultSolver extends AbstractSolver {
 					throw new RuntimeException("Adding enumeration NoGood causes conflicts after backjump. Should not happen.");
 				}
 			} else {
-				LOGGER.info("{} decisions done.", decisionCounter);
+				logSizeOfSearchTree();
 				return false;
 			}
 		}
@@ -128,8 +136,7 @@ public class DefaultSolver extends AbstractSolver {
 				branchingHeuristic.violatedNoGood(violatedNoGood);
 				if (!afterAllAtomsAssigned) {
 					if (!learnBackjumpAddFromConflict()) {
-						// NoGoods are unsatisfiable.
-						LOGGER.info("{} decisions done.", decisionCounter);
+						logSizeOfSearchTree();
 						return false;
 					}
 				} else {
@@ -138,7 +145,7 @@ public class DefaultSolver extends AbstractSolver {
 					doBacktrack();
 					afterAllAtomsAssigned = false;
 					if (isSearchSpaceExhausted()) {
-						LOGGER.info("{} decisions done.", decisionCounter);
+						logSizeOfSearchTree();
 						return false;
 					}
 				}
@@ -147,8 +154,7 @@ public class DefaultSolver extends AbstractSolver {
 				LOGGER.trace("Doing propagation step.");
 				updateGrounderAssignment();
 				if (!obtainNoGoodsFromGrounder()) {
-					// NoGoods are unsatisfiable.
-					LOGGER.info("{} decisions done.", decisionCounter);
+					logSizeOfSearchTree();
 					return false;
 				}
 			} else if ((nextChoice = computeChoice()) != 0) {
@@ -163,18 +169,22 @@ public class DefaultSolver extends AbstractSolver {
 				LOGGER.debug("Answer-Set found: {}", as);
 				LOGGER.debug("Choices of Answer-Set were: {}", choiceStack);
 				action.accept(as);
-				LOGGER.info("{} decisions done.", decisionCounter);
+				logSizeOfSearchTree();
 				return true;
 			} else {
 				LOGGER.debug("Backtracking from wrong choices ({} MBTs): {}", assignment.getMBTCount(), choiceStack);
 				doBacktrack();
 				afterAllAtomsAssigned = false;
 				if (isSearchSpaceExhausted()) {
-					LOGGER.info("{} decisions done.", decisionCounter);
+					logSizeOfSearchTree();
 					return false;
 				}
 			}
 		}
+	}
+
+	private void logSizeOfSearchTree() {
+		LOGGER.info("{} decisions done with {} conflicts.", decisionCounter, conflictCounter);
 	}
 
 	private NoGood createEnumerationNoGood() {
@@ -249,6 +259,7 @@ public class DefaultSolver extends AbstractSolver {
 		if (backjumpingDecisionLevel < 0) {
 			throw new RuntimeException("Backjumping decision level less than 0, should not happen.");
 		}
+		conflictCounter++;
 		// Remove everything above the backjumpingDecisionLevel, but keep the backjumpingDecisionLevel unchanged.
 		while (assignment.getDecisionLevel() > backjumpingDecisionLevel) {
 			store.backtrack();
