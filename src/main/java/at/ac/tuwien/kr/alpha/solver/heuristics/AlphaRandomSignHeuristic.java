@@ -44,7 +44,7 @@ public class AlphaRandomSignHeuristic extends DependencyDrivenHeuristic {
 
 	@Override
 	protected void incrementSignCounter(Integer literal) {
-		; // do nothing
+		LOGGER.trace("AlphaRandomSignHeuristic does NOT increment sign counters because they are not needed.");
 	}
 
 	@Override

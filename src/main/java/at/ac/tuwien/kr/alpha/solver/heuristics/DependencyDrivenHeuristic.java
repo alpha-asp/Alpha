@@ -34,6 +34,8 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFact
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -54,6 +56,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
  * Copyright (c) 2017 Siemens AG
  */
 public class DependencyDrivenHeuristic implements BranchingHeuristic {
+	protected static final Logger LOGGER = LoggerFactory.getLogger(DependencyDrivenHeuristic.class);
 	
 	public static final double DEFAULT_ACTIVITY = 0.0;
 	public static final int DEFAULT_SIGN_COUNTER = 0;
@@ -254,9 +257,9 @@ public class DependencyDrivenHeuristic implements BranchingHeuristic {
 					literals.add(literal);
 					if (bodyAtom != 0) {
 						atomsToBodies.put(atomOf(literal), bodyAtom);
-					} else {
+					} // else {
 						// TODO
-					}
+					// }
 				}
 				// TODO: make more performant (maybe head could always come first in NoGood?)
 			}
