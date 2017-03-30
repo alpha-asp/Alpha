@@ -44,10 +44,12 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 /**
- * A new branching heuristic designed specifically for the lazy-grounding solver Alpha.
- * Inspired by BerkMin, as described in:
- * Goldberg, E.; Novikov, Y. (2002): BerkMin: A fast and robust SAT-solver.
- * In : Design, Automation and Test in Europe Conference and Exhibition, 2002. Proceedings. IEEE, pp. 142-149.
+ * The BerkMin variants {@link BerkMin} and {@link BerkMinLiteral} suffer from the fact that choice points
+ * comprise only a small portion of all the literals occuring in nogoods and therefore do not influence
+ * activity and sign counters as much as other atoms.
+ * The basic idea of {@link DependencyDrivenHeuristic} is therefore to find <i>dependent</i> atoms that can
+ * enrich the information available for a choice point. Intuitively, all atoms occurring in the head or the
+ * body of a rule depend on a choice point representing the body of this rule.
  * 
  * Copyright (c) 2017 Siemens AG
  */
@@ -176,7 +178,12 @@ public class DependencyDrivenHeuristic implements BranchingHeuristic {
 	}
 	
 	/**
-	 * TODO: doc
+	 * {@link DependencyDrivenHeuristic} manages a stack of nogoods in the fashion of {@link BerkMin}
+	 * and starts by looking at the most active atom <code>a</code> in the nogood currently at the top of the stack.
+	 * If <code>a</code> is an active choice point (i.e. representing the body of an applicable rule), it is immediately chosen;
+	 * else the most active choice point dependent on <code>a</code> is.
+	 * If there is no such atom, we continue further down the stack.
+	 * When choosing between dependent atoms, a {@link BodyActivityProvider} is employed to define the activity of a choice point.
 	 */
 	@Override
 	public int chooseAtom() {

@@ -31,6 +31,17 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.body_activity.BodyActivityProvide
 
 import java.util.Random;
 
+/**
+ * One weakness of Alpha that has to be addressed in future work is its lack of support nogoods (except in one special case).
+ * This means that the solver cannot recognize when an atom occurring negatively in a rule body cannot be satisfied anymore,
+ * thus exploring large portions of the search space in search for a witness.
+ * Therefore, Alpha currently benefits in many cases from heuristics that assign true to choice points whenever they can.
+ * We apply this modification to {@link DependencyDrivenHeuristic}, which then always assigns true first and tries false
+ * only when backtracking, and call these variants <i>pyromaniacal</i> since they prefer the firing of a rule over its non-firing.
+
+ * Copyright (c) 2017 Siemens AG
+ *
+ */
 public class DependencyDrivenPyroHeuristic extends DependencyDrivenHeuristic {
 
 	public DependencyDrivenPyroHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random,

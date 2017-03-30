@@ -34,6 +34,20 @@ import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
+/**
+ * {@link DependencyDrivenHeuristic} needs to know a lot about the structure of nogoods, i.e. the role their members play in rules.
+ * However, the solving component of Alpha usually deals only with nogoods and cannot naturally access this information.
+ * Therefore, {@link GeneralizedDependencyDrivenHeuristic} both generalizes and simplifies {@link DependencyDrivenHeuristic}
+ * by redefining the set of atoms dependent on a choice point.
+ * This set is constructed by adding to it, every time a new nogood containing a choice point is added to the stack,
+ * all other atoms in the nogood.
+ * To choose an atom, {@link GeneralizedDependencyDrivenHeuristic} then proceeds as {@link DependencyDrivenHeuristic}.
+ * Because {@link GeneralizedDependencyDrivenHeuristic} does not know the head belonging to a choice point,
+ * it just uses the {@link BerkMin} method to choose a truth value.
+
+ * Copyright (c) 2017 Siemens AG
+ *
+ */
 public class GeneralizedDependencyDrivenHeuristic extends DependencyDrivenHeuristic {
 
 	public GeneralizedDependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random,

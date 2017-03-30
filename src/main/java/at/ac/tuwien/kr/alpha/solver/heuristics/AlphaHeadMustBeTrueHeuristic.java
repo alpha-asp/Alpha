@@ -54,7 +54,6 @@ public class AlphaHeadMustBeTrueHeuristic extends DependencyDrivenHeuristic {
 		Optional<Integer> mostActiveBody = bodiesOfMbtHeads.filter(this::isUnassigned).filter(choiceManager::isActiveChoiceAtom)
 				.max(Comparator.comparingDouble(bodyActivity::get));
 		if (mostActiveBody.isPresent()) {
-			// System.out.println("!"); // TODO: at the moment, this heuristic does NOTHING except call super! So either there is a bug or it is just useless.
 			rememberedAtom = mostActiveBody.get();
 			return rememberedAtom;
 		}
