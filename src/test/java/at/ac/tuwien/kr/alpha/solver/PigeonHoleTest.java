@@ -30,6 +30,7 @@ import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
@@ -73,16 +74,19 @@ public class PigeonHoleTest extends AbstractSolverTests {
 	}
 
 	@Test(timeout = 5000)
+	@Ignore("disabled to save resources during CI")
 	public void test3Pigeons3Holes() throws IOException {
 		testPigeonsHoles(3, 3);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void test4Pigeons3Holes() throws IOException {
 		testPigeonsHoles(4, 3);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void test3Pigeons4Holes() throws IOException {
 		testPigeonsHoles(3, 4);
 	}
