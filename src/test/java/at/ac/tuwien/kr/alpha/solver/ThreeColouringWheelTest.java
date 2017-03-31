@@ -126,8 +126,6 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 		rules.addAll(program.facts);
 		rules.addAll(program.rules);
 		rules.addAll(program.constraints);
-		// Collections.reverse(rules);
-		// Collections.shuffle(rules);
 		return new ParsedProgram(rules);
 	}
 

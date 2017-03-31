@@ -135,8 +135,6 @@ public class PartSubpartConfigurationTest extends AbstractSolverTests {
 
 	private String concat(List<String> rules) {
 		String ls = System.lineSeparator();
-		// Collections.reverse(rules);
-		// Collections.shuffle(rules, new Random(0));
 		return rules.stream().collect(Collectors.joining(ls));
 	}
 

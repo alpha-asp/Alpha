@@ -128,6 +128,7 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 		rules.addAll(program.rules);
 		rules.addAll(program.constraints);
 
+		// TODO: switch on if different rule orderings in the encoding are desired (e.g. for benchmarking purposes)
 		// Collections.reverse(rules);
 		// Collections.shuffle(rules);
 
