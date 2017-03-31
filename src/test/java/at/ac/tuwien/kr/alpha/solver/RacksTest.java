@@ -31,8 +31,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.antlr.v4.runtime.ANTLRFileStream;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -42,9 +41,10 @@ import java.util.Optional;
 import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 
 /**
- * Tests {@link AbstractSolver} using Omiga benchmark problems.
+ * Tests {@link AbstractSolver} using a racks configuration problem.
  *
  */
+@Ignore("disabled to save resources during CI")
 public class RacksTest extends AbstractSolverTests {
 	/**
 	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.

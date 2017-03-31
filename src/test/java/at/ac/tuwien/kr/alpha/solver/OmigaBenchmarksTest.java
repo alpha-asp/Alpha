@@ -31,8 +31,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.antlr.v4.runtime.ANTLRFileStream;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -75,31 +74,37 @@ public class OmigaBenchmarksTest extends AbstractSolverTests {
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testCutedge_100_30() throws IOException {
 		test("cutedge", "cutedge-100-30.txt");
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testCutedge_100_50() throws IOException {
 		test("cutedge", "cutedge-100-50.txt");
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testLocstrat_200() throws IOException {
 		test("locstrat", "locstrat-200.txt");
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testLocstrat_400() throws IOException {
 		test("locstrat", "locstrat-400.txt");
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testReach_1() throws IOException {
 		test("reach", "reach-1.txt");
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testReach_4() throws IOException {
 		test("reach", "reach-4.txt");
 	}

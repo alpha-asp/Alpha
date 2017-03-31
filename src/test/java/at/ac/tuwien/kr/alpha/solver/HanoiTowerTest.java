@@ -31,8 +31,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.*;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.antlr.v4.runtime.ANTLRFileStream;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -47,6 +46,7 @@ import static org.junit.Assert.assertTrue;
  * Tests {@link AbstractSolver} using some hanoi tower test cases (see https://en.wikipedia.org/wiki/Tower_of_Hanoi).
  *
  */
+@Ignore("disabled to save resources during CI")
 public class HanoiTowerTest extends AbstractSolverTests {
 	/**
 	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.

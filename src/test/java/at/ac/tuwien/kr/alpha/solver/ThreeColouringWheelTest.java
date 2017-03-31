@@ -30,8 +30,7 @@ import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.*;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -40,9 +39,11 @@ import java.util.*;
 import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 
 /**
- * Tests {@link AbstractSolver} using some three-coloring test cases, as described in: Lef鑦re, Claire; B閍trix, Christopher; St閜han, Igor; Garcia, Laurent
- * (2017): ASPeRiX, a first-order forward chaining approach for answer set computing. In Theory and Practice of Logic Programming, pp.񁥂5. DOI:
- * 10.1017/S1471068416000569
+ * Tests {@link AbstractSolver} using some three-coloring test cases, as described in:
+ * Lef鑦re, Claire; B閍trix, Christopher; St閜han, Igor; Garcia, Laurent (2017):
+ * ASPeRiX, a first-order forward chaining approach for answer set computing.
+ * In Theory and Practice of Logic Programming, pp.񁥂5.
+ * DOI: 10.1017/S1471068416000569
  */
 public class ThreeColouringWheelTest extends AbstractSolverTests {
 	/**
@@ -60,7 +61,7 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 
 	@Before
 	public void printSolverName() {
-		// System.out.println(solverName);
+		System.out.println(solverName);
 	}
 
 	@Test(timeout = 1000)
@@ -74,23 +75,25 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 	}
 
 	@Test(timeout = 6000)
+	@Ignore("disabled to save resources during CI")
 	public void testN6() throws IOException {
 		testThreeColouring(6);
 	}
 
-	// for paper:
-
 	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
 	public void testN3() throws IOException {
 		testThreeColouring(3);
 	}
 
 	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
 	public void testN7() throws IOException {
 		testThreeColouring(7);
 	}
 
 	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
 	public void testN11() throws IOException {
 		testThreeColouring(11);
 	}
@@ -113,12 +116,9 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 		Solver solver = getInstance(grounder);
 
 		Optional<AnswerSet> answerSet = solver.stream().findAny();
-		// System.out.println(answerSet);
+		System.out.println(answerSet);
 
 		// TODO: check correctness of answer set
-
-		System.out.print(" " + ((DefaultSolver) solver).getDecisionCounter() + "," + ((DefaultSolver) solver).getConflictCounter() + "[" + solverName + "]");
-		// System.out.print(" " + ((DefaultSolver) solver).getDecisionCounter());
 	}
 
 	private ParsedProgram maybeShuffle(ParsedProgram program) {
@@ -127,7 +127,7 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 		rules.addAll(program.rules);
 		rules.addAll(program.constraints);
 		// Collections.reverse(rules);
-		Collections.shuffle(rules);
+		// Collections.shuffle(rules);
 		return new ParsedProgram(rules);
 	}
 

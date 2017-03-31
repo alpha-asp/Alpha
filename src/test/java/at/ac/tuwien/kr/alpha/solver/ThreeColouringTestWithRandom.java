@@ -39,11 +39,12 @@ import java.util.*;
 import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 
 /**
- * Tests {@link AbstractSolver} using some three-coloring test cases, as described in: Lefèvre, Claire; Béatrix, Christopher; Stéphan, Igor; Garcia, Laurent
- * (2017): ASPeRiX, a first-order forward chaining approach for answer set computing. In Theory and Practice of Logic Programming, pp. 1–45. DOI:
- * 10.1017/S1471068416000569
+ * Tests {@link AbstractSolver} using some three-coloring test cases, as described in:
+ * Lefèvre, Claire; Béatrix, Christopher; Stéphan, Igor; Garcia, Laurent (2017):
+ * ASPeRiX, a first-order forward chaining approach for answer set computing.
+ * In Theory and Practice of Logic Programming, pp. 1–45.
+ * DOI: 10.1017/S1471068416000569
  */
-@Ignore
 public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 	/**
 	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
@@ -63,95 +64,106 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 		System.out.println(solverName);
 	}
 
-	// @Test(timeout = 3000)
-	// public void testN3() throws IOException {
-	// testThreeColouring(3, false, 0);
-	// }
-	//
-	// @Test(timeout = 4000)
-	// public void testN4() throws IOException {
-	// testThreeColouring(4, false, 0);
-	// }
-	//
-	// @Test(timeout = 5000)
-	// public void testN5() throws IOException {
-	// testThreeColouring(5, false, 0);
-	// }
-	//
-	// @Test(timeout = 6000)
-	// public void testN6() throws IOException {
-	// testThreeColouring(6, false, 0);
-	// }
-	//
-	// @Test(timeout = 7000)
-	// public void testN7() throws IOException {
-	// testThreeColouring(7, false, 0);
-	// }
-	//
-	// @Test(timeout = 8000)
-	// public void testN8() throws IOException {
-	// testThreeColouring(8, false, 0);
-	// }
-	//
-	// @Test(timeout = 9000)
-	// public void testN9() throws IOException {
-	// testThreeColouring(9, false, 0);
-	// }
+	@Test(timeout = 3000)
+	public void testN3() throws IOException {
+		testThreeColouring(3, false, 0);
+	}
+
+	@Test(timeout = 4000)
+	public void testN4() throws IOException {
+		testThreeColouring(4, false, 0);
+	}
+
+	@Test(timeout = 5000)
+	public void testN5() throws IOException {
+		testThreeColouring(5, false, 0);
+	}
+
+	@Test(timeout = 6000)
+	public void testN6() throws IOException {
+		testThreeColouring(6, false, 0);
+	}
+
+	@Test(timeout = 7000)
+	public void testN7() throws IOException {
+		testThreeColouring(7, false, 0);
+	}
+
+	@Test(timeout = 8000)
+	public void testN8() throws IOException {
+		testThreeColouring(8, false, 0);
+	}
+
+	@Test(timeout = 9000)
+	public void testN9() throws IOException {
+		testThreeColouring(9, false, 0);
+	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testN10() throws IOException {
 		testThreeColouring(10, false, 0);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testN10Random0() throws IOException {
 		testThreeColouring(10, true, 0);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testN10Random1() throws IOException {
 		testThreeColouring(10, true, 1);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testN10Random2() throws IOException {
 		testThreeColouring(10, true, 2);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testN10Random3() throws IOException {
 		testThreeColouring(10, true, 3);
 	}
 
 	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
 	public void testN19() throws IOException {
 		testThreeColouring(19, false, 0);
 	}
 
 	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
 	public void testN19Random0() throws IOException {
 		testThreeColouring(19, true, 0);
 	}
 
 	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
 	public void testN19Random1() throws IOException {
 		testThreeColouring(19, true, 1);
 	}
 
 	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
 	public void testN19Random2() throws IOException {
 		testThreeColouring(19, true, 2);
 	}
 
 	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
 	public void testN19Random3() throws IOException {
 		testThreeColouring(19, true, 3);
 	}
 
-	// @Test(timeout = 10000)
-	// public void testN101() throws IOException {
-	// testThreeColouring(101, false, 0);
-	// }
+	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
+	public void testN101() throws IOException {
+		testThreeColouring(101, false, 0);
+	}
 
 	private void testThreeColouring(int n, boolean shuffle, int seed) throws IOException {
 		ParsedProgram program = parseVisit("col(V,C) :- v(V), c(C), not ncol(V,C)." + "ncol(V,C) :- col(V,D), c(C), C != D." + ":- e(V,U), col(V,C), col(U,C).");

@@ -30,8 +30,7 @@ import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.*;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -55,7 +54,7 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 
 	@Before
 	public void printSolverName() {
-		// System.out.println(solverName);
+		System.out.println(solverName);
 	}
 
 	@Test(timeout = 1000)
@@ -64,33 +63,37 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testV10E18() throws IOException {
 		testThreeColouring(10, 18);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testV20E38() throws IOException {
 		testThreeColouring(20, 38);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testV30E48() throws IOException {
 		testThreeColouring(30, 48);
 	}
 
-	// for paper:
-
 	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
 	public void testV200E300() throws IOException {
 		testThreeColouring(200, 300);
 	}
 
 	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
 	public void testV300E200() throws IOException {
 		testThreeColouring(300, 200);
 	}
 
 	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
 	public void testV300E300() throws IOException {
 		testThreeColouring(300, 300);
 	}
@@ -114,12 +117,9 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 		Solver solver = getInstance(grounder);
 
 		Optional<AnswerSet> answerSet = solver.stream().findAny();
-		// System.out.println(answerSet);
+		System.out.println(answerSet);
 
 		// TODO: check correctness of answer set
-
-		// System.out.print(" " + ((DefaultSolver) solver).getDecisionCounter() + "[" + solverName + "]");
-		System.out.print(" " + ((DefaultSolver) solver).getDecisionCounter());
 	}
 
 	private ParsedProgram maybeShuffle(ParsedProgram program) {
@@ -146,7 +146,8 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 		Random rand = new Random(0);
 		Collection<ParsedFact> facts = new LinkedHashSet<>(edges);
 		for (int i = 0; i < edges; i++) {
-			int v1 = 0, v2 = 0;
+			int v1 = 0;
+			int v2 = 0;
 			while (v1 == v2) {
 				v1 = rand.nextInt(vertices);
 				v2 = rand.nextInt(vertices);

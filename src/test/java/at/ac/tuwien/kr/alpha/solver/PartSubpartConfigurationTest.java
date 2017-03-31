@@ -30,8 +30,7 @@ import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -60,7 +59,7 @@ public class PartSubpartConfigurationTest extends AbstractSolverTests {
 
 	@Before
 	public void printSolverName() {
-		// System.out.print(solverName);
+		System.out.print(solverName);
 	}
 
 	@Test(timeout = 1000)
@@ -69,36 +68,43 @@ public class PartSubpartConfigurationTest extends AbstractSolverTests {
 	}
 
 	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
 	public void testN4() throws IOException {
 		testPartSubpart(4);
 	}
 
 	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
 	public void testN8() throws IOException {
 		testPartSubpart(8);
 	}
 
 	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
 	public void testN16() throws IOException {
 		testPartSubpart(16);
 	}
 
 	@Test(timeout = 61000)
+	@Ignore("disabled to save resources during CI")
 	public void testN32() throws IOException {
 		testPartSubpart(32);
 	}
 
 	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
 	public void testN60() throws IOException {
 		testPartSubpart(60);
 	}
 
 	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
 	public void testN75() throws IOException {
 		testPartSubpart(75);
 	}
 
 	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
 	public void testN100() throws IOException {
 		testPartSubpart(100);
 	}
@@ -123,15 +129,14 @@ public class PartSubpartConfigurationTest extends AbstractSolverTests {
 		Solver solver = getInstance(grounder);
 
 		Optional<AnswerSet> answerSet = solver.stream().findAny();
-		// System.out.println(answerSet);
-		// System.out.print(" " + ((DefaultSolver) solver).getDecisionCounter() + "," + ((DefaultSolver) solver).getConflictCounter() + "[" + solverName + "]");
-		// System.out.print(" " + ((DefaultSolver) solver).getDecisionCounter());
+		System.out.println(answerSet);
+		// TODO: check correctness of answer set
 	}
 
 	private String concat(List<String> rules) {
 		String ls = System.lineSeparator();
 		// Collections.reverse(rules);
-		Collections.shuffle(rules, new Random(0));
+		// Collections.shuffle(rules, new Random(0));
 		return rules.stream().collect(Collectors.joining(ls));
 	}
 
