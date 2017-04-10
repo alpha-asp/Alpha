@@ -64,11 +64,13 @@ public class Main {
 	private static final String OPT_FILTER = "filter";
 	private static final String OPT_SORT = "sort";
 	private static final String OPT_DETERMINISTIC = "deterministic";
+	private static final String OPT_BRANCHING_HEURISTIC = "branchingHeuristic";
 
 	private static final String DEFAULT_GROUNDER = "naive";
 	private static final String DEFAULT_SOLVER = "default";
 	private static final String OPT_SEED = "seed";
 	private static final String OPT_DEBUG_INTERNAL_CHECKS = "DebugEnableInternalChecks";
+	private static final String DEFAULT_BRANCHING_HEURISTIC = Heuristic.NAIVE.name();
 
 	private static CommandLine commandLine;
 
@@ -123,6 +125,11 @@ public class Main {
 
 		Option debugFlags = new Option(OPT_DEBUG_INTERNAL_CHECKS, "run additional (time-consuming) safety checks.");
 		options.addOption(debugFlags);
+
+		Option branchingHeuristicOption = new Option("b", OPT_BRANCHING_HEURISTIC, false, "name of the branching heuristic to use");
+		branchingHeuristicOption.setArgs(1);
+		branchingHeuristicOption.setArgName("heuristic");
+		options.addOption(branchingHeuristicOption);
 
 		try {
 			commandLine = new DefaultParser().parse(options, args);
@@ -207,8 +214,17 @@ public class Main {
 
 		LOGGER.info("Seed for pseudorandomization is {}.", seed);
 
+		String chosenSolver = commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER);
+		String chosenBranchingHeuristic = commandLine.getOptionValue(OPT_BRANCHING_HEURISTIC, DEFAULT_BRANCHING_HEURISTIC);
+		Heuristic parsedChosenBranchingHeuristic = null;
+		try {
+			parsedChosenBranchingHeuristic = Heuristic.get(chosenBranchingHeuristic);
+		} catch (IllegalArgumentException e) {
+			bailOut("Unknown branching heuristic: {}. Please try one of the following: {}.", chosenBranchingHeuristic, Heuristic.listAllowedValues());
+		}
+		
 		Solver solver = SolverFactory.getInstance(
-			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, new Random(seed), Heuristic.BERKMINLITERAL, debugInternalChecks // TODO: see issue #18
+chosenSolver, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks
 		);
 
 		Stream<AnswerSet> stream = solver.stream();

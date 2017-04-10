@@ -29,8 +29,11 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public final class BranchingHeuristicFactory {
 
@@ -61,6 +64,22 @@ public final class BranchingHeuristicFactory {
 		@Override
 		public String toString() {
 			return name;
+		}
+
+		public static Heuristic get(String name) {
+			for (Heuristic heuristic : values()) {
+				if (StringUtils.equalsIgnoreCase(name, heuristic.name)) {
+					return heuristic;
+				}
+			}
+			return valueOf(name);
+		}
+
+		/**
+		 * @return a comma-separated list of names of known heuristics
+		 */
+		public static String listAllowedValues() {
+			return Arrays.stream(values()).map(Heuristic::toString).collect(Collectors.joining(", "));
 		}
 	}
 
