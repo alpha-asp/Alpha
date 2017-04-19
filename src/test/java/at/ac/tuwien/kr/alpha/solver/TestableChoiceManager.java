@@ -1,19 +1,17 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2017 Siemens AG
  * All rights reserved.
- *
- * Additional changes made by Siemens.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *
+ * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -27,19 +25,25 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.Random;
+import java.util.Map;
 
-public final class SolverFactory {
-	public static Solver getInstance(String name, Grounder grounder, Random random, Heuristic heuristic, boolean debugInternalChecks) {
-		switch (name.toLowerCase()) {
-			case "naive" :
-				return new NaiveSolver(grounder);
-			case "default":
-				return new DefaultSolver(grounder, random, heuristic, debugInternalChecks);
-		}
-		throw new IllegalArgumentException("Unknown solver requested.");
+/**
+ * This class is only here to make {@link ChoiceManager#addChoiceInformation(Pair)} public so that unit tests can access it.
+ * 
+ * Copyright (c) 2017 Siemens AG
+ *
+ */
+public class TestableChoiceManager extends ChoiceManager {
+
+	public TestableChoiceManager(Assignment assignment) {
+		super(assignment);
 	}
+
+	@Override
+	public void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms) {
+		super.addChoiceInformation(choiceAtoms);
+	}
+
 }
