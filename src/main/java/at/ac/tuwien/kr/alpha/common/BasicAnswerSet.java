@@ -1,6 +1,8 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -129,16 +131,34 @@ public class BasicAnswerSet implements AnswerSet {
 			return this;
 		}
 
-		public Builder instance(String... constantSymbols) {
+		public Builder instance(String... terms) {
 			if (firstInstance) {
 				firstInstance = false;
-				predicate = new BasicPredicate(predicateSymbol, constantSymbols.length);
+				predicate = new BasicPredicate(predicateSymbol, terms.length);
 				predicates.add(predicate);
 			}
 
-			List<Term> terms = Stream.of(constantSymbols).map(ConstantTerm::getInstance).collect(Collectors.toList());
-			instances.add(new BasicAtom(predicate, terms));
+			List<Term> termList = Stream.of(terms).map(BasicAnswerSet.Builder::parseFunctionTermSimple).collect(Collectors.toList());
+			instances.add(new BasicAtom(predicate, termList));
 			return this;
+		}
+
+		private static Term parseFunctionTermSimple(String functionTerm) {
+			String funcTerm = functionTerm.replaceAll("\\s+", "");	// remove all whitespace.
+			Pattern funcTermPattern = Pattern.compile("(\\w*)\\((.*)\\)");
+			Matcher funcTermMatcher = funcTermPattern.matcher(funcTerm);
+			if (funcTermMatcher.matches()) {
+				String functionSymbol = funcTermMatcher.group(1);
+				String functionTermlist = funcTermMatcher.group(2);
+				ArrayList<Term> termlist = new ArrayList<>();
+				for (String subTerm : functionTermlist.split(",")) {
+					termlist.add(parseFunctionTermSimple(subTerm));
+				}
+				return FunctionTerm.getInstance(functionSymbol, termlist);
+			} else {
+				// Function term does not match, input is a constant.
+				return ConstantTerm.getInstance(functionTerm);
+			}
 		}
 
 		public BasicAnswerSet build() {

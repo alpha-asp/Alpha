@@ -624,4 +624,25 @@ public class SolverTests extends AbstractSolverTests {
 
 		assertEquals(0, answerSets.size());
 	}
+
+	@Test
+	public void testFunctionTermEquality() throws IOException {
+		String testProgram = "r1(f(a,b)). r2(f(a,b)). a :- r1(X), r2(Y), X = Y.";
+		ParsedProgram parsedProgram = parseVisit(testProgram);
+		Grounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
+			new BasicAnswerSet.Builder()
+				.predicate("r1")
+				.instance("f(a,b)")
+				.predicate("r2")
+				.instance("f(a,b)")
+				.predicate("a")
+				.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
 }
