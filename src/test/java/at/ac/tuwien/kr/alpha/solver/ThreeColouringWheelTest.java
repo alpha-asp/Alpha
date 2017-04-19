@@ -40,7 +40,7 @@ import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 
 /**
  * Tests {@link AbstractSolver} using some three-coloring test cases, as described in:
- * Lef®®vre, Claire; B®¶atrix, Christopher; St®¶phan, Igor; Garcia, Laurent (2017):
+ * Lef√®vre, Claire; B√©atrix, Christopher; St√©phan, Igor; Garcia, Laurent (2017):
  * ASPeRiX, a first-order forward chaining approach for answer set computing.
  * In Theory and Practice of Logic Programming, pp. 1-45.
  * DOI: 10.1017/S1471068416000569
