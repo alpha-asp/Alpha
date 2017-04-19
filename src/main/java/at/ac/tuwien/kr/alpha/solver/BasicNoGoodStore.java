@@ -105,9 +105,9 @@ class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	@Override
 	public ConflictCause add(int id, NoGood noGood) {
 		LOGGER.trace("Adding {}", noGood);
-		if (noGood.size() == 1) {
+		if (noGood.isUnary()) {
 			return addUnary(noGood);
-		} else if (noGood.size() == 2) {
+		} else if (noGood.isBinary()) {
 			return addAndWatchBinary(id, noGood);
 		} else {
 			return addAndWatch(noGood);
