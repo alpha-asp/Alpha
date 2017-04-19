@@ -7,7 +7,7 @@ import at.ac.tuwien.kr.alpha.common.Term;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ParsedConstant extends ParsedTerm {
-	enum Type { STRING, NUMBER, CONSTANT }
+	public enum Type { STRING, NUMBER, CONSTANT }
 
 	private final String content;
 

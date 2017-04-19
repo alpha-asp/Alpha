@@ -511,7 +511,7 @@ public class BasicAssignment implements Assignment {
 
 		@Override
 		public String toString() {
-			return value.toString() + "(" + decisionLevel + ", " + propagationLevel + ")";
+			return String.format("%d=%s(%d, %d)", atom, value, decisionLevel, propagationLevel);
 		}
 	}
 }

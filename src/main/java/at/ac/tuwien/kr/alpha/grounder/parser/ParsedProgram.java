@@ -1,8 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -20,7 +18,7 @@ public class ParsedProgram extends CommonParsedObject {
 		this.constraints = constraints;
 	}
 
-	public ParsedProgram(List<CommonParsedObject> objects) {
+	public ParsedProgram(Collection<? extends CommonParsedObject> objects) {
 		this(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 
 		objects.forEach(o -> o.addTo(this));
