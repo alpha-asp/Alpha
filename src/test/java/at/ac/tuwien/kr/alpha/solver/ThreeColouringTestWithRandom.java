@@ -90,11 +90,13 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 	}
 
 	@Test(timeout = 8000)
+	@Ignore("disabled to save resources during CI")
 	public void testN8() throws IOException {
 		testThreeColouring(8, false, 0);
 	}
 
 	@Test(timeout = 9000)
+	@Ignore("disabled to save resources during CI")
 	public void testN9() throws IOException {
 		testThreeColouring(9, false, 0);
 	}
