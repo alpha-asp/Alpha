@@ -49,6 +49,10 @@ $ gradle bundledJar
 
 and pick up `build/libs/alpha-bundled.jar`.
 
+## Publications
+
+ * [Antonius Weinzierl: Blending Lazy-Grounding and CDNL Search for Answer-Set Solving](https://doi.org/10.1007/978-3-319-61660-5_17)
+
 ## Suggested Reading
 
  * [Answer Set programming: A Primer](http://www.kr.tuwien.ac.at/staff/tkren/pub/2009/rw2009-asp.pdf)
