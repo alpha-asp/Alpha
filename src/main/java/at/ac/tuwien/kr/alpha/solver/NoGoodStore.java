@@ -6,7 +6,7 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
  * A (temporary) interface defining the use of a NoGoodStore.
  * Copyright (c) 2016, the Alpha Team.
  */
-public interface NoGoodStore<T extends ThriceTruth> {
+interface NoGoodStore {
 	/**
 	 * Adds a nogood with the given id.
 	 * @param id the unique identifier of the nogood.

@@ -38,7 +38,7 @@ import java.util.*;
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
-class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
+class BasicNoGoodStore implements NoGoodStore {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BasicNoGoodStore.class);
 	private boolean internalChecksEnabled;
 
