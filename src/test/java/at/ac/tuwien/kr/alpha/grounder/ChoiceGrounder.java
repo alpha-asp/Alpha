@@ -202,4 +202,9 @@ public class ChoiceGrounder implements Grounder {
 	public boolean isAtomChoicePoint(int atom) {
 		return atom == ATOM_BR1 || atom == ATOM_BR2;
 	}
+
+	@Override
+	public int getMaxAtomId() {
+		return 8;
+	}
 }

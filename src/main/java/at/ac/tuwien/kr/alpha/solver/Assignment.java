@@ -90,6 +90,8 @@ public interface Assignment {
 
 	Assignment.Entry getGuessViolatedByAssign();
 
+	void growForMaxAtomId(int maxAtomId);
+
 	Queue<Entry> getAssignmentsToProcess();
 
 	/**
@@ -101,6 +103,39 @@ public interface Assignment {
 	Entry get(int atom);
 
 	int getDecisionLevel();
+
+	/**
+	 * Helper for debugging: prints the given NoGood with its assignment inlined.
+	 * @param noGood the nogood to print.
+	 * @return a string of the nogood with the current assignment (inlined).
+	 */
+	default String printNoGoodAssignment(NoGood noGood) {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("{ ");
+
+		for (int i = 0; i < noGood.size(); i++) {
+			sb.append(noGood.getLiteral(i));
+			sb.append("=");
+			sb.append(this.get(atomOf(noGood.getLiteral(i))));
+			sb.append(" ");
+		}
+
+		sb.append("}");
+
+		if (noGood.hasHead()) {
+			sb.append("[");
+			sb.append(noGood.getHead());
+			sb.append("]");
+		}
+
+		if (noGood instanceof WatchedNoGood) {
+			WatchedNoGood watchedNoGood = (WatchedNoGood) noGood;
+			sb.append("{ " + watchedNoGood.getPointer(0) + " " + watchedNoGood.getPointer(1) + " " + watchedNoGood.getAlphaPointer() + " }");
+		}
+
+		return sb.toString();
+	}
 
 	/**
 	 * Returns the truth value assigned to an atom.
@@ -187,5 +222,29 @@ public interface Assignment {
 		int getPropagationLevel();
 		boolean isReassignAtLowerDecisionLevel();
 		void setReassignFalse();
+
+		/**
+		 * Returns the literal corresponding to this assignment
+		 * @return atomId if this entry is TRUE/MBT and -atomId if entry is FALSE.
+		 */
+		default int getLiteral() {
+			return getTruth().toBoolean() ? getAtom() : -getAtom();
+		}
+
+		/**
+		 * Returns the weakly assigned decision level.
+		 * @return the decision level of a previous MBT if it exists, otherwise the decision level of this entry.
+		 */
+		default int getWeakDecisionLevel() {
+			return getPrevious() != null ? getPrevious().getDecisionLevel() : getDecisionLevel();
+		}
+
+		/**
+		 * Returns the strongly assigned decision level.
+		 * @return the decision level of this entry if it is TRUE/FALSE and Integer.MAX_VALUE otherwise.
+		 */
+		default int getStrongDecisionLevel() {
+			return getTruth().isMBT() ? Integer.MAX_VALUE : getDecisionLevel();
+		}
 	}
 }

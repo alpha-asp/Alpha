@@ -52,7 +52,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 public class DefaultSolver extends AbstractSolver {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolver.class);
 
-	private final NoGoodStore<ThriceTruth> store;
+	private final NoGoodStore store;
 	private final ChoiceStack choiceStack;
 	private final Assignment assignment;
 	private final GroundConflictNoGoodLearner learner;
@@ -69,8 +69,8 @@ public class DefaultSolver extends AbstractSolver {
 	public DefaultSolver(Grounder grounder, Random random, String branchingHeuristicName, boolean debugInternalChecks) {
 		super(grounder);
 
-		this.assignment = new BasicAssignment(grounder);
-		this.store = new BasicNoGoodStore(assignment, grounder);
+		this.assignment = new ArrayAssignment(grounder);
+		this.store = new NoGoodStoreAlphaRoaming(assignment);
 		if (debugInternalChecks) {
 			store.enableInternalChecks();
 		}
@@ -99,6 +99,10 @@ public class DefaultSolver extends AbstractSolver {
 				int backjumpLevel = computeMinimumConflictLevel(enumerationNoGood);
 				if (backjumpLevel == -1) {
 					throw new RuntimeException("Enumeration NoGood is currently not violated. Should not happen.");
+				}
+				if (backjumpLevel == 0) {
+					// Search space exhausted (only happens if first guess is for TRUE at decision level 1 for an atom that was MBT at decision level 0 already).
+					return false;
 				}
 				// Backjump instead of backtrack, enumerationNoGood will invert lass guess.
 				doBackjump(backjumpLevel - 1);
@@ -364,6 +368,7 @@ public class DefaultSolver extends AbstractSolver {
 	 */
 	private boolean addAllNoGoodsAndTreatContradictions(Map<Integer, NoGood> obtained) {
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
+		assignment.growForMaxAtomId(grounder.getMaxAtomId());
 		while (!noGoodsToAdd.isEmpty()) {
 			Map.Entry<Integer, NoGood> noGoodEntry = noGoodsToAdd.poll();
 			NoGoodStore.ConflictCause conflictCause = store.add(noGoodEntry.getKey(), noGoodEntry.getValue());

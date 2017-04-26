@@ -603,6 +603,11 @@ public class NaiveGrounder extends AbstractGrounder {
 		return atomStore.get(atom) instanceof RuleAtom;
 	}
 
+	@Override
+	public int getMaxAtomId() {
+		return atomStore.getHighestAtomId();
+	}
+
 	public void printCurrentlyKnownGroundRules() {
 		System.out.println("Printing known ground rules:");
 		for (Map.Entry<NonGroundRule, HashSet<Substitution>> ruleSubstitutionsEntry : knownGroundingSubstitutions.entrySet()) {
