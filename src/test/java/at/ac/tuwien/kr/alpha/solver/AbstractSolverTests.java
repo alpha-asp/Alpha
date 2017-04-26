@@ -72,12 +72,6 @@ public abstract class AbstractSolverTests {
 				}
 			},
 			{
-				"DefaultSolver (random Naive)",
-				(Function<Grounder, Solver>) g -> {
-					return new DefaultSolver(g, new Random(), BranchingHeuristicFactory.NAIVE, enableAdditionalInternalChecks);
-				}
-			},
-			{
 				"DefaultSolver (deterministic Naive)",
 				(Function<Grounder, Solver>) g -> {
 					return new DefaultSolver(g, new Random(0), BranchingHeuristicFactory.NAIVE, enableAdditionalInternalChecks);
