@@ -28,7 +28,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
@@ -42,42 +42,21 @@ public abstract class AbstractSolverTests {
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> factories() {
 		boolean enableAdditionalInternalChecks = false;
-		return Arrays.asList(new Object[][]{
-			{
-				"NaiveSolver",
-				(Function<Grounder, Solver>) NaiveSolver::new
-			},
-			{
-				"DefaultSolver (random BerkMin)",
-				(Function<Grounder, Solver>) g -> {
-					return new DefaultSolver(g, new Random(), BranchingHeuristicFactory.BERKMIN, enableAdditionalInternalChecks);
-				}
-			},
-			{
-				"DefaultSolver (deterministic BerkMin)",
-				(Function<Grounder, Solver>) g -> {
-					return new DefaultSolver(g, new Random(0), BranchingHeuristicFactory.BERKMIN, enableAdditionalInternalChecks);
-				}
-			},
-			{
-				"DefaultSolver (random BerkMinLiteral)",
-				(Function<Grounder, Solver>) g -> {
-					return new DefaultSolver(g, new Random(), BranchingHeuristicFactory.BERKMINLITERAL, enableAdditionalInternalChecks);
-				}
-			},
-			{
-				"DefaultSolver (deterministic BerkMinLiteral)",
-				(Function<Grounder, Solver>) g -> {
-					return new DefaultSolver(g, new Random(0), BranchingHeuristicFactory.BERKMINLITERAL, enableAdditionalInternalChecks);
-				}
-			},
-			{
-				"DefaultSolver (deterministic Naive)",
-				(Function<Grounder, Solver>) g -> {
-					return new DefaultSolver(g, new Random(0), BranchingHeuristicFactory.NAIVE, enableAdditionalInternalChecks);
-				}
-			},
-		});
+		Collection<Object[]> factories = new ArrayList<>();
+		factories.add(new Object[] {"NaiveSolver", (Function<Grounder, Solver>) NaiveSolver::new});
+		for (Heuristic heuristic : Heuristic.values()) {
+			String name = "DefaultSolver (random " + heuristic + ")";
+			Function<Grounder, Solver> instantiator = g -> {
+				return new DefaultSolver(g, new Random(), heuristic, enableAdditionalInternalChecks);
+			};
+			factories.add(new Object[] {name, instantiator});
+			name = "DefaultSolver (deterministic " + heuristic + ")";
+			instantiator = g -> {
+				return new DefaultSolver(g, new Random(0), heuristic, enableAdditionalInternalChecks);
+			};
+			factories.add(new Object[] {name, instantiator});
+		}
+		return factories;
 	}
 
 	@Parameter(value = 0)

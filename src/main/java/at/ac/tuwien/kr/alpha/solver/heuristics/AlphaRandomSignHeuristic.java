@@ -1,19 +1,17 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2017 Siemens AG
  * All rights reserved.
- *
- * Additional changes made by Siemens.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *
+ * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,47 +23,41 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.grounder.parser;
+package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import java.util.*;
+import at.ac.tuwien.kr.alpha.solver.*;
+import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
 
-/**
- * Copyright (c) 2016, the Alpha Team.
- */
-public class ParsedProgram extends CommonParsedObject {
-	public static final ParsedProgram EMPTY = new ParsedProgram(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+import java.util.Random;
 
-	public List<ParsedRule> rules;
-	public List<ParsedFact> facts;
-	public List<ParsedConstraint> constraints;
+import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
 
-	private ParsedProgram(List<ParsedRule> rules, List<ParsedFact> facts, List<ParsedConstraint> constraints) {
-		this.rules = rules;
-		this.facts = facts;
-		this.constraints = constraints;
+public class AlphaRandomSignHeuristic extends DependencyDrivenHeuristic {
+
+	public AlphaRandomSignHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
+		super(assignment, choiceManager, decayAge, decayFactor, random, BodyActivityType.DEFAULT);
 	}
 
-	public ParsedProgram(Collection<? extends CommonParsedObject> objects) {
-		this(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
-
-		objects.forEach(o -> o.addTo(this));
+	public AlphaRandomSignHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
+		super(assignment, choiceManager, random);
 	}
 
-	public boolean addRule(ParsedRule rule) {
-		return rules.add(rule);
+	@Override
+	protected void incrementSignCounter(Integer literal) {
+		LOGGER.trace("AlphaRandomSignHeuristic does NOT increment sign counters because they are not needed.");
 	}
 
-	public boolean addFact(ParsedFact fact) {
-		return facts.add(fact);
+	@Override
+	public boolean chooseSign(int atom) {
+		if (!isAtom(atom)) {
+			throw new IllegalArgumentException("Atom must be a positive integer.");
+		}
+
+		if (assignment.getTruth(atom) == ThriceTruth.MBT) {
+			return true;
+		}
+
+		return rand.nextBoolean();
 	}
 
-	public boolean addConstraint(ParsedConstraint constraint) {
-		return constraints.add(constraint);
-	}
-
-	public void accumulate(ParsedProgram program) {
-		rules.addAll(program.rules);
-		facts.addAll(program.facts);
-		constraints.addAll(program.constraints);
-	}
 }

@@ -1,19 +1,17 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2017 Siemens AG
  * All rights reserved.
- *
- * Additional changes made by Siemens.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *
+ * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,47 +23,27 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.grounder.parser;
+package at.ac.tuwien.kr.alpha.solver;
 
-import java.util.*;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.Map;
 
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * This class is only here to make {@link ChoiceManager#addChoiceInformation(Pair)} public so that unit tests can access it.
+ * 
+ * Copyright (c) 2017 Siemens AG
+ *
  */
-public class ParsedProgram extends CommonParsedObject {
-	public static final ParsedProgram EMPTY = new ParsedProgram(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+public class TestableChoiceManager extends ChoiceManager {
 
-	public List<ParsedRule> rules;
-	public List<ParsedFact> facts;
-	public List<ParsedConstraint> constraints;
-
-	private ParsedProgram(List<ParsedRule> rules, List<ParsedFact> facts, List<ParsedConstraint> constraints) {
-		this.rules = rules;
-		this.facts = facts;
-		this.constraints = constraints;
+	public TestableChoiceManager(Assignment assignment) {
+		super(assignment);
 	}
 
-	public ParsedProgram(Collection<? extends CommonParsedObject> objects) {
-		this(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
-
-		objects.forEach(o -> o.addTo(this));
+	@Override
+	public void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms) {
+		super.addChoiceInformation(choiceAtoms);
 	}
 
-	public boolean addRule(ParsedRule rule) {
-		return rules.add(rule);
-	}
-
-	public boolean addFact(ParsedFact fact) {
-		return facts.add(fact);
-	}
-
-	public boolean addConstraint(ParsedConstraint constraint) {
-		return constraints.add(constraint);
-	}
-
-	public void accumulate(ParsedProgram program) {
-		rules.addAll(program.rules);
-		facts.addAll(program.facts);
-		constraints.addAll(program.constraints);
-	}
 }
