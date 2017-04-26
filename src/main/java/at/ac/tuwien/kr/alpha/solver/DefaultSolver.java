@@ -64,7 +64,8 @@ public class DefaultSolver extends AbstractSolver {
 	private boolean didChange;
 
 	private int decisionCounter;
-	private int conflictCounter;
+	private int backtrackCounter;
+	private int backjumpCounter;
 
 	public DefaultSolver(Grounder grounder, Random random, Heuristic branchingHeuristic, boolean debugInternalChecks) {
 		super(grounder);
@@ -86,7 +87,7 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	public int getConflictCounter() {
-		return conflictCounter;
+		return backtrackCounter + backjumpCounter;
 	}
 
 	@Override
@@ -185,7 +186,10 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private void logSizeOfSearchTree() {
-		LOGGER.info("{} decisions done with {} conflicts.", decisionCounter, conflictCounter);
+		LOGGER.info("Choices\t: {}", decisionCounter);
+		LOGGER.info("Conflicts\t: {}", backtrackCounter + backjumpCounter);
+		LOGGER.info("  Backtracks\t: {}", backtrackCounter);
+		LOGGER.info("  Backjumps\t: {}", backjumpCounter);
 	}
 
 	private NoGood createEnumerationNoGood() {
@@ -260,7 +264,7 @@ public class DefaultSolver extends AbstractSolver {
 		if (backjumpingDecisionLevel < 0) {
 			throw new RuntimeException("Backjumping decision level less than 0, should not happen.");
 		}
-		conflictCounter++;
+		backjumpCounter++;
 		// Remove everything above the backjumpingDecisionLevel, but keep the backjumpingDecisionLevel unchanged.
 		while (assignment.getDecisionLevel() > backjumpingDecisionLevel) {
 			store.backtrack();
@@ -282,6 +286,7 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private void doBacktrack() {
+		backtrackCounter++;
 		boolean repeatBacktrack;	// Iterative implementation of recursive backtracking.
 		do {
 			repeatBacktrack = false;
