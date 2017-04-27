@@ -58,14 +58,10 @@ public class DefaultSolver extends AbstractSolver {
 	private final BranchingHeuristic branchingHeuristic;
 	private final BranchingHeuristic fallbackBranchingHeuristic;
 	private final ChoiceManager choiceManager;
+	private final SolverCounters counters = new SolverCounters();
 
 	private boolean initialize = true;
-
 	private boolean didChange;
-
-	private int decisionCounter;
-	private int backtrackCounter;
-	private int backjumpCounter;
 
 	public DefaultSolver(Grounder grounder, Random random, Heuristic branchingHeuristic, boolean debugInternalChecks) {
 		super(grounder);
@@ -83,11 +79,11 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	public int getDecisionCounter() {
-		return decisionCounter;
+		return counters.decisionCounter;
 	}
 
 	public int getConflictCounter() {
-		return backtrackCounter + backjumpCounter;
+		return counters.backtrackCounter + counters.backjumpCounter;
 	}
 
 	@Override
@@ -186,10 +182,10 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private void logSizeOfSearchTree() {
-		LOGGER.info("Choices\t: {}", decisionCounter);
-		LOGGER.info("Conflicts\t: {}", backtrackCounter + backjumpCounter);
-		LOGGER.info("  Backtracks\t: {}", backtrackCounter);
-		LOGGER.info("  Backjumps\t: {}", backjumpCounter);
+		LOGGER.info("Choices\t: {}", counters.decisionCounter);
+		LOGGER.info("Conflicts\t: {}", counters.backtrackCounter + counters.backjumpCounter);
+		LOGGER.info("  Backtracks\t: {}", counters.backtrackCounter);
+		LOGGER.info("  Backjumps\t: {}", counters.backjumpCounter);
 	}
 
 	private NoGood createEnumerationNoGood() {
@@ -264,7 +260,7 @@ public class DefaultSolver extends AbstractSolver {
 		if (backjumpingDecisionLevel < 0) {
 			throw new RuntimeException("Backjumping decision level less than 0, should not happen.");
 		}
-		backjumpCounter++;
+		counters.backjumpCounter++;
 		// Remove everything above the backjumpingDecisionLevel, but keep the backjumpingDecisionLevel unchanged.
 		while (assignment.getDecisionLevel() > backjumpingDecisionLevel) {
 			store.backtrack();
@@ -286,7 +282,7 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private void doBacktrack() {
-		backtrackCounter++;
+		counters.backtrackCounter++;
 		boolean repeatBacktrack;	// Iterative implementation of recursive backtracking.
 		do {
 			repeatBacktrack = false;
@@ -327,7 +323,7 @@ public class DefaultSolver extends AbstractSolver {
 					continue;
 				}
 
-				decisionCounter++;
+				counters.decisionCounter++;
 				boolean newGuess = !lastGuessedValue;
 				assignment.guess(lastGuessedAtom, newGuess);
 				LOGGER.debug("Backtrack: setting decision level to {}.", assignment.getDecisionLevel());
@@ -335,7 +331,7 @@ public class DefaultSolver extends AbstractSolver {
 				choiceStack.pushBacktrack(lastGuessedAtom, newGuess);
 				choiceManager.nextDecisionLevel();
 				LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
-				LOGGER.debug("Backtrack: {} choices so far.", decisionCounter);
+				LOGGER.debug("Backtrack: {} choices so far.", counters.decisionCounter);
 			} else {
 				LOGGER.debug("Recursive backtracking.");
 				repeatBacktrack = true;
@@ -438,7 +434,7 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private void doChoice(int nextChoice) {
-		decisionCounter++;
+		counters.decisionCounter++;
 		boolean sign = branchingHeuristic.chooseSign(nextChoice);
 		assignment.guess(nextChoice, sign);
 		choiceStack.push(nextChoice, sign);
@@ -446,7 +442,7 @@ public class DefaultSolver extends AbstractSolver {
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Choice: guessing {}={}@{}", grounder.atomToString(nextChoice), sign, assignment.getDecisionLevel());
 			LOGGER.debug("Choice: stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
-			LOGGER.debug("Choice: {} choices so far.", decisionCounter);
+			LOGGER.debug("Choice: {} choices so far.", counters.decisionCounter);
 		}
 	}
 
