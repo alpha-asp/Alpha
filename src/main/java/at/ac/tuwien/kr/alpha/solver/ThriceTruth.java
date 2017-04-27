@@ -57,6 +57,13 @@ public enum ThriceTruth implements Truth {
 	}
 
 	/**
+	 * @return true if this is MBT.
+	 */
+	public boolean isMBT() {
+		return this == ThriceTruth.MBT;
+	}
+
+	/**
 	 * Returns true if the two truth values are not compatible with each other.
 	 * Each truth value is compatible with itself and both MBT and TRUE are compatible. All other combinations are
 	 * conflicting.

@@ -86,6 +86,26 @@ public class RuleAtom implements Atom {
 	}
 
 	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		RuleAtom that = (RuleAtom) o;
+
+		return terms.equals(that.terms);
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 * PREDICATE.hashCode() + terms.hashCode();
+	}
+
+
+	@Override
 	public String toString() {
 		return PREDICATE.getPredicateName() + "(" + terms.get(0) + "," + terms.get(1) + ')';
 	}

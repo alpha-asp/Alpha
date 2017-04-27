@@ -145,7 +145,7 @@ public class Main {
 			HelpFormatter formatter = new HelpFormatter();
 			// TODO(flowlo): This is quite optimistic. How do we know that the program
 			// really was invoked as "java -jar ..."?
-			formatter.printHelp("java -jar alpha.jar OR java -jar alpha_bundled.jar", options);
+			formatter.printHelp("java -jar alpha.jar OR java -jar alpha-bundled.jar", options);
 			System.exit(0);
 			return;
 		}
@@ -222,9 +222,9 @@ public class Main {
 		} catch (IllegalArgumentException e) {
 			bailOut("Unknown branching heuristic: {}. Please try one of the following: {}.", chosenBranchingHeuristic, Heuristic.listAllowedValues());
 		}
-		
+
 		Solver solver = SolverFactory.getInstance(
-chosenSolver, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks
+			chosenSolver, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks
 		);
 
 		Stream<AnswerSet> stream = solver.stream();

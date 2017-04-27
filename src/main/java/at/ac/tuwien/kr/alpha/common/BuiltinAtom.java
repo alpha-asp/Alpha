@@ -169,6 +169,8 @@ public class BuiltinAtom implements Atom {
 			} catch (NumberFormatException e) {
 				return new NumberOrTerm(term);
 			}
+		} else if (term instanceof FunctionTerm) {
+			return new NumberOrTerm(term);
 		} else {
 			throw new RuntimeException("Not supported term structure in builtin atom encountered: " + term);
 		}
