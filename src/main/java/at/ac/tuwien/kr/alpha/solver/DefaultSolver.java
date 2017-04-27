@@ -440,7 +440,9 @@ public class DefaultSolver extends AbstractSolver {
 	private void doChoice(int nextChoice) {
 		decisionCounter++;
 		boolean sign = branchingHeuristic.chooseSign(nextChoice);
-		assignment.guess(nextChoice, sign);
+		if (!assignment.guess(nextChoice, sign)) {
+			throw new RuntimeException("Picked choice is incompatible with current assignment. Should not happen.");
+		}
 		choiceStack.push(nextChoice, sign);
 		choiceManager.nextDecisionLevel();
 		if (LOGGER.isDebugEnabled()) {

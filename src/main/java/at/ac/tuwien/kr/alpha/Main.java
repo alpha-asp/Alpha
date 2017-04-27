@@ -222,9 +222,9 @@ public class Main {
 		} catch (IllegalArgumentException e) {
 			bailOut("Unknown branching heuristic: {}. Please try one of the following: {}.", chosenBranchingHeuristic, Heuristic.listAllowedValues());
 		}
-		
+
 		Solver solver = SolverFactory.getInstance(
-chosenSolver, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks
+			chosenSolver, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks
 		);
 
 		Stream<AnswerSet> stream = solver.stream();
