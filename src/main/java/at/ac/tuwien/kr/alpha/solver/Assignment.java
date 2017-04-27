@@ -29,9 +29,7 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
 
-import java.util.Iterator;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
@@ -58,6 +56,11 @@ public interface Assignment {
 	 * @return the count of must-be-true values in the asignment.
 	 */
 	int getMBTCount();
+
+	default boolean isMBT(int atom) {
+		Entry entry = get(atom);
+		return entry != null && entry.getTruth() == ThriceTruth.MBT;
+	}
 
 	boolean assign(int atom, ThriceTruth value, NoGood impliedBy);
 
