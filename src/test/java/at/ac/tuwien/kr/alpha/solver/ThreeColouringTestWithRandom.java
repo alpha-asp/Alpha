@@ -25,12 +25,14 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.IgnoreTimeoutsOnContinuousIntegrationRule;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.*;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.junit.*;
+import org.junit.rules.TestRule;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -46,6 +48,9 @@ import static at.ac.tuwien.kr.alpha.Main.parseVisit;
  * DOI: 10.1017/S1471068416000569
  */
 public class ThreeColouringTestWithRandom extends AbstractSolverTests {
+	@Rule
+	public TestRule ignoreTimeoutsOnContinuousIntegration = new IgnoreTimeoutsOnContinuousIntegrationRule();
+
 	/**
 	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
 	 */
@@ -75,97 +80,81 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 	}
 
 	@Test(timeout = 5000)
-	@Ignore("disabled to save resources during CI")
 	public void testN5() throws IOException {
 		testThreeColouring(5, false, 0);
 	}
 
 	@Test(timeout = 6000)
-	@Ignore("disabled to save resources during CI")
 	public void testN6() throws IOException {
 		testThreeColouring(6, false, 0);
 	}
 
 	@Test(timeout = 7000)
-	@Ignore("disabled to save resources during CI")
 	public void testN7() throws IOException {
 		testThreeColouring(7, false, 0);
 	}
 
 	@Test(timeout = 8000)
-	@Ignore("disabled to save resources during CI")
 	public void testN8() throws IOException {
 		testThreeColouring(8, false, 0);
 	}
 
 	@Test(timeout = 9000)
-	@Ignore("disabled to save resources during CI")
 	public void testN9() throws IOException {
 		testThreeColouring(9, false, 0);
 	}
 
 	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
 	public void testN10() throws IOException {
 		testThreeColouring(10, false, 0);
 	}
 
 	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
 	public void testN10Random0() throws IOException {
 		testThreeColouring(10, true, 0);
 	}
 
 	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
 	public void testN10Random1() throws IOException {
 		testThreeColouring(10, true, 1);
 	}
 
 	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
 	public void testN10Random2() throws IOException {
 		testThreeColouring(10, true, 2);
 	}
 
 	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
 	public void testN10Random3() throws IOException {
 		testThreeColouring(10, true, 3);
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void testN19() throws IOException {
 		testThreeColouring(19, false, 0);
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void testN19Random0() throws IOException {
 		testThreeColouring(19, true, 0);
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void testN19Random1() throws IOException {
 		testThreeColouring(19, true, 1);
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void testN19Random2() throws IOException {
 		testThreeColouring(19, true, 2);
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void testN19Random3() throws IOException {
 		testThreeColouring(19, true, 3);
 	}
 
 	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
 	public void testN101() throws IOException {
 		testThreeColouring(101, false, 0);
 	}

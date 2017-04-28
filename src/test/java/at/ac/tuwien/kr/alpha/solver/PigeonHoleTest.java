@@ -25,12 +25,14 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.IgnoreTimeoutsOnContinuousIntegrationRule;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.junit.*;
+import org.junit.rules.TestRule;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -44,6 +46,9 @@ import static at.ac.tuwien.kr.alpha.Main.parseVisit;
  *
  */
 public class PigeonHoleTest extends AbstractSolverTests {
+	@Rule
+	public final TestRule ignoreTimeoutsOnContinuousIntegration = new IgnoreTimeoutsOnContinuousIntegrationRule();
+
 	/**
 	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
 	 */
@@ -78,61 +83,51 @@ public class PigeonHoleTest extends AbstractSolverTests {
 	}
 
 	@Test(timeout = 1000)
-	@Ignore("disabled to save resources during CI")
 	public void test3Pigeons3Holes() throws IOException {
 		testPigeonsHoles(3, 3);
 	}
 
 	@Test(timeout = 1000)
-	@Ignore("disabled to save resources during CI")
 	public void test4Pigeons3Holes() throws IOException {
 		testPigeonsHoles(4, 3);
 	}
 
 	@Test(timeout = 1000)
-	@Ignore("disabled to save resources during CI")
 	public void test3Pigeons4Holes() throws IOException {
 		testPigeonsHoles(3, 4);
 	}
 
 	@Test(timeout = 1000)
-	@Ignore("disabled to save resources during CI")
 	public void test4Pigeons4Holes() throws IOException {
 		testPigeonsHoles(4, 4);
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void test10Pigeons10Holes() throws IOException {
 		testPigeonsHoles(10, 10);
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void test19Pigeons20Holes() throws IOException {
 		testPigeonsHoles(19, 20);
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void test28Pigeons30Holes() throws IOException {
 		testPigeonsHoles(28, 30);
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void test37Pigeons40Holes() throws IOException {
 		testPigeonsHoles(37, 40);
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void test46Pigeons50Holes() throws IOException {
 		testPigeonsHoles(46, 50);
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void test55Pigeons60Holes() throws IOException {
 		testPigeonsHoles(55, 60);
 	}

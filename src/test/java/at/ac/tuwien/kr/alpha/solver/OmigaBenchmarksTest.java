@@ -25,6 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.IgnoreTimeoutsOnContinuousIntegrationRule;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
@@ -32,6 +33,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.junit.*;
+import org.junit.rules.TestRule;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -45,6 +47,9 @@ import static at.ac.tuwien.kr.alpha.Main.parseVisit;
  *
  */
 public class OmigaBenchmarksTest extends AbstractSolverTests {
+	@Rule
+	public TestRule ignoreTimeoutsOnContinuousIntegration = new IgnoreTimeoutsOnContinuousIntegrationRule();
+
 	/**
 	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
 	 */
@@ -74,44 +79,38 @@ public class OmigaBenchmarksTest extends AbstractSolverTests {
 	}
 
 	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
 	public void testCutedge_100_30() throws IOException {
 		test("cutedge", "cutedge-100-30.txt");
 	}
 
 	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
 	public void testCutedge_100_50() throws IOException {
 		test("cutedge", "cutedge-100-50.txt");
 	}
 
 	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
 	public void testLocstrat_200() throws IOException {
 		test("locstrat", "locstrat-200.txt");
 	}
 
 	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
 	public void testLocstrat_400() throws IOException {
 		test("locstrat", "locstrat-400.txt");
 	}
 
 	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
 	public void testReach_1() throws IOException {
 		test("reach", "reach-1.txt");
 	}
 
 	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
 	public void testReach_4() throws IOException {
 		test("reach", "reach-4.txt");
 	}
 
 	private void test(String folder, String aspFileName) throws IOException {
 		ANTLRFileStream programInputStream = new ANTLRFileStream(
-Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName).toString());
+		Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName).toString());
 		ParsedProgram parsedProgram = parseVisit(programInputStream);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
@@ -119,5 +118,4 @@ Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName).toStrin
 		System.out.println(answerSet);
 		// TODO: check correctness of answer set
 	}
-
 }

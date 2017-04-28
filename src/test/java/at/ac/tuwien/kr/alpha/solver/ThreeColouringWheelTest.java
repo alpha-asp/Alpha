@@ -25,12 +25,14 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.IgnoreTimeoutsOnContinuousIntegrationRule;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.*;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.junit.*;
+import org.junit.rules.TestRule;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -46,6 +48,9 @@ import static at.ac.tuwien.kr.alpha.Main.parseVisit;
  * DOI: 10.1017/S1471068416000569
  */
 public class ThreeColouringWheelTest extends AbstractSolverTests {
+	@Rule
+	public TestRule ignoreTimeoutsOnContinuousIntegration = new IgnoreTimeoutsOnContinuousIntegrationRule();
+
 	/**
 	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
 	 */
@@ -75,25 +80,21 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 	}
 
 	@Test(timeout = 6000)
-	@Ignore("disabled to save resources during CI")
 	public void testN6() throws IOException {
 		testThreeColouring(6);
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void testN3() throws IOException {
 		testThreeColouring(3);
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void testN7() throws IOException {
 		testThreeColouring(7);
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void testN11() throws IOException {
 		testThreeColouring(11);
 	}

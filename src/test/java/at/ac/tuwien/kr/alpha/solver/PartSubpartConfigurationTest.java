@@ -25,12 +25,14 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.IgnoreTimeoutsOnContinuousIntegrationRule;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.junit.*;
+import org.junit.rules.TestRule;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -44,6 +46,9 @@ import static at.ac.tuwien.kr.alpha.Main.parseVisit;
  *
  */
 public class PartSubpartConfigurationTest extends AbstractSolverTests {
+	@Rule
+	public TestRule ignoreTimeoutsOnContinuousIntegration = new IgnoreTimeoutsOnContinuousIntegrationRule();
+
 	/**
 	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
 	 */
@@ -68,43 +73,36 @@ public class PartSubpartConfigurationTest extends AbstractSolverTests {
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void testN4() throws IOException {
 		testPartSubpart(4);
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void testN8() throws IOException {
 		testPartSubpart(8);
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void testN16() throws IOException {
 		testPartSubpart(16);
 	}
 
 	@Test(timeout = 61000)
-	@Ignore("disabled to save resources during CI")
 	public void testN32() throws IOException {
 		testPartSubpart(32);
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void testN60() throws IOException {
 		testPartSubpart(60);
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void testN75() throws IOException {
 		testPartSubpart(75);
 	}
 
 	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
 	public void testN100() throws IOException {
 		testPartSubpart(100);
 	}
