@@ -16,17 +16,18 @@ import static org.junit.Assert.*;
  */
 public class NoGoodStoreAlphaRoamingTest extends BasicNoGoodStoreTest {
 
-	private final BasicAssignment assignment;
+	private final ArrayAssignment assignment;
 	private final NoGoodStoreAlphaRoaming store;
 
 	public NoGoodStoreAlphaRoamingTest() {
-		assignment = new BasicAssignment(null);
+		assignment = new ArrayAssignment(null);
 		store = new NoGoodStoreAlphaRoaming(assignment);
 	}
 
 	@Before
 	public void setUp() {
 		store.clear();
+		assignment.growForMaxAtomId(200);
 	}
 
 	@Test
