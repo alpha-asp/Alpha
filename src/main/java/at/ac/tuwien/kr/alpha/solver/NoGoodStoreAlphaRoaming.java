@@ -300,36 +300,23 @@ class NoGoodStoreAlphaRoaming implements NoGoodStore {
 		Assignment.Entry entryB = assignment.get(atomOf(b));
 
 		// Check for violation.
-		if (isViolatedA && isViolatedB && entryA.getDecisionLevel() == entryB.getDecisionLevel()) {
+		if (isViolatedA && isViolatedB) {
 			return new ConflictCause(noGood, null);
 		}
 
-		// If one literal is violated on lower decision level than the other is assigned or the other is unassigned, the NoGood propagates.
-		int propagatedLiteral = -1;
-		Assignment.Entry propagatee = null;
-		int propagationDecisionLevel = -1;
-		if (isViolatedA && (entryB == null || entryA.getDecisionLevel() < entryB.getDecisionLevel())) {
-			// Literal a is violated and propagates b.
-			propagationDecisionLevel = entryA.getDecisionLevel();
-			propagatedLiteral = 1;
-			propagatee = entryA;
-		}
-		if (isViolatedB && (entryA == null || entryB.getDecisionLevel() < entryA.getDecisionLevel())) {
-			// Literal b is violated and propagates a.
-			propagationDecisionLevel = entryB.getDecisionLevel();
-			propagatedLiteral = 0;
-			propagatee = entryB;
-		}
-
-		// If binary NoGood propagates, assign corresponding literal and respect eventual head.
-		if (propagatedLiteral != -1) {
-			if (noGood.hasHead() && noGood.getHead() == propagatedLiteral && !propagatee.getTruth().isMBT()) {
-				assignStrongComplement(propagatedLiteral, noGood, propagationDecisionLevel);
-				if (isPropagationConflicting) {
-					return setViolatedFromAssignment();
-				}
-			} else {
-				assignWeakComplement(propagatedLiteral, noGood, propagationDecisionLevel);
+		// If one literal is violated the NoGood propagates.
+		boolean doesPropagate = isViolatedA || isViolatedB;
+		int propagateePos = isViolatedA ? 1 : 0;
+		Assignment.Entry violatedEntry = isViolatedA ? entryA : entryB;
+		if (doesPropagate) {
+			// Propagate weakly.
+			assignWeakComplement(propagateePos, noGood, getWeakDecisionLevel(violatedEntry));
+			if (isPropagationConflicting) {
+				return setViolatedFromAssignment();
+			}
+			// Propagate strongly if applicable.
+			if (noGood.hasHead() && noGood.getHead() == propagateePos && MBT != violatedEntry.getTruth()) {
+				assignStrongComplement(propagateePos, noGood, getStrongDecisionLevel(violatedEntry));
 				if (isPropagationConflicting) {
 					return setViolatedFromAssignment();
 				}

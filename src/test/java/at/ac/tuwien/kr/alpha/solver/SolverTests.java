@@ -645,4 +645,67 @@ public class SolverTests extends AbstractSolverTests {
 		Set<AnswerSet> answerSets = solver.collectSet();
 		assertEquals(expected, answerSets);
 	}
+
+	@Test
+	public void builtinInequality() throws IOException {
+		String program = "location(a1).\n" +
+			"region(r1).\n" +
+			"region(r2).\n" +
+			"\n" +
+			"assign(L,R) :- location(L), region(R), not nassign(L,R).\n" +
+			"nassign(L,R) :- location(L), region(R), not assign(L,R).\n" +
+			"\n" +
+			":- assign(L,R1), assign(L,R2), R1 != R2.\n" +
+			"\n" +
+			"aux_ext_assign(a1,r1).\n" +
+			"aux_ext_assign(a1,r2).\n" +
+			"\n" +
+			"aux_not_assign(L,R) :- aux_ext_assign(L,R), not assign(L,R).\n" +
+			":- aux_not_assign(L,R), assign(L,R).";
+
+		ParsedProgram parsedProgram = parseVisit(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+
+		Solver solver = getInstance(grounder);
+
+		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
+			.predicate("location")
+			.instance("a1")
+			.predicate("region")
+			.instance("r1")
+			.instance("r2")
+			.predicate("aux_ext_assign")
+			.instance("a1", "r1")
+			.instance("a1", "r2");
+
+		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
+			new BasicAnswerSet.Builder(base)
+				.predicate("assign")
+				.instance("a1", "r2")
+				.predicate("nassign")
+				.instance("a1", "r1")
+				.predicate("aux_not_assign")
+				.instance("a1", "r1")
+				.build(),
+			new BasicAnswerSet.Builder(base)
+				.predicate("assign")
+				.instance("a1", "r1")
+				.predicate("nassign")
+				.instance("a1", "r2")
+				.predicate("aux_not_assign")
+				.instance("a1", "r2")
+				.build(),
+			new BasicAnswerSet.Builder(base)
+				.predicate("nassign")
+				.instance("a1", "r1")
+				.instance("a1", "r2")
+				.predicate("aux_not_assign")
+				.instance("a1", "r1")
+				.instance("a1", "r2")
+				.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
 }
