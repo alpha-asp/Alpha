@@ -108,6 +108,8 @@ public class BasicAnswerSet implements AnswerSet {
 			this.predicates = new TreeSet<>(copy.predicates);
 			this.instances = new TreeSet<>(copy.instances);
 			this.predicateInstances = new HashMap<>(copy.predicateInstances);
+			this.predicateInstances = copy.predicateInstances.entrySet().stream()
+				.collect(Collectors.toMap(Map.Entry::getKey, e -> new TreeSet<>(e.getValue())));
 		}
 
 		private void flush() {
@@ -116,7 +118,12 @@ public class BasicAnswerSet implements AnswerSet {
 				predicates.add(predicate);
 				predicateInstances.put(predicate, new TreeSet<>(singletonList(new BasicAtom(predicate))));
 			} else {
-				predicateInstances.put(predicate, new TreeSet<>(instances));
+				SortedSet<Atom> atoms = predicateInstances.get(predicate);
+				if (atoms == null) {
+					predicateInstances.put(predicate, new TreeSet<>(instances));
+				} else {
+					atoms.addAll(instances);
+				}
 			}
 			firstInstance = true;
 			instances.clear();
