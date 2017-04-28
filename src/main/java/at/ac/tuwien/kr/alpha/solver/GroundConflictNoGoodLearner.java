@@ -137,6 +137,10 @@ public class GroundConflictNoGoodLearner {
 
 			// Resolve next NoGood based on current literal
 			Assignment.Entry currentLiteralAssignment = firstUIPPriorityQueue.poll();
+			if (currentLiteralAssignment.getPrevious() != null) {
+				// Use previous MBT assignment if it exists.
+				currentLiteralAssignment = currentLiteralAssignment.getPrevious();
+			}
 			// Get NoGood it was implied by.
 			NoGood impliedByNoGood = currentLiteralAssignment.getImpliedBy();
 			if (impliedByNoGood == null) {

@@ -235,7 +235,7 @@ class ArrayAssignment implements Assignment {
 			violatedByAssign = impliedBy;
 			if (decisionLevel < current.getWeakDecisionLevel()) {
 				// New assignment is lower than the current one, hence cause is the reason for the (higher) current one.
-				violatedByAssign = current.getImpliedBy();
+				violatedByAssign = current.getPrevious() == null ? current.getImpliedBy() : current.getPrevious().getImpliedBy();	// take MBT reason if it exists.
 				if (violatedByAssign == null) {
 					guessViolatedByAssign = current;
 				}
