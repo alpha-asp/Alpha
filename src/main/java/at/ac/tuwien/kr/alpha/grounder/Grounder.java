@@ -20,7 +20,7 @@ public interface Grounder extends AtomTranslator {
 	 * Applies lazy grounding and returns all newly derived (fully ground) NoGoods.
 	 * @return a mapping of nogood IDs to NoGoods.
 	 */
-	Map<Integer, NoGood> getNoGoods();
+	Map<Integer, NoGood> getNoGoods(BooleanAssignmentReader currentAssignment);
 
 	/**
 	 * Return choice points and their enablers and disablers.

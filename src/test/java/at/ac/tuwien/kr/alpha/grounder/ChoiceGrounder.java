@@ -140,7 +140,7 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public Map<Integer, NoGood> getNoGoods() {
+	public Map<Integer, NoGood> getNoGoods(BooleanAssignmentReader currentAssignment) {
 		if (!returnedAllNogoods) {
 			returnedAllNogoods = true;
 			return NOGOODS;

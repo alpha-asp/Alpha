@@ -27,6 +27,7 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.RuleAtom;
+import at.ac.tuwien.kr.alpha.grounder.BooleanAssignmentReader;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
@@ -85,7 +86,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 	}
 
 	private Collection<NoGood> getNoGoods() {
-		return grounder.getNoGoods().values();
+		return grounder.getNoGoods(new BooleanAssignmentReader(null)).values();
 	}
 
 }

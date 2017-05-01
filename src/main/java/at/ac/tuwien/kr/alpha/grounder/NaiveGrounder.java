@@ -266,7 +266,7 @@ public class NaiveGrounder extends AbstractGrounder {
 	}
 
 	@Override
-	public Map<Integer, NoGood> getNoGoods() {
+	public Map<Integer, NoGood> getNoGoods(BooleanAssignmentReader currentAssignment) {
 		// First call, output all NoGoods from facts.
 		if (outputFactNogoods) {
 			outputFactNogoods = false;

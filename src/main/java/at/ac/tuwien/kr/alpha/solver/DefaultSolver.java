@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.grounder.BooleanAssignmentReader;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.*;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
@@ -353,7 +354,7 @@ public class DefaultSolver extends AbstractSolver {
 	 * @return false iff the set of NoGoods is detected to be unsatisfiable.
 	 */
 	private boolean obtainNoGoodsFromGrounder() {
-		Map<Integer, NoGood> obtained = grounder.getNoGoods();
+		Map<Integer, NoGood> obtained = grounder.getNoGoods(new BooleanAssignmentReader(assignment));
 		LOGGER.debug("Obtained NoGoods from grounder: {}", obtained);
 
 		if (!obtained.isEmpty()) {
