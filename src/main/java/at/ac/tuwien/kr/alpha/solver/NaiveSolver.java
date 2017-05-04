@@ -70,7 +70,7 @@ public class NaiveSolver extends AbstractSolver {
 	NaiveSolver(Grounder grounder) {
 		super(grounder);
 
-		this.choiceStack = new ChoiceStack(grounder);
+		this.choiceStack = new ChoiceStack(grounder, false);
 
 		decisionLevels.add(0, new ArrayList<>());
 		mbtAssignedFromUnassigned.add(0, new ArrayList<>());

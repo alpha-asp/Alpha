@@ -70,8 +70,9 @@ public class DefaultSolver extends AbstractSolver {
 		this.store = new NoGoodStoreAlphaRoaming(assignment);
 		if (debugInternalChecks) {
 			store.enableInternalChecks();
+			((ArrayAssignment) assignment).enableInternalChecks();
 		}
-		this.choiceStack = new ChoiceStack(grounder);
+		this.choiceStack = new ChoiceStack(grounder, false);
 		this.learner = new GroundConflictNoGoodLearner(assignment);
 		this.choiceManager = new ChoiceManager(assignment);
 		this.branchingHeuristic = BranchingHeuristicFactory.getInstance(branchingHeuristic, grounder, assignment, choiceManager, random);

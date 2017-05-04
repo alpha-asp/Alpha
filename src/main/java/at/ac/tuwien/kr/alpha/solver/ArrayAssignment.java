@@ -54,6 +54,8 @@ class ArrayAssignment implements Assignment {
 
 	private int mbtCount;
 
+	private boolean internalChecksEnabled;
+
 	public ArrayAssignment(Grounder grounder) {
 		this.grounder = grounder;
 		this.atomsAssignedInDecisionLevel = new ArrayList<>();
@@ -72,6 +74,10 @@ class ArrayAssignment implements Assignment {
 		atomsAssignedInDecisionLevel.add(new ArrayList<>());
 		assignment.clear();
 		mbtCount = 0;
+	}
+
+	void enableInternalChecks() {
+		internalChecksEnabled = true;
 	}
 
 	@Override
@@ -198,6 +204,13 @@ class ArrayAssignment implements Assignment {
 	}
 
 	private boolean assignWithDecisionLevel(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
+		if (internalChecksEnabled) {
+			if (getMBTCount() != getMBTAssignedAtoms().size()) {
+				throw new RuntimeException("MBT counter and amount of actually MBT-assigned atoms disagree. Should not happen.");
+			} else {
+				LOGGER.debug("MBT count agrees with amount of MBT-assigned atoms.");
+			}
+		}
 		if (!isAtom(atom)) {
 			throw new IllegalArgumentException("not an atom");
 		}
@@ -276,7 +289,6 @@ class ArrayAssignment implements Assignment {
 				} else {
 					// Current assignment is MBT and the new one is below it (no TRUE above exists).
 					recordAssignment(atom, value, impliedBy, decisionLevel, null);
-					mbtCount++;
 				}
 				return true;
 		}
@@ -357,6 +369,21 @@ class ArrayAssignment implements Assignment {
 			throw new RuntimeException("Requesting entry of negated atom. Should not happen.");
 		}
 		return assignment.get(atom);
+	}
+
+	/**
+	 * Debug helper collecting all atoms that are assigned MBT.
+	 * @return a list of all atomIds that are assigned MBT (and not TRUE).
+	 */
+	private List<Integer> getMBTAssignedAtoms() {
+		List<Integer> ret = new ArrayList<>();
+		for (int i = 0; i < assignment.size(); i++) {
+			Entry entry = assignment.get(i);
+			if (entry != null && entry.getTruth() == MBT) {
+				ret.add(i);
+			}
+		}
+		return ret;
 	}
 
 	@Override
