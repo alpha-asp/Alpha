@@ -1,7 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.solver.Assignment;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 /**
  * Helper class to allow the grounder to check whether an atom is currently assigned true, in order to exclude some
@@ -24,7 +23,7 @@ public class BooleanAssignmentReader {
 		if (assignment == null) {
 			return true;
 		}
-		ThriceTruth truth = assignment.get(atomId).getTruth();
-		return truth != null && truth.toBoolean();
+		Assignment.Entry entry = assignment.get(atomId);
+		return entry != null && entry.getTruth().toBoolean();
 	}
 }

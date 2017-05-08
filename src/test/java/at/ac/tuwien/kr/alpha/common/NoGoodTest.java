@@ -3,9 +3,12 @@ package at.ac.tuwien.kr.alpha.common;
 import org.junit.Test;
 
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class NoGoodTest {
 	@Test
@@ -71,5 +74,19 @@ public class NoGoodTest {
 		assertEquals(-3, ng3.getLiteral(1));
 		assertEquals(1, ng3.getLiteral(2));
 		assertEquals(2, ng3.getLiteral(3));
+	}
+
+	@Test
+	public void noGoodsInHashMap() {
+		NoGood ng1 = new NoGood(new int[]{1, 2, -3, -4}, 0);
+		NoGood ng2 = new NoGood(new int[]{1, 2, -4}, 0);
+		NoGood ng3 = new NoGood(new int[]{1, 2, -3, -4}, 0);
+		Map<NoGood, Integer> noGoodIdentifiers = new LinkedHashMap<>();
+		noGoodIdentifiers.put(ng1, 1);
+		noGoodIdentifiers.put(ng1, 2);
+		noGoodIdentifiers.put(ng2, 4);
+		assertTrue(noGoodIdentifiers.containsKey(ng3));
+		noGoodIdentifiers.put(ng3, 5);
+		assertEquals(2, noGoodIdentifiers.size());
 	}
 }

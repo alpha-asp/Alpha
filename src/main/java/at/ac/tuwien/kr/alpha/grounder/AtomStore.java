@@ -1,7 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.Atom;
-import at.ac.tuwien.kr.alpha.common.BasicAtom;
 
 import java.util.*;
 
@@ -30,7 +29,7 @@ public class AtomStore {
 	 * @param groundAtom
 	 * @return
 	 */
-	public int getAtomId(BasicAtom groundAtom) {
+	public int getAtomId(Atom groundAtom) {
 		return predicateInstancesToAtomIds.get(groundAtom);
 	}
 
