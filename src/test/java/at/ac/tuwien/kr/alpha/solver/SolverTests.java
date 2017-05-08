@@ -44,6 +44,7 @@ import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class SolverTests extends AbstractSolverTests {
 	/**
@@ -791,5 +792,41 @@ public class SolverTests extends AbstractSolverTests {
 
 		Set<AnswerSet> answerSets = solver.collectSet();
 		assertEquals(expected, answerSets);
+	}
+	@Test
+	public void sameVariableTwiceInAtom() throws IOException {
+		String program = "p(a, a).\n" +
+			"q(X) :- p(X, X).\n";
+
+		ParsedProgram parsedProgram = parseVisit(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
+			new BasicAnswerSet.Builder()
+				.predicate("p")
+				.instance("a", "a")
+				.predicate("q")
+				.instance("a")
+				.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
+
+	@Test
+	public void sameVariableTwiceInAtomConstraint() throws IOException {
+		String program = "p(a, a).\n" +
+			":- p(X, X).\n";
+
+		ParsedProgram parsedProgram = parseVisit(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertTrue(answerSets.isEmpty());
 	}
 }

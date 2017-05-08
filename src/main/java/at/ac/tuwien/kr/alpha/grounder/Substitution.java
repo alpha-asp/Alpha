@@ -47,7 +47,7 @@ public class Substitution {
 			// Left term is variable, bind it to the right term.
 			if (eval(variableTerm) != null) {
 				// Variable is already bound, return true if binding is the same as the current ground term.
-				return termNonGround == eval(variableTerm);
+				return termGround == eval(variableTerm);
 			} else {
 				substitution.put(variableTerm, termGround);
 				return true;
