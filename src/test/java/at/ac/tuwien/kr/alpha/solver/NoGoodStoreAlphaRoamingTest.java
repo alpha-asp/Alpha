@@ -14,7 +14,7 @@ import static org.junit.Assert.*;
 /**
  * Copyright (c) 2017, the Alpha Team.
  */
-public class NoGoodStoreAlphaRoamingTest extends BasicNoGoodStoreTest {
+public class NoGoodStoreAlphaRoamingTest {
 
 	private final ArrayAssignment assignment;
 	private final NoGoodStoreAlphaRoaming store;

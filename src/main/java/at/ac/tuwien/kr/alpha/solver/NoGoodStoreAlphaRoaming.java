@@ -287,17 +287,19 @@ class NoGoodStoreAlphaRoaming implements NoGoodStore {
 		// Shorthands for viewing the nogood as { a, b }.
 		final int a = noGood.getLiteral(0);
 		final int b = noGood.getLiteral(1);
+		final int atomA = atomOf(a);
+		final int atomB = atomOf(b);
 
 		// Ignore NoGoods of the form { -a, a }.
-		if (a != b && atomOf(a) == atomOf(b)) {
+		if (a != b && atomA == atomB) {
 			return null;
 		}
 
-		boolean isViolatedA = assignment.containsWeakComplement(a);
-		boolean isViolatedB = assignment.containsWeakComplement(b);
+		final Assignment.Entry entryA = assignment.get(atomA);
+		final Assignment.Entry entryB = assignment.get(atomB);
 
-		Assignment.Entry entryA = assignment.get(atomOf(a));
-		Assignment.Entry entryB = assignment.get(atomOf(b));
+		final boolean isViolatedA = entryA != null && isPositive(a) == entryA.getTruth().toBoolean();
+		final boolean isViolatedB = entryB != null && isPositive(b) == entryB.getTruth().toBoolean();
 
 		// Check for violation.
 		if (isViolatedA && isViolatedB) {
