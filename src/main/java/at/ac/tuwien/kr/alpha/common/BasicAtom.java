@@ -3,10 +3,7 @@ package at.ac.tuwien.kr.alpha.common;
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -29,6 +26,12 @@ public class BasicAtom implements Atom {
 			}
 		}
 		this.ground = ground;
+	}
+
+	public BasicAtom(BasicAtom clone) {
+		this.predicate = clone.getPredicate();
+		this.terms = new ArrayList<>(clone.getTerms());
+		this.ground = clone.ground;
 	}
 
 	public BasicAtom(Predicate predicate, Term... terms) {

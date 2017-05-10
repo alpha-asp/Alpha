@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.grounder.BooleanAssignmentReader;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -343,9 +344,22 @@ public class NaiveSolver extends AbstractSolver {
 		}
 	}
 
+	private class NaiveBooleanAssignmentReader extends BooleanAssignmentReader {
+
+		public NaiveBooleanAssignmentReader() {
+			super(null);
+		}
+
+		@Override
+		public boolean isTrue(int atomId) {
+			Boolean assigned = truthAssignments.get(atomId);
+			return assigned != null && assigned;
+		}
+	}
+
 	private void obtainNoGoodsFromGrounder() {
 		final int oldSize = knownNoGoods.size();
-		knownNoGoods.putAll(grounder.getNoGoods());
+		knownNoGoods.putAll(grounder.getNoGoods(new NaiveBooleanAssignmentReader()));
 		if (oldSize != knownNoGoods.size()) {
 			// Record to detect propagation fixpoint, checking if new NoGoods were reported would be better here.
 			didChange = true;
