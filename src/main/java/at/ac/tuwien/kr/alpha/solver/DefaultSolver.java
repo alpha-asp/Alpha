@@ -362,11 +362,7 @@ public class DefaultSolver extends AbstractSolver {
 	 */
 	private boolean obtainNoGoodsFromGrounder(boolean fromHex) {
 		Map<Integer, NoGood> obtained;
-		if (!fromHex) {
-			obtained = grounder.getNoGoods(assignment);
-		} else {
-			obtained = grounder.getHexNoGoods(assignment);
-		}
+		obtained = grounder.getNoGoods(assignment);
 		LOGGER.debug("Obtained NoGoods from grounder: {}", obtained);
 
 		if (!obtained.isEmpty()) {

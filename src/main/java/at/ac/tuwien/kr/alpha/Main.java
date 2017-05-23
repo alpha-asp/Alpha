@@ -30,12 +30,10 @@ package at.ac.tuwien.kr.alpha;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.HexAnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
-import at.ac.tuwien.kr.alpha.grounder.bridges.HexBridge;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTreeVisitor;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityProgramTransformation;
@@ -52,8 +50,10 @@ import org.slf4j.LoggerFactory;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -170,10 +170,6 @@ public class Main {
 
 		Bridge[] bridges = new Bridge[0];
 
-		if (commandLine.hasOption(OPT_HEX)) {
-			bridges = new Bridge[] {new HexBridge()};
-		}
-
 		int limit = 0;
 
 		try {
@@ -246,17 +242,8 @@ public class Main {
 		if (commandLine.hasOption(OPT_SORT)) {
 			stream = stream.sorted();
 		}
-		if (commandLine.hasOption(OPT_HEX)) {
-			// If running in hex mode, do not print to standard output
-			// but instead report back via the bridge.
-			List<String[]> answerSets = stream
-				.map(new HexAnswerSetFormatter()::format)
-				.collect(Collectors.toList());
 
-			HexBridge.sendResults(answerSets.toArray(new String[answerSets.size()][]));
-		} else {
-			stream.forEach(System.out::println);
-		}
+		stream.forEach(System.out::println);
 	}
 
 	private static void bailOut(String format, Object... arguments) {

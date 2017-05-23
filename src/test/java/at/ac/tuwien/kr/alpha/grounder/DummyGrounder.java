@@ -122,7 +122,7 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
-	public Map<Integer, NoGood> getNoGoods() {
+	public Map<Integer, NoGood> getNoGoods(Assignment assignment) {
 		// Return NoGoods depending on current assignment.
 		HashMap<Integer, NoGood> returnNoGoods = new HashMap<>();
 		if (currentTruthValues[1] == 1 && currentTruthValues[2] == 1) {

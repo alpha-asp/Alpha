@@ -313,18 +313,6 @@ public class NaiveGrounder extends BridgedGrounder {
 		return newNoGoods;
 	}
 
-	@Override
-	public Map<Integer, NoGood> getHexNoGoods(Assignment assignment) {
-		HashMap<Integer, NoGood> newNoGoods = new LinkedHashMap<>();
-
-		// Import additional rules from external sources
-		for (NonGroundRule externalRule : collectExternalRules(assignment, atomStore, intIdGenerator)) {
-			register(generateNoGoodsFromGroundSubstitution(externalRule, new Substitution()), newNoGoods);
-		}
-
-		return newNoGoods;
-	}
-
 	private void register(Iterable<NoGood> noGoods, Map<Integer, NoGood> difference) {
 		for (NoGood noGood : noGoods) {
 			// Check if noGood was already derived earlier, add if it is new
