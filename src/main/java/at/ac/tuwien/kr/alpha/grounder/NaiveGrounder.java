@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.Term;
+import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.parser.*;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -42,7 +43,7 @@ import java.util.*;
  * A semi-naive grounder.
  * Copyright (c) 2016, the Alpha Team.
  */
-public class NaiveGrounder extends AbstractGrounder {
+public class NaiveGrounder extends BridgedGrounder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
 
 	protected HashMap<Predicate, ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage>> workingMemory = new HashMap<>();
@@ -64,12 +65,12 @@ public class NaiveGrounder extends AbstractGrounder {
 	private Set<NonGroundRule> uniqueGroundRulePerGroundHead = new HashSet<>();
 	private Map<Predicate, HashSet<NonGroundRule>> ruleHeadsToDefiningRules = new HashMap<>();
 
-	public NaiveGrounder(ParsedProgram program) {
-		this(program, p -> true);
+	public NaiveGrounder(ParsedProgram program, Bridge... bridges) {
+		this(program, p -> true, bridges);
 	}
 
-	public NaiveGrounder(ParsedProgram program, java.util.function.Predicate<Predicate> filter) {
-		super(program, filter);
+	public NaiveGrounder(ParsedProgram program, java.util.function.Predicate<Predicate> filter,  Bridge... bridges) {
+		super(program, filter, bridges);
 
 		// initialize all facts
 		for (ParsedFact fact : this.program.facts) {
@@ -266,7 +267,7 @@ public class NaiveGrounder extends AbstractGrounder {
 	}
 
 	@Override
-	public Map<Integer, NoGood> getNoGoods() {
+	public Map<Integer, NoGood> getNoGoods(Assignment assignment) {
 		// First call, output all NoGoods from facts.
 		if (outputFactNogoods) {
 			outputFactNogoods = false;
@@ -301,6 +302,13 @@ public class NaiveGrounder extends AbstractGrounder {
 			// Mark instances added by updateAssignment as done
 			modifiedWorkingMemory.markRecentlyAddedInstancesDone();
 		}
+
+		// Import additional rules from external sources
+		//for (NonGroundRule externalRule : collectExternalRules(assignment, atomStore, intIdGenerator)) {
+		//	register(generateNoGoodsFromGroundSubstitution(externalRule, new Substitution()), newNoGoods);
+		//}
+
+
 		modifiedWorkingMemories = new LinkedHashSet<>();
 		return newNoGoods;
 	}

@@ -345,7 +345,7 @@ public class NaiveSolver extends AbstractSolver {
 
 	private void obtainNoGoodsFromGrounder() {
 		final int oldSize = knownNoGoods.size();
-		knownNoGoods.putAll(grounder.getNoGoods());
+		knownNoGoods.putAll(grounder.getNoGoods(null));
 		if (oldSize != knownNoGoods.size()) {
 			// Record to detect propagation fixpoint, checking if new NoGoods were reported would be better here.
 			didChange = true;

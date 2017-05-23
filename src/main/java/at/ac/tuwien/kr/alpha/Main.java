@@ -33,6 +33,7 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTreeVisitor;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityProgramTransformation;
@@ -46,8 +47,13 @@ import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.util.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -62,6 +68,8 @@ public class Main {
 	private static final String OPT_GROUNDER = "grounder";
 	private static final String OPT_SOLVER = "solver";
 	private static final String OPT_FILTER = "filter";
+	private static final String OPT_STRING = "str";
+	private static final String OPT_HEX = "hex";
 	private static final String OPT_SORT = "sort";
 	private static final String OPT_DETERMINISTIC = "deterministic";
 	private static final String OPT_BRANCHING_HEURISTIC = "branchingHeuristic";
@@ -86,7 +94,6 @@ public class Main {
 
 		Option inputOption = new Option("i", OPT_INPUT, true, "read the ASP program from this file");
 		inputOption.setArgName("file");
-		inputOption.setRequired(true);
 		inputOption.setArgs(1);
 		inputOption.setType(FileInputStream.class);
 		options.addOption(inputOption);
@@ -109,6 +116,15 @@ public class Main {
 		filterOption.setArgName("filter");
 		filterOption.setValueSeparator(',');
 		options.addOption(filterOption);
+
+		Option strOption = new Option("str", OPT_STRING, true, "provide the ASP program in form of a string");
+		inputOption.setArgs(1);
+		inputOption.setArgName("string");
+		inputOption.setType(String.class);
+		options.addOption(strOption);
+
+		Option hexOption = new Option("x", OPT_HEX, true, "resolve external atoms via Hex and report back answer sets");
+		options.addOption(hexOption);
 
 		Option sortOption = new Option("sort", OPT_SORT, false, "sort answer sets");
 		options.addOption(sortOption);
@@ -159,6 +175,8 @@ public class Main {
 			};
 		}
 
+		Bridge[] bridges = new Bridge[0];
+
 		int limit = 0;
 
 		try {
@@ -174,12 +192,16 @@ public class Main {
 
 		ParsedProgram program = null;
 		try {
-			// Parse all input files and accumulate their results in one ParsedProgram.
-			String[] inputFileNames = commandLine.getOptionValues(OPT_INPUT);
-			program = parseVisit(new ANTLRFileStream(inputFileNames[0]));
+			if (commandLine.hasOption(OPT_STRING)) {
+				program = parseVisit(commandLine.getOptionValue(OPT_STRING));
+			} else {
+				// Parse all input files and accumulate their results in one ParsedProgram.
+				String[] inputFileNames = commandLine.getOptionValues(OPT_INPUT);
+				program = parseVisit(new ANTLRFileStream(inputFileNames[0]));
 
-			for (int i = 1; i < inputFileNames.length; i++) {
-				program.accumulate(parseVisit(new ANTLRFileStream(inputFileNames[i])));
+				for (int i = 1; i < inputFileNames.length; i++) {
+					program.accumulate(parseVisit(new ANTLRFileStream(inputFileNames[i])));
+				}
 			}
 		} catch (RecognitionException e) {
 			// In case a recognitionexception occured, parseVisit will
@@ -196,7 +218,7 @@ public class Main {
 		IdentityProgramTransformation programTransformation = new IdentityProgramTransformation();
 		ParsedProgram transformedProgram = programTransformation.transform(program);
 		Grounder grounder = GrounderFactory.getInstance(
-			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram, filter
+			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram, filter, bridges
 		);
 
 		// NOTE: Using time as seed is fine as the internal heuristics

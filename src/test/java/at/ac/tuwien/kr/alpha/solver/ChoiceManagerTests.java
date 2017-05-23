@@ -85,7 +85,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 	}
 
 	private Collection<NoGood> getNoGoods() {
-		return grounder.getNoGoods().values();
+		return grounder.getNoGoods(new BasicAssignment()).values();
 	}
 
 }

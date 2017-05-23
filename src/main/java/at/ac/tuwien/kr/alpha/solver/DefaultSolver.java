@@ -32,6 +32,9 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.*;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -159,6 +162,15 @@ public class DefaultSolver extends AbstractSolver {
 					logSizeOfSearchTree();
 					return false;
 				}
+			/*} else if (!propagationFixpointReached(true)) {
+				// Ask the grounder for new NoGoods, then propagate (again).
+				LOGGER.trace("Doing propagation step.");
+				updateGrounderAssignment();
+				if (!obtainNoGoodsFromGrounder(true)) {
+					// NoGoods are unsatisfiable.
+					LOGGER.info("{} decisions done.", decisionCounter);
+					return false;
+				}*/
 			} else if ((nextChoice = computeChoice()) != 0) {
 				LOGGER.debug("Doing choice.");
 				doChoice(nextChoice);
@@ -352,7 +364,8 @@ public class DefaultSolver extends AbstractSolver {
 	 * @return false iff the set of NoGoods is detected to be unsatisfiable.
 	 */
 	private boolean obtainNoGoodsFromGrounder() {
-		Map<Integer, NoGood> obtained = grounder.getNoGoods();
+		Map<Integer, NoGood> obtained;
+		obtained = grounder.getNoGoods(assignment);
 		LOGGER.debug("Obtained NoGoods from grounder: {}", obtained);
 
 		if (!obtained.isEmpty()) {

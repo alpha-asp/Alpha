@@ -104,7 +104,6 @@ public class RuleAtom implements Atom {
 		return 31 * PREDICATE.hashCode() + terms.hashCode();
 	}
 
-
 	@Override
 	public String toString() {
 		return PREDICATE.getPredicateName() + "(" + terms.get(0) + "," + terms.get(1) + ')';

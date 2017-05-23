@@ -137,7 +137,7 @@ public class AlphaHeuristicTestAssumptions {
 	}
 
 	private Collection<NoGood> getNoGoods() {
-		return grounder.getNoGoods().values();
+		return grounder.getNoGoods(new BasicAssignment()).values();
 	}
 
 	private void assertGreaterThan(String message, long expected, long actual) {

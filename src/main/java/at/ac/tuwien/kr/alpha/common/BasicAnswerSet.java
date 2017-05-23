@@ -140,6 +140,7 @@ public class BasicAnswerSet implements AnswerSet {
 
 			List<Term> termList = Stream.of(terms).map(BasicAnswerSet.Builder::parseFunctionTermSimple).collect(Collectors.toList());
 			instances.add(new BasicAtom(predicate, termList));
+
 			return this;
 		}
 
