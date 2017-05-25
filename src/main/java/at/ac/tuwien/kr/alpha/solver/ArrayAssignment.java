@@ -252,6 +252,15 @@ class ArrayAssignment implements Assignment {
 				if (violatedByAssign == null) {
 					guessViolatedByAssign = current;
 				}
+				// The lower assignment takes precedence over the current value, overwrite it and adjust mbtCounter.
+				if (current.getTruth() == MBT) {
+					mbtCount--;
+				}
+				recordAssignment(atom, value, impliedBy, decisionLevel, null);
+				if (value == MBT) {
+					mbtCount++;
+				}
+
 			}
 			return false;
 		}
