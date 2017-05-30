@@ -829,4 +829,35 @@ public class SolverTests extends AbstractSolverTests {
 		Set<AnswerSet> answerSets = solver.collectSet();
 		assertTrue(answerSets.isEmpty());
 	}
+
+	@Test
+	public void noPositiveSelfFounding() throws IOException {
+		String program = "a :- b.\n" +
+			"b:- a.\n" +
+			":- not b.";
+
+		ParsedProgram parsedProgram = parseVisit(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertTrue(answerSets.isEmpty());
+	}
+
+	@Test
+	public void noPositiveCycleSelfFoundingGuess() throws IOException {
+		String program =
+			"c :- not d.\n" +
+			"d :- not c." +
+			"a :- b, not c.\n" +
+			"b:- a.\n" +
+			":- not b.";
+
+		ParsedProgram parsedProgram = parseVisit(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertTrue(answerSets.isEmpty());
+	}
 }
