@@ -14,7 +14,8 @@ public class GroundConflictNoGoodLearnerTest {
 	private final NoGoodStore store;
 
 	public GroundConflictNoGoodLearnerTest() {
-		this.assignment = new BasicAssignment();
+		this.assignment = new ArrayAssignment();
+		this.assignment.growForMaxAtomId(20);
 		this.store = new NoGoodStoreAlphaRoaming(assignment);
 	}
 

@@ -52,7 +52,8 @@ public class BerkMinTest {
 	
 	@Before
 	public void setUp() {
-		BasicAssignment assignment = new BasicAssignment();
+		Assignment assignment = new ArrayAssignment();
+		assignment.growForMaxAtomId(2);
 		this.berkmin = new BerkMin(assignment, new PseudoChoiceManager(assignment), new Random());
 	}
 	
