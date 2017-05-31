@@ -2,9 +2,9 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import java.util.*;
 
-public class SimpleAssignmentImpl implements SimpleAssignment<BooleanTruth> {
-	private HashMap<Integer, Boolean> delegate = new HashMap<>();
-	private LinkedList<SimpleReadableAssignment.Entry<BooleanTruth>> newAssignments2 = new LinkedList<>();
+public class SimpleAssignmentImpl implements SimpleAssignment {
+	private HashMap<Integer, ThriceTruth> delegate = new HashMap<>();
+	private LinkedList<SimpleReadableAssignment.Entry> newAssignments2 = new LinkedList<>();
 
 	@Override
 	public boolean isAssigned(int atom) {
@@ -12,14 +12,8 @@ public class SimpleAssignmentImpl implements SimpleAssignment<BooleanTruth> {
 	}
 
 	@Override
-	public BooleanTruth getTruth(int atom) {
-		Boolean truth = delegate.get(atom);
-
-		if (truth == null) {
-			return null;
-		}
-
-		return BooleanTruth.valueOf(truth);
+	public ThriceTruth getTruth(int atom) {
+		return delegate.get(atom);
 	}
 
 	@Override
@@ -28,8 +22,10 @@ public class SimpleAssignmentImpl implements SimpleAssignment<BooleanTruth> {
 	}
 
 	@Override
-	public boolean assign(int atom, BooleanTruth value) {
-		return assign(atom, value.toBoolean());
+	public boolean assign(int atom, ThriceTruth value) {
+		newAssignments2.add(new Entry(atom, value));
+		delegate.put(atom, value);
+		return true;
 	}
 
 	@Override
@@ -38,32 +34,30 @@ public class SimpleAssignmentImpl implements SimpleAssignment<BooleanTruth> {
 	}
 
 	public boolean assign(int atom, boolean value) {
-		newAssignments2.add(new Entry(atom, value));
-		delegate.put(atom, value);
-		return true;
+		return assign(atom, ThriceTruth.valueOf(value));
 	}
 
 	@Override
-	public Iterator<Map.Entry<Integer, BooleanTruth>> iterator() {
+	public Iterator<Map.Entry<Integer, ThriceTruth>> iterator() {
 		return delegate.entrySet().stream()
-			.map(e -> (Map.Entry<Integer, BooleanTruth>) new AbstractMap.SimpleEntry<>(e.getKey(), BooleanTruth.valueOf(e.getValue())))
+			.map(e -> (Map.Entry<Integer, ThriceTruth>) new AbstractMap.SimpleEntry<>(e.getKey(), e.getValue()))
 			.iterator();
 	}
 
 	@Override
-	public Iterator<SimpleReadableAssignment.Entry<BooleanTruth>> getNewAssignmentsIterator2() {
-		Iterator<SimpleReadableAssignment.Entry<BooleanTruth>> it = newAssignments2.iterator();
+	public Iterator<SimpleReadableAssignment.Entry> getNewAssignmentsIterator2() {
+		Iterator<SimpleReadableAssignment.Entry> it = newAssignments2.iterator();
 		newAssignments2 = new LinkedList<>();
 		return it;
 	}
 
-	private static class Entry implements SimpleReadableAssignment.Entry<BooleanTruth> {
+	private static class Entry implements SimpleReadableAssignment.Entry {
 		private final int atom;
-		private final BooleanTruth truth;
+		private final ThriceTruth truth;
 
-		private Entry(int atom, boolean truth) {
+		private Entry(int atom, ThriceTruth truth) {
 			this.atom = atom;
-			this.truth = BooleanTruth.valueOf(truth);
+			this.truth = truth;
 		}
 
 		@Override
@@ -72,7 +66,7 @@ public class SimpleAssignmentImpl implements SimpleAssignment<BooleanTruth> {
 		}
 
 		@Override
-		public BooleanTruth getTruth() {
+		public ThriceTruth getTruth() {
 			return truth;
 		}
 	}

@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 
+import java.util.Iterator;
 import java.util.Stack;
 
 /**
@@ -36,7 +37,7 @@ import java.util.Stack;
  * the chosen value, and if the other value has been tried before (if we "backtracked" already).
  *
  */
-class ChoiceStack {
+class ChoiceStack implements Iterable<Integer> {
 	private final AtomTranslator translator;
 	private final Stack<Entry> delegate = new Stack<>();
 
@@ -66,6 +67,29 @@ class ChoiceStack {
 	
 	public boolean peekBacktracked() {
 		return delegate.peek().backtracked;
+	}
+
+	private class ChoiceIterator implements Iterator<Integer> {
+		private final Iterator<Entry> iterator;
+
+		public ChoiceIterator(Iterator<Entry> iterator) {
+			this.iterator = iterator;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return iterator.hasNext();
+		}
+
+		@Override
+		public Integer next() {
+			Entry next = iterator.next();
+			return next.atom * (next.value ? 1 : -1);
+		}
+	}
+
+	public ChoiceIterator iterator() {
+		return new ChoiceIterator(delegate.iterator());
 	}
 
 	@Override

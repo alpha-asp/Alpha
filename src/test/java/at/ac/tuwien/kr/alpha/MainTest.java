@@ -6,47 +6,52 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import static at.ac.tuwien.kr.alpha.Main.main;
 import static at.ac.tuwien.kr.alpha.Main.parseVisit;
-import static at.ac.tuwien.kr.alpha.Util.stream;
 
 public class MainTest {
+	public static InputStream stream(String file) {
+		return new ByteArrayInputStream(file.getBytes());
+	}
+
 	@Test
 	@Ignore
 	public void parseSimpleProgram() throws IOException {
-		parseVisit(stream(
+		parseVisit(
 			"p(X) :- q(X).\n" +
 			"q(a).\n" +
 			"q(b).\n"
-		));
+		);
 	}
 
 	@Test
 	public void parseProgramWithNegativeBody() throws IOException {
-		parseVisit(stream(
+		parseVisit(
 			"p(X) :- q(X), not q(a).\n" +
 				"q(a).\n"
-		));
+		);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
 	@Ignore
 	public void parseProgramWithFunction() throws IOException {
-		parseVisit(stream(
+		parseVisit(
 			"p(X) :- q(f(X)).\n" +
 				"q(a).\n"
-		));
+		);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
 	@Ignore
 	public void parseProgramWithDisjunctionInHead() throws IOException {
-		parseVisit(stream(
+		parseVisit(
 			"r(X) | q(X) :- q(X).\n" +
 				"q(a).\n"
-		));
+		);
 	}
 
 	@Test

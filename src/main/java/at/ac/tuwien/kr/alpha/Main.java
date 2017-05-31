@@ -1,9 +1,35 @@
+/**
+ * Copyright (c) 2016-2017, the Alpha Team.
+ * All rights reserved.
+ *
+ * Additional changes made by Siemens.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1) Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ * 2) Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.DefaultAnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.common.HexAnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
@@ -12,9 +38,10 @@ import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.bridges.HexBridge;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTreeVisitor;
-import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityTransformation;
+import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityProgramTransformation;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
@@ -25,7 +52,6 @@ import org.slf4j.LoggerFactory;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -50,6 +76,7 @@ public class Main {
 	private static final String DEFAULT_GROUNDER = "naive";
 	private static final String DEFAULT_SOLVER = "default";
 	private static final String OPT_SEED = "seed";
+	private static final String OPT_DEBUG_INTERNAL_CHECKS = "DebugEnableInternalChecks";
 
 	private static CommandLine commandLine;
 
@@ -97,7 +124,7 @@ public class Main {
 		Option hexOption = new Option("x", OPT_HEX, true, "resolve external atoms via Hex and report back answer sets");
 		options.addOption(hexOption);
 
-		Option sortOption = new Option("s", OPT_SORT, false, "sort answer sets");
+		Option sortOption = new Option("sort", OPT_SORT, false, "sort answer sets");
 		options.addOption(sortOption);
 
 		Option deterministicOption = new Option("d", OPT_DETERMINISTIC, false, "disable randomness");
@@ -109,6 +136,9 @@ public class Main {
 		seedOption.setArgs(1);
 		seedOption.setType(Number.class);
 		options.addOption(seedOption);
+
+		Option debugFlags = new Option(OPT_DEBUG_INTERNAL_CHECKS, "run additional (time-consuming) safety checks.");
+		options.addOption(debugFlags);
 
 		try {
 			commandLine = new DefaultParser().parse(options, args);
@@ -155,17 +185,26 @@ public class Main {
 			bailOut("Failed to parse number of answer sets requested.", e);
 		}
 
+		boolean debugInternalChecks = commandLine.hasOption(OPT_DEBUG_INTERNAL_CHECKS);
+
 		ParsedProgram program = null;
 		try {
 			if (commandLine.hasOption(OPT_STRING)) {
-				program = parseVisit(Util.stream(commandLine.getOptionValue(OPT_STRING)));
-			} else if (commandLine.hasOption(OPT_INPUT)) {
-				program = parseVisit(new FileInputStream(commandLine.getOptionValue(OPT_INPUT)));
+				program = parseVisit(commandLine.getOptionValue(OPT_STRING));
 			} else {
-				bailOut("Error: no input provided");
+				// Parse all input files and accumulate their results in one ParsedProgram.
+				String[] inputFileNames = commandLine.getOptionValues(OPT_INPUT);
+				program = parseVisit(new ANTLRFileStream(inputFileNames[0]));
+
+				for (int i = 1; i < inputFileNames.length; i++) {
+					program.accumulate(parseVisit(new ANTLRFileStream(inputFileNames[i])));
+				}
 			}
 		} catch (RecognitionException e) {
-			bailOut("Error while parsing input ASP program, see errors above.", e);
+			// In case a recognitionexception occured, parseVisit will
+			// already have printed an error message, so we just exit
+			// at this point without further logging.
+			System.exit(1);
 		} catch (FileNotFoundException e) {
 			bailOut(e.getMessage());
 		} catch (IOException e) {
@@ -173,10 +212,10 @@ public class Main {
 		}
 
 		// Apply program transformations/rewritings (currently none).
-		IdentityTransformation programTransformation = new IdentityTransformation();
+		IdentityProgramTransformation programTransformation = new IdentityProgramTransformation();
 		ParsedProgram transformedProgram = programTransformation.transform(program);
 		Grounder grounder = GrounderFactory.getInstance(
-			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), filter, bridges
+			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram, filter, bridges
 		);
 
 		// NOTE: Using time as seed is fine as the internal heuristics
@@ -195,7 +234,7 @@ public class Main {
 		LOGGER.info("Seed for pseudorandomization is {}.", seed);
 
 		Solver solver = SolverFactory.getInstance(
-			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, new Random(seed)
+			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, new Random(seed), BranchingHeuristicFactory.BERKMINLITERAL, debugInternalChecks // TODO: see issue #18
 		);
 
 		Stream<AnswerSet> stream = solver.stream();
@@ -204,10 +243,9 @@ public class Main {
 			stream = stream.limit(limit);
 		}
 
-		if (options.hasOption(OPT_SORT)) {
+		if (commandLine.hasOption(OPT_SORT)) {
 			stream = stream.sorted();
 		}
-
 		if (commandLine.hasOption(OPT_HEX)) {
 			// If running in hex mode, do not print to standard output
 			// but instead report back via the bridge.
@@ -217,9 +255,7 @@ public class Main {
 
 			HexBridge.sendResults(answerSets.toArray(new String[answerSets.size()][]));
 		} else {
-			stream
-				.map(new DefaultAnswerSetFormatter()::format)
-				.forEach(System.out::println);
+			stream.forEach(System.out::println);
 		}
 	}
 
@@ -228,7 +264,11 @@ public class Main {
 		System.exit(1);
 	}
 
-	public static ParsedProgram parseVisit(InputStream is) throws IOException {
+	public static ParsedProgram parseVisit(String input) throws IOException {
+		return parseVisit(new ANTLRInputStream(input));
+	}
+
+	public static ParsedProgram parseVisit(ANTLRInputStream is) throws IOException {
 		/*
 		// In order to require less memory: use unbuffered streams and avoid constructing a full parse tree.
 		ASPCore2Lexer lexer = new ASPCore2Lexer(new UnbufferedCharStream(is));
@@ -237,9 +277,7 @@ public class Main {
 		parser.setBuildParseTree(false);
 		*/
 		CommonTokenStream tokens = new CommonTokenStream(
-			new ASPCore2Lexer(
-				new ANTLRInputStream(is)
-			)
+			new ASPCore2Lexer(is)
 		);
 		final ASPCore2Parser parser = new ASPCore2Parser(tokens);
 
@@ -248,7 +286,7 @@ public class Main {
 		parser.removeErrorListeners();
 		parser.setErrorHandler(new BailErrorStrategy());
 
-		final SwallowingErrorListener errorListener = new SwallowingErrorListener();
+		final CustomErrorListener errorListener = new CustomErrorListener(is.getSourceName());
 
 		ASPCore2Parser.ProgramContext programContext;
 		try {
@@ -260,7 +298,6 @@ public class Main {
 			if (e.getCause() instanceof RecognitionException) {
 				tokens.reset();
 				parser.addErrorListener(errorListener);
-				parser.addErrorListener(ConsoleErrorListener.INSTANCE);
 				parser.setErrorHandler(new DefaultErrorStrategy());
 				parser.getInterpreter().setPredictionMode(PredictionMode.LL);
 				// Re-run parse.

@@ -58,7 +58,7 @@ public class Substitution {
 			FunctionTerm ftNonGround = (FunctionTerm) termNonGround;
 			FunctionTerm ftGround = (FunctionTerm) termGround;
 
-			if (!(ftNonGround.isSimilar(ftGround))) {
+			if (!(ftNonGround.getSymbol().equals(ftGround.getSymbol()))) {
 				return false;
 			}
 
@@ -82,7 +82,9 @@ public class Substitution {
 	public String toUniformString() {
 		List<VariableTerm> variablesInSubstitution = new ArrayList<>(substitution.size());
 		variablesInSubstitution.addAll(substitution.keySet());
-		Collections.sort(variablesInSubstitution); // Hint: Maybe this is a performance issue later, better have sorted/well-defined insertion into VariableSubstitution.
+
+		Collections.sort(variablesInSubstitution); // Hint: Maybe this is a performance issue later, better have sorted/well-defined insertion into Substitution.
+
 		StringBuilder ret = new StringBuilder();
 		for (VariableTerm variableTerm : variablesInSubstitution) {
 			ret.append("_")
@@ -123,4 +125,5 @@ public class Substitution {
 	public boolean isEmpty() {
 		return substitution.isEmpty();
 	}
+
 }

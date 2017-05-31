@@ -42,7 +42,7 @@ public abstract class ReteGrounder extends FilteringGrounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<? extends ReadableAssignment.Entry> it) {
+	public void updateAssignment(Iterator<ReadableAssignment.Entry> it) {
 	}
 
 	@Override
@@ -52,11 +52,6 @@ public abstract class ReteGrounder extends FilteringGrounder {
 
 	@Override
 	public String atomToString(int atomId) {
-		return null;
-	}
-
-	@Override
-	public List<Integer> getUnassignedAtoms(ReadableAssignment assignment) {
 		return null;
 	}
 

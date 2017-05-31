@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.solver.SimpleReadableAssignment;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 import java.util.Iterator;
 import java.util.Queue;
@@ -11,7 +12,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
-public interface ReadableAssignment<T extends Truth> extends SimpleReadableAssignment<T> {
+public interface ReadableAssignment extends SimpleReadableAssignment {
 	/**
 	 * Reports how many atoms are assigned to must-be-true currently. If this method returns
 	 * zero, the assignment is guaranteed to be free of must-be-true values (i.e. it only
@@ -26,17 +27,17 @@ public interface ReadableAssignment<T extends Truth> extends SimpleReadableAssig
 	 */
 	Set<Integer> getTrueAssignments();
 
-	Queue<ReadableAssignment.Entry<T>> getAssignmentsToProcess();
-	ReadableAssignment.Entry<T> getGuessViolatedByAssign();
+	Queue<ReadableAssignment.Entry> getAssignmentsToProcess();
+	ReadableAssignment.Entry getGuessViolatedByAssign();
 	NoGood getNoGoodViolatedByAssign();
 
 	/**
 	 * Returns an iterator over all new assignments. New assignments are only returned once.
 	 * @return
 	 */
-	Iterator<ReadableAssignment.Entry<T>> getNewAssignmentsIterator();
+	Iterator<ReadableAssignment.Entry> getNewAssignmentsIterator();
 
-	Entry<T> get(int atom);
+	Entry get(int atom);
 
 	int getDecisionLevel();
 
@@ -45,8 +46,8 @@ public interface ReadableAssignment<T extends Truth> extends SimpleReadableAssig
 	 * @param atom the id of the atom.
 	 * @return the truth value; null if atomId is not assigned.
 	 */
-	default T getTruth(int atom) {
-		final Entry<T> entry = get(atom);
+	default ThriceTruth getTruth(int atom) {
+		final Entry entry = get(atom);
 		return entry == null ? null : entry.getTruth();
 	}
 
@@ -101,9 +102,9 @@ public interface ReadableAssignment<T extends Truth> extends SimpleReadableAssig
 		return false;
 	}
 
-	interface Entry<T extends Truth> extends SimpleReadableAssignment.Entry<T> {
+	interface Entry extends SimpleReadableAssignment.Entry {
 		int getDecisionLevel();
-		Entry<T> getPrevious();
+		Entry getPrevious();
 		NoGood getImpliedBy();
 
 		int getPropagationLevel();

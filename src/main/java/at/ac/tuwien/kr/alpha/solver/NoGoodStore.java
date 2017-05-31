@@ -18,14 +18,14 @@ public interface NoGoodStore<T extends ThriceTruth> {
 
 	class ConflictCause {
 		private final NoGood violatedNoGood;
-		private final ReadableAssignment.Entry<? extends ThriceTruth> violatedGuess;
+		private final ReadableAssignment.Entry violatedGuess;
 
-		public ConflictCause(NoGood violatedNoGood, ReadableAssignment.Entry<? extends  ThriceTruth> violatedGuess) {
+		public ConflictCause(NoGood violatedNoGood, ReadableAssignment.Entry violatedGuess) {
 			this.violatedNoGood = violatedNoGood;
 			this.violatedGuess = violatedGuess;
 		}
 
-		public ReadableAssignment.Entry<? extends ThriceTruth> getViolatedGuess() {
+		public ReadableAssignment.Entry getViolatedGuess() {
 			return violatedGuess;
 		}
 
@@ -47,4 +47,9 @@ public interface NoGoodStore<T extends ThriceTruth> {
 	boolean propagate();
 
 	void backtrack();
+
+	/**
+	 * Enables (time-consuming) additional sanity checks.
+	 */
+	void enableInternalChecks();
 }

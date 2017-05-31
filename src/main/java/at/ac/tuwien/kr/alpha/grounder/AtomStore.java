@@ -13,13 +13,13 @@ import java.util.*;
 public class AtomStore {
 	private List<Atom> atomIdsToInternalBasicAtoms = new ArrayList<>();
 	private Map<Atom, Integer> predicateInstancesToAtomIds = new HashMap<>();
-	private IntIdGenerator atomIdGenerator = new IntIdGenerator();
+	private IntIdGenerator atomIdGenerator = new IntIdGenerator(1);
 
 	private List<Integer> releasedAtomIds = new ArrayList<>();	// contains atomIds ready to be garbage collected if necessary.
 
 	public AtomStore() {
 		// Create atomId for falsum (currently not needed, but it gets atomId 0, which cannot represent a negated literal).
-		add(null);
+		atomIdsToInternalBasicAtoms.add(null);
 	}
 
 	public int getHighestAtomId() {
@@ -55,6 +55,14 @@ public class AtomStore {
 	 * @return
 	 */
 	public int add(Atom groundAtom) {
+		if (groundAtom == null) {
+			throw new IllegalArgumentException("groundAtom must not be null");
+		}
+
+		if (!groundAtom.isGround()) {
+			throw new IllegalArgumentException("atom must be ground");
+		}
+
 		Integer id = predicateInstancesToAtomIds.get(groundAtom);
 
 		if (id == null) {

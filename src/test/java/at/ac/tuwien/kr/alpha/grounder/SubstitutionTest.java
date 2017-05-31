@@ -53,6 +53,7 @@ public class SubstitutionTest {
 		Substitution substitution = new Substitution();
 		substitution.put(VariableTerm.getInstance("Z"), ConstantTerm.getInstance("aa"));
 		FunctionTerm groundFunctionTerm = FunctionTerm.getInstance("f", ConstantTerm.getInstance("bb"), ConstantTerm.getInstance("cc"));
+
 		Term nongroundFunctionTerm = FunctionTerm.getInstance("f", ConstantTerm.getInstance("bb"), VariableTerm.getInstance("X"));
 		substitution.unifyTerms(nongroundFunctionTerm, groundFunctionTerm);
 		assertEquals("Variable X must bind to constant term cc", substitution.eval(VariableTerm.getInstance("X")), ConstantTerm.getInstance("cc"));

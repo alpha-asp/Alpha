@@ -126,7 +126,7 @@ public class BasicAssignmentTest {
 	public void assignmentsToProcess() throws Exception {
 		assignment.assign(1, MBT);
 
-		Queue<ReadableAssignment.Entry<ThriceTruth>> queue = assignment.getAssignmentsToProcess();
+		Queue<ReadableAssignment.Entry> queue = assignment.getAssignmentsToProcess();
 		assertEquals(1, queue.remove().getAtom());
 
 		assignment.guess(2, MBT);
@@ -142,7 +142,7 @@ public class BasicAssignmentTest {
 	@Test
 	public void newAssignmentsIteratorAndBacktracking() throws Exception {
 
-		Iterator<ReadableAssignment.Entry<ThriceTruth>> newAssignmentsIterator;
+		Iterator<ReadableAssignment.Entry> newAssignmentsIterator;
 
 		assignment.assign(1, MBT);
 		assignment.guess(2, MBT);
@@ -166,7 +166,7 @@ public class BasicAssignmentTest {
 	@Test
 	public void newAssignmentsIteratorLowerDecisionLevelAndBacktracking() throws Exception {
 
-		Iterator<ReadableAssignment.Entry<ThriceTruth>> newAssignmentsIterator;
+		Iterator<ReadableAssignment.Entry> newAssignmentsIterator;
 
 		assignment.guess(1, MBT);
 		assignment.guess(2, MBT);
@@ -181,7 +181,7 @@ public class BasicAssignmentTest {
 
 	@Test
 	public void iteratorAndBacktracking() throws Exception {
-		Queue<ReadableAssignment.Entry<ThriceTruth>> assignmentsToProcess = assignment.getAssignmentsToProcess();
+		Queue<ReadableAssignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
 
 		assignment.assign(1, MBT);
 		assertEquals(1, assignmentsToProcess.remove().getAtom());

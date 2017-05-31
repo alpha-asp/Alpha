@@ -31,7 +31,7 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 import at.ac.tuwien.kr.alpha.common.Truth;
 
-public interface Assignment<T extends Truth> extends ReadableAssignment<T>, SimpleAssignment<T> {
+public interface Assignment extends ReadableAssignment, SimpleAssignment {
 	/**
 	 * Backtracks to the indicated decision level. Every assignment on a higher decisionLevel is removed.
 	 * All assignments below (or equal to) decisionLevel are kept. Note that for atoms being TRUE this may require
@@ -39,7 +39,7 @@ public interface Assignment<T extends Truth> extends ReadableAssignment<T>, Simp
 	 */
 	void backtrack();
 
-	boolean assign(int atom, T value, NoGood impliedBy);
+	boolean assign(int atom, ThriceTruth value, NoGood impliedBy);
 
 	/**
 	 * Assigns an atom some value on a lower decision level than the current one.
@@ -49,11 +49,11 @@ public interface Assignment<T extends Truth> extends ReadableAssignment<T>, Simp
 	 * @param decisionLevel
 	 * @return
 	 */
-	boolean assign(int atom, T value, NoGood impliedBy, int decisionLevel);
+	boolean assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel);
 
-	default boolean assign(int atom, T value) {
+	default boolean assign(int atom, ThriceTruth value) {
 		return assign(atom, value, null);
 	}
 
-	boolean guess(int atom, T value);
+	boolean guess(int atom, ThriceTruth value);
 }

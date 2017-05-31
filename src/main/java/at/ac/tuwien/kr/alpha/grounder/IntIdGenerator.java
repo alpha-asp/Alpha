@@ -7,6 +7,14 @@ package at.ac.tuwien.kr.alpha.grounder;
 public class IntIdGenerator {
 	private int highestId;
 
+	public IntIdGenerator() {
+		this(0);
+	}
+
+	public IntIdGenerator(int initial) {
+		this.highestId = initial;
+	}
+
 	public int getNextId() {
 		if (highestId == Integer.MAX_VALUE) {
 			throw new RuntimeException("Ran out of Ids (integer overflow).");

@@ -28,12 +28,11 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.BasicAssignment;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
+import at.ac.tuwien.kr.alpha.solver.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -54,7 +53,8 @@ public class BerkMinTest {
 	
 	@Before
 	public void setUp() {
-		this.berkmin = new BerkMin(new BasicAssignment(), a -> true, a -> true, new Random());
+		BasicAssignment assignment = new BasicAssignment();
+		this.berkmin = new BerkMin(assignment, new PseudoChoiceManager(assignment), new Random());
 	}
 	
 	@Test
@@ -175,5 +175,22 @@ public class BerkMinTest {
 
 	private static ConflictAnalysisResult pseudo(NoGood noGood) {
 		return new ConflictAnalysisResult(null, 0, false, Collections.singleton(noGood), false);
+	}
+
+	private static class PseudoChoiceManager extends ChoiceManager {
+
+		public PseudoChoiceManager(Assignment assignment) {
+			super(assignment);
+		}
+
+		@Override
+		public boolean isAtomChoice(int atom) {
+			return true;
+		}
+
+		@Override
+		public boolean isActiveChoiceAtom(int atom) {
+			return true;
+		}
 	}
 }

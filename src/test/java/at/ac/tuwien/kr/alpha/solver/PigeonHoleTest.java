@@ -27,11 +27,9 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.bridges.ProgramBridge;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +37,6 @@ import java.io.IOException;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Main.parseVisit;
-import static at.ac.tuwien.kr.alpha.Util.stream;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -81,13 +78,11 @@ public class PigeonHoleTest extends AbstractSolverTests {
 	}
 
 	@Test(timeout = 10000)
-	@Ignore("currently not possible within time limit") // TODO
 	public void test4Pigeons3Holes() throws IOException {
 		testPigeonsHoles(4, 3);
 	}
 
 	@Test(timeout = 10000)
-	@Ignore("currently not possible within time limit") // TODO
 	public void test3Pigeons4Holes() throws IOException {
 		testPigeonsHoles(3, 4);
 	}
@@ -109,10 +104,10 @@ public class PigeonHoleTest extends AbstractSolverTests {
 		testProgram.append(":- pigeon(P), not assigned(P).").append(ls);
 		addPigeons(testProgram, pigeons);
 		addHoles(testProgram, holes);
-		System.out.println(testProgram);
 
-		ParsedProgram parsedProgram = parseVisit(stream(testProgram.toString()));
-		NaiveGrounder grounder = new NaiveGrounder(new ProgramBridge(parsedProgram));
+		ParsedProgram parsedProgram = parseVisit(testProgram.toString());
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+
 		Solver solver = getInstance(grounder);
 
 		Set<AnswerSet> answerSets = solver.collectSet();

@@ -1,8 +1,6 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2017 Siemens AG
  * All rights reserved.
- * 
- * Additional changes made by Siemens.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -27,52 +25,26 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.solver.Assignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 
-import java.util.Collection;
+import java.util.Random;
 
-/**
- * The default heuristic that had been used by {@link at.ac.tuwien.kr.alpha.solver.DefaultSolver} before {@link BerkMin} was implemented.
- *
- */
-public class NaiveHeuristic implements BranchingHeuristic {
+public final class BranchingHeuristicFactory {
 
-	private final ChoiceManager choiceManager;
+	public static final String NAIVE = "naive";
+	public static final String BERKMIN = "berkmin";
+	public static final String BERKMINLITERAL = "berkminliteral";
 
-	public NaiveHeuristic(ChoiceManager choiceManager) {
-		this.choiceManager = choiceManager;
-	}
-
-	@Override
-	public void violatedNoGood(NoGood violatedNoGood) {
-	}
-
-	@Override
-	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
-	}
-
-	@Override
-	public void newNoGood(NoGood newNoGood) {
-	}
-
-	@Override
-	public void newNoGoods(Collection<NoGood> newNoGoods) {
-	}
-
-	@Override
-	public double getActivity(int literal) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public int chooseAtom() {
-		return choiceManager.getNextActiveChoiceAtom();
-	}
-
-	@Override
-	public boolean chooseSign(int atom) {
-		return true;
+	public static BranchingHeuristic getInstance(String name, Assignment assignment, ChoiceManager choiceManager, Random random) {
+		switch (name.toLowerCase()) {
+			case NAIVE:
+				return new NaiveHeuristic(choiceManager);
+			case BERKMIN:
+				return new BerkMin(assignment, choiceManager, random);
+			case BERKMINLITERAL:
+				return new BerkMinLiteral(assignment, choiceManager, random);
+		}
+		throw new IllegalArgumentException("Unknown branching heuristic requested.");
 	}
 }

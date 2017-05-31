@@ -30,7 +30,6 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
-import at.ac.tuwien.kr.alpha.common.Truth;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -41,6 +40,8 @@ import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static java.lang.Math.abs;
 
 /**
@@ -98,7 +99,7 @@ public class NaiveSolver extends AbstractSolver {
 				obtainNoGoodsFromGrounder();
 				doUnitPropagation();
 				doMBTPropagation();
-				LOGGER.trace("Assignment after propagation is: {}", assignment);
+				//LOGGER.trace("Assignment after propagation is: {}", truthAssignments);
 			} else if (assignmentViolatesNoGoods()) {
 				LOGGER.trace("Backtracking from wrong choices:");
 				LOGGER.trace("Choice stack: {}", choiceStack);
@@ -178,7 +179,7 @@ public class NaiveSolver extends AbstractSolver {
 
 	private String reportTruthAssignments() {
 		String report = "Current Truth assignments: ";
-		for (Map.Entry<Integer, BooleanTruth> entry : assignment) {
+		for (Map.Entry<Integer, ThriceTruth> entry : assignment) {
 			report += (entry.getValue().toBoolean() ? "+" : "-") + entry.getKey() + " ";
 		}
 		return report;
@@ -194,7 +195,7 @@ public class NaiveSolver extends AbstractSolver {
 
 	private AnswerSet getAnswerSetFromAssignment() {
 		ArrayList<Integer> trueAtoms = new ArrayList<>();
-		for (Map.Entry<Integer, BooleanTruth> entry : assignment) {
+		for (Map.Entry<Integer, ThriceTruth> entry : assignment) {
 			if (entry.getValue().toBoolean()) {
 				trueAtoms.add(entry.getKey());
 			}
@@ -227,7 +228,7 @@ public class NaiveSolver extends AbstractSolver {
 				continue;
 			}
 
-			BooleanTruth truth = assignment.getTruth(e.getValue().getLeft());
+			ThriceTruth truth = assignment.getTruth(e.getValue().getLeft());
 			if (truth == null || !truth.toBoolean()) {
 				continue;
 			}
@@ -287,22 +288,23 @@ public class NaiveSolver extends AbstractSolver {
 
 	private void updateGrounderAssignments() {
 		grounder.updateAssignment(newTruthAssignments.stream().map(atom -> {
-			return new Entry(atom, assignment.getTruth(atom));
+			return (ReadableAssignment.Entry)new Entry(atom, assignment.getTruth(atom));
 		}).iterator());
 		newTruthAssignments.clear();
 	}
 
+
 	private static final class Entry implements ReadableAssignment.Entry {
-		private final Truth value;
+		private final ThriceTruth value;
 		private final int atom;
 
-		Entry(int atom, Truth value) {
+		Entry(int atom, ThriceTruth value) {
 			this.value = value;
 			this.atom = atom;
 		}
 
 		@Override
-		public Truth getTruth() {
+		public ThriceTruth getTruth() {
 			return value;
 		}
 
@@ -388,10 +390,10 @@ public class NaiveSolver extends AbstractSolver {
 
 	private boolean isLiteralViolated(int literal) {
 		final int atom = atomOf(literal);
-		final Truth assignment = this.assignment.getTruth(atom);
+		final ThriceTruth truth = assignment.getTruth(atom);
 
 		// For unassigned atoms, any literal is not violated.
-		return assignment != null && isNegated(literal) != assignment.toBoolean();
+		return assignment != null && isNegated(literal) != truth.toBoolean();
 	}
 
 	/**

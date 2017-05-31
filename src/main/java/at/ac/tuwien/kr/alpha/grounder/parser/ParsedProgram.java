@@ -37,4 +37,10 @@ public class ParsedProgram extends CommonParsedObject {
 	public boolean addConstraint(ParsedConstraint constraint) {
 		return constraints.add(constraint);
 	}
+
+	public void accumulate(ParsedProgram program) {
+		rules.addAll(program.rules);
+		facts.addAll(program.facts);
+		constraints.addAll(program.constraints);
+	}
 }

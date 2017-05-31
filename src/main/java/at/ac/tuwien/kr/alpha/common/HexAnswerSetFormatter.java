@@ -27,7 +27,8 @@ public class HexAnswerSetFormatter implements AnswerSetFormatter<String[]> {
 			}
 
 			for (Iterator<Atom> instanceIterator = instances.iterator(); instanceIterator.hasNext();) {
-				result.add(instanceIterator.next().toString().replace(" ", "").replace("()", ""));
+				String regex = "\\s*(?=([^\"]*\"[^\"]*\")*[^\"]*$)";
+				result.add(instanceIterator.next().toString().replace("()", "").replaceAll(regex, ""));
 			}
 		}
 		return result.toArray(new String[result.size()]);

@@ -28,15 +28,17 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
-import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
+import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.StreamSupport;
+import java.util.stream.Stream;
 
-import static at.ac.tuwien.kr.alpha.common.atoms.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.atoms.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -48,37 +50,36 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
  * Copyright (c) 2016 Siemens AG
  */
 public class BerkMin implements BranchingHeuristic {
-	public static final int DEFAULT_DECAY_AGE = 10;
-	public static final double DEFAULT_DECAY_FACTOR = 0.25;
+	private static final Logger LOGGER = LoggerFactory.getLogger(BerkMin.class);
+	
+	static final double DEFAULT_ACTIVITY = 0.0;
+	static final int DEFAULT_SIGN_COUNTER = 0;
+	static final int DEFAULT_CHOICE_ATOM = 0;
 
-	private static final double DEFAULT_ACTIVITY = 0.0;
-	private static final int DEFAULT_SIGN_COUNTER = 0;
-	private static final int DEFAULT_CHOICE_ATOM = 0;
+	static final int DEFAULT_DECAY_AGE = 10;
+	static final double DEFAULT_DECAY_FACTOR = 0.25;
 
-	private final Assignment<ThriceTruth> assignment;
-	private final Predicate<? super Integer> isAtomChoicePoint;
-	private final Predicate<? super Integer> isAtomActiveChoicePoint;
-	private final Random rand;
+	final Assignment assignment;
+	final ChoiceManager choiceManager;
+	final Random rand;
 
-	private Map<Integer, Double> activityCounters = new HashMap<>();
-	private Map<Integer, Integer> signCounters = new HashMap<>();
+	private Map<Integer, Double> activityCounters = new LinkedHashMap<>();
+	private Map<Integer, Integer> signCounters = new LinkedHashMap<>();
 	private Deque<NoGood> stackOfNoGoods = new ArrayDeque<>();
 	private int decayAge;
 	private double decayFactor;
 	private int stepsSinceLastDecay;
 
-	public BerkMin(Assignment<ThriceTruth> assignment, Predicate<? super Integer> isAtomChoicePoint,
-			Predicate<? super Integer> isAtomActiveChoicePoint, Random random, int decayAge, double decayFactor) {
+	BerkMin(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
 		this.assignment = assignment;
-		this.isAtomChoicePoint = isAtomChoicePoint;
-		this.isAtomActiveChoicePoint = isAtomActiveChoicePoint;
-		this.rand = random;
+		this.choiceManager = choiceManager;
 		this.decayAge = decayAge;
 		this.decayFactor = decayFactor;
+		this.rand = random;
 	}
 
-	public BerkMin(Assignment<ThriceTruth> assignment, Predicate<? super Integer> isAtomChoicePoint, Predicate<? super Integer> isAtomActiveChoicePoint, Random random) {
-		this(assignment, isAtomChoicePoint, isAtomActiveChoicePoint, random, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR);
+	BerkMin(Assignment assignment, ChoiceManager choiceManager, Random random) {
+		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random);
 	}
 
 	/**
@@ -118,6 +119,9 @@ public class BerkMin implements BranchingHeuristic {
 	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
 		pushToStack(analysisResult.learnedNoGood);
 		for (NoGood noGood : analysisResult.noGoodsResponsibleForConflict) {
+			if (LOGGER.isTraceEnabled()) {
+				LOGGER.trace("NoGood responsible with {} choice points", numChoicePoints(noGood));
+			}
 			for (Integer literal : noGood) {
 				incrementActivityCounter(literal);
 				incrementSignCounter(literal);
@@ -132,6 +136,16 @@ public class BerkMin implements BranchingHeuristic {
 		for (Integer literal : newNoGood) {
 			incrementSignCounter(literal);
 		}
+	}
+
+	private int numChoicePoints(NoGood noGood) {
+		int numChoicePoints = 0;
+		for (Integer literal : noGood) {
+			if (choiceManager.isAtomChoice(literal)) {
+				numChoicePoints++;
+			}
+		}
+		return numChoicePoints;
 	}
 
 	@Override
@@ -177,11 +191,13 @@ public class BerkMin implements BranchingHeuristic {
 		int positiveCounter = signCounters.getOrDefault(+atom, DEFAULT_SIGN_COUNTER);
 		int negativeCounter = signCounters.getOrDefault(-atom, DEFAULT_SIGN_COUNTER);
 
-		if (positiveCounter == negativeCounter) {
+		if (positiveCounter > negativeCounter) {
+			return false;
+		} else if (negativeCounter > positiveCounter) {
+			return true;
+		} else {
 			return rand.nextBoolean();
 		}
-
-		return negativeCounter > positiveCounter;
 	}
 
 	private void pushToStack(NoGood noGood) {
@@ -192,7 +208,7 @@ public class BerkMin implements BranchingHeuristic {
 
 	private void incrementActivityCounter(int literal) {
 		int atom = atomOf(literal);
-		if (isAtomChoicePoint.test(atom)) {
+		if (choiceManager.isAtomChoice(atom)) {
 			activityCounters.compute(atom, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + 1);
 		}
 		// TODO: check performance
@@ -206,7 +222,7 @@ public class BerkMin implements BranchingHeuristic {
 	}
 	
 	private void incrementSignCounter(Integer literal) {
-		if (isAtomChoicePoint.test(atomOf(literal))) {
+		if (choiceManager.isAtomChoice(atomOf(literal))) {
 			signCounters.compute(literal, (k, v) -> (v == null ? DEFAULT_SIGN_COUNTER : v) + 1);
 		}
 	}
@@ -224,7 +240,7 @@ public class BerkMin implements BranchingHeuristic {
 	 * Gets the most recent conflict that is still violated.
 	 * @return the violated nogood closest to the top of the stack of nogoods.
 	 */
-	public NoGood getCurrentTopClause() {
+	NoGood getCurrentTopClause() {
 		for (NoGood noGood : stackOfNoGoods) {
 			if (assignment.isUndefined(noGood)) {
 				return noGood;
@@ -234,18 +250,23 @@ public class BerkMin implements BranchingHeuristic {
 	}
 	
 	/**
-	 * If {@code noGood != null}, returns the most active unassigned literal from {@code noGood}.
-	 * Else, returns the most active atom of all the known atoms.
+	 * If {@code noGood != null}, returns the most active unassigned literal from {@code noGood}. Else, returns the most active atom of all the known atoms.
 	 * @param noGood
 	 * @return
 	 */
 	private int getMostActiveChoosableAtom(NoGood noGood) {
-		final Iterable<Integer> candidates = noGood != null ? noGood : activityCounters.keySet();
-
-		return StreamSupport.stream(candidates.spliterator(), true)
+		if (noGood != null) {
+			return getMostActiveChoosableAtom(noGood.stream().boxed());
+		} else {
+			return getMostActiveChoosableAtom(activityCounters.keySet().stream());
+		}
+	}
+	
+	private int getMostActiveChoosableAtom(Stream<Integer> streamOfLiterals) {
+		return streamOfLiterals
 			.map(Literals::atomOf)
 			.filter(this::isUnassigned)
-			.filter(isAtomActiveChoicePoint)
+			.filter(choiceManager::isActiveChoiceAtom)
 			.max(Comparator.comparingDouble(this::getActivity))
 			.orElse(DEFAULT_CHOICE_ATOM);
 	}
