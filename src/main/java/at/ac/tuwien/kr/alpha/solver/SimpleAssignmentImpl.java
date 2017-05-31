@@ -17,6 +17,17 @@ public class SimpleAssignmentImpl implements SimpleAssignment {
 	}
 
 	@Override
+	public Set<Integer> getTrueAssignments() {
+		Set<Integer> result = new HashSet<>();
+		for (Map.Entry<Integer, ThriceTruth> entry : delegate.entrySet()) {
+			if (entry.getValue().toBoolean()) {
+				result.add(entry.getKey());
+			}
+		}
+		return result;
+	}
+
+	@Override
 	public void clear() {
 		delegate.clear();
 	}
@@ -35,13 +46,6 @@ public class SimpleAssignmentImpl implements SimpleAssignment {
 
 	public boolean assign(int atom, boolean value) {
 		return assign(atom, ThriceTruth.valueOf(value));
-	}
-
-	@Override
-	public Iterator<Map.Entry<Integer, ThriceTruth>> iterator() {
-		return delegate.entrySet().stream()
-			.map(e -> (Map.Entry<Integer, ThriceTruth>) new AbstractMap.SimpleEntry<>(e.getKey(), e.getValue()))
-			.iterator();
 	}
 
 	@Override

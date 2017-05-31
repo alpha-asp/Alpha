@@ -39,7 +39,7 @@ import java.util.*;
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
-public class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
+public class BasicNoGoodStore implements NoGoodStore {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BasicNoGoodStore.class);
 	private boolean internalChecksEnabled;
 
@@ -106,9 +106,9 @@ public class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	@Override
 	public ConflictCause add(int id, NoGood noGood) {
 		LOGGER.trace("Adding {}", noGood);
-		if (noGood.size() == 1) {
+		if (noGood.isUnary()) {
 			return addUnary(noGood);
-		} else if (noGood.size() == 2) {
+		} else if (noGood.isBinary()) {
 			return addAndWatchBinary(id, noGood);
 		} else {
 			return addAndWatch(noGood);
@@ -632,7 +632,7 @@ public class BasicNoGoodStore implements NoGoodStore<ThriceTruth> {
 	@Override
 	public boolean propagate() {
 		boolean propagated = false;
-		Queue<ReadableAssignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
+		Queue<? extends ReadableAssignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
 
 		while (!assignmentsToProcess.isEmpty()) {
 			final ReadableAssignment.Entry entry = assignmentsToProcess.remove();

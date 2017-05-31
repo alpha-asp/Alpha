@@ -58,4 +58,10 @@ public interface Grounder extends AtomTranslator {
 	 * @return
 	 */
 	boolean isAtomChoicePoint(int atom);
+
+	/**
+	 * Returns the highest atomId in use.
+	 * @return the highest atomId in use.
+	 */
+	int getMaxAtomId();
 }

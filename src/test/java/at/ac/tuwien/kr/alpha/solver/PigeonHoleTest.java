@@ -30,14 +30,19 @@ import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Main.parseVisit;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Tests {@link AbstractSolver} using some pigeon-hole test cases (see https://en.wikipedia.org/wiki/Pigeonhole_principle).
@@ -57,6 +62,11 @@ public class PigeonHoleTest extends AbstractSolverTests {
 		root.setLevel(Level.DEBUG);
 	}
 
+	@Before
+	public void printSolverName() {
+		System.out.println(solverName);
+	}
+
 	@Test(timeout = 1000)
 	public void test2Pigeons2Holes() throws IOException {
 		testPigeonsHoles(2, 2);
@@ -72,61 +82,109 @@ public class PigeonHoleTest extends AbstractSolverTests {
 		testPigeonsHoles(2, 3);
 	}
 
-	@Test(timeout = 5000)
+	@Test(timeout = 1000)
+	@Ignore("disabled to save resources during CI")
 	public void test3Pigeons3Holes() throws IOException {
 		testPigeonsHoles(3, 3);
 	}
 
-	@Test(timeout = 10000)
+	@Test(timeout = 1000)
+	@Ignore("disabled to save resources during CI")
 	public void test4Pigeons3Holes() throws IOException {
 		testPigeonsHoles(4, 3);
 	}
 
-	@Test(timeout = 10000)
+	@Test(timeout = 1000)
+	@Ignore("disabled to save resources during CI")
 	public void test3Pigeons4Holes() throws IOException {
 		testPigeonsHoles(3, 4);
+	}
+
+	@Test(timeout = 1000)
+	@Ignore("disabled to save resources during CI")
+	public void test4Pigeons4Holes() throws IOException {
+		testPigeonsHoles(4, 4);
+	}
+
+	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
+	public void test10Pigeons10Holes() throws IOException {
+		testPigeonsHoles(10, 10);
+	}
+
+	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
+	public void test19Pigeons20Holes() throws IOException {
+		testPigeonsHoles(19, 20);
+	}
+
+	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
+	public void test28Pigeons30Holes() throws IOException {
+		testPigeonsHoles(28, 30);
+	}
+
+	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
+	public void test37Pigeons40Holes() throws IOException {
+		testPigeonsHoles(37, 40);
+	}
+
+	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
+	public void test46Pigeons50Holes() throws IOException {
+		testPigeonsHoles(46, 50);
+	}
+
+	@Test(timeout = 60000)
+	@Ignore("disabled to save resources during CI")
+	public void test55Pigeons60Holes() throws IOException {
+		testPigeonsHoles(55, 60);
 	}
 
 	/**
 	 * Tries to solve the problem of assigning P pigeons to H holes.
 	 */
 	private void testPigeonsHoles(int pigeons, int holes) throws IOException {
-		String ls = System.lineSeparator();
-		StringBuilder testProgram = new StringBuilder();
-		testProgram.append("n(N) :- pigeon(N).").append(ls);
-		testProgram.append("n(N) :- hole(N).").append(ls);
-		testProgram.append("eq(N,N) :- n(N).").append(ls);
-		testProgram.append("in(P,H) :- pigeon(P), hole(H), not not_in(P,H).").append(ls);
-		testProgram.append("not_in(P,H) :- pigeon(P), hole(H), not in(P,H).").append(ls);
-		testProgram.append(":- in(P,H1), in(P,H2), not eq(H1,H2).").append(ls);
-		testProgram.append(":- in(P1,H), in(P2,H), not eq(P1,P2).").append(ls);
-		testProgram.append("assigned(P) :- pigeon(P), in(P,H).").append(ls);
-		testProgram.append(":- pigeon(P), not assigned(P).").append(ls);
-		addPigeons(testProgram, pigeons);
-		addHoles(testProgram, holes);
+		List<String> rules = new ArrayList<>();
+		rules.add("pos(P,H) :- pigeon(P), hole(H), not negpos(P,H).");
+		rules.add("negpos(P,H) :- pigeon(P), hole(H), not pos(P,H).");
+		rules.add(":- pigeon(P), hole(H1), hole(H2), pos(P,H1), pos(P,H2), H1 != H2.");
+		rules.add(":- pigeon(P), not hashole(P).");
+		rules.add("hashole(P) :- pigeon(P), hole(H), pos(P,H).");
+		rules.add(":- pigeon(P1), pigeon(P2), hole(H), pos(P1,H), pos(P2,H), P1 != P2.");
 
-		ParsedProgram parsedProgram = parseVisit(testProgram.toString());
+		addPigeons(rules, pigeons);
+		addHoles(rules, holes);
+
+		String testProgram = concat(rules);
+		ParsedProgram parsedProgram = parseVisit(testProgram);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 
 		Solver solver = getInstance(grounder);
 
 		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(numberOfSolutions(pigeons, holes), answerSets.size());
+		Assert.assertEquals(numberOfSolutions(pigeons, holes), answerSets.size());
+		solver.stream().findAny();
 	}
 
-	private void addPigeons(StringBuilder testProgram, int pigeons) {
-		addFacts(testProgram, "pigeon", 1, pigeons);
+	private void addPigeons(List<String> rules, int pigeons) {
+		addFacts(rules, "pigeon", 1, pigeons);
 	}
 
-	private void addHoles(StringBuilder testProgram, int holes) {
-		addFacts(testProgram, "hole", 1, holes);
+	private void addHoles(List<String> rules, int holes) {
+		addFacts(rules, "hole", 1, holes);
 	}
 
-	private void addFacts(StringBuilder testProgram, String predicateName, int from, int to) {
-		String ls = System.lineSeparator();
+	private void addFacts(List<String> rules, String predicateName, int from, int to) {
 		for (int i = from; i <= to; i++) {
-			testProgram.append(String.format("%s(%d).%s", predicateName, i, ls));
+			rules.add(String.format("%s(%d).", predicateName, i));
 		}
+	}
+
+	private String concat(List<String> rules) {
+		String ls = System.lineSeparator();
+		return rules.stream().collect(Collectors.joining(ls));
 	}
 
 	private long numberOfSolutions(int pigeons, int holes) {

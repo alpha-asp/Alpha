@@ -307,9 +307,27 @@ public class NaiveGrounder extends BridgedGrounder {
 			modifiedWorkingMemory.markRecentlyAddedInstancesDone();
 		}
 
-		modifiedWorkingMemories = new HashSet<>();
+		// Import additional rules from external sources
+		//for (NonGroundRule externalRule : collectExternalRules(assignment, atomStore, intIdGenerator)) {
+		//	register(generateNoGoodsFromGroundSubstitution(externalRule, new Substitution()), newNoGoods);
+		//}
+
+
+		modifiedWorkingMemories = new LinkedHashSet<>();
 		return newNoGoods;
 	}
+
+	private void register(Iterable<NoGood> noGoods, Map<Integer, NoGood> difference) {
+		for (NoGood noGood : noGoods) {
+			// Check if noGood was already derived earlier, add if it is new
+			if (!nogoodIdentifiers.containsKey(noGood)) {
+				int noGoodId = nogoodIdGenerator.getNextId();
+				nogoodIdentifiers.put(noGood, noGoodId);
+				difference.put(noGoodId, noGood);
+			}
+		}
+	}
+
 
 	/**
 	 * Generates all NoGoods resulting from a non-ground rule and a variable substitution.
@@ -596,6 +614,11 @@ public class NaiveGrounder extends BridgedGrounder {
 	@Override
 	public boolean isAtomChoicePoint(int atom) {
 		return false;
+	}
+
+	@Override
+	public int getMaxAtomId() {
+		return atomStore.getHighestAtomId();
 	}
 
 	public void printCurrentlyKnownGroundRules() {

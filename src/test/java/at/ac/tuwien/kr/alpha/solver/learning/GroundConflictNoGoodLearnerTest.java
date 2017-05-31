@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
 public class GroundConflictNoGoodLearnerTest {
 
 	private final Assignment assignment;
-	private final NoGoodStore<ThriceTruth> store;
+	private final NoGoodStore store;
 
 	public GroundConflictNoGoodLearnerTest() {
 		this.assignment = new BasicAssignment();

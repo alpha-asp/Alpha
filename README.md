@@ -1,8 +1,29 @@
 # Alpha
 
-[![Build Status](https://travis-ci.org/AntoniusW/Alpha.svg?branch=master)](https://travis-ci.org/AntoniusW/Alpha) [![Code Quality Status](https://codebeat.co/badges/7538d939-2394-4e3d-8e50-1f93e39d2acf)](https://codebeat.co/projects/github-com-antoniusw-alpha)
+[![Build Status](https://travis-ci.org/alpha-asp/Alpha.svg?branch=master)](https://travis-ci.org/alpha-asp/Alpha)
+[![Code Quality Status](https://codebeat.co/badges/10b609be-9774-42a1-b7fe-2bb64382744d)](https://codebeat.co/projects/github-com-alpha-asp-alpha-master)
 
 Alpha is the successor of [OMiGA](http://www.kr.tuwien.ac.at/research/systems/omiga/) and currently in development.
+
+## Getting Started
+
+Download a current version of `alpha.jar` from [Releases](https://github.com/AntoniusW/Alpha/releases).
+
+Running Alpha is as simple as running any other JAR:
+
+```bash
+$ java -jar alpha.jar
+```
+
+### Example Usage
+
+Solve 3-colorability for some benchmarking instance and filter for color predicates:
+
+```bash
+$ java -jar alpha.jar -i benchmarks/omiga/omiga-testcases/3col/3col-10-18.txt -fblue -fred -fgreen
+```
+
+Note that in this example the path to the input file is relative to the root of this repository. If you have not checked out the repository, you can just [download the example file from GitHub](/benchmarks/omiga/omiga-testcases/3col/3col-10-18.txt).
 
 ## Building
 
@@ -25,14 +46,6 @@ $ gradle bundledJar
 ```
 
 and pick up `build/libs/alpha-bundled.jar`.
-
-## Usage
-
-Solve 3-colorability for some benchmarking instance and filter for color predicates:
-
-```bash
-$ java -jar alpha.jar -i benchmarks/omiga/omiga-testcases/3col/3col-10-18.txt -fblue -fred -fgreen
-```
 
 ## Suggested Reading
 

@@ -115,6 +115,7 @@ public class BasicAssignment implements Assignment {
 				mbtCount++;
 				assignment.put(entry.getAtom(), previous);
 				LOGGER.trace("Backtracking assignment: {}={} restored to {}={}.", entry.getAtom(), current, entry.getAtom(), previous);
+				// TODO: if atom was watched and MBT, the watch might not point to the highest assigned literal now.
 			} else {
 				if (MBT.equals(current.getTruth())) {
 					mbtCount--;
@@ -177,6 +178,11 @@ public class BasicAssignment implements Assignment {
 	@Override
 	public ReadableAssignment.Entry getGuessViolatedByAssign() {
 		return guessViolatedByAssign;
+	}
+
+	@Override
+	public void growForMaxAtomId(int maxAtomId) {
+		// Nothing to do here, HashMap grows automatically and returns null if entry is not found.
 	}
 
 	private boolean assignWithDecisionLevel(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
@@ -435,11 +441,6 @@ public class BasicAssignment implements Assignment {
 	}
 
 	@Override
-	public Iterator<Map.Entry<Integer, ThriceTruth>> iterator() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public Iterator<? extends SimpleReadableAssignment.Entry> getNewAssignmentsIterator2() {
 		Iterator<? extends SimpleReadableAssignment.Entry> it = newAssignments2.iterator();
 		newAssignments2 = new LinkedList<>();
@@ -502,7 +503,7 @@ public class BasicAssignment implements Assignment {
 
 		@Override
 		public String toString() {
-			return value.toString() + "(" + decisionLevel + ", " + propagationLevel + ")";
+			return String.format("%d=%s(%d, %d)", atom, value, decisionLevel, propagationLevel);
 		}
 	}
 }

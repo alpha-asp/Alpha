@@ -14,8 +14,20 @@ jdk:
 # version of Gradle, so this workaround fetches
 # a given version before carrying out the build.
 before_install:
-  - wget -O gradle.zip https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip
-  - unzip gradle.zip
+  # Setup Gradle configuration, tell it not to spawn a daemon.
+  # Gradle will complain and ask us to enable the daemon, but
+  # disabling it actually is a good practice for CI. Docs at
+  # https://docs.gradle.org/3.5/userguide/gradle_daemon.html#when_should_i_not_use_the_gradle_daemon
+  - mkdir -pv $HOME/.gradle
+  - echo 'org.gradle.daemon=false' > $HOME/.gradle/gradle.properties
+
+  # Set memory limits for Gradle and Java processes it spawns.
+  - export GRADLE_OPTS="-Xmx1g -Xss8m"
+  - echo 'org.gradle.jvmargs=-Xmx1g' >> $HOME/.gradle/gradle.properties
+
+  # Actually download Gradle, unpack it and make it visible in $PATH.
+  - wget -q -O gradle.zip https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip
+  - unzip -q gradle.zip
   - export PATH=$PWD/gradle-$GRADLE_VERSION/bin:$PATH
 
 # Do not send notifications via e-mail, this gets
@@ -28,9 +40,9 @@ notifications:
 # of dependencies according to Travis CI docs, see
 # https://docs.travis-ci.com/user/languages/java#Caching
 before_cache:
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+  - rm -fv  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fvr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
+    - $HOME/.gradle/caches/$GRADLE_VERSION/
+    - $HOME/.gradle/caches/modules-2/

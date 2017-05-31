@@ -177,14 +177,6 @@ public class NaiveSolver extends AbstractSolver {
 		}
 	}
 
-	private String reportTruthAssignments() {
-		String report = "Current Truth assignments: ";
-		for (Map.Entry<Integer, ThriceTruth> entry : assignment) {
-			report += (entry.getValue().toBoolean() ? "+" : "-") + entry.getKey() + " ";
-		}
-		return report;
-	}
-
 	private boolean propagationFixpointReached() {
 		// Check if anything changed.
 		// didChange is updated in places of change.
@@ -194,13 +186,7 @@ public class NaiveSolver extends AbstractSolver {
 	}
 
 	private AnswerSet getAnswerSetFromAssignment() {
-		ArrayList<Integer> trueAtoms = new ArrayList<>();
-		for (Map.Entry<Integer, ThriceTruth> entry : assignment) {
-			if (entry.getValue().toBoolean()) {
-				trueAtoms.add(entry.getKey());
-			}
-		}
-		return translate(trueAtoms);
+		return translate(assignment.getTrueAssignments());
 	}
 
 	private void doChoice() {

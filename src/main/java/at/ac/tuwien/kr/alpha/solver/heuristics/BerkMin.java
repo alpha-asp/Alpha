@@ -168,7 +168,7 @@ public class BerkMin implements BranchingHeuristic {
 	@Override
 	public int chooseAtom() {
 		for (NoGood noGood : stackOfNoGoods) {
-			if (assignment.isUndefined(noGood)) { // TODO: is this really necessary?
+			if (assignment.isUndefined(noGood)) {
 				int mostActiveAtom = getMostActiveChoosableAtom(noGood);
 				if (mostActiveAtom != DEFAULT_CHOICE_ATOM) {
 					return mostActiveAtom;
@@ -200,7 +200,7 @@ public class BerkMin implements BranchingHeuristic {
 		}
 	}
 
-	private void pushToStack(NoGood noGood) {
+	protected void pushToStack(NoGood noGood) {
 		if (noGood != null) {
 			stackOfNoGoods.push(noGood);
 		}
@@ -262,7 +262,7 @@ public class BerkMin implements BranchingHeuristic {
 		}
 	}
 	
-	private int getMostActiveChoosableAtom(Stream<Integer> streamOfLiterals) {
+	protected int getMostActiveChoosableAtom(Stream<Integer> streamOfLiterals) {
 		return streamOfLiterals
 			.map(Literals::atomOf)
 			.filter(this::isUnassigned)

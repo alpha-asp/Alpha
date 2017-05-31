@@ -30,8 +30,19 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 import at.ac.tuwien.kr.alpha.common.Truth;
+import java.util.*;
+
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 public interface Assignment extends ReadableAssignment, SimpleAssignment {
+	/**
+	 * Delete all information stored in the assignment.
+	 */
+	void clear();
+
 	/**
 	 * Backtracks to the indicated decision level. Every assignment on a higher decisionLevel is removed.
 	 * All assignments below (or equal to) decisionLevel are kept. Note that for atoms being TRUE this may require
@@ -56,4 +67,8 @@ public interface Assignment extends ReadableAssignment, SimpleAssignment {
 	}
 
 	boolean guess(int atom, ThriceTruth value);
+
+	default boolean guess(int atom, boolean value) {
+		return guess(atom, ThriceTruth.valueOf(value));
+	}
 }

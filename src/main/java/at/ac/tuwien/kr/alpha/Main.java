@@ -30,18 +30,16 @@ package at.ac.tuwien.kr.alpha;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.HexAnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
-import at.ac.tuwien.kr.alpha.grounder.bridges.HexBridge;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTreeVisitor;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityProgramTransformation;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
@@ -52,8 +50,10 @@ import org.slf4j.LoggerFactory;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -72,11 +72,13 @@ public class Main {
 	private static final String OPT_HEX = "hex";
 	private static final String OPT_SORT = "sort";
 	private static final String OPT_DETERMINISTIC = "deterministic";
+	private static final String OPT_BRANCHING_HEURISTIC = "branchingHeuristic";
 
 	private static final String DEFAULT_GROUNDER = "naive";
 	private static final String DEFAULT_SOLVER = "default";
 	private static final String OPT_SEED = "seed";
 	private static final String OPT_DEBUG_INTERNAL_CHECKS = "DebugEnableInternalChecks";
+	private static final String DEFAULT_BRANCHING_HEURISTIC = Heuristic.NAIVE.name();
 
 	private static CommandLine commandLine;
 
@@ -140,6 +142,11 @@ public class Main {
 		Option debugFlags = new Option(OPT_DEBUG_INTERNAL_CHECKS, "run additional (time-consuming) safety checks.");
 		options.addOption(debugFlags);
 
+		Option branchingHeuristicOption = new Option("b", OPT_BRANCHING_HEURISTIC, false, "name of the branching heuristic to use");
+		branchingHeuristicOption.setArgs(1);
+		branchingHeuristicOption.setArgName("heuristic");
+		options.addOption(branchingHeuristicOption);
+
 		try {
 			commandLine = new DefaultParser().parse(options, args);
 		} catch (ParseException e) {
@@ -154,7 +161,7 @@ public class Main {
 			HelpFormatter formatter = new HelpFormatter();
 			// TODO(flowlo): This is quite optimistic. How do we know that the program
 			// really was invoked as "java -jar ..."?
-			formatter.printHelp("java -jar alpha.jar OR java -jar alpha_bundled.jar", options);
+			formatter.printHelp("java -jar alpha.jar OR java -jar alpha-bundled.jar", options);
 			System.exit(0);
 			return;
 		}
@@ -169,10 +176,6 @@ public class Main {
 		}
 
 		Bridge[] bridges = new Bridge[0];
-
-		if (commandLine.hasOption(OPT_HEX)) {
-			bridges = new Bridge[] {new HexBridge()};
-		}
 
 		int limit = 0;
 
@@ -233,8 +236,17 @@ public class Main {
 
 		LOGGER.info("Seed for pseudorandomization is {}.", seed);
 
+		String chosenSolver = commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER);
+		String chosenBranchingHeuristic = commandLine.getOptionValue(OPT_BRANCHING_HEURISTIC, DEFAULT_BRANCHING_HEURISTIC);
+		Heuristic parsedChosenBranchingHeuristic = null;
+		try {
+			parsedChosenBranchingHeuristic = Heuristic.get(chosenBranchingHeuristic);
+		} catch (IllegalArgumentException e) {
+			bailOut("Unknown branching heuristic: {}. Please try one of the following: {}.", chosenBranchingHeuristic, Heuristic.listAllowedValues());
+		}
+
 		Solver solver = SolverFactory.getInstance(
-			commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER), grounder, new Random(seed), BranchingHeuristicFactory.BERKMINLITERAL, debugInternalChecks // TODO: see issue #18
+			chosenSolver, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks
 		);
 
 		Stream<AnswerSet> stream = solver.stream();
@@ -246,17 +258,8 @@ public class Main {
 		if (commandLine.hasOption(OPT_SORT)) {
 			stream = stream.sorted();
 		}
-		if (commandLine.hasOption(OPT_HEX)) {
-			// If running in hex mode, do not print to standard output
-			// but instead report back via the bridge.
-			List<String[]> answerSets = stream
-				.map(new HexAnswerSetFormatter()::format)
-				.collect(Collectors.toList());
 
-			HexBridge.sendResults(answerSets.toArray(new String[answerSets.size()][]));
-		} else {
-			stream.forEach(System.out::println);
-		}
+		stream.forEach(System.out::println);
 	}
 
 	private static void bailOut(String format, Object... arguments) {
