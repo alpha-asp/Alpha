@@ -289,9 +289,9 @@ public class NaiveGrounder extends BridgedGrounder {
 				// Generate variableSubstitutions from each recent instance.
 				for (Instance instance : modifiedWorkingMemory.getRecentlyAddedInstances()) {
 					// Check instance if it matches with the atom.
-					Substitution partialVariableSubstitution = new Substitution();
-					if (unify(firstBindingAtom.firstBindingAtom, instance, partialVariableSubstitution)) {
-						variableSubstitutions.addAll(bindNextAtomInRule(nonGroundRule, 0, firstBindingAtom.firstBindingAtomPos, partialVariableSubstitution));
+					Substitution unified = unify(firstBindingAtom.firstBindingAtom, instance, new Substitution());
+					if (unified != null) {
+						variableSubstitutions.addAll(bindNextAtomInRule(nonGroundRule, 0, firstBindingAtom.firstBindingAtomPos, unified));
 					}
 				}
 				for (Substitution variableSubstitution : variableSubstitutions) {
@@ -513,9 +513,9 @@ public class NaiveGrounder extends BridgedGrounder {
 		ArrayList<Substitution> generatedSubstitutions = new ArrayList<>();
 		for (Instance instance : instances) {
 			// Check each instance if it matches with the atom.
-			Substitution substitutionClone = new Substitution(partialSubstitution);
-			if (unify(substitute, instance, substitutionClone)) {
-				generatedSubstitutions.addAll(bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, substitutionClone));
+			Substitution unified = unify(substitute, instance, new Substitution(partialSubstitution));
+			if (unified != null) {
+				generatedSubstitutions.addAll(bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, unified));
 			}
 		}
 
@@ -529,17 +529,15 @@ public class NaiveGrounder extends BridgedGrounder {
 	 * @param substitution if the atom does not unify, this is left unchanged.
 	 * @return true if the atom and the instance unify. False otherwise
 	 */
-	protected boolean unify(Atom atom, Instance instance, Substitution substitution) {
-		Substitution tempSubstitution = new Substitution(substitution);
+	protected Substitution unify(Atom atom, Instance instance, Substitution substitution) {
 		for (int i = 0; i < instance.terms.size(); i++) {
 			if (instance.terms.get(i) == atom.getTerms().get(i) ||
-				tempSubstitution.unifyTerms(atom.getTerms().get(i), instance.terms.get(i))) {
+				substitution.unifyTerms(atom.getTerms().get(i), instance.terms.get(i))) {
 				continue;
 			}
-			return false;
+			return null;
 		}
-		substitution.replaceSubstitution(tempSubstitution);
-		return true;
+		return substitution;
 	}
 
 	@Override

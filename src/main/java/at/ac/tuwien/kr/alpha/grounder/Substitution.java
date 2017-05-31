@@ -11,9 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 
 public class Substitution {
-	private final HashMap<VariableTerm, Term> substitution;
+	private HashMap<VariableTerm, Term> substitution;
 
-	public Substitution(HashMap<VariableTerm, Term> substitution) {
+	private Substitution(HashMap<VariableTerm, Term> substitution) {
 		this.substitution = substitution;
 	}
 
@@ -23,11 +23,6 @@ public class Substitution {
 
 	public Substitution(Substitution clone) {
 		this(new HashMap<>(clone.substitution));
-	}
-
-	public void replaceSubstitution(Substitution other) {
-		substitution.clear();
-		substitution.putAll(other.substitution);
 	}
 
 	/**
