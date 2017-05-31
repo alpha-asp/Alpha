@@ -31,7 +31,7 @@ public class AtomStore {
 	 * @param groundAtom
 	 * @return
 	 */
-	public int getAtomId(BasicAtom groundAtom) {
+	public int getAtomId(Atom groundAtom) {
 		return predicateInstancesToAtomIds.get(groundAtom);
 	}
 

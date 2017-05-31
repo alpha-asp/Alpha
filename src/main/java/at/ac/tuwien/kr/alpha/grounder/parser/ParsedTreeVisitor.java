@@ -131,6 +131,15 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 	}
 
 	@Override
+	public CommonParsedObject visitHead(ASPCore2Parser.HeadContext ctx) {
+		ListOfParsedObjects listHead = (ListOfParsedObjects) super.visitHead(ctx);
+		if (listHead.size() > 1) {
+			notSupportedSyntax(ctx);
+		}
+		return listHead;
+	}
+
+	@Override
 	public CommonParsedObject visitStatement_weightConstraint(ASPCore2Parser.Statement_weightConstraintContext ctx) {
 		notSupportedSyntax(ctx);
 		return null;

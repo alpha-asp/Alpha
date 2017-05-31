@@ -28,7 +28,11 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AtomTranslator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Stack;
 
@@ -38,19 +42,71 @@ import java.util.Stack;
  *
  */
 class ChoiceStack implements Iterable<Integer> {
+	private static final Logger LOGGER = LoggerFactory.getLogger(ChoiceStack.class);
+
 	private final AtomTranslator translator;
 	private final Stack<Entry> delegate = new Stack<>();
+	private final DebugWatcher debugWatcher;
 
-	ChoiceStack(AtomTranslator translator) {
+	/**
+	 * A helper class for halting the debugger when certain assignments occur on the choice stack.
+	 *
+	 * Example usage (called from DefaultSolver):
+	 * choiceStack = new ChoiceStack(grounder, true);
+	 * choiceStack.getDebugWatcher().watchAssignments("_R_(0,_C:red_V:7)=TRUE", "_R_(0,_C:green_V:8)=TRUE", "_R_(0,_C:red_V:9)=TRUE", "_R_(0,_C:red_V:4)=TRUE");
+	 */
+	class DebugWatcher {
+		ArrayList<String> toWatchFor = new ArrayList<>();
+
+		private void runWatcher() {
+			String current = ChoiceStack.this.toString();
+			boolean contained = true;
+			for (String s : toWatchFor) {
+				if (!current.contains(s)) {
+					contained = false;
+					break;
+				}
+			}
+			if (contained) {
+				LOGGER.debug("Marker hit.");	// Set debug breakpoint here to halt when desired assignment occurs.
+			}
+		}
+
+		/**
+		 * Registers atom assignments to watch for.
+		 * @param toWatch one or more strings as they occur in ChoiceStack.toString()
+		 */
+		public void watchAssignments(String... toWatch) {
+			toWatchFor = new ArrayList<>();
+			Collections.addAll(toWatchFor, toWatch);
+		}
+	}
+
+	public DebugWatcher getDebugWatcher() {
+		return debugWatcher;
+	}
+
+	ChoiceStack(AtomTranslator translator, boolean enableDebugWatcher) {
 		this.translator = translator;
+		if (enableDebugWatcher) {
+			this.debugWatcher = new DebugWatcher();
+		} else {
+			this.debugWatcher = null;
+		}
 	}
 
 	public void push(int atom, boolean value) {
 		delegate.push(new Entry(atom, value, false));
+		if (debugWatcher != null) {
+			debugWatcher.runWatcher();
+		}
 	}
 
 	public void pushBacktrack(int atom, boolean value) {
 		delegate.push(new Entry(atom, value, true));
+		if (debugWatcher != null) {
+			debugWatcher.runWatcher();
+		}
 	}
 
 	public void remove() {

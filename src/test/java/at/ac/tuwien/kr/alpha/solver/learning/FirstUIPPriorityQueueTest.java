@@ -1,8 +1,9 @@
 package at.ac.tuwien.kr.alpha.solver.learning;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.solver.BasicAssignment;
+import at.ac.tuwien.kr.alpha.solver.ArrayAssignment;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,15 +14,16 @@ import static org.junit.Assert.assertTrue;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class FirstUIPPriorityQueueTest {
-	private final BasicAssignment assignment;
+	private final WritableAssignment assignment;
 
 	public FirstUIPPriorityQueueTest() {
-		assignment = new BasicAssignment();
+		assignment = new ArrayAssignment();
 	}
 
 	@Before
 	public void setUp() {
 		assignment.clear();
+		assignment.growForMaxAtomId(4);
 	}
 
 	@Test

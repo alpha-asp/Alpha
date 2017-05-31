@@ -147,6 +147,13 @@ public interface Assignment extends SimpleAssignment {
 		return sb.toString();
 	}
 
+	/**
+	 * Returns an iterator over all new assignments and additionally all backtracked reassignments at lower decision level).
+	 * These assignments are only returned once.
+	 * @return
+	 */
+	Iterator<Entry> getNewAssignmentsForChoice();
+
 	interface Entry extends SimpleAssignment.Entry {
 		ThriceTruth getTruth();
 		int getDecisionLevel();

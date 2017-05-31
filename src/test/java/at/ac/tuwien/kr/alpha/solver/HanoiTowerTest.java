@@ -101,26 +101,6 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		testHanoiTower("simple");
 	}
 
-	@Test(timeout = 30000)
-	public void testSimple1() throws IOException {
-		testHanoiTower("simple1");
-	}
-
-	@Test(timeout = 20000)
-	public void testSimple2() throws IOException {
-		testHanoiTower("simple2");
-	}
-
-	@Test(timeout = 15000)
-	public void testSimple3() throws IOException {
-		testHanoiTower("simple3");
-	}
-
-	@Test(timeout = 10000)
-	public void testSimple4() throws IOException {
-		testHanoiTower("simple4");
-	}
-
 	private void testHanoiTower(int instance) throws IOException {
 		testHanoiTower(String.valueOf(instance));
 	}

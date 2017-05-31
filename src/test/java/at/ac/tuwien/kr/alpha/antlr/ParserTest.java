@@ -58,4 +58,10 @@ public class ParserTest {
 		assertEquals(3, parsedProgram.rules.get(0).body.size());
 	}
 
+	@Test(expected = UnsupportedOperationException.class)
+	// Change expected after Alpha can deal with disjunction.
+	public void parseProgramWithDisjunctionInHead() throws IOException {
+		parseVisit("r(X) | q(X) :- q(X).\nq(a).\n");
+	}
+
 }

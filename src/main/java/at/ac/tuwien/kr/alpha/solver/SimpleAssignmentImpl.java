@@ -48,12 +48,12 @@ public class SimpleAssignmentImpl implements SimpleWritableAssignment {
 		return assign(atom, ThriceTruth.valueOf(value));
 	}
 
-	@Override
+	/*@Override
 	public Iterator<SimpleAssignment.Entry> getNewAssignmentsIterator2() {
 		Iterator<SimpleAssignment.Entry> it = newAssignments2.iterator();
 		newAssignments2 = new LinkedList<>();
 		return it;
-	}
+	}*/
 
 	private static class Entry implements SimpleAssignment.Entry {
 		private final int atom;

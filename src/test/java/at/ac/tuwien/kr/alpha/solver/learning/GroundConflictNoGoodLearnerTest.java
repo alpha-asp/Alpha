@@ -15,8 +15,9 @@ public class GroundConflictNoGoodLearnerTest {
 	private final NoGoodStore store;
 
 	public GroundConflictNoGoodLearnerTest() {
-		this.assignment = new BasicAssignment();
-		this.store = new BasicNoGoodStore(assignment);
+		this.assignment = new ArrayAssignment();
+		this.assignment.growForMaxAtomId(20);
+		this.store = new NoGoodStoreAlphaRoaming(assignment);
 	}
 
 	@Test
@@ -57,6 +58,7 @@ public class GroundConflictNoGoodLearnerTest {
 
 	@Test
 	public void subCurrentDLPropagationWithGuessCauseOfConflict() {
+		GroundConflictNoGoodLearner learner = new GroundConflictNoGoodLearner(assignment);
 		NoGood n1 = new NoGood(1, -2);
 		NoGood n2 = new NoGood(2, 3);
 		store.add(10, n1);
@@ -67,10 +69,10 @@ public class GroundConflictNoGoodLearnerTest {
 		assertEquals(1, assignment.get(2).getDecisionLevel());
 		NoGoodStore.ConflictCause conflictCause = store.add(11, n2);
 		assertNotNull(conflictCause);
-		//store.propagate();
-		assertNotNull(conflictCause.getViolatedGuess());
-		assertEquals(3, conflictCause.getViolatedGuess().getAtom());
-		assertEquals(2, conflictCause.getViolatedGuess().getDecisionLevel());
-		assertNull(conflictCause.getViolatedNoGood());
+		assertNotNull(conflictCause.getViolatedNoGood());
+		GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.getViolatedNoGood());
+		assertNull(conflictAnalysisResult.learnedNoGood);
+		assertEquals(2, conflictAnalysisResult.backjumpLevel);
+
 	}
 }

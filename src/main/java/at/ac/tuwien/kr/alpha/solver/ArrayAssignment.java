@@ -40,20 +40,21 @@ import static at.ac.tuwien.kr.alpha.common.atoms.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
 /**
- * An implementation of the Assignment, based on BasicAssignment but using ArrayList (instead of HashMap) as underlying
- * structure for storing assignment entries.
+ * An implementation of the Assignment using ArrayList as underlying structure for storing assignment entries.
  */
-class ArrayAssignment implements WritableAssignment {
+public class ArrayAssignment implements WritableAssignment {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ArrayAssignment.class);
 	private final ArrayList<Entry> assignment = new ArrayList<>();
 	private final List<List<Integer>> atomsAssignedInDecisionLevel;
 	private final ArrayList<Integer> propagationCounterPerDecisionLevel;
 	private final Queue<ArrayAssignment.Entry> assignmentsToProcess = new LinkedList<>();
 	private Queue<Assignment.Entry> newAssignments = new LinkedList<>();
-	private Queue<Assignment.Entry> newAssignments2 = new LinkedList<>();
+	private Queue<Assignment.Entry> newAssignmentsForChoice = new LinkedList<>();
 	private final Grounder grounder;
 
 	private int mbtCount;
+
+	private boolean internalChecksEnabled;
 
 	public ArrayAssignment(Grounder grounder) {
 		this.grounder = grounder;
@@ -73,6 +74,10 @@ class ArrayAssignment implements WritableAssignment {
 		atomsAssignedInDecisionLevel.add(new ArrayList<>());
 		assignment.clear();
 		mbtCount = 0;
+	}
+
+	void enableInternalChecks() {
+		internalChecksEnabled = true;
 	}
 
 	@Override
@@ -109,9 +114,10 @@ class ArrayAssignment implements WritableAssignment {
 				iterator.remove();
 			}
 		}
-		for (Iterator<Assignment.Entry> iterator = newAssignments2.iterator(); iterator.hasNext();) {
+		// Hint: it might be faster to just return all assignments for choice and let the ChoiceManager avoid duplicate checks.
+		for (Iterator<Assignment.Entry> iterator = newAssignmentsForChoice.iterator(); iterator.hasNext();) {
 			Assignment.Entry entry = iterator.next();
-			if (entry.getDecisionLevel() == getDecisionLevel()) {
+			if (entry.getDecisionLevel() == getDecisionLevel() && !entry.isReassignAtLowerDecisionLevel()) {
 				iterator.remove();
 			}
 		}
@@ -204,6 +210,13 @@ class ArrayAssignment implements WritableAssignment {
 	}
 
 	private boolean assignWithDecisionLevel(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
+		if (internalChecksEnabled) {
+			if (getMBTCount() != getMBTAssignedAtoms().size()) {
+				throw new RuntimeException("MBT counter and amount of actually MBT-assigned atoms disagree. Should not happen.");
+			} else {
+				LOGGER.debug("MBT count agrees with amount of MBT-assigned atoms.");
+			}
+		}
 		if (!isAtom(atom)) {
 			throw new IllegalArgumentException("not an atom");
 		}
@@ -245,6 +258,15 @@ class ArrayAssignment implements WritableAssignment {
 				if (violatedByAssign == null) {
 					guessViolatedByAssign = current;
 				}
+				// The lower assignment takes precedence over the current value, overwrite it and adjust mbtCounter.
+				if (current.getTruth() == MBT) {
+					mbtCount--;
+				}
+				recordAssignment(atom, value, impliedBy, decisionLevel, null);
+				if (value == MBT) {
+					mbtCount++;
+				}
+
 			}
 			return false;
 		}
@@ -282,7 +304,6 @@ class ArrayAssignment implements WritableAssignment {
 				} else {
 					// Current assignment is MBT and the new one is below it (no TRUE above exists).
 					recordAssignment(atom, value, impliedBy, decisionLevel, null);
-					mbtCount++;
 				}
 				return true;
 		}
@@ -301,7 +322,6 @@ class ArrayAssignment implements WritableAssignment {
 		atomsAssignedInDecisionLevel.get(decisionLevel).add(previous.getAtom());
 		assignmentsToProcess.add(previous); // Process MBT on lower decision level.
 		// Replace the current TRUE entry with one where previous is set correctly.
-		atomsAssignedInDecisionLevel.get(oldEntry.getDecisionLevel()).remove(oldEntry);
 		Entry trueEntry = new Entry(oldEntry.getTruth(), oldEntry.getDecisionLevel(), oldEntry.getPropagationLevel(), oldEntry.getImpliedBy(), previous, atom, oldEntry.isReassignAtLowerDecisionLevel());
 		if (LOGGER.isTraceEnabled()) {
 			LOGGER.trace("Recording assignment {}: MBT below TRUE {} impliedBy: {}", atom, trueEntry.getPrevious(), trueEntry.getPrevious().getImpliedBy());
@@ -342,7 +362,7 @@ class ArrayAssignment implements WritableAssignment {
 		}
 		assignmentsToProcess.add(next);
 		newAssignments.add(next);
-		newAssignments2.add(next);
+		newAssignmentsForChoice.add(next);
 		assignment.set(atom, next);
 	}
 
@@ -359,10 +379,22 @@ class ArrayAssignment implements WritableAssignment {
 
 	@Override
 	public Entry get(int atom) {
-		if (atom < 0) {
-			throw new RuntimeException("Requesting entry of negated atom. Should not happen.");
-		}
 		return assignment.get(atom);
+	}
+
+	/**
+	 * Debug helper collecting all atoms that are assigned MBT.
+	 * @return a list of all atomIds that are assigned MBT (and not TRUE).
+	 */
+	private List<Integer> getMBTAssignedAtoms() {
+		List<Integer> ret = new ArrayList<>();
+		for (int i = 0; i < assignment.size(); i++) {
+			Entry entry = assignment.get(i);
+			if (entry != null && entry.getTruth() == MBT) {
+				ret.add(i);
+			}
+		}
+		return ret;
 	}
 
 	@Override
@@ -385,11 +417,16 @@ class ArrayAssignment implements WritableAssignment {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("[");
+		boolean isFirst = true;
 		for (Iterator<Entry> iterator = assignment.iterator(); iterator.hasNext();) {
 			Entry assignmentEntry = iterator.next();
 			if (assignmentEntry == null) {
 				continue;
 			}
+			if (!isFirst) {
+				sb.append(", ");
+			}
+			isFirst = false;
 			sb.append(assignmentEntry.getTruth());
 			sb.append("_");
 			if (grounder != null) {
@@ -399,10 +436,6 @@ class ArrayAssignment implements WritableAssignment {
 			}
 			sb.append("@");
 			sb.append(assignmentEntry.getDecisionLevel());
-
-			if (iterator.hasNext()) {
-				sb.append(", ");
-			}
 		}
 		sb.append("]");
 		return sb.toString();
@@ -416,9 +449,9 @@ class ArrayAssignment implements WritableAssignment {
 	}
 
 	@Override
-	public Iterator<Assignment.Entry> getNewAssignmentsIterator2() {
-		Iterator<Assignment.Entry> it = newAssignments2.iterator();
-		newAssignments2 = new LinkedList<>();
+	public Iterator<Assignment.Entry> getNewAssignmentsForChoice() {
+		Iterator<Assignment.Entry> it = newAssignmentsForChoice.iterator();
+		newAssignmentsForChoice = new LinkedList<>();
 		return it;
 	}
 

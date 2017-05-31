@@ -40,6 +40,7 @@ import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
 import static java.lang.Math.abs;
 
 /**
@@ -69,7 +70,7 @@ public class NaiveSolver extends AbstractSolver {
 	NaiveSolver(Grounder grounder) {
 		super(grounder);
 
-		this.choiceStack = new ChoiceStack(grounder);
+		this.choiceStack = new ChoiceStack(grounder, false);
 
 		decisionLevels.add(0, new ArrayList<>());
 		mbtAssignedFromUnassigned.add(0, new ArrayList<>());
@@ -334,6 +335,7 @@ public class NaiveSolver extends AbstractSolver {
 	private void obtainNoGoodsFromGrounder() {
 		final int oldSize = knownNoGoods.size();
 		knownNoGoods.putAll(grounder.getNoGoods(null));
+
 		if (oldSize != knownNoGoods.size()) {
 			// Record to detect propagation fixpoint, checking if new NoGoods were reported would be better here.
 			didChange = true;
@@ -434,6 +436,10 @@ public class NaiveSolver extends AbstractSolver {
 			}
 			int literal = noGood.getLiteral(i);
 			if (!(isLiteralAssigned(literal) && isLiteralViolated(literal))) {
+				return false;
+			}
+			// Skip if positive literal is assigned MBT.
+			if (isPositive(literal) && mbtAssigned.contains(atomOf(literal))) {
 				return false;
 			}
 		}

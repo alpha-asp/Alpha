@@ -25,8 +25,9 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.BasicAssignment;
+import at.ac.tuwien.kr.alpha.solver.ArrayAssignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
@@ -56,7 +57,8 @@ public class BerkMinTest {
 	
 	@Before
 	public void setUp() {
-		BasicAssignment assignment = new BasicAssignment();
+		Assignment assignment = new ArrayAssignment();
+		assignment.growForMaxAtomId(2);
 		this.berkmin = new BerkMin(assignment, new PseudoChoiceManager(assignment), new Random());
 	}
 	
@@ -182,7 +184,7 @@ public class BerkMinTest {
 
 	private static class PseudoChoiceManager extends ChoiceManager {
 
-		public PseudoChoiceManager(WritableAssignment assignment) {
+		public PseudoChoiceManager(Assignment assignment) {
 			super(assignment);
 		}
 

@@ -6,14 +6,20 @@ import org.junit.Test;
 
 import java.util.*;
 
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-public class BasicAssignmentTest {
-	private final BasicAssignment assignment;
+/**
+ * Copyright (c) 2017, the Alpha Team.
+ */
+public class ArrayAssignmentTest {
+	private final ArrayAssignment assignment;
 
-	public BasicAssignmentTest() {
-		assignment = new BasicAssignment();
+	public ArrayAssignmentTest() {
+		assignment = new ArrayAssignment();
 	}
 
 	@Before
@@ -33,12 +39,14 @@ public class BasicAssignmentTest {
 
 	@Test
 	public void alreadyAssignedThrows() throws Exception {
+		assignment.growForMaxAtomId(1);
 		assertTrue(assignment.assign(1, MBT));
 		assertFalse(assignment.assign(1, FALSE));
 	}
 
 	@Test
 	public void initializeDecisionLevelState() throws Exception {
+		assignment.growForMaxAtomId(2);
 		assignment.assign(1, MBT);
 		assignment.guess(2, MBT);
 		assignment.guess(1, TRUE);
@@ -46,23 +54,24 @@ public class BasicAssignmentTest {
 
 	@Test
 	public void checkToString() {
+		assignment.growForMaxAtomId(20);
 		assignment.assign(1, FALSE);
 		assertEquals("[F_1@0]", assignment.toString());
-		//assertEquals("[1=FALSE(0)]", assignment.toString());
 
 		assignment.assign(2, TRUE);
 		assertEquals("[F_1@0, T_2@0]", assignment.toString());
-		// assertEquals("[1=FALSE(0), 2=TRUE(0)]", assignment.toString());
 	}
 
 	@Test
 	public void reassignGracefully() {
+		assignment.growForMaxAtomId(1);
 		assignment.assign(1, FALSE);
 		assignment.assign(1, FALSE);
 	}
 
 	@Test
 	public void assignAndBacktrack() {
+		assignment.growForMaxAtomId(10);
 		assignment.assign(1, MBT);
 		assignment.assign(2, FALSE);
 		assignment.assign(3, TRUE);
@@ -109,6 +118,7 @@ public class BasicAssignmentTest {
 
 	@Test
 	public void testContains() {
+		assignment.growForMaxAtomId(10);
 		assignment.assign(1, TRUE);
 		assertTrue(assignment.containsWeakComplement(+1));
 		assertFalse(assignment.containsWeakComplement(-1));
@@ -124,9 +134,10 @@ public class BasicAssignmentTest {
 
 	@Test
 	public void assignmentsToProcess() throws Exception {
+		assignment.growForMaxAtomId(2);
 		assignment.assign(1, MBT);
 
-		Queue<Assignment.Entry> queue = assignment.getAssignmentsToProcess();
+		Queue<? extends Assignment.Entry> queue = assignment.getAssignmentsToProcess();
 		assertEquals(1, queue.remove().getAtom());
 
 		assignment.guess(2, MBT);
@@ -141,7 +152,7 @@ public class BasicAssignmentTest {
 
 	@Test
 	public void newAssignmentsIteratorAndBacktracking() throws Exception {
-
+		assignment.growForMaxAtomId(3);
 		Iterator<Assignment.Entry> newAssignmentsIterator;
 
 		assignment.assign(1, MBT);
@@ -165,7 +176,7 @@ public class BasicAssignmentTest {
 
 	@Test
 	public void newAssignmentsIteratorLowerDecisionLevelAndBacktracking() throws Exception {
-
+		assignment.growForMaxAtomId(3);
 		Iterator<Assignment.Entry> newAssignmentsIterator;
 
 		assignment.guess(1, MBT);
@@ -181,7 +192,8 @@ public class BasicAssignmentTest {
 
 	@Test
 	public void iteratorAndBacktracking() throws Exception {
-		Queue<Assignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
+		assignment.growForMaxAtomId(3);
+		Queue<? extends Assignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
 
 		assignment.assign(1, MBT);
 		assertEquals(1, assignmentsToProcess.remove().getAtom());
@@ -200,6 +212,7 @@ public class BasicAssignmentTest {
 
 	@Test
 	public void mbtCounterAssignMbtToFalseOnLowerDecisionLevel() {
+		assignment.growForMaxAtomId(4);
 		assertTrue(assignment.guess(1, TRUE));
 		assertTrue(assignment.guess(2, FALSE));
 
@@ -215,4 +228,5 @@ public class BasicAssignmentTest {
 
 		assertEquals(0, assignment.getMBTCount());
 	}
+
 }

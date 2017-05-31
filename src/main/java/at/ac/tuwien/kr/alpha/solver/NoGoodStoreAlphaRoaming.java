@@ -49,7 +49,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
  *  point to unassigned literals. Observe that for an assignment to TRUE the (potentially lower) decision level of MBT
  *  is taken.
  */
-class NoGoodStoreAlphaRoaming implements NoGoodStore {
+public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NoGoodStoreAlphaRoaming.class);
 	private boolean internalChecksEnabled;
 
@@ -58,7 +58,7 @@ class NoGoodStoreAlphaRoaming implements NoGoodStore {
 
 	private NoGood violated;
 
-	NoGoodStoreAlphaRoaming(WritableAssignment assignment) {
+	public NoGoodStoreAlphaRoaming(WritableAssignment assignment) {
 		this.assignment = assignment;
 	}
 
@@ -96,7 +96,16 @@ class NoGoodStoreAlphaRoaming implements NoGoodStore {
 	}
 
 	private Watches<BinaryWatch, WatchedNoGood> watches(int literal) {
-		return watches.computeIfAbsent(atomOf(literal), k -> new Watches<>());
+		//*
+		int atom = atomOf(literal);
+		Watches<BinaryWatch, WatchedNoGood> watches = this.watches.get(atom);
+		if (watches == null) {
+			watches = new Watches<>();
+			this.watches.put(atom, watches);
+		}
+		return watches; /*/
+		return this.watches.computeIfAbsent(atomOf(literal), k -> new Watches<>());
+		//*/
 	}
 
 	private void addOrdinaryWatch(WatchedNoGood wng, int pointer) {
@@ -288,17 +297,19 @@ class NoGoodStoreAlphaRoaming implements NoGoodStore {
 		// Shorthands for viewing the nogood as { a, b }.
 		final int a = noGood.getLiteral(0);
 		final int b = noGood.getLiteral(1);
+		final int atomA = atomOf(a);
+		final int atomB = atomOf(b);
 
 		// Ignore NoGoods of the form { -a, a }.
-		if (a != b && atomOf(a) == atomOf(b)) {
+		if (a != b && atomA == atomB) {
 			return null;
 		}
 
-		boolean isViolatedA = assignment.containsWeakComplement(a);
-		boolean isViolatedB = assignment.containsWeakComplement(b);
+		final Assignment.Entry entryA = assignment.get(atomA);
+		final Assignment.Entry entryB = assignment.get(atomB);
 
-		Assignment.Entry entryA = assignment.get(atomOf(a));
-		Assignment.Entry entryB = assignment.get(atomOf(b));
+		final boolean isViolatedA = entryA != null && isPositive(a) == entryA.getTruth().toBoolean();
+		final boolean isViolatedB = entryB != null && isPositive(b) == entryB.getTruth().toBoolean();
 
 		// Check for violation.
 		if (isViolatedA && isViolatedB) {
