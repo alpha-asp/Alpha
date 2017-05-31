@@ -69,13 +69,14 @@ public class DefaultSolver extends AbstractSolver {
 
 		this.assignment = new ArrayAssignment(grounder);
 		this.store = new NoGoodStoreAlphaRoaming(assignment);
+		this.choiceManager = new ChoiceManager(assignment);
 		if (debugInternalChecks) {
 			store.enableInternalChecks();
 			((ArrayAssignment) assignment).enableInternalChecks();
+			choiceManager.enableInternalChecks();
 		}
 		this.choiceStack = new ChoiceStack(grounder, false);
 		this.learner = new GroundConflictNoGoodLearner(assignment);
-		this.choiceManager = new ChoiceManager(assignment);
 		this.branchingHeuristic = BranchingHeuristicFactory.getInstance(branchingHeuristic, grounder, assignment, choiceManager, random);
 		this.fallbackBranchingHeuristic = new NaiveHeuristic(choiceManager);
 	}
@@ -177,6 +178,7 @@ public class DefaultSolver extends AbstractSolver {
 				return true;
 			} else {
 				LOGGER.debug("Backtracking from wrong choices ({} MBTs): {}", assignment.getMBTCount(), choiceStack);
+				counters.remainingMBTAtFixpointCounter++;
 				doBacktrack();
 				afterAllAtomsAssigned = false;
 				if (isSearchSpaceExhausted()) {
@@ -191,6 +193,7 @@ public class DefaultSolver extends AbstractSolver {
 		LOGGER.info("Choices\t: {}", counters.decisionCounter);
 		LOGGER.info("Conflicts\t: {}", counters.backtrackCounter + counters.backjumpCounter);
 		LOGGER.info("  Backtracks\t: {}", counters.backtrackCounter);
+		LOGGER.info("    Caused by MBT at end\t: {}", counters.remainingMBTAtFixpointCounter);
 		LOGGER.info("  Backjumps\t: {}", counters.backjumpCounter);
 	}
 
@@ -233,7 +236,11 @@ public class DefaultSolver extends AbstractSolver {
 		}
 
 		branchingHeuristic.analyzedConflict(analysisResult);
-		if (analysisResult.learnedNoGood == null) {
+		if (analysisResult.learnedNoGood == null && analysisResult.clearLastGuessAfterBackjump) {
+			// TODO: Temporarily abort resolution with backtrack instead of learning a too large nogood.
+			counters.backtrackCounter++;
+			doBacktrack();
+		} else if (analysisResult.learnedNoGood == null) {
 			LOGGER.debug("Conflict results from wrong guess, backjumping and removing guess.");
 			LOGGER.debug("Backjumping to decision level: {}", analysisResult.backjumpLevel);
 			doBackjump(analysisResult.backjumpLevel);
@@ -382,6 +389,10 @@ public class DefaultSolver extends AbstractSolver {
 		assignment.growForMaxAtomId(grounder.getMaxAtomId());
 		while (!noGoodsToAdd.isEmpty()) {
 			Map.Entry<Integer, NoGood> noGoodEntry = noGoodsToAdd.poll();
+			if (noGoodEntry.getValue().size() == 0) {
+				// Empty NoGood cannot be satisfied, program is unsatisfiable.
+				return false;
+			}
 			NoGoodStore.ConflictCause conflictCause = store.add(noGoodEntry.getKey(), noGoodEntry.getValue());
 			if (conflictCause == null) {
 				// There is no conflict, all is fine. Just skip conflict treatment and carry on.
@@ -457,10 +468,10 @@ public class DefaultSolver extends AbstractSolver {
 
 	private int computeChoice() {
 		// Update ChoiceManager.
-		Iterator<Assignment.Entry> it = assignment.getNewAssignmentsIterator2();
-		while (it.hasNext()) {
-			choiceManager.updateAssignment(it.next().getAtom());
-		}
+		LOGGER.trace("Updating assignments of ChoiceManager.");
+		choiceManager.updateAssignments();
+		// Hint: for custom heuristics, evaluate them here and pick a value if the heuristics suggests one.
+
 		// Run Heuristics.
 		int heuristicChoice = branchingHeuristic.chooseAtom();
 		if (heuristicChoice != 0) {
@@ -470,7 +481,7 @@ public class DefaultSolver extends AbstractSolver {
 			return heuristicChoice;
 		}
 
-		// TODO: remove fallback as soon as we are sure that BerkMin will always choose an atom
+		// Fall back to naive heuristics (which is guaranteed to select a guess if one is possible) in case the selected heuristics selects none.
 		LOGGER.debug("Falling back to NaiveHeuristics.");
 		return fallbackBranchingHeuristic.chooseAtom();
 	}

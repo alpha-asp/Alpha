@@ -39,17 +39,16 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
 /**
- * An implementation of the Assignment, based on BasicAssignment but using ArrayList (instead of HashMap) as underlying
- * structure for storing assignment entries.
+ * An implementation of the Assignment using ArrayList as underlying structure for storing assignment entries.
  */
-class ArrayAssignment implements Assignment {
+public class ArrayAssignment implements Assignment {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ArrayAssignment.class);
 	private final ArrayList<Entry> assignment = new ArrayList<>();
 	private final List<List<Integer>> atomsAssignedInDecisionLevel;
 	private final ArrayList<Integer> propagationCounterPerDecisionLevel;
 	private final Queue<Assignment.Entry> assignmentsToProcess = new LinkedList<>();
 	private Queue<Assignment.Entry> newAssignments = new LinkedList<>();
-	private Queue<Assignment.Entry> newAssignments2 = new LinkedList<>();
+	private Queue<Assignment.Entry> newAssignmentsForChoice = new LinkedList<>();
 	private final Grounder grounder;
 
 	private int mbtCount;
@@ -109,9 +108,10 @@ class ArrayAssignment implements Assignment {
 				iterator.remove();
 			}
 		}
-		for (Iterator<Assignment.Entry> iterator = newAssignments2.iterator(); iterator.hasNext();) {
+		// Hint: it might be faster to just return all assignments for choice and let the ChoiceManager avoid duplicate checks.
+		for (Iterator<Assignment.Entry> iterator = newAssignmentsForChoice.iterator(); iterator.hasNext();) {
 			Assignment.Entry entry = iterator.next();
-			if (entry.getDecisionLevel() == getDecisionLevel()) {
+			if (entry.getDecisionLevel() == getDecisionLevel() && !entry.isReassignAtLowerDecisionLevel()) {
 				iterator.remove();
 			}
 		}
@@ -316,7 +316,6 @@ class ArrayAssignment implements Assignment {
 		atomsAssignedInDecisionLevel.get(decisionLevel).add(previous.getAtom());
 		assignmentsToProcess.add(previous); // Process MBT on lower decision level.
 		// Replace the current TRUE entry with one where previous is set correctly.
-		atomsAssignedInDecisionLevel.get(oldEntry.getDecisionLevel()).remove(oldEntry);
 		Entry trueEntry = new Entry(oldEntry.getTruth(), oldEntry.getDecisionLevel(), oldEntry.getPropagationLevel(), oldEntry.getImpliedBy(), previous, atom, oldEntry.isReassignAtLowerDecisionLevel());
 		if (LOGGER.isTraceEnabled()) {
 			LOGGER.trace("Recording assignment {}: MBT below TRUE {} impliedBy: {}", atom, trueEntry.getPrevious(), trueEntry.getPrevious().getImpliedBy());
@@ -357,7 +356,7 @@ class ArrayAssignment implements Assignment {
 		}
 		assignmentsToProcess.add(next);
 		newAssignments.add(next);
-		newAssignments2.add(next);
+		newAssignmentsForChoice.add(next);
 		assignment.set(atom, next);
 	}
 
@@ -374,9 +373,6 @@ class ArrayAssignment implements Assignment {
 
 	@Override
 	public Entry get(int atom) {
-		if (atom < 0) {
-			throw new RuntimeException("Requesting entry of negated atom. Should not happen.");
-		}
 		return assignment.get(atom);
 	}
 
@@ -415,11 +411,16 @@ class ArrayAssignment implements Assignment {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("[");
+		boolean isFirst = true;
 		for (Iterator<Entry> iterator = assignment.iterator(); iterator.hasNext();) {
 			Entry assignmentEntry = iterator.next();
 			if (assignmentEntry == null) {
 				continue;
 			}
+			if (!isFirst) {
+				sb.append(", ");
+			}
+			isFirst = false;
 			sb.append(assignmentEntry.getTruth());
 			sb.append("_");
 			if (grounder != null) {
@@ -429,10 +430,6 @@ class ArrayAssignment implements Assignment {
 			}
 			sb.append("@");
 			sb.append(assignmentEntry.getDecisionLevel());
-
-			if (iterator.hasNext()) {
-				sb.append(", ");
-			}
 		}
 		sb.append("]");
 		return sb.toString();
@@ -446,9 +443,9 @@ class ArrayAssignment implements Assignment {
 	}
 
 	@Override
-	public Iterator<Assignment.Entry> getNewAssignmentsIterator2() {
-		Iterator<Assignment.Entry> it = newAssignments2.iterator();
-		newAssignments2 = new LinkedList<>();
+	public Iterator<Assignment.Entry> getNewAssignmentsForChoice() {
+		Iterator<Assignment.Entry> it = newAssignmentsForChoice.iterator();
+		newAssignmentsForChoice = new LinkedList<>();
 		return it;
 	}
 
