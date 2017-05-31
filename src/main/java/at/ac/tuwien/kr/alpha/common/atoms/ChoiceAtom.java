@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
+import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -77,5 +78,14 @@ public class ChoiceAtom implements Atom {
 			return result;
 		}
 		return terms.get(0).compareTo(other.terms.get(0));
+	}
+
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder(predicate.getPredicateName());
+		sb.append("(");
+		Util.appendDelimited(sb, terms);
+		sb.append(")");
+		return sb.toString();
 	}
 }
