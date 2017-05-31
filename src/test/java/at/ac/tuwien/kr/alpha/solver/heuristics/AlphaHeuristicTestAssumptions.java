@@ -25,6 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
@@ -55,7 +56,7 @@ import static org.junit.Assert.assertTrue;
 public class AlphaHeuristicTestAssumptions {
 
 	private Grounder grounder;
-	private WritableAssignment assignment;
+	private Assignment assignment;
 	private TestableChoiceManager choiceManager;
 	
 	@Before

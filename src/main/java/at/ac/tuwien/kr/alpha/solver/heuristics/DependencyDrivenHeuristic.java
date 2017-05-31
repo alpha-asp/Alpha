@@ -25,11 +25,11 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
-import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProvider;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
@@ -67,7 +67,7 @@ public class DependencyDrivenHeuristic implements BranchingHeuristic {
 	public static final int DEFAULT_DECAY_AGE = 10;
 	public static final double DEFAULT_DECAY_FACTOR = 0.25;
 
-	protected final WritableAssignment assignment;
+	protected final Assignment assignment;
 	protected final ChoiceManager choiceManager;
 	protected final Random rand;
 	protected final BodyActivityProvider bodyActivity;
@@ -99,7 +99,7 @@ public class DependencyDrivenHeuristic implements BranchingHeuristic {
 	 */
 	protected final MultiValuedMap<Integer, Integer> atomsToBodies = new HashSetValuedHashMap<>();
 
-	public DependencyDrivenHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, BodyActivityType bodyActivityType) {
+	public DependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, BodyActivityType bodyActivityType) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
 		this.decayAge = decayAge;
@@ -108,11 +108,11 @@ public class DependencyDrivenHeuristic implements BranchingHeuristic {
 		this.bodyActivity = BodyActivityProviderFactory.getInstance(bodyActivityType, bodyToLiterals, activityCounters, DEFAULT_ACTIVITY);
 	}
 
-	public DependencyDrivenHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, Random random, BodyActivityType bodyActivityType) {
+	public DependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random, BodyActivityType bodyActivityType) {
 		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random, bodyActivityType);
 	}
 
-	public DependencyDrivenHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
+	public DependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
 		this(assignment, choiceManager, random, BodyActivityType.DEFAULT);
 	}
 

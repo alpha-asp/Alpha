@@ -25,6 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
@@ -44,11 +45,11 @@ public class AlphaHeadMustBeTrueHeuristic extends DependencyDrivenHeuristic {
 
 	private int rememberedAtom;
 
-	public AlphaHeadMustBeTrueHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
+	public AlphaHeadMustBeTrueHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
 		super(assignment, choiceManager, decayAge, decayFactor, random, BodyActivityType.DEFAULT);
 	}
 
-	public AlphaHeadMustBeTrueHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
+	public AlphaHeadMustBeTrueHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
 		super(assignment, choiceManager, random);
 	}
 

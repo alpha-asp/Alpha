@@ -29,7 +29,6 @@ package at.ac.tuwien.kr.alpha.solver.learning;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +46,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 public class GroundConflictNoGoodLearner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(GroundConflictNoGoodLearner.class);
 
-	private final WritableAssignment assignment;
+	private final Assignment assignment;
 
 	public static class ConflictAnalysisResult {
 		public final NoGood learnedNoGood;
@@ -69,7 +68,7 @@ public class GroundConflictNoGoodLearner {
 		}
 	}
 
-	public GroundConflictNoGoodLearner(WritableAssignment assignment) {
+	public GroundConflictNoGoodLearner(Assignment assignment) {
 		this.assignment = assignment;
 	}
 
