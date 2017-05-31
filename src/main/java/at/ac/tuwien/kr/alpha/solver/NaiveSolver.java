@@ -40,8 +40,6 @@ import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static java.lang.Math.abs;
 
 /**
@@ -60,7 +58,8 @@ public class NaiveSolver extends AbstractSolver {
 	private boolean didChange;
 	private int decisionLevel;
 
-	private Choices choices = new Choices();
+	private Map<Integer, Integer> choiceOn = new HashMap<>();
+	private Map<Integer, Integer> choiceOff = new HashMap<>();
 	private Integer nextChoice;
 	private HashSet<Integer> mbtAssigned = new HashSet<>();
 	private ArrayList<ArrayList<Integer>> mbtAssignedFromUnassigned = new ArrayList<>();
@@ -206,7 +205,7 @@ public class NaiveSolver extends AbstractSolver {
 
 	private boolean choicesLeft() {
 		// Check if there is an enabled choice that is not also disabled
-		for (Map.Entry<Integer, Pair<Integer, Integer>> e : choices) {
+		for (Map.Entry<Integer, Integer> e : choiceOn.entrySet()) {
 			final int atom = e.getKey();
 
 			// Only consider unassigned choices
@@ -214,13 +213,15 @@ public class NaiveSolver extends AbstractSolver {
 				continue;
 			}
 
-			ThriceTruth truth = assignment.getTruth(e.getValue().getLeft());
+			ThriceTruth truth = assignment.getTruth(e.getValue());
+
 			if (truth == null || !truth.toBoolean()) {
 				continue;
 			}
 
 			// Check that candidate is not disabled already
-			truth = assignment.getTruth(e.getValue().getRight());
+			truth = assignment.getTruth(choiceOff.getOrDefault(atom, 0));
+
 			if (truth == null || !truth.toBoolean()) {
 				nextChoice = atom;
 				return true;
@@ -339,7 +340,9 @@ public class NaiveSolver extends AbstractSolver {
 		}
 
 		// Record choice atoms
-		choices.putAll(grounder.getChoices());
+		final Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms = grounder.getChoiceAtoms();
+		choiceOn.putAll(choiceAtoms.getKey());
+		choiceOff.putAll(choiceAtoms.getValue());
 	}
 
 	private boolean isSearchSpaceExhausted() {

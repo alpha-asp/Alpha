@@ -3,7 +3,6 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.solver.Choices;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -150,8 +149,8 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
-	public Choices getChoices() {
-		return new Choices();
+	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
+		return new ImmutablePair<>(new HashMap<>(), new HashMap<>());
 	}
 
 	@Override

@@ -1,8 +1,10 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AtomTranslator;
+import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
-import at.ac.tuwien.kr.alpha.solver.Choices;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Iterator;
@@ -32,7 +34,7 @@ public interface Grounder extends AtomTranslator {
 	 * choiceOn maps atoms (choice points) to their enabling atoms
 	 * and choiceOff maps atoms (choice points) to their disabling atoms.
 	 */
-	Choices getChoices();
+	Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms();
 
 	void updateAssignment(Iterator<ReadableAssignment.Entry> it);
 

@@ -37,6 +37,7 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -342,7 +343,7 @@ public class DefaultSolver extends AbstractSolver {
 
 				counters.decisionCounter++;
 				boolean newGuess = !lastGuessedValue;
-				assignment.guess(lastGuessedAtom, ThriceTruth.valueOf(newGuess));
+				assignment.guess(lastGuessedAtom, newGuess);
 				LOGGER.debug("Backtrack: setting decision level to {}.", assignment.getDecisionLevel());
 				LOGGER.debug("Backtrack: inverting last guess. Now: {}={}@{}", grounder.atomToString(lastGuessedAtom), newGuess, assignment.getDecisionLevel());
 				choiceStack.pushBacktrack(lastGuessedAtom, newGuess);
@@ -365,8 +366,7 @@ public class DefaultSolver extends AbstractSolver {
 	 * @return false iff the set of NoGoods is detected to be unsatisfiable.
 	 */
 	private boolean obtainNoGoodsFromGrounder() {
-		Map<Integer, NoGood> obtained;
-		obtained = grounder.getNoGoods(assignment);
+		Map<Integer, NoGood> obtained = grounder.getNoGoods(assignment);
 		LOGGER.debug("Obtained NoGoods from grounder: {}", obtained);
 
 		if (!obtained.isEmpty()) {
@@ -375,8 +375,8 @@ public class DefaultSolver extends AbstractSolver {
 		}
 
 		// Record choice atoms.
-
-		choiceManager.add(grounder.getChoices());
+		final Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms = grounder.getChoiceAtoms();
+		choiceManager.addChoiceInformation(choiceAtoms);
 		// Inform heuristics.
 		branchingHeuristic.newNoGoods(obtained.values());
 
@@ -455,8 +455,7 @@ public class DefaultSolver extends AbstractSolver {
 	private void doChoice(int nextChoice) {
 		counters.decisionCounter++;
 		boolean sign = branchingHeuristic.chooseSign(nextChoice);
-
-		if (!assignment.guess(nextChoice, ThriceTruth.valueOf(sign))) {
+		if (!assignment.guess(nextChoice, sign)) {
 			throw new RuntimeException("Picked choice is incompatible with current assignment. Should not happen.");
 		}
 

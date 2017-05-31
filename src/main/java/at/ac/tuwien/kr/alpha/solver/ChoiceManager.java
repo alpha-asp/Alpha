@@ -28,7 +28,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
-import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
@@ -133,12 +132,6 @@ public class ChoiceManager {
 		highestDecisionLevel--;
 	}
 
-	public void add(Choices choices) {
-		for (Map.Entry<Integer, Pair<Integer, Integer>> entry : choices) {
-			add(entry.getKey(), entry.getValue().getLeft(), entry.getValue().getRight());
-		}
-	}
-
 	void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms) {
 		// Assumption: we get all enabler/disabler pairs in one call.
 		Map<Integer, Integer> enablers = choiceAtoms.getLeft();
@@ -146,24 +139,22 @@ public class ChoiceManager {
 		for (Map.Entry<Integer, Integer> atomToEnabler : enablers.entrySet()) {
 			// Construct and record ChoicePoint.
 			Integer atom = atomToEnabler.getKey();
-			add(atom, atomToEnabler.getValue(), disablers.get(atom));
+			if (atom == null) {
+				throw new RuntimeException("Incomplete choice point description found (no atom). Should not happen.");
+			}
+			if (influencers.get(atom) != null) {
+				throw new RuntimeException("Received choice information repeatedly. Should not happen.");
+			}
+			Integer enabler = atomToEnabler.getValue();
+			Integer disabler = disablers.get(atom);
+			if (enabler == null || disabler == null) {
+				throw new RuntimeException("Incomplete choice point description found (no enabler or disabler). Should not happen.");
+			}
+			ChoicePoint choicePoint = new ChoicePoint(atom, enabler, disabler);
+			influencers.put(atom, choicePoint);
+			influencers.put(enabler, choicePoint);
+			influencers.put(disabler, choicePoint);
 		}
-	}
-
-	private void add(Integer atom, Integer enabler, Integer disabler) {
-		if (atom == null) {
-			throw new RuntimeException("Incomplete choice point description found (no atom). Should not happen.");
-		}
-		if (influencers.get(atom) != null) {
-			throw new RuntimeException("Received choice information repeatedly. Should not happen.");
-		}
-		if (enabler == null || disabler == null) {
-			throw new RuntimeException("Incomplete choice point description found (no enabler or disabler). Should not happen.");
-		}
-		ChoicePoint choicePoint = new ChoicePoint(atom, enabler, disabler);
-		influencers.put(atom, choicePoint);
-		influencers.put(enabler, choicePoint);
-		influencers.put(disabler, choicePoint);
 	}
 
 	public boolean isActiveChoiceAtom(int atom) {

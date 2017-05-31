@@ -30,8 +30,6 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.solver.Choices;
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -159,15 +157,12 @@ public class ChoiceGrounder implements Grounder {
 	private boolean isFirst = true;
 
 	@Override
-	public Choices getChoices() {
+	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
 		if (isFirst) {
 			isFirst = false;
-			Choices result = new Choices();
-			result.put(ATOM_BR1, CHOICE_EN_BR1, CHOICE_DIS_BR1);
-			result.put(ATOM_BR2, CHOICE_EN_BR2, CHOICE_DIS_BR2);
-			return result;
+			return new ImmutablePair<>(CHOICE_ENABLE, CHOICE_DISABLE);
 		} else {
-			return new Choices();
+			return new ImmutablePair<>(new HashMap<>(), new HashMap<>());
 		}
 	}
 

@@ -36,9 +36,9 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFact;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedRule;
 import at.ac.tuwien.kr.alpha.solver.Assignment;
-import at.ac.tuwien.kr.alpha.solver.Choices;
 import com.google.common.collect.Iterables;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,13 +71,13 @@ public class NaiveGrounder extends BridgedGrounder {
 	private final HashMap<Predicate, ArrayList<Instance>> factsFromProgram = new HashMap<>();
 	private final ArrayList<NonGroundRule> rulesFromProgram = new ArrayList<>();
 	private final HashMap<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
+	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newChoiceAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
 	private final HashSet<Predicate> knownPredicates = new HashSet<>();
 	private final HashMap<NonGroundRule, HashSet<Substitution>> knownGroundingSubstitutions = new HashMap<>();
 
 	private boolean outputFactNogoods = true;
 
 	private HashSet<IndexedInstanceStorage> modifiedWorkingMemories = new HashSet<>();
-	private Choices choices = new Choices();
 
 	public NaiveGrounder(ParsedProgram program, Bridge... bridges) {
 		this(program, p -> true, bridges);
@@ -415,6 +415,9 @@ public class NaiveGrounder extends BridgedGrounder {
 
 		// Check if the body of the rule contains negation, add choices then
 		if (!bodyAtomsNegative.isEmpty()) {
+			Map<Integer, Integer> newChoiceOn = newChoiceAtoms.getLeft();
+			Map<Integer, Integer> newChoiceOff = newChoiceAtoms.getRight();
+
 			// Choice is on the body representing atom
 			int choiceId = choiceAtomsGenerator.getNextId();
 
@@ -428,6 +431,7 @@ public class NaiveGrounder extends BridgedGrounder {
 			}
 			// Add corresponding NoGood and ChoiceOn
 			generatedNoGoods.add(NoGood.headFirst(choiceOnLiterals));	// ChoiceOn and ChoiceOff NoGoods avoid MBT and directly set to true, hence the rule head pointer.
+			newChoiceOn.put(bodyRepresentingAtomId, choiceOnAtomIdInt);
 
 			// ChoiceOff if some negative body atom is contradicted
 			int choiceOffAtomIdInt = atomStore.add(ChoiceAtom.off(choiceId));
@@ -435,7 +439,7 @@ public class NaiveGrounder extends BridgedGrounder {
 				// Choice is off if any of the negative atoms is assigned true, hence we add one NoGood for each such atom.
 				generatedNoGoods.add(NoGood.headFirst(-choiceOffAtomIdInt, -negAtomId));
 			}
-			choices.put(bodyRepresentingAtomId, choiceOnAtomIdInt, choiceOffAtomIdInt);
+			newChoiceOff.put(bodyRepresentingAtomId, choiceOffAtomIdInt);
 		}
 		return generatedNoGoods;
 	}
@@ -541,10 +545,10 @@ public class NaiveGrounder extends BridgedGrounder {
 	}
 
 	@Override
-	public Choices getChoices() {
-		Choices currentChoices = choices;
-		choices = new Choices();
-		return currentChoices;
+	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
+		Pair<Map<Integer, Integer>, Map<Integer, Integer>> currentChoiceAtoms = newChoiceAtoms;
+		newChoiceAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
+		return currentChoiceAtoms;
 	}
 
 	@Override

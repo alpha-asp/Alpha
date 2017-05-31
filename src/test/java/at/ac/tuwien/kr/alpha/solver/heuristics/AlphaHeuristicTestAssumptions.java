@@ -82,7 +82,7 @@ public class AlphaHeuristicTestAssumptions {
 		int other = 0;
 
 		Collection<NoGood> noGoods = getNoGoods();
-		choiceManager.add(grounder.getChoices());
+		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
 		for (NoGood noGood : noGoods) {
 			n++;
 			boolean knownType = false;
@@ -124,7 +124,7 @@ public class AlphaHeuristicTestAssumptions {
 
 	private void testIsAtomChoice(Predicate<? super Integer> isRuleBody) {
 		Collection<NoGood> noGoods = getNoGoods();
-		choiceManager.add(grounder.getChoices());
+		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
 		for (NoGood noGood : noGoods) {
 			for (Integer literal : noGood) {
 				int atom = atomOf(literal);
