@@ -30,7 +30,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -140,7 +140,7 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public Map<Integer, NoGood> getNoGoods(ReadableAssignment assignment) {
+	public Map<Integer, NoGood> getNoGoods(Assignment assignment) {
 		if (!returnedAllNogoods) {
 			returnedAllNogoods = true;
 			return NOGOODS;
@@ -150,7 +150,7 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public Map<Integer, NoGood> getHexNoGoods(Assignment assignment) {
+	public Map<Integer, NoGood> getHexNoGoods(WritableAssignment assignment) {
 		return emptyMap();
 	}
 
@@ -167,7 +167,7 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<ReadableAssignment.Entry> it) {
+	public void updateAssignment(Iterator<Assignment.Entry> it) {
 		// This test grounder reports all NoGoods immediately, irrespective of any assignment.
 	}
 
@@ -181,7 +181,7 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public List<Integer> getUnassignedAtoms(Assignment assignment) {
+	public List<Integer> getUnassignedAtoms(WritableAssignment assignment) {
 		List<Integer> unassigned = new ArrayList<>();
 		List<Integer> knownAtomIds = new ArrayList<>(atomIdToString.keySet());
 		for (Integer atomId : knownAtomIds) {

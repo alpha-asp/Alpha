@@ -1,15 +1,12 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
-import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
 
 import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.atoms.Atoms.isAtom;
 
 /**
  * A BerkMin-like heuristics that uses activity of literals and a fixed-size queue instead of a stack of NoGoods.
@@ -21,12 +18,12 @@ public class BerkMinLiteral extends BerkMin {
 	private static final int DEFAULT_QUEUE_SIZE = 32;
 	private final int queueSize;
 
-	BerkMinLiteral(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, int queueSize) {
+	BerkMinLiteral(WritableAssignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, int queueSize) {
 		super(assignment, choiceManager, decayAge, decayFactor, random);
 		this.queueSize = queueSize;
 	}
 
-	BerkMinLiteral(Assignment assignment, ChoiceManager choiceManager, Random random) {
+	BerkMinLiteral(WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
 		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random, DEFAULT_QUEUE_SIZE);
 	}
 

@@ -25,7 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
 
@@ -38,11 +38,11 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
  */
 public class AlphaActiveRuleHeuristic extends DependencyDrivenHeuristic {
 
-	public AlphaActiveRuleHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
+	public AlphaActiveRuleHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
 		super(assignment, choiceManager, decayAge, decayFactor, random, BodyActivityType.DEFAULT);
 	}
 
-	public AlphaActiveRuleHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
+	public AlphaActiveRuleHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
 		super(assignment, choiceManager, random);
 	}
 

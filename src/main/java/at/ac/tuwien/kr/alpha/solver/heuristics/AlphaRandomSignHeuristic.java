@@ -34,11 +34,11 @@ import static at.ac.tuwien.kr.alpha.common.atoms.Atoms.isAtom;
 
 public class AlphaRandomSignHeuristic extends DependencyDrivenHeuristic {
 
-	public AlphaRandomSignHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
+	public AlphaRandomSignHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
 		super(assignment, choiceManager, decayAge, decayFactor, random, BodyActivityType.DEFAULT);
 	}
 
-	public AlphaRandomSignHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
+	public AlphaRandomSignHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
 		super(assignment, choiceManager, random);
 	}
 

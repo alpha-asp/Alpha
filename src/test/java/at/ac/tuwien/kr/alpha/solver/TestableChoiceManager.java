@@ -37,7 +37,7 @@ import java.util.Map;
  */
 public class TestableChoiceManager extends ChoiceManager {
 
-	public TestableChoiceManager(Assignment assignment) {
+	public TestableChoiceManager(WritableAssignment assignment) {
 		super(assignment);
 	}
 

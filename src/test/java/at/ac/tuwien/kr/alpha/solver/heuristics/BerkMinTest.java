@@ -179,7 +179,7 @@ public class BerkMinTest {
 
 	private static class PseudoChoiceManager extends ChoiceManager {
 
-		public PseudoChoiceManager(Assignment assignment) {
+		public PseudoChoiceManager(WritableAssignment assignment) {
 			super(assignment);
 		}
 

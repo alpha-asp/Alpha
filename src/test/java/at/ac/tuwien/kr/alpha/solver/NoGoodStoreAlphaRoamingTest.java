@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -574,7 +574,7 @@ public class NoGoodStoreAlphaRoamingTest extends BasicNoGoodStoreTest {
 		assertNull(store.add(10, noGood));
 		store.propagate();
 		assertTrue(TRUE.equals(assignment.getTruth(1)));
-		ReadableAssignment.Entry entry = assignment.get(1);
+		Assignment.Entry entry = assignment.get(1);
 		assertTrue(TRUE.equals(entry.getTruth()));
 		assertEquals(2, entry.getDecisionLevel());
 	}

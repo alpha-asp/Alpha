@@ -52,7 +52,7 @@ import static org.junit.Assert.assertTrue;
 public class AlphaHeuristicTestAssumptions {
 
 	private Grounder grounder;
-	private Assignment assignment;
+	private WritableAssignment assignment;
 	private TestableChoiceManager choiceManager;
 	
 	@Before

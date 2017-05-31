@@ -28,16 +28,9 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
-import at.ac.tuwien.kr.alpha.common.Truth;
-import java.util.*;
+import at.ac.tuwien.kr.alpha.common.Assignment;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
-
-public interface Assignment extends ReadableAssignment, SimpleAssignment {
+public interface WritableAssignment extends Assignment, SimpleWritableAssignment {
 	/**
 	 * Delete all information stored in the assignment.
 	 */

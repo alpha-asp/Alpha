@@ -65,7 +65,7 @@ public class DependencyDrivenHeuristic implements BranchingHeuristic {
 	public static final int DEFAULT_DECAY_AGE = 10;
 	public static final double DEFAULT_DECAY_FACTOR = 0.25;
 
-	protected final Assignment assignment;
+	protected final WritableAssignment assignment;
 	protected final ChoiceManager choiceManager;
 	protected final Random rand;
 	protected final BodyActivityProvider bodyActivity;
@@ -97,8 +97,8 @@ public class DependencyDrivenHeuristic implements BranchingHeuristic {
 	 */
 	protected final MultiValuedMap<Integer, Integer> atomsToBodies = new HashSetValuedHashMap<>();
 
-	public DependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random,
-			BodyActivityType bodyActivityType) {
+	public DependencyDrivenHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random,
+					 BodyActivityType bodyActivityType) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
 		this.decayAge = decayAge;
@@ -107,11 +107,11 @@ public class DependencyDrivenHeuristic implements BranchingHeuristic {
 		this.bodyActivity = BodyActivityProviderFactory.getInstance(bodyActivityType, bodyToLiterals, activityCounters, DEFAULT_ACTIVITY);
 	}
 
-	public DependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random, BodyActivityType bodyActivityType) {
+	public DependencyDrivenHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, Random random, BodyActivityType bodyActivityType) {
 		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random, bodyActivityType);
 	}
 
-	public DependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
+	public DependencyDrivenHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
 		this(assignment, choiceManager, random, BodyActivityType.DEFAULT);
 	}
 

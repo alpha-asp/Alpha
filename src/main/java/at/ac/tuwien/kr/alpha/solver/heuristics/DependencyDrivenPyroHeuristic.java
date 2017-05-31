@@ -25,7 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
 
@@ -44,16 +44,16 @@ import java.util.Random;
  */
 public class DependencyDrivenPyroHeuristic extends DependencyDrivenHeuristic {
 
-	public DependencyDrivenPyroHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random,
-			BodyActivityType bodyActivityType) {
+	public DependencyDrivenPyroHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random,
+					     BodyActivityType bodyActivityType) {
 		super(assignment, choiceManager, decayAge, decayFactor, random, bodyActivityType);
 	}
 
-	public DependencyDrivenPyroHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random, BodyActivityType bodyActivityType) {
+	public DependencyDrivenPyroHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, Random random, BodyActivityType bodyActivityType) {
 		super(assignment, choiceManager, random, bodyActivityType);
 	}
 
-	public DependencyDrivenPyroHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
+	public DependencyDrivenPyroHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
 		super(assignment, choiceManager, random);
 	}
 

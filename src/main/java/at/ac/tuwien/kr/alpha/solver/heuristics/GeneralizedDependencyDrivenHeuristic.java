@@ -26,7 +26,7 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
 
@@ -50,16 +50,16 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
  */
 public class GeneralizedDependencyDrivenHeuristic extends DependencyDrivenHeuristic {
 
-	public GeneralizedDependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random,
-			BodyActivityType bodyActivityType) {
+	public GeneralizedDependencyDrivenHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random,
+						    BodyActivityType bodyActivityType) {
 		super(assignment, choiceManager, decayAge, decayFactor, random, bodyActivityType);
 	}
 
-	public GeneralizedDependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random, BodyActivityType bodyActivityType) {
+	public GeneralizedDependencyDrivenHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, Random random, BodyActivityType bodyActivityType) {
 		super(assignment, choiceManager, random, bodyActivityType);
 	}
 
-	public GeneralizedDependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
+	public GeneralizedDependencyDrivenHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
 		super(assignment, choiceManager, random);
 	}
 

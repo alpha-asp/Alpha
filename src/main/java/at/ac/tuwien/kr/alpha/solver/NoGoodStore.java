@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
+import at.ac.tuwien.kr.alpha.common.Assignment;
 
 /**
  * A (temporary) interface defining the use of a NoGoodStore.
@@ -18,14 +18,14 @@ public interface NoGoodStore {
 
 	class ConflictCause {
 		private final NoGood violatedNoGood;
-		private final ReadableAssignment.Entry violatedGuess;
+		private final Assignment.Entry violatedGuess;
 
-		public ConflictCause(NoGood violatedNoGood, ReadableAssignment.Entry violatedGuess) {
+		public ConflictCause(NoGood violatedNoGood, Assignment.Entry violatedGuess) {
 			this.violatedNoGood = violatedNoGood;
 			this.violatedGuess = violatedGuess;
 		}
 
-		public ReadableAssignment.Entry getViolatedGuess() {
+		public Assignment.Entry getViolatedGuess() {
 			return violatedGuess;
 		}
 

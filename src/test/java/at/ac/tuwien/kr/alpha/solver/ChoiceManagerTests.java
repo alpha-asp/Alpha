@@ -65,7 +65,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 		String testProgram = "h :- b1, b2, not b3, not b4.";
 		ParsedProgram parsedProgram = parseVisit(testProgram);
 		this.grounder = new NaiveGrounder(parsedProgram);
-		Assignment assignment = new BasicAssignment();
+		WritableAssignment assignment = new BasicAssignment();
 		this.choiceManager = new ChoiceManager(assignment);
 	}
 

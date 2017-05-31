@@ -28,7 +28,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,13 +39,13 @@ import static at.ac.tuwien.kr.alpha.common.atoms.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
-public class BasicAssignment implements Assignment {
+public class BasicAssignment implements WritableAssignment {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BasicAssignment.class);
 	private final Map<Integer, Entry> assignment = new HashMap<>();
 	private final List<List<Entry>> decisionLevels;
-	private final Queue<ReadableAssignment.Entry> assignmentsToProcess = new LinkedList<>();
-	private Queue<ReadableAssignment.Entry> newAssignments = new LinkedList<>();
-	private Queue<ReadableAssignment.Entry> newAssignments2 = new LinkedList<>();
+	private final Queue<Assignment.Entry> assignmentsToProcess = new LinkedList<>();
+	private Queue<Assignment.Entry> newAssignments = new LinkedList<>();
+	private Queue<Assignment.Entry> newAssignments2 = new LinkedList<>();
 	private final Grounder grounder;
 
 	private int mbtCount;
@@ -74,27 +74,27 @@ public class BasicAssignment implements Assignment {
 	}
 
 	@Override
-	public Queue<ReadableAssignment.Entry> getAssignmentsToProcess() {
+	public Queue<Assignment.Entry> getAssignmentsToProcess() {
 		return assignmentsToProcess;
 	}
 
 	@Override
 	public void backtrack() {
 		// Remove all assignments on the current decision level from the queue of assignments to process.
-		for (Iterator<ReadableAssignment.Entry> iterator = assignmentsToProcess.iterator(); iterator.hasNext();) {
-			ReadableAssignment.Entry entry = iterator.next();
+		for (Iterator<Assignment.Entry> iterator = assignmentsToProcess.iterator(); iterator.hasNext();) {
+			Assignment.Entry entry = iterator.next();
 			if (entry.getDecisionLevel() == getDecisionLevel()) {
 				iterator.remove();
 			}
 		}
-		for (Iterator<ReadableAssignment.Entry> iterator = newAssignments.iterator(); iterator.hasNext();) {
-			ReadableAssignment.Entry entry = iterator.next();
+		for (Iterator<Assignment.Entry> iterator = newAssignments.iterator(); iterator.hasNext();) {
+			Assignment.Entry entry = iterator.next();
 			if (entry.getDecisionLevel() == getDecisionLevel()) {
 				iterator.remove();
 			}
 		}
-		for (Iterator<ReadableAssignment.Entry> iterator = newAssignments2.iterator(); iterator.hasNext();) {
-			ReadableAssignment.Entry entry = iterator.next();
+		for (Iterator<Assignment.Entry> iterator = newAssignments2.iterator(); iterator.hasNext();) {
+			Assignment.Entry entry = iterator.next();
 			if (entry.getDecisionLevel() == getDecisionLevel()) {
 				iterator.remove();
 			}
@@ -176,7 +176,7 @@ public class BasicAssignment implements Assignment {
 	private Entry guessViolatedByAssign;
 
 	@Override
-	public ReadableAssignment.Entry getGuessViolatedByAssign() {
+	public Assignment.Entry getGuessViolatedByAssign() {
 		return guessViolatedByAssign;
 	}
 
@@ -434,20 +434,20 @@ public class BasicAssignment implements Assignment {
 	}
 
 	@Override
-	public Iterator<ReadableAssignment.Entry> getNewAssignmentsIterator() {
-		Iterator<ReadableAssignment.Entry> it = newAssignments.iterator();
+	public Iterator<Assignment.Entry> getNewAssignmentsIterator() {
+		Iterator<Assignment.Entry> it = newAssignments.iterator();
 		newAssignments = new LinkedList<>();
 		return it;
 	}
 
 	@Override
-	public Iterator<? extends SimpleReadableAssignment.Entry> getNewAssignmentsIterator2() {
-		Iterator<? extends SimpleReadableAssignment.Entry> it = newAssignments2.iterator();
+	public Iterator<? extends SimpleAssignment.Entry> getNewAssignmentsIterator2() {
+		Iterator<? extends SimpleAssignment.Entry> it = newAssignments2.iterator();
 		newAssignments2 = new LinkedList<>();
 		return it;
 	}
 
-	private static final class Entry implements ReadableAssignment.Entry {
+	private static final class Entry implements Assignment.Entry {
 		private final ThriceTruth value;
 		private final int decisionLevel;
 		private final int propagationLevel;

@@ -28,7 +28,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,14 +43,14 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
  * An implementation of the Assignment, based on BasicAssignment but using ArrayList (instead of HashMap) as underlying
  * structure for storing assignment entries.
  */
-class ArrayAssignment implements Assignment {
+class ArrayAssignment implements WritableAssignment {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ArrayAssignment.class);
 	private final ArrayList<Entry> assignment = new ArrayList<>();
 	private final List<List<Integer>> atomsAssignedInDecisionLevel;
 	private final ArrayList<Integer> propagationCounterPerDecisionLevel;
 	private final Queue<ArrayAssignment.Entry> assignmentsToProcess = new LinkedList<>();
-	private Queue<ReadableAssignment.Entry> newAssignments = new LinkedList<>();
-	private Queue<ReadableAssignment.Entry> newAssignments2 = new LinkedList<>();
+	private Queue<Assignment.Entry> newAssignments = new LinkedList<>();
+	private Queue<Assignment.Entry> newAssignments2 = new LinkedList<>();
 	private final Grounder grounder;
 
 	private int mbtCount;
@@ -81,7 +81,7 @@ class ArrayAssignment implements Assignment {
 	}
 
 	@Override
-	public Queue<? extends ReadableAssignment.Entry> getAssignmentsToProcess() {
+	public Queue<? extends Assignment.Entry> getAssignmentsToProcess() {
 		return assignmentsToProcess;
 	}
 
@@ -90,7 +90,7 @@ class ArrayAssignment implements Assignment {
 		// Remove all assignments on the current decision level from the queue of assignments to process.
 		HashSet<Integer> removedEntries = new HashSet<>();
 		for (Iterator<ArrayAssignment.Entry> iterator = assignmentsToProcess.iterator(); iterator.hasNext();) {
-			ReadableAssignment.Entry entry = iterator.next();
+			Assignment.Entry entry = iterator.next();
 			if (entry.getDecisionLevel() == getDecisionLevel()) {
 				iterator.remove();
 				removedEntries.add(entry.getAtom());
@@ -103,14 +103,14 @@ class ArrayAssignment implements Assignment {
 				entry.setReassignFalse();
 			}
 		}
-		for (Iterator<ReadableAssignment.Entry> iterator = newAssignments.iterator(); iterator.hasNext();) {
-			ReadableAssignment.Entry entry = iterator.next();
+		for (Iterator<Assignment.Entry> iterator = newAssignments.iterator(); iterator.hasNext();) {
+			Assignment.Entry entry = iterator.next();
 			if (entry.getDecisionLevel() == getDecisionLevel()) {
 				iterator.remove();
 			}
 		}
-		for (Iterator<ReadableAssignment.Entry> iterator = newAssignments2.iterator(); iterator.hasNext();) {
-			ReadableAssignment.Entry entry = iterator.next();
+		for (Iterator<Assignment.Entry> iterator = newAssignments2.iterator(); iterator.hasNext();) {
+			Assignment.Entry entry = iterator.next();
 			if (entry.getDecisionLevel() == getDecisionLevel()) {
 				iterator.remove();
 			}
@@ -195,11 +195,11 @@ class ArrayAssignment implements Assignment {
 	private Entry guessViolatedByAssign;
 
 	@Override
-	public ReadableAssignment.Entry getGuessViolatedByAssign() {
+	public Assignment.Entry getGuessViolatedByAssign() {
 		return guessViolatedByAssign;
 	}
 
-	private boolean assignmentsConsistent(ReadableAssignment.Entry oldAssignment, ThriceTruth value) {
+	private boolean assignmentsConsistent(Assignment.Entry oldAssignment, ThriceTruth value) {
 		return oldAssignment == null || oldAssignment.getTruth().toBoolean() == value.toBoolean();
 	}
 
@@ -409,20 +409,20 @@ class ArrayAssignment implements Assignment {
 	}
 
 	@Override
-	public Iterator<ReadableAssignment.Entry> getNewAssignmentsIterator() {
-		Iterator<ReadableAssignment.Entry> it = newAssignments.iterator();
+	public Iterator<Assignment.Entry> getNewAssignmentsIterator() {
+		Iterator<Assignment.Entry> it = newAssignments.iterator();
 		newAssignments = new LinkedList<>();
 		return it;
 	}
 
 	@Override
-	public Iterator<ReadableAssignment.Entry> getNewAssignmentsIterator2() {
-		Iterator<ReadableAssignment.Entry> it = newAssignments2.iterator();
+	public Iterator<Assignment.Entry> getNewAssignmentsIterator2() {
+		Iterator<Assignment.Entry> it = newAssignments2.iterator();
 		newAssignments2 = new LinkedList<>();
 		return it;
 	}
 
-	private static final class Entry implements ReadableAssignment.Entry {
+	private static final class Entry implements Assignment.Entry {
 		private final ThriceTruth value;
 		private final int decisionLevel;
 		private final int propagationLevel;

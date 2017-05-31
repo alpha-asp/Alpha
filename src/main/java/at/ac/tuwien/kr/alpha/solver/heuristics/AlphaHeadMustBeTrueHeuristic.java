@@ -39,11 +39,11 @@ public class AlphaHeadMustBeTrueHeuristic extends DependencyDrivenHeuristic {
 
 	private int rememberedAtom;
 
-	public AlphaHeadMustBeTrueHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
+	public AlphaHeadMustBeTrueHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
 		super(assignment, choiceManager, decayAge, decayFactor, random, BodyActivityType.DEFAULT);
 	}
 
-	public AlphaHeadMustBeTrueHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
+	public AlphaHeadMustBeTrueHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
 		super(assignment, choiceManager, random);
 	}
 

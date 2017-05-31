@@ -27,7 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
@@ -39,7 +39,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class ChoiceManager {
-	private final Assignment assignment;
+	private final WritableAssignment assignment;
 
 	// Active choice points and all atoms that influence a choice point (enabler, disabler, choice atom itself).
 	private final Set<ChoicePoint> activeChoicePoints = new LinkedHashSet<>();
@@ -52,7 +52,7 @@ public class ChoiceManager {
 	// The total number of modifications this ChoiceManager received (avoids re-computation in ChoicePoints).
 	private long modCount;
 
-	public ChoiceManager(Assignment assignment) {
+	public ChoiceManager(WritableAssignment assignment) {
 		this.assignment = assignment;
 		modifiedInDecisionLevel.put(0, new ArrayList<>());
 		highestDecisionLevel = 0;
@@ -74,14 +74,14 @@ public class ChoiceManager {
 		}
 
 		private boolean isActiveChoicePoint() {
-			ReadableAssignment.Entry enablerEntry = assignment.get(enabler);
-			ReadableAssignment.Entry disablerEntry = assignment.get(disabler);
+			Assignment.Entry enablerEntry = assignment.get(enabler);
+			Assignment.Entry disablerEntry = assignment.get(disabler);
 			return  enablerEntry != null && enablerEntry.getTruth().toBoolean()
 				&& (disablerEntry == null || !disablerEntry.getTruth().toBoolean());
 		}
 
 		private boolean isNotChosen() {
-			ReadableAssignment.Entry entry = assignment.get(atom);
+			Assignment.Entry entry = assignment.get(atom);
 			return entry == null || MBT.equals(entry.getTruth());
 		}
 

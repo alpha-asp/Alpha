@@ -1,12 +1,25 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-public interface SimpleAssignment extends SimpleReadableAssignment {
+import at.ac.tuwien.kr.alpha.common.Truth;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+public interface SimpleAssignment {
+	boolean isAssigned(int atom);
+	ThriceTruth getTruth(int atom);
+
 	/**
-	 * Delete all information stored in the assignment.
+	 * Returns all atomIds that are assigned TRUE in the current assignment.
+	 * @return a list of all true assigned atoms.
 	 */
-	void clear();
+	Set<Integer> getTrueAssignments();
 
-	boolean assign(int atom, ThriceTruth value);
+	Iterator<? extends Entry> getNewAssignmentsIterator2();
 
-	void unassign(int atom);
+	interface Entry {
+		int getAtom();
+		ThriceTruth getTruth();
+	}
 }

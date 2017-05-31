@@ -2,9 +2,9 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import java.util.*;
 
-public class SimpleAssignmentImpl implements SimpleAssignment {
+public class SimpleAssignmentImpl implements SimpleWritableAssignment {
 	private HashMap<Integer, ThriceTruth> delegate = new HashMap<>();
-	private LinkedList<SimpleReadableAssignment.Entry> newAssignments2 = new LinkedList<>();
+	private LinkedList<SimpleAssignment.Entry> newAssignments2 = new LinkedList<>();
 
 	@Override
 	public boolean isAssigned(int atom) {
@@ -49,13 +49,13 @@ public class SimpleAssignmentImpl implements SimpleAssignment {
 	}
 
 	@Override
-	public Iterator<SimpleReadableAssignment.Entry> getNewAssignmentsIterator2() {
-		Iterator<SimpleReadableAssignment.Entry> it = newAssignments2.iterator();
+	public Iterator<SimpleAssignment.Entry> getNewAssignmentsIterator2() {
+		Iterator<SimpleAssignment.Entry> it = newAssignments2.iterator();
 		newAssignments2 = new LinkedList<>();
 		return it;
 	}
 
-	private static class Entry implements SimpleReadableAssignment.Entry {
+	private static class Entry implements SimpleAssignment.Entry {
 		private final int atom;
 		private final ThriceTruth truth;
 

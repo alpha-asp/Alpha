@@ -35,7 +35,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstraint;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFact;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedRule;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import com.google.common.collect.Iterables;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -217,7 +217,7 @@ public class NaiveGrounder extends BridgedGrounder {
 	}
 
 	@Override
-	public Map<Integer, NoGood> getHexNoGoods(Assignment assignment) {
+	public Map<Integer, NoGood> getHexNoGoods(WritableAssignment assignment) {
 		HashMap<Integer, NoGood> newNoGoods = new LinkedHashMap<>();
 
 		// Import additional rules from external sources
@@ -265,7 +265,7 @@ public class NaiveGrounder extends BridgedGrounder {
 	}
 
 	@Override
-	public Map<Integer, NoGood> getNoGoods(ReadableAssignment assignment) {
+	public Map<Integer, NoGood> getNoGoods(Assignment assignment) {
 		// First call, output all NoGoods from facts.
 		if (outputFactNogoods) {
 			outputFactNogoods = false;
@@ -552,9 +552,9 @@ public class NaiveGrounder extends BridgedGrounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<ReadableAssignment.Entry> it) {
+	public void updateAssignment(Iterator<Assignment.Entry> it) {
 		while (it.hasNext()) {
-			ReadableAssignment.Entry assignment = it.next();
+			Assignment.Entry assignment = it.next();
 			Truth truthValue = assignment.getTruth();
 			Atom atom = atomStore.get(assignment.getAtom());
 			ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> workingMemory = this.workingMemory.get(atom.getPredicate());
@@ -576,7 +576,7 @@ public class NaiveGrounder extends BridgedGrounder {
 	}
 
 	@Override
-	public List<Integer> getUnassignedAtoms(Assignment assignment) {
+	public List<Integer> getUnassignedAtoms(WritableAssignment assignment) {
 		List<Integer> unassignedAtoms = new ArrayList<>();
 		// Check all known atoms: assumption is that AtomStore assigned continuous values and 0 is no valid atomId.
 		for (int i = 1; i <= atomStore.getHighestAtomId(); i++) {
@@ -592,7 +592,7 @@ public class NaiveGrounder extends BridgedGrounder {
 		return atomStore.get(atomId).toString();
 	}
 
-	public List<Integer> getUnassignedAtoms(ReadableAssignment assignment) {
+	public List<Integer> getUnassignedAtoms(Assignment assignment) {
 		List<Integer> unassignedAtoms = new ArrayList<>();
 		// Check all known atoms: assumption is that AtomStore assigned continuous values and 0 is no valid atomId.
 		for (int i = 1; i <= atomStore.getHighestAtomId(); i++) {

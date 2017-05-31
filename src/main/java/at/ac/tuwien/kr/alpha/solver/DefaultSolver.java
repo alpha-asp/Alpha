@@ -29,9 +29,8 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.solver.heuristics.*;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
@@ -58,7 +57,7 @@ public class DefaultSolver extends AbstractSolver {
 
 	private final NoGoodStore store;
 	private final ChoiceStack choiceStack;
-	private final Assignment assignment;
+	private final WritableAssignment assignment;
 	private final GroundConflictNoGoodLearner learner;
 	private final BranchingHeuristic branchingHeuristic;
 	private final BranchingHeuristic fallbackBranchingHeuristic;
@@ -219,7 +218,7 @@ public class DefaultSolver extends AbstractSolver {
 	private int computeMinimumConflictLevel(NoGood noGood) {
 		int minimumConflictLevel = -1;
 		for (Integer literal : noGood) {
-			ReadableAssignment.Entry entry = assignment.get(atomOf(literal));
+			Assignment.Entry entry = assignment.get(atomOf(literal));
 			if (entry == null || isPositive(literal) != entry.getTruth().toBoolean()) {
 				return -1;
 			}
@@ -310,7 +309,7 @@ public class DefaultSolver extends AbstractSolver {
 
 			int lastGuessedAtom = choiceStack.peekAtom();
 			boolean lastGuessedValue = choiceStack.peekValue();
-			ReadableAssignment.Entry lastChoiceEntry = assignment.get(lastGuessedAtom);
+			Assignment.Entry lastChoiceEntry = assignment.get(lastGuessedAtom);
 
 			store.backtrack();
 			LOGGER.debug("Backtrack: Removing last choice, setting decision level to {}.", assignment.getDecisionLevel());
@@ -470,7 +469,7 @@ public class DefaultSolver extends AbstractSolver {
 
 	private int computeChoice() {
 		// Update ChoiceManager.
-		Iterator<? extends SimpleReadableAssignment.Entry> it = assignment.getNewAssignmentsIterator2();
+		Iterator<? extends SimpleAssignment.Entry> it = assignment.getNewAssignmentsIterator2();
 		while (it.hasNext()) {
 			choiceManager.updateAssignment(it.next().getAtom());
 		}

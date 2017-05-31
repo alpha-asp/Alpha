@@ -27,7 +27,7 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
@@ -59,7 +59,7 @@ public class BerkMin implements BranchingHeuristic {
 	static final int DEFAULT_DECAY_AGE = 10;
 	static final double DEFAULT_DECAY_FACTOR = 0.25;
 
-	final Assignment assignment;
+	final WritableAssignment assignment;
 	final ChoiceManager choiceManager;
 	final Random rand;
 
@@ -70,7 +70,7 @@ public class BerkMin implements BranchingHeuristic {
 	private double decayFactor;
 	private int stepsSinceLastDecay;
 
-	BerkMin(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
+	BerkMin(WritableAssignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
 		this.decayAge = decayAge;
@@ -78,7 +78,7 @@ public class BerkMin implements BranchingHeuristic {
 		this.rand = random;
 	}
 
-	BerkMin(Assignment assignment, ChoiceManager choiceManager, Random random) {
+	BerkMin(WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
 		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random);
 	}
 

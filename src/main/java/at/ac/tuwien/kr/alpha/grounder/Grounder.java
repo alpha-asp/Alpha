@@ -3,8 +3,8 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.ReadableAssignment;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Iterator;
@@ -23,9 +23,9 @@ public interface Grounder extends AtomTranslator {
 	 * Applies lazy grounding and returns all newly derived (fully ground) NoGoods.
 	 * @return a mapping of nogood IDs to NoGoods.
 	 */
-	Map<Integer, NoGood> getNoGoods(ReadableAssignment assignment);
+	Map<Integer, NoGood> getNoGoods(Assignment assignment);
 
-	Map<Integer, NoGood> getHexNoGoods(Assignment assignment);
+	Map<Integer, NoGood> getHexNoGoods(WritableAssignment assignment);
 
 	/**
 	 * Return choice points and their enablers and disablers.
@@ -36,7 +36,7 @@ public interface Grounder extends AtomTranslator {
 	 */
 	Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms();
 
-	void updateAssignment(Iterator<ReadableAssignment.Entry> it);
+	void updateAssignment(Iterator<Assignment.Entry> it);
 
 	void forgetAssignment(int[] atomIds);
 
@@ -45,7 +45,7 @@ public interface Grounder extends AtomTranslator {
 	 * @param assignment the current assignment.
 	 * @return a list of atoms not having assigned a truth value.
 	 */
-	List<Integer> getUnassignedAtoms(Assignment assignment);
+	List<Integer> getUnassignedAtoms(WritableAssignment assignment);
 
 	/**
 	 * Registers the given NoGood and returns the identifier of it.
