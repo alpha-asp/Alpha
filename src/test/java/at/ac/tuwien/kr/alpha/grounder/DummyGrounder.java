@@ -3,7 +3,6 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -12,9 +11,7 @@ import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
 import static at.ac.tuwien.kr.alpha.Util.entry;
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
 
 /**
  * Represents a small ASP program {@code { c :- a, b.  a.  b. }}.
@@ -69,7 +66,7 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
-	public List<Integer> getUnassignedAtoms(WritableAssignment assignment) {
+	public List<Integer> getUnassignedAtoms(Assignment assignment) {
 		List<Integer> unassigned = new ArrayList<>();
 		List<Integer> knownAtomIds = Arrays.asList(1, 2, 3, 4);
 		for (Integer atomId : knownAtomIds) {
@@ -144,7 +141,7 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
-	public Map<Integer, NoGood> getHexNoGoods(WritableAssignment assignment) {
+	public Map<Integer, NoGood> getHexNoGoods(Assignment assignment) {
 		return emptyMap();
 	}
 

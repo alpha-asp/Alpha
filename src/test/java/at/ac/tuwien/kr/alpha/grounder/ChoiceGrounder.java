@@ -30,7 +30,6 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -150,7 +149,7 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public Map<Integer, NoGood> getHexNoGoods(WritableAssignment assignment) {
+	public Map<Integer, NoGood> getHexNoGoods(Assignment assignment) {
 		return emptyMap();
 	}
 
@@ -181,7 +180,7 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public List<Integer> getUnassignedAtoms(WritableAssignment assignment) {
+	public List<Integer> getUnassignedAtoms(Assignment assignment) {
 		List<Integer> unassigned = new ArrayList<>();
 		List<Integer> knownAtomIds = new ArrayList<>(atomIdToString.keySet());
 		for (Integer atomId : knownAtomIds) {

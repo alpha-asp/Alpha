@@ -55,10 +55,6 @@ public class AtomStore {
 	 * @return
 	 */
 	public int add(Atom groundAtom) {
-		if (groundAtom == null) {
-			throw new IllegalArgumentException("groundAtom must not be null");
-		}
-
 		if (!groundAtom.isGround()) {
 			throw new IllegalArgumentException("atom must be ground");
 		}

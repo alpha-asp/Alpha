@@ -1,9 +1,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.Truth;
-
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 public interface SimpleAssignment {

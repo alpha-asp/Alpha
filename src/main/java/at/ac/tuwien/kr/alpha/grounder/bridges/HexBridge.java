@@ -1,13 +1,14 @@
 package at.ac.tuwien.kr.alpha.grounder.bridges;
 
-import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.common.atoms.*;
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.AtomStore;
 import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
-import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 
 import java.util.*;
 
@@ -17,7 +18,8 @@ public class HexBridge implements Bridge {
 
 	ArrayList<String> importedRules = new ArrayList<>();
 
-	public Collection<NonGroundRule> getRules(WritableAssignment assignment, AtomStore atomStore, IntIdGenerator intIdGenerator) {
+	@Override
+	public Collection<NonGroundRule> getRules(Assignment assignment, AtomStore atomStore, IntIdGenerator intIdGenerator) {
 		Set<NonGroundRule> ioRules = new HashSet<>();
 
 		String[][] externalNogoods = getExternalNoGoods(assignment, atomStore);
@@ -74,7 +76,7 @@ public class HexBridge implements Bridge {
 		return new BasicAtom(new BasicPredicate(lit[0], lit.length - 1), terms);
 	}
 
-	private String[][] getExternalNoGoods(WritableAssignment assignment, AtomStore atomStore) {
+	private String[][] getExternalNoGoods(Assignment assignment, AtomStore atomStore) {
 		List<String> trueAtoms = new ArrayList<>();
 		List<String> falseAtoms = new ArrayList<>();
 

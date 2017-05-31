@@ -27,8 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha.solver.learning;
 
-import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;

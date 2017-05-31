@@ -27,7 +27,10 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Copyright (c) 2016, the Alpha Team.

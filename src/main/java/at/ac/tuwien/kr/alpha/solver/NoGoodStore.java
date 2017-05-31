@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.NoGood;
 
 /**
  * A (temporary) interface defining the use of a NoGoodStore.

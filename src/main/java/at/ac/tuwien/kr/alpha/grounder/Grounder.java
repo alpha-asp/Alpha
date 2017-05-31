@@ -1,10 +1,9 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Iterator;
@@ -25,7 +24,7 @@ public interface Grounder extends AtomTranslator {
 	 */
 	Map<Integer, NoGood> getNoGoods(Assignment assignment);
 
-	Map<Integer, NoGood> getHexNoGoods(WritableAssignment assignment);
+	Map<Integer, NoGood> getHexNoGoods(Assignment assignment);
 
 	/**
 	 * Return choice points and their enablers and disablers.
@@ -45,7 +44,7 @@ public interface Grounder extends AtomTranslator {
 	 * @param assignment the current assignment.
 	 * @return a list of atoms not having assigned a truth value.
 	 */
-	List<Integer> getUnassignedAtoms(WritableAssignment assignment);
+	List<Integer> getUnassignedAtoms(Assignment assignment);
 
 	/**
 	 * Registers the given NoGood and returns the identifier of it.
