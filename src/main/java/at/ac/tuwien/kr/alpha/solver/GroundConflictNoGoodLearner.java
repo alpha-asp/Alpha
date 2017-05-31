@@ -133,6 +133,15 @@ public class GroundConflictNoGoodLearner {
 				// For the moment, just report the learned NoGood.
 				return repeatAnalysisIfNotAssigning(currentResolutionNoGood, noGoodsResponsible);
 				//return new ConflictAnalysisResult(currentResolutionNoGood, computeBackjumpingDecisionLevel(currentResolutionNoGood), false, noGoodsResponsible);
+			} else if (currentResolutionNoGood.size() > 32) {
+				// Break if resolved NoGood becomes too large.
+				// Remove all current-dl elements from the resolution NoGood and add the last guess, then backjump like usual.
+				return new ConflictAnalysisResult(null, conflictDecisionLevel, true, noGoodsResponsible, false);	// Flag unsatisfiable abused here.
+				/*if (getAssignmentEntryRespectingLowerMBT(lastGuessedAtom).getDecisionLevel() <= conflictDecisionLevel) {
+					// If lastGuessedAtom is not unassigned after backjump, use repeatAnalysisIfNotAssigning.
+					return repeatAnalysisIfNotAssigning(replaceAllFromConflictDecisionLevelWithGuess(currentResolutionNoGood, conflictDecisionLevel, lastGuessedAtom), noGoodsResponsible, lastGuessedAtom);
+				}
+				return new ConflictAnalysisResult(replaceAllFromConflictDecisionLevelWithGuess(currentResolutionNoGood, conflictDecisionLevel, lastGuessedAtom), conflictDecisionLevel - 1, false, noGoodsResponsible, false, isLearntTooLarge);*/
 			}
 
 			// Resolve next NoGood based on current literal
@@ -247,7 +256,7 @@ public class GroundConflictNoGoodLearner {
 		int numLiteralsOfHighestDecisionLevel = -1;
 		if (learnedNoGood.size() == 1) {
 			// Singleton NoGoods induce a backjump to the decision level before the NoGood got violated.
-			int singleLiteralDecisionLevel = assignment.get(learnedNoGood.getLiteral(0)).getDecisionLevel();
+			int singleLiteralDecisionLevel = assignment.get(learnedNoGood.getAtom(0)).getDecisionLevel();
 			return singleLiteralDecisionLevel - 1 >= 0 ? singleLiteralDecisionLevel - 1 : 0;
 		}
 		for (Integer integer : learnedNoGood) {

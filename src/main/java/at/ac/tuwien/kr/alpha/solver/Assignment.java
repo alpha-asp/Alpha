@@ -208,11 +208,11 @@ public interface Assignment {
 	Iterator<Entry> getNewAssignmentsIterator();
 
 	/**
-	 * Returns an iterator over all new assignments. New assignments are only returned once.
-	 * getNewAssignmentsIterator and getNewAssignmentsIterator2 are independent of each other (i.e., each has its own backing collection).
+	 * Returns an iterator over all new assignments and additionally all backtracked reassignments at lower decision level).
+	 * These assignments are only returned once.
 	 * @return
 	 */
-	Iterator<Entry> getNewAssignmentsIterator2();
+	Iterator<Entry> getNewAssignmentsForChoice();
 
 	interface Entry {
 		ThriceTruth getTruth();

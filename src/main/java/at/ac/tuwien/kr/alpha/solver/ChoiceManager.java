@@ -28,16 +28,20 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 /**
  * This class provides functionality for choice point management, detection of active choice points, etc.
  * Copyright (c) 2017, the Alpha Team.
  */
 public class ChoiceManager {
+	private static final Logger LOGGER = LoggerFactory.getLogger(ChoiceManager.class);
 	private final Assignment assignment;
 
 	// Active choice points and all atoms that influence a choice point (enabler, disabler, choice atom itself).
@@ -50,6 +54,12 @@ public class ChoiceManager {
 
 	// The total number of modifications this ChoiceManager received (avoids re-computation in ChoicePoints).
 	private long modCount;
+
+	private boolean internalChecksEnabled;
+
+	void enableInternalChecks() {
+		internalChecksEnabled = true;
+	}
 
 	public ChoiceManager(Assignment assignment) {
 		this.assignment = assignment;
@@ -75,7 +85,7 @@ public class ChoiceManager {
 		private boolean isActiveChoicePoint() {
 			Assignment.Entry enablerEntry = assignment.get(enabler);
 			Assignment.Entry disablerEntry = assignment.get(disabler);
-			return  enablerEntry != null && enablerEntry.getTruth().toBoolean()
+			return  enablerEntry != null && enablerEntry.getTruth() == TRUE
 				&& (disablerEntry == null || !disablerEntry.getTruth().toBoolean());
 		}
 
@@ -85,6 +95,7 @@ public class ChoiceManager {
 		}
 
 		void recomputeActive() {
+			LOGGER.trace("Recomputing activity of atom {}.", atom);
 			if (lastModCount == modCount) {
 				return;
 			}
@@ -93,9 +104,11 @@ public class ChoiceManager {
 			lastModCount = modCount;
 			if (isActive) {
 				activeChoicePoints.add(this);
+				LOGGER.debug("Activating choice point for atom {}", this.atom);
 			} else {
 				if (wasActive) {
 					activeChoicePoints.remove(this);
+					LOGGER.debug("Deactivating choice point for atom {}", this.atom);
 				}
 			}
 		}
@@ -106,12 +119,24 @@ public class ChoiceManager {
 		}
 	}
 
-	public void updateAssignment(int atom) {
-		ChoicePoint choicePoint = influencers.get(atom);
-		if (choicePoint != null) {
-			modCount++;
-			modifiedInDecisionLevel.get(highestDecisionLevel).add(atom);
-			choicePoint.recomputeActive();
+	public void updateAssignments() {
+		modCount++;
+		Iterator<Assignment.Entry> it = assignment.getNewAssignmentsForChoice();
+		int currentDecisionLevel = assignment.getDecisionLevel();
+		while (it.hasNext()) {
+			Assignment.Entry entry = it.next();
+			ChoicePoint choicePoint = influencers.get(entry.getAtom());
+			if (choicePoint != null) {
+				if (entry.getDecisionLevel() <= currentDecisionLevel) {
+					// Updates may contain already-backtracked re-assignments at lower decision level that nevertheless change choice points.
+					// Only record if this is no such assignment.
+					modifiedInDecisionLevel.get(entry.getDecisionLevel()).add(entry.getAtom());        // Note that the weak decision level is not used here since disablers become TRUE due to generated NoGoods while an enabler being MBT is ignored, also for the atom itself only TRUE/FALSE is relevant.
+				}
+				choicePoint.recomputeActive();
+			}
+		}
+		if (internalChecksEnabled) {
+			checkActiveChoicePoints();
 		}
 	}
 
@@ -157,16 +182,41 @@ public class ChoiceManager {
 	}
 
 	public boolean isActiveChoiceAtom(int atom) {
+		if (internalChecksEnabled) {
+			checkActiveChoicePoints();
+		}
 		ChoicePoint choicePoint = influencers.get(atom);
 		return choicePoint != null && choicePoint.isActive && choicePoint.atom == atom;
 	}
 
 	public int getNextActiveChoiceAtom() {
+		if (internalChecksEnabled) {
+			checkActiveChoicePoints();
+		}
 		return activeChoicePoints.size() > 0 ? activeChoicePoints.iterator().next().atom : 0;
 	}
 
 	public boolean isAtomChoice(int atom) {
 		ChoicePoint choicePoint = influencers.get(atom);
 		return choicePoint != null && choicePoint.atom == atom;
+	}
+
+	private void checkActiveChoicePoints() {
+		HashSet<ChoicePoint> actualActiveChoicePoints = new HashSet<>();
+		for (ChoicePoint choicePoint : influencers.values()) {
+			Assignment.Entry enablerEntry = assignment.get(choicePoint.enabler);
+			Assignment.Entry disablerEntry = assignment.get(choicePoint.disabler);
+			boolean isActive = enablerEntry != null && enablerEntry.getTruth() == TRUE
+				&& (disablerEntry == null || !disablerEntry.getTruth().toBoolean());
+			Assignment.Entry entry = assignment.get(choicePoint.atom);
+			boolean isNotChosen = entry == null || MBT.equals(entry.getTruth());
+			if (isActive && isNotChosen) {
+				actualActiveChoicePoints.add(choicePoint);
+			}
+		}
+		if (!actualActiveChoicePoints.equals(activeChoicePoints)) {
+			throw new RuntimeException("ChoiceManger internal checker detected wrong activeChoicePoints.");
+		}
+		LOGGER.debug("Checking internal choice manger: all ok.");
 	}
 }

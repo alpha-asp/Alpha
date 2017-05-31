@@ -95,7 +95,16 @@ class NoGoodStoreAlphaRoaming implements NoGoodStore {
 	}
 
 	private Watches<BinaryWatch, WatchedNoGood> watches(int literal) {
-		return watches.computeIfAbsent(atomOf(literal), k -> new Watches<>());
+		//*
+		int atom = atomOf(literal);
+		Watches<BinaryWatch, WatchedNoGood> watches = this.watches.get(atom);
+		if (watches == null) {
+			watches = new Watches<>();
+			this.watches.put(atom, watches);
+		}
+		return watches; /*/
+		return this.watches.computeIfAbsent(atomOf(literal), k -> new Watches<>());
+		//*/
 	}
 
 	private void addOrdinaryWatch(WatchedNoGood wng, int pointer) {

@@ -35,4 +35,5 @@ public class SolverCounters {
 	int decisionCounter;
 	int backtrackCounter;
 	int backjumpCounter;
+	int remainingMBTAtFixpointCounter;
 }
