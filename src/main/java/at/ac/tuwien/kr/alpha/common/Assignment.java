@@ -40,12 +40,47 @@ public interface Assignment extends SimpleAssignment {
 
 	Assignment.Entry getGuessViolatedByAssign();
 
+	void growForMaxAtomId(int maxAtomId);
+
 	/**
 	 * Returns an iterator over all new assignments. New assignments are only returned once.
 	 * getNewAssignmentsIterator and getNewAssignmentsIterator2 are independent of each other (i.e., each has its own backing collection).
 	 * @return
 	 */
 	Iterator<Entry> getNewAssignmentsIterator();
+
+	/**
+	 * Helper for debugging: prints the given NoGood with its assignment inlined.
+	 * @param noGood the nogood to print.
+	 * @return a string of the nogood with the current assignment (inlined).
+	 */
+	default String printNoGoodAssignment(NoGood noGood) {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("{ ");
+
+		for (int i = 0; i < noGood.size(); i++) {
+			sb.append(noGood.getLiteral(i));
+			sb.append("=");
+			sb.append(this.get(atomOf(noGood.getLiteral(i))));
+			sb.append(" ");
+		}
+
+		sb.append("}");
+
+		if (noGood.hasHead()) {
+			sb.append("[");
+			sb.append(noGood.getHead());
+			sb.append("]");
+		}
+
+		if (noGood instanceof WatchedNoGood) {
+			WatchedNoGood watchedNoGood = (WatchedNoGood) noGood;
+			sb.append("{ " + watchedNoGood.getPointer(0) + " " + watchedNoGood.getPointer(1) + " " + watchedNoGood.getAlphaPointer() + " }");
+		}
+
+		return sb.toString();
+	}
 
 	Queue<? extends Entry> getAssignmentsToProcess();
 
@@ -110,41 +145,6 @@ public interface Assignment extends SimpleAssignment {
 			}
 		}
 		return false;
-	}
-
-	void growForMaxAtomId(int maxAtomId);
-
-	/**
-	 * Helper for debugging: prints the given NoGood with its assignment inlined.
-	 * @param noGood the nogood to print.
-	 * @return a string of the nogood with the current assignment (inlined).
-	 */
-	default String printNoGoodAssignment(NoGood noGood) {
-		StringBuilder sb = new StringBuilder();
-
-		sb.append("{ ");
-
-		for (int i = 0; i < noGood.size(); i++) {
-			sb.append(noGood.getLiteral(i));
-			sb.append("=");
-			sb.append(this.get(atomOf(noGood.getLiteral(i))));
-			sb.append(" ");
-		}
-
-		sb.append("}");
-
-		if (noGood.hasHead()) {
-			sb.append("[");
-			sb.append(noGood.getHead());
-			sb.append("]");
-		}
-
-		if (noGood instanceof WatchedNoGood) {
-			WatchedNoGood watchedNoGood = (WatchedNoGood) noGood;
-			sb.append("{ " + watchedNoGood.getPointer(0) + " " + watchedNoGood.getPointer(1) + " " + watchedNoGood.getAlphaPointer() + " }");
-		}
-
-		return sb.toString();
 	}
 
 	/**
