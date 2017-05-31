@@ -27,7 +27,6 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
 
@@ -38,7 +37,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 /**
- * A variant of {@link DependencyDrivenHeuristic} that prefers to choose atoms representing bodies of rules whose heads are assigned {@link ThriceTruth#MBT}.
+ * A variant of {@link DependencyDrivenHeuristic} that prefers to choose atoms representing bodies of rules whose heads
+ * are assigned {@link at.ac.tuwien.kr.alpha.solver.ThriceTruth#MBT}.
  */
 public class AlphaHeadMustBeTrueHeuristic extends DependencyDrivenHeuristic {
 

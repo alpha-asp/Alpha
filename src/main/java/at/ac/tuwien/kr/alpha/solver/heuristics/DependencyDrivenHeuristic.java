@@ -99,8 +99,7 @@ public class DependencyDrivenHeuristic implements BranchingHeuristic {
 	 */
 	protected final MultiValuedMap<Integer, Integer> atomsToBodies = new HashSetValuedHashMap<>();
 
-	public DependencyDrivenHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random,
-					 BodyActivityType bodyActivityType) {
+	public DependencyDrivenHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, BodyActivityType bodyActivityType) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
 		this.decayAge = decayAge;

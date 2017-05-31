@@ -52,8 +52,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
  */
 public class GeneralizedDependencyDrivenHeuristic extends DependencyDrivenHeuristic {
 
-	public GeneralizedDependencyDrivenHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random,
-						    BodyActivityType bodyActivityType) {
+	public GeneralizedDependencyDrivenHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, BodyActivityType bodyActivityType) {
 		super(assignment, choiceManager, decayAge, decayFactor, random, bodyActivityType);
 	}
 

@@ -44,8 +44,7 @@ import java.util.Random;
  */
 public class DependencyDrivenPyroHeuristic extends DependencyDrivenHeuristic {
 
-	public DependencyDrivenPyroHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random,
-					     BodyActivityType bodyActivityType) {
+	public DependencyDrivenPyroHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, BodyActivityType bodyActivityType) {
 		super(assignment, choiceManager, decayAge, decayFactor, random, bodyActivityType);
 	}
 
