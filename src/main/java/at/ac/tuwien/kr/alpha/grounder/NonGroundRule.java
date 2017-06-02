@@ -131,8 +131,8 @@ public class NonGroundRule {
 	 * Note that the below sorting can be improved to yield smaller joins.
 	 */
 	private List<Atom> sortAtoms(List<Atom> atoms) {
-		final Set<SortingBodyComponent> components = new HashSet<>();
-		final Set<BuiltinAtom> builtinAtoms = new HashSet<>();
+		final Set<SortingBodyComponent> components = new LinkedHashSet<>();
+		final Set<BuiltinAtom> builtinAtoms = new LinkedHashSet<>();
 
 		for (Atom atom : atoms) {
 			if (atom instanceof BuiltinAtom) {
@@ -140,7 +140,7 @@ public class NonGroundRule {
 				builtinAtoms.add((BuiltinAtom) atom);
 				continue;
 			}
-			final Set<SortingBodyComponent> hits = new HashSet<>();
+			final Set<SortingBodyComponent> hits = new LinkedHashSet<>();
 
 			// For each variable
 			for (VariableTerm variableTerm : atom.getOccurringVariables()) {
@@ -298,8 +298,8 @@ public class NonGroundRule {
 		int numAtoms;
 
 		SortingBodyComponent(Atom atom) {
-			this.occurringVariables = new HashSet<>(atom.getOccurringVariables());
-			this.atoms = new HashSet<>();
+			this.occurringVariables = new LinkedHashSet<>(atom.getOccurringVariables());
+			this.atoms = new LinkedHashSet<>();
 			this.atoms.add(atom);
 			this.atomSequence = new ArrayList<>();
 			this.atomSequence.add(atom);

@@ -53,7 +53,7 @@ public class NaiveGrounder extends AbstractGrounder {
 	private IntIdGenerator nogoodIdGenerator = new IntIdGenerator();
 	private IntIdGenerator choiceAtomsGenerator = new IntIdGenerator();
 
-	private HashMap<Predicate, HashSet<Instance>> factsFromProgram = new LinkedHashMap<>();
+	private HashMap<Predicate, LinkedHashSet<Instance>> factsFromProgram = new LinkedHashMap<>();
 	private boolean prepareFacts = true;
 	private ArrayList<NonGroundRule> rulesFromProgram = new ArrayList<>();
 	private HashSet<IndexedInstanceStorage> modifiedWorkingMemories = new LinkedHashSet<>();
@@ -86,7 +86,7 @@ public class NaiveGrounder extends AbstractGrounder {
 			}
 			Instance instance = new Instance(termList.toArray(new Term[0]));
 			// Add instance to corresponding list of facts
-			factsFromProgram.putIfAbsent(predicate, new HashSet<>());
+			factsFromProgram.putIfAbsent(predicate, new LinkedHashSet<>());
 			HashSet<Instance> internalPredicateInstances = factsFromProgram.get(predicate);
 			internalPredicateInstances.add(instance);
 		}
@@ -227,7 +227,7 @@ public class NaiveGrounder extends AbstractGrounder {
 		}
 
 		// Add true atoms from facts.
-		for (Map.Entry<Predicate, HashSet<Instance>> facts : factsFromProgram.entrySet()) {
+		for (Map.Entry<Predicate, LinkedHashSet<Instance>> facts : factsFromProgram.entrySet()) {
 			Predicate factPredicate = facts.getKey();
 			knownPredicates.add(factPredicate);
 			predicateInstances.putIfAbsent(factPredicate, new TreeSet<>());
