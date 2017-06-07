@@ -11,6 +11,7 @@ import java.util.Map;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -22,6 +23,12 @@ public class NaiveNoGoodStore implements NoGoodStore {
 
 	public NaiveNoGoodStore(WritableAssignment assignment) {
 		this.assignment = assignment;
+	}
+
+	@Override
+	public void clear() {
+		assignment.clear();
+		delegate.clear();
 	}
 
 	@Override
@@ -44,12 +51,25 @@ public class NaiveNoGoodStore implements NoGoodStore {
 
 	@Override
 	public boolean propagate() {
-		return doUnitPropagation() || doMBTPropagation();
+		boolean retry = false;
+		boolean result = false;
+		do {
+			retry = false;
+			if (doUnitPropagation()) {
+				result = true;
+				retry = true;
+			}
+			if (doMBTPropagation()) {
+				result = true;
+				retry = true;
+			}
+		} while (retry);
+		return result;
 	}
 
 	@Override
 	public void backtrack() {
-
+		assignment.backtrack();
 	}
 
 	@Override
@@ -97,7 +117,7 @@ public class NaiveNoGoodStore implements NoGoodStore {
 			if (assignment.isAssigned(impliedAtomId)) {	// Skip if value already was assigned.
 				continue;
 			}
-			assignment.assign(impliedAtomId, ThriceTruth.valueOf(impliedTruthValue));
+			assignment.assign(impliedAtomId, impliedTruthValue ? MBT : FALSE, noGood);
 			result = true;
 		}
 		return result;
@@ -154,9 +174,9 @@ public class NaiveNoGoodStore implements NoGoodStore {
 			if (!(assignment.isAssigned(atomOf(literal)) && assignment.isViolated(literal))) {
 				return false;
 			}
+
 			// Skip if positive literal is assigned MBT.
-			ThriceTruth truth = assignment.getTruth(atomOf(literal));
-			if (isPositive(literal) && truth == MBT) {
+			if (isPositive(literal) && assignment.getTruth(atomOf(literal)) == MBT) {
 				return false;
 			}
 		}

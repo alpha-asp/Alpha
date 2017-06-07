@@ -71,7 +71,7 @@ public class DefaultSolver extends AbstractSolver {
 		super(grounder);
 
 		this.assignment = new ArrayAssignment(grounder);
-		this.store = new NoGoodStoreAlphaRoaming(assignment);
+		this.store = new NaiveNoGoodStore(assignment);
 		this.choiceManager = new ChoiceManager(assignment);
 		if (debugInternalChecks) {
 			store.enableInternalChecks();

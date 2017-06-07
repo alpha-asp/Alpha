@@ -87,7 +87,8 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 		return watches.size();
 	}
 
-	void clear() {
+	@Override
+	public void clear() {
 		assignment.clear();
 		watches.clear();
 	}

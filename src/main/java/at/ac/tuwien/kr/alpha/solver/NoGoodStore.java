@@ -54,4 +54,6 @@ public interface NoGoodStore extends Iterable<NoGood> {
 	void enableInternalChecks();
 
 	int size();
+
+	void clear();
 }

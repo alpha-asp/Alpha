@@ -82,7 +82,8 @@ public class BasicNoGoodStore implements NoGoodStore {
 		throw new UnsupportedOperationException();
 	}
 
-	void clear() {
+	@Override
+	public void clear() {
 		assignment.clear();
 		watches.clear();
 	}
