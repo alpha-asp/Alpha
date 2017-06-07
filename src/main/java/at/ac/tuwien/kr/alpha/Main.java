@@ -246,7 +246,7 @@ public class Main {
 		}
 
 		Solver solver = SolverFactory.getInstance(
-			chosenSolver, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks
+			chosenSolver, "default", grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks
 		);
 
 		Stream<AnswerSet> stream = solver.stream();

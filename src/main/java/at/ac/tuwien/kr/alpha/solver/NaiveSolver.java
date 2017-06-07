@@ -35,6 +35,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -59,11 +60,12 @@ public class NaiveSolver extends AbstractSolver {
 
 	private List<Integer> unassignedAtoms;
 
-	NaiveSolver(Grounder grounder) {
+	NaiveSolver(Grounder grounder, NoGoodStore store, ArrayAssignment assignment) {
 		super(grounder);
 
 		this.choiceStack = new ChoiceStack(grounder, false);
-		this.store = new NaiveNoGoodStore(assignment);
+		this.store = store;
+		this.assignment = assignment;
 	}
 
 	@Override

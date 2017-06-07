@@ -67,11 +67,11 @@ public class DefaultSolver extends AbstractSolver {
 	private boolean initialize = true;
 	private boolean didChange;
 
-	public DefaultSolver(Grounder grounder, Random random, Heuristic branchingHeuristic, boolean debugInternalChecks) {
+	public DefaultSolver(Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, Heuristic branchingHeuristic, boolean debugInternalChecks) {
 		super(grounder);
 
-		this.assignment = new ArrayAssignment(grounder);
-		this.store = new NaiveNoGoodStore(assignment);
+		this.assignment = assignment;
+		this.store = store;
 		this.choiceManager = new ChoiceManager(assignment);
 		if (debugInternalChecks) {
 			store.enableInternalChecks();

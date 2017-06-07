@@ -33,12 +33,25 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heurist
 import java.util.Random;
 
 public final class SolverFactory {
-	public static Solver getInstance(String name, Grounder grounder, Random random, Heuristic heuristic, boolean debugInternalChecks) {
+	public static Solver getInstance(String name, String storeName, Grounder grounder, Random random, Heuristic heuristic, boolean debugInternalChecks) {
+		final ArrayAssignment assignment = new ArrayAssignment(grounder);
+
+		NoGoodStore store;
+
+		switch (storeName.toLowerCase()) {
+			case "naive":
+				store = new NaiveNoGoodStore(assignment);
+				break;
+			default:
+				store = new NoGoodStoreAlphaRoaming(assignment);
+				break;
+		}
+
 		switch (name.toLowerCase()) {
 			case "naive" :
-				return new NaiveSolver(grounder);
+				return new NaiveSolver(grounder, store, assignment);
 			case "default":
-				return new DefaultSolver(grounder, random, heuristic, debugInternalChecks);
+				return new DefaultSolver(grounder, store, assignment, random, heuristic, debugInternalChecks);
 		}
 		throw new IllegalArgumentException("Unknown solver requested.");
 	}

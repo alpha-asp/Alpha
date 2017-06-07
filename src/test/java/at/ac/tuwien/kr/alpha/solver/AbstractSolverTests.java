@@ -45,16 +45,43 @@ public abstract class AbstractSolverTests {
 	public static Collection<Object[]> factories() {
 		boolean enableAdditionalInternalChecks = false;
 		Collection<Object[]> factories = new ArrayList<>();
-		factories.add(new Object[] {"NaiveSolver", (Function<Grounder, Solver>) NaiveSolver::new});
+		factories.add(new Object[] {"NS", (Function<Grounder, Solver>) (Grounder g) -> {
+			ArrayAssignment assignment = new ArrayAssignment();
+			NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment);
+			return new NaiveSolver(g, store, assignment);
+		}});
+		factories.add(new Object[] {"NS/naive", (Function<Grounder, Solver>) (Grounder g) -> {
+			ArrayAssignment assignment = new ArrayAssignment();
+			NoGoodStore store = new NaiveNoGoodStore(assignment);
+			return new NaiveSolver(g, store, assignment);
+		}});
 		for (Heuristic heuristic : Heuristic.values()) {
-			String name = "DefaultSolver (random " + heuristic + ")";
+			String name = "DS/R/" + heuristic;
 			Function<Grounder, Solver> instantiator = g -> {
-				return new DefaultSolver(g, new Random(), heuristic, enableAdditionalInternalChecks);
+				ArrayAssignment assignment = new ArrayAssignment();
+				NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment);
+				return new DefaultSolver(g, store, assignment, new Random(), heuristic, enableAdditionalInternalChecks);
 			};
 			factories.add(new Object[] {name, instantiator});
-			name = "DefaultSolver (deterministic " + heuristic + ")";
+			name = "DS/R/" + heuristic + "/naive";
 			instantiator = g -> {
-				return new DefaultSolver(g, new Random(0), heuristic, enableAdditionalInternalChecks);
+				ArrayAssignment assignment = new ArrayAssignment();
+				NoGoodStore store = new NaiveNoGoodStore(assignment);
+				return new DefaultSolver(g, store, assignment, new Random(), heuristic, enableAdditionalInternalChecks);
+			};
+			factories.add(new Object[] {name, instantiator});
+			name = "DS/D/" + heuristic;
+			instantiator = g -> {
+				ArrayAssignment assignment = new ArrayAssignment();
+				NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment);
+				return new DefaultSolver(g, store, assignment, new Random(0), heuristic, enableAdditionalInternalChecks);
+			};
+			factories.add(new Object[] {name, instantiator});
+			name = "DS/D/" + heuristic + "/naive";
+			instantiator = g -> {
+				ArrayAssignment assignment = new ArrayAssignment();
+				NoGoodStore store = new NaiveNoGoodStore(assignment);
+				return new DefaultSolver(g, store, assignment, new Random(0), heuristic, enableAdditionalInternalChecks);
 			};
 			factories.add(new Object[] {name, instantiator});
 		}
