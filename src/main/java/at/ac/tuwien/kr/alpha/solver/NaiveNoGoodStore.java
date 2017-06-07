@@ -33,6 +33,10 @@ public class NaiveNoGoodStore implements NoGoodStore {
 
 	@Override
 	public ConflictCause add(int id, NoGood noGood) {
+		if (assignment.violates(noGood)) {
+			return new ConflictCause(noGood, null);
+		}
+
 		delegate.put(id, noGood);
 		return null;
 	}

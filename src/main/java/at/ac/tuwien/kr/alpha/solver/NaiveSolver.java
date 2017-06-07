@@ -52,7 +52,6 @@ public class NaiveSolver extends AbstractSolver {
 
 	private boolean doInit = true;
 	private boolean didChange;
-	private int decisionLevel;
 
 	private Map<Integer, Integer> choiceOn = new HashMap<>();
 	private Map<Integer, Integer> choiceOff = new HashMap<>();
@@ -187,21 +186,21 @@ public class NaiveSolver extends AbstractSolver {
 	}
 
 	private void doBacktrack() {
-		if (decisionLevel <= 0) {
+		if (assignment.getDecisionLevel() <= 0) {
 			return;
 		}
 
 		int lastGuessedAtom = choiceStack.peekAtom();
 		boolean lastGuessedTruthValue = choiceStack.peekValue();
 		choiceStack.remove();
+		store.backtrack();
 
 		if (lastGuessedTruthValue) {
 			// Guess false now
-			assignment.assign(lastGuessedAtom, FALSE);
+			assignment.guess(lastGuessedAtom, FALSE);
 			choiceStack.pushBacktrack(lastGuessedAtom, false);
 			didChange = true;
 		} else {
-			decisionLevel--;
 			doBacktrack();
 		}
 	}
@@ -232,6 +231,6 @@ public class NaiveSolver extends AbstractSolver {
 	}
 
 	private boolean isSearchSpaceExhausted() {
-		return decisionLevel == 0;
+		return assignment.getDecisionLevel() == 0;
 	}
 }
