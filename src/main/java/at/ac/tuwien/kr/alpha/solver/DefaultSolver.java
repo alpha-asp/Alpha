@@ -84,12 +84,8 @@ public class DefaultSolver extends AbstractSolver {
 		this.fallbackBranchingHeuristic = new NaiveHeuristic(choiceManager);
 	}
 
-	public int getDecisionCounter() {
-		return counters.decisionCounter;
-	}
-
-	public int getConflictCounter() {
-		return counters.backtrackCounter + counters.backjumpCounter;
+	public SolverCounters getCounters() {
+		return counters;
 	}
 
 	@Override
@@ -97,7 +93,7 @@ public class DefaultSolver extends AbstractSolver {
 		// Initially, get NoGoods from grounder.
 		if (initialize) {
 			if (!obtainNoGoodsFromGrounder(false)) {
-				logSizeOfSearchTree();
+				counters.log();
 				return false;
 			}
 			initialize = false;
@@ -122,7 +118,7 @@ public class DefaultSolver extends AbstractSolver {
 					throw new RuntimeException("Adding enumeration NoGood causes conflicts after backjump. Should not happen.");
 				}
 			} else {
-				logSizeOfSearchTree();
+				counters.log();
 				return false;
 			}
 		}
@@ -149,7 +145,7 @@ public class DefaultSolver extends AbstractSolver {
 				branchingHeuristic.violatedNoGood(violatedNoGood);
 				if (!afterAllAtomsAssigned) {
 					if (!learnBackjumpAddFromConflict()) {
-						logSizeOfSearchTree();
+						counters.log();
 						return false;
 					}
 				} else {
@@ -158,7 +154,7 @@ public class DefaultSolver extends AbstractSolver {
 					doBacktrack();
 					afterAllAtomsAssigned = false;
 					if (isSearchSpaceExhausted()) {
-						logSizeOfSearchTree();
+						counters.log();
 						return false;
 					}
 				}
@@ -168,7 +164,7 @@ public class DefaultSolver extends AbstractSolver {
 				LOGGER.trace("Doing propagation step.");
 				updateGrounderAssignment();
 				if (!obtainNoGoodsFromGrounder(false)) {
-					logSizeOfSearchTree();
+					counters.log();
 					return false;
 				}
 			} else if (!askedHex) {
@@ -177,7 +173,7 @@ public class DefaultSolver extends AbstractSolver {
 				updateGrounderAssignment();
 				if (!obtainNoGoodsFromGrounder(true)) {
 					// NoGoods are unsatisfiable.
-					logSizeOfSearchTree();
+					counters.log();
 					return false;
 				}
 			/*} else if (!propagationFixpointReached(true)) {
@@ -201,27 +197,19 @@ public class DefaultSolver extends AbstractSolver {
 				LOGGER.debug("Answer-Set found: {}", as);
 				LOGGER.debug("Choices of Answer-Set were: {}", choiceStack);
 				action.accept(as);
-				logSizeOfSearchTree();
+				counters.log();
 				return true;
 			} else {
 				LOGGER.debug("Backtracking from wrong choices ({} MBTs): {}", assignment.getMBTCount(), choiceStack);
-				counters.remainingMBTAtFixpointCounter++;
+				counters.remainingMBTAtFixpoint();
 				doBacktrack();
 				afterAllAtomsAssigned = false;
 				if (isSearchSpaceExhausted()) {
-					logSizeOfSearchTree();
+					counters.log();
 					return false;
 				}
 			}
 		}
-	}
-
-	private void logSizeOfSearchTree() {
-		LOGGER.info("Choices\t: {}", counters.decisionCounter);
-		LOGGER.info("Conflicts\t: {}", counters.backtrackCounter + counters.backjumpCounter);
-		LOGGER.info("  Backtracks\t: {}", counters.backtrackCounter);
-		LOGGER.info("    Caused by MBT at end\t: {}", counters.remainingMBTAtFixpointCounter);
-		LOGGER.info("  Backjumps\t: {}", counters.backjumpCounter);
 	}
 
 	private NoGood createEnumerationNoGood() {
@@ -265,7 +253,7 @@ public class DefaultSolver extends AbstractSolver {
 		branchingHeuristic.analyzedConflict(analysisResult);
 		if (analysisResult.learnedNoGood == null && analysisResult.clearLastGuessAfterBackjump) {
 			// TODO: Temporarily abort resolution with backtrack instead of learning a too large nogood.
-			counters.backtrackCounter++;
+			counters.backtrack();
 			doBacktrack();
 		} else if (analysisResult.learnedNoGood == null) {
 			LOGGER.debug("Conflict results from wrong guess, backjumping and removing guess.");
@@ -300,7 +288,7 @@ public class DefaultSolver extends AbstractSolver {
 		if (backjumpingDecisionLevel < 0) {
 			throw new RuntimeException("Backjumping decision level less than 0, should not happen.");
 		}
-		counters.backjumpCounter++;
+		counters.backjump();
 		// Remove everything above the backjumpingDecisionLevel, but keep the backjumpingDecisionLevel unchanged.
 		while (assignment.getDecisionLevel() > backjumpingDecisionLevel) {
 			store.backtrack();
@@ -322,7 +310,7 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private void doBacktrack() {
-		counters.backtrackCounter++;
+		counters.backtrack();
 		boolean repeatBacktrack;	// Iterative implementation of recursive backtracking.
 		do {
 			repeatBacktrack = false;
@@ -363,7 +351,7 @@ public class DefaultSolver extends AbstractSolver {
 					continue;
 				}
 
-				counters.decisionCounter++;
+				counters.decision();
 				boolean newGuess = !lastGuessedValue;
 				assignment.guess(lastGuessedAtom, newGuess);
 				LOGGER.debug("Backtrack: setting decision level to {}.", assignment.getDecisionLevel());
@@ -371,7 +359,7 @@ public class DefaultSolver extends AbstractSolver {
 				choiceStack.pushBacktrack(lastGuessedAtom, newGuess);
 				choiceManager.nextDecisionLevel();
 				LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
-				LOGGER.debug("Backtrack: {} choices so far.", counters.decisionCounter);
+				LOGGER.debug("Backtrack: {} choices so far.", counters.decision());
 			} else {
 				LOGGER.debug("Recursive backtracking.");
 				repeatBacktrack = true;
@@ -484,7 +472,7 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private void doChoice(int nextChoice) {
-		counters.decisionCounter++;
+		counters.decision();
 		boolean sign = branchingHeuristic.chooseSign(nextChoice);
 		if (!assignment.guess(nextChoice, sign)) {
 			throw new RuntimeException("Picked choice is incompatible with current assignment. Should not happen.");
@@ -495,7 +483,7 @@ public class DefaultSolver extends AbstractSolver {
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Choice: guessing {}={}@{}", grounder.atomToString(nextChoice), sign, assignment.getDecisionLevel());
 			LOGGER.debug("Choice: stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
-			LOGGER.debug("Choice: {} choices so far.", counters.decisionCounter);
+			LOGGER.debug("Choice: {} choices so far.", counters.getDecisionCounter());
 		}
 	}
 

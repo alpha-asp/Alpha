@@ -73,14 +73,15 @@ public class RacksTest extends AbstractSolverTests {
 
 	private void test() throws IOException {
 		ANTLRFileStream programInputStream = new ANTLRFileStream(
-Paths.get("benchmarks", "siemens", "racks", "racks.lp").toString());
+			Paths.get("benchmarks", "siemens", "racks", "racks.lp").toString()
+		);
 		ParsedProgram parsedProgram = parseVisit(programInputStream);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		System.out.println(answerSet);
 		// TODO: check correctness of answer set
-		System.out.println(((DefaultSolver) solver).getDecisionCounter() + " choices," + ((DefaultSolver) solver).getConflictCounter() + " conflicts");
+		System.out.println(((DefaultSolver) solver).getCounters().getDecisionCounter() + " choices," + ((DefaultSolver) solver).getCounters().getConflictCounter() + " conflicts");
 	}
 
 }

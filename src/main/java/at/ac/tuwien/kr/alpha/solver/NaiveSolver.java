@@ -114,7 +114,7 @@ public class NaiveSolver extends AbstractSolver {
 				assignUnassignedToFalse();
 				didChange = true;
 			} else if (noMBTValuesReamining()) {
-				AnswerSet as = getAnswerSetFromAssignment();
+				AnswerSet as = translate(assignment.getTrueAssignments());
 				LOGGER.debug("Answer-Set found: {}", as);
 				LOGGER.trace("Choice stack: {}", choiceStack);
 				action.accept(as);
@@ -183,10 +183,6 @@ public class NaiveSolver extends AbstractSolver {
 		boolean changeCopy = didChange;
 		didChange = false;
 		return !changeCopy;
-	}
-
-	private AnswerSet getAnswerSetFromAssignment() {
-		return translate(assignment.getTrueAssignments());
 	}
 
 	private void doChoice() {
