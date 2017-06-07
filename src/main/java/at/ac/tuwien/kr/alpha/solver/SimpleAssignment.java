@@ -1,6 +1,8 @@
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.Truth;
 
 import java.util.Set;
 
@@ -10,6 +12,11 @@ import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 public interface SimpleAssignment {
 	boolean isAssigned(int atom);
 	ThriceTruth getTruth(int atom);
+	int getDecisionLevel();
+
+	default boolean isMBT(int atom) {
+		return getTruth(atom) == ThriceTruth.MBT;
+	}
 
 	default boolean isViolated(int literal) {
 		final int atom = atomOf(literal);
@@ -38,6 +45,16 @@ public interface SimpleAssignment {
 	 * @return a list of all true assigned atoms.
 	 */
 	Set<Integer> getTrueAssignments();
+
+	/**
+	 * Reports how many atoms are assigned to must-be-true currently. If this method returns
+	 * zero, the assignment is guaranteed to be free of must-be-true values (i.e. it only
+	 * contains assignments to either true or false).
+	 * @return the count of must-be-true values in the asignment.
+	 */
+	int getMBTCount();
+
+	void backtrack();
 
 	interface Entry {
 		int getAtom();

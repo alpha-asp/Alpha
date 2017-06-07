@@ -36,13 +36,6 @@ public interface WritableAssignment extends Assignment, SimpleWritableAssignment
 	 */
 	void clear();
 
-	/**
-	 * Backtracks to the indicated decision level. Every assignment on a higher decisionLevel is removed.
-	 * All assignments below (or equal to) decisionLevel are kept. Note that for atoms being TRUE this may require
-	 * setting the assigned value to MBT during backtracking.
-	 */
-	void backtrack();
-
 	boolean assign(int atom, ThriceTruth value, NoGood impliedBy);
 
 	/**
@@ -57,11 +50,5 @@ public interface WritableAssignment extends Assignment, SimpleWritableAssignment
 
 	default boolean assign(int atom, ThriceTruth value) {
 		return assign(atom, value, null);
-	}
-
-	boolean guess(int atom, ThriceTruth value);
-
-	default boolean guess(int atom, boolean value) {
-		return guess(atom, ThriceTruth.valueOf(value));
 	}
 }

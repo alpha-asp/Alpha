@@ -221,7 +221,6 @@ public class DefaultSolver extends AbstractSolver {
 		return new NoGood(enumerationLiterals, -1);
 	}
 
-
 	private int computeMinimumConflictLevel(NoGood noGood) {
 		int minimumConflictLevel = -1;
 		for (Integer literal : noGood) {

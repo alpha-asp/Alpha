@@ -13,23 +13,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 public interface Assignment extends SimpleAssignment {
-	/**
-	 * Reports how many atoms are assigned to must-be-true currently. If this method returns
-	 * zero, the assignment is guaranteed to be free of must-be-true values (i.e. it only
-	 * contains assignments to either true or false).
-	 * @return the count of must-be-true values in the asignment.
-	 */
-	int getMBTCount();
-
-	default boolean isMBT(int atom) {
-		Entry entry = get(atom);
-		return entry != null && entry.getTruth() == ThriceTruth.MBT;
-	}
-
 	Entry get(int atom);
-
-	int getDecisionLevel();
-
 
 	/**
 	 * In case that assign fails (i.e., it returns false) the NoGood violated by the assignment can be obtained by this method.

@@ -38,10 +38,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
-import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
-import static java.lang.Math.abs;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -49,11 +46,8 @@ import static java.lang.Math.abs;
 public class NaiveSolver extends AbstractSolver {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveSolver.class);
 	private final ChoiceStack choiceStack;
-	private SimpleAssignmentImpl assignment = new SimpleAssignmentImpl();
-	private ArrayList<Integer> newTruthAssignments = new ArrayList<>();
-	private ArrayList<ArrayList<Integer>> decisionLevels = new ArrayList<>();
-
-	private HashMap<Integer, NoGood> knownNoGoods = new HashMap<>();
+	private ArrayAssignment assignment = new ArrayAssignment();
+	private final NoGoodStore store;
 
 	private boolean doInit = true;
 	private boolean didChange;
@@ -62,19 +56,14 @@ public class NaiveSolver extends AbstractSolver {
 	private Map<Integer, Integer> choiceOn = new HashMap<>();
 	private Map<Integer, Integer> choiceOff = new HashMap<>();
 	private Integer nextChoice;
-	private HashSet<Integer> mbtAssigned = new HashSet<>();
-	private ArrayList<ArrayList<Integer>> mbtAssignedFromUnassigned = new ArrayList<>();
-	private ArrayList<ArrayList<Integer>> trueAssignedFromMbt = new ArrayList<>();
+
 	private List<Integer> unassignedAtoms;
 
 	NaiveSolver(Grounder grounder) {
 		super(grounder);
 
 		this.choiceStack = new ChoiceStack(grounder, false);
-
-		decisionLevels.add(0, new ArrayList<>());
-		mbtAssignedFromUnassigned.add(0, new ArrayList<>());
-		trueAssignedFromMbt.add(0, new ArrayList<>());
+		this.store = new NaiveNoGoodStore(assignment);
 	}
 
 	@Override
@@ -97,10 +86,11 @@ public class NaiveSolver extends AbstractSolver {
 				LOGGER.trace("Propagating.");
 				updateGrounderAssignments();	// After a choice, it would be more efficient to propagate first and only then ask the grounder.
 				obtainNoGoodsFromGrounder();
-				doUnitPropagation();
-				doMBTPropagation();
+				if (store.propagate()) {
+					didChange = true;
+				}
 				//LOGGER.trace("Assignment after propagation is: {}", truthAssignments);
-			} else if (assignmentViolatesNoGoods()) {
+			} else if (store.getViolatedNoGood() != null) {
 				LOGGER.trace("Backtracking from wrong choices:");
 				LOGGER.trace("Choice stack: {}", choiceStack);
 				doBacktrack();
@@ -122,10 +112,10 @@ public class NaiveSolver extends AbstractSolver {
 			} else {
 				LOGGER.debug("Backtracking from wrong choices (MBT remaining):");
 				if (LOGGER.isTraceEnabled()) {
-					LOGGER.trace("Currently MBT:");
-					for (Integer integer : mbtAssigned) {
-						LOGGER.trace(grounder.atomToString(integer));
-					}
+					//LOGGER.trace("Currently MBT:");
+					//for (Integer integer : mbtAssigned) {
+					//	LOGGER.trace(grounder.atomToString(integer));
+					//}
 					LOGGER.trace("Choice stack: {}", choiceStack);
 				}
 				doBacktrack();
@@ -138,43 +128,17 @@ public class NaiveSolver extends AbstractSolver {
 
 	private void assignUnassignedToFalse() {
 		for (Integer atom : unassignedAtoms) {
-			assignment.assign(atom, false);
-			newTruthAssignments.add(atom);
-			decisionLevels.get(decisionLevel).add(atom);
+			assignment.assign(atom, FALSE);
 		}
 	}
 
 	private boolean allAtomsAssigned() {
-		unassignedAtoms = new ArrayList<>();
-		HashSet<Integer> knownAtoms = new HashSet<>();
-		for (Map.Entry<Integer, NoGood> entry : knownNoGoods.entrySet()) {
-			for (Integer integer : entry.getValue()) {
-				knownAtoms.add(abs(integer));
-			}
-		}
-		for (Integer atom : knownAtoms) {
-			if (!assignment.isAssigned(atom)) {
-				unassignedAtoms.add(atom);
-			}
-		}
+		unassignedAtoms = grounder.getUnassignedAtoms(assignment);
 		return unassignedAtoms.isEmpty();
 	}
 
 	private boolean noMBTValuesReamining() {
-		return mbtAssigned.size() == 0;
-	}
-
-	private void doMBTPropagation() {
-		boolean didPropagate = true;
-		while (didPropagate) {
-			didPropagate = false;
-			for (Map.Entry<Integer, NoGood> noGoodEntry : knownNoGoods.entrySet()) {
-				if (propagateMBT(noGoodEntry.getValue())) {
-					didPropagate = true;
-					didChange = true;
-				}
-			}
-		}
+		return assignment.getMBTCount() == 0;
 	}
 
 	private boolean propagationFixpointReached() {
@@ -186,15 +150,8 @@ public class NaiveSolver extends AbstractSolver {
 	}
 
 	private void doChoice() {
-		decisionLevel++;
-		ArrayList<Integer> list = new ArrayList<>();
-		list.add(nextChoice);
-		decisionLevels.add(decisionLevel, list);
-		trueAssignedFromMbt.add(decisionLevel, new ArrayList<>());
-		mbtAssignedFromUnassigned.add(decisionLevel, new ArrayList<>());
 		// We guess true for any unassigned choice atom (backtrack tries false)
-		assignment.assign(nextChoice, true);
-		newTruthAssignments.add(nextChoice);
+		assignment.guess(nextChoice, true);
 		choiceStack.push(nextChoice, true);
 		// Record change to compute propagation fixpoint again.
 		didChange = true;
@@ -236,33 +193,10 @@ public class NaiveSolver extends AbstractSolver {
 		boolean lastGuessedTruthValue = choiceStack.peekValue();
 		choiceStack.remove();
 
-		// Remove truth assignments of current decision level
-		for (Integer atomId : decisionLevels.get(decisionLevel)) {
-			assignment.unassign(atomId);
-		}
-
-		// Handle MBT assigned values:
-		// First, restore mbt when it got assigned true in this decision level
-		for (Integer atomId : trueAssignedFromMbt.get(decisionLevel)) {
-			mbtAssigned.add(atomId);
-		}
-
-		// Second, remove mbt indicator for values that were unassigned
-		for (Integer atomId : mbtAssignedFromUnassigned.get(decisionLevel)) {
-			mbtAssigned.remove(atomId);
-		}
-
-		// Clear atomIds in current decision level
-		decisionLevels.set(decisionLevel, new ArrayList<>());
-		mbtAssignedFromUnassigned.set(decisionLevel, new ArrayList<>());
-		trueAssignedFromMbt.set(decisionLevel, new ArrayList<>());
-
 		if (lastGuessedTruthValue) {
 			// Guess false now
-			assignment.assign(lastGuessedAtom, false);
+			assignment.assign(lastGuessedAtom, FALSE);
 			choiceStack.pushBacktrack(lastGuessedAtom, false);
-			newTruthAssignments.add(lastGuessedAtom);
-			decisionLevels.get(decisionLevel).add(lastGuessedAtom);
 			didChange = true;
 		} else {
 			decisionLevel--;
@@ -271,68 +205,20 @@ public class NaiveSolver extends AbstractSolver {
 	}
 
 	private void updateGrounderAssignments() {
-		grounder.updateAssignment(newTruthAssignments.stream().map(atom -> {
-			return (Assignment.Entry)new Entry(atom, assignment.getTruth(atom));
-		}).iterator());
-		newTruthAssignments.clear();
-	}
-
-
-	private static final class Entry implements Assignment.Entry {
-		private final ThriceTruth value;
-		private final int atom;
-
-		Entry(int atom, ThriceTruth value) {
-			this.value = value;
-			this.atom = atom;
-		}
-
-		@Override
-		public ThriceTruth getTruth() {
-			return value;
-		}
-
-		@Override
-		public int getDecisionLevel() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public NoGood getImpliedBy() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public Entry getPrevious() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public int getAtom() {
-			return atom;
-		}
-
-		@Override
-		public int getPropagationLevel() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean isReassignAtLowerDecisionLevel() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public String toString() {
-			throw new UnsupportedOperationException();
-		}
+		grounder.updateAssignment(assignment.getNewAssignmentsIterator());
 	}
 
 	private void obtainNoGoodsFromGrounder() {
-		final int oldSize = knownNoGoods.size();
-		knownNoGoods.putAll(grounder.getNoGoods(null));
+		final int oldSize = store.size();
 
-		if (oldSize != knownNoGoods.size()) {
+		Map<Integer, NoGood> obtained = grounder.getNoGoods(null);
+		assignment.growForMaxAtomId(grounder.getMaxAtomId());
+
+		for (Map.Entry<Integer, NoGood> e : obtained.entrySet()) {
+			store.add(e.getKey(), e.getValue());
+		}
+
+		if (oldSize != store.size()) {
 			// Record to detect propagation fixpoint, checking if new NoGoods were reported would be better here.
 			didChange = true;
 		}
@@ -345,103 +231,5 @@ public class NaiveSolver extends AbstractSolver {
 
 	private boolean isSearchSpaceExhausted() {
 		return decisionLevel == 0;
-	}
-
-	private void doUnitPropagation() {
-		// Check each NoGood if it is unit (naive algorithm)
-		for (NoGood noGood : knownNoGoods.values()) {
-			int implied = unitPropagate(noGood);
-			if (implied == -1) {	// NoGood is not unit, skip.
-				continue;
-			}
-			int impliedLiteral = noGood.getLiteral(implied);
-			int impliedAtomId = atomOf(impliedLiteral);
-			boolean impliedTruthValue = isNegated(impliedLiteral);
-			if (assignment.isAssigned(impliedAtomId)) {	// Skip if value already was assigned.
-				continue;
-			}
-			assignment.assign(impliedAtomId, impliedTruthValue);
-			newTruthAssignments.add(impliedAtomId);
-			didChange = true;	// Record to detect propagation fixpoint
-			decisionLevels.get(decisionLevel).add(impliedAtomId);
-			if (impliedTruthValue) {	// Record MBT value in case true is assigned
-				mbtAssigned.add(impliedAtomId);
-				mbtAssignedFromUnassigned.get(decisionLevel).add(impliedAtomId);
-			}
-		}
-	}
-
-	/**
-	 * Returns position of implied literal if input NoGood is unit.
-	 * @param noGood
-	 * @return -1 if NoGood is not unit.
-	 */
-	private int unitPropagate(NoGood noGood) {
-		int lastUnassignedPosition = -1;
-		for (int i = 0; i < noGood.size(); i++) {
-			int literal = noGood.getLiteral(i);
-			if (assignment.isAssigned(atomOf(literal))) {
-				if (!assignment.isViolated(literal)) {
-					// The NoGood is satisfied, hence it cannot be unit.
-					return -1;
-				}
-			} else if (lastUnassignedPosition != -1) {
-				// NoGood is not unit, if there is not exactly one unassigned literal
-				return -1;
-			} else {
-				lastUnassignedPosition = i;
-			}
-		}
-		return lastUnassignedPosition;
-	}
-
-	private boolean propagateMBT(NoGood noGood) {
-		// The MBT propagation checks whether the head-indicated literal is MBT
-		// and the remaining literals are violated
-		// and none of them are MBT,
-		// then the head literal is set from MBT to true.
-
-		if (!noGood.hasHead()) {
-			return false;
-		}
-
-		int headAtom = noGood.getAtom(noGood.getHead());
-
-		// Check whether head is assigned MBT.
-		if (!mbtAssigned.contains(headAtom)) {
-			return false;
-		}
-
-		// Check that NoGood is violated except for the head (i.e., without the head set it would be unit)
-		// and that none of the true values is MBT.
-		for (int i = 0; i < noGood.size(); i++) {
-			if (noGood.getHead() == i) {
-				continue;
-			}
-			int literal = noGood.getLiteral(i);
-			if (!(assignment.isAssigned(atomOf(literal)) && assignment.isViolated(literal))) {
-				return false;
-			}
-			// Skip if positive literal is assigned MBT.
-			if (isPositive(literal) && mbtAssigned.contains(atomOf(literal))) {
-				return false;
-			}
-		}
-
-		// Set truth value from MBT to true.
-		mbtAssigned.remove(headAtom);
-		trueAssignedFromMbt.get(decisionLevel).add(headAtom);
-		return true;
-	}
-
-	private boolean assignmentViolatesNoGoods() {
-		// Check each NoGood, if it is violated
-		for (NoGood noGood : knownNoGoods.values()) {
-			if (assignment.violates(noGood)) {
-				LOGGER.trace("Violated NoGood: {}", noGood);
-				return true;
-			}
-		}
-		return false;
 	}
 }

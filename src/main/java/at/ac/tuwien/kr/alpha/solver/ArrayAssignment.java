@@ -379,6 +379,9 @@ public class ArrayAssignment implements WritableAssignment {
 
 	@Override
 	public Entry get(int atom) {
+		if (atom >= assignment.size()) {
+			return null;
+		}
 		return assignment.get(atom);
 	}
 

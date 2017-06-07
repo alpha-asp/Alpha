@@ -77,6 +77,11 @@ public class BasicNoGoodStore implements NoGoodStore {
 		internalChecksEnabled = true;
 	}
 
+	@Override
+	public int size() {
+		throw new UnsupportedOperationException();
+	}
+
 	void clear() {
 		assignment.clear();
 		watches.clear();
@@ -891,6 +896,11 @@ public class BasicNoGoodStore implements NoGoodStore {
 			addAlphaWatch(noGood);
 		}
 		return true;
+	}
+
+	@Override
+	public Iterator<NoGood> iterator() {
+		throw new UnsupportedOperationException();
 	}
 
 	private static final class BinaryWatch {

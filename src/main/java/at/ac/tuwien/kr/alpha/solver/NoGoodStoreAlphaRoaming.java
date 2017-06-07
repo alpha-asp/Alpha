@@ -82,6 +82,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 		internalChecksEnabled = true;
 	}
 
+	@Override
+	public int size() {
+		return watches.size();
+	}
+
 	void clear() {
 		assignment.clear();
 		watches.clear();
@@ -590,6 +595,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 			runInternalChecks();
 		}
 		return didPropagate;
+	}
+
+	@Override
+	public Iterator<NoGood> iterator() {
+		throw new UnsupportedOperationException();
 	}
 
 	private static final class BinaryWatch {
