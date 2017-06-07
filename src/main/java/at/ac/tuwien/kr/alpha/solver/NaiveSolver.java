@@ -371,18 +371,6 @@ public class NaiveSolver extends AbstractSolver {
 		}
 	}
 
-	private boolean isLiteralAssigned(int literal) {
-		return assignment.isAssigned(atomOf(literal));
-	}
-
-	private boolean isLiteralViolated(int literal) {
-		final int atom = atomOf(literal);
-		final ThriceTruth truth = assignment.getTruth(atom);
-
-		// For unassigned atoms, any literal is not violated.
-		return assignment != null && isNegated(literal) != truth.toBoolean();
-	}
-
 	/**
 	 * Returns position of implied literal if input NoGood is unit.
 	 * @param noGood
@@ -392,8 +380,8 @@ public class NaiveSolver extends AbstractSolver {
 		int lastUnassignedPosition = -1;
 		for (int i = 0; i < noGood.size(); i++) {
 			int literal = noGood.getLiteral(i);
-			if (isLiteralAssigned(literal)) {
-				if (!isLiteralViolated(literal)) {
+			if (assignment.isAssigned(atomOf(literal))) {
+				if (!assignment.isViolated(literal)) {
 					// The NoGood is satisfied, hence it cannot be unit.
 					return -1;
 				}
@@ -431,7 +419,7 @@ public class NaiveSolver extends AbstractSolver {
 				continue;
 			}
 			int literal = noGood.getLiteral(i);
-			if (!(isLiteralAssigned(literal) && isLiteralViolated(literal))) {
+			if (!(assignment.isAssigned(atomOf(literal)) && assignment.isViolated(literal))) {
 				return false;
 			}
 			// Skip if positive literal is assigned MBT.
@@ -449,14 +437,7 @@ public class NaiveSolver extends AbstractSolver {
 	private boolean assignmentViolatesNoGoods() {
 		// Check each NoGood, if it is violated
 		for (NoGood noGood : knownNoGoods.values()) {
-			boolean isSatisfied = false;
-			for (Integer noGoodLiteral : noGood) {
-				if (!isLiteralAssigned(noGoodLiteral) || !isLiteralViolated(noGoodLiteral)) {
-					isSatisfied = true;
-					break;
-				}
-			}
-			if (!isSatisfied) {
+			if (assignment.violates(noGood)) {
 				LOGGER.trace("Violated NoGood: {}", noGood);
 				return true;
 			}
