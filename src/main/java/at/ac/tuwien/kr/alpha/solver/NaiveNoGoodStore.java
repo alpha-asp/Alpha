@@ -5,15 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
-import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
+import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
 public class NaiveNoGoodStore implements NoGoodStore {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveNoGoodStore.class);
@@ -21,12 +15,13 @@ public class NaiveNoGoodStore implements NoGoodStore {
 	private HashMap<Integer, NoGood> delegate = new HashMap<>();
 	private final WritableAssignment assignment;
 
+	private boolean hasInferredAssignments;
+
 	public NaiveNoGoodStore(WritableAssignment assignment) {
 		this.assignment = assignment;
 	}
 
-	@Override
-	public void clear() {
+	void clear() {
 		assignment.clear();
 		delegate.clear();
 	}
@@ -34,7 +29,7 @@ public class NaiveNoGoodStore implements NoGoodStore {
 	@Override
 	public ConflictCause add(int id, NoGood noGood) {
 		if (assignment.violates(noGood)) {
-			return new ConflictCause(noGood, null);
+			return new ConflictCause(noGood);
 		}
 
 		delegate.put(id, noGood);
@@ -42,33 +37,26 @@ public class NaiveNoGoodStore implements NoGoodStore {
 	}
 
 	@Override
-	public NoGood getViolatedNoGood() {
-		// Check each NoGood, if it is violated
+	public ConflictCause propagate() {
+		ConflictCause conflictCause;
 		for (NoGood noGood : delegate.values()) {
-			if (assignment.violates(noGood)) {
-				LOGGER.trace("Violated NoGood: {}", noGood);
-				return noGood;
+			conflictCause = propagateWeakly(noGood);
+			if (conflictCause != null) {
+				return conflictCause;
+			}
+		}
+		for (NoGood noGood : delegate.values()) {
+			conflictCause = propagateStrongly(noGood);
+			if (conflictCause != null) {
+				return conflictCause;
 			}
 		}
 		return null;
 	}
 
 	@Override
-	public boolean propagate() {
-		boolean retry = false;
-		boolean result = false;
-		do {
-			retry = false;
-			if (doUnitPropagation()) {
-				result = true;
-				retry = true;
-			}
-			if (doMBTPropagation()) {
-				result = true;
-				retry = true;
-			}
-		} while (retry);
-		return result;
+	public boolean hasInferredAssignments() {
+		return hasInferredAssignments;
 	}
 
 	@Override
@@ -76,117 +64,90 @@ public class NaiveNoGoodStore implements NoGoodStore {
 		assignment.backtrack();
 	}
 
-	@Override
-	public void enableInternalChecks() {
+	/**
+	 * Infer an assignment from a nogood if it is weakly unit.
+	 *
+	 * This method iterates over all literals in the given nogood
+	 * in order to check whether it is weakly unit. If the nogood
+	 * turns out to be unit, then an assignment is generated and
+	 * {@code true} is returned. Otherwise, {@code false} is
+	 * returned.
+	 *
+	 * @param noGood the nogood to analyze.
+	 * @return {@code true} iff an assignment was inferred,
+	 *         {@code false} otherwise.
+	 */
+	private ConflictCause propagateWeakly(NoGood noGood) {
+		int index = -1;
+		for (int i = 0; i < noGood.size(); i++) {
+			final int literal = noGood.getLiteral(i);
 
-	}
-
-	@Override
-	public int size() {
-		return delegate.size();
-	}
-
-
-	@Override
-	public Iterator<NoGood> iterator() {
-		return delegate.values().iterator();
-	}
-
-	private boolean doMBTPropagation() {
-		boolean result = false;
-		boolean didPropagate = true;
-		while (didPropagate) {
-			didPropagate = false;
-			for (Map.Entry<Integer, NoGood> noGoodEntry : delegate.entrySet()) {
-				if (propagateMBT(noGoodEntry.getValue())) {
-					didPropagate = true;
-					result = true;
-				}
+			if (!assignment.isViolated(literal)) {
+				// Literal is satisfied!
+				return null;
 			}
+
+			if (index != -1) {
+				// There is more than one unassigned literal!
+				return null;
+			}
+
+			index = i;
 		}
-		return result;
-	}
 
-	private boolean doUnitPropagation() {
-		boolean result = false;
-		// Check each NoGood if it is unit (naive algorithm)
-		for (NoGood noGood : delegate.values()) {
-			int implied = unitPropagate(noGood);
-			if (implied == -1) {	// NoGood is not unit, skip.
-				continue;
-			}
-			int impliedLiteral = noGood.getLiteral(implied);
-			int impliedAtomId = atomOf(impliedLiteral);
-			boolean impliedTruthValue = isNegated(impliedLiteral);
-			if (assignment.isAssigned(impliedAtomId)) {	// Skip if value already was assigned.
-				continue;
-			}
-			assignment.assign(impliedAtomId, impliedTruthValue ? MBT : FALSE, noGood);
-			result = true;
-		}
-		return result;
+		hasInferredAssignments = true;
+
+		final int literal = noGood.getLiteral(index);
+		return assignment.assign(atomOf(literal), isNegated(literal) ? MBT : FALSE, noGood);
 	}
 
 	/**
-	 * Returns position of implied literal if input NoGood is unit.
-	 * @param noGood
-	 * @return -1 if NoGood is not unit.
+	 * Infer an assignment from a nogood if it is strongly unit.
+	 *
+	 * This method iterates over all literals in the given nogood
+	 * in order to check whether it is strongly unit. If the nogood
+	 * turns out to be unit, then an assignment for the head is
+	 * generated and {@code true} is returned. Otherwise,
+	 * {@code false} is returned.
+	 *
+	 * @param noGood the nogood to analyze.
+	 * @return {@code true} iff an assignment was inferred,
+	 *         {@code false} otherwise.
 	 */
-	private int unitPropagate(NoGood noGood) {
-		int lastUnassignedPosition = -1;
-		for (int i = 0; i < noGood.size(); i++) {
-			int literal = noGood.getLiteral(i);
-			if (assignment.isAssigned(atomOf(literal))) {
-				if (!assignment.isViolated(literal)) {
-					// The NoGood is satisfied, hence it cannot be unit.
-					return -1;
-				}
-			} else if (lastUnassignedPosition != -1) {
-				// NoGood is not unit, if there is not exactly one unassigned literal
-				return -1;
-			} else {
-				lastUnassignedPosition = i;
-			}
-		}
-		return lastUnassignedPosition;
-	}
-
-	private boolean propagateMBT(NoGood noGood) {
-		// The MBT propagation checks whether the head-indicated literal is MBT
-		// and the remaining literals are violated
-		// and none of them are MBT,
-		// then the head literal is set from MBT to true.
-
+	private ConflictCause propagateStrongly(NoGood noGood) {
 		if (!noGood.hasHead()) {
-			return false;
+			return null;
 		}
 
-		int headAtom = noGood.getAtom(noGood.getHead());
+		final int head = noGood.getAtom(noGood.getHead());
 
-		// Check whether head is assigned MBT.
-		if (!assignment.isMBT(headAtom)) {
-			return false;
+		if (assignment.getTruth(head) != MBT) {
+			return null;
 		}
 
-		// Check that NoGood is violated except for the head (i.e., without the head set it would be unit)
-		// and that none of the true values is MBT.
+		// Check that NoGood is violated except for the head
+		// (i.e., without the head set it would be unit) and
+		// that none of the true values are assigned MBT, but
+		// instead are all TRUE.
 		for (int i = 0; i < noGood.size(); i++) {
 			if (noGood.getHead() == i) {
 				continue;
 			}
-			int literal = noGood.getLiteral(i);
-			if (!(assignment.isAssigned(atomOf(literal)) && assignment.isViolated(literal))) {
-				return false;
+
+			final int literal = noGood.getLiteral(i);
+
+			if (!assignment.isViolated(literal)) {
+				return null;
 			}
 
 			// Skip if positive literal is assigned MBT.
-			if (isPositive(literal) && assignment.getTruth(atomOf(literal)) == MBT) {
-				return false;
+			if (isPositive(literal) && assignment.getTruth(atomOf(literal)) != TRUE) {
+				return null;
 			}
 		}
 
-		// Set truth value from MBT to true.
-		assignment.assign(headAtom, TRUE, noGood);
-		return true;
+		hasInferredAssignments = true;
+
+		return assignment.assign(head, TRUE, noGood);
 	}
 }

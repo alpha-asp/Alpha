@@ -56,6 +56,9 @@ public class ArrayAssignment implements WritableAssignment {
 
 	private boolean internalChecksEnabled;
 
+	private NoGood violatedByAssign;
+	private Entry guessViolatedByAssign;
+
 	public ArrayAssignment(Grounder grounder) {
 		this.grounder = grounder;
 		this.atomsAssignedInDecisionLevel = new ArrayList<>();
@@ -160,14 +163,14 @@ public class ArrayAssignment implements WritableAssignment {
 	}
 
 	@Override
-	public boolean guess(int atom, ThriceTruth value) {
+	public ConflictCause guess(int atom, ThriceTruth value) {
 		atomsAssignedInDecisionLevel.add(new ArrayList<>());
 		propagationCounterPerDecisionLevel.add(0);
 		return assign(atom, value, null);
 	}
 
 	@Override
-	public boolean assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
+	public ConflictCause assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
 		if (decisionLevel > getDecisionLevel() || decisionLevel < 0) {
 			throw new IllegalArgumentException("Given decisionLevel is outside range of possible decision levels. Given decisionLevel is: " + decisionLevel);
 		}
@@ -175,41 +178,43 @@ public class ArrayAssignment implements WritableAssignment {
 			String atomString = grounder != null ? grounder.atomToString(atom) : Integer.toString(atom);
 			LOGGER.trace("Assign called with lower decision level. Atom: {}_{}@{}.", value, atomString, decisionLevel);
 		}
-		boolean isConflictFree = assignWithDecisionLevel(atom, value, impliedBy, decisionLevel);
-		if (!isConflictFree) {
+		ConflictCause isConflictFree = assignWithDecisionLevel(atom, value, impliedBy, decisionLevel);
+		if (isConflictFree != null) {
 			LOGGER.debug("Assign is conflicting: atom: {}, value: {}, impliedBy: {}.", atom, value, impliedBy);
 		}
 		return isConflictFree;
 	}
 
 	@Override
-	public boolean assign(int atom, ThriceTruth value, NoGood impliedBy) {
-		boolean isConflictFree = assignWithDecisionLevel(atom, value, impliedBy, getDecisionLevel());
-		if (!isConflictFree) {
+	public ConflictCause assign(int atom, ThriceTruth value, NoGood impliedBy) {
+		ConflictCause isConflictFree = assignWithDecisionLevel(atom, value, impliedBy, getDecisionLevel());
+		if (isConflictFree != null) {
 			LOGGER.debug("Assign is conflicting: atom: {}, value: {}, impliedBy: {}.", atom, value, impliedBy);
 		}
 		return isConflictFree;
 	}
 
-	private NoGood violatedByAssign;
-
 	@Override
-	public NoGood getNoGoodViolatedByAssign() {
-		return violatedByAssign;
-	}
+	public ConflictCause getConflictCause() {
+		if (violatedByAssign != null && guessViolatedByAssign != null) {
+			throw new RuntimeException("There are two causes for a conflict, this should not happen!");
+		}
 
-	private Entry guessViolatedByAssign;
+		if (violatedByAssign != null) {
+			return new ConflictCause(violatedByAssign);
+		}
+		if (guessViolatedByAssign != null) {
+			return new ConflictCause(guessViolatedByAssign);
+		}
 
-	@Override
-	public Assignment.Entry getGuessViolatedByAssign() {
-		return guessViolatedByAssign;
+		return null;
 	}
 
 	private boolean assignmentsConsistent(Assignment.Entry oldAssignment, ThriceTruth value) {
 		return oldAssignment == null || oldAssignment.getTruth().toBoolean() == value.toBoolean();
 	}
 
-	private boolean assignWithDecisionLevel(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
+	private ConflictCause assignWithDecisionLevel(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
 		if (internalChecksEnabled) {
 			if (getMBTCount() != getMBTAssignedAtoms().size()) {
 				throw new RuntimeException("MBT counter and amount of actually MBT-assigned atoms disagree. Should not happen.");
@@ -235,7 +240,7 @@ public class ArrayAssignment implements WritableAssignment {
 		// and the current one has lower decision level.
 		if (current != null && current.getDecisionLevel() <= decisionLevel &&
 			(value.equals(current.getTruth()) || value.isMBT() && TRUE.equals(current.getTruth()))) {
-			return true;
+			return null;
 		}
 
 		// If the atom currently is not assigned, simply record the assignment.
@@ -245,7 +250,7 @@ public class ArrayAssignment implements WritableAssignment {
 				mbtCount++;
 			}
 			recordAssignment(atom, value, impliedBy, decisionLevel, null);
-			return true;
+			return null;
 		}
 
 		// Check consistency.
@@ -268,7 +273,7 @@ public class ArrayAssignment implements WritableAssignment {
 				}
 
 			}
-			return false;
+			return getConflictCause();
 		}
 
 		// Previous assignment exists, and the new one is consistent with it.
@@ -276,7 +281,7 @@ public class ArrayAssignment implements WritableAssignment {
 			case FALSE:
 				// Previous must be false, simply re-assign it.
 				recordAssignment(atom, value, impliedBy, decisionLevel, null);
-				return true;
+				return null;
 			case TRUE:
 				ArrayAssignment.Entry eventualPreExistingMBT = current.getTruth().isMBT() ? current : current.getPrevious();
 				if (eventualPreExistingMBT != null && eventualPreExistingMBT.getDecisionLevel() <= decisionLevel) {
@@ -289,13 +294,13 @@ public class ArrayAssignment implements WritableAssignment {
 				if (current.getTruth().isMBT()) {
 					mbtCount--;
 				}
-				return true;
+				return null;
 			case MBT:
 				if (current.getPrevious() != null && current.getPrevious().getDecisionLevel() <= decisionLevel
 					|| TRUE.equals(current.getTruth()) && current.getDecisionLevel() <= decisionLevel) {
 					// New assignment is above-or-equal to an already existing MBT,
 					// or current is TRUE and at same decision level as the new MBT. Ignore it.
-					return true;
+					return null;
 				}
 				if (!current.getTruth().isMBT()) {
 					// Current assignment is TRUE and new one is MBT below (and lower than a previous MBT).
@@ -305,7 +310,7 @@ public class ArrayAssignment implements WritableAssignment {
 					// Current assignment is MBT and the new one is below it (no TRUE above exists).
 					recordAssignment(atom, value, impliedBy, decisionLevel, null);
 				}
-				return true;
+				return null;
 		}
 		throw new RuntimeException("Statement should be unreachable, algorithm misses some case.");
 	}

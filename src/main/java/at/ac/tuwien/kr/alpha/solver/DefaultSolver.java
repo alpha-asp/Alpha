@@ -74,7 +74,6 @@ public class DefaultSolver extends AbstractSolver {
 		this.store = store;
 		this.choiceManager = new ChoiceManager(assignment);
 		if (debugInternalChecks) {
-			store.enableInternalChecks();
 			((ArrayAssignment) assignment).enableInternalChecks();
 			choiceManager.enableInternalChecks();
 		}
@@ -113,7 +112,7 @@ public class DefaultSolver extends AbstractSolver {
 				// Backjump instead of backtrack, enumerationNoGood will invert lass guess.
 				doBackjump(backjumpLevel - 1);
 				LOGGER.debug("Adding enumeration NoGood: {}", enumerationNoGood);
-				NoGoodStore.ConflictCause conflictCause = store.add(grounder.registerOutsideNoGood(enumerationNoGood), enumerationNoGood);
+				ConflictCause conflictCause = store.add(grounder.registerOutsideNoGood(enumerationNoGood), enumerationNoGood);
 				if (conflictCause != null) {
 					throw new RuntimeException("Adding enumeration NoGood causes conflicts after backjump. Should not happen.");
 				}
@@ -129,22 +128,19 @@ public class DefaultSolver extends AbstractSolver {
 
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
-			didChange |= store.propagate();
+			ConflictCause conflictCause = store.propagate();
+			didChange |= store.hasInferredAssignments();
 			LOGGER.trace("Assignment after propagation is: {}", assignment);
-			if (didChange) {
-				askedHex = false;
-			}
-			if (store.getViolatedNoGood() != null) {
-				askedHex = false;
+			if (conflictCause != null) {
 				// Learn from conflict.
-				NoGood violatedNoGood = store.getViolatedNoGood();
+				NoGood violatedNoGood = conflictCause.getViolatedNoGood();
 				if (LOGGER.isDebugEnabled()) {
 					LOGGER.debug("NoGood violated ({}) by wrong choices ({} violated): {}", grounder.noGoodToString(violatedNoGood), choiceStack);
 				}
 				LOGGER.debug("Violating assignment is: {}", assignment);
 				branchingHeuristic.violatedNoGood(violatedNoGood);
 				if (!afterAllAtomsAssigned) {
-					if (!learnBackjumpAddFromConflict()) {
+					if (!learnBackjumpAddFromConflict(conflictCause)) {
 						counters.log();
 						return false;
 					}
@@ -241,9 +237,9 @@ public class DefaultSolver extends AbstractSolver {
 	 * or backtracks the guess causing the conflict.
 	 * @return false iff the analysis result shows that the set of NoGoods is unsatisfiable.
 	 */
-	private boolean learnBackjumpAddFromConflict() {
+	private boolean learnBackjumpAddFromConflict(ConflictCause conflictCause) {
 		LOGGER.debug("Analyzing conflict.");
-		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(store.getViolatedNoGood());
+		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(conflictCause.getViolatedNoGood());
 		if (analysisResult.isUnsatisfiable) {
 			// Halt if unsatisfiable.
 			return false;
@@ -263,7 +259,8 @@ public class DefaultSolver extends AbstractSolver {
 			choiceStack.remove();
 			choiceManager.backtrack();
 			LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
-			if (!store.propagate()) {
+			store.propagate();
+			if (!store.hasInferredAssignments()) {
 				throw new RuntimeException("Nothing to propagate after backtracking from conflict-causing guess. Should not happen.");
 			}
 		} else {
@@ -274,7 +271,7 @@ public class DefaultSolver extends AbstractSolver {
 			doBackjump(backjumpingDecisionLevel);
 
 			int learnedNoGoodId = grounder.registerOutsideNoGood(learnedNoGood);
-			NoGoodStore.ConflictCause conflictCause = store.add(learnedNoGoodId, learnedNoGood);
+			conflictCause = store.add(learnedNoGoodId, learnedNoGood);
 			if (conflictCause != null) {
 				throw new RuntimeException("Learned NoGood is violated after backjumping, should not happen.");
 			}
@@ -412,7 +409,7 @@ public class DefaultSolver extends AbstractSolver {
 				// Empty NoGood cannot be satisfied, program is unsatisfiable.
 				return false;
 			}
-			NoGoodStore.ConflictCause conflictCause = store.add(noGoodEntry.getKey(), noGoodEntry.getValue());
+			ConflictCause conflictCause = store.add(noGoodEntry.getKey(), noGoodEntry.getValue());
 			if (conflictCause == null) {
 				// There is no conflict, all is fine. Just skip conflict treatment and carry on.
 				continue;
@@ -473,7 +470,8 @@ public class DefaultSolver extends AbstractSolver {
 	private void doChoice(int nextChoice) {
 		counters.decision();
 		boolean sign = branchingHeuristic.chooseSign(nextChoice);
-		if (!assignment.guess(nextChoice, sign)) {
+		ConflictCause conflictCause = assignment.guess(nextChoice, sign);
+		if (conflictCause != null) {
 			throw new RuntimeException("Picked choice is incompatible with current assignment. Should not happen.");
 		}
 

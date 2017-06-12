@@ -28,15 +28,15 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Array;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
@@ -87,16 +87,18 @@ public class NaiveSolver extends AbstractSolver {
 				LOGGER.trace("Propagating.");
 				updateGrounderAssignments();	// After a choice, it would be more efficient to propagate first and only then ask the grounder.
 				obtainNoGoodsFromGrounder();
-				if (store.propagate()) {
+				ConflictCause conflictCause = store.propagate();
+				if (store.hasInferredAssignments()) {
 					didChange = true;
 				}
 				//LOGGER.trace("Assignment after propagation is: {}", truthAssignments);
-			} else if (store.getViolatedNoGood() != null) {
-				LOGGER.trace("Backtracking from wrong choices:");
-				LOGGER.trace("Choice stack: {}", choiceStack);
-				doBacktrack();
-				if (isSearchSpaceExhausted()) {
-					return false;
+				if (conflictCause != null) {
+					LOGGER.trace("Backtracking from wrong choices:");
+					LOGGER.trace("Choice stack: {}", choiceStack);
+					doBacktrack();
+					if (isSearchSpaceExhausted()) {
+						return false;
+					}
 				}
 			} else if (choicesLeft()) {
 				doChoice();
@@ -104,7 +106,7 @@ public class NaiveSolver extends AbstractSolver {
 				LOGGER.trace("Closing unassigned known atoms (assigning FALSE).");
 				assignUnassignedToFalse();
 				didChange = true;
-			} else if (noMBTValuesReamining()) {
+			} else if (assignment.getMBTCount() == 0) {
 				AnswerSet as = translate(assignment.getTrueAssignments());
 				LOGGER.debug("Answer-Set found: {}", as);
 				LOGGER.trace("Choice stack: {}", choiceStack);
@@ -138,10 +140,6 @@ public class NaiveSolver extends AbstractSolver {
 		return unassignedAtoms.isEmpty();
 	}
 
-	private boolean noMBTValuesReamining() {
-		return assignment.getMBTCount() == 0;
-	}
-
 	private boolean propagationFixpointReached() {
 		// Check if anything changed.
 		// didChange is updated in places of change.
@@ -168,16 +166,16 @@ public class NaiveSolver extends AbstractSolver {
 				continue;
 			}
 
-			ThriceTruth truth = assignment.getTruth(e.getValue());
+			ThriceTruth enabler = assignment.getTruth(e.getValue());
 
-			if (truth == null || !truth.toBoolean()) {
+			if (enabler == null || enabler == FALSE) {
 				continue;
 			}
 
 			// Check that candidate is not disabled already
-			truth = assignment.getTruth(choiceOff.getOrDefault(atom, 0));
+			ThriceTruth disabler = assignment.getTruth(choiceOff.get(atom));
 
-			if (truth == null || !truth.toBoolean()) {
+			if (disabler == null || disabler == FALSE) {
 				nextChoice = atom;
 				return true;
 			}
@@ -210,18 +208,11 @@ public class NaiveSolver extends AbstractSolver {
 	}
 
 	private void obtainNoGoodsFromGrounder() {
-		final int oldSize = store.size();
-
 		Map<Integer, NoGood> obtained = grounder.getNoGoods(null);
 		assignment.growForMaxAtomId(grounder.getMaxAtomId());
 
 		for (Map.Entry<Integer, NoGood> e : obtained.entrySet()) {
 			store.add(e.getKey(), e.getValue());
-		}
-
-		if (oldSize != store.size()) {
-			// Record to detect propagation fixpoint, checking if new NoGoods were reported would be better here.
-			didChange = true;
 		}
 
 		// Record choice atoms

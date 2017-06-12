@@ -6,7 +6,7 @@ public interface SimpleWritableAssignment extends SimpleAssignment {
 	 */
 	void clear();
 
-	boolean assign(int atom, ThriceTruth value);
+	ConflictCause assign(int atom, ThriceTruth value);
 
 	void unassign(int atom);
 
@@ -17,9 +17,9 @@ public interface SimpleWritableAssignment extends SimpleAssignment {
 	 */
 	void backtrack();
 
-	boolean guess(int atom, ThriceTruth value);
+	ConflictCause guess(int atom, ThriceTruth value);
 
-	default boolean guess(int atom, boolean value) {
+	default ConflictCause guess(int atom, boolean value) {
 		return guess(atom, ThriceTruth.valueOf(value));
 	}
 }

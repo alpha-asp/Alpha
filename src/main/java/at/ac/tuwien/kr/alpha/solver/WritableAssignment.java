@@ -36,7 +36,7 @@ public interface WritableAssignment extends Assignment, SimpleWritableAssignment
 	 */
 	void clear();
 
-	boolean assign(int atom, ThriceTruth value, NoGood impliedBy);
+	ConflictCause assign(int atom, ThriceTruth value, NoGood impliedBy);
 
 	/**
 	 * Assigns an atom some value on a lower decision level than the current one.
@@ -46,9 +46,9 @@ public interface WritableAssignment extends Assignment, SimpleWritableAssignment
 	 * @param decisionLevel
 	 * @return
 	 */
-	boolean assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel);
+	ConflictCause assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel);
 
-	default boolean assign(int atom, ThriceTruth value) {
+	default ConflictCause assign(int atom, ThriceTruth value) {
 		return assign(atom, value, null);
 	}
 }

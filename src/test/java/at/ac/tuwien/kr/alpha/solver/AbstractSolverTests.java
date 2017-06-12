@@ -55,6 +55,7 @@ public abstract class AbstractSolverTests {
 			NoGoodStore store = new NaiveNoGoodStore(assignment);
 			return new NaiveSolver(g, store, assignment);
 		}});
+		/*
 		for (Heuristic heuristic : Heuristic.values()) {
 			String name = "DS/R/" + heuristic;
 			Function<Grounder, Solver> instantiator = g -> {
@@ -84,7 +85,7 @@ public abstract class AbstractSolverTests {
 				return new DefaultSolver(g, store, assignment, new Random(0), heuristic, enableAdditionalInternalChecks);
 			};
 			factories.add(new Object[] {name, instantiator});
-		}
+		}*/
 		return factories;
 	}
 

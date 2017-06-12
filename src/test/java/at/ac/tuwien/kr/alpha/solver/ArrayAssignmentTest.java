@@ -40,8 +40,8 @@ public class ArrayAssignmentTest {
 	@Test
 	public void alreadyAssignedThrows() throws Exception {
 		assignment.growForMaxAtomId(1);
-		assertTrue(assignment.assign(1, MBT));
-		assertFalse(assignment.assign(1, FALSE));
+		assertNull(assignment.assign(1, MBT));
+		assertNotNull(assignment.assign(1, FALSE));
 	}
 
 	@Test
@@ -213,15 +213,15 @@ public class ArrayAssignmentTest {
 	@Test
 	public void mbtCounterAssignMbtToFalseOnLowerDecisionLevel() {
 		assignment.growForMaxAtomId(4);
-		assertTrue(assignment.guess(1, TRUE));
-		assertTrue(assignment.guess(2, FALSE));
+		assertNull(assignment.guess(1, TRUE));
+		assertNull(assignment.guess(2, FALSE));
 
-		assertTrue(assignment.assign(3, MBT, null, 2));
+		assertNull(assignment.assign(3, MBT, null, 2));
 		assertEquals(1, assignment.getMBTCount());
 
-		assertTrue(assignment.guess(4, TRUE));
+		assertNull(assignment.guess(4, TRUE));
 
-		assertFalse(assignment.assign(3, FALSE, null, 1));
+		assertNotNull(assignment.assign(3, FALSE, null, 1));
 
 		assignment.backtrack();
 		assignment.backtrack();

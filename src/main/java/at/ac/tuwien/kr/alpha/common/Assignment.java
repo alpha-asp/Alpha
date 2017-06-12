@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.solver.ConflictCause;
 import at.ac.tuwien.kr.alpha.solver.SimpleAssignment;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.WatchedNoGood;
@@ -20,9 +21,7 @@ public interface Assignment extends SimpleAssignment {
 	 * The returned value is arbitrary if the previous assign did not fail.
 	 * @return
 	 */
-	NoGood getNoGoodViolatedByAssign();
-
-	Assignment.Entry getGuessViolatedByAssign();
+	ConflictCause getConflictCause();
 
 	void growForMaxAtomId(int maxAtomId);
 
@@ -167,10 +166,10 @@ public interface Assignment extends SimpleAssignment {
 
 		/**
 		 * Returns the strongly assigned decision level.
-		 * @return the decision level of this entry if it is TRUE/FALSE and Integer.MAX_VALUE otherwise.
+		 * @return the decision level of this entry if it is TRUE/FALSE and -1 otherwise.
 		 */
 		default int getStrongDecisionLevel() {
-			return getTruth().isMBT() ? Integer.MAX_VALUE : getDecisionLevel();
+			return getTruth().isMBT() ? -1 : getDecisionLevel();
 		}
 	}
 }

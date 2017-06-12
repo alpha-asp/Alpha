@@ -51,21 +51,29 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
  */
 public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NoGoodStoreAlphaRoaming.class);
-	private boolean internalChecksEnabled;
+	private final boolean internalChecksEnabled;
 
-	final WritableAssignment assignment;
+	private final WritableAssignment assignment;
 	private final Map<Integer, Watches<BinaryWatch, WatchedNoGood>> watches = new LinkedHashMap<>();
 
-	private NoGood violated;
+	private boolean didPropagate;
+
+	public NoGoodStoreAlphaRoaming(WritableAssignment assignment, boolean internalChecksEnabled) {
+		this.assignment = assignment;
+		this.internalChecksEnabled = internalChecksEnabled;
+	}
 
 	public NoGoodStoreAlphaRoaming(WritableAssignment assignment) {
-		this.assignment = assignment;
+		this(assignment, false);
+	}
+
+	void clear() {
+		assignment.clear();
+		watches.clear();
 	}
 
 	@Override
 	public void backtrack() {
-		violated = null;
-		isPropagationConflicting = false;
 		didPropagate = false;
 		assignment.backtrack();
 		if (internalChecksEnabled) {
@@ -77,49 +85,22 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 		}
 	}
 
-	@Override
-	public void enableInternalChecks() {
-		internalChecksEnabled = true;
-	}
-
-	@Override
-	public int size() {
-		return watches.size();
-	}
-
-	@Override
-	public void clear() {
-		assignment.clear();
-		watches.clear();
-	}
-
-	private void setViolated(final NoGood noGood) {
-		violated = noGood;
-	}
-
-	private ConflictCause setViolatedFromAssignment() {
-		return new ConflictCause(assignment.getNoGoodViolatedByAssign(), assignment.getGuessViolatedByAssign());
-	}
-
 	private Watches<BinaryWatch, WatchedNoGood> watches(int literal) {
-		//*
-		int atom = atomOf(literal);
-		Watches<BinaryWatch, WatchedNoGood> watches = this.watches.get(atom);
-		if (watches == null) {
-			watches = new Watches<>();
-			this.watches.put(atom, watches);
+		final int atom = atomOf(literal);
+		Watches<BinaryWatch, WatchedNoGood> result = watches.get(atom);
+		if (result == null) {
+			result = new Watches<>();
+			this.watches.put(atom, result);
 		}
-		return watches; /*/
-		return this.watches.computeIfAbsent(atomOf(literal), k -> new Watches<>());
-		//*/
+		return result;
 	}
 
-	private void addOrdinaryWatch(WatchedNoGood wng, int pointer) {
+	private void addWeakWatch(WatchedNoGood wng, int pointer) {
 		final int literal = wng.getLiteral(wng.getPointer(pointer));
 		watches(literal).multary.getOrdinary(isPositive(literal)).add(wng);
 	}
 
-	private void addAlphaWatch(WatchedNoGood wng) {
+	private void addStrongWatch(WatchedNoGood wng) {
 		final int literal = wng.getLiteralAtAlpha();
 		watches(literal).multary.getAlpha(isPositive(literal)).add(wng);
 	}
@@ -136,25 +117,16 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 		}
 	}
 
-	@Override
-	public NoGood getViolatedNoGood() {
-		return violated;
-	}
-
 	/**
 	 * Takes a noGood containing only a single literal and translates it into an assignment (because it
 	 * is trivially unit). Still, a check for conflict is performed.
 	 */
 	private ConflictCause addUnary(final NoGood noGood) {
 		if (noGood.hasHead()) {
-			assignStrongComplement(0, noGood, 0);
+			return assignStrongComplement(0, noGood, 0);
 		} else {
-			assignWeakComplement(0, noGood, 0);
+			return assignWeakComplement(0, noGood, 0);
 		}
-		if (isPropagationConflicting) {
-			return setViolatedFromAssignment();
-		}
-		return null;
 	}
 
 	private ConflictCause addAndWatch(final NoGood noGood) {
@@ -213,13 +185,13 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 			}
 			// Check violation.
 			if (literalEntry != null && literalEntry.getTruth().toBoolean() == isPositive(literal)) {
-				if (getWeakDecisionLevel(literalEntry) > weakDecisionLevelHighestAssigned) {
-					weakDecisionLevelHighestAssigned = getWeakDecisionLevel(literalEntry);
+				if (literalEntry.getWeakDecisionLevel() > weakDecisionLevelHighestAssigned) {
+					weakDecisionLevelHighestAssigned = literalEntry.getWeakDecisionLevel();
 					posWeakHighestAssigned = i;
 				}
 				if (!literalEntry.getTruth().isMBT()	// Ensure strong violation.
-					&& getStrongDecisionLevel(literalEntry) > strongDecisionLevelHighestAssigned) {
-					strongDecisionLevelHighestAssigned = getStrongDecisionLevel(literalEntry);
+					&& literalEntry.getStrongDecisionLevel() > strongDecisionLevelHighestAssigned) {
+					strongDecisionLevelHighestAssigned = literalEntry.getStrongDecisionLevel();
 					posStrongHighestAssigned = i;
 				}
 				if (literalEntry.getTruth().isMBT()) {
@@ -232,7 +204,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 		// Compute ordinary watches:
 		final WatchedNoGood wng;
 
-
 		if (posWeakUnassigned1 != -1 && posWeakUnassigned2 != -1) {
 			// NoGood has two unassigned literals.
 			wng = new WatchedNoGood(noGood, posWeakUnassigned1, posWeakUnassigned2, -1);
@@ -244,24 +215,24 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 			if (posSatisfiedLiteral2 == -1 && posWeakUnassigned1 == -1) {
 				// The NoGood has only one satisfied literal and is unit without it.
 				// If it is unit on lower decision level than it is satisfied, it propagates the satisfying literal on lower decision level.
-				if (getWeakDecisionLevel(satisfiedLiteralEntry) > weakDecisionLevelHighestAssigned) {
-					assignWeakComplement(posSatisfiedLiteral1, noGood, weakDecisionLevelHighestAssigned);
-					if (isPropagationConflicting) {
-						return setViolatedFromAssignment();
+				if (satisfiedLiteralEntry.getWeakDecisionLevel() > weakDecisionLevelHighestAssigned) {
+					ConflictCause conflictCause = assignWeakComplement(posSatisfiedLiteral1, noGood, weakDecisionLevelHighestAssigned);
+					if (conflictCause != null) {
+						return conflictCause;
 					}
 				}
 			}
 			wng = new WatchedNoGood(noGood, posSatisfiedLiteral1, bestSecondPointer, -1);
 		} else if (posWeakUnassigned1 != -1) {
 			// NoGood is weakly unit; propagate.
-			assignWeakComplement(posWeakUnassigned1, noGood, weakDecisionLevelHighestAssigned);
-			if (isPropagationConflicting) {
-				return setViolatedFromAssignment();
+			ConflictCause conflictCause = assignWeakComplement(posWeakUnassigned1, noGood, weakDecisionLevelHighestAssigned);
+			if (conflictCause != null) {
+				return conflictCause;
 			}
 			wng = new WatchedNoGood(noGood, posWeakUnassigned1, posWeakHighestAssigned, -1);
 		} else {
 			// NoGood is violated.
-			return new ConflictCause(noGood, null);
+			return new ConflictCause(noGood);
 		}
 
 		// Compute alpha watch:
@@ -271,17 +242,17 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 				wng.setAlphaPointer(posStrongUnassigned);
 			} else if (posSatisfiedLiteral1 == -1 && !containsPositiveAssignedMBT) {
 				// Strongly unit.
-				assignStrongComplement(noGood.getHead(), noGood, strongDecisionLevelHighestAssigned);
-				if (isPropagationConflicting) {
-					return setViolatedFromAssignment();
+				ConflictCause conflictCause = assignStrongComplement(noGood.getHead(), noGood, strongDecisionLevelHighestAssigned);
+				if (conflictCause != null) {
+					return conflictCause;
 				}
 				wng.setAlphaPointer(posStrongHighestAssigned);
 			} else if (posSatisfiedLiteral1 == noGood.getHead() && posSatisfiedLiteral2 == -1 && posStrongUnassigned == -1) {
 				// The head is the only satisfying literal, hence it might propagate on lower decision level.
-				if (getStrongDecisionLevel(satisfiedLiteralEntry) > strongDecisionLevelHighestAssigned) {
-					assignStrongComplement(posSatisfiedLiteral1, noGood, strongDecisionLevelHighestAssigned);
-					if (isPropagationConflicting) {
-						return setViolatedFromAssignment();
+				if (satisfiedLiteralEntry.getStrongDecisionLevel() > strongDecisionLevelHighestAssigned) {
+					ConflictCause conflictCause = assignStrongComplement(posSatisfiedLiteral1, noGood, strongDecisionLevelHighestAssigned);
+					if (conflictCause != null) {
+						return conflictCause;
 					}
 				}
 			}
@@ -291,11 +262,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 		if (wng.getAlphaPointer() != -1) {
 			// Only look at the alpha pointer if it points at a legal index. It might not
 			// in case the noGood has no head or no positive literal.
-			addAlphaWatch(wng);
+			addStrongWatch(wng);
 		}
 		// Set ordinary watches.
-		addOrdinaryWatch(wng, 0);
-		addOrdinaryWatch(wng, 1);
+		addWeakWatch(wng, 0);
+		addWeakWatch(wng, 1);
 		return null;
 	}
 
@@ -319,7 +290,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 
 		// Check for violation.
 		if (isViolatedA && isViolatedB) {
-			return new ConflictCause(noGood, null);
+			return new ConflictCause(noGood);
 		}
 
 		// If one literal is violated the NoGood propagates.
@@ -328,15 +299,15 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 		Assignment.Entry violatedEntry = isViolatedA ? entryA : entryB;
 		if (doesPropagate) {
 			// Propagate weakly.
-			assignWeakComplement(propagateePos, noGood, getWeakDecisionLevel(violatedEntry));
-			if (isPropagationConflicting) {
-				return setViolatedFromAssignment();
+			ConflictCause conflictCause = assignWeakComplement(propagateePos, noGood, violatedEntry.getWeakDecisionLevel());
+			if (conflictCause != null) {
+				return conflictCause;
 			}
 			// Propagate strongly if applicable.
 			if (noGood.hasHead() && noGood.getHead() == propagateePos && MBT != violatedEntry.getTruth()) {
-				assignStrongComplement(propagateePos, noGood, getStrongDecisionLevel(violatedEntry));
-				if (isPropagationConflicting) {
-					return setViolatedFromAssignment();
+				conflictCause = assignStrongComplement(propagateePos, noGood, violatedEntry.getStrongDecisionLevel());
+				if (conflictCause != null) {
+					return conflictCause;
 				}
 			}
 		}
@@ -361,59 +332,52 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 	}
 
 
-	private void assignWeakComplement(final int literalIndex, final NoGood impliedBy, int decisionLevel) {
+	private ConflictCause assignWeakComplement(final int literalIndex, final NoGood impliedBy, int decisionLevel) {
 		final int literal = impliedBy.getLiteral(literalIndex);
 		ThriceTruth truth = isNegated(literal) ? MBT : FALSE;
-		assignTruth(atomOf(literal), truth, impliedBy, decisionLevel);
+		return assignTruth(atomOf(literal), truth, impliedBy, decisionLevel);
 	}
 
-	private void assignStrongComplement(final int literalIndex, final NoGood impliedBy, int decisionLevel) {
+	private ConflictCause assignStrongComplement(final int literalIndex, final NoGood impliedBy, int decisionLevel) {
 		final int literal = impliedBy.getLiteral(literalIndex);
 		ThriceTruth truth = isNegated(literal) ? TRUE : FALSE;
-		assignTruth(atomOf(literal), truth, impliedBy, decisionLevel);
+		return assignTruth(atomOf(literal), truth, impliedBy, decisionLevel);
 	}
 
-	private void assignTruth(int atom, ThriceTruth truth, NoGood impliedBy, int decisionLevel) {
+	private ConflictCause assignTruth(int atom, ThriceTruth truth, NoGood impliedBy, int decisionLevel) {
 		// Skip assignment if it is the same as the current one and the current one has lower decision level.
 		Assignment.Entry currentAssignment = assignment.get(atom);
 		if (currentAssignment != null && currentAssignment.getDecisionLevel() <= decisionLevel && (truth.equals(currentAssignment.getTruth()))) {
-			return;
+			return null;
 		}
-		if (!assignment.assign(atom, truth, impliedBy, decisionLevel)) {
-			setViolated(assignment.getNoGoodViolatedByAssign());
-			isPropagationConflicting = true;
-		} else {
+		ConflictCause cause = assignment.assign(atom, truth, impliedBy, decisionLevel);
+		if (cause == null) {
 			didPropagate = true;
 		}
-	}
-
-
-	private int getWeakDecisionLevel(Assignment.Entry entry) {
-		return entry.getPrevious() != null ? entry.getPrevious().getDecisionLevel() : entry.getDecisionLevel();
-	}
-
-	private int getStrongDecisionLevel(Assignment.Entry entry) {
-		return entry.getTruth().isMBT() ? -1 : entry.getDecisionLevel();
+		return cause;
 	}
 
 	/**
 	 * Propagates from Unassigned to MBT/FALSE.
 	 * @param entry the assignment that triggers the propagation.
 	 */
-	private void propagateWeakly(final Assignment.Entry entry) {
+	private ConflictCause propagateWeakly(final Assignment.Entry entry) {
 		// If assignment is for TRUE, previous MBT exists, and this is no reassignment, nothing changes for weak propagation.
 		if (entry.getPrevious() != null && !entry.isReassignAtLowerDecisionLevel()) {
-			return;
+			return null;
 		}
 
 		Watches<BinaryWatch, WatchedNoGood> watchesOfAssignedAtom = watches(entry.getAtom());
 
 		// Process binary watches.
 		for (BinaryWatch binaryWatch : watchesOfAssignedAtom.binary.getOrdinary(entry.getTruth().toBoolean())) {
-			assignWeakComplement(binaryWatch.getOtherLiteralIndex(), binaryWatch.getNoGood(), entry.getDecisionLevel());
+			ConflictCause conflictCause = assignWeakComplement(binaryWatch.getOtherLiteralIndex(), binaryWatch.getNoGood(), entry.getDecisionLevel());
+			if (conflictCause != null) {
+				return conflictCause;
+			}
 		}
 
-		int assignedDecisionLevel = getWeakDecisionLevel(entry);
+		int assignedDecisionLevel = entry.getWeakDecisionLevel();
 
 		// Check all watched multi-ary NoGoods.
 		Iterator<WatchedNoGood> watchIterator = watchesOfAssignedAtom.multary.getOrdinary(entry.getTruth().toBoolean()).iterator();
@@ -449,7 +413,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 				// 3) the nogood is satisfied by the other watch and the current literal has decision level greater than the satisfying literal.
 				if (currentEntry == null
 					|| currentEntry.getTruth().toBoolean() != isPositive(currentLiteral)
-					|| (isNoGoodSatisfiedByOtherWatch && getWeakDecisionLevel(currentEntry) >= getWeakDecisionLevel(otherEntry))
+					|| (isNoGoodSatisfiedByOtherWatch && currentEntry.getWeakDecisionLevel() >= otherEntry.getWeakDecisionLevel())
 					) {
 					foundPointerCandidate = true;
 					pointerCandidateIndex = i;
@@ -457,7 +421,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 				}
 
 				// Record literal if it has highest decision level so far.
-				int currentDecisionLevel = getWeakDecisionLevel(currentEntry);
+				int currentDecisionLevel = currentEntry.getWeakDecisionLevel();
 				if (currentDecisionLevel > highestDecisionLevel) {
 					highestDecisionLevel = currentDecisionLevel;
 					pointerCandidateIndex = i;
@@ -468,35 +432,43 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 				// Move pointer to new literal.
 				watchedNoGood.setPointer(assignedPointer, pointerCandidateIndex);
 				watchIterator.remove();
-				addOrdinaryWatch(watchedNoGood, assignedPointer);
+				addWeakWatch(watchedNoGood, assignedPointer);
 			} else {
 				// NoGood is unit, propagate (on potentially lower decision level).
 				// Note: Violation is detected by Assignment.
-				assignWeakComplement(otherIndex, watchedNoGood, highestDecisionLevel);
+				ConflictCause conflictCause = assignWeakComplement(otherIndex, watchedNoGood, highestDecisionLevel);
+
+				if (conflictCause != null) {
+					return conflictCause;
+				}
 
 				// Move assigned watch to now-highest position (if it changed).
 				if (pointerCandidateIndex != assignedIndex) {
 					watchedNoGood.setPointer(assignedPointer, pointerCandidateIndex);
 					watchIterator.remove();
-					addOrdinaryWatch(watchedNoGood, assignedPointer);
+					addWeakWatch(watchedNoGood, assignedPointer);
 				}
 			}
 		}
+		return null;
 	}
 
-	private void propagateStrongly(final Assignment.Entry entry) {
+	private ConflictCause propagateStrongly(final Assignment.Entry entry) {
 		// Nothing needs to be done in case MBT is assigned since MBT cannot trigger strong unit-propagation.
 		if (entry.getTruth().isMBT()) {
-			return;
+			return null;
 		}
 
 		// Process binary watches.
 		Watches<BinaryWatch, WatchedNoGood> watchesOfAssignedAtom = watches(entry.getAtom());
 		for (BinaryWatch binaryWatch : watchesOfAssignedAtom.binary.getAlpha(entry.getTruth().toBoolean())) {
-			assignStrongComplement(binaryWatch.getOtherLiteralIndex(), binaryWatch.getNoGood(), entry.getDecisionLevel());
+			ConflictCause conflictCause = assignStrongComplement(binaryWatch.getOtherLiteralIndex(), binaryWatch.getNoGood(), entry.getDecisionLevel());
+			if (conflictCause != null) {
+				return conflictCause;
+			}
 		}
 
-		int assignedDecisionLevel = getStrongDecisionLevel(entry);
+		int assignedDecisionLevel = entry.getStrongDecisionLevel();
 
 		Iterator<WatchedNoGood> watchIterator = watchesOfAssignedAtom.multary.getAlpha(entry.getTruth().toBoolean()).iterator();
 		while (watchIterator.hasNext()) {
@@ -532,7 +504,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 				// 3) the nogood is satisfied by the head and the current literal has decision level greater than the head literal.
 				if (currentEntry == null || currentEntry.getTruth().isMBT()
 					|| currentEntry.getTruth().toBoolean() != isPositive(currentLiteral)
-					|| (isNoGoodSatisfiedByHead && getStrongDecisionLevel(currentEntry) >= getStrongDecisionLevel(headEntry))
+					|| (isNoGoodSatisfiedByHead && currentEntry.getStrongDecisionLevel() >= headEntry.getStrongDecisionLevel())
 					) {
 					foundPointerCandidate = true;
 					pointerCandidateIndex = i;
@@ -540,7 +512,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 				}
 
 				// Record literal if it has highest decision level so far.
-				int currentDecisionLevel = getStrongDecisionLevel(currentEntry);
+				int currentDecisionLevel = currentEntry.getStrongDecisionLevel();
 				if (currentDecisionLevel > highestDecisionLevel) {
 					highestDecisionLevel = currentDecisionLevel;
 					pointerCandidateIndex = i;
@@ -551,56 +523,56 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 				// Move pointer to new literal.
 				watchedNoGood.setAlphaPointer(pointerCandidateIndex);
 				watchIterator.remove();
-				addAlphaWatch(watchedNoGood);
-			} else {
+				addStrongWatch(watchedNoGood);
+				continue;
+			}
 
-				// NoGood is unit, propagate (on potentially lower decision level).
-				assignStrongComplement(headIndex, watchedNoGood, highestDecisionLevel);
+			// NoGood is unit, propagate (on potentially lower decision level).
+			ConflictCause conflictCause = assignStrongComplement(headIndex, watchedNoGood, highestDecisionLevel);
+			if (conflictCause != null) {
+				return conflictCause;
+			}
 
-				// Move assigned watch to now-highest position (if it changed).
-				if (pointerCandidateIndex != assignedIndex) {
-					watchedNoGood.setAlphaPointer(pointerCandidateIndex);
-					watchIterator.remove();
-					addAlphaWatch(watchedNoGood);
-				}
+			// Move assigned watch to now-highest position (if it changed).
+			if (pointerCandidateIndex != assignedIndex) {
+				watchedNoGood.setAlphaPointer(pointerCandidateIndex);
+				watchIterator.remove();
+				addStrongWatch(watchedNoGood);
 			}
 		}
+		return null;
 	}
 
-	private boolean didPropagate;
-	private boolean isPropagationConflicting;
-
 	@Override
-	public boolean propagate() {
+	public ConflictCause propagate() {
 		didPropagate = false;
-		isPropagationConflicting = false;
 
 		Queue<? extends Assignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
 		while (!assignmentsToProcess.isEmpty()) {
 			final Assignment.Entry currentEntry = assignmentsToProcess.remove();
 			LOGGER.trace("Propagation processing entry: {}={}", currentEntry.getAtom(), currentEntry);
 
-			propagateWeakly(currentEntry);
-			if (isPropagationConflicting) {
+			ConflictCause conflictCause = propagateWeakly(currentEntry);
+			if (conflictCause != null) {
 				LOGGER.trace("Halting propagation due to conflict. Current assignment: {}.", assignment);
-				return didPropagate;
+				return conflictCause;
 			}
 
-			propagateStrongly(currentEntry);
-			if (isPropagationConflicting) {
+			conflictCause = propagateStrongly(currentEntry);
+			if (conflictCause != null) {
 				LOGGER.trace("Halting propagation due to conflict. Current assignment: {}.", assignment);
-				return didPropagate;
+				return conflictCause;
 			}
 		}
 		if (internalChecksEnabled) {
 			runInternalChecks();
 		}
-		return didPropagate;
+		return null;
 	}
 
 	@Override
-	public Iterator<NoGood> iterator() {
-		throw new UnsupportedOperationException();
+	public boolean hasInferredAssignments() {
+		return didPropagate;
 	}
 
 	private static final class BinaryWatch {
@@ -639,9 +611,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 		private Set<T> getOrdinary(boolean polarity) {
 			return polarity ? positive : negative;
 		}
-
-
-
 	}
 
 	/**
@@ -661,9 +630,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 	}
 
 	public void runInternalChecks() {
-		if (getViolatedNoGood() == null) {
-			new WatchedNoGoodsChecker().doWatchesCheck();
-		}
+		new WatchedNoGoodsChecker().doWatchesCheck();
 	}
 
 	/**

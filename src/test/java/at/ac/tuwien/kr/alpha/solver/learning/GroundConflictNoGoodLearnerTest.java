@@ -41,11 +41,14 @@ public class GroundConflictNoGoodLearnerTest {
 
 		assignment.guess(9, ThriceTruth.TRUE);
 		assignment.guess(8, ThriceTruth.FALSE);
-		assertFalse(store.propagate());
+		assertNull(store.propagate());
+		assertFalse(store.hasInferredAssignments());
 		assignment.guess(7, ThriceTruth.FALSE);
-		assertEquals(true, store.propagate());
+		ConflictCause conflictCause = store.propagate();
+		assertTrue(store.hasInferredAssignments());
 
-		NoGood violatedNoGood = store.getViolatedNoGood();
+		assertNotNull(conflictCause);
+		NoGood violatedNoGood = conflictCause.getViolatedNoGood();
 		assertNotNull(violatedNoGood);
 		assertTrue(violatedNoGood.equals(n5) || violatedNoGood.equals(n7));
 		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(violatedNoGood);
@@ -67,7 +70,7 @@ public class GroundConflictNoGoodLearnerTest {
 		store.propagate();
 		assertEquals(ThriceTruth.MBT, assignment.get(2).getTruth());
 		assertEquals(1, assignment.get(2).getDecisionLevel());
-		NoGoodStore.ConflictCause conflictCause = store.add(11, n2);
+		ConflictCause conflictCause = store.add(11, n2);
 		assertNotNull(conflictCause);
 		assertNotNull(conflictCause.getViolatedNoGood());
 		GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.getViolatedNoGood());
