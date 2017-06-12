@@ -49,7 +49,7 @@ public final class SolverFactory {
 
 		switch (name.toLowerCase()) {
 			case "naive" :
-				return new NaiveSolver(grounder, store, assignment);
+				return new NaiveSolver(grounder);
 			case "default":
 				return new DefaultSolver(grounder, store, assignment, random, heuristic, debugInternalChecks);
 		}

@@ -45,17 +45,8 @@ public abstract class AbstractSolverTests {
 	public static Collection<Object[]> factories() {
 		boolean enableAdditionalInternalChecks = false;
 		Collection<Object[]> factories = new ArrayList<>();
-		factories.add(new Object[] {"NS", (Function<Grounder, Solver>) (Grounder g) -> {
-			ArrayAssignment assignment = new ArrayAssignment();
-			NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment);
-			return new NaiveSolver(g, store, assignment);
-		}});
-		factories.add(new Object[] {"NS/naive", (Function<Grounder, Solver>) (Grounder g) -> {
-			ArrayAssignment assignment = new ArrayAssignment();
-			NoGoodStore store = new NaiveNoGoodStore(assignment);
-			return new NaiveSolver(g, store, assignment);
-		}});
-		/*
+		factories.add(new Object[] {"NS", (Function<Grounder, Solver>) NaiveSolver::new});
+
 		for (Heuristic heuristic : Heuristic.values()) {
 			String name = "DS/R/" + heuristic;
 			Function<Grounder, Solver> instantiator = g -> {
@@ -85,7 +76,7 @@ public abstract class AbstractSolverTests {
 				return new DefaultSolver(g, store, assignment, new Random(0), heuristic, enableAdditionalInternalChecks);
 			};
 			factories.add(new Object[] {name, instantiator});
-		}*/
+		}
 		return factories;
 	}
 
