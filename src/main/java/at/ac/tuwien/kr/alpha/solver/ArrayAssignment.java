@@ -43,13 +43,12 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 /**
  * An implementation of the Assignment using ArrayList as underlying structure for storing assignment entries.
  */
-public class ArrayAssignment implements WritableAssignment {
+public class ArrayAssignment implements WritableAssignment, Checkable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ArrayAssignment.class);
 
 	private final AtomTranslator translator;
-	private final boolean internalChecksEnabled;
-
 	private final ArrayList<Entry> assignment = new ArrayList<>();
+
 	private final List<List<Integer>> atomsAssignedInDecisionLevel;
 	private final ArrayList<Integer> propagationCounterPerDecisionLevel;
 	private final Queue<ArrayAssignment.Entry> assignmentsToProcess = new LinkedList<>();
@@ -57,9 +56,10 @@ public class ArrayAssignment implements WritableAssignment {
 	private Queue<Assignment.Entry> newAssignmentsForChoice = new LinkedList<>();
 
 	private int mbtCount;
+	private boolean checksEnabled;
 
-	public ArrayAssignment(AtomTranslator translator, boolean internalChecksEnabled) {
-		this.internalChecksEnabled = internalChecksEnabled;
+	public ArrayAssignment(AtomTranslator translator, boolean checksEnabled) {
+		this.checksEnabled = checksEnabled;
 		this.translator = translator;
 		this.atomsAssignedInDecisionLevel = new ArrayList<>();
 		this.atomsAssignedInDecisionLevel.add(new ArrayList<>());
@@ -194,7 +194,7 @@ public class ArrayAssignment implements WritableAssignment {
 	}
 
 	private ConflictCause assignWithDecisionLevel(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
-		if (internalChecksEnabled) {
+		if (checksEnabled) {
 			if (getMBTCount() != getMBTAssignedAtoms().size()) {
 				throw new RuntimeException("MBT counter and amount of actually MBT-assigned atoms disagree. Should not happen.");
 			} else {
@@ -439,6 +439,11 @@ public class ArrayAssignment implements WritableAssignment {
 		Iterator<Assignment.Entry> it = newAssignmentsForChoice.iterator();
 		newAssignmentsForChoice = new LinkedList<>();
 		return it;
+	}
+
+	@Override
+	public void setChecksEnabled(boolean checksEnabled) {
+		this.checksEnabled = checksEnabled;
 	}
 
 	private static final class Entry implements Assignment.Entry {

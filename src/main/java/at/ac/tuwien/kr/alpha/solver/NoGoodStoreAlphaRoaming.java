@@ -49,18 +49,18 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
  *  point to unassigned literals. Observe that for an assignment to TRUE the (potentially lower) decision level of MBT
  *  is taken.
  */
-public class NoGoodStoreAlphaRoaming implements NoGoodStore {
+public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NoGoodStoreAlphaRoaming.class);
-	private final boolean internalChecksEnabled;
 
 	private final WritableAssignment assignment;
 	private final Map<Integer, Watches<BinaryWatch, WatchedNoGood>> watches = new LinkedHashMap<>();
 
+	private boolean checksEnabled;
 	private boolean didPropagate;
 
-	public NoGoodStoreAlphaRoaming(WritableAssignment assignment, boolean internalChecksEnabled) {
+	public NoGoodStoreAlphaRoaming(WritableAssignment assignment, boolean checksEnabled) {
 		this.assignment = assignment;
-		this.internalChecksEnabled = internalChecksEnabled;
+		this.checksEnabled = checksEnabled;
 	}
 
 	public NoGoodStoreAlphaRoaming(WritableAssignment assignment) {
@@ -76,7 +76,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 	public void backtrack() {
 		didPropagate = false;
 		assignment.backtrack();
-		if (internalChecksEnabled) {
+		if (checksEnabled) {
 			if (assignment.getAssignmentsToProcess().isEmpty()) {
 				new WatchedNoGoodsChecker().doWatchesCheck();
 			} else {
@@ -563,7 +563,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 				return conflictCause;
 			}
 		}
-		if (internalChecksEnabled) {
+		if (checksEnabled) {
 			runInternalChecks();
 		}
 		return null;
@@ -572,6 +572,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 	@Override
 	public boolean hasInferredAssignments() {
 		return didPropagate;
+	}
+
+	@Override
+	public void setChecksEnabled(boolean checksEnabled) {
+		this.checksEnabled = checksEnabled;
 	}
 
 	private static final class BinaryWatch {
