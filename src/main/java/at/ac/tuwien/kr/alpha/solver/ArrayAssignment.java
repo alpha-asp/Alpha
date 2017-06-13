@@ -180,15 +180,6 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		return isConflictFree;
 	}
 
-	@Override
-	public ConflictCause assign(int atom, ThriceTruth value, NoGood impliedBy) {
-		ConflictCause isConflictFree = assignWithDecisionLevel(atom, value, impliedBy, getDecisionLevel());
-		if (isConflictFree != null) {
-			LOGGER.debug("Assign is conflicting: atom: {}, value: {}, impliedBy: {}.", atom, value, impliedBy);
-		}
-		return isConflictFree;
-	}
-
 	private boolean assignmentsConsistent(Assignment.Entry oldAssignment, ThriceTruth value) {
 		return oldAssignment == null || oldAssignment.getTruth().toBoolean() == value.toBoolean();
 	}

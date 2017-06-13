@@ -42,10 +42,10 @@ public class GroundConflictNoGoodLearnerTest {
 		assignment.guess(9, ThriceTruth.TRUE);
 		assignment.guess(8, ThriceTruth.FALSE);
 		assertNull(store.propagate());
-		assertFalse(store.hasInferredAssignments());
+		assertFalse(store.didPropagate());
 		assignment.guess(7, ThriceTruth.FALSE);
 		ConflictCause conflictCause = store.propagate();
-		assertTrue(store.hasInferredAssignments());
+		assertTrue(store.didPropagate());
 
 		assertNotNull(conflictCause);
 		NoGood violatedNoGood = conflictCause.getViolatedNoGood();

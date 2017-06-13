@@ -86,7 +86,7 @@ public class NaiveNoGoodStore implements NoGoodStore {
 	}
 
 	@Override
-	public boolean hasInferredAssignments() {
+	public boolean didPropagate() {
 		return hasInferredAssignments;
 	}
 

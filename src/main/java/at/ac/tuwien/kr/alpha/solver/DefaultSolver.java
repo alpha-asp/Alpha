@@ -124,7 +124,7 @@ public class DefaultSolver extends AbstractSolver {
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
 			ConflictCause conflictCause = store.propagate();
-			didChange |= store.hasInferredAssignments();
+			didChange |= store.didPropagate();
 			LOGGER.trace("Assignment after propagation is: {}", assignment);
 			if (conflictCause != null) {
 				// Learn from conflict.
@@ -236,7 +236,7 @@ public class DefaultSolver extends AbstractSolver {
 			choiceManager.backtrack();
 			LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 			store.propagate();
-			if (!store.hasInferredAssignments()) {
+			if (!store.didPropagate()) {
 				throw new RuntimeException("Nothing to propagate after backtracking from conflict-causing guess. Should not happen.");
 			}
 		} else {

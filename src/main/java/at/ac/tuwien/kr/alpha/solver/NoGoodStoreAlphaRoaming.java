@@ -570,7 +570,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	}
 
 	@Override
-	public boolean hasInferredAssignments() {
+	public boolean didPropagate() {
 		return didPropagate;
 	}
 

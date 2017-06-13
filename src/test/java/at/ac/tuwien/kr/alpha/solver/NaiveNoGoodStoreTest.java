@@ -288,7 +288,7 @@ public class NaiveNoGoodStoreTest {
 		// First deduce 1 from 2 and 3, then deduce
 		// 5 from -4 and 1.
 		store.propagate();
-		assertTrue(store.hasInferredAssignments());
+		assertTrue(store.didPropagate());
 
 		assertEquals(TRUE, assignment.getTruth(1));
 		assertEquals(TRUE, assignment.getTruth(5));
@@ -299,19 +299,19 @@ public class NaiveNoGoodStoreTest {
 		// 1 <- 2, 3.
 		store.add(1, headFirst(-1, 2, 3));
 		assertNull(store.propagate());
-		assertFalse(store.hasInferredAssignments());
+		assertFalse(store.didPropagate());
 
 		// 2.
 		store.add(2, fact(-2));
 		assertNull(store.propagate());
-		assertTrue(store.hasInferredAssignments());
+		assertTrue(store.didPropagate());
 		assertEquals(TRUE, assignment.getTruth(2));
 		assertNull(assignment.getTruth(1));
 
 		// 3.
 		store.add(3, fact(-3));
 		assertNull(store.propagate());
-		assertTrue(store.hasInferredAssignments());
+		assertTrue(store.didPropagate());
 		assertEquals(TRUE, assignment.getTruth(3));
 
 		assertEquals(TRUE, assignment.getTruth(1));
@@ -378,7 +378,7 @@ public class NaiveNoGoodStoreTest {
 		assertNull(assignment.assign(3, FALSE));
 		ConflictCause conflictCause = store.propagate();
 		assertNotNull(conflictCause);
-		assertFalse(store.hasInferredAssignments());
+		assertFalse(store.didPropagate());
 		assertEquals(noGood, new NoGood(conflictCause.getViolatedNoGood()));
 	}
 
@@ -401,7 +401,7 @@ public class NaiveNoGoodStoreTest {
 		assertNull(assignment.assign(19, TRUE));
 		ConflictCause conflictCause = store.propagate();
 		assertNotNull(conflictCause);
-		assertFalse(store.hasInferredAssignments());
+		assertFalse(store.didPropagate());
 		assertEquals(noGood, new NoGood(conflictCause.getViolatedNoGood()));
 	}
 
@@ -414,7 +414,7 @@ public class NaiveNoGoodStoreTest {
 		assertNull(assignment.assign(19, MBT));
 		ConflictCause conflictCause = store.propagate();
 		assertNotNull(conflictCause);
-		assertFalse(store.hasInferredAssignments());
+		assertFalse(store.didPropagate());
 		assertEquals(noGood, new NoGood(conflictCause.getViolatedNoGood()));
 	}
 

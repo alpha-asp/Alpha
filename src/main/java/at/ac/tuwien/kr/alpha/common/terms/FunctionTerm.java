@@ -85,6 +85,7 @@ public class FunctionTerm extends Term {
 		if (terms.isEmpty()) {
 			return symbol.getSymbol();
 		}
+
 		final StringBuilder sb = new StringBuilder(symbol.getSymbol() + "(");
 		appendDelimited(sb, terms);
 		sb.append(")");
