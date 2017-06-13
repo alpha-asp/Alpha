@@ -6,11 +6,8 @@ import org.junit.Test;
 
 import java.util.*;
 
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Copyright (c) 2017, the Alpha Team.

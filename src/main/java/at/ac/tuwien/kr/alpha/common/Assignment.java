@@ -1,6 +1,5 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.solver.ConflictCause;
 import at.ac.tuwien.kr.alpha.solver.SimpleAssignment;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.WatchedNoGood;

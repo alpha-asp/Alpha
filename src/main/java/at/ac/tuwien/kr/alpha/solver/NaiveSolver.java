@@ -38,9 +38,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
-import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.common.Literals.*;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static java.lang.Math.abs;

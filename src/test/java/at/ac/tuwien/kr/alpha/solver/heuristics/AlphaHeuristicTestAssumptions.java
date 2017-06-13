@@ -32,7 +32,6 @@ import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.solver.ArrayAssignment;
 import at.ac.tuwien.kr.alpha.solver.TestableChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;

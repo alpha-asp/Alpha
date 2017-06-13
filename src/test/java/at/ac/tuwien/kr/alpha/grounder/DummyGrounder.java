@@ -11,7 +11,8 @@ import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
 import static at.ac.tuwien.kr.alpha.Util.entry;
-import static java.util.Collections.*;
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 
 /**
  * Represents a small ASP program {@code { c :- a, b.  a.  b. }}.

@@ -39,7 +39,6 @@ import java.util.stream.Stream;
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
 import static at.ac.tuwien.kr.alpha.Util.entry;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 
 /**

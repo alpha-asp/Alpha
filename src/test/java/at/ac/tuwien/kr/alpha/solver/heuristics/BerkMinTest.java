@@ -29,7 +29,6 @@ import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.ArrayAssignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 import org.junit.Before;
 import org.junit.Test;
