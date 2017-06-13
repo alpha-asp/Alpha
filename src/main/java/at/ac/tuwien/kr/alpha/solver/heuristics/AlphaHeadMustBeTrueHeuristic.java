@@ -28,6 +28,7 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
 
 import java.util.Comparator;
@@ -55,7 +56,7 @@ public class AlphaHeadMustBeTrueHeuristic extends DependencyDrivenHeuristic {
 	@Override
 	public int chooseAtom() {
 		Set<Integer> heads = headToBodies.keySet();
-		Stream<Integer> bodiesOfMbtHeads = heads.stream().map(Literals::atomOf).filter(assignment::isMBT).flatMap(h -> headToBodies.get(h).stream());
+		Stream<Integer> bodiesOfMbtHeads = heads.stream().map(Literals::atomOf).filter(a -> assignment.getTruth(a) == ThriceTruth.MBT).flatMap(h -> headToBodies.get(h).stream());
 		Optional<Integer> mostActiveBody = bodiesOfMbtHeads.filter(this::isUnassigned).filter(choiceManager::isActiveChoiceAtom)
 				.max(Comparator.comparingDouble(bodyActivity::get));
 		if (mostActiveBody.isPresent()) {

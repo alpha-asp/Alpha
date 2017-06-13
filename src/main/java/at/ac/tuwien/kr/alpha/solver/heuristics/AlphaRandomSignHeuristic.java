@@ -25,6 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
@@ -36,11 +37,11 @@ import static at.ac.tuwien.kr.alpha.common.atoms.Atoms.isAtom;
 
 public class AlphaRandomSignHeuristic extends DependencyDrivenHeuristic {
 
-	public AlphaRandomSignHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
+	public AlphaRandomSignHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
 		super(assignment, choiceManager, decayAge, decayFactor, random, BodyActivityType.DEFAULT);
 	}
 
-	public AlphaRandomSignHeuristic(WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
+	public AlphaRandomSignHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
 		super(assignment, choiceManager, random);
 	}
 

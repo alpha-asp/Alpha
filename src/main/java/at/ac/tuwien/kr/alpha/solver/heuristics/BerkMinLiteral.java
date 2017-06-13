@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
@@ -20,12 +21,12 @@ public class BerkMinLiteral extends BerkMin {
 	private static final int DEFAULT_QUEUE_SIZE = 32;
 	private final int queueSize;
 
-	BerkMinLiteral(WritableAssignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, int queueSize) {
+	BerkMinLiteral(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, int queueSize) {
 		super(assignment, choiceManager, decayAge, decayFactor, random);
 		this.queueSize = queueSize;
 	}
 
-	BerkMinLiteral(WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
+	BerkMinLiteral(Assignment assignment, ChoiceManager choiceManager, Random random) {
 		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random, DEFAULT_QUEUE_SIZE);
 	}
 

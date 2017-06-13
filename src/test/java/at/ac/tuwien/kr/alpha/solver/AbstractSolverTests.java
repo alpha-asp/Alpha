@@ -43,35 +43,35 @@ import java.util.function.Function;
 public abstract class AbstractSolverTests {
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> factories() {
-		boolean enableAdditionalInternalChecks = false;
+		boolean enableAdditionalInternalChecks = true;
 		Collection<Object[]> factories = new ArrayList<>();
 		factories.add(new Object[] {"NS", (Function<Grounder, Solver>) NaiveSolver::new});
 
 		for (Heuristic heuristic : Heuristic.values()) {
 			String name = "DS/R/" + heuristic;
 			Function<Grounder, Solver> instantiator = g -> {
-				ArrayAssignment assignment = new ArrayAssignment();
-				NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment);
+				ArrayAssignment assignment = new ArrayAssignment(g, enableAdditionalInternalChecks);
+				NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment, enableAdditionalInternalChecks);
 				return new DefaultSolver(g, store, assignment, new Random(), heuristic, enableAdditionalInternalChecks);
 			};
 			factories.add(new Object[] {name, instantiator});
 			name = "DS/R/" + heuristic + "/naive";
 			instantiator = g -> {
-				ArrayAssignment assignment = new ArrayAssignment();
+				ArrayAssignment assignment = new ArrayAssignment(g, enableAdditionalInternalChecks);
 				NoGoodStore store = new NaiveNoGoodStore(assignment);
 				return new DefaultSolver(g, store, assignment, new Random(), heuristic, enableAdditionalInternalChecks);
 			};
 			factories.add(new Object[] {name, instantiator});
 			name = "DS/D/" + heuristic;
 			instantiator = g -> {
-				ArrayAssignment assignment = new ArrayAssignment();
-				NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment);
+				ArrayAssignment assignment = new ArrayAssignment(g, enableAdditionalInternalChecks);
+				NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment, enableAdditionalInternalChecks);
 				return new DefaultSolver(g, store, assignment, new Random(0), heuristic, enableAdditionalInternalChecks);
 			};
 			factories.add(new Object[] {name, instantiator});
 			name = "DS/D/" + heuristic + "/naive";
 			instantiator = g -> {
-				ArrayAssignment assignment = new ArrayAssignment();
+				ArrayAssignment assignment = new ArrayAssignment(g, enableAdditionalInternalChecks);
 				NoGoodStore store = new NaiveNoGoodStore(assignment);
 				return new DefaultSolver(g, store, assignment, new Random(0), heuristic, enableAdditionalInternalChecks);
 			};

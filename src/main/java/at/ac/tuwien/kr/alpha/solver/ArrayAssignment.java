@@ -84,11 +84,6 @@ public class ArrayAssignment implements WritableAssignment {
 	}
 
 	@Override
-	public void unassign(int atom) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public Queue<? extends Assignment.Entry> getAssignmentsToProcess() {
 		return assignmentsToProcess;
 	}

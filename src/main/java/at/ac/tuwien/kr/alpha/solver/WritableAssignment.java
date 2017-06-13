@@ -30,13 +30,18 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 
-public interface WritableAssignment extends Assignment, SimpleWritableAssignment {
+public interface WritableAssignment extends Assignment {
 	/**
 	 * Delete all information stored in the assignment.
 	 */
 	void clear();
 
-	ConflictCause assign(int atom, ThriceTruth value, NoGood impliedBy);
+	/**
+	 * Backtracks to the indicated decision level. Every assignment on a higher decisionLevel is removed.
+	 * All assignments below (or equal to) decisionLevel are kept. Note that for atoms being TRUE this may require
+	 * setting the assigned value to MBT during backtracking.
+	 */
+	void backtrack();
 
 	/**
 	 * Assigns an atom some value on a lower decision level than the current one.
@@ -48,7 +53,15 @@ public interface WritableAssignment extends Assignment, SimpleWritableAssignment
 	 */
 	ConflictCause assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel);
 
+	ConflictCause assign(int atom, ThriceTruth value, NoGood impliedBy);
+
 	default ConflictCause assign(int atom, ThriceTruth value) {
 		return assign(atom, value, null);
+	}
+
+	ConflictCause guess(int atom, ThriceTruth value);
+
+	default ConflictCause guess(int atom, boolean value) {
+		return guess(atom, ThriceTruth.valueOf(value));
 	}
 }
