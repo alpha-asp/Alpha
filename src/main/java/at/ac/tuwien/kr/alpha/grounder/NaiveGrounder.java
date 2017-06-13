@@ -258,7 +258,6 @@ public class NaiveGrounder extends BridgedGrounder {
 		return new BasicAnswerSet(knownPredicates, predicateInstances);
 	}
 
-	@Override
 	public Map<Integer, NoGood> getHexNoGoods(Assignment assignment) {
 		HashMap<Integer, NoGood> newNoGoods = new LinkedHashMap<>();
 

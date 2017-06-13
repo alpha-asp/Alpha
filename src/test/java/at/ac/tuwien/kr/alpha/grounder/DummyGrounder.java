@@ -141,11 +141,6 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
-	public Map<Integer, NoGood> getHexNoGoods(Assignment assignment) {
-		return emptyMap();
-	}
-
-	@Override
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
 		return new ImmutablePair<>(new HashMap<>(), new HashMap<>());
 	}

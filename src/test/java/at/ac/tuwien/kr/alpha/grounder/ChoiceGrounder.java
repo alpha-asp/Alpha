@@ -147,12 +147,7 @@ public class ChoiceGrounder implements Grounder {
 			return new HashMap<>();
 		}
 	}
-
-	@Override
-	public Map<Integer, NoGood> getHexNoGoods(Assignment assignment) {
-		return emptyMap();
-	}
-
+	
 	private boolean isFirst = true;
 
 	@Override
