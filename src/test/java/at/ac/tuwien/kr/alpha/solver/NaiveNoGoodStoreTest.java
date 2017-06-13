@@ -578,16 +578,17 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
+	@Ignore("Not decision-level aware.")
 	public void propagationAtLowerDecisionLevel() {
 		NoGood noGood = headFirst(-1, 2, -3);
 		assertNull(assignment.guess(3, FALSE));
 		assertNull(assignment.guess(2, TRUE));
 		assertNull(assignment.guess(4, TRUE));
 		assertNull(store.add(10, noGood));
-		store.propagate();
-		assertTrue(TRUE.equals(assignment.getTruth(1)));
+		assertNull(store.propagate());
+		assertEquals(TRUE, assignment.getTruth(1));
 		Assignment.Entry entry = assignment.get(1);
-		assertTrue(TRUE.equals(entry.getTruth()));
+		assertEquals(TRUE, entry.getTruth());
 		assertEquals(2, entry.getDecisionLevel());
 	}
 }
