@@ -58,11 +58,12 @@ public class ChoiceManager {
 
 	private boolean internalChecksEnabled;
 
-	void enableInternalChecks() {
-		internalChecksEnabled = true;
+	public ChoiceManager(Assignment assignment) {
+		this(assignment, false);
 	}
 
-	public ChoiceManager(Assignment assignment) {
+	public ChoiceManager(Assignment assignment, boolean internalChecksEnabled) {
+		this.internalChecksEnabled = internalChecksEnabled;
 		this.assignment = assignment;
 		modifiedInDecisionLevel.put(0, new ArrayList<>());
 		highestDecisionLevel = 0;

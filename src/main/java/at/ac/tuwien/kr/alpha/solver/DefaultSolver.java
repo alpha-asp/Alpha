@@ -72,11 +72,7 @@ public class DefaultSolver extends AbstractSolver {
 
 		this.assignment = assignment;
 		this.store = store;
-		this.choiceManager = new ChoiceManager(assignment);
-		if (debugInternalChecks) {
-			((ArrayAssignment) assignment).enableInternalChecks();
-			choiceManager.enableInternalChecks();
-		}
+		this.choiceManager = new ChoiceManager(assignment, debugInternalChecks);
 		this.choiceStack = new ChoiceStack(grounder, false);
 		this.learner = new GroundConflictNoGoodLearner(assignment);
 		this.branchingHeuristic = BranchingHeuristicFactory.getInstance(branchingHeuristic, grounder, assignment, choiceManager, random);
