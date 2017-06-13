@@ -59,9 +59,10 @@ public class NaiveGrounder extends BridgedGrounder {
 	private final IntIdGenerator nogoodIdGenerator = new IntIdGenerator();
 	private final IntIdGenerator choiceAtomsGenerator = new IntIdGenerator();
 
-	private final HashMap<Predicate, HashSet<Instance>> factsFromProgram = new HashMap<>();
+	private HashMap<Predicate, LinkedHashSet<Instance>> factsFromProgram = new LinkedHashMap<>();
 	private final ArrayList<NonGroundRule> rulesFromProgram = new ArrayList<>();
 	private final HashMap<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
+
 	private boolean prepareFacts = true;
 
 	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newChoiceAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
@@ -98,7 +99,7 @@ public class NaiveGrounder extends BridgedGrounder {
 			}
 			Instance instance = new Instance(termList.toArray(new Term[0]));
 			// Add instance to corresponding list of facts
-			factsFromProgram.putIfAbsent(predicate, new HashSet<>());
+			factsFromProgram.putIfAbsent(predicate, new LinkedHashSet<>());
 			HashSet<Instance> internalPredicateInstances = factsFromProgram.get(predicate);
 			internalPredicateInstances.add(instance);
 		}
@@ -241,7 +242,7 @@ public class NaiveGrounder extends BridgedGrounder {
 		}
 
 		// Add true atoms from facts.
-		for (Map.Entry<Predicate, HashSet<Instance>> facts : factsFromProgram.entrySet()) {
+		for (Map.Entry<Predicate, LinkedHashSet<Instance>> facts : factsFromProgram.entrySet()) {
 			Predicate factPredicate = facts.getKey();
 			knownPredicates.add(factPredicate);
 			predicateInstances.putIfAbsent(factPredicate, new TreeSet<>());

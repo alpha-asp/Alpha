@@ -13,14 +13,14 @@ import java.util.*;
 public class IndexedInstanceStorage {
 	private final String description;	// An (arbitrary) description of what is stored here, mainly for debugging.
 	private final int arity;		// All instances stored have to have this number of termIds.
-	private HashSet<Instance> instances;	// A collection of all instances currently stored in this storage.
+	private LinkedHashSet<Instance> instances;	// A collection of all instances currently stored in this storage.
 	private ArrayList<HashMap<Term, ArrayList<Instance>>> indices;	// For each position, a mapping of termIds to list of instances with this termId at the corresponding position
 	private ArrayList<Instance> recentlyAddedInstances;
 
 	public IndexedInstanceStorage(String description, int arity) {
 		this.description = description;
 		this.arity = arity;
-		instances = new HashSet<>();
+		instances = new LinkedHashSet<>();
 		recentlyAddedInstances = new ArrayList<>();
 		// Create list of mappings, initialize to null.
 		indices = new ArrayList<>();
@@ -39,7 +39,7 @@ public class IndexedInstanceStorage {
 				"IndexedInstanceStorage: " + description + " arity: " + arity + "  requested indices position: " + position);
 		}
 		// Add index
-		indices.set(position, new HashMap<>());
+		indices.set(position, new LinkedHashMap<>());
 
 		// Initialize index with all instances currently used.
 		for (Instance instance : instances) {
