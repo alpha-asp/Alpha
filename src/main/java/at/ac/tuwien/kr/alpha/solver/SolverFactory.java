@@ -34,7 +34,7 @@ import java.util.Random;
 
 public final class SolverFactory {
 	public static Solver getInstance(String name, String storeName, Grounder grounder, Random random, Heuristic heuristic, boolean debugInternalChecks) {
-		final ArrayAssignment assignment = new ArrayAssignment(grounder);
+		final ArrayAssignment assignment = new ArrayAssignment(grounder, debugInternalChecks);
 
 		NoGoodStore store;
 
@@ -42,9 +42,11 @@ public final class SolverFactory {
 			case "naive":
 				store = new NaiveNoGoodStore(assignment);
 				break;
-			default:
+			case "alphaRoaming":
 				store = new NoGoodStoreAlphaRoaming(assignment, debugInternalChecks);
 				break;
+			default:
+				throw new IllegalArgumentException("Unknown store requested.");
 		}
 
 		switch (name.toLowerCase()) {
