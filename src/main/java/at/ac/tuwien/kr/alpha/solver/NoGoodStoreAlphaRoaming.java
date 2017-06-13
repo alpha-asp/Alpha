@@ -95,12 +95,12 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 		return result;
 	}
 
-	private void addWeakWatch(WatchedNoGood wng, int pointer) {
+	private void addOrdinaryWatch(WatchedNoGood wng, int pointer) {
 		final int literal = wng.getLiteral(wng.getPointer(pointer));
 		watches(literal).multary.getOrdinary(isPositive(literal)).add(wng);
 	}
 
-	private void addStrongWatch(WatchedNoGood wng) {
+	private void addAlphaWatch(WatchedNoGood wng) {
 		final int literal = wng.getLiteralAtAlpha();
 		watches(literal).multary.getAlpha(isPositive(literal)).add(wng);
 	}
@@ -262,11 +262,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 		if (wng.getAlphaPointer() != -1) {
 			// Only look at the alpha pointer if it points at a legal index. It might not
 			// in case the noGood has no head or no positive literal.
-			addStrongWatch(wng);
+			addAlphaWatch(wng);
 		}
 		// Set ordinary watches.
-		addWeakWatch(wng, 0);
-		addWeakWatch(wng, 1);
+		addOrdinaryWatch(wng, 0);
+		addOrdinaryWatch(wng, 1);
 		return null;
 	}
 
@@ -330,7 +330,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 		}
 		return null;
 	}
-
 
 	private ConflictCause assignWeakComplement(final int literalIndex, final NoGood impliedBy, int decisionLevel) {
 		final int literal = impliedBy.getLiteral(literalIndex);
@@ -432,7 +431,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 				// Move pointer to new literal.
 				watchedNoGood.setPointer(assignedPointer, pointerCandidateIndex);
 				watchIterator.remove();
-				addWeakWatch(watchedNoGood, assignedPointer);
+				addOrdinaryWatch(watchedNoGood, assignedPointer);
 			} else {
 				// NoGood is unit, propagate (on potentially lower decision level).
 				// Note: Violation is detected by Assignment.
@@ -446,7 +445,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 				if (pointerCandidateIndex != assignedIndex) {
 					watchedNoGood.setPointer(assignedPointer, pointerCandidateIndex);
 					watchIterator.remove();
-					addWeakWatch(watchedNoGood, assignedPointer);
+					addOrdinaryWatch(watchedNoGood, assignedPointer);
 				}
 			}
 		}
@@ -523,7 +522,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 				// Move pointer to new literal.
 				watchedNoGood.setAlphaPointer(pointerCandidateIndex);
 				watchIterator.remove();
-				addStrongWatch(watchedNoGood);
+				addAlphaWatch(watchedNoGood);
 				continue;
 			}
 
@@ -537,7 +536,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore {
 			if (pointerCandidateIndex != assignedIndex) {
 				watchedNoGood.setAlphaPointer(pointerCandidateIndex);
 				watchIterator.remove();
-				addStrongWatch(watchedNoGood);
+				addAlphaWatch(watchedNoGood);
 			}
 		}
 		return null;
