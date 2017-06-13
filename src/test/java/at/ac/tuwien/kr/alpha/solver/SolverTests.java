@@ -238,7 +238,6 @@ public class SolverTests extends AbstractSolverTests {
 	public void emptyProgramYieldsEmptyAnswerSet() throws IOException {
 		ParsedProgram parsedProgram = parseVisit("");
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-
 		List<AnswerSet> answerSets = getInstance(grounder).collectList();
 		assertEquals(1, answerSets.size());
 		assertEquals(BasicAnswerSet.EMPTY, answerSets.get(0));
@@ -306,8 +305,10 @@ public class SolverTests extends AbstractSolverTests {
 		String testProgram = "dom(1). dom(2). dom(3). dom(4). dom(5)." +
 			"p(X) :- dom(X), X = 4." +
 			"r(Y) :- dom(Y), Y <= 2.";
+
 		ParsedProgram parsedProgram = parseVisit(testProgram);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+
 		Solver solver = getInstance(grounder);
 
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
@@ -337,6 +338,7 @@ public class SolverTests extends AbstractSolverTests {
 			"c :- 2 <= 3, not 2 > 3.";
 		ParsedProgram parsedProgram = parseVisit(testProgram);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+
 		Solver solver = getInstance(grounder);
 
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(

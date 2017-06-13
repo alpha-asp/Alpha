@@ -25,13 +25,17 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.*;
-import at.ac.tuwien.kr.alpha.solver.GroundConflictNoGoodLearner.ConflictAnalysisResult;
+import at.ac.tuwien.kr.alpha.solver.ArrayAssignment;
+import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Random;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 

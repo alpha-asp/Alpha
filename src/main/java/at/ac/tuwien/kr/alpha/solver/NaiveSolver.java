@@ -28,8 +28,8 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.grounder.BooleanAssignmentReader;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -38,9 +38,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
-import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.common.Literals.*;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static java.lang.Math.abs;
@@ -335,32 +333,14 @@ public class NaiveSolver extends AbstractSolver {
 		}
 
 		@Override
-		public void setReassignFalse() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
 		public String toString() {
 			throw new UnsupportedOperationException();
 		}
 	}
 
-	private class NaiveBooleanAssignmentReader extends BooleanAssignmentReader {
-
-		public NaiveBooleanAssignmentReader() {
-			super(null);
-		}
-
-		@Override
-		public boolean isTrue(int atomId) {
-			Boolean assigned = truthAssignments.get(atomId);
-			return assigned != null && assigned;
-		}
-	}
-
 	private void obtainNoGoodsFromGrounder() {
 		final int oldSize = knownNoGoods.size();
-		knownNoGoods.putAll(grounder.getNoGoods(new NaiveBooleanAssignmentReader()));
+		knownNoGoods.putAll(grounder.getNoGoods(null));
 		if (oldSize != knownNoGoods.size()) {
 			// Record to detect propagation fixpoint, checking if new NoGoods were reported would be better here.
 			didChange = true;

@@ -3,44 +3,34 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 
 /**
- * A (temporary) interface defining the use of a NoGoodStore.
+ * An interface defining the use of a nogood store.
+ *
  * Copyright (c) 2016, the Alpha Team.
  */
-interface NoGoodStore {
+public interface NoGoodStore {
 	/**
 	 * Adds a nogood with the given id.
 	 * @param id the unique identifier of the nogood.
 	 * @param noGood the nogood to add.
-	 * @return null if the noGood was added without conflict, a ConflictCause describing the conflict otherwise.
+	 * @return {@code null} if the noGood was added without conflict, a {@link ConflictCause} describing
+	 *         the conflict otherwise.
 	 */
 	ConflictCause add(int id, NoGood noGood);
 
-	class ConflictCause {
-		NoGood violatedNoGood;
-		Assignment.Entry violatedGuess;
-
-		public ConflictCause(NoGood violatedNoGood, Assignment.Entry violatedGuess) {
-			this.violatedNoGood = violatedNoGood;
-			this.violatedGuess = violatedGuess;
-		}
-	}
+	/**
+	 * Apply weak propagation and strong propagation. Propagation should stop as soon as some nogood is violated.
+	 * @return some cause iff a conflict was reached or {@code null} otherwise
+	 */
+	ConflictCause propagate();
 
 	/**
-	 * Returns the NoGood that is violated by the current assignment.
-	 * @return the violated nogood.
+	 * After a call to {@link #propagate()} this method provides
+	 * whether propagation was successful, i.e. at least one new
+	 * assignment was inferred.
+	 * @return {@code true} iff the last call to {@link #propagate()}
+	 *         inferred at least one assignment, {@code false} otherwise.
 	 */
-	NoGood getViolatedNoGood();
-
-	/**
-	 * Apply unit-propagation and mbt-propagation. Propagation should stop as soon as some NoGood is violated.
-	 * @return true iff the propagation derived new assignment(s).
-	 */
-	boolean propagate();
+	boolean didPropagate();
 
 	void backtrack();
-
-	/**
-	 * Enables (time-consuming) additional sanity checks.
-	 */
-	void enableInternalChecks();
 }

@@ -1,15 +1,13 @@
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.*;
 
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Copyright (c) 2017, the Alpha Team.
@@ -39,8 +37,8 @@ public class ArrayAssignmentTest {
 	@Test
 	public void alreadyAssignedThrows() throws Exception {
 		assignment.growForMaxAtomId(1);
-		assertTrue(assignment.assign(1, MBT));
-		assertFalse(assignment.assign(1, FALSE));
+		assertNull(assignment.assign(1, MBT));
+		assertNotNull(assignment.assign(1, FALSE));
 	}
 
 	@Test
@@ -136,7 +134,7 @@ public class ArrayAssignmentTest {
 		assignment.growForMaxAtomId(2);
 		assignment.assign(1, MBT);
 
-		Queue<Assignment.Entry> queue = assignment.getAssignmentsToProcess();
+		Queue<? extends Assignment.Entry> queue = assignment.getAssignmentsToProcess();
 		assertEquals(1, queue.remove().getAtom());
 
 		assignment.guess(2, MBT);
@@ -192,7 +190,7 @@ public class ArrayAssignmentTest {
 	@Test
 	public void iteratorAndBacktracking() throws Exception {
 		assignment.growForMaxAtomId(3);
-		Queue<Assignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
+		Queue<? extends Assignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
 
 		assignment.assign(1, MBT);
 		assertEquals(1, assignmentsToProcess.remove().getAtom());
@@ -212,15 +210,15 @@ public class ArrayAssignmentTest {
 	@Test
 	public void mbtCounterAssignMbtToFalseOnLowerDecisionLevel() {
 		assignment.growForMaxAtomId(4);
-		assertTrue(assignment.guess(1, TRUE));
-		assertTrue(assignment.guess(2, FALSE));
+		assertNull(assignment.guess(1, TRUE));
+		assertNull(assignment.guess(2, FALSE));
 
-		assertTrue(assignment.assign(3, MBT, null, 2));
+		assertNull(assignment.assign(3, MBT, null, 2));
 		assertEquals(1, assignment.getMBTCount());
 
-		assertTrue(assignment.guess(4, TRUE));
+		assertNull(assignment.guess(4, TRUE));
 
-		assertFalse(assignment.assign(3, FALSE, null, 1));
+		assertNotNull(assignment.assign(3, FALSE, null, 1));
 
 		assignment.backtrack();
 		assignment.backtrack();

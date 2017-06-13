@@ -27,6 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.slf4j.Logger;
@@ -34,37 +36,43 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.atoms.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
 /**
  * An implementation of the Assignment using ArrayList as underlying structure for storing assignment entries.
  */
-public class ArrayAssignment implements Assignment {
+public class ArrayAssignment implements WritableAssignment, Checkable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ArrayAssignment.class);
+
+	private final AtomTranslator translator;
 	private final ArrayList<Entry> assignment = new ArrayList<>();
+
 	private final List<List<Integer>> atomsAssignedInDecisionLevel;
 	private final ArrayList<Integer> propagationCounterPerDecisionLevel;
-	private final Queue<Assignment.Entry> assignmentsToProcess = new LinkedList<>();
+	private final Queue<ArrayAssignment.Entry> assignmentsToProcess = new LinkedList<>();
 	private Queue<Assignment.Entry> newAssignments = new LinkedList<>();
 	private Queue<Assignment.Entry> newAssignmentsForChoice = new LinkedList<>();
-	private final Grounder grounder;
 
 	private int mbtCount;
+	private boolean checksEnabled;
 
-	private boolean internalChecksEnabled;
-
-	public ArrayAssignment(Grounder grounder) {
-		this.grounder = grounder;
+	public ArrayAssignment(AtomTranslator translator, boolean checksEnabled) {
+		this.checksEnabled = checksEnabled;
+		this.translator = translator;
 		this.atomsAssignedInDecisionLevel = new ArrayList<>();
 		this.atomsAssignedInDecisionLevel.add(new ArrayList<>());
 		this.propagationCounterPerDecisionLevel = new ArrayList<>();
 		this.propagationCounterPerDecisionLevel.add(0);
 	}
 
+	public ArrayAssignment(Grounder translator) {
+		this(translator, false);
+	}
+
 	public ArrayAssignment() {
-		this(null);
+		this(null, false);
 	}
 
 	@Override
@@ -75,12 +83,8 @@ public class ArrayAssignment implements Assignment {
 		mbtCount = 0;
 	}
 
-	void enableInternalChecks() {
-		internalChecksEnabled = true;
-	}
-
 	@Override
-	public Queue<Assignment.Entry> getAssignmentsToProcess() {
+	public Queue<? extends Assignment.Entry> getAssignmentsToProcess() {
 		return assignmentsToProcess;
 	}
 
@@ -88,7 +92,7 @@ public class ArrayAssignment implements Assignment {
 	public void backtrack() {
 		// Remove all assignments on the current decision level from the queue of assignments to process.
 		HashSet<Integer> removedEntries = new HashSet<>();
-		for (Iterator<Assignment.Entry> iterator = assignmentsToProcess.iterator(); iterator.hasNext();) {
+		for (Iterator<ArrayAssignment.Entry> iterator = assignmentsToProcess.iterator(); iterator.hasNext();) {
 			Assignment.Entry entry = iterator.next();
 			if (entry.getDecisionLevel() == getDecisionLevel()) {
 				iterator.remove();
@@ -96,7 +100,7 @@ public class ArrayAssignment implements Assignment {
 			}
 		}
 		// If backtracking removed the first assigning entry, any reassignment becomes an ordinary (first) assignment.
-		for (Assignment.Entry entry : assignmentsToProcess) {
+		for (ArrayAssignment.Entry entry : assignmentsToProcess) {
 			// NOTE: this check is most often not needed, perhaps there is a better way to realize this check?
 			if (entry.isReassignAtLowerDecisionLevel() && removedEntries.contains(entry.getAtom())) {
 				entry.setReassignFalse();
@@ -154,57 +158,34 @@ public class ArrayAssignment implements Assignment {
 	}
 
 	@Override
-	public boolean guess(int atom, ThriceTruth value) {
+	public ConflictCause guess(int atom, ThriceTruth value) {
 		atomsAssignedInDecisionLevel.add(new ArrayList<>());
 		propagationCounterPerDecisionLevel.add(0);
 		return assign(atom, value, null);
 	}
 
 	@Override
-	public boolean assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
+	public ConflictCause assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
 		if (decisionLevel > getDecisionLevel() || decisionLevel < 0) {
 			throw new IllegalArgumentException("Given decisionLevel is outside range of possible decision levels. Given decisionLevel is: " + decisionLevel);
 		}
 		if (decisionLevel < getDecisionLevel() && LOGGER.isDebugEnabled()) {
-			String atomString = grounder != null ? grounder.atomToString(atom) : Integer.toString(atom);
+			String atomString = translator != null ? translator.atomToString(atom) : Integer.toString(atom);
 			LOGGER.trace("Assign called with lower decision level. Atom: {}_{}@{}.", value, atomString, decisionLevel);
 		}
-		boolean isConflictFree = assignWithDecisionLevel(atom, value, impliedBy, decisionLevel);
-		if (!isConflictFree) {
+		ConflictCause isConflictFree = assignWithDecisionLevel(atom, value, impliedBy, decisionLevel);
+		if (isConflictFree != null) {
 			LOGGER.debug("Assign is conflicting: atom: {}, value: {}, impliedBy: {}.", atom, value, impliedBy);
 		}
 		return isConflictFree;
-	}
-
-	@Override
-	public boolean assign(int atom, ThriceTruth value, NoGood impliedBy) {
-		boolean isConflictFree = assignWithDecisionLevel(atom, value, impliedBy, getDecisionLevel());
-		if (!isConflictFree) {
-			LOGGER.debug("Assign is conflicting: atom: {}, value: {}, impliedBy: {}.", atom, value, impliedBy);
-		}
-		return isConflictFree;
-	}
-
-	private NoGood violatedByAssign;
-
-	@Override
-	public NoGood getNoGoodViolatedByAssign() {
-		return violatedByAssign;
-	}
-
-	private Entry guessViolatedByAssign;
-
-	@Override
-	public Assignment.Entry getGuessViolatedByAssign() {
-		return guessViolatedByAssign;
 	}
 
 	private boolean assignmentsConsistent(Assignment.Entry oldAssignment, ThriceTruth value) {
 		return oldAssignment == null || oldAssignment.getTruth().toBoolean() == value.toBoolean();
 	}
 
-	private boolean assignWithDecisionLevel(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
-		if (internalChecksEnabled) {
+	private ConflictCause assignWithDecisionLevel(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
+		if (checksEnabled) {
 			if (getMBTCount() != getMBTAssignedAtoms().size()) {
 				throw new RuntimeException("MBT counter and amount of actually MBT-assigned atoms disagree. Should not happen.");
 			} else {
@@ -229,7 +210,7 @@ public class ArrayAssignment implements Assignment {
 		// and the current one has lower decision level.
 		if (current != null && current.getDecisionLevel() <= decisionLevel &&
 			(value.equals(current.getTruth()) || value.isMBT() && TRUE.equals(current.getTruth()))) {
-			return true;
+			return null;
 		}
 
 		// If the atom currently is not assigned, simply record the assignment.
@@ -239,18 +220,19 @@ public class ArrayAssignment implements Assignment {
 				mbtCount++;
 			}
 			recordAssignment(atom, value, impliedBy, decisionLevel, null);
-			return true;
+			return null;
 		}
 
 		// Check consistency.
 		if (!assignmentsConsistent(current, value)) {
+			ConflictCause conflictCause = null;
 			// Assignments are inconsistent, prepare the reason.
-			violatedByAssign = impliedBy;
+			NoGood violated = impliedBy;
 			if (decisionLevel < current.getWeakDecisionLevel()) {
 				// New assignment is lower than the current one, hence cause is the reason for the (higher) current one.
-				violatedByAssign = current.getPrevious() == null ? current.getImpliedBy() : current.getPrevious().getImpliedBy();	// take MBT reason if it exists.
-				if (violatedByAssign == null) {
-					guessViolatedByAssign = current;
+				violated = current.getPrevious() == null ? current.getImpliedBy() : current.getPrevious().getImpliedBy();	// take MBT reason if it exists.
+				if (violated == null) {
+					conflictCause = new ConflictCause(current);
 				}
 				// The lower assignment takes precedence over the current value, overwrite it and adjust mbtCounter.
 				if (current.getTruth() == MBT) {
@@ -262,7 +244,8 @@ public class ArrayAssignment implements Assignment {
 				}
 
 			}
-			return false;
+			conflictCause = new ConflictCause(impliedBy);
+			return conflictCause;
 		}
 
 		// Previous assignment exists, and the new one is consistent with it.
@@ -270,7 +253,7 @@ public class ArrayAssignment implements Assignment {
 			case FALSE:
 				// Previous must be false, simply re-assign it.
 				recordAssignment(atom, value, impliedBy, decisionLevel, null);
-				return true;
+				return null;
 			case TRUE:
 				ArrayAssignment.Entry eventualPreExistingMBT = current.getTruth().isMBT() ? current : current.getPrevious();
 				if (eventualPreExistingMBT != null && eventualPreExistingMBT.getDecisionLevel() <= decisionLevel) {
@@ -283,13 +266,13 @@ public class ArrayAssignment implements Assignment {
 				if (current.getTruth().isMBT()) {
 					mbtCount--;
 				}
-				return true;
+				return null;
 			case MBT:
 				if (current.getPrevious() != null && current.getPrevious().getDecisionLevel() <= decisionLevel
 					|| TRUE.equals(current.getTruth()) && current.getDecisionLevel() <= decisionLevel) {
 					// New assignment is above-or-equal to an already existing MBT,
 					// or current is TRUE and at same decision level as the new MBT. Ignore it.
-					return true;
+					return null;
 				}
 				if (!current.getTruth().isMBT()) {
 					// Current assignment is TRUE and new one is MBT below (and lower than a previous MBT).
@@ -299,7 +282,7 @@ public class ArrayAssignment implements Assignment {
 					// Current assignment is MBT and the new one is below it (no TRUE above exists).
 					recordAssignment(atom, value, impliedBy, decisionLevel, null);
 				}
-				return true;
+				return null;
 		}
 		throw new RuntimeException("Statement should be unreachable, algorithm misses some case.");
 	}
@@ -423,8 +406,8 @@ public class ArrayAssignment implements Assignment {
 			isFirst = false;
 			sb.append(assignmentEntry.getTruth());
 			sb.append("_");
-			if (grounder != null) {
-				sb.append(grounder.atomToString(assignmentEntry.getAtom()));
+			if (translator != null) {
+				sb.append(translator.atomToString(assignmentEntry.getAtom()));
 			} else {
 				sb.append(assignmentEntry.getAtom());
 			}
@@ -447,6 +430,11 @@ public class ArrayAssignment implements Assignment {
 		Iterator<Assignment.Entry> it = newAssignmentsForChoice.iterator();
 		newAssignmentsForChoice = new LinkedList<>();
 		return it;
+	}
+
+	@Override
+	public void setChecksEnabled(boolean checksEnabled) {
+		this.checksEnabled = checksEnabled;
 	}
 
 	private static final class Entry implements Assignment.Entry {
@@ -506,7 +494,6 @@ public class ArrayAssignment implements Assignment {
 			return isReassignAtLowerDecisionLevel;
 		}
 
-		@Override
 		public void setReassignFalse() {
 			this.isReassignAtLowerDecisionLevel = false;
 		}

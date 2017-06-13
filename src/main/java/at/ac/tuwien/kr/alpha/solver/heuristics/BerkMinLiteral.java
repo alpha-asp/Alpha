@@ -1,10 +1,12 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 
-import java.util.*;
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.Random;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 

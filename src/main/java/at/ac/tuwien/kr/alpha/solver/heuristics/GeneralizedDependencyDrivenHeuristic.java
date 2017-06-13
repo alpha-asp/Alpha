@@ -25,12 +25,14 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
@@ -50,8 +52,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
  */
 public class GeneralizedDependencyDrivenHeuristic extends DependencyDrivenHeuristic {
 
-	public GeneralizedDependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random,
-			BodyActivityType bodyActivityType) {
+	public GeneralizedDependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, BodyActivityType bodyActivityType) {
 		super(assignment, choiceManager, decayAge, decayFactor, random, bodyActivityType);
 	}
 

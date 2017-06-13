@@ -25,12 +25,13 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.grounder.BooleanAssignmentReader;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
-import at.ac.tuwien.kr.alpha.solver.*;
+import at.ac.tuwien.kr.alpha.solver.ArrayAssignment;
+import at.ac.tuwien.kr.alpha.solver.TestableChoiceManager;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -141,7 +142,7 @@ public class AlphaHeuristicTestAssumptions {
 	}
 
 	private Collection<NoGood> getNoGoods() {
-		return grounder.getNoGoods(new BooleanAssignmentReader(null)).values();
+		return grounder.getNoGoods(null).values();
 	}
 
 	private void assertGreaterThan(String message, long expected, long actual) {

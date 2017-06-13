@@ -1,5 +1,6 @@
-package at.ac.tuwien.kr.alpha.common;
+package at.ac.tuwien.kr.alpha.common.terms;
 
+import at.ac.tuwien.kr.alpha.common.Symbol;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;

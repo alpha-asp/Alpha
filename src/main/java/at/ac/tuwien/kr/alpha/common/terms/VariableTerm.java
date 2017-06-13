@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.common;
+package at.ac.tuwien.kr.alpha.common.terms;
 
 import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;

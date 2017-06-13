@@ -26,8 +26,8 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
 import org.apache.commons.lang3.StringUtils;
 
@@ -83,7 +83,7 @@ public final class BranchingHeuristicFactory {
 		}
 	}
 
-	public static BranchingHeuristic getInstance(Heuristic name, Grounder grounder, Assignment assignment, ChoiceManager choiceManager, Random random) {
+	public static BranchingHeuristic getInstance(Heuristic name, Grounder grounder, WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
 		switch (name) {
 		case NAIVE:
 			return new NaiveHeuristic(choiceManager);

@@ -27,10 +27,10 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.Term;
-import at.ac.tuwien.kr.alpha.common.VariableTerm;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -57,7 +57,6 @@ public class SubstitutionTest {
 		Term nongroundFunctionTerm = FunctionTerm.getInstance("f", ConstantTerm.getInstance("bb"), VariableTerm.getInstance("X"));
 		substitution.unifyTerms(nongroundFunctionTerm, groundFunctionTerm);
 		assertEquals("Variable X must bind to constant term cc", substitution.eval(VariableTerm.getInstance("X")), ConstantTerm.getInstance("cc"));
-
 		assertEquals("Variable Z must bind to constant term aa", substitution.eval(VariableTerm.getInstance("Z")), ConstantTerm.getInstance("aa"));
 	}
 }

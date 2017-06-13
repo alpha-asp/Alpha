@@ -1,5 +1,10 @@
-package at.ac.tuwien.kr.alpha.common;
+package at.ac.tuwien.kr.alpha.common.atoms;
 
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedBuiltinAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTerm;

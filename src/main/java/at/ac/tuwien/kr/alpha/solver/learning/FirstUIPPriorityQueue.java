@@ -1,4 +1,6 @@
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.solver.learning;
+
+import at.ac.tuwien.kr.alpha.common.Assignment;
 
 import java.util.Comparator;
 import java.util.HashSet;

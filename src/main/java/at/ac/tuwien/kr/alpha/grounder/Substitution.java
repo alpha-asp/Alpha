@@ -1,9 +1,9 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.Term;
-import at.ac.tuwien.kr.alpha.common.VariableTerm;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,7 +13,7 @@ import java.util.List;
 public class Substitution {
 	private HashMap<VariableTerm, Term> substitution;
 
-	public Substitution(HashMap<VariableTerm, Term> substitution) {
+	private Substitution(HashMap<VariableTerm, Term> substitution) {
 		this.substitution = substitution;
 	}
 
@@ -23,10 +23,6 @@ public class Substitution {
 
 	public Substitution(Substitution clone) {
 		this(new HashMap<>(clone.substitution));
-	}
-
-	public void replaceSubstitution(Substitution other) {
-		this.substitution = other.substitution;
 	}
 
 	/**
@@ -81,7 +77,9 @@ public class Substitution {
 	public String toUniformString() {
 		List<VariableTerm> variablesInSubstitution = new ArrayList<>(substitution.size());
 		variablesInSubstitution.addAll(substitution.keySet());
+
 		Collections.sort(variablesInSubstitution); // Hint: Maybe this is a performance issue later, better have sorted/well-defined insertion into Substitution.
+
 		StringBuilder ret = new StringBuilder();
 		for (VariableTerm variableTerm : variablesInSubstitution) {
 			ret.append("_")
@@ -122,4 +120,5 @@ public class Substitution {
 	public boolean isEmpty() {
 		return substitution.isEmpty();
 	}
+
 }

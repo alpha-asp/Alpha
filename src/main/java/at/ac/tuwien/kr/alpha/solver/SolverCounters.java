@@ -25,6 +25,9 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Maintains counters measuring, e.g., the size of the search space being explored.
  * 
@@ -32,8 +35,53 @@ package at.ac.tuwien.kr.alpha.solver;
  *
  */
 public class SolverCounters {
-	int decisionCounter;
-	int backtrackCounter;
-	int backjumpCounter;
-	int remainingMBTAtFixpointCounter;
+	private static final Logger LOGGER = LoggerFactory.getLogger(SolverCounters.class);
+	private int decisionCounter;
+	private int backtrackCounter;
+	private int backjumpCounter;
+	private int remainingMBTAtFixpointCounter;
+
+	public int decision() {
+		return ++decisionCounter;
+	}
+
+	public int backtrack() {
+		return ++backtrackCounter;
+	}
+
+	public int backjump() {
+		return ++backjumpCounter;
+	}
+
+	public int remainingMBTAtFixpoint() {
+		return ++remainingMBTAtFixpointCounter;
+	}
+
+	public void log() {
+		LOGGER.info("Choices\t: {}", decisionCounter);
+		LOGGER.info("Conflicts\t: {}", backtrackCounter + backjumpCounter);
+		LOGGER.info("  Backtracks\t: {}", backtrackCounter);
+		LOGGER.info("    Caused by MBT at end\t: {}", remainingMBTAtFixpointCounter);
+		LOGGER.info("  Backjumps\t: {}", backjumpCounter);
+	}
+
+	public int getDecisionCounter() {
+		return decisionCounter;
+	}
+
+	public int getBacktrackCounter() {
+		return backtrackCounter;
+	}
+
+	public int getBackjumpCounter() {
+		return backjumpCounter;
+	}
+
+	public int getRemainingMBTAtFixpointCounter() {
+		return remainingMBTAtFixpointCounter;
+	}
+
+	public int getConflictCounter() {
+		return backjumpCounter + backtrackCounter;
+	}
 }

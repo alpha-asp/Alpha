@@ -25,10 +25,10 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver;
+package at.ac.tuwien.kr.alpha.solver.learning;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.ResolutionSequence;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,6 +150,7 @@ public class GroundConflictNoGoodLearner {
 				// Use previous MBT assignment if it exists.
 				currentLiteralAssignment = currentLiteralAssignment.getPrevious();
 			}
+
 			// Get NoGood it was implied by.
 			NoGood impliedByNoGood = currentLiteralAssignment.getImpliedBy();
 			if (impliedByNoGood == null) {

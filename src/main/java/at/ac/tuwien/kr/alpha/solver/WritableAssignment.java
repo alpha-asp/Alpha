@@ -1,19 +1,19 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016, the Alpha Team.
  * All rights reserved.
- * 
+ *
  * Additional changes made by Siemens.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,54 +25,45 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver.heuristics;
+package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 
-import java.util.Collection;
+public interface WritableAssignment extends Assignment {
+	/**
+	 * Delete all information stored in the assignment.
+	 */
+	void clear();
 
-/**
- * The default heuristic that had been used by {@link at.ac.tuwien.kr.alpha.solver.DefaultSolver} before {@link BerkMin} was implemented.
- *
- */
-public class NaiveHeuristic implements BranchingHeuristic {
+	/**
+	 * Backtracks to the indicated decision level. Every assignment on a higher decisionLevel is removed.
+	 * All assignments below (or equal to) decisionLevel are kept. Note that for atoms being TRUE this may require
+	 * setting the assigned value to MBT during backtracking.
+	 */
+	void backtrack();
 
-	private final ChoiceManager choiceManager;
+	/**
+	 * Assigns an atom some value on a lower decision level than the current one.
+	 * @param atom
+	 * @param value
+	 * @param impliedBy
+	 * @param decisionLevel
+	 * @return
+	 */
+	ConflictCause assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel);
 
-	public NaiveHeuristic(ChoiceManager choiceManager) {
-		this.choiceManager = choiceManager;
+	default ConflictCause assign(int atom, ThriceTruth value, NoGood impliedBy) {
+		return assign(atom, value, impliedBy, getDecisionLevel());
 	}
 
-	@Override
-	public void violatedNoGood(NoGood violatedNoGood) {
+	default ConflictCause assign(int atom, ThriceTruth value) {
+		return assign(atom, value, null);
 	}
 
-	@Override
-	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
-	}
+	ConflictCause guess(int atom, ThriceTruth value);
 
-	@Override
-	public void newNoGood(NoGood newNoGood) {
-	}
-
-	@Override
-	public void newNoGoods(Collection<NoGood> newNoGoods) {
-	}
-
-	@Override
-	public double getActivity(int literal) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public int chooseAtom() {
-		return choiceManager.getNextActiveChoiceAtom();
-	}
-
-	@Override
-	public boolean chooseSign(int atom) {
-		return true;
+	default ConflictCause guess(int atom, boolean value) {
+		return guess(atom, ThriceTruth.valueOf(value));
 	}
 }

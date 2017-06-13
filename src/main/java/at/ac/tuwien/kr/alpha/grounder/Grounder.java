@@ -1,7 +1,9 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomTranslator;
+import at.ac.tuwien.kr.alpha.common.NoGood;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Iterator;
@@ -20,7 +22,7 @@ public interface Grounder extends AtomTranslator {
 	 * Applies lazy grounding and returns all newly derived (fully ground) NoGoods.
 	 * @return a mapping of nogood IDs to NoGoods.
 	 */
-	Map<Integer, NoGood> getNoGoods(BooleanAssignmentReader currentAssignment);
+	Map<Integer, NoGood> getNoGoods(Assignment assignment);
 
 	/**
 	 * Return choice points and their enablers and disablers.

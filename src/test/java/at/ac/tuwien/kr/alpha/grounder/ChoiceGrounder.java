@@ -28,10 +28,8 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Atom;
-import at.ac.tuwien.kr.alpha.common.BasicAtom;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -140,7 +138,7 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public Map<Integer, NoGood> getNoGoods(BooleanAssignmentReader currentAssignment) {
+	public Map<Integer, NoGood> getNoGoods(Assignment assignment) {
 		if (!returnedAllNogoods) {
 			returnedAllNogoods = true;
 			return NOGOODS;
@@ -148,7 +146,7 @@ public class ChoiceGrounder implements Grounder {
 			return new HashMap<>();
 		}
 	}
-
+	
 	private boolean isFirst = true;
 
 	@Override

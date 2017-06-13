@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static at.ac.tuwien.kr.alpha.common.NoGood.fact;
@@ -13,14 +14,13 @@ import static org.junit.Assert.*;
 /**
  * Copyright (c) 2017, the Alpha Team.
  */
-public class NoGoodStoreAlphaRoamingTest {
-
+public class NaiveNoGoodStoreTest {
 	private final ArrayAssignment assignment;
-	private final NoGoodStoreAlphaRoaming store;
+	private final NaiveNoGoodStore store;
 
-	public NoGoodStoreAlphaRoamingTest() {
+	public NaiveNoGoodStoreTest() {
 		assignment = new ArrayAssignment(null);
-		store = new NoGoodStoreAlphaRoaming(assignment);
+		store = new NaiveNoGoodStore(assignment);
 	}
 
 	@Before
@@ -79,6 +79,7 @@ public class NoGoodStoreAlphaRoamingTest {
 	}
 
 	@Test
+	@Ignore("Checks for conflict detection in add.")
 	public void addNotCausingAssignmentFalse() {
 		assignment.assign(1, FALSE);
 		assignment.assign(4, TRUE);
@@ -255,6 +256,7 @@ public class NoGoodStoreAlphaRoamingTest {
 	}
 
 	@Test
+	@Ignore("Checks for propagation in add.")
 	public void propagateNaryMBTTwice() {
 		assignment.assign(4, FALSE);
 		assignment.assign(3, MBT);
@@ -285,7 +287,7 @@ public class NoGoodStoreAlphaRoamingTest {
 
 		// First deduce 1 from 2 and 3, then deduce
 		// 5 from -4 and 1.
-		assertNull(store.propagate());
+		store.propagate();
 		assertTrue(store.didPropagate());
 
 		assertEquals(TRUE, assignment.getTruth(1));
@@ -302,13 +304,15 @@ public class NoGoodStoreAlphaRoamingTest {
 		// 2.
 		store.add(2, fact(-2));
 		assertNull(store.propagate());
-		assertFalse(store.didPropagate());
+		assertTrue(store.didPropagate());
+		assertEquals(TRUE, assignment.getTruth(2));
 		assertNull(assignment.getTruth(1));
 
 		// 3.
 		store.add(3, fact(-3));
 		assertNull(store.propagate());
 		assertTrue(store.didPropagate());
+		assertEquals(TRUE, assignment.getTruth(3));
 
 		assertEquals(TRUE, assignment.getTruth(1));
 	}
@@ -345,6 +349,7 @@ public class NoGoodStoreAlphaRoamingTest {
 	}
 
 	@Test
+	@Ignore("Checks for conflict detection in add.")
 	public void conflictingBinary() {
 		final NoGood noGood = new NoGood(1, 2);
 		assignment.assign(1, TRUE);
@@ -354,6 +359,7 @@ public class NoGoodStoreAlphaRoamingTest {
 	}
 
 	@Test
+	@Ignore("Checks for conflict detection in add.")
 	public void conflictingNary() {
 		final NoGood noGood = new NoGood(1, 2, 3);
 		assignment.assign(1, TRUE);
@@ -383,6 +389,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		assertNull(assignment.assign(2, FALSE));
 		assertNull(assignment.assign(7, FALSE));
 		assertNull(store.propagate());
+		assertNull(store.propagate());
 	}
 
 	@Test
@@ -393,8 +400,8 @@ public class NoGoodStoreAlphaRoamingTest {
 		assertNull(assignment.assign(11, TRUE));
 		assertNull(assignment.assign(19, TRUE));
 		ConflictCause conflictCause = store.propagate();
-		assertFalse(store.didPropagate());
 		assertNotNull(conflictCause);
+		assertFalse(store.didPropagate());
 		assertEquals(noGood, new NoGood(conflictCause.getViolatedNoGood()));
 	}
 
@@ -406,8 +413,8 @@ public class NoGoodStoreAlphaRoamingTest {
 		assertNull(assignment.assign(11, MBT));
 		assertNull(assignment.assign(19, MBT));
 		ConflictCause conflictCause = store.propagate();
-		assertFalse(store.didPropagate());
 		assertNotNull(conflictCause);
+		assertFalse(store.didPropagate());
 		assertEquals(noGood, new NoGood(conflictCause.getViolatedNoGood()));
 	}
 
@@ -432,6 +439,7 @@ public class NoGoodStoreAlphaRoamingTest {
 	}
 
 	@Test
+	@Ignore("Checks for conflict detection in add.")
 	public void naryNoGoodViolatedDuringAdditionAllTrue() {
 		NoGood noGood = new NoGood(1, 2, 3);
 		assertNull(assignment.assign(1, TRUE));
@@ -443,6 +451,7 @@ public class NoGoodStoreAlphaRoamingTest {
 	}
 
 	@Test
+	@Ignore("Checks for conflict detection in add.")
 	public void naryNoGoodViolatedDuringAdditionAllMbt() {
 		NoGood noGood = new NoGood(1, 2, 3);
 		assertNull(assignment.assign(1, MBT));
@@ -456,13 +465,14 @@ public class NoGoodStoreAlphaRoamingTest {
 	@Test
 	public void binaryNoGoodViolatedAfterAddition() {
 		NoGood noGood = new NoGood(1, 2);
-		assertNull(store.add(11, noGood));
+		assertNull(store.add(1, noGood));
 		assertNull(assignment.assign(1, MBT));
 		assertNull(assignment.assign(2, MBT));
 		assertNotNull(store.propagate());
 	}
 
 	@Test
+	@Ignore("Checks for conflict detection in add.")
 	public void binaryNoGoodViolatedDuringAdditionAllTrue() {
 		NoGood noGood = new NoGood(1, 2);
 		assertNull(assignment.assign(1, TRUE));
@@ -473,6 +483,7 @@ public class NoGoodStoreAlphaRoamingTest {
 	}
 
 	@Test
+	@Ignore("Checks for conflict detection in add.")
 	public void binaryNoGoodViolatedDuringAdditionAllMbt() {
 		NoGood noGood = new NoGood(1, 2);
 		assertNull(assignment.assign(1, MBT));
@@ -527,6 +538,7 @@ public class NoGoodStoreAlphaRoamingTest {
 
 
 	@Test
+	@Ignore("Checks for propagation in add.")
 	public void addedBinaryNoGoodPropagatesTrueFromFalse() {
 		NoGood noGood = headFirst(-11, -12);
 		assertNull(assignment.guess(12, FALSE));
@@ -566,17 +578,17 @@ public class NoGoodStoreAlphaRoamingTest {
 	}
 
 	@Test
+	@Ignore("Not decision-level aware.")
 	public void propagationAtLowerDecisionLevel() {
 		NoGood noGood = headFirst(-1, 2, -3);
 		assertNull(assignment.guess(3, FALSE));
 		assertNull(assignment.guess(2, TRUE));
 		assertNull(assignment.guess(4, TRUE));
 		assertNull(store.add(10, noGood));
-		store.propagate();
-		assertTrue(TRUE.equals(assignment.getTruth(1)));
+		assertNull(store.propagate());
+		assertEquals(TRUE, assignment.getTruth(1));
 		Assignment.Entry entry = assignment.get(1);
-		assertTrue(TRUE.equals(entry.getTruth()));
+		assertEquals(TRUE, entry.getTruth());
 		assertEquals(2, entry.getDecisionLevel());
 	}
-
 }

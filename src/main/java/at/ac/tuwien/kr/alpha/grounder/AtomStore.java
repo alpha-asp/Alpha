@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 
 import java.util.*;
 

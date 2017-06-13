@@ -25,13 +25,15 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.*;
-import at.ac.tuwien.kr.alpha.solver.GroundConflictNoGoodLearner.ConflictAnalysisResult;
+import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProvider;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
+import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.slf4j.Logger;
@@ -40,8 +42,8 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.stream.Stream;
 
-import static at.ac.tuwien.kr.alpha.common.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.atoms.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -97,8 +99,7 @@ public class DependencyDrivenHeuristic implements BranchingHeuristic {
 	 */
 	protected final MultiValuedMap<Integer, Integer> atomsToBodies = new HashSetValuedHashMap<>();
 
-	public DependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random,
-			BodyActivityType bodyActivityType) {
+	public DependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, BodyActivityType bodyActivityType) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
 		this.decayAge = decayAge;

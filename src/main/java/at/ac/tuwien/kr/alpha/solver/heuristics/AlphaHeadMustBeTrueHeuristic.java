@@ -25,15 +25,21 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.Literals;
-import at.ac.tuwien.kr.alpha.solver.*;
+import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
- * A variant of {@link DependencyDrivenHeuristic} that prefers to choose atoms representing bodies of rules whose heads are assigned {@link ThriceTruth#MBT}.
+ * A variant of {@link DependencyDrivenHeuristic} that prefers to choose atoms representing bodies of rules whose heads
+ * are assigned {@link at.ac.tuwien.kr.alpha.solver.ThriceTruth#MBT}.
  */
 public class AlphaHeadMustBeTrueHeuristic extends DependencyDrivenHeuristic {
 
@@ -50,7 +56,7 @@ public class AlphaHeadMustBeTrueHeuristic extends DependencyDrivenHeuristic {
 	@Override
 	public int chooseAtom() {
 		Set<Integer> heads = headToBodies.keySet();
-		Stream<Integer> bodiesOfMbtHeads = heads.stream().map(Literals::atomOf).filter(assignment::isMBT).flatMap(h -> headToBodies.get(h).stream());
+		Stream<Integer> bodiesOfMbtHeads = heads.stream().map(Literals::atomOf).filter(a -> assignment.getTruth(a) == ThriceTruth.MBT).flatMap(h -> headToBodies.get(h).stream());
 		Optional<Integer> mostActiveBody = bodiesOfMbtHeads.filter(this::isUnassigned).filter(choiceManager::isActiveChoiceAtom)
 				.max(Comparator.comparingDouble(bodyActivity::get));
 		if (mostActiveBody.isPresent()) {

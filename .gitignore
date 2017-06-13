@@ -142,3 +142,4 @@ gradle-app.setting
 ### Custom additions ###
 /.checkstyle
 /junit.log
+.idea/modules/*.iml

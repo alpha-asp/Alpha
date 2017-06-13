@@ -1,5 +1,9 @@
-package at.ac.tuwien.kr.alpha.common;
+package at.ac.tuwien.kr.alpha.common.atoms;
 
+import at.ac.tuwien.kr.alpha.common.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
@@ -8,7 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static at.ac.tuwien.kr.alpha.common.ConstantTerm.getInstance;
+import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
 
 /**
  * Atoms corresponding to rule bodies use this predicate, first term is rule number,
@@ -103,7 +107,6 @@ public class RuleAtom implements Atom {
 	public int hashCode() {
 		return 31 * PREDICATE.hashCode() + terms.hashCode();
 	}
-
 
 	@Override
 	public String toString() {

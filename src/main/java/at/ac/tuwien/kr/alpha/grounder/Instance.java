@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.Term;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 import java.util.Arrays;
 import java.util.List;

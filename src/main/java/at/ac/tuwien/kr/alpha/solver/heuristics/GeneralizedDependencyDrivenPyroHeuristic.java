@@ -25,7 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
 
@@ -45,7 +45,7 @@ import java.util.Random;
 public class GeneralizedDependencyDrivenPyroHeuristic extends GeneralizedDependencyDrivenHeuristic {
 
 	public GeneralizedDependencyDrivenPyroHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random,
-			BodyActivityType bodyActivityType) {
+							BodyActivityType bodyActivityType) {
 		super(assignment, choiceManager, decayAge, decayFactor, random, bodyActivityType);
 	}
 

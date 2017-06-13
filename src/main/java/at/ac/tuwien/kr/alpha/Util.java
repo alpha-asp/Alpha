@@ -27,7 +27,10 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.SortedSet;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 

@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
  * This class provides functionality for choice point management, detection of active choice points, etc.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class ChoiceManager {
+public class ChoiceManager implements Checkable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ChoiceManager.class);
 	private final Assignment assignment;
 
@@ -55,17 +56,23 @@ public class ChoiceManager {
 	// The total number of modifications this ChoiceManager received (avoids re-computation in ChoicePoints).
 	private long modCount;
 
-	private boolean internalChecksEnabled;
-
-	void enableInternalChecks() {
-		internalChecksEnabled = true;
-	}
+	private boolean checksEnabled;
 
 	public ChoiceManager(Assignment assignment) {
+		this(assignment, false);
+	}
+
+	public ChoiceManager(Assignment assignment, boolean checksEnabled) {
+		this.checksEnabled = checksEnabled;
 		this.assignment = assignment;
 		modifiedInDecisionLevel.put(0, new ArrayList<>());
 		highestDecisionLevel = 0;
 		modCount = 0;
+	}
+
+	@Override
+	public void setChecksEnabled(boolean checksEnabled) {
+		this.checksEnabled = checksEnabled;
 	}
 
 	private class ChoicePoint {
@@ -135,7 +142,7 @@ public class ChoiceManager {
 				choicePoint.recomputeActive();
 			}
 		}
-		if (internalChecksEnabled) {
+		if (checksEnabled) {
 			checkActiveChoicePoints();
 		}
 	}
@@ -182,7 +189,7 @@ public class ChoiceManager {
 	}
 
 	public boolean isActiveChoiceAtom(int atom) {
-		if (internalChecksEnabled) {
+		if (checksEnabled) {
 			checkActiveChoicePoints();
 		}
 		ChoicePoint choicePoint = influencers.get(atom);
@@ -190,7 +197,7 @@ public class ChoiceManager {
 	}
 
 	public int getNextActiveChoiceAtom() {
-		if (internalChecksEnabled) {
+		if (checksEnabled) {
 			checkActiveChoicePoints();
 		}
 		return activeChoicePoints.size() > 0 ? activeChoicePoints.iterator().next().atom : 0;

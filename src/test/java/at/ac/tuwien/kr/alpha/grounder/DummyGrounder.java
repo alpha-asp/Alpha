@@ -1,7 +1,8 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.solver.Assignment;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -127,7 +128,7 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
-	public Map<Integer, NoGood> getNoGoods(BooleanAssignmentReader currentAssignment) {
+	public Map<Integer, NoGood> getNoGoods(Assignment assignment) {
 		// Return NoGoods depending on current assignment.
 		HashMap<Integer, NoGood> returnNoGoods = new HashMap<>();
 		if (currentTruthValues[1] == 1 && currentTruthValues[2] == 1) {

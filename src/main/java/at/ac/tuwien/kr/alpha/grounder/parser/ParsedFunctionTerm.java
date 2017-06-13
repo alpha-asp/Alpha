@@ -1,13 +1,13 @@
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.Term;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static at.ac.tuwien.kr.alpha.common.FunctionTerm.getInstance;
+import static at.ac.tuwien.kr.alpha.common.terms.FunctionTerm.getInstance;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -34,6 +34,12 @@ public class ParsedFunctionTerm extends ParsedTerm {
 
 	@Override
 	public Term toTerm() {
-		return getInstance(functionName, termList.stream().map(ParsedTerm::toTerm).collect(Collectors.toList()));
+		List<Term> terms = new ArrayList<>(termList.size());
+
+		for (ParsedTerm item : termList) {
+			terms.add(item.toTerm());
+		}
+
+		return getInstance(functionName, terms);
 	}
 }
