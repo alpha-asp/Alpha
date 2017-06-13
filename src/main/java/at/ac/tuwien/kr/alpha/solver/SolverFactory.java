@@ -43,7 +43,7 @@ public final class SolverFactory {
 				store = new NaiveNoGoodStore(assignment);
 				break;
 			default:
-				store = new NoGoodStoreAlphaRoaming(assignment);
+				store = new NoGoodStoreAlphaRoaming(assignment, debugInternalChecks);
 				break;
 		}
 
