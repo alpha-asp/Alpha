@@ -69,7 +69,6 @@ public class Main {
 	private static final String OPT_SOLVER = "solver";
 	private static final String OPT_FILTER = "filter";
 	private static final String OPT_STRING = "str";
-	private static final String OPT_HEX = "hex";
 	private static final String OPT_SORT = "sort";
 	private static final String OPT_DETERMINISTIC = "deterministic";
 	private static final String OPT_BRANCHING_HEURISTIC = "branchingHeuristic";
@@ -122,9 +121,6 @@ public class Main {
 		inputOption.setArgName("string");
 		inputOption.setType(String.class);
 		options.addOption(strOption);
-
-		Option hexOption = new Option("x", OPT_HEX, true, "resolve external atoms via Hex and report back answer sets");
-		options.addOption(hexOption);
 
 		Option sortOption = new Option("sort", OPT_SORT, false, "sort answer sets");
 		options.addOption(sortOption);
