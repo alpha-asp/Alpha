@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.slf4j.Logger;
@@ -44,31 +45,34 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
  */
 public class ArrayAssignment implements WritableAssignment {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ArrayAssignment.class);
+
+	private final AtomTranslator translator;
+	private final boolean internalChecksEnabled;
+
 	private final ArrayList<Entry> assignment = new ArrayList<>();
 	private final List<List<Integer>> atomsAssignedInDecisionLevel;
 	private final ArrayList<Integer> propagationCounterPerDecisionLevel;
 	private final Queue<ArrayAssignment.Entry> assignmentsToProcess = new LinkedList<>();
 	private Queue<Assignment.Entry> newAssignments = new LinkedList<>();
 	private Queue<Assignment.Entry> newAssignmentsForChoice = new LinkedList<>();
-	private final Grounder grounder;
 
 	private int mbtCount;
 
-	private boolean internalChecksEnabled;
-
-	private NoGood violatedByAssign;
-	private Entry guessViolatedByAssign;
-
-	public ArrayAssignment(Grounder grounder) {
-		this.grounder = grounder;
+	public ArrayAssignment(AtomTranslator translator, boolean internalChecksEnabled) {
+		this.internalChecksEnabled = internalChecksEnabled;
+		this.translator = translator;
 		this.atomsAssignedInDecisionLevel = new ArrayList<>();
 		this.atomsAssignedInDecisionLevel.add(new ArrayList<>());
 		this.propagationCounterPerDecisionLevel = new ArrayList<>();
 		this.propagationCounterPerDecisionLevel.add(0);
 	}
 
+	public ArrayAssignment(Grounder translator) {
+		this(translator, false);
+	}
+
 	public ArrayAssignment() {
-		this(null);
+		this(null, false);
 	}
 
 	@Override
@@ -77,10 +81,6 @@ public class ArrayAssignment implements WritableAssignment {
 		atomsAssignedInDecisionLevel.add(new ArrayList<>());
 		assignment.clear();
 		mbtCount = 0;
-	}
-
-	void enableInternalChecks() {
-		internalChecksEnabled = true;
 	}
 
 	@Override
@@ -175,7 +175,7 @@ public class ArrayAssignment implements WritableAssignment {
 			throw new IllegalArgumentException("Given decisionLevel is outside range of possible decision levels. Given decisionLevel is: " + decisionLevel);
 		}
 		if (decisionLevel < getDecisionLevel() && LOGGER.isDebugEnabled()) {
-			String atomString = grounder != null ? grounder.atomToString(atom) : Integer.toString(atom);
+			String atomString = translator != null ? translator.atomToString(atom) : Integer.toString(atom);
 			LOGGER.trace("Assign called with lower decision level. Atom: {}_{}@{}.", value, atomString, decisionLevel);
 		}
 		ConflictCause isConflictFree = assignWithDecisionLevel(atom, value, impliedBy, decisionLevel);
@@ -192,22 +192,6 @@ public class ArrayAssignment implements WritableAssignment {
 			LOGGER.debug("Assign is conflicting: atom: {}, value: {}, impliedBy: {}.", atom, value, impliedBy);
 		}
 		return isConflictFree;
-	}
-
-	@Override
-	public ConflictCause getConflictCause() {
-		if (violatedByAssign != null && guessViolatedByAssign != null) {
-			throw new RuntimeException("There are two causes for a conflict, this should not happen!");
-		}
-
-		if (violatedByAssign != null) {
-			return new ConflictCause(violatedByAssign);
-		}
-		if (guessViolatedByAssign != null) {
-			return new ConflictCause(guessViolatedByAssign);
-		}
-
-		return null;
 	}
 
 	private boolean assignmentsConsistent(Assignment.Entry oldAssignment, ThriceTruth value) {
@@ -255,13 +239,14 @@ public class ArrayAssignment implements WritableAssignment {
 
 		// Check consistency.
 		if (!assignmentsConsistent(current, value)) {
+			ConflictCause conflictCause = null;
 			// Assignments are inconsistent, prepare the reason.
-			violatedByAssign = impliedBy;
+			NoGood violated = impliedBy;
 			if (decisionLevel < current.getWeakDecisionLevel()) {
 				// New assignment is lower than the current one, hence cause is the reason for the (higher) current one.
-				violatedByAssign = current.getPrevious() == null ? current.getImpliedBy() : current.getPrevious().getImpliedBy();	// take MBT reason if it exists.
-				if (violatedByAssign == null) {
-					guessViolatedByAssign = current;
+				violated = current.getPrevious() == null ? current.getImpliedBy() : current.getPrevious().getImpliedBy();	// take MBT reason if it exists.
+				if (violated == null) {
+					conflictCause = new ConflictCause(current);
 				}
 				// The lower assignment takes precedence over the current value, overwrite it and adjust mbtCounter.
 				if (current.getTruth() == MBT) {
@@ -273,7 +258,8 @@ public class ArrayAssignment implements WritableAssignment {
 				}
 
 			}
-			return getConflictCause();
+			conflictCause = new ConflictCause(impliedBy);
+			return conflictCause;
 		}
 
 		// Previous assignment exists, and the new one is consistent with it.
@@ -384,9 +370,6 @@ public class ArrayAssignment implements WritableAssignment {
 
 	@Override
 	public Entry get(int atom) {
-		if (atom >= assignment.size()) {
-			return null;
-		}
 		return assignment.get(atom);
 	}
 
@@ -437,8 +420,8 @@ public class ArrayAssignment implements WritableAssignment {
 			isFirst = false;
 			sb.append(assignmentEntry.getTruth());
 			sb.append("_");
-			if (grounder != null) {
-				sb.append(grounder.atomToString(assignmentEntry.getAtom()));
+			if (translator != null) {
+				sb.append(translator.atomToString(assignmentEntry.getAtom()));
 			} else {
 				sb.append(assignmentEntry.getAtom());
 			}

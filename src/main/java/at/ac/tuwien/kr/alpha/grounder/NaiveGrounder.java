@@ -259,17 +259,6 @@ public class NaiveGrounder extends BridgedGrounder {
 		return new BasicAnswerSet(knownPredicates, predicateInstances);
 	}
 
-	public Map<Integer, NoGood> getHexNoGoods(Assignment assignment) {
-		HashMap<Integer, NoGood> newNoGoods = new LinkedHashMap<>();
-
-		// Import additional rules from external sources
-		for (NonGroundRule externalRule : collectExternalRules(assignment, atomStore, intIdGenerator)) {
-			register(generateNoGoodsFromGroundSubstitution(externalRule, new Substitution()), newNoGoods);
-		}
-
-		return newNoGoods;
-	}
-
 	/**
 	 * Helper methods to analyze average nogood length.
 	 * @return
@@ -348,11 +337,6 @@ public class NaiveGrounder extends BridgedGrounder {
 			// Mark instances added by updateAssignment as done
 			modifiedWorkingMemory.markRecentlyAddedInstancesDone();
 		}
-
-		// Import additional rules from external sources
-		//for (NonGroundRule externalRule : collectExternalRules(assignment, atomStore, intIdGenerator)) {
-		//	register(generateNoGoodsFromGroundSubstitution(externalRule, new Substitution()), newNoGoods);
-		//}
 
 		modifiedWorkingMemories = new LinkedHashSet<>();
 		for (Atom removeAtom : removeAfterObtainingNewNoGoods) {

@@ -16,13 +16,6 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 public interface Assignment extends SimpleAssignment {
 	Entry get(int atom);
 
-	/**
-	 * In case that assign fails (i.e., it returns false) the NoGood violated by the assignment can be obtained by this method.
-	 * The returned value is arbitrary if the previous assign did not fail.
-	 * @return
-	 */
-	ConflictCause getConflictCause();
-
 	void growForMaxAtomId(int maxAtomId);
 
 	/**
