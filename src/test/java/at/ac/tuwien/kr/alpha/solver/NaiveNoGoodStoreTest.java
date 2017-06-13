@@ -298,19 +298,21 @@ public class NaiveNoGoodStoreTest {
 	public void moveThirdPointer() {
 		// 1 <- 2, 3.
 		store.add(1, headFirst(-1, 2, 3));
-		store.propagate();
+		assertNull(store.propagate());
 		assertFalse(store.hasInferredAssignments());
 
 		// 2.
 		store.add(2, fact(-2));
-		store.propagate();
+		assertNull(store.propagate());
 		assertTrue(store.hasInferredAssignments());
+		assertEquals(TRUE, assignment.getTruth(2));
 		assertNull(assignment.getTruth(1));
 
 		// 3.
 		store.add(3, fact(-3));
-		store.propagate();
+		assertNull(store.propagate());
 		assertTrue(store.hasInferredAssignments());
+		assertEquals(TRUE, assignment.getTruth(3));
 
 		assertEquals(TRUE, assignment.getTruth(1));
 	}
@@ -463,7 +465,7 @@ public class NaiveNoGoodStoreTest {
 	@Test
 	public void binaryNoGoodViolatedAfterAddition() {
 		NoGood noGood = new NoGood(1, 2);
-		assertNull(store.add(11, noGood));
+		assertNull(store.add(1, noGood));
 		assertNull(assignment.assign(1, MBT));
 		assertNull(assignment.assign(2, MBT));
 		assertNotNull(store.propagate());

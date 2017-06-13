@@ -38,19 +38,50 @@ public class NaiveNoGoodStore implements NoGoodStore {
 
 	@Override
 	public ConflictCause propagate() {
-		ConflictCause conflictCause;
+		hasInferredAssignments = false;
+
+		boolean any = false;
+		boolean retry;
+
+		do {
+			retry = false;
+			ConflictCause conflictCause;
+			for (NoGood noGood : delegate.values()) {
+				hasInferredAssignments = false;
+				conflictCause = propagateWeakly(noGood);
+				if (conflictCause != null) {
+					return conflictCause;
+				}
+				if (hasInferredAssignments) {
+					any = true;
+					hasInferredAssignments = false;
+					retry = true;
+				}
+			}
+			for (NoGood noGood : delegate.values()) {
+				hasInferredAssignments = false;
+				conflictCause = propagateStrongly(noGood);
+				if (conflictCause != null) {
+					return conflictCause;
+				}
+				if (hasInferredAssignments) {
+					any = true;
+					hasInferredAssignments = false;
+					retry = true;
+				}
+			}
+		} while (retry);
+
 		for (NoGood noGood : delegate.values()) {
-			conflictCause = propagateWeakly(noGood);
-			if (conflictCause != null) {
-				return conflictCause;
+			if (assignment.violates(noGood)) {
+				return new ConflictCause(noGood);
 			}
 		}
-		for (NoGood noGood : delegate.values()) {
-			conflictCause = propagateStrongly(noGood);
-			if (conflictCause != null) {
-				return conflictCause;
-			}
+
+		if (any) {
+			hasInferredAssignments = true;
 		}
+
 		return null;
 	}
 
@@ -82,17 +113,21 @@ public class NaiveNoGoodStore implements NoGoodStore {
 		for (int i = 0; i < noGood.size(); i++) {
 			final int literal = noGood.getLiteral(i);
 
-			if (!assignment.isViolated(literal)) {
-				// Literal is satisfied!
-				return null;
-			}
-
-			if (index != -1) {
+			if (assignment.isAssigned(atomOf(literal))) {
+				if (!assignment.isViolated(literal)) {
+					// Literal is satisfied!
+					return null;
+				}
+			} else if (index != -1) {
 				// There is more than one unassigned literal!
 				return null;
+			} else {
+				index = i;
 			}
+		}
 
-			index = i;
+		if (index == -1) {
+			return null;
 		}
 
 		hasInferredAssignments = true;
