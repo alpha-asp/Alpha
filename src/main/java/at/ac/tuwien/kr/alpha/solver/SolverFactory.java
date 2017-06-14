@@ -42,7 +42,7 @@ public final class SolverFactory {
 			case "naive":
 				store = new NaiveNoGoodStore(assignment);
 				break;
-			case "alphaRoaming":
+			case "alpharoaming":
 				store = new NoGoodStoreAlphaRoaming(assignment, debugInternalChecks);
 				break;
 			default:
