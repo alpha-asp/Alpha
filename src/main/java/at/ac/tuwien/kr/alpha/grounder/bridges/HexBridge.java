@@ -24,13 +24,6 @@ public class HexBridge implements Bridge {
 
 		String[][] externalNogoods = getExternalNoGoods(assignment, atomStore);
 
-		for (String[] stra : externalNogoods) {
-			for (String str : stra) {
-				System.out.print(str + " ");
-			}
-			System.out.println();
-		}
-
 		for (int m = 0; m < externalNogoods.length; m++) {
 			// Collect ground atoms in the body
 			List<Atom> bodyAtoms = new ArrayList<>();

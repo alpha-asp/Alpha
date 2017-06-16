@@ -414,12 +414,22 @@ public class NaiveGrounder extends BridgedGrounder {
 				}
 			}
 			Atom groundAtom = atom.substitute(substitution);
+			HashSet<Instance> factInstances = factsFromProgram.get(groundAtom.getPredicate());
+			if (factInstances != null && factInstances.contains(new Instance(groundAtom.getTerms()))) {
+				// Skip positive atoms that are always true.
+				continue;
+			}
 
 			int groundAtomPositive = atomStore.add(groundAtom);
 			bodyAtomsPositive.add(groundAtomPositive);
 		}
 		for (Atom atom : nonGroundRule.getBodyAtomsNegative()) {
 			Atom groundAtom = atom.substitute(substitution);
+			HashSet<NonGroundRule> definingRules = ruleHeadsToDefiningRules.get(groundAtom.getPredicate());
+			if (definingRules == null || definingRules.isEmpty()) {
+				// Negative atom is no fact and no rule defines it, it is always false, skip it.
+				continue;
+			}
 
 			int groundAtomNegative = atomStore.add(groundAtom);
 			bodyAtomsNegative.add(groundAtomNegative);
