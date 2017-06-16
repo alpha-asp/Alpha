@@ -30,10 +30,13 @@ package at.ac.tuwien.kr.alpha;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.HexAnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
+
+import at.ac.tuwien.kr.alpha.grounder.bridges.HexBridge;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTreeVisitor;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityProgramTransformation;
@@ -55,6 +58,8 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Stream;
+import java.util.stream.Collectors;
+import java.util.*;
 
 /**
  * Main entry point for Alpha.
@@ -69,6 +74,7 @@ public class Main {
 	private static final String OPT_SOLVER = "solver";
 	private static final String OPT_FILTER = "filter";
 	private static final String OPT_STRING = "str";
+	private static final String OPT_HEX = "hex";
 	private static final String OPT_SORT = "sort";
 	private static final String OPT_DETERMINISTIC = "deterministic";
 	private static final String OPT_STORE = "store";
@@ -129,6 +135,9 @@ public class Main {
 		inputOption.setType(String.class);
 		options.addOption(strOption);
 
+		Option hexOption = new Option("x", OPT_HEX, true, "resolve external atoms via Hex and report back answer sets");
+		options.addOption(hexOption);
+
 		Option sortOption = new Option("sort", OPT_SORT, false, "sort answer sets");
 		options.addOption(sortOption);
 
@@ -179,6 +188,10 @@ public class Main {
 		}
 
 		Bridge[] bridges = new Bridge[0];
+
+		if (commandLine.hasOption(OPT_HEX)) {
+			bridges = new Bridge[] {new HexBridge()};
+		}
 
 		int limit = 0;
 
@@ -263,7 +276,17 @@ public class Main {
 			stream = stream.sorted();
 		}
 
-		stream.forEach(System.out::println);
+		if (commandLine.hasOption(OPT_HEX)) {
+			// If running in hex mode, do not print to standard output
+			// but instead report back via the bridge.
+			List<String[]> answerSets = stream
+					.map(new HexAnswerSetFormatter()::format)
+					.collect(Collectors.toList());
+
+			HexBridge.sendResults(answerSets.toArray(new String[answerSets.size()][]));
+		} else {
+			stream.forEach(System.out::println);
+		}
 	}
 
 	private static void bailOut(String format, Object... arguments) {

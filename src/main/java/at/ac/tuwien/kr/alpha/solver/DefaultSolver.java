@@ -87,7 +87,7 @@ public class DefaultSolver extends AbstractSolver {
 	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
 		// Initially, get NoGoods from grounder.
 		if (initialize) {
-			if (!obtainNoGoodsFromGrounder()) {
+			if (!obtainNoGoodsFromGrounder(false)) {
 				counters.log();
 				return false;
 			}
@@ -120,13 +120,18 @@ public class DefaultSolver extends AbstractSolver {
 
 		int nextChoice;
 		boolean afterAllAtomsAssigned = false;
+		boolean askedHex = false;
 
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
 			ConflictCause conflictCause = store.propagate();
 			didChange |= store.didPropagate();
 			LOGGER.trace("Assignment after propagation is: {}", assignment);
+			if (didChange) {
+				askedHex = false;
+			}
 			if (conflictCause != null) {
+				askedHex = false;
 				// Learn from conflict.
 				NoGood violatedNoGood = conflictCause.getViolatedNoGood();
 				if (LOGGER.isDebugEnabled()) {
@@ -150,10 +155,20 @@ public class DefaultSolver extends AbstractSolver {
 					}
 				}
 			} else if (!propagationFixpointReached()) {
+				askedHex = false;
 				// Ask the grounder for new NoGoods, then propagate (again).
 				LOGGER.trace("Doing propagation step.");
 				updateGrounderAssignment();
-				if (!obtainNoGoodsFromGrounder()) {
+				if (!obtainNoGoodsFromGrounder(false)) {
+					counters.log();
+					return false;
+				}
+			} else if (!askedHex) {
+				askedHex = true;
+				LOGGER.trace("Doing HEX propagation step.");
+				updateGrounderAssignment();
+				if (!obtainNoGoodsFromGrounder(true)) {
+					// NoGoods are unsatisfiable.
 					counters.log();
 					return false;
 				}
@@ -347,8 +362,15 @@ public class DefaultSolver extends AbstractSolver {
 	 * Obtains new NoGoods from grounder and adds them to the NoGoodStore and the heuristics.
 	 * @return false iff the set of NoGoods is detected to be unsatisfiable.
 	 */
-	private boolean obtainNoGoodsFromGrounder() {
-		Map<Integer, NoGood> obtained = grounder.getNoGoods(assignment);
+	private boolean obtainNoGoodsFromGrounder(boolean fromHex) {
+		Map<Integer, NoGood> obtained;
+		if (!fromHex) {
+			obtained = grounder.getNoGoods(assignment);
+			System.out.println("From Grounder: " + obtained);
+		} else {
+			obtained = grounder.getHexNoGoods(assignment);
+			System.out.println("From Hex: " + obtained);
+		}
 		LOGGER.debug("Obtained NoGoods from grounder: {}", obtained);
 
 		if (!obtained.isEmpty()) {

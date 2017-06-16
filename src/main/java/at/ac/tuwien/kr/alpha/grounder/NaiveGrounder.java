@@ -259,6 +259,18 @@ public class NaiveGrounder extends BridgedGrounder {
 		return new BasicAnswerSet(knownPredicates, predicateInstances);
 	}
 
+	@Override
+	public Map<Integer, NoGood> getHexNoGoods(Assignment assignment) {
+		HashMap<Integer, NoGood> newNoGoods = new LinkedHashMap<>();
+
+		// Import additional rules from external sources
+		for (NonGroundRule externalRule : collectExternalRules(assignment, atomStore, intIdGenerator)) {
+			register(generateNoGoodsFromGroundSubstitution(externalRule, new Substitution()), newNoGoods);
+		}
+
+		return newNoGoods;
+	}
+
 	/**
 	 * Helper methods to analyze average nogood length.
 	 * @return
@@ -402,33 +414,13 @@ public class NaiveGrounder extends BridgedGrounder {
 				}
 			}
 			Atom groundAtom = atom.substitute(substitution);
-			// Consider facts to eliminate ground atoms from the generated nogoods that are always true
-			// and eliminate nogoods that are always satisfied due to facts.
-			HashSet<Instance> factInstances = factsFromProgram.get(groundAtom.getPredicate());
-			if (factInstances != null && factInstances.contains(new Instance(groundAtom.getTerms()))) {
-				// Skip positive atoms that are always true.
-				continue;
-			}
-			HashSet<NonGroundRule> definingRules = ruleHeadsToDefiningRules.get(groundAtom.getPredicate());
-			if (definingRules == null || definingRules.isEmpty()) {
-				// Atom is no fact and no rule defines it, it cannot be derived (i.e., is always false), skip whole rule as it will never fire.
-				return new ArrayList<>();
-			}
+
 			int groundAtomPositive = atomStore.add(groundAtom);
 			bodyAtomsPositive.add(groundAtomPositive);
 		}
 		for (Atom atom : nonGroundRule.getBodyAtomsNegative()) {
 			Atom groundAtom = atom.substitute(substitution);
-			HashSet<Instance> factInstances = factsFromProgram.get(groundAtom.getPredicate());
-			if (factInstances != null && factInstances.contains(new Instance(groundAtom.getTerms()))) {
-				// Negative atom that is always true encountered, skip whole rule as it will never fire.
-				return new ArrayList<>();
-			}
-			HashSet<NonGroundRule> definingRules = ruleHeadsToDefiningRules.get(groundAtom.getPredicate());
-			if (definingRules == null || definingRules.isEmpty()) {
-				// Negative atom is no fact and no rule defines it, it is always false, skip it.
-				continue;
-			}
+
 			int groundAtomNegative = atomStore.add(groundAtom);
 			bodyAtomsNegative.add(groundAtomNegative);
 		}

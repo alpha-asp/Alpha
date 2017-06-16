@@ -24,6 +24,8 @@ public interface Grounder extends AtomTranslator {
 	 */
 	Map<Integer, NoGood> getNoGoods(Assignment assignment);
 
+	Map<Integer, NoGood> getHexNoGoods(Assignment assignment);
+
 	/**
 	 * Return choice points and their enablers and disablers.
 	 * Must be preceeded by a call to getNoGoods().
