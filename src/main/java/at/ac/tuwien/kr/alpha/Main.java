@@ -154,18 +154,18 @@ public class Main {
 			commandLine = new DefaultParser().parse(options, args);
 		} catch (ParseException e) {
 			System.err.println(e.getMessage());
-			HelpFormatter formatter = new HelpFormatter();
-			formatter.printHelp("java -jar alpha.jar\njava -jar alpha_bundled.jar", options);
-			System.exit(1);
+			exitWithHelp(options, 1);
 			return;
 		}
 
 		if (commandLine.hasOption(OPT_HELP)) {
-			HelpFormatter formatter = new HelpFormatter();
-			// TODO(flowlo): This is quite optimistic. How do we know that the program
-			// really was invoked as "java -jar ..."?
-			formatter.printHelp("java -jar alpha.jar OR java -jar alpha-bundled.jar", options);
-			System.exit(0);
+			exitWithHelp(options, 0);
+			return;
+		}
+
+		if (!commandLine.hasOption(OPT_STRING) && !commandLine.hasOption(OPT_INPUT)) {
+			System.err.println("No input program is specified. Aborting.");
+			exitWithHelp(options, 1);
 			return;
 		}
 
@@ -264,6 +264,14 @@ public class Main {
 		}
 
 		stream.forEach(System.out::println);
+	}
+
+	private static void exitWithHelp(Options options, int exitCode) {
+		HelpFormatter formatter = new HelpFormatter();
+		// TODO(flowlo): This is quite optimistic. How do we know that the program
+		// really was invoked as "java -jar ..."?
+		formatter.printHelp("java -jar alpha-bundled.jar\njava -jar alpha.jar", options);
+		System.exit(exitCode);
 	}
 
 	private static void bailOut(String format, Object... arguments) {
