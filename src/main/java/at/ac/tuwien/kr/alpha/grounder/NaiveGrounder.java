@@ -263,8 +263,34 @@ public class NaiveGrounder extends BridgedGrounder {
 	public Map<Integer, NoGood> getHexNoGoods(Assignment assignment) {
 		HashMap<Integer, NoGood> newNoGoods = new LinkedHashMap<>();
 
+		List<Atom> trueAtoms = new ArrayList<>();
+
+
+		for (Map.Entry<Predicate, LinkedHashSet<Instance>> facts : factsFromProgram.entrySet()) {
+			Predicate factPredicate = facts.getKey();
+
+			for (Instance factInstance : facts.getValue()) {
+				trueAtoms.add(new BasicAtom(factPredicate, factInstance.terms));
+			}
+		}
+
+
+		for (ListIterator<Atom> it = atomStore.listIterator(); it.hasNext();) {
+			int id = it.nextIndex();
+			Atom atom = it.next();
+
+			if (atom == null || atom.isInternal() || !assignment.isAssigned(id)) {
+				continue;
+			}
+
+			if (assignment.get(id).getTruth().toBoolean()) {
+				trueAtoms.add(atom);
+			}
+		}
+
+
 		// Import additional rules from external sources
-		for (NonGroundRule externalRule : collectExternalRules(assignment, atomStore, intIdGenerator)) {
+		for (NonGroundRule externalRule : collectExternalRules(trueAtoms, intIdGenerator)) {
 			register(generateNoGoodsFromGroundSubstitution(externalRule, new Substitution()), newNoGoods);
 		}
 
