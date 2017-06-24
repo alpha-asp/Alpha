@@ -1,7 +1,7 @@
 # Route our builds to Travis CI's Container Based
 # Infrastructure for shorter queue times.
 # https://docs.travis-ci.com/user/workers/container-based-infrastructure/#Routing-your-build-to-container-based-infrastructure
-sudo: true
+sudo: false
 
 language: java
 
