@@ -22,8 +22,8 @@ before_install:
   - echo 'org.gradle.daemon=false' > $HOME/.gradle/gradle.properties
 
   # Set memory limits for Gradle and Java processes it spawns.
-  - export GRADLE_OPTS="-Xmx1g -Xss8m"
-  - echo 'org.gradle.jvmargs=-Xmx1g' >> $HOME/.gradle/gradle.properties
+  - export GRADLE_OPTS="-XX:MaxRAM=4G"
+  - echo 'org.gradle.jvmargs=-XX:MaxRAM=4G' >> $HOME/.gradle/gradle.properties
 
   # Actually download Gradle, unpack it and make it visible in $PATH.
   - wget -q -O gradle.zip https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip
