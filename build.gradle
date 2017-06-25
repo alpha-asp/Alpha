@@ -50,6 +50,12 @@ compileTestJava {
 	options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }//*/
 
+test {
+	// Set JVM arguments for the tests.
+	jvmArgs '-XX:MaxRAM=2000M'
+}
+
+
 task bundledJar(type: Jar) {
 	manifest {
 		attributes 'Main-Class': mainClassName
