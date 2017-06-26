@@ -1,69 +1,59 @@
 package at.ac.tuwien.kr.alpha;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.PrintStream;
 
 import static at.ac.tuwien.kr.alpha.Main.main;
-import static at.ac.tuwien.kr.alpha.Main.parseVisit;
+import static org.junit.Assert.assertTrue;
 
 public class MainTest {
 	public static InputStream stream(String file) {
 		return new ByteArrayInputStream(file.getBytes());
 	}
 
-	@Test
-	@Ignore
-	public void parseSimpleProgram() throws IOException {
-		parseVisit(
-			"p(X) :- q(X).\n" +
-			"q(a).\n" +
-			"q(b).\n"
-		);
+	/**
+	 * Temporarily redirects System.err and System.out while running the solver from the main entry point with the given parameters.
+	 * Returns true if the output contains the given matches.
+	 * Warning: this test is fragile and may require adaptions if printing is changed anywhere in Alpha.
+	 * @param argv the arguments the solver is started with.
+	 * @param matchOutput output that must occur on System.out - may be null if irrelevant.
+	 * @param matchError the output that must occur on System.err - may be null if irrelevant.
+	 * @return true if given output and errors appear on System.out and System.err while running main(argv).
+	 */
+	private boolean testMainForOutput(String[] argv, String matchOutput, String matchError) {
+		PrintStream oldErr = System.err;
+		PrintStream oldOut = System.out;
+		ByteArrayOutputStream newOut = new ByteArrayOutputStream();
+		ByteArrayOutputStream newErr = new ByteArrayOutputStream();
+		System.setOut(new PrintStream(newOut));
+		System.setErr(new PrintStream(newErr));
+		main(argv);
+		System.setOut(oldOut);
+		System.setErr(oldErr);
+
+		return !(matchOutput != null && !newOut.toString().contains(matchOutput))
+			&& !(matchError != null && !newErr.toString().contains(matchError));
 	}
 
 	@Test
-	public void parseProgramWithNegativeBody() throws IOException {
-		parseVisit(
-			"p(X) :- q(X), not q(a).\n" +
-				"q(a).\n"
-		);
-	}
-
-	@Test(expected = UnsupportedOperationException.class)
-	@Ignore
-	public void parseProgramWithFunction() throws IOException {
-		parseVisit(
-			"p(X) :- q(f(X)).\n" +
-				"q(a).\n"
-		);
-	}
-
-	@Test(expected = UnsupportedOperationException.class)
-	@Ignore
-	public void parseProgramWithDisjunctionInHead() throws IOException {
-		parseVisit(
-			"r(X) | q(X) :- q(X).\n" +
-				"q(a).\n"
-		);
+	public void testCommandLineOptions() {
+		// Exercise the main entry point of the solver.
+		assertTrue(testMainForOutput(new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "20", "-str", "p(a). \n b :- p(X).\n"}, "{ b(), p(a) }", null));
+		assertTrue(testMainForOutput(new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "0", "-str", "p(a). \n b :- p(X).\n"}, "{ b(), p(a) }", null));
+		assertTrue(testMainForOutput(new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "1", "-str", "p(a). \n b :- p(X).\n"}, "{ b(), p(a) }", null));
+		assertTrue(testMainForOutput(new String[]{"-g", "naive", "-s", "default", "-r", "naive", "-e", "1119654162577372", "-n", "1", "-str", "p(a). \n b :- p(X).\n"}, "{ b(), p(a) }", null));
 	}
 
 	@Test
-	@Ignore
-	public void testLargeInputProgram() {
-		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		root.setLevel(Level.DEBUG);
-		//main(new String[]{"-g", "naive", "-s", "default", "-n", "2", "-i", "./benchmarks/omiga/omiga-testcases/locstrat/locstrat-200.txt"});
-		//main(new String[]{"-g", "naive", "-s", "default", "-n", "2", "-i", "./benchmarks/omiga/omiga-testcases/cutedge/cutedge-100-50.txt"});
-		//main(new String[]{"-g", "naive", "-s", "default", "-n", "10", "-i", "./benchmarks/omiga/omiga-testcases/3col/3col-20-38.txt"});
-		//main(new String[]{"-g", "naive", "-s", "naive", "-n", "10", "-i", "./benchmarks/omiga/omiga-testcases/reach/reach-1.txt"});
-		main(new String[]{"-g", "naive", "-s", "default", "-n", "1", "-i", "./benchmarks/siemens/vehicle_normal_small.asp"});
+	public void previouslyProblematicRuns() {
+		// Run tests that formerly caused some sort of exception.
+		main(new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "200", "-i", "./src/test/resources/PreviouslyProblematic/3col-20-38.txt"});
+		main(new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119718541727902", "-n", "200", "-i", ".//src/test/resources/PreviouslyProblematic/3col-20-38.txt"});
+		main(new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "97598271567626", "-n", "2", "-i", "./src/test/resources/PreviouslyProblematic/vehicle_normal_small.asp"});
+		main(new String[]{"-DebugEnableInternalChecks", "-sort", "-g", "naive", "-s", "default", "-n", "400", "-i", "./src/test/resources/PreviouslyProblematic/3col-20-38.txt"});
 	}
-
 }

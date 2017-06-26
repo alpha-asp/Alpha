@@ -862,4 +862,30 @@ public class SolverTests extends AbstractSolverTests {
 		Set<AnswerSet> answerSets = solver.collectSet();
 		assertTrue(answerSets.isEmpty());
 	}
+
+	@Test
+	public void conflictFromUnaryNoGood() throws IOException {
+		String program =
+			"d(b).\n" +
+			"sel(X) :- not nsel(X), d(X).\n" +
+			"nsel(X) :- not sel(X), d(X).\n" +
+			"t(a) :- sel(b).\n" +
+			":- t(X).\n";
+
+		ParsedProgram parsedProgram = parseVisit(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
+				new BasicAnswerSet.Builder()
+						.predicate("d")
+						.instance("b")
+						.predicate("nsel")
+						.instance("b")
+						.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
 }

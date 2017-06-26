@@ -225,7 +225,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 
 		// Check consistency.
 		if (!assignmentsConsistent(current, value)) {
-			ConflictCause conflictCause = null;
+			ConflictCause conflictCause = new ConflictCause(impliedBy);
 			// Assignments are inconsistent, prepare the reason.
 			NoGood violated = impliedBy;
 			if (decisionLevel < current.getWeakDecisionLevel()) {
@@ -233,6 +233,8 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 				violated = current.getPrevious() == null ? current.getImpliedBy() : current.getPrevious().getImpliedBy();	// take MBT reason if it exists.
 				if (violated == null) {
 					conflictCause = new ConflictCause(current);
+				} else {
+					conflictCause = new ConflictCause(violated);
 				}
 				// The lower assignment takes precedence over the current value, overwrite it and adjust mbtCounter.
 				if (current.getTruth() == MBT) {
@@ -244,7 +246,6 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 				}
 
 			}
-			conflictCause = new ConflictCause(impliedBy);
 			return conflictCause;
 		}
 
