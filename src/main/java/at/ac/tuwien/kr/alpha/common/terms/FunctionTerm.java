@@ -63,10 +63,19 @@ public class FunctionTerm extends Term {
 	}
 
 	@Override
-	public List<VariableTerm> getOccurringVariables() {
+	public List<VariableTerm> getBindingVariables() {
 		LinkedList<VariableTerm> vars = new LinkedList<>();
 		for (Term term : terms) {
-			vars.addAll(term.getOccurringVariables());
+			vars.addAll(term.getBindingVariables());
+		}
+		return vars;
+	}
+
+	@Override
+	public List<VariableTerm> getNonBindingVariables() {
+		LinkedList<VariableTerm> vars = new LinkedList<>();
+		for (Term term : terms) {
+			vars.addAll(term.getNonBindingVariables());
 		}
 		return vars;
 	}
@@ -117,7 +126,7 @@ public class FunctionTerm extends Term {
 	@Override
 	public int compareTo(Term o) {
 		if (!(o instanceof FunctionTerm)) {
-			return -1;
+			throw new ClassCastException();
 		}
 		FunctionTerm other = (FunctionTerm)o;
 

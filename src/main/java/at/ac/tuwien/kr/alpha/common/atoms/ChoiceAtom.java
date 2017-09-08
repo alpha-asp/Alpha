@@ -57,8 +57,13 @@ public class ChoiceAtom implements Atom {
 	}
 
 	@Override
-	public List<VariableTerm> getOccurringVariables() {
+	public List<VariableTerm> getBindingVariables() {
 		// NOTE: Term is a ConstantTerm, which has no variables by definition.
+		return Collections.emptyList();
+	}
+
+	@Override
+	public List<VariableTerm> getNonBindingVariables() {
 		return Collections.emptyList();
 	}
 

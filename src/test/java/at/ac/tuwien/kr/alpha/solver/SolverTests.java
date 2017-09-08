@@ -888,4 +888,49 @@ public class SolverTests extends AbstractSolverTests {
 		Set<AnswerSet> answerSets = solver.collectSet();
 		assertEquals(expected, answerSets);
 	}
+
+	@Test
+	public void intervalsInFacts() throws IOException {
+		String program = "a." +
+				"facta(1..3)." +
+				"factb(t, 5..8, u)." +
+				"factc(1..3, w, 2 .. 4)." +
+				"b(1,2)." +
+				"b(3,4).";
+
+		ParsedProgram parsedProgram = parseVisit(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
+				new BasicAnswerSet.Builder()
+						.predicate("facta")
+						.instance("1")
+						.instance("2")
+						.instance("3")
+						.predicate("factb")
+						.instance("t", "5", "u")
+						.instance("t", "6", "u")
+						.instance("t", "7", "u")
+						.instance("t", "8", "u")
+						.predicate("factc")
+						.instance("1", "w", "2")
+						.instance("2", "w", "2")
+						.instance("3", "w", "2")
+						.instance("1", "w", "3")
+						.instance("2", "w", "3")
+						.instance("3", "w", "3")
+						.instance("1", "w", "4")
+						.instance("2", "w", "4")
+						.instance("3", "w", "4")
+						.predicate("a")
+						.predicate("b")
+						.instance("1", "2")
+						.instance("3", "4")
+						.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
 }

@@ -29,6 +29,8 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
@@ -91,17 +93,13 @@ public class NaiveGrounder extends BridgedGrounder {
 			BasicPredicate predicate = new BasicPredicate(predicateName, predicateArity);
 			// Record predicate
 			adaptWorkingMemoryForPredicate(predicate);
+			// Construct fact instance(s).
+			List<Instance> instances = constructFactInstances(fact, predicateArity);
 
-			// Construct instance from the fact.
-			ArrayList<Term> termList = new ArrayList<>();
-			for (int i = 0; i < predicateArity; i++) {
-				termList.add(fact.getFact().getTerms().get(i).toTerm());
-			}
-			Instance instance = new Instance(termList.toArray(new Term[0]));
 			// Add instance to corresponding list of facts
 			factsFromProgram.putIfAbsent(predicate, new LinkedHashSet<>());
 			HashSet<Instance> internalPredicateInstances = factsFromProgram.get(predicate);
-			internalPredicateInstances.add(instance);
+			internalPredicateInstances.addAll(instances);
 		}
 		// initialize rules
 		adaptWorkingMemoryForPredicate(RuleAtom.PREDICATE);
@@ -129,10 +127,10 @@ public class NaiveGrounder extends BridgedGrounder {
 					continue;
 				}
 				// Collect head and body variables.
-				HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.getOccurringVariables());
+				HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.getBindingVariables());
 				HashSet<VariableTerm> occurringVariablesBody = new HashSet<>();
 				for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
-					occurringVariablesBody.addAll(atom.getOccurringVariables());
+					occurringVariablesBody.addAll(atom.getBindingVariables());
 				}
 				occurringVariablesBody.removeAll(occurringVariablesHead);
 				// Check if ever body variables occurs in the head.
@@ -142,6 +140,45 @@ public class NaiveGrounder extends BridgedGrounder {
 			}
 		}
 	}
+
+	private List<Instance> constructFactInstances(ParsedFact fact, int predicateArity) {
+		// Construct instance(s) from the fact.
+		Term[] currentTerms = new Term[predicateArity];
+		List<Instance> instances = new ArrayList<>();
+		boolean containsIntervals = false;
+		// Check if instance contains intervals at all.
+		for (int i = 0; i < predicateArity; i++) {
+			Term term = fact.getFact().getTerms().get(i).toTerm();
+			currentTerms[i] = term;
+			if (term instanceof IntervalTerm) {
+				containsIntervals = true;
+			}
+		}
+		// If fact contains no intervals, simply return the single instance.
+		if (!containsIntervals) {
+			return Collections.singletonList(new Instance(currentTerms));
+		}
+		// Fact contains intervals, unroll them all.
+		return unrollInstances(currentTerms, 0);
+	}
+
+	private List<Instance> unrollInstances(Term[] currentTerms, int currentPosition) {
+		if (currentPosition == currentTerms.length) {
+			return Collections.singletonList(new Instance(currentTerms));
+		}
+		Term currentTerm = currentTerms[currentPosition];
+		if (currentTerm instanceof IntervalTerm) {
+			List<Instance> instances = new ArrayList<>();
+			for (int i = ((IntervalTerm) currentTerm).getLowerBound(); i <= ((IntervalTerm) currentTerm).getUpperBound(); i++) {
+				Term[] clonedTerms = currentTerms.clone();
+				clonedTerms[currentPosition] = ConstantTerm.getInstance(String.valueOf(i));
+				instances.addAll(unrollInstances(clonedTerms, currentPosition + 1));
+			}
+			return instances;
+		}
+		return unrollInstances(currentTerms, currentPosition + 1);
+	}
+
 
 	private void adaptWorkingMemoryForPredicate(Predicate predicate) {
 		// Create working memory for predicate if it does not exist
@@ -618,7 +655,6 @@ public class NaiveGrounder extends BridgedGrounder {
 			// Check each instance if it matches with the atom.
 			Substitution unified = unify(substitute, instance, new Substitution(partialSubstitution));
 			if (unified != null) {
-				generatedSubstitutions.addAll(bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, unified, currentAssignment));
 
 				// Check if atom is also assigned true.
 				BasicAtom substituteClone = new BasicAtom((BasicAtom) substitute);

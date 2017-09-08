@@ -62,7 +62,7 @@ term : ID (PAREN_OPEN terms? PAREN_CLOSE)?  # term_constOrFunc
      | term arithop term                    # term_binopTerm
      | gringo_range                         # term_gringoRange; // syntax extension
 
-gringo_range : (NUMBER | VARIABLE | ID) DOT DOT (NUMBER | VARIABLE | ID); // NOT Core2 syntax, but widespread
+gringo_range : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE); // NOT Core2 syntax, but widespread
 
 gringo_sharp : SHARP ~(DOT)* DOT; // NOT Core2 syntax, but widespread, matching not perfect due to possible earlier dots
 

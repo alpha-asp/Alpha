@@ -3,7 +3,6 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BuiltinAtom;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedAtom;
@@ -88,42 +87,31 @@ public class NonGroundRule {
 	 * @return true if this rule is safe.
 	 */
 	private boolean isSafe() {
-		Set<VariableTerm> positiveVariables = new HashSet<>();
-		Set<VariableTerm> builtinVariables = new HashSet<>();
+		Set<VariableTerm> bindingVariables = new HashSet<>();
+		Set<VariableTerm> nonbindingVariables = new HashSet<>();
 
 		// Check that all negative variables occur in the positive body.
 		for (Atom posAtom : bodyAtomsPositive) {
-			// FIXME: The following five lines depend on concrete
-			// implementations of the Atom interface. Not nice.
-			if (posAtom instanceof BasicAtom) {
-				positiveVariables.addAll(posAtom.getOccurringVariables());
-			} else if (posAtom instanceof BuiltinAtom) {
-				builtinVariables.addAll(posAtom.getOccurringVariables());
-			}
+			bindingVariables.addAll(posAtom.getBindingVariables());
+			nonbindingVariables.addAll(posAtom.getNonBindingVariables());
 		}
 
 		for (Atom negAtom : bodyAtomsNegative) {
-			for (VariableTerm term : negAtom.getOccurringVariables()) {
-				if (!positiveVariables.contains(term)) {
-					return false;
-				}
-			}
-		}
-		for (VariableTerm builtinVariable : builtinVariables) {
-			if (!positiveVariables.contains(builtinVariable)) {
-				return false;
-			}
+			// No variables in a negated atom are binding.
+			nonbindingVariables.addAll(negAtom.getBindingVariables());
+			nonbindingVariables.addAll(negAtom.getNonBindingVariables());
 		}
 
-		// Constraint are safe at this point
-		if (isConstraint()) {
+		// Rule heads must be safe, i.e., all their variables must be bound by the body.
+		if (!isConstraint()) {
+			nonbindingVariables.addAll(headAtom.getBindingVariables());
+			nonbindingVariables.addAll(headAtom.getNonBindingVariables());
 			return true;
 		}
 
-		// Check that all variables of the head occur in the positive body.
-		List<VariableTerm> headVariables = headAtom.getOccurringVariables();
-		headVariables.removeAll(positiveVariables);
-		return headVariables.isEmpty();
+		// Check that all non-binding variables are bound in this rule.
+		nonbindingVariables.removeAll(bindingVariables);
+		return nonbindingVariables.isEmpty();
 	}
 
 	/**
@@ -143,7 +131,7 @@ public class NonGroundRule {
 			final Set<SortingBodyComponent> hits = new LinkedHashSet<>();
 
 			// For each variable
-			for (VariableTerm variableTerm : atom.getOccurringVariables()) {
+			for (VariableTerm variableTerm : atom.getBindingVariables()) {
 				// Find all components it also occurs and record in hitting components
 				for (SortingBodyComponent component : components) {
 					if (component.occurringVariables.contains(variableTerm)) {
@@ -298,7 +286,7 @@ public class NonGroundRule {
 		int numAtoms;
 
 		SortingBodyComponent(Atom atom) {
-			this.occurringVariables = new LinkedHashSet<>(atom.getOccurringVariables());
+			this.occurringVariables = new LinkedHashSet<>(atom.getBindingVariables());
 			this.atoms = new LinkedHashSet<>();
 			this.atoms.add(atom);
 			this.atomSequence = new ArrayList<>();
@@ -309,7 +297,7 @@ public class NonGroundRule {
 		void add(Atom atom) {
 			this.atoms.add(atom);
 			this.atomSequence.add(atom);
-			this.occurringVariables.addAll(atom.getOccurringVariables());
+			this.occurringVariables.addAll(atom.getBindingVariables());
 			this.numAtoms++;
 		}
 

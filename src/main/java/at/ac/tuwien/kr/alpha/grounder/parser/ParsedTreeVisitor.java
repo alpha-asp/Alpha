@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import org.antlr.v4.runtime.RuleContext;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
@@ -261,10 +262,23 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 		return null;
 	}
 
+	/**
+	 * Helper for parsing intervals like fact(1..5).
+	 */
+	private ParsedTerm parseNumberOrVariable(Token token) {
+		if (token.getType() == ASPCore2Parser.NUMBER) {
+			return new ParsedConstant(token.getText(), ParsedConstant.Type.NUMBER);
+		}
+		if (token.getType() == ASPCore2Parser.VARIABLE) {
+			return new ParsedVariable(token.getText());
+		}
+		throw new RuntimeException("Wrong input received: token is neither NUMBER nor VARIABLE. Should not happen.");
+	}
+
 	@Override
 	public CommonParsedObject visitTerm_gringoRange(ASPCore2Parser.Term_gringoRangeContext ctx) {
-		notSupportedSyntax(ctx);
-		return null;
+		// gringo_range : (NUMBER | VARIABLE) DOT DOT (NUMBER | VARIABLE);
+		return new ParsedInterval(parseNumberOrVariable(ctx.gringo_range().lower), parseNumberOrVariable(ctx.gringo_range().upper));
 	}
 
 	@Override

@@ -86,12 +86,21 @@ public class BasicAtom implements Atom {
 		return 31 * predicate.hashCode() + terms.hashCode();
 	}
 
-	public List<VariableTerm> getOccurringVariables() {
-		LinkedList<VariableTerm> occurringVariables = new LinkedList<>();
+	public List<VariableTerm> getBindingVariables() {
+		LinkedList<VariableTerm> bindingVariables = new LinkedList<>();
 		for (Term term : terms) {
-			occurringVariables.addAll(term.getOccurringVariables());
+			bindingVariables.addAll(term.getBindingVariables());
 		}
-		return occurringVariables;
+		return bindingVariables;
+	}
+
+	@Override
+	public List<VariableTerm> getNonBindingVariables() {
+		LinkedList<VariableTerm> nonbindingVariables = new LinkedList<>();
+		for (Term term : terms) {
+			nonbindingVariables.addAll(term.getNonBindingVariables());
+		}
+		return nonbindingVariables;
 	}
 
 	@Override

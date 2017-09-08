@@ -30,7 +30,12 @@ public class ConstantTerm extends Term {
 	}
 
 	@Override
-	public List<VariableTerm> getOccurringVariables() {
+	public List<VariableTerm> getBindingVariables() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public List<VariableTerm> getNonBindingVariables() {
 		return Collections.emptyList();
 	}
 
@@ -69,6 +74,6 @@ public class ConstantTerm extends Term {
 		if (o instanceof ConstantTerm) {
 			return symbol.compareTo(((ConstantTerm) o).symbol);
 		}
-		return 1;
+		throw new ClassCastException();
 	}
 }

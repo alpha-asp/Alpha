@@ -37,8 +37,13 @@ public class VariableTerm extends Term {
 	}
 
 	@Override
-	public List<VariableTerm> getOccurringVariables() {
+	public List<VariableTerm> getBindingVariables() {
 		return Collections.singletonList(this);
+	}
+
+	@Override
+	public List<VariableTerm> getNonBindingVariables() {
+		return Collections.emptyList();
 	}
 
 	@Override
@@ -86,7 +91,7 @@ public class VariableTerm extends Term {
 		}
 
 		if (!(o instanceof VariableTerm)) {
-			return -1;
+			throw new ClassCastException();
 		}
 
 		VariableTerm other = (VariableTerm)o;
