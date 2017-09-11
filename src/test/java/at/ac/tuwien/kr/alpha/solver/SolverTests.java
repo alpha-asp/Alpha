@@ -933,4 +933,94 @@ public class SolverTests extends AbstractSolverTests {
 		Set<AnswerSet> answerSets = solver.collectSet();
 		assertEquals(expected, answerSets);
 	}
+
+	@Test
+	public void intervalInRules() throws IOException {
+		String program = "a :- 3 = 1..4 ." +
+				"p(X, 1..X) :- dom(X), X != 2." +
+				"dom(1). dom(2). dom(3).";
+
+		ParsedProgram parsedProgram = parseVisit(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
+				new BasicAnswerSet.Builder()
+						.predicate("dom")
+						.instance("1")
+						.instance("2")
+						.instance("3")
+						.predicate("p")
+						.instance("1", "1")
+						.instance("3", "1")
+						.instance("3", "2")
+						.instance("3", "3")
+						.predicate("a")
+						.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
+
+	@Test
+	public void intervalInFunctionTermsInRules() throws IOException {
+		String program = "a :- q(f(1..3,g(4..5)))." +
+				"q(f(2,g(4)))." +
+				"q(f(1,g(5)))." +
+				"p(f(1..3,g(4..5))) :- b." +
+				"b.";
+
+		ParsedProgram parsedProgram = parseVisit(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
+				new BasicAnswerSet.Builder()
+						.predicate("q")
+						.instance("f(2,g(4))")
+						.instance("f(1,g(5))")
+						.predicate("a")
+						.predicate("b")
+						.predicate("p")
+						.instance("f(1,g(4))")
+						.instance("f(1,g(5))")
+						.instance("f(2,g(4))")
+						.instance("f(2,g(5))")
+						.instance("f(3,g(4))")
+						.instance("f(3,g(5))")
+						.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
+
+	@Test
+	public void groundAtomInRule() throws IOException {
+		String program = "p :- dom(X), q, q2." +
+				"dom(1)." +
+				"q :- not nq." +
+				"nq :- not q." +
+				"q2 :- not nq2." +
+				"nq2 :- not q2." +
+				":- not p.";
+
+		ParsedProgram parsedProgram = parseVisit(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
+				new BasicAnswerSet.Builder()
+						.predicate("dom")
+						.instance("1")
+						.predicate("p")
+						.predicate("q")
+						.predicate("q2")
+						.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
 }
