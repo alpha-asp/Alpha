@@ -16,7 +16,7 @@ import java.util.*;
 
 /**
  * Represents a non-ground rule or a constraint for the semi-naive grounder.
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2017, the Alpha Team.
  */
 public class NonGroundRule {
 	private final int ruleId;
@@ -60,7 +60,7 @@ public class NonGroundRule {
 		}
 	}
 
-	private boolean isOriginallyGround(List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
+	private static boolean isOriginallyGround(List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
 		if (headAtom != null && !headAtom.isGround()) {
 			return false;
 		}
@@ -84,7 +84,7 @@ public class NonGroundRule {
 	 * @param headAtom
 	 * @return true if some interval occurs in the rule.
 	 */
-	private boolean rewriteIntervalSpecifications(List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
+	private static boolean rewriteIntervalSpecifications(List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
 		// Collect all intervals and replace them with variables.
 		Map<VariableTerm, IntervalTerm> intervalReplacements = new HashMap<>();
 		for (Atom atom : bodyAtomsPositive) {
@@ -107,7 +107,7 @@ public class NonGroundRule {
 	/**
 	 * Replaces every IntervalTerm by a new variable and returns a mapping of the replaced VariableTerm -> IntervalTerm.
 	 */
-	private void rewriteAtom(Atom atom, Map<VariableTerm, IntervalTerm> intervalReplacement) {
+	private static void rewriteAtom(Atom atom, Map<VariableTerm, IntervalTerm> intervalReplacement) {
 		List<Term> termList = atom.getTerms();
 		for (int i = 0; i < termList.size(); i++) {
 			Term term = termList.get(i);
@@ -124,7 +124,7 @@ public class NonGroundRule {
 		}
 	}
 
-	private FunctionTerm rewriteFunctionTerm(FunctionTerm functionTerm, Map<VariableTerm, IntervalTerm> intervalReplacement) {
+	private static FunctionTerm rewriteFunctionTerm(FunctionTerm functionTerm, Map<VariableTerm, IntervalTerm> intervalReplacement) {
 		List<Term> termList = new ArrayList<>(functionTerm.getTerms());
 		boolean didChange = false;
 		for (int i = 0; i < termList.size(); i++) {
