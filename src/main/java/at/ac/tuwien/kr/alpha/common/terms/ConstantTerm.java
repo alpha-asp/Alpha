@@ -14,6 +14,10 @@ import java.util.List;
 public class ConstantTerm extends Term {
 	private static final Interner<ConstantTerm> INTERNER = Interners.newStrongInterner();
 
+	public Symbol getSymbol() {
+		return symbol;
+	}
+
 	private final Symbol symbol;
 
 	private ConstantTerm(String symbol) {

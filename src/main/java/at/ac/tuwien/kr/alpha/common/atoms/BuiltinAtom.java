@@ -1,13 +1,12 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
+import at.ac.tuwien.kr.alpha.common.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedBuiltinAtom;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTerm;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,29 +17,53 @@ import java.util.stream.Collectors;
  */
 public class BuiltinAtom implements Atom {
 	private final List<Term> terms;
-	private final ParsedBuiltinAtom.BINOP binop;
+	private final String predicateName;
 
-	protected BuiltinAtom(ParsedBuiltinAtom.BINOP binop, List<Term> terms) {
+	public BuiltinAtom(String predicateName, List<Term> terms, boolean flip) {
 		if (terms.size() != 2) {
 			throw new IllegalArgumentException("terms must be of size 2");
 		}
 
-		this.binop = binop;
 		this.terms = terms;
-	}
 
-	public BuiltinAtom(ParsedBuiltinAtom parsedBuiltinAtom) {
-		this(parsedBuiltinAtom.binop, parsedBuiltinAtom.getTerms().stream().map(ParsedTerm::toTerm).collect(Collectors.toList()));
+		if (!flip) {
+			this.predicateName = predicateName;
+			return;
+		}
+
+		switch (predicateName) {
+			case "=":
+				this.predicateName = "!=";
+				return;
+			case "<":
+				this.predicateName = ">=";
+				return;
+			case ">":
+				this.predicateName = "<=";
+				return;
+			case "<=":
+				this.predicateName = ">";
+				return;
+			case ">=":
+				this.predicateName = "<";
+				return;
+			case "<>":
+			case "!=":
+				this.predicateName = "=";
+				return;
+			default:
+				throw new UnsupportedOperationException("Unknown comparison operator (\"" + predicateName + "\") requested!");
+		}
 	}
 
 	@Override
 	public String toString() {
-		return terms.get(0) + " " + binop + " " + terms.get(1);
+		return terms.get(0) + " " + this.predicateName + " " + terms.get(1);
 	}
 
 	@Override
 	public Predicate getPredicate() {
-		return binop.toPredicate();
+		return new BasicPredicate(this.predicateName, 2);
 	}
 
 	@Override
@@ -69,53 +92,34 @@ public class BuiltinAtom implements Atom {
 
 	@Override
 	public Atom substitute(Substitution substitution) {
-		return new BuiltinAtom(binop, terms.stream().map(t -> {
+		return new BuiltinAtom(this.predicateName, terms.stream().map(t -> {
 			return t.substitute(substitution);
-		}).collect(Collectors.toList()));
+		}).collect(Collectors.toList()), false);
 	}
 
 	public boolean evaluate(Substitution substitution) {
-		NumberOrTerm left = evaluateExpression(terms.get(0), substitution);
-		NumberOrTerm right = evaluateExpression(terms.get(1), substitution);
-		switch (binop) {
-			case EQ:
-				if (left.isNumber() != right.isNumber()) {
-					throw new RuntimeException("BuiltinAtom: cannot compare terms of different types: " + left + binop + right);
-				} else if (left.isNumber()) {
-					return left.number == right.number;
-				} else {
-					return left.term.equals(right.term);
-				}
-			case NE:
-				if (left.isNumber() != right.isNumber()) {
-					throw new RuntimeException("BuiltinAtom: cannot compare terms of different types: " + left + binop + right);
-				} else if (left.isNumber()) {
-					return left.number != right.number;
-				} else {
-					return !left.term.equals(right.term);
-				}
-			case GT:
-				if (left.isNumber() && right.isNumber()) {
-					return  left.number > right.number;
-				}
-				throw new RuntimeException("BuiltinAtom: can only compare number terms: " + left + binop + right);
-			case LT:
-				if (left.isNumber() && right.isNumber()) {
-					return  left.number < right.number;
-				}
-				throw new RuntimeException("BuiltinAtom: can only compare number terms: " + left + binop + right);
-			case GE:
-				if (left.isNumber() && right.isNumber()) {
-					return  left.number >= right.number;
-				}
-				throw new RuntimeException("BuiltinAtom: can only compare number terms: " + left + binop + right);
-			case LE:
-				if (left.isNumber() && right.isNumber()) {
-					return  left.number <= right.number;
-				}
-				throw new RuntimeException("BuiltinAtom: can only compare number terms: " + left + binop + right);
+		final int x = evaluateExpression(terms.get(0), substitution);
+		final int y = evaluateExpression(terms.get(1), substitution);
+
+		final int comparison = Integer.compare(x, y);
+
+		switch (this.predicateName) {
+			case "=":
+				return comparison ==  0;
+			case "<":
+				return comparison < 0;
+			case ">":
+				return comparison > 0;
+			case "<=":
+				return comparison <= 0;
+			case ">=":
+				return comparison >= 0;
+			case "<>":
+			case "!=":
+				return comparison != 0;
+			default:
+				throw new UnsupportedOperationException("Unknown comparison operator requested!");
 		}
-		throw new RuntimeException("Unknown binop: " + binop);
 	}
 
 	@Override
@@ -126,7 +130,7 @@ public class BuiltinAtom implements Atom {
 
 		BuiltinAtom other = (BuiltinAtom)o;
 
-		int result = binop.compareTo(other.binop);
+		int result = this.predicateName.compareTo(other.predicateName);
 
 		if (result != 0) {
 			return result;
@@ -141,43 +145,19 @@ public class BuiltinAtom implements Atom {
 		return terms.get(1).compareTo(other.terms.get(1));
 	}
 
-	private static class NumberOrTerm {
-		public final int number;
-		public final Term term;
-
-		public NumberOrTerm(int number) {
-			this.number = number;
-			this.term = null;
-		}
-
-		public NumberOrTerm(Term term) {
-			this.term = term;
-			this.number = 0;
-		}
-
-		public boolean isNumber() {
-			return term == null;
-		}
-
-		@Override
-		public String toString() {
-			return term == null ? Integer.toString(number) : term.toString();
-		}
-	}
-
-	private static NumberOrTerm evaluateExpression(Term term, Substitution substitution) {
+	private static int evaluateExpression(Term term, Substitution substitution) {
 		if (term instanceof VariableTerm) {
 			return evaluateExpression(substitution.eval((VariableTerm) term), substitution);
 		} else if (term instanceof ConstantTerm) {
 			try {
-				return new NumberOrTerm(Integer.parseInt(term.toString()));
+				return Integer.parseInt(term.toString());
 			} catch (NumberFormatException e) {
-				return new NumberOrTerm(term);
+				return ((ConstantTerm) term).getSymbol().getId();
 			}
 		} else if (term instanceof FunctionTerm) {
-			return new NumberOrTerm(term);
+			return ((FunctionTerm) term).getSymbol().getId();
 		} else {
-			throw new RuntimeException("Not supported term structure in builtin atom encountered: " + term);
+			throw new UnsupportedOperationException("Unsupported term structure in builtin atom encountered: " + term);
 		}
 	}
 }
