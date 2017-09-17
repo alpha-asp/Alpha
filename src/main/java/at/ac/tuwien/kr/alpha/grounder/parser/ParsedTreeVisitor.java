@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2017, the Alpha Team.
  */
 public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 
@@ -277,7 +277,7 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 
 	@Override
 	public CommonParsedObject visitTerm_gringoRange(ASPCore2Parser.Term_gringoRangeContext ctx) {
-		// gringo_range : (NUMBER | VARIABLE) DOT DOT (NUMBER | VARIABLE);
+		// gringo_range : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE);
 		return new ParsedInterval(parseNumberOrVariable(ctx.gringo_range().lower), parseNumberOrVariable(ctx.gringo_range().upper));
 	}
 

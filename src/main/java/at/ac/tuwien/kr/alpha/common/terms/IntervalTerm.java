@@ -12,16 +12,31 @@ import java.util.List;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class IntervalTerm extends Term {
+	private final Term lowerBoundTerm;
+	private final Term upperBoundTerm;
 
-	private final Term lowerBound;
-	private final Term upperBound;
+	private final int lowerBound;
+	private final int upperBound;
+
+	private final boolean ground;
 
 	private IntervalTerm(Term lowerBound, Term upperBound) {
 		if (lowerBound == null || upperBound == null) {
 			throw new IllegalArgumentException();
 		}
-		this.lowerBound = lowerBound;
-		this.upperBound = upperBound;
+
+		this.ground = !((lowerBound instanceof VariableTerm) || (upperBound instanceof VariableTerm));
+
+		this.lowerBoundTerm = lowerBound;
+		this.upperBoundTerm = upperBound;
+
+		if (this.ground) {
+			this.upperBound = Integer.parseInt(upperBoundTerm.toString());
+			this.lowerBound = Integer.parseInt(lowerBoundTerm.toString());
+		} else {
+			this.upperBound = -1;
+			this.lowerBound = -1;
+		}
 	}
 
 	public static IntervalTerm getInstance(Term lowerBound, Term upperBound) {
@@ -30,21 +45,21 @@ public class IntervalTerm extends Term {
 
 	@Override
 	public boolean isGround() {
-		return !(lowerBound instanceof VariableTerm) && !(upperBound instanceof VariableTerm);
+		return this.ground;
 	}
 
 	public int getLowerBound() {
 		if (!isGround()) {
 			throw new RuntimeException("Cannot get the lower bound of non-ground interval. Should not happen.");
 		}
-		return Integer.parseInt(lowerBound.toString());
+		return this.lowerBound;
 	}
 
 	public int getUpperBound() {
 		if (!isGround()) {
-			throw new RuntimeException("Cannot get the lower bound of non-ground interval. Should not happen.");
+			throw new RuntimeException("Cannot get the upper bound of non-ground interval. Should not happen.");
 		}
-		return Integer.parseInt(upperBound.toString());
+		return this.upperBound;
 	}
 
 
@@ -62,11 +77,11 @@ public class IntervalTerm extends Term {
 	@Override
 	public List<VariableTerm> getNonBindingVariables() {
 		LinkedList<VariableTerm> variables = new LinkedList<>();
-		if (lowerBound instanceof VariableTerm) {
-			variables.add((VariableTerm) lowerBound);
+		if (lowerBoundTerm instanceof VariableTerm) {
+			variables.add((VariableTerm) lowerBoundTerm);
 		}
-		if (upperBound instanceof VariableTerm) {
-			variables.add((VariableTerm) upperBound);
+		if (upperBoundTerm instanceof VariableTerm) {
+			variables.add((VariableTerm) upperBoundTerm);
 		}
 		return variables;
 	}
@@ -76,12 +91,12 @@ public class IntervalTerm extends Term {
 		if (isGround()) {
 			return this;
 		}
-		return new IntervalTerm(lowerBound.substitute(substitution), upperBound.substitute(substitution));
+		return new IntervalTerm(lowerBoundTerm.substitute(substitution), upperBoundTerm.substitute(substitution));
 	}
 
 	@Override
 	public String toString() {
-		return lowerBound + ".." + upperBound;
+		return lowerBoundTerm + ".." + upperBoundTerm;
 	}
 
 	@Override
@@ -95,17 +110,17 @@ public class IntervalTerm extends Term {
 
 		IntervalTerm that = (IntervalTerm) o;
 
-		if (!lowerBound.equals(that.lowerBound)) {
+		if (!lowerBoundTerm.equals(that.lowerBoundTerm)) {
 			return false;
 		}
-		return upperBound.equals(that.upperBound);
+		return upperBoundTerm.equals(that.upperBoundTerm);
 
 	}
 
 	@Override
 	public int hashCode() {
-		int result = lowerBound.hashCode();
-		result = 31 * result + upperBound.hashCode();
+		int result = lowerBoundTerm.hashCode();
+		result = 31 * result + upperBoundTerm.hashCode();
 		return result;
 	}
 
