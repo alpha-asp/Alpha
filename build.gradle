@@ -1,7 +1,12 @@
-apply plugin: 'antlr'
-apply plugin: 'application'
-apply plugin: 'checkstyle'
-apply plugin: 'java'
+plugins {
+	id 'antlr'
+	id 'application'
+	id 'checkstyle'
+	id 'java'
+	id 'jacoco'
+
+	id 'com.github.kt3k.coveralls' version '2.8.1'
+}
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -62,4 +67,11 @@ task bundledJar(type: Jar) {
 	archiveName = "${project.name}-bundled.jar"
 
 	with jar
+}
+
+jacocoTestReport {
+	reports {
+		xml.enabled = true
+		html.enabled = true
+	}
 }

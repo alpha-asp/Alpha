@@ -5,10 +5,11 @@ sudo: true
 
 language: java
 
-# Run builds against Oracle JDK.
 # https://docs.travis-ci.com/user/languages/java#Testing-Against-Multiple-JDKs
 jdk:
+  - openjdk8
   - oraclejdk8
+  - oraclejdk9
 
 # As of 2016-06 Travis CI is running an outdated
 # version of Gradle, so this workaround fetches
@@ -17,7 +18,7 @@ before_install:
   # Setup Gradle configuration, tell it not to spawn a daemon.
   # Gradle will complain and ask us to enable the daemon, but
   # disabling it actually is a good practice for CI. Docs at
-  # https://docs.gradle.org/3.5/userguide/gradle_daemon.html#when_should_i_not_use_the_gradle_daemon
+  # https://docs.gradle.org/4.1/userguide/gradle_daemon.html#when_should_i_not_use_the_gradle_daemon
   - mkdir -pv $HOME/.gradle
   - echo 'org.gradle.daemon=false' > $HOME/.gradle/gradle.properties
 
@@ -29,6 +30,9 @@ before_install:
   - wget -q -O gradle.zip https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip
   - unzip -q gradle.zip
   - export PATH=$PWD/gradle-$GRADLE_VERSION/bin:$PATH
+
+after_success:
+  - gradle jacocoTestReport coveralls
 
 # Do not send notifications via e-mail, this gets
 # annoying pretty fast. Check Travis CI docs at

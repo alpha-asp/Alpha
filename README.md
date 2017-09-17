@@ -1,6 +1,7 @@
 # Alpha
 
 [![Build Status](https://travis-ci.org/alpha-asp/Alpha.svg?branch=master)](https://travis-ci.org/alpha-asp/Alpha)
+[![Coverage Status](https://coveralls.io/repos/github/alpha-asp/Alpha/badge.svg?branch=ci)](https://coveralls.io/github/alpha-asp/Alpha?branch=ci)
 [![Code Quality Status](https://codebeat.co/badges/10b609be-9774-42a1-b7fe-2bb64382744d)](https://codebeat.co/projects/github-com-alpha-asp-alpha-master)
 
 Alpha is the successor of [OMiGA](http://www.kr.tuwien.ac.at/research/systems/omiga/) and currently in development.
