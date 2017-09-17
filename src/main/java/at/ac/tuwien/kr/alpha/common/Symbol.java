@@ -9,14 +9,17 @@ import com.google.common.collect.Interners;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class Symbol implements Comparable<Symbol> {
+	private static int counter;
 	private static final Interner<Symbol> INTERNER = Interners.newStrongInterner();
 
 	private final String symbol;
 	private final int arity;
+	private final int id;
 
-	private Symbol(String symbol, int arity) {
+	private Symbol(String symbol, int arity, int id) {
 		this.symbol = symbol;
 		this.arity = arity;
+		this.id = id;
 	}
 
 	public static Symbol getInstance(String symbol) {
@@ -24,7 +27,7 @@ public class Symbol implements Comparable<Symbol> {
 	}
 
 	public static Symbol getInstance(String symbol, int arity) {
-		return INTERNER.intern(new Symbol(symbol, arity));
+		return INTERNER.intern(new Symbol(symbol, arity, counter++));
 	}
 
 	public String getSymbol() {
@@ -33,6 +36,10 @@ public class Symbol implements Comparable<Symbol> {
 
 	public int getArity() {
 		return arity;
+	}
+
+	public int getId() {
+		return id;
 	}
 
 	@Override

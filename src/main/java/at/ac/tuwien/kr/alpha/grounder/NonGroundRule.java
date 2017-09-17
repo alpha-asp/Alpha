@@ -1,10 +1,10 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.predicates.Evaluable;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.BuiltinAtom;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedRule;
@@ -89,17 +89,17 @@ public class NonGroundRule {
 	 */
 	private boolean isSafe() {
 		Set<VariableTerm> positiveVariables = new HashSet<>();
-		Set<VariableTerm> builtinVariables = new HashSet<>();
+		//Set<VariableTerm> builtinVariables = new HashSet<>();
 
 		// Check that all negative variables occur in the positive body.
 		for (Atom posAtom : bodyAtomsPositive) {
 			// FIXME: The following five lines depend on concrete
 			// implementations of the Atom interface. Not nice.
-			if (posAtom instanceof BasicAtom) {
+		//	if (posAtom instanceof BasicAtom) {
 				positiveVariables.addAll(posAtom.getOccurringVariables());
-			} else if (posAtom instanceof BuiltinAtom) {
-				builtinVariables.addAll(posAtom.getOccurringVariables());
-			}
+		//	} else if (posAtom instanceof BuiltinAtom) {
+		//		builtinVariables.addAll(posAtom.getOccurringVariables());
+		//	}
 		}
 
 		for (Atom negAtom : bodyAtomsNegative) {
@@ -109,11 +109,13 @@ public class NonGroundRule {
 				}
 			}
 		}
-		for (VariableTerm builtinVariable : builtinVariables) {
-			if (!positiveVariables.contains(builtinVariable)) {
-				return false;
-			}
-		}
+
+		// FIXME
+		//for (VariableTerm builtinVariable : builtinVariables) {
+		//	if (!positiveVariables.contains(builtinVariable)) {
+		//		return false;
+		//	}
+		//}
 
 		// Constraint are safe at this point
 		if (isConstraint()) {
@@ -132,12 +134,12 @@ public class NonGroundRule {
 	 */
 	private List<Atom> sortAtoms(List<Atom> atoms) {
 		final Set<SortingBodyComponent> components = new LinkedHashSet<>();
-		final Set<BuiltinAtom> builtinAtoms = new LinkedHashSet<>();
+		final Set<Atom> evaluableAtoms = new LinkedHashSet<>();
 
 		for (Atom atom : atoms) {
-			if (atom instanceof BuiltinAtom) {
+			if (atom.getPredicate() instanceof Evaluable) {
 				// Sort out builtin atoms (we consider them as not creating new bindings)
-				builtinAtoms.add((BuiltinAtom) atom);
+				evaluableAtoms.add(atom);
 				continue;
 			}
 			final Set<SortingBodyComponent> hits = new LinkedHashSet<>();
@@ -181,7 +183,7 @@ public class NonGroundRule {
 		for (SortingBodyComponent component : components) {
 			sortedPositiveBodyAtoms.addAll(component.atomSequence);
 		}
-		sortedPositiveBodyAtoms.addAll(builtinAtoms);	// Put builtin atoms after positive literals and before negative ones.
+		sortedPositiveBodyAtoms.addAll(evaluableAtoms);	// Put builtin atoms after positive literals and before negative ones.
 		return sortedPositiveBodyAtoms;
 	}
 

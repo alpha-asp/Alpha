@@ -29,6 +29,9 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
+import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.predicates.Evaluable;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
@@ -391,10 +394,10 @@ public class NaiveGrounder extends BridgedGrounder {
 		ArrayList<Integer> bodyAtomsPositive = new ArrayList<>();
 		ArrayList<Integer> bodyAtomsNegative = new ArrayList<>();
 		for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
-			if (atom instanceof BuiltinAtom) {
+			if (atom.getPredicate() instanceof Evaluable) {
 				// Truth of builtin atoms does not depend on any assignment
 				// hence, they need not be represented as long as they evaluate to true
-				if (((BuiltinAtom) atom).evaluate(substitution)) {
+				if (((Evaluable) atom.getPredicate()).evaluate(atom.getTerms(), substitution)) {
 					continue;
 				} else {
 					// Rule body is always false, skip the whole rule.
@@ -534,10 +537,10 @@ public class NaiveGrounder extends BridgedGrounder {
 		}
 
 		Atom currentAtom = rule.getBodyAtom(atomPos);
-		if (currentAtom instanceof BuiltinAtom) {
+		if (currentAtom.getPredicate() instanceof Evaluable) {
 			// Assumption: all variables occurring in the builtin atom are already bound
 			// (as ensured by the body atom sorting)
-			if (((BuiltinAtom)currentAtom).evaluate(partialSubstitution)) {
+			if (((Evaluable)currentAtom.getPredicate()).evaluate(currentAtom.getTerms(), partialSubstitution)) {
 				// Builtin is true, continue with next atom in rule body.
 				return bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, partialSubstitution, currentAssignment);
 			}

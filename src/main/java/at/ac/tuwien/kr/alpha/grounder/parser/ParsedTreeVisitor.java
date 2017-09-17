@@ -154,38 +154,22 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 	@Override
 	public CommonParsedObject visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
 		// builtin_atom : term binop term;
-		ParsedTerm left = (ParsedTerm) visit(ctx.term(0));
-		ParsedTerm right = (ParsedTerm) visit(ctx.term(1));
-		ParsedBuiltinAtom.BINOP binop;
-		ASPCore2Parser.BinopContext parsedBinop = ctx.binop();
-		// binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
-		if (parsedBinop.EQUAL() != null) {
-			binop = ParsedBuiltinAtom.BINOP.EQ;
-		} else if (parsedBinop.UNEQUAL() != null) {
-			binop = ParsedBuiltinAtom.BINOP.NE;
-		} else if (parsedBinop.LESS() != null) {
-			binop = ParsedBuiltinAtom.BINOP.LT;
-		} else if (parsedBinop.GREATER() != null) {
-			binop = ParsedBuiltinAtom.BINOP.GT;
-		} else if (parsedBinop.LESS_OR_EQ() != null) {
-			binop = ParsedBuiltinAtom.BINOP.LE;
-		} else if (parsedBinop.GREATER_OR_EQ() != null) {
-			binop = ParsedBuiltinAtom.BINOP.GE;
-		} else {
-			throw new RuntimeException("Unknown binop encountered.");
-		}
-		return new ParsedBuiltinAtom(left, binop, right);
+		final ArrayList<ParsedTerm> terms = new ArrayList<>(2);
+		terms.add((ParsedTerm) visit(ctx.term(0)));
+		terms.add((ParsedTerm) visit(ctx.term(1)));
+		return new ParsedBuiltinAtom(ctx.binop().getText(), terms);
 	}
 
 	@Override
 	public CommonParsedObject visitNaf_literal(ASPCore2Parser.Naf_literalContext ctx) {
 		// naf_literal : NAF? (classical_literal | builtin_atom);
 		boolean isNegated = ctx.NAF() != null;
+		ParsedAtom atom;
 		if (ctx.builtin_atom() != null) {
-			ParsedBuiltinAtom builtinAtom = (ParsedBuiltinAtom) visitBuiltin_atom(ctx.builtin_atom());
-			return isNegated ? builtinAtom.getNegation() : builtinAtom;
+			atom = (ParsedAtom) visitBuiltin_atom(ctx.builtin_atom());
+		} else {
+			atom = (ParsedAtom) visitClassical_literal(ctx.classical_literal());
 		}
-		ParsedAtom atom = (ParsedAtom)visitClassical_literal(ctx.classical_literal());
 		atom.isNegated = isNegated;
 		return atom;
 	}

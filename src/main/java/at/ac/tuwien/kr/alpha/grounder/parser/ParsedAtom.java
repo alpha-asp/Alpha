@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
-import at.ac.tuwien.kr.alpha.common.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
