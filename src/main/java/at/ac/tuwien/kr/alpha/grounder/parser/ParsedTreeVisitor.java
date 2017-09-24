@@ -161,12 +161,39 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 	}
 
 	@Override
+	public CommonParsedObject visitExternal_atom(ASPCore2Parser.External_atomContext ctx) {
+		// external_atom : AMPERSAND ID (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?;
+
+		if (ctx.MINUS() != null) {
+			notSupportedSyntax(ctx);
+		}
+
+		List<ParsedTerm> inputTerms = new ArrayList<>();
+		if (ctx.terms() != null) {
+			for (CommonParsedObject term : (ListOfParsedObjects) visitTerms(ctx.input)) {
+				inputTerms.add((ParsedTerm) term);
+			}
+		}
+
+		List<ParsedTerm> outputTerms = new ArrayList<>();
+		if (ctx.terms() != null) {
+			for (CommonParsedObject term : (ListOfParsedObjects) visitTerms(ctx.output)) {
+				outputTerms.add((ParsedTerm) term);
+			}
+		}
+
+		return new ParsedExternalAtom(ctx.ID().getText(), inputTerms, outputTerms);
+	}
+
+	@Override
 	public CommonParsedObject visitNaf_literal(ASPCore2Parser.Naf_literalContext ctx) {
 		// naf_literal : NAF? (classical_literal | builtin_atom);
 		boolean isNegated = ctx.NAF() != null;
 		ParsedAtom atom;
 		if (ctx.builtin_atom() != null) {
 			atom = (ParsedAtom) visitBuiltin_atom(ctx.builtin_atom());
+		} else if (ctx.external_atom() != null) {
+			atom = (ParsedAtom) visitExternal_atom(ctx.external_atom());
 		} else {
 			atom = (ParsedAtom) visitClassical_literal(ctx.classical_literal());
 		}
@@ -180,7 +207,6 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 		if (ctx.MINUS() != null) {
 			notSupportedSyntax(ctx);
 		}
-
 
 		List<ParsedTerm> terms = new ArrayList<>();
 		if (ctx.terms() != null) {

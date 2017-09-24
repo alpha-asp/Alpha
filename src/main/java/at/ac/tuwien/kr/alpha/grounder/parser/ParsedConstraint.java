@@ -1,5 +1,9 @@
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -10,6 +14,17 @@ public class ParsedConstraint extends CommonParsedObject {
 
 	public ParsedConstraint(List<ParsedAtom> body) {
 		this.body = body;
+	}
+
+	public NonGroundRule toNonGroundRule() {
+		final List<Atom> pos = new ArrayList<>(this.body.size() / 2);
+		final List<Atom> neg = new ArrayList<>(this.body.size() / 2);
+
+		for (ParsedAtom bodyAtom : this.body) {
+			(bodyAtom.isNegated() ? neg : pos).add(bodyAtom.toAtom());
+		}
+
+		return new NonGroundRule(pos, neg, null);
 	}
 
 	@Override

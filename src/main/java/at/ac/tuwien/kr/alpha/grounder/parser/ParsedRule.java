@@ -1,11 +1,15 @@
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class ParsedRule extends CommonParsedObject{
+public class ParsedRule extends CommonParsedObject {
 	public final ParsedAtom head;
 	public final List<ParsedAtom> body;
 
@@ -16,6 +20,20 @@ public class ParsedRule extends CommonParsedObject{
 
 	public ParsedRule(List<ParsedAtom> body) {
 		this(body, null);
+	}
+
+	public NonGroundRule toNonGroundRule() {
+		final List<Atom> pos = new ArrayList<>(this.body.size() / 2);
+		final List<Atom> neg = new ArrayList<>(this.body.size() / 2);
+
+		for (ParsedAtom bodyAtom : this.body) {
+			(bodyAtom.isNegated() ? neg : pos).add(bodyAtom.toAtom());
+		}
+
+		// Construct head if the given parsedRule is no constraint
+		final Atom head = this.head != null ? this.head.toAtom() : null;
+
+		return new NonGroundRule(pos, neg, head);
 	}
 
 	@Override

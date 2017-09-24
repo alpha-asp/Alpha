@@ -16,15 +16,15 @@ import java.util.*;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class NonGroundRule {
-	private final int ruleId;
+	private static final IntIdGenerator GENERATOR = new IntIdGenerator();
+
+	private final int ruleId = GENERATOR.getNextId();
 
 	private final List<Atom> bodyAtomsPositive;
 	private final List<Atom> bodyAtomsNegative;
 	private final Atom headAtom;
 
-	public NonGroundRule(int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
-		this.ruleId = ruleId;
-
+	public NonGroundRule(List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
 		// Sort for better join order.
 		this.bodyAtomsPositive = Collections.unmodifiableList(sortAtoms(bodyAtomsPositive));
 
@@ -39,25 +39,6 @@ public class NonGroundRule {
 			throw new RuntimeException("Encountered not safe rule: " + toString()
 				+ "\nNotice: A rule is considered safe if all variables occurring in negative literals, builtin atoms, and the head of the rule also occurr in some positive litera.");
 		}
-	}
-
-	public static NonGroundRule constructNonGroundRule(IntIdGenerator intIdGenerator, ParsedRule parsedRule) {
-		final List<Atom> pos = new ArrayList<>(parsedRule.body.size() / 2);
-		final List<Atom> neg = new ArrayList<>(parsedRule.body.size() / 2);
-
-		for (ParsedAtom bodyAtom : parsedRule.body) {
-			(bodyAtom.isNegated() ? neg : pos).add(bodyAtom.toAtom());
-		}
-
-		// Construct head if the given parsedRule is no constraint
-		final Atom head = parsedRule.head != null ? parsedRule.head.toAtom() : null;
-
-		return new NonGroundRule(
-			intIdGenerator.getNextId(),
-			pos,
-			neg,
-			head
-		);
 	}
 
 	public int getRuleId() {

@@ -2,7 +2,6 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.BuiltinAtom;
 import at.ac.tuwien.kr.alpha.common.predicates.TotalOrder;
 
 import java.util.List;

@@ -40,6 +40,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFact;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedRule;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+import com.google.common.collect.Iterables;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -79,44 +80,36 @@ public class NaiveGrounder extends BridgedGrounder {
 
 	private HashSet<IndexedInstanceStorage> modifiedWorkingMemories = new HashSet<>();
 
-	public NaiveGrounder(ParsedProgram program, Bridge... bridges) {
+	public NaiveGrounder(Program program, Bridge... bridges) {
 		this(program, p -> true, bridges);
 	}
 
-	public NaiveGrounder(ParsedProgram program, java.util.function.Predicate<Predicate> filter, Bridge... bridges) {
+	public NaiveGrounder(Program program, java.util.function.Predicate<Predicate> filter, Bridge... bridges) {
 		super(program, filter, bridges);
 
 		// initialize all facts
-		for (ParsedFact fact : this.program.facts) {
-			String predicateName = fact.getFact().getPredicate();
-			int predicateArity = fact.getFact().getArity();
-
-			BasicPredicate predicate = new BasicPredicate(predicateName, predicateArity);
+		for (Atom fact : this.program.getFacts()) {
+			Predicate predicate = fact.getPredicate();
 			// Record predicate
 			adaptWorkingMemoryForPredicate(predicate);
 
 			// Construct instance from the fact.
-			ArrayList<Term> termList = new ArrayList<>();
-			for (int i = 0; i < predicateArity; i++) {
-				termList.add(fact.getFact().getTerms().get(i).toTerm());
-			}
-			Instance instance = new Instance(termList.toArray(new Term[0]));
+			Instance instance = new Instance(fact.getTerms().toArray(new Term[0]));
 			// Add instance to corresponding list of facts
 			factsFromProgram.putIfAbsent(predicate, new LinkedHashSet<>());
 			HashSet<Instance> internalPredicateInstances = factsFromProgram.get(predicate);
 			internalPredicateInstances.add(instance);
 		}
+
 		// initialize rules
 		adaptWorkingMemoryForPredicate(RuleAtom.PREDICATE);
 		adaptWorkingMemoryForPredicate(ChoiceAtom.OFF);
 		adaptWorkingMemoryForPredicate(ChoiceAtom.ON);
-		for (ParsedRule rule : program.rules) {
+
+		for (NonGroundRule rule : Iterables.concat(program.getRules(), program.getConstraints())) {
 			registerRuleOrConstraint(rule);
 		}
-		// initialize constraints
-		for (ParsedConstraint constraint : program.constraints) {
-			registerRuleOrConstraint(new ParsedRule(constraint.body));
-		}
+
 		// Hint: Could clear this.program to free memory.
 		this.program = null;
 		// Record all unique rule heads.
@@ -161,9 +154,7 @@ public class NaiveGrounder extends BridgedGrounder {
 		knownPredicates.add(predicate);
 	}
 
-	private void registerRuleOrConstraint(ParsedRule rule) {
-		// Record the rule for later use
-		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(intIdGenerator, rule);
+	private void registerRuleOrConstraint(NonGroundRule nonGroundRule) {
 		// Record defining rules for each predicate.
 		if (nonGroundRule.getHeadAtom() != null) {
 			Predicate headPredicate = nonGroundRule.getHeadAtom().getPredicate();

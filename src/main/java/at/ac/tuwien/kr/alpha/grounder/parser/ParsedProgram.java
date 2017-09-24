@@ -27,6 +27,10 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
+import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -70,5 +74,25 @@ public class ParsedProgram extends CommonParsedObject {
 		rules.addAll(program.rules);
 		facts.addAll(program.facts);
 		constraints.addAll(program.constraints);
+	}
+
+	public Program toProgram()  {
+		List<Atom> facts = new ArrayList<>(this.facts.size());
+		List<NonGroundRule> rules = new ArrayList<>(this.rules.size());
+		List<NonGroundRule> constraints = new ArrayList<>(this.constraints.size());
+
+		for (ParsedFact fact : this.facts) {
+			facts.add(fact.getFact().toAtom());
+		}
+
+		for (ParsedRule rule : this.rules) {
+			rules.add(rule.toNonGroundRule());
+		}
+
+		for (ParsedConstraint rule : this.constraints) {
+			constraints.add(rule.toNonGroundRule());
+		}
+
+		return new Program(facts, rules, constraints);
 	}
 }

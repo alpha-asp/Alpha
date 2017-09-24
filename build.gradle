@@ -29,6 +29,7 @@ dependencies {
 	compile group: 'org.apache.commons', name: 'commons-lang3',        version: '3.4'
 	compile group: 'ch.qos.logback',     name: 'logback-classic',      version: '1.1.7'
 	compile group: 'com.google.guava',   name: 'guava',                version: '20.0'
+	compile group: 'org.reflections',    name: 'reflections',          version: '0.9.11'
 
 	// NOTE(flowlo): JGraphT was used in OMiGA, the predecessor of Alpha.
 	// We might need it, so I'll keep this here just in case.
