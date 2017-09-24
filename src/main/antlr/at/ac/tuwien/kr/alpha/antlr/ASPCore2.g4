@@ -42,11 +42,13 @@ weight_at_level : term (AT term)? (COMMA terms)?;
 
 naf_literals : naf_literal (COMMA naf_literals)?;
 
-naf_literal : NAF? (classical_literal | builtin_atom);
+naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
 
 classical_literal : MINUS? ID (PAREN_OPEN terms PAREN_CLOSE)?;
 
 builtin_atom : term binop term;
+
+external_atom : MINUS? AMPERSAND ID (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?;
 
 binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
 
@@ -94,6 +96,7 @@ TIMES : '*';
 DIV : '/';
 AT : '@';
 SHARP : '#'; // NOT Core2 syntax but gringo
+AMPERSAND : '&';
 
 PAREN_OPEN : '(';
 PAREN_CLOSE : ')';
