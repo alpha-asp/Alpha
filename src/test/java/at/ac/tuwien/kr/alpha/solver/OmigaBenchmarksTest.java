@@ -115,7 +115,7 @@ public class OmigaBenchmarksTest extends AbstractSolverTests {
 		ANTLRFileStream programInputStream = new ANTLRFileStream(
 Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName).toString());
 		ParsedProgram parsedProgram = parseVisit(programInputStream);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
 		Solver solver = getInstance(grounder);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		System.out.println(answerSet);

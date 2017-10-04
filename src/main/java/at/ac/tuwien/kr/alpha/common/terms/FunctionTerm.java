@@ -12,7 +12,7 @@ import static at.ac.tuwien.kr.alpha.Util.appendDelimited;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class FunctionTerm extends Term {
+public class FunctionTerm implements Term {
 	private static final Interner<FunctionTerm> INTERNER = Interners.newStrongInterner();
 
 	private final Symbol symbol;

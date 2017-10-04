@@ -3,9 +3,11 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.predicates.ExternalEvaluable;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -37,7 +39,7 @@ public class ParsedAtom extends CommonParsedObject {
 		return isNegated;
 	}
 
-	public Atom toAtom() {
+	public Atom toAtom(Map<String, ExternalEvaluable> externals) {
 		return new BasicAtom(new BasicPredicate(predicate, terms.size()), terms());
 	}
 

@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class ConstantTerm extends Term {
+public class ConstantTerm implements Term {
 	private static final Interner<ConstantTerm> INTERNER = Interners.newStrongInterner();
 
 	public Symbol getSymbol() {

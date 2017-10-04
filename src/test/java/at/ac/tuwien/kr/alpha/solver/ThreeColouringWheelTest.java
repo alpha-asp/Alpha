@@ -104,20 +104,20 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 	}
 
 	private void testThreeColouring(int n) throws IOException {
-		ParsedProgram program = parseVisit(
+		ParsedProgram parsedProgram = parseVisit(
 				"col(V,C) :- v(V), c(C), not ncol(V,C)." +
 				"ncol(V,C) :- col(V,D), c(C), C != D." +
 				":- e(V,U), col(V,C), col(U,C).");
 		Collection<ParsedFact> colours = createColors("red", "blue", "green");
-		program.accumulate(new ParsedProgram(colours));
+		parsedProgram.accumulate(new ParsedProgram(colours));
 		Collection<ParsedFact> vertices = createVertices(n);
-		program.accumulate(new ParsedProgram(vertices));
+		parsedProgram.accumulate(new ParsedProgram(vertices));
 		Collection<ParsedFact> edges = createEdges(n);
-		program.accumulate(new ParsedProgram(edges));
+		parsedProgram.accumulate(new ParsedProgram(edges));
 
-		program = maybeShuffle(program);
+		parsedProgram = maybeShuffle(parsedProgram);
 
-		NaiveGrounder grounder = new NaiveGrounder(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
 		Solver solver = getInstance(grounder);
 
 		Optional<AnswerSet> answerSet = solver.stream().findAny();

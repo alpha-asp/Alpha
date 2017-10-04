@@ -159,7 +159,7 @@ public class PigeonHoleTest extends AbstractSolverTests {
 
 		String testProgram = concat(rules);
 		ParsedProgram parsedProgram = parseVisit(testProgram);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
 
 		Solver solver = getInstance(grounder);
 

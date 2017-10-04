@@ -62,7 +62,7 @@ public class AlphaHeuristicTestAssumptions {
 	public void setUp() throws IOException {
 		String testProgram = "h :- b1, b2, not b3, not b4.";
 		ParsedProgram parsedProgram = parseVisit(testProgram);
-		this.grounder = new NaiveGrounder(parsedProgram);
+		this.grounder = new NaiveGrounder(parsedProgram.toProgram());
 		this.assignment = new ArrayAssignment();
 		this.choiceManager = new TestableChoiceManager(assignment);
 	}

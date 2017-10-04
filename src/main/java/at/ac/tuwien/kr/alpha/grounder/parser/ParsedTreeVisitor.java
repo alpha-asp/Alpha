@@ -169,14 +169,14 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 		}
 
 		List<ParsedTerm> inputTerms = new ArrayList<>();
-		if (ctx.terms() != null) {
+		if (ctx.input != null) {
 			for (CommonParsedObject term : (ListOfParsedObjects) visitTerms(ctx.input)) {
 				inputTerms.add((ParsedTerm) term);
 			}
 		}
 
 		List<ParsedTerm> outputTerms = new ArrayList<>();
-		if (ctx.terms() != null) {
+		if (ctx.output != null) {
 			for (CommonParsedObject term : (ListOfParsedObjects) visitTerms(ctx.output)) {
 				outputTerms.add((ParsedTerm) term);
 			}

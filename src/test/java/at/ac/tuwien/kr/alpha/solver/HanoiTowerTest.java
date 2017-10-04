@@ -110,7 +110,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		ANTLRFileStream instanceInputStream = new ANTLRFileStream(Paths.get("src", "test", "resources", "HanoiTower_instances", instance + ".asp").toString());
 		ParsedProgram parsedProgram = parseVisit(programInputStream);
 		parsedProgram.accumulate(parseVisit(instanceInputStream));
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
 		Solver solver = getInstance(grounder);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		System.out.println(answerSet);

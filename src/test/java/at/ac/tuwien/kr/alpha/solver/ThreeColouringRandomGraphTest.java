@@ -101,7 +101,7 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 	}
 
 	private void testThreeColouring(int nVertices, int nEdges) throws IOException {
-		ParsedProgram program = parseVisit(
+		ParsedProgram parsedProgram = parseVisit(
 				"blue(N) :- v(N), not red(N), not green(N)." +
 				"red(N) :- v(N), not blue(N), not green(N)." +
 				"green(N) :- v(N), not red(N), not blue(N)." +
@@ -109,13 +109,13 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 				":- e(N1,N2), red(N1), red(N2)." +
 				":- e(N1,N2), green(N1), green(N2).");
 		Collection<ParsedFact> vertices = createVertices(nVertices);
-		program.accumulate(new ParsedProgram(vertices));
+		parsedProgram.accumulate(new ParsedProgram(vertices));
 		Collection<ParsedFact> edges = createEdges(nVertices, nEdges);
-		program.accumulate(new ParsedProgram(edges));
+		parsedProgram.accumulate(new ParsedProgram(edges));
 
-		program = maybeShuffle(program);
+		parsedProgram = maybeShuffle(parsedProgram);
 
-		NaiveGrounder grounder = new NaiveGrounder(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
 		Solver solver = getInstance(grounder);
 
 		Optional<AnswerSet> answerSet = solver.stream().findAny();

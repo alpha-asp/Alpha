@@ -29,12 +29,10 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.predicates.ExternalEvaluable;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -76,21 +74,25 @@ public class ParsedProgram extends CommonParsedObject {
 		constraints.addAll(program.constraints);
 	}
 
-	public Program toProgram()  {
+	public Program toProgram() {
+		return this.toProgram(Collections.emptyMap());
+	}
+
+	public Program toProgram(Map<String, ExternalEvaluable> externals)  {
 		List<Atom> facts = new ArrayList<>(this.facts.size());
 		List<NonGroundRule> rules = new ArrayList<>(this.rules.size());
 		List<NonGroundRule> constraints = new ArrayList<>(this.constraints.size());
 
 		for (ParsedFact fact : this.facts) {
-			facts.add(fact.getFact().toAtom());
+			facts.add(fact.getFact().toAtom(externals));
 		}
 
 		for (ParsedRule rule : this.rules) {
-			rules.add(rule.toNonGroundRule());
+			rules.add(rule.toNonGroundRule(externals));
 		}
 
 		for (ParsedConstraint rule : this.constraints) {
-			constraints.add(rule.toNonGroundRule());
+			constraints.add(rule.toNonGroundRule(externals));
 		}
 
 		return new Program(facts, rules, constraints);

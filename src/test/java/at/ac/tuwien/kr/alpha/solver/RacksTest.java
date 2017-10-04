@@ -76,7 +76,7 @@ public class RacksTest extends AbstractSolverTests {
 			Paths.get("benchmarks", "siemens", "racks", "racks.lp").toString()
 		);
 		ParsedProgram parsedProgram = parseVisit(programInputStream);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
 		Solver solver = getInstance(grounder);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		System.out.println(answerSet);

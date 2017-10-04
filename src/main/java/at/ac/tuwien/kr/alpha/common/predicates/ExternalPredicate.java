@@ -21,8 +21,6 @@ public class ExternalPredicate implements External {
 
 	@Override
 	public int evaluate(List<Term> input, List<Term> output, Substitution substitution) {
-
-
 		return 0;
 	}
 

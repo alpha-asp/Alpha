@@ -173,21 +173,21 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 	}
 
 	private void testThreeColouring(int n, boolean shuffle, int seed) throws IOException {
-		ParsedProgram program = parseVisit("col(V,C) :- v(V), c(C), not ncol(V,C)." + "ncol(V,C) :- col(V,D), c(C), C != D." + ":- e(V,U), col(V,C), col(U,C).");
+		ParsedProgram parsedProgram = parseVisit("col(V,C) :- v(V), c(C), not ncol(V,C)." + "ncol(V,C) :- col(V,D), c(C), C != D." + ":- e(V,U), col(V,C), col(U,C).");
 		List<CommonParsedObject> colours = createColors("1", "2", "3");
-		program.accumulate(new ParsedProgram(colours));
+		parsedProgram.accumulate(new ParsedProgram(colours));
 		List<CommonParsedObject> vertices = createVertices(n);
-		program.accumulate(new ParsedProgram(vertices));
+		parsedProgram.accumulate(new ParsedProgram(vertices));
 		List<CommonParsedObject> edges = createEdges(n, shuffle, seed);
-		program.accumulate(new ParsedProgram(edges));
+		parsedProgram.accumulate(new ParsedProgram(edges));
 
-		NaiveGrounder grounder = new NaiveGrounder(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
 		Solver solver = getInstance(grounder);
 
-		for (ParsedFact fact : program.facts) {
+		for (ParsedFact fact : parsedProgram.facts) {
 			System.out.println(fact.getFact().toString() + ".");
 		}
-		for (ParsedRule rule : program.rules) {
+		for (ParsedRule rule : parsedProgram.rules) {
 			System.out.print(rule.head.toString());
 			System.out.print(":-");
 			for (int i = 0; i < rule.body.size(); i++) {
@@ -199,7 +199,7 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 			System.out.println(".");
 		}
 
-		for (ParsedConstraint constraint : program.constraints) {
+		for (ParsedConstraint constraint : parsedProgram.constraints) {
 			System.out.print(":-");
 			for (int i = 0; i < constraint.body.size(); i++) {
 				if (i > 0) {
