@@ -93,7 +93,8 @@ public class TotalOrder implements Evaluable, Predicate {
 			try {
 				return Integer.parseInt(term.toString());
 			} catch (NumberFormatException e) {
-				return ((ConstantTerm) term).getSymbol().getId();
+				// FIXME: This is bad. We need consistent ordering, even among objects.
+				return ((ConstantTerm) term).getObject().hashCode();
 			}
 		} else if (term instanceof FunctionTerm) {
 			return ((FunctionTerm) term).getSymbol().getId();

@@ -1,6 +1,5 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
-import at.ac.tuwien.kr.alpha.common.Symbol;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
@@ -14,18 +13,18 @@ import java.util.List;
 public class ConstantTerm implements Term {
 	private static final Interner<ConstantTerm> INTERNER = Interners.newStrongInterner();
 
-	public Symbol getSymbol() {
-		return symbol;
+	public Object getObject() {
+		return object;
 	}
 
-	private final Symbol symbol;
+	private final Object object;
 
-	private ConstantTerm(String symbol) {
-		this.symbol = Symbol.getInstance(symbol);
+	private ConstantTerm(Object object) {
+		this.object = object;
 	}
 
-	public static ConstantTerm getInstance(String constantSymbol) {
-		return INTERNER.intern(new ConstantTerm(constantSymbol));
+	public static ConstantTerm getInstance(Object object) {
+		return INTERNER.intern(new ConstantTerm(object));
 	}
 
 	@Override
@@ -45,7 +44,7 @@ public class ConstantTerm implements Term {
 
 	@Override
 	public String toString() {
-		return symbol.getSymbol();
+		return object.toString();
 	}
 
 	@Override
@@ -60,18 +59,23 @@ public class ConstantTerm implements Term {
 
 		ConstantTerm that = (ConstantTerm) o;
 
-		return symbol.equals(that.symbol);
+		return object.equals(that.object);
 	}
 
 	@Override
 	public int hashCode() {
-		return symbol.hashCode();
+		return object.hashCode();
 	}
 
 	@Override
 	public int compareTo(Term o) {
 		if (o instanceof ConstantTerm) {
-			return symbol.compareTo(((ConstantTerm) o).symbol);
+			if (this.object.equals(((ConstantTerm) o).object)) {
+				return 0;
+			}
+			// FIXME
+			//return object.compareTo(((ConstantTerm) o).object);
+			return 1;
 		}
 		return 1;
 	}

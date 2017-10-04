@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.common.predicates;
 
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
@@ -28,7 +29,7 @@ public class ExternalEvaluable implements Predicate, Evaluable {
 			throw new IllegalArgumentException("Number of terms does not match.");
 		}
 
-		Term[] arguments = new Term[terms.size()];
+		Object[] arguments = new Object[terms.size()];
 
 		for (int i = 0; i < arguments.length; i++) {
 			Term it = terms.get(i);
@@ -37,7 +38,11 @@ public class ExternalEvaluable implements Predicate, Evaluable {
 				it = it.substitute(substitution);
 			}
 
-			arguments[i] = it;
+			if (!(it instanceof ConstantTerm)) {
+				throw new IllegalArgumentException("how did i get here?");
+			}
+
+			arguments[i] = ((ConstantTerm) it).getObject();
 		}
 
 		try {

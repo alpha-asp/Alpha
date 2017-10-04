@@ -29,6 +29,11 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
+import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
@@ -58,6 +63,40 @@ public class SolverTests extends AbstractSolverTests {
 	private static void enableDebugLog() {
 		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		root.setLevel(Level.DEBUG);
+	}
+
+	private static class Thingy {
+		@Override
+		public String toString() {
+			return "thingy";
+		}
+	}
+
+	@Test
+	public void testObjectProgram() throws IOException {
+		Thingy thingy = new Thingy();
+
+		Atom fact = new BasicAtom(new BasicPredicate("foo", 1), ConstantTerm.getInstance(thingy));
+
+		Program program = new Program(
+			Collections.singletonList(fact),
+			Collections.emptyList(),
+			Collections.emptyList()
+		);
+
+		Grounder grounder = new NaiveGrounder(program);
+		Solver solver = getInstance(grounder);
+
+		List<AnswerSet> answerSets = solver.collectList();
+
+		assertEquals(1, answerSets.size());
+
+		AnswerSet expected = new BasicAnswerSet.Builder()
+			.predicate("foo").instanceObj(thingy)
+			.build();
+
+		AnswerSet actual = answerSets.get(0);
+		assertEquals(expected, actual);
 	}
 
 	@Test

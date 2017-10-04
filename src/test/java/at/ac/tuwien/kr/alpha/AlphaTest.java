@@ -16,15 +16,15 @@ public class AlphaTest {
 	private static int invocations = 0;
 
 	@Predicate
-	public static boolean isOne(ConstantTerm term) {
+	public static boolean isOne(String term) {
 		invocations++;
-		return term.getSymbol().getSymbol().equals("1");
+		return term.equals("1");
 	}
 
 	@Test
 	public void withExternal() throws Exception {
 		Alpha system = new Alpha();
-		system.register(this.getClass().getMethod("isOne", ConstantTerm.class));
+		system.register(this.getClass().getMethod("isOne", String.class));
 		Set<AnswerSet> actual = system.solve("a :- &isOne(1).").collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new BasicAnswerSet.Builder().predicate("a").build()));
 		assertEquals(expected, actual);
@@ -42,7 +42,7 @@ public class AlphaTest {
 	@Test
 	public void withNativeExternal() throws Exception {
 		Alpha system = new Alpha();
-		system.register("isTwo", t -> t.getSymbol().getSymbol().equals("2"));
+		system.register("isTwo", t -> t.getObject().toString().equals("2"));
 
 		Set<AnswerSet> actual = system.solve("a :- &isTwo(2).").collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new BasicAnswerSet.Builder().predicate("a").build()));
