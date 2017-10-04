@@ -25,7 +25,7 @@ public class ParsedExternalAtom extends ParsedAtom {
 	}
 
 	@Override
-	public Atom toAtom(Map<String, ExternalEvaluable> externals) {
+	public Atom toAtom(Map<String, Predicate> externals) {
 		Predicate external = externals.get(this.predicate);
 
 		// TODO: This is very fragile. Do a nice fallback for built-in predicates such as TotalOrder.

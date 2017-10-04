@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.predicates.ExternalEvaluable;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ public class ParsedRule extends CommonParsedObject {
 		this(body, null);
 	}
 
-	public NonGroundRule toNonGroundRule(Map<String, ExternalEvaluable> externals) {
+	public NonGroundRule toNonGroundRule(Map<String, Predicate> externals) {
 		final List<Atom> pos = new ArrayList<>(this.body.size() / 2);
 		final List<Atom> neg = new ArrayList<>(this.body.size() / 2);
 

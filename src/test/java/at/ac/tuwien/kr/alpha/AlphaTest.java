@@ -40,6 +40,16 @@ public class AlphaTest {
 	}
 
 	@Test
+	public void withNativeExternal() throws Exception {
+		Alpha system = new Alpha();
+		system.register("isTwo", t -> t.getSymbol().getSymbol().equals("2"));
+
+		Set<AnswerSet> actual = system.solve("a :- &isTwo(2).").collect(Collectors.toSet());
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new BasicAnswerSet.Builder().predicate("a").build()));
+		assertEquals(expected, actual);
+	}
+
+	@Test
 	public void withExternalInvocationCounted1() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", ConstantTerm.class));

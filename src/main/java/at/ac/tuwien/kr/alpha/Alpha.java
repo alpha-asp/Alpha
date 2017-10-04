@@ -3,6 +3,9 @@ package at.ac.tuwien.kr.alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.predicates.ExternalEvaluable;
+import at.ac.tuwien.kr.alpha.common.predicates.ExternalNativePredicate;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
@@ -23,7 +26,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public class Alpha {
-	private final Map<String, ExternalEvaluable> predicateMethods = new HashMap<>();
+	private final Map<String, at.ac.tuwien.kr.alpha.common.predicates.Predicate> predicateMethods = new HashMap<>();
 
 	private final String grounderName;
 	private final String solverName;
@@ -84,6 +87,10 @@ public class Alpha {
 
 	public void register(Method method) {
 		this.predicateMethods.put(method.getName(), new ExternalEvaluable(method));
+	}
+
+	public void register(String name, java.util.function.Predicate<ConstantTerm> predicate) {
+		this.predicateMethods.put(name, new ExternalNativePredicate(name, predicate));
 	}
 
 	public void setProgram(Program program)

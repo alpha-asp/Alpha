@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.predicates.ExternalEvaluable;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 
 import java.util.*;
@@ -78,7 +79,7 @@ public class ParsedProgram extends CommonParsedObject {
 		return this.toProgram(Collections.emptyMap());
 	}
 
-	public Program toProgram(Map<String, ExternalEvaluable> externals)  {
+	public Program toProgram(Map<String, Predicate> externals)  {
 		List<Atom> facts = new ArrayList<>(this.facts.size());
 		List<NonGroundRule> rules = new ArrayList<>(this.rules.size());
 		List<NonGroundRule> constraints = new ArrayList<>(this.constraints.size());

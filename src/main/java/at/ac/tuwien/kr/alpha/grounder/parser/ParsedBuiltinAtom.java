@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.predicates.ExternalEvaluable;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.predicates.TotalOrder;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public class ParsedBuiltinAtom extends ParsedAtom {
 	}
 
 	@Override
-	public Atom toAtom(Map<String, ExternalEvaluable> externals) {
+	public Atom toAtom(Map<String, Predicate> externals) {
 		if (this.terms.size() != 2) {
 			throw new UnsupportedOperationException("Builtin with not exactly two terms cannot be handled.");
 		}
