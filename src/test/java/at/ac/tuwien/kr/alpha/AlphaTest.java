@@ -15,6 +15,7 @@ import static org.junit.Assert.assertEquals;
 public class AlphaTest {
 	private static int invocations = 0;
 
+	@Predicate
 	public static boolean isOne(ConstantTerm term) {
 		invocations++;
 		return term.getSymbol().getSymbol().equals("1");
@@ -24,6 +25,15 @@ public class AlphaTest {
 	public void withExternal() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", ConstantTerm.class));
+		Set<AnswerSet> actual = system.solve("a :- &isOne(1).").collect(Collectors.toSet());
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new BasicAnswerSet.Builder().predicate("a").build()));
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void withExternalViaAnnotation() throws Exception {
+		Alpha system = new Alpha();
+		system.scan(this.getClass().getPackage().getName());
 		Set<AnswerSet> actual = system.solve("a :- &isOne(1).").collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new BasicAnswerSet.Builder().predicate("a").build()));
 		assertEquals(expected, actual);

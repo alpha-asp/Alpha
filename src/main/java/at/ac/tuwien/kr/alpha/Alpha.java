@@ -10,6 +10,9 @@ import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import org.reflections.Reflections;
+import org.reflections.scanners.MethodAnnotationsScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -67,7 +70,11 @@ public class Alpha {
 	}
 
 	public void scan(String base) {
-		Reflections reflections = new Reflections(base);
+		Reflections reflections = new Reflections(new ConfigurationBuilder()
+			.setUrls(ClasspathHelper.forPackage(base))
+			.setScanners(new MethodAnnotationsScanner())
+		);
+
 		Set<Method> predicateMethods = reflections.getMethodsAnnotatedWith(Predicate.class);
 
 		for (Method method : predicateMethods) {
