@@ -54,7 +54,8 @@ binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
 
 terms : term (COMMA terms)?;
 
-term : ID (PAREN_OPEN terms? PAREN_CLOSE)?  # term_constOrFunc
+term : ID                                   # term_const
+     | ID (PAREN_OPEN terms? PAREN_CLOSE)   # term_func
      | NUMBER                               # term_number
      | STRING                               # term_string
      | VARIABLE                             # term_variable

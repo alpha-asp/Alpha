@@ -5,26 +5,28 @@ import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class ConstantTerm implements Term {
+public class ConstantTerm<T extends Comparable<T>> implements Term {
 	private static final Interner<ConstantTerm> INTERNER = Interners.newStrongInterner();
 
-	public Object getObject() {
+	public T getObject() {
 		return object;
 	}
 
-	private final Object object;
+	private final T object;
 
-	private ConstantTerm(Object object) {
+	private ConstantTerm(T object) {
 		this.object = object;
 	}
 
-	public static ConstantTerm getInstance(Object object) {
-		return INTERNER.intern(new ConstantTerm(object));
+	public static <T extends Comparable<T>> ConstantTerm getInstance(T object) {
+		return INTERNER.intern(new ConstantTerm<T>(object));
 	}
 
 	@Override
@@ -67,16 +69,31 @@ public class ConstantTerm implements Term {
 		return object.hashCode();
 	}
 
+	private static final Map<Class<?>, Integer> priority = new HashMap<>();
+
+	static {
+		priority.put(Integer.class, 0);
+		priority.put(String.class, 1);
+	}
+
 	@Override
 	public int compareTo(Term o) {
 		if (o instanceof ConstantTerm) {
-			if (this.object.equals(((ConstantTerm) o).object)) {
-				return 0;
+			ConstantTerm otherConstantTerm = (ConstantTerm) o;
+
+			if (otherConstantTerm.object.getClass() == this.object.getClass()) {
+				return this.object.compareTo((T) otherConstantTerm.object);
 			}
-			// FIXME
-			//return object.compareTo(((ConstantTerm) o).object);
-			return 1;
+
+			int myPrio = priority.getOrDefault(this.object.getClass(), Integer.MAX_VALUE);
+			int otherPrio = priority.getOrDefault(otherConstantTerm.object.getClass(), Integer.MAX_VALUE);
+
+			if (myPrio == otherPrio) {
+				throw new RuntimeException("WUT");
+			}
+
+			return myPrio - otherPrio;
 		}
-		return 1;
+		return this.toString().compareTo(o.toString());
 	}
 }

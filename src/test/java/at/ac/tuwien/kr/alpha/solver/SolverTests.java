@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.Symbol;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
@@ -65,10 +66,15 @@ public class SolverTests extends AbstractSolverTests {
 		root.setLevel(Level.DEBUG);
 	}
 
-	private static class Thingy {
+	private static class Thingy implements Comparable<Thingy> {
 		@Override
 		public String toString() {
 			return "thingy";
+		}
+
+		@Override
+		public int compareTo(Thingy o) {
+			return 0;
 		}
 	}
 
@@ -92,7 +98,7 @@ public class SolverTests extends AbstractSolverTests {
 		assertEquals(1, answerSets.size());
 
 		AnswerSet expected = new BasicAnswerSet.Builder()
-			.predicate("foo").instanceObj(thingy)
+			.predicate("foo").instance(thingy)
 			.build();
 
 		AnswerSet actual = answerSets.get(0);
@@ -111,9 +117,9 @@ public class SolverTests extends AbstractSolverTests {
 		assertEquals(1, answerSets.size());
 
 		AnswerSet expected = new BasicAnswerSet.Builder()
-			.predicate("q").instance("a").instance("c")
-			.predicate("p").instance("a").instance("b")
-			.predicate("foo").instance("13").instance("16")
+			.predicate("q").symbolicInstance("a").symbolicInstance("c")
+			.predicate("p").symbolicInstance("a").symbolicInstance("b")
+			.predicate("foo").instance(13).instance(16)
 			.build();
 
 		assertEquals(expected, answerSets.get(0));
@@ -129,8 +135,8 @@ public class SolverTests extends AbstractSolverTests {
 		List<AnswerSet> answerSets = solver.collectList();
 
 		AnswerSet expected = new BasicAnswerSet.Builder()
-			.predicate("p").instance("a").instance("b")
-			.predicate("r").instance("a").instance("b")
+			.predicate("p").instance(Symbol.getInstance("a")).instance(Symbol.getInstance("b"))
+			.predicate("r").instance(Symbol.getInstance("a")).instance(Symbol.getInstance("b"))
 			.build();
 
 		assertEquals(1, answerSets.size());
@@ -151,8 +157,8 @@ public class SolverTests extends AbstractSolverTests {
 
 		assertEquals(1, answerSets.size());
 		AnswerSet expected = new BasicAnswerSet.Builder()
-			.predicate("q").instance("1").instance("2")
-			.predicate("p").instance("1").instance("2")
+			.predicate("q").instance(1).instance(2)
+			.predicate("p").instance(1).instance(2)
 			.build();
 
 		assertEquals(expected, answerSets.get(0));
@@ -198,42 +204,44 @@ public class SolverTests extends AbstractSolverTests {
 		Solver solver = getInstance(grounder);
 
 		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
-			.predicate("dom").instance("1").instance("2").instance("3");
+			.predicate("dom").instance(1).instance(2).instance(3);
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
 			new BasicAnswerSet.Builder(base)
-				.predicate("q").instance("1").instance("2")
-				.predicate("p").instance("3")
+				.predicate("q").instance(1).instance(2)
+				.predicate("p").instance(3)
 				.build(),
 			new BasicAnswerSet.Builder(base)
-				.predicate("q").instance("1")
-				.predicate("p").instance("2").instance("3")
+				.predicate("q").instance(1)
+				.predicate("p").instance(2).instance(3)
 				.build(),
 			new BasicAnswerSet.Builder(base)
-				.predicate("q").instance("2")
-				.predicate("p").instance("1").instance("3")
+				.predicate("q").instance(2)
+				.predicate("p").instance(1).instance(3)
 				.build(),
 			new BasicAnswerSet.Builder(base)
-				.predicate("p").instance("1").instance("2").instance("3")
+				.predicate("p").instance(1).instance(2).instance(3)
 				.build(),
 			new BasicAnswerSet.Builder(base)
-				.predicate("q").instance("1").instance("2").instance("3")
+				.predicate("q").instance(1).instance(2).instance(3)
 				.build(),
 			new BasicAnswerSet.Builder(base)
-				.predicate("q").instance("1").instance("3")
-				.predicate("p").instance("2")
+				.predicate("q").instance(1).instance(3)
+				.predicate("p").instance(2)
 				.build(),
 			new BasicAnswerSet.Builder(base)
-				.predicate("q").instance("2").instance("3")
-				.predicate("p").instance("1")
+				.predicate("q").instance(2).instance(3)
+				.predicate("p").instance(1)
 				.build(),
 			new BasicAnswerSet.Builder(base)
-				.predicate("q").instance("3")
-				.predicate("p").instance("1").instance("2")
+				.predicate("q").instance(3)
+				.predicate("p").instance(1).instance(2)
 				.build()
 		));
 
-		assertEquals(expected, solver.collectSet());
+		Set<AnswerSet> actual = solver.collectSet();
+
+		assertEquals(expected, actual);
 	}
 
 	@Test
@@ -353,16 +361,16 @@ public class SolverTests extends AbstractSolverTests {
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
 			new BasicAnswerSet.Builder()
 				.predicate("dom")
-				.instance("1")
-				.instance("2")
-				.instance("3")
-				.instance("4")
-				.instance("5")
+				.instance(1)
+				.instance(2)
+				.instance(3)
+				.instance(4)
+				.instance(5)
 				.predicate("p")
-				.instance("4")
+				.instance(4)
 				.predicate("r")
-				.instance("1")
-				.instance("2")
+				.instance(1)
+				.instance(2)
 				.build()
 		));
 
@@ -411,50 +419,50 @@ public class SolverTests extends AbstractSolverTests {
 
 		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
 			.predicate("eq")
-			.instance("1", "1")
-			.instance("2", "2")
-			.instance("3", "3")
+			.instance(1, 1)
+			.instance(2, 2)
+			.instance(3, 3)
 			.predicate("var")
-			.instance("1")
-			.instance("2")
-			.instance("3");
+			.instance(1)
+			.instance(2)
+			.instance(3);
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
 			new BasicAnswerSet.Builder(base)
 				.predicate("val")
-				.instance("1", "1")
-				.instance("2", "2")
-				.instance("3", "3")
+				.instance(1, 1)
+				.instance(2, 2)
+				.instance(3, 3)
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("val")
-				.instance("1", "1")
-				.instance("3", "2")
-				.instance("2", "3")
+				.instance(1, 1)
+				.instance(3, 2)
+				.instance(2, 3)
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("val")
-				.instance("2", "1")
-				.instance("1", "2")
-				.instance("3", "3")
+				.instance(2, 1)
+				.instance(1, 2)
+				.instance(3, 3)
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("val")
-				.instance("2", "1")
-				.instance("3", "2")
-				.instance("1", "3")
+				.instance(2, 1)
+				.instance(3, 2)
+				.instance(1, 3)
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("val")
-				.instance("3", "1")
-				.instance("1", "2")
-				.instance("2", "3")
+				.instance(3, 1)
+				.instance(1, 2)
+				.instance(2, 3)
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("val")
-				.instance("3", "1")
-				.instance("2", "2")
-				.instance("1", "3")
+				.instance(3, 1)
+				.instance(2, 2)
+				.instance(1, 3)
 				.build()
 		));
 
@@ -482,50 +490,50 @@ public class SolverTests extends AbstractSolverTests {
 
 		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
 			.predicate("eq")
-			.instance("1", "1")
-			.instance("2", "2")
-			.instance("3", "3")
+			.instance(1, 1)
+			.instance(2, 2)
+			.instance(3, 3)
 			.predicate("var")
-			.instance("1")
-			.instance("2")
-			.instance("3");
+			.instance(1)
+			.instance(2)
+			.instance(3);
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
 			new BasicAnswerSet.Builder(base)
 				.predicate("val")
-				.instance("1", "1")
-				.instance("2", "2")
-				.instance("3", "3")
+				.instance(1, 1)
+				.instance(2, 2)
+				.instance(3, 3)
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("val")
-				.instance("1", "1")
-				.instance("3", "2")
-				.instance("2", "3")
+				.instance(1, 1)
+				.instance(3, 2)
+				.instance(2, 3)
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("val")
-				.instance("2", "1")
-				.instance("1", "2")
-				.instance("3", "3")
+				.instance(2, 1)
+				.instance(1, 2)
+				.instance(3, 3)
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("val")
-				.instance("2", "1")
-				.instance("3", "2")
-				.instance("1", "3")
+				.instance(2, 1)
+				.instance(3, 2)
+				.instance(1, 3)
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("val")
-				.instance("3", "1")
-				.instance("1", "2")
-				.instance("2", "3")
+				.instance(3, 1)
+				.instance(1, 2)
+				.instance(2, 3)
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("val")
-				.instance("3", "1")
-				.instance("2", "2")
-				.instance("1", "3")
+				.instance(3, 1)
+				.instance(2, 2)
+				.instance(1, 3)
 				.build()
 		));
 
@@ -545,8 +553,8 @@ public class SolverTests extends AbstractSolverTests {
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
 			new BasicAnswerSet.Builder()
 				.predicate("val")
-				.instance("1", "1")
-				.instance("2", "2")
+				.instance(1, 1)
+				.instance(2, 2)
 				.build()
 		));
 
@@ -567,40 +575,40 @@ public class SolverTests extends AbstractSolverTests {
 
 		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
 			.predicate("node")
-			.instance("a")
-			.instance("b");
+			.instance(Symbol.getInstance("a"))
+			.instance(Symbol.getInstance("b"));
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
 			new BasicAnswerSet.Builder(base)
 				.predicate("in")
-				.instance("a")
-				.instance("b")
+				.instance(Symbol.getInstance("a"))
+				.instance(Symbol.getInstance("b"))
 				.predicate("pair")
-				.instance("a", "a")
-				.instance("a", "b")
-				.instance("b", "a")
-				.instance("b", "b")
+				.instance(Symbol.getInstance("a"), Symbol.getInstance("a"))
+				.instance(Symbol.getInstance("a"), Symbol.getInstance("b"))
+				.instance(Symbol.getInstance("b"), Symbol.getInstance("a"))
+				.instance(Symbol.getInstance("b"), Symbol.getInstance("b"))
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("in")
-				.instance("b")
+				.instance(Symbol.getInstance("b"))
 				.predicate("out")
-				.instance("a")
+				.instance(Symbol.getInstance("a"))
 				.predicate("pair")
-				.instance("b", "b")
+				.instance(Symbol.getInstance("b"), Symbol.getInstance("b"))
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("in")
-				.instance("a")
+				.instance(Symbol.getInstance("a"))
 				.predicate("out")
-				.instance("b")
+				.instance(Symbol.getInstance("b"))
 				.predicate("pair")
-				.instance("a", "a")
+				.instance(Symbol.getInstance("a"), Symbol.getInstance("a"))
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("out")
-				.instance("a")
-				.instance("b")
+				.instance(Symbol.getInstance("a"))
+				.instance(Symbol.getInstance("b"))
 				.build()
 		));
 
@@ -622,32 +630,32 @@ public class SolverTests extends AbstractSolverTests {
 
 		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
 			.predicate("node")
-			.instance("a")
-			.instance("b");
+			.instance(Symbol.getInstance("a"))
+			.instance(Symbol.getInstance("b"));
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
 			new BasicAnswerSet.Builder(base)
 				.predicate("in")
-				.instance("b")
+				.instance(Symbol.getInstance("b"))
 				.predicate("out")
-				.instance("a")
+				.instance(Symbol.getInstance("a"))
 				.predicate("edge")
-				.instance("b", "a")
+				.instance(Symbol.getInstance("b"), Symbol.getInstance("a"))
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("in")
-				.instance("a")
+				.instance(Symbol.getInstance("a"))
 				.predicate("out")
-				.instance("b")
+				.instance(Symbol.getInstance("b"))
 				.predicate("edge")
-				.instance("b", "a")
+				.instance(Symbol.getInstance("b"), Symbol.getInstance("a"))
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("out")
-				.instance("a")
-				.instance("b")
+				.instance(Symbol.getInstance("a"))
+				.instance(Symbol.getInstance("b"))
 				.predicate("edge")
-				.instance("b", "a")
+				.instance(Symbol.getInstance("b"), Symbol.getInstance("a"))
 				.build()
 		));
 
@@ -677,14 +685,15 @@ public class SolverTests extends AbstractSolverTests {
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
 			new BasicAnswerSet.Builder()
 				.predicate("r1")
-				.instance("f(a,b)")
+				.parseInstance("f(a,b)")
 				.predicate("r2")
-				.instance("f(a,b)")
+				.parseInstance("f(a,b)")
 				.predicate("a")
 				.build()
 		));
 
 		Set<AnswerSet> answerSets = solver.collectSet();
+
 		assertEquals(expected, answerSets);
 	}
 
@@ -712,38 +721,38 @@ public class SolverTests extends AbstractSolverTests {
 
 		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
 			.predicate("location")
-			.instance("a1")
+			.instance(Symbol.getInstance("a1"))
 			.predicate("region")
-			.instance("r1")
-			.instance("r2")
+			.instance(Symbol.getInstance("r1"))
+			.instance(Symbol.getInstance("r2"))
 			.predicate("aux_ext_assign")
-			.instance("a1", "r1")
-			.instance("a1", "r2");
+			.instance(Symbol.getInstance("a1"), Symbol.getInstance("r1"))
+			.instance(Symbol.getInstance("a1"), Symbol.getInstance("r2"));
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
 			new BasicAnswerSet.Builder(base)
 				.predicate("assign")
-				.instance("a1", "r2")
+				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r2"))
 				.predicate("nassign")
-				.instance("a1", "r1")
+				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r1"))
 				.predicate("aux_not_assign")
-				.instance("a1", "r1")
+				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r1"))
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("assign")
-				.instance("a1", "r1")
+				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r1"))
 				.predicate("nassign")
-				.instance("a1", "r2")
+				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r2"))
 				.predicate("aux_not_assign")
-				.instance("a1", "r2")
+				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r2"))
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("nassign")
-				.instance("a1", "r1")
-				.instance("a1", "r2")
+				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r1"))
+				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r2"))
 				.predicate("aux_not_assign")
-				.instance("a1", "r1")
-				.instance("a1", "r2")
+				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r1"))
+				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r2"))
 				.build()
 		));
 
@@ -769,65 +778,65 @@ public class SolverTests extends AbstractSolverTests {
 
 		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
 			.predicate("possible")
-			.instance("l1", "r1")
-			.instance("l3", "r3")
-			.instance("l4", "r1")
-			.instance("l4", "r3")
-			.instance("l5", "r4")
-			.instance("l6", "r2")
-			.instance("l7", "r3")
-			.instance("l8", "r2")
-			.instance("l9", "r1")
-			.instance("l9", "r4")
+			.symbolicInstance("l1", "r1")
+			.symbolicInstance("l3", "r3")
+			.symbolicInstance("l4", "r1")
+			.symbolicInstance("l4", "r3")
+			.symbolicInstance("l5", "r4")
+			.symbolicInstance("l6", "r2")
+			.symbolicInstance("l7", "r3")
+			.symbolicInstance("l8", "r2")
+			.symbolicInstance("l9", "r1")
+			.symbolicInstance("l9", "r4")
 			.predicate("assign")
-			.instance("l1", "r1")
-			.instance("l3", "r3")
-			.instance("l5", "r4")
-			.instance("l6", "r2")
-			.instance("l7", "r3")
-			.instance("l8", "r2")
+			.symbolicInstance("l1", "r1")
+			.symbolicInstance("l3", "r3")
+			.symbolicInstance("l5", "r4")
+			.symbolicInstance("l6", "r2")
+			.symbolicInstance("l7", "r3")
+			.symbolicInstance("l8", "r2")
 			.predicate("assigned")
-			.instance("l1")
-			.instance("l3")
-			.instance("l4")
-			.instance("l5")
-			.instance("l6")
-			.instance("l7")
-			.instance("l8")
-			.instance("l9");
+			.symbolicInstance("l1")
+			.symbolicInstance("l3")
+			.symbolicInstance("l4")
+			.symbolicInstance("l5")
+			.symbolicInstance("l6")
+			.symbolicInstance("l7")
+			.symbolicInstance("l8")
+			.symbolicInstance("l9");
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
 			new BasicAnswerSet.Builder(base)
 				.predicate("assign")
-				.instance("l4", "r1")
-				.instance("l9", "r4")
+				.symbolicInstance("l4", "r1")
+				.symbolicInstance("l9", "r4")
 				.predicate("nassign")
-				.instance("l4", "r3")
-				.instance("l9", "r1")
+				.symbolicInstance("l4", "r3")
+				.symbolicInstance("l9", "r1")
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("assign")
-				.instance("l4", "r1")
-				.instance("l9", "r1")
+				.symbolicInstance("l4", "r1")
+				.symbolicInstance("l9", "r1")
 				.predicate("nassign")
-				.instance("l4", "r3")
-				.instance("l9", "r4")
+				.symbolicInstance("l4", "r3")
+				.symbolicInstance("l9", "r4")
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("assign")
-				.instance("l4", "r3")
-				.instance("l9", "r4")
+				.symbolicInstance("l4", "r3")
+				.symbolicInstance("l9", "r4")
 				.predicate("nassign")
-				.instance("l4", "r1")
-				.instance("l9", "r1")
+				.symbolicInstance("l4", "r1")
+				.symbolicInstance("l9", "r1")
 				.build(),
 			new BasicAnswerSet.Builder(base)
 				.predicate("assign")
-				.instance("l4", "r3")
-				.instance("l9", "r1")
+				.symbolicInstance("l4", "r3")
+				.symbolicInstance("l9", "r1")
 				.predicate("nassign")
-				.instance("l4", "r1")
-				.instance("l9", "r4")
+				.symbolicInstance("l4", "r1")
+				.symbolicInstance("l9", "r4")
 				.build()
 		));
 
@@ -847,9 +856,9 @@ public class SolverTests extends AbstractSolverTests {
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
 			new BasicAnswerSet.Builder()
 				.predicate("p")
-				.instance("a", "a")
+				.instance(Symbol.getInstance("a"), Symbol.getInstance("a"))
 				.predicate("q")
-				.instance("a")
+				.instance(Symbol.getInstance("a"))
 				.build()
 		));
 
@@ -918,9 +927,9 @@ public class SolverTests extends AbstractSolverTests {
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
 				new BasicAnswerSet.Builder()
 						.predicate("d")
-						.instance("b")
+						.instance(Symbol.getInstance("b"))
 						.predicate("nsel")
-						.instance("b")
+						.instance(Symbol.getInstance("b"))
 						.build()
 		));
 

@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
+import at.ac.tuwien.kr.alpha.common.Symbol;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -230,17 +231,16 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 
 	@Override
 	public CommonParsedObject visitTerm_number(ASPCore2Parser.Term_numberContext ctx) {
-		return new ParsedConstant(ctx.NUMBER().getText(), ParsedConstant.Type.NUMBER);
+		return new ParsedConstant<>(Integer.parseInt(ctx.NUMBER().getText()));
 	}
 
 	@Override
-	public CommonParsedObject visitTerm_constOrFunc(ASPCore2Parser.Term_constOrFuncContext ctx) {
-		// ID (PAREN_OPEN terms? PAREN_CLOSE)?
-		if (ctx.PAREN_OPEN() == null) {
-			// constant
-			return new ParsedConstant(ctx.ID().getText(), ParsedConstant.Type.CONSTANT);
-		}
+	public CommonParsedObject visitTerm_const(ASPCore2Parser.Term_constContext ctx) {
+		return new ParsedConstant<>(Symbol.getInstance(ctx.ID().getText()));
+	}
 
+	@Override
+	public CommonParsedObject visitTerm_func(ASPCore2Parser.Term_funcContext ctx) {
 		// function term
 		final List<ParsedTerm> terms = new ArrayList<>();
 		for (CommonParsedObject commonTerm : (ListOfParsedObjects)visitTerms(ctx.terms())) {
@@ -279,7 +279,8 @@ public class ParsedTreeVisitor extends ASPCore2BaseVisitor<CommonParsedObject> {
 
 	@Override
 	public CommonParsedObject visitTerm_string(ASPCore2Parser.Term_stringContext ctx) {
-		return new ParsedConstant(ctx.STRING().getText(), ParsedConstant.Type.STRING);
+		String text = ctx.STRING().getText();
+		return new ParsedConstant<>(text.substring(1, text.length()-1));
 	}
 
 	@Override

@@ -164,13 +164,8 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 	private ParsedFact fact(String predicateName, int... iTerms) {
 		List<ParsedTerm> terms = new ArrayList<>(1);
 		for (int i : iTerms) {
-			terms.add(new ParsedConstant(i2s(i), ParsedConstant.Type.NUMBER));
+			terms.add(new ParsedConstant<>(i));
 		}
 		return new ParsedFact(new ParsedAtom(predicateName, terms));
 	}
-
-	private String i2s(int i) {
-		return String.valueOf(i).intern();
-	}
-
 }

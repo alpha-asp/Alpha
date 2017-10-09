@@ -138,7 +138,7 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 		Collection<ParsedFact> facts = new ArrayList<>(colours.length);
 		for (String colour : colours) {
 			List<ParsedTerm> terms = new ArrayList<>(1);
-			terms.add(new ParsedConstant(colour, ParsedConstant.Type.STRING));
+			terms.add(new ParsedConstant<>(colour));
 			facts.add(new ParsedFact(new ParsedAtom("c", terms)));
 		}
 		return facts;
@@ -167,13 +167,8 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 	private ParsedFact fact(String predicateName, int... iTerms) {
 		List<ParsedTerm> terms = new ArrayList<>(1);
 		for (int i : iTerms) {
-			terms.add(new ParsedConstant(i2s(i), ParsedConstant.Type.NUMBER));
+			terms.add(new ParsedConstant<>(i));
 		}
 		return new ParsedFact(new ParsedAtom(predicateName, terms));
 	}
-
-	private String i2s(int i) {
-		return String.valueOf(i).intern();
-	}
-
 }

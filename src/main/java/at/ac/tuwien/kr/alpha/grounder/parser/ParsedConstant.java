@@ -33,18 +33,14 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class ParsedConstant extends ParsedTerm {
-	public enum Type { STRING, NUMBER, CONSTANT }
+public class ParsedConstant<T extends Comparable<T>> extends ParsedTerm {
+	private final T content;
 
-	private final String content;
-
-	private final Type type;
-	public ParsedConstant(String content, Type type) {
+	public ParsedConstant(T content) {
 		this.content = content;
-		this.type = type;
 	}
 
-	public String getContent() {
+	public T getContent() {
 		return content;
 	}
 
@@ -55,6 +51,6 @@ public class ParsedConstant extends ParsedTerm {
 
 	@Override
 	public String toString() {
-		return content;
+		return content.toString();
 	}
 }

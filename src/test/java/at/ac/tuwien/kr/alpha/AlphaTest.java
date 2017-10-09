@@ -2,12 +2,21 @@ package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
+import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.predicates.ExternalEvaluable;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
+import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
+import at.ac.tuwien.kr.alpha.solver.Solver;
+import at.ac.tuwien.kr.alpha.solver.SolverTests;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -16,17 +25,75 @@ public class AlphaTest {
 	private static int invocations = 0;
 
 	@Predicate
-	public static boolean isOne(String term) {
+	public static boolean isOne(int term) {
 		invocations++;
-		return term.equals("1");
+		return term == 1;
+	}
+
+	@Predicate
+	public static boolean isFoo(Integer a) {
+		return a == 0xF00;
+	}
+
+	@Predicate
+	public static boolean thinger(Thingy thingy) {
+		return true;
 	}
 
 	@Test
 	public void withExternal() throws Exception {
 		Alpha system = new Alpha();
-		system.register(this.getClass().getMethod("isOne", String.class));
+		system.register(this.getClass().getMethod("isOne", int.class));
 		Set<AnswerSet> actual = system.solve("a :- &isOne(1).").collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new BasicAnswerSet.Builder().predicate("a").build()));
+		assertEquals(expected, actual);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void withExternalTypeConflict() throws Exception {
+		Alpha system = new Alpha();
+		system.register(this.getClass().getMethod("isFoo", Integer.class));
+		Set<AnswerSet> actual = system.solve("a :- &isFoo(\"adsfnfdsf\").").collect(Collectors.toSet());
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new BasicAnswerSet.Builder().predicate("a").build()));
+		assertEquals(expected, actual);
+	}
+
+	private static class Thingy implements Comparable<Thingy> {
+		@Override
+		public String toString() {
+			return "thingy";
+		}
+
+		@Override
+		public int compareTo(Thingy o) {
+			return 0;
+		}
+	}
+
+	private static class SubThingy extends Thingy {}
+
+	@Test
+	public void withExternalSubtype() throws Exception {
+		SubThingy thingy = new SubThingy();
+
+		NonGroundRule rule = new NonGroundRule(
+			Collections.singletonList(
+				new BasicAtom(new ExternalEvaluable(this.getClass().getMethod("thinger", Thingy.class)), ConstantTerm.getInstance(thingy))
+			),
+			Collections.emptyList(),
+			new BasicAtom(new BasicPredicate("p", 1), ConstantTerm.getInstance("x"))
+		);
+
+		Alpha system = new Alpha();
+
+		system.setProgram(new Program(
+			Collections.emptyList(),
+			Collections.singletonList(rule),
+			Collections.emptyList()
+		));
+
+		Set<AnswerSet> actual = system.solve().collect(Collectors.toSet());
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new BasicAnswerSet.Builder().predicate("p").instance("x").build()));
 		assertEquals(expected, actual);
 	}
 
@@ -52,7 +119,7 @@ public class AlphaTest {
 	@Test
 	public void withExternalInvocationCounted1() throws Exception {
 		Alpha system = new Alpha();
-		system.register(this.getClass().getMethod("isOne", ConstantTerm.class));
+		system.register(this.getClass().getMethod("isOne", int.class));
 		int before = invocations;
 		Set<AnswerSet> actual = system.solve("a :- &isOne(1), &isOne(1).").collect(Collectors.toSet());
 		int after = invocations;
@@ -66,7 +133,7 @@ public class AlphaTest {
 	@Test
 	public void withExternalInvocationCounted2() throws Exception {
 		Alpha system = new Alpha();
-		system.register(this.getClass().getMethod("isOne", ConstantTerm.class));
+		system.register(this.getClass().getMethod("isOne", int.class));
 		int before = invocations;
 		Set<AnswerSet> actual = system.solve("a. b :- &isOne(1), &isOne(2).").collect(Collectors.toSet());
 		int after = invocations;
@@ -80,7 +147,7 @@ public class AlphaTest {
 	@Test
 	public void withExternalInvocationCounted3() throws Exception {
 		Alpha system = new Alpha();
-		system.register(this.getClass().getMethod("isOne", ConstantTerm.class));
+		system.register(this.getClass().getMethod("isOne", int.class));
 		int before = invocations;
 		Set<AnswerSet> actual = system.solve("a :- &isOne(1), not &isOne(2).").collect(Collectors.toSet());
 		int after = invocations;

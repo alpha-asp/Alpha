@@ -146,7 +146,7 @@ public class BasicAnswerSet implements AnswerSet {
 			return this;
 		}
 
-		public Builder instanceObj(Object... terms) {
+		public <T extends Comparable<T>> Builder instance(T... terms) {
 			if (firstInstance) {
 				firstInstance = false;
 				predicate = new BasicPredicate(predicateSymbol, terms.length);
@@ -158,7 +158,19 @@ public class BasicAnswerSet implements AnswerSet {
 			return this;
 		}
 
-		public Builder instance(String... terms) {
+		public Builder symbolicInstance(String... terms) {
+			if (firstInstance) {
+				firstInstance = false;
+				predicate = new BasicPredicate(predicateSymbol, terms.length);
+				predicates.add(predicate);
+			}
+
+			List<Term> termList = Stream.of(terms).map(Symbol::getInstance).map(ConstantTerm::getInstance).collect(Collectors.toList());
+			instances.add(new BasicAtom(predicate, termList));
+			return this;
+		}
+
+		public Builder parseInstance(String... terms) {
 			if (firstInstance) {
 				firstInstance = false;
 				predicate = new BasicPredicate(predicateSymbol, terms.length);

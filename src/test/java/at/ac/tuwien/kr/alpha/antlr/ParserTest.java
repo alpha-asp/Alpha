@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.antlr;
 
+import at.ac.tuwien.kr.alpha.common.Symbol;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedConstant;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFunctionTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
@@ -22,8 +23,8 @@ public class ParserTest {
 		assertEquals("Program contains one fact.", 1, parsedProgram.facts.size());
 		assertEquals("Predicate name of fact is p.", "p", parsedProgram.facts.get(0).getFact().getPredicate());
 		assertEquals("Fact has two terms.", 2, parsedProgram.facts.get(0).getFact().getArity());
-		assertEquals("First term is a.", "a", ((ParsedConstant)parsedProgram.facts.get(0).getFact().getTerms().get(0)).getContent());
-		assertEquals("Second term is b.", "b", ((ParsedConstant)parsedProgram.facts.get(0).getFact().getTerms().get(1)).getContent());
+		assertEquals("First term is a.", Symbol.getInstance("a"), ((ParsedConstant)parsedProgram.facts.get(0).getFact().getTerms().get(0)).getContent());
+		assertEquals("Second term is b.", Symbol.getInstance("b"), ((ParsedConstant)parsedProgram.facts.get(0).getFact().getTerms().get(1)).getContent());
 	}
 
 	@Test

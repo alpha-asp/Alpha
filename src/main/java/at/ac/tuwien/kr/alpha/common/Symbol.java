@@ -47,7 +47,16 @@ public class Symbol implements Comparable<Symbol> {
 		if (this == o) {
 			return true;
 		}
-		if (o == null || getClass() != o.getClass()) {
+
+		if (o == null) {
+			return false;
+		}
+
+		if (String.class == o.getClass()) {
+			return o.equals(symbol);
+		}
+
+		if (getClass() != o.getClass()) {
 			return false;
 		}
 
@@ -64,5 +73,10 @@ public class Symbol implements Comparable<Symbol> {
 	@Override
 	public int compareTo(Symbol o) {
 		return ComparisonChain.start().compare(symbol, o.symbol).compare(arity, o.arity).result();
+	}
+
+	@Override
+	public String toString() {
+		return symbol;
 	}
 }
