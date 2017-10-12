@@ -41,7 +41,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.function.Predicate;
 
-import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
