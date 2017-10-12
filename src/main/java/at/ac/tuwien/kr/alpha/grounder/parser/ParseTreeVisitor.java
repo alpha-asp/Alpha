@@ -26,6 +26,9 @@ import java.util.List;
  */
 public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
+	private Program inputProgram;
+	private boolean isCurrentLiteralNegated;
+
 	private void notSupportedSyntax(RuleContext ctx) {
 		throw new UnsupportedOperationException("Unsupported syntax encountered: " + ctx.getText());
 	}
@@ -76,8 +79,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		visitStatements(ctx.statements());
 		return inputProgram;
 	}
-
-	private Program inputProgram;
 
 	@Override
 	public Object visitStatements(ASPCore2Parser.StatementsContext ctx) {
@@ -185,8 +186,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		}
 		return new BuiltinAtom(binop, termList, isCurrentLiteralNegated);
 	}
-
-	private boolean isCurrentLiteralNegated;
 
 	@Override
 	public Literal visitNaf_literal(ASPCore2Parser.Naf_literalContext ctx) {

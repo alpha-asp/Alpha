@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.grounder.internalatoms;
+package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.BasicPredicate;

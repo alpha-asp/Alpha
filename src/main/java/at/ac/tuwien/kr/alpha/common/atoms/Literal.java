@@ -6,8 +6,4 @@ package at.ac.tuwien.kr.alpha.common.atoms;
 public interface Literal extends Atom {
 
 	boolean isNegated();
-
-	default boolean isPositive() {
-		return !isNegated();
-	}
 }
