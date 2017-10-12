@@ -43,16 +43,16 @@ public class NonGroundRule {
 
 	// FIXME: NonGroundRule should extend Rule and then its constructor directly be used.
 	public static NonGroundRule constructNonGroundRule(IntIdGenerator intIdGenerator, Rule rule) {
-		final List<Atom> pos = new ArrayList<>(rule.getNumBodyAtoms() / 2);
-		final List<Atom> neg = new ArrayList<>(rule.getNumBodyAtoms() / 2);
+		List<Literal> body = rule.getBody();
+		final List<Atom> pos = new ArrayList<>(body.size() / 2);
+		final List<Atom> neg = new ArrayList<>(body.size() / 2);
 
-		for (int i = 0; i < rule.getNumBodyAtoms(); i++) {
-			Literal bodyLiteral = rule.getBodyLiteral(i);
-			(bodyLiteral.isNegated() ? neg : pos).add(bodyLiteral);
+		for (Literal l : rule.getBody()) {
+			(l.isNegated() ? neg : pos).add(l);
 		}
 
 		// Construct head if the given rule is no constraint
-		final Atom head = rule.getHeadAtom();
+		final Atom head = rule.getHead();
 
 		return new NonGroundRule(
 				intIdGenerator.getNextId(),

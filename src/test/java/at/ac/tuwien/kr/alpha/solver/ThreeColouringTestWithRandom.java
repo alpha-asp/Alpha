@@ -26,6 +26,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.Main;
+import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -183,22 +184,22 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 		NaiveGrounder grounder = new NaiveGrounder(program);
 		Solver solver = getInstance(grounder);
 
+		StringBuilder sb = new StringBuilder();
+
 		for (Atom fact : program.getFacts()) {
-			System.out.println(fact.toString() + ".");
+			sb.append(fact);
+			sb.append(".");
 		}
 		for (Rule rule : program.getRules()) {
 			if (!rule.isConstraint()) {
-				System.out.print(rule.getHeadAtom().toString());
+				sb.append(rule.getHead());
 			}
-			System.out.print(":-");
-			for (int i = 0; i < rule.getNumBodyAtoms(); i++) {
-				if (i > 0) {
-					System.out.print(", ");
-				}
-				System.out.print(rule.getBodyLiteral(i).toString());
-			}
-			System.out.println(".");
+			sb.append(":-");
+			Util.appendDelimited(sb, rule.getBody());
+			sb.append(".");
 		}
+
+		System.out.println(sb);
 
 		Optional<AnswerSet> answerSet = solver.stream().findAny();
 		System.out.println(answerSet);

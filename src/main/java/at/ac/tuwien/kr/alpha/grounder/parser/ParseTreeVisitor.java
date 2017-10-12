@@ -91,10 +91,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Object visitStatement_constraint(ASPCore2Parser.Statement_constraintContext ctx) {
 		// CONS body DOT
-		inputProgram.getRules().add(new Rule(visitBody(ctx.body()), null));
+		inputProgram.getRules().add(new Rule(null, visitBody(ctx.body())));
 		return null;
 	}
-
 
 	@Override
 	public Object visitStatement_rule(ASPCore2Parser.Statement_ruleContext ctx) {
@@ -104,7 +103,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			inputProgram.getFacts().add(visitHead(ctx.head()));
 		} else {
 			// rule
-			inputProgram.getRules().add(new Rule(visitBody(ctx.body()), visitHead(ctx.head())));
+			inputProgram.getRules().add(new Rule(visitHead(ctx.head()), visitBody(ctx.body())));
 		}
 		return null;
 	}

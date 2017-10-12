@@ -55,7 +55,7 @@ public class ParserTest {
 	public void parseBuiltinAtom() throws IOException {
 		Program parsedProgram = Main.parseVisit("a :- p(X), X != Y, q(Y).");
 		assertEquals(1, parsedProgram.getRules().size());
-		assertEquals(3, parsedProgram.getRules().get(0).getNumBodyAtoms());
+		assertEquals(3, parsedProgram.getRules().get(0).getBody().size());
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
