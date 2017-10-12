@@ -1,13 +1,12 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
+import at.ac.tuwien.kr.alpha.common.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedBuiltinAtom;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTerm;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,26 +15,64 @@ import java.util.stream.Collectors;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class BuiltinAtom implements Atom {
+public class BuiltinAtom implements Literal {
 	private final List<Term> terms;
-	private final ParsedBuiltinAtom.BINOP binop;
+	private final BINOP binop;
+	private final boolean isNegated;
 
-	protected BuiltinAtom(ParsedBuiltinAtom.BINOP binop, List<Term> terms) {
+	public enum BINOP {
+		EQ("=",  new BasicPredicate("=",  2)),
+		NE("!=", new BasicPredicate("!=", 2)),
+		LT("<",  new BasicPredicate("<",  2)),
+		GT(">",  new BasicPredicate(">",  2)),
+		LE("<=", new BasicPredicate("<=", 2)),
+		GE(">=", new BasicPredicate(">=", 2));
+
+		private String asString;
+		private Predicate asPredicate;
+
+		BINOP(String asString, Predicate asPredicate) {
+			this.asString = asString;
+			this.asPredicate = asPredicate;
+		}
+
+		@Override
+		public String toString() {
+			return asString;
+		}
+
+		public Predicate toPredicate() {
+			return asPredicate;
+		}
+
+		public BINOP getNegation() {
+			switch (this) {
+				case EQ: return NE;
+				case NE: return EQ;
+				case LT: return GE;
+				case GT: return LE;
+				case LE: return GT;
+				case GE: return LT;
+			}
+			throw new RuntimeException("Unknown BINOP encountered, cannot negate it.");
+		}
+	};
+
+
+
+	public BuiltinAtom(BINOP binop, List<Term> terms, boolean isNegated) {
 		if (terms.size() != 2) {
 			throw new IllegalArgumentException("terms must be of size 2");
 		}
 
 		this.binop = binop;
 		this.terms = terms;
-	}
-
-	public BuiltinAtom(ParsedBuiltinAtom parsedBuiltinAtom) {
-		this(parsedBuiltinAtom.binop, parsedBuiltinAtom.getTerms().stream().map(ParsedTerm::toTerm).collect(Collectors.toList()));
+		this.isNegated = isNegated;
 	}
 
 	@Override
 	public String toString() {
-		return terms.get(0) + " " + binop + " " + terms.get(1);
+		return (isNegated ? "not " : "") + terms.get(0) + " " + binop + " " + terms.get(1);
 	}
 
 	@Override
@@ -71,7 +108,7 @@ public class BuiltinAtom implements Atom {
 	public Atom substitute(Substitution substitution) {
 		return new BuiltinAtom(binop, terms.stream().map(t -> {
 			return t.substitute(substitution);
-		}).collect(Collectors.toList()));
+		}).collect(Collectors.toList()), isNegated);
 	}
 
 	public boolean evaluate(Substitution substitution) {
@@ -139,6 +176,11 @@ public class BuiltinAtom implements Atom {
 		}
 
 		return terms.get(1).compareTo(other.terms.get(1));
+	}
+
+	@Override
+	public boolean isNegated() {
+		return isNegated;
 	}
 
 	private static class NumberOrTerm {
