@@ -25,9 +25,15 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.Main;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.parser.*;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.junit.Before;
@@ -37,8 +43,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
-
-import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 
 public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 	/**
@@ -101,19 +105,17 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 	}
 
 	private void testThreeColouring(int nVertices, int nEdges) throws IOException {
-		ParsedProgram program = parseVisit(
+		Program program = Main.parseVisit(
 				"blue(N) :- v(N), not red(N), not green(N)." +
 				"red(N) :- v(N), not blue(N), not green(N)." +
 				"green(N) :- v(N), not red(N), not blue(N)." +
 				":- e(N1,N2), blue(N1), blue(N2)." +
 				":- e(N1,N2), red(N1), red(N2)." +
 				":- e(N1,N2), green(N1), green(N2).");
-		Collection<ParsedFact> vertices = createVertices(nVertices);
-		program.accumulate(new ParsedProgram(vertices));
-		Collection<ParsedFact> edges = createEdges(nVertices, nEdges);
-		program.accumulate(new ParsedProgram(edges));
+		program.getFacts().addAll(createVertices(nVertices));
+		program.getFacts().addAll(createEdges(nVertices, nEdges));
 
-		program = maybeShuffle(program);
+		maybeShuffle(program);
 
 		NaiveGrounder grounder = new NaiveGrounder(program);
 		Solver solver = getInstance(grounder);
@@ -124,30 +126,26 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 		// TODO: check correctness of answer set
 	}
 
-	private ParsedProgram maybeShuffle(ParsedProgram program) {
-		List<CommonParsedObject> rules = new ArrayList<>();
-		rules.addAll(program.facts);
-		rules.addAll(program.rules);
-		rules.addAll(program.constraints);
+	private void maybeShuffle(Program program) {
 
 		// TODO: switch on if different rule orderings in the encoding are desired (e.g. for benchmarking purposes)
-		// Collections.reverse(rules);
-		// Collections.shuffle(rules);
-
-		return new ParsedProgram(rules);
+		// Collections.reverse(program.getRules());
+		// Collections.shuffle(program.getRules());
+		// Collections.reverse(program.getFacts());
+		// Collections.shuffle(program.getFacts());
 	}
 
-	private Collection<ParsedFact> createVertices(int n) {
-		Collection<ParsedFact> facts = new ArrayList<>(n);
+	private Collection<Atom> createVertices(int n) {
+		Collection<Atom> facts = new ArrayList<>(n);
 		for (int i = 0; i < n; i++) {
 			facts.add(fact("v", i));
 		}
 		return facts;
 	}
 
-	private Collection<ParsedFact> createEdges(int vertices, int edges) {
+	private Collection<Atom> createEdges(int vertices, int edges) {
 		Random rand = new Random(0);
-		Collection<ParsedFact> facts = new LinkedHashSet<>(edges);
+		Collection<Atom> facts = new LinkedHashSet<>(edges);
 		for (int i = 0; i < edges; i++) {
 			int v1 = 0;
 			int v2 = 0;
@@ -161,12 +159,12 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 		return facts;
 	}
 
-	private ParsedFact fact(String predicateName, int... iTerms) {
-		List<ParsedTerm> terms = new ArrayList<>(1);
+	private Atom fact(String predicateName, int... iTerms) {
+		List<Term> terms = new ArrayList<>(1);
 		for (int i : iTerms) {
-			terms.add(new ParsedConstant(i2s(i), ParsedConstant.Type.NUMBER));
+			terms.add(ConstantTerm.getInstance(i2s(i)));
 		}
-		return new ParsedFact(new ParsedAtom(predicateName, terms));
+		return new BasicAtom(new BasicPredicate(predicateName, iTerms.length), terms);
 	}
 
 	private String i2s(int i) {

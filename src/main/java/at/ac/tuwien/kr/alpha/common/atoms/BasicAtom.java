@@ -12,12 +12,13 @@ import java.util.stream.Collectors;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class BasicAtom implements Atom {
+public class BasicAtom implements Literal {
 	private final Predicate predicate;
 	private final List<Term> terms;
 	private final boolean ground;
+	private final boolean isNegated;
 
-	public BasicAtom(Predicate predicate, List<Term> terms) {
+	public BasicAtom(Predicate predicate, List<Term> terms, boolean isNegated) {
 		this.predicate = predicate;
 		this.terms = terms;
 
@@ -29,12 +30,23 @@ public class BasicAtom implements Atom {
 			}
 		}
 		this.ground = ground;
+		this.isNegated = isNegated;
+	}
+
+	/**
+	 * Creates a positive BasicAtom over predicate and terms.
+	 * @param predicate
+	 * @param terms
+	 */
+	public BasicAtom(Predicate predicate, List<Term> terms) {
+		this(predicate, terms, false);
 	}
 
 	public BasicAtom(BasicAtom clone) {
 		this.predicate = clone.getPredicate();
 		this.terms = new ArrayList<>(clone.getTerms());
 		this.ground = clone.ground;
+		this.isNegated = clone.isNegated;
 	}
 
 	public BasicAtom(Predicate predicate, Term... terms) {
@@ -104,6 +116,9 @@ public class BasicAtom implements Atom {
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder(predicate.getPredicateName());
+		if (isNegated) {
+			sb.append("not ");
+		}
 		sb.append("(");
 		Util.appendDelimited(sb, terms);
 		sb.append(")");
@@ -130,5 +145,10 @@ public class BasicAtom implements Atom {
 		}
 
 		return 0;
+	}
+
+	@Override
+	public boolean isNegated() {
+		return isNegated;
 	}
 }

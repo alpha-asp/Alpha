@@ -31,11 +31,11 @@ import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedTreeVisitor;
+import at.ac.tuwien.kr.alpha.grounder.parser.ParseTreeVisitor;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityProgramTransformation;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
@@ -193,12 +193,12 @@ public class Main {
 
 		boolean debugInternalChecks = commandLine.hasOption(OPT_DEBUG_INTERNAL_CHECKS);
 
-		ParsedProgram program = null;
+		Program program = null;
 		try {
 			if (commandLine.hasOption(OPT_STRING)) {
 				program = parseVisit(commandLine.getOptionValue(OPT_STRING));
 			} else {
-				// Parse all input files and accumulate their results in one ParsedProgram.
+				// Parse all input files and accumulate their results in one Program.
 				String[] inputFileNames = commandLine.getOptionValues(OPT_INPUT);
 				program = parseVisit(new ANTLRFileStream(inputFileNames[0]));
 
@@ -218,8 +218,9 @@ public class Main {
 		}
 
 		// Apply program transformations/rewritings (currently none).
+		// FIXME: program transformations should be relocated an run on Program(s).
 		IdentityProgramTransformation programTransformation = new IdentityProgramTransformation();
-		ParsedProgram transformedProgram = programTransformation.transform(program);
+		Program transformedProgram = programTransformation.transform(program);
 		Grounder grounder = GrounderFactory.getInstance(
 			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram, filter, bridges
 		);
@@ -279,11 +280,11 @@ public class Main {
 		System.exit(1);
 	}
 
-	public static ParsedProgram parseVisit(String input) throws IOException {
+	public static Program parseVisit(String input) throws IOException {
 		return parseVisit(new ANTLRInputStream(input));
 	}
 
-	public static ParsedProgram parseVisit(ANTLRInputStream is) throws IOException {
+	public static Program parseVisit(ANTLRInputStream is) throws IOException {
 		/*
 		// In order to require less memory: use unbuffered streams and avoid constructing a full parse tree.
 		ASPCore2Lexer lexer = new ASPCore2Lexer(new UnbufferedCharStream(is));
@@ -292,7 +293,7 @@ public class Main {
 		parser.setBuildParseTree(false);
 		*/
 		CommonTokenStream tokens = new CommonTokenStream(
-			new ASPCore2Lexer(is)
+				new ASPCore2Lexer(is)
 		);
 		final ASPCore2Parser parser = new ASPCore2Parser(tokens);
 
@@ -337,7 +338,7 @@ public class Main {
 		}
 
 		// Construct internal program representation.
-		ParsedTreeVisitor visitor = new ParsedTreeVisitor();
-		return (ParsedProgram) visitor.visitProgram(programContext);
+		ParseTreeVisitor visitor = new ParseTreeVisitor();
+		return visitor.visitProgram(programContext);
 	}
 }

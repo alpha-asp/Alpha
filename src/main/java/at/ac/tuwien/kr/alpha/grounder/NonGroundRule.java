@@ -2,12 +2,12 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BuiltinAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedAtom;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedRule;
 
 import java.util.*;
 
@@ -41,22 +41,24 @@ public class NonGroundRule {
 		}
 	}
 
-	public static NonGroundRule constructNonGroundRule(IntIdGenerator intIdGenerator, ParsedRule parsedRule) {
-		final List<Atom> pos = new ArrayList<>(parsedRule.body.size() / 2);
-		final List<Atom> neg = new ArrayList<>(parsedRule.body.size() / 2);
+	// FIXME: NonGroundRule should extend Rule and then its constructor directly be used.
+	public static NonGroundRule constructNonGroundRule(IntIdGenerator intIdGenerator, Rule rule) {
+		List<Literal> body = rule.getBody();
+		final List<Atom> pos = new ArrayList<>(body.size() / 2);
+		final List<Atom> neg = new ArrayList<>(body.size() / 2);
 
-		for (ParsedAtom bodyAtom : parsedRule.body) {
-			(bodyAtom.isNegated() ? neg : pos).add(bodyAtom.toAtom());
+		for (Literal l : rule.getBody()) {
+			(l.isNegated() ? neg : pos).add(l);
 		}
 
-		// Construct head if the given parsedRule is no constraint
-		final Atom head = parsedRule.head != null ? parsedRule.head.toAtom() : null;
+		// Construct head if the given rule is no constraint
+		final Atom head = rule.getHead();
 
 		return new NonGroundRule(
-			intIdGenerator.getNextId(),
-			pos,
-			neg,
-			head
+				intIdGenerator.getNextId(),
+				pos,
+				neg,
+				head
 		);
 	}
 
