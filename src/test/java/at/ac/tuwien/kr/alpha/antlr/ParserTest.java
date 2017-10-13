@@ -1,8 +1,8 @@
 package at.ac.tuwien.kr.alpha.antlr;
 
-import at.ac.tuwien.kr.alpha.Main;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.antlr.v4.runtime.RecognitionException;
 import org.junit.Test;
 
@@ -14,9 +14,11 @@ import static org.junit.Assert.assertEquals;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ParserTest {
+	private final ProgramParser parser = new ProgramParser();
+
 	@Test
 	public void parseFact() throws IOException {
-		Program parsedProgram = Main.parseVisit("p(a,b).");
+		Program parsedProgram = parser.parse("p(a,b).");
 
 		assertEquals("Program contains one fact.", 1, parsedProgram.getFacts().size());
 		assertEquals("Predicate name of fact is p.", "p", parsedProgram.getFacts().get(0).getPredicate().getPredicateName());
@@ -27,18 +29,18 @@ public class ParserTest {
 
 	@Test
 	public void parseFactWithFunctionTerms() throws IOException {
-		Program parsedProgram = Main.parseVisit("p(f(a),g(h(Y))).");
+		Program parsedProgram = parser.parse("p(f(a),g(h(Y))).");
 
 		assertEquals("Program contains one fact.", 1, parsedProgram.getFacts().size());
 		assertEquals("Predicate name of fact is p.", "p", parsedProgram.getFacts().get(0).getPredicate().getPredicateName());
 		assertEquals("Fact has two terms.", 2, parsedProgram.getFacts().get(0).getPredicate().getArity());
-		assertEquals("First term is function term f.", "f", ((FunctionTerm)parsedProgram.getFacts().get(0).getTerms().get(0)).getSymbol().getSymbol());
-		assertEquals("Second term is function term g.", "g", ((FunctionTerm)parsedProgram.getFacts().get(0).getTerms().get(1)).getSymbol().getSymbol());
+		assertEquals("First term is function term f.", "f", ((FunctionTerm)parsedProgram.getFacts().get(0).getTerms().get(0)).getSymbol().toString());
+		assertEquals("Second term is function term g.", "g", ((FunctionTerm)parsedProgram.getFacts().get(0).getTerms().get(1)).getSymbol().toString());
 	}
 
 	@Test
 	public void parseSmallProgram() throws IOException {
-		Program parsedProgram = Main.parseVisit("a :- b, not d.\n" +
+		Program parsedProgram = parser.parse("a :- b, not d.\n" +
 			"c(X) :- p(X,a,_), q(Xaa,xaa)." +
 				":- f(Y).");
 
@@ -47,12 +49,12 @@ public class ParserTest {
 
 	@Test(expected = RecognitionException.class)
 	public void parseBadSyntax() throws IOException {
-		Main.parseVisit("Wrong Syntax.");
+		parser.parse("Wrong Syntax.");
 	}
 
 	@Test
 	public void parseBuiltinAtom() throws IOException {
-		Program parsedProgram = Main.parseVisit("a :- p(X), X != Y, q(Y).");
+		Program parsedProgram = parser.parse("a :- p(X), X != Y, q(Y).");
 		assertEquals(1, parsedProgram.getRules().size());
 		assertEquals(3, parsedProgram.getRules().get(0).getBody().size());
 	}
@@ -60,7 +62,7 @@ public class ParserTest {
 	@Test(expected = UnsupportedOperationException.class)
 	// Change expected after Alpha can deal with disjunction.
 	public void parseProgramWithDisjunctionInHead() throws IOException {
-		Main.parseVisit("r(X) | q(X) :- q(X).\nq(a).\n");
+		parser.parse("r(X) | q(X) :- q(X).\nq(a).\n");
 	}
 
 }

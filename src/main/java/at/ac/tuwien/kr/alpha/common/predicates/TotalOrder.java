@@ -1,9 +1,6 @@
 package at.ac.tuwien.kr.alpha.common.predicates;
 
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.List;
@@ -62,10 +59,10 @@ public class TotalOrder implements Evaluable, Predicate {
 			throw new RuntimeException("Tried to evaluate total order predicate over unexpected arity!");
 		}
 
-		final int x = evaluateExpression(terms.get(0), substitution);
-		final int y = evaluateExpression(terms.get(1), substitution);
+		final Term x = terms.get(0).substitute(substitution);
+		final Term y = terms.get(1).substitute(substitution);
 
-		final int comparison = Integer.compare(x, y);
+		final int comparison = x.compareTo(y);
 
 		switch (this.predicateName) {
 			case "=":
@@ -83,23 +80,6 @@ public class TotalOrder implements Evaluable, Predicate {
 				return comparison != 0;
 			default:
 				throw new UnsupportedOperationException("Unknown comparison operator requested!");
-		}
-	}
-
-	private static int evaluateExpression(Term term, Substitution substitution) {
-		if (term instanceof VariableTerm) {
-			return evaluateExpression(substitution.eval((VariableTerm) term), substitution);
-		} else if (term instanceof ConstantTerm) {
-			try {
-				return Integer.parseInt(term.toString());
-			} catch (NumberFormatException e) {
-				// FIXME: This is bad. We need consistent ordering, even among objects.
-				return ((ConstantTerm) term).getObject().hashCode();
-			}
-		} else if (term instanceof FunctionTerm) {
-			return ((FunctionTerm) term).getSymbol().getId();
-		} else {
-			throw new UnsupportedOperationException("Unsupported term structure in builtin atom encountered: " + term);
 		}
 	}
 }

@@ -69,11 +69,11 @@ public class ConstantTerm<T extends Comparable<T>> implements Term {
 		return object.hashCode();
 	}
 
-	private static final Map<Class<?>, Integer> priority = new HashMap<>();
+	private static final Map<Class<?>, Integer> PRIORITY = new HashMap<>();
 
 	static {
-		priority.put(Integer.class, 0);
-		priority.put(String.class, 1);
+		PRIORITY.put(Integer.class, 0);
+		PRIORITY.put(String.class, 1);
 	}
 
 	@Override
@@ -85,8 +85,8 @@ public class ConstantTerm<T extends Comparable<T>> implements Term {
 				return this.object.compareTo((T) otherConstantTerm.object);
 			}
 
-			int myPrio = priority.getOrDefault(this.object.getClass(), Integer.MAX_VALUE);
-			int otherPrio = priority.getOrDefault(otherConstantTerm.object.getClass(), Integer.MAX_VALUE);
+			int myPrio = PRIORITY.getOrDefault(this.object.getClass(), Integer.MAX_VALUE);
+			int otherPrio = PRIORITY.getOrDefault(otherConstantTerm.object.getClass(), Integer.MAX_VALUE);
 
 			if (myPrio == otherPrio) {
 				throw new RuntimeException("WUT");

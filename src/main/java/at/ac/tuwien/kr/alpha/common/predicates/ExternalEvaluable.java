@@ -13,8 +13,7 @@ import java.util.List;
 public class ExternalEvaluable implements Predicate, Evaluable {
 	private final Method method;
 
-	public ExternalEvaluable(Method method)
-	{
+	public ExternalEvaluable(Method method) {
 		if (!method.getReturnType().equals(boolean.class)) {
 			throw new IllegalArgumentException("method must return boolean");
 		}
@@ -27,7 +26,7 @@ public class ExternalEvaluable implements Predicate, Evaluable {
 		if (terms.size() != getArity()) {
 			throw new IllegalArgumentException(
 				"Parameter count mismatch when calling " + getPredicateName() + ". " +
-				"Expected " + getArity() + " parameters but got " + terms.size() + "."
+					"Expected " + getArity() + " parameters but got " + terms.size() + "."
 			);
 		}
 
@@ -61,8 +60,8 @@ public class ExternalEvaluable implements Predicate, Evaluable {
 
 			throw new IllegalArgumentException(
 				"Parameter type mismatch when calling " + getPredicateName() +
-				" at position " + i + ". Expected " + expected + " but got " +
-				actual + "."
+					" at position " + i + ". Expected " + expected + " but got " +
+					actual + "."
 			);
 		}
 

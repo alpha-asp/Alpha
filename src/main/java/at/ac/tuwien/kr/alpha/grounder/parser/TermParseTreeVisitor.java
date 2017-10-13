@@ -1,6 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2TermParser;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2TermBaseVisitor;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2TermParser;
 import at.ac.tuwien.kr.alpha.common.Symbol;

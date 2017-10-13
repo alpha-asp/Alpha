@@ -51,7 +51,7 @@ public class TermTest {
 	public void testTermOrdering() throws Exception {
 		Term cts = ConstantTerm.getInstance("abc");
 		Term cti = ConstantTerm.getInstance(2);
-		Term cto = ConstantTerm.getInstance(new UUID(0,0));
+		Term cto = ConstantTerm.getInstance(new UUID(0, 0));
 		Term ft = FunctionTerm.getInstance("f", ConstantTerm.getInstance("a"));
 
 		assertTrue(cts.compareTo(cti) > 0);

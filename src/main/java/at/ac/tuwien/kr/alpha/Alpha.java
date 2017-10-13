@@ -7,6 +7,7 @@ import at.ac.tuwien.kr.alpha.common.predicates.ExternalNativePredicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
@@ -48,25 +49,21 @@ public class Alpha {
 
 	private long seed;
 
-	public Alpha(String grounderName, String solverName, String storeName)
-	{
+	public Alpha(String grounderName, String solverName, String storeName) {
 		this.grounderName = grounderName;
 		this.solverName = solverName;
 		this.storeName = storeName;
 	}
 
-	public Alpha(String grounderName, String solverName)
-	{
+	public Alpha(String grounderName, String solverName) {
 		this(grounderName, solverName, "alpharoaming");
 	}
 
-	public Alpha(String grounderName)
-	{
+	public Alpha(String grounderName) {
 		this(grounderName, "default");
 	}
 
-	public Alpha()
-	{
+	public Alpha() {
 		this("naive");
 	}
 
@@ -91,8 +88,7 @@ public class Alpha {
 		this.predicateMethods.put(name, new ExternalNativePredicate(name, predicate));
 	}
 
-	public void setProgram(Program program)
-	{
+	public void setProgram(Program program) {
 		this.program = program;
 	}
 
@@ -102,14 +98,15 @@ public class Alpha {
 			throw new IllegalStateException("This system has already been used.");
 		}
 
-		setProgram(Main.parseVisit(program, predicateMethods));
+		ProgramParser parser = new ProgramParser(predicateMethods);
+
+		setProgram(parser.parse(program));
 
 		// Obtain grounder instance and feed it with parsedProgram.
 		return solve();
 	}
 
-	public Stream<AnswerSet> solve()
-	{
+	public Stream<AnswerSet> solve() {
 		Grounder grounder = GrounderFactory.getInstance(grounderName, program);
 		Solver solver = SolverFactory.getInstance(solverName, storeName, grounder, new Random(seed), BranchingHeuristicFactory.Heuristic.NAIVE, false);
 		return solver.stream();

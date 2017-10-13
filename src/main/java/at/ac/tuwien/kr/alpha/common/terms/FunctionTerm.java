@@ -83,10 +83,10 @@ public class FunctionTerm implements Term {
 	@Override
 	public String toString() {
 		if (terms.isEmpty()) {
-			return symbol.getSymbol();
+			return symbol.toString();
 		}
 
-		final StringBuilder sb = new StringBuilder(symbol.getSymbol() + "(");
+		final StringBuilder sb = new StringBuilder(symbol.toString() + "(");
 		appendDelimited(sb, terms);
 		sb.append(")");
 		return sb.toString();
