@@ -5,9 +5,11 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BuiltinAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.IntervalAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
 import java.util.*;
@@ -63,6 +65,16 @@ public class NonGroundRule {
 		List<Literal> body = rule.getBody();
 		final List<Atom> pos = new ArrayList<>(body.size() / 2);
 		final List<Atom> neg = new ArrayList<>(body.size() / 2);
+		for (Literal literal : body) {
+			if (literal.isNegated()) {
+				neg.add(literal);
+			} else {
+				pos.add(literal);
+			}
+		}
+		return new NonGroundRule(intIdGenerator.getNextId(), pos, neg, rule.getHead());
+	}
+
 	private static boolean isOriginallyGround(List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
 		if (headAtom != null && !headAtom.isGround()) {
 			return false;
@@ -153,25 +165,6 @@ public class NonGroundRule {
 		return functionTerm;
 	}
 
-
-	public static NonGroundRule constructNonGroundRule(IntIdGenerator intIdGenerator, ParsedRule parsedRule) {
-		final List<Atom> pos = new ArrayList<>(parsedRule.body.size() / 2);
-		final List<Atom> neg = new ArrayList<>(parsedRule.body.size() / 2);
-
-		for (Literal l : rule.getBody()) {
-			(l.isNegated() ? neg : pos).add(l);
-		}
-
-		// Construct head if the given rule is no constraint
-		final Atom head = rule.getHead();
-
-		return new NonGroundRule(
-				intIdGenerator.getNextId(),
-				pos,
-				neg,
-				head
-		);
-	}
 
 	public int getRuleId() {
 		return ruleId;

@@ -31,11 +31,11 @@ import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BuiltinAtom;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
+import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
+import at.ac.tuwien.kr.alpha.common.terms.*;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -93,7 +93,7 @@ public class NaiveGrounder extends BridgedGrounder {
 			Predicate predicate = atom.getPredicate();
 			adaptWorkingMemoryForPredicate(predicate);
 			// Construct fact instance(s).
-			List<Instance> instances = constructFactInstances(fact, predicateArity);
+			List<Instance> instances = FactIntervalEvaluator.constructFactInstances(atom);
 
 			// Add instance to corresponding list of facts
 			factsFromProgram.putIfAbsent(predicate, new LinkedHashSet<>());
@@ -135,60 +135,6 @@ public class NaiveGrounder extends BridgedGrounder {
 			}
 		}
 
-	}
-
-	private boolean functionTermContainsIntervals(FunctionTerm functionTerm) {
-		// Test whether a function term contains an interval term (recursively).
-		for (Term term : functionTerm.getTerms()) {
-			if (term instanceof IntervalTerm) {
-				return true;
-			}
-			if (term instanceof FunctionTerm && functionTermContainsIntervals((FunctionTerm) term)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private List<Instance> constructFactInstances(ParsedFact fact, int predicateArity) {
-		// Construct instance(s) from the fact.
-		Term[] currentTerms = new Term[predicateArity];
-		List<Instance> instances = new ArrayList<>();
-		boolean containsIntervals = false;
-		// Check if instance contains intervals at all.
-		for (int i = 0; i < predicateArity; i++) {
-			Term term = fact.getFact().getTerms().get(i).toTerm();
-			currentTerms[i] = term;
-			if (term instanceof IntervalTerm) {
-				containsIntervals = true;
-			} else if (term instanceof FunctionTerm && functionTermContainsIntervals((FunctionTerm) term)) {
-				containsIntervals = true;
-				throw new RuntimeException("Intervals inside function terms in facts are not supported yet. Try turning the fact into a rule.");
-			}
-		}
-		// If fact contains no intervals, simply return the single instance.
-		if (!containsIntervals) {
-			return Collections.singletonList(new Instance(currentTerms));
-		}
-		// Fact contains intervals, unroll them all.
-		return unrollInstances(currentTerms, 0);
-	}
-
-	private List<Instance> unrollInstances(Term[] currentTerms, int currentPosition) {
-		if (currentPosition == currentTerms.length) {
-			return Collections.singletonList(new Instance(currentTerms));
-		}
-		Term currentTerm = currentTerms[currentPosition];
-		if (currentTerm instanceof IntervalTerm) {
-			List<Instance> instances = new ArrayList<>();
-			for (int i = ((IntervalTerm) currentTerm).getLowerBound(); i <= ((IntervalTerm) currentTerm).getUpperBound(); i++) {
-				Term[] clonedTerms = currentTerms.clone();
-				clonedTerms[currentPosition] = ConstantTerm.getInstance(String.valueOf(i));
-				instances.addAll(unrollInstances(clonedTerms, currentPosition + 1));
-			}
-			return instances;
-		}
-		return unrollInstances(currentTerms, currentPosition + 1);
 	}
 
 
