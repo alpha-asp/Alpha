@@ -22,7 +22,7 @@ import static java.util.Collections.singletonList;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class DummyGrounder implements Grounder {
-	public static final Set<AnswerSet> EXPECTED = new HashSet<>(singletonList(new BasicAnswerSet.Builder()
+	public static final Set<AnswerSet> EXPECTED = new HashSet<>(singletonList(new AnswerSetBuilder()
 		.predicate("a")
 		.predicate("b")
 		.predicate("c")

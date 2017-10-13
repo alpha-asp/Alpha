@@ -25,9 +25,15 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.Main;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.parser.*;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.junit.Before;
@@ -40,8 +46,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-
-import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 
 /**
  * Tests {@link AbstractSolver} using some three-coloring test cases, as described in:
@@ -104,20 +108,17 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 	}
 
 	private void testThreeColouring(int n) throws IOException {
-		ParsedProgram parsedProgram = parseVisit(
+		Program program = Main.parseVisit(
 				"col(V,C) :- v(V), c(C), not ncol(V,C)." +
 				"ncol(V,C) :- col(V,D), c(C), C != D." +
 				":- e(V,U), col(V,C), col(U,C).");
-		Collection<ParsedFact> colours = createColors("red", "blue", "green");
-		parsedProgram.accumulate(new ParsedProgram(colours));
-		Collection<ParsedFact> vertices = createVertices(n);
-		parsedProgram.accumulate(new ParsedProgram(vertices));
-		Collection<ParsedFact> edges = createEdges(n);
-		parsedProgram.accumulate(new ParsedProgram(edges));
+		program.getFacts().addAll(createColors("red", "blue", "green"));
+		program.getFacts().addAll(createVertices(n));
+		program.getFacts().addAll(createEdges(n));
 
-		parsedProgram = maybeShuffle(parsedProgram);
+		maybeShuffle(program);
 
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		NaiveGrounder grounder = new NaiveGrounder(program);
 		Solver solver = getInstance(grounder);
 
 		Optional<AnswerSet> answerSet = solver.stream().findAny();
@@ -126,34 +127,31 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 		// TODO: check correctness of answer set
 	}
 
-	private ParsedProgram maybeShuffle(ParsedProgram program) {
-		List<CommonParsedObject> rules = new ArrayList<>();
-		rules.addAll(program.facts);
-		rules.addAll(program.rules);
-		rules.addAll(program.constraints);
-		return new ParsedProgram(rules);
+	private void maybeShuffle(Program program) {
+		// No shuffling here.
 	}
 
-	private Collection<ParsedFact> createColors(String... colours) {
-		Collection<ParsedFact> facts = new ArrayList<>(colours.length);
+	private Collection<Atom> createColors(String... colours) {
+		Collection<Atom> facts = new ArrayList<>(colours.length);
+		BasicPredicate predicate = new BasicPredicate("c", 1);
 		for (String colour : colours) {
-			List<ParsedTerm> terms = new ArrayList<>(1);
-			terms.add(new ParsedConstant<>(colour));
-			facts.add(new ParsedFact(new ParsedAtom("c", terms)));
+			List<Term> terms = new ArrayList<>(1);
+			terms.add(ConstantTerm.getInstance(colour));
+			facts.add(new BasicAtom(predicate, terms));
 		}
 		return facts;
 	}
 
-	private Collection<ParsedFact> createVertices(int n) {
-		Collection<ParsedFact> facts = new ArrayList<>(n);
+	private Collection<Atom> createVertices(int n) {
+		Collection<Atom> facts = new ArrayList<>(n);
 		for (int i = 1; i <= n; i++) {
 			facts.add(fact("v", i));
 		}
 		return facts;
 	}
 
-	private Collection<ParsedFact> createEdges(int n) {
-		Collection<ParsedFact> facts = new ArrayList<>(n);
+	private Collection<Atom> createEdges(int n) {
+		Collection<Atom> facts = new ArrayList<>(n);
 		for (int i = 2; i <= n; i++) {
 			facts.add(fact("e", 1, i));
 		}
@@ -164,11 +162,12 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 		return facts;
 	}
 
-	private ParsedFact fact(String predicateName, int... iTerms) {
-		List<ParsedTerm> terms = new ArrayList<>(1);
+	private Atom fact(String predicateName, int... iTerms) {
+		List<Term> terms = new ArrayList<>(1);
+		BasicPredicate predicate = new BasicPredicate(predicateName, iTerms.length);
 		for (int i : iTerms) {
-			terms.add(new ParsedConstant<>(i));
+			terms.add(ConstantTerm.getInstance(i));
 		}
-		return new ParsedFact(new ParsedAtom(predicateName, terms));
+		return new BasicAtom(predicate, terms);
 	}
 }

@@ -26,8 +26,8 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.antlr.v4.runtime.ANTLRFileStream;
@@ -75,8 +75,8 @@ public class RacksTest extends AbstractSolverTests {
 		ANTLRFileStream programInputStream = new ANTLRFileStream(
 			Paths.get("benchmarks", "siemens", "racks", "racks.lp").toString()
 		);
-		ParsedProgram parsedProgram = parseVisit(programInputStream);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		Program parsedProgram = parseVisit(programInputStream);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		System.out.println(answerSet);

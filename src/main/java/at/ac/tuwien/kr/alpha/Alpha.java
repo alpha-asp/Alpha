@@ -5,10 +5,8 @@ import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.predicates.ExternalEvaluable;
 import at.ac.tuwien.kr.alpha.common.predicates.ExternalNativePredicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
@@ -104,12 +102,9 @@ public class Alpha {
 			throw new IllegalStateException("This system has already been used.");
 		}
 
-		ParsedProgram parsedProgram = Main.parseVisit(program);
+		setProgram(Main.parseVisit(program, predicateMethods));
 
 		// Obtain grounder instance and feed it with parsedProgram.
-
-		setProgram(parsedProgram.toProgram(predicateMethods));
-
 		return solve();
 	}
 

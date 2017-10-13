@@ -27,10 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.Symbol;
+import at.ac.tuwien.kr.alpha.Main;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
@@ -39,7 +37,6 @@ import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.junit.Test;
@@ -48,7 +45,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 
-import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -85,9 +81,8 @@ public class SolverTests extends AbstractSolverTests {
 		Atom fact = new BasicAtom(new BasicPredicate("foo", 1), ConstantTerm.getInstance(thingy));
 
 		Program program = new Program(
-			Collections.singletonList(fact),
 			Collections.emptyList(),
-			Collections.emptyList()
+			Collections.singletonList(fact)
 		);
 
 		Grounder grounder = new NaiveGrounder(program);
@@ -97,7 +92,7 @@ public class SolverTests extends AbstractSolverTests {
 
 		assertEquals(1, answerSets.size());
 
-		AnswerSet expected = new BasicAnswerSet.Builder()
+		AnswerSet expected = new AnswerSetBuilder()
 			.predicate("foo").instance(thingy)
 			.build();
 
@@ -108,15 +103,15 @@ public class SolverTests extends AbstractSolverTests {
 	@Test
 	public void testFactsOnlyProgram() throws IOException {
 		String testProgram = "p(a). p(b). foo(13). foo(16). q(a). q(c).";
-		ParsedProgram parsedProgram = parseVisit(testProgram);
-		Grounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		Program parsedProgram = Main.parseVisit(testProgram);
+		Grounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
 		List<AnswerSet> answerSets = solver.collectList();
 
 		assertEquals(1, answerSets.size());
 
-		AnswerSet expected = new BasicAnswerSet.Builder()
+		AnswerSet expected = new AnswerSetBuilder()
 			.predicate("q").symbolicInstance("a").symbolicInstance("c")
 			.predicate("p").symbolicInstance("a").symbolicInstance("b")
 			.predicate("foo").instance(13).instance(16)
@@ -128,13 +123,13 @@ public class SolverTests extends AbstractSolverTests {
 	@Test
 	public void testSimpleRule() throws Exception {
 		String testProgram = "p(a). p(b). r(X) :- p(X).";
-		ParsedProgram parsedProgram = parseVisit(testProgram);
-		Grounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		Program parsedProgram = Main.parseVisit(testProgram);
+		Grounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
 		List<AnswerSet> answerSets = solver.collectList();
 
-		AnswerSet expected = new BasicAnswerSet.Builder()
+		AnswerSet expected = new AnswerSetBuilder()
 			.predicate("p").instance(Symbol.getInstance("a")).instance(Symbol.getInstance("b"))
 			.predicate("r").instance(Symbol.getInstance("a")).instance(Symbol.getInstance("b"))
 			.build();
@@ -149,14 +144,14 @@ public class SolverTests extends AbstractSolverTests {
 			"p(1)." +
 				"p(2)." +
 				"q(X) :-  p(X), p(1).";
-		ParsedProgram parsedProgram = parseVisit(testProgram);
-		Grounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		Program parsedProgram = Main.parseVisit(testProgram);
+		Grounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
 		List<AnswerSet> answerSets = solver.collectList();
 
 		assertEquals(1, answerSets.size());
-		AnswerSet expected = new BasicAnswerSet.Builder()
+		AnswerSet expected = new AnswerSetBuilder()
 			.predicate("q").instance(1).instance(2)
 			.predicate("p").instance(1).instance(2)
 			.build();
@@ -167,15 +162,15 @@ public class SolverTests extends AbstractSolverTests {
 	@Test
 	public void testProgramZeroArityPredicates() throws Exception {
 		String testProgram = "a. p(X) :- b, r(X).";
-		ParsedProgram parsedProgram = parseVisit(testProgram);
-		Grounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		Program parsedProgram = Main.parseVisit(testProgram);
+		Grounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
 		List<AnswerSet> answerSets = solver.collectList();
 
 		assertEquals(1, answerSets.size());
 
-		AnswerSet expected = new BasicAnswerSet.Builder()
+		AnswerSet expected = new AnswerSetBuilder()
 			.predicate("a")
 			.build();
 
@@ -184,11 +179,11 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void testGuessingGroundProgram() throws Exception {
-		Solver solver = getInstance(new NaiveGrounder(parseVisit("a :- not b. b :- not a.").toProgram()));
+		Solver solver = getInstance(new NaiveGrounder(Main.parseVisit("a :- not b. b :- not a.")));
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new BasicAnswerSet.Builder().predicate("a").build(),
-			new BasicAnswerSet.Builder().predicate("b").build()
+			new AnswerSetBuilder().predicate("a").build(),
+			new AnswerSetBuilder().predicate("b").build()
 		));
 
 		assertEquals(expected, solver.collectSet());
@@ -199,41 +194,41 @@ public class SolverTests extends AbstractSolverTests {
 		String testProgram = "dom(1). dom(2). dom(3)." +
 			"p(X) :- dom(X), not q(X)." +
 			"q(X) :- dom(X), not p(X).";
-		ParsedProgram parsedProgram = parseVisit(testProgram);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		Program parsedProgram = Main.parseVisit(testProgram);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
-		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
+		final AnswerSetBuilder base = new AnswerSetBuilder()
 			.predicate("dom").instance(1).instance(2).instance(3);
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("q").instance(1).instance(2)
 				.predicate("p").instance(3)
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("q").instance(1)
 				.predicate("p").instance(2).instance(3)
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("q").instance(2)
 				.predicate("p").instance(1).instance(3)
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("p").instance(1).instance(2).instance(3)
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("q").instance(1).instance(2).instance(3)
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("q").instance(1).instance(3)
 				.predicate("p").instance(2)
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("q").instance(2).instance(3)
 				.predicate("p").instance(1)
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("q").instance(3)
 				.predicate("p").instance(1).instance(2)
 				.build()
@@ -260,19 +255,19 @@ public class SolverTests extends AbstractSolverTests {
 			"b :- not a, not c." +
 			"c :- not a, not b.";
 
-		ParsedProgram parsedProgram = parseVisit(testProgram);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		Program parsedProgram = Main.parseVisit(testProgram);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 
 		Solver solver = getInstance(grounder);
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new BasicAnswerSet.Builder()
+			new AnswerSetBuilder()
 				.predicate("a")
 				.build(),
-			new BasicAnswerSet.Builder()
+			new AnswerSetBuilder()
 				.predicate("b")
 				.build(),
-			new BasicAnswerSet.Builder()
+			new AnswerSetBuilder()
 				.predicate("c")
 				.build()
 		));
@@ -283,8 +278,8 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void emptyProgramYieldsEmptyAnswerSet() throws IOException {
-		ParsedProgram parsedProgram = parseVisit("");
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		Program parsedProgram = Main.parseVisit("");
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		List<AnswerSet> answerSets = getInstance(grounder).collectList();
 		assertEquals(1, answerSets.size());
 		assertEquals(BasicAnswerSet.EMPTY, answerSets.get(0));
@@ -300,43 +295,43 @@ public class SolverTests extends AbstractSolverTests {
 			"notc :- not c.\n" +
 			":- nota,notb,notc.";
 
-		ParsedProgram parsedProgram = parseVisit(testProgram);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		Program parsedProgram = Main.parseVisit(testProgram);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 
 		Solver solver = getInstance(grounder);
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new BasicAnswerSet.Builder()
+			new AnswerSetBuilder()
 				.predicate("a")
 				.predicate("b")
 				.predicate("c")
 				.build(),
-			new BasicAnswerSet.Builder()
+			new AnswerSetBuilder()
 				.predicate("nota")
 				.predicate("b")
 				.predicate("c")
 				.build(),
-			new BasicAnswerSet.Builder()
+			new AnswerSetBuilder()
 				.predicate("a")
 				.predicate("notb")
 				.predicate("c")
 				.build(),
-			new BasicAnswerSet.Builder()
+			new AnswerSetBuilder()
 				.predicate("nota")
 				.predicate("notb")
 				.predicate("c")
 				.build(),
-			new BasicAnswerSet.Builder()
+			new AnswerSetBuilder()
 				.predicate("a")
 				.predicate("b")
 				.predicate("notc")
 				.build(),
-			new BasicAnswerSet.Builder()
+			new AnswerSetBuilder()
 				.predicate("nota")
 				.predicate("b")
 				.predicate("notc")
 				.build(),
-			new BasicAnswerSet.Builder()
+			new AnswerSetBuilder()
 				.predicate("a")
 				.predicate("notb")
 				.predicate("notc")
@@ -353,13 +348,13 @@ public class SolverTests extends AbstractSolverTests {
 			"p(X) :- dom(X), X = 4." +
 			"r(Y) :- dom(Y), Y <= 2.";
 
-		ParsedProgram parsedProgram = parseVisit(testProgram);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		Program parsedProgram = Main.parseVisit(testProgram);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 
 		Solver solver = getInstance(grounder);
 
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
-			new BasicAnswerSet.Builder()
+			new AnswerSetBuilder()
 				.predicate("dom")
 				.instance(1)
 				.instance(2)
@@ -383,13 +378,14 @@ public class SolverTests extends AbstractSolverTests {
 		String testProgram = "a :- 13 != 4." +
 			"b :- 2 != 3, 2 = 3." +
 			"c :- 2 <= 3, not 2 > 3.";
-		ParsedProgram parsedProgram = parseVisit(testProgram);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+
+		Program program = Main.parseVisit(testProgram);
+		NaiveGrounder grounder = new NaiveGrounder(program);
 
 		Solver solver = getInstance(grounder);
 
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
-			new BasicAnswerSet.Builder()
+			new AnswerSetBuilder()
 				.predicate("a")
 				.predicate("c")
 				.build()
@@ -413,11 +409,12 @@ public class SolverTests extends AbstractSolverTests {
 			"val(VAR,3):-var(VAR),not val(VAR,1),not val(VAR,2).\n" +
 			"%:- val(VAR1,VAL1), val(VAR2,VAL2), eq(VAL1,VAL2), not eq(VAR1,VAR2).\n" +
 			":- eq(VAL1,VAL2), not eq(VAR1,VAR2), val(VAR1,VAL1), val(VAR2,VAL2).";
-		ParsedProgram parsedProgram = parseVisit(testProgram);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+
+		Program parsedProgram = Main.parseVisit(testProgram);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
-		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
+		final AnswerSetBuilder base = new AnswerSetBuilder()
 			.predicate("eq")
 			.instance(1, 1)
 			.instance(2, 2)
@@ -428,37 +425,37 @@ public class SolverTests extends AbstractSolverTests {
 			.instance(3);
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("val")
 				.instance(1, 1)
 				.instance(2, 2)
 				.instance(3, 3)
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("val")
 				.instance(1, 1)
 				.instance(3, 2)
 				.instance(2, 3)
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("val")
 				.instance(2, 1)
 				.instance(1, 2)
 				.instance(3, 3)
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("val")
 				.instance(2, 1)
 				.instance(3, 2)
 				.instance(1, 3)
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("val")
 				.instance(3, 1)
 				.instance(1, 2)
 				.instance(2, 3)
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("val")
 				.instance(3, 1)
 				.instance(2, 2)
@@ -484,11 +481,12 @@ public class SolverTests extends AbstractSolverTests {
 				"val(VAR,3):-var(VAR),not val(VAR,1),not val(VAR,2).\n" +
 				":- val(VAR1,VAL1), val(VAR2,VAL2), eq(VAL1,VAL2), not eq(VAR1,VAR2).\n" +
 				"%:- eq(VAL1,VAL2), not eq(VAR1,VAR2), val(VAR1,VAL1), val(VAR2,VAL2).";
-		ParsedProgram parsedProgram = parseVisit(testProgram);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+
+		Program parsedProgram = Main.parseVisit(testProgram);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
-		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
+		final AnswerSetBuilder base = new AnswerSetBuilder()
 			.predicate("eq")
 			.instance(1, 1)
 			.instance(2, 2)
@@ -499,37 +497,37 @@ public class SolverTests extends AbstractSolverTests {
 			.instance(3);
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("val")
 				.instance(1, 1)
 				.instance(2, 2)
 				.instance(3, 3)
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("val")
 				.instance(1, 1)
 				.instance(3, 2)
 				.instance(2, 3)
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("val")
 				.instance(2, 1)
 				.instance(1, 2)
 				.instance(3, 3)
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("val")
 				.instance(2, 1)
 				.instance(3, 2)
 				.instance(1, 3)
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("val")
 				.instance(3, 1)
 				.instance(1, 2)
 				.instance(2, 3)
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("val")
 				.instance(3, 1)
 				.instance(2, 2)
@@ -546,12 +544,13 @@ public class SolverTests extends AbstractSolverTests {
 		String testProgram = "val(1,1).\n" +
 			"val(2,2).\n" +
 			"something:- val(VAR1,VAL1), val(VAR2,VAL2), anything(VAL1,VAL2).";
-		ParsedProgram parsedProgram = parseVisit(testProgram);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+
+		Program parsedProgram = Main.parseVisit(testProgram);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
-			new BasicAnswerSet.Builder()
+			new AnswerSetBuilder()
 				.predicate("val")
 				.instance(1, 1)
 				.instance(2, 2)
@@ -569,17 +568,17 @@ public class SolverTests extends AbstractSolverTests {
 			"in(X) :- not out(X), node(X).\n" +
 			"out(X) :- not in(X), node(X).\n" +
 			"pair(X,Y) :- in(X), in(Y).";
-		ParsedProgram parsedProgram = parseVisit(testProgram);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		Program parsedProgram = Main.parseVisit(testProgram);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
-		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
+		final AnswerSetBuilder base = new AnswerSetBuilder()
 			.predicate("node")
 			.instance(Symbol.getInstance("a"))
 			.instance(Symbol.getInstance("b"));
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("in")
 				.instance(Symbol.getInstance("a"))
 				.instance(Symbol.getInstance("b"))
@@ -589,7 +588,7 @@ public class SolverTests extends AbstractSolverTests {
 				.instance(Symbol.getInstance("b"), Symbol.getInstance("a"))
 				.instance(Symbol.getInstance("b"), Symbol.getInstance("b"))
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("in")
 				.instance(Symbol.getInstance("b"))
 				.predicate("out")
@@ -597,7 +596,7 @@ public class SolverTests extends AbstractSolverTests {
 				.predicate("pair")
 				.instance(Symbol.getInstance("b"), Symbol.getInstance("b"))
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("in")
 				.instance(Symbol.getInstance("a"))
 				.predicate("out")
@@ -605,7 +604,7 @@ public class SolverTests extends AbstractSolverTests {
 				.predicate("pair")
 				.instance(Symbol.getInstance("a"), Symbol.getInstance("a"))
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("out")
 				.instance(Symbol.getInstance("a"))
 				.instance(Symbol.getInstance("b"))
@@ -624,17 +623,17 @@ public class SolverTests extends AbstractSolverTests {
 			"in(X) :- not out(X), node(X).\n" +
 			"out(X) :- not in(X), node(X).\n" +
 			":- in(X), in(Y), edge(X,Y).";
-		ParsedProgram parsedProgram = parseVisit(testProgram);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		Program parsedProgram = Main.parseVisit(testProgram);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
-		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
+		final AnswerSetBuilder base = new AnswerSetBuilder()
 			.predicate("node")
 			.instance(Symbol.getInstance("a"))
 			.instance(Symbol.getInstance("b"));
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("in")
 				.instance(Symbol.getInstance("b"))
 				.predicate("out")
@@ -642,7 +641,7 @@ public class SolverTests extends AbstractSolverTests {
 				.predicate("edge")
 				.instance(Symbol.getInstance("b"), Symbol.getInstance("a"))
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("in")
 				.instance(Symbol.getInstance("a"))
 				.predicate("out")
@@ -650,7 +649,7 @@ public class SolverTests extends AbstractSolverTests {
 				.predicate("edge")
 				.instance(Symbol.getInstance("b"), Symbol.getInstance("a"))
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("out")
 				.instance(Symbol.getInstance("a"))
 				.instance(Symbol.getInstance("b"))
@@ -666,8 +665,8 @@ public class SolverTests extends AbstractSolverTests {
 	@Test
 	public void testUnsatisfiableProgram() throws IOException {
 		String testProgram = "p(a). p(b). :- p(a), p(b).";
-		ParsedProgram parsedProgram = parseVisit(testProgram);
-		Grounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		Program parsedProgram = Main.parseVisit(testProgram);
+		Grounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
 		List<AnswerSet> answerSets = solver.collectList();
@@ -678,12 +677,12 @@ public class SolverTests extends AbstractSolverTests {
 	@Test
 	public void testFunctionTermEquality() throws IOException {
 		String testProgram = "r1(f(a,b)). r2(f(a,b)). a :- r1(X), r2(Y), X = Y.";
-		ParsedProgram parsedProgram = parseVisit(testProgram);
-		Grounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		Program parsedProgram = Main.parseVisit(testProgram);
+		Grounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
-			new BasicAnswerSet.Builder()
+			new AnswerSetBuilder()
 				.predicate("r1")
 				.parseInstance("f(a,b)")
 				.predicate("r2")
@@ -714,12 +713,11 @@ public class SolverTests extends AbstractSolverTests {
 			"aux_not_assign(L,R) :- aux_ext_assign(L,R), not assign(L,R).\n" +
 			":- aux_not_assign(L,R), assign(L,R).";
 
-		ParsedProgram parsedProgram = parseVisit(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
-
+		Program parsedProgram = Main.parseVisit(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
-		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
+		final AnswerSetBuilder base = new AnswerSetBuilder()
 			.predicate("location")
 			.instance(Symbol.getInstance("a1"))
 			.predicate("region")
@@ -730,7 +728,7 @@ public class SolverTests extends AbstractSolverTests {
 			.instance(Symbol.getInstance("a1"), Symbol.getInstance("r2"));
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("assign")
 				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r2"))
 				.predicate("nassign")
@@ -738,7 +736,7 @@ public class SolverTests extends AbstractSolverTests {
 				.predicate("aux_not_assign")
 				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r1"))
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("assign")
 				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r1"))
 				.predicate("nassign")
@@ -746,7 +744,7 @@ public class SolverTests extends AbstractSolverTests {
 				.predicate("aux_not_assign")
 				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r2"))
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("nassign")
 				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r1"))
 				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r2"))
@@ -771,12 +769,11 @@ public class SolverTests extends AbstractSolverTests {
 			"\n" +
 			"possible(l1, r1). possible(l3, r3). possible(l4, r1). possible(l4, r3). possible(l5, r4). possible(l6, r2). possible(l7, r3). possible(l8, r2). possible(l9, r1). possible(l9, r4).\n";
 
-		ParsedProgram parsedProgram = parseVisit(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
-
+		Program parsedProgram = Main.parseVisit(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
-		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
+		final AnswerSetBuilder base = new AnswerSetBuilder()
 			.predicate("possible")
 			.symbolicInstance("l1", "r1")
 			.symbolicInstance("l3", "r3")
@@ -806,7 +803,7 @@ public class SolverTests extends AbstractSolverTests {
 			.symbolicInstance("l9");
 
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("assign")
 				.symbolicInstance("l4", "r1")
 				.symbolicInstance("l9", "r4")
@@ -814,7 +811,7 @@ public class SolverTests extends AbstractSolverTests {
 				.symbolicInstance("l4", "r3")
 				.symbolicInstance("l9", "r1")
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("assign")
 				.symbolicInstance("l4", "r1")
 				.symbolicInstance("l9", "r1")
@@ -822,7 +819,7 @@ public class SolverTests extends AbstractSolverTests {
 				.symbolicInstance("l4", "r3")
 				.symbolicInstance("l9", "r4")
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("assign")
 				.symbolicInstance("l4", "r3")
 				.symbolicInstance("l9", "r4")
@@ -830,7 +827,7 @@ public class SolverTests extends AbstractSolverTests {
 				.symbolicInstance("l4", "r1")
 				.symbolicInstance("l9", "r1")
 				.build(),
-			new BasicAnswerSet.Builder(base)
+			new AnswerSetBuilder(base)
 				.predicate("assign")
 				.symbolicInstance("l4", "r3")
 				.symbolicInstance("l9", "r1")
@@ -848,13 +845,12 @@ public class SolverTests extends AbstractSolverTests {
 		String program = "p(a, a).\n" +
 			"q(X) :- p(X, X).\n";
 
-		ParsedProgram parsedProgram = parseVisit(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
-
+		Program parsedProgram = Main.parseVisit(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
-			new BasicAnswerSet.Builder()
+			new AnswerSetBuilder()
 				.predicate("p")
 				.instance(Symbol.getInstance("a"), Symbol.getInstance("a"))
 				.predicate("q")
@@ -871,9 +867,8 @@ public class SolverTests extends AbstractSolverTests {
 		String program = "p(a, a).\n" +
 			":- p(X, X).\n";
 
-		ParsedProgram parsedProgram = parseVisit(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
-
+		Program parsedProgram = Main.parseVisit(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
 		Set<AnswerSet> answerSets = solver.collectSet();
@@ -886,8 +881,8 @@ public class SolverTests extends AbstractSolverTests {
 			"b:- a.\n" +
 			":- not b.";
 
-		ParsedProgram parsedProgram = parseVisit(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		Program parsedProgram = Main.parseVisit(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
 		Set<AnswerSet> answerSets = solver.collectSet();
@@ -903,8 +898,8 @@ public class SolverTests extends AbstractSolverTests {
 			"b:- a.\n" +
 			":- not b.";
 
-		ParsedProgram parsedProgram = parseVisit(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		Program parsedProgram = Main.parseVisit(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
 		Set<AnswerSet> answerSets = solver.collectSet();
@@ -920,12 +915,12 @@ public class SolverTests extends AbstractSolverTests {
 			"t(a) :- sel(b).\n" +
 			":- t(X).\n";
 
-		ParsedProgram parsedProgram = parseVisit(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		Program parsedProgram = Main.parseVisit(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
-				new BasicAnswerSet.Builder()
+				new AnswerSetBuilder()
 						.predicate("d")
 						.instance(Symbol.getInstance("b"))
 						.predicate("nsel")

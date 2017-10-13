@@ -1,13 +1,12 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.Util;
+import at.ac.tuwien.kr.alpha.common.Rule;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.predicates.Evaluable;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedAtom;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedRule;
 
 import java.util.*;
 
@@ -39,6 +38,26 @@ public class NonGroundRule {
 			throw new RuntimeException("Encountered not safe rule: " + toString()
 				+ "\nNotice: A rule is considered safe if all variables occurring in negative literals, builtin atoms, and the head of the rule also occurr in some positive litera.");
 		}
+	}
+
+	// FIXME: NonGroundRule should extend Rule and then its constructor directly be used.
+	public static NonGroundRule constructNonGroundRule(IntIdGenerator intIdGenerator, Rule rule) {
+		List<Literal> body = rule.getBody();
+		final List<Atom> pos = new ArrayList<>(body.size() / 2);
+		final List<Atom> neg = new ArrayList<>(body.size() / 2);
+
+		for (Literal l : rule.getBody()) {
+			(l.isNegated() ? neg : pos).add(l);
+		}
+
+		// Construct head if the given rule is no constraint
+		final Atom head = rule.getHead();
+
+		return new NonGroundRule(
+				pos,
+				neg,
+				head
+		);
 	}
 
 	public int getRuleId() {

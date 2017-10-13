@@ -26,8 +26,8 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.antlr.v4.runtime.ANTLRFileStream;
@@ -113,9 +113,10 @@ public class OmigaBenchmarksTest extends AbstractSolverTests {
 
 	private void test(String folder, String aspFileName) throws IOException {
 		ANTLRFileStream programInputStream = new ANTLRFileStream(
-Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName).toString());
-		ParsedProgram parsedProgram = parseVisit(programInputStream);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+			Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName).toString()
+		);
+		Program parsedProgram = parseVisit(programInputStream);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		System.out.println(answerSet);

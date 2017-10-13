@@ -49,10 +49,10 @@ import static java.util.Collections.singleton;
  */
 public class ChoiceGrounder implements Grounder {
 	public static final Set<AnswerSet> EXPECTED = new HashSet<>(asList(
-		new BasicAnswerSet.Builder()
+		new AnswerSetBuilder()
 			.predicate("aa")
 			.build(),
-		new BasicAnswerSet.Builder()
+		new AnswerSetBuilder()
 			.predicate("bb")
 			.build()
 	));

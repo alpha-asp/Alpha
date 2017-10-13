@@ -26,16 +26,14 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedAtom;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedFact;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.antlr.v4.runtime.ANTLRFileStream;
@@ -108,9 +106,9 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	private void testHanoiTower(String instance) throws IOException {
 		ANTLRFileStream programInputStream = new ANTLRFileStream(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp").toString());
 		ANTLRFileStream instanceInputStream = new ANTLRFileStream(Paths.get("src", "test", "resources", "HanoiTower_instances", instance + ".asp").toString());
-		ParsedProgram parsedProgram = parseVisit(programInputStream);
+		Program parsedProgram = parseVisit(programInputStream);
 		parsedProgram.accumulate(parseVisit(instanceInputStream));
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		System.out.println(answerSet);
@@ -121,14 +119,13 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	 * Conducts a very simple, non-comprehensive goal check (i.e. it may classify answer sets as correct that are actually wrong) by checking if for every goal/3
 	 * fact in the input there is a corresponding on/3 atom in the output.
 	 */
-	private void checkGoal(ParsedProgram parsedProgram, AnswerSet answerSet) {
+	private void checkGoal(Program parsedProgram, AnswerSet answerSet) {
 		Predicate ongoal = new BasicPredicate("ongoal", 2);
 		Predicate on = new BasicPredicate("on", 3);
 		int steps = getSteps(parsedProgram);
 		SortedSet<Atom> onInstancesInAnswerSet = answerSet.getPredicateInstances(on);
-		for (ParsedFact fact : parsedProgram.facts) {
-			ParsedAtom atom = fact.getFact();
-			if (atom.getPredicate().equals(ongoal.getPredicateName()) && atom.getArity() == ongoal.getArity()) {
+		for (Atom atom : parsedProgram.getFacts()) {
+			if (atom.getPredicate().equals(ongoal.getPredicateName()) && atom.getPredicate().getArity() == ongoal.getArity()) {
 				Term expectedTop = ConstantTerm.getInstance(atom.getTerms().get(0).toString());
 				Term expectedBottom = ConstantTerm.getInstance(atom.getTerms().get(1).toString());
 				Term expectedSteps = ConstantTerm.getInstance(String.valueOf(steps));
@@ -138,12 +135,11 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		}
 	}
 
-	private int getSteps(ParsedProgram parsedProgram) {
+	private int getSteps(Program parsedProgram) {
 		Predicate steps = new BasicPredicate("steps", 1);
-		for (ParsedFact fact : parsedProgram.facts) {
-			ParsedAtom atom = fact.getFact();
-			if (atom.getPredicate().equals(steps.getPredicateName()) && atom.getArity() == steps.getArity()) {
-				return Integer.valueOf(atom.getTerms().get(0).toTerm().toString());
+		for (Atom atom : parsedProgram.getFacts()) {
+			if (atom.getPredicate().getPredicateName().equals(steps.getPredicateName()) && atom.getPredicate().getArity() == steps.getArity()) {
+				return Integer.valueOf(atom.getTerms().get(0).toString());
 			}
 		}
 		throw new IllegalArgumentException("No steps atom found in input program.");

@@ -1,21 +1,12 @@
 package at.ac.tuwien.kr.alpha;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.ExternalEvaluable;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
-import at.ac.tuwien.kr.alpha.solver.Solver;
-import at.ac.tuwien.kr.alpha.solver.SolverTests;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,7 +36,7 @@ public class AlphaTest {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", int.class));
 		Set<AnswerSet> actual = system.solve("a :- &isOne(1).").collect(Collectors.toSet());
-		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new BasicAnswerSet.Builder().predicate("a").build()));
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
 	}
 
@@ -54,7 +45,7 @@ public class AlphaTest {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isFoo", Integer.class));
 		Set<AnswerSet> actual = system.solve("a :- &isFoo(\"adsfnfdsf\").").collect(Collectors.toSet());
-		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new BasicAnswerSet.Builder().predicate("a").build()));
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
 	}
 
@@ -76,24 +67,22 @@ public class AlphaTest {
 	public void withExternalSubtype() throws Exception {
 		SubThingy thingy = new SubThingy();
 
-		NonGroundRule rule = new NonGroundRule(
+		Rule rule = new Rule(
+			new BasicAtom(new BasicPredicate("p", 1), ConstantTerm.getInstance("x")),
 			Collections.singletonList(
 				new BasicAtom(new ExternalEvaluable(this.getClass().getMethod("thinger", Thingy.class)), ConstantTerm.getInstance(thingy))
-			),
-			Collections.emptyList(),
-			new BasicAtom(new BasicPredicate("p", 1), ConstantTerm.getInstance("x"))
+			)
 		);
 
 		Alpha system = new Alpha();
 
 		system.setProgram(new Program(
-			Collections.emptyList(),
 			Collections.singletonList(rule),
 			Collections.emptyList()
 		));
 
 		Set<AnswerSet> actual = system.solve().collect(Collectors.toSet());
-		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new BasicAnswerSet.Builder().predicate("p").instance("x").build()));
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new AnswerSetBuilder().predicate("p").instance("x").build()));
 		assertEquals(expected, actual);
 	}
 
@@ -102,7 +91,7 @@ public class AlphaTest {
 		Alpha system = new Alpha();
 		system.scan(this.getClass().getPackage().getName());
 		Set<AnswerSet> actual = system.solve("a :- &isOne(1).").collect(Collectors.toSet());
-		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new BasicAnswerSet.Builder().predicate("a").build()));
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
 	}
 
@@ -112,7 +101,7 @@ public class AlphaTest {
 		system.register("isTwo", t -> t.getObject().toString().equals("2"));
 
 		Set<AnswerSet> actual = system.solve("a :- &isTwo(2).").collect(Collectors.toSet());
-		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new BasicAnswerSet.Builder().predicate("a").build()));
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
 	}
 
@@ -126,7 +115,7 @@ public class AlphaTest {
 
 		assertEquals(1, after - before);
 
-		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new BasicAnswerSet.Builder().predicate("a").build()));
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
 	}
 
@@ -140,7 +129,7 @@ public class AlphaTest {
 
 		assertEquals(2, after - before);
 
-		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new BasicAnswerSet.Builder().predicate("a").build()));
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
 	}
 
@@ -154,7 +143,7 @@ public class AlphaTest {
 
 		assertEquals(1, after - before);
 
-		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new BasicAnswerSet.Builder().predicate("a").build()));
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
 	}
 
@@ -162,7 +151,7 @@ public class AlphaTest {
 	public void basicUsage() throws Exception {
 		Alpha system = new Alpha();
 		Set<AnswerSet> actual = system.solve("a.").collect(Collectors.toSet());
-		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new BasicAnswerSet.Builder().predicate("a").build()));
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
 	}
 }

@@ -1,30 +1,35 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 
+import java.util.Collections;
 import java.util.List;
 
+/**
+ * Alpha-internal representation of an ASP program, i.e., a set of ASP rules.
+ * Copyright (c) 2017, the Alpha Team.
+ */
 public class Program {
-	private final List<Atom> facts;
-	private final List<NonGroundRule> rules;
-	private final List<NonGroundRule> constraints;
+	public static final Program EMPTY = new Program(Collections.emptyList(), Collections.emptyList());
 
-	public Program(List<Atom> facts, List<NonGroundRule> rules, List<NonGroundRule> constraints) {
-		this.facts = facts;
+	private final List<Rule> rules;
+	private final List<Atom> facts;
+
+	public Program(List<Rule> rules, List<Atom> facts) {
 		this.rules = rules;
-		this.constraints = constraints;
+		this.facts = facts;
+	}
+
+	public List<Rule> getRules() {
+		return rules;
 	}
 
 	public List<Atom> getFacts() {
 		return facts;
 	}
 
-	public List<NonGroundRule> getRules() {
-		return rules;
-	}
-
-	public List<NonGroundRule> getConstraints() {
-		return constraints;
+	public void accumulate(Program program) {
+		rules.addAll(program.rules);
+		facts.addAll(program.facts);
 	}
 }

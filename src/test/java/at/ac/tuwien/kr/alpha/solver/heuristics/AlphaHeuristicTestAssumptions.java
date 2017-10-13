@@ -25,11 +25,12 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.Main;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import at.ac.tuwien.kr.alpha.solver.ArrayAssignment;
 import at.ac.tuwien.kr.alpha.solver.TestableChoiceManager;
 import org.junit.Before;
@@ -40,7 +41,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.function.Predicate;
 
-import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -61,8 +61,8 @@ public class AlphaHeuristicTestAssumptions {
 	@Before
 	public void setUp() throws IOException {
 		String testProgram = "h :- b1, b2, not b3, not b4.";
-		ParsedProgram parsedProgram = parseVisit(testProgram);
-		this.grounder = new NaiveGrounder(parsedProgram.toProgram());
+		Program parsedProgram = Main.parseVisit(testProgram);
+		this.grounder = new NaiveGrounder(parsedProgram);
 		this.assignment = new ArrayAssignment();
 		this.choiceManager = new TestableChoiceManager(assignment);
 	}

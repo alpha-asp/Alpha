@@ -1,21 +1,18 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
 public abstract class AbstractGrounder implements Grounder {
-	protected Program program;
 	protected final java.util.function.Predicate<Predicate> filter;
 
-	protected AbstractGrounder(Program program, java.util.function.Predicate<Predicate> filter) {
-		this.program = program;
+	protected AbstractGrounder(java.util.function.Predicate<Predicate> filter) {
 		this.filter = filter;
 	}
 
-	protected AbstractGrounder(Program program) {
-		this(program, p -> true);
+	protected AbstractGrounder() {
+		this(p -> true);
 	}
 }

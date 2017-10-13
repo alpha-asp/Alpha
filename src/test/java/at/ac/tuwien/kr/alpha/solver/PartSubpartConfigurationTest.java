@@ -25,9 +25,10 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.Main;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParsedProgram;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.junit.Before;
@@ -40,8 +41,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 
 /**
  * Tests {@link AbstractSolver} using some configuration test cases in which subparts are assigned to parts.
@@ -128,8 +127,8 @@ public class PartSubpartConfigurationTest extends AbstractSolverTests {
 		rules.add(":- subpart(SP1,P), subpart(SP2, P), SP1!=SP2, subpartid(SP1,ID), subpartid(SP2,ID).");
 
 		String testProgram = concat(rules);
-		ParsedProgram parsedProgram = parseVisit(testProgram);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		Program parsedProgram = Main.parseVisit(testProgram);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
 		Optional<AnswerSet> answerSet = solver.stream().findAny();

@@ -25,9 +25,16 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.Main;
+import at.ac.tuwien.kr.alpha.Util;
+import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.parser.*;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.junit.Before;
@@ -37,8 +44,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
-
-import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 
 /**
  * Tests {@link AbstractSolver} using some three-coloring test cases, as described in:
@@ -173,60 +178,48 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 	}
 
 	private void testThreeColouring(int n, boolean shuffle, int seed) throws IOException {
-		ParsedProgram parsedProgram = parseVisit("col(V,C) :- v(V), c(C), not ncol(V,C)." + "ncol(V,C) :- col(V,D), c(C), C != D." + ":- e(V,U), col(V,C), col(U,C).");
-		List<CommonParsedObject> colours = createColors("1", "2", "3");
-		parsedProgram.accumulate(new ParsedProgram(colours));
-		List<CommonParsedObject> vertices = createVertices(n);
-		parsedProgram.accumulate(new ParsedProgram(vertices));
-		List<CommonParsedObject> edges = createEdges(n, shuffle, seed);
-		parsedProgram.accumulate(new ParsedProgram(edges));
+		Program program = Main.parseVisit("col(V,C) :- v(V), c(C), not ncol(V,C)." + "ncol(V,C) :- col(V,D), c(C), C != D." + ":- e(V,U), col(V,C), col(U,C).");
+		program.getFacts().addAll(createColors("1", "2", "3"));
+		program.getFacts().addAll(createVertices(n));
+		program.getFacts().addAll(createEdges(n, shuffle, seed));
 
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram.toProgram());
+		NaiveGrounder grounder = new NaiveGrounder(program);
 		Solver solver = getInstance(grounder);
 
-		for (ParsedFact fact : parsedProgram.facts) {
-			System.out.println(fact.getFact().toString() + ".");
+		StringBuilder sb = new StringBuilder();
+
+		for (Atom fact : program.getFacts()) {
+			sb.append(fact);
+			sb.append(".");
 		}
-		for (ParsedRule rule : parsedProgram.rules) {
-			System.out.print(rule.head.toString());
-			System.out.print(":-");
-			for (int i = 0; i < rule.body.size(); i++) {
-				if (i > 0) {
-					System.out.print(", ");
-				}
-				System.out.print(rule.body.get(i).toString());
+		for (Rule rule : program.getRules()) {
+			if (!rule.isConstraint()) {
+				sb.append(rule.getHead());
 			}
-			System.out.println(".");
+			sb.append(":-");
+			Util.appendDelimited(sb, rule.getBody());
+			sb.append(".");
 		}
 
-		for (ParsedConstraint constraint : parsedProgram.constraints) {
-			System.out.print(":-");
-			for (int i = 0; i < constraint.body.size(); i++) {
-				if (i > 0) {
-					System.out.print(", ");
-				}
-				System.out.print(constraint.body.get(i).toString());
-			}
-			System.out.println(".");
-		}
+		System.out.println(sb);
 
 		Optional<AnswerSet> answerSet = solver.stream().findAny();
 		System.out.println(answerSet);
 		// TODO: check correctness of answer set
 	}
 
-	private List<CommonParsedObject> createColors(String... colours) {
-		List<CommonParsedObject> facts = new ArrayList<>(colours.length);
+	private List<Atom> createColors(String... colours) {
+		List<Atom> facts = new ArrayList<>(colours.length);
 		for (String colour : colours) {
-			List<ParsedTerm> terms = new ArrayList<>(1);
-			terms.add(new ParsedConstant<>(colour));
-			facts.add(new ParsedFact(new ParsedAtom("c", terms)));
+			List<Term> terms = new ArrayList<>(1);
+			terms.add(ConstantTerm.getInstance(colour));
+			facts.add(new BasicAtom(new BasicPredicate("c", 1), terms));
 		}
 		return facts;
 	}
 
-	private List<CommonParsedObject> createVertices(int n) {
-		List<CommonParsedObject> facts = new ArrayList<>(n);
+	private List<Atom> createVertices(int n) {
+		List<Atom> facts = new ArrayList<>(n);
 		for (int i = 1; i <= n; i++) {
 			facts.add(fact("v", i));
 		}
@@ -241,9 +234,9 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 	 * @param seed
 	 * @return
 	 */
-	private List<CommonParsedObject> createEdges(int n, boolean shuffle, int seed) {
-		List<CommonParsedObject> facts = new ArrayList<>(n);
-		List<Integer> indices = new ArrayList<Integer>();
+	private List<Atom> createEdges(int n, boolean shuffle, int seed) {
+		List<Atom> facts = new ArrayList<>(n);
+		List<Integer> indices = new ArrayList<>();
 		for (int i = 1; i <= n; i++) {
 			indices.add(i);
 		}
@@ -261,11 +254,12 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 		return facts;
 	}
 
-	private ParsedFact fact(String predicateName, int... iTerms) {
-		List<ParsedTerm> terms = new ArrayList<>(1);
+	private Atom fact(String predicateName, int... iTerms) {
+		List<Term> terms = new ArrayList<>(iTerms.length);
+		Predicate predicate = new BasicPredicate(predicateName, iTerms.length);
 		for (int i : iTerms) {
-			terms.add(new ParsedConstant<>(i));
+			terms.add(ConstantTerm.getInstance(i));
 		}
-		return new ParsedFact(new ParsedAtom(predicateName, terms));
+		return new BasicAtom(predicate, terms);
 	}
 }
