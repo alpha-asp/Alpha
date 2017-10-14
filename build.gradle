@@ -36,7 +36,7 @@ dependencies {
 	//compile group: 'org.jgrapht', name: 'jgrapht-core', version: '0.9.2'
 }
 
-generateGrammarSource {
+tasks.withType(AntlrTask) {
 	// See https://github.com/antlr/antlr4/blob/master/doc/tool-options.md
 	arguments += [
 			"-visitor",

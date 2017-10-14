@@ -86,11 +86,7 @@ public class BasicAtom implements Literal {
 
 		BasicAtom that = (BasicAtom) o;
 
-		if (!predicate.equals(that.predicate)) {
-			return false;
-		}
-
-		return terms.equals(that.terms);
+		return predicate.equals(that.predicate) && terms.equals(that.terms);
 	}
 
 	@Override

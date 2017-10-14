@@ -43,7 +43,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.atoms.Atoms.isAtom;
+import static at.ac.tuwien.kr.alpha.solver.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
