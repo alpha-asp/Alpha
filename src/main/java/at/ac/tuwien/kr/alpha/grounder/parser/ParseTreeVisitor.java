@@ -6,18 +6,12 @@ import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.BuiltinAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.terms.*;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -121,9 +115,64 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	public Atom visitHead(ASPCore2Parser.HeadContext ctx) {
 		// head : disjunction | choice;
 		if (ctx.choice() != null) {
-			notSupportedSyntax(ctx);
+			return visitChoice(ctx.choice());
 		}
 		return visitDisjunction(ctx.disjunction());
+	}
+
+	@Override
+	public ChoiceHead visitChoice(ASPCore2Parser.ChoiceContext ctx) {
+		// choice : (lt=term lop=binop)? CURLY_OPEN choice_elements? CURLY_CLOSE (uop=binop ut=term)?;
+		Term lt = null;
+		BuiltinAtom.BINOP lop = null;
+		Term ut = null;
+		BuiltinAtom.BINOP uop = null;
+		if (ctx.lt != null) {
+			lt = (Term) visit(ctx.lt);
+			lop = visitBinop(ctx.lop);
+		}
+		if (ctx.ut != null) {
+			ut = (Term) visit(ctx.ut);
+			uop = visitBinop(ctx.uop);
+		}
+		return new ChoiceHead(visitChoice_elements(ctx.choice_elements()), lt, lop, ut, uop);
+	}
+
+	@Override
+	public List<AbstractMap.SimpleEntry<Atom, List<Literal>>> visitChoice_elements(ASPCore2Parser.Choice_elementsContext ctx) {
+		// choice_elements : choice_element (SEMICOLON choice_elements)?;
+		List<AbstractMap.SimpleEntry<Atom, List<Literal>>> choiceElements;
+		if (ctx.choice_elements() != null) {
+			choiceElements = visitChoice_elements(ctx.choice_elements());
+		} else {
+			choiceElements = new LinkedList<>();
+		}
+		choiceElements.add(0, visitChoice_element(ctx.choice_element()));
+		return choiceElements;
+	}
+
+	@Override
+	public AbstractMap.SimpleEntry<Atom, List<Literal>> visitChoice_element(ASPCore2Parser.Choice_elementContext ctx) {
+		// choice_element : classical_literal (COLON naf_literals?)?;
+		Atom atom = visitClassical_literal(ctx.classical_literal());
+		if (ctx.naf_literals() != null) {
+			return new AbstractMap.SimpleEntry<Atom, List<Literal>>(atom, visitNaf_literals(ctx.naf_literals()));
+		} else {
+			return new AbstractMap.SimpleEntry<Atom, List<Literal>>(atom, Collections.emptyList());
+		}
+	}
+
+	@Override
+	public List<Literal> visitNaf_literals(ASPCore2Parser.Naf_literalsContext ctx) {
+		// naf_literals : naf_literal (COMMA naf_literals)?;
+		List<Literal> literals;
+		if (ctx.naf_literals() != null) {
+			literals = visitNaf_literals(ctx.naf_literals());
+		} else {
+			literals = new LinkedList<>();
+		}
+		literals.add(0, visitNaf_literal(ctx.naf_literal()));
+		return literals;
 	}
 
 	@Override
@@ -158,6 +207,26 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
+	public BuiltinAtom.BINOP visitBinop(ASPCore2Parser.BinopContext ctx) {
+		// binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
+		if (ctx.EQUAL() != null) {
+			return BuiltinAtom.BINOP.EQ;
+		} else if (ctx.UNEQUAL() != null) {
+			return BuiltinAtom.BINOP.NE;
+		} else if (ctx.LESS() != null) {
+			return BuiltinAtom.BINOP.LT;
+		} else if (ctx.GREATER() != null) {
+			return BuiltinAtom.BINOP.GT;
+		} else if (ctx.LESS_OR_EQ() != null) {
+			return BuiltinAtom.BINOP.LE;
+		} else if (ctx.GREATER_OR_EQ() != null) {
+			return BuiltinAtom.BINOP.GE;
+		} else {
+			throw new RuntimeException("Unknown binop encountered.");
+		}
+	}
+
+	@Override
 	public Literal visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
 		// builtin_atom : term binop term;
 		Term left = (Term) visit(ctx.term(0));
@@ -165,24 +234,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		List<Term> termList = new ArrayList<>(2);
 		termList.add(left);
 		termList.add(right);
-		BuiltinAtom.BINOP binop;
-		ASPCore2Parser.BinopContext parsedBinop = ctx.binop();
-		// binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
-		if (parsedBinop.EQUAL() != null) {
-			binop = BuiltinAtom.BINOP.EQ;
-		} else if (parsedBinop.UNEQUAL() != null) {
-			binop = BuiltinAtom.BINOP.NE;
-		} else if (parsedBinop.LESS() != null) {
-			binop = BuiltinAtom.BINOP.LT;
-		} else if (parsedBinop.GREATER() != null) {
-			binop = BuiltinAtom.BINOP.GT;
-		} else if (parsedBinop.LESS_OR_EQ() != null) {
-			binop = BuiltinAtom.BINOP.LE;
-		} else if (parsedBinop.GREATER_OR_EQ() != null) {
-			binop = BuiltinAtom.BINOP.GE;
-		} else {
-			throw new RuntimeException("Unknown binop encountered.");
-		}
+		BuiltinAtom.BINOP binop = visitBinop(ctx.binop());
 		return new BuiltinAtom(binop, termList, isCurrentLiteralNegated);
 	}
 

@@ -24,7 +24,7 @@ body : ( naf_literal | NAF? aggregate ) (COMMA body)?;
 
 disjunction : classical_literal (OR disjunction)?;
 
-choice : (term binop)? CURLY_OPEN choice_elements? CURLY_CLOSE (binop term)?;
+choice : (lt=term lop=binop)? CURLY_OPEN choice_elements? CURLY_CLOSE (uop=binop ut=term)?;
 
 choice_elements : choice_element (SEMICOLON choice_elements)?;
 
