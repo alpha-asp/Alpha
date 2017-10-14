@@ -15,9 +15,7 @@ import java.util.List;
 public abstract class Term implements Comparable<Term> {
 	public abstract boolean isGround();
 
-	public abstract List<VariableTerm> getBindingVariables();
-
-	public abstract List<VariableTerm> getNonBindingVariables();
+	public abstract List<VariableTerm> getOccurringVariables();
 
 	/**
 	 * Applies a substitution, result may be nonground.

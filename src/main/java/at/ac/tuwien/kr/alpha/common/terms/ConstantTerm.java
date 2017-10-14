@@ -30,12 +30,7 @@ public class ConstantTerm extends Term {
 	}
 
 	@Override
-	public List<VariableTerm> getBindingVariables() {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public List<VariableTerm> getNonBindingVariables() {
+	public List<VariableTerm> getOccurringVariables() {
 		return Collections.emptyList();
 	}
 

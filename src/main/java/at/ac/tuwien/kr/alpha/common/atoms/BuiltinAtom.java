@@ -101,8 +101,7 @@ public class BuiltinAtom implements Literal {
 		// For the time being, no variables in built-in atoms can bind.
 		List<VariableTerm> vars = new ArrayList<>(2);
 		for (Term term : terms) {
-			vars.addAll(term.getBindingVariables());
-			vars.addAll(term.getNonBindingVariables());
+			vars.addAll(term.getOccurringVariables());
 		}
 		return vars;
 	}

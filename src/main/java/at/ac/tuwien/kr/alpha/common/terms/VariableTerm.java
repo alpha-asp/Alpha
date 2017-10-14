@@ -37,13 +37,8 @@ public class VariableTerm extends Term {
 	}
 
 	@Override
-	public List<VariableTerm> getBindingVariables() {
+	public List<VariableTerm> getOccurringVariables() {
 		return Collections.singletonList(this);
-	}
-
-	@Override
-	public List<VariableTerm> getNonBindingVariables() {
-		return Collections.emptyList();
 	}
 
 	@Override

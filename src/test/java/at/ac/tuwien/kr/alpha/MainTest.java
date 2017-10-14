@@ -42,10 +42,10 @@ public class MainTest {
 	@Test
 	public void testCommandLineOptions() {
 		// Exercise the main entry point of the solver.
-		assertTrue(testMainForOutput(new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "20", "-str", "p(a). \n b :- p(X).\n"}, "{ b(), p(a) }", null));
-		assertTrue(testMainForOutput(new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "0", "-str", "p(a). \n b :- p(X).\n"}, "{ b(), p(a) }", null));
-		assertTrue(testMainForOutput(new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "1", "-str", "p(a). \n b :- p(X).\n"}, "{ b(), p(a) }", null));
-		assertTrue(testMainForOutput(new String[]{"-g", "naive", "-s", "default", "-r", "naive", "-e", "1119654162577372", "-n", "1", "-str", "p(a). \n b :- p(X).\n"}, "{ b(), p(a) }", null));
+		assertTrue(testMainForOutput(new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "20", "-str", "p(a). \n b :- p(X).\n"}, "{ b, p(a) }", null));
+		assertTrue(testMainForOutput(new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "0", "-str", "p(a). \n b :- p(X).\n"}, "{ b, p(a) }", null));
+		assertTrue(testMainForOutput(new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "1", "-str", "p(a). \n b :- p(X).\n"}, "{ b, p(a) }", null));
+		assertTrue(testMainForOutput(new String[]{"-g", "naive", "-s", "default", "-r", "naive", "-e", "1119654162577372", "-n", "1", "-str", "p(a). \n b :- p(X).\n"}, "{ b, p(a) }", null));
 	}
 
 	@Test

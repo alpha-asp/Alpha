@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha.grounder.atoms;
 import at.ac.tuwien.kr.alpha.common.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -19,7 +20,7 @@ import java.util.List;
  * is added to the rule body for generating all bindings of the variable.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class IntervalAtom implements Atom {
+public class IntervalAtom implements Literal {
 	private static final Predicate INTERVAL_PREDICATE = new BasicPredicate("_interval", 2);
 
 	private final IntervalTerm intervalTerm;
@@ -67,7 +68,7 @@ public class IntervalAtom implements Atom {
 
 	@Override
 	public List<VariableTerm> getNonBindingVariables() {
-		return intervalTerm.getNonBindingVariables();
+		return intervalTerm.getOccurringVariables();
 	}
 
 	@Override
@@ -89,5 +90,11 @@ public class IntervalAtom implements Atom {
 		sb.append(intervalTerm.toString());
 		sb.append(")");
 		return sb.toString();
+	}
+
+	@Override
+	public boolean isNegated() {
+		// IntervalAtoms only occur positively.
+		return false;
 	}
 }

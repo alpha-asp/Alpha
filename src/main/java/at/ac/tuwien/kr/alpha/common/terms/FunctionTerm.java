@@ -63,19 +63,10 @@ public class FunctionTerm extends Term {
 	}
 
 	@Override
-	public List<VariableTerm> getBindingVariables() {
+	public List<VariableTerm> getOccurringVariables() {
 		LinkedList<VariableTerm> vars = new LinkedList<>();
 		for (Term term : terms) {
-			vars.addAll(term.getBindingVariables());
-		}
-		return vars;
-	}
-
-	@Override
-	public List<VariableTerm> getNonBindingVariables() {
-		LinkedList<VariableTerm> vars = new LinkedList<>();
-		for (Term term : terms) {
-			vars.addAll(term.getNonBindingVariables());
+			vars.addAll(term.getOccurringVariables());
 		}
 		return vars;
 	}

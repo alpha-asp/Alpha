@@ -5,12 +5,10 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BuiltinAtom;
-import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
+import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 
 import java.util.*;
 
@@ -36,13 +34,11 @@ public class NonGroundRule {
 		return isOriginallyGround;
 	}
 
-	private NonGroundRule(int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
+	private NonGroundRule(int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom, boolean containsIntervals) {
 		this.ruleId = ruleId;
 
 		this.isOriginallyGround = isOriginallyGround(bodyAtomsPositive, bodyAtomsNegative, headAtom);
-
-		// Rewrite interval specifications into VariableTerm+IntervalAtom
-		this.containsIntervals = rewriteIntervalSpecifications(bodyAtomsPositive, bodyAtomsNegative, headAtom);
+		this.containsIntervals = containsIntervals;
 
 		// Sort for better join order.
 		this.bodyAtomsPositive = Collections.unmodifiableList(sortAtoms(bodyAtomsPositive));
@@ -65,104 +61,42 @@ public class NonGroundRule {
 		List<Literal> body = rule.getBody();
 		final List<Atom> pos = new ArrayList<>(body.size() / 2);
 		final List<Atom> neg = new ArrayList<>(body.size() / 2);
+		boolean containsIntervals = false;
 		for (Literal literal : body) {
+			if (literal instanceof IntervalAtom) {
+				containsIntervals = true;
+			}
 			if (literal.isNegated()) {
 				neg.add(literal);
 			} else {
 				pos.add(literal);
 			}
 		}
-		return new NonGroundRule(intIdGenerator.getNextId(), pos, neg, rule.getHead());
+		return new NonGroundRule(intIdGenerator.getNextId(), pos, neg, rule.getHead(), containsIntervals);
 	}
 
 	private static boolean isOriginallyGround(List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
-		if (headAtom != null && !headAtom.isGround()) {
+		List<VariableTerm> occurringVariables = new ArrayList<>();
+		if (headAtom != null) {
+			occurringVariables.addAll(headAtom.getBindingVariables());
+			occurringVariables.addAll(headAtom.getNonBindingVariables());
+		}
+		for (Atom atom : bodyAtomsPositive) {
+			occurringVariables.addAll(atom.getBindingVariables());
+			occurringVariables.addAll(atom.getNonBindingVariables());
+		}
+		for (Atom atom : bodyAtomsNegative) {
+			occurringVariables.addAll(atom.getBindingVariables());
+			occurringVariables.addAll(atom.getNonBindingVariables());
+		}
+		for (VariableTerm variable : occurringVariables) {
+			// Ignore variables introduced by interval rewriting.
+			if (variable.toString().startsWith(IntervalTermToIntervalAtom.INTERVAL_VARIABLE_PREFIX)) {
+				continue;
+			}
 			return false;
 		}
-		for (Atom atom : bodyAtomsPositive) {
-			if (!atom.isGround()) {
-				return false;
-			}
-		}
-		for (Atom atom : bodyAtomsNegative) {
-			if (!atom.isGround()) {
-				return false;
-			}
-		}
 		return true;
-	}
-
-	/**
-	 * Rewrites intervals into a new variable and special IntervalAtom.
-	 * @param bodyAtomsPositive
-	 * @param bodyAtomsNegative
-	 * @param headAtom
-	 * @return true if some interval occurs in the rule.
-	 */
-	private static boolean rewriteIntervalSpecifications(List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
-		// Collect all intervals and replace them with variables.
-		Map<VariableTerm, IntervalTerm> intervalReplacements = new HashMap<>();
-		for (Atom atom : bodyAtomsPositive) {
-			rewriteAtom(atom, intervalReplacements);
-		}
-		for (Atom atom : bodyAtomsNegative) {
-			rewriteAtom(atom, intervalReplacements);
-		}
-		if (headAtom != null) {
-			rewriteAtom(headAtom, intervalReplacements);
-		}
-
-		// Add new IntervalAtoms representing the interval specifications.
-		for (Map.Entry<VariableTerm, IntervalTerm> interval : intervalReplacements.entrySet()) {
-			bodyAtomsPositive.add(new IntervalAtom(interval.getValue(), interval.getKey()));
-		}
-		return !intervalReplacements.isEmpty();
-	}
-
-	/**
-	 * Replaces every IntervalTerm by a new variable and returns a mapping of the replaced VariableTerm -> IntervalTerm.
-	 */
-	private static void rewriteAtom(Atom atom, Map<VariableTerm, IntervalTerm> intervalReplacement) {
-		List<Term> termList = atom.getTerms();
-		for (int i = 0; i < termList.size(); i++) {
-			Term term = termList.get(i);
-			if (term instanceof IntervalTerm) {
-				VariableTerm replacementVariable = VariableTerm.getInstance("_Interval" + intervalReplacement.size());
-				intervalReplacement.put(replacementVariable, (IntervalTerm) term);
-				termList.set(i, replacementVariable);
-			}
-			if (term instanceof FunctionTerm) {
-				// Rewrite function terms recursively.
-				FunctionTerm rewrittenFunctionTerm = rewriteFunctionTerm((FunctionTerm) term, intervalReplacement);
-				termList.set(i, rewrittenFunctionTerm);
-			}
-		}
-	}
-
-	private static FunctionTerm rewriteFunctionTerm(FunctionTerm functionTerm, Map<VariableTerm, IntervalTerm> intervalReplacement) {
-		List<Term> termList = new ArrayList<>(functionTerm.getTerms());
-		boolean didChange = false;
-		for (int i = 0; i < termList.size(); i++) {
-			Term term = termList.get(i);
-			if (term instanceof IntervalTerm) {
-				VariableTerm replacementVariable = VariableTerm.getInstance("_Interval" + intervalReplacement.size());
-				intervalReplacement.put(replacementVariable, (IntervalTerm) term);
-				termList.set(i, replacementVariable);
-				didChange = true;
-			}
-			if (term instanceof FunctionTerm) {
-				// Recursively rewrite function terms.
-				FunctionTerm rewrittenFunctionTerm = rewriteFunctionTerm((FunctionTerm) term, intervalReplacement);
-				if (rewrittenFunctionTerm != term) {
-					termList.set(i, rewrittenFunctionTerm);
-					didChange = true;
-				}
-			}
-		}
-		if (didChange) {
-			return FunctionTerm.getInstance(functionTerm.getSymbol(), termList);
-		}
-		return functionTerm;
 	}
 
 
@@ -368,7 +302,7 @@ public class NonGroundRule {
 		} else {
 			sb.append(" ");
 		}
-		Util.appendDelimitedPrefix(sb, "not ", bodyAtomsNegative);
+		Util.appendDelimited(sb, bodyAtomsNegative);
 		sb.append(".\n");
 
 		return sb.toString();

@@ -113,6 +113,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		if (ctx.disjunction() != null) {
 			notSupportedSyntax(ctx);
 		}
+		isCurrentLiteralNegated = false;
 		return visitClassical_literal(ctx.classical_literal());
 	}
 

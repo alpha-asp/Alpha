@@ -2,7 +2,6 @@ package at.ac.tuwien.kr.alpha.common.terms;
 
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -63,19 +62,8 @@ public class IntervalTerm extends Term {
 	}
 
 
-	/**
-	 * Note: this method always returns an empty list, regardless of the interval containing variables or not.
-	 * The reason is that those variables are not binding, even if the interval occurs in a positive atom.
-	 * Use getNonBindingVariables() to obtain the list of variables actually occurring in the interval.
-	 */
 	@Override
-	public List<VariableTerm> getBindingVariables() {
-		// Variables occurring in an IntervalTerm cannot bind, they must be bound on the outside. In order to not complicate
-		return Collections.emptyList();
-	}
-
-	@Override
-	public List<VariableTerm> getNonBindingVariables() {
+	public List<VariableTerm> getOccurringVariables() {
 		LinkedList<VariableTerm> variables = new LinkedList<>();
 		if (lowerBoundTerm instanceof VariableTerm) {
 			variables.add((VariableTerm) lowerBoundTerm);
