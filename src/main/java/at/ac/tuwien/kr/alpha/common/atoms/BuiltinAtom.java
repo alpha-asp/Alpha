@@ -9,6 +9,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -96,12 +97,18 @@ public class BuiltinAtom implements Literal {
 	}
 
 	@Override
-	public List<VariableTerm> getOccurringVariables() {
+	public List<VariableTerm> getNonBindingVariables() {
+		// For the time being, no variables in built-in atoms can bind.
 		List<VariableTerm> vars = new ArrayList<>(2);
 		for (Term term : terms) {
 			vars.addAll(term.getOccurringVariables());
 		}
 		return vars;
+	}
+
+	@Override
+	public List<VariableTerm> getBindingVariables() {
+		return Collections.emptyList();
 	}
 
 	@Override

@@ -98,12 +98,29 @@ public class BasicAtom implements Literal {
 		return 31 * predicate.hashCode() + terms.hashCode();
 	}
 
-	public List<VariableTerm> getOccurringVariables() {
-		LinkedList<VariableTerm> occurringVariables = new LinkedList<>();
-		for (Term term : terms) {
-			occurringVariables.addAll(term.getOccurringVariables());
+	public List<VariableTerm> getBindingVariables() {
+		if (isNegated) {
+			// Negative literal has no binding variables.
+			return Collections.emptyList();
 		}
-		return occurringVariables;
+		LinkedList<VariableTerm> bindingVariables = new LinkedList<>();
+		for (Term term : terms) {
+			bindingVariables.addAll(term.getOccurringVariables());
+		}
+		return bindingVariables;
+	}
+
+	@Override
+	public List<VariableTerm> getNonBindingVariables() {
+		if (!isNegated) {
+			// Positive literal has only binding variables.
+			return Collections.emptyList();
+		}
+		LinkedList<VariableTerm> nonbindingVariables = new LinkedList<>();
+		for (Term term : terms) {
+			nonbindingVariables.addAll(term.getOccurringVariables());
+		}
+		return nonbindingVariables;
 	}
 
 	@Override
@@ -115,13 +132,16 @@ public class BasicAtom implements Literal {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder(predicate.getPredicateName());
+		final StringBuilder sb = new StringBuilder();
 		if (isNegated) {
 			sb.append("not ");
 		}
-		sb.append("(");
-		Util.appendDelimited(sb, terms);
-		sb.append(")");
+		sb.append(predicate.getPredicateName());
+		if (!terms.isEmpty()) {
+			sb.append("(");
+			Util.appendDelimited(sb, terms);
+			sb.append(")");
+		}
 		return sb.toString();
 	}
 

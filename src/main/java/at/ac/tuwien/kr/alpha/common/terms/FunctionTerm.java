@@ -117,7 +117,7 @@ public class FunctionTerm extends Term {
 	@Override
 	public int compareTo(Term o) {
 		if (!(o instanceof FunctionTerm)) {
-			return -1;
+			throw new ClassCastException();
 		}
 		FunctionTerm other = (FunctionTerm)o;
 

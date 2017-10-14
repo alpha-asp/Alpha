@@ -7,5 +7,5 @@ import at.ac.tuwien.kr.alpha.common.Program;
  */
 public abstract class ProgramTransformationBase {
 
-	abstract public Program transform(Program inputProgram);
+	abstract public void transform(Program inputProgram);
 }

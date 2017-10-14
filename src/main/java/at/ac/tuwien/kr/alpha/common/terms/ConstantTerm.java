@@ -69,6 +69,6 @@ public class ConstantTerm extends Term {
 		if (o instanceof ConstantTerm) {
 			return symbol.compareTo(((ConstantTerm) o).symbol);
 		}
-		return 1;
+		throw new ClassCastException();
 	}
 }

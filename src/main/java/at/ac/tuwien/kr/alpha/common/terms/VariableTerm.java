@@ -86,7 +86,7 @@ public class VariableTerm extends Term {
 		}
 
 		if (!(o instanceof VariableTerm)) {
-			return -1;
+			throw new ClassCastException();
 		}
 
 		VariableTerm other = (VariableTerm)o;
