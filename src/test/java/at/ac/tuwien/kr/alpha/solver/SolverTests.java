@@ -125,7 +125,6 @@ public class SolverTests extends AbstractSolverTests {
 		);
 	}
 
-
 	@Test
 	public void testGuessingProgramNonGround() throws Exception {
 		assertAnswerSetsWithBase(
@@ -280,107 +279,38 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void guessingAndPropagationAfterwards() throws IOException {
-		String testProgram = "node(a).\n" +
-			"node(b).\n" +
-			"in(X) :- not out(X), node(X).\n" +
-			"out(X) :- not in(X), node(X).\n" +
-			"pair(X,Y) :- in(X), in(Y).";
+		assertAnswerSetsWithBase(
+			"node(a)." +
+			"node(b)." +
+			"in(X) :- not out(X), node(X)." +
+			"out(X) :- not in(X), node(X)." +
+			"pair(X,Y) :- in(X), in(Y).",
 
-		Program parsedProgram = parser.parse(testProgram);
+			"node(a), node(b)",
 
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-
-		final AnswerSetBuilder base = new AnswerSetBuilder()
-			.predicate("node")
-			.instance(Symbol.getInstance("a"))
-			.instance(Symbol.getInstance("b"));
-
-		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new AnswerSetBuilder(base)
-				.predicate("in")
-				.instance(Symbol.getInstance("a"))
-				.instance(Symbol.getInstance("b"))
-				.predicate("pair")
-				.instance(Symbol.getInstance("a"), Symbol.getInstance("a"))
-				.instance(Symbol.getInstance("a"), Symbol.getInstance("b"))
-				.instance(Symbol.getInstance("b"), Symbol.getInstance("a"))
-				.instance(Symbol.getInstance("b"), Symbol.getInstance("b"))
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("in")
-				.instance(Symbol.getInstance("b"))
-				.predicate("out")
-				.instance(Symbol.getInstance("a"))
-				.predicate("pair")
-				.instance(Symbol.getInstance("b"), Symbol.getInstance("b"))
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("in")
-				.instance(Symbol.getInstance("a"))
-				.predicate("out")
-				.instance(Symbol.getInstance("b"))
-				.predicate("pair")
-				.instance(Symbol.getInstance("a"), Symbol.getInstance("a"))
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("out")
-				.instance(Symbol.getInstance("a"))
-				.instance(Symbol.getInstance("b"))
-				.build()
-		));
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(expected, answerSets);
+			"in(a), in(b), pair(a,a), pair(a,b), pair(b,a), pair(b,b)",
+			"in(b), out(a), pair(b,b)",
+			"in(a), out(b), pair(a,a)",
+			"out(a), out(b)"
+		);
 	}
 
 	@Test
 	public void guessingAndConstraints() throws IOException {
-		String testProgram = "node(a).\n" +
-			"node(b).\n" +
-			"edge(b,a).\n" +
-			"in(X) :- not out(X), node(X).\n" +
-			"out(X) :- not in(X), node(X).\n" +
-			":- in(X), in(Y), edge(X,Y).";
+		assertAnswerSetsWithBase(
+			"node(a)." +
+			"node(b)." +
+			"edge(b,a)." +
+			"in(X) :- not out(X), node(X)." +
+			"out(X) :- not in(X), node(X)." +
+			":- in(X), in(Y), edge(X,Y).",
 
-		Program parsedProgram = parser.parse(testProgram);
+			"node(a), node(b), edge(b,a)",
 
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-
-		final AnswerSetBuilder base = new AnswerSetBuilder()
-			.predicate("node")
-			.instance(Symbol.getInstance("a"))
-			.instance(Symbol.getInstance("b"));
-
-		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new AnswerSetBuilder(base)
-				.predicate("in")
-				.instance(Symbol.getInstance("b"))
-				.predicate("out")
-				.instance(Symbol.getInstance("a"))
-				.predicate("edge")
-				.instance(Symbol.getInstance("b"), Symbol.getInstance("a"))
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("in")
-				.instance(Symbol.getInstance("a"))
-				.predicate("out")
-				.instance(Symbol.getInstance("b"))
-				.predicate("edge")
-				.instance(Symbol.getInstance("b"), Symbol.getInstance("a"))
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("out")
-				.instance(Symbol.getInstance("a"))
-				.instance(Symbol.getInstance("b"))
-				.predicate("edge")
-				.instance(Symbol.getInstance("b"), Symbol.getInstance("a"))
-				.build()
-		));
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(expected, answerSets);
+			"in(b), out(a)",
+			"in(a), out(b)",
+			"out(a), out(b)"
+		);
 	}
 
 	@Test
@@ -399,149 +329,81 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void builtinInequality() throws IOException {
-		String program = "location(a1).\n" +
-			"region(r1).\n" +
-			"region(r2).\n" +
-			"\n" +
-			"assign(L,R) :- location(L), region(R), not nassign(L,R).\n" +
-			"nassign(L,R) :- location(L), region(R), not assign(L,R).\n" +
-			"\n" +
-			":- assign(L,R1), assign(L,R2), R1 != R2.\n" +
-			"\n" +
-			"aux_ext_assign(a1,r1).\n" +
-			"aux_ext_assign(a1,r2).\n" +
-			"\n" +
-			"aux_not_assign(L,R) :- aux_ext_assign(L,R), not assign(L,R).\n" +
-			":- aux_not_assign(L,R), assign(L,R).";
+		assertAnswerSetsWithBase(
+			"location(a1)." +
+			"region(r1)." +
+			"region(r2)." +
+			"assign(L,R) :- location(L), region(R), not nassign(L,R)." +
+			"nassign(L,R) :- location(L), region(R), not assign(L,R)." +
+			":- assign(L,R1), assign(L,R2), R1 != R2." +
+			"aux_ext_assign(a1,r1)." +
+			"aux_ext_assign(a1,r2)." +
+			"aux_not_assign(L,R) :- aux_ext_assign(L,R), not assign(L,R)." +
+			":- aux_not_assign(L,R), assign(L,R).",
 
+			"location(a1), region(r1), region(r2), aux_ext_assign(a1,r1), aux_ext_assign(a1,r2)",
 
-		Program parsedProgram = parser.parse(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-
-		final AnswerSetBuilder base = new AnswerSetBuilder()
-			.predicate("location")
-			.instance(Symbol.getInstance("a1"))
-			.predicate("region")
-			.instance(Symbol.getInstance("r1"))
-			.instance(Symbol.getInstance("r2"))
-			.predicate("aux_ext_assign")
-			.instance(Symbol.getInstance("a1"), Symbol.getInstance("r1"))
-			.instance(Symbol.getInstance("a1"), Symbol.getInstance("r2"));
-
-		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new AnswerSetBuilder(base)
-				.predicate("assign")
-				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r2"))
-				.predicate("nassign")
-				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r1"))
-				.predicate("aux_not_assign")
-				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r1"))
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("assign")
-				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r1"))
-				.predicate("nassign")
-				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r2"))
-				.predicate("aux_not_assign")
-				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r2"))
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("nassign")
-				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r1"))
-				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r2"))
-				.predicate("aux_not_assign")
-				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r1"))
-				.instance(Symbol.getInstance("a1"), Symbol.getInstance("r2"))
-				.build()
-		));
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(expected, answerSets);
+			"assign(a1,r2), nassign(a1,r1), aux_not_assign(a1,r1)",
+			"assign(a1,r1), nassign(a1,r2), aux_not_assign(a1,r2)",
+			"nassign(a1,r1), nassign(a1,r2), aux_not_assign(a1,r1), aux_not_assign(a1,r2)"
+		);
 	}
 
 	@Test
 	public void guessingConstraintsInequality() throws IOException {
-		String program = "assign(L, R) :- not nassign(L, R), possible(L, R).\n" +
-			"nassign(L, R) :- not assign(L, R), possible(L, R).\n" +
-			"\n" +
-			"assigned(L) :- assign(L, R).\n" +
-			":- possible(L,_), not assigned(L).\n" +
-			":- assign(L, R1), assign(L, R2), R1 != R2.\n" +
-			"\n" +
-			"possible(l1, r1). possible(l3, r3). possible(l4, r1). possible(l4, r3). possible(l5, r4). possible(l6, r2). possible(l7, r3). possible(l8, r2). possible(l9, r1). possible(l9, r4).\n";
+		assertAnswerSetsWithBase(
+			"assign(L, R) :- not nassign(L, R), possible(L, R)." +
+			"nassign(L, R) :- not assign(L, R), possible(L, R)." +
+			"assigned(L) :- assign(L, R)." +
+			":- possible(L,_), not assigned(L)." +
+			":- assign(L, R1), assign(L, R2), R1 != R2." +
+			"possible(l1, r1). possible(l3, r3). possible(l4, r1). possible(l4, r3). possible(l5, r4). possible(l6, r2). possible(l7, r3). possible(l8, r2). possible(l9, r1). possible(l9, r4).",
 
+			"possible(l1,r1), " +
+			"possible(l3,r3), " +
+			"possible(l4,r1), " +
+			"possible(l4,r3), " +
+			"possible(l5,r4), " +
+			"possible(l6,r2), " +
+			"possible(l7,r3), " +
+			"possible(l8,r2), " +
+			"possible(l9,r1), " +
+			"possible(l9,r4), " +
+			"assign(l1,r1), " +
+			"assign(l3,r3), " +
+			"assign(l5,r4), " +
+			"assign(l6,r2), " +
+			"assign(l7,r3), " +
+			"assign(l8,r2), " +
+			"assigned(l1), " +
+			"assigned(l3), " +
+			"assigned(l4), " +
+			"assigned(l5), " +
+			"assigned(l6), " +
+			"assigned(l7), " +
+			"assigned(l8), " +
+			"assigned(l9)",
 
-		Program parsedProgram = parser.parse(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
+			"assign(l4,r1), " +
+			"assign(l9,r4), " +
+			"nassign(l4,r3), " +
+			"nassign(l9,r1)",
 
-		final AnswerSetBuilder base = new AnswerSetBuilder()
-			.predicate("possible")
-			.symbolicInstance("l1", "r1")
-			.symbolicInstance("l3", "r3")
-			.symbolicInstance("l4", "r1")
-			.symbolicInstance("l4", "r3")
-			.symbolicInstance("l5", "r4")
-			.symbolicInstance("l6", "r2")
-			.symbolicInstance("l7", "r3")
-			.symbolicInstance("l8", "r2")
-			.symbolicInstance("l9", "r1")
-			.symbolicInstance("l9", "r4")
-			.predicate("assign")
-			.symbolicInstance("l1", "r1")
-			.symbolicInstance("l3", "r3")
-			.symbolicInstance("l5", "r4")
-			.symbolicInstance("l6", "r2")
-			.symbolicInstance("l7", "r3")
-			.symbolicInstance("l8", "r2")
-			.predicate("assigned")
-			.symbolicInstance("l1")
-			.symbolicInstance("l3")
-			.symbolicInstance("l4")
-			.symbolicInstance("l5")
-			.symbolicInstance("l6")
-			.symbolicInstance("l7")
-			.symbolicInstance("l8")
-			.symbolicInstance("l9");
+			"assign(l4,r1), " +
+			"assign(l9,r1), " +
+			"nassign(l4,r3), " +
+			"nassign(l9,r4)",
 
-		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new AnswerSetBuilder(base)
-				.predicate("assign")
-				.symbolicInstance("l4", "r1")
-				.symbolicInstance("l9", "r4")
-				.predicate("nassign")
-				.symbolicInstance("l4", "r3")
-				.symbolicInstance("l9", "r1")
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("assign")
-				.symbolicInstance("l4", "r1")
-				.symbolicInstance("l9", "r1")
-				.predicate("nassign")
-				.symbolicInstance("l4", "r3")
-				.symbolicInstance("l9", "r4")
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("assign")
-				.symbolicInstance("l4", "r3")
-				.symbolicInstance("l9", "r4")
-				.predicate("nassign")
-				.symbolicInstance("l4", "r1")
-				.symbolicInstance("l9", "r1")
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("assign")
-				.symbolicInstance("l4", "r3")
-				.symbolicInstance("l9", "r1")
-				.predicate("nassign")
-				.symbolicInstance("l4", "r1")
-				.symbolicInstance("l9", "r4")
-				.build()
-		));
+			"assign(l4,r3), " +
+			"assign(l9,r4), " +
+			"nassign(l4,r1), " +
+			"nassign(l9,r1)",
 
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(expected, answerSets);
+			"assign(l4,r3), " +
+			"assign(l9,r1), " +
+			"nassign(l4,r1), " +
+			"nassign(l9,r4)"
+		);
 	}
 	@Test
 	public void sameVariableTwiceInAtom() throws IOException {
