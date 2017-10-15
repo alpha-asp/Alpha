@@ -1,8 +1,7 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
+import at.ac.tuwien.kr.alpha.common.Interner;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,7 +12,7 @@ import java.util.Map;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ConstantTerm<T extends Comparable<T>> implements Term {
-	private static final Interner<ConstantTerm> INTERNER = Interners.newStrongInterner();
+	private static final Interner<ConstantTerm> INTERNER = new Interner<>();
 
 	public T getObject() {
 		return object;

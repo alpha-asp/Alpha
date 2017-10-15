@@ -1,9 +1,8 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
+import at.ac.tuwien.kr.alpha.common.Interner;
 import at.ac.tuwien.kr.alpha.common.Symbol;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
 
 import java.util.*;
 
@@ -13,7 +12,7 @@ import static at.ac.tuwien.kr.alpha.Util.appendDelimited;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class FunctionTerm implements Term {
-	private static final Interner<FunctionTerm> INTERNER = Interners.newStrongInterner();
+	private static final Interner<FunctionTerm> INTERNER = new Interner<>();
 
 	private final Symbol symbol;
 	private final List<Term> terms;

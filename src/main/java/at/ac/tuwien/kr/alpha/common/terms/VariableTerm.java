@@ -1,9 +1,8 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
+import at.ac.tuwien.kr.alpha.common.Interner;
 import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
 
 import java.util.Collections;
 import java.util.List;
@@ -12,7 +11,7 @@ import java.util.List;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class VariableTerm implements Term {
-	private static final Interner<VariableTerm> INTERNER = Interners.newStrongInterner();
+	private static final Interner<VariableTerm> INTERNER = new Interner<>();
 
 	private static final String ANONYMOUS_VARIABLE_PREFIX = "_";
 	private static final IntIdGenerator ANONYMOUS_VARIABLE_COUNTER = new IntIdGenerator();
