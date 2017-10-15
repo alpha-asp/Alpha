@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha.common;
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 
 import java.util.ArrayList;
 import java.util.List;

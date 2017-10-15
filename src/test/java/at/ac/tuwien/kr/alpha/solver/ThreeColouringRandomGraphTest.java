@@ -25,15 +25,15 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.Main;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.junit.Before;
@@ -105,13 +105,14 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 	}
 
 	private void testThreeColouring(int nVertices, int nEdges) throws IOException {
-		Program program = Main.parseVisit(
+		Program program = new ProgramParser().parse(
 				"blue(N) :- v(N), not red(N), not green(N)." +
 				"red(N) :- v(N), not blue(N), not green(N)." +
 				"green(N) :- v(N), not red(N), not blue(N)." +
 				":- e(N1,N2), blue(N1), blue(N2)." +
 				":- e(N1,N2), red(N1), red(N2)." +
 				":- e(N1,N2), green(N1), green(N2).");
+
 		program.getFacts().addAll(createVertices(nVertices));
 		program.getFacts().addAll(createEdges(nVertices, nEdges));
 
@@ -162,13 +163,8 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 	private Atom fact(String predicateName, int... iTerms) {
 		List<Term> terms = new ArrayList<>(1);
 		for (int i : iTerms) {
-			terms.add(ConstantTerm.getInstance(i2s(i)));
+			terms.add(ConstantTerm.getInstance(i));
 		}
 		return new BasicAtom(new BasicPredicate(predicateName, iTerms.length), terms);
 	}
-
-	private String i2s(int i) {
-		return String.valueOf(i).intern();
-	}
-
 }

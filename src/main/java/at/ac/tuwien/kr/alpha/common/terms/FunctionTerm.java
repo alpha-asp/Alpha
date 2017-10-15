@@ -1,9 +1,8 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
+import at.ac.tuwien.kr.alpha.common.Interner;
 import at.ac.tuwien.kr.alpha.common.Symbol;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
 
 import java.util.*;
 
@@ -12,8 +11,8 @@ import static at.ac.tuwien.kr.alpha.Util.appendDelimited;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class FunctionTerm extends Term {
-	private static final Interner<FunctionTerm> INTERNER = Interners.newStrongInterner();
+public class FunctionTerm implements Term {
+	private static final Interner<FunctionTerm> INTERNER = new Interner<>();
 
 	private final Symbol symbol;
 	private final List<Term> terms;
@@ -83,10 +82,10 @@ public class FunctionTerm extends Term {
 	@Override
 	public String toString() {
 		if (terms.isEmpty()) {
-			return symbol.getSymbol();
+			return symbol.toString();
 		}
 
-		final StringBuilder sb = new StringBuilder(symbol.getSymbol() + "(");
+		final StringBuilder sb = new StringBuilder(symbol.toString() + "(");
 		appendDelimited(sb, terms);
 		sb.append(")");
 		return sb.toString();
@@ -116,23 +115,22 @@ public class FunctionTerm extends Term {
 
 	@Override
 	public int compareTo(Term o) {
+		if (o instanceof ConstantTerm) {
+			return 1;
+		}
 		if (!(o instanceof FunctionTerm)) {
-			throw new ClassCastException();
+			throw new UnsupportedOperationException("Can only compare function term to function term or constant term.");
 		}
 		FunctionTerm other = (FunctionTerm)o;
-
-		int result = symbol.compareTo(other.symbol);
-
-		if (result != 0) {
-			return result;
-		}
 
 		if (terms.size() != other.terms.size()) {
 			return terms.size() - other.terms.size();
 		}
 
-		if (terms.isEmpty() && other.terms.isEmpty()) {
-			return 0;
+		int result = symbol.compareTo(other.symbol);
+
+		if (result != 0) {
+			return result;
 		}
 
 		for (int i = 0; i < terms.size(); i++) {

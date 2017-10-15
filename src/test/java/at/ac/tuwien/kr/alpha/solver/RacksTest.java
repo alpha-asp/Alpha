@@ -28,9 +28,11 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import org.antlr.v4.runtime.ANTLRFileStream;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -40,14 +42,14 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-import static at.ac.tuwien.kr.alpha.Main.parseVisit;
-
 /**
  * Tests {@link AbstractSolver} using a racks configuration problem.
  *
  */
 @Ignore("disabled to save resources during CI")
 public class RacksTest extends AbstractSolverTests {
+	private final ProgramParser parser = new ProgramParser();
+
 	/**
 	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
 	 */
@@ -72,10 +74,10 @@ public class RacksTest extends AbstractSolverTests {
 	}
 
 	private void test() throws IOException {
-		ANTLRFileStream programInputStream = new ANTLRFileStream(
-			Paths.get("benchmarks", "siemens", "racks", "racks.lp").toString()
+		CharStream programInputStream = CharStreams.fromPath(
+			Paths.get("benchmarks", "siemens", "racks", "racks.lp")
 		);
-		Program parsedProgram = parseVisit(programInputStream);
+		Program parsedProgram = parser.parse(programInputStream);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();

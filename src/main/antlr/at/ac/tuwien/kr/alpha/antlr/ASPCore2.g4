@@ -1,10 +1,11 @@
 grammar ASPCore2;
 
+import ASPLexer;
+
 /* The ASP-Core-2 grammar in ANTLR v4 based on
  * https://www.mat.unical.it/aspcomp2013/files/ASP-CORE-2.01c.pdf
  * (sections 4 and 5, pages 10-12).
- * It is extended a bit to parse widespread syntax used by gringo/clasp,
- * see productions "gringo_range" and "gringo_sharp".
+ * It is extended a bit to parse widespread syntax (e.g. used by gringo/clasp).
  */
 
 program : statements? query?;
@@ -13,8 +14,9 @@ statements : statement+;
 
 query : classical_literal QUERY_MARK;
 
-statement : CONS body DOT                # statement_constraint
-          | head (CONS body?)? DOT       # statement_rule
+statement : head DOT                     # statement_fact
+          | CONS body DOT                # statement_constraint
+          | head CONS body DOT           # statement_rule
           | WCONS body? DOT SQUARE_OPEN weight_at_level SQUARE_CLOSE # statement_weightConstraint
           | gringo_sharp                 # statement_gringoSharp;   // syntax extension
 
@@ -42,7 +44,7 @@ weight_at_level : term (AT term)? (COMMA terms)?;
 
 naf_literals : naf_literal (COMMA naf_literals)?;
 
-naf_literal : NAF? (classical_literal | builtin_atom);
+naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
 
 classical_literal : MINUS? ID (PAREN_OPEN terms PAREN_CLOSE)?;
 
@@ -52,7 +54,8 @@ binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
 
 terms : term (COMMA terms)?;
 
-term : ID (PAREN_OPEN terms? PAREN_CLOSE)?  # term_constOrFunc
+term : ID                                   # term_const
+     | ID (PAREN_OPEN terms? PAREN_CLOSE)   # term_func
      | NUMBER                               # term_number
      | STRING                               # term_string
      | VARIABLE                             # term_variable
@@ -62,7 +65,11 @@ term : ID (PAREN_OPEN terms? PAREN_CLOSE)?  # term_constOrFunc
      | term arithop term                    # term_binopTerm
      | interval                             # term_interval; // syntax extension
 
+arithop : PLUS | MINUS | TIMES | DIV;
+
 interval : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE); // NOT Core2 syntax, but widespread
+
+external_atom : MINUS? AMPERSAND ID (SQUARE_OPEN output = terms SQUARE_CLOSE)? (PAREN_OPEN input = terms PAREN_CLOSE)?; // NOT Core2 syntax.
 
 gringo_sharp : SHARP ~(DOT)* DOT; // NOT Core2 syntax, but widespread, matching not perfect due to possible earlier dots
 
@@ -74,50 +81,6 @@ ground_term : /*SYMBOLIC_CONSTANT*/ ID | STRING | MINUS? NUMBER;
 
 variable_term : VARIABLE | ANONYMOUS_VARIABLE;
 
-arithop : PLUS | MINUS | TIMES | DIV;
+answer_set : CURLY_OPEN classical_literal? (COMMA classical_literal)* CURLY_CLOSE;
 
-
-
-ANONYMOUS_VARIABLE : '_';
-DOT : '.';
-COMMA : ',';
-QUERY_MARK : '?';
-COLON : ':';
-SEMICOLON : ';';
-OR : '|';
-NAF : 'not';
-CONS : ':-';
-WCONS : ':~';
-PLUS : '+';
-MINUS : '-';
-TIMES : '*';
-DIV : '/';
-AT : '@';
-SHARP : '#'; // NOT Core2 syntax but gringo
-
-PAREN_OPEN : '(';
-PAREN_CLOSE : ')';
-SQUARE_OPEN : '[';
-SQUARE_CLOSE : ']';
-CURLY_OPEN : '{';
-CURLY_CLOSE : '}';
-EQUAL : '=';
-UNEQUAL : '<>' | '!=';
-LESS : '<';
-GREATER : '>';
-LESS_OR_EQ : '<=';
-GREATER_OR_EQ : '>=';
-
-AGGREGATE_COUNT : '#count';
-AGGREGATE_MAX : '#max';
-AGGREGATE_MIN : '#min';
-AGGREGATE_SUM : '#sum';
-
-ID : ('a'..'z') ( 'A'..'Z' | 'a'..'z' | '0'..'9' | '_' )*;
-VARIABLE : ('A'..'Z') ( 'A'..'Z' | 'a'..'z' | '0'..'9' | '_' )*;
-NUMBER : '0' | ('1'..'9') ('0'..'9')*;
-STRING : '"' ( '\\"' | . )*? '"';
-
-COMMENT : '%' ~[\r\n]* -> channel(HIDDEN);
-MULTI_LINE_COMMEN : '%*' .*? '*%' -> channel(HIDDEN);
-BLANK : [ \t\r\n\f]+ -> channel(HIDDEN) ;
+answer_sets: answer_set*;

@@ -1,9 +1,9 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
-import at.ac.tuwien.kr.alpha.common.BasicPredicate;
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -35,7 +35,7 @@ public class IntervalAtom implements Literal {
 		List<Substitution> substitutions = new ArrayList<>();
 		for (int i = intervalTerm.getLowerBound(); i <= intervalTerm.getUpperBound(); i++) {
 			Substitution ith = new Substitution(partialSubstitution);
-			ith.put(intervalRepresentingVariable, ConstantTerm.getInstance(String.valueOf(i)));
+			ith.put(intervalRepresentingVariable, ConstantTerm.getInstance(i));
 			substitutions.add(ith);
 		}
 		return substitutions;
@@ -83,13 +83,7 @@ public class IntervalAtom implements Literal {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder(INTERVAL_PREDICATE.getPredicateName());
-		sb.append("(");
-		sb.append(intervalRepresentingVariable.toString());
-		sb.append(", ");
-		sb.append(intervalTerm.toString());
-		sb.append(")");
-		return sb.toString();
+		return INTERVAL_PREDICATE.getPredicateName() + "(" + intervalRepresentingVariable + ", " + intervalTerm + ")";
 	}
 
 	@Override
