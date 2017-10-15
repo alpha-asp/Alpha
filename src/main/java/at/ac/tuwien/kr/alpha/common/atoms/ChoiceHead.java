@@ -13,7 +13,7 @@ import java.util.List;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class ChoiceHead implements Atom {
-	private final List<AbstractMap.SimpleEntry<Atom, List<Literal>>> choiceElements;
+	private final List<AbstractMap.SimpleEntry<BasicAtom, List<Literal>>> choiceElements;
 	private final Term lowerBound;
 
 	public BuiltinAtom.BINOP getLowerOp() {
@@ -28,7 +28,7 @@ public class ChoiceHead implements Atom {
 	private final Term upperBound;
 	private final BuiltinAtom.BINOP upperOp;
 
-	public List<AbstractMap.SimpleEntry<Atom, List<Literal>>> getChoiceElements() {
+	public List<AbstractMap.SimpleEntry<BasicAtom, List<Literal>>> getChoiceElements() {
 		return choiceElements;
 	}
 
@@ -40,7 +40,7 @@ public class ChoiceHead implements Atom {
 		return upperBound;
 	}
 
-	public ChoiceHead(List<AbstractMap.SimpleEntry<Atom, List<Literal>>> choiceElements, Term lowerBound, BuiltinAtom.BINOP lowerOp, Term upperBound, BuiltinAtom.BINOP upperOp) {
+	public ChoiceHead(List<AbstractMap.SimpleEntry<BasicAtom, List<Literal>>> choiceElements, Term lowerBound, BuiltinAtom.BINOP lowerOp, Term upperBound, BuiltinAtom.BINOP upperOp) {
 		this.choiceElements = choiceElements;
 		this.lowerBound = lowerBound;
 		this.lowerOp = lowerOp;

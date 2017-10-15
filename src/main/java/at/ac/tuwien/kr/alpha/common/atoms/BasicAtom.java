@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
@@ -43,10 +44,14 @@ public class BasicAtom implements Literal {
 	}
 
 	public BasicAtom(BasicAtom clone) {
+		this(clone, clone.isNegated);
+	}
+
+	public BasicAtom(BasicAtom clone, boolean isNegated) {
 		this.predicate = clone.getPredicate();
 		this.terms = new ArrayList<>(clone.getTerms());
 		this.ground = clone.ground;
-		this.isNegated = clone.isNegated;
+		this.isNegated = isNegated;
 	}
 
 	public BasicAtom(Predicate predicate, Term... terms) {
@@ -170,5 +175,14 @@ public class BasicAtom implements Literal {
 	@Override
 	public boolean isNegated() {
 		return isNegated;
+	}
+
+	public boolean containsIntervalTerms() {
+		for (Term term : terms) {
+			if (IntervalTerm.termContainsIntervalTerm(term)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

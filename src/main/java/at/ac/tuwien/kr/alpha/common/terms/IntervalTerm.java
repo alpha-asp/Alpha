@@ -117,4 +117,33 @@ public class IntervalTerm extends Term {
 		throw new RuntimeException("Intervals cannot be compared.");
 	}
 
+	/**
+	 * Returns true if the term contains (or is) some IntervalTerm.
+	 * @param term the term to test
+	 * @return true iff an IntervalTerm occurs in term.
+	 */
+	public static boolean termContainsIntervalTerm(Term term) {
+		if (term instanceof IntervalTerm) {
+			return true;
+		} else if (term instanceof FunctionTerm) {
+			return functionTermContainsIntervals((FunctionTerm) term);
+		} else {
+			return false;
+		}
+	}
+
+	public static boolean functionTermContainsIntervals(FunctionTerm functionTerm) {
+		// Test whether a function term contains an interval term (recursively).
+		for (Term term : functionTerm.getTerms()) {
+			if (term instanceof IntervalTerm) {
+				return true;
+			}
+			if (term instanceof FunctionTerm && functionTermContainsIntervals((FunctionTerm) term)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+
 }

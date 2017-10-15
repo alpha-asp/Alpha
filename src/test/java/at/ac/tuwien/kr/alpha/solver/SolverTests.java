@@ -1023,4 +1023,96 @@ public class SolverTests extends AbstractSolverTests {
 		Set<AnswerSet> answerSets = solver.collectSet();
 		assertEquals(expected, answerSets);
 	}
+
+	@Test
+	public void simpleChoiceRule() throws IOException {
+		String program = "{ a; b; c} :- d. d.";
+
+		Program parsedProgram = parseVisit(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
+				new BasicAnswerSet.Builder()
+						.predicate("d")
+						.build(),
+				new BasicAnswerSet.Builder()
+						.predicate("a")
+						.predicate("d")
+						.build(),
+				new BasicAnswerSet.Builder()
+						.predicate("a")
+						.predicate("b")
+						.predicate("d")
+						.build(),
+				new BasicAnswerSet.Builder()
+						.predicate("a")
+						.predicate("c")
+						.predicate("d")
+						.build(),
+				new BasicAnswerSet.Builder()
+						.predicate("a")
+						.predicate("b")
+						.predicate("c")
+						.predicate("d")
+						.build(),
+				new BasicAnswerSet.Builder()
+						.predicate("b")
+						.predicate("d")
+						.build(),
+				new BasicAnswerSet.Builder()
+						.predicate("b")
+						.predicate("c")
+						.predicate("d")
+						.build(),
+				new BasicAnswerSet.Builder()
+						.predicate("c")
+						.predicate("d")
+						.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
+
+
+	@Test
+	public void conditionalChoiceRule() throws IOException {
+		String program = "dom(1..3)." +
+				"{ p(X): not q(X); r(Y): p(Y)} :- dom(X), q(Y)." +
+				"q(2).";
+
+		Program parsedProgram = parseVisit(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
+				.predicate("dom")
+				.instance("1")
+				.instance("2")
+				.instance("3")
+				.predicate("q")
+				.instance("2");
+
+		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
+				new BasicAnswerSet.Builder(base)
+						.predicate("p")
+						.instance("1")
+						.instance("3")
+						.build(),
+				new BasicAnswerSet.Builder(base)
+						.build(),
+				new BasicAnswerSet.Builder(base)
+						.predicate("p")
+						.instance("3")
+						.build(),
+				new BasicAnswerSet.Builder(base)
+						.predicate("p")
+						.instance("1")
+						.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
 }

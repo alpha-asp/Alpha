@@ -31,11 +31,13 @@ import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BuiltinAtom;
-import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
-import at.ac.tuwien.kr.alpha.common.terms.*;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
+import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityProgramTransformation;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformationBase;
@@ -85,11 +87,7 @@ public class NaiveGrounder extends BridgedGrounder {
 		super(program, filter, bridges);
 
 		// Apply program transformations/rewritings.
-		ProgramTransformationBase transformation = new IdentityProgramTransformation();
-		transformation.transform(program);
-		// Transform intervals.
-		transformation = new IntervalTermToIntervalAtom();
-		transformation.transform(program);
+		applyProgramTransformations(program);
 
 		// Register internal atoms.
 		adaptWorkingMemoryForPredicate(RuleAtom.PREDICATE);
@@ -144,6 +142,17 @@ public class NaiveGrounder extends BridgedGrounder {
 			}
 		}
 
+	}
+
+	private void applyProgramTransformations(Program program) {
+		ProgramTransformationBase transformation = new IdentityProgramTransformation();
+		transformation.transform(program);
+		// Transform choice rules.
+		transformation = new ChoiceHeadToNormal();
+		transformation.transform(program);
+		// Transform intervals.
+		transformation = new IntervalTermToIntervalAtom();
+		transformation.transform(program);
 	}
 
 

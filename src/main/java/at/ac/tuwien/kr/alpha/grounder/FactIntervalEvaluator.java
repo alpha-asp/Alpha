@@ -16,19 +16,6 @@ import java.util.List;
  */
 public class FactIntervalEvaluator {
 
-	private static boolean functionTermContainsIntervals(FunctionTerm functionTerm) {
-		// Test whether a function term contains an interval term (recursively).
-		for (Term term : functionTerm.getTerms()) {
-			if (term instanceof IntervalTerm) {
-				return true;
-			}
-			if (term instanceof FunctionTerm && functionTermContainsIntervals((FunctionTerm) term)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	/**
 	 * Helper to construct Instances from a fact that may contain intervals.
 	 * @param fact the fact potentially containing intervals.
@@ -46,7 +33,7 @@ public class FactIntervalEvaluator {
 			currentTerms[i] = term;
 			if (term instanceof IntervalTerm) {
 				containsIntervals = true;
-			} else if (term instanceof FunctionTerm && functionTermContainsIntervals((FunctionTerm) term)) {
+			} else if (term instanceof FunctionTerm && IntervalTerm.functionTermContainsIntervals((FunctionTerm) term)) {
 				containsIntervals = true;
 				throw new RuntimeException("Intervals inside function terms in facts are not supported yet. Try turning the fact into a rule.");
 			}
