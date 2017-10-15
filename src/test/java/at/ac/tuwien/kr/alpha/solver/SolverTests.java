@@ -171,7 +171,7 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void emptyProgramYieldsEmptyAnswerSet() throws IOException {
-		assertOnlyEmptyAnswerSet("");
+		assertAnswerSets("", "");
 	}
 
 	@Test
@@ -244,76 +244,27 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void guessingProgramConstraintPermutation() throws IOException {
-		String testProgram =
-			"eq(1,1).\n" +
-				"eq(2,2).\n" +
-				"eq(3,3).\n" +
-				"var(1).\n" +
-				"var(2).\n" +
-				"var(3).\n" +
-				"val(VAR,1):-var(VAR),not val(VAR,2),not val(VAR,3).\n" +
-				"val(VAR,2):-var(VAR),not val(VAR,1),not val(VAR,3).\n" +
-				"val(VAR,3):-var(VAR),not val(VAR,1),not val(VAR,2).\n" +
-				":- val(VAR1,VAL1), val(VAR2,VAL2), eq(VAL1,VAL2), not eq(VAR1,VAR2).\n" +
-				"%:- eq(VAL1,VAL2), not eq(VAR1,VAR2), val(VAR1,VAL1), val(VAR2,VAL2).";
+		assertAnswerSetsWithBase(
+		"eq(1,1)." +
+			"eq(2,2)." +
+			"eq(3,3)." +
+			"var(1)." +
+			"var(2)." +
+			"var(3)." +
+			"val(VAR,1):-var(VAR),not val(VAR,2),not val(VAR,3)." +
+			"val(VAR,2):-var(VAR),not val(VAR,1),not val(VAR,3)." +
+			"val(VAR,3):-var(VAR),not val(VAR,1),not val(VAR,2)." +
+			":- val(VAR1,VAL1), val(VAR2,VAL2), eq(VAL1,VAL2), not eq(VAR1,VAR2).",
 
+			"eq(1,1), eq(2,2), eq(3,3), var(1), var(2), var(3)",
 
-		Program parsedProgram = parser.parse(testProgram);
-
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-
-		final AnswerSetBuilder base = new AnswerSetBuilder()
-			.predicate("eq")
-			.instance(1, 1)
-			.instance(2, 2)
-			.instance(3, 3)
-			.predicate("var")
-			.instance(1)
-			.instance(2)
-			.instance(3);
-
-		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new AnswerSetBuilder(base)
-				.predicate("val")
-				.instance(1, 1)
-				.instance(2, 2)
-				.instance(3, 3)
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("val")
-				.instance(1, 1)
-				.instance(3, 2)
-				.instance(2, 3)
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("val")
-				.instance(2, 1)
-				.instance(1, 2)
-				.instance(3, 3)
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("val")
-				.instance(2, 1)
-				.instance(3, 2)
-				.instance(1, 3)
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("val")
-				.instance(3, 1)
-				.instance(1, 2)
-				.instance(2, 3)
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("val")
-				.instance(3, 1)
-				.instance(2, 2)
-				.instance(1, 3)
-				.build()
-		));
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(expected, answerSets);
+			"val(1,1), val(2,2), val(3,3)",
+			"val(1,1), val(3,2), val(2,3)",
+			"val(2,1), val(1,2), val(3,3)",
+			"val(2,1), val(3,2), val(1,3)",
+			"val(3,1), val(1,2), val(2,3)",
+			"val(3,1), val(2,2), val(1,3)"
+		);
 	}
 
 	@Test
@@ -434,7 +385,7 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void testUnsatisfiableProgram() throws IOException {
-		assertNoAnswerSets("p(a). p(b). :- p(a), p(b).");
+		assertAnswerSets("p(a). p(b). :- p(a), p(b).");
 	}
 
 	@Test
@@ -604,7 +555,7 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void sameVariableTwiceInAtomConstraint() throws IOException {
-		assertNoAnswerSets(
+		assertAnswerSets(
 			"p(a, a)." +
 			":- p(X, X)."
 		);
@@ -612,7 +563,7 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void noPositiveSelfFounding() throws IOException {
-		assertNoAnswerSets(
+		assertAnswerSets(
 			"a :- b." +
 			"b:- a." +
 			":- not b."
@@ -621,7 +572,7 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void noPositiveCycleSelfFoundingGuess() throws IOException {
-		assertNoAnswerSets(
+		assertAnswerSets(
 			"c :- not d." +
 			"d :- not c." +
 			"a :- b, not c." +
@@ -738,6 +689,11 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	private void assertAnswerSets(String program, String... answerSets) throws IOException {
+		if (answerSets.length == 0) {
+			assertAnswerSets(program, emptySet());
+			return;
+		}
+
 		StringJoiner joiner = new StringJoiner("} {", "{", "}");
 		Arrays.stream(answerSets).forEach(joiner::add);
 		assertAnswerSets(program, AnswerSetsParser.parse(joiner.toString()));
@@ -748,18 +704,18 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	private void assertAnswerSetsWithBase(String program, String base, String... answerSets) throws IOException {
-		assertAnswerSets(program, AnswerSetsParser.parseWithBase(base, answerSets));
+		if (!base.endsWith(",")) {
+			base += ", ";
+		}
+
+		for (int i = 0; i < answerSets.length; i++) {
+			answerSets[i] = base + answerSets[i];
+		}
+
+		assertAnswerSets(program, answerSets);
 	}
 
 	private void assertAnswerSets(String program, Set<AnswerSet> answerSets) throws IOException {
 		assertEquals(answerSets, solve(program));
-	}
-
-	private void assertOnlyEmptyAnswerSet(String program) throws IOException {
-		assertEquals(singleton(BasicAnswerSet.EMPTY), solve(program));
-	}
-
-	private void assertNoAnswerSets(String program) throws IOException {
-		assertEquals(emptySet(), solve(program));
 	}
 }

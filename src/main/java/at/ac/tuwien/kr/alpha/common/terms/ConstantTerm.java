@@ -26,7 +26,7 @@ public class ConstantTerm<T extends Comparable<T>> implements Term {
 	}
 
 	public static <T extends Comparable<T>> ConstantTerm getInstance(T object) {
-		return INTERNER.intern(new ConstantTerm<T>(object));
+		return INTERNER.intern(new ConstantTerm<>(object));
 	}
 
 	@Override
@@ -94,6 +94,12 @@ public class ConstantTerm<T extends Comparable<T>> implements Term {
 
 			return myPrio - otherPrio;
 		}
-		throw new ClassCastException();
+		if (o instanceof FunctionTerm) {
+			return -1;
+		}
+		if (o instanceof VariableTerm) {
+			return -1;
+		}
+		throw new UnsupportedOperationException("Comparison of terms is not fully implemented.");
 	}
 }
