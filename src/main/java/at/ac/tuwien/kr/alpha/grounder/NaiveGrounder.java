@@ -38,9 +38,7 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
-import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityProgramTransformation;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
-import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformationBase;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -87,18 +85,16 @@ public class NaiveGrounder extends BridgedGrounder {
 		super(filter, bridges);
 		// TODO: initialize based on program.
 
-		// Apply program transformations/rewritings.
-		ProgramTransformationBase transformation = new IdentityProgramTransformation();
-		transformation.transform(program);
 		// Transform intervals.
-		transformation = new IntervalTermToIntervalAtom();
-		transformation.transform(program);
+		new IntervalTermToIntervalAtom().transform(program);
 
 		// initialize all facts
 		for (Atom fact : program.getFacts()) {
-			Predicate predicate = fact.getPredicate();
+			final Predicate predicate = fact.getPredicate();
+
 			// Record predicate
 			adaptWorkingMemoryForPredicate(predicate);
+
 			// Construct fact instance(s).
 			List<Instance> instances = FactIntervalEvaluator.constructFactInstances(fact);
 

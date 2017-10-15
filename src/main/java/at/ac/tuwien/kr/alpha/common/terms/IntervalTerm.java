@@ -61,7 +61,6 @@ public class IntervalTerm implements Term {
 		return this.upperBound;
 	}
 
-
 	@Override
 	public List<VariableTerm> getOccurringVariables() {
 		LinkedList<VariableTerm> variables = new LinkedList<>();
@@ -114,7 +113,7 @@ public class IntervalTerm implements Term {
 
 	@Override
 	public int compareTo(Term o) {
-		throw new RuntimeException("Intervals cannot be compared.");
+		throw new UnsupportedOperationException("Intervals cannot be compared.");
 	}
 
 }

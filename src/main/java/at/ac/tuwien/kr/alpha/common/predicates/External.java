@@ -6,5 +6,5 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import java.util.List;
 
 public interface External {
-	int evaluate(List<Term> input, List<Term> output, Substitution substitution);
+	List<Term> evaluate(List<Term> terms);
 }

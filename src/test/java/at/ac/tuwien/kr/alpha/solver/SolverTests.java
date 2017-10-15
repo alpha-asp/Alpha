@@ -598,7 +598,7 @@ public class SolverTests extends AbstractSolverTests {
 			"p(a, a)." +
 			"q(X) :- p(X, X).",
 
-			"p(a,a), a(a)"
+			"p(a,a), q(a)"
 		);
 	}
 
@@ -645,109 +645,73 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void intervalsInFacts() throws IOException {
-		String program = "a." +
-				"facta(1..3)." +
-				"factb(t, 5..8, u)." +
-				"factc(1..3, w, 2 .. 4)." +
-				"b(1,2)." +
-				"b(3,4).";
+		assertAnswerSets(
+			"a." +
+			"facta(1..3)." +
+			"factb(t, 5..8, u)." +
+			"factc(1..3, w, 2 .. 4)." +
+			"b(1,2)." +
+			"b(3,4).",
 
-		Program parsedProgram = parser.parse(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
+			"facta(1), " +
+			"facta(2), " +
+			"facta(3), " +
 
-		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
-				new AnswerSetBuilder()
-						.predicate("facta")
-						.instance("1")
-						.instance("2")
-						.instance("3")
-						.predicate("factb")
-						.instance("t", "5", "u")
-						.instance("t", "6", "u")
-						.instance("t", "7", "u")
-						.instance("t", "8", "u")
-						.predicate("factc")
-						.instance("1", "w", "2")
-						.instance("2", "w", "2")
-						.instance("3", "w", "2")
-						.instance("1", "w", "3")
-						.instance("2", "w", "3")
-						.instance("3", "w", "3")
-						.instance("1", "w", "4")
-						.instance("2", "w", "4")
-						.instance("3", "w", "4")
-						.predicate("a")
-						.predicate("b")
-						.instance("1", "2")
-						.instance("3", "4")
-						.build()
-		));
+			"factb(t, 5, u)," +
+			"factb(t, 6, u)," +
+			"factb(t, 7, u)," +
+			"factb(t, 8, u)," +
 
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(expected, answerSets);
+			"factc(1, w, 2)," +
+			"factc(2, w, 2)," +
+			"factc(3, w, 2)," +
+			"factc(1, w, 3)," +
+			"factc(2, w, 3)," +
+			"factc(3, w, 3)," +
+			"factc(1, w, 4)," +
+			"factc(2, w, 4)," +
+			"factc(3, w, 4)," +
+
+			"a," +
+
+			"b(1, 2),"+
+			"b(3, 4)"
+		);
 	}
 
 	@Test
 	public void intervalInRules() throws IOException {
-		String program = "a :- 3 = 1..4 ." +
-				"p(X, 1..X) :- dom(X), X != 2." +
-				"dom(1). dom(2). dom(3).";
+		assertAnswerSets(
+			"a :- 3 = 1..4 ." +
+			"p(X, 1..X) :- dom(X), X != 2." +
+			"dom(1). dom(2). dom(3).",
 
-		Program parsedProgram = parser.parse(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-
-		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
-					new AnswerSetBuilder()
-						.predicate("dom")
-						.instance("1")
-						.instance("2")
-						.instance("3")
-						.predicate("p")
-						.instance("1", "1")
-						.instance("3", "1")
-						.instance("3", "2")
-						.instance("3", "3")
-						.predicate("a")
-						.build()
-		));
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(expected, answerSets);
+			"dom(1), dom(2), dom(3), p(1, 1), p(3, 1), p(3, 2), p(3, 3), a"
+		);
 	}
 
 	@Test
 	public void intervalInFunctionTermsInRules() throws IOException {
-		String program = "a :- q(f(1..3,g(4..5)))." +
-				"q(f(2,g(4)))." +
-				"q(f(1,g(5)))." +
-				"p(f(1..3,g(4..5))) :- b." +
-				"b.";
+		assertAnswerSets(
+			"a :- q(f(1..3,g(4..5)))." +
+			"q(f(2,g(4)))." +
+			"q(f(1,g(5)))." +
+			"p(f(1..3,g(4..5))) :- b." +
+			"b.",
 
-		Program parsedProgram = parser.parse(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
+			"a, " +
+			"b, " +
 
-		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
-				new AnswerSetBuilder()
-						.predicate("q")
-						.instance("f(2,g(4))")
-						.instance("f(1,g(5))")
-						.predicate("a")
-						.predicate("b")
-						.predicate("p")
-						.instance("f(1,g(4))")
-						.instance("f(1,g(5))")
-						.instance("f(2,g(4))")
-						.instance("f(2,g(5))")
-						.instance("f(3,g(4))")
-						.instance("f(3,g(5))")
-						.build()
-		));
+			"q(f(2,g(4))), " +
+			"q(f(1,g(5))), " +
 
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(expected, answerSets);
+			"p(f(1,g(4))), " +
+			"p(f(1,g(5))), " +
+			"p(f(2,g(4))), " +
+			"p(f(2,g(5))), " +
+			"p(f(3,g(4))), " +
+			"p(f(3,g(5)))"
+		);
 	}
 
 	@Test

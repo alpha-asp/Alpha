@@ -35,7 +35,7 @@ public class IntervalAtom implements Literal {
 		List<Substitution> substitutions = new ArrayList<>();
 		for (int i = intervalTerm.getLowerBound(); i <= intervalTerm.getUpperBound(); i++) {
 			Substitution ith = new Substitution(partialSubstitution);
-			ith.put(intervalRepresentingVariable, ConstantTerm.getInstance(String.valueOf(i)));
+			ith.put(intervalRepresentingVariable, ConstantTerm.getInstance(i));
 			substitutions.add(ith);
 		}
 		return substitutions;
