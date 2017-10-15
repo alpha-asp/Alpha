@@ -3,42 +3,92 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
-import at.ac.tuwien.kr.alpha.common.BasicPredicate;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.Rule;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.BuiltinAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.predicates.TotalOrder;
 import at.ac.tuwien.kr.alpha.common.terms.*;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+
+import static java.util.Collections.emptyList;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
+	private final Map<String, Predicate> externals;
+	private final boolean acceptVariables;
 
 	private Program inputProgram;
 	private boolean isCurrentLiteralNegated;
+
+	public ParseTreeVisitor(Map<String, Predicate> externals) {
+		this(externals, true);
+	}
+
+	public ParseTreeVisitor(Map<String, Predicate> externals, boolean acceptVariables) {
+		this.externals = externals;
+		this.acceptVariables = acceptVariables;
+	}
 
 	private void notSupportedSyntax(RuleContext ctx) {
 		throw new UnsupportedOperationException("Unsupported syntax encountered: " + ctx.getText());
 	}
 
-	@Override
-	public String visitTerminal(TerminalNode node) {
-		return node.getText();
+	public Program translate(ASPCore2Parser.ProgramContext input) {
+		return visitProgram(input);
+	}
+
+	public Set<AnswerSet> translate(ASPCore2Parser.Answer_setsContext input) {
+		return visitAnswer_sets(input);
 	}
 
 	@Override
-	protected Object defaultResult() {
-		return null;
+	public Set<AnswerSet> visitAnswer_sets(ASPCore2Parser.Answer_setsContext ctx) {
+		Set<AnswerSet> result = new TreeSet<>();
+
+		for (ASPCore2Parser.Answer_setContext answerSetContext : ctx.answer_set()) {
+			result.add(visitAnswer_set(answerSetContext));
+		}
+
+		return result;
+	}
+
+	@Override
+	public AnswerSet visitAnswer_set(ASPCore2Parser.Answer_setContext ctx) {
+		SortedSet<Predicate> predicates = new TreeSet<>();
+		Map<Predicate, SortedSet<Atom>> predicateInstances = new TreeMap<>();
+
+		for (ASPCore2Parser.Classical_literalContext classicalLiteralContext : ctx.classical_literal()) {
+			Literal literal = visitClassical_literal(classicalLiteralContext);
+
+			if (literal.isNegated()) {
+				notSupportedSyntax(classicalLiteralContext);
+			}
+
+			predicates.add(literal.getPredicate());
+			predicateInstances.compute(literal.getPredicate(), (k, v) -> {
+				if (v == null) {
+					v = new TreeSet<>();
+				}
+				v.add(literal);
+				return v;
+			});
+
+		}
+
+		return new BasicAnswerSet(predicates, predicateInstances);
+	}
+
+	@Override
+	public String visitTerminal(TerminalNode node) {
+		return node.getText();
 	}
 
 	/*protected CommonParsedObject aggregateResult(CommonParsedObject aggregate, CommonParsedObject nextResult) {
@@ -73,6 +123,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		if (ctx.statements() == null) {
 			return Program.EMPTY;
 		}
+
 		inputProgram = new Program(new ArrayList<>(), new ArrayList<>());
 		visitStatements(ctx.statements());
 		return inputProgram;
@@ -88,6 +139,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
+	public Object visitStatement_fact(ASPCore2Parser.Statement_factContext ctx) {
+		// head DOT
+		inputProgram.getFacts().add(visitHead(ctx.head()));
+		return null;
+	}
+
+	@Override
 	public Object visitStatement_constraint(ASPCore2Parser.Statement_constraintContext ctx) {
 		// CONS body DOT
 		inputProgram.getRules().add(new Rule(null, visitBody(ctx.body())));
@@ -96,20 +154,14 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public Object visitStatement_rule(ASPCore2Parser.Statement_ruleContext ctx) {
-		// head (CONS body?)? DOT
-		if (ctx.body() == null) {
-			// fact
-			inputProgram.getFacts().add(visitHead(ctx.head()));
-		} else {
-			// rule
-			inputProgram.getRules().add(new Rule(visitHead(ctx.head()), visitBody(ctx.body())));
-		}
+		// head CONS body DOT
+		inputProgram.getRules().add(new Rule(visitHead(ctx.head()), visitBody(ctx.body())));
 		return null;
 	}
 
 	@Override
 	public Atom visitDisjunction(ASPCore2Parser.DisjunctionContext ctx) {
-		//disjunction : classical_literal (OR disjunction)?;
+		// disjunction : classical_literal (OR disjunction)?;
 		if (ctx.disjunction() != null) {
 			notSupportedSyntax(ctx);
 		}
@@ -127,6 +179,140 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
+	public List<Literal> visitBody(ASPCore2Parser.BodyContext ctx) {
+		// body : ( naf_literal | NAF? aggregate ) (COMMA body)?;
+		if (ctx == null) {
+			return emptyList();
+		}
+
+		final List<Literal> literals = new ArrayList<>();
+		do {
+			if (ctx.naf_literal() == null) {
+				notSupportedSyntax(ctx.aggregate());
+			}
+
+			literals.add(visitNaf_literal(ctx.naf_literal()));
+		} while ((ctx = ctx.body()) != null);
+
+		return literals;
+	}
+
+	@Override
+	public Literal visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
+		// builtin_atom : term binop term;
+		return new BasicAtom(new TotalOrder(ctx.binop().getText()), Arrays.asList(
+			(Term) visit(ctx.term(0)),
+			(Term) visit(ctx.term(1))
+		), isCurrentLiteralNegated);
+	}
+
+	@Override
+	public Literal visitNaf_literal(ASPCore2Parser.Naf_literalContext ctx) {
+		// naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
+		isCurrentLiteralNegated = ctx.NAF() != null;
+		if (ctx.builtin_atom() != null) {
+			return visitBuiltin_atom(ctx.builtin_atom());
+		} else if (ctx.classical_literal() != null) {
+			return visitClassical_literal(ctx.classical_literal());
+		} else if (ctx.external_atom() != null) {
+			return visitExternal_atom(ctx.external_atom());
+		}
+		notSupportedSyntax(ctx);
+		return null;
+	}
+
+	@Override
+	public Literal visitClassical_literal(ASPCore2Parser.Classical_literalContext ctx) {
+		// classical_literal : MINUS? ID (PAREN_OPEN terms PAREN_CLOSE)?;
+		if (ctx.MINUS() != null) {
+			notSupportedSyntax(ctx);
+		}
+
+		final List<Term> terms = visitTerms(ctx.terms());
+		return new BasicAtom(new BasicPredicate(ctx.ID().getText(), terms.size()), terms, isCurrentLiteralNegated);
+	}
+
+	@Override
+	public List<Term> visitTerms(ASPCore2Parser.TermsContext ctx) {
+		// terms : term (COMMA terms)?;
+		if (ctx == null) {
+			return emptyList();
+		}
+
+		final List<Term> terms = new ArrayList<>();
+		do  {
+			ASPCore2Parser.TermContext term = ctx.term();
+			terms.add((Term) visit(term));
+		} while ((ctx = ctx.terms()) != null);
+
+		return terms;
+	}
+
+	@Override
+	public ConstantTerm visitTerm_number(ASPCore2Parser.Term_numberContext ctx) {
+		return ConstantTerm.getInstance(Integer.parseInt(ctx.NUMBER().getText()));
+	}
+
+	@Override
+	public ConstantTerm visitTerm_const(ASPCore2Parser.Term_constContext ctx) {
+		return ConstantTerm.getInstance(Symbol.getInstance(ctx.ID().getText()));
+	}
+
+	@Override
+	public ConstantTerm visitTerm_string(ASPCore2Parser.Term_stringContext ctx) {
+		return ConstantTerm.getInstance(ctx.STRING().getText());
+	}
+
+	@Override
+	public FunctionTerm visitTerm_func(ASPCore2Parser.Term_funcContext ctx) {
+		return FunctionTerm.getInstance(ctx.ID().getText(), visitTerms(ctx.terms()));
+	}
+
+	@Override
+	public VariableTerm visitTerm_anonymousVariable(ASPCore2Parser.Term_anonymousVariableContext ctx) {
+		if (!acceptVariables) {
+			notSupportedSyntax(ctx);
+			return null;
+		}
+
+		return VariableTerm.getAnonymousInstance();
+	}
+
+	@Override
+	public VariableTerm visitTerm_variable(ASPCore2Parser.Term_variableContext ctx) {
+		if (!acceptVariables) {
+			notSupportedSyntax(ctx);
+			return null;
+		}
+
+		return VariableTerm.getInstance(ctx.VARIABLE().getText());
+	}
+
+	@Override
+	public Term visitTerm_parenthesisedTerm(ASPCore2Parser.Term_parenthesisedTermContext ctx) {
+		return (Term) visit(ctx.term());
+	}
+
+	@Override
+	public Literal visitExternal_atom(ASPCore2Parser.External_atomContext ctx) {
+		// external_atom : AMPERSAND ID (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?;
+
+		if (ctx.MINUS() != null) {
+			notSupportedSyntax(ctx);
+		}
+
+		if (!visitTerms(ctx.output).isEmpty()) {
+			notSupportedSyntax(ctx.output);
+		}
+
+		Predicate predicate = externals.get(ctx.ID().getText());
+
+		// TODO: Throw if predicate is null.
+
+		return new BasicAtom(predicate, visitTerms(ctx.input), isCurrentLiteralNegated);
+	}
+
+	@Override
 	public Object visitStatement_weightConstraint(ASPCore2Parser.Statement_weightConstraintContext ctx) {
 		notSupportedSyntax(ctx);
 		return null;
@@ -139,150 +325,24 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public List<Literal> visitBody(ASPCore2Parser.BodyContext ctx) {
-		// body : ( naf_literal | NAF? aggregate ) (COMMA body)?;
-		if (ctx.naf_literal() == null) {
-			notSupportedSyntax(ctx.aggregate());
-		}
-
-		List<Literal> bodyLiterals;
-		if (ctx.body() != null) {
-			bodyLiterals = visitBody(ctx.body());
-		} else {
-			bodyLiterals = new LinkedList<>();
-		}
-
-		bodyLiterals.add(0, visitNaf_literal(ctx.naf_literal()));
-
-		return bodyLiterals;
-	}
-
-	@Override
-	public Literal visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
-		// builtin_atom : term binop term;
-		Term left = (Term) visit(ctx.term(0));
-		Term right = (Term) visit(ctx.term(1));
-		List<Term> termList = new ArrayList<>(2);
-		termList.add(left);
-		termList.add(right);
-		BuiltinAtom.BINOP binop;
-		ASPCore2Parser.BinopContext parsedBinop = ctx.binop();
-		// binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
-		if (parsedBinop.EQUAL() != null) {
-			binop = BuiltinAtom.BINOP.EQ;
-		} else if (parsedBinop.UNEQUAL() != null) {
-			binop = BuiltinAtom.BINOP.NE;
-		} else if (parsedBinop.LESS() != null) {
-			binop = BuiltinAtom.BINOP.LT;
-		} else if (parsedBinop.GREATER() != null) {
-			binop = BuiltinAtom.BINOP.GT;
-		} else if (parsedBinop.LESS_OR_EQ() != null) {
-			binop = BuiltinAtom.BINOP.LE;
-		} else if (parsedBinop.GREATER_OR_EQ() != null) {
-			binop = BuiltinAtom.BINOP.GE;
-		} else {
-			throw new RuntimeException("Unknown binop encountered.");
-		}
-		return new BuiltinAtom(binop, termList, isCurrentLiteralNegated);
-	}
-
-	@Override
-	public Literal visitNaf_literal(ASPCore2Parser.Naf_literalContext ctx) {
-		// naf_literal : NAF? (classical_literal | builtin_atom);
-		isCurrentLiteralNegated = ctx.NAF() != null;
-		if (ctx.builtin_atom() != null) {
-			return visitBuiltin_atom(ctx.builtin_atom());
-		} else {
-			return visitClassical_literal(ctx.classical_literal());
-		}
-	}
-
-	@Override
-	public Literal visitClassical_literal(ASPCore2Parser.Classical_literalContext ctx) {
-		// classical_literal : MINUS? ID (PAREN_OPEN terms PAREN_CLOSE)?;
-		if (ctx.MINUS() != null) {
-			notSupportedSyntax(ctx);
-		}
-
-		List<Term> termList;
-		if (ctx.terms() != null) {
-			termList = visitTerms(ctx.terms());
-		} else {
-			termList = Collections.emptyList();
-		}
-		return new BasicAtom(new BasicPredicate(ctx.ID().getText(), termList.size()), termList, isCurrentLiteralNegated);
-	}
-
-	@Override
-	public List<Term> visitTerms(ASPCore2Parser.TermsContext ctx) {
-		// terms : term (COMMA terms)?;
-		List<Term> termList;
-		if (ctx.terms() != null) {
-			termList = visitTerms(ctx.terms());
-		} else {
-			termList = new LinkedList<>();
-		}
-
-		termList.add(0, (Term)visit(ctx.term()));
-		return termList;
-	}
-
-	@Override
-	public ConstantTerm visitTerm_number(ASPCore2Parser.Term_numberContext ctx) {
-		return ConstantTerm.getInstance(ctx.NUMBER().getText());
-	}
-
-	@Override
-	public Term visitTerm_constOrFunc(ASPCore2Parser.Term_constOrFuncContext ctx) {
-		// ID (PAREN_OPEN terms? PAREN_CLOSE)?
-		if (ctx.PAREN_OPEN() == null) {
-			// constant
-			return ConstantTerm.getInstance(ctx.ID().getText());
-		}
-		// function term
-		return FunctionTerm.getInstance(ctx.ID().getText(), visitTerms(ctx.terms()));
-	}
-
-	@Override
-	public VariableTerm visitTerm_anonymousVariable(ASPCore2Parser.Term_anonymousVariableContext ctx) {
-		return VariableTerm.getAnonymousInstance();
-	}
-
-	@Override
-	public VariableTerm visitTerm_variable(ASPCore2Parser.Term_variableContext ctx) {
-		return VariableTerm.getInstance(ctx.VARIABLE().getText());
-	}
-
-	@Override
 	public Object visitTerm_minusTerm(ASPCore2Parser.Term_minusTermContext ctx) {
 		notSupportedSyntax(ctx);
 		return null;
+	}
+
+	public IntervalTerm visitTerm_interval(ASPCore2Parser.Term_intervalContext ctx) {
+		// interval : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE);
+		ASPCore2Parser.IntervalContext ictx = ctx.interval();
+		String lowerText = ictx.lower.getText();
+		String upperText = ictx.upper.getText();
+		Term lower = ictx.lower.getType() == ASPCore2Lexer.NUMBER ? ConstantTerm.getInstance(Integer.parseInt(lowerText)) : VariableTerm.getInstance(lowerText);
+		Term upper = ictx.upper.getType() == ASPCore2Lexer.NUMBER ? ConstantTerm.getInstance(Integer.parseInt(upperText)) : VariableTerm.getInstance(upperText);
+		return IntervalTerm.getInstance(lower, upper);
 	}
 
 	@Override
 	public Object visitTerm_binopTerm(ASPCore2Parser.Term_binopTermContext ctx) {
 		notSupportedSyntax(ctx);
 		return null;
-	}
-
-	@Override
-	public IntervalTerm visitTerm_interval(ASPCore2Parser.Term_intervalContext ctx) {
-		// interval : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE);
-		ASPCore2Parser.IntervalContext ictx = ctx.interval();
-		String lowerText = ictx.lower.getText();
-		String upperText = ictx.upper.getText();
-		Term lower = ictx.lower.getType() == ASPCore2Lexer.NUMBER ? ConstantTerm.getInstance(lowerText) : VariableTerm.getInstance(lowerText);
-		Term upper = ictx.upper.getType() == ASPCore2Lexer.NUMBER ? ConstantTerm.getInstance(upperText) : VariableTerm.getInstance(upperText);
-		return IntervalTerm.getInstance(lower, upper);
-	}
-
-	@Override
-	public ConstantTerm visitTerm_string(ASPCore2Parser.Term_stringContext ctx) {
-		return ConstantTerm.getInstance(ctx.STRING().getText());
-	}
-
-	@Override
-	public Term visitTerm_parenthesisedTerm(ASPCore2Parser.Term_parenthesisedTermContext ctx) {
-		return (Term) visit(ctx.term());
 	}
 }

@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -46,4 +47,23 @@ public class TermTest {
 		assertEquals("Variable occurring as subterm must be reported as occurring variable.", occurringVariables.get(0), tx);
 	}
 
+	@Test
+	public void testTermOrdering() throws Exception {
+		Term cts = ConstantTerm.getInstance("abc");
+		Term cti = ConstantTerm.getInstance(2);
+		Term cto = ConstantTerm.getInstance(new UUID(0, 0));
+		Term ft = FunctionTerm.getInstance("f", ConstantTerm.getInstance("a"));
+
+		assertTrue(cts.compareTo(cti) > 0);
+		assertTrue(cti.compareTo(cts) < 0);
+
+		assertTrue(cts.compareTo(cto) < 0);
+		assertTrue(cto.compareTo(cts) > 0);
+
+		assertTrue(cts.compareTo(ft) < 0);
+		assertTrue(ft.compareTo(cts) > 0);
+
+		assertTrue(cto.compareTo(ft) < 0);
+		assertTrue(ft.compareTo(cto) > 0);
+	}
 }
