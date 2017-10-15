@@ -82,10 +82,4 @@ public class TermParseTreeVisitor extends ASPCore2TermBaseVisitor<Object> {
 		notSupportedSyntax(ctx);
 		return null;
 	}
-
-	@Override
-	public Object visitTerm_gringoRange(ASPCore2TermParser.Term_gringoRangeContext ctx) {
-		notSupportedSyntax(ctx);
-		return null;
-	}
 }

@@ -34,7 +34,6 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityProgramTransformation;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
@@ -216,12 +215,8 @@ public class Main {
 			bailOut("Failed to parse program.", e);
 		}
 
-		// Apply program transformations/rewritings (currently none).
-		// FIXME: program transformations should be relocated an run on Program(s).
-		IdentityProgramTransformation programTransformation = new IdentityProgramTransformation();
-		Program transformedProgram = programTransformation.transform(program);
 		Grounder grounder = GrounderFactory.getInstance(
-			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), transformedProgram, filter, bridges
+			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), program, filter, bridges
 		);
 
 		// NOTE: Using time as seed is fine as the internal heuristics

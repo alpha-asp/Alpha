@@ -8,6 +8,8 @@ import java.util.List;
  * Common representation of Terms. Terms are constructed such that each term is represented by a unique object, hence
  * term equality can be checked by object reference comparison. Each concrete subclass of a Term must implement a
  * factory-like method to obtain instances.
+ *
+ * Note: subtypes of Term need only be comparable with themselves, no comparison amongst subtypes is needed.
  * Copyright (c) 2016, the Alpha Team.
  */
 public interface Term extends Comparable<Term> {

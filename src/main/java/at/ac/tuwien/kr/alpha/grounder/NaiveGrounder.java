@@ -35,8 +35,12 @@ import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
+import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityProgramTransformation;
+import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
+import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformationBase;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -83,19 +87,25 @@ public class NaiveGrounder extends BridgedGrounder {
 		super(filter, bridges);
 		// TODO: initialize based on program.
 
+		// Apply program transformations/rewritings.
+		ProgramTransformationBase transformation = new IdentityProgramTransformation();
+		transformation.transform(program);
+		// Transform intervals.
+		transformation = new IntervalTermToIntervalAtom();
+		transformation.transform(program);
+
 		// initialize all facts
 		for (Atom fact : program.getFacts()) {
 			Predicate predicate = fact.getPredicate();
 			// Record predicate
 			adaptWorkingMemoryForPredicate(predicate);
+			// Construct fact instance(s).
+			List<Instance> instances = FactIntervalEvaluator.constructFactInstances(fact);
 
-			// Construct instance from the fact.
-			Instance instance = new Instance(fact.getTerms().toArray(new Term[0]));
-
-			// Add instance to corresponding list of facts.
+			// Add instances to corresponding list of facts.
 			factsFromProgram.putIfAbsent(predicate, new LinkedHashSet<>());
 			HashSet<Instance> internalPredicateInstances = factsFromProgram.get(predicate);
-			internalPredicateInstances.add(instance);
+			internalPredicateInstances.addAll(instances);
 		}
 
 		// Register internal atoms.
@@ -122,10 +132,10 @@ public class NaiveGrounder extends BridgedGrounder {
 					continue;
 				}
 				// Collect head and body variables.
-				HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.getOccurringVariables());
+				HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.getBindingVariables());
 				HashSet<VariableTerm> occurringVariablesBody = new HashSet<>();
 				for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
-					occurringVariablesBody.addAll(atom.getOccurringVariables());
+					occurringVariablesBody.addAll(atom.getBindingVariables());
 				}
 				occurringVariablesBody.removeAll(occurringVariablesHead);
 				// Check if ever body variables occurs in the head.
@@ -135,6 +145,7 @@ public class NaiveGrounder extends BridgedGrounder {
 			}
 		}
 	}
+
 
 	private void adaptWorkingMemoryForPredicate(Predicate predicate) {
 		// Create working memory for predicate if it does not exist
@@ -164,6 +175,7 @@ public class NaiveGrounder extends BridgedGrounder {
 
 		// Create working memories for all predicates occurring in the rule
 		for (Predicate predicate : nonGroundRule.getOccurringPredicates()) {
+			// FIXME: this also contains interval/builtin predicates that are not needed.
 			adaptWorkingMemoryForPredicate(predicate);
 		}
 		rulesFromProgram.add(nonGroundRule);
@@ -280,10 +292,22 @@ public class NaiveGrounder extends BridgedGrounder {
 			}
 		}
 		for (NonGroundRule nonGroundRule : rulesFromProgram) {
-			if (!nonGroundRule.isGround()) {
+			// Generate nogoods for all rules that are ground already.
+			if (!nonGroundRule.isOriginallyGround()) {
 				continue;
 			}
-			register(generateNoGoodsFromGroundSubstitution(nonGroundRule, new Substitution()), noGoodsFromFacts);
+			// Check if rule contains intervals (but is otherwise ground).
+			if (nonGroundRule.containsIntervals()) {
+				// Then generate all substitutions of the intervals and generate the resulting nogoods.
+				List<Substitution> substitutions = bindNextAtomInRule(nonGroundRule, 0, -1, new Substitution(), null);
+				for (Substitution substitution : substitutions) {
+					register(generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution), noGoodsFromFacts);
+				}
+
+			} else {
+				// Generate nogoods of ground rules (where no intervals occur).
+				register(generateNoGoodsFromGroundSubstitution(nonGroundRule, new Substitution()), noGoodsFromFacts);
+			}
 		}
 		return noGoodsFromFacts;
 	}
@@ -394,6 +418,10 @@ public class NaiveGrounder extends BridgedGrounder {
 					// Rule body is always false, skip the whole rule.
 					return new ArrayList<>(0);
 				}
+			}
+			if (atom instanceof IntervalAtom) {
+				// IntervalAtoms are needed for deriving all substitutions of intervals but otherwise can be ignored.
+				continue;
 			}
 			Atom groundAtom = atom.substitute(substitution);
 			// Consider facts to eliminate ground atoms from the generated nogoods that are always true
@@ -539,6 +567,20 @@ public class NaiveGrounder extends BridgedGrounder {
 			// Builtin is false, return no bindings.
 			return Collections.emptyList();
 		}
+		if (currentAtom instanceof IntervalAtom) {
+			// Assumption: IntervalAtoms occur before all BuiltinAtoms and after all positive ordinary atoms in the body, to have their values bound at evaluation.
+			// Generate the set of substitutions stemming from this interval specification.
+			IntervalAtom groundInterval = (IntervalAtom) currentAtom.substitute(partialSubstitution);	// Substitute variables occurring in the interval itself.
+
+			// Generate all substitutions for the interval representing variable.
+			List<Substitution> intervalSubstitutions = groundInterval.getIntervalSubstitutions(partialSubstitution);
+			ArrayList<Substitution> generatedSubstitutions = new ArrayList<>();
+			for (Substitution intervalSubstitution : intervalSubstitutions) {
+				// Continue grounding with each of the generated values.
+				generatedSubstitutions.addAll(bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, intervalSubstitution, currentAssignment));
+			}
+			return generatedSubstitutions;
+		}
 
 		// check if partialVariableSubstitution already yields a ground atom
 		final Atom substitute = currentAtom.substitute(partialSubstitution);
@@ -612,7 +654,6 @@ public class NaiveGrounder extends BridgedGrounder {
 			// Check each instance if it matches with the atom.
 			Substitution unified = unify(substitute, instance, new Substitution(partialSubstitution));
 			if (unified != null) {
-				generatedSubstitutions.addAll(bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, unified, currentAssignment));
 
 				// Check if atom is also assigned true.
 				BasicAtom substituteClone = new BasicAtom((BasicAtom) substitute);

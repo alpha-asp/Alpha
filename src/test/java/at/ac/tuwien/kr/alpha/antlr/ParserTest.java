@@ -1,7 +1,10 @@
 package at.ac.tuwien.kr.alpha.antlr;
 
 import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.antlr.v4.runtime.RecognitionException;
 import org.junit.Test;
@@ -9,6 +12,7 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -65,4 +69,12 @@ public class ParserTest {
 		parser.parse("r(X) | q(X) :- q(X).\nq(a).\n");
 	}
 
+	@Test
+	public void parseInterval() throws IOException {
+		Program parsedProgram = parser.parse("fact(2..5). p(X) :- q(a, 3 .. X).");
+		IntervalTerm factInterval = (IntervalTerm) parsedProgram.getFacts().get(0).getTerms().get(0);
+		assertTrue(factInterval.equals(IntervalTerm.getInstance(ConstantTerm.getInstance("2"), ConstantTerm.getInstance("5"))));
+		IntervalTerm bodyInterval = (IntervalTerm) parsedProgram.getRules().get(0).getBody().get(0).getTerms().get(1);
+		assertTrue(bodyInterval.equals(IntervalTerm.getInstance(ConstantTerm.getInstance("3"), VariableTerm.getInstance("X"))));
+	}
 }

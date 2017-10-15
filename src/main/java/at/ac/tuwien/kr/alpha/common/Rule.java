@@ -6,7 +6,6 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -19,7 +18,7 @@ public class Rule {
 
 	public Rule(Atom head, List<Literal> body) {
 		this.head = head;
-		this.body = Collections.unmodifiableList(body);
+		this.body = body;
 
 		if (!isSafe()) {
 			// TODO: safety check needs to be adapted to solver what the solver actually understands. Will change in the future, adapt exception message accordingly.

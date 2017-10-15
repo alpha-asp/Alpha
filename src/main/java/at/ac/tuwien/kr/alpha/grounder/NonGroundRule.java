@@ -7,23 +7,39 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.predicates.Evaluable;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
+import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 
 import java.util.*;
 
 /**
  * Represents a non-ground rule or a constraint for the semi-naive grounder.
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2017, the Alpha Team.
  */
 public class NonGroundRule {
-	private static final IntIdGenerator GENERATOR = new IntIdGenerator();
-
-	private final int ruleId = GENERATOR.getNextId();
+	private final int ruleId;
 
 	private final List<Atom> bodyAtomsPositive;
 	private final List<Atom> bodyAtomsNegative;
 	private final Atom headAtom;
 
-	public NonGroundRule(List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
+	private final boolean containsIntervals;
+	private final boolean isOriginallyGround;
+
+	public boolean containsIntervals() {
+		return containsIntervals;
+	}
+
+	public boolean isOriginallyGround() {
+		return isOriginallyGround;
+	}
+
+	private NonGroundRule(int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom, boolean containsIntervals) {
+		this.ruleId = ruleId;
+
+		this.isOriginallyGround = isOriginallyGround(bodyAtomsPositive, bodyAtomsNegative, headAtom);
+		this.containsIntervals = containsIntervals;
+
 		// Sort for better join order.
 		this.bodyAtomsPositive = Collections.unmodifiableList(sortAtoms(bodyAtomsPositive));
 
@@ -45,19 +61,42 @@ public class NonGroundRule {
 		List<Literal> body = rule.getBody();
 		final List<Atom> pos = new ArrayList<>(body.size() / 2);
 		final List<Atom> neg = new ArrayList<>(body.size() / 2);
-
-		for (Literal l : rule.getBody()) {
-			(l.isNegated() ? neg : pos).add(l);
+		boolean containsIntervals = false;
+		for (Literal literal : body) {
+			if (literal instanceof IntervalAtom) {
+				containsIntervals = true;
+			}
+			if (literal.isNegated()) {
+				neg.add(literal);
+			} else {
+				pos.add(literal);
+			}
 		}
+		return new NonGroundRule(intIdGenerator.getNextId(), pos, neg, rule.getHead(), containsIntervals);
+	}
 
-		// Construct head if the given rule is no constraint
-		final Atom head = rule.getHead();
-
-		return new NonGroundRule(
-				pos,
-				neg,
-				head
-		);
+	private static boolean isOriginallyGround(List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
+		List<VariableTerm> occurringVariables = new ArrayList<>();
+		if (headAtom != null) {
+			occurringVariables.addAll(headAtom.getBindingVariables());
+			occurringVariables.addAll(headAtom.getNonBindingVariables());
+		}
+		for (Atom atom : bodyAtomsPositive) {
+			occurringVariables.addAll(atom.getBindingVariables());
+			occurringVariables.addAll(atom.getNonBindingVariables());
+		}
+		for (Atom atom : bodyAtomsNegative) {
+			occurringVariables.addAll(atom.getBindingVariables());
+			occurringVariables.addAll(atom.getNonBindingVariables());
+		}
+		for (VariableTerm variable : occurringVariables) {
+			// Ignore variables introduced by interval rewriting.
+			if (variable.toString().startsWith(IntervalTermToIntervalAtom.INTERVAL_VARIABLE_PREFIX)) {
+				continue;
+			}
+			return false;
+		}
+		return true;
 	}
 
 	public int getRuleId() {
@@ -88,44 +127,30 @@ public class NonGroundRule {
 	 * @return true if this rule is safe.
 	 */
 	private boolean isSafe() {
-		Set<VariableTerm> positiveVariables = new HashSet<>();
-		//Set<VariableTerm> builtinVariables = new HashSet<>();
+		Set<VariableTerm> bindingVariables = new HashSet<>();
+		Set<VariableTerm> nonbindingVariables = new HashSet<>();
 
 		// Check that all negative variables occur in the positive body.
 		for (Atom posAtom : bodyAtomsPositive) {
-			// FIXME: The following five lines depend on concrete
-			// implementations of the Atom interface. Not nice.
-		//	if (posAtom instanceof BasicAtom) {
-				positiveVariables.addAll(posAtom.getOccurringVariables());
-		//	} else if (posAtom instanceof BuiltinAtom) {
-		//		builtinVariables.addAll(posAtom.getOccurringVariables());
-		//	}
+			bindingVariables.addAll(posAtom.getBindingVariables());
+			nonbindingVariables.addAll(posAtom.getNonBindingVariables());
 		}
 
 		for (Atom negAtom : bodyAtomsNegative) {
-			for (VariableTerm term : negAtom.getOccurringVariables()) {
-				if (!positiveVariables.contains(term)) {
-					return false;
-				}
-			}
+			// No variables in a negated atom are binding.
+			nonbindingVariables.addAll(negAtom.getBindingVariables());
+			nonbindingVariables.addAll(negAtom.getNonBindingVariables());
 		}
 
-		// FIXME
-		//for (VariableTerm builtinVariable : builtinVariables) {
-		//	if (!positiveVariables.contains(builtinVariable)) {
-		//		return false;
-		//	}
-		//}
-
-		// Constraint are safe at this point
-		if (isConstraint()) {
-			return true;
+		// Rule heads must be safe, i.e., all their variables must be bound by the body.
+		if (!isConstraint()) {
+			nonbindingVariables.addAll(headAtom.getBindingVariables());
+			nonbindingVariables.addAll(headAtom.getNonBindingVariables());
 		}
 
-		// Check that all variables of the head occur in the positive body.
-		List<VariableTerm> headVariables = headAtom.getOccurringVariables();
-		headVariables.removeAll(positiveVariables);
-		return headVariables.isEmpty();
+		// Check that all non-binding variables are bound in this rule.
+		nonbindingVariables.removeAll(bindingVariables);
+		return nonbindingVariables.isEmpty();
 	}
 
 	/**
@@ -135,6 +160,7 @@ public class NonGroundRule {
 	private List<Atom> sortAtoms(List<Atom> atoms) {
 		final Set<SortingBodyComponent> components = new LinkedHashSet<>();
 		final Set<Atom> evaluableAtoms = new LinkedHashSet<>();
+		final Set<IntervalAtom> intervalAtoms = new LinkedHashSet<>();
 
 		for (Atom atom : atoms) {
 			if (atom.getPredicate() instanceof Evaluable) {
@@ -142,10 +168,14 @@ public class NonGroundRule {
 				evaluableAtoms.add(atom);
 				continue;
 			}
+			if (atom instanceof IntervalAtom) {
+				intervalAtoms.add((IntervalAtom) atom);
+				continue;
+			}
 			final Set<SortingBodyComponent> hits = new LinkedHashSet<>();
 
 			// For each variable
-			for (VariableTerm variableTerm : atom.getOccurringVariables()) {
+			for (VariableTerm variableTerm : atom.getBindingVariables()) {
 				// Find all components it also occurs and record in hitting components
 				for (SortingBodyComponent component : components) {
 					if (component.occurringVariables.contains(variableTerm)) {
@@ -183,6 +213,8 @@ public class NonGroundRule {
 		for (SortingBodyComponent component : components) {
 			sortedPositiveBodyAtoms.addAll(component.atomSequence);
 		}
+
+		sortedPositiveBodyAtoms.addAll(intervalAtoms); // Put interval atoms after positive literals generating their bindings and before builtin atom.
 		sortedPositiveBodyAtoms.addAll(evaluableAtoms);	// Put builtin atoms after positive literals and before negative ones.
 		return sortedPositiveBodyAtoms;
 	}
@@ -246,23 +278,6 @@ public class NonGroundRule {
 		return bodyAtomsPositive.size() + bodyAtomsNegative.size();
 	}
 
-	public boolean isGround() {
-		if (!isConstraint() && !headAtom.isGround()) {
-			return false;
-		}
-		for (Atom atom : bodyAtomsPositive) {
-			if (!atom.isGround()) {
-				return false;
-			}
-		}
-		for (Atom atom : bodyAtomsNegative) {
-			if (!atom.isGround()) {
-				return false;
-			}
-		}
-		return true;
-	}
-
 	public boolean isConstraint() {
 		return headAtom == null;
 	}
@@ -287,7 +302,7 @@ public class NonGroundRule {
 		} else {
 			sb.append(" ");
 		}
-		Util.appendDelimitedPrefix(sb, "not ", bodyAtomsNegative);
+		Util.appendDelimited(sb, bodyAtomsNegative);
 		sb.append(".\n");
 
 		return sb.toString();
@@ -300,7 +315,7 @@ public class NonGroundRule {
 		int numAtoms;
 
 		SortingBodyComponent(Atom atom) {
-			this.occurringVariables = new LinkedHashSet<>(atom.getOccurringVariables());
+			this.occurringVariables = new LinkedHashSet<>(atom.getBindingVariables());
 			this.atoms = new LinkedHashSet<>();
 			this.atoms.add(atom);
 			this.atomSequence = new ArrayList<>();
@@ -311,7 +326,7 @@ public class NonGroundRule {
 		void add(Atom atom) {
 			this.atoms.add(atom);
 			this.atomSequence.add(atom);
-			this.occurringVariables.addAll(atom.getOccurringVariables());
+			this.occurringVariables.addAll(atom.getBindingVariables());
 			this.numAtoms++;
 		}
 

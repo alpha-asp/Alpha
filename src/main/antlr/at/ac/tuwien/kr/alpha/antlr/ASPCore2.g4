@@ -51,9 +51,9 @@ classical_literal : MINUS? ID (PAREN_OPEN terms PAREN_CLOSE)?;
 
 builtin_atom : term binop term;
 
-external_atom : MINUS? AMPERSAND ID (SQUARE_OPEN output = terms SQUARE_CLOSE)? (PAREN_OPEN input = terms PAREN_CLOSE)?;
-
 binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
+
+external_atom : MINUS? AMPERSAND ID (SQUARE_OPEN output = terms SQUARE_CLOSE)? (PAREN_OPEN input = terms PAREN_CLOSE)?;
 
 gringo_sharp : SHARP ~(DOT)* DOT; // NOT Core2 syntax, but widespread, matching not perfect due to possible earlier dots
 

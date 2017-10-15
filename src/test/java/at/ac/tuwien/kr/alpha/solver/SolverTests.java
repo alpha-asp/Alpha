@@ -182,7 +182,6 @@ public class SolverTests extends AbstractSolverTests {
 	@Test
 	public void testGuessingGroundProgram() throws Exception {
 		Solver solver = getInstance(new NaiveGrounder(parser.parse("a :- not b. b :- not a.")));
-
 		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
 			new AnswerSetBuilder().predicate("a").build(),
 			new AnswerSetBuilder().predicate("b").build()
@@ -196,7 +195,9 @@ public class SolverTests extends AbstractSolverTests {
 		String testProgram = "dom(1). dom(2). dom(3)." +
 			"p(X) :- dom(X), not q(X)." +
 			"q(X) :- dom(X), not p(X).";
+
 		Program parsedProgram = parser.parse(testProgram);
+
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -257,7 +258,9 @@ public class SolverTests extends AbstractSolverTests {
 			"b :- not a, not c." +
 			"c :- not a, not b.";
 
+
 		Program parsedProgram = parser.parse(testProgram);
+
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 
 		Solver solver = getInstance(grounder);
@@ -297,7 +300,9 @@ public class SolverTests extends AbstractSolverTests {
 			"notc :- not c.\n" +
 			":- nota,notb,notc.";
 
+
 		Program parsedProgram = parser.parse(testProgram);
+
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 
 		Solver solver = getInstance(grounder);
@@ -350,7 +355,9 @@ public class SolverTests extends AbstractSolverTests {
 			"p(X) :- dom(X), X = 4." +
 			"r(Y) :- dom(Y), Y <= 2.";
 
+
 		Program parsedProgram = parser.parse(testProgram);
+
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 
 		Solver solver = getInstance(grounder);
@@ -412,7 +419,9 @@ public class SolverTests extends AbstractSolverTests {
 			"%:- val(VAR1,VAL1), val(VAR2,VAL2), eq(VAL1,VAL2), not eq(VAR1,VAR2).\n" +
 			":- eq(VAL1,VAL2), not eq(VAR1,VAR2), val(VAR1,VAL1), val(VAR2,VAL2).";
 
+
 		Program parsedProgram = parser.parse(testProgram);
+
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -484,7 +493,9 @@ public class SolverTests extends AbstractSolverTests {
 				":- val(VAR1,VAL1), val(VAR2,VAL2), eq(VAL1,VAL2), not eq(VAR1,VAR2).\n" +
 				"%:- eq(VAL1,VAL2), not eq(VAR1,VAR2), val(VAR1,VAL1), val(VAR2,VAL2).";
 
+
 		Program parsedProgram = parser.parse(testProgram);
+
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -547,7 +558,9 @@ public class SolverTests extends AbstractSolverTests {
 			"val(2,2).\n" +
 			"something:- val(VAR1,VAL1), val(VAR2,VAL2), anything(VAL1,VAL2).";
 
+
 		Program parsedProgram = parser.parse(testProgram);
+
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -570,7 +583,9 @@ public class SolverTests extends AbstractSolverTests {
 			"in(X) :- not out(X), node(X).\n" +
 			"out(X) :- not in(X), node(X).\n" +
 			"pair(X,Y) :- in(X), in(Y).";
+
 		Program parsedProgram = parser.parse(testProgram);
+
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -625,7 +640,9 @@ public class SolverTests extends AbstractSolverTests {
 			"in(X) :- not out(X), node(X).\n" +
 			"out(X) :- not in(X), node(X).\n" +
 			":- in(X), in(Y), edge(X,Y).";
+
 		Program parsedProgram = parser.parse(testProgram);
+
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -667,7 +684,9 @@ public class SolverTests extends AbstractSolverTests {
 	@Test
 	public void testUnsatisfiableProgram() throws IOException {
 		String testProgram = "p(a). p(b). :- p(a), p(b).";
+
 		Program parsedProgram = parser.parse(testProgram);
+
 		Grounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -679,7 +698,9 @@ public class SolverTests extends AbstractSolverTests {
 	@Test
 	public void testFunctionTermEquality() throws IOException {
 		String testProgram = "r1(f(a,b)). r2(f(a,b)). a :- r1(X), r2(Y), X = Y.";
+
 		Program parsedProgram = parser.parse(testProgram);
+
 		Grounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 
@@ -714,6 +735,7 @@ public class SolverTests extends AbstractSolverTests {
 			"\n" +
 			"aux_not_assign(L,R) :- aux_ext_assign(L,R), not assign(L,R).\n" +
 			":- aux_not_assign(L,R), assign(L,R).";
+
 
 		Program parsedProgram = parser.parse(program);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
@@ -770,6 +792,7 @@ public class SolverTests extends AbstractSolverTests {
 			":- assign(L, R1), assign(L, R2), R1 != R2.\n" +
 			"\n" +
 			"possible(l1, r1). possible(l3, r3). possible(l4, r1). possible(l4, r3). possible(l5, r4). possible(l6, r2). possible(l7, r3). possible(l8, r2). possible(l9, r1). possible(l9, r4).\n";
+
 
 		Program parsedProgram = parser.parse(program);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
@@ -927,6 +950,141 @@ public class SolverTests extends AbstractSolverTests {
 						.instance(Symbol.getInstance("b"))
 						.predicate("nsel")
 						.instance(Symbol.getInstance("b"))
+						.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
+
+	@Test
+	public void intervalsInFacts() throws IOException {
+		String program = "a." +
+				"facta(1..3)." +
+				"factb(t, 5..8, u)." +
+				"factc(1..3, w, 2 .. 4)." +
+				"b(1,2)." +
+				"b(3,4).";
+
+		Program parsedProgram = parser.parse(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
+				new AnswerSetBuilder()
+						.predicate("facta")
+						.instance("1")
+						.instance("2")
+						.instance("3")
+						.predicate("factb")
+						.instance("t", "5", "u")
+						.instance("t", "6", "u")
+						.instance("t", "7", "u")
+						.instance("t", "8", "u")
+						.predicate("factc")
+						.instance("1", "w", "2")
+						.instance("2", "w", "2")
+						.instance("3", "w", "2")
+						.instance("1", "w", "3")
+						.instance("2", "w", "3")
+						.instance("3", "w", "3")
+						.instance("1", "w", "4")
+						.instance("2", "w", "4")
+						.instance("3", "w", "4")
+						.predicate("a")
+						.predicate("b")
+						.instance("1", "2")
+						.instance("3", "4")
+						.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
+
+	@Test
+	public void intervalInRules() throws IOException {
+		String program = "a :- 3 = 1..4 ." +
+				"p(X, 1..X) :- dom(X), X != 2." +
+				"dom(1). dom(2). dom(3).";
+
+		Program parsedProgram = parser.parse(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
+					new AnswerSetBuilder()
+						.predicate("dom")
+						.instance("1")
+						.instance("2")
+						.instance("3")
+						.predicate("p")
+						.instance("1", "1")
+						.instance("3", "1")
+						.instance("3", "2")
+						.instance("3", "3")
+						.predicate("a")
+						.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
+
+	@Test
+	public void intervalInFunctionTermsInRules() throws IOException {
+		String program = "a :- q(f(1..3,g(4..5)))." +
+				"q(f(2,g(4)))." +
+				"q(f(1,g(5)))." +
+				"p(f(1..3,g(4..5))) :- b." +
+				"b.";
+
+		Program parsedProgram = parser.parse(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
+				new AnswerSetBuilder()
+						.predicate("q")
+						.instance("f(2,g(4))")
+						.instance("f(1,g(5))")
+						.predicate("a")
+						.predicate("b")
+						.predicate("p")
+						.instance("f(1,g(4))")
+						.instance("f(1,g(5))")
+						.instance("f(2,g(4))")
+						.instance("f(2,g(5))")
+						.instance("f(3,g(4))")
+						.instance("f(3,g(5))")
+						.build()
+		));
+
+		Set<AnswerSet> answerSets = solver.collectSet();
+		assertEquals(expected, answerSets);
+	}
+
+	@Test
+	public void groundAtomInRule() throws IOException {
+		String program = "p :- dom(X), q, q2." +
+				"dom(1)." +
+				"q :- not nq." +
+				"nq :- not q." +
+				"q2 :- not nq2." +
+				"nq2 :- not q2." +
+				":- not p.";
+
+		Program parsedProgram = parser.parse(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		Solver solver = getInstance(grounder);
+
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
+				new AnswerSetBuilder()
+						.predicate("dom")
+						.instance("1")
+						.predicate("p")
+						.predicate("q")
+						.predicate("q2")
 						.build()
 		));
 

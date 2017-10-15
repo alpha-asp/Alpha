@@ -86,7 +86,7 @@ public class VariableTerm implements Term {
 		}
 
 		if (!(o instanceof VariableTerm)) {
-			return -1;
+			throw new ClassCastException();
 		}
 
 		VariableTerm other = (VariableTerm)o;

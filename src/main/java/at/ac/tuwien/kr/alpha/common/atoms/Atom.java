@@ -17,7 +17,17 @@ public interface Atom extends Comparable<Atom> {
 	boolean isGround();
 	boolean isInternal();
 
-	List<VariableTerm> getOccurringVariables();
+	/**
+	 * List of all variables occurring in the Atom that are potentially binding, i.e., variables in positive atoms.
+	 * @return
+	 */
+	List<VariableTerm> getBindingVariables();
+
+	/**
+	 * List of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
+	 * @return
+	 */
+	List<VariableTerm> getNonBindingVariables();
 
 	/**
 	 * This method applies a substitution to a potentially non-substitute atom.

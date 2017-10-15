@@ -7,8 +7,7 @@ import at.ac.tuwien.kr.alpha.common.Program;
  */
 public class IdentityProgramTransformation extends ProgramTransformationBase {
 	@Override
-	public Program transform(Program inputProgram) {
-		return inputProgram;
+	public void transform(Program inputProgram) {
 	}
 
 

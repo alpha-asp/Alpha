@@ -94,6 +94,6 @@ public class ConstantTerm<T extends Comparable<T>> implements Term {
 
 			return myPrio - otherPrio;
 		}
-		return this.toString().compareTo(o.toString());
+		throw new ClassCastException();
 	}
 }

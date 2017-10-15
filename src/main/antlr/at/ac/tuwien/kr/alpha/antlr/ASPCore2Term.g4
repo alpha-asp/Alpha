@@ -13,8 +13,8 @@ term : ID                                   # term_const
      | PAREN_OPEN term PAREN_CLOSE          # term_parenthesisedTerm
      | MINUS term                           # term_minusTerm
      | term arithop term                    # term_binopTerm
-     | gringo_range                         # term_gringoRange; // syntax extension
+     | interval                             # term_interval; // syntax extension
 
 arithop : PLUS | MINUS | TIMES | DIV;
 
-gringo_range : (NUMBER | VARIABLE | ID) DOT DOT (NUMBER | VARIABLE | ID); // NOT Core2 syntax, but widespread
+interval : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE); // NOT Core2 syntax, but widespread
