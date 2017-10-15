@@ -3,9 +3,7 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.Rule;
-import at.ac.tuwien.kr.alpha.common.Symbol;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
@@ -16,10 +14,7 @@ import at.ac.tuwien.kr.alpha.common.terms.*;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Collections.emptyList;
 
@@ -28,16 +23,67 @@ import static java.util.Collections.emptyList;
  */
 public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	private final Map<String, Predicate> externals;
+	private final boolean acceptVariables;
 
 	private Program inputProgram;
 	private boolean isCurrentLiteralNegated;
 
 	public ParseTreeVisitor(Map<String, Predicate> externals) {
+		this(externals, true);
+	}
+
+	public ParseTreeVisitor(Map<String, Predicate> externals, boolean acceptVariables) {
 		this.externals = externals;
+		this.acceptVariables = acceptVariables;
 	}
 
 	private void notSupportedSyntax(RuleContext ctx) {
 		throw new UnsupportedOperationException("Unsupported syntax encountered: " + ctx.getText());
+	}
+
+	public Program translate(ASPCore2Parser.ProgramContext input) {
+		return visitProgram(input);
+	}
+
+	public Set<AnswerSet> translate(ASPCore2Parser.Answer_setsContext input) {
+		return visitAnswer_sets(input);
+	}
+
+	@Override
+	public Set<AnswerSet> visitAnswer_sets(ASPCore2Parser.Answer_setsContext ctx) {
+		Set<AnswerSet> result = new TreeSet<>();
+
+		for (ASPCore2Parser.Answer_setContext answerSetContext : ctx.answer_set()) {
+			result.add(visitAnswer_set(answerSetContext));
+		}
+
+		return result;
+	}
+
+	@Override
+	public AnswerSet visitAnswer_set(ASPCore2Parser.Answer_setContext ctx) {
+		SortedSet<Predicate> predicates = new TreeSet<>();
+		Map<Predicate, SortedSet<Atom>> predicateInstances = new TreeMap<>();
+
+		for (ASPCore2Parser.Classical_literalContext classicalLiteralContext : ctx.classical_literal()) {
+			Literal literal = visitClassical_literal(classicalLiteralContext);
+
+			if (literal.isNegated()) {
+				notSupportedSyntax(classicalLiteralContext);
+			}
+
+			predicates.add(literal.getPredicate());
+			predicateInstances.compute(literal.getPredicate(), (k, v) -> {
+				if (v == null) {
+					v = new TreeSet<>();
+				}
+				v.add(literal);
+				return v;
+			});
+
+		}
+
+		return new BasicAnswerSet(predicates, predicateInstances);
 	}
 
 	@Override
@@ -224,11 +270,21 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public VariableTerm visitTerm_anonymousVariable(ASPCore2Parser.Term_anonymousVariableContext ctx) {
+		if (!acceptVariables) {
+			notSupportedSyntax(ctx);
+			return null;
+		}
+
 		return VariableTerm.getAnonymousInstance();
 	}
 
 	@Override
 	public VariableTerm visitTerm_variable(ASPCore2Parser.Term_variableContext ctx) {
+		if (!acceptVariables) {
+			notSupportedSyntax(ctx);
+			return null;
+		}
+
 		return VariableTerm.getInstance(ctx.VARIABLE().getText());
 	}
 

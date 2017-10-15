@@ -1,7 +1,8 @@
 package at.ac.tuwien.kr.alpha;
 
-import at.ac.tuwien.kr.alpha.antlr.AnswerSetsLexer;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.grounder.parser.ParseTreeVisitor;
 import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -10,6 +11,7 @@ import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Set;
 
 public class AnswerSetsParser {
@@ -51,9 +53,9 @@ public class AnswerSetsParser {
 
 	public Set<AnswerSet> parseDynamic(CharStream stream) throws IOException {
 		CommonTokenStream tokens = new CommonTokenStream(
-			new AnswerSetsLexer(stream)
+			new ASPCore2Lexer(stream)
 		);
-		final at.ac.tuwien.kr.alpha.antlr.AnswerSetsParser parser = new at.ac.tuwien.kr.alpha.antlr.AnswerSetsParser(tokens);
+		final at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser parser = new at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser(tokens);
 
 		// Try SLL parsing mode (faster but may terminate incorrectly).
 		parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
@@ -62,10 +64,10 @@ public class AnswerSetsParser {
 
 		final CustomErrorListener errorListener = new CustomErrorListener("");
 
-		at.ac.tuwien.kr.alpha.antlr.AnswerSetsParser.AnswerSetsContext answerSetsContext;
+		at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Answer_setsContext answerSetsContext;
 		try {
 			// Parse program
-			answerSetsContext = parser.answerSets();
+			answerSetsContext = parser.answer_sets();
 		} catch (ParseCancellationException e) {
 			// Recognition exception may be caused simply by SLL parsing failing,
 			// retry with LL parser and DefaultErrorStrategy printing errors to console.
@@ -87,7 +89,7 @@ public class AnswerSetsParser {
 		}
 
 		// Construct internal program representation.
-		AnswerSetsParseTreeVisitor visitor = new AnswerSetsParseTreeVisitor();
-		return (Set<AnswerSet>) visitor.visit(answerSetsContext);
+		ParseTreeVisitor visitor = new ParseTreeVisitor(Collections.emptyMap(), false);
+		return visitor.translate(answerSetsContext);
 	}
 }

@@ -81,3 +81,7 @@ basic_term : ground_term | variable_term;
 ground_term : /*SYMBOLIC_CONSTANT*/ ID | STRING | MINUS? NUMBER;
 
 variable_term : VARIABLE | ANONYMOUS_VARIABLE;
+
+answer_set : CURLY_OPEN classical_literal* (COMMA classical_literal)* CURLY_CLOSE;
+
+answer_sets: answer_set*;
