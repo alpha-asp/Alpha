@@ -1,6 +1,6 @@
 grammar ASPCore2;
 
-import ASPLexer, ASPCore2Term;
+import ASPLexer;
 
 /* The ASP-Core-2 grammar in ANTLR v4 based on
  * https://www.mat.unical.it/aspcomp2013/files/ASP-CORE-2.01c.pdf
@@ -52,6 +52,23 @@ classical_literal : MINUS? ID (PAREN_OPEN terms PAREN_CLOSE)?;
 builtin_atom : term binop term;
 
 binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
+
+terms : term (COMMA terms)?;
+
+term : ID                                   # term_const
+     | ID (PAREN_OPEN terms? PAREN_CLOSE)   # term_func
+     | NUMBER                               # term_number
+     | STRING                               # term_string
+     | VARIABLE                             # term_variable
+     | ANONYMOUS_VARIABLE                   # term_anonymousVariable
+     | PAREN_OPEN term PAREN_CLOSE          # term_parenthesisedTerm
+     | MINUS term                           # term_minusTerm
+     | term arithop term                    # term_binopTerm
+     | interval                             # term_interval; // syntax extension
+
+arithop : PLUS | MINUS | TIMES | DIV;
+
+interval : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE); // NOT Core2 syntax, but widespread
 
 external_atom : MINUS? AMPERSAND ID (SQUARE_OPEN output = terms SQUARE_CLOSE)? (PAREN_OPEN input = terms PAREN_CLOSE)?;
 

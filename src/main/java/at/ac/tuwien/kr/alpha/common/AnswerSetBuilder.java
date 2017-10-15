@@ -6,9 +6,7 @@ import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.grounder.parser.TermParser;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -83,27 +81,6 @@ public class AnswerSetBuilder {
 		}
 
 		List<Term> termList = Stream.of(terms).map(Symbol::getInstance).map(ConstantTerm::getInstance).collect(Collectors.toList());
-		instances.add(new BasicAtom(predicate, termList));
-		return this;
-	}
-
-	public AnswerSetBuilder parseInstance(String... terms) {
-		if (firstInstance) {
-			firstInstance = false;
-			predicate = new BasicPredicate(predicateSymbol, terms.length);
-			predicates.add(predicate);
-		}
-
-		TermParser parser = new TermParser();
-
-		List<Term> termList = Stream.of(terms).map(s -> {
-			try {
-				return parser.parse(s);
-			} catch (IOException e) {
-				e.printStackTrace();
-				return null;
-			}
-		}).collect(Collectors.toList());
 		instances.add(new BasicAtom(predicate, termList));
 		return this;
 	}

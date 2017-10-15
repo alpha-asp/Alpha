@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.AnswerSetsParser;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -34,35 +35,19 @@ import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import org.junit.Test;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
 
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class SolverTests extends AbstractSolverTests {
 	private final ProgramParser parser = new ProgramParser();
-
-	/**
-	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
-	 */
-	private static void enableTracing() {
-		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		root.setLevel(ch.qos.logback.classic.Level.TRACE);
-	}
-
-	private static void enableDebugLog() {
-		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		root.setLevel(Level.DEBUG);
-	}
 
 	private static class Thingy implements Comparable<Thingy> {
 		@Override
@@ -78,168 +63,87 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void testObjectProgram() throws IOException {
-		Thingy thingy = new Thingy();
+		final Thingy thingy = new Thingy();
 
-		Atom fact = new BasicAtom(new BasicPredicate("foo", 1), ConstantTerm.getInstance(thingy));
+		final Atom fact = new BasicAtom(new BasicPredicate("foo", 1), ConstantTerm.getInstance(thingy));
 
-		Program program = new Program(
+		final Program program = new Program(
 			Collections.emptyList(),
 			Collections.singletonList(fact)
 		);
 
-		Grounder grounder = new NaiveGrounder(program);
-		Solver solver = getInstance(grounder);
-
-		List<AnswerSet> answerSets = solver.collectList();
-
-		assertEquals(1, answerSets.size());
-
-		AnswerSet expected = new AnswerSetBuilder()
+		assertEquals(singleton(new AnswerSetBuilder()
 			.predicate("foo").instance(thingy)
-			.build();
-
-		AnswerSet actual = answerSets.get(0);
-		assertEquals(expected, actual);
+			.build()), solve(program));
 	}
 
 	@Test
 	public void testFactsOnlyProgram() throws IOException {
-		String testProgram = "p(a). p(b). foo(13). foo(16). q(a). q(c).";
-		Program parsedProgram = parser.parse(testProgram);
-		Grounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
+		assertAnswerSet(
+			"p(a). p(b). foo(13). foo(16). q(a). q(c).",
 
-		List<AnswerSet> answerSets = solver.collectList();
-
-		assertEquals(1, answerSets.size());
-
-		AnswerSet expected = new AnswerSetBuilder()
-			.predicate("q").symbolicInstance("a").symbolicInstance("c")
-			.predicate("p").symbolicInstance("a").symbolicInstance("b")
-			.predicate("foo").instance(13).instance(16)
-			.build();
-
-		assertEquals(expected, answerSets.get(0));
+			"q(a), q(c), p(a), p(b), foo(13), foo(16)"
+		);
 	}
 
 	@Test
 	public void testSimpleRule() throws Exception {
-		String testProgram = "p(a). p(b). r(X) :- p(X).";
-		Program parsedProgram = parser.parse(testProgram);
-		Grounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
+		assertAnswerSet(
+			"p(a). p(b). r(X) :- p(X).",
 
-		List<AnswerSet> answerSets = solver.collectList();
-
-		AnswerSet expected = new AnswerSetBuilder()
-			.predicate("p").instance(Symbol.getInstance("a")).instance(Symbol.getInstance("b"))
-			.predicate("r").instance(Symbol.getInstance("a")).instance(Symbol.getInstance("b"))
-			.build();
-
-		assertEquals(1, answerSets.size());
-		assertEquals(expected, answerSets.get(0));
+			"p(a), p(b), r(a), r(b)"
+		);
 	}
 
 	@Test
 	public void testSimpleRuleWithGroundPart() throws Exception {
-		String testProgram =
+		assertAnswerSet(
 			"p(1)." +
 				"p(2)." +
-				"q(X) :-  p(X), p(1).";
-		Program parsedProgram = parser.parse(testProgram);
-		Grounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
+				"q(X) :-  p(X), p(1).",
 
-		List<AnswerSet> answerSets = solver.collectList();
-
-		assertEquals(1, answerSets.size());
-		AnswerSet expected = new AnswerSetBuilder()
-			.predicate("q").instance(1).instance(2)
-			.predicate("p").instance(1).instance(2)
-			.build();
-
-		assertEquals(expected, answerSets.get(0));
+			"q(1), q(2), p(1), p(2)"
+		);
 	}
 
 	@Test
 	public void testProgramZeroArityPredicates() throws Exception {
-		String testProgram = "a. p(X) :- b, r(X).";
-		Program parsedProgram = parser.parse(testProgram);
-		Grounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
+		assertAnswerSet(
+			"a. p(X) :- b, r(X).",
 
-		List<AnswerSet> answerSets = solver.collectList();
-
-		assertEquals(1, answerSets.size());
-
-		AnswerSet expected = new AnswerSetBuilder()
-			.predicate("a")
-			.build();
-
-		assertEquals(expected, answerSets.get(0));
+		"a"
+		);
 	}
 
 	@Test
 	public void testGuessingGroundProgram() throws Exception {
-		Solver solver = getInstance(new NaiveGrounder(parser.parse("a :- not b. b :- not a.")));
-		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new AnswerSetBuilder().predicate("a").build(),
-			new AnswerSetBuilder().predicate("b").build()
-		));
+		assertAnswerSets(
+			"a :- not b. b :- not a.",
 
-		assertEquals(expected, solver.collectSet());
+			"a",
+			"b"
+		);
 	}
+
 
 	@Test
 	public void testGuessingProgramNonGround() throws Exception {
-		String testProgram = "dom(1). dom(2). dom(3)." +
+		assertAnswerSetsWithBase(
+			"dom(1). dom(2). dom(3)." +
 			"p(X) :- dom(X), not q(X)." +
-			"q(X) :- dom(X), not p(X).";
+			"q(X) :- dom(X), not p(X).",
 
-		Program parsedProgram = parser.parse(testProgram);
+			"dom(1), dom(2), dom(3)",
 
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-
-		final AnswerSetBuilder base = new AnswerSetBuilder()
-			.predicate("dom").instance(1).instance(2).instance(3);
-
-		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new AnswerSetBuilder(base)
-				.predicate("q").instance(1).instance(2)
-				.predicate("p").instance(3)
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("q").instance(1)
-				.predicate("p").instance(2).instance(3)
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("q").instance(2)
-				.predicate("p").instance(1).instance(3)
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("p").instance(1).instance(2).instance(3)
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("q").instance(1).instance(2).instance(3)
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("q").instance(1).instance(3)
-				.predicate("p").instance(2)
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("q").instance(2).instance(3)
-				.predicate("p").instance(1)
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("q").instance(3)
-				.predicate("p").instance(1).instance(2)
-				.build()
-		));
-
-		Set<AnswerSet> actual = solver.collectSet();
-
-		assertEquals(expected, actual);
+			"q(1), q(2), p(3)",
+			"q(1), p(2), p(3)",
+			"p(1), q(2), p(3)",
+			"p(1), p(2), p(3)",
+			"q(1), q(2), q(3)",
+			"q(1), p(2), q(3)",
+			"p(1), q(2), q(3)",
+			"p(1), p(2), q(3)"
+		);
 	}
 
 	@Test
@@ -254,228 +158,88 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void guessingProgram3Way() throws IOException {
-		String testProgram = "a :- not b, not c." +
+		assertAnswerSets(
+			"a :- not b, not c." +
 			"b :- not a, not c." +
-			"c :- not a, not b.";
+			"c :- not a, not b.",
 
-
-		Program parsedProgram = parser.parse(testProgram);
-
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-
-		Solver solver = getInstance(grounder);
-
-		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new AnswerSetBuilder()
-				.predicate("a")
-				.build(),
-			new AnswerSetBuilder()
-				.predicate("b")
-				.build(),
-			new AnswerSetBuilder()
-				.predicate("c")
-				.build()
-		));
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(expected, answerSets);
+			"a",
+			"b",
+			"c"
+		);
 	}
 
 	@Test
 	public void emptyProgramYieldsEmptyAnswerSet() throws IOException {
-		Program parsedProgram = parser.parse("");
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		List<AnswerSet> answerSets = getInstance(grounder).collectList();
-		assertEquals(1, answerSets.size());
-		assertEquals(BasicAnswerSet.EMPTY, answerSets.get(0));
+		assertOnlyEmptyAnswerSet("");
 	}
 
 	@Test
 	public void guessingMultipleAnswerSets() throws IOException {
-		String testProgram = "a :- not nota.\n" +
-			"nota :- not a.\n" +
-			"b :- not notb.\n" +
-			"notb :- not b.\n" +
-			"c :- not notc.\n" +
-			"notc :- not c.\n" +
-			":- nota,notb,notc.";
+		assertAnswerSets(
+			"a :- not nota." +
+			"nota :- not a." +
+			"b :- not notb." +
+			"notb :- not b." +
+			"c :- not notc." +
+			"notc :- not c." +
+			":- nota,notb,notc.",
 
-
-		Program parsedProgram = parser.parse(testProgram);
-
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-
-		Solver solver = getInstance(grounder);
-
-		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new AnswerSetBuilder()
-				.predicate("a")
-				.predicate("b")
-				.predicate("c")
-				.build(),
-			new AnswerSetBuilder()
-				.predicate("nota")
-				.predicate("b")
-				.predicate("c")
-				.build(),
-			new AnswerSetBuilder()
-				.predicate("a")
-				.predicate("notb")
-				.predicate("c")
-				.build(),
-			new AnswerSetBuilder()
-				.predicate("nota")
-				.predicate("notb")
-				.predicate("c")
-				.build(),
-			new AnswerSetBuilder()
-				.predicate("a")
-				.predicate("b")
-				.predicate("notc")
-				.build(),
-			new AnswerSetBuilder()
-				.predicate("nota")
-				.predicate("b")
-				.predicate("notc")
-				.build(),
-			new AnswerSetBuilder()
-				.predicate("a")
-				.predicate("notb")
-				.predicate("notc")
-				.build()
-		));
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(expected, answerSets);
+			"a, b, c",
+			"nota, b, c",
+			"a, notb, c",
+			"nota, notb, c",
+			"a, b, notc",
+			"nota, b, notc",
+			"a, notb, notc"
+		);
 	}
 
 	@Test
 	public void builtinAtoms() throws IOException {
-		String testProgram = "dom(1). dom(2). dom(3). dom(4). dom(5)." +
+		assertAnswerSet(
+			"dom(1). dom(2). dom(3). dom(4). dom(5)." +
 			"p(X) :- dom(X), X = 4." +
-			"r(Y) :- dom(Y), Y <= 2.";
+			"r(Y) :- dom(Y), Y <= 2.",
 
-
-		Program parsedProgram = parser.parse(testProgram);
-
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-
-		Solver solver = getInstance(grounder);
-
-		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
-			new AnswerSetBuilder()
-				.predicate("dom")
-				.instance(1)
-				.instance(2)
-				.instance(3)
-				.instance(4)
-				.instance(5)
-				.predicate("p")
-				.instance(4)
-				.predicate("r")
-				.instance(1)
-				.instance(2)
-				.build()
-		));
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(expected, answerSets);
+			"dom(1), dom(2), dom(3), dom(4), dom(5), p(4), r(1), r(2)"
+		);
 	}
 
 	@Test
 	public void builtinAtomsGroundRule() throws IOException {
-		String testProgram = "a :- 13 != 4." +
+		assertAnswerSet(
+			"a :- 13 != 4." +
 			"b :- 2 != 3, 2 = 3." +
-			"c :- 2 <= 3, not 2 > 3.";
+			"c :- 2 <= 3, not 2 > 3.",
 
-		Program program = parser.parse(testProgram);
-		NaiveGrounder grounder = new NaiveGrounder(program);
-
-		Solver solver = getInstance(grounder);
-
-		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
-			new AnswerSetBuilder()
-				.predicate("a")
-				.predicate("c")
-				.build()
-		));
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(expected, answerSets);
+			"a, c"
+		);
 	}
 
 	@Test
 	public void guessingProgramConstraint() throws IOException {
-		String testProgram =
-			"eq(1,1).\n" +
-			"eq(2,2).\n" +
-			"eq(3,3).\n" +
-			"var(1).\n" +
-			"var(2).\n" +
-			"var(3).\n" +
-			"val(VAR,1):-var(VAR),not val(VAR,2),not val(VAR,3).\n" +
-			"val(VAR,2):-var(VAR),not val(VAR,1),not val(VAR,3).\n" +
-			"val(VAR,3):-var(VAR),not val(VAR,1),not val(VAR,2).\n" +
-			"%:- val(VAR1,VAL1), val(VAR2,VAL2), eq(VAL1,VAL2), not eq(VAR1,VAR2).\n" +
-			":- eq(VAL1,VAL2), not eq(VAR1,VAR2), val(VAR1,VAL1), val(VAR2,VAL2).";
+		assertAnswerSetsWithBase(
+			"eq(1,1)." +
+			"eq(2,2)." +
+			"eq(3,3)." +
+			"var(1)." +
+			"var(2)." +
+			"var(3)." +
+			"val(VAR,1):-var(VAR),not val(VAR,2),not val(VAR,3)." +
+			"val(VAR,2):-var(VAR),not val(VAR,1),not val(VAR,3)." +
+			"val(VAR,3):-var(VAR),not val(VAR,1),not val(VAR,2)." +
+			":- eq(VAL1,VAL2), not eq(VAR1,VAR2), val(VAR1,VAL1), val(VAR2,VAL2).",
 
+			"eq(1, 1), eq(2, 2), eq(3, 3), var(1), var(2), var(3)",
 
-		Program parsedProgram = parser.parse(testProgram);
-
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-
-		final AnswerSetBuilder base = new AnswerSetBuilder()
-			.predicate("eq")
-			.instance(1, 1)
-			.instance(2, 2)
-			.instance(3, 3)
-			.predicate("var")
-			.instance(1)
-			.instance(2)
-			.instance(3);
-
-		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-			new AnswerSetBuilder(base)
-				.predicate("val")
-				.instance(1, 1)
-				.instance(2, 2)
-				.instance(3, 3)
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("val")
-				.instance(1, 1)
-				.instance(3, 2)
-				.instance(2, 3)
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("val")
-				.instance(2, 1)
-				.instance(1, 2)
-				.instance(3, 3)
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("val")
-				.instance(2, 1)
-				.instance(3, 2)
-				.instance(1, 3)
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("val")
-				.instance(3, 1)
-				.instance(1, 2)
-				.instance(2, 3)
-				.build(),
-			new AnswerSetBuilder(base)
-				.predicate("val")
-				.instance(3, 1)
-				.instance(2, 2)
-				.instance(1, 3)
-				.build()
-		));
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(expected, answerSets);
+			"val(1, 1), val(2, 2), val(3, 3)",
+			"val(1, 1), val(3, 2), val(2, 3)",
+			"val(2, 1), val(1, 2), val(3, 3)",
+			"val(2, 1), val(3, 2), val(1, 3)",
+			"val(3, 1), val(1, 2), val(2, 3)",
+			"val(3, 1), val(2, 2), val(1, 3)"
+		);
 	}
 
 	@Test
@@ -554,26 +318,13 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void simpleNoPropagation() throws IOException {
-		String testProgram = "val(1,1).\n" +
-			"val(2,2).\n" +
-			"something:- val(VAR1,VAL1), val(VAR2,VAL2), anything(VAL1,VAL2).";
+		assertAnswerSet(
+			"val(1,1)." +
+			"val(2,2)." +
+			"something:- val(VAR1,VAL1), val(VAR2,VAL2), anything(VAL1,VAL2).",
 
-
-		Program parsedProgram = parser.parse(testProgram);
-
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-
-		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
-			new AnswerSetBuilder()
-				.predicate("val")
-				.instance(1, 1)
-				.instance(2, 2)
-				.build()
-		));
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(expected, answerSets);
+			"val(1, 1), val(2, 2)"
+		);
 	}
 
 	@Test
@@ -683,40 +434,16 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void testUnsatisfiableProgram() throws IOException {
-		String testProgram = "p(a). p(b). :- p(a), p(b).";
-
-		Program parsedProgram = parser.parse(testProgram);
-
-		Grounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-
-		List<AnswerSet> answerSets = solver.collectList();
-
-		assertEquals(0, answerSets.size());
+		assertNoAnswerSets("p(a). p(b). :- p(a), p(b).");
 	}
 
 	@Test
 	public void testFunctionTermEquality() throws IOException {
-		String testProgram = "r1(f(a,b)). r2(f(a,b)). a :- r1(X), r2(Y), X = Y.";
+		assertAnswerSet(
+			"r1(f(a,b)). r2(f(a,b)). a :- r1(X), r2(Y), X = Y.",
 
-		Program parsedProgram = parser.parse(testProgram);
-
-		Grounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-
-		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
-			new AnswerSetBuilder()
-				.predicate("r1")
-				.parseInstance("f(a,b)")
-				.predicate("r2")
-				.parseInstance("f(a,b)")
-				.predicate("a")
-				.build()
-		));
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-
-		assertEquals(expected, answerSets);
+			"r1(f(a,b)), r2(f(a,b)), a"
+		);
 	}
 
 	@Test
@@ -867,94 +594,53 @@ public class SolverTests extends AbstractSolverTests {
 	}
 	@Test
 	public void sameVariableTwiceInAtom() throws IOException {
-		String program = "p(a, a).\n" +
-			"q(X) :- p(X, X).\n";
+		assertAnswerSets(
+			"p(a, a)." +
+			"q(X) :- p(X, X).",
 
-		Program parsedProgram = parser.parse(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-
-		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
-			new AnswerSetBuilder()
-				.predicate("p")
-				.instance(Symbol.getInstance("a"), Symbol.getInstance("a"))
-				.predicate("q")
-				.instance(Symbol.getInstance("a"))
-				.build()
-		));
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(expected, answerSets);
+			"p(a,a), a(a)"
+		);
 	}
 
 	@Test
 	public void sameVariableTwiceInAtomConstraint() throws IOException {
-		String program = "p(a, a).\n" +
-			":- p(X, X).\n";
-
-		Program parsedProgram = parser.parse(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertTrue(answerSets.isEmpty());
+		assertNoAnswerSets(
+			"p(a, a)." +
+			":- p(X, X)."
+		);
 	}
 
 	@Test
 	public void noPositiveSelfFounding() throws IOException {
-		String program = "a :- b.\n" +
-			"b:- a.\n" +
-			":- not b.";
-
-		Program parsedProgram = parser.parse(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertTrue(answerSets.isEmpty());
+		assertNoAnswerSets(
+			"a :- b." +
+			"b:- a." +
+			":- not b."
+		);
 	}
 
 	@Test
 	public void noPositiveCycleSelfFoundingGuess() throws IOException {
-		String program =
-			"c :- not d.\n" +
+		assertNoAnswerSets(
+			"c :- not d." +
 			"d :- not c." +
-			"a :- b, not c.\n" +
-			"b:- a.\n" +
-			":- not b.";
-
-		Program parsedProgram = parser.parse(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertTrue(answerSets.isEmpty());
+			"a :- b, not c." +
+			"b:- a." +
+			":- not b."
+		);
 	}
 
 	@Test
 	public void conflictFromUnaryNoGood() throws IOException {
-		String program =
-			"d(b).\n" +
-			"sel(X) :- not nsel(X), d(X).\n" +
-			"nsel(X) :- not sel(X), d(X).\n" +
-			"t(a) :- sel(b).\n" +
-			":- t(X).\n";
+		assertAnswerSet(
+			"d(b)." +
+			"sel(X) :- not nsel(X), d(X)." +
+			"nsel(X) :- not sel(X), d(X)." +
+			"t(a) :- sel(b)." +
+			":- t(X).",
 
-		Program parsedProgram = parser.parse(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-
-		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
-				new AnswerSetBuilder()
-						.predicate("d")
-						.instance(Symbol.getInstance("b"))
-						.predicate("nsel")
-						.instance(Symbol.getInstance("b"))
-						.build()
-		));
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(expected, answerSets);
+			"d(b), nsel(b)"
+		);
 	}
 
 	@Test
@@ -1066,29 +752,50 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void groundAtomInRule() throws IOException {
-		String program = "p :- dom(X), q, q2." +
+		assertAnswerSet(
+			"p :- dom(X), q, q2." +
 				"dom(1)." +
 				"q :- not nq." +
 				"nq :- not q." +
 				"q2 :- not nq2." +
 				"nq2 :- not q2." +
-				":- not p.";
+				":- not p.",
 
-		Program parsedProgram = parser.parse(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
+			"dom(1), p, q, q2"
+		);
+	}
 
-		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(
-				new AnswerSetBuilder()
-						.predicate("dom")
-						.instance("1")
-						.predicate("p")
-						.predicate("q")
-						.predicate("q2")
-						.build()
-		));
+	private Set<AnswerSet> solve(String program) throws IOException {
+		return solve(parser.parse(program));
+	}
 
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(expected, answerSets);
+	private Set<AnswerSet> solve(Program program) throws IOException {
+		return getInstance(new NaiveGrounder(program)).collectSet();
+	}
+
+	private void assertAnswerSets(String program, String... answerSets) throws IOException {
+		StringJoiner joiner = new StringJoiner("} {", "{", "}");
+		Arrays.stream(answerSets).forEach(joiner::add);
+		assertAnswerSets(program, AnswerSetsParser.parse(joiner.toString()));
+	}
+
+	private void assertAnswerSet(String program, String answerSet) throws IOException {
+		assertAnswerSets(program, AnswerSetsParser.parseSingleton(answerSet));
+	}
+
+	private void assertAnswerSetsWithBase(String program, String base, String... answerSets) throws IOException {
+		assertAnswerSets(program, AnswerSetsParser.parseWithBase(base, answerSets));
+	}
+
+	private void assertAnswerSets(String program, Set<AnswerSet> answerSets) throws IOException {
+		assertEquals(answerSets, solve(program));
+	}
+
+	private void assertOnlyEmptyAnswerSet(String program) throws IOException {
+		assertEquals(singleton(BasicAnswerSet.EMPTY), solve(program));
+	}
+
+	private void assertNoAnswerSets(String program) throws IOException {
+		assertEquals(emptySet(), solve(program));
 	}
 }

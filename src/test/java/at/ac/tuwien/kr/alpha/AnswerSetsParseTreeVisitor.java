@@ -1,17 +1,68 @@
 package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.antlr.AnswerSetsBaseVisitor;
+import at.ac.tuwien.kr.alpha.antlr.AnswerSetsParser;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
 import at.ac.tuwien.kr.alpha.common.Symbol;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static java.util.Collections.emptyList;
 
 public class AnswerSetsParseTreeVisitor extends AnswerSetsBaseVisitor<Object> {
+	@Override
+	public Set<AnswerSet> visitAnswerSets(AnswerSetsParser.AnswerSetsContext ctx) {
+		Set<AnswerSet> result = new TreeSet<>();
+
+		for (AnswerSetsParser.AnswerSetContext answerSetContext : ctx.answerSet()) {
+			result.add(visitAnswerSet(answerSetContext));
+		}
+
+		return result;
+	}
+
+	@Override
+	public AnswerSet visitAnswerSet(AnswerSetsParser.AnswerSetContext ctx) {
+		if (ctx.atoms() == null) {
+			return BasicAnswerSet.EMPTY;
+		}
+
+		AnswerSetsParser.AtomsContext atomsContext = ctx.atoms();
+
+		SortedSet<Predicate> predicates = new TreeSet<>();
+		Map<Predicate, SortedSet<Atom>> predicateInstances = new TreeMap<>();
+
+		do
+		{
+			final Atom atom = visitAtom(atomsContext.atom());
+			predicates.add(atom.getPredicate());
+			predicateInstances.compute(atom.getPredicate(), (k, v) -> {
+				if (v == null) {
+					v = new TreeSet<>();
+				}
+				v.add(atom);
+				return v;
+			});
+
+		} while ((atomsContext = atomsContext.atoms()) != null);
+
+		return new BasicAnswerSet(predicates, predicateInstances);
+	}
+
+	@Override
+	public Atom visitAtom(AnswerSetsParser.AtomContext ctx) {
+		final List<Term> terms = visitTerms(ctx.terms());
+		return new BasicAtom(new BasicPredicate(ctx.ID().getText(), terms.size()), terms, false);
+	}
+
 	@Override
 	public List<Term> visitTerms(at.ac.tuwien.kr.alpha.antlr.AnswerSetsParser.TermsContext ctx) {
 		// terms : term (COMMA terms)?;

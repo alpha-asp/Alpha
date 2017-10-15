@@ -1,6 +1,6 @@
 grammar AnswerSets;
 
-answerSets : answerSet+;
+answerSets : answerSet*;
 
 answerSet : CURLY_OPEN atoms? CURLY_CLOSE;
 

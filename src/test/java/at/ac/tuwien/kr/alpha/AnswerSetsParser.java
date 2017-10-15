@@ -2,9 +2,9 @@ package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.antlr.AnswerSetsLexer;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.grounder.parser.Parser;
 import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
@@ -12,9 +12,44 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 import java.io.IOException;
 import java.util.Set;
 
-public class AnswerSetsParser implements Parser<Set<AnswerSet>> {
-	@Override
-	public Set<AnswerSet> parse(CharStream stream) throws IOException {
+public class AnswerSetsParser {
+	private static final AnswerSetsParser SINGLETON = new AnswerSetsParser();
+
+	public static Set<AnswerSet> parseWithBase(String base, String... others) {
+		if (!base.endsWith(",")) {
+			base += ",";
+		}
+
+		StringBuilder sb = new StringBuilder("");
+
+		for (String other : others) {
+			sb.append("{ ");
+			sb.append(base);
+			sb.append(other);
+			sb.append(" }");
+		}
+
+		return parse(sb.toString());
+	}
+
+	public static Set<AnswerSet> parseSingleton(String s) {
+		return parse("{ " + s + " }");
+	}
+
+	public static Set<AnswerSet> parse(String s) {
+		return parse(CharStreams.fromString(s));
+	}
+
+	public static Set<AnswerSet> parse(CharStream stream) {
+		try {
+			return SINGLETON.parseDynamic(stream);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+			//return null;
+		}
+	}
+
+	public Set<AnswerSet> parseDynamic(CharStream stream) throws IOException {
 		CommonTokenStream tokens = new CommonTokenStream(
 			new AnswerSetsLexer(stream)
 		);
