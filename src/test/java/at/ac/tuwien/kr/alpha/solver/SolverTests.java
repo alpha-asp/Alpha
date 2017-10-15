@@ -625,7 +625,7 @@ public class SolverTests extends AbstractSolverTests {
 
 			"a," +
 
-			"b(1, 2),"+
+			"b(1, 2)," +
 			"b(3, 4)"
 		);
 	}
