@@ -34,16 +34,13 @@ import at.ac.tuwien.kr.alpha.common.predicates.Evaluable;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.common.atoms.BuiltinAtom;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
-import at.ac.tuwien.kr.alpha.grounder.transformation.IdentityProgramTransformation;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
+import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -148,8 +145,7 @@ public class NaiveGrounder extends BridgedGrounder {
 	}
 
 	private void applyProgramTransformations(Program program) {
-		ProgramTransformationBase transformation = new IdentityProgramTransformation();
-		transformation.transform(program);
+		ProgramTransformation transformation;
 		// Transform choice rules.
 		transformation = new ChoiceHeadToNormal();
 		transformation.transform(program);

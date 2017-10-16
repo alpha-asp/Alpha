@@ -49,6 +49,50 @@ import static org.junit.Assert.assertEquals;
 public class SolverTests extends AbstractSolverTests {
 	private final ProgramParser parser = new ProgramParser();
 
+	private Set<AnswerSet> solve(String program) throws IOException {
+		return solve(parser.parse(program));
+	}
+
+	private Set<AnswerSet> solve(Program program) throws IOException {
+		return getInstance(new NaiveGrounder(program)).collectSet();
+	}
+
+	private void assertAnswerSets(String program, String... answerSets) throws IOException {
+		if (answerSets.length == 0) {
+			assertAnswerSets(program, emptySet());
+			return;
+		}
+
+		StringJoiner joiner = new StringJoiner("} {", "{", "}");
+		Arrays.stream(answerSets).forEach(joiner::add);
+		assertAnswerSets(program, AnswerSetsParser.parse(joiner.toString()));
+	}
+
+	private void assertAnswerSet(String program, String answerSet) throws IOException {
+		assertAnswerSets(program, AnswerSetsParser.parseSingleton(answerSet));
+	}
+
+	private void assertAnswerSetsWithBase(String program, String base, String... answerSets) throws IOException {
+		base = base.trim();
+		base = base.endsWith(",") ? base.substring(0, base.length() - 1) : base;
+		String baseDelimited = base + ", ";
+
+		for (int i = 0; i < answerSets.length; i++) {
+			answerSets[i] = answerSets[i].trim();
+			if (answerSets[i].length() == 0) {
+				answerSets[i] = base;
+			} else {
+				answerSets[i] = baseDelimited + answerSets[i];
+			}
+		}
+
+		assertAnswerSets(program, answerSets);
+	}
+
+	private void assertAnswerSets(String program, Set<AnswerSet> answerSets) throws IOException {
+		assertEquals(answerSets, solve(program));
+	}
+
 	private static class Thingy implements Comparable<Thingy> {
 		@Override
 		public String toString() {
@@ -542,134 +586,37 @@ public class SolverTests extends AbstractSolverTests {
 		);
 	}
 
-	private Set<AnswerSet> solve(String program) throws IOException {
-		return solve(parser.parse(program));
-	}
 
-	private Set<AnswerSet> solve(Program program) throws IOException {
-		return getInstance(new NaiveGrounder(program)).collectSet();
-	}
-
-	private void assertAnswerSets(String program, String... answerSets) throws IOException {
-		if (answerSets.length == 0) {
-			assertAnswerSets(program, emptySet());
-			return;
-		}
-
-		StringJoiner joiner = new StringJoiner("} {", "{", "}");
-		Arrays.stream(answerSets).forEach(joiner::add);
-		assertAnswerSets(program, AnswerSetsParser.parse(joiner.toString()));
-	}
-
-	private void assertAnswerSet(String program, String answerSet) throws IOException {
-		assertAnswerSets(program, AnswerSetsParser.parseSingleton(answerSet));
-	}
-
-	private void assertAnswerSetsWithBase(String program, String base, String... answerSets) throws IOException {
-		if (!base.endsWith(",")) {
-			base += ", ";
-		}
-
-		for (int i = 0; i < answerSets.length; i++) {
-			answerSets[i] = base + answerSets[i];
-		}
-
-		assertAnswerSets(program, answerSets);
-	}
-
-	private void assertAnswerSets(String program, Set<AnswerSet> answerSets) throws IOException {
-		assertEquals(answerSets, solve(program));
-	}
 
 	@Test
 	public void simpleChoiceRule() throws IOException {
-		String program = "{ a; b; c} :- d. d.";
+		assertAnswerSetsWithBase("{ a; b; c} :- d. d.",
 
-		Program parsedProgram = parseVisit(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
-
-		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-				new BasicAnswerSet.Builder()
-						.predicate("d")
-						.build(),
-				new BasicAnswerSet.Builder()
-						.predicate("a")
-						.predicate("d")
-						.build(),
-				new BasicAnswerSet.Builder()
-						.predicate("a")
-						.predicate("b")
-						.predicate("d")
-						.build(),
-				new BasicAnswerSet.Builder()
-						.predicate("a")
-						.predicate("c")
-						.predicate("d")
-						.build(),
-				new BasicAnswerSet.Builder()
-						.predicate("a")
-						.predicate("b")
-						.predicate("c")
-						.predicate("d")
-						.build(),
-				new BasicAnswerSet.Builder()
-						.predicate("b")
-						.predicate("d")
-						.build(),
-				new BasicAnswerSet.Builder()
-						.predicate("b")
-						.predicate("c")
-						.predicate("d")
-						.build(),
-				new BasicAnswerSet.Builder()
-						.predicate("c")
-						.predicate("d")
-						.build()
-		));
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(expected, answerSets);
+				"d",
+				"",
+				"a",
+				"a, b",
+				"a, c",
+				"a, b, c",
+				"b",
+				"b, c",
+				"c"
+				);
 	}
 
 
 	@Test
 	public void conditionalChoiceRule() throws IOException {
-		String program = "dom(1..3)." +
+		assertAnswerSetsWithBase("dom(1..3)." +
 				"{ p(X): not q(X); r(Y): p(Y)} :- dom(X), q(Y)." +
-				"q(2).";
+				"q(2).",
 
-		Program parsedProgram = parseVisit(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
+				"dom(1), dom(2), dom(3), q(2)",
 
-		final BasicAnswerSet.Builder base = new BasicAnswerSet.Builder()
-				.predicate("dom")
-				.instance("1")
-				.instance("2")
-				.instance("3")
-				.predicate("q")
-				.instance("2");
-
-		Set<AnswerSet> expected = new HashSet<>(Arrays.asList(
-				new BasicAnswerSet.Builder(base)
-						.predicate("p")
-						.instance("1")
-						.instance("3")
-						.build(),
-				new BasicAnswerSet.Builder(base)
-						.build(),
-				new BasicAnswerSet.Builder(base)
-						.predicate("p")
-						.instance("3")
-						.build(),
-				new BasicAnswerSet.Builder(base)
-						.predicate("p")
-						.instance("1")
-						.build()
-		));
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		assertEquals(expected, answerSets);
+				"p(1), p(3)",
+				"",
+				"p(3)",
+				"p(1)"
+				);
 	}
 }

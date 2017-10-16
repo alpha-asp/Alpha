@@ -1,12 +1,12 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.BasicPredicate;
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ChoiceHead;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HiddenAtom;
@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * Copyright (c) 2017, the Alpha Team.
  */
-public class ChoiceHeadToNormal extends ProgramTransformationBase {
+public class ChoiceHeadToNormal implements ProgramTransformation {
 	public final static String PREDICATE_NEGATION_PREFIX = "_n";
 
 	@Override

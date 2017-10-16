@@ -1,11 +1,10 @@
 package at.ac.tuwien.kr.alpha.antlr;
 
-import at.ac.tuwien.kr.alpha.common.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.BuiltinAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ChoiceHead;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
@@ -17,9 +16,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -87,7 +84,7 @@ public class ParserTest {
 
 	@Test
 	public void parseChoiceRule() throws IOException {
-		Program parsedProgram = parseVisit("dom(1). dom(2). { a ; b } :- dom(X).");
+		Program parsedProgram = parser.parse("dom(1). dom(2). { a ; b } :- dom(X).");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
 		BasicAtom atomA = new BasicAtom(new BasicPredicate("a", 0));
 		assertEquals(2, choiceHead.getChoiceElements().size());
@@ -99,7 +96,7 @@ public class ParserTest {
 
 	@Test
 	public void parseChoiceRuleBounded() throws IOException {
-		Program parsedProgram = parseVisit("dom(1). dom(2). 1 < { a: p(v,w), not r; b } <= 13 :- dom(X). foo.");
+		Program parsedProgram = parser.parse("dom(1). dom(2). 1 < { a: p(v,w), not r; b } <= 13 :- dom(X). foo.");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
 		BasicAtom atomA = new BasicAtom(new BasicPredicate("a", 0));
 		assertEquals(2, choiceHead.getChoiceElements().size());
@@ -109,9 +106,9 @@ public class ParserTest {
 		assertEquals(2, conditionalLiterals.size());
 		assertFalse(conditionalLiterals.get(0).isNegated());
 		assertTrue(conditionalLiterals.get(1).isNegated());
-		assertEquals(ConstantTerm.getInstance("1"), choiceHead.getLowerBound());
-		assertEquals(BuiltinAtom.BINOP.LT, choiceHead.getLowerOp());
-		assertEquals(ConstantTerm.getInstance("13"), choiceHead.getUpperBound());
-		assertEquals(BuiltinAtom.BINOP.LE, choiceHead.getUpperOp());
+		assertEquals(ConstantTerm.getInstance(1), choiceHead.getLowerBound());
+		assertEquals("<", choiceHead.getLowerOp().getPredicateName());
+		assertEquals(ConstantTerm.getInstance(13), choiceHead.getUpperBound());
+		assertEquals("<=", choiceHead.getUpperOp().getPredicateName());
 	}
 }

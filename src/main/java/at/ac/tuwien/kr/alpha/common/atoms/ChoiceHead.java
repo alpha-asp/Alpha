@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.predicates.TotalOrder;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
@@ -16,17 +17,17 @@ public class ChoiceHead implements Atom {
 	private final List<AbstractMap.SimpleEntry<BasicAtom, List<Literal>>> choiceElements;
 	private final Term lowerBound;
 
-	public BuiltinAtom.BINOP getLowerOp() {
+	public TotalOrder getLowerOp() {
 		return lowerOp;
 	}
 
-	public BuiltinAtom.BINOP getUpperOp() {
+	public TotalOrder getUpperOp() {
 		return upperOp;
 	}
 
-	private final BuiltinAtom.BINOP lowerOp;
+	private final TotalOrder lowerOp;
 	private final Term upperBound;
-	private final BuiltinAtom.BINOP upperOp;
+	private final TotalOrder upperOp;
 
 	public List<AbstractMap.SimpleEntry<BasicAtom, List<Literal>>> getChoiceElements() {
 		return choiceElements;
@@ -40,7 +41,7 @@ public class ChoiceHead implements Atom {
 		return upperBound;
 	}
 
-	public ChoiceHead(List<AbstractMap.SimpleEntry<BasicAtom, List<Literal>>> choiceElements, Term lowerBound, BuiltinAtom.BINOP lowerOp, Term upperBound, BuiltinAtom.BINOP upperOp) {
+	public ChoiceHead(List<AbstractMap.SimpleEntry<BasicAtom, List<Literal>>> choiceElements, Term lowerBound, TotalOrder lowerOp, Term upperBound, TotalOrder upperOp) {
 		this.choiceElements = choiceElements;
 		this.lowerBound = lowerBound;
 		this.lowerOp = lowerOp;
