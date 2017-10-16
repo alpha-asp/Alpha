@@ -19,7 +19,8 @@ import java.util.Map;
  * Rewrites all interval terms in a rule into a new variable and an IntervalAtom.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class IntervalTermToIntervalAtom implements ProgramTransformation {
+public class IntervalTermToIntervalAtom extends ProgramTransformationBase {
+
 	public static final String INTERVAL_VARIABLE_PREFIX = "_Interval";
 
 	/**

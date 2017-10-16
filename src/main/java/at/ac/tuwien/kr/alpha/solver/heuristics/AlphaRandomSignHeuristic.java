@@ -32,7 +32,7 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFact
 
 import java.util.Random;
 
-import static at.ac.tuwien.kr.alpha.solver.Atoms.isAtom;
+import static at.ac.tuwien.kr.alpha.common.atoms.Atoms.isAtom;
 
 public class AlphaRandomSignHeuristic extends DependencyDrivenHeuristic {
 

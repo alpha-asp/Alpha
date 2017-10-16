@@ -10,7 +10,7 @@ import java.util.List;
  * An IntervalTerm is a meta-term and the grounder must replace it with its corresponding set of facts or rules.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class IntervalTerm implements Term {
+public class IntervalTerm extends Term {
 	private final Term lowerBoundTerm;
 	private final Term upperBoundTerm;
 
@@ -60,6 +60,7 @@ public class IntervalTerm implements Term {
 		}
 		return this.upperBound;
 	}
+
 
 	@Override
 	public List<VariableTerm> getOccurringVariables() {
@@ -113,7 +114,7 @@ public class IntervalTerm implements Term {
 
 	@Override
 	public int compareTo(Term o) {
-		throw new UnsupportedOperationException("Intervals cannot be compared.");
+		throw new RuntimeException("Intervals cannot be compared.");
 	}
 
 }

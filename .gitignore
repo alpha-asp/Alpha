@@ -143,4 +143,3 @@ gradle-app.setting
 /.checkstyle
 /junit.log
 .idea/modules/*.iml
-*.tokens

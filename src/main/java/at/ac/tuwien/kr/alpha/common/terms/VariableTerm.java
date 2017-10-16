@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class VariableTerm implements Term {
+public class VariableTerm extends Term {
 	private static final Interner<VariableTerm> INTERNER = Interners.newStrongInterner();
 
 	private static final String ANONYMOUS_VARIABLE_PREFIX = "_";

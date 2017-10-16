@@ -27,6 +27,10 @@ public class Symbol implements Comparable<Symbol> {
 		return INTERNER.intern(new Symbol(symbol, arity));
 	}
 
+	public String getSymbol() {
+		return symbol;
+	}
+
 	public int getArity() {
 		return arity;
 	}
@@ -36,7 +40,6 @@ public class Symbol implements Comparable<Symbol> {
 		if (this == o) {
 			return true;
 		}
-
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
@@ -54,10 +57,5 @@ public class Symbol implements Comparable<Symbol> {
 	@Override
 	public int compareTo(Symbol o) {
 		return ComparisonChain.start().compare(symbol, o.symbol).compare(arity, o.arity).result();
-	}
-
-	@Override
-	public String toString() {
-		return symbol;
 	}
 }

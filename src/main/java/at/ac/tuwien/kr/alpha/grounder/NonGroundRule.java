@@ -1,11 +1,11 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.Util;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BuiltinAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.predicates.Evaluable;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
@@ -99,6 +99,7 @@ public class NonGroundRule {
 		return true;
 	}
 
+
 	public int getRuleId() {
 		return ruleId;
 	}
@@ -159,13 +160,13 @@ public class NonGroundRule {
 	 */
 	private List<Atom> sortAtoms(List<Atom> atoms) {
 		final Set<SortingBodyComponent> components = new LinkedHashSet<>();
-		final Set<Atom> evaluableAtoms = new LinkedHashSet<>();
+		final Set<BuiltinAtom> builtinAtoms = new LinkedHashSet<>();
 		final Set<IntervalAtom> intervalAtoms = new LinkedHashSet<>();
 
 		for (Atom atom : atoms) {
-			if (atom.getPredicate() instanceof Evaluable) {
+			if (atom instanceof BuiltinAtom) {
 				// Sort out builtin atoms (we consider them as not creating new bindings)
-				evaluableAtoms.add(atom);
+				builtinAtoms.add((BuiltinAtom) atom);
 				continue;
 			}
 			if (atom instanceof IntervalAtom) {
@@ -213,9 +214,8 @@ public class NonGroundRule {
 		for (SortingBodyComponent component : components) {
 			sortedPositiveBodyAtoms.addAll(component.atomSequence);
 		}
-
 		sortedPositiveBodyAtoms.addAll(intervalAtoms); // Put interval atoms after positive literals generating their bindings and before builtin atom.
-		sortedPositiveBodyAtoms.addAll(evaluableAtoms);	// Put builtin atoms after positive literals and before negative ones.
+		sortedPositiveBodyAtoms.addAll(builtinAtoms);	// Put builtin atoms after positive literals and before negative ones.
 		return sortedPositiveBodyAtoms;
 	}
 

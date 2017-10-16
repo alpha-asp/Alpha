@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
@@ -86,7 +86,11 @@ public class BasicAtom implements Literal {
 
 		BasicAtom that = (BasicAtom) o;
 
-		return predicate.equals(that.predicate) && terms.equals(that.terms);
+		if (!predicate.equals(that.predicate)) {
+			return false;
+		}
+
+		return terms.equals(that.terms);
 	}
 
 	@Override

@@ -68,7 +68,7 @@ public class FactIntervalEvaluator {
 			List<Instance> instances = new ArrayList<>();
 			for (int i = ((IntervalTerm) currentTerm).getLowerBound(); i <= ((IntervalTerm) currentTerm).getUpperBound(); i++) {
 				Term[] clonedTerms = currentTerms.clone();
-				clonedTerms[currentPosition] = ConstantTerm.getInstance(i);
+				clonedTerms[currentPosition] = ConstantTerm.getInstance(String.valueOf(i));
 				instances.addAll(unrollInstances(clonedTerms, currentPosition + 1));
 			}
 			return instances;

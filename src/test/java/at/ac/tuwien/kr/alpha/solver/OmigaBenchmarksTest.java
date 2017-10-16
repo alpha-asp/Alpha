@@ -28,11 +28,9 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.ANTLRFileStream;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -41,6 +39,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Optional;
+
+import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 
 /**
  * Tests {@link AbstractSolver} using Omiga benchmark problems.
@@ -112,10 +112,9 @@ public class OmigaBenchmarksTest extends AbstractSolverTests {
 	}
 
 	private void test(String folder, String aspFileName) throws IOException {
-		CharStream programInputStream = CharStreams.fromPath(
-			Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName)
-		);
-		Program parsedProgram = new ProgramParser().parse(programInputStream);
+		ANTLRFileStream programInputStream = new ANTLRFileStream(
+Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName).toString());
+		Program parsedProgram = parseVisit(programInputStream);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();

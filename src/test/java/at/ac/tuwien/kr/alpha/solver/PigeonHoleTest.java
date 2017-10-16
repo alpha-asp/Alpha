@@ -25,10 +25,10 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.Main;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.junit.Assert;
@@ -157,7 +157,7 @@ public class PigeonHoleTest extends AbstractSolverTests {
 		addHoles(rules, holes);
 
 		String testProgram = concat(rules);
-		Program parsedProgram = new ProgramParser().parse(testProgram);
+		Program parsedProgram = Main.parseVisit(testProgram);
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 
 		Solver solver = getInstance(grounder);
