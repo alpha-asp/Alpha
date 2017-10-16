@@ -3,6 +3,8 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -20,7 +22,7 @@ import static java.util.Collections.singletonList;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class DummyGrounder implements Grounder {
-	public static final Set<AnswerSet> EXPECTED = new HashSet<>(singletonList(new BasicAnswerSet.Builder()
+	public static final Set<AnswerSet> EXPECTED = new HashSet<>(singletonList(new AnswerSetBuilder()
 		.predicate("a")
 		.predicate("b")
 		.predicate("c")

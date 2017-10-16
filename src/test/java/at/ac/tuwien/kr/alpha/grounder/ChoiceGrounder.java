@@ -30,6 +30,8 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -47,10 +49,10 @@ import static java.util.Collections.singleton;
  */
 public class ChoiceGrounder implements Grounder {
 	public static final Set<AnswerSet> EXPECTED = new HashSet<>(asList(
-		new BasicAnswerSet.Builder()
+		new AnswerSetBuilder()
 			.predicate("aa")
 			.build(),
-		new BasicAnswerSet.Builder()
+		new AnswerSetBuilder()
 			.predicate("bb")
 			.build()
 	));
