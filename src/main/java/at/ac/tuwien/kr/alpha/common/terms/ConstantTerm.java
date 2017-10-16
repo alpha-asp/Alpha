@@ -76,29 +76,44 @@ public class ConstantTerm<T extends Comparable<T>> implements Term {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public int compareTo(Term o) {
-		if (o instanceof ConstantTerm) {
-			ConstantTerm otherConstantTerm = (ConstantTerm) o;
-
-			if (otherConstantTerm.object.getClass() == this.object.getClass()) {
-				return this.object.compareTo((T) otherConstantTerm.object);
-			}
-
-			int myPrio = PRIORITY.getOrDefault(this.object.getClass(), Integer.MAX_VALUE);
-			int otherPrio = PRIORITY.getOrDefault(otherConstantTerm.object.getClass(), Integer.MAX_VALUE);
-
-			if (myPrio == otherPrio) {
-				throw new RuntimeException("WUT");
-			}
-
-			return myPrio - otherPrio;
-		}
 		if (o instanceof FunctionTerm) {
 			return -1;
 		}
 		if (o instanceof VariableTerm) {
 			return -1;
 		}
-		throw new UnsupportedOperationException("Comparison of terms is not fully implemented.");
+
+		if (!(o instanceof ConstantTerm)) {
+			throw new UnsupportedOperationException("Comparison of terms is not fully implemented.");
+		}
+
+		ConstantTerm other = (ConstantTerm) o;
+
+		// We will perform an unchecked cast.
+		// Because of type erasure, we cannot know the exact type
+		// of other.object.
+		// However, may assume that other.object actually is of
+		// type T.
+		// We know that this.object if of type T and implements
+		// Comparable<T>. We ensure that the class of other.object
+		// equals the class of this.object, which in turn is T.
+		// That assumption should be quite safe. It can only be
+		// wrong if we have some bug that generates strange
+		// ConstantTerms at runtime, bypassing the check for T
+		// at compile-time.
+		if (other.object.getClass() == this.object.getClass()) {
+			return this.object.compareTo((T) other.object);
+		}
+
+		int myPrio = PRIORITY.getOrDefault(this.object.getClass(), Integer.MAX_VALUE);
+		int otherPrio = PRIORITY.getOrDefault(other.object.getClass(), Integer.MAX_VALUE);
+
+		if (myPrio == otherPrio) {
+			throw new RuntimeException("WUT");
+		}
+
+		return myPrio - otherPrio;
 	}
 }
