@@ -5,7 +5,8 @@ import ASPLexer;
 /* The ASP-Core-2 grammar in ANTLR v4 based on
  * https://www.mat.unical.it/aspcomp2013/files/ASP-CORE-2.01c.pdf
  * (sections 4 and 5, pages 10-12).
- * It is extended a bit to parse widespread syntax (e.g. used by gringo/clasp).
+ * It is extended a bit to parse widespread syntax used by gringo/clasp,
+ * see productions "gringo_range" and "gringo_sharp".
  */
 
 program : statements? query?;
@@ -69,7 +70,7 @@ arithop : PLUS | MINUS | TIMES | DIV;
 
 interval : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE); // NOT Core2 syntax, but widespread
 
-external_atom : MINUS? AMPERSAND ID (SQUARE_OPEN output = terms SQUARE_CLOSE)? (PAREN_OPEN input = terms PAREN_CLOSE)?; // NOT Core2 syntax.
+external_atom : MINUS? AMPERSAND ID (SQUARE_OPEN output = terms SQUARE_CLOSE)? (PAREN_OPEN input = terms PAREN_CLOSE)?;
 
 gringo_sharp : SHARP ~(DOT)* DOT; // NOT Core2 syntax, but widespread, matching not perfect due to possible earlier dots
 
@@ -81,6 +82,6 @@ ground_term : /*SYMBOLIC_CONSTANT*/ ID | STRING | MINUS? NUMBER;
 
 variable_term : VARIABLE | ANONYMOUS_VARIABLE;
 
-answer_set : CURLY_OPEN classical_literal? (COMMA classical_literal)* CURLY_CLOSE;
+answer_set : CURLY_OPEN classical_literal* (COMMA classical_literal)* CURLY_CLOSE;
 
 answer_sets: answer_set*;
