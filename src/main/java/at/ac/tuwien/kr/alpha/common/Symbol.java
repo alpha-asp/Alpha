@@ -1,11 +1,15 @@
 package at.ac.tuwien.kr.alpha.common;
 
+import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
+
 /**
  * Provides a unique representation of each function and constant symbol.
  * Copyright (c) 2016, the Alpha Team.
  */
 public class Symbol implements Comparable<Symbol> {
-	private static final Interner<Symbol> INTERNER = new Interner<>();
+	private static final Interner<Symbol> INTERNER = Interners.newStrongInterner();
 
 	private final String symbol;
 	private final int arity;
@@ -49,13 +53,7 @@ public class Symbol implements Comparable<Symbol> {
 
 	@Override
 	public int compareTo(Symbol o) {
-		int result = symbol.compareTo(o.symbol);
-
-		if (result != 0) {
-			return result;
-		}
-
-		return arity - o.arity;
+		return ComparisonChain.start().compare(symbol, o.symbol).compare(arity, o.arity).result();
 	}
 
 	@Override
