@@ -61,14 +61,21 @@ public class AnswerSetBuilder {
 		return this;
 	}
 
-	public <T extends Comparable<T>> AnswerSetBuilder instance(T... terms) {
+	@SafeVarargs
+	public final <T extends Comparable<T>> AnswerSetBuilder instance(final T... terms) {
 		if (firstInstance) {
 			firstInstance = false;
 			predicate = new BasicPredicate(predicateSymbol, terms.length);
 			predicates.add(predicate);
 		}
 
-		List<Term> termList = Stream.of(terms).map(ConstantTerm::getInstance).collect(Collectors.toList());
+		// Note that usage of terms does not pollute the heap,
+		// since we are only reading, not writing.
+		List<Term> termList = Stream
+			.of(terms)
+			.map(ConstantTerm::getInstance)
+			.collect(Collectors.toList());
+
 		instances.add(new BasicAtom(predicate, termList));
 		return this;
 	}
