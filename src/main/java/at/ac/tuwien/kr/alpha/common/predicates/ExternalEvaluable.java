@@ -10,7 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
-public class ExternalEvaluable implements Predicate, Evaluable {
+public class ExternalEvaluable implements Predicate, FixedEvaluable {
 	private final Method method;
 
 	public ExternalEvaluable(Method method) {
@@ -22,7 +22,7 @@ public class ExternalEvaluable implements Predicate, Evaluable {
 	}
 
 	@Override
-	public boolean evaluate(List<Term> terms, Substitution substitution) {
+	public boolean evaluate(List<ConstantTerm> terms) {
 		if (terms.size() != getArity()) {
 			throw new IllegalArgumentException(
 				"Parameter count mismatch when calling " + getPredicateName() + ". " +
@@ -35,17 +35,7 @@ public class ExternalEvaluable implements Predicate, Evaluable {
 		final Object[] arguments = new Object[terms.size()];
 
 		for (int i = 0; i < arguments.length; i++) {
-			Term it = terms.get(i);
-
-			if (it instanceof VariableTerm) {
-				it = it.substitute(substitution);
-			}
-
-			if (!(it instanceof ConstantTerm)) {
-				throw new RuntimeException("Non-constant term as parameter for evaluable. Should not happen.");
-			}
-
-			arguments[i] = ((ConstantTerm) it).getObject();
+			arguments[i] = terms.get(i).getObject();
 
 			final Class<?> expected = parameterTypes[i];
 			final Class<?> actual = arguments[i].getClass();

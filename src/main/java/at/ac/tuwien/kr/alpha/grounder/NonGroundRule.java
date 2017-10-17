@@ -4,7 +4,7 @@ import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.predicates.Evaluable;
+import at.ac.tuwien.kr.alpha.common.predicates.FixedEvaluable;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
@@ -163,7 +163,7 @@ public class NonGroundRule {
 		final Set<IntervalAtom> intervalAtoms = new LinkedHashSet<>();
 
 		for (Atom atom : atoms) {
-			if (atom.getPredicate() instanceof Evaluable) {
+			if (atom.getPredicate() instanceof FixedEvaluable) {
 				// Sort out builtin atoms (we consider them as not creating new bindings)
 				evaluableAtoms.add(atom);
 				continue;

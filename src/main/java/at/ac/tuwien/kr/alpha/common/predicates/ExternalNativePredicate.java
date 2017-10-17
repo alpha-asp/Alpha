@@ -6,31 +6,17 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.List;
 
-public class ExternalNativePredicate implements Predicate, Evaluable {
-	private final String name;
-	private final java.util.function.Predicate<ConstantTerm> predicate;
+public class ExternalNativePredicate<T> extends BaseExternalNativePredicate {
+	private final java.util.function.Predicate<T> predicate;
 
-	public ExternalNativePredicate(String name, java.util.function.Predicate<ConstantTerm> predicate) {
-		this.name = name;
+	public ExternalNativePredicate(String name, java.util.function.Predicate<T> predicate) {
+		super(name, 1);
 		this.predicate = predicate;
 	}
 
 	@Override
-	public boolean evaluate(List<Term> terms, Substitution substitution) {
-		if (terms.size() != 1) {
-			throw new IllegalArgumentException("can only test one term");
-		}
-
-		return predicate.test((ConstantTerm) terms.get(0).substitute(substitution));
-	}
-
-	@Override
-	public String getPredicateName() {
-		return name;
-	}
-
-	@Override
-	public int getArity() {
-		return 1;
+	@SuppressWarnings("unchecked")
+	protected boolean test(List<ConstantTerm> terms) {
+		return predicate.test((T) terms.get(0).getObject());
 	}
 }

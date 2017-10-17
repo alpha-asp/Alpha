@@ -2,7 +2,11 @@ package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.ExternalEvaluable;
+import at.ac.tuwien.kr.alpha.common.predicates.ExternalNativeBiPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.ExternalNativePredicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
@@ -11,6 +15,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import org.apache.commons.lang3.text.WordUtils;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
@@ -18,10 +23,7 @@ import org.reflections.util.ConfigurationBuilder;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class Alpha {
@@ -94,12 +96,47 @@ public class Alpha {
 		register(method, method.getName());
 	}
 
-	public void register(String name, java.util.function.Predicate<ConstantTerm> predicate) {
-		this.predicateMethods.put(name, new ExternalNativePredicate(name, predicate));
+	public <T> void register(String name, java.util.function.Predicate<T> predicate) {
+		this.predicateMethods.put(name, new ExternalNativePredicate<>(name, predicate));
+	}
+
+	public <T, U> void register(String name, java.util.function.BiPredicate<T, U> predicate) {
+		this.predicateMethods.put(name, new ExternalNativeBiPredicate<>(name, predicate));
 	}
 
 	public void setProgram(Program program) {
 		this.program = program;
+	}
+
+	public <T extends Comparable<T>> void addFacts(Collection<T> c, String name) {
+		if (c.isEmpty()) {
+			return;
+		}
+
+		final List<Atom> atoms = new ArrayList<>();
+
+		for (T it : c) {
+			atoms.add(new BasicAtom(new BasicPredicate(name, 1), ConstantTerm.getInstance(it)));
+		}
+
+		final Program acc = new Program(Collections.emptyList(), atoms);
+
+		if (this.program == null) {
+			this.program = acc;
+		} else {
+			this.program.accumulate(acc);
+		}
+	}
+
+	public <T extends Comparable<T>> void addFacts(Collection<T> c) {
+		if (c.isEmpty()) {
+			return;
+		}
+
+		T first = c.iterator().next();
+
+		String simpleName = first.getClass().getSimpleName();
+		addFacts(c, simpleName.substring(0, 1).toLowerCase() + simpleName.substring(1));
 	}
 
 	public Stream<AnswerSet> solve(String program) throws IOException {

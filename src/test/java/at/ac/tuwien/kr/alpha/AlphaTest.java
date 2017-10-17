@@ -10,10 +10,9 @@ import at.ac.tuwien.kr.alpha.common.predicates.ExternalEvaluable;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 
@@ -45,6 +44,18 @@ public class AlphaTest {
 		assertEquals(expected, actual);
 	}
 
+	@Test
+	public void addsFacts() throws Exception {
+		Alpha system = new Alpha();
+		Thingy a = new Thingy();
+		Thingy b = new Thingy();
+		List<Thingy> things = Arrays.asList(a, b);
+		system.addFacts(things);
+		Set<AnswerSet> actual = system.solve().collect(Collectors.toSet());
+		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new AnswerSetBuilder().predicate("thingy").instance(a).instance(b).build()));
+		assertEquals(expected, actual);
+	}
+
 	@Test(expected = IllegalArgumentException.class)
 	public void withExternalTypeConflict() throws Exception {
 		Alpha system = new Alpha();
@@ -52,6 +63,26 @@ public class AlphaTest {
 		Set<AnswerSet> actual = system.solve("a :- &isFoo(\"adsfnfdsf\").").collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void smallGraph() throws Exception {
+		Alpha system = new Alpha();
+		system.register("connected", (Integer a, Integer b) -> {
+			return (a == 1 && b == 2) || (b == 2 || b == 3);
+		});
+
+		Set<AnswerSet> answerSets = system.solve("node(1). node(2). node(3). a :- &connected(1,2).").collect(Collectors.toSet());
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void smallGraphWithWrongType() throws Exception {
+		Alpha system = new Alpha();
+		system.register("connected", (Integer a, Integer b) -> {
+			return (a == 1 && b == 2) || (b == 2 || b == 3);
+		});
+
+		system.solve("a :- &connected(\"hello\",2).");
 	}
 
 	private static class Thingy implements Comparable<Thingy> {
@@ -103,7 +134,7 @@ public class AlphaTest {
 	@Test
 	public void withNativeExternal() throws Exception {
 		Alpha system = new Alpha();
-		system.register("isTwo", t -> t.getObject().toString().equals("2"));
+		system.register("isTwo", (String t) -> t.equals("2"));
 
 		Set<AnswerSet> actual = system.solve("a :- &isTwo(2).").collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(Collections.singletonList(new AnswerSetBuilder().predicate("a").build()));

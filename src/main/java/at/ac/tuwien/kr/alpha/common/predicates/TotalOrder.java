@@ -1,11 +1,12 @@
 package at.ac.tuwien.kr.alpha.common.predicates;
 
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.List;
 
-public class TotalOrder implements Evaluable, Predicate {
+public class TotalOrder implements FixedEvaluable, Predicate {
 	private final String predicateName;
 
 	public TotalOrder(String predicateName) {
@@ -54,13 +55,13 @@ public class TotalOrder implements Evaluable, Predicate {
 	}
 
 	@Override
-	public boolean evaluate(List<Term> terms, Substitution substitution) {
+	public boolean evaluate(List<ConstantTerm> terms) {
 		if (terms.size() != getArity()) {
 			throw new RuntimeException("Tried to evaluate total order predicate over unexpected arity!");
 		}
 
-		final Term x = terms.get(0).substitute(substitution);
-		final Term y = terms.get(1).substitute(substitution);
+		final Term x = terms.get(0);
+		final Term y = terms.get(1);
 
 		final int comparison = x.compareTo(y);
 
