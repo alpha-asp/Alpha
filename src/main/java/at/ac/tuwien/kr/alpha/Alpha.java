@@ -76,12 +76,22 @@ public class Alpha {
 		Set<Method> predicateMethods = reflections.getMethodsAnnotatedWith(Predicate.class);
 
 		for (Method method : predicateMethods) {
-			this.register(method);
+			String name = method.getAnnotation(Predicate.class).name();
+
+			if (name.isEmpty()) {
+				name = method.getName();
+			}
+
+			this.register(method, name);
 		}
 	}
 
+	public void register(Method method, String name) {
+		this.predicateMethods.put(name, new ExternalEvaluable(method));
+	}
+
 	public void register(Method method) {
-		this.predicateMethods.put(method.getName(), new ExternalEvaluable(method));
+		register(method, method.getName());
 	}
 
 	public void register(String name, java.util.function.Predicate<ConstantTerm> predicate) {
