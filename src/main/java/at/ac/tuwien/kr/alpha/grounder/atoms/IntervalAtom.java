@@ -73,7 +73,7 @@ public class IntervalAtom implements Literal {
 
 	@Override
 	public Atom substitute(Substitution substitution) {
-		return new IntervalAtom((IntervalTerm) intervalTerm.substitute(substitution), intervalRepresentingVariable);
+		return new IntervalAtom(intervalTerm.substitute(substitution), intervalRepresentingVariable);
 	}
 
 	@Override

@@ -74,7 +74,7 @@ public class IntervalTerm implements Term {
 	}
 
 	@Override
-	public Term substitute(Substitution substitution) {
+	public IntervalTerm substitute(Substitution substitution) {
 		if (isGround()) {
 			return this;
 		}

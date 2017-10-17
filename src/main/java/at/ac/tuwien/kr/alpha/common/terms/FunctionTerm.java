@@ -71,7 +71,7 @@ public class FunctionTerm implements Term {
 	}
 
 	@Override
-	public Term substitute(Substitution substitution) {
+	public FunctionTerm substitute(Substitution substitution) {
 		List<Term> groundTermList = new ArrayList<>(terms.size());
 		for (Term term : terms) {
 			groundTermList.add(term.substitute(substitution));

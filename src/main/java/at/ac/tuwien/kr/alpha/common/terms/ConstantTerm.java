@@ -24,8 +24,9 @@ public class ConstantTerm<T extends Comparable<T>> implements Term {
 		this.object = object;
 	}
 
-	public static <T extends Comparable<T>> ConstantTerm getInstance(T object) {
-		return INTERNER.intern(new ConstantTerm<>(object));
+	@SuppressWarnings("unchecked")
+	public static <T extends Comparable<T>> ConstantTerm<T> getInstance(T object) {
+		return (ConstantTerm<T>) INTERNER.intern(new ConstantTerm<>(object));
 	}
 
 	@Override
@@ -39,7 +40,7 @@ public class ConstantTerm<T extends Comparable<T>> implements Term {
 	}
 
 	@Override
-	public Term substitute(Substitution substitution) {
+	public ConstantTerm<T> substitute(Substitution substitution) {
 		return this;
 	}
 

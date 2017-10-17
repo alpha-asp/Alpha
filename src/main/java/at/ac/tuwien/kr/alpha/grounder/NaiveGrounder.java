@@ -649,32 +649,34 @@ public class NaiveGrounder extends BridgedGrounder {
 		for (Instance instance : instances) {
 			// Check each instance if it matches with the atom.
 			Substitution unified = unify(substitute, instance, new Substitution(partialSubstitution));
-			if (unified != null) {
+			if (unified == null) {
+				continue;
+			}
 
-				// Check if atom is also assigned true.
-				BasicAtom substituteClone = new BasicAtom((BasicAtom) substitute);
-				Atom substitutedAtom = substituteClone.substitute(unified);
-				if (!substitutedAtom.isGround()) {
-					throw new RuntimeException("Grounded atom should be ground but is not. Should not happen.");
-				}
-				if (factsFromProgram.get(substitutedAtom.getPredicate()) == null || !factsFromProgram.get(substitutedAtom.getPredicate()).contains(new Instance(substitutedAtom.getTerms()))) {
-					int atomId = atomStore.add(substitutedAtom);
+			// Check if atom is also assigned true.
+			BasicAtom substituteClone = new BasicAtom((BasicAtom) substitute);
+			Atom substitutedAtom = substituteClone.substitute(unified);
+			if (!substitutedAtom.isGround()) {
+				throw new RuntimeException("Grounded atom should be ground but is not. Should not happen.");
+			}
 
-					if (currentAssignment != null) {
-						ThriceTruth truth = currentAssignment.getTruth(atomId);
-						if (atomId > maxAtomIdBeforeGroundingNewNoGoods || truth == null || !truth.toBoolean()) {
-							// Atom currently does not hold, skip further grounding.
-							// TODO: investigate grounding heuristics for use here, i.e., ground anyways to avoid re-grounding in the future.
-							if (!disableInstanceRemoval) {
-								removeAfterObtainingNewNoGoods.add(substitutedAtom);
-								continue;
-							}
+			if (factsFromProgram.get(substitutedAtom.getPredicate()) == null || !factsFromProgram.get(substitutedAtom.getPredicate()).contains(new Instance(substitutedAtom.getTerms()))) {
+				int atomId = atomStore.add(substitutedAtom);
+
+				if (currentAssignment != null) {
+					ThriceTruth truth = currentAssignment.getTruth(atomId);
+					if (atomId > maxAtomIdBeforeGroundingNewNoGoods || truth == null || !truth.toBoolean()) {
+						// Atom currently does not hold, skip further grounding.
+						// TODO: investigate grounding heuristics for use here, i.e., ground anyways to avoid re-grounding in the future.
+						if (!disableInstanceRemoval) {
+							removeAfterObtainingNewNoGoods.add(substitutedAtom);
+							continue;
 						}
 					}
 				}
-				List<Substitution> boundSubstitutions = bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, unified, currentAssignment);
-				generatedSubstitutions.addAll(boundSubstitutions);
 			}
+			List<Substitution> boundSubstitutions = bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, unified, currentAssignment);
+			generatedSubstitutions.addAll(boundSubstitutions);
 		}
 
 		return generatedSubstitutions;
