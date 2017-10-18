@@ -15,3 +15,5 @@
 *.tiff filter=lfs diff=lfs merge=lfs binary
 *.gpg  filter=lfs diff=lfs merge=lfs binary
 *.bin  filter=lfs diff=lfs merge=lfs binary
+
+benchmarks/omiga/** linguist-vendored
