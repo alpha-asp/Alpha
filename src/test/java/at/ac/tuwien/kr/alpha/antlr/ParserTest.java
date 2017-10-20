@@ -40,6 +40,7 @@ import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.antlr.v4.runtime.CharStreams;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -172,5 +173,15 @@ public class ParserTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testMissingDotNotIgnored() {
 		parser.parse("p(X,Y) :- q(X), r(Y) p(a). q(b).");
+	}
+
+	@Test
+	public void parseEnumerationDirective() throws IOException {
+		Program parsedProgram = parser.parse("p(a,1)." +
+			"# enum_atom_is mune." +
+			"r(X) :- p(X), mune(X)." +
+			"p(b,2).");
+		String directive = parsedProgram.getInlineDirectives().getDirectiveValue(InlineDirectives.DIRECTIVE.enum_atom_is);
+		assertEquals("mune", directive);
 	}
 }

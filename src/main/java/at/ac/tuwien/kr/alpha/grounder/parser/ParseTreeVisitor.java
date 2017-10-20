@@ -23,6 +23,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	private Program inputProgram;
 	private boolean isCurrentLiteralNegated;
+	private InlineDirectives inlineDirectives;
 
 	public ParseTreeVisitor(Map<String, PredicateInterpretation> externals) {
 		this(externals, true);
@@ -127,8 +128,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		if (ctx.statements() == null) {
 			return Program.EMPTY;
 		}
-
 		inputProgram = new Program(new ArrayList<>(), new ArrayList<>());
+		inlineDirectives = new InlineDirectives();
+		inputProgram = new Program(new ArrayList<>(), new ArrayList<>(), inlineDirectives);
 		visitStatements(ctx.statements());
 		return inputProgram;
 	}
@@ -241,6 +243,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		}
 		literals.add(0, visitNaf_literal(ctx.naf_literal()));
 		return literals;
+	}
+
+	@Override
+	public Object visitDirective_enumeration(ASPCore2Parser.Directive_enumerationContext ctx) {
+		// directive_enumeration : SHARP 'enum_atom_is' ID DOT;
+		inlineDirectives.addDirective(InlineDirectives.DIRECTIVE.enum_atom_is, ctx.ID().getText());
+		return null;
 	}
 
 	@Override

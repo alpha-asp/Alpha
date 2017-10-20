@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,14 +41,16 @@ import static at.ac.tuwien.kr.alpha.Util.join;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class Program {
-	public static final Program EMPTY = new Program(Collections.emptyList(), Collections.emptyList());
+	public static final Program EMPTY = new Program(Collections.emptyList(), Collections.emptyList(), new InlineDirectives());
 
 	private final List<Rule> rules;
 	private final List<Atom> facts;
+	private final InlineDirectives inlineDirectives;
 
-	public Program(List<Rule> rules, List<Atom> facts) {
+	public Program(List<Rule> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
 		this.rules = rules;
 		this.facts = facts;
+		this.inlineDirectives = inlineDirectives;
 	}
 
 	public Program() {
@@ -62,9 +65,14 @@ public class Program {
 		return facts;
 	}
 
+	public InlineDirectives getInlineDirectives() {
+		return inlineDirectives;
+	}
+
 	public void accumulate(Program program) {
 		rules.addAll(program.rules);
 		facts.addAll(program.facts);
+		inlineDirectives.accumulate(program.inlineDirectives);
 	}
 
 	@Override
