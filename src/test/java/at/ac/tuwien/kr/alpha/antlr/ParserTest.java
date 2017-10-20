@@ -38,6 +38,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.HeuristicDirectiveToRule;
 import org.antlr.v4.runtime.CharStreams;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
