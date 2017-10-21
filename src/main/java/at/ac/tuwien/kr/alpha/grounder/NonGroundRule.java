@@ -3,8 +3,9 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.predicates.FixedEvaluable;
+import at.ac.tuwien.kr.alpha.common.predicates.Evaluable;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
@@ -24,21 +25,27 @@ public class NonGroundRule {
 	private final Atom headAtom;
 
 	private final boolean containsIntervals;
+	private final boolean containsExternals;
 	private final boolean isOriginallyGround;
 
 	public boolean containsIntervals() {
 		return containsIntervals;
 	}
 
+	public boolean containsExternals() {
+		return containsExternals;
+	}
+
 	public boolean isOriginallyGround() {
 		return isOriginallyGround;
 	}
 
-	private NonGroundRule(int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom, boolean containsIntervals) {
+	private NonGroundRule(int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom, boolean containsIntervals, boolean containsExternals) {
 		this.ruleId = ruleId;
 
 		this.isOriginallyGround = isOriginallyGround(bodyAtomsPositive, bodyAtomsNegative, headAtom);
 		this.containsIntervals = containsIntervals;
+		this.containsExternals = containsExternals;
 
 		// Sort for better join order.
 		this.bodyAtomsPositive = Collections.unmodifiableList(sortAtoms(bodyAtomsPositive));
@@ -62,17 +69,20 @@ public class NonGroundRule {
 		final List<Atom> pos = new ArrayList<>(body.size() / 2);
 		final List<Atom> neg = new ArrayList<>(body.size() / 2);
 		boolean containsIntervals = false;
+		boolean containsExternals = false;
 		for (Literal literal : body) {
 			if (literal instanceof IntervalAtom) {
 				containsIntervals = true;
 			}
-			if (literal.isNegated()) {
-				neg.add(literal);
-			} else {
-				pos.add(literal);
+			if ((literal instanceof ExternalAtom)) {
+				if (((ExternalAtom) literal).hasOutput()) {
+					containsExternals = true;
+				}
 			}
+
+			(literal.isNegated() ? neg : pos).add(literal);
 		}
-		return new NonGroundRule(intIdGenerator.getNextId(), pos, neg, rule.getHead(), containsIntervals);
+		return new NonGroundRule(intIdGenerator.getNextId(), pos, neg, rule.getHead(), containsIntervals, containsExternals);
 	}
 
 	private static boolean isOriginallyGround(List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
@@ -159,13 +169,13 @@ public class NonGroundRule {
 	 */
 	private List<Atom> sortAtoms(List<Atom> atoms) {
 		final Set<SortingBodyComponent> components = new LinkedHashSet<>();
-		final Set<Atom> evaluableAtoms = new LinkedHashSet<>();
+		final Set<ExternalAtom> evaluableAtoms = new LinkedHashSet<>();
 		final Set<IntervalAtom> intervalAtoms = new LinkedHashSet<>();
 
 		for (Atom atom : atoms) {
-			if (atom.getPredicate() instanceof FixedEvaluable) {
+			if (atom instanceof ExternalAtom) {
 				// Sort out builtin atoms (we consider them as not creating new bindings)
-				evaluableAtoms.add(atom);
+				evaluableAtoms.add((ExternalAtom) atom);
 				continue;
 			}
 			if (atom instanceof IntervalAtom) {

@@ -4,10 +4,7 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
-import at.ac.tuwien.kr.alpha.common.predicates.ExternalEvaluable;
-import at.ac.tuwien.kr.alpha.common.predicates.ExternalNativeBiPredicate;
-import at.ac.tuwien.kr.alpha.common.predicates.ExternalNativePredicate;
+import at.ac.tuwien.kr.alpha.common.predicates.*;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
@@ -15,7 +12,6 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
-import org.apache.commons.lang3.text.WordUtils;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
@@ -27,7 +23,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class Alpha {
-	private final Map<String, at.ac.tuwien.kr.alpha.common.predicates.Predicate> predicateMethods = new HashMap<>();
+	private final Map<String, Evaluable> predicateMethods = new HashMap<>();
 
 	private final String grounderName;
 	private final String solverName;
@@ -89,7 +85,7 @@ public class Alpha {
 	}
 
 	public void register(Method method, String name) {
-		this.predicateMethods.put(name, new ExternalEvaluable(method));
+		this.predicateMethods.put(name, new ExternalSimpleFixedEvaluable(method));
 	}
 
 	public void register(Method method) {

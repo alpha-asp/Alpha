@@ -6,8 +6,10 @@ import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.predicates.Evaluable;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.predicates.TotalOrder;
 import at.ac.tuwien.kr.alpha.common.terms.*;
@@ -22,17 +24,17 @@ import static java.util.Collections.emptyList;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
-	private final Map<String, Predicate> externals;
+	private final Map<String, Evaluable> externals;
 	private final boolean acceptVariables;
 
 	private Program inputProgram;
 	private boolean isCurrentLiteralNegated;
 
-	public ParseTreeVisitor(Map<String, Predicate> externals) {
+	public ParseTreeVisitor(Map<String, Evaluable> externals) {
 		this(externals, true);
 	}
 
-	public ParseTreeVisitor(Map<String, Predicate> externals, boolean acceptVariables) {
+	public ParseTreeVisitor(Map<String, Evaluable> externals, boolean acceptVariables) {
 		this.externals = externals;
 		this.acceptVariables = acceptVariables;
 	}
@@ -200,10 +202,10 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Literal visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
 		// builtin_atom : term binop term;
-		return new BasicAtom(new TotalOrder(ctx.binop().getText()), Arrays.asList(
+		return new ExternalAtom(new TotalOrder(ctx.binop().getText(), isCurrentLiteralNegated), Arrays.asList(
 			(Term) visit(ctx.term(0)),
 			(Term) visit(ctx.term(1))
-		), isCurrentLiteralNegated);
+		), Collections.emptyList(), isCurrentLiteralNegated);
 	}
 
 	@Override
@@ -301,15 +303,21 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			notSupportedSyntax(ctx);
 		}
 
-		if (!visitTerms(ctx.output).isEmpty()) {
-			notSupportedSyntax(ctx.output);
+		List<Term> outputTerms = visitTerms(ctx.output);
+		List<VariableTerm> output = new ArrayList<>(outputTerms.size());
+
+		for (Term t : outputTerms) {
+			if (!(t instanceof VariableTerm)) {
+				notSupportedSyntax(ctx.output);
+				return null;
+			}
 		}
 
-		Predicate predicate = externals.get(ctx.ID().getText());
+		Evaluable predicate = externals.get(ctx.ID().getText());
 
 		// TODO: Throw if predicate is null.
 
-		return new BasicAtom(predicate, visitTerms(ctx.input), isCurrentLiteralNegated);
+		return new ExternalAtom(predicate, visitTerms(ctx.input), output, isCurrentLiteralNegated);
 	}
 
 	@Override

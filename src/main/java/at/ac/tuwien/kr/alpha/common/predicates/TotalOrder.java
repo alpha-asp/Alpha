@@ -2,11 +2,11 @@ package at.ac.tuwien.kr.alpha.common.predicates;
 
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.List;
+import java.util.Set;
 
-public class TotalOrder implements FixedEvaluable, Predicate {
+public class TotalOrder implements Evaluable, Predicate {
 	private final String predicateName;
 
 	public TotalOrder(String predicateName) {
@@ -55,7 +55,7 @@ public class TotalOrder implements FixedEvaluable, Predicate {
 	}
 
 	@Override
-	public boolean evaluate(List<ConstantTerm> terms) {
+	public Set<List<ConstantTerm>> evaluate(List<Term> terms) {
 		if (terms.size() != getArity()) {
 			throw new RuntimeException("Tried to evaluate total order predicate over unexpected arity!");
 		}
@@ -65,22 +65,32 @@ public class TotalOrder implements FixedEvaluable, Predicate {
 
 		final int comparison = x.compareTo(y);
 
+		boolean result;
+
 		switch (this.predicateName) {
 			case "=":
-				return comparison ==  0;
+				result = comparison ==  0;
+				break;
 			case "<":
-				return comparison < 0;
+				result = comparison < 0;
+				break;
 			case ">":
-				return comparison > 0;
+				result = comparison > 0;
+				break;
 			case "<=":
-				return comparison <= 0;
+				result = comparison <= 0;
+				break;
 			case ">=":
-				return comparison >= 0;
+				result = comparison >= 0;
+				break;
 			case "<>":
 			case "!=":
-				return comparison != 0;
+				result = comparison != 0;
+				break;
 			default:
 				throw new UnsupportedOperationException("Unknown comparison operator requested!");
 		}
+
+		return result ? TRUE : FALSE;
 	}
 }

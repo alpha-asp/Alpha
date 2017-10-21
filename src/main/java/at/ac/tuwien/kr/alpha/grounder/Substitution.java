@@ -8,9 +8,9 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import java.util.*;
 
 public class Substitution {
-	private TreeMap<VariableTerm, ConstantTerm> substitution;
+	private TreeMap<VariableTerm, Term> substitution;
 
-	private Substitution(TreeMap<VariableTerm, ConstantTerm> substitution) {
+	private Substitution(TreeMap<VariableTerm, Term> substitution) {
 		this.substitution = substitution;
 	}
 
@@ -38,14 +38,14 @@ public class Substitution {
 		} else if (termNonGround instanceof VariableTerm) {
 			VariableTerm variableTerm = (VariableTerm)termNonGround;
 			// Left term is variable, bind it to the right term.
-			ConstantTerm bound = eval(variableTerm);
+			Term bound = eval(variableTerm);
 
 			if (bound != null) {
 				// Variable is already bound, return true if binding is the same as the current ground term.
 				return termGround == bound;
 			}
 
-			substitution.put(variableTerm, (ConstantTerm) termGround);
+			substitution.put(variableTerm, termGround);
 			return true;
 		} else if (termNonGround instanceof FunctionTerm && termGround instanceof FunctionTerm) {
 			// Both terms are function terms
@@ -75,11 +75,11 @@ public class Substitution {
 	 * @param variableTerm the variable term to substitute, if possible
 	 * @return a constant term if the substitution contains the given variable, {@code null} otherwise.
 	 */
-	public ConstantTerm eval(VariableTerm variableTerm) {
+	public Term eval(VariableTerm variableTerm) {
 		return this.substitution.get(variableTerm);
 	}
 
-	public <T extends Comparable<T>> ConstantTerm put(VariableTerm variableTerm, ConstantTerm<T> groundTerm) {
+	public <T extends Comparable<T>> Term put(VariableTerm variableTerm, ConstantTerm<T> groundTerm) {
 		// Note: We're destroying type information here.
 		return substitution.put(variableTerm, groundTerm);
 	}
@@ -96,7 +96,7 @@ public class Substitution {
 	@Override
 	public String toString() {
 		final StringBuilder ret = new StringBuilder();
-		for (Map.Entry<VariableTerm, ConstantTerm> e : substitution.entrySet()) {
+		for (Map.Entry<VariableTerm, Term> e : substitution.entrySet()) {
 			ret.append("_").append(e.getKey()).append(":").append(e.getValue());
 		}
 		return ret.toString();

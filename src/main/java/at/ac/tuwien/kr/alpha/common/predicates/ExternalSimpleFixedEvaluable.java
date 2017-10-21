@@ -2,18 +2,17 @@ package at.ac.tuwien.kr.alpha.common.predicates;
 
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import org.apache.commons.lang3.ClassUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Set;
 
-public class ExternalEvaluable implements Predicate, FixedEvaluable {
+public class ExternalSimpleFixedEvaluable implements Evaluable {
 	private final Method method;
 
-	public ExternalEvaluable(Method method) {
+	public ExternalSimpleFixedEvaluable(Method method) {
 		if (!method.getReturnType().equals(boolean.class)) {
 			throw new IllegalArgumentException("method must return boolean");
 		}
@@ -22,7 +21,7 @@ public class ExternalEvaluable implements Predicate, FixedEvaluable {
 	}
 
 	@Override
-	public boolean evaluate(List<ConstantTerm> terms) {
+	public Set<List<ConstantTerm>> evaluate(List<Term> terms) {
 		if (terms.size() != getArity()) {
 			throw new IllegalArgumentException(
 				"Parameter count mismatch when calling " + getPredicateName() + ". " +
@@ -35,7 +34,14 @@ public class ExternalEvaluable implements Predicate, FixedEvaluable {
 		final Object[] arguments = new Object[terms.size()];
 
 		for (int i = 0; i < arguments.length; i++) {
-			arguments[i] = terms.get(i).getObject();
+			if (!(terms.get(i) instanceof ConstantTerm)) {
+				throw new IllegalArgumentException(
+					"Expected only constants as input for " + getPredicateName() + ", but got " +
+						"something else at position " + i + "."
+				);
+			}
+
+			arguments[i] = ((ConstantTerm) terms.get(i)).getObject();
 
 			final Class<?> expected = parameterTypes[i];
 			final Class<?> actual = arguments[i].getClass();
@@ -56,7 +62,7 @@ public class ExternalEvaluable implements Predicate, FixedEvaluable {
 		}
 
 		try {
-			return (boolean) method.invoke(null, arguments);
+			return ((boolean) method.invoke(null, arguments)) ? TRUE : FALSE;
 		} catch (IllegalAccessException | InvocationTargetException e) {
 			throw new RuntimeException(e);
 		}
