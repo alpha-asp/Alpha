@@ -115,12 +115,26 @@ public class FunctionTerm implements Term {
 
 	@Override
 	public int compareTo(Term o) {
+		if (this == o) {
+			return 0;
+		}
+
+		if (o == null) {
+			return 1;
+		}
+
 		if (o instanceof ConstantTerm) {
 			return 1;
 		}
-		if (!(o instanceof FunctionTerm)) {
-			throw new UnsupportedOperationException("Can only compare function term to function term or constant term.");
+
+		if (o instanceof VariableTerm) {
+			return -1;
 		}
+
+		if (!(o instanceof FunctionTerm)) {
+			throw new UnsupportedOperationException("Can only compare function term to function term, constant term or variable term.");
+		}
+
 		FunctionTerm other = (FunctionTerm)o;
 
 		if (terms.size() != other.terms.size()) {

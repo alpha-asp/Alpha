@@ -80,16 +80,24 @@ public class VariableTerm implements Term {
 		if (this == o) {
 			return 0;
 		}
+
 		if (o == null) {
 			return 1;
 		}
 
+		if (o instanceof ConstantTerm) {
+			return 1;
+		}
+
+		if (o instanceof FunctionTerm) {
+			return 1;
+		}
+
 		if (!(o instanceof VariableTerm)) {
-			throw new ClassCastException();
+			throw new UnsupportedOperationException("Can only compare variable term to variable term, function term or constant term.");
 		}
 
 		VariableTerm other = (VariableTerm)o;
-
 		return variableName.compareTo(other.variableName);
 	}
 }

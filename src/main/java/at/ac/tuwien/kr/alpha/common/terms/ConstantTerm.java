@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
 import at.ac.tuwien.kr.alpha.common.Interner;
+import at.ac.tuwien.kr.alpha.common.Symbol;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Collections;
@@ -69,25 +70,42 @@ public class ConstantTerm<T extends Comparable<T>> implements Term {
 		return object.hashCode();
 	}
 
-	private static final Map<Class<?>, Integer> PRIORITY = new HashMap<>();
-
-	static {
-		PRIORITY.put(Integer.class, 0);
-		PRIORITY.put(String.class, 1);
+	/**
+	 * Establishes "priority" for ordering of constant terms depending on the type
+	 * of the corresponding object according to ASP-Core-2.03c.
+	 */
+	private static final int priority(final Class<?> clazz) {
+		if (clazz.equals(Integer.class)) {
+			return 1;
+		} else if (clazz.equals(Symbol.class)) {
+			return 2;
+		} else if (clazz.equals(String.class)) {
+			return 3;
+		}
+		return 0;
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public int compareTo(Term o) {
+		if (this == o) {
+			return 0;
+		}
+
+		if (o == null) {
+			return 1;
+		}
+
 		if (o instanceof FunctionTerm) {
 			return -1;
 		}
+
 		if (o instanceof VariableTerm) {
 			return -1;
 		}
 
 		if (!(o instanceof ConstantTerm)) {
-			throw new UnsupportedOperationException("Comparison of terms is not fully implemented.");
+			throw new UnsupportedOperationException("Can only compare constant term to constant term, function term or variable term.");
 		}
 
 		ConstantTerm other = (ConstantTerm) o;
@@ -108,13 +126,16 @@ public class ConstantTerm<T extends Comparable<T>> implements Term {
 			return this.object.compareTo((T) other.object);
 		}
 
-		int myPrio = PRIORITY.getOrDefault(this.object.getClass(), Integer.MAX_VALUE);
-		int otherPrio = PRIORITY.getOrDefault(other.object.getClass(), Integer.MAX_VALUE);
+		Class<?> thisType = this.object.getClass();
+		Class<?> otherType = other.object.getClass();
 
-		if (myPrio == otherPrio) {
-			throw new RuntimeException("WUT");
+		int thisPrio = priority(thisType);
+		int otherPrio = priority(otherType);
+
+		if (thisPrio == 0 || otherPrio == 0) {
+			return thisType.getName().compareTo(otherType.getName());
 		}
 
-		return myPrio - otherPrio;
+		return thisPrio - otherPrio;
 	}
 }
