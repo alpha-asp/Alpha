@@ -79,6 +79,6 @@ public class ProgramParser implements Parser<Program> {
 
 		// Construct internal program representation.
 		ParseTreeVisitor visitor = new ParseTreeVisitor(externals);
-		return visitor.visitProgram(programContext);
+		return visitor.translate(programContext);
 	}
 }

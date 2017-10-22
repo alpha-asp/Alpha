@@ -42,10 +42,18 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		throw new UnsupportedOperationException("Unsupported syntax encountered: " + ctx.getText());
 	}
 
+	/**
+	 * Translates a program context (referring to a node in an ATN specific to ANTLR)
+	 * to the internal representation of Alpha.
+	 */
 	public Program translate(ASPCore2Parser.ProgramContext input) {
 		return visitProgram(input);
 	}
 
+	/**
+	 * Translates a context for answer sets (referring to a node in an ATN specific to ANTLR)
+	 * to the representation that Alpha uses.
+	 */
 	public Set<AnswerSet> translate(ASPCore2Parser.Answer_setsContext input) {
 		return visitAnswer_sets(input);
 	}
