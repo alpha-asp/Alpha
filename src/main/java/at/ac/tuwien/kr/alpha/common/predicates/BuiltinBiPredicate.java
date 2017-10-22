@@ -1,52 +1,22 @@
 package at.ac.tuwien.kr.alpha.common.predicates;
 
+import at.ac.tuwien.kr.alpha.common.BinaryOperator;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 import java.util.List;
 import java.util.Set;
 
-public class TotalOrder implements Evaluable, Predicate {
-	private final String predicateName;
+public class BuiltinBiPredicate implements Evaluable, Predicate {
+	private final BinaryOperator operator;
 
-	public TotalOrder(String predicateName) {
-		this(predicateName, false);
-	}
-
-	public TotalOrder(String predicateName, boolean flip) {
-		if (!flip) {
-			this.predicateName = predicateName;
-			return;
-		}
-
-		switch (predicateName) {
-			case "=":
-				this.predicateName = "!=";
-				return;
-			case "<":
-				this.predicateName = ">=";
-				return;
-			case ">":
-				this.predicateName = "<=";
-				return;
-			case "<=":
-				this.predicateName = ">";
-				return;
-			case ">=":
-				this.predicateName = "<";
-				return;
-			case "<>":
-			case "!=":
-				this.predicateName = "=";
-				return;
-			default:
-				throw new UnsupportedOperationException("Unknown comparison operator (\"" + predicateName + "\") requested!");
-		}
+	public BuiltinBiPredicate(BinaryOperator operator) {
+		this.operator = operator;
 	}
 
 	@Override
 	public String getPredicateName() {
-		return this.predicateName;
+		return operator.toString();
 	}
 
 	@Override
@@ -67,24 +37,23 @@ public class TotalOrder implements Evaluable, Predicate {
 
 		boolean result;
 
-		switch (this.predicateName) {
-			case "=":
+		switch (operator) {
+			case EQ:
 				result = comparison ==  0;
 				break;
-			case "<":
+			case LT:
 				result = comparison < 0;
 				break;
-			case ">":
+			case GT:
 				result = comparison > 0;
 				break;
-			case "<=":
+			case LE:
 				result = comparison <= 0;
 				break;
-			case ">=":
+			case GE:
 				result = comparison >= 0;
 				break;
-			case "<>":
-			case "!=":
+			case NE:
 				result = comparison != 0;
 				break;
 			default:

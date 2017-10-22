@@ -31,9 +31,7 @@ import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.Evaluable;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
@@ -418,6 +416,7 @@ public class NaiveGrounder extends BridgedGrounder {
 		ArrayList<Integer> bodyAtomsPositive = new ArrayList<>();
 		ArrayList<Integer> bodyAtomsNegative = new ArrayList<>();
 		for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
+
 			if (atom instanceof ExternalAtom) {
 				ExternalAtom external = (ExternalAtom) atom;
 

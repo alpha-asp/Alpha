@@ -11,7 +11,6 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.Evaluable;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
-import at.ac.tuwien.kr.alpha.common.predicates.TotalOrder;
 import at.ac.tuwien.kr.alpha.common.terms.*;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -202,7 +201,30 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Literal visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
 		// builtin_atom : term binop term;
-		return new ExternalAtom(new TotalOrder(ctx.binop().getText(), isCurrentLiteralNegated), Arrays.asList(
+		BinaryOperator op;
+
+		if (ctx.binop().EQUAL() != null) {
+			op = BinaryOperator.EQ;
+		} else if (ctx.binop().UNEQUAL() != null) {
+			op = BinaryOperator.NE;
+		} else if (ctx.binop().LESS() != null) {
+			op = BinaryOperator.LT;
+		} else if (ctx.binop().LESS_OR_EQ() != null) {
+			op = BinaryOperator.LE;
+		} else if (ctx.binop().GREATER() != null) {
+			op = BinaryOperator.GT;
+		} else if (ctx.binop().GREATER_OR_EQ() != null) {
+			op = BinaryOperator.GE;
+		} else {
+			notSupportedSyntax(ctx.binop());
+			return null;
+		}
+
+		if (isCurrentLiteralNegated) {
+			op = op.getNegation();
+		}
+
+		return new ExternalAtom(op.toPredicate(), Arrays.asList(
 			(Term) visit(ctx.term(0)),
 			(Term) visit(ctx.term(1))
 		), Collections.emptyList(), isCurrentLiteralNegated);
