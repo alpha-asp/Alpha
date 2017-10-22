@@ -5,7 +5,6 @@ import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.predicates.Evaluable;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
@@ -74,7 +73,7 @@ public class NonGroundRule {
 			if (literal instanceof IntervalAtom) {
 				containsIntervals = true;
 			}
-			if ((literal instanceof ExternalAtom)) {
+			if (literal instanceof ExternalAtom) {
 				if (((ExternalAtom) literal).hasOutput()) {
 					containsExternals = true;
 				}

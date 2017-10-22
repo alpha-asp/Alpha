@@ -5,7 +5,8 @@ import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
-import java.util.*;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class Substitution {
 	private TreeMap<VariableTerm, Term> substitution;

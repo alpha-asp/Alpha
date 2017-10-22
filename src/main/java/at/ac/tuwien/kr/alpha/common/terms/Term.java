@@ -1,6 +1,5 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
-import at.ac.tuwien.kr.alpha.common.Symbol;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.List;
@@ -16,8 +15,16 @@ import java.util.List;
  *                 Constant terms according to their corresponding object and its type
  *                 <ol>
  *                         <li>{@link ConstantTerm<Integer>} ordered by value of the integers</li>
- *                         <li>{@link ConstantTerm<Symbol>} lexicographically ordered on the symbol</li>
- *                         <li>{@link ConstantTerm<String>} lexicographically ordered on the string</li>
+ *                         <li>{@link ConstantTerm<at.ac.tuwien.kr.alpha.common.Symbol>} lexicographically ordered on the symbol</li>
+ *                         <li>{@link ConstantTerm<String>} lexicographicall
+ * First, all constant terms with integers
+ * ordered according to the values of the integers, then all constant terms with symbols, according to the lexicographic
+ * order of their symbols, then all constant terms with strings, according to the lexicographic order of their strings,
+ * then all constant terms with other objects, where the ordering of comparison is the ordering imposed by
+ * {@link Comparable} for terms of the same type, and the lexicograSymbolphical ordering of the type names for constants of
+ * different types. Then all function symbols follow, ordered by arity, functor name, and ordering based on the
+ * arguments.
+ * Variable terms are last.y ordered on the string</li>
  *                         <li>{@link ConstantTerm} for all other types, where {@link Comparable#compareTo(Object)} is
  *                         used as ordering whenever possible (i.e. two terms' objects have the same type). For two
  *                         terms with objects of different type, the result is the lexicographic ordering of the type

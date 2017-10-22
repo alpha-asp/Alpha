@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.common.predicates.Evaluable;
 import at.ac.tuwien.kr.alpha.common.predicates.BuiltinBiPredicate;
+import at.ac.tuwien.kr.alpha.common.predicates.Evaluable;
 
 public enum BinaryOperator {
 	EQ("="),

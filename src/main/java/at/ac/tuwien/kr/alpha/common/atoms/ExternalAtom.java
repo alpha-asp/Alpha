@@ -8,10 +8,13 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
 
 public class ExternalAtom implements Literal {
 	private final List<Term> input;

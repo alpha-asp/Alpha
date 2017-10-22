@@ -5,9 +5,7 @@ import at.ac.tuwien.kr.alpha.common.Symbol;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
