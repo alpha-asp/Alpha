@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
+import at.ac.tuwien.kr.alpha.common.Symbol;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.List;
@@ -37,18 +38,32 @@ import java.util.List;
  *
  * Copyright (c) 2017, the Alpha Team.
  */
-public interface Term extends Comparable<Term> {
-	boolean isGround();
+public abstract class Term implements Comparable<Term> {
+	public abstract boolean isGround();
 
-	List<VariableTerm> getOccurringVariables();
+	public abstract List<VariableTerm> getOccurringVariables();
 
 	/**
 	 * Applies a substitution, result may be nonground.
 	 * @param substitution the variable substitution to apply.
 	 * @return the non-substitute term where all variable substitutions have been applied.
 	 */
-	Term substitute(Substitution substitution);
+	public abstract Term substitute(Substitution substitution);
+
+	private static int priority(Term term) {
+		final Class<?> clazz = term.getClass();
+		if (clazz.equals(ConstantTerm.class)) {
+			return 1;
+		} else if (clazz.equals(FunctionTerm.class)) {
+			return 2;
+		} else if (clazz.equals(VariableTerm.class)) {
+			return 3;
+		}
+		throw new UnsupportedOperationException("Can only compare constant term, function terms and variable terms among each other.");
+	}
 
 	@Override
-	String toString();
+	public int compareTo(Term o) {
+		return o == null ? 1 : Integer.compare(priority(this), priority(o));
+	}
 }

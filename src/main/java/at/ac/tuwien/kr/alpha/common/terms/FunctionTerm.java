@@ -11,7 +11,7 @@ import static at.ac.tuwien.kr.alpha.Util.appendDelimited;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class FunctionTerm implements Term {
+public class FunctionTerm extends Term {
 	private static final Interner<FunctionTerm> INTERNER = new Interner<>();
 
 	private final Symbol symbol;
@@ -119,20 +119,8 @@ public class FunctionTerm implements Term {
 			return 0;
 		}
 
-		if (o == null) {
-			return 1;
-		}
-
-		if (o instanceof ConstantTerm) {
-			return 1;
-		}
-
-		if (o instanceof VariableTerm) {
-			return -1;
-		}
-
 		if (!(o instanceof FunctionTerm)) {
-			throw new UnsupportedOperationException("Can only compare function term to function term, constant term or variable term.");
+			return super.compareTo(o);
 		}
 
 		FunctionTerm other = (FunctionTerm)o;

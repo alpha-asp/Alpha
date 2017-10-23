@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class ConstantTerm<T extends Comparable<T>> implements Term {
+public class ConstantTerm<T extends Comparable<T>> extends Term {
 	private static final Interner<ConstantTerm> INTERNER = new Interner<>();
 
 	public T getObject() {
@@ -90,20 +90,8 @@ public class ConstantTerm<T extends Comparable<T>> implements Term {
 			return 0;
 		}
 
-		if (o == null) {
-			return 1;
-		}
-
-		if (o instanceof FunctionTerm) {
-			return -1;
-		}
-
-		if (o instanceof VariableTerm) {
-			return -1;
-		}
-
 		if (!(o instanceof ConstantTerm)) {
-			throw new UnsupportedOperationException("Can only compare constant term to constant term, function term or variable term.");
+			return super.compareTo(o);
 		}
 
 		ConstantTerm other = (ConstantTerm) o;
@@ -134,6 +122,6 @@ public class ConstantTerm<T extends Comparable<T>> implements Term {
 			return thisType.getName().compareTo(otherType.getName());
 		}
 
-		return thisPrio - otherPrio;
+		return Integer.compare(thisPrio, otherPrio);
 	}
 }
