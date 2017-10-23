@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.predicates.BuiltinBiPredicate;
-import at.ac.tuwien.kr.alpha.common.predicates.Evaluable;
+import at.ac.tuwien.kr.alpha.common.predicates.FixedInterpretationPredicate;
 
 public enum BinaryOperator {
 	EQ("="),
@@ -12,7 +12,7 @@ public enum BinaryOperator {
 	GE(">=");
 
 	private String asString;
-	private Evaluable asPredicate;
+	private FixedInterpretationPredicate asPredicate;
 
 	BinaryOperator(String asString) {
 		this.asString = asString;
@@ -24,7 +24,7 @@ public enum BinaryOperator {
 		return asString;
 	}
 
-	public Evaluable toPredicate() {
+	public FixedInterpretationPredicate toPredicate() {
 		return asPredicate;
 	}
 

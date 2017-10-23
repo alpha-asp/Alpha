@@ -7,13 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public abstract class BaseExternalNativePredicate implements Evaluable {
-	protected final String name;
-	protected final int arity;
-
-	public BaseExternalNativePredicate(String name, int arity) {
-		this.name = name;
-		this.arity = arity;
+public abstract class BaseExternalPredicate extends FixedInterpretationPredicate {
+	public BaseExternalPredicate(String name, int arity) {
+		super(name, arity);
 	}
 
 	@Override
@@ -43,14 +39,4 @@ public abstract class BaseExternalNativePredicate implements Evaluable {
 	}
 
 	protected abstract boolean test(List<ConstantTerm> terms);
-
-	@Override
-	public String getPredicateName() {
-		return name;
-	}
-
-	@Override
-	public int getArity() {
-		return 1;
-	}
 }

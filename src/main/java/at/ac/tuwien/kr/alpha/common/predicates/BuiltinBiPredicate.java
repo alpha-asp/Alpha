@@ -7,21 +7,12 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import java.util.List;
 import java.util.Set;
 
-public class BuiltinBiPredicate implements Evaluable, Predicate {
+public class BuiltinBiPredicate extends FixedInterpretationPredicate {
 	private final BinaryOperator operator;
 
 	public BuiltinBiPredicate(BinaryOperator operator) {
+		super(operator.toString(), 2);
 		this.operator = operator;
-	}
-
-	@Override
-	public String getPredicateName() {
-		return operator.toString();
-	}
-
-	@Override
-	public int getArity() {
-		return 2;
 	}
 
 	@Override

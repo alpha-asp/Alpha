@@ -8,9 +8,8 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
-import at.ac.tuwien.kr.alpha.common.predicates.Evaluable;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.predicates.FixedInterpretationPredicate;
 import at.ac.tuwien.kr.alpha.common.terms.*;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -23,17 +22,17 @@ import static java.util.Collections.emptyList;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
-	private final Map<String, Evaluable> externals;
+	private final Map<String, FixedInterpretationPredicate> externals;
 	private final boolean acceptVariables;
 
 	private Program inputProgram;
 	private boolean isCurrentLiteralNegated;
 
-	public ParseTreeVisitor(Map<String, Evaluable> externals) {
+	public ParseTreeVisitor(Map<String, FixedInterpretationPredicate> externals) {
 		this(externals, true);
 	}
 
-	public ParseTreeVisitor(Map<String, Evaluable> externals, boolean acceptVariables) {
+	public ParseTreeVisitor(Map<String, FixedInterpretationPredicate> externals, boolean acceptVariables) {
 		this.externals = externals;
 		this.acceptVariables = acceptVariables;
 	}
@@ -261,7 +260,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		}
 
 		final List<Term> terms = visitTerms(ctx.terms());
-		return new BasicAtom(new BasicPredicate(ctx.ID().getText(), terms.size()), terms, isCurrentLiteralNegated);
+		return new BasicAtom(new Predicate(ctx.ID().getText(), terms.size()), terms, isCurrentLiteralNegated);
 	}
 
 	@Override
@@ -343,7 +342,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			}
 		}
 
-		Evaluable predicate = externals.get(ctx.ID().getText());
+		FixedInterpretationPredicate predicate = externals.get(ctx.ID().getText());
 
 		// TODO: Throw if predicate is null.
 

@@ -23,7 +23,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class Alpha {
-	private final Map<String, Evaluable> predicateMethods = new HashMap<>();
+	private final Map<String, FixedInterpretationPredicate> predicateMethods = new HashMap<>();
 
 	private final String grounderName;
 	private final String solverName;
@@ -85,7 +85,7 @@ public class Alpha {
 	}
 
 	public void register(Method method, String name) {
-		this.predicateMethods.put(name, new ExternalSimpleFixedEvaluable(method));
+		this.predicateMethods.put(name, new ExternalMethodPredicate(method));
 	}
 
 	public void register(Method method) {
@@ -93,11 +93,11 @@ public class Alpha {
 	}
 
 	public <T> void register(String name, java.util.function.Predicate<T> predicate) {
-		this.predicateMethods.put(name, new ExternalNativePredicate<>(name, predicate));
+		this.predicateMethods.put(name, new ExternalPredicate<>(name, predicate));
 	}
 
 	public <T, U> void register(String name, java.util.function.BiPredicate<T, U> predicate) {
-		this.predicateMethods.put(name, new ExternalNativeBiPredicate<>(name, predicate));
+		this.predicateMethods.put(name, new ExternalBiPredicate<>(name, predicate));
 	}
 
 	public void setProgram(Program program) {
@@ -112,7 +112,7 @@ public class Alpha {
 		final List<Atom> atoms = new ArrayList<>();
 
 		for (T it : c) {
-			atoms.add(new BasicAtom(new BasicPredicate(name, 1), ConstantTerm.getInstance(it)));
+			atoms.add(new BasicAtom(new at.ac.tuwien.kr.alpha.common.predicates.Predicate(name, 1), ConstantTerm.getInstance(it)));
 		}
 
 		final Program acc = new Program(Collections.emptyList(), atoms);

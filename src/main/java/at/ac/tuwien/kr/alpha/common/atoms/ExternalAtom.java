@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.predicates.Evaluable;
+import at.ac.tuwien.kr.alpha.common.predicates.FixedInterpretationPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -20,10 +20,10 @@ public class ExternalAtom implements Literal {
 	private final List<Term> input;
 	private final List<VariableTerm> output;
 
-	protected final Evaluable predicate;
+	protected final FixedInterpretationPredicate predicate;
 	protected final boolean negated;
 
-	public ExternalAtom(Evaluable predicate, List<Term> input, List<VariableTerm> output, boolean negated) {
+	public ExternalAtom(FixedInterpretationPredicate predicate, List<Term> input, List<VariableTerm> output, boolean negated) {
 		this.predicate = predicate;
 		this.input = input;
 		this.output = output;

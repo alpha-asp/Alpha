@@ -4,10 +4,10 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 
 import java.util.List;
 
-public class ExternalNativeBiPredicate<T, U> extends BaseExternalNativePredicate {
+public class ExternalBiPredicate<T, U> extends BaseExternalPredicate {
 	private final java.util.function.BiPredicate<T, U> predicate;
 
-	public ExternalNativeBiPredicate(String name, java.util.function.BiPredicate<T, U> predicate) {
+	public ExternalBiPredicate(String name, java.util.function.BiPredicate<T, U> predicate) {
 		super(name, 2);
 		this.predicate = predicate;
 	}

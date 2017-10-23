@@ -9,18 +9,21 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
 
-public class ExternalSimpleFixedEvaluable implements Evaluable {
+public class ExternalBindingMethodPredicate extends FixedInterpretationPredicate {
 	private final Method method;
 
-	public ExternalSimpleFixedEvaluable(Method method) {
-		if (!method.getReturnType().equals(boolean.class)) {
-			throw new IllegalArgumentException("method must return boolean");
+	public ExternalBindingMethodPredicate(Method method) {
+		super(method.getName(), method.getParameterCount());
+
+		if (!method.getReturnType().equals(Set.class)) {
+			throw new IllegalArgumentException("method must return Set");
 		}
 
 		this.method = method;
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public Set<List<ConstantTerm>> evaluate(List<Term> terms) {
 		if (terms.size() != getArity()) {
 			throw new IllegalArgumentException(
@@ -62,19 +65,9 @@ public class ExternalSimpleFixedEvaluable implements Evaluable {
 		}
 
 		try {
-			return ((boolean) method.invoke(null, arguments)) ? TRUE : FALSE;
+			return (Set) method.invoke(null, arguments);
 		} catch (IllegalAccessException | InvocationTargetException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	@Override
-	public String getPredicateName() {
-		return method.getName();
-	}
-
-	@Override
-	public int getArity() {
-		return method.getParameterCount();
 	}
 }

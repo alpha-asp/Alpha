@@ -1,6 +1,5 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
-import at.ac.tuwien.kr.alpha.common.Symbol;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.List;

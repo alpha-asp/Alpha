@@ -4,10 +4,10 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 
 import java.util.List;
 
-public class ExternalNativePredicate<T> extends BaseExternalNativePredicate {
+public class ExternalPredicate<T> extends BaseExternalPredicate {
 	private final java.util.function.Predicate<T> predicate;
 
-	public ExternalNativePredicate(String name, java.util.function.Predicate<T> predicate) {
+	public ExternalPredicate(String name, java.util.function.Predicate<T> predicate) {
 		super(name, 1);
 		this.predicate = predicate;
 	}

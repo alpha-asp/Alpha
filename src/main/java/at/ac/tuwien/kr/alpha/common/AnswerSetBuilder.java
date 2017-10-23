@@ -2,7 +2,6 @@ package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -37,7 +36,7 @@ public class AnswerSetBuilder {
 
 	private void flush() {
 		if (firstInstance) {
-			predicate = new BasicPredicate(predicateSymbol, 0);
+			predicate = new Predicate(predicateSymbol, 0);
 			predicates.add(predicate);
 			predicateInstances.put(predicate, new TreeSet<>(singletonList(new BasicAtom(predicate))));
 		} else {
@@ -65,7 +64,7 @@ public class AnswerSetBuilder {
 	public final <T extends Comparable<T>> AnswerSetBuilder instance(final T... terms) {
 		if (firstInstance) {
 			firstInstance = false;
-			predicate = new BasicPredicate(predicateSymbol, terms.length);
+			predicate = new Predicate(predicateSymbol, terms.length);
 			predicates.add(predicate);
 		}
 
@@ -83,7 +82,7 @@ public class AnswerSetBuilder {
 	public AnswerSetBuilder symbolicInstance(String... terms) {
 		if (firstInstance) {
 			firstInstance = false;
-			predicate = new BasicPredicate(predicateSymbol, terms.length);
+			predicate = new Predicate(predicateSymbol, terms.length);
 			predicates.add(predicate);
 		}
 

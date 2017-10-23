@@ -6,8 +6,8 @@ import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
-import at.ac.tuwien.kr.alpha.common.predicates.ExternalSimpleFixedEvaluable;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.predicates.ExternalMethodPredicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import org.junit.Test;
 
@@ -21,18 +21,18 @@ import static org.junit.Assert.assertEquals;
 public class AlphaTest {
 	private static int invocations;
 
-	@Predicate
+	@at.ac.tuwien.kr.alpha.Predicate
 	public static boolean isOne(int term) {
 		invocations++;
 		return term == 1;
 	}
 
-	@Predicate
+	@at.ac.tuwien.kr.alpha.Predicate
 	public static boolean isFoo(Integer a) {
 		return a == 0xF00;
 	}
 
-	@Predicate
+	@at.ac.tuwien.kr.alpha.Predicate
 	public static boolean thinger(Thingy thingy) {
 		return true;
 	}
@@ -106,10 +106,10 @@ public class AlphaTest {
 		SubThingy thingy = new SubThingy();
 
 		Rule rule = new Rule(
-			new BasicAtom(new BasicPredicate("p", 1), ConstantTerm.getInstance("x")),
+			new BasicAtom(new Predicate("p", 1), ConstantTerm.getInstance("x")),
 			singletonList(
 				new ExternalAtom(
-					new ExternalSimpleFixedEvaluable(this.getClass().getMethod("thinger", Thingy.class)),
+					new ExternalMethodPredicate(this.getClass().getMethod("thinger", Thingy.class)),
 					singletonList(ConstantTerm.getInstance(thingy)),
 					emptyList(),
 					false

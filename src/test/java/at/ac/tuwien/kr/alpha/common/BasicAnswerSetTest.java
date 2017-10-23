@@ -2,7 +2,6 @@ package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import org.junit.Test;
@@ -21,12 +20,12 @@ import static org.junit.Assert.assertNotEquals;
 public class BasicAnswerSetTest {
 	@Test
 	public void areAnswerSetsEqual() throws Exception {
-		BasicPredicate a = new BasicPredicate("a", 0);
-		BasicPredicate foo = new BasicPredicate("foo", 1);
+		Predicate a = new Predicate("a", 0);
+		Predicate foo = new Predicate("foo", 1);
 		SortedSet<Predicate> fooAndA = new TreeSet<>(asList(foo, a));
 
-		BasicPredicate q = new BasicPredicate("q", 0);
-		BasicPredicate p = new BasicPredicate("p", 1);
+		Predicate q = new Predicate("q", 0);
+		Predicate p = new Predicate("p", 1);
 		SortedSet<Predicate> qAndP = new TreeSet<>(asList(q, p));
 
 		ConstantTerm bar = getInstance("bar");

@@ -2,7 +2,6 @@ package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -13,8 +12,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class ChoiceAtom implements Atom {
-	public static final Predicate ON = new BasicPredicate("ChoiceOn", 1);
-	public static final Predicate OFF = new BasicPredicate("ChoiceOff", 1);
+	public static final Predicate ON = new Predicate("ChoiceOn", 1);
+	public static final Predicate OFF = new Predicate("ChoiceOff", 1);
 
 	private final Predicate predicate;
 	private final List<Term> terms;
