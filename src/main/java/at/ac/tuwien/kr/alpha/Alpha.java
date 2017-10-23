@@ -12,6 +12,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import org.antlr.v4.runtime.CharStreams;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
@@ -151,7 +152,7 @@ public class Alpha {
 
 		ProgramParser parser = new ProgramParser(predicateMethods);
 
-		setProgram(parser.parse(program));
+		setProgram(parser.parse(CharStreams.fromString(program)));
 
 		// Obtain grounder instance and feed it with parsedProgram.
 		return solve();

@@ -110,7 +110,8 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
-		System.out.println(answerSet);
+		assertTrue(answerSet.isPresent());
+		System.out.println(answerSet.get());
 		checkGoal(parsedProgram, answerSet.get());
 	}
 
@@ -124,7 +125,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		int steps = getSteps(parsedProgram);
 		SortedSet<Atom> onInstancesInAnswerSet = answerSet.getPredicateInstances(on);
 		for (Atom atom : parsedProgram.getFacts()) {
-			if (atom.getPredicate().equals(ongoal.getPredicateName()) && atom.getPredicate().getArity() == ongoal.getArity()) {
+			if (atom.getPredicate().getPredicateName().equals(ongoal.getPredicateName()) && atom.getPredicate().getArity() == ongoal.getArity()) {
 				Term expectedTop = ConstantTerm.getInstance(atom.getTerms().get(0).toString());
 				Term expectedBottom = ConstantTerm.getInstance(atom.getTerms().get(1).toString());
 				Term expectedSteps = ConstantTerm.getInstance(String.valueOf(steps));

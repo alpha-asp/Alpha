@@ -169,9 +169,7 @@ public class Main {
 
 		if (commandLine.hasOption(OPT_FILTER)) {
 			Set<String> desiredPredicates = new HashSet<>(Arrays.asList(commandLine.getOptionValues(OPT_FILTER)));
-			filter = p -> {
-				return desiredPredicates.contains(p.getPredicateName());
-			};
+			filter = p -> desiredPredicates.contains(p.getPredicateName());
 		}
 
 		Bridge[] bridges = new Bridge[0];
@@ -239,7 +237,7 @@ public class Main {
 		String chosenBranchingHeuristic = commandLine.getOptionValue(OPT_BRANCHING_HEURISTIC, DEFAULT_BRANCHING_HEURISTIC);
 		Heuristic parsedChosenBranchingHeuristic = null;
 		try {
-			parsedChosenBranchingHeuristic = Heuristic.get(chosenBranchingHeuristic);
+			parsedChosenBranchingHeuristic = Heuristic.valueOf(chosenBranchingHeuristic.replace("-", "_").toUpperCase());
 		} catch (IllegalArgumentException e) {
 			bailOut("Unknown branching heuristic: {}. Please try one of the following: {}.", chosenBranchingHeuristic, Heuristic.listAllowedValues());
 		}

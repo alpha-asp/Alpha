@@ -398,8 +398,7 @@ public class DefaultSolver extends AbstractSolver {
 				LOGGER.debug("Backtrack: choice stack size: {}, choice stack: {}", choiceStack.size(), choiceStack);
 			} else {
 				LOGGER.debug("Violated NoGood is {}. Analyzing the conflict.", conflictCause.getViolatedNoGood());
-				GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = null;
-				conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.getViolatedNoGood());
+				GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.getViolatedNoGood());
 				if (conflictAnalysisResult.isUnsatisfiable) {
 					// Halt if unsatisfiable.
 					return false;

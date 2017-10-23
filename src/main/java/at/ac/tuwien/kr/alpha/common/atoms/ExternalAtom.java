@@ -119,9 +119,15 @@ public class ExternalAtom implements Literal {
 
 	@Override
 	public Atom substitute(Substitution substitution) {
-		return new ExternalAtom(predicate, input.stream().map(t -> {
-			return t.substitute(substitution);
-		}).collect(Collectors.toList()), output, negated);
+		return new ExternalAtom(
+			predicate,
+			input
+				.stream()
+				.map(t -> t.substitute(substitution))
+				.collect(Collectors.toList()),
+			output,
+			negated
+		);
 	}
 
 	@Override

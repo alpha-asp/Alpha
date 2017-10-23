@@ -128,7 +128,7 @@ class ChoiceStack implements Iterable<Integer> {
 	private class ChoiceIterator implements Iterator<Integer> {
 		private final Iterator<Entry> iterator;
 
-		public ChoiceIterator(Iterator<Entry> iterator) {
+		ChoiceIterator(Iterator<Entry> iterator) {
 			this.iterator = iterator;
 		}
 
@@ -162,7 +162,7 @@ class ChoiceStack implements Iterable<Integer> {
 		boolean value;
 		boolean backtracked;
 
-		public Entry(int atom, boolean value, boolean backtracked) {
+		Entry(int atom, boolean value, boolean backtracked) {
 			this.atom = atom;
 			this.value = value;
 			this.backtracked = backtracked;

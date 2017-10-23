@@ -72,9 +72,7 @@ public class AlphaTest {
 	@Test
 	public void smallGraph() throws Exception {
 		Alpha system = new Alpha();
-		system.register("connected", (Integer a, Integer b) -> {
-			return (a == 1 && b == 2) || (b == 2 || b == 3);
-		});
+		system.register("connected", (Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3));
 
 		Set<AnswerSet> answerSets = system.solve("node(1). node(2). node(3). a :- &connected(1,2).").collect(Collectors.toSet());
 	}
@@ -82,9 +80,7 @@ public class AlphaTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void smallGraphWithWrongType() throws Exception {
 		Alpha system = new Alpha();
-		system.register("connected", (Integer a, Integer b) -> {
-			return (a == 1 && b == 2) || (b == 2 || b == 3);
-		});
+		system.register("connected", (Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3));
 
 		system.solve("a :- &connected(\"hello\",2).").collect(Collectors.toSet());
 	}

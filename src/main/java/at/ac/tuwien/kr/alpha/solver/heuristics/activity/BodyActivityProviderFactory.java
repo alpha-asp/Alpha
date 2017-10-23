@@ -49,8 +49,7 @@ public final class BodyActivityProviderFactory {
 		case MIN:
 			return new MinBodyActivityProvider(bodyToLiterals, activityCounters, defaultActivity);
 		default:
-			assert false : "Unknown BodyActivityType: " + type;
-			return null;
+			throw new IllegalArgumentException("Unknown body activity type requested.");
 		}
 	}
 
