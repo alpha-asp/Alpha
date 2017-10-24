@@ -38,6 +38,9 @@ import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.junit.Test;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
@@ -48,6 +51,19 @@ import static org.junit.Assert.assertEquals;
 
 public class SolverTests extends AbstractSolverTests {
 	private final ProgramParser parser = new ProgramParser();
+
+	/**
+	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
+	 */
+	private static void enableTracing() {
+		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+		root.setLevel(ch.qos.logback.classic.Level.TRACE);
+	}
+
+	private static void enableDebugLog() {
+		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+		root.setLevel(Level.DEBUG);
+	}
 
 	private static class Thingy implements Comparable<Thingy> {
 		@Override
