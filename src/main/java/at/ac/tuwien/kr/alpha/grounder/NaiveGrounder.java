@@ -300,6 +300,7 @@ public class NaiveGrounder extends BridgedGrounder {
 			}
 
 			// Check if rule contains intervals (but is otherwise ground).
+			// FIXME: should only be done for rules with externals where the rule contains no variable bound by an ordinary atom.
 			if (nonGroundRule.containsIntervals() || nonGroundRule.containsExternals()) {
 				// Then generate all substitutions of the intervals and generate the resulting nogoods.
 				List<Substitution> substitutions = bindNextAtomInRule(nonGroundRule, 0, -1, new Substitution(), null);
