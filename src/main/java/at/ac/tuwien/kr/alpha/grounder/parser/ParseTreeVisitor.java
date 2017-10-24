@@ -37,8 +37,8 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		this.acceptVariables = acceptVariables;
 	}
 
-	private void notSupportedSyntax(RuleContext ctx) {
-		throw new UnsupportedOperationException("Unsupported syntax encountered: " + ctx.getText());
+	private UnsupportedOperationException notSupported(RuleContext ctx) {
+		return new UnsupportedOperationException("Unsupported syntax encountered: " + ctx.getText());
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			Literal literal = visitClassical_literal(classicalLiteralContext);
 
 			if (literal.isNegated()) {
-				notSupportedSyntax(classicalLiteralContext);
+				throw notSupported(classicalLiteralContext);
 			}
 
 			predicates.add(literal.getPredicate());
@@ -125,7 +125,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	public Program visitProgram(ASPCore2Parser.ProgramContext ctx) {
 		// program : statements? query?;
 		if (ctx.query() != null) {
-			notSupportedSyntax(ctx.query());
+			throw notSupported(ctx.query());
 		}
 
 		if (ctx.statements() == null) {
@@ -171,7 +171,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	public Atom visitDisjunction(ASPCore2Parser.DisjunctionContext ctx) {
 		// disjunction : classical_literal (OR disjunction)?;
 		if (ctx.disjunction() != null) {
-			notSupportedSyntax(ctx);
+			throw notSupported(ctx);
 		}
 		isCurrentLiteralNegated = false;
 		return visitClassical_literal(ctx.classical_literal());
@@ -181,7 +181,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	public Atom visitHead(ASPCore2Parser.HeadContext ctx) {
 		// head : disjunction | choice;
 		if (ctx.choice() != null) {
-			notSupportedSyntax(ctx);
+			throw notSupported(ctx);
 		}
 		return visitDisjunction(ctx.disjunction());
 	}
@@ -196,7 +196,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		final List<Literal> literals = new ArrayList<>();
 		do {
 			if (ctx.naf_literal() == null) {
-				notSupportedSyntax(ctx.aggregate());
+				throw notSupported(ctx.aggregate());
 			}
 
 			literals.add(visitNaf_literal(ctx.naf_literal()));
@@ -223,8 +223,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		} else if (ctx.binop().GREATER_OR_EQ() != null) {
 			op = BinaryOperator.GE;
 		} else {
-			notSupportedSyntax(ctx.binop());
-			return null;
+			throw notSupported(ctx.binop());
 		}
 
 		if (isCurrentLiteralNegated) {
@@ -248,15 +247,14 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		} else if (ctx.external_atom() != null) {
 			return visitExternal_atom(ctx.external_atom());
 		}
-		notSupportedSyntax(ctx);
-		return null;
+		throw notSupported(ctx);
 	}
 
 	@Override
 	public Literal visitClassical_literal(ASPCore2Parser.Classical_literalContext ctx) {
 		// classical_literal : MINUS? ID (PAREN_OPEN terms PAREN_CLOSE)?;
 		if (ctx.MINUS() != null) {
-			notSupportedSyntax(ctx);
+			throw notSupported(ctx);
 		}
 
 		final List<Term> terms = visitTerms(ctx.terms());
@@ -302,8 +300,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public VariableTerm visitTerm_anonymousVariable(ASPCore2Parser.Term_anonymousVariableContext ctx) {
 		if (!acceptVariables) {
-			notSupportedSyntax(ctx);
-			return null;
+			throw notSupported(ctx);
 		}
 
 		return VariableTerm.getAnonymousInstance();
@@ -312,8 +309,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public VariableTerm visitTerm_variable(ASPCore2Parser.Term_variableContext ctx) {
 		if (!acceptVariables) {
-			notSupportedSyntax(ctx);
-			return null;
+			throw notSupported(ctx);
 		}
 
 		return VariableTerm.getInstance(ctx.VARIABLE().getText());
@@ -329,7 +325,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		// external_atom : AMPERSAND ID (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?;
 
 		if (ctx.MINUS() != null) {
-			notSupportedSyntax(ctx);
+			throw notSupported(ctx);
 		}
 
 		List<Term> outputTerms = visitTerms(ctx.output);
@@ -337,9 +333,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 		for (Term t : outputTerms) {
 			if (!(t instanceof VariableTerm)) {
-				notSupportedSyntax(ctx.output);
-				return null;
+				throw notSupported(ctx.output);
 			}
+			output.add((VariableTerm) t);
 		}
 
 		FixedInterpretationPredicate predicate = externals.get(ctx.ID().getText());
@@ -351,20 +347,17 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public Object visitStatement_weightConstraint(ASPCore2Parser.Statement_weightConstraintContext ctx) {
-		notSupportedSyntax(ctx);
-		return null;
+		throw notSupported(ctx);
 	}
 
 	@Override
 	public Object visitStatement_gringoSharp(ASPCore2Parser.Statement_gringoSharpContext ctx) {
-		notSupportedSyntax(ctx);
-		return null;
+		throw notSupported(ctx);
 	}
 
 	@Override
 	public Object visitTerm_minusTerm(ASPCore2Parser.Term_minusTermContext ctx) {
-		notSupportedSyntax(ctx);
-		return null;
+		throw notSupported(ctx);
 	}
 
 	public IntervalTerm visitTerm_interval(ASPCore2Parser.Term_intervalContext ctx) {
@@ -379,7 +372,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public Object visitTerm_binopTerm(ASPCore2Parser.Term_binopTermContext ctx) {
-		notSupportedSyntax(ctx);
-		return null;
+		throw notSupported(ctx);
 	}
 }
