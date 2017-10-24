@@ -562,7 +562,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	private void assertAnswerSet(String program, String answerSet) throws IOException {
-		assertAnswerSets(program, AnswerSetsParser.parseSingleton(answerSet));
+		assertAnswerSets(program, AnswerSetsParser.parse("{ " + answerSet + " }"));
 	}
 
 	private void assertAnswerSetsWithBase(String program, String base, String... answerSets) throws IOException {
