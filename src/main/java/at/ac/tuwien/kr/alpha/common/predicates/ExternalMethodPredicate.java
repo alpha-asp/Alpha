@@ -7,7 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
-public class ExternalMethodPredicate extends BaseExternalPredicate {
+public class ExternalMethodPredicate extends ExternalNonBindingPredicate {
 	private final Method method;
 
 	public ExternalMethodPredicate(Method method) {

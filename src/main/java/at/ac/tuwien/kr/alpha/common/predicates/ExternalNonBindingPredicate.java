@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public abstract class BaseExternalPredicate extends FixedInterpretationPredicate {
-	public BaseExternalPredicate(String name, int arity) {
+public abstract class ExternalNonBindingPredicate extends FixedInterpretationPredicate {
+	public ExternalNonBindingPredicate(String name, int arity) {
 		super(name, arity);
 	}
 

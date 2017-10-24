@@ -4,7 +4,7 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 
 import java.util.List;
 
-public class ExternalLongPredicate extends BaseExternalPredicate {
+public class ExternalLongPredicate extends ExternalNonBindingPredicate {
 	private final java.util.function.LongPredicate predicate;
 
 	public ExternalLongPredicate(String name, java.util.function.LongPredicate predicate) {

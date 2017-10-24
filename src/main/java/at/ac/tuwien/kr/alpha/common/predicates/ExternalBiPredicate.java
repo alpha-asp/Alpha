@@ -4,7 +4,7 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 
 import java.util.List;
 
-public class ExternalBiPredicate<T, U> extends BaseExternalPredicate {
+public class ExternalBiPredicate<T, U> extends ExternalNonBindingPredicate {
 	private final java.util.function.BiPredicate<T, U> predicate;
 
 	public ExternalBiPredicate(String name, java.util.function.BiPredicate<T, U> predicate) {

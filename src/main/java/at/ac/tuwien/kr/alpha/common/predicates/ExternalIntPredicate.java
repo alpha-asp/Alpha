@@ -4,7 +4,7 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 
 import java.util.List;
 
-public class ExternalIntPredicate extends BaseExternalPredicate {
+public class ExternalIntPredicate extends ExternalNonBindingPredicate {
 	private final java.util.function.IntPredicate predicate;
 
 	public ExternalIntPredicate(String name, java.util.function.IntPredicate predicate) {
