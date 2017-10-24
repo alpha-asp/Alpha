@@ -64,10 +64,23 @@ public class ExternalBindingMethodPredicate extends FixedInterpretationPredicate
 			);
 		}
 
+		Set<List<ConstantTerm>> result;
 		try {
-			return (Set) method.invoke(null, arguments);
+			result = (Set) method.invoke(null, arguments);
 		} catch (IllegalAccessException | InvocationTargetException e) {
 			throw new RuntimeException(e);
 		}
+
+		if (result == null) {
+			throw new NullPointerException("Predicate " + getPredicateName() + " returned null. It must return a Set.");
+		}
+
+		for (List<ConstantTerm> binding : result) {
+			if (binding.size() != getArity()) {
+				throw new RuntimeException("Predicate " + getPredicateName() + " returned " + binding.size() + " terms when exactly " + getArity() + " were expected.");
+			}
+		}
+
+		return result;
 	}
 }

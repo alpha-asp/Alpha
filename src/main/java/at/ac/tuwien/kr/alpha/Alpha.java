@@ -88,6 +88,14 @@ public class Alpha {
 		this.predicateMethods.put(name, new ExternalMethodPredicate(method));
 	}
 
+	public void registerBinding(Method method, String name) {
+		this.predicateMethods.put(name, new ExternalBindingMethodPredicate(method));
+	}
+
+	public void registerBinding(Method method) {
+		registerBinding(method, method.getName());
+	}
+
 	public void register(Method method) {
 		register(method, method.getName());
 	}

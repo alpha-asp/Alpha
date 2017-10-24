@@ -6,16 +6,19 @@ import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.predicates.ExternalMethodPredicate;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
+import static java.util.Arrays.asList;
+import static java.util.Collections.*;
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 public class AlphaTest {
@@ -51,7 +54,7 @@ public class AlphaTest {
 		Alpha system = new Alpha();
 		Thingy a = new Thingy();
 		Thingy b = new Thingy();
-		List<Thingy> things = Arrays.asList(a, b);
+		List<Thingy> things = asList(a, b);
 		system.addFacts(things);
 		Set<AnswerSet> actual = system.solve().collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("thingy").instance(a).instance(b).build()));
@@ -85,6 +88,61 @@ public class AlphaTest {
 		});
 
 		system.solve("a :- &connected(\"hello\",2).").collect(Collectors.toSet());
+	}
+
+	public static Set<List<ConstantTerm<Integer>>> neighbors(int node) {
+		if (node == 1) {
+			return new HashSet<>(asList(
+				singletonList(ConstantTerm.getInstance(2)),
+				singletonList(ConstantTerm.getInstance(3))
+			));
+		}
+		return emptySet();
+	}
+
+	public static Set<List<ConstantTerm<Integer>>> coolNode(int node) {
+		if (node == 1) {
+			return singleton(emptyList());
+		}
+		return emptySet();
+	}
+
+	@Test
+	public void smallGraphNoNeighbors() throws Exception {
+		Alpha system = new Alpha();
+		system.registerBinding(this.getClass().getMethod("neighbors", int.class));
+
+		assertTrue(AnswerSetsParser.parse("{ noNeighbors(2) }").equals(system.solve("noNeighbors(2) :- not &neighbors[X](2).").collect(Collectors.toSet())));
+	}
+
+	@Test
+	public void smallGraphCoolNode() throws Exception {
+		Alpha system = new Alpha();
+		system.registerBinding(this.getClass().getMethod("coolNode", int.class));
+
+		Set<AnswerSet> actual = system.solve("node(1..2). in(X) :- node(X), &coolNode(X).").collect(Collectors.toSet());
+		Set<AnswerSet> expected = AnswerSetsParser.parse("{ in(1), node(1), node(2) }");
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void smallGraphSingleNeighbor() throws Exception {
+		Alpha system = new Alpha();
+		system.registerBinding(this.getClass().getMethod("neighbors", int.class));
+
+		Set<AnswerSet> expected = AnswerSetsParser.parse("{ in(1,2), in(1,3), node(1), node(2), node(3) }");
+		Set<AnswerSet> actual = system.solve("node(1..3). in(1,X) :- &neighbors[X](1), node(X).").collect(Collectors.toSet());
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void smallGraphSingleNeighborNoTerm() throws Exception {
+		Alpha system = new Alpha();
+		system.registerBinding(this.getClass().getMethod("neighbors", int.class));
+
+		Set<AnswerSet> expected = AnswerSetsParser.parse("{ success }");
+		Set<AnswerSet> actual = system.solve("success :- &neighbors(1), not &neighbors(2).").collect(Collectors.toSet());
+		assertEquals(expected, actual);
 	}
 
 	private static class Thingy implements Comparable<Thingy> {
