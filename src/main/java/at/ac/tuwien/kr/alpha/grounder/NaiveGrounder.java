@@ -580,14 +580,14 @@ public class NaiveGrounder extends BridgedGrounder {
 			// (as ensured by the body atom sorting)
 
 			// Generate all substitutions for the interval representing variable.
-			List<Substitution> intervalSubstitutions = ((ExternalAtom)currentAtom).getSubstitutions(partialSubstitution);
+			List<Substitution> substitutions = ((ExternalAtom)currentAtom).getSubstitutions(partialSubstitution);
 
-			if (intervalSubstitutions.isEmpty()) {
+			if (substitutions.isEmpty()) {
 				return emptyList();
 			}
 
 			ArrayList<Substitution> generatedSubstitutions = new ArrayList<>();
-			for (Substitution intervalSubstitution : intervalSubstitutions) {
+			for (Substitution intervalSubstitution : substitutions) {
 				// Continue grounding with each of the generated values.
 				generatedSubstitutions.addAll(bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, intervalSubstitution, currentAssignment));
 			}
