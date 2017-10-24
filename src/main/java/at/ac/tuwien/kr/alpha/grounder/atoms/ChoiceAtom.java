@@ -73,19 +73,6 @@ public class ChoiceAtom implements Atom {
 	}
 
 	@Override
-	public int compareTo(Atom o) {
-		if (!(o instanceof  ChoiceAtom)) {
-			return 1;
-		}
-		ChoiceAtom other = (ChoiceAtom)o;
-		int result = predicate.compareTo(other.predicate);
-		if (result != 0) {
-			return result;
-		}
-		return terms.get(0).compareTo(other.terms.get(0));
-	}
-
-	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder(predicate.getPredicateName());
 		sb.append("(");

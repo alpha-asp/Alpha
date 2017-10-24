@@ -76,11 +76,6 @@ public class IntervalAtom implements Literal {
 	}
 
 	@Override
-	public int compareTo(Atom o) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public String toString() {
 		return INTERVAL_PREDICATE.getPredicateName() + "(" + intervalRepresentingVariable + ", " + intervalTerm + ")";
 	}

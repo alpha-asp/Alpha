@@ -79,21 +79,6 @@ public class RuleAtom implements Atom {
 	}
 
 	@Override
-	public int compareTo(Atom o) {
-		if (!(o instanceof  RuleAtom)) {
-			return 1;
-		}
-
-		RuleAtom other = (RuleAtom)o;
-
-		int result = terms.get(0).compareTo(other.terms.get(0));
-		if (result != 0) {
-			return result;
-		}
-		return terms.get(1).compareTo(other.terms.get(1));
-	}
-
-	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
 			return true;

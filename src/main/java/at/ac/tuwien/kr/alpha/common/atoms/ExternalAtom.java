@@ -107,12 +107,6 @@ public class ExternalAtom implements Literal {
 	}
 
 	@Override
-	public int compareTo(Atom o) {
-		// TODO: Implement
-		return 0;
-	}
-
-	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder("&");
 		sb.append(predicate.getPredicateName());

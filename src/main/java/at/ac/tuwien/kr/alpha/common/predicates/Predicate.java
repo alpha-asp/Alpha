@@ -50,7 +50,7 @@ public class Predicate implements Comparable<Predicate> {
 
 	@Override
 	public int compareTo(Predicate other) {
-		int result = this.getArity() - other.getArity();
+		int result = Integer.compare(this.getArity(), other.getArity());
 
 		if (result != 0) {
 			return result;
