@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
-import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 public class AlphaTest {
@@ -112,7 +111,9 @@ public class AlphaTest {
 		Alpha system = new Alpha();
 		system.registerBinding(this.getClass().getMethod("neighbors", int.class));
 
-		assertTrue(AnswerSetsParser.parse("{ noNeighbors(2) }").equals(system.solve("noNeighbors(2) :- not &neighbors[X](2).").collect(Collectors.toSet())));
+		Set<AnswerSet> expected = AnswerSetsParser.parse("{ noNeighbors(2) }");
+		Set<AnswerSet> actual = system.solve("noNeighbors(2) :- not &neighbors(2).").collect(Collectors.toSet());
+		assertEquals(expected, actual);
 	}
 
 	@Test

@@ -8,10 +8,7 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
@@ -41,11 +38,18 @@ public class ExternalAtom implements Literal {
 
 		Set<List<ConstantTerm>> results = predicate.evaluate(substitutes);
 
+		if (results == null) {
+			throw new NullPointerException("Predicate " + getPredicate().getPredicateName() + " returned null. It must return a Set.");
+		}
+
 		if (results.isEmpty()) {
 			return emptyList();
 		}
 
 		for (List<ConstantTerm> bindings : results) {
+			if (bindings.size() < output.size()) {
+				throw new RuntimeException("Predicate " + getPredicate().getPredicateName() + " returned " + bindings.size() + " terms when at least " + output.size() + " were expected.");
+			}
 			Substitution ith = new Substitution(partialSubstitution);
 			for (int i = 0; i < output.size(); i++) {
 				ith.put(output.get(i), bindings.get(i));
@@ -87,16 +91,30 @@ public class ExternalAtom implements Literal {
 
 	@Override
 	public List<VariableTerm> getBindingVariables() {
+		if (negated) {
+			// Negative literal has no binding variables.
+			return Collections.emptyList();
+		}
 		LinkedList<VariableTerm> bindingVariables = new LinkedList<>();
 		for (Term term : input) {
 			bindingVariables.addAll(term.getOccurringVariables());
 		}
+		bindingVariables.addAll(output);
 		return bindingVariables;
 	}
 
 	@Override
 	public List<VariableTerm> getNonBindingVariables() {
-		return emptyList();
+		if (!negated) {
+			// Positive literal has only binding variables.
+			return Collections.emptyList();
+		}
+		LinkedList<VariableTerm> nonbindingVariables = new LinkedList<>();
+		for (Term term : input) {
+			nonbindingVariables.addAll(term.getOccurringVariables());
+		}
+		nonbindingVariables.addAll(output);
+		return nonbindingVariables;
 	}
 
 	@Override

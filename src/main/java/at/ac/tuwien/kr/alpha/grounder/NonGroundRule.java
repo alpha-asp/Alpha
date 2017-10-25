@@ -5,6 +5,7 @@ import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.predicates.BuiltinBiPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
@@ -56,10 +57,7 @@ public class NonGroundRule {
 
 		this.headAtom = headAtom;
 
-		if (!isSafe()) {
-			throw new RuntimeException("Encountered not safe rule: " + toString()
-				+ "\nNotice: A rule is considered safe if all variables occurring in negative literals, builtin atoms, and the head of the rule also occurr in some positive litera.");
-		}
+		checkSafety();
 	}
 
 	// FIXME: NonGroundRule should extend Rule and then its constructor directly be used.
@@ -135,7 +133,7 @@ public class NonGroundRule {
 	 * head also occur in the positive body).
 	 * @return true if this rule is safe.
 	 */
-	private boolean isSafe() {
+	private void checkSafety() {
 		Set<VariableTerm> bindingVariables = new HashSet<>();
 		Set<VariableTerm> nonbindingVariables = new HashSet<>();
 
@@ -159,7 +157,13 @@ public class NonGroundRule {
 
 		// Check that all non-binding variables are bound in this rule.
 		nonbindingVariables.removeAll(bindingVariables);
-		return nonbindingVariables.isEmpty();
+
+		if (nonbindingVariables.isEmpty()) {
+			return;
+		}
+
+		throw new RuntimeException("Encountered unsafe variable " + nonbindingVariables.iterator().next().toString() + " in rule: " + toString()
+			+ "\nNotice: A rule is considered safe if all variables occurring in negative literals, builtin atoms, and the head of the rule also occur in some positive litera.");
 	}
 
 	/**
@@ -168,13 +172,14 @@ public class NonGroundRule {
 	 */
 	private List<Atom> sortAtoms(List<Atom> atoms) {
 		final Set<SortingBodyComponent> components = new LinkedHashSet<>();
-		final Set<ExternalAtom> evaluableAtoms = new LinkedHashSet<>();
+		final Set<ExternalAtom> builtinAtoms = new LinkedHashSet<>();
 		final Set<IntervalAtom> intervalAtoms = new LinkedHashSet<>();
 
 		for (Atom atom : atoms) {
-			if (atom instanceof ExternalAtom) {
+			// FIXME: The following case assumes that builtin predicates do not create bindings?!
+			if (atom.getPredicate() instanceof BuiltinBiPredicate) {
 				// Sort out builtin atoms (we consider them as not creating new bindings)
-				evaluableAtoms.add((ExternalAtom) atom);
+				builtinAtoms.add((ExternalAtom) atom);
 				continue;
 			}
 			if (atom instanceof IntervalAtom) {
@@ -224,7 +229,7 @@ public class NonGroundRule {
 		}
 
 		sortedPositiveBodyAtoms.addAll(intervalAtoms); // Put interval atoms after positive literals generating their bindings and before builtin atom.
-		sortedPositiveBodyAtoms.addAll(evaluableAtoms);	// Put builtin atoms after positive literals and before negative ones.
+		sortedPositiveBodyAtoms.addAll(builtinAtoms);	// Put builtin atoms after positive literals and before negative ones.
 		return sortedPositiveBodyAtoms;
 	}
 
