@@ -582,7 +582,7 @@ public class NaiveGrounder extends BridgedGrounder {
 			// Generate all substitutions for the interval representing variable.
 			List<Substitution> substitutions = ((ExternalAtom)currentAtom).getSubstitutions(partialSubstitution);
 
-			if (substitutions.isEmpty() && rule.isBodyAtomPositive(atomPos)) {
+			if (substitutions.isEmpty()) {
 				return emptyList();
 			}
 
