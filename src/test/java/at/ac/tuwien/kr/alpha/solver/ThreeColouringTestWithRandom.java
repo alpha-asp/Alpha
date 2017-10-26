@@ -25,14 +25,17 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.Main;
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.junit.Before;
@@ -176,7 +179,7 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 	}
 
 	private void testThreeColouring(int n, boolean shuffle, int seed) throws IOException {
-		Program program = Main.parseVisit("col(V,C) :- v(V), c(C), not ncol(V,C)." + "ncol(V,C) :- col(V,D), c(C), C != D." + ":- e(V,U), col(V,C), col(U,C).");
+		Program program = new ProgramParser().parse("col(V,C) :- v(V), c(C), not ncol(V,C)." + "ncol(V,C) :- col(V,D), c(C), C != D." + ":- e(V,U), col(V,C), col(U,C).");
 		program.getFacts().addAll(createColors("1", "2", "3"));
 		program.getFacts().addAll(createVertices(n));
 		program.getFacts().addAll(createEdges(n, shuffle, seed));
@@ -211,7 +214,7 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 		for (String colour : colours) {
 			List<Term> terms = new ArrayList<>(1);
 			terms.add(ConstantTerm.getInstance(colour));
-			facts.add(new BasicAtom(new BasicPredicate("c", 1), terms));
+			facts.add(new BasicAtom(new Predicate("c", 1), terms));
 		}
 		return facts;
 	}
@@ -254,15 +257,10 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 
 	private Atom fact(String predicateName, int... iTerms) {
 		List<Term> terms = new ArrayList<>(iTerms.length);
-		Predicate predicate = new BasicPredicate(predicateName, iTerms.length);
+		Predicate predicate = new Predicate(predicateName, iTerms.length);
 		for (int i : iTerms) {
-			terms.add(ConstantTerm.getInstance(i2s(i)));
+			terms.add(ConstantTerm.getInstance(i));
 		}
 		return new BasicAtom(predicate, terms);
 	}
-
-	private String i2s(int i) {
-		return String.valueOf(i).intern();
-	}
-
 }

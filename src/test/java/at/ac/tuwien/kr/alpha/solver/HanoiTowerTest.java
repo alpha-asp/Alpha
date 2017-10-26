@@ -26,17 +26,17 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.BasicPredicate;
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import org.antlr.v4.runtime.ANTLRFileStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -47,7 +47,6 @@ import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.SortedSet;
 
-import static at.ac.tuwien.kr.alpha.Main.parseVisit;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -56,6 +55,8 @@ import static org.junit.Assert.assertTrue;
  */
 @Ignore("disabled to save resources during CI")
 public class HanoiTowerTest extends AbstractSolverTests {
+	private final ProgramParser parser = new ProgramParser();
+
 	/**
 	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
 	 */
@@ -104,10 +105,8 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	}
 
 	private void testHanoiTower(String instance) throws IOException {
-		ANTLRFileStream programInputStream = new ANTLRFileStream(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp").toString());
-		ANTLRFileStream instanceInputStream = new ANTLRFileStream(Paths.get("src", "test", "resources", "HanoiTower_instances", instance + ".asp").toString());
-		Program parsedProgram = parseVisit(programInputStream);
-		parsedProgram.accumulate(parseVisit(instanceInputStream));
+		Program parsedProgram = parser.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp")));
+		parsedProgram.accumulate(parser.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "HanoiTower_instances", instance + ".asp"))));
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		Solver solver = getInstance(grounder);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
@@ -120,8 +119,8 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	 * fact in the input there is a corresponding on/3 atom in the output.
 	 */
 	private void checkGoal(Program parsedProgram, AnswerSet answerSet) {
-		Predicate ongoal = new BasicPredicate("ongoal", 2);
-		Predicate on = new BasicPredicate("on", 3);
+		Predicate ongoal = new Predicate("ongoal", 2);
+		Predicate on = new Predicate("on", 3);
 		int steps = getSteps(parsedProgram);
 		SortedSet<Atom> onInstancesInAnswerSet = answerSet.getPredicateInstances(on);
 		for (Atom atom : parsedProgram.getFacts()) {
@@ -136,7 +135,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	}
 
 	private int getSteps(Program parsedProgram) {
-		Predicate steps = new BasicPredicate("steps", 1);
+		Predicate steps = new Predicate("steps", 1);
 		for (Atom atom : parsedProgram.getFacts()) {
 			if (atom.getPredicate().getPredicateName().equals(steps.getPredicateName()) && atom.getPredicate().getArity() == steps.getArity()) {
 				return Integer.valueOf(atom.getTerms().get(0).toString());

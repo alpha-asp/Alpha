@@ -1,9 +1,8 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
-import at.ac.tuwien.kr.alpha.common.BasicPredicate;
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -21,7 +20,7 @@ import java.util.List;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class IntervalAtom implements Literal {
-	private static final Predicate INTERVAL_PREDICATE = new BasicPredicate("_interval", 2);
+	private static final Predicate INTERVAL_PREDICATE = new Predicate("_interval", 2);
 
 	private final IntervalTerm intervalTerm;
 	private final VariableTerm intervalRepresentingVariable;
@@ -35,7 +34,7 @@ public class IntervalAtom implements Literal {
 		List<Substitution> substitutions = new ArrayList<>();
 		for (int i = intervalTerm.getLowerBound(); i <= intervalTerm.getUpperBound(); i++) {
 			Substitution ith = new Substitution(partialSubstitution);
-			ith.put(intervalRepresentingVariable, ConstantTerm.getInstance(String.valueOf(i)));
+			ith.put(intervalRepresentingVariable, ConstantTerm.getInstance(i));
 			substitutions.add(ith);
 		}
 		return substitutions;
@@ -73,23 +72,12 @@ public class IntervalAtom implements Literal {
 
 	@Override
 	public Atom substitute(Substitution substitution) {
-		return new IntervalAtom((IntervalTerm) intervalTerm.substitute(substitution), intervalRepresentingVariable);
-	}
-
-	@Override
-	public int compareTo(Atom o) {
-		throw new UnsupportedOperationException();
+		return new IntervalAtom(intervalTerm.substitute(substitution), intervalRepresentingVariable);
 	}
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder(INTERVAL_PREDICATE.getPredicateName());
-		sb.append("(");
-		sb.append(intervalRepresentingVariable.toString());
-		sb.append(", ");
-		sb.append(intervalTerm.toString());
-		sb.append(")");
-		return sb.toString();
+		return INTERVAL_PREDICATE.getPredicateName() + "(" + intervalRepresentingVariable + ", " + intervalTerm + ")";
 	}
 
 	@Override

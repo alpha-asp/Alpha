@@ -25,12 +25,12 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.Main;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.junit.Before;
@@ -63,7 +63,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 	@Before
 	public void setUp() throws IOException {
 		String testProgram = "h :- b1, b2, not b3, not b4.";
-		Program parsedProgram = Main.parseVisit(testProgram);
+		Program parsedProgram = new ProgramParser().parse(testProgram);
 		this.grounder = new NaiveGrounder(parsedProgram);
 		WritableAssignment assignment = new ArrayAssignment();
 		this.choiceManager = new ChoiceManager(assignment);

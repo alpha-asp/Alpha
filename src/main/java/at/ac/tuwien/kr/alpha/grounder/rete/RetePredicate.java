@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder.rete;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -9,10 +9,7 @@ import java.util.HashMap;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class RetePredicate implements Predicate {
-
-	public final String predicateName;
-	public final int arity;
+public class RetePredicate extends Predicate {
 	public final TupleStore tupleStore;
 
 	// TODO: link/put memory of instances here?
@@ -33,18 +30,7 @@ public class RetePredicate implements Predicate {
 	}
 
 	private RetePredicate(String predicateName, int arity) {
-		this.predicateName = predicateName;
-		this.arity = arity;
+		super(predicateName, arity);
 		tupleStore = new TupleStore();
-	}
-
-	@Override
-	public String getPredicateName() {
-		return predicateName;
-	}
-
-	@Override
-	public int getArity() {
-		return arity;
 	}
 }

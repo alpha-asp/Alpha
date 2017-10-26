@@ -5,24 +5,22 @@ import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class Substitution {
-	private HashMap<VariableTerm, Term> substitution;
+	private TreeMap<VariableTerm, Term> substitution;
 
-	private Substitution(HashMap<VariableTerm, Term> substitution) {
+	private Substitution(TreeMap<VariableTerm, Term> substitution) {
 		this.substitution = substitution;
 	}
 
 	public Substitution() {
-		this(new HashMap<>());
+		this(new TreeMap<>());
 	}
 
 	public Substitution(Substitution clone) {
-		this(new HashMap<>(clone.substitution));
+		this(new TreeMap<>(clone.substitution));
 	}
 
 	/**
@@ -41,13 +39,15 @@ public class Substitution {
 		} else if (termNonGround instanceof VariableTerm) {
 			VariableTerm variableTerm = (VariableTerm)termNonGround;
 			// Left term is variable, bind it to the right term.
-			if (eval(variableTerm) != null) {
+			Term bound = eval(variableTerm);
+
+			if (bound != null) {
 				// Variable is already bound, return true if binding is the same as the current ground term.
-				return termGround == eval(variableTerm);
-			} else {
-				substitution.put(variableTerm, termGround);
-				return true;
+				return termGround == bound;
 			}
+
+			substitution.put(variableTerm, termGround);
+			return true;
 		} else if (termNonGround instanceof FunctionTerm && termGround instanceof FunctionTerm) {
 			// Both terms are function terms
 			FunctionTerm ftNonGround = (FunctionTerm) termNonGround;
@@ -70,22 +70,35 @@ public class Substitution {
 	}
 
 	/**
+	 * This method should be used to obtain the {@link ConstantTerm} to be used in place of
+	 * a given {@link VariableTerm} under this substitution.
+	 *
+	 * @param variableTerm the variable term to substitute, if possible
+	 * @return a constant term if the substitution contains the given variable, {@code null} otherwise.
+	 */
+	public Term eval(VariableTerm variableTerm) {
+		return this.substitution.get(variableTerm);
+	}
+
+	public <T extends Comparable<T>> Term put(VariableTerm variableTerm, ConstantTerm<T> groundTerm) {
+		// Note: We're destroying type information here.
+		return substitution.put(variableTerm, groundTerm);
+	}
+
+	public boolean isEmpty() {
+		return substitution.isEmpty();
+	}
+
+	/**
 	 * Prints the variable substitution in a uniform way (sorted by variable names).
 	 *
 	 * @return
 	 */
-	public String toUniformString() {
-		List<VariableTerm> variablesInSubstitution = new ArrayList<>(substitution.size());
-		variablesInSubstitution.addAll(substitution.keySet());
-
-		Collections.sort(variablesInSubstitution); // Hint: Maybe this is a performance issue later, better have sorted/well-defined insertion into Substitution.
-
-		StringBuilder ret = new StringBuilder();
-		for (VariableTerm variableTerm : variablesInSubstitution) {
-			ret.append("_")
-				.append(variableTerm)
-				.append(":")
-				.append(substitution.get(variableTerm));
+	@Override
+	public String toString() {
+		final StringBuilder ret = new StringBuilder();
+		for (Map.Entry<VariableTerm, Term> e : substitution.entrySet()) {
+			ret.append("_").append(e.getKey()).append(":").append(e.getValue());
 		}
 		return ret.toString();
 	}
@@ -108,17 +121,4 @@ public class Substitution {
 	public int hashCode() {
 		return substitution != null ? substitution.hashCode() : 0;
 	}
-
-	public Term eval(VariableTerm variableTerm) {
-		return this.substitution.get(variableTerm);
-	}
-
-	public Term put(VariableTerm variableTerm, Term groundTerm) {
-		return substitution.put(variableTerm, groundTerm);
-	}
-
-	public boolean isEmpty() {
-		return substitution.isEmpty();
-	}
-
 }

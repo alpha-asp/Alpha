@@ -1,23 +1,21 @@
-package at.ac.tuwien.kr.alpha.common;
+package at.ac.tuwien.kr.alpha.common.predicates;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class BasicPredicate implements Predicate {
-	private final String name;
-	private final int arity;
+public class Predicate implements Comparable<Predicate> {
+	protected final String name;
+	protected final int arity;
 
-	public BasicPredicate(String name, int arity) {
+	public Predicate(String name, int arity) {
 		this.name = name;
 		this.arity = arity;
 	}
 
-	@Override
 	public String getPredicateName() {
 		return name;
 	}
 
-	@Override
 	public int getArity() {
 		return arity;
 	}
@@ -31,7 +29,7 @@ public class BasicPredicate implements Predicate {
 			return false;
 		}
 
-		BasicPredicate that = (BasicPredicate) o;
+		Predicate that = (Predicate) o;
 
 		if (arity != that.arity) {
 			return false;
@@ -48,5 +46,16 @@ public class BasicPredicate implements Predicate {
 	@Override
 	public String toString() {
 		return name + "/" + arity;
+	}
+
+	@Override
+	public int compareTo(Predicate other) {
+		int result = Integer.compare(this.getArity(), other.getArity());
+
+		if (result != 0) {
+			return result;
+		}
+
+		return getPredicateName().compareTo(other.getPredicateName());
 	}
 }
