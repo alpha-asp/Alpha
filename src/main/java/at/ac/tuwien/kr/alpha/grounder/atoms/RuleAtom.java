@@ -32,7 +32,7 @@ public class RuleAtom implements Atom {
 	}
 
 	public RuleAtom(NonGroundRule nonGroundRule, Substitution substitution) {
-		this(Arrays.<ConstantTerm<String>>asList(
+		this(Arrays.asList(
 			getInstance(Integer.toString(nonGroundRule.getRuleId())),
 			getInstance(substitution.toString())
 		));

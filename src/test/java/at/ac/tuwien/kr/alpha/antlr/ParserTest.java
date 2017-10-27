@@ -6,7 +6,6 @@ import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.antlr.v4.runtime.RecognitionException;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -51,7 +50,7 @@ public class ParserTest {
 		assertEquals("Program contains three rules.", 3, parsedProgram.getRules().size());
 	}
 
-	@Test(expected = RecognitionException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void parseBadSyntax() throws IOException {
 		parser.parse("Wrong Syntax.");
 	}

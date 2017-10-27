@@ -13,6 +13,11 @@ public interface AtomTranslator {
 		return (isNegated(literal) ? "-" : "+") + "(" + atomToString(atomOf(literal)) + ")";
 	}
 
+	/**
+	 * Prints the NoGood such that literals are structured atoms instead of integers.
+	 * @param noGood the nogood to translate
+	 * @return the string representation of the NoGood.
+	 */
 	default <T extends NoGood> String noGoodToString(T noGood) {
 		StringBuilder sb = new StringBuilder("{");
 
@@ -25,6 +30,13 @@ public interface AtomTranslator {
 		}
 
 		sb.append("}");
+
+		if (noGood.hasHead()) {
+			sb.append("[");
+			sb.append(noGood.getHead());
+			sb.append("]");
+		}
+
 		return sb.toString();
 	}
 }

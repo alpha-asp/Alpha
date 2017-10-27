@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
-public class ProgramParser implements Parser<Program> {
+public class ProgramParser {
 	private final Map<String, FixedInterpretationPredicate> externals;
 
 	public ProgramParser(Map<String, FixedInterpretationPredicate> externals) {
@@ -22,6 +22,22 @@ public class ProgramParser implements Parser<Program> {
 
 	public ProgramParser() {
 		this(Collections.emptyMap());
+	}
+
+	public Program parse(String s) {
+		try {
+			return parse(CharStreams.fromString(s));
+		} catch (IOException e) {
+			// In this case we assume that something went fundamentally
+			// wrong when using a String as input. The caller probably
+			// assumes that I/O on a String should always be fine.
+			throw new RuntimeException("Encountered I/O-related exception while parsing a String.", e);
+		} catch (RecognitionException | ParseCancellationException e) {
+			// If there were issues parsing the given string, we
+			// throw something that suggests that the input string
+			// is malformed.
+			throw new IllegalArgumentException("Could not parse answer sets.", e);
+		}
 	}
 
 	public Program parse(CharStream stream) throws IOException {

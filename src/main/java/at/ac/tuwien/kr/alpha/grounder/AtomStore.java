@@ -86,10 +86,10 @@ public class AtomStore {
 	}
 
 	public String printAtomIdTermMapping() {
-		String ret = "";
+		StringBuilder ret = new StringBuilder();
 		for (Map.Entry<Atom, Integer> entry : predicateInstancesToAtomIds.entrySet()) {
-			ret += entry.getValue() + " <-> " + entry.getKey().toString() + "\n";
+			ret.append(entry.getValue()).append(" <-> ").append(entry.getKey().toString()).append("\n");
 		}
-		return ret;
+		return ret.toString();
 	}
 }

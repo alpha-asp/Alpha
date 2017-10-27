@@ -29,7 +29,6 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -38,42 +37,23 @@ import java.util.stream.Collectors;
 public final class BranchingHeuristicFactory {
 
 	public enum Heuristic {
-		NAIVE("naive"),
-		BERKMIN("berkmin"),
-		BERKMINLITERAL("berkminliteral"),
-		DD("dd"),
-		DD_SUM("dd-sum"),
-		DD_AVG("dd-avg"),
-		DD_MAX("dd-max"),
-		DD_MIN("dd-min"),
-		DD_PYRO("dd-pyro"),
-		GDD("gdd"),
-		GDD_SUM("gdd-sum"),
-		GDD_AVG("gdd-avg"),
-		GDD_MAX("gdd-max"),
-		GDD_MIN("gdd-min"),
-		GDD_PYRO("gdd-pyro"),
-		ALPHA_ACTIVE_RULE("alpha-ar"),
-		ALPHA_HEAD_MBT("alpha-hmbt");
-		
-		private String name;
-		private Heuristic(String name) {
-			this.name = name;
-		}
-
-		@Override
-		public String toString() {
-			return name;
-		}
-
-		public static Heuristic get(String name) {
-			for (Heuristic heuristic : values()) {
-				if (StringUtils.equalsIgnoreCase(name, heuristic.name)) {
-					return heuristic;
-				}
-			}
-			return valueOf(name);
-		}
+		NAIVE,
+		BERKMIN,
+		BERKMINLITERAL,
+		DD,
+		DD_SUM,
+		DD_AVG,
+		DD_MAX,
+		DD_MIN,
+		DD_PYRO,
+		GDD,
+		GDD_SUM,
+		GDD_AVG,
+		GDD_MAX,
+		GDD_MIN,
+		GDD_PYRO,
+		ALPHA_ACTIVE_RULE,
+		ALPHA_HEAD_MBT;
 
 		/**
 		 * @return a comma-separated list of names of known heuristics

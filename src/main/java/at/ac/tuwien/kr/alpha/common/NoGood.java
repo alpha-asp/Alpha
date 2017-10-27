@@ -27,8 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
-
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.function.Predicate;
@@ -36,7 +34,6 @@ import java.util.stream.IntStream;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
-import static java.lang.Math.abs;
 
 public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	protected final int[] literals;
@@ -220,8 +217,8 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 
 		sb.append("{ ");
 
-		for (int i = 0; i < literals.length; i++) {
-			sb.append(literals[i]);
+		for (int literal : literals) {
+			sb.append(literal);
 			sb.append(" ");
 		}
 
@@ -236,19 +233,5 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 		sb.append("]");
 
 		return sb.toString();
-	}
-
-	/**
-	 * Prints the NoGood such that literals are structured atoms instead of integers.
-	 * @param grounder the grounder used for resolving atomIds
-	 * @return the string representation of the NoGood.
-	 */
-	public String toStringReadable(Grounder grounder) {
-		String ret = "{";
-		for (int i = 0; i < literals.length; i++) {
-			ret += (i == 0 ? "" : ", ") + (literals[i] < 0 ? "-" : "+") + grounder.atomToString(abs(literals[i]));
-		}
-		ret += "}[" + head + "]";
-		return ret;
 	}
 }
