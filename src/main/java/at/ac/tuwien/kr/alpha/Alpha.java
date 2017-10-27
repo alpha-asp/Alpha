@@ -2,8 +2,9 @@ package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.predicates.ExternalEvaluable;
-import at.ac.tuwien.kr.alpha.common.predicates.ExternalNativePredicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.predicates.*;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
@@ -18,14 +19,11 @@ import org.reflections.util.ConfigurationBuilder;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class Alpha {
-	private final Map<String, at.ac.tuwien.kr.alpha.common.predicates.Predicate> predicateMethods = new HashMap<>();
+	private final Map<String, FixedInterpretationPredicate> predicateMethods = new HashMap<>();
 
 	private final String grounderName;
 	private final String solverName;
@@ -76,20 +74,73 @@ public class Alpha {
 		Set<Method> predicateMethods = reflections.getMethodsAnnotatedWith(Predicate.class);
 
 		for (Method method : predicateMethods) {
-			this.register(method);
+			String name = method.getAnnotation(Predicate.class).name();
+
+			if (name.isEmpty()) {
+				name = method.getName();
+			}
+
+			this.register(method, name);
 		}
 	}
 
-	public void register(Method method) {
-		this.predicateMethods.put(method.getName(), new ExternalEvaluable(method));
+	public void register(Method method, String name) {
+		this.predicateMethods.put(name, new ExternalMethodPredicate(method));
 	}
 
-	public void register(String name, java.util.function.Predicate<ConstantTerm> predicate) {
-		this.predicateMethods.put(name, new ExternalNativePredicate(name, predicate));
+	public void registerBinding(Method method, String name) {
+		this.predicateMethods.put(name, new ExternalBindingMethodPredicate(method));
+	}
+
+	public void registerBinding(Method method) {
+		registerBinding(method, method.getName());
+	}
+
+	public void register(Method method) {
+		register(method, method.getName());
+	}
+
+	public <T> void register(String name, java.util.function.Predicate<T> predicate) {
+		this.predicateMethods.put(name, new ExternalPredicate<>(name, predicate));
+	}
+
+	public <T, U> void register(String name, java.util.function.BiPredicate<T, U> predicate) {
+		this.predicateMethods.put(name, new ExternalBiPredicate<>(name, predicate));
 	}
 
 	public void setProgram(Program program) {
 		this.program = program;
+	}
+
+	public <T extends Comparable<T>> void addFacts(Collection<T> c, String name) {
+		if (c.isEmpty()) {
+			return;
+		}
+
+		final List<Atom> atoms = new ArrayList<>();
+
+		for (T it : c) {
+			atoms.add(new BasicAtom(new at.ac.tuwien.kr.alpha.common.predicates.Predicate(name, 1), ConstantTerm.getInstance(it)));
+		}
+
+		final Program acc = new Program(Collections.emptyList(), atoms);
+
+		if (this.program == null) {
+			this.program = acc;
+		} else {
+			this.program.accumulate(acc);
+		}
+	}
+
+	public <T extends Comparable<T>> void addFacts(Collection<T> c) {
+		if (c.isEmpty()) {
+			return;
+		}
+
+		T first = c.iterator().next();
+
+		String simpleName = first.getClass().getSimpleName();
+		addFacts(c, simpleName.substring(0, 1).toLowerCase() + simpleName.substring(1));
 	}
 
 	public Stream<AnswerSet> solve(String program) throws IOException {

@@ -11,7 +11,7 @@ import static at.ac.tuwien.kr.alpha.Util.appendDelimited;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class FunctionTerm implements Term {
+public class FunctionTerm extends Term {
 	private static final Interner<FunctionTerm> INTERNER = new Interner<>();
 
 	private final Symbol symbol;
@@ -71,7 +71,7 @@ public class FunctionTerm implements Term {
 	}
 
 	@Override
-	public Term substitute(Substitution substitution) {
+	public FunctionTerm substitute(Substitution substitution) {
 		List<Term> groundTermList = new ArrayList<>(terms.size());
 		for (Term term : terms) {
 			groundTermList.add(term.substitute(substitution));
@@ -115,12 +115,14 @@ public class FunctionTerm implements Term {
 
 	@Override
 	public int compareTo(Term o) {
-		if (o instanceof ConstantTerm) {
-			return 1;
+		if (this == o) {
+			return 0;
 		}
+
 		if (!(o instanceof FunctionTerm)) {
-			throw new UnsupportedOperationException("Can only compare function term to function term or constant term.");
+			return super.compareTo(o);
 		}
+
 		FunctionTerm other = (FunctionTerm)o;
 
 		if (terms.size() != other.terms.size()) {

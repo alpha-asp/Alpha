@@ -147,28 +147,6 @@ public class BasicAtom implements Literal {
 	}
 
 	@Override
-	public int compareTo(Atom o) {
-		if (this.terms.size() != o.getTerms().size()) {
-			return this.terms.size() - o.getTerms().size();
-		}
-
-		int result = this.predicate.compareTo(o.getPredicate());
-
-		if (result != 0) {
-			return result;
-		}
-
-		for (int i = 0; i < terms.size(); i++) {
-			result = terms.get(i).compareTo(o.getTerms().get(i));
-			if (result != 0) {
-				return result;
-			}
-		}
-
-		return 0;
-	}
-
-	@Override
 	public boolean isNegated() {
 		return isNegated;
 	}

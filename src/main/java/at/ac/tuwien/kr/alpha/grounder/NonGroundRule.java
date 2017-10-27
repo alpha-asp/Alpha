@@ -3,8 +3,9 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.predicates.Evaluable;
+import at.ac.tuwien.kr.alpha.common.predicates.BuiltinBiPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
@@ -24,21 +25,27 @@ public class NonGroundRule {
 	private final Atom headAtom;
 
 	private final boolean containsIntervals;
+	private final boolean containsExternals;
 	private final boolean isOriginallyGround;
 
 	public boolean containsIntervals() {
 		return containsIntervals;
 	}
 
+	public boolean containsExternals() {
+		return containsExternals;
+	}
+
 	public boolean isOriginallyGround() {
 		return isOriginallyGround;
 	}
 
-	private NonGroundRule(int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom, boolean containsIntervals) {
+	private NonGroundRule(int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom, boolean containsIntervals, boolean containsExternals) {
 		this.ruleId = ruleId;
 
 		this.isOriginallyGround = isOriginallyGround(bodyAtomsPositive, bodyAtomsNegative, headAtom);
 		this.containsIntervals = containsIntervals;
+		this.containsExternals = containsExternals;
 
 		// Sort for better join order.
 		this.bodyAtomsPositive = Collections.unmodifiableList(sortAtoms(bodyAtomsPositive));
@@ -50,10 +57,7 @@ public class NonGroundRule {
 
 		this.headAtom = headAtom;
 
-		if (!isSafe()) {
-			throw new RuntimeException("Encountered not safe rule: " + toString()
-				+ "\nNotice: A rule is considered safe if all variables occurring in negative literals, builtin atoms, and the head of the rule also occurr in some positive litera.");
-		}
+		checkSafety();
 	}
 
 	// FIXME: NonGroundRule should extend Rule and then its constructor directly be used.
@@ -62,17 +66,20 @@ public class NonGroundRule {
 		final List<Atom> pos = new ArrayList<>(body.size() / 2);
 		final List<Atom> neg = new ArrayList<>(body.size() / 2);
 		boolean containsIntervals = false;
+		boolean containsExternals = false;
 		for (Literal literal : body) {
 			if (literal instanceof IntervalAtom) {
 				containsIntervals = true;
 			}
-			if (literal.isNegated()) {
-				neg.add(literal);
-			} else {
-				pos.add(literal);
+			if (literal instanceof ExternalAtom) {
+				if (((ExternalAtom) literal).hasOutput()) {
+					containsExternals = true;
+				}
 			}
+
+			(literal.isNegated() ? neg : pos).add(literal);
 		}
-		return new NonGroundRule(intIdGenerator.getNextId(), pos, neg, rule.getHead(), containsIntervals);
+		return new NonGroundRule(intIdGenerator.getNextId(), pos, neg, rule.getHead(), containsIntervals, containsExternals);
 	}
 
 	private static boolean isOriginallyGround(List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
@@ -126,7 +133,7 @@ public class NonGroundRule {
 	 * head also occur in the positive body).
 	 * @return true if this rule is safe.
 	 */
-	private boolean isSafe() {
+	private void checkSafety() {
 		Set<VariableTerm> bindingVariables = new HashSet<>();
 		Set<VariableTerm> nonbindingVariables = new HashSet<>();
 
@@ -150,7 +157,13 @@ public class NonGroundRule {
 
 		// Check that all non-binding variables are bound in this rule.
 		nonbindingVariables.removeAll(bindingVariables);
-		return nonbindingVariables.isEmpty();
+
+		if (nonbindingVariables.isEmpty()) {
+			return;
+		}
+
+		throw new RuntimeException("Encountered unsafe variable " + nonbindingVariables.iterator().next().toString() + " in rule: " + toString()
+			+ "\nNotice: A rule is considered safe if all variables occurring in negative literals, builtin atoms, and the head of the rule also occur in some positive litera.");
 	}
 
 	/**
@@ -159,13 +172,14 @@ public class NonGroundRule {
 	 */
 	private List<Atom> sortAtoms(List<Atom> atoms) {
 		final Set<SortingBodyComponent> components = new LinkedHashSet<>();
-		final Set<Atom> evaluableAtoms = new LinkedHashSet<>();
+		final Set<ExternalAtom> builtinAtoms = new LinkedHashSet<>();
 		final Set<IntervalAtom> intervalAtoms = new LinkedHashSet<>();
 
 		for (Atom atom : atoms) {
-			if (atom.getPredicate() instanceof Evaluable) {
+			// FIXME: The following case assumes that builtin predicates do not create bindings?!
+			if (atom.getPredicate() instanceof BuiltinBiPredicate) {
 				// Sort out builtin atoms (we consider them as not creating new bindings)
-				evaluableAtoms.add(atom);
+				builtinAtoms.add((ExternalAtom) atom);
 				continue;
 			}
 			if (atom instanceof IntervalAtom) {
@@ -215,7 +229,7 @@ public class NonGroundRule {
 		}
 
 		sortedPositiveBodyAtoms.addAll(intervalAtoms); // Put interval atoms after positive literals generating their bindings and before builtin atom.
-		sortedPositiveBodyAtoms.addAll(evaluableAtoms);	// Put builtin atoms after positive literals and before negative ones.
+		sortedPositiveBodyAtoms.addAll(builtinAtoms);	// Put builtin atoms after positive literals and before negative ones.
 		return sortedPositiveBodyAtoms;
 	}
 

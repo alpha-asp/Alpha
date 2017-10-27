@@ -31,13 +31,16 @@ import at.ac.tuwien.kr.alpha.AnswerSetsParser;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.junit.Test;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
@@ -49,48 +52,17 @@ import static org.junit.Assert.assertEquals;
 public class SolverTests extends AbstractSolverTests {
 	private final ProgramParser parser = new ProgramParser();
 
-	private Set<AnswerSet> solve(String program) throws IOException {
-		return solve(parser.parse(program));
+	/**
+	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
+	 */
+	private static void enableTracing() {
+		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+		root.setLevel(ch.qos.logback.classic.Level.TRACE);
 	}
 
-	private Set<AnswerSet> solve(Program program) throws IOException {
-		return getInstance(new NaiveGrounder(program)).collectSet();
-	}
-
-	private void assertAnswerSets(String program, String... answerSets) throws IOException {
-		if (answerSets.length == 0) {
-			assertAnswerSets(program, emptySet());
-			return;
-		}
-
-		StringJoiner joiner = new StringJoiner("} {", "{", "}");
-		Arrays.stream(answerSets).forEach(joiner::add);
-		assertAnswerSets(program, AnswerSetsParser.parse(joiner.toString()));
-	}
-
-	private void assertAnswerSet(String program, String answerSet) throws IOException {
-		assertAnswerSets(program, AnswerSetsParser.parseSingleton(answerSet));
-	}
-
-	private void assertAnswerSetsWithBase(String program, String base, String... answerSets) throws IOException {
-		base = base.trim();
-		base = base.endsWith(",") ? base.substring(0, base.length() - 1) : base;
-		String baseDelimited = base + ", ";
-
-		for (int i = 0; i < answerSets.length; i++) {
-			answerSets[i] = answerSets[i].trim();
-			if (answerSets[i].length() == 0) {
-				answerSets[i] = base;
-			} else {
-				answerSets[i] = baseDelimited + answerSets[i];
-			}
-		}
-
-		assertAnswerSets(program, answerSets);
-	}
-
-	private void assertAnswerSets(String program, Set<AnswerSet> answerSets) throws IOException {
-		assertEquals(answerSets, solve(program));
+	private static void enableDebugLog() {
+		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+		root.setLevel(Level.DEBUG);
 	}
 
 	private static class Thingy implements Comparable<Thingy> {
@@ -109,7 +81,7 @@ public class SolverTests extends AbstractSolverTests {
 	public void testObjectProgram() throws IOException {
 		final Thingy thingy = new Thingy();
 
-		final Atom fact = new BasicAtom(new BasicPredicate("foo", 1), ConstantTerm.getInstance(thingy));
+		final Atom fact = new BasicAtom(new Predicate("foo", 1), ConstantTerm.getInstance(thingy));
 
 		final Program program = new Program(
 			Collections.emptyList(),
@@ -543,7 +515,16 @@ public class SolverTests extends AbstractSolverTests {
 			"p(X, 1..X) :- dom(X), X != 2." +
 			"dom(1). dom(2). dom(3).",
 
-			"dom(1), dom(2), dom(3), p(1, 1), p(3, 1), p(3, 2), p(3, 3), a"
+			"dom(1)," +
+				"dom(2)," +
+				"dom(3)," +
+
+				"p(1, 1)," +
+				"p(3, 1)," +
+				"p(3, 2)," +
+				"p(3, 3)," +
+
+				"a"
 		);
 	}
 
@@ -586,37 +567,83 @@ public class SolverTests extends AbstractSolverTests {
 		);
 	}
 
-
-
 	@Test
 	public void simpleChoiceRule() throws IOException {
-		assertAnswerSetsWithBase("{ a; b; c} :- d. d.",
+		assertAnswerSetsWithBase(
+			"{ a; b; c} :- d." +
+				"d.",
 
-				"d",
-				"",
-				"a",
-				"a, b",
-				"a, c",
-				"a, b, c",
-				"b",
-				"b, c",
-				"c"
-				);
+			"d",
+			"",
+			"a",
+			"a, b",
+			"a, c",
+			"a, b, c",
+			"b",
+			"b, c",
+			"c"
+		);
 	}
-
 
 	@Test
 	public void conditionalChoiceRule() throws IOException {
-		assertAnswerSetsWithBase("dom(1..3)." +
+		assertAnswerSetsWithBase(
+			"dom(1..3)." +
 				"{ p(X): not q(X); r(Y): p(Y)} :- dom(X), q(Y)." +
 				"q(2).",
 
-				"dom(1), dom(2), dom(3), q(2)",
+			"dom(1)," +
+				"dom(2)," +
+				"dom(3)," +
+				"q(2)",
 
-				"p(1), p(3)",
-				"",
+			"p(1)," +
 				"p(3)",
-				"p(1)"
-				);
+
+			"",
+
+			"p(3)",
+
+			"p(1)"
+		);
+	}
+
+	private Set<AnswerSet> solve(String program) throws IOException {
+		return solve(parser.parse(program));
+	}
+
+	private Set<AnswerSet> solve(Program program) throws IOException {
+		return getInstance(new NaiveGrounder(program)).collectSet();
+	}
+
+	private void assertAnswerSets(String program, String... answerSets) throws IOException {
+		if (answerSets.length == 0) {
+			assertAnswerSets(program, emptySet());
+			return;
+		}
+
+		StringJoiner joiner = new StringJoiner("} {", "{", "}");
+		Arrays.stream(answerSets).forEach(joiner::add);
+		assertAnswerSets(program, AnswerSetsParser.parse(joiner.toString()));
+	}
+
+	private void assertAnswerSet(String program, String answerSet) throws IOException {
+		assertAnswerSets(program, AnswerSetsParser.parse("{ " + answerSet + " }"));
+	}
+
+	private void assertAnswerSetsWithBase(String program, String base, String... answerSets) throws IOException {
+		if (!base.endsWith(",")) {
+			base += ", ";
+		}
+
+		for (int i = 0; i < answerSets.length; i++) {
+			answerSets[i] = base + answerSets[i];
+		}
+
+		assertAnswerSets(program, answerSets);
+	}
+
+	private void assertAnswerSets(String program, Set<AnswerSet> answerSets) throws IOException {
+		assertEquals(answerSets, solve(program));
 	}
 }

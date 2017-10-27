@@ -10,7 +10,7 @@ import java.util.List;
  * An IntervalTerm is a meta-term and the grounder must replace it with its corresponding set of facts or rules.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class IntervalTerm implements Term {
+public class IntervalTerm extends Term {
 	private final Term lowerBoundTerm;
 	private final Term upperBoundTerm;
 
@@ -74,7 +74,7 @@ public class IntervalTerm implements Term {
 	}
 
 	@Override
-	public Term substitute(Substitution substitution) {
+	public IntervalTerm substitute(Substitution substitution) {
 		if (isGround()) {
 			return this;
 		}

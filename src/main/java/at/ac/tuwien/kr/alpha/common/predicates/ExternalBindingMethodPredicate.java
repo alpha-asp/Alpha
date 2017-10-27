@@ -2,27 +2,29 @@ package at.ac.tuwien.kr.alpha.common.predicates;
 
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import org.apache.commons.lang3.ClassUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Set;
 
-public class ExternalEvaluable implements Predicate, Evaluable {
+public class ExternalBindingMethodPredicate extends FixedInterpretationPredicate {
 	private final Method method;
 
-	public ExternalEvaluable(Method method) {
-		if (!method.getReturnType().equals(boolean.class)) {
-			throw new IllegalArgumentException("method must return boolean");
+	public ExternalBindingMethodPredicate(Method method) {
+		super(method.getName(), method.getParameterCount());
+
+		if (!method.getReturnType().equals(Set.class)) {
+			throw new IllegalArgumentException("method must return Set");
 		}
 
 		this.method = method;
 	}
 
 	@Override
-	public boolean evaluate(List<Term> terms, Substitution substitution) {
+	@SuppressWarnings("unchecked")
+	public Set<List<ConstantTerm>> evaluate(List<Term> terms) {
 		if (terms.size() != getArity()) {
 			throw new IllegalArgumentException(
 				"Parameter count mismatch when calling " + getPredicateName() + ". " +
@@ -35,17 +37,14 @@ public class ExternalEvaluable implements Predicate, Evaluable {
 		final Object[] arguments = new Object[terms.size()];
 
 		for (int i = 0; i < arguments.length; i++) {
-			Term it = terms.get(i);
-
-			if (it instanceof VariableTerm) {
-				it = it.substitute(substitution);
+			if (!(terms.get(i) instanceof ConstantTerm)) {
+				throw new IllegalArgumentException(
+					"Expected only constants as input for " + getPredicateName() + ", but got " +
+						"something else at position " + i + "."
+				);
 			}
 
-			if (!(it instanceof ConstantTerm)) {
-				throw new RuntimeException("Non-constant term as parameter for evaluable. Should not happen.");
-			}
-
-			arguments[i] = ((ConstantTerm) it).getObject();
+			arguments[i] = ((ConstantTerm) terms.get(i)).getObject();
 
 			final Class<?> expected = parameterTypes[i];
 			final Class<?> actual = arguments[i].getClass();
@@ -66,19 +65,9 @@ public class ExternalEvaluable implements Predicate, Evaluable {
 		}
 
 		try {
-			return (boolean) method.invoke(null, arguments);
+			return (Set) method.invoke(null, arguments);
 		} catch (IllegalAccessException | InvocationTargetException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	@Override
-	public String getPredicateName() {
-		return method.getName();
-	}
-
-	@Override
-	public int getArity() {
-		return method.getParameterCount();
 	}
 }

@@ -2,7 +2,6 @@ package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
@@ -21,7 +20,7 @@ import java.util.List;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class IntervalAtom implements Literal {
-	private static final Predicate INTERVAL_PREDICATE = new BasicPredicate("_interval", 2);
+	private static final Predicate INTERVAL_PREDICATE = new Predicate("_interval", 2);
 
 	private final IntervalTerm intervalTerm;
 	private final VariableTerm intervalRepresentingVariable;
@@ -73,12 +72,7 @@ public class IntervalAtom implements Literal {
 
 	@Override
 	public Atom substitute(Substitution substitution) {
-		return new IntervalAtom((IntervalTerm) intervalTerm.substitute(substitution), intervalRepresentingVariable);
-	}
-
-	@Override
-	public int compareTo(Atom o) {
-		throw new UnsupportedOperationException();
+		return new IntervalAtom(intervalTerm.substitute(substitution), intervalRepresentingVariable);
 	}
 
 	@Override

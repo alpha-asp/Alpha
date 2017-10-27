@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class VariableTerm implements Term {
+public class VariableTerm extends Term {
 	private static final Interner<VariableTerm> INTERNER = new Interner<>();
 
 	private static final String ANONYMOUS_VARIABLE_PREFIX = "_";
@@ -80,16 +80,12 @@ public class VariableTerm implements Term {
 		if (this == o) {
 			return 0;
 		}
-		if (o == null) {
-			return 1;
-		}
 
 		if (!(o instanceof VariableTerm)) {
-			throw new ClassCastException();
+			return super.compareTo(o);
 		}
 
 		VariableTerm other = (VariableTerm)o;
-
 		return variableName.compareTo(other.variableName);
 	}
 }

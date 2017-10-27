@@ -55,7 +55,7 @@ public class Symbol implements Comparable<Symbol> {
 			return result;
 		}
 
-		return arity - o.arity;
+		return Integer.compare(arity, o.arity);
 	}
 
 	@Override

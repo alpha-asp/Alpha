@@ -1,8 +1,8 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
@@ -11,7 +11,6 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
 
@@ -20,11 +19,11 @@ import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
  * second is a term containing variable substitutions.
  */
 public class RuleAtom implements Atom {
-	public static final Predicate PREDICATE = new BasicPredicate("_R_", 2);
+	public static final Predicate PREDICATE = new Predicate("_R_", 2);
 
-	private final List<Term> terms;
+	private final List<ConstantTerm<String>> terms;
 
-	private RuleAtom(List<Term> terms) {
+	private RuleAtom(List<ConstantTerm<String>> terms) {
 		if (terms.size() != 2) {
 			throw new IllegalArgumentException();
 		}
@@ -33,14 +32,10 @@ public class RuleAtom implements Atom {
 	}
 
 	public RuleAtom(NonGroundRule nonGroundRule, Substitution substitution) {
-		this(Arrays.asList(
+		this(Arrays.<ConstantTerm<String>>asList(
 			getInstance(Integer.toString(nonGroundRule.getRuleId())),
-			getInstance(substitution.toUniformString())
+			getInstance(substitution.toString())
 		));
-	}
-
-	public RuleAtom(Term... terms) {
-		this(Arrays.asList(terms));
 	}
 
 	@Override
@@ -50,7 +45,10 @@ public class RuleAtom implements Atom {
 
 	@Override
 	public List<Term> getTerms() {
-		return terms;
+		return Arrays.asList(
+			terms.get(0),
+			terms.get(1)
+		);
 	}
 
 	@Override
@@ -77,22 +75,7 @@ public class RuleAtom implements Atom {
 
 	@Override
 	public Atom substitute(Substitution substitution) {
-		return new RuleAtom(terms.stream().map(t -> {
-			return t.substitute(substitution);
-		}).collect(Collectors.toList()));
-	}
-
-	@Override
-	public int compareTo(Atom o) {
-		if (!(o instanceof  RuleAtom)) {
-			return 1;
-		}
-		RuleAtom other = (RuleAtom)o;
-		int result = terms.get(0).compareTo(other.terms.get(0));
-		if (result != 0) {
-			return result;
-		}
-		return terms.get(1).compareTo(other.terms.get(1));
+		return this;
 	}
 
 	@Override

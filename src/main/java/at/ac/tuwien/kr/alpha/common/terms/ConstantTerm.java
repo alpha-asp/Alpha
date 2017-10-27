@@ -1,17 +1,16 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
 import at.ac.tuwien.kr.alpha.common.Interner;
+import at.ac.tuwien.kr.alpha.common.Symbol;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class ConstantTerm<T extends Comparable<T>> implements Term {
+public class ConstantTerm<T extends Comparable<T>> extends Term {
 	private static final Interner<ConstantTerm> INTERNER = new Interner<>();
 
 	public T getObject() {
@@ -24,8 +23,9 @@ public class ConstantTerm<T extends Comparable<T>> implements Term {
 		this.object = object;
 	}
 
-	public static <T extends Comparable<T>> ConstantTerm getInstance(T object) {
-		return INTERNER.intern(new ConstantTerm<>(object));
+	@SuppressWarnings("unchecked")
+	public static <T extends Comparable<T>> ConstantTerm<T> getInstance(T object) {
+		return (ConstantTerm<T>) INTERNER.intern(new ConstantTerm<>(object));
 	}
 
 	@Override
@@ -39,7 +39,7 @@ public class ConstantTerm<T extends Comparable<T>> implements Term {
 	}
 
 	@Override
-	public Term substitute(Substitution substitution) {
+	public ConstantTerm<T> substitute(Substitution substitution) {
 		return this;
 	}
 
@@ -68,37 +68,60 @@ public class ConstantTerm<T extends Comparable<T>> implements Term {
 		return object.hashCode();
 	}
 
-	private static final Map<Class<?>, Integer> PRIORITY = new HashMap<>();
-
-	static {
-		PRIORITY.put(Integer.class, 0);
-		PRIORITY.put(String.class, 1);
+	/**
+	 * Establishes "priority" for ordering of constant terms depending on the type
+	 * of the corresponding object according to ASP-Core-2.03c.
+	 */
+	private static final int priority(final Class<?> clazz) {
+		if (clazz.equals(Integer.class)) {
+			return 1;
+		} else if (clazz.equals(Symbol.class)) {
+			return 2;
+		} else if (clazz.equals(String.class)) {
+			return 3;
+		}
+		return 0;
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public int compareTo(Term o) {
-		if (o instanceof ConstantTerm) {
-			ConstantTerm otherConstantTerm = (ConstantTerm) o;
-
-			if (otherConstantTerm.object.getClass() == this.object.getClass()) {
-				return this.object.compareTo((T) otherConstantTerm.object);
-			}
-
-			int myPrio = PRIORITY.getOrDefault(this.object.getClass(), Integer.MAX_VALUE);
-			int otherPrio = PRIORITY.getOrDefault(otherConstantTerm.object.getClass(), Integer.MAX_VALUE);
-
-			if (myPrio == otherPrio) {
-				throw new RuntimeException("WUT");
-			}
-
-			return myPrio - otherPrio;
+		if (this == o) {
+			return 0;
 		}
-		if (o instanceof FunctionTerm) {
-			return -1;
+
+		if (!(o instanceof ConstantTerm)) {
+			return super.compareTo(o);
 		}
-		if (o instanceof VariableTerm) {
-			return -1;
+
+		ConstantTerm other = (ConstantTerm) o;
+
+		// We will perform an unchecked cast.
+		// Because of type erasure, we cannot know the exact type
+		// of other.object.
+		// However, may assume that other.object actually is of
+		// type T.
+		// We know that this.object if of type T and implements
+		// Comparable<T>. We ensure that the class of other.object
+		// equals the class of this.object, which in turn is T.
+		// That assumption should be quite safe. It can only be
+		// wrong if we have some bug that generates strange
+		// ConstantTerms at runtime, bypassing the check for T
+		// at compile-time.
+		if (other.object.getClass() == this.object.getClass()) {
+			return this.object.compareTo((T) other.object);
 		}
-		throw new UnsupportedOperationException("Comparison of terms is not fully implemented.");
+
+		Class<?> thisType = this.object.getClass();
+		Class<?> otherType = other.object.getClass();
+
+		int thisPrio = priority(thisType);
+		int otherPrio = priority(otherType);
+
+		if (thisPrio == 0 || otherPrio == 0) {
+			return thisType.getName().compareTo(otherType.getName());
+		}
+
+		return Integer.compare(thisPrio, otherPrio);
 	}
 }
