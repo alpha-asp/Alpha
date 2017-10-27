@@ -34,19 +34,21 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
+import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import junit.framework.TestCase;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class SolverTests extends AbstractSolverTests {
 	private static class Thingy implements Comparable<Thingy> {
@@ -69,7 +71,8 @@ public class SolverTests extends AbstractSolverTests {
 
 		final Program program = new Program(
 			Collections.emptyList(),
-			Collections.singletonList(fact)
+			Collections.singletonList(fact),
+			new InlineDirectives()
 		);
 
 		assertEquals(singleton(new AnswerSetBuilder()
@@ -631,6 +634,50 @@ public class SolverTests extends AbstractSolverTests {
 			"a2 :- not b2." +
 			"b2 :- not a2.");
 	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void instanceEnumerationAtom() throws IOException {
+		Set<AnswerSet> answerSets = solve("# enum_atom_is enum." +
+			"dom(1). dom(2). dom(3). dom(4)." +
+			"p(X) :- dom(X)." +
+			"q(Y) :- p(Y)." +
+			"unique_position(Term,Pos) :- q(Term), enum(id0,Term,Pos)." +
+			"wrong_double_occurrence :- unique_position(T1,P), unique_position(T2,P), T1 != T2");
+		/* Approximate answerSet = "dom(1), dom(2), dom(3)," +
+			"p(1), p(2), p(3)," +
+			"q(1), q(2), q(3)," +
+			"unique_position(1,0)," +
+			"unique_position(1,1)," +
+			"unique_position(1,2).";*/
+
+		// Since enumeration depends on evaluation, we do not know which unique_position is actually assigned.
+		// Check manually that there is one answer set, wrong_double_occurrence has not been derived, and enum yielded a unique position for each term.
+		// TODO: what could help here is an assertAnswerSetFiltered that ignores some filtered predicates.
+		assertEquals(1, answerSets.size());
+		AnswerSet answerSet = answerSets.iterator().next();
+		assertEquals(0, answerSet.getPredicateInstances(new Predicate("wrong_double_occurrence", 0)).size());
+		SortedSet<Atom> positions = answerSet.getPredicateInstances(new Predicate("unique_position", 2));
+		assertEquals(3, positions.size());
+		boolean usedPositions[] = new boolean[3];
+		for (Atom position : positions) {
+			Integer atomPos = ((ConstantTerm<Integer>) position.getTerms().get(1)).getObject();
+			assertTrue(atomPos < 3);
+			usedPositions[atomPos] = true;
+		}
+		for (int i = 0; i < 3; i++) {
+			assertTrue(usedPositions[i]);
+		}
+	}
+
+	private Set<AnswerSet> solve(String program) throws IOException {
+		return solve(parser.parse(program));
+	}
+
+	private Set<AnswerSet> solve(Program program) throws IOException {
+		return getInstance(new NaiveGrounder(program)).collectSet();
+	}
+
 
 	@Test
 	public void dummyGrounder() {

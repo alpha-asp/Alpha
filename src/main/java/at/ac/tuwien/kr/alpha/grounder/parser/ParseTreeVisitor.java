@@ -128,7 +128,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		if (ctx.statements() == null) {
 			return Program.EMPTY;
 		}
-		inputProgram = new Program(new ArrayList<>(), new ArrayList<>());
 		inlineDirectives = new InlineDirectives();
 		inputProgram = new Program(new ArrayList<>(), new ArrayList<>(), inlineDirectives);
 		visitStatements(ctx.statements());
@@ -168,6 +167,20 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	public Object visitStatement_rule(ASPCore2Parser.Statement_ruleContext ctx) {
 		// head CONS body DOT
 		inputProgram.getRules().add(new Rule(visitHead(ctx.head()), visitBody(ctx.body())));
+		return null;
+	}
+
+	@Override
+	public Object visitStatement_weightConstraint(ASPCore2Parser.Statement_weightConstraintContext ctx) {
+		// WCONS body? DOT SQUARE_OPEN weight_at_level SQUARE_CLOSE
+		throw notSupported(ctx);
+	}
+
+	@Override
+	public Object visitStatement_directive(ASPCore2Parser.Statement_directiveContext ctx) {
+		// directive
+		visitDirective(ctx.directive());
+		// Parsed directives are globally stored, nothing to return here.
 		return null;
 	}
 
