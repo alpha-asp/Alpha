@@ -5,7 +5,6 @@ import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ChoiceHead;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -58,7 +57,7 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 
 				// Construct head atom for the guess.
 				Predicate headPredicate = head.getPredicate();
-				Predicate negPredicate = new BasicPredicate(PREDICATE_NEGATION_PREFIX + headPredicate.getPredicateName(), headPredicate.getArity() + 1);
+				Predicate negPredicate = new Predicate(PREDICATE_NEGATION_PREFIX + headPredicate.getPredicateName(), headPredicate.getArity() + 1);
 				List<Term> headTerms = new ArrayList<>(head.getTerms());
 				headTerms.add(0, ConstantTerm.getInstance("1"));	// FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for classical negative atoms.
 				HiddenAtom negHead = new HiddenAtom(negPredicate, headTerms);

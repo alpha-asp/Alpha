@@ -4,7 +4,7 @@ import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ChoiceHead;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.predicates.BasicPredicate;
+import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
@@ -86,7 +86,7 @@ public class ParserTest {
 	public void parseChoiceRule() throws IOException {
 		Program parsedProgram = parser.parse("dom(1). dom(2). { a ; b } :- dom(X).");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
-		BasicAtom atomA = new BasicAtom(new BasicPredicate("a", 0));
+		BasicAtom atomA = new BasicAtom(new Predicate("a", 0));
 		assertEquals(2, choiceHead.getChoiceElements().size());
 		assertTrue(choiceHead.getChoiceElements().get(0).getKey().toString().equals("a"));
 		assertTrue(choiceHead.getChoiceElements().get(1).getKey().toString().equals("b"));
@@ -98,7 +98,7 @@ public class ParserTest {
 	public void parseChoiceRuleBounded() throws IOException {
 		Program parsedProgram = parser.parse("dom(1). dom(2). 1 < { a: p(v,w), not r; b } <= 13 :- dom(X). foo.");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
-		BasicAtom atomA = new BasicAtom(new BasicPredicate("a", 0));
+		BasicAtom atomA = new BasicAtom(new Predicate("a", 0));
 		assertEquals(2, choiceHead.getChoiceElements().size());
 		assertTrue(choiceHead.getChoiceElements().get(0).getKey().toString().equals("a"));
 		assertTrue(choiceHead.getChoiceElements().get(1).getKey().toString().equals("b"));
@@ -107,8 +107,8 @@ public class ParserTest {
 		assertFalse(conditionalLiterals.get(0).isNegated());
 		assertTrue(conditionalLiterals.get(1).isNegated());
 		assertEquals(ConstantTerm.getInstance(1), choiceHead.getLowerBound());
-		assertEquals("<", choiceHead.getLowerOp().getPredicateName());
+		assertEquals("<", choiceHead.getLowerOp().toPredicate().getPredicateName());
 		assertEquals(ConstantTerm.getInstance(13), choiceHead.getUpperBound());
-		assertEquals("<=", choiceHead.getUpperOp().getPredicateName());
+		assertEquals("<=", choiceHead.getUpperOp().toPredicate().getPredicateName());
 	}
 }
