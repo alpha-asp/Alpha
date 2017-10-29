@@ -10,7 +10,6 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HiddenAtom;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -42,14 +41,14 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 			}
 
 			// Only rewrite rules with a choice in their head.
-			List<AbstractMap.SimpleEntry<BasicAtom, List<Literal>>> choiceElements = ((ChoiceHead) rule.getHead()).getChoiceElements();
-			for (AbstractMap.SimpleEntry<BasicAtom, List<Literal>> choiceElement : choiceElements) {
+			List<ChoiceHead.ChoiceElement> choiceElements = ((ChoiceHead) rule.getHead()).getChoiceElements();
+			for (ChoiceHead.ChoiceElement choiceElement : choiceElements) {
 				// Create two guessing rules for each choiceElement.
 
 				// Construct common body to both rules.
-				BasicAtom head = choiceElement.getKey();
+				BasicAtom head = choiceElement.choiceAtom;
 				List<Literal> ruleBody = new ArrayList<>(rule.getBody());
-				ruleBody.addAll(choiceElement.getValue());
+				ruleBody.addAll(choiceElement.conditionLiterals);
 
 				if (head.containsIntervalTerms()) {
 					throw new RuntimeException("Program contains a choice rule with interval terms in its head. This is not supported (yet).");

@@ -6,7 +6,6 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.AbstractMap;
 import java.util.List;
 
 /**
@@ -14,8 +13,21 @@ import java.util.List;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class ChoiceHead implements Atom {
-	private final List<AbstractMap.SimpleEntry<BasicAtom, List<Literal>>> choiceElements;
+	private final List<ChoiceElement> choiceElements;
 	private final Term lowerBound;
+	private final BinaryOperator lowerOp;
+	private final Term upperBound;
+	private final BinaryOperator upperOp;
+
+	public static class ChoiceElement {
+		public final BasicAtom choiceAtom;
+		public final List<Literal> conditionLiterals;
+
+		public ChoiceElement(BasicAtom choiceAtom, List<Literal> conditionLiterals) {
+			this.choiceAtom = choiceAtom;
+			this.conditionLiterals = conditionLiterals;
+		}
+	}
 
 	public BinaryOperator getLowerOp() {
 		return lowerOp;
@@ -25,11 +37,7 @@ public class ChoiceHead implements Atom {
 		return upperOp;
 	}
 
-	private final BinaryOperator lowerOp;
-	private final Term upperBound;
-	private final BinaryOperator upperOp;
-
-	public List<AbstractMap.SimpleEntry<BasicAtom, List<Literal>>> getChoiceElements() {
+	public List<ChoiceElement> getChoiceElements() {
 		return choiceElements;
 	}
 
@@ -41,7 +49,7 @@ public class ChoiceHead implements Atom {
 		return upperBound;
 	}
 
-	public ChoiceHead(List<AbstractMap.SimpleEntry<BasicAtom, List<Literal>>> choiceElements, Term lowerBound, BinaryOperator lowerOp, Term upperBound, BinaryOperator upperOp) {
+	public ChoiceHead(List<ChoiceElement> choiceElements, Term lowerBound, BinaryOperator lowerOp, Term upperBound, BinaryOperator upperOp) {
 		this.choiceElements = choiceElements;
 		this.lowerBound = lowerBound;
 		this.lowerOp = lowerOp;

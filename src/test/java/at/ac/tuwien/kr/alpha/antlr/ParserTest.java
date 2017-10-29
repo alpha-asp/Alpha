@@ -88,8 +88,8 @@ public class ParserTest {
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
 		BasicAtom atomA = new BasicAtom(new Predicate("a", 0));
 		assertEquals(2, choiceHead.getChoiceElements().size());
-		assertTrue(choiceHead.getChoiceElements().get(0).getKey().toString().equals("a"));
-		assertTrue(choiceHead.getChoiceElements().get(1).getKey().toString().equals("b"));
+		assertTrue(choiceHead.getChoiceElements().get(0).choiceAtom.toString().equals("a"));
+		assertTrue(choiceHead.getChoiceElements().get(1).choiceAtom.toString().equals("b"));
 		assertEquals(null, choiceHead.getLowerBound());
 		assertEquals(null, choiceHead.getUpperBound());
 	}
@@ -100,9 +100,9 @@ public class ParserTest {
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
 		BasicAtom atomA = new BasicAtom(new Predicate("a", 0));
 		assertEquals(2, choiceHead.getChoiceElements().size());
-		assertTrue(choiceHead.getChoiceElements().get(0).getKey().toString().equals("a"));
-		assertTrue(choiceHead.getChoiceElements().get(1).getKey().toString().equals("b"));
-		List<Literal> conditionalLiterals = choiceHead.getChoiceElements().get(0).getValue();
+		assertTrue(choiceHead.getChoiceElements().get(0).choiceAtom.toString().equals("a"));
+		assertTrue(choiceHead.getChoiceElements().get(1).choiceAtom.toString().equals("b"));
+		List<Literal> conditionalLiterals = choiceHead.getChoiceElements().get(0).conditionLiterals;
 		assertEquals(2, conditionalLiterals.size());
 		assertFalse(conditionalLiterals.get(0).isNegated());
 		assertTrue(conditionalLiterals.get(1).isNegated());

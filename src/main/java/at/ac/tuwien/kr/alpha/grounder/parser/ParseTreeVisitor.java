@@ -206,9 +206,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public List<AbstractMap.SimpleEntry<BasicAtom, List<Literal>>> visitChoice_elements(ASPCore2Parser.Choice_elementsContext ctx) {
+	public List<ChoiceHead.ChoiceElement> visitChoice_elements(ASPCore2Parser.Choice_elementsContext ctx) {
 		// choice_elements : choice_element (SEMICOLON choice_elements)?;
-		List<AbstractMap.SimpleEntry<BasicAtom, List<Literal>>> choiceElements;
+		List<ChoiceHead.ChoiceElement> choiceElements;
 		if (ctx.choice_elements() != null) {
 			choiceElements = visitChoice_elements(ctx.choice_elements());
 		} else {
@@ -219,13 +219,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public AbstractMap.SimpleEntry<BasicAtom, List<Literal>> visitChoice_element(ASPCore2Parser.Choice_elementContext ctx) {
+	public ChoiceHead.ChoiceElement visitChoice_element(ASPCore2Parser.Choice_elementContext ctx) {
 		// choice_element : classical_literal (COLON naf_literals?)?;
 		BasicAtom atom = (BasicAtom) visitClassical_literal(ctx.classical_literal());
 		if (ctx.naf_literals() != null) {
-			return new AbstractMap.SimpleEntry<>(atom, visitNaf_literals(ctx.naf_literals()));
+			return new ChoiceHead.ChoiceElement(atom, visitNaf_literals(ctx.naf_literals()));
 		} else {
-			return new AbstractMap.SimpleEntry<>(atom, Collections.emptyList());
+			return new ChoiceHead.ChoiceElement(atom, Collections.emptyList());
 		}
 	}
 
