@@ -69,7 +69,7 @@ arithop : PLUS | MINUS | TIMES | DIV;
 
 interval : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE); // NOT Core2 syntax, but widespread
 
-external_atom : MINUS? AMPERSAND ID (SQUARE_OPEN output = terms SQUARE_CLOSE)? (PAREN_OPEN input = terms PAREN_CLOSE)?; // NOT Core2 syntax.
+external_atom : MINUS? AMPERSAND ID (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?; // NOT Core2 syntax.
 
 gringo_sharp : SHARP ~(DOT)* DOT; // NOT Core2 syntax, but widespread, matching not perfect due to possible earlier dots
 

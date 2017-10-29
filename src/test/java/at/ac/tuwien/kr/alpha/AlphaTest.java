@@ -43,7 +43,7 @@ public class AlphaTest {
 	public void withExternal() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", int.class));
-		Set<AnswerSet> actual = system.solve("a :- &isOne(1).").collect(Collectors.toSet());
+		Set<AnswerSet> actual = system.solve("a :- &isOne[1].").collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
 	}
@@ -64,7 +64,7 @@ public class AlphaTest {
 	public void withExternalTypeConflict() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isFoo", Integer.class));
-		Set<AnswerSet> actual = system.solve("a :- &isFoo(\"adsfnfdsf\").").collect(Collectors.toSet());
+		Set<AnswerSet> actual = system.solve("a :- &isFoo[\"adsfnfdsf\"].").collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
 	}
@@ -74,7 +74,7 @@ public class AlphaTest {
 		Alpha system = new Alpha();
 		system.register("connected", (Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3));
 
-		Set<AnswerSet> answerSets = system.solve("node(1). node(2). node(3). a :- &connected(1,2).").collect(Collectors.toSet());
+		Set<AnswerSet> answerSets = system.solve("node(1). node(2). node(3). a :- &connected[1,2].").collect(Collectors.toSet());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -82,7 +82,7 @@ public class AlphaTest {
 		Alpha system = new Alpha();
 		system.register("connected", (Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3));
 
-		system.solve("a :- &connected(\"hello\",2).").collect(Collectors.toSet());
+		system.solve("a :- &connected[\"hello\",2].").collect(Collectors.toSet());
 	}
 
 	public static Set<List<ConstantTerm<Integer>>> neighbors(int node) {
@@ -108,7 +108,7 @@ public class AlphaTest {
 		system.registerBinding(this.getClass().getMethod("neighbors", int.class));
 
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ noNeighbors(2) }");
-		Set<AnswerSet> actual = system.solve("noNeighbors(2) :- not &neighbors(2).").collect(Collectors.toSet());
+		Set<AnswerSet> actual = system.solve("noNeighbors(2) :- not &neighbors[2].").collect(Collectors.toSet());
 		assertEquals(expected, actual);
 	}
 
@@ -117,7 +117,7 @@ public class AlphaTest {
 		Alpha system = new Alpha();
 		system.registerBinding(this.getClass().getMethod("coolNode", int.class));
 
-		Set<AnswerSet> actual = system.solve("node(1..2). in(X) :- node(X), &coolNode(X).").collect(Collectors.toSet());
+		Set<AnswerSet> actual = system.solve("node(1..2). in(X) :- node(X), &coolNode[X].").collect(Collectors.toSet());
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ in(1), node(1), node(2) }");
 		assertEquals(expected, actual);
 	}
@@ -128,7 +128,7 @@ public class AlphaTest {
 		system.registerBinding(this.getClass().getMethod("neighbors", int.class));
 
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ in(1,2), in(1,3), node(1), node(2), node(3) }");
-		Set<AnswerSet> actual = system.solve("node(1..3). in(1,X) :- &neighbors[X](1), node(X).").collect(Collectors.toSet());
+		Set<AnswerSet> actual = system.solve("node(1..3). in(1,X) :- &neighbors[1](X), node(X).").collect(Collectors.toSet());
 		assertEquals(expected, actual);
 	}
 
@@ -138,7 +138,7 @@ public class AlphaTest {
 		system.registerBinding(this.getClass().getMethod("neighbors", int.class));
 
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ success }");
-		Set<AnswerSet> actual = system.solve("success :- &neighbors(1), not &neighbors(2).").collect(Collectors.toSet());
+		Set<AnswerSet> actual = system.solve("success :- &neighbors[1], not &neighbors[2].").collect(Collectors.toSet());
 		assertEquals(expected, actual);
 	}
 
@@ -188,7 +188,7 @@ public class AlphaTest {
 	public void withExternalViaAnnotation() throws Exception {
 		Alpha system = new Alpha();
 		system.scan(this.getClass().getPackage().getName());
-		Set<AnswerSet> actual = system.solve("a :- &isOne(1).").collect(Collectors.toSet());
+		Set<AnswerSet> actual = system.solve("a :- &isOne[1].").collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
 	}
@@ -198,7 +198,7 @@ public class AlphaTest {
 		Alpha system = new Alpha();
 		system.register("isTwo", (Integer t) -> t == 2);
 
-		Set<AnswerSet> actual = system.solve("a :- &isTwo(2).").collect(Collectors.toSet());
+		Set<AnswerSet> actual = system.solve("a :- &isTwo[2].").collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
 	}
@@ -208,7 +208,7 @@ public class AlphaTest {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", int.class));
 		int before = invocations;
-		Set<AnswerSet> actual = system.solve("a :- &isOne(1), &isOne(1).").collect(Collectors.toSet());
+		Set<AnswerSet> actual = system.solve("a :- &isOne[1], &isOne[1].").collect(Collectors.toSet());
 		int after = invocations;
 
 		assertEquals(2, after - before);
@@ -222,7 +222,7 @@ public class AlphaTest {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", int.class));
 		int before = invocations;
-		Set<AnswerSet> actual = system.solve("a. b :- &isOne(1), &isOne(2).").collect(Collectors.toSet());
+		Set<AnswerSet> actual = system.solve("a. b :- &isOne[1], &isOne[2].").collect(Collectors.toSet());
 		int after = invocations;
 
 		assertEquals(2, after - before);
@@ -236,7 +236,7 @@ public class AlphaTest {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", int.class));
 		int before = invocations;
-		Set<AnswerSet> actual = system.solve("a :- &isOne(1), not &isOne(2).").collect(Collectors.toSet());
+		Set<AnswerSet> actual = system.solve("a :- &isOne[1], not &isOne[2].").collect(Collectors.toSet());
 		int after = invocations;
 
 		assertEquals(1, after - before);

@@ -12,6 +12,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
 
 public class ExternalAtom implements Literal {
 	private final List<Term> input;
@@ -91,29 +92,26 @@ public class ExternalAtom implements Literal {
 
 	@Override
 	public List<VariableTerm> getBindingVariables() {
-		if (negated) {
-			// Negative literal has no binding variables.
-			return Collections.emptyList();
-		}
-		LinkedList<VariableTerm> bindingVariables = new LinkedList<>();
-		for (Term term : input) {
-			bindingVariables.addAll(term.getOccurringVariables());
-		}
-		bindingVariables.addAll(output);
-		return bindingVariables;
+		// If the external atom is negative, then all variables of input and output are non-binding
+		// and there are no binding variables (like for ordinary atoms).
+		// If the external atom is positive, then variables of output are binding.
+		return negated ? emptyList() : unmodifiableList(output);
 	}
 
 	@Override
 	public List<VariableTerm> getNonBindingVariables() {
-		if (!negated) {
-			// Positive literal has only binding variables.
-			return Collections.emptyList();
-		}
+		// External atoms have their input always non-binding, since they cannot
+		// be queried without some concrete input.
 		LinkedList<VariableTerm> nonbindingVariables = new LinkedList<>();
 		for (Term term : input) {
 			nonbindingVariables.addAll(term.getOccurringVariables());
 		}
-		nonbindingVariables.addAll(output);
+
+		// If the external atom is negative, then all variables of input and output are non-binding.
+		if (negated) {
+			nonbindingVariables.addAll(output);
+		}
+
 		return nonbindingVariables;
 	}
 
