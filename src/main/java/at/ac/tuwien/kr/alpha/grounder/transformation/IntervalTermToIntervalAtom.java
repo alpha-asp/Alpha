@@ -33,7 +33,10 @@ public class IntervalTermToIntervalAtom implements ProgramTransformation {
 			rewriteAtom(literal, intervalReplacements);
 		}
 		if (rule.getHead() != null) {
-			rewriteAtom(rule.getHead(), intervalReplacements);
+			if (!rule.getHead().isNormal()) {
+				throw new RuntimeException("Cannot rewrite intervals in rules whose head contains a disjunction or choice. Given rule is: " + rule);
+			}
+			rewriteAtom(rule.getHead().disjunctiveHead.get(0), intervalReplacements);
 		}
 
 		// Add new IntervalAtoms representing the interval specifications.

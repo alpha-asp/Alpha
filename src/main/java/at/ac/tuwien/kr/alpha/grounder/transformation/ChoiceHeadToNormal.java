@@ -1,9 +1,9 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import at.ac.tuwien.kr.alpha.common.Head;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.ChoiceHead;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -11,6 +11,7 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HiddenAtom;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -28,21 +29,20 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 		while (ruleIterator.hasNext()) {
 			Rule rule = ruleIterator.next();
 
-			if (rule.getHead() == null) {
-				continue;
-			}
-			if (!(rule.getHead() instanceof ChoiceHead)) {
+			Head ruleHead = rule.getHead();
+			if (ruleHead == null || ruleHead.choiceHead == null) {
+				// Rule is constraint or without choice in the head. Leave as is.
 				continue;
 			}
 			ruleIterator.remove();
 			// Choice rules with boundaries are not yet supported.
-			if (((ChoiceHead) rule.getHead()).getLowerBound() != null || ((ChoiceHead) rule.getHead()).getUpperBound() != null) {
+			if (ruleHead.choiceHead.getLowerBound() != null || ruleHead.choiceHead.getUpperBound() != null) {
 				throw new RuntimeException("Found choice rule with bounds, which are not yet supported. Rule is: " + rule);
 			}
 
 			// Only rewrite rules with a choice in their head.
-			List<ChoiceHead.ChoiceElement> choiceElements = ((ChoiceHead) rule.getHead()).getChoiceElements();
-			for (ChoiceHead.ChoiceElement choiceElement : choiceElements) {
+			List<Head.ChoiceHead.ChoiceElement> choiceElements = ruleHead.choiceHead.getChoiceElements();
+			for (Head.ChoiceHead.ChoiceElement choiceElement : choiceElements) {
 				// Create two guessing rules for each choiceElement.
 
 				// Construct common body to both rules.
@@ -64,11 +64,11 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 				// Construct two guessing rules.
 				List<Literal> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithNegHead.add(new BasicAtom(head, true));
-				additionalRules.add(new Rule(negHead, guessingRuleBodyWithNegHead));
+				additionalRules.add(new Rule(Head.constructDisjunctiveHead(Collections.singletonList(negHead)), guessingRuleBodyWithNegHead));
 
 				List<Literal> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithHead.add(new HiddenAtom(negHead, true));
-				additionalRules.add(new Rule(head, guessingRuleBodyWithHead));
+				additionalRules.add(new Rule(Head.constructDisjunctiveHead(Collections.singletonList(head)), guessingRuleBodyWithHead));
 
 				// TODO: when cardinality constraints are possible, process the boundaries by adding a constraint with a cardinality check.
 			}

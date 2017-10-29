@@ -7,7 +7,6 @@ import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.ChoiceHead;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.predicates.FixedInterpretationPredicate;
@@ -150,7 +149,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Object visitStatement_fact(ASPCore2Parser.Statement_factContext ctx) {
 		// head DOT
-		inputProgram.getFacts().add(visitHead(ctx.head()));
+		Head head = visitHead(ctx.head());
+		if (head.isNormal()) {
+			inputProgram.getFacts().add(head.disjunctiveHead.get(0));
+		} else {
+			// Treat facts with choice or disjunction in the head like a rule.
+			inputProgram.getRules().add(new Rule(head, emptyList()));
+		}
 		return null;
 	}
 
@@ -169,17 +174,17 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public Atom visitDisjunction(ASPCore2Parser.DisjunctionContext ctx) {
+	public Head visitDisjunction(ASPCore2Parser.DisjunctionContext ctx) {
 		// disjunction : classical_literal (OR disjunction)?;
 		if (ctx.disjunction() != null) {
 			throw notSupported(ctx);
 		}
 		isCurrentLiteralNegated = false;
-		return visitClassical_literal(ctx.classical_literal());
+		return Head.constructDisjunctiveHead(Collections.singletonList(visitClassical_literal(ctx.classical_literal())));
 	}
 
 	@Override
-	public Atom visitHead(ASPCore2Parser.HeadContext ctx) {
+	public Head visitHead(ASPCore2Parser.HeadContext ctx) {
 		// head : disjunction | choice;
 		if (ctx.choice() != null) {
 			return visitChoice(ctx.choice());
@@ -188,7 +193,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public ChoiceHead visitChoice(ASPCore2Parser.ChoiceContext ctx) {
+	public Head visitChoice(ASPCore2Parser.ChoiceContext ctx) {
 		// choice : (lt=term lop=binop)? CURLY_OPEN choice_elements? CURLY_CLOSE (uop=binop ut=term)?;
 		Term lt = null;
 		BinaryOperator lop = null;
@@ -202,13 +207,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			ut = (Term) visit(ctx.ut);
 			uop = visitBinop(ctx.uop);
 		}
-		return new ChoiceHead(visitChoice_elements(ctx.choice_elements()), lt, lop, ut, uop);
+		return Head.constructChoiceHead(new Head.ChoiceHead(visitChoice_elements(ctx.choice_elements()), lt, lop, ut, uop));
 	}
 
 	@Override
-	public List<ChoiceHead.ChoiceElement> visitChoice_elements(ASPCore2Parser.Choice_elementsContext ctx) {
+	public List<Head.ChoiceHead.ChoiceElement> visitChoice_elements(ASPCore2Parser.Choice_elementsContext ctx) {
 		// choice_elements : choice_element (SEMICOLON choice_elements)?;
-		List<ChoiceHead.ChoiceElement> choiceElements;
+		List<Head.ChoiceHead.ChoiceElement> choiceElements;
 		if (ctx.choice_elements() != null) {
 			choiceElements = visitChoice_elements(ctx.choice_elements());
 		} else {
@@ -219,13 +224,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public ChoiceHead.ChoiceElement visitChoice_element(ASPCore2Parser.Choice_elementContext ctx) {
+	public Head.ChoiceHead.ChoiceElement visitChoice_element(ASPCore2Parser.Choice_elementContext ctx) {
 		// choice_element : classical_literal (COLON naf_literals?)?;
 		BasicAtom atom = (BasicAtom) visitClassical_literal(ctx.classical_literal());
 		if (ctx.naf_literals() != null) {
-			return new ChoiceHead.ChoiceElement(atom, visitNaf_literals(ctx.naf_literals()));
+			return new Head.ChoiceHead.ChoiceElement(atom, visitNaf_literals(ctx.naf_literals()));
 		} else {
-			return new ChoiceHead.ChoiceElement(atom, Collections.emptyList());
+			return new Head.ChoiceHead.ChoiceElement(atom, Collections.emptyList());
 		}
 	}
 

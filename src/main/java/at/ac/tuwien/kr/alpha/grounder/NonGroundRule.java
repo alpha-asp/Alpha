@@ -79,7 +79,14 @@ public class NonGroundRule {
 
 			(literal.isNegated() ? neg : pos).add(literal);
 		}
-		return new NonGroundRule(intIdGenerator.getNextId(), pos, neg, rule.getHead(), containsIntervals, containsExternals);
+		Atom headAtom = null;
+		if (rule.getHead() != null) {
+			if (!rule.getHead().isNormal()) {
+				throw new RuntimeException("Trying to construct NonGroundRule from rule that is not normal. Should not happen.");
+			}
+			headAtom = rule.getHead().disjunctiveHead.get(0);
+		}
+		return new NonGroundRule(intIdGenerator.getNextId(), pos, neg, headAtom, containsIntervals, containsExternals);
 	}
 
 	private static boolean isOriginallyGround(List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
