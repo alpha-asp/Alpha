@@ -9,9 +9,11 @@ import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.atoms.HiddenAtom;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Copyright (c) 2017, the Alpha Team.
@@ -64,7 +66,7 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 				grounder.flagPredicateAsInternal(negPredicate);
 				List<Term> headTerms = new ArrayList<>(head.getTerms());
 				headTerms.add(0, ConstantTerm.getInstance("1"));	// FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for classical negative atoms.
-				HiddenAtom negHead = new HiddenAtom(negPredicate, headTerms);
+				BasicAtom negHead = new BasicAtom(negPredicate, headTerms);
 
 				// Construct two guessing rules.
 				List<Literal> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
@@ -72,7 +74,7 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 				additionalRules.add(new Rule(Head.constructDisjunctiveHead(Collections.singletonList(negHead)), guessingRuleBodyWithNegHead));
 
 				List<Literal> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
-				guessingRuleBodyWithHead.add(new HiddenAtom(negHead, true));
+				guessingRuleBodyWithHead.add(new BasicAtom(negHead, true));
 				additionalRules.add(new Rule(Head.constructDisjunctiveHead(Collections.singletonList(head)), guessingRuleBodyWithHead));
 
 				// TODO: when cardinality constraints are possible, process the boundaries by adding a constraint with a cardinality check.

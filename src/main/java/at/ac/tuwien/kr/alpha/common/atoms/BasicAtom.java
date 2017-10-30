@@ -48,11 +48,11 @@ public class BasicAtom implements Literal {
 		this(clone, clone.negated);
 	}
 
-	public BasicAtom(BasicAtom clone, boolean isNegated) {
+	public BasicAtom(BasicAtom clone, boolean negated) {
 		this.predicate = clone.getPredicate();
 		this.terms = new ArrayList<>(clone.getTerms());
 		this.ground = clone.ground;
-		this.negated = clone.negated;
+		this.negated = negated;
 	}
 
 	public BasicAtom(Predicate predicate, Term... terms) {

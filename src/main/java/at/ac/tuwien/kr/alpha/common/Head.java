@@ -40,6 +40,16 @@ public class Head {
 		return disjunctiveHead != null && disjunctiveHead.size() <= 1;
 	}
 
+	@Override
+	public String toString() {
+		if (isNormal()) {
+			return disjunctiveHead.get(0).toString();
+		} else if (choiceHead != null) {
+			return choiceHead.toString();
+		}
+		return super.toString();	// TODO: print actual disjunction here.
+	}
+
 	/**
 	 * Represents the head of a choice rule.
 	 */
