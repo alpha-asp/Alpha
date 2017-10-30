@@ -73,12 +73,26 @@ public abstract class AbstractSolverTests {
 
 	@Parameters(name = "{0}/{1}/{2}/{3}")
 	public static Collection<Object[]> parameters() {
+		// Check whether we are running in a CI environment.
+		boolean ci = Boolean.valueOf(System.getenv("CI"));
+
 		String[] solvers = getProperty("solvers", "default");
 		String[] grounders = getProperty("grounders", "naive");
 		String[] stores = getProperty("stores", "alpharoaming");
-		String[] heuristics = getProperty("heuristics", "NAIVE");
-		String seed = System.getProperty("seed", "");
-		boolean checks = Boolean.valueOf(System.getProperty("test.checks", "false"));
+		String[] heuristics = getProperty("heuristics", ci ? "ALL" : "NAIVE");
+
+		// "ALL" is a magic value that will be expanded to contain all heuristics.
+		if ("ALL".equals(heuristics[0])) {
+			BranchingHeuristicFactory.Heuristic[] values = BranchingHeuristicFactory.Heuristic.values();
+			heuristics = new String[values.length];
+			int i = 0;
+			for (BranchingHeuristicFactory.Heuristic heuristic : values) {
+				heuristics[i++] = heuristic.toString();
+			}
+		}
+
+		String seed = System.getProperty("seed", ci ? "0" : "");
+		boolean checks = Boolean.valueOf(System.getProperty("test.checks", String.valueOf(ci)));
 
 		Random random = seed.isEmpty() ? new Random() : new Random(Long.valueOf(seed));
 

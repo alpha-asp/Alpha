@@ -118,7 +118,7 @@ public class PigeonHoleTest extends AbstractSolverTests {
 	}
 
 	/**
-	 * Tries to collectSet the problem of assigning P pigeons to H holes.
+	 * Tries to solve the problem of assigning P pigeons to H holes.
 	 */
 	private void testPigeonsHoles(int pigeons, int holes) throws IOException {
 		List<String> rules = new ArrayList<>();
