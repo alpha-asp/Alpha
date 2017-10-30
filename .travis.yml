@@ -6,10 +6,13 @@ sudo: true
 language: java
 
 # https://docs.travis-ci.com/user/languages/java#Testing-Against-Multiple-JDKs
-jdk:
-  - openjdk8
-  - oraclejdk8
-  - oraclejdk9
+matrix:
+  fast_finish: true
+  include:
+    - jdk: openjdk8
+  allow_failures:
+    - jdk: oraclejdk8
+    - jdk: oraclejdk9
 
 # As of 2016-06 Travis CI is running an outdated
 # version of Gradle, so this workaround fetches
