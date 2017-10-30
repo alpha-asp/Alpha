@@ -178,11 +178,11 @@ public class NaiveSolver extends AbstractSolver {
 	}
 
 	private String reportTruthAssignments() {
-		String report = "Current Truth assignments: ";
+		StringBuilder report = new StringBuilder("Current Truth assignments: ");
 		for (Integer atomId : truthAssignments.keySet()) {
-			report += (truthAssignments.get(atomId) ? "+" : "-") + atomId + " ";
+			report.append(truthAssignments.get(atomId) ? "+" : "-").append(atomId).append(" ");
 		}
-		return report;
+		return report.toString();
 	}
 
 	private boolean propagationFixpointReached() {
@@ -253,9 +253,7 @@ public class NaiveSolver extends AbstractSolver {
 
 		// Handle MBT assigned values:
 		// First, restore mbt when it got assigned true in this decision level
-		for (Integer atomId : trueAssignedFromMbt.get(decisionLevel)) {
-			mbtAssigned.add(atomId);
-		}
+		mbtAssigned.addAll(trueAssignedFromMbt.get(decisionLevel));
 
 		// Second, remove mbt indicator for values that were unassigned
 		for (Integer atomId : mbtAssignedFromUnassigned.get(decisionLevel)) {
@@ -281,9 +279,9 @@ public class NaiveSolver extends AbstractSolver {
 	}
 
 	private void updateGrounderAssignments() {
-		grounder.updateAssignment(newTruthAssignments.stream().map(atom -> {
-			return (Assignment.Entry)new Entry(atom, truthAssignments.get(atom) ? TRUE : FALSE);
-		}).iterator());
+		grounder.updateAssignment(newTruthAssignments.stream().map(
+			atom -> (Assignment.Entry) new Entry(atom, truthAssignments.get(atom) ? TRUE : FALSE)
+		).iterator());
 		newTruthAssignments.clear();
 	}
 

@@ -25,7 +25,6 @@ public class FactIntervalEvaluator {
 		// Construct instance(s) from the fact.
 		int arity = fact.getPredicate().getArity();
 		Term[] currentTerms = new Term[arity];
-		List<Instance> instances = new ArrayList<>();
 		boolean containsIntervals = false;
 		// Check if instance contains intervals at all.
 		for (int i = 0; i < arity; i++) {

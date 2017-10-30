@@ -600,7 +600,7 @@ public class NaiveGrounder extends BridgedGrounder {
 			// Generate all substitutions for the interval representing variable.
 			List<Substitution> substitutions = ((ExternalAtom)currentAtom).getSubstitutions(partialSubstitution);
 
-			if (substitutions.isEmpty() && rule.isBodyAtomPositive(atomPos)) {
+			if (substitutions.isEmpty()) {
 				return emptyList();
 			}
 
@@ -826,23 +826,23 @@ public class NaiveGrounder extends BridgedGrounder {
 	}
 
 	public static String groundAndPrintRule(NonGroundRule rule, Substitution substitution) {
-		String ret = "";
+		StringBuilder ret = new StringBuilder();
 		if (!rule.isConstraint()) {
 			Atom groundHead = rule.getHeadAtom().substitute(substitution);
-			ret += groundHead.toString();
+			ret.append(groundHead.toString());
 		}
-		ret += " :- ";
+		ret.append(" :- ");
 		boolean isFirst = true;
 		for (Atom bodyAtom : rule.getBodyAtomsPositive()) {
-			ret += groundAtomToString(bodyAtom, false, substitution, isFirst);
+			ret.append(groundAtomToString(bodyAtom, false, substitution, isFirst));
 			isFirst = false;
 		}
 		for (Atom bodyAtom : rule.getBodyAtomsNegative()) {
-			ret += groundAtomToString(bodyAtom, true, substitution, isFirst);
+			ret.append(groundAtomToString(bodyAtom, true, substitution, isFirst));
 			isFirst = false;
 		}
-		ret += ".";
-		return ret;
+		ret.append(".");
+		return ret.toString();
 	}
 
 	private static String groundAtomToString(Atom bodyAtom, boolean isNegative, Substitution substitution, boolean isFirst) {

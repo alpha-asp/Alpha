@@ -227,7 +227,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		if (!assignmentsConsistent(current, value)) {
 			ConflictCause conflictCause = new ConflictCause(impliedBy);
 			// Assignments are inconsistent, prepare the reason.
-			NoGood violated = impliedBy;
+			NoGood violated;
 			if (decisionLevel < current.getWeakDecisionLevel()) {
 				// New assignment is lower than the current one, hence cause is the reason for the (higher) current one.
 				violated = current.getPrevious() == null ? current.getImpliedBy() : current.getPrevious().getImpliedBy();	// take MBT reason if it exists.
@@ -396,8 +396,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 	public String toString() {
 		StringBuilder sb = new StringBuilder("[");
 		boolean isFirst = true;
-		for (Iterator<Entry> iterator = assignment.iterator(); iterator.hasNext();) {
-			Entry assignmentEntry = iterator.next();
+		for (Entry assignmentEntry : assignment) {
 			if (assignmentEntry == null) {
 				continue;
 			}
