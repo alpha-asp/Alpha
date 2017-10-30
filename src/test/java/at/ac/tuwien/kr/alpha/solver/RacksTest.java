@@ -28,39 +28,33 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 
 /**
  * Tests {@link AbstractSolver} using a racks configuration problem.
  *
  */
-@Ignore("disabled to save resources during CI")
-public class RacksTest extends AbstractSolverTests {
-	@Before
-	public void printSolverName() {
-		System.out.println(solverName);
+@Disabled("disabled to save resources during CI")
+class RacksTest extends AbstractSolverTests {
+	@Test
+	void testRacks() throws IOException {
+		assertTimeout(Duration.ofSeconds(10), () -> {
+			CharStream programInputStream = CharStreams.fromPath(
+				Paths.get("benchmarks", "siemens", "racks", "racks.lp")
+			);
+			Solver solver = getInstance(programInputStream);
+			Optional<AnswerSet> answerSet = solver.stream().findFirst();
+			System.out.println(answerSet);
+			// TODO: check correctness of answer set
+			System.out.println(((DefaultSolver) solver).getCounters().getDecisionCounter() + " choices," + ((DefaultSolver) solver).getCounters().getConflictCounter() + " conflicts");
+		});
 	}
-
-	@Test(timeout = 10000)
-	public void testRacks() throws IOException {
-		test();
-	}
-
-	private void test() throws IOException {
-		CharStream programInputStream = CharStreams.fromPath(
-			Paths.get("benchmarks", "siemens", "racks", "racks.lp")
-		);
-		Solver solver = getInstance(programInputStream);
-		Optional<AnswerSet> answerSet = solver.stream().findFirst();
-		System.out.println(answerSet);
-		// TODO: check correctness of answer set
-		System.out.println(((DefaultSolver) solver).getCounters().getDecisionCounter() + " choices," + ((DefaultSolver) solver).getCounters().getConflictCounter() + " conflicts");
-	}
-
 }

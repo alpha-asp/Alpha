@@ -31,32 +31,32 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
 public class SubstitutionTest {
 	@Test
-	public void unifyTermsSimpleBinding() throws Exception {
+	void unifyTermsSimpleBinding() throws Exception {
 		Substitution substitution = new Substitution();
 		Term groundTerm = ConstantTerm.getInstance("abc");
 		Term nongroundTerm = VariableTerm.getInstance("Y");
 		substitution.unifyTerms(nongroundTerm, groundTerm);
-		assertEquals("Variable Y must bind to constant term abc", substitution.eval(VariableTerm.getInstance("Y")), ConstantTerm.getInstance("abc"));
+		assertEquals(substitution.eval(VariableTerm.getInstance("Y")), ConstantTerm.getInstance("abc"), "Variable Y must bind to constant term abc");
 	}
 
 	@Test
-	public void unifyTermsFunctionTermBinding() throws Exception {
+	void unifyTermsFunctionTermBinding() throws Exception {
 		Substitution substitution = new Substitution();
 		substitution.put(VariableTerm.getInstance("Z"), ConstantTerm.getInstance("aa"));
 		FunctionTerm groundFunctionTerm = FunctionTerm.getInstance("f", ConstantTerm.getInstance("bb"), ConstantTerm.getInstance("cc"));
 
 		Term nongroundFunctionTerm = FunctionTerm.getInstance("f", ConstantTerm.getInstance("bb"), VariableTerm.getInstance("X"));
 		substitution.unifyTerms(nongroundFunctionTerm, groundFunctionTerm);
-		assertEquals("Variable X must bind to constant term cc", substitution.eval(VariableTerm.getInstance("X")), ConstantTerm.getInstance("cc"));
-		assertEquals("Variable Z must bind to constant term aa", substitution.eval(VariableTerm.getInstance("Z")), ConstantTerm.getInstance("aa"));
+		assertEquals(substitution.eval(VariableTerm.getInstance("X")), ConstantTerm.getInstance("cc"), "Variable X must bind to constant term cc");
+		assertEquals(substitution.eval(VariableTerm.getInstance("Z")), ConstantTerm.getInstance("aa"), "Variable Z must bind to constant term aa");
 	}
 }

@@ -1,18 +1,18 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
 public class IndexedInstanceStorageTest {
 	@Test
-	public void testIndexedInstanceStorage() {
+	void testIndexedInstanceStorage() {
 		IndexedInstanceStorage storage = new IndexedInstanceStorage("A test storage of arity 4", 4);
 		storage.addIndexPosition(0);
 		storage.addIndexPosition(2);
@@ -28,14 +28,14 @@ public class IndexedInstanceStorageTest {
 
 		try {
 			storage.addInstance(badInst1);
-			fail();
+			fail("Expected exception but none was thrown.");
 		} catch (Exception e) {
 			assertTrue(e.getMessage().startsWith("Instance length does not match arity of IndexedInstanceStorage"));
 		}
 
 		try {
 			storage.addInstance(badInst2);
-			fail();
+			fail("Expected exception but none was thrown.");
 		} catch (Exception e) {
 			assertTrue(e.getMessage().startsWith("Instance length does not match arity of IndexedInstanceStorage"));
 		}

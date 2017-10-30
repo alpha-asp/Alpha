@@ -33,76 +33,53 @@ import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.assertTimeout;
+
 public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
-	@Test(timeout = 1000)
-	public void testV3E3() throws IOException {
-		testThreeColouring(3, 3);
-	}
+	@Tag("slow")
+	@ParameterizedTest
+	@CsvSource({
+		"3, 3, 1",
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testV10E18() throws IOException {
-		testThreeColouring(10, 18);
-	}
+		"10, 18, 10",
+		"20, 38, 10",
+		"30, 48, 10",
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testV20E38() throws IOException {
-		testThreeColouring(20, 38);
-	}
+		"200, 300, 60",
+		"300, 200, 60",
+		"300, 300, 60"
+	})
+	void threeColouring(int v, int e, int seconds) throws IOException {
+		assertTimeout(Duration.ofSeconds(seconds), () -> {
+			Program program = new ProgramParser().parse(
+					"blue(N) :- v(N), not red(N), not green(N)." +
+					"red(N) :- v(N), not blue(N), not green(N)." +
+					"green(N) :- v(N), not red(N), not blue(N)." +
+					":- e(N1,N2), blue(N1), blue(N2)." +
+					":- e(N1,N2), red(N1), red(N2)." +
+					":- e(N1,N2), green(N1), green(N2).");
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testV30E48() throws IOException {
-		testThreeColouring(30, 48);
-	}
+			program.getFacts().addAll(createVertices(v));
+			program.getFacts().addAll(createEdges(v, e));
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testV200E300() throws IOException {
-		testThreeColouring(200, 300);
-	}
+			maybeShuffle(program);
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testV300E200() throws IOException {
-		testThreeColouring(300, 200);
-	}
+			Optional<AnswerSet> answerSet = getInstance(program).stream().findAny();
+			System.out.println(answerSet);
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testV300E300() throws IOException {
-		testThreeColouring(300, 300);
-	}
-
-	private void testThreeColouring(int nVertices, int nEdges) throws IOException {
-		Program program = new ProgramParser().parse(
-				"blue(N) :- v(N), not red(N), not green(N)." +
-				"red(N) :- v(N), not blue(N), not green(N)." +
-				"green(N) :- v(N), not red(N), not blue(N)." +
-				":- e(N1,N2), blue(N1), blue(N2)." +
-				":- e(N1,N2), red(N1), red(N2)." +
-				":- e(N1,N2), green(N1), green(N2).");
-
-		program.getFacts().addAll(createVertices(nVertices));
-		program.getFacts().addAll(createEdges(nVertices, nEdges));
-
-		maybeShuffle(program);
-
-		Optional<AnswerSet> answerSet = getInstance(program).stream().findAny();
-		System.out.println(answerSet);
-
-		// TODO: check correctness of answer set
+			// TODO: check correctness of answer set
+		});
 	}
 
 	private void maybeShuffle(Program program) {
-
 		// TODO: switch on if different rule orderings in the encoding are desired (e.g. for benchmarking purposes)
 		// Collections.reverse(program.getRules());
 		// Collections.shuffle(program.getRules());

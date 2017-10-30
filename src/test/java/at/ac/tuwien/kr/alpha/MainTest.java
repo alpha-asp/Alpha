@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 
 import static at.ac.tuwien.kr.alpha.Main.main;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MainTest {
 	public static InputStream stream(String file) {
@@ -40,7 +40,7 @@ public class MainTest {
 	}
 
 	@Test
-	public void testCommandLineOptions() {
+	void testCommandLineOptions() {
 		// Exercise the main entry point of the solver.
 		assertTrue(testMainForOutput(new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "20", "-str", "p(a). \n b :- p(X).\n"}, "{ b, p(a) }", null));
 		assertTrue(testMainForOutput(new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "0", "-str", "p(a). \n b :- p(X).\n"}, "{ b, p(a) }", null));
@@ -49,7 +49,7 @@ public class MainTest {
 	}
 
 	@Test
-	public void previouslyProblematicRuns() {
+	void previouslyProblematicRuns() {
 		// Run tests that formerly caused some sort of exception.
 		main(new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "200", "-i", "./src/test/resources/PreviouslyProblematic/3col-20-38.txt"});
 		main(new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119718541727902", "-n", "200", "-i", ".//src/test/resources/PreviouslyProblematic/3col-20-38.txt"});

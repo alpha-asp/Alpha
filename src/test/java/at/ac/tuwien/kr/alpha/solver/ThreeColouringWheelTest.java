@@ -33,14 +33,18 @@ import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 
 /**
  * Tests {@link AbstractSolver} using some three-coloring test cases, as described in:
@@ -49,58 +53,36 @@ import java.util.Optional;
  * In Theory and Practice of Logic Programming, pp. 1-45.
  * DOI: 10.1017/S1471068416000569
  */
-public class ThreeColouringWheelTest extends AbstractSolverTests {
-	@Test(timeout = 1000)
-	public void testN4() throws IOException {
-		testThreeColouring(4);
-	}
+class ThreeColouringWheelTest extends AbstractSolverTests {
+	@Tag("slow")
+	@ParameterizedTest
+	@CsvSource({
+		"4, 1",
+		"5, 1",
+		"6, 6",
+		"3, 60",
+		"7, 60",
+		"11, 60",
+	})
+	void threeColoring(int n, int seconds) throws IOException {
+		assertTimeout(Duration.ofSeconds(seconds), () -> {
+			Program program = new ProgramParser().parse(
+					"col(V,C) :- v(V), c(C), not ncol(V,C)." +
+					"ncol(V,C) :- col(V,D), c(C), C != D." +
+					":- e(V,U), col(V,C), col(U,C).");
+			program.getFacts().addAll(createColors("red", "blue", "green"));
+			program.getFacts().addAll(createVertices(n));
+			program.getFacts().addAll(createEdges(n));
 
-	@Test(timeout = 1000)
-	public void testN5() throws IOException {
-		testThreeColouring(5);
-	}
+			maybeShuffle(program);
 
-	@Test(timeout = 6000)
-	@Ignore("disabled to save resources during CI")
-	public void testN6() throws IOException {
-		testThreeColouring(6);
-	}
+			Solver solver = getInstance(program);
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN3() throws IOException {
-		testThreeColouring(3);
-	}
+			Optional<AnswerSet> answerSet = solver.stream().findAny();
+			System.out.println(answerSet);
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN7() throws IOException {
-		testThreeColouring(7);
-	}
-
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN11() throws IOException {
-		testThreeColouring(11);
-	}
-
-	private void testThreeColouring(int n) throws IOException {
-		Program program = new ProgramParser().parse(
-				"col(V,C) :- v(V), c(C), not ncol(V,C)." +
-				"ncol(V,C) :- col(V,D), c(C), C != D." +
-				":- e(V,U), col(V,C), col(U,C).");
-		program.getFacts().addAll(createColors("red", "blue", "green"));
-		program.getFacts().addAll(createVertices(n));
-		program.getFacts().addAll(createEdges(n));
-
-		maybeShuffle(program);
-
-		Solver solver = getInstance(program);
-
-		Optional<AnswerSet> answerSet = solver.stream().findAny();
-		System.out.println(answerSet);
-
-		// TODO: check correctness of answer set
+			// TODO: check correctness of answer set
+		});
 	}
 
 	private void maybeShuffle(Program program) {

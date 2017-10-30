@@ -33,17 +33,17 @@ import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.ArrayAssignment;
 import at.ac.tuwien.kr.alpha.solver.TestableChoiceManager;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.function.Predicate;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests assumptions made by {@link AlphaHeuristic}. Even if these test cases do not test {@link AlphaHeuristic} directly, it will break if these test cases
@@ -57,7 +57,7 @@ public class AlphaHeuristicTestAssumptions {
 	private Assignment assignment;
 	private TestableChoiceManager choiceManager;
 	
-	@Before
+	@BeforeEach
 	public void setUp() throws IOException {
 		String testProgram = "h :- b1, b2, not b3, not b4.";
 		Program parsedProgram = new ProgramParser().parse(testProgram);
@@ -67,13 +67,13 @@ public class AlphaHeuristicTestAssumptions {
 	}
 
 	@Test
-	@Ignore("Test strictly depends on generated NoGoods. Grounder optimisations change generated NoGoods.")
+	@Disabled("Test strictly depends on generated NoGoods. Grounder optimisations change generated NoGoods.")
 	public void testNumbersOfNoGoods_GrounderIsAtomChoicePoint() {
 		testNumbersOfNoGoods(grounder::isAtomChoicePoint);
 	}
 
 	@Test
-	@Ignore("Test strictly depends on generated NoGoods. Grounder optimisations change generated NoGoods.")
+	@Disabled("Test strictly depends on generated NoGoods. Grounder optimisations change generated NoGoods.")
 	public void testNumbersOfNoGoods_ChoiceManagerIsAtomChoice() {
 		testNumbersOfNoGoods(choiceManager::isAtomChoice);
 	}
@@ -107,9 +107,9 @@ public class AlphaHeuristicTestAssumptions {
 			}
 		}
 
-		assertEquals("Unexpected number of bodyNotHead nogoods", 1, bodyNotHead);
-		assertEquals("Unexpected number of bodyElementsNotBody nogoods", 1, bodyElementsNotBody);
-		assertGreaterThan("Unexpected number of nogoods without head", 4, noHead);
+		assertEquals(1, bodyNotHead, "Unexpected number of bodyNotHead nogoods");
+		assertEquals(1, bodyElementsNotBody, "Unexpected number of bodyElementsNotBody nogoods");
+		assertGreaterThan( 4, noHead, "Unexpected number of nogoods without head");
 
 		// there may be other nogoods (e.g. for ChoiceOn, ChoiceOff) which we do not care for here
 		System.out.println("Total number of NoGoods: " + n);
@@ -117,12 +117,12 @@ public class AlphaHeuristicTestAssumptions {
 	}
 
 	@Test
-	public void testIsAtomChoice_GrounderIsAtomChoicePoint() {
+	void testIsAtomChoice_GrounderIsAtomChoicePoint() {
 		testIsAtomChoice(grounder::isAtomChoicePoint);
 	}
 
 	@Test
-	public void testIsAtomChoice_ChoiceManagerIsAtomChoice() {
+	void testIsAtomChoice_ChoiceManagerIsAtomChoice() {
 		testIsAtomChoice(choiceManager::isAtomChoice);
 	}
 
@@ -134,7 +134,7 @@ public class AlphaHeuristicTestAssumptions {
 				int atom = atomOf(literal);
 				String atomToString = grounder.atomToString(atom);
 				if (atomToString.startsWith("_R_")) {
-					assertTrue("Atom not choice: " + atomToString, isRuleBody.test(atom));
+					assertTrue(isRuleBody.test(atom), "Atom not choice: " + atomToString);
 				}
 			}
 		}
@@ -144,7 +144,7 @@ public class AlphaHeuristicTestAssumptions {
 		return grounder.getNoGoods(null).values();
 	}
 
-	private void assertGreaterThan(String message, long expected, long actual) {
-		assertTrue(message, actual > expected);
+	private void assertGreaterThan(long expected, long actual, String message) {
+		assertTrue(actual > expected, message);
 	}
 }

@@ -4,22 +4,22 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
 public class BasicAnswerSetTest {
 	@Test
-	public void areAnswerSetsEqual() throws Exception {
+	void areAnswerSetsEqual() throws Exception {
 		Predicate a = new Predicate("a", 0);
 		Predicate foo = new Predicate("foo", 1);
 		SortedSet<Predicate> fooAndA = new TreeSet<>(asList(foo, a));

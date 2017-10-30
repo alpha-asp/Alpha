@@ -48,7 +48,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static java.util.Collections.emptySet;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @RunWith(Parameterized.class)
 public abstract class AbstractSolverTests {

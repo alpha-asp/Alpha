@@ -4,11 +4,11 @@ import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.solver.ArrayAssignment;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -20,14 +20,14 @@ public class FirstUIPPriorityQueueTest {
 		assignment = new ArrayAssignment();
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		assignment.clear();
 		assignment.growForMaxAtomId(4);
 	}
 
 	@Test
-	public void nonlinearEntries() {
+	void nonlinearEntries() {
 		assignment.guess(1, ThriceTruth.MBT);
 		assignment.assign(2, ThriceTruth.TRUE);
 		assignment.assign(3, ThriceTruth.FALSE);
@@ -54,7 +54,7 @@ public class FirstUIPPriorityQueueTest {
 	}
 
 	@Test
-	public void ignoreDuplicates() {
+	void ignoreDuplicates() {
 		assignment.guess(1, ThriceTruth.MBT);
 		assignment.assign(2, ThriceTruth.TRUE);
 		assignment.assign(3, ThriceTruth.FALSE);

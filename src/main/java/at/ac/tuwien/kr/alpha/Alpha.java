@@ -34,18 +34,6 @@ public class Alpha {
 
 	private Program program;
 
-	public long getSeed() {
-		return seed;
-	}
-
-	public void setSeed(long seed) {
-		this.seed = seed;
-	}
-
-	public void setDeterministic() {
-		setSeed(0);
-	}
-
 	private long seed;
 
 	public Alpha(String grounderName, String solverName, String storeName) {
@@ -64,6 +52,18 @@ public class Alpha {
 
 	public Alpha() {
 		this("naive");
+	}
+
+	public long getSeed() {
+		return seed;
+	}
+
+	public void setSeed(long seed) {
+		this.seed = seed;
+	}
+
+	public void setDeterministic() {
+		setSeed(0);
 	}
 
 	public void scan(String base) {

@@ -2,14 +2,14 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import static at.ac.tuwien.kr.alpha.common.NoGood.fact;
 import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Copyright (c) 2017, the Alpha Team.
@@ -23,14 +23,14 @@ public class NaiveNoGoodStoreTest {
 		store = new NaiveNoGoodStore(assignment);
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		store.clear();
 		assignment.growForMaxAtomId(200);
 	}
 
 	@Test
-	public void singleFact() {
+	void singleFact() {
 		store.add(1, fact(-1));
 		store.propagate();
 
@@ -38,7 +38,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void single() {
+	void single() {
 		store.add(1, new NoGood(-1));
 		store.propagate();
 
@@ -46,14 +46,14 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void constraintWithAssignment() {
+	void constraintWithAssignment() {
 		assignment.assign(123, MBT);
 		assignment.assign(23, TRUE);
 		store.add(3, new NoGood(-123, 22, 23));
 	}
 
 	@Test
-	public void assignment() {
+	void assignment() {
 		store.add(3, headFirst(-7, -4, -2));
 		assignment.assign(4, TRUE);
 		assignment.assign(2, FALSE);
@@ -63,7 +63,7 @@ public class NaiveNoGoodStoreTest {
 
 
 	@Test
-	public void addNotCausingAssignment() {
+	void addNotCausingAssignment() {
 		assignment.assign(1, TRUE);
 		store.add(3, headFirst(-3, -2, 1));
 
@@ -71,7 +71,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void addNotCausingAssignmentUnassigned() {
+	void addNotCausingAssignmentUnassigned() {
 		assignment.assign(1, TRUE);
 		store.add(3, headFirst(-5, 4, 1));
 
@@ -79,7 +79,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
+	@Disabled("Checks for conflict detection in add.")
 	public void addNotCausingAssignmentFalse() {
 		assignment.assign(1, FALSE);
 		assignment.assign(4, TRUE);
@@ -89,7 +89,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void addNotCausingAssignmentTrue() {
+	void addNotCausingAssignmentTrue() {
 		assignment.assign(1, TRUE);
 		assignment.assign(2, TRUE);
 		store.add(1, headFirst(-3, 2, -1));
@@ -98,7 +98,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void propBinary() {
+	void propBinary() {
 		assignment.assign(2, FALSE);
 
 		store.add(1, headFirst(-1, 2));
@@ -108,7 +108,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void propagateBinaryFirstTrue() {
+	void propagateBinaryFirstTrue() {
 		assignment.assign(2, TRUE);
 
 		store.add(1, headFirst(-1, 2));
@@ -117,7 +117,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void propagateBinarySecondTrue() {
+	void propagateBinarySecondTrue() {
 		assignment.assign(1, FALSE);
 
 		store.add(1, new NoGood(new int[]{-1, 2}, 1));
@@ -127,7 +127,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void propagateBinaryMBT() {
+	void propagateBinaryMBT() {
 		assignment.assign(2, MBT);
 
 		store.add(1, headFirst(-1, 2));
@@ -137,7 +137,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void propagateBinaryTrue() {
+	void propagateBinaryTrue() {
 		assignment.assign(2, TRUE);
 
 		store.add(1, headFirst(-1, 2));
@@ -147,7 +147,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void propagateBinaryMBTAfterAssignment() {
+	void propagateBinaryMBTAfterAssignment() {
 		store.add(1, headFirst(-1, 2));
 		store.propagate();
 
@@ -158,7 +158,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void propagateBinaryTrueAfterAssignment() {
+	void propagateBinaryTrueAfterAssignment() {
 		store.add(1, headFirst(-1, 2));
 		assignment.assign(2, TRUE);
 		store.propagate();
@@ -167,7 +167,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void propagateBinaryMBTTwice() {
+	void propagateBinaryMBTTwice() {
 		assignment.assign(2, MBT);
 
 		store.add(1, new NoGood(-1, 2));
@@ -181,7 +181,7 @@ public class NaiveNoGoodStoreTest {
 
 
 	@Test
-	public void propagateBinaryMBTTwiceOutofSync() {
+	void propagateBinaryMBTTwiceOutofSync() {
 		store.add(1, new NoGood(-1, 2));
 		store.add(2, new NoGood(-3, 1));
 
@@ -194,7 +194,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void propagateNaryTrue() {
+	void propagateNaryTrue() {
 		assignment.assign(2, TRUE);
 		assignment.assign(3, TRUE);
 
@@ -206,7 +206,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void propagateNaryFalse() {
+	void propagateNaryFalse() {
 		assignment.assign(2, FALSE);
 		assignment.assign(3, FALSE);
 
@@ -217,7 +217,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void addFullyAssignedBinary() {
+	void addFullyAssignedBinary() {
 		assignment.assign(2, TRUE);
 		assignment.assign(3, TRUE);
 
@@ -229,7 +229,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void addFullyAssignedNary() {
+	void addFullyAssignedNary() {
 		assignment.assign(2, TRUE);
 		assignment.assign(3, TRUE);
 		assignment.assign(4, TRUE);
@@ -243,7 +243,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void propagateNaryMBT() {
+	void propagateNaryMBT() {
 		final NoGood noGood = headFirst(-1, 2, 3);
 
 		assignment.assign(2, MBT);
@@ -256,7 +256,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for propagation in add.")
+	@Disabled("Checks for propagation in add.")
 	public void propagateNaryMBTTwice() {
 		assignment.assign(4, FALSE);
 		assignment.assign(3, MBT);
@@ -273,7 +273,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void propagateNaryFactsMultiple() {
+	void propagateNaryFactsMultiple() {
 		NoGood[] noGoods = new NoGood[]{
 			headFirst(-1, 2, 3),  // 1 <-  2, 3.
 			headFirst(-5, -4, 1), // 5 <- -4, 1.
@@ -295,7 +295,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void moveThirdPointer() {
+	void moveThirdPointer() {
 		// 1 <- 2, 3.
 		store.add(1, headFirst(-1, 2, 3));
 		assertNull(store.propagate());
@@ -318,7 +318,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void propagateNaryMBTTwiceReordered() {
+	void propagateNaryMBTTwiceReordered() {
 		// From 2 and 3 follows 1.
 		store.add(1, headFirst(-1, 2, 3));
 		// From -4 and 1 follows 5.
@@ -340,7 +340,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void conflictingFact() {
+	void conflictingFact() {
 		final NoGood noGood = fact(1);
 		assignment.assign(1, TRUE);
 		ConflictCause conflictCause = store.add(1, noGood);
@@ -349,7 +349,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
+	@Disabled("Checks for conflict detection in add.")
 	public void conflictingBinary() {
 		final NoGood noGood = new NoGood(1, 2);
 		assignment.assign(1, TRUE);
@@ -359,7 +359,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
+	@Disabled("Checks for conflict detection in add.")
 	public void conflictingNary() {
 		final NoGood noGood = new NoGood(1, 2, 3);
 		assignment.assign(1, TRUE);
@@ -370,7 +370,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void propagateViolatedConstraint() {
+	void propagateViolatedConstraint() {
 		NoGood noGood = headFirst(-3, -2, -1);
 		assertNull(store.add(1, noGood));
 		assertNull(assignment.assign(1, FALSE));
@@ -383,7 +383,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void noViolation() {
+	void noViolation() {
 		assertNull(store.add(1, headFirst(-7, -4, -2)));
 		assertNull(assignment.assign(4, TRUE));
 		assertNull(assignment.assign(2, FALSE));
@@ -393,7 +393,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void propagateViolatedConstraintHeadless() {
+	void propagateViolatedConstraintHeadless() {
 		NoGood noGood = new NoGood(3, 11, 19);
 		assertNull(store.add(24, noGood));
 		assertNull(assignment.assign(3, TRUE));
@@ -406,7 +406,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void propagateViolatedConstraintHeadlessMbt() {
+	void propagateViolatedConstraintHeadlessMbt() {
 		NoGood noGood = new NoGood(3, 11, 19);
 		assertNull(store.add(24, noGood));
 		assertNull(assignment.assign(3, MBT));
@@ -419,7 +419,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void neverViolatedNoGood() {
+	void neverViolatedNoGood() {
 		NoGood noGood = new NoGood(-44, 10, 13, 44);
 		assertNull(store.add(80, noGood));
 		assertNull(assignment.assign(10, TRUE));
@@ -429,7 +429,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void naryNoGoodViolatedAfterAddition() {
+	void naryNoGoodViolatedAfterAddition() {
 		NoGood noGood = new NoGood(1, 2, 3);
 		assertNull(store.add(11, noGood));
 		assertNull(assignment.assign(1, MBT));
@@ -439,7 +439,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
+	@Disabled("Checks for conflict detection in add.")
 	public void naryNoGoodViolatedDuringAdditionAllTrue() {
 		NoGood noGood = new NoGood(1, 2, 3);
 		assertNull(assignment.assign(1, TRUE));
@@ -451,7 +451,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
+	@Disabled("Checks for conflict detection in add.")
 	public void naryNoGoodViolatedDuringAdditionAllMbt() {
 		NoGood noGood = new NoGood(1, 2, 3);
 		assertNull(assignment.assign(1, MBT));
@@ -463,7 +463,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void binaryNoGoodViolatedAfterAddition() {
+	void binaryNoGoodViolatedAfterAddition() {
 		NoGood noGood = new NoGood(1, 2);
 		assertNull(store.add(1, noGood));
 		assertNull(assignment.assign(1, MBT));
@@ -472,7 +472,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
+	@Disabled("Checks for conflict detection in add.")
 	public void binaryNoGoodViolatedDuringAdditionAllTrue() {
 		NoGood noGood = new NoGood(1, 2);
 		assertNull(assignment.assign(1, TRUE));
@@ -483,7 +483,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Checks for conflict detection in add.")
+	@Disabled("Checks for conflict detection in add.")
 	public void binaryNoGoodViolatedDuringAdditionAllMbt() {
 		NoGood noGood = new NoGood(1, 2);
 		assertNull(assignment.assign(1, MBT));
@@ -494,7 +494,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void addedViolatedBinaryNoGoodPropagatesAfterBacktracking() {
+	void addedViolatedBinaryNoGoodPropagatesAfterBacktracking() {
 		NoGood noGood = new NoGood(70, 195);
 		assertNull(assignment.guess(70, MBT));
 		assertNull(assignment.guess(195, MBT));
@@ -506,7 +506,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void addedViolatedNaryNoGoodPropagatesAfterBacktracking() {
+	void addedViolatedNaryNoGoodPropagatesAfterBacktracking() {
 		NoGood noGood = new NoGood(70, 195, 36);
 		assertNull(assignment.guess(70, MBT));
 		assertNull(assignment.guess(195, MBT));
@@ -519,7 +519,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void binaryNoGoodPropagatesTrueFromFalse() {
+	void binaryNoGoodPropagatesTrueFromFalse() {
 		NoGood noGood = headFirst(-11, -12);
 		assertNull(store.add(5, noGood));
 		assertNull(assignment.guess(12, FALSE));
@@ -528,7 +528,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void binaryNoGoodPropagatesTrueFromTrue() {
+	void binaryNoGoodPropagatesTrueFromTrue() {
 		NoGood noGood = headFirst(-11, 12);
 		assertNull(store.add(5, noGood));
 		assertNull(assignment.guess(12, TRUE));
@@ -538,7 +538,7 @@ public class NaiveNoGoodStoreTest {
 
 
 	@Test
-	@Ignore("Checks for propagation in add.")
+	@Disabled("Checks for propagation in add.")
 	public void addedBinaryNoGoodPropagatesTrueFromFalse() {
 		NoGood noGood = headFirst(-11, -12);
 		assertNull(assignment.guess(12, FALSE));
@@ -547,7 +547,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void addedBinaryNoGoodPropagatesTrueFromTrue() {
+	void addedBinaryNoGoodPropagatesTrueFromTrue() {
 		NoGood noGood = headFirst(-11, 12);
 		assertNull(assignment.guess(12, TRUE));
 		assertNull(store.add(5, noGood));
@@ -556,7 +556,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void naryNoGoodPropagatesTrueFromFalse() {
+	void naryNoGoodPropagatesTrueFromFalse() {
 		NoGood noGood = headFirst(-1, 2, -3);
 		assertNull(store.add(10, noGood));
 		assertNull(assignment.assign(2, TRUE));
@@ -567,7 +567,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void naryNoGoodPropagatesTrueFromTrue() {
+	void naryNoGoodPropagatesTrueFromTrue() {
 		NoGood noGood = headFirst(-1, 2, -3);
 		assertNull(store.add(10, noGood));
 		assertNull(assignment.assign(3, FALSE));
@@ -578,7 +578,7 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	@Ignore("Not decision-level aware.")
+	@Disabled("Not decision-level aware.")
 	public void propagationAtLowerDecisionLevel() {
 		NoGood noGood = headFirst(-1, 2, -3);
 		assertNull(assignment.guess(3, FALSE));

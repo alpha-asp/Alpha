@@ -2,9 +2,9 @@ package at.ac.tuwien.kr.alpha.solver.learning;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.*;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -21,7 +21,7 @@ public class GroundConflictNoGoodLearnerTest {
 	}
 
 	@Test
-	public void smallConflictNonTrivial1UIP() {
+	void smallConflictNonTrivial1UIP() {
 		GroundConflictNoGoodLearner learner = new GroundConflictNoGoodLearner(assignment);
 
 		NoGood n1 = new NoGood(2, -8, 1);
@@ -60,7 +60,7 @@ public class GroundConflictNoGoodLearnerTest {
 	}
 
 	@Test
-	public void subCurrentDLPropagationWithGuessCauseOfConflict() {
+	void subCurrentDLPropagationWithGuessCauseOfConflict() {
 		GroundConflictNoGoodLearner learner = new GroundConflictNoGoodLearner(assignment);
 		NoGood n1 = new NoGood(1, -2);
 		NoGood n2 = new NoGood(2, 3);

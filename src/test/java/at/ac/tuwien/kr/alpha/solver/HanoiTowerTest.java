@@ -34,53 +34,66 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.antlr.v4.runtime.CharStreams;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.SortedSet;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests {@link AbstractSolver} using some hanoi tower test cases (see https://en.wikipedia.org/wiki/Tower_of_Hanoi).
  *
  */
-@Ignore("disabled to save resources during CI")
+@Disabled("disabled to save resources during CI")
 public class HanoiTowerTest extends AbstractSolverTests {
 	private final ProgramParser parser = new ProgramParser();
 
-	@Before
+	@BeforeEach
 	public void printSolverName() {
 		System.out.println(solverName);
 	}
 
-	@Test(timeout = 10000)
-	public void testInstance1() throws IOException {
-		testHanoiTower(1);
+	@Test
+	void testInstance1() throws IOException {
+		assertTimeout(Duration.ofSeconds(10), () ->
+			testHanoiTower(1)
+		);
 	}
 
-	@Test(timeout = 10000)
-	public void testInstance2() throws IOException {
-		testHanoiTower(2);
+	@Test
+	void testInstance2() throws IOException {
+		assertTimeout(Duration.ofSeconds(10), () ->
+			testHanoiTower(2)
+		);
 	}
 
-	@Test(timeout = 10000)
-	public void testInstance3() throws IOException {
-		testHanoiTower(3);
+	@Test
+	void testInstance3() throws IOException {
+		assertTimeout(Duration.ofSeconds(10), () ->
+			testHanoiTower(3)
+		);
 	}
 
-	@Test(timeout = 10000)
-	public void testInstance4() throws IOException {
-		testHanoiTower(4);
+	@Test
+	void testInstance4() throws IOException {
+		assertTimeout(Duration.ofSeconds(10), () ->
+			testHanoiTower(4)
+		);
 	}
 
-	@Test(timeout = 60000)
-	public void testSimple() throws IOException {
+	@Test
+	void testSimple() throws IOException {
 		testHanoiTower("simple");
+		assertTimeout(Duration.ofMinutes(1), () ->
+			testHanoiTower("simple")
+		);
 	}
 
 	private void testHanoiTower(int instance) throws IOException {
@@ -112,7 +125,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 				Term expectedBottom = ConstantTerm.getInstance(atom.getTerms().get(1).toString());
 				Term expectedSteps = ConstantTerm.getInstance(String.valueOf(steps));
 				Atom expectedAtom = new BasicAtom(on, expectedSteps, expectedBottom, expectedTop);
-				assertTrue("Answer set does not contain " + expectedAtom, onInstancesInAnswerSet.contains(expectedAtom));
+				assertTrue(onInstancesInAnswerSet.contains(expectedAtom), "Answer set does not contain " + expectedAtom);
 			}
 		}
 	}

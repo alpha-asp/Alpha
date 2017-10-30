@@ -35,11 +35,15 @@ import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 
 /**
  * Tests {@link AbstractSolver} using some three-coloring test cases, as described in:
@@ -49,140 +53,58 @@ import java.util.*;
  * DOI: 10.1017/S1471068416000569
  */
 public class ThreeColouringTestWithRandom extends AbstractSolverTests {
-	@Test(timeout = 3000)
-	public void testN3() throws IOException {
-		testThreeColouring(3, false, 0);
-	}
+	@Tag("slow")
+	@ParameterizedTest
+	@CsvSource({
+		"3, false, 0, 3",
+		"4, false, 0, 4",
+		"5, false, 0, 5",
+		"6, false, 0, 6",
+		"7, false, 0, 7",
+		"8, false, 0, 8",
+		"9, false, 0, 9",
+		"10, false, 0, 10",
+		"10, true, 0, 10",
+		"10, true, 1, 10",
+		"10, true, 2, 10",
+		"10, true, 3, 10",
+		"19, false, 0, 60",
+		"19, true, 0, 60",
+		"19, true, 1, 60",
+		"19, true, 2, 60",
+		"19, true, 3, 60",
+		"101, false, 0, 10",
+	})
+	void threeColoring(int n, boolean shuffle, int seed, int seconds) throws IOException {
+		assertTimeout(Duration.ofSeconds(seconds), () -> {
+			Program program = new ProgramParser().parse("col(V,C) :- v(V), c(C), not ncol(V,C)." + "ncol(V,C) :- col(V,D), c(C), C != D." + ":- e(V,U), col(V,C), col(U,C).");
+			program.getFacts().addAll(createColors("1", "2", "3"));
+			program.getFacts().addAll(createVertices(n));
+			program.getFacts().addAll(createEdges(n, shuffle, seed));
 
-	@Test(timeout = 4000)
-	public void testN4() throws IOException {
-		testThreeColouring(4, false, 0);
-	}
+			Solver solver = getInstance(program);
 
-	@Test(timeout = 5000)
-	@Ignore("disabled to save resources during CI")
-	public void testN5() throws IOException {
-		testThreeColouring(5, false, 0);
-	}
+			StringBuilder sb = new StringBuilder();
 
-	@Test(timeout = 6000)
-	@Ignore("disabled to save resources during CI")
-	public void testN6() throws IOException {
-		testThreeColouring(6, false, 0);
-	}
-
-	@Test(timeout = 7000)
-	@Ignore("disabled to save resources during CI")
-	public void testN7() throws IOException {
-		testThreeColouring(7, false, 0);
-	}
-
-	@Test(timeout = 8000)
-	@Ignore("disabled to save resources during CI")
-	public void testN8() throws IOException {
-		testThreeColouring(8, false, 0);
-	}
-
-	@Test(timeout = 9000)
-	@Ignore("disabled to save resources during CI")
-	public void testN9() throws IOException {
-		testThreeColouring(9, false, 0);
-	}
-
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testN10() throws IOException {
-		testThreeColouring(10, false, 0);
-	}
-
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testN10Random0() throws IOException {
-		testThreeColouring(10, true, 0);
-	}
-
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testN10Random1() throws IOException {
-		testThreeColouring(10, true, 1);
-	}
-
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testN10Random2() throws IOException {
-		testThreeColouring(10, true, 2);
-	}
-
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testN10Random3() throws IOException {
-		testThreeColouring(10, true, 3);
-	}
-
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN19() throws IOException {
-		testThreeColouring(19, false, 0);
-	}
-
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN19Random0() throws IOException {
-		testThreeColouring(19, true, 0);
-	}
-
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN19Random1() throws IOException {
-		testThreeColouring(19, true, 1);
-	}
-
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN19Random2() throws IOException {
-		testThreeColouring(19, true, 2);
-	}
-
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN19Random3() throws IOException {
-		testThreeColouring(19, true, 3);
-	}
-
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testN101() throws IOException {
-		testThreeColouring(101, false, 0);
-	}
-
-	private void testThreeColouring(int n, boolean shuffle, int seed) throws IOException {
-		Program program = new ProgramParser().parse("col(V,C) :- v(V), c(C), not ncol(V,C)." + "ncol(V,C) :- col(V,D), c(C), C != D." + ":- e(V,U), col(V,C), col(U,C).");
-		program.getFacts().addAll(createColors("1", "2", "3"));
-		program.getFacts().addAll(createVertices(n));
-		program.getFacts().addAll(createEdges(n, shuffle, seed));
-
-		Solver solver = getInstance(program);
-
-		StringBuilder sb = new StringBuilder();
-
-		for (Atom fact : program.getFacts()) {
-			sb.append(fact);
-			sb.append(".");
-		}
-		for (Rule rule : program.getRules()) {
-			if (!rule.isConstraint()) {
-				sb.append(rule.getHead());
+			for (Atom fact : program.getFacts()) {
+				sb.append(fact);
+				sb.append(".");
 			}
-			sb.append(":-");
-			Util.appendDelimited(sb, rule.getBody());
-			sb.append(".");
-		}
+			for (Rule rule : program.getRules()) {
+				if (!rule.isConstraint()) {
+					sb.append(rule.getHead());
+				}
+				sb.append(":-");
+				Util.appendDelimited(sb, rule.getBody());
+				sb.append(".");
+			}
 
-		System.out.println(sb);
+			System.out.println(sb);
 
-		Optional<AnswerSet> answerSet = solver.stream().findAny();
-		System.out.println(answerSet);
-		// TODO: check correctness of answer set
+			Optional<AnswerSet> answerSet = solver.stream().findAny();
+			System.out.println(answerSet);
+			// TODO: check correctness of answer set
+		});
 	}
 
 	private List<Atom> createColors(String... colours) {

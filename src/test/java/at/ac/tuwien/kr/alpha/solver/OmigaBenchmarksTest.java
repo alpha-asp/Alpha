@@ -28,78 +28,46 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 
 /**
  * Tests {@link AbstractSolver} using Omiga benchmark problems.
  *
  */
-public class OmigaBenchmarksTest extends AbstractSolverTests {
-	@Before
-	public void printSolverName() {
-		System.out.println(solverName);
-	}
+class OmigaBenchmarksTest extends AbstractSolverTests {
+	@Tag("slow")
+	@ParameterizedTest
+	@CsvSource({
+		"3col, 10-18",
+		"3col, 20-38",
 
-	@Test(timeout = 10000)
-	public void test3Col_10_18() throws IOException {
-		test("3col", "3col-10-18.txt");
-	}
+		"cutedge, 100-30",
+		"cutedge, 100-50",
 
-	@Test(timeout = 10000)
-	public void test3Col_20_38() throws IOException {
-		test("3col", "3col-20-38.txt");
-	}
+		"locstrat, 200",
+		"locstrat, 400",
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testCutedge_100_30() throws IOException {
-		test("cutedge", "cutedge-100-30.txt");
+		"reach, 1",
+		"reach, 4",
+	})
+	void omigaBenchmark(String category, String name) throws IOException {
+		assertTimeout(Duration.ofSeconds(10), () -> {
+			CharStream programInputStream = CharStreams.fromPath(
+				Paths.get("benchmarks", "omiga", "omiga-testcases", category, category + '-' + name + ".txt")
+			);
+			Solver solver = getInstance(programInputStream);
+			Optional<AnswerSet> answerSet = solver.stream().findFirst();
+			System.out.println(answerSet);
+			// TODO: check correctness of answer set
+		});
 	}
-
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testCutedge_100_50() throws IOException {
-		test("cutedge", "cutedge-100-50.txt");
-	}
-
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testLocstrat_200() throws IOException {
-		test("locstrat", "locstrat-200.txt");
-	}
-
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testLocstrat_400() throws IOException {
-		test("locstrat", "locstrat-400.txt");
-	}
-
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testReach_1() throws IOException {
-		test("reach", "reach-1.txt");
-	}
-
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
-	public void testReach_4() throws IOException {
-		test("reach", "reach-4.txt");
-	}
-
-	private void test(String folder, String aspFileName) throws IOException {
-		CharStream programInputStream = CharStreams.fromPath(
-			Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName)
-		);
-		Solver solver = getInstance(programInputStream);
-		Optional<AnswerSet> answerSet = solver.stream().findFirst();
-		System.out.println(answerSet);
-		// TODO: check correctness of answer set
-	}
-
 }

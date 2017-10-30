@@ -9,8 +9,9 @@ import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.common.predicates.ExternalMethodPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -18,7 +19,8 @@ import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AlphaTest {
 	private static int invocations;
@@ -40,7 +42,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	public void withExternal() throws Exception {
+	void withExternal() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", int.class));
 		Set<AnswerSet> actual = system.solve("a :- &isOne[1].").collect(Collectors.toSet());
@@ -49,7 +51,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	public void addsFacts() throws Exception {
+	void addsFacts() throws Exception {
 		Alpha system = new Alpha();
 		Thingy a = new Thingy();
 		Thingy b = new Thingy();
@@ -60,29 +62,33 @@ public class AlphaTest {
 		assertEquals(expected, actual);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void withExternalTypeConflict() throws Exception {
-		Alpha system = new Alpha();
-		system.register(this.getClass().getMethod("isFoo", Integer.class));
-		Set<AnswerSet> actual = system.solve("a :- &isFoo[\"adsfnfdsf\"].").collect(Collectors.toSet());
-		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
-		assertEquals(expected, actual);
+	@Test
+	void withExternalTypeConflict() throws Exception {
+		assertThrows(IllegalArgumentException.class, () -> {
+			Alpha system = new Alpha();
+			system.register(this.getClass().getMethod("isFoo", Integer.class));
+			Set<AnswerSet> actual = system.solve("a :- &isFoo[\"adsfnfdsf\"].").collect(Collectors.toSet());
+			Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
+			assertEquals(expected, actual);
+		});
 	}
 
 	@Test
-	public void smallGraph() throws Exception {
+	void smallGraph() throws IOException {
 		Alpha system = new Alpha();
 		system.register("connected", (Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3));
 
 		Set<AnswerSet> answerSets = system.solve("node(1). node(2). node(3). a :- &connected[1,2].").collect(Collectors.toSet());
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void smallGraphWithWrongType() throws Exception {
-		Alpha system = new Alpha();
-		system.register("connected", (Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3));
+	@Test
+	void smallGraphWithWrongType() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			Alpha system = new Alpha();
+			system.register("connected", (Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3));
 
-		system.solve("a :- &connected[\"hello\",2].").collect(Collectors.toSet());
+			system.solve("a :- &connected[\"hello\",2].").collect(Collectors.toSet());
+		});
 	}
 
 	public static Set<List<ConstantTerm<Integer>>> neighbors(int node) {
@@ -103,7 +109,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	public void smallGraphNoNeighbors() throws Exception {
+	void smallGraphNoNeighbors() throws Exception {
 		Alpha system = new Alpha();
 		system.registerBinding(this.getClass().getMethod("neighbors", int.class));
 
@@ -113,7 +119,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	public void smallGraphCoolNode() throws Exception {
+	void smallGraphCoolNode() throws Exception {
 		Alpha system = new Alpha();
 		system.registerBinding(this.getClass().getMethod("coolNode", int.class));
 
@@ -123,7 +129,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	public void smallGraphSingleNeighbor() throws Exception {
+	void smallGraphSingleNeighbor() throws Exception {
 		Alpha system = new Alpha();
 		system.registerBinding(this.getClass().getMethod("neighbors", int.class));
 
@@ -133,7 +139,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	public void smallGraphSingleNeighborNoTerm() throws Exception {
+	void smallGraphSingleNeighborNoTerm() throws Exception {
 		Alpha system = new Alpha();
 		system.registerBinding(this.getClass().getMethod("neighbors", int.class));
 
@@ -157,7 +163,7 @@ public class AlphaTest {
 	private static class SubThingy extends Thingy {}
 
 	@Test
-	public void withExternalSubtype() throws Exception {
+	void withExternalSubtype() throws Exception {
 		SubThingy thingy = new SubThingy();
 
 		Rule rule = new Rule(
@@ -185,7 +191,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	public void withExternalViaAnnotation() throws Exception {
+	void withExternalViaAnnotation() throws Exception {
 		Alpha system = new Alpha();
 		system.scan(this.getClass().getPackage().getName());
 		Set<AnswerSet> actual = system.solve("a :- &isOne[1].").collect(Collectors.toSet());
@@ -194,7 +200,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	public void withNativeExternal() throws Exception {
+	void withNativeExternal() throws Exception {
 		Alpha system = new Alpha();
 		system.register("isTwo", (Integer t) -> t == 2);
 
@@ -204,7 +210,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	public void withExternalInvocationCounted1() throws Exception {
+	void withExternalInvocationCounted1() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", int.class));
 		int before = invocations;
@@ -218,7 +224,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	public void withExternalInvocationCounted2() throws Exception {
+	void withExternalInvocationCounted2() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", int.class));
 		int before = invocations;
@@ -232,7 +238,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	public void withExternalInvocationCounted3() throws Exception {
+	void withExternalInvocationCounted3() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", int.class));
 		int before = invocations;
@@ -246,7 +252,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	public void basicUsage() throws Exception {
+	void basicUsage() throws Exception {
 		Alpha system = new Alpha();
 		Set<AnswerSet> actual = system.solve("a.").collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));

@@ -30,14 +30,14 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.ArrayAssignment;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.Random;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests {@link BerkMin}.
@@ -54,7 +54,7 @@ public class BerkMinTest {
 	
 	private BerkMin berkmin;
 	
-	@Before
+	@BeforeEach
 	public void setUp() {
 		Assignment assignment = new ArrayAssignment();
 		assignment.growForMaxAtomId(2);
@@ -62,7 +62,7 @@ public class BerkMinTest {
 	}
 	
 	@Test
-	public void countPositiveLiteralsOnce() {
+	void countPositiveLiteralsOnce() {
 		NoGood violatedNoGood = new NoGood(1, 2);
 		berkmin.violatedNoGood(violatedNoGood);
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
@@ -71,7 +71,7 @@ public class BerkMinTest {
 	}
 	
 	@Test
-	public void countNegativeLiteralsOnce() {
+	void countNegativeLiteralsOnce() {
 		NoGood violatedNoGood = new NoGood(-1, -2);
 		berkmin.violatedNoGood(violatedNoGood);
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
@@ -80,7 +80,7 @@ public class BerkMinTest {
 	}
 	
 	@Test
-	public void countPositiveLiteralsTwice() {
+	void countPositiveLiteralsTwice() {
 		NoGood violatedNoGood = new NoGood(1, 2);
 		berkmin.violatedNoGood(violatedNoGood);
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
@@ -91,7 +91,7 @@ public class BerkMinTest {
 	}
 	
 	@Test
-	public void countNegativeLiteralsTwice() {
+	void countNegativeLiteralsTwice() {
 		NoGood violatedNoGood = new NoGood(-1, -2);
 		berkmin.violatedNoGood(violatedNoGood);
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
@@ -102,7 +102,7 @@ public class BerkMinTest {
 	}
 	
 	@Test
-	public void countMixedLiteralsTwice() {
+	void countMixedLiteralsTwice() {
 		NoGood violatedNoGood = new NoGood(1, -2);
 		berkmin.violatedNoGood(violatedNoGood);
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
@@ -113,7 +113,7 @@ public class BerkMinTest {
 	}
 	
 	@Test
-	public void countPositiveLiteralsThenNegativeLiterals() {
+	void countPositiveLiteralsThenNegativeLiterals() {
 		NoGood violatedNoGood = new NoGood(1, 2);
 		berkmin.violatedNoGood(violatedNoGood);
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
@@ -125,7 +125,7 @@ public class BerkMinTest {
 	}
 	
 	@Test
-	public void reachDecayAgeOnce() {
+	void reachDecayAgeOnce() {
 		berkmin.setDecayAge(3);
 		berkmin.setDecayFactor(1.0 / 3);
 		NoGood violatedNoGood = new NoGood(1, 2);
@@ -144,7 +144,7 @@ public class BerkMinTest {
 	}
 	
 	@Test
-	public void reachDecayAgeTwice() {
+	void reachDecayAgeTwice() {
 		berkmin.setDecayAge(2);
 		berkmin.setDecayFactor(0.75);
 		NoGood violatedNoGood = new NoGood(1, 2);
@@ -167,7 +167,7 @@ public class BerkMinTest {
 	}
 	
 	@Test
-	public void learnNoGood() {
+	void learnNoGood() {
 		NoGood learnedNoGood = new NoGood(1, 2);
 		int backjumpLevel = 1;
 		boolean clearLastGuessAfterBackjump = true;

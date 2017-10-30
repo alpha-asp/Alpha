@@ -25,88 +25,49 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 
 /**
  * Tests {@link AbstractSolver} using some configuration test cases in which subparts are assigned to parts.
  *
  */
 public class PartSubpartConfigurationTest extends AbstractSolverTests {
-	@Test(timeout = 1000)
-	public void testN2() throws IOException {
-		testPartSubpart(2);
-	}
+	@Tag("slow")
+	@ParameterizedTest
+	@ValueSource(ints = { 2, 4, 8, 18, 32, 60, 75, 100 })
+	void testPartSubpart(int n) throws IOException {
+		assertTimeout(Duration.ofMinutes(1), () -> {
+			List<String> rules = new ArrayList<>();
+			for (int i = 1; i <= n; i++) {
+				rules.add(String.format("n(%d).", i));
+			}
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN4() throws IOException {
-		testPartSubpart(4);
-	}
+			rules.addAll(Arrays.asList(
+				"part(N) :- n(N), not no_part(N).",
+				"no_part(N) :- n(N), not part(N).",
+				"subpartid(SP,ID) :- subpart(SP,P), n(ID), not no_subpartid(SP,ID).",
+				"no_subpartid(SP,ID) :- subpart(SP,P), n(ID), not subpartid(SP,ID).",
+				"subpart(SP,P) :- part(P), part(SP), P != SP, not no_subpart(SP,P).",
+				"no_subpart(SP,P) :- part(P), part(SP), P != SP, not subpart(SP,P).",
+				":- subpart(SP,P1), subpart(SP,P2), P1 != P2.",
+				":- subpart(SP1,P), subpart(SP2, P), SP1!=SP2, subpartid(SP1,ID), subpartid(SP2,ID)."
+			));
 
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN8() throws IOException {
-		testPartSubpart(8);
-	}
-
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN16() throws IOException {
-		testPartSubpart(16);
-	}
-
-	@Test(timeout = 61000)
-	@Ignore("disabled to save resources during CI")
-	public void testN32() throws IOException {
-		testPartSubpart(32);
-	}
-
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN60() throws IOException {
-		testPartSubpart(60);
-	}
-
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN75() throws IOException {
-		testPartSubpart(75);
-	}
-
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void testN100() throws IOException {
-		testPartSubpart(100);
-	}
-
-	private void testPartSubpart(int n) throws IOException {
-		List<String> rules = new ArrayList<>();
-		for (int i = 1; i <= n; i++) {
-			rules.add(String.format("n(%d).", i));
-		}
-
-		rules.addAll(Arrays.asList(
-			"part(N) :- n(N), not no_part(N).",
-			"no_part(N) :- n(N), not part(N).",
-			"subpartid(SP,ID) :- subpart(SP,P), n(ID), not no_subpartid(SP,ID).",
-			"no_subpartid(SP,ID) :- subpart(SP,P), n(ID), not subpartid(SP,ID).",
-			"subpart(SP,P) :- part(P), part(SP), P != SP, not no_subpart(SP,P).",
-			"no_subpart(SP,P) :- part(P), part(SP), P != SP, not subpart(SP,P).",
-			":- subpart(SP,P1), subpart(SP,P2), P1 != P2.",
-			":- subpart(SP1,P), subpart(SP2, P), SP1!=SP2, subpartid(SP1,ID), subpartid(SP2,ID)."
-		));
-
-		assertFalse(collectSet(concat(rules)).isEmpty());
-		// TODO: check correctness of answer set
+			assertFalse(collectSet(concat(rules)).isEmpty());
+			// TODO: check correctness of answer set
+		});
 	}
 
 	private String concat(List<String> rules) {

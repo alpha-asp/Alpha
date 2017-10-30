@@ -26,95 +26,55 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 
 /**
  * Tests {@link AbstractSolver} using some pigeon-hole test cases (see https://en.wikipedia.org/wiki/Pigeonhole_principle).
  *
  */
 public class PigeonHoleTest extends AbstractSolverTests {
-	@Test(timeout = 1000)
-	public void test2Pigeons2Holes() throws IOException {
-		testPigeonsHoles(2, 2);
+	@ParameterizedTest
+	@CsvSource({
+		"2, 2",
+		"3, 2",
+		"2, 3",
+		"3, 3",
+		"4, 3",
+		"3, 4",
+		"4, 4",
+	})
+	public void pigeonHolesSmall(int pigeons, int holes) {
+		assertTimeout(Duration.ofSeconds(1), () ->
+			testPigeonsHoles(pigeons, holes)
+		);
 	}
 
-	@Test(timeout = 1000)
-	public void test3Pigeons2Holes() throws IOException {
-		testPigeonsHoles(3, 2);
-	}
-
-	@Test(timeout = 1000)
-	public void test2Pigeons3Holes() throws IOException {
-		testPigeonsHoles(2, 3);
-	}
-
-	@Test(timeout = 1000)
-	@Ignore("disabled to save resources during CI")
-	public void test3Pigeons3Holes() throws IOException {
-		testPigeonsHoles(3, 3);
-	}
-
-	@Test(timeout = 1000)
-	@Ignore("disabled to save resources during CI")
-	public void test4Pigeons3Holes() throws IOException {
-		testPigeonsHoles(4, 3);
-	}
-
-	@Test(timeout = 1000)
-	@Ignore("disabled to save resources during CI")
-	public void test3Pigeons4Holes() throws IOException {
-		testPigeonsHoles(3, 4);
-	}
-
-	@Test(timeout = 1000)
-	@Ignore("disabled to save resources during CI")
-	public void test4Pigeons4Holes() throws IOException {
-		testPigeonsHoles(4, 4);
-	}
-
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void test10Pigeons10Holes() throws IOException {
-		testPigeonsHoles(10, 10);
-	}
-
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void test19Pigeons20Holes() throws IOException {
-		testPigeonsHoles(19, 20);
-	}
-
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void test28Pigeons30Holes() throws IOException {
-		testPigeonsHoles(28, 30);
-	}
-
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void test37Pigeons40Holes() throws IOException {
-		testPigeonsHoles(37, 40);
-	}
-
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void test46Pigeons50Holes() throws IOException {
-		testPigeonsHoles(46, 50);
-	}
-
-	@Test(timeout = 60000)
-	@Ignore("disabled to save resources during CI")
-	public void test55Pigeons60Holes() throws IOException {
-		testPigeonsHoles(55, 60);
+	@Tag("slow")
+	@ParameterizedTest
+	@CsvSource({
+		"10, 10",
+		"19, 20",
+		"28, 30",
+		"37, 40",
+		"46, 50",
+		"55, 60"
+	})
+	public void pigeonHolesLarge(int pigeons, int holes) {
+		assertTimeout(Duration.ofMinutes(1), () ->
+			testPigeonsHoles(pigeons, holes)
+		);
 	}
 
 	/**
@@ -129,19 +89,11 @@ public class PigeonHoleTest extends AbstractSolverTests {
 		rules.add("hashole(P) :- pigeon(P), hole(H), pos(P,H).");
 		rules.add(":- pigeon(P1), pigeon(P2), hole(H), pos(P1,H), pos(P2,H), P1 != P2.");
 
-		addPigeons(rules, pigeons);
-		addHoles(rules, holes);
+		addFacts(rules, "pigeon", 1, pigeons);
+		addFacts(rules, "hole", 1, holes);
 
 		Set<AnswerSet> answerSets = collectSet(concat(rules));
 		assertEquals(numberOfSolutions(pigeons, holes), answerSets.size());
-	}
-
-	private void addPigeons(List<String> rules, int pigeons) {
-		addFacts(rules, "pigeon", 1, pigeons);
-	}
-
-	private void addHoles(List<String> rules, int holes) {
-		addFacts(rules, "hole", 1, holes);
 	}
 
 	private void addFacts(List<String> rules, String predicateName, int from, int to) {
@@ -172,5 +124,4 @@ public class PigeonHoleTest extends AbstractSolverTests {
 		// see http://www.luschny.de/math/factorial/FastFactorialFunctions.htm
 		// TODO: we could use Apache Commons Math
 	}
-
 }

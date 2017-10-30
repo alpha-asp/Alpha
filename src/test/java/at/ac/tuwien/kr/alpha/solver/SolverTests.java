@@ -35,16 +35,15 @@ import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
-import junit.framework.TestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Collections;
 
 import static java.util.Collections.singleton;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SolverTests extends AbstractSolverTests {
+class SolverTests extends AbstractSolverTests {
 	private static class Thingy implements Comparable<Thingy> {
 		@Override
 		public String toString() {
@@ -58,7 +57,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void testObjectProgram() throws IOException {
+	void testObjectProgram() throws IOException {
 		final Thingy thingy = new Thingy();
 
 		final Atom fact = new BasicAtom(new Predicate("foo", 1), ConstantTerm.getInstance(thingy));
@@ -74,7 +73,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void testFactsOnlyProgram() throws IOException {
+	void testFactsOnlyProgram() throws IOException {
 		assertAnswerSet(
 			"p(a). p(b). foo(13). foo(16). q(a). q(c).",
 
@@ -83,7 +82,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void testSimpleRule() throws Exception {
+	void testSimpleRule() throws Exception {
 		assertAnswerSet(
 			"p(a). p(b). r(X) :- p(X).",
 
@@ -92,7 +91,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void testSimpleRuleWithGroundPart() throws Exception {
+	void testSimpleRuleWithGroundPart() throws Exception {
 		assertAnswerSet(
 			"p(1)." +
 				"p(2)." +
@@ -103,7 +102,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void testProgramZeroArityPredicates() throws Exception {
+	void testProgramZeroArityPredicates() throws Exception {
 		assertAnswerSet(
 			"a. p(X) :- b, r(X).",
 
@@ -112,7 +111,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void testGuessingGroundProgram() throws Exception {
+	void testGuessingGroundProgram() throws Exception {
 		assertAnswerSets(
 			"a :- not b. b :- not a.",
 
@@ -122,7 +121,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void testGuessingProgramNonGround() throws Exception {
+	void testGuessingProgramNonGround() throws Exception {
 		assertAnswerSetsWithBase(
 			"dom(1). dom(2). dom(3)." +
 			"p(X) :- dom(X), not q(X)." +
@@ -142,7 +141,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void guessingProgram3Way() throws IOException {
+	void guessingProgram3Way() throws IOException {
 		assertAnswerSets(
 			"a :- not b, not c." +
 			"b :- not a, not c." +
@@ -155,12 +154,12 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void emptyProgramYieldsEmptyAnswerSet() throws IOException {
+	void emptyProgramYieldsEmptyAnswerSet() throws IOException {
 		assertAnswerSets("", "");
 	}
 
 	@Test
-	public void guessingMultipleAnswerSets() throws IOException {
+	void guessingMultipleAnswerSets() throws IOException {
 		assertAnswerSets(
 			"a :- not nota." +
 			"nota :- not a." +
@@ -181,7 +180,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void builtinAtoms() throws IOException {
+	void builtinAtoms() throws IOException {
 		assertAnswerSet(
 			"dom(1). dom(2). dom(3). dom(4). dom(5)." +
 			"p(X) :- dom(X), X = 4." +
@@ -192,7 +191,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void builtinAtomsGroundRule() throws IOException {
+	void builtinAtomsGroundRule() throws IOException {
 		assertAnswerSet(
 			"a :- 13 != 4." +
 			"b :- 2 != 3, 2 = 3." +
@@ -203,7 +202,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void guessingProgramConstraint() throws IOException {
+	void guessingProgramConstraint() throws IOException {
 		assertAnswerSetsWithBase(
 			"eq(1,1)." +
 			"eq(2,2)." +
@@ -228,7 +227,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void guessingProgramConstraintPermutation() throws IOException {
+	void guessingProgramConstraintPermutation() throws IOException {
 		assertAnswerSetsWithBase(
 		"eq(1,1)." +
 			"eq(2,2)." +
@@ -253,7 +252,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void simpleNoPropagation() throws IOException {
+	void simpleNoPropagation() throws IOException {
 		assertAnswerSet(
 			"val(1,1)." +
 			"val(2,2)." +
@@ -264,7 +263,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void guessingAndPropagationAfterwards() throws IOException {
+	void guessingAndPropagationAfterwards() throws IOException {
 		assertAnswerSetsWithBase(
 			"node(a)." +
 			"node(b)." +
@@ -282,7 +281,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void guessingAndConstraints() throws IOException {
+	void guessingAndConstraints() throws IOException {
 		assertAnswerSetsWithBase(
 			"node(a)." +
 			"node(b)." +
@@ -300,12 +299,12 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void testUnsatisfiableProgram() throws IOException {
+	void testUnsatisfiableProgram() throws IOException {
 		assertAnswerSets("p(a). p(b). :- p(a), p(b).");
 	}
 
 	@Test
-	public void testFunctionTermEquality() throws IOException {
+	void testFunctionTermEquality() throws IOException {
 		assertAnswerSet(
 			"r1(f(a,b)). r2(f(a,b)). a :- r1(X), r2(Y), X = Y.",
 
@@ -314,7 +313,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void builtinInequality() throws IOException {
+	void builtinInequality() throws IOException {
 		assertAnswerSetsWithBase(
 			"location(a1)." +
 			"region(r1)." +
@@ -336,7 +335,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void guessingConstraintsInequality() throws IOException {
+	void guessingConstraintsInequality() throws IOException {
 		assertAnswerSetsWithBase(
 			"assign(L, R) :- not nassign(L, R), possible(L, R)." +
 			"nassign(L, R) :- not assign(L, R), possible(L, R)." +
@@ -392,7 +391,7 @@ public class SolverTests extends AbstractSolverTests {
 		);
 	}
 	@Test
-	public void sameVariableTwiceInAtom() throws IOException {
+	void sameVariableTwiceInAtom() throws IOException {
 		assertAnswerSets(
 			"p(a, a)." +
 			"q(X) :- p(X, X).",
@@ -402,7 +401,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void sameVariableTwiceInAtomConstraint() throws IOException {
+	void sameVariableTwiceInAtomConstraint() throws IOException {
 		assertAnswerSets(
 			"p(a, a)." +
 			":- p(X, X)."
@@ -410,7 +409,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void noPositiveSelfFounding() throws IOException {
+	void noPositiveSelfFounding() throws IOException {
 		assertAnswerSets(
 			"a :- b." +
 			"b:- a." +
@@ -419,7 +418,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void noPositiveCycleSelfFoundingGuess() throws IOException {
+	void noPositiveCycleSelfFoundingGuess() throws IOException {
 		assertAnswerSets(
 			"c :- not d." +
 			"d :- not c." +
@@ -430,7 +429,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void conflictFromUnaryNoGood() throws IOException {
+	void conflictFromUnaryNoGood() throws IOException {
 		assertAnswerSet(
 			"d(b)." +
 			"sel(X) :- not nsel(X), d(X)." +
@@ -443,7 +442,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void intervalsInFacts() throws IOException {
+	void intervalsInFacts() throws IOException {
 		assertAnswerSets(
 			"a." +
 			"facta(1..3)." +
@@ -479,7 +478,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void intervalInRules() throws IOException {
+	void intervalInRules() throws IOException {
 		assertAnswerSets(
 			"a :- 3 = 1..4 ." +
 			"p(X, 1..X) :- dom(X), X != 2." +
@@ -490,7 +489,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void intervalInFunctionTermsInRules() throws IOException {
+	void intervalInFunctionTermsInRules() throws IOException {
 		assertAnswerSets(
 			"a :- q(f(1..3,g(4..5)))." +
 			"q(f(2,g(4)))." +
@@ -514,7 +513,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void groundAtomInRule() throws IOException {
+	void groundAtomInRule() throws IOException {
 		assertAnswerSet(
 			"p :- dom(X), q, q2." +
 				"dom(1)." +
@@ -529,12 +528,12 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void dummyGrounder() {
-		TestCase.assertEquals(DummyGrounder.EXPECTED, getInstance(new DummyGrounder()).collectSet());
+	void dummyGrounder() {
+		assertEquals(DummyGrounder.EXPECTED, getInstance(new DummyGrounder()).collectSet());
 	}
 
 	@Test
-	public void choiceGrounder() {
-		TestCase.assertEquals(ChoiceGrounder.EXPECTED, getInstance(new ChoiceGrounder()).collectSet());
+	void choiceGrounder() {
+		assertEquals(ChoiceGrounder.EXPECTED, getInstance(new ChoiceGrounder()).collectSet());
 	}
 }
