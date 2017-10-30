@@ -42,8 +42,4 @@ public class HiddenAtom extends BasicAtom {
 		return new HiddenAtom((BasicAtom) super.substitute(substitution));
 	}
 
-	@Override
-	public boolean isInternal() {
-		return true;
-	}
 }

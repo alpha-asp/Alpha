@@ -85,11 +85,6 @@ public class ExternalAtom implements Literal {
 	}
 
 	@Override
-	public boolean isInternal() {
-		return false;
-	}
-
-	@Override
 	public List<VariableTerm> getBindingVariables() {
 		if (negated) {
 			// Negative literal has no binding variables.

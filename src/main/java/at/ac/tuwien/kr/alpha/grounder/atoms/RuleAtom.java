@@ -58,11 +58,6 @@ public class RuleAtom implements Atom {
 	}
 
 	@Override
-	public boolean isInternal() {
-		return true;
-	}
-
-	@Override
 	public List<VariableTerm> getBindingVariables() {
 		// NOTE: Both terms are ConstantTerms, which have no variables by definition.
 		return Collections.emptyList();

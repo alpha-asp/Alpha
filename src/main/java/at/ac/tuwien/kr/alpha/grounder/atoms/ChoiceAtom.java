@@ -52,11 +52,6 @@ public class ChoiceAtom implements Atom {
 	}
 
 	@Override
-	public boolean isInternal() {
-		return true;
-	}
-
-	@Override
 	public List<VariableTerm> getBindingVariables() {
 		// NOTE: Term is a ConstantTerm, which has no variables by definition.
 		return Collections.emptyList();

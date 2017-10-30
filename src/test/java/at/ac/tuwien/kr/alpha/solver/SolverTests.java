@@ -608,6 +608,17 @@ public class SolverTests extends AbstractSolverTests {
 		);
 	}
 
+	@Test
+	public void doubleChoiceRule() throws IOException {
+		Program program = parser.parse("{ a }. { a }.");
+		Solver solver = getInstance(new NaiveGrounder(program));
+		int countAnswerSets = 0;
+		while (solver.spliterator().tryAdvance(d -> { })) {
+			countAnswerSets++;
+		}
+		assertEquals(2, countAnswerSets);
+	}
+
 	private Set<AnswerSet> solve(String program) throws IOException {
 		return solve(parser.parse(program));
 	}

@@ -57,6 +57,8 @@ import static java.util.Collections.singletonList;
  */
 public class NaiveGrounder extends BridgedGrounder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
+	private static final HashSet<Predicate> INTERNAL_PREDICATES = new HashSet<>(Arrays.asList(
+		RuleAtom.PREDICATE, ChoiceAtom.ON, ChoiceAtom.OFF, IntervalAtom.INTERVAL_PREDICATE));
 
 	protected HashMap<Predicate, ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage>> workingMemory = new HashMap<>();
 	protected Map<NoGood, Integer> noGoodIdentifiers = new LinkedHashMap<>();
@@ -148,7 +150,7 @@ public class NaiveGrounder extends BridgedGrounder {
 
 	private void applyProgramTransformations(Program program) {
 		// Transform choice rules.
-		new ChoiceHeadToNormal().transform(program);
+		new ChoiceHeadToNormal(this).transform(program);
 		// Transform intervals.
 		new IntervalTermToIntervalAtom().transform(program);
 	}
@@ -229,6 +231,14 @@ public class NaiveGrounder extends BridgedGrounder {
 		rulesUsingPredicateWorkingMemory.get(workingMemory).add(new FirstBindingAtom(nonGroundRule, atomPos, bodyAtom));
 	}
 
+	/**
+	 * Flags the given predicate as internal such that it is not printed in answer sets.
+	 * @param predicate the predicate to consider internal.
+	 */
+	public void flagPredicateAsInternal(Predicate predicate) {
+		INTERNAL_PREDICATES.add(predicate);
+	}
+
 	@Override
 	public AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms) {
 		Map<Predicate, SortedSet<Atom>> predicateInstances = new LinkedHashMap<>();
@@ -237,13 +247,12 @@ public class NaiveGrounder extends BridgedGrounder {
 		// Iterate over all true atomIds, computeNextAnswerSet instances from atomStore and add them if not filtered.
 		for (int trueAtom : trueAtoms) {
 			final Atom atom = atomStore.get(trueAtom);
+			Predicate predicate = atom.getPredicate();
 
-			// Skip internal atoms
-			if (atom.isInternal()) {
+			// Skip atoms over internal predicates.
+			if (INTERNAL_PREDICATES.contains(predicate)) {
 				continue;
 			}
-
-			Predicate predicate = atom.getPredicate();
 
 			// Skip filtered predicates.
 			if (!filter.test(predicate)) {

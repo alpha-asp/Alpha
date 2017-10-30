@@ -76,10 +76,6 @@ public class BasicAtom implements Literal {
 		return ground;
 	}
 
-	public boolean isInternal() {
-		return false;
-	}
-
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
