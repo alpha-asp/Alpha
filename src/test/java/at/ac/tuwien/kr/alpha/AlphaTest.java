@@ -77,6 +77,31 @@ public class AlphaTest {
 		Set<AnswerSet> answerSets = system.solve("node(1). node(2). node(3). a :- &connected[1,2].").collect(Collectors.toSet());
 	}
 
+	@Test
+	public void supplier() throws Exception {
+		Alpha system = new Alpha();
+		system.register("bestNode", () -> singleton(singletonList(ConstantTerm.getInstance(1))));
+
+		Set<AnswerSet> expected = AnswerSetsParser.parse("{ node(1), a }");
+		Set<AnswerSet> actual = system.solve("node(1). a :- &bestNode(X), node(X).").collect(Collectors.toSet());
+		assertEquals(expected, actual);
+	}
+
+	@at.ac.tuwien.kr.alpha.Predicate
+	public static Set<List<ConstantTerm>> bestNode() {
+		return singleton(singletonList(ConstantTerm.getInstance(1)));
+	}
+
+	@Test
+	public void noInput() throws Exception {
+		Alpha system = new Alpha();
+		system.register(this.getClass().getMethod("bestNode"));
+
+		Set<AnswerSet> expected = AnswerSetsParser.parse("{ node(1), a }");
+		Set<AnswerSet> actual = system.solve("node(1). a :- &bestNode(X), node(X).").collect(Collectors.toSet());
+		assertEquals(expected, actual);
+	}
+
 	@Test(expected = IllegalArgumentException.class)
 	public void smallGraphWithWrongType() throws Exception {
 		Alpha system = new Alpha();
@@ -105,7 +130,7 @@ public class AlphaTest {
 	@Test
 	public void smallGraphNoNeighbors() throws Exception {
 		Alpha system = new Alpha();
-		system.registerBinding(this.getClass().getMethod("neighbors", int.class));
+		system.register(this.getClass().getMethod("neighbors", int.class));
 
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ noNeighbors(2) }");
 		Set<AnswerSet> actual = system.solve("noNeighbors(2) :- not &neighbors[2].").collect(Collectors.toSet());
@@ -115,7 +140,7 @@ public class AlphaTest {
 	@Test
 	public void smallGraphCoolNode() throws Exception {
 		Alpha system = new Alpha();
-		system.registerBinding(this.getClass().getMethod("coolNode", int.class));
+		system.register(this.getClass().getMethod("coolNode", int.class));
 
 		Set<AnswerSet> actual = system.solve("node(1..2). in(X) :- node(X), &coolNode[X].").collect(Collectors.toSet());
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ in(1), node(1), node(2) }");
@@ -125,7 +150,7 @@ public class AlphaTest {
 	@Test
 	public void smallGraphSingleNeighbor() throws Exception {
 		Alpha system = new Alpha();
-		system.registerBinding(this.getClass().getMethod("neighbors", int.class));
+		system.register(this.getClass().getMethod("neighbors", int.class));
 
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ in(1,2), in(1,3), node(1), node(2), node(3) }");
 		Set<AnswerSet> actual = system.solve("node(1..3). in(1,X) :- &neighbors[1](X), node(X).").collect(Collectors.toSet());
@@ -135,7 +160,7 @@ public class AlphaTest {
 	@Test
 	public void smallGraphSingleNeighborNoTerm() throws Exception {
 		Alpha system = new Alpha();
-		system.registerBinding(this.getClass().getMethod("neighbors", int.class));
+		system.register(this.getClass().getMethod("neighbors", int.class));
 
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ success }");
 		Set<AnswerSet> actual = system.solve("success :- &neighbors[1], not &neighbors[2].").collect(Collectors.toSet());

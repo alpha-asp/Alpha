@@ -12,6 +12,8 @@ public abstract class FixedInterpretationPredicate extends Predicate {
 	protected static final Set<List<ConstantTerm>> TRUE = singleton(emptyList());
 	protected static final Set<List<ConstantTerm>> FALSE = emptySet();
 
+	public static final String EVALUATE_RETURN_TYPE_NAME_PREFIX = Set.class.getName() + "<" + List.class.getName() + "<" + ConstantTerm.class.getName();
+
 	public FixedInterpretationPredicate(String name, int arity) {
 		super(name, arity);
 	}
