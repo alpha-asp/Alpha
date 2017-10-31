@@ -34,18 +34,6 @@ public class Alpha {
 
 	private Program program;
 
-	public long getSeed() {
-		return seed;
-	}
-
-	public void setSeed(long seed) {
-		this.seed = seed;
-	}
-
-	public void setDeterministic() {
-		setSeed(0);
-	}
-
 	private long seed;
 
 	public Alpha(String grounderName, String solverName, String storeName) {
@@ -64,6 +52,18 @@ public class Alpha {
 
 	public Alpha() {
 		this("naive");
+	}
+
+	public long getSeed() {
+		return seed;
+	}
+
+	public void setSeed(long seed) {
+		this.seed = seed;
+	}
+
+	public void setDeterministic() {
+		setSeed(0);
 	}
 
 	public void scan(String base) {
@@ -86,15 +86,17 @@ public class Alpha {
 	}
 
 	public void register(Method method, String name) {
-		this.predicateMethods.put(name, new ExternalMethodPredicate(method));
-	}
+		if (method.getReturnType().equals(boolean.class)) {
+			this.predicateMethods.put(name, new ExternalMethodPredicate(method));
+			return;
+		}
 
-	public void registerBinding(Method method, String name) {
-		this.predicateMethods.put(name, new ExternalBindingMethodPredicate(method));
-	}
+		if (method.getGenericReturnType().getTypeName().startsWith(FixedInterpretationPredicate.EVALUATE_RETURN_TYPE_NAME_PREFIX)) {
+			this.predicateMethods.put(name, new ExternalBindingMethodPredicate(method));
+			return;
+		}
 
-	public void registerBinding(Method method) {
-		registerBinding(method, method.getName());
+		throw new IllegalArgumentException("Passed method has unexpected return type. Should be either boolean or start with " + FixedInterpretationPredicate.EVALUATE_RETURN_TYPE_NAME_PREFIX + ".");
 	}
 
 	public void register(Method method) {
@@ -105,8 +107,20 @@ public class Alpha {
 		this.predicateMethods.put(name, new ExternalPredicate<>(name, predicate));
 	}
 
+	public void register(String name, java.util.function.IntPredicate predicate) {
+		this.predicateMethods.put(name, new ExternalIntPredicate(name, predicate));
+	}
+
+	public void register(String name, java.util.function.LongPredicate predicate) {
+		this.predicateMethods.put(name, new ExternalLongPredicate(name, predicate));
+	}
+
 	public <T, U> void register(String name, java.util.function.BiPredicate<T, U> predicate) {
 		this.predicateMethods.put(name, new ExternalBiPredicate<>(name, predicate));
+	}
+
+	public void register(String name, java.util.function.Supplier<Set<List<ConstantTerm>>> supplier) {
+		this.predicateMethods.put(name, new ExternalSupplier(name, supplier));
 	}
 
 	public void setProgram(Program program) {

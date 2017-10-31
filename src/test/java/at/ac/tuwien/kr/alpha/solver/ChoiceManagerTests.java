@@ -31,11 +31,8 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -44,19 +41,6 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static org.junit.Assert.assertTrue;
 
 public class ChoiceManagerTests extends AbstractSolverTests {
-	/**
-	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
-	 */
-	private static void enableTracing() {
-		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		root.setLevel(ch.qos.logback.classic.Level.TRACE);
-	}
-
-	private static void enableDebugLog() {
-		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		root.setLevel(Level.DEBUG);
-	}
-
 	private Grounder grounder;
 	private ChoiceManager choiceManager;
 

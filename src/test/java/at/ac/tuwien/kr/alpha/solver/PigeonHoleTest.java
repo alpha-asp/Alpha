@@ -26,16 +26,8 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,29 +35,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * Tests {@link AbstractSolver} using some pigeon-hole test cases (see https://en.wikipedia.org/wiki/Pigeonhole_principle).
  *
  */
 public class PigeonHoleTest extends AbstractSolverTests {
-	/**
-	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
-	 */
-	private static void enableTracing() {
-		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		root.setLevel(ch.qos.logback.classic.Level.TRACE);
-	}
-
-	private static void enableDebugLog() {
-		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		root.setLevel(Level.DEBUG);
-	}
-
-	@Before
-	public void printSolverName() {
-		System.out.println(solverName);
-	}
-
 	@Test(timeout = 1000)
 	public void test2Pigeons2Holes() throws IOException {
 		testPigeonsHoles(2, 2);
@@ -156,15 +132,8 @@ public class PigeonHoleTest extends AbstractSolverTests {
 		addPigeons(rules, pigeons);
 		addHoles(rules, holes);
 
-		String testProgram = concat(rules);
-		Program parsedProgram = new ProgramParser().parse(testProgram);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-
-		Solver solver = getInstance(grounder);
-
-		Set<AnswerSet> answerSets = solver.collectSet();
-		Assert.assertEquals(numberOfSolutions(pigeons, holes), answerSets.size());
-		solver.stream().findAny();
+		Set<AnswerSet> answerSets = collectSet(concat(rules));
+		assertEquals(numberOfSolutions(pigeons, holes), answerSets.size());
 	}
 
 	private void addPigeons(List<String> rules, int pigeons) {

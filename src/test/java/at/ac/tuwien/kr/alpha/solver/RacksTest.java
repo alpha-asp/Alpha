@@ -26,17 +26,11 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -48,21 +42,6 @@ import java.util.Optional;
  */
 @Ignore("disabled to save resources during CI")
 public class RacksTest extends AbstractSolverTests {
-	private final ProgramParser parser = new ProgramParser();
-
-	/**
-	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
-	 */
-	private static void enableTracing() {
-		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		root.setLevel(ch.qos.logback.classic.Level.TRACE);
-	}
-
-	private static void enableDebugLog() {
-		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		root.setLevel(Level.DEBUG);
-	}
-
 	@Before
 	public void printSolverName() {
 		System.out.println(solverName);
@@ -77,9 +56,7 @@ public class RacksTest extends AbstractSolverTests {
 		CharStream programInputStream = CharStreams.fromPath(
 			Paths.get("benchmarks", "siemens", "racks", "racks.lp")
 		);
-		Program parsedProgram = parser.parse(programInputStream);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
+		Solver solver = getInstance(programInputStream);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		System.out.println(answerSet);
 		// TODO: check correctness of answer set

@@ -434,7 +434,6 @@ public class NaiveGrounder extends BridgedGrounder {
 		ArrayList<Integer> bodyAtomsPositive = new ArrayList<>();
 		ArrayList<Integer> bodyAtomsNegative = new ArrayList<>();
 		for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
-
 			if (atom instanceof ExternalAtom) {
 				ExternalAtom external = (ExternalAtom) atom;
 
