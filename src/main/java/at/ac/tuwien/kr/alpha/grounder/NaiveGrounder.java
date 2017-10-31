@@ -155,7 +155,6 @@ public class NaiveGrounder extends BridgedGrounder {
 		new IntervalTermToIntervalAtom().transform(program);
 	}
 
-
 	private void adaptWorkingMemoryForPredicate(Predicate predicate) {
 		// Create working memory for predicate if it does not exist
 		if (!workingMemory.containsKey(predicate)) {

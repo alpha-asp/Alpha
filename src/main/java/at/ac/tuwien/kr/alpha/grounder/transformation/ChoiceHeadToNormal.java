@@ -26,7 +26,6 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 		this.grounder = grounder;
 	}
 
-
 	@Override
 	public void transform(Program inputProgram) {
 		List<Rule> additionalRules = new ArrayList<>();
