@@ -75,7 +75,7 @@ external_atom : MINUS? AMPERSAND ID (SQUARE_OPEN input = terms SQUARE_CLOSE)? (P
 
 directive : directive_enumeration;  // NOT Core2 syntax, allows solver specific directives. Further directives shall be added here.
 
-directive_enumeration : SHARP 'enum_atom_is' ID DOT;  // NOT Core2 syntax, used for aggregate translation.
+directive_enumeration : SHARP 'enum_predicate_is' ID DOT;  // NOT Core2 syntax, used for aggregate translation.
 
 basic_terms : basic_term (COMMA basic_terms)? ;
 

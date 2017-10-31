@@ -10,7 +10,7 @@ import java.util.Map;
 public class InlineDirectives {
 
 	public enum DIRECTIVE {
-		enum_atom_is
+		enum_predicate_is
 	}
 
 	private final LinkedHashMap<DIRECTIVE, String> directives = new LinkedHashMap<>();

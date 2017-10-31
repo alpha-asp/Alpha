@@ -35,9 +35,12 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
+import at.ac.tuwien.kr.alpha.grounder.transformation.EnumerationRewriting;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
@@ -182,6 +185,11 @@ public class NaiveGrounder extends BridgedGrounder {
 		new IntervalTermToIntervalAtom().transform(program);
 		// Remove variable equalities.
 		new VariableEqualityRemoval().transform(program);
+		// Transform intervals.
+		new IntervalTermToIntervalAtom().transform(program);
+		// Transform enumeration atoms.
+		new EnumerationRewriting().transform(program);
+		EnumerationAtom.resetEnumerations();
 	}
 
 	/**
@@ -364,6 +372,11 @@ public class NaiveGrounder extends BridgedGrounder {
 				generatedSubstitutions.addAll(bindNextAtomInRule(groundingOrder, orderPosition + 1, substitution, currentAssignment));
 			}
 			return generatedSubstitutions;
+		}
+		if (currentAtom instanceof EnumerationAtom) {
+			// Get the enumeration value and add it to the current partialSubstitution.
+			((EnumerationAtom) currentAtom).addEnumerationToSubstitution(partialSubstitution);
+			return bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, partialSubstitution, currentAssignment);
 		}
 
 		// check if partialVariableSubstitution already yields a ground atom

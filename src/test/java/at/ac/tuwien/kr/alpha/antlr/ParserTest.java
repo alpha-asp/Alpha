@@ -178,10 +178,10 @@ public class ParserTest {
 	@Test
 	public void parseEnumerationDirective() throws IOException {
 		Program parsedProgram = parser.parse("p(a,1)." +
-			"# enum_atom_is mune." +
+			"# enum_predicate_is mune." +
 			"r(X) :- p(X), mune(X)." +
 			"p(b,2).");
-		String directive = parsedProgram.getInlineDirectives().getDirectiveValue(InlineDirectives.DIRECTIVE.enum_atom_is);
+		String directive = parsedProgram.getInlineDirectives().getDirectiveValue(InlineDirectives.DIRECTIVE.enum_predicate_is);
 		assertEquals("mune", directive);
 	}
 }

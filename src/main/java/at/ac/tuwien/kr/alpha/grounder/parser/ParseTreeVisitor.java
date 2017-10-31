@@ -260,8 +260,8 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public Object visitDirective_enumeration(ASPCore2Parser.Directive_enumerationContext ctx) {
-		// directive_enumeration : SHARP 'enum_atom_is' ID DOT;
-		inlineDirectives.addDirective(InlineDirectives.DIRECTIVE.enum_atom_is, ctx.ID().getText());
+		// directive_enumeration : SHARP 'enum_predicate_is' ID DOT;
+		inlineDirectives.addDirective(InlineDirectives.DIRECTIVE.enum_predicate_is, ctx.ID().getText());
 		return null;
 	}
 
