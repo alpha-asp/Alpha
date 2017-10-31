@@ -25,46 +25,22 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertFalse;
 
 /**
  * Tests {@link AbstractSolver} using some configuration test cases in which subparts are assigned to parts.
  *
  */
 public class PartSubpartConfigurationTest extends AbstractSolverTests {
-	/**
-	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
-	 */
-	private static void enableTracing() {
-		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		root.setLevel(ch.qos.logback.classic.Level.TRACE);
-	}
-
-	private static void enableDebugLog() {
-		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		root.setLevel(Level.DEBUG);
-	}
-
-	@Before
-	public void printSolverName() {
-		System.out.print(solverName);
-	}
-
 	@Test(timeout = 1000)
 	public void testN2() throws IOException {
 		testPartSubpart(2);
@@ -117,22 +93,19 @@ public class PartSubpartConfigurationTest extends AbstractSolverTests {
 		for (int i = 1; i <= n; i++) {
 			rules.add(String.format("n(%d).", i));
 		}
-		rules.add("part(N) :- n(N), not no_part(N).");
-		rules.add("no_part(N) :- n(N), not part(N).");
-		rules.add("subpartid(SP,ID) :- subpart(SP,P), n(ID), not no_subpartid(SP,ID).");
-		rules.add("no_subpartid(SP,ID) :- subpart(SP,P), n(ID), not subpartid(SP,ID).");
-		rules.add("subpart(SP,P) :- part(P), part(SP), P != SP, not no_subpart(SP,P).");
-		rules.add("no_subpart(SP,P) :- part(P), part(SP), P != SP, not subpart(SP,P).");
-		rules.add(":- subpart(SP,P1), subpart(SP,P2), P1 != P2.");
-		rules.add(":- subpart(SP1,P), subpart(SP2, P), SP1!=SP2, subpartid(SP1,ID), subpartid(SP2,ID).");
 
-		String testProgram = concat(rules);
-		Program parsedProgram = new ProgramParser().parse(testProgram);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
-		Solver solver = getInstance(grounder);
+		rules.addAll(Arrays.asList(
+			"part(N) :- n(N), not no_part(N).",
+			"no_part(N) :- n(N), not part(N).",
+			"subpartid(SP,ID) :- subpart(SP,P), n(ID), not no_subpartid(SP,ID).",
+			"no_subpartid(SP,ID) :- subpart(SP,P), n(ID), not subpartid(SP,ID).",
+			"subpart(SP,P) :- part(P), part(SP), P != SP, not no_subpart(SP,P).",
+			"no_subpart(SP,P) :- part(P), part(SP), P != SP, not subpart(SP,P).",
+			":- subpart(SP,P1), subpart(SP,P2), P1 != P2.",
+			":- subpart(SP1,P), subpart(SP2, P), SP1!=SP2, subpartid(SP1,ID), subpartid(SP2,ID)."
+		));
 
-		Optional<AnswerSet> answerSet = solver.stream().findAny();
-		System.out.println(answerSet);
+		assertFalse(collectSet(concat(rules)).isEmpty());
 		// TODO: check correctness of answer set
 	}
 
@@ -140,5 +113,4 @@ public class PartSubpartConfigurationTest extends AbstractSolverTests {
 		String ls = System.lineSeparator();
 		return rules.stream().collect(Collectors.joining(ls));
 	}
-
 }

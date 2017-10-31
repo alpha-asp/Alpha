@@ -27,66 +27,170 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.AnswerSetsParser;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Random;
-import java.util.function.Function;
+import java.io.IOException;
+import java.util.*;
+
+import static java.util.Collections.emptySet;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public abstract class AbstractSolverTests {
-	@Parameters(name = "{0}")
-	public static Collection<Object[]> factories() {
-		boolean enableAdditionalInternalChecks = true;
-		Collection<Object[]> factories = new ArrayList<>();
-		factories.add(new Object[] {"NS", (Function<Grounder, Solver>) NaiveSolver::new});
+	private final ProgramParser parser = new ProgramParser();
 
-		for (Heuristic heuristic : Heuristic.values()) {
-			String name = "DS/R/" + heuristic;
-			Function<Grounder, Solver> instantiator = g -> {
-				ArrayAssignment assignment = new ArrayAssignment(g, enableAdditionalInternalChecks);
-				NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment, enableAdditionalInternalChecks);
-				return new DefaultSolver(g, store, assignment, new Random(), heuristic, enableAdditionalInternalChecks);
-			};
-			factories.add(new Object[] {name, instantiator});
-			name = "DS/R/" + heuristic + "/naive";
-			instantiator = g -> {
-				ArrayAssignment assignment = new ArrayAssignment(g, enableAdditionalInternalChecks);
-				NoGoodStore store = new NaiveNoGoodStore(assignment);
-				return new DefaultSolver(g, store, assignment, new Random(), heuristic, enableAdditionalInternalChecks);
-			};
-			factories.add(new Object[] {name, instantiator});
-			name = "DS/D/" + heuristic;
-			instantiator = g -> {
-				ArrayAssignment assignment = new ArrayAssignment(g, enableAdditionalInternalChecks);
-				NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment, enableAdditionalInternalChecks);
-				return new DefaultSolver(g, store, assignment, new Random(0), heuristic, enableAdditionalInternalChecks);
-			};
-			factories.add(new Object[] {name, instantiator});
-			name = "DS/D/" + heuristic + "/naive";
-			instantiator = g -> {
-				ArrayAssignment assignment = new ArrayAssignment(g, enableAdditionalInternalChecks);
-				NoGoodStore store = new NaiveNoGoodStore(assignment);
-				return new DefaultSolver(g, store, assignment, new Random(0), heuristic, enableAdditionalInternalChecks);
-			};
-			factories.add(new Object[] {name, instantiator});
+	/**
+	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
+	 */
+	private static void enableTracing() {
+		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+		root.setLevel(ch.qos.logback.classic.Level.TRACE);
+	}
+
+	private static void enableDebugLog() {
+		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+		root.setLevel(Level.DEBUG);
+	}
+
+	private static String[] getProperty(String subKey, String def) {
+		return System.getProperty("test." + subKey, def).split(",");
+	}
+
+	@Parameters(name = "{0}/{1}/{2}/{3}")
+	public static Collection<Object[]> parameters() {
+		// Check whether we are running in a CI environment.
+		boolean ci = Boolean.valueOf(System.getenv("CI"));
+
+		String[] solvers = getProperty("solvers", ci ? "default" : "default,naive");
+		String[] grounders = getProperty("grounders", "naive");
+		String[] stores = getProperty("stores", ci ? "alpharoaming" : "alpharoaming,naive");
+		String[] heuristics = getProperty("heuristics", ci ? "ALL" : "NAIVE");
+
+		// "ALL" is a magic value that will be expanded to contain all heuristics.
+		if ("ALL".equals(heuristics[0])) {
+			BranchingHeuristicFactory.Heuristic[] values = BranchingHeuristicFactory.Heuristic.values();
+			heuristics = new String[values.length];
+			int i = 0;
+			for (BranchingHeuristicFactory.Heuristic heuristic : values) {
+				heuristics[i++] = heuristic.toString();
+			}
 		}
+
+		String seed = System.getProperty("seed", ci ? "0" : "");
+		boolean checks = Boolean.valueOf(System.getProperty("test.checks", String.valueOf(ci)));
+
+		Random random = seed.isEmpty() ? new Random() : new Random(Long.valueOf(seed));
+
+		Collection<Object[]> factories = new ArrayList<>();
+
+		for (String solver : solvers) {
+			for (String grounder : grounders) {
+				for (String store : stores) {
+					for (String heuristic : heuristics) {
+						factories.add(new Object[]{
+							solver, grounder, store, BranchingHeuristicFactory.Heuristic.valueOf(heuristic), random, checks
+						});
+					}
+				}
+			}
+		}
+
 		return factories;
 	}
 
-	@Parameter(value = 0)
+	@Parameter(0)
 	public String solverName;
 
-	@Parameter(value = 1)
-	public Function<Grounder, Solver> factory;
+	@Parameter(1)
+	public String grounderName;
 
-	protected Solver getInstance(Grounder g) {
-		return factory.apply(g);
+	@Parameter(2)
+	public String storeName;
+
+	@Parameter(3)
+	public BranchingHeuristicFactory.Heuristic heuristic;
+
+	@Parameter(4)
+	public Random random;
+
+	@Parameter(5)
+	public boolean checks;
+
+	protected Solver getInstance(Grounder grounder) {
+		return SolverFactory.getInstance(solverName, storeName, grounder, random, heuristic, checks);
+	}
+
+	protected Solver getInstance(Program program) {
+		return getInstance(GrounderFactory.getInstance(grounderName, program));
+	}
+
+	protected Solver getInstance(String program) {
+		return getInstance(CharStreams.fromString(program));
+	}
+
+	protected Solver getInstance(CharStream program) {
+		try {
+			return getInstance(parser.parse(program));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Set<AnswerSet> collectSet(String program) {
+		return getInstance(program).collectSet();
+	}
+
+	protected Set<AnswerSet> collectSet(Program program) {
+		return getInstance(program).collectSet();
+	}
+
+	protected Set<AnswerSet> collectSet(CharStream program) {
+		return getInstance(program).collectSet();
+	}
+
+	protected void assertAnswerSets(String program, String... answerSets) throws IOException {
+		if (answerSets.length == 0) {
+			assertAnswerSets(program, emptySet());
+			return;
+		}
+
+		StringJoiner joiner = new StringJoiner("} {", "{", "}");
+		Arrays.stream(answerSets).forEach(joiner::add);
+		assertAnswerSets(program, AnswerSetsParser.parse(joiner.toString()));
+	}
+
+	protected void assertAnswerSet(String program, String answerSet) throws IOException {
+		assertAnswerSets(program, AnswerSetsParser.parse("{ " + answerSet + " }"));
+	}
+
+	protected void assertAnswerSetsWithBase(String program, String base, String... answerSets) throws IOException {
+		if (!base.endsWith(",")) {
+			base += ", ";
+		}
+
+		for (int i = 0; i < answerSets.length; i++) {
+			answerSets[i] = base + answerSets[i];
+		}
+
+		assertAnswerSets(program, answerSets);
+	}
+
+	protected void assertAnswerSets(String program, Set<AnswerSet> answerSets) throws IOException {
+		assertEquals(answerSets, collectSet(program));
 	}
 }

@@ -27,44 +27,24 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.AnswerSetsParser;
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
+import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
-import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import junit.framework.TestCase;
 import org.junit.Test;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
 
-import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
 
 public class SolverTests extends AbstractSolverTests {
-	private final ProgramParser parser = new ProgramParser();
-
-	/**
-	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
-	 */
-	private static void enableTracing() {
-		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		root.setLevel(ch.qos.logback.classic.Level.TRACE);
-	}
-
-	private static void enableDebugLog() {
-		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		root.setLevel(Level.DEBUG);
-	}
-
 	private static class Thingy implements Comparable<Thingy> {
 		@Override
 		public String toString() {
@@ -90,7 +70,7 @@ public class SolverTests extends AbstractSolverTests {
 
 		assertEquals(singleton(new AnswerSetBuilder()
 			.predicate("foo").instance(thingy)
-			.build()), solve(program));
+			.build()), collectSet(program));
 	}
 
 	@Test
@@ -159,16 +139,6 @@ public class SolverTests extends AbstractSolverTests {
 			"p(1), q(2), q(3)",
 			"p(1), p(2), q(3)"
 		);
-	}
-
-	@Test
-	public void dummyGrounder() {
-		assertEquals(DummyGrounder.EXPECTED, getInstance(new DummyGrounder()).collectSet());
-	}
-
-	@Test
-	public void choiceGrounder() {
-		assertEquals(ChoiceGrounder.EXPECTED, getInstance(new ChoiceGrounder()).collectSet());
 	}
 
 	@Test
@@ -558,42 +528,13 @@ public class SolverTests extends AbstractSolverTests {
 		);
 	}
 
-	private Set<AnswerSet> solve(String program) throws IOException {
-		return solve(parser.parse(program));
+	@Test
+	public void dummyGrounder() {
+		TestCase.assertEquals(DummyGrounder.EXPECTED, getInstance(new DummyGrounder()).collectSet());
 	}
 
-	private Set<AnswerSet> solve(Program program) throws IOException {
-		return getInstance(new NaiveGrounder(program)).collectSet();
-	}
-
-	private void assertAnswerSets(String program, String... answerSets) throws IOException {
-		if (answerSets.length == 0) {
-			assertAnswerSets(program, emptySet());
-			return;
-		}
-
-		StringJoiner joiner = new StringJoiner("} {", "{", "}");
-		Arrays.stream(answerSets).forEach(joiner::add);
-		assertAnswerSets(program, AnswerSetsParser.parse(joiner.toString()));
-	}
-
-	private void assertAnswerSet(String program, String answerSet) throws IOException {
-		assertAnswerSets(program, AnswerSetsParser.parse("{ " + answerSet + " }"));
-	}
-
-	private void assertAnswerSetsWithBase(String program, String base, String... answerSets) throws IOException {
-		if (!base.endsWith(",")) {
-			base += ", ";
-		}
-
-		for (int i = 0; i < answerSets.length; i++) {
-			answerSets[i] = base + answerSets[i];
-		}
-
-		assertAnswerSets(program, answerSets);
-	}
-
-	private void assertAnswerSets(String program, Set<AnswerSet> answerSets) throws IOException {
-		assertEquals(answerSets, solve(program));
+	@Test
+	public void choiceGrounder() {
+		TestCase.assertEquals(ChoiceGrounder.EXPECTED, getInstance(new ChoiceGrounder()).collectSet());
 	}
 }

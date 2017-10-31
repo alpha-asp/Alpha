@@ -34,14 +34,9 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
@@ -54,24 +49,6 @@ import java.util.*;
  * DOI: 10.1017/S1471068416000569
  */
 public class ThreeColouringTestWithRandom extends AbstractSolverTests {
-	/**
-	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
-	 */
-	private static void enableTracing() {
-		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		root.setLevel(ch.qos.logback.classic.Level.TRACE);
-	}
-
-	private static void enableDebugLog() {
-		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		root.setLevel(Level.DEBUG);
-	}
-
-	@Before
-	public void printSolverName() {
-		System.out.println(solverName);
-	}
-
 	@Test(timeout = 3000)
 	public void testN3() throws IOException {
 		testThreeColouring(3, false, 0);
@@ -184,8 +161,7 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 		program.getFacts().addAll(createVertices(n));
 		program.getFacts().addAll(createEdges(n, shuffle, seed));
 
-		NaiveGrounder grounder = new NaiveGrounder(program);
-		Solver solver = getInstance(grounder);
+		Solver solver = getInstance(program);
 
 		StringBuilder sb = new StringBuilder();
 
