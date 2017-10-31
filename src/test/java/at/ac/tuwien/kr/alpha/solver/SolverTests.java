@@ -27,6 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.AnswerSetsParser;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
@@ -35,12 +37,13 @@ import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
-import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import junit.framework.TestCase;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
@@ -581,13 +584,11 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void doubleChoiceRule() throws IOException {
-		Program program = parser.parse("{ a }. { a }.");
-		Solver solver = getInstance(new NaiveGrounder(program));
-		int countAnswerSets = 0;
-		while (solver.spliterator().tryAdvance(d -> { })) {
-			countAnswerSets++;
-		}
-		assertEquals(2, countAnswerSets);
+		Solver solver = getInstance("{ a }. { a }.");
+		// Make sure that no superfluous answer sets that only differ on hidden atoms occur.
+		List<AnswerSet> actual = solver.collectList();
+		assertEquals(2, actual.size());
+		assertEquals(AnswerSetsParser.parse("{} { a }"), new HashSet<>(actual));
 	}
 
 	@Test

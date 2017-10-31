@@ -179,12 +179,18 @@ public abstract class AbstractSolverTests {
 	}
 
 	protected void assertAnswerSetsWithBase(String program, String base, String... answerSets) throws IOException {
+		base = base.trim();
 		if (!base.endsWith(",")) {
 			base += ", ";
 		}
 
 		for (int i = 0; i < answerSets.length; i++) {
 			answerSets[i] = base + answerSets[i];
+			// Remove trailing ",".
+			answerSets[i] = answerSets[i].trim();
+			if (answerSets[i].endsWith(",")) {
+				answerSets[i] = answerSets[i].substring(0, answerSets[i].length() - 1);
+			}
 		}
 
 		assertAnswerSets(program, answerSets);
