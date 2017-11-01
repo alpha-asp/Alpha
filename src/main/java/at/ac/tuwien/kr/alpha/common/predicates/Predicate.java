@@ -6,10 +6,16 @@ package at.ac.tuwien.kr.alpha.common.predicates;
 public class Predicate implements Comparable<Predicate> {
 	protected final String name;
 	protected final int arity;
+	private final boolean internal;
 
-	public Predicate(String name, int arity) {
+	public Predicate(String name, int arity, boolean internal) {
 		this.name = name;
 		this.arity = arity;
+		this.internal = internal;
+	}
+
+	public Predicate(String name, int arity) {
+		this(name, arity, false);
 	}
 
 	public String getPredicateName() {
@@ -57,5 +63,9 @@ public class Predicate implements Comparable<Predicate> {
 		}
 
 		return getPredicateName().compareTo(other.getPredicateName());
+	}
+
+	public boolean isInternal() {
+		return internal;
 	}
 }

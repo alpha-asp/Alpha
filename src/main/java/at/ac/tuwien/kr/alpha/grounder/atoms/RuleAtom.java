@@ -19,7 +19,7 @@ import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
  * second is a term containing variable substitutions.
  */
 public class RuleAtom implements Atom {
-	public static final Predicate PREDICATE = new Predicate("_R_", 2);
+	public static final Predicate PREDICATE = new Predicate("_R_", 2, true);
 
 	private final List<ConstantTerm<String>> terms;
 

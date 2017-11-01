@@ -6,7 +6,6 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,12 +16,7 @@ import java.util.List;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class ChoiceHeadToNormal implements ProgramTransformation {
-	public final static String PREDICATE_NEGATION_PREFIX = "_n";
-	private final NaiveGrounder grounder;
-
-	public ChoiceHeadToNormal(NaiveGrounder grounder) {
-		this.grounder = grounder;
-	}
+	private final static String PREDICATE_NEGATION_PREFIX = "_n";
 
 	@Override
 	public void transform(Program inputProgram) {
@@ -60,8 +54,7 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 
 				// Construct head atom for the guess.
 				Predicate headPredicate = head.getPredicate();
-				Predicate negPredicate = new Predicate(PREDICATE_NEGATION_PREFIX + headPredicate.getPredicateName(), headPredicate.getArity() + 1);
-				grounder.flagPredicateAsInternal(negPredicate);
+				Predicate negPredicate = new Predicate(PREDICATE_NEGATION_PREFIX + headPredicate.getPredicateName(), headPredicate.getArity() + 1, true);
 				List<Term> headTerms = new ArrayList<>(head.getTerms());
 				headTerms.add(0, ConstantTerm.getInstance("1"));	// FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for classical negative atoms.
 				BasicAtom negHead = new BasicAtom(negPredicate, headTerms);
