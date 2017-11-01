@@ -151,7 +151,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		// head DOT
 		Head head = visitHead(ctx.head());
 		if (head.isNormal()) {
-			inputProgram.getFacts().add(head.disjunctiveHead.get(0));
+			inputProgram.getFacts().add(((DisjunctiveHead)head).disjunctiveAtoms.get(0));
 		} else {
 			// Treat facts with choice or disjunction in the head like a rule.
 			inputProgram.getRules().add(new Rule(head, emptyList()));
@@ -180,7 +180,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			throw notSupported(ctx);
 		}
 		isCurrentLiteralNegated = false;
-		return Head.constructDisjunctiveHead(Collections.singletonList(visitClassical_literal(ctx.classical_literal())));
+		return new DisjunctiveHead(Collections.singletonList(visitClassical_literal(ctx.classical_literal())));
 	}
 
 	@Override
@@ -207,13 +207,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			ut = (Term) visit(ctx.ut);
 			uop = visitBinop(ctx.uop);
 		}
-		return Head.constructChoiceHead(new Head.ChoiceHead(visitChoice_elements(ctx.choice_elements()), lt, lop, ut, uop));
+		return new ChoiceHead(visitChoice_elements(ctx.choice_elements()), lt, lop, ut, uop);
 	}
 
 	@Override
-	public List<Head.ChoiceHead.ChoiceElement> visitChoice_elements(ASPCore2Parser.Choice_elementsContext ctx) {
+	public List<ChoiceHead.ChoiceElement> visitChoice_elements(ASPCore2Parser.Choice_elementsContext ctx) {
 		// choice_elements : choice_element (SEMICOLON choice_elements)?;
-		List<Head.ChoiceHead.ChoiceElement> choiceElements;
+		List<ChoiceHead.ChoiceElement> choiceElements;
 		if (ctx.choice_elements() != null) {
 			choiceElements = visitChoice_elements(ctx.choice_elements());
 		} else {
@@ -224,13 +224,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public Head.ChoiceHead.ChoiceElement visitChoice_element(ASPCore2Parser.Choice_elementContext ctx) {
+	public ChoiceHead.ChoiceElement visitChoice_element(ASPCore2Parser.Choice_elementContext ctx) {
 		// choice_element : classical_literal (COLON naf_literals?)?;
 		BasicAtom atom = (BasicAtom) visitClassical_literal(ctx.classical_literal());
 		if (ctx.naf_literals() != null) {
-			return new Head.ChoiceHead.ChoiceElement(atom, visitNaf_literals(ctx.naf_literals()));
+			return new ChoiceHead.ChoiceElement(atom, visitNaf_literals(ctx.naf_literals()));
 		} else {
-			return new Head.ChoiceHead.ChoiceElement(atom, Collections.emptyList());
+			return new ChoiceHead.ChoiceElement(atom, Collections.emptyList());
 		}
 	}
 

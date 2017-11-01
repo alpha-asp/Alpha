@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.antlr;
 
-import at.ac.tuwien.kr.alpha.common.Head;
+import at.ac.tuwien.kr.alpha.common.ChoiceHead;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
@@ -84,7 +84,7 @@ public class ParserTest {
 	@Test
 	public void parseChoiceRule() throws IOException {
 		Program parsedProgram = parser.parse("dom(1). dom(2). { a ; b } :- dom(X).");
-		Head.ChoiceHead choiceHead = parsedProgram.getRules().get(0).getHead().choiceHead;
+		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
 		BasicAtom atomA = new BasicAtom(new Predicate("a", 0));
 		assertEquals(2, choiceHead.getChoiceElements().size());
 		assertTrue(choiceHead.getChoiceElements().get(0).choiceAtom.toString().equals("a"));
@@ -96,7 +96,7 @@ public class ParserTest {
 	@Test
 	public void parseChoiceRuleBounded() throws IOException {
 		Program parsedProgram = parser.parse("dom(1). dom(2). 1 < { a: p(v,w), not r; b } <= 13 :- dom(X). foo.");
-		Head.ChoiceHead choiceHead = parsedProgram.getRules().get(0).getHead().choiceHead;
+		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
 		BasicAtom atomA = new BasicAtom(new Predicate("a", 0));
 		assertEquals(2, choiceHead.getChoiceElements().size());
 		assertTrue(choiceHead.getChoiceElements().get(0).choiceAtom.toString().equals("a"));

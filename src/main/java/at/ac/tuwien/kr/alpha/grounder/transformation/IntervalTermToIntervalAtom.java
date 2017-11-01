@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
@@ -36,7 +37,7 @@ public class IntervalTermToIntervalAtom implements ProgramTransformation {
 			if (!rule.getHead().isNormal()) {
 				throw new RuntimeException("Cannot rewrite intervals in rules whose head contains a disjunction or choice. Given rule is: " + rule);
 			}
-			rewriteAtom(rule.getHead().disjunctiveHead.get(0), intervalReplacements);
+			rewriteAtom(((DisjunctiveHead)rule.getHead()).disjunctiveAtoms.get(0), intervalReplacements);
 		}
 
 		// Add new IntervalAtoms representing the interval specifications.

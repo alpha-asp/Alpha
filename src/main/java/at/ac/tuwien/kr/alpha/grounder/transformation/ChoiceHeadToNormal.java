@@ -1,8 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.Head;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.Rule;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
@@ -35,19 +33,20 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 			Rule rule = ruleIterator.next();
 
 			Head ruleHead = rule.getHead();
-			if (ruleHead == null || ruleHead.choiceHead == null) {
+			if (!(ruleHead instanceof ChoiceHead)) {
 				// Rule is constraint or without choice in the head. Leave as is.
 				continue;
 			}
 			ruleIterator.remove();
+			ChoiceHead choiceHead = (ChoiceHead) ruleHead;
 			// Choice rules with boundaries are not yet supported.
-			if (ruleHead.choiceHead.getLowerBound() != null || ruleHead.choiceHead.getUpperBound() != null) {
+			if (choiceHead.getLowerBound() != null || choiceHead.getUpperBound() != null) {
 				throw new RuntimeException("Found choice rule with bounds, which are not yet supported. Rule is: " + rule);
 			}
 
 			// Only rewrite rules with a choice in their head.
-			List<Head.ChoiceHead.ChoiceElement> choiceElements = ruleHead.choiceHead.getChoiceElements();
-			for (Head.ChoiceHead.ChoiceElement choiceElement : choiceElements) {
+			List<ChoiceHead.ChoiceElement> choiceElements = choiceHead.getChoiceElements();
+			for (ChoiceHead.ChoiceElement choiceElement : choiceElements) {
 				// Create two guessing rules for each choiceElement.
 
 				// Construct common body to both rules.
@@ -70,11 +69,11 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 				// Construct two guessing rules.
 				List<Literal> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithNegHead.add(new BasicAtom(head, true));
-				additionalRules.add(new Rule(Head.constructDisjunctiveHead(Collections.singletonList(negHead)), guessingRuleBodyWithNegHead));
+				additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(negHead)), guessingRuleBodyWithNegHead));
 
 				List<Literal> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithHead.add(new BasicAtom(negHead, true));
-				additionalRules.add(new Rule(Head.constructDisjunctiveHead(Collections.singletonList(head)), guessingRuleBodyWithHead));
+				additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(head)), guessingRuleBodyWithHead));
 
 				// TODO: when cardinality constraints are possible, process the boundaries by adding a constraint with a cardinality check.
 			}

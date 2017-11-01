@@ -184,7 +184,7 @@ public class AlphaTest {
 		SubThingy thingy = new SubThingy();
 
 		Rule rule = new Rule(
-			Head.constructDisjunctiveHead(Collections.singletonList(new BasicAtom(new Predicate("p", 1), ConstantTerm.getInstance("x")))),
+			new DisjunctiveHead(Collections.singletonList(new BasicAtom(new Predicate("p", 1), ConstantTerm.getInstance("x")))),
 			singletonList(
 				new ExternalAtom(
 					new ExternalMethodPredicate(this.getClass().getMethod("thinger", Thingy.class)),

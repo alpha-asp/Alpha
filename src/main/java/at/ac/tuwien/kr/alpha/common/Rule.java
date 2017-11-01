@@ -85,7 +85,7 @@ public class Rule {
 		if (!head.isNormal()) {
 			throw new RuntimeException("Called isGround on non-normal rule. Should not happen");
 		}
-		if (!isConstraint() && !head.disjunctiveHead.get(0).isGround()) {
+		if (!isConstraint() && !((DisjunctiveHead)head).isGround()) {
 			return false;
 		}
 		for (Literal atom : body) {

@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.Util;
+import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
@@ -84,7 +85,7 @@ public class NonGroundRule {
 			if (!rule.getHead().isNormal()) {
 				throw new RuntimeException("Trying to construct NonGroundRule from rule that is not normal. Should not happen.");
 			}
-			headAtom = rule.getHead().disjunctiveHead.get(0);
+			headAtom = ((DisjunctiveHead)rule.getHead()).disjunctiveAtoms.get(0);
 		}
 		return new NonGroundRule(intIdGenerator.getNextId(), pos, neg, headAtom, containsIntervals, containsExternals);
 	}

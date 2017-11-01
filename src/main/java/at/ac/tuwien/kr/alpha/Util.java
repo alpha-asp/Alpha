@@ -43,13 +43,17 @@ public class Util {
 		return Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue);
 	}
 
-	public static <E> void appendDelimited(StringBuilder sb, Iterable<E> iterable) {
+	public static <E> void appendDelimited(StringBuilder sb, String delimiter, Iterable<E> iterable) {
 		for (Iterator<E> iterator = iterable.iterator(); iterator.hasNext();) {
 			sb.append(iterator.next());
 			if (iterator.hasNext()) {
-				sb.append(", ");
+				sb.append(delimiter);
 			}
 		}
+	}
+
+	public static <E> void appendDelimited(StringBuilder sb, Iterable<E> iterable) {
+		appendDelimited(sb, ", ", iterable);
 	}
 
 	public static <E> void appendDelimitedPrefix(StringBuilder sb, String prefix, Iterable<E> iterable) {
