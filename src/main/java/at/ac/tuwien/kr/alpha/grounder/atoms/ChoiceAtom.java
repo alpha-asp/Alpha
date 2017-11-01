@@ -12,8 +12,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class ChoiceAtom implements Atom {
-	public static final Predicate ON = new Predicate("ChoiceOn", 1);
-	public static final Predicate OFF = new Predicate("ChoiceOff", 1);
+	public static final Predicate ON = new Predicate("ChoiceOn", 1, true);
+	public static final Predicate OFF = new Predicate("ChoiceOff", 1, true);
 
 	private final Predicate predicate;
 	private final List<Term> terms;
@@ -48,11 +48,6 @@ public class ChoiceAtom implements Atom {
 	@Override
 	public boolean isGround() {
 		// NOTE: Term is a ConstantTerm, which is ground by definition.
-		return true;
-	}
-
-	@Override
-	public boolean isInternal() {
 		return true;
 	}
 

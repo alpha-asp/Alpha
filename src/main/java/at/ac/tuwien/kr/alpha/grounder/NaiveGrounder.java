@@ -38,6 +38,7 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
+import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -88,8 +89,8 @@ public class NaiveGrounder extends BridgedGrounder {
 		super(filter, bridges);
 		// TODO: initialize based on program.
 
-		// Transform intervals.
-		new IntervalTermToIntervalAtom().transform(program);
+		// Apply program transformations/rewritings.
+		applyProgramTransformations(program);
 
 		// initialize all facts
 		for (Atom fact : program.getFacts()) {
@@ -143,6 +144,13 @@ public class NaiveGrounder extends BridgedGrounder {
 				}
 			}
 		}
+	}
+
+	private void applyProgramTransformations(Program program) {
+		// Transform choice rules.
+		new ChoiceHeadToNormal().transform(program);
+		// Transform intervals.
+		new IntervalTermToIntervalAtom().transform(program);
 	}
 
 	private void adaptWorkingMemoryForPredicate(Predicate predicate) {
@@ -228,13 +236,12 @@ public class NaiveGrounder extends BridgedGrounder {
 		// Iterate over all true atomIds, computeNextAnswerSet instances from atomStore and add them if not filtered.
 		for (int trueAtom : trueAtoms) {
 			final Atom atom = atomStore.get(trueAtom);
+			Predicate predicate = atom.getPredicate();
 
-			// Skip internal atoms
-			if (atom.isInternal()) {
+			// Skip atoms over internal predicates.
+			if (predicate.isInternal()) {
 				continue;
 			}
-
-			Predicate predicate = atom.getPredicate();
 
 			// Skip filtered predicates.
 			if (!filter.test(predicate)) {

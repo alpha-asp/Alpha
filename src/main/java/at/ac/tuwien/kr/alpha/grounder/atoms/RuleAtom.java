@@ -19,7 +19,7 @@ import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
  * second is a term containing variable substitutions.
  */
 public class RuleAtom implements Atom {
-	public static final Predicate PREDICATE = new Predicate("_R_", 2);
+	public static final Predicate PREDICATE = new Predicate("_R_", 2, true);
 
 	private final List<ConstantTerm<String>> terms;
 
@@ -54,11 +54,6 @@ public class RuleAtom implements Atom {
 	@Override
 	public boolean isGround() {
 		// NOTE: Both terms are ConstantTerms, which are ground by definition.
-		return true;
-	}
-
-	@Override
-	public boolean isInternal() {
 		return true;
 	}
 

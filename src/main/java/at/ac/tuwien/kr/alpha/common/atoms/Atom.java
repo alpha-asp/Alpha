@@ -15,7 +15,6 @@ public interface Atom extends Comparable<Atom> {
 	List<Term> getTerms();
 
 	boolean isGround();
-	boolean isInternal();
 
 	/**
 	 * List of all variables occurring in the Atom that are potentially binding, i.e., variables in positive atoms.

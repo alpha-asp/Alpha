@@ -1,9 +1,6 @@
 package at.ac.tuwien.kr.alpha;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.Rule;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.common.predicates.ExternalMethodPredicate;
@@ -11,6 +8,7 @@ import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -186,7 +184,7 @@ public class AlphaTest {
 		SubThingy thingy = new SubThingy();
 
 		Rule rule = new Rule(
-			new BasicAtom(new Predicate("p", 1), ConstantTerm.getInstance("x")),
+			new DisjunctiveHead(Collections.singletonList(new BasicAtom(new Predicate("p", 1), ConstantTerm.getInstance("x")))),
 			singletonList(
 				new ExternalAtom(
 					new ExternalMethodPredicate(this.getClass().getMethod("thinger", Thingy.class)),

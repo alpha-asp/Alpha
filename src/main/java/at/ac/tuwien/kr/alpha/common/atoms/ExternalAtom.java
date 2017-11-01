@@ -86,11 +86,6 @@ public class ExternalAtom implements Literal {
 	}
 
 	@Override
-	public boolean isInternal() {
-		return false;
-	}
-
-	@Override
 	public List<VariableTerm> getBindingVariables() {
 		// If the external atom is negative, then all variables of input and output are non-binding
 		// and there are no binding variables (like for ordinary atoms).

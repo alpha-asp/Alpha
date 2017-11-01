@@ -149,7 +149,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Object visitStatement_fact(ASPCore2Parser.Statement_factContext ctx) {
 		// head DOT
-		inputProgram.getFacts().add(visitHead(ctx.head()));
+		Head head = visitHead(ctx.head());
+		if (head.isNormal()) {
+			inputProgram.getFacts().add(((DisjunctiveHead)head).disjunctiveAtoms.get(0));
+		} else {
+			// Treat facts with choice or disjunction in the head like a rule.
+			inputProgram.getRules().add(new Rule(head, emptyList()));
+		}
 		return null;
 	}
 
@@ -168,22 +174,77 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public Atom visitDisjunction(ASPCore2Parser.DisjunctionContext ctx) {
+	public Head visitDisjunction(ASPCore2Parser.DisjunctionContext ctx) {
 		// disjunction : classical_literal (OR disjunction)?;
 		if (ctx.disjunction() != null) {
 			throw notSupported(ctx);
 		}
 		isCurrentLiteralNegated = false;
-		return visitClassical_literal(ctx.classical_literal());
+		return new DisjunctiveHead(Collections.singletonList(visitClassical_literal(ctx.classical_literal())));
 	}
 
 	@Override
-	public Atom visitHead(ASPCore2Parser.HeadContext ctx) {
+	public Head visitHead(ASPCore2Parser.HeadContext ctx) {
 		// head : disjunction | choice;
 		if (ctx.choice() != null) {
-			throw notSupported(ctx);
+			return visitChoice(ctx.choice());
 		}
 		return visitDisjunction(ctx.disjunction());
+	}
+
+	@Override
+	public Head visitChoice(ASPCore2Parser.ChoiceContext ctx) {
+		// choice : (lt=term lop=binop)? CURLY_OPEN choice_elements? CURLY_CLOSE (uop=binop ut=term)?;
+		Term lt = null;
+		BinaryOperator lop = null;
+		Term ut = null;
+		BinaryOperator uop = null;
+		if (ctx.lt != null) {
+			lt = (Term) visit(ctx.lt);
+			lop = visitBinop(ctx.lop);
+		}
+		if (ctx.ut != null) {
+			ut = (Term) visit(ctx.ut);
+			uop = visitBinop(ctx.uop);
+		}
+		return new ChoiceHead(visitChoice_elements(ctx.choice_elements()), lt, lop, ut, uop);
+	}
+
+	@Override
+	public List<ChoiceHead.ChoiceElement> visitChoice_elements(ASPCore2Parser.Choice_elementsContext ctx) {
+		// choice_elements : choice_element (SEMICOLON choice_elements)?;
+		List<ChoiceHead.ChoiceElement> choiceElements;
+		if (ctx.choice_elements() != null) {
+			choiceElements = visitChoice_elements(ctx.choice_elements());
+		} else {
+			choiceElements = new LinkedList<>();
+		}
+		choiceElements.add(0, visitChoice_element(ctx.choice_element()));
+		return choiceElements;
+	}
+
+	@Override
+	public ChoiceHead.ChoiceElement visitChoice_element(ASPCore2Parser.Choice_elementContext ctx) {
+		// choice_element : classical_literal (COLON naf_literals?)?;
+		BasicAtom atom = (BasicAtom) visitClassical_literal(ctx.classical_literal());
+		if (ctx.naf_literals() != null) {
+			return new ChoiceHead.ChoiceElement(atom, visitNaf_literals(ctx.naf_literals()));
+		} else {
+			return new ChoiceHead.ChoiceElement(atom, Collections.emptyList());
+		}
+	}
+
+	@Override
+	public List<Literal> visitNaf_literals(ASPCore2Parser.Naf_literalsContext ctx) {
+		// naf_literals : naf_literal (COMMA naf_literals)?;
+		List<Literal> literals;
+		if (ctx.naf_literals() != null) {
+			literals = visitNaf_literals(ctx.naf_literals());
+		} else {
+			literals = new LinkedList<>();
+		}
+		literals.add(0, visitNaf_literal(ctx.naf_literal()));
+		return literals;
 	}
 
 	@Override
@@ -206,25 +267,29 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
+	public BinaryOperator visitBinop(ASPCore2Parser.BinopContext ctx) {
+		// binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
+		if (ctx.EQUAL() != null) {
+			return BinaryOperator.EQ;
+		} else if (ctx.UNEQUAL() != null) {
+			return BinaryOperator.NE;
+		} else if (ctx.LESS() != null) {
+			return BinaryOperator.LT;
+		} else if (ctx.LESS_OR_EQ() != null) {
+			return BinaryOperator.LE;
+		} else if (ctx.GREATER() != null) {
+			return BinaryOperator.GT;
+		} else if (ctx.GREATER_OR_EQ() != null) {
+			return BinaryOperator.GE;
+		} else {
+			throw notSupported(ctx);
+		}
+	}
+
+	@Override
 	public Literal visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
 		// builtin_atom : term binop term;
-		BinaryOperator op;
-
-		if (ctx.binop().EQUAL() != null) {
-			op = BinaryOperator.EQ;
-		} else if (ctx.binop().UNEQUAL() != null) {
-			op = BinaryOperator.NE;
-		} else if (ctx.binop().LESS() != null) {
-			op = BinaryOperator.LT;
-		} else if (ctx.binop().LESS_OR_EQ() != null) {
-			op = BinaryOperator.LE;
-		} else if (ctx.binop().GREATER() != null) {
-			op = BinaryOperator.GT;
-		} else if (ctx.binop().GREATER_OR_EQ() != null) {
-			op = BinaryOperator.GE;
-		} else {
-			throw notSupported(ctx.binop());
-		}
+		BinaryOperator op = visitBinop(ctx.binop());
 
 		if (isCurrentLiteralNegated) {
 			op = op.getNegation();

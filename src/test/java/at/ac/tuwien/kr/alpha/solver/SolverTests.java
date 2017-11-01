@@ -27,6 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.AnswerSetsParser;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
@@ -40,6 +42,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
@@ -485,7 +489,16 @@ public class SolverTests extends AbstractSolverTests {
 			"p(X, 1..X) :- dom(X), X != 2." +
 			"dom(1). dom(2). dom(3).",
 
-			"dom(1), dom(2), dom(3), p(1, 1), p(3, 1), p(3, 2), p(3, 3), a"
+			"dom(1)," +
+				"dom(2)," +
+				"dom(3)," +
+
+				"p(1, 1)," +
+				"p(3, 1)," +
+				"p(3, 2)," +
+				"p(3, 3)," +
+
+				"a"
 		);
 	}
 
@@ -526,6 +539,56 @@ public class SolverTests extends AbstractSolverTests {
 
 			"dom(1), p, q, q2"
 		);
+	}
+
+	@Test
+	public void simpleChoiceRule() throws IOException {
+		assertAnswerSetsWithBase(
+			"{ a; b; c} :- d." +
+				"d.",
+
+			"d",
+			"",
+			"a",
+			"a, b",
+			"a, c",
+			"a, b, c",
+			"b",
+			"b, c",
+			"c"
+		);
+	}
+
+	@Test
+	public void conditionalChoiceRule() throws IOException {
+		assertAnswerSetsWithBase(
+			"dom(1..3)." +
+				"{ p(X): not q(X); r(Y): p(Y)} :- dom(X), q(Y)." +
+				"q(2).",
+
+			"dom(1)," +
+				"dom(2)," +
+				"dom(3)," +
+				"q(2)",
+
+			"p(1)," +
+				"p(3)",
+
+			"",
+
+			"p(3)",
+
+			"p(1)"
+		);
+	}
+
+	@Test
+	public void doubleChoiceRule() throws IOException {
+		Solver solver = getInstance("{ a }. { a }.");
+		// Make sure that no superfluous answer sets that only differ on hidden atoms occur.
+		List<AnswerSet> actual = solver.collectList();
+		assertEquals(2, actual.size());
+		assertEquals(AnswerSetsParser.parse("{} { a }"), new HashSet<>(actual));
 	}
 
 	@Test

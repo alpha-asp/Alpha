@@ -1,11 +1,8 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,10 +10,10 @@ import java.util.List;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class Rule {
-	private final Atom head;
+	private final Head head;
 	private final List<Literal> body;
 
-	public Rule(Atom head, List<Literal> body) {
+	public Rule(Head head, List<Literal> body) {
 		this.head = head;
 		this.body = body;
 
@@ -27,27 +24,12 @@ public class Rule {
 		}
 	}
 
-	public Atom getHead() {
+	public Head getHead() {
 		return head;
 	}
 
 	public List<Literal> getBody() {
 		return body;
-	}
-
-	/**
-	 *
-	 * @return a list of all ordinary predicates occurring in the rule (may contain duplicates, does not contain builtin atoms).
-	 */
-	public List<Predicate> getOccurringPredicates() {
-		ArrayList<Predicate> predicateList = new ArrayList<>(body.size() + 1);
-		for (Literal literal : body) {
-			predicateList.add(literal.getPredicate());
-		}
-		if (!isConstraint()) {
-			predicateList.add(head.getPredicate());
-		}
-		return predicateList;
 	}
 
 	/**
@@ -100,7 +82,10 @@ public class Rule {
 	}
 
 	public boolean isGround() {
-		if (!isConstraint() && !head.isGround()) {
+		if (!head.isNormal()) {
+			throw new RuntimeException("Called isGround on non-normal rule. Should not happen");
+		}
+		if (!isConstraint() && !((DisjunctiveHead)head).isGround()) {
 			return false;
 		}
 		for (Literal atom : body) {
