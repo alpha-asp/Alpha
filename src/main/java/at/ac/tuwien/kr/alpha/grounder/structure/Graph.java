@@ -8,14 +8,14 @@ import java.util.*;
  */
 public class Graph<V> {
 	private final HashSet<V> vertices;
-	private final HashSet<AbstractMap.SimpleEntry<V,V>> edges;
-	private final Map<V, Integer> vertexPositions;
+	private final HashSet<AbstractMap.SimpleEntry<V, V>> edges;
+	private final LinkedHashMap<V, Integer> vertexPositions;
 	private int counter;
 
 	public Graph() {
 		vertices = new HashSet<>();
 		edges = new HashSet<>();
-		vertexPositions = new HashMap<>();
+		vertexPositions = new LinkedHashMap<>();
 		counter = 0;
 	}
 
@@ -44,7 +44,6 @@ public class Graph<V> {
 
 	public boolean[][] getAdjacencyMatrix() {
 		boolean[][] matrix = new boolean[vertices.size()][vertices.size()];
-		Map<V, Integer> vertexPositions = getVertexPositions();
 		for (AbstractMap.SimpleEntry<V, V> edge : edges) {
 			matrix[vertexPositions.get(edge.getKey())][vertexPositions.get(edge.getValue())] = true;
 		}
@@ -58,5 +57,9 @@ public class Graph<V> {
 			list.get(edge.getKey()).add(edge.getValue());
 		}
 		return list;
+	}
+
+	public int getNumVertices() {
+		return vertexPositions.size();
 	}
 }
