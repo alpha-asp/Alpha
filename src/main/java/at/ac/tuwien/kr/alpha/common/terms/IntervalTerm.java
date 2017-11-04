@@ -116,6 +116,11 @@ public class IntervalTerm extends Term {
 		throw new UnsupportedOperationException("Intervals cannot be compared.");
 	}
 
+	@Override
+	public Term renameVariables(String renamePrefix) {
+		return new IntervalTerm(lowerBoundTerm.renameVariables(renamePrefix), upperBoundTerm.renameVariables(renamePrefix));
+	}
+
 	/**
 	 * Returns true if the term contains (or is) some IntervalTerm.
 	 * @param term the term to test

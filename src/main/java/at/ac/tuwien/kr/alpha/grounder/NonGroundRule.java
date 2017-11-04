@@ -20,6 +20,7 @@ import java.util.*;
  */
 public class NonGroundRule {
 	private final int ruleId;
+	private final Rule rule;
 
 	private final List<Atom> bodyAtomsPositive;
 	private final List<Atom> bodyAtomsNegative;
@@ -28,6 +29,7 @@ public class NonGroundRule {
 	private final boolean containsIntervals;
 	private final boolean containsExternals;
 	private final boolean isOriginallyGround;
+	private final RuleGroundingOrder groundingOrder;
 
 	public boolean containsIntervals() {
 		return containsIntervals;
@@ -41,8 +43,9 @@ public class NonGroundRule {
 		return isOriginallyGround;
 	}
 
-	private NonGroundRule(int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom, boolean containsIntervals, boolean containsExternals) {
+	private NonGroundRule(Rule rule, int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom, boolean containsIntervals, boolean containsExternals) {
 		this.ruleId = ruleId;
+		this.rule = rule;
 
 		this.isOriginallyGround = isOriginallyGround(bodyAtomsPositive, bodyAtomsNegative, headAtom);
 		this.containsIntervals = containsIntervals;
@@ -59,6 +62,8 @@ public class NonGroundRule {
 		this.headAtom = headAtom;
 
 		checkSafety();
+		this.groundingOrder = new RuleGroundingOrder(this);
+		groundingOrder.computeGroundingOrders();
 	}
 
 	// FIXME: NonGroundRule should extend Rule and then its constructor directly be used.
@@ -87,7 +92,7 @@ public class NonGroundRule {
 			}
 			headAtom = ((DisjunctiveHead)rule.getHead()).disjunctiveAtoms.get(0);
 		}
-		return new NonGroundRule(intIdGenerator.getNextId(), pos, neg, headAtom, containsIntervals, containsExternals);
+		return new NonGroundRule(rule, intIdGenerator.getNextId(), pos, neg, headAtom, containsIntervals, containsExternals);
 	}
 
 	private static boolean isOriginallyGround(List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
@@ -328,6 +333,10 @@ public class NonGroundRule {
 		sb.append(".\n");
 
 		return sb.toString();
+	}
+
+	public Rule getRule() {
+		return rule;
 	}
 
 	private class SortingBodyComponent {

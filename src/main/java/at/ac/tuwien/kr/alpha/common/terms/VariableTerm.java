@@ -88,4 +88,9 @@ public class VariableTerm extends Term {
 		VariableTerm other = (VariableTerm)o;
 		return variableName.compareTo(other.variableName);
 	}
+
+	@Override
+	public Term renameVariables(String renamePrefix) {
+		return VariableTerm.getInstance(renamePrefix + variableName);
+	}
 }

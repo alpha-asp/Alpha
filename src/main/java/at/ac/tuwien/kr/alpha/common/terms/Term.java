@@ -65,4 +65,11 @@ public abstract class Term implements Comparable<Term> {
 	public int compareTo(Term o) {
 		return o == null ? 1 : Integer.compare(priority(this), priority(o));
 	}
+
+	/**
+	 * Rename all variables occurring in this Term by prefixing their name.
+	 * @param renamePrefix the name to prefix all occurring variables.
+	 * @return the term with all variables renamed.
+	 */
+	public abstract Term renameVariables(String renamePrefix);
 }

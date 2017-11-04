@@ -144,4 +144,13 @@ public class FunctionTerm extends Term {
 
 		return 0;
 	}
+
+	@Override
+	public Term renameVariables(String renamePrefix) {
+		ArrayList<Term> renamedTerms = new ArrayList<>(terms.size());
+		for (Term term : terms) {
+			renamedTerms.add(term.renameVariables(renamePrefix));
+		}
+		return FunctionTerm.getInstance(symbol, renamedTerms);
+	}
 }

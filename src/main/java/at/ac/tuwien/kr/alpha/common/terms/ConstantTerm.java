@@ -124,4 +124,10 @@ public class ConstantTerm<T extends Comparable<T>> extends Term {
 
 		return Integer.compare(thisPrio, otherPrio);
 	}
+
+	@Override
+	public Term renameVariables(String renamePrefix) {
+		// Constant contains no variables, hence stays the same.
+		return this;
+	}
 }
