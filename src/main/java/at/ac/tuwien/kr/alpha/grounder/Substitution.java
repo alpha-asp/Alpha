@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
@@ -22,6 +23,24 @@ public class Substitution {
 
 	public Substitution(Substitution clone) {
 		this(new TreeMap<>(clone.substitution));
+	}
+
+	/**
+	 * Computes the unifier of the atom and the instance and stores it in the variable substitution.
+	 * @param atom the body atom to unify
+	 * @param instance the ground instance
+	 * @param substitution if the atom does not unify, this is left unchanged.
+	 * @return true if the atom and the instance unify. False otherwise
+	 */
+	static Substitution unify(Atom atom, Instance instance, Substitution substitution) {
+		for (int i = 0; i < instance.terms.size(); i++) {
+			if (instance.terms.get(i) == atom.getTerms().get(i) ||
+				substitution.unifyTerms(atom.getTerms().get(i), instance.terms.get(i))) {
+				continue;
+			}
+			return null;
+		}
+		return substitution;
 	}
 
 	/**

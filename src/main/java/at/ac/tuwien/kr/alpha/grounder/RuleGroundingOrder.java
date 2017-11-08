@@ -110,7 +110,7 @@ public class RuleGroundingOrder {
 		Literal bestLiteral = null;
 		boolean bestLiteralSharesVariables = false;
 		// Find the best literal whose nonbinding variables are already bound and whose selectivity is highest.
-		// To avoid cross products, select those first that have som of their variables already bound.
+		// To avoid cross products, select those first that have some of their variables already bound.
 		for (Literal literal : remainingLiterals) {
 			if (!boundVariables.containsAll(literal.getNonBindingVariables())) {
 				// Only consider literals whose nonbinding variables are already bound.

@@ -360,7 +360,7 @@ public class NaiveGrounder extends BridgedGrounder {
 				for (Instance instance : modifiedWorkingMemory.getRecentlyAddedInstances()) {
 					// Check instance if it matches with the atom.
 
-					Substitution unified = unify(firstBindingAtom.firstBindingAtom, instance, new Substitution());
+					Substitution unified = Substitution.unify(firstBindingAtom.firstBindingAtom, instance, new Substitution());
 					if (unified != null) {
 						substitutions.addAll(bindNextAtomInRule(nonGroundRule, 0, firstBindingAtom.firstBindingAtomPos, unified, currentAssignment));
 					}
@@ -509,7 +509,7 @@ public class NaiveGrounder extends BridgedGrounder {
 		ArrayList<Substitution> generatedSubstitutions = new ArrayList<>();
 		for (Instance instance : instances) {
 			// Check each instance if it matches with the atom.
-			Substitution unified = unify(substitute, instance, new Substitution(partialSubstitution));
+			Substitution unified = Substitution.unify(substitute, instance, new Substitution(partialSubstitution));
 			if (unified == null) {
 				continue;
 			}
@@ -541,24 +541,6 @@ public class NaiveGrounder extends BridgedGrounder {
 		}
 
 		return generatedSubstitutions;
-	}
-
-	/**
-	 * Computes the unifier of the atom and the instance and stores it in the variable substitution.
-	 * @param atom the body atom to unify
-	 * @param instance the ground instance
-	 * @param substitution if the atom does not unify, this is left unchanged.
-	 * @return true if the atom and the instance unify. False otherwise
-	 */
-	protected Substitution unify(Atom atom, Instance instance, Substitution substitution) {
-		for (int i = 0; i < instance.terms.size(); i++) {
-			if (instance.terms.get(i) == atom.getTerms().get(i) ||
-				substitution.unifyTerms(atom.getTerms().get(i), instance.terms.get(i))) {
-				continue;
-			}
-			return null;
-		}
-		return substitution;
 	}
 
 	@Override
