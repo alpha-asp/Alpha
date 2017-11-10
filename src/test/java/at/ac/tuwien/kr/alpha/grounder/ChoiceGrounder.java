@@ -120,7 +120,7 @@ public class ChoiceGrounder implements Grounder {
 			if (!filter.test(atomPredicate)) {
 				continue;
 			}
-			if (atomPredicate.getPredicateName().startsWith("_")) {
+			if (atomPredicate.getName().startsWith("_")) {
 				continue;
 			}
 			trueAtomPredicates.add(atomPredicate);

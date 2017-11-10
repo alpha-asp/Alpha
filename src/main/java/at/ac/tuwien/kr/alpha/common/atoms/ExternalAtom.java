@@ -1,6 +1,5 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.predicates.FixedInterpretationPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -8,9 +7,13 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import static at.ac.tuwien.kr.alpha.Util.join;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 
@@ -40,7 +43,7 @@ public class ExternalAtom implements Literal {
 		Set<List<ConstantTerm>> results = predicate.evaluate(substitutes);
 
 		if (results == null) {
-			throw new NullPointerException("Predicate " + getPredicate().getPredicateName() + " returned null. It must return a Set.");
+			throw new NullPointerException("Predicate " + getPredicate().getName() + " returned null. It must return a Set.");
 		}
 
 		if (results.isEmpty()) {
@@ -49,7 +52,7 @@ public class ExternalAtom implements Literal {
 
 		for (List<ConstantTerm> bindings : results) {
 			if (bindings.size() < output.size()) {
-				throw new RuntimeException("Predicate " + getPredicate().getPredicateName() + " returned " + bindings.size() + " terms when at least " + output.size() + " were expected.");
+				throw new RuntimeException("Predicate " + getPredicate().getName() + " returned " + bindings.size() + " terms when at least " + output.size() + " were expected.");
 			}
 			Substitution ith = new Substitution(partialSubstitution);
 			for (int i = 0; i < output.size(); i++) {
@@ -125,18 +128,13 @@ public class ExternalAtom implements Literal {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder("&");
-		sb.append(predicate.getPredicateName());
+		String result = "&" + predicate.getName();
 		if (!output.isEmpty()) {
-			sb.append("[");
-			Util.appendDelimited(sb, output);
-			sb.append("]");
+			result += join("[", output, "]");
 		}
 		if (!input.isEmpty()) {
-			sb.append("(");
-			Util.appendDelimited(sb, input);
-			sb.append(")");
+			result += join("(", input, ")");
 		}
-		return sb.toString();
+		return result;
 	}
 }

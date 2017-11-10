@@ -1,9 +1,10 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 
 import java.util.List;
+
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 /**
  * Copyright (c) 2017, the Alpha Team.
@@ -27,9 +28,7 @@ public class DisjunctiveHead extends Head {
 		if (isNormal()) {
 			return disjunctiveAtoms.get(0).toString();
 		}
-		StringBuilder sb = new StringBuilder();
-		Util.appendDelimited(sb, " | ", disjunctiveAtoms);
-		return sb.toString();
+		return join("", disjunctiveAtoms, " | ", "");
 	}
 
 	public boolean isGround() {

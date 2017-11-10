@@ -1,6 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
@@ -13,6 +12,8 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 
 import java.util.*;
+
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 /**
  * Represents a non-ground rule or a constraint for the semi-naive grounder.
@@ -310,24 +311,15 @@ public class NonGroundRule {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-
-		if (!isConstraint()) {
-			sb.append(headAtom);
-			sb.append(" ");
-		}
-
-		sb.append(":- ");
-		Util.appendDelimited(sb, bodyAtomsPositive);
-		if (bodyAtomsPositive.size() > 0 && bodyAtomsNegative.size() > 0) {
-			sb.append(", ");
-		} else {
-			sb.append(" ");
-		}
-		Util.appendDelimited(sb, bodyAtomsNegative);
-		sb.append(".\n");
-
-		return sb.toString();
+		return join(
+			join(
+				isConstraint() ? "" : ":- " + headAtom + " ",
+				bodyAtomsPositive,
+				bodyAtomsPositive.size() + bodyAtomsNegative.size() > 0 ? ", " : " "
+			),
+			bodyAtomsNegative,
+			"."
+		);
 	}
 
 	private class SortingBodyComponent {

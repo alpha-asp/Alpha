@@ -23,7 +23,7 @@ public abstract class ExternalNonBindingPredicate extends FixedInterpretationPre
 		for (int i = 0; i < terms.size(); i++) {
 			if (!(terms.get(i) instanceof ConstantTerm)) {
 				throw new IllegalArgumentException(
-					"Expected only constants as input for " + getPredicateName() + ", but got " +
+					"Expected only constants as input for " + getName() + ", but got " +
 						"something else at position " + i + "."
 				);
 			}

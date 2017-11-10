@@ -5,6 +5,8 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import java.util.Collections;
 import java.util.List;
 
+import static at.ac.tuwien.kr.alpha.Util.join;
+
 /**
  * Alpha-internal representation of an ASP program, i.e., a set of ASP rules.
  * Copyright (c) 2017, the Alpha Team.
@@ -31,5 +33,21 @@ public class Program {
 	public void accumulate(Program program) {
 		rules.addAll(program.rules);
 		facts.addAll(program.facts);
+	}
+
+	@Override
+	public String toString() {
+		final String ls = System.lineSeparator();
+		return join(
+			join(
+				"",
+				facts,
+				"." + ls,
+				ls
+			),
+			rules,
+			ls,
+			""
+		);
 	}
 }

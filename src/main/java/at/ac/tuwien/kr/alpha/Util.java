@@ -27,10 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import java.util.AbstractMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.SortedSet;
+import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -43,27 +40,16 @@ public class Util {
 		return Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue);
 	}
 
-	public static <E> void appendDelimited(StringBuilder sb, String delimiter, Iterable<E> iterable) {
-		for (Iterator<E> iterator = iterable.iterator(); iterator.hasNext();) {
-			sb.append(iterator.next());
-			if (iterator.hasNext()) {
-				sb.append(delimiter);
-			}
-		}
+	public static <E> String join(String prefix, Iterable<E> iterable, String suffix) {
+		return join(prefix, iterable, ", ", suffix);
 	}
 
-	public static <E> void appendDelimited(StringBuilder sb, Iterable<E> iterable) {
-		appendDelimited(sb, ", ", iterable);
-	}
-
-	public static <E> void appendDelimitedPrefix(StringBuilder sb, String prefix, Iterable<E> iterable) {
-		for (Iterator<E> iterator = iterable.iterator(); iterator.hasNext();) {
-			sb.append(prefix);
-			sb.append(iterator.next());
-			if (iterator.hasNext()) {
-				sb.append(", ");
-			}
+	public static <E> String join(String prefix, Iterable<E> iterable, String delimiter, String suffix) {
+		StringJoiner joiner = new StringJoiner(delimiter, prefix, suffix);
+		for (E element : iterable) {
+			joiner.add(element.toString());
 		}
+		return joiner.toString();
 	}
 
 	public static <T extends Comparable<T>> int compareSortedSets(SortedSet<T> a, SortedSet<T> b) {

@@ -18,7 +18,7 @@ public class Predicate implements Comparable<Predicate> {
 		this(name, arity, false);
 	}
 
-	public String getPredicateName() {
+	public String getName() {
 		return name;
 	}
 
@@ -36,12 +36,7 @@ public class Predicate implements Comparable<Predicate> {
 		}
 
 		Predicate that = (Predicate) o;
-
-		if (arity != that.arity) {
-			return false;
-		}
-
-		return name.equals(that.name);
+		return arity == that.arity && name.equals(that.name);
 	}
 
 	@Override
@@ -62,7 +57,7 @@ public class Predicate implements Comparable<Predicate> {
 			return result;
 		}
 
-		return getPredicateName().compareTo(other.getPredicateName());
+		return getName().compareTo(other.getName());
 	}
 
 	public boolean isInternal() {

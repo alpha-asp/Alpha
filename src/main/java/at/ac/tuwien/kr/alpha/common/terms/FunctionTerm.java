@@ -6,7 +6,7 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.*;
 
-import static at.ac.tuwien.kr.alpha.Util.appendDelimited;
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -85,10 +85,7 @@ public class FunctionTerm extends Term {
 			return symbol.toString();
 		}
 
-		final StringBuilder sb = new StringBuilder(symbol.toString() + "(");
-		appendDelimited(sb, terms);
-		sb.append(")");
-		return sb.toString();
+		return join(symbol.toString() + "(", terms, ")");
 	}
 
 	@Override

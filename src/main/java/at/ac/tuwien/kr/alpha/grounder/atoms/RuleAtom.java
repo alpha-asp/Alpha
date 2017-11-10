@@ -94,6 +94,6 @@ public class RuleAtom implements Atom {
 
 	@Override
 	public String toString() {
-		return PREDICATE.getPredicateName() + "(" + terms.get(0) + "," + terms.get(1) + ')';
+		return PREDICATE.getName() + "(" + terms.get(0) + "," + terms.get(1) + ')';
 	}
 }

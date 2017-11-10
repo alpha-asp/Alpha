@@ -1,7 +1,5 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -9,6 +7,8 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -44,14 +44,14 @@ public class BasicAtom implements Literal {
 		this(predicate, terms, false);
 	}
 
-	public BasicAtom(BasicAtom clone) {
-		this(clone, clone.negated);
+	public BasicAtom(Literal clone) {
+		this(clone, clone.isNegated());
 	}
 
-	public BasicAtom(BasicAtom clone, boolean negated) {
+	public BasicAtom(Atom clone, boolean negated) {
 		this.predicate = clone.getPredicate();
 		this.terms = new ArrayList<>(clone.getTerms());
-		this.ground = clone.ground;
+		this.ground = clone.isGround();
 		this.negated = negated;
 	}
 
@@ -118,17 +118,11 @@ public class BasicAtom implements Literal {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder();
-		if (negated) {
-			sb.append("not ");
+		String result = (negated ? "not " : "") + predicate.getName();
+		if (terms.isEmpty()) {
+			return result;
 		}
-		sb.append(predicate.getPredicateName());
-		if (!terms.isEmpty()) {
-			sb.append("(");
-			Util.appendDelimited(sb, terms);
-			sb.append(")");
-		}
-		return sb.toString();
+		return join(result + "(", terms,")");
 	}
 
 	@Override
@@ -170,14 +164,5 @@ public class BasicAtom implements Literal {
 	@Override
 	public int hashCode() {
 		return 31 * predicate.hashCode() + terms.hashCode();
-	}
-
-	public boolean containsIntervalTerms() {
-		for (Term term : terms) {
-			if (IntervalTerm.termContainsIntervalTerm(term)) {
-				return true;
-			}
-		}
-		return false;
 	}
 }

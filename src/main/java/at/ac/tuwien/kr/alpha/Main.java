@@ -169,7 +169,7 @@ public class Main {
 
 		if (commandLine.hasOption(OPT_FILTER)) {
 			Set<String> desiredPredicates = new HashSet<>(Arrays.asList(commandLine.getOptionValues(OPT_FILTER)));
-			filter = p -> desiredPredicates.contains(p.getPredicateName());
+			filter = p -> desiredPredicates.contains(p.getName());
 		}
 
 		Bridge[] bridges = new Bridge[0];

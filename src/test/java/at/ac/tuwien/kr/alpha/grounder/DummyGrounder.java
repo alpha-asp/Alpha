@@ -112,7 +112,7 @@ public class DummyGrounder implements Grounder {
 			if (!filter.test(atomPredicate)) {
 				continue;
 			}
-			if ("_br1".equals(atomPredicate.getPredicateName())) {
+			if ("_br1".equals(atomPredicate.getName())) {
 				continue;
 			}
 			trueAtomPredicates.add(atomPredicate);

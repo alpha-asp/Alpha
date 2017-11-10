@@ -1,6 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
-import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -10,6 +9,8 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Collections;
 import java.util.List;
+
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 public class ChoiceAtom implements Atom {
 	public static final Predicate ON = new Predicate("ChoiceOn", 1, true);
@@ -69,10 +70,6 @@ public class ChoiceAtom implements Atom {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder(predicate.getPredicateName());
-		sb.append("(");
-		Util.appendDelimited(sb, terms);
-		sb.append(")");
-		return sb.toString();
+		return join(predicate.getName() + "(", terms, ")");
 	}
 }

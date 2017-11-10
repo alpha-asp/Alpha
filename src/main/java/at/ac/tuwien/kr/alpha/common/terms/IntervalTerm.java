@@ -97,11 +97,7 @@ public class IntervalTerm extends Term {
 
 		IntervalTerm that = (IntervalTerm) o;
 
-		if (!lowerBoundTerm.equals(that.lowerBoundTerm)) {
-			return false;
-		}
-		return upperBoundTerm.equals(that.upperBoundTerm);
-
+		return lowerBoundTerm.equals(that.lowerBoundTerm) && upperBoundTerm.equals(that.upperBoundTerm);
 	}
 
 	@Override

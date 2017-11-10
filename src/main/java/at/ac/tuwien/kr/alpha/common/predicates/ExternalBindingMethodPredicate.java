@@ -27,7 +27,7 @@ public class ExternalBindingMethodPredicate extends FixedInterpretationPredicate
 	public Set<List<ConstantTerm>> evaluate(List<Term> terms) {
 		if (terms.size() != getArity()) {
 			throw new IllegalArgumentException(
-				"Parameter count mismatch when calling " + getPredicateName() + ". " +
+				"Parameter count mismatch when calling " + getName() + ". " +
 					"Expected " + getArity() + " parameters but got " + terms.size() + "."
 			);
 		}
@@ -39,7 +39,7 @@ public class ExternalBindingMethodPredicate extends FixedInterpretationPredicate
 		for (int i = 0; i < arguments.length; i++) {
 			if (!(terms.get(i) instanceof ConstantTerm)) {
 				throw new IllegalArgumentException(
-					"Expected only constants as input for " + getPredicateName() + ", but got " +
+					"Expected only constants as input for " + getName() + ", but got " +
 						"something else at position " + i + "."
 				);
 			}
@@ -58,7 +58,7 @@ public class ExternalBindingMethodPredicate extends FixedInterpretationPredicate
 			}
 
 			throw new IllegalArgumentException(
-				"Parameter type mismatch when calling " + getPredicateName() +
+				"Parameter type mismatch when calling " + getName() +
 					" at position " + i + ". Expected " + expected + " but got " +
 					actual + "."
 			);

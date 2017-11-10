@@ -20,7 +20,7 @@ import java.util.List;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class IntervalAtom implements Literal {
-	public static final Predicate INTERVAL_PREDICATE = new Predicate("_interval", 2, true);
+	private static final Predicate PREDICATE = new Predicate("_interval", 2, true);
 
 	private final IntervalTerm intervalTerm;
 	private final VariableTerm intervalRepresentingVariable;
@@ -42,7 +42,7 @@ public class IntervalAtom implements Literal {
 
 	@Override
 	public Predicate getPredicate() {
-		return INTERVAL_PREDICATE;
+		return PREDICATE;
 	}
 
 	@Override
@@ -72,7 +72,7 @@ public class IntervalAtom implements Literal {
 
 	@Override
 	public String toString() {
-		return INTERVAL_PREDICATE.getPredicateName() + "(" + intervalRepresentingVariable + ", " + intervalTerm + ")";
+		return PREDICATE.getName() + "(" + intervalRepresentingVariable + ", " + intervalTerm + ")";
 	}
 
 	@Override

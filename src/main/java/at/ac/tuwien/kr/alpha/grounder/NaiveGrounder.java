@@ -156,8 +156,8 @@ public class NaiveGrounder extends BridgedGrounder {
 	private void adaptWorkingMemoryForPredicate(Predicate predicate) {
 		// Create working memory for predicate if it does not exist
 		if (!workingMemory.containsKey(predicate)) {
-			IndexedInstanceStorage instanceStoragePos = new IndexedInstanceStorage(predicate.getPredicateName() + "+", predicate.getArity());
-			IndexedInstanceStorage instanceStorageNeg = new IndexedInstanceStorage(predicate.getPredicateName() + "-", predicate.getArity());
+			IndexedInstanceStorage instanceStoragePos = new IndexedInstanceStorage(predicate.getName() + "+", predicate.getArity());
+			IndexedInstanceStorage instanceStorageNeg = new IndexedInstanceStorage(predicate.getName() + "-", predicate.getArity());
 			// Index all positions of the storage (may impair efficiency)
 			for (int i = 0; i < predicate.getArity(); i++) {
 				instanceStoragePos.addIndexPosition(i);

@@ -51,7 +51,7 @@ public class BasicAnswerSet implements AnswerSet {
 			Set<Atom> instances = getPredicateInstances(predicate);
 
 			if (instances == null || instances.isEmpty()) {
-				sb.append(predicate.getPredicateName());
+				sb.append(predicate.getName());
 				continue;
 			}
 

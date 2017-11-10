@@ -40,7 +40,7 @@ public class ExternalMethodPredicate extends ExternalNonBindingPredicate {
 			}
 
 			throw new IllegalArgumentException(
-				"Parameter type mismatch when calling " + getPredicateName() +
+				"Parameter type mismatch when calling " + getName() +
 					" at position " + i + ". Expected " + expected + " but got " +
 					actual + "."
 			);
