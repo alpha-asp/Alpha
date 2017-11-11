@@ -20,10 +20,12 @@ import static at.ac.tuwien.kr.alpha.Util.join;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class NonGroundRule {
+	private static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
+
 	private final int ruleId;
 
-	private final List<Atom> bodyAtomsPositive;
-	private final List<Atom> bodyAtomsNegative;
+	private final List<Literal> bodyAtomsPositive;
+	private final List<Literal> bodyAtomsNegative;
 	private final Atom headAtom;
 
 	private final boolean containsIntervals;
@@ -42,7 +44,7 @@ public class NonGroundRule {
 		return isOriginallyGround;
 	}
 
-	private NonGroundRule(int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom, boolean containsIntervals, boolean containsExternals) {
+	private NonGroundRule(int ruleId, List<Literal> bodyAtomsPositive, List<Literal> bodyAtomsNegative, Atom headAtom, boolean containsIntervals, boolean containsExternals) {
 		this.ruleId = ruleId;
 
 		this.isOriginallyGround = isOriginallyGround(bodyAtomsPositive, bodyAtomsNegative, headAtom);
@@ -63,10 +65,10 @@ public class NonGroundRule {
 	}
 
 	// FIXME: NonGroundRule should extend Rule and then its constructor directly be used.
-	public static NonGroundRule constructNonGroundRule(IntIdGenerator intIdGenerator, Rule rule) {
+	public static NonGroundRule constructNonGroundRule(Rule rule) {
 		List<Literal> body = rule.getBody();
-		final List<Atom> pos = new ArrayList<>(body.size() / 2);
-		final List<Atom> neg = new ArrayList<>(body.size() / 2);
+		final List<Literal> pos = new ArrayList<>(body.size() / 2);
+		final List<Literal> neg = new ArrayList<>(body.size() / 2);
 		boolean containsIntervals = false;
 		boolean containsExternals = false;
 		for (Literal literal : body) {
@@ -88,10 +90,10 @@ public class NonGroundRule {
 			}
 			headAtom = ((DisjunctiveHead)rule.getHead()).disjunctiveAtoms.get(0);
 		}
-		return new NonGroundRule(intIdGenerator.getNextId(), pos, neg, headAtom, containsIntervals, containsExternals);
+		return new NonGroundRule(ID_GENERATOR.getNextId(), pos, neg, headAtom, containsIntervals, containsExternals);
 	}
 
-	private static boolean isOriginallyGround(List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
+	private static boolean isOriginallyGround(List<Literal> bodyAtomsPositive, List<Literal> bodyAtomsNegative, Atom headAtom) {
 		List<Variable> occurringVariables = new ArrayList<>();
 		if (headAtom != null) {
 			occurringVariables.addAll(headAtom.getBindingVariables());
@@ -179,12 +181,12 @@ public class NonGroundRule {
 	 * Sorts atoms such that the join-order of the atoms is improved (= cannot degenerate into cross-product).
 	 * Note that the below sorting can be improved to yield smaller joins.
 	 */
-	private List<Atom> sortAtoms(List<Atom> atoms) {
+	private List<Literal> sortAtoms(List<Literal> atoms) {
 		final Set<SortingBodyComponent> components = new LinkedHashSet<>();
 		final Set<ExternalAtom> builtinAtoms = new LinkedHashSet<>();
 		final Set<IntervalAtom> intervalAtoms = new LinkedHashSet<>();
 
-		for (Atom atom : atoms) {
+		for (Literal atom : atoms) {
 			// FIXME: The following case assumes that builtin predicates do not create bindings?!
 			if ((atom instanceof ExternalAtom) && (((ExternalAtom)atom).getInterpretation()) instanceof BuiltinBiPredicate) {
 				// Sort out builtin atoms (we consider them as not creating new bindings)
@@ -232,7 +234,7 @@ public class NonGroundRule {
 		}
 
 		// Components now contains all components that are internally connected but not connected to another component
-		List<Atom> sortedPositiveBodyAtoms = new ArrayList<>(components.size());
+		List<Literal> sortedPositiveBodyAtoms = new ArrayList<>(components.size());
 		for (SortingBodyComponent component : components) {
 			sortedPositiveBodyAtoms.addAll(component.atomSequence);
 		}
@@ -264,7 +266,7 @@ public class NonGroundRule {
 	 * @param atomPosition 0-based position of the body atom.
 	 * @return
 	 */
-	public Atom getBodyAtom(int atomPosition) {
+	public Literal getBodyAtom(int atomPosition) {
 		if (atomPosition < bodyAtomsPositive.size()) {
 			return bodyAtomsPositive.get(atomPosition);
 		} else {
@@ -324,11 +326,11 @@ public class NonGroundRule {
 
 	private class SortingBodyComponent {
 		private final Set<Variable> occurringVariables;
-		private final Set<Atom> atoms;
-		private final List<Atom> atomSequence;
+		private final Set<Literal> atoms;
+		private final List<Literal> atomSequence;
 		int numAtoms;
 
-		SortingBodyComponent(Atom atom) {
+		SortingBodyComponent(Literal atom) {
 			this.occurringVariables = new LinkedHashSet<>(atom.getBindingVariables());
 			this.atoms = new LinkedHashSet<>();
 			this.atoms.add(atom);
@@ -337,7 +339,7 @@ public class NonGroundRule {
 			this.numAtoms = 1;
 		}
 
-		void add(Atom atom) {
+		void add(Literal atom) {
 			this.atoms.add(atom);
 			this.atomSequence.add(atom);
 			this.occurringVariables.addAll(atom.getBindingVariables());
@@ -352,11 +354,11 @@ public class NonGroundRule {
 		}
 	}
 
-	public List<Atom> getBodyAtomsPositive() {
+	public List<Literal> getBodyAtomsPositive() {
 		return bodyAtomsPositive;
 	}
 
-	public List<Atom> getBodyAtomsNegative() {
+	public List<Literal> getBodyAtomsNegative() {
 		return bodyAtomsNegative;
 	}
 

@@ -190,7 +190,7 @@ public class ChoiceGrounder implements Grounder {
 	private Map<NoGood, Integer> solverDerivedNoGoods = new HashMap<>();
 
 	@Override
-	public int registerOutsideNoGood(NoGood noGood) {
+	public int register(NoGood noGood) {
 		if (!solverDerivedNoGoods.containsKey(noGood)) {
 			solverDerivedNoGoods.put(noGood, solverDerivedNoGoodIdCounter++);
 		}

@@ -108,7 +108,7 @@ public class DefaultSolver extends AbstractSolver {
 				// Backjump instead of backtrack, enumerationNoGood will invert lass guess.
 				doBackjump(backjumpLevel - 1);
 				LOGGER.debug("Adding enumeration NoGood: {}", enumerationNoGood);
-				ConflictCause conflictCause = store.add(grounder.registerOutsideNoGood(enumerationNoGood), enumerationNoGood);
+				ConflictCause conflictCause = store.add(grounder.register(enumerationNoGood), enumerationNoGood);
 				if (conflictCause != null) {
 					throw new RuntimeException("Adding enumeration NoGood causes conflicts after backjump. Should not happen.");
 				}
@@ -246,7 +246,7 @@ public class DefaultSolver extends AbstractSolver {
 			LOGGER.debug("Computed backjumping level: {}", backjumpingDecisionLevel);
 			doBackjump(backjumpingDecisionLevel);
 
-			int learnedNoGoodId = grounder.registerOutsideNoGood(learnedNoGood);
+			int learnedNoGoodId = grounder.register(learnedNoGood);
 			conflictCause = store.add(learnedNoGoodId, learnedNoGood);
 			if (conflictCause != null) {
 				throw new RuntimeException("Learned NoGood is violated after backjumping, should not happen.");
@@ -416,7 +416,7 @@ public class DefaultSolver extends AbstractSolver {
 				// If NoGood was learned, add it to the store.
 				// Note that the learned NoGood may cause further conflicts, since propagation on lower decision levels is lazy, hence backtracking once might not be enough to remove the real conflict cause.
 				if (conflictAnalysisResult.learnedNoGood != null) {
-					noGoodsToAdd.addFirst(new AbstractMap.SimpleEntry<>(grounder.registerOutsideNoGood(conflictAnalysisResult.learnedNoGood), conflictAnalysisResult.learnedNoGood));
+					noGoodsToAdd.addFirst(new AbstractMap.SimpleEntry<>(grounder.register(conflictAnalysisResult.learnedNoGood), conflictAnalysisResult.learnedNoGood));
 				}
 			}
 			if (store.add(noGoodEntry.getKey(), noGoodEntry.getValue()) != null) {
