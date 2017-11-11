@@ -8,10 +8,7 @@ import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Constant;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -73,6 +70,22 @@ public class AlphaTest {
 		system.register("connected", (Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3));
 
 		Set<AnswerSet> answerSets = system.solve("node(1). node(2). node(3). a :- &connected[1,2].").collect(Collectors.toSet());
+	}
+
+	@Test
+	public void filterOutput() throws Exception {
+		Alpha system = new Alpha();
+		system.register("getLargeGraphEdges", () ->
+			new HashSet<>(asList(
+				asList(Constant.getInstance(1), Constant.getInstance(2)),
+				asList(Constant.getInstance(2), Constant.getInstance(1)),
+				asList(Constant.getInstance(13), Constant.getInstance(1))
+			))
+		);
+
+		Set<AnswerSet> actual = system.solve("node(1). node(2). outgoing13(X) :- node(X), &getLargeGraphEdges(13,X).").collect(Collectors.toSet());
+		Set<AnswerSet> expected = AnswerSetsParser.parse("{ node(1), node(2), outgoing13(1) }");
+		assertEquals(expected, actual);
 	}
 
 	@Test
