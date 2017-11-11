@@ -29,11 +29,13 @@ package at.ac.tuwien.kr.alpha.common;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
+import static java.util.Collections.singletonList;
 
 public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	protected final int[] literals;
@@ -78,6 +80,31 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 
 	public static NoGood fact(int literal) {
 		return headFirst(literal);
+	}
+
+	public static NoGood support(int headAtom, int ruleBodyAtom) {
+		return new NoGood(headAtom, -ruleBodyAtom);
+	}
+
+	public static NoGood fromConstraint(List<Integer> pos, List<Integer> neg) {
+		return new NoGood(addPosNeg(new int[pos.size() + neg.size()], pos, neg, 0));
+	}
+
+	public static NoGood fromBody(List<Integer> pos, List<Integer> neg, int bodyAtom) {
+		int[] bodyLiterals = new int[pos.size() + neg.size() + 1];
+		bodyLiterals[0] = -bodyAtom;
+		return NoGood.headFirst(addPosNeg(bodyLiterals, pos, neg, 1));
+	}
+
+	private static int[] addPosNeg(int[] literals, List<Integer> pos, List<Integer> neg, int offset) {
+		int i = offset;
+		for (Integer atomId : pos) {
+			literals[i++] = atomId;
+		}
+		for (Integer atomId : neg) {
+			literals[i++] = -atomId;
+		}
+		return literals;
 	}
 
 	public int size() {

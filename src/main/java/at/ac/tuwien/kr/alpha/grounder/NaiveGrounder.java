@@ -42,7 +42,6 @@ import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,24 +58,24 @@ import static java.util.Collections.singletonList;
 public class NaiveGrounder extends BridgedGrounder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
 
-	private WorkingMemory workingMemory = new WorkingMemory();
-	private AtomStore atomStore = new AtomStore();
+	private final WorkingMemory workingMemory = new WorkingMemory();
+	private final AtomStore atomStore = new AtomStore();
+	private final NogoodRegistry registry = new NogoodRegistry();
+	private final ChoiceRecorder choiceRecorder;
 
-	private NogoodRegistry registry = new NogoodRegistry();
-
-	private final IntIdGenerator choiceAtomsGenerator = new IntIdGenerator();
-
-	private HashMap<Predicate, LinkedHashSet<Instance>> factsFromProgram = new LinkedHashMap<>();
+	private final HashMap<Predicate, LinkedHashSet<Instance>> factsFromProgram = new LinkedHashMap<>();
 	private final ArrayList<NonGroundRule> rulesFromProgram = new ArrayList<>();
 	private final HashMap<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
 
-	private boolean prepareFacts = true;
-
-	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newChoiceAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
 	private final HashMap<NonGroundRule, HashSet<Substitution>> knownGroundingSubstitutions = new HashMap<>();
 
-	private Set<NonGroundRule> uniqueGroundRulePerGroundHead = new HashSet<>();
-	private Map<Predicate, HashSet<NonGroundRule>> ruleHeadsToDefiningRules = new HashMap<>();
+	private final Set<NonGroundRule> uniqueGroundRulePerGroundHead = new HashSet<>();
+	private final Map<Predicate, HashSet<NonGroundRule>> ruleHeadsToDefiningRules = new HashMap<>();
+
+	private boolean prepareFacts = true;
+	private LinkedHashSet<Atom> removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
+	private int maxAtomIdBeforeGroundingNewNoGoods = -1;
+	boolean disableInstanceRemoval;
 
 	public NaiveGrounder(Program program, Bridge... bridges) {
 		this(program, p -> true, bridges);
@@ -84,6 +83,9 @@ public class NaiveGrounder extends BridgedGrounder {
 
 	public NaiveGrounder(Program program, java.util.function.Predicate<Predicate> filter, Bridge... bridges) {
 		super(filter, bridges);
+
+		choiceRecorder = new ChoiceRecorder(atomStore);
+
 		// TODO: initialize based on program.
 
 		// Apply program transformations/rewritings.
@@ -188,16 +190,16 @@ public class NaiveGrounder extends BridgedGrounder {
 		}
 
 		// Register each atom occurring in the body of the rule at its corresponding working memory.
-		HashSet<Atom> registeredPositiveAtoms = new HashSet<>();
+		HashSet<Atom> registered = new HashSet<>();
 		for (int i = 0; i < nonGroundRule.getBodyAtomsPositive().size(); i++) {
-			registerAtomAtWorkingMemory(nonGroundRule, registeredPositiveAtoms, i);
+			registerAtomAtWorkingMemory(nonGroundRule, registered, i);
 		}
 
 		// Register negative literals only if the rule contains no positive literals (necessary grounding is ensured by safety of rules).
+		registered.clear();
 		if (nonGroundRule.getBodyAtomsPositive().isEmpty()) {
-			HashSet<Atom> registeredNegativeAtoms = new HashSet<>();
 			for (int i = 0; i < nonGroundRule.getBodyAtomsNegative().size(); i++) {
-				registerAtomAtWorkingMemory(nonGroundRule, registeredNegativeAtoms, i);
+				registerAtomAtWorkingMemory(nonGroundRule, registered, i);
 			}
 		}
 	}
@@ -215,7 +217,7 @@ public class NaiveGrounder extends BridgedGrounder {
 		}
 
 		registeredAtoms.add(bodyAtom);
-		IndexedInstanceStorage storage = this.workingMemory.get(bodyAtom);
+		IndexedInstanceStorage storage = workingMemory.get(bodyAtom);
 		rulesUsingPredicateWorkingMemory.putIfAbsent(storage, new ArrayList<>());
 		rulesUsingPredicateWorkingMemory.get(storage).add(new FirstBindingAtom(nonGroundRule, atomPos, bodyAtom));
 	}
@@ -297,10 +299,6 @@ public class NaiveGrounder extends BridgedGrounder {
 		return noGoodsFromFacts;
 	}
 
-	private NoGood supportednessNoGoodUniqueRule(int headAtom, int ruleBodyAtom) {
-		return new NoGood(headAtom, -ruleBodyAtom);
-	}
-
 	@Override
 	public Map<Integer, NoGood> getNoGoods(Assignment currentAssignment) {
 		// In first call, prepare facts and ground rules.
@@ -357,18 +355,10 @@ public class NaiveGrounder extends BridgedGrounder {
 			for (Map.Entry<Integer, NoGood> noGoodEntry : newNoGoods.entrySet()) {
 				LOGGER.debug("{} == {}", noGoodEntry.getValue(), noGoodToString(noGoodEntry.getValue()));
 			}
-			LOGGER.debug("Choice information is:");
-			for (Map.Entry<Integer, Integer> enablers : newChoiceAtoms.getLeft().entrySet()) {
-				LOGGER.debug("{} enabled by {}.", enablers.getKey(), enablers.getValue());
-			}
-			for (Map.Entry<Integer, Integer> disablers : newChoiceAtoms.getRight().entrySet()) {
-				LOGGER.debug("{} disabled by {}.", disablers.getKey(), disablers.getValue());
-			}
+			LOGGER.debug("Choice information is: {}");
 		}
 		return newNoGoods;
 	}
-
-	boolean disableInstanceRemoval;
 
 	@Override
 	public int register(NoGood noGood) {
@@ -397,7 +387,7 @@ public class NaiveGrounder extends BridgedGrounder {
 
 		// A constraint is represented by exactly one NoGood.
 		if (nonGroundRule.isConstraint()) {
-			return translateConstraint(pos, neg);
+			return singletonList(NoGood.fromConstraint(pos, neg));
 		}
 
 		// Prepare atom representing the rule body
@@ -415,7 +405,7 @@ public class NaiveGrounder extends BridgedGrounder {
 		final List<NoGood> generatedNoGoods = new ArrayList<>();
 
 		// Create NoGood for body.
-		final NoGood ruleBody = translateBody(pos, neg, bodyAtom);
+		final NoGood ruleBody = NoGood.fromBody(pos, neg, bodyAtom);
 		generatedNoGoods.add(ruleBody);
 
 		// Generate NoGoods such that the atom representing the body is true iff the body is true.
@@ -426,12 +416,12 @@ public class NaiveGrounder extends BridgedGrounder {
 
 		// Check if the rule head is unique, add support then:
 		if (uniqueGroundRulePerGroundHead.contains(nonGroundRule)) {
-			generatedNoGoods.add(supportednessNoGoodUniqueRule(headAtom, bodyAtom));
+			generatedNoGoods.add(NoGood.support(headAtom, bodyAtom));
 		}
 
 		// Check if the body of the rule contains negation, add choices then
-		if (neg.size() != 0) {
-			generatedNoGoods.addAll(generateAndAddChoices(pos, neg, bodyAtom));
+		if (!neg.isEmpty()) {
+			generatedNoGoods.addAll(choiceRecorder.generate(pos, neg, bodyAtom));
 		}
 
 		return generatedNoGoods;
@@ -504,74 +494,9 @@ public class NaiveGrounder extends BridgedGrounder {
 		return pos;
 	}
 
-	private NoGood translateBody(List<Integer> pos, List<Integer> neg, int bodyAtom) {
-		int[] bodyLiterals = new int[pos.size() + neg.size() + 1];
-		bodyLiterals[0] = -bodyAtom;
-
-		int i = 1;
-		for (Integer atomId : pos) {
-			bodyLiterals[i++] = atomId;
-		}
-		for (Integer atomId : neg) {
-			bodyLiterals[i++] = -atomId;
-		}
-
-		return NoGood.headFirst(bodyLiterals);
-	}
-
-	private List<NoGood> generateAndAddChoices(List<Integer> pos, List<Integer> neg, int bodyAtom) {
-		List<NoGood> noGoods = new ArrayList<>(neg.size() + 1);
-		Map<Integer, Integer> newChoiceOn = newChoiceAtoms.getLeft();
-		Map<Integer, Integer> newChoiceOff = newChoiceAtoms.getRight();
-		// Choice is on the body representing atom
-
-		// ChoiceOn if all positive body atoms are satisfied
-		int[] choiceOnLiterals = new int[pos.size() + 1];
-		int i = 1;
-		for (Integer atomId : pos) {
-			choiceOnLiterals[i++] = atomId;
-		}
-
-		int choiceId = choiceAtomsGenerator.getNextId();
-		Atom choiceOnAtom = ChoiceAtom.on(choiceId);
-
-		int choiceOnAtomIdInt = atomStore.add(choiceOnAtom);
-		choiceOnLiterals[0] = -choiceOnAtomIdInt;
-		// Add corresponding NoGood and ChoiceOn
-		// ChoiceOn and ChoiceOff NoGoods avoid MBT and directly set to true, hence the rule head pointer.
-		noGoods.add(NoGood.headFirst(choiceOnLiterals));
-		newChoiceOn.put(bodyAtom, choiceOnAtomIdInt);
-
-		// ChoiceOff if some negative body atom is contradicted
-		Atom choiceOffAtom = ChoiceAtom.off(choiceId);
-		int choiceOffAtomIdInt = atomStore.add(choiceOffAtom);
-		for (Integer negAtomId : neg) {
-			// Choice is off if any of the negative atoms is assigned true, hence we add one NoGood for each such atom.
-			noGoods.add(NoGood.headFirst(-choiceOffAtomIdInt, negAtomId));
-		}
-		newChoiceOff.put(bodyAtom, choiceOffAtomIdInt);
-
-		return noGoods;
-	}
-
-	private List<NoGood> translateConstraint(List<Integer> positive, List<Integer> negative) {
-		int[] constraintLiterals = new int[positive.size() + negative.size()];
-		int i = 0;
-		for (Integer atomId : positive) {
-			constraintLiterals[i++] = +atomId;
-		}
-		for (Integer atomId : negative) {
-			constraintLiterals[i++] = -atomId;
-		}
-		return singletonList(new NoGood(constraintLiterals));
-	}
-
-	private LinkedHashSet<Atom> removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
-	private int maxAtomIdBeforeGroundingNewNoGoods = -1;
-
 	private List<Substitution> bindNextAtomInRule(NonGroundRule rule, int atomPos, int firstBindingPos, Substitution partialSubstitution, Assignment currentAssignment) {
 		if (atomPos == rule.getNumBodyAtoms()) {
-			return Collections.singletonList(partialSubstitution);
+			return singletonList(partialSubstitution);
 		}
 
 		if (atomPos == firstBindingPos) {
@@ -739,9 +664,7 @@ public class NaiveGrounder extends BridgedGrounder {
 
 	@Override
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
-		Pair<Map<Integer, Integer>, Map<Integer, Integer>> currentChoiceAtoms = newChoiceAtoms;
-		newChoiceAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
-		return currentChoiceAtoms;
+		return choiceRecorder.getAndReset();
 	}
 
 	@Override

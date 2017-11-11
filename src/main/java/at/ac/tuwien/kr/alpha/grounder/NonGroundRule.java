@@ -94,6 +94,22 @@ public class NonGroundRule {
 	}
 
 	private static boolean isOriginallyGround(List<Literal> bodyAtomsPositive, List<Literal> bodyAtomsNegative, Atom headAtom) {
+		/* TODO: Why does this not work?
+		if (headAtom != null && !headAtom.isGround()) {
+			return false;
+		}
+		for (Atom atom : bodyAtomsPositive) {
+			if (!atom.isGround()) {
+				return false;
+			}
+		}
+		for (Atom atom : bodyAtomsNegative) {
+			if (!atom.isGround()) {
+				return false;
+			}
+		}
+		*/
+
 		List<Variable> occurringVariables = new ArrayList<>();
 		if (headAtom != null) {
 			occurringVariables.addAll(headAtom.getBindingVariables());
