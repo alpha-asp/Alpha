@@ -503,6 +503,16 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
+	public void emptyIntervals() throws IOException {
+		assertAnswerSets(
+			"p(3..1)." +
+				"dom(5)." +
+				"p(X) :- dom(X), X = 7..2 .",
+			"dom(5)"
+		);
+	}
+
+	@Test
 	public void intervalInFunctionTermsInRules() throws IOException {
 		assertAnswerSets(
 			"a :- q(f(1..3,g(4..5)))." +

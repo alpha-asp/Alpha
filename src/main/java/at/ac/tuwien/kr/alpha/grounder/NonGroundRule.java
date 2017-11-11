@@ -10,7 +10,6 @@ import at.ac.tuwien.kr.alpha.common.predicates.BuiltinBiPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
-import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 
 import java.util.*;
 
@@ -27,29 +26,17 @@ public class NonGroundRule {
 	private final Atom headAtom;
 
 	private final boolean containsIntervals;
-	private final boolean containsExternals;
-	private final boolean isOriginallyGround;
-	private final RuleGroundingOrder groundingOrder;
+	final RuleGroundingOrder groundingOrder;
 
-	public boolean containsIntervals() {
+	boolean containsIntervals() {
 		return containsIntervals;
-	}
-
-	public boolean containsExternals() {
-		return containsExternals;
-	}
-
-	public boolean isOriginallyGround() {
-		return isOriginallyGround;
 	}
 
 	private NonGroundRule(Rule rule, int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom, boolean containsIntervals, boolean containsExternals) {
 		this.ruleId = ruleId;
 		this.rule = rule;
 
-		this.isOriginallyGround = isOriginallyGround(bodyAtomsPositive, bodyAtomsNegative, headAtom);
 		this.containsIntervals = containsIntervals;
-		this.containsExternals = containsExternals;
 
 		// Sort for better join order.
 		this.bodyAtomsPositive = Collections.unmodifiableList(sortAtoms(bodyAtomsPositive));
@@ -93,30 +80,6 @@ public class NonGroundRule {
 			headAtom = ((DisjunctiveHead)rule.getHead()).disjunctiveAtoms.get(0);
 		}
 		return new NonGroundRule(rule, intIdGenerator.getNextId(), pos, neg, headAtom, containsIntervals, containsExternals);
-	}
-
-	private static boolean isOriginallyGround(List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
-		List<VariableTerm> occurringVariables = new ArrayList<>();
-		if (headAtom != null) {
-			occurringVariables.addAll(headAtom.getBindingVariables());
-			occurringVariables.addAll(headAtom.getNonBindingVariables());
-		}
-		for (Atom atom : bodyAtomsPositive) {
-			occurringVariables.addAll(atom.getBindingVariables());
-			occurringVariables.addAll(atom.getNonBindingVariables());
-		}
-		for (Atom atom : bodyAtomsNegative) {
-			occurringVariables.addAll(atom.getBindingVariables());
-			occurringVariables.addAll(atom.getNonBindingVariables());
-		}
-		for (VariableTerm variable : occurringVariables) {
-			// Ignore variables introduced by interval rewriting.
-			if (variable.toString().startsWith(IntervalTermToIntervalAtom.INTERVAL_VARIABLE_PREFIX)) {
-				continue;
-			}
-			return false;
-		}
-		return true;
 	}
 
 	public int getRuleId() {

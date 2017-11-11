@@ -20,18 +20,25 @@ public class RuleGroundingOrderTest {
 	@Test
 	public void groundingOrder() throws IOException {
 		Program program = parser.parse("h(X,C) :- p(X,Y), q(A,B), r(Y,A), s(C)." +
-			"j(A,B,X,Y) :- r1(A,B), r1(X,Y), r1(A,X), r1(B,Y).");
-		Rule rule = program.getRules().get(1);
-		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(new IntIdGenerator(), rule);
-		RuleGroundingOrder rgo1 = new RuleGroundingOrder(nonGroundRule);
-		rgo1.computeGroundingOrders();
-		assertEquals(1, rgo1.getStartingLiterals().size());
+			"j(A,B,X,Y) :- r1(A,B), r1(X,Y), r1(A,X), r1(B,Y), A = B." +
+			"p(a) :- b = a.");
+		Rule rule0 = program.getRules().get(0);
+		NonGroundRule nonGroundRule0 = NonGroundRule.constructNonGroundRule(new IntIdGenerator(), rule0);
+		RuleGroundingOrder rgo0 = new RuleGroundingOrder(nonGroundRule0);
+		rgo0.computeGroundingOrders();
+		assertEquals(4, rgo0.getStartingLiterals().size());
 
-		Rule rule2 = program.getRules().get(0);
+		Rule rule1 = program.getRules().get(1);
+		NonGroundRule nonGroundRule1 = NonGroundRule.constructNonGroundRule(new IntIdGenerator(), rule1);
+		RuleGroundingOrder rgo1 = new RuleGroundingOrder(nonGroundRule1);
+		rgo1.computeGroundingOrders();
+		assertEquals(4, rgo1.getStartingLiterals().size());
+
+		Rule rule2 = program.getRules().get(2);
 		NonGroundRule nonGroundRule2 = NonGroundRule.constructNonGroundRule(new IntIdGenerator(), rule2);
 		RuleGroundingOrder rgo2 = new RuleGroundingOrder(nonGroundRule2);
 		rgo2.computeGroundingOrders();
-		assertEquals(4, rgo2.getStartingLiterals().size());
+		assertEquals(1, rgo2.getStartingLiterals().size());
 	}
 
 }

@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.predicates.FixedInterpretationPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
@@ -9,10 +10,7 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Helper for treating IntervalTerms in rules. Each IntervalTerm is replaced by a variable and a special IntervalAtom
@@ -20,7 +18,13 @@ import java.util.List;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class IntervalAtom implements Literal {
-	public static final Predicate INTERVAL_PREDICATE = new Predicate("_interval", 2, true);
+	private static final FixedInterpretationPredicate INTERVAL_PREDICATE = new FixedInterpretationPredicate("_interval", 2, true) {
+		@Override
+		public Set<List<ConstantTerm>> evaluate(List<Term> terms) {
+			// Note: maybe could use this method to get the result of getIntervalSubstitutions.
+			throw new UnsupportedOperationException();
+		}
+	};
 
 	private final IntervalTerm intervalTerm;
 	private final VariableTerm intervalRepresentingVariable;
