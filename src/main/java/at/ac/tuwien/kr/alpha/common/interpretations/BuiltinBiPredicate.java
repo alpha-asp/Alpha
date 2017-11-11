@@ -1,23 +1,22 @@
-package at.ac.tuwien.kr.alpha.common.predicates;
+package at.ac.tuwien.kr.alpha.common.interpretations;
 
 import at.ac.tuwien.kr.alpha.common.BinaryOperator;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Constant;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 import java.util.List;
 import java.util.Set;
 
-public class BuiltinBiPredicate extends FixedInterpretationPredicate {
+public class BuiltinBiPredicate extends FixedInterpretation {
 	private final BinaryOperator operator;
 
 	public BuiltinBiPredicate(BinaryOperator operator) {
-		super(operator.toString(), 2);
 		this.operator = operator;
 	}
 
 	@Override
-	public Set<List<ConstantTerm>> evaluate(List<Term> terms) {
-		if (terms.size() != getArity()) {
+	public Set<List<Constant>> evaluate(List<Term> terms) {
+		if (terms.size() != 2) {
 			throw new RuntimeException("Tried to evaluate total order predicate over unexpected arity!");
 		}
 

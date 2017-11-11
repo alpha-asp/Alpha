@@ -1,10 +1,10 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.Constant;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Variable;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Collections;
@@ -13,8 +13,8 @@ import java.util.List;
 import static at.ac.tuwien.kr.alpha.Util.join;
 
 public class ChoiceAtom implements Atom {
-	public static final Predicate ON = new Predicate("ChoiceOn", 1, true);
-	public static final Predicate OFF = new Predicate("ChoiceOff", 1, true);
+	public static final Predicate ON = Predicate.getInstance("ChoiceOn", 1, true);
+	public static final Predicate OFF = Predicate.getInstance("ChoiceOff", 1, true);
 
 	private final Predicate predicate;
 	private final List<Term> terms;
@@ -25,7 +25,7 @@ public class ChoiceAtom implements Atom {
 	}
 
 	private ChoiceAtom(Predicate predicate, int id) {
-		this(predicate, ConstantTerm.getInstance(Integer.toString(id)));
+		this(predicate, Constant.getInstance(Integer.toString(id)));
 	}
 
 	public static ChoiceAtom on(int id) {
@@ -53,13 +53,13 @@ public class ChoiceAtom implements Atom {
 	}
 
 	@Override
-	public List<VariableTerm> getBindingVariables() {
+	public List<Variable> getBindingVariables() {
 		// NOTE: Term is a ConstantTerm, which has no variables by definition.
 		return Collections.emptyList();
 	}
 
 	@Override
-	public List<VariableTerm> getNonBindingVariables() {
+	public List<Variable> getNonBindingVariables() {
 		return Collections.emptyList();
 	}
 
@@ -70,6 +70,6 @@ public class ChoiceAtom implements Atom {
 
 	@Override
 	public String toString() {
-		return join(predicate.getName() + "(", terms, ")");
+		return join(predicate.getSymbol() + "(", terms, ")");
 	}
 }

@@ -33,8 +33,8 @@ import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.Constant;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import junit.framework.TestCase;
@@ -65,7 +65,7 @@ public class SolverTests extends AbstractSolverTests {
 	public void testObjectProgram() throws IOException {
 		final Thingy thingy = new Thingy();
 
-		final Atom fact = new BasicAtom(new Predicate("foo", 1), ConstantTerm.getInstance(thingy));
+		final Atom fact = new BasicAtom(new Predicate("foo", 1), Constant.getInstance(thingy));
 
 		final Program program = new Program(
 			Collections.emptyList(),

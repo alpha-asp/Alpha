@@ -3,7 +3,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -103,8 +103,8 @@ public class DummyGrounder implements Grounder {
 
 	@Override
 	public AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms) {
-		// Note: This grounder only deals with 0-ary predicates, i.e., every atom is a predicate and there is
-		// 	 only one predicate instance representing 0 terms.
+		// Note: This grounder only deals with 0-ary predicates, i.e., every atom is a interpretation and there is
+		// 	 only one interpretation instance representing 0 terms.
 
 		SortedSet<Predicate> trueAtomPredicates = new TreeSet<>();
 		for (int trueAtom : trueAtoms) {
@@ -112,7 +112,7 @@ public class DummyGrounder implements Grounder {
 			if (!filter.test(atomPredicate)) {
 				continue;
 			}
-			if ("_br1".equals(atomPredicate.getName())) {
+			if ("_br1".equals(atomPredicate.getSymbol())) {
 				continue;
 			}
 			trueAtomPredicates.add(atomPredicate);

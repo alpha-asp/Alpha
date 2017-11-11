@@ -14,9 +14,9 @@ import java.util.List;
  *         <li>
  *                 Constant terms according to their corresponding object and its type
  *                 <ol>
- *                         <li>{@link ConstantTerm<Integer>} ordered by value of the integers</li>
- *                         <li>{@link ConstantTerm<at.ac.tuwien.kr.alpha.common.Symbol>} lexicographically ordered on the symbol</li>
- *                         <li>{@link ConstantTerm<String>} lexicographicall
+ *                         <li>{@link Constant <Integer>} ordered by value of the integers</li>
+ *                         <li>{@link Constant < SymbolWithRank >} lexicographically ordered on the symbol</li>
+ *                         <li>{@link Constant <String>} lexicographicall
  * First, all constant terms with integers
  * ordered according to the values of the integers, then all constant terms with symbols, according to the lexicographic
  * order of their symbols, then all constant terms with strings, according to the lexicographic order of their strings,
@@ -25,7 +25,7 @@ import java.util.List;
  * different types. Then all function symbols follow, ordered by arity, functor name, and ordering based on the
  * arguments.
  * Variable terms are last.y ordered on the string</li>
- *                         <li>{@link ConstantTerm} for all other types, where {@link Comparable#compareTo(Object)} is
+ *                         <li>{@link Constant} for all other types, where {@link Comparable#compareTo(Object)} is
  *                         used as ordering whenever possible (i.e. two terms' objects have the same type). For two
  *                         terms with objects of different type, the result is the lexicographic ordering of the type
  *                         names.</li>
@@ -40,7 +40,7 @@ import java.util.List;
 public abstract class Term implements Comparable<Term> {
 	public abstract boolean isGround();
 
-	public abstract List<VariableTerm> getOccurringVariables();
+	public abstract List<Variable> getOccurringVariables();
 
 	/**
 	 * Applies a substitution, result may be nonground.
@@ -51,11 +51,11 @@ public abstract class Term implements Comparable<Term> {
 
 	private static int priority(Term term) {
 		final Class<?> clazz = term.getClass();
-		if (clazz.equals(ConstantTerm.class)) {
+		if (clazz.equals(Constant.class)) {
 			return 1;
 		} else if (clazz.equals(FunctionTerm.class)) {
 			return 2;
-		} else if (clazz.equals(VariableTerm.class)) {
+		} else if (clazz.equals(Variable.class)) {
 			return 3;
 		}
 		throw new UnsupportedOperationException("Can only compare constant term, function terms and variable terms among each other.");

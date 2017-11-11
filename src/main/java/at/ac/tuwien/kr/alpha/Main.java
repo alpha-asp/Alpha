@@ -29,7 +29,7 @@ package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
@@ -169,7 +169,7 @@ public class Main {
 
 		if (commandLine.hasOption(OPT_FILTER)) {
 			Set<String> desiredPredicates = new HashSet<>(Arrays.asList(commandLine.getOptionValues(OPT_FILTER)));
-			filter = p -> desiredPredicates.contains(p.getName());
+			filter = p -> desiredPredicates.contains(p.getSymbol());
 		}
 
 		Bridge[] bridges = new Bridge[0];

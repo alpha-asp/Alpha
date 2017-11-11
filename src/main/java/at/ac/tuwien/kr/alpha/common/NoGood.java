@@ -121,7 +121,7 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	}
 
 	/**
-	 * Analyzes the type of this NoGood and checks if it is the so-called "body, not head" type. Uses the given {@code isRuleBody} predicate to check whether an
+	 * Analyzes the type of this NoGood and checks if it is the so-called "body, not head" type. Uses the given {@code isRuleBody} interpretation to check whether an
 	 * atom represents a rule body.
 	 * 
 	 * @return {@code true} iff: the NoGood is binary, and it has a head, and its tail is an atom representing a rule body.
@@ -138,7 +138,7 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	}
 
 	/**
-	 * Analyzes the type of this NoGood and checks if it is the so-called "body elements, not body" type. Uses the given {@code isRuleBody} predicate to check
+	 * Analyzes the type of this NoGood and checks if it is the so-called "body elements, not body" type. Uses the given {@code isRuleBody} interpretation to check
 	 * whether an atom represents a rule body.
 	 * 
 	 * @return {@code true} iff: the NoGood contains at least two literals, and the head is a negative literal whose atom represents a rule body.

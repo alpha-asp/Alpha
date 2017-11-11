@@ -5,7 +5,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import java.util.*;
 
 /**
- * This class stores ground atoms and provides the translation from an (integer) atomId to a (structured) predicate instance.
+ * This class stores ground atoms and provides the translation from an (integer) atomId to a (structured) interpretation instance.
  * Copyright (c) 2016, the Alpha Team.
  */
 public class AtomStore {
@@ -25,7 +25,7 @@ public class AtomStore {
 	}
 
 	/**
-	 * Returns the AtomId associated with a given ground predicate instance (=ground atom).
+	 * Returns the AtomId associated with a given ground interpretation instance (=ground atom).
 	 * @param groundAtom
 	 * @return
 	 */

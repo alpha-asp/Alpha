@@ -1,7 +1,8 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.common.predicates.BuiltinBiPredicate;
-import at.ac.tuwien.kr.alpha.common.predicates.FixedInterpretationPredicate;
+import at.ac.tuwien.kr.alpha.common.interpretations.BuiltinBiPredicate;
+import at.ac.tuwien.kr.alpha.common.interpretations.FixedInterpretation;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
 
 public enum BinaryOperator {
 	EQ("="),
@@ -12,11 +13,11 @@ public enum BinaryOperator {
 	GE(">=");
 
 	private String asString;
-	private FixedInterpretationPredicate asPredicate;
+	private FixedInterpretation interpretation;
 
 	BinaryOperator(String asString) {
 		this.asString = asString;
-		this.asPredicate = new BuiltinBiPredicate(this);
+		this.interpretation = new BuiltinBiPredicate(this);
 	}
 
 	@Override
@@ -24,8 +25,12 @@ public enum BinaryOperator {
 		return asString;
 	}
 
-	public FixedInterpretationPredicate toPredicate() {
-		return asPredicate;
+	public FixedInterpretation getInterpretation() {
+		return interpretation;
+	}
+
+	public Predicate toPredicate() {
+		return new Predicate(asString, 2);
 	}
 
 	public BinaryOperator getNegation() {

@@ -1,9 +1,9 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Constant;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Variable;
 import org.junit.Test;
 
 import java.util.LinkedList;
@@ -22,8 +22,8 @@ public class TermTest {
 	public void testTermReferenceEquality() {
 		// Terms must have a unique representation so that reference comparison is sufficient to check
 		// whether two terms are equal.
-		ConstantTerm ta1 = ConstantTerm.getInstance("a");
-		ConstantTerm ta2 = ConstantTerm.getInstance("a");
+		Constant ta1 = Constant.getInstance("a");
+		Constant ta2 = Constant.getInstance("a");
 		assertTrue("Two instances of ConstantTerms for the same term symbol must be the same object", ta1 == ta2);
 
 		List<Term> termList = new LinkedList<>();
@@ -39,20 +39,20 @@ public class TermTest {
 
 	@Test
 	public void testTermVariableOccurrences() {
-		ConstantTerm ta = ConstantTerm.getInstance("a");
-		VariableTerm tx = VariableTerm.getInstance("X");
+		Constant ta = Constant.getInstance("a");
+		Variable tx = Variable.getInstance("X");
 		FunctionTerm tf = FunctionTerm.getInstance("f", ta, tx);
-		List<VariableTerm> occurringVariables = tf.getOccurringVariables();
+		List<Variable> occurringVariables = tf.getOccurringVariables();
 
 		assertEquals("Variable occurring as subterm must be reported as occurring variable.", occurringVariables.get(0), tx);
 	}
 
 	@Test
 	public void testTermOrdering() throws Exception {
-		Term cts = ConstantTerm.getInstance("abc");
-		Term cti = ConstantTerm.getInstance(2);
-		Term cto = ConstantTerm.getInstance(new UUID(0, 0));
-		Term ft = FunctionTerm.getInstance("f", ConstantTerm.getInstance("a"));
+		Term cts = Constant.getInstance("abc");
+		Term cti = Constant.getInstance(2);
+		Term cto = Constant.getInstance(new UUID(0, 0));
+		Term ft = FunctionTerm.getInstance("f", Constant.getInstance("a"));
 
 		assertTrue(cts.compareTo(cti) > 0);
 		assertTrue(cti.compareTo(cts) < 0);

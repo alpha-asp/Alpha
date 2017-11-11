@@ -9,7 +9,7 @@ import static at.ac.tuwien.kr.alpha.Util.join;
 
 /**
  * An instance is a positional association of terms, e.g., representing a variable substitution, or a ground instance of
- * a predicate.
+ * a interpretation.
  * Copyright (c) 2016, the Alpha Team.
  */
 public class Instance {

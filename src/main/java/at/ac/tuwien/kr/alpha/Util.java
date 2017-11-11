@@ -52,7 +52,7 @@ public class Util {
 		return joiner.toString();
 	}
 
-	public static <T extends Comparable<T>> int compareSortedSets(SortedSet<T> a, SortedSet<T> b) {
+	public static <U extends T, T extends Comparable<T>> int compareSortedSets(SortedSet<U> a, SortedSet<U> b) {
 		if (a.size() != b.size()) {
 			return a.size() - b.size();
 		}
@@ -61,8 +61,8 @@ public class Util {
 			return 0;
 		}
 
-		final Iterator<T> ita = a.iterator();
-		final Iterator<T> itb = b.iterator();
+		final Iterator<U> ita = a.iterator();
+		final Iterator<U> itb = b.iterator();
 
 		do {
 			final int result = ita.next().compareTo(itb.next());

@@ -29,8 +29,8 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.Constant;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.junit.Ignore;
@@ -137,7 +137,7 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 	private Atom fact(String predicateName, int... iTerms) {
 		List<Term> terms = new ArrayList<>(1);
 		for (int i : iTerms) {
-			terms.add(ConstantTerm.getInstance(i));
+			terms.add(Constant.getInstance(i));
 		}
 		return new BasicAtom(new Predicate(predicateName, iTerms.length), terms);
 	}

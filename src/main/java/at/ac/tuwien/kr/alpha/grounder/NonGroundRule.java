@@ -5,9 +5,9 @@ import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.predicates.BuiltinBiPredicate;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.common.interpretations.BuiltinBiPredicate;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.Variable;
 import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 
@@ -92,7 +92,7 @@ public class NonGroundRule {
 	}
 
 	private static boolean isOriginallyGround(List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
-		List<VariableTerm> occurringVariables = new ArrayList<>();
+		List<Variable> occurringVariables = new ArrayList<>();
 		if (headAtom != null) {
 			occurringVariables.addAll(headAtom.getBindingVariables());
 			occurringVariables.addAll(headAtom.getNonBindingVariables());
@@ -105,7 +105,7 @@ public class NonGroundRule {
 			occurringVariables.addAll(atom.getBindingVariables());
 			occurringVariables.addAll(atom.getNonBindingVariables());
 		}
-		for (VariableTerm variable : occurringVariables) {
+		for (Variable variable : occurringVariables) {
 			// Ignore variables introduced by interval rewriting.
 			if (variable.toString().startsWith(IntervalTermToIntervalAtom.INTERVAL_VARIABLE_PREFIX)) {
 				continue;
@@ -143,8 +143,8 @@ public class NonGroundRule {
 	 * @return true if this rule is safe.
 	 */
 	private void checkSafety() {
-		Set<VariableTerm> bindingVariables = new HashSet<>();
-		Set<VariableTerm> nonbindingVariables = new HashSet<>();
+		Set<Variable> bindingVariables = new HashSet<>();
+		Set<Variable> nonbindingVariables = new HashSet<>();
 
 		// Check that all negative variables occur in the positive body.
 		for (Atom posAtom : bodyAtomsPositive) {
@@ -186,7 +186,7 @@ public class NonGroundRule {
 
 		for (Atom atom : atoms) {
 			// FIXME: The following case assumes that builtin predicates do not create bindings?!
-			if (atom.getPredicate() instanceof BuiltinBiPredicate) {
+			if ((atom instanceof ExternalAtom) && (((ExternalAtom)atom).getInterpretation()) instanceof BuiltinBiPredicate) {
 				// Sort out builtin atoms (we consider them as not creating new bindings)
 				builtinAtoms.add((ExternalAtom) atom);
 				continue;
@@ -198,7 +198,7 @@ public class NonGroundRule {
 			final Set<SortingBodyComponent> hits = new LinkedHashSet<>();
 
 			// For each variable
-			for (VariableTerm variableTerm : atom.getBindingVariables()) {
+			for (Variable variableTerm : atom.getBindingVariables()) {
 				// Find all components it also occurs and record in hitting components
 				for (SortingBodyComponent component : components) {
 					if (component.occurringVariables.contains(variableTerm)) {
@@ -243,8 +243,8 @@ public class NonGroundRule {
 	}
 
 	/**
-	 * Returns the predicate occurring first in the body of the rule.
-	 * @return the first predicate of the body or null if the first predicate is a builtin predicate.
+	 * Returns the interpretation occurring first in the body of the rule.
+	 * @return the first interpretation of the body or null if the first interpretation is a builtin interpretation.
 	 */
 	public Predicate usedFirstBodyPredicate() {
 		if (!bodyAtomsPositive.isEmpty()) {
@@ -323,7 +323,7 @@ public class NonGroundRule {
 	}
 
 	private class SortingBodyComponent {
-		private final Set<VariableTerm> occurringVariables;
+		private final Set<Variable> occurringVariables;
 		private final Set<Atom> atoms;
 		private final List<Atom> atomSequence;
 		int numAtoms;

@@ -1,17 +1,16 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.common.terms.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 public class Substitution {
-	private TreeMap<VariableTerm, Term> substitution;
+	private TreeMap<Variable, Term> substitution;
 
-	private Substitution(TreeMap<VariableTerm, Term> substitution) {
+	private Substitution(TreeMap<Variable, Term> substitution) {
 		this.substitution = substitution;
 	}
 
@@ -33,11 +32,11 @@ public class Substitution {
 		if (termNonGround == termGround) {
 			// Both terms are either the same constant or the same variable term
 			return true;
-		} else if (termNonGround instanceof ConstantTerm) {
+		} else if (termNonGround instanceof Constant) {
 			// Since right term is ground, both terms differ
 			return false;
-		} else if (termNonGround instanceof VariableTerm) {
-			VariableTerm variableTerm = (VariableTerm)termNonGround;
+		} else if (termNonGround instanceof Variable) {
+			Variable variableTerm = (Variable)termNonGround;
 			// Left term is variable, bind it to the right term.
 			Term bound = eval(variableTerm);
 
@@ -70,23 +69,63 @@ public class Substitution {
 	}
 
 	/**
-	 * This method should be used to obtain the {@link ConstantTerm} to be used in place of
-	 * a given {@link VariableTerm} under this substitution.
+	 * This method should be used to obtain the {@link Constant} to be used in place of
+	 * a given {@link Variable} under this substitution.
 	 *
 	 * @param variableTerm the variable term to substitute, if possible
 	 * @return a constant term if the substitution contains the given variable, {@code null} otherwise.
 	 */
-	public Term eval(VariableTerm variableTerm) {
+	public Term eval(Variable variableTerm) {
 		return this.substitution.get(variableTerm);
 	}
 
-	public <T extends Comparable<T>> Term put(VariableTerm variableTerm, ConstantTerm<T> groundTerm) {
+	public <T extends Comparable<T>> Term put(Variable variableTerm, Constant<T> groundTerm) {
 		// Note: We're destroying type information here.
 		return substitution.put(variableTerm, groundTerm);
 	}
 
 	public boolean isEmpty() {
 		return substitution.isEmpty();
+	}
+
+	public Term apply(Term term) {
+		if (term.isGround()) {
+			return term;
+		}
+
+		if (term instanceof FunctionTerm) {
+			return apply((FunctionTerm) term);
+		} else if (term instanceof Variable) {
+			return apply((Variable) term);
+		} else if (term instanceof IntervalTerm) {
+			return apply((IntervalTerm) term);
+		} else {
+			throw new RuntimeException("Unknown term type discovered.");
+		}
+	}
+
+	public FunctionTerm apply(FunctionTerm ft) {
+		if (ft.isGround()) {
+			return ft;
+		}
+
+		List<Term> groundTermList = new ArrayList<>(ft.getTerms().size());
+		for (Term term : ft.getTerms()) {
+			groundTermList.add(apply(term));
+		}
+		return FunctionTerm.getInstance(ft.getSymbol(), groundTermList);
+	}
+
+	public IntervalTerm apply(IntervalTerm it) {
+		if (it.isGround()) {
+			return it;
+		}
+
+		return IntervalTerm.getInstance(apply(it.getLowerBound()), apply(it.getUpperBound()));
+	}
+
+	public Term apply(Variable variable) {
+		return eval(variable);
 	}
 
 	/**
@@ -97,7 +136,7 @@ public class Substitution {
 	@Override
 	public String toString() {
 		final StringBuilder ret = new StringBuilder();
-		for (Map.Entry<VariableTerm, Term> e : substitution.entrySet()) {
+		for (Map.Entry<Variable, Term> e : substitution.entrySet()) {
 			ret.append("_").append(e.getKey()).append(":").append(e.getValue());
 		}
 		return ret.toString();

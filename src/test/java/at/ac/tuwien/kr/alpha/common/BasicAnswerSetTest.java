@@ -2,13 +2,13 @@ package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.Constant;
 import org.junit.Test;
 
 import java.util.*;
 
-import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
+import static at.ac.tuwien.kr.alpha.common.terms.Constant.getInstance;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
@@ -28,8 +28,8 @@ public class BasicAnswerSetTest {
 		Predicate p = new Predicate("p", 1);
 		SortedSet<Predicate> qAndP = new TreeSet<>(asList(q, p));
 
-		ConstantTerm bar = getInstance("bar");
-		ConstantTerm baz = getInstance("baz");
+		Constant bar = getInstance("bar");
+		Constant baz = getInstance("baz");
 
 		Map<Predicate, SortedSet<Atom>> inst1 = new HashMap<>();
 		inst1.put(a, new TreeSet<>(singleton(new BasicAtom(a))));

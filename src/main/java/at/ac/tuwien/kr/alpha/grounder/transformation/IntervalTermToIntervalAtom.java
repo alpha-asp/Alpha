@@ -8,7 +8,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Variable;
 import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ public class IntervalTermToIntervalAtom implements ProgramTransformation {
 	 */
 	public static boolean rewriteIntervalSpecifications(Rule rule) {
 		// Collect all intervals and replace them with variables.
-		Map<VariableTerm, IntervalTerm> intervalReplacements = new HashMap<>();
+		Map<Variable, IntervalTerm> intervalReplacements = new HashMap<>();
 		for (Literal literal : rule.getBody()) {
 			rewriteAtom(literal, intervalReplacements);
 		}
@@ -41,7 +41,7 @@ public class IntervalTermToIntervalAtom implements ProgramTransformation {
 		}
 
 		// Add new IntervalAtoms representing the interval specifications.
-		for (Map.Entry<VariableTerm, IntervalTerm> interval : intervalReplacements.entrySet()) {
+		for (Map.Entry<Variable, IntervalTerm> interval : intervalReplacements.entrySet()) {
 			rule.getBody().add(new IntervalAtom(interval.getValue(), interval.getKey()));
 		}
 		return !intervalReplacements.isEmpty();
@@ -50,12 +50,12 @@ public class IntervalTermToIntervalAtom implements ProgramTransformation {
 	/**
 	 * Replaces every IntervalTerm by a new variable and returns a mapping of the replaced VariableTerm -> IntervalTerm.
 	 */
-	private static void rewriteAtom(Atom atom, Map<VariableTerm, IntervalTerm> intervalReplacement) {
+	private static void rewriteAtom(Atom atom, Map<Variable, IntervalTerm> intervalReplacement) {
 		List<Term> termList = atom.getTerms();
 		for (int i = 0; i < termList.size(); i++) {
 			Term term = termList.get(i);
 			if (term instanceof IntervalTerm) {
-				VariableTerm replacementVariable = VariableTerm.getInstance(INTERVAL_VARIABLE_PREFIX + intervalReplacement.size());
+				Variable replacementVariable = Variable.getInstance(INTERVAL_VARIABLE_PREFIX + intervalReplacement.size());
 				intervalReplacement.put(replacementVariable, (IntervalTerm) term);
 				termList.set(i, replacementVariable);
 			}
@@ -67,13 +67,13 @@ public class IntervalTermToIntervalAtom implements ProgramTransformation {
 		}
 	}
 
-	private static FunctionTerm rewriteFunctionTerm(FunctionTerm functionTerm, Map<VariableTerm, IntervalTerm> intervalReplacement) {
+	private static FunctionTerm rewriteFunctionTerm(FunctionTerm functionTerm, Map<Variable, IntervalTerm> intervalReplacement) {
 		List<Term> termList = new ArrayList<>(functionTerm.getTerms());
 		boolean didChange = false;
 		for (int i = 0; i < termList.size(); i++) {
 			Term term = termList.get(i);
 			if (term instanceof IntervalTerm) {
-				VariableTerm replacementVariable = VariableTerm.getInstance("_Interval" + intervalReplacement.size());
+				Variable replacementVariable = Variable.getInstance("_Interval" + intervalReplacement.size());
 				intervalReplacement.put(replacementVariable, (IntervalTerm) term);
 				termList.set(i, replacementVariable);
 				didChange = true;

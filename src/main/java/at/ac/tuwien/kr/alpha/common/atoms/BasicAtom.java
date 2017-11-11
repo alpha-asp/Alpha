@@ -1,8 +1,8 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Variable;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.*;
@@ -36,7 +36,7 @@ public class BasicAtom implements Literal {
 	}
 
 	/**
-	 * Creates a positive BasicAtom over predicate and terms.
+	 * Creates a positive BasicAtom over interpretation and terms.
 	 * @param predicate
 	 * @param terms
 	 */
@@ -84,12 +84,12 @@ public class BasicAtom implements Literal {
 	}
 
 	@Override
-	public List<VariableTerm> getBindingVariables() {
+	public List<Variable> getBindingVariables() {
 		if (negated) {
 			// Negative literal has no binding variables.
 			return Collections.emptyList();
 		}
-		LinkedList<VariableTerm> bindingVariables = new LinkedList<>();
+		LinkedList<Variable> bindingVariables = new LinkedList<>();
 		for (Term term : terms) {
 			bindingVariables.addAll(term.getOccurringVariables());
 		}
@@ -97,12 +97,12 @@ public class BasicAtom implements Literal {
 	}
 
 	@Override
-	public List<VariableTerm> getNonBindingVariables() {
+	public List<Variable> getNonBindingVariables() {
 		if (!negated) {
 			// Positive literal has only binding variables.
 			return Collections.emptyList();
 		}
-		LinkedList<VariableTerm> nonbindingVariables = new LinkedList<>();
+		LinkedList<Variable> nonbindingVariables = new LinkedList<>();
 		for (Term term : terms) {
 			nonbindingVariables.addAll(term.getOccurringVariables());
 		}
@@ -118,7 +118,7 @@ public class BasicAtom implements Literal {
 
 	@Override
 	public String toString() {
-		String result = (negated ? "not " : "") + predicate.getName();
+		String result = (negated ? "not " : "") + predicate.getSymbol();
 		if (terms.isEmpty()) {
 			return result;
 		}

@@ -2,8 +2,8 @@ package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.Constant;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 import java.util.*;
@@ -72,7 +72,7 @@ public class AnswerSetBuilder {
 		// since we are only reading, not writing.
 		List<Term> termList = Stream
 			.of(terms)
-			.map(ConstantTerm::getInstance)
+			.map(Constant::getInstance)
 			.collect(Collectors.toList());
 
 		instances.add(new BasicAtom(predicate, termList));
@@ -86,7 +86,7 @@ public class AnswerSetBuilder {
 			predicates.add(predicate);
 		}
 
-		List<Term> termList = Stream.of(terms).map(Symbol::getInstance).map(ConstantTerm::getInstance).collect(Collectors.toList());
+		List<Term> termList = Stream.of(terms).map(Constant::getSymbolicInstance).collect(Collectors.toList());
 		instances.add(new BasicAtom(predicate, termList));
 		return this;
 	}

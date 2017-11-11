@@ -1,14 +1,15 @@
 package at.ac.tuwien.kr.alpha.antlr;
 
+import at.ac.tuwien.kr.alpha.common.BinaryOperator;
 import at.ac.tuwien.kr.alpha.common.ChoiceHead;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.Constant;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Variable;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.junit.Test;
 
@@ -28,8 +29,8 @@ public class ParserTest {
 		Program parsedProgram = parser.parse("p(a,b).");
 
 		assertEquals("Program contains one fact.", 1, parsedProgram.getFacts().size());
-		assertEquals("Predicate name of fact is p.", "p", parsedProgram.getFacts().get(0).getPredicate().getName());
-		assertEquals("Fact has two terms.", 2, parsedProgram.getFacts().get(0).getPredicate().getArity());
+		assertEquals("Predicate name of fact is p.", "p", parsedProgram.getFacts().get(0).getPredicate().getSymbol());
+		assertEquals("Fact has two terms.", 2, parsedProgram.getFacts().get(0).getPredicate().getRank());
 		assertEquals("First term is a.", "a", (parsedProgram.getFacts().get(0).getTerms().get(0)).toString());
 		assertEquals("Second term is b.", "b", (parsedProgram.getFacts().get(0).getTerms().get(1)).toString());
 	}
@@ -39,10 +40,10 @@ public class ParserTest {
 		Program parsedProgram = parser.parse("p(f(a),g(h(Y))).");
 
 		assertEquals("Program contains one fact.", 1, parsedProgram.getFacts().size());
-		assertEquals("Predicate name of fact is p.", "p", parsedProgram.getFacts().get(0).getPredicate().getName());
-		assertEquals("Fact has two terms.", 2, parsedProgram.getFacts().get(0).getPredicate().getArity());
-		assertEquals("First term is function term f.", "f", ((FunctionTerm)parsedProgram.getFacts().get(0).getTerms().get(0)).getSymbol().toString());
-		assertEquals("Second term is function term g.", "g", ((FunctionTerm)parsedProgram.getFacts().get(0).getTerms().get(1)).getSymbol().toString());
+		assertEquals("Predicate name of fact is p.", "p", parsedProgram.getFacts().get(0).getPredicate().getSymbol());
+		assertEquals("Fact has two terms.", 2, parsedProgram.getFacts().get(0).getPredicate().getRank());
+		assertEquals("First term is function term f.", "f/1", ((FunctionTerm)parsedProgram.getFacts().get(0).getTerms().get(0)).getSymbol().toString());
+		assertEquals("Second term is function term g.", "g/1", ((FunctionTerm)parsedProgram.getFacts().get(0).getTerms().get(1)).getSymbol().toString());
 	}
 
 	@Test
@@ -76,9 +77,9 @@ public class ParserTest {
 	public void parseInterval() throws IOException {
 		Program parsedProgram = parser.parse("fact(2..5). p(X) :- q(a, 3 .. X).");
 		IntervalTerm factInterval = (IntervalTerm) parsedProgram.getFacts().get(0).getTerms().get(0);
-		assertTrue(factInterval.equals(IntervalTerm.getInstance(ConstantTerm.getInstance(2), ConstantTerm.getInstance(5))));
+		assertTrue(factInterval.equals(IntervalTerm.getInstance(Constant.getInstance(2), Constant.getInstance(5))));
 		IntervalTerm bodyInterval = (IntervalTerm) parsedProgram.getRules().get(0).getBody().get(0).getTerms().get(1);
-		assertTrue(bodyInterval.equals(IntervalTerm.getInstance(ConstantTerm.getInstance(3), VariableTerm.getInstance("X"))));
+		assertTrue(bodyInterval.equals(IntervalTerm.getInstance(Constant.getInstance(3), Variable.getInstance("X"))));
 	}
 
 	@Test
@@ -105,9 +106,9 @@ public class ParserTest {
 		assertEquals(2, conditionalLiterals.size());
 		assertFalse(conditionalLiterals.get(0).isNegated());
 		assertTrue(conditionalLiterals.get(1).isNegated());
-		assertEquals(ConstantTerm.getInstance(1), choiceHead.getLowerBound());
-		assertEquals("<", choiceHead.getLowerOperator().toPredicate().getName());
-		assertEquals(ConstantTerm.getInstance(13), choiceHead.getUpperBound());
-		assertEquals("<=", choiceHead.getUpperOperator().toPredicate().getName());
+		assertEquals(Constant.getInstance(1), choiceHead.getLowerBound());
+		assertEquals(BinaryOperator.LT, choiceHead.getLowerOperator());
+		assertEquals(Constant.getInstance(13), choiceHead.getUpperBound());
+		assertEquals(BinaryOperator.LE, choiceHead.getUpperOperator());
 	}
 }

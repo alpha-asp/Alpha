@@ -8,8 +8,8 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.predicates.FixedInterpretationPredicate;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.interpretations.FixedInterpretation;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.*;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -22,17 +22,17 @@ import static java.util.Collections.emptyList;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
-	private final Map<String, FixedInterpretationPredicate> externals;
+	private final Map<String, FixedInterpretation> externals;
 	private final boolean acceptVariables;
 
 	private Program inputProgram;
 	private boolean isCurrentLiteralNegated;
 
-	public ParseTreeVisitor(Map<String, FixedInterpretationPredicate> externals) {
+	public ParseTreeVisitor(Map<String, FixedInterpretation> externals) {
 		this(externals, true);
 	}
 
-	public ParseTreeVisitor(Map<String, FixedInterpretationPredicate> externals, boolean acceptVariables) {
+	public ParseTreeVisitor(Map<String, FixedInterpretation> externals, boolean acceptVariables) {
 		this.externals = externals;
 		this.acceptVariables = acceptVariables;
 	}
@@ -295,7 +295,10 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			op = op.getNegation();
 		}
 
-		return new ExternalAtom(op.toPredicate(), Arrays.asList(
+		return new ExternalAtom(
+			op.toPredicate(),
+			op.getInterpretation(),
+			Arrays.asList(
 			(Term) visit(ctx.term(0)),
 			(Term) visit(ctx.term(1))
 		), Collections.emptyList(), isCurrentLiteralNegated);
@@ -343,18 +346,19 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public ConstantTerm visitTerm_number(ASPCore2Parser.Term_numberContext ctx) {
-		return ConstantTerm.getInstance(Integer.parseInt(ctx.NUMBER().getText()));
+	public Constant visitTerm_number(ASPCore2Parser.Term_numberContext ctx) {
+		return Constant.getInstance(Integer.parseInt(ctx.NUMBER().getText()));
 	}
 
 	@Override
-	public ConstantTerm visitTerm_const(ASPCore2Parser.Term_constContext ctx) {
-		return ConstantTerm.getInstance(Symbol.getInstance(ctx.ID().getText()));
+	public Constant visitTerm_const(ASPCore2Parser.Term_constContext ctx) {
+		return Constant.getSymbolicInstance(ctx.ID().getText());
 	}
 
 	@Override
-	public ConstantTerm visitTerm_string(ASPCore2Parser.Term_stringContext ctx) {
-		return ConstantTerm.getInstance(ctx.STRING().getText());
+	public Constant visitTerm_string(ASPCore2Parser.Term_stringContext ctx) {
+		String quotedString = ctx.QUOTED_STRING().getText();
+		return Constant.getInstance(quotedString.substring(1, quotedString.length() - 1));
 	}
 
 	@Override
@@ -363,21 +367,21 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public VariableTerm visitTerm_anonymousVariable(ASPCore2Parser.Term_anonymousVariableContext ctx) {
+	public Variable visitTerm_anonymousVariable(ASPCore2Parser.Term_anonymousVariableContext ctx) {
 		if (!acceptVariables) {
 			throw notSupported(ctx);
 		}
 
-		return VariableTerm.getAnonymousInstance();
+		return Variable.getAnonymousInstance();
 	}
 
 	@Override
-	public VariableTerm visitTerm_variable(ASPCore2Parser.Term_variableContext ctx) {
+	public Variable visitTerm_variable(ASPCore2Parser.Term_variableContext ctx) {
 		if (!acceptVariables) {
 			throw notSupported(ctx);
 		}
 
-		return VariableTerm.getInstance(ctx.VARIABLE().getText());
+		return Variable.getInstance(ctx.VARIABLE().getText());
 	}
 
 	@Override
@@ -393,21 +397,22 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			throw notSupported(ctx);
 		}
 
-		List<Term> outputTerms = visitTerms(ctx.output);
-		List<VariableTerm> output = new ArrayList<>(outputTerms.size());
+		final String predicateName = ctx.ID().getText();
+		final FixedInterpretation interpretation = externals.get(predicateName);
 
-		for (Term t : outputTerms) {
-			if (!(t instanceof VariableTerm)) {
-				throw notSupported(ctx.output);
-			}
-			output.add((VariableTerm) t);
+		if (interpretation == null) {
+			throw new IllegalArgumentException("Unknown interpretation name encountered: " + predicateName);
 		}
 
-		FixedInterpretationPredicate predicate = externals.get(ctx.ID().getText());
+		List<Term> outputTerms = visitTerms(ctx.output);
 
-		// TODO: Throw if predicate is null.
-
-		return new ExternalAtom(predicate, visitTerms(ctx.input), output, isCurrentLiteralNegated);
+		return new ExternalAtom(
+			new Predicate(predicateName, outputTerms.size()),
+			interpretation,
+			visitTerms(ctx.input),
+			outputTerms,
+			isCurrentLiteralNegated
+		);
 	}
 
 	@Override
@@ -430,8 +435,8 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		ASPCore2Parser.IntervalContext ictx = ctx.interval();
 		String lowerText = ictx.lower.getText();
 		String upperText = ictx.upper.getText();
-		Term lower = ictx.lower.getType() == ASPCore2Lexer.NUMBER ? ConstantTerm.getInstance(Integer.parseInt(lowerText)) : VariableTerm.getInstance(lowerText);
-		Term upper = ictx.upper.getType() == ASPCore2Lexer.NUMBER ? ConstantTerm.getInstance(Integer.parseInt(upperText)) : VariableTerm.getInstance(upperText);
+		Term lower = ictx.lower.getType() == ASPCore2Lexer.NUMBER ? Constant.getInstance(Integer.parseInt(lowerText)) : Variable.getInstance(lowerText);
+		Term upper = ictx.upper.getType() == ASPCore2Lexer.NUMBER ? Constant.getInstance(Integer.parseInt(upperText)) : Variable.getInstance(upperText);
 		return IntervalTerm.getInstance(lower, upper);
 	}
 

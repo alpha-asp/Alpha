@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -51,7 +51,7 @@ public class BasicAnswerSet implements AnswerSet {
 			Set<Atom> instances = getPredicateInstances(predicate);
 
 			if (instances == null || instances.isEmpty()) {
-				sb.append(predicate.getName());
+				sb.append(predicate.getSymbol());
 				continue;
 			}
 

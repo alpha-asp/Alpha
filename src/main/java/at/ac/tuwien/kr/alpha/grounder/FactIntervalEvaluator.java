@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Constant;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -23,7 +23,7 @@ public class FactIntervalEvaluator {
 	 */
 	public static List<Instance> constructFactInstances(Atom fact) {
 		// Construct instance(s) from the fact.
-		int arity = fact.getPredicate().getArity();
+		int arity = fact.getPredicate().getRank();
 		Term[] currentTerms = new Term[arity];
 		boolean containsIntervals = false;
 		// Check if instance contains intervals at all.
@@ -52,9 +52,13 @@ public class FactIntervalEvaluator {
 		Term currentTerm = currentTerms[currentPosition];
 		if (currentTerm instanceof IntervalTerm) {
 			List<Instance> instances = new ArrayList<>();
-			for (int i = ((IntervalTerm) currentTerm).getLowerBound(); i <= ((IntervalTerm) currentTerm).getUpperBound(); i++) {
+
+			int lower = ((Constant<Integer>)((IntervalTerm) currentTerm).getLowerBound()).getSymbol();
+			int upper = ((Constant<Integer>)((IntervalTerm) currentTerm).getUpperBound()).getSymbol();
+
+			for (int i = lower; i <= upper; i++) {
 				Term[] clonedTerms = currentTerms.clone();
-				clonedTerms[currentPosition] = ConstantTerm.getInstance(i);
+				clonedTerms[currentPosition] = Constant.getInstance(i);
 				instances.addAll(unrollInstances(clonedTerms, currentPosition + 1));
 			}
 			return instances;

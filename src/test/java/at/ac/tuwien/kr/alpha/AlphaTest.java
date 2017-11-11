@@ -3,9 +3,9 @@ package at.ac.tuwien.kr.alpha;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.ExternalMethodPredicate;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.interpretations.ExternalMethodPredicate;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.Constant;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -78,7 +78,7 @@ public class AlphaTest {
 	@Test
 	public void supplier() throws Exception {
 		Alpha system = new Alpha();
-		system.register("bestNode", () -> singleton(singletonList(ConstantTerm.getInstance(1))));
+		system.register("bestNode", () -> singleton(singletonList(Constant.getInstance(1))));
 
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ node(1), a }");
 		Set<AnswerSet> actual = system.solve("node(1). a :- &bestNode(X), node(X).").collect(Collectors.toSet());
@@ -86,8 +86,8 @@ public class AlphaTest {
 	}
 
 	@at.ac.tuwien.kr.alpha.Predicate
-	public static Set<List<ConstantTerm>> bestNode() {
-		return singleton(singletonList(ConstantTerm.getInstance(1)));
+	public static Set<List<Constant>> bestNode() {
+		return singleton(singletonList(Constant.getInstance(1)));
 	}
 
 	@Test
@@ -108,17 +108,17 @@ public class AlphaTest {
 		system.solve("a :- &connected[\"hello\",2].").collect(Collectors.toSet());
 	}
 
-	public static Set<List<ConstantTerm<Integer>>> neighbors(int node) {
+	public static Set<List<Constant<Integer>>> neighbors(int node) {
 		if (node == 1) {
 			return new HashSet<>(asList(
-				singletonList(ConstantTerm.getInstance(2)),
-				singletonList(ConstantTerm.getInstance(3))
+				singletonList(Constant.getInstance(2)),
+				singletonList(Constant.getInstance(3))
 			));
 		}
 		return emptySet();
 	}
 
-	public static Set<List<ConstantTerm<Integer>>> coolNode(int node) {
+	public static Set<List<Constant<Integer>>> coolNode(int node) {
 		if (node == 1) {
 			return singleton(emptyList());
 		}
@@ -184,11 +184,12 @@ public class AlphaTest {
 		SubThingy thingy = new SubThingy();
 
 		Rule rule = new Rule(
-			new DisjunctiveHead(Collections.singletonList(new BasicAtom(new Predicate("p", 1), ConstantTerm.getInstance("x")))),
+			new DisjunctiveHead(Collections.singletonList(new BasicAtom(new Predicate("p", 1), Constant.getInstance("x")))),
 			singletonList(
 				new ExternalAtom(
+					new Predicate("thinger", 1),
 					new ExternalMethodPredicate(this.getClass().getMethod("thinger", Thingy.class)),
-					singletonList(ConstantTerm.getInstance(thingy)),
+					singletonList(Constant.getInstance(thingy)),
 					emptyList(),
 					false
 				)
@@ -271,8 +272,16 @@ public class AlphaTest {
 	@Test
 	public void basicUsage() throws Exception {
 		Alpha system = new Alpha();
-		Set<AnswerSet> actual = system.solve("a.").collect(Collectors.toSet());
-		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
+		Set<AnswerSet> actual = system.solve("p(a).").collect(Collectors.toSet());
+		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("p").symbolicInstance("a").build()));
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void basicUsageWithString() throws Exception {
+		Alpha system = new Alpha();
+		Set<AnswerSet> actual = system.solve("p(\"a\").").collect(Collectors.toSet());
+		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("p").instance("a").build()));
 		assertEquals(expected, actual);
 	}
 }

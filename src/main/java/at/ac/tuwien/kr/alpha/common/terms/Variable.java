@@ -10,23 +10,23 @@ import java.util.List;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class VariableTerm extends Term {
-	private static final Interner<VariableTerm> INTERNER = new Interner<>();
+public class Variable extends Term {
+	private static final Interner<Variable> INTERNER = new Interner<>();
 
 	private static final String ANONYMOUS_VARIABLE_PREFIX = "_";
 	private static final IntIdGenerator ANONYMOUS_VARIABLE_COUNTER = new IntIdGenerator();
 
 	private final String variableName;
 
-	private VariableTerm(String variableName) {
+	private Variable(String variableName) {
 		this.variableName = variableName;
 	}
 
-	public static VariableTerm getInstance(String variableName) {
-		return INTERNER.intern(new VariableTerm(variableName));
+	public static Variable getInstance(String variableName) {
+		return INTERNER.intern(new Variable(variableName));
 	}
 
-	public static VariableTerm getAnonymousInstance() {
+	public static Variable getAnonymousInstance() {
 		return getInstance(ANONYMOUS_VARIABLE_PREFIX + ANONYMOUS_VARIABLE_COUNTER.getNextId());
 	}
 
@@ -36,7 +36,7 @@ public class VariableTerm extends Term {
 	}
 
 	@Override
-	public List<VariableTerm> getOccurringVariables() {
+	public List<Variable> getOccurringVariables() {
 		return Collections.singletonList(this);
 	}
 
@@ -65,7 +65,7 @@ public class VariableTerm extends Term {
 			return false;
 		}
 
-		VariableTerm that = (VariableTerm) o;
+		Variable that = (Variable) o;
 
 		return variableName.equals(that.variableName);
 	}
@@ -81,11 +81,11 @@ public class VariableTerm extends Term {
 			return 0;
 		}
 
-		if (!(o instanceof VariableTerm)) {
+		if (!(o instanceof Variable)) {
 			return super.compareTo(o);
 		}
 
-		VariableTerm other = (VariableTerm)o;
+		Variable other = (Variable)o;
 		return variableName.compareTo(other.variableName);
 	}
 }

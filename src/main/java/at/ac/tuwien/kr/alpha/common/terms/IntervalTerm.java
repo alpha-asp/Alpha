@@ -14,9 +14,6 @@ public class IntervalTerm extends Term {
 	private final Term lowerBoundTerm;
 	private final Term upperBoundTerm;
 
-	private final int lowerBound;
-	private final int upperBound;
-
 	private final boolean ground;
 
 	private IntervalTerm(Term lowerBound, Term upperBound) {
@@ -24,18 +21,10 @@ public class IntervalTerm extends Term {
 			throw new IllegalArgumentException();
 		}
 
-		this.ground = !((lowerBound instanceof VariableTerm) || (upperBound instanceof VariableTerm));
+		this.ground = lowerBound.isGround() && upperBound.isGround();
 
 		this.lowerBoundTerm = lowerBound;
 		this.upperBoundTerm = upperBound;
-
-		if (this.ground) {
-			this.upperBound = Integer.parseInt(upperBoundTerm.toString());
-			this.lowerBound = Integer.parseInt(lowerBoundTerm.toString());
-		} else {
-			this.upperBound = -1;
-			this.lowerBound = -1;
-		}
 	}
 
 	public static IntervalTerm getInstance(Term lowerBound, Term upperBound) {
@@ -47,28 +36,28 @@ public class IntervalTerm extends Term {
 		return this.ground;
 	}
 
-	public int getLowerBound() {
+	public Term getLowerBound() {
 		if (!isGround()) {
 			throw new RuntimeException("Cannot get the lower bound of non-ground interval. Should not happen.");
 		}
-		return this.lowerBound;
+		return this.lowerBoundTerm;
 	}
 
-	public int getUpperBound() {
+	public Term getUpperBound() {
 		if (!isGround()) {
 			throw new RuntimeException("Cannot get the upper bound of non-ground interval. Should not happen.");
 		}
-		return this.upperBound;
+		return this.upperBoundTerm;
 	}
 
 	@Override
-	public List<VariableTerm> getOccurringVariables() {
-		LinkedList<VariableTerm> variables = new LinkedList<>();
-		if (lowerBoundTerm instanceof VariableTerm) {
-			variables.add((VariableTerm) lowerBoundTerm);
+	public List<Variable> getOccurringVariables() {
+		LinkedList<Variable> variables = new LinkedList<>();
+		if (lowerBoundTerm instanceof Variable) {
+			variables.add((Variable) lowerBoundTerm);
 		}
-		if (upperBoundTerm instanceof VariableTerm) {
-			variables.add((VariableTerm) upperBoundTerm);
+		if (upperBoundTerm instanceof Variable) {
+			variables.add((Variable) upperBoundTerm);
 		}
 		return variables;
 	}

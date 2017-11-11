@@ -29,8 +29,8 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.Constant;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.junit.Ignore;
@@ -112,7 +112,7 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 		Predicate predicate = new Predicate("c", 1);
 		for (String colour : colours) {
 			List<Term> terms = new ArrayList<>(1);
-			terms.add(ConstantTerm.getInstance(colour));
+			terms.add(Constant.getInstance(colour));
 			facts.add(new BasicAtom(predicate, terms));
 		}
 		return facts;
@@ -142,7 +142,7 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 		List<Term> terms = new ArrayList<>(1);
 		Predicate predicate = new Predicate(predicateName, iTerms.length);
 		for (int i : iTerms) {
-			terms.add(ConstantTerm.getInstance(i));
+			terms.add(Constant.getInstance(i));
 		}
 		return new BasicAtom(predicate, terms);
 	}

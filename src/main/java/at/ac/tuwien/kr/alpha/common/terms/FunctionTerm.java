@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
+import at.ac.tuwien.kr.alpha.common.symbols.Functor;
 import at.ac.tuwien.kr.alpha.common.Interner;
-import at.ac.tuwien.kr.alpha.common.Symbol;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.*;
@@ -14,16 +14,21 @@ import static at.ac.tuwien.kr.alpha.Util.join;
 public class FunctionTerm extends Term {
 	private static final Interner<FunctionTerm> INTERNER = new Interner<>();
 
-	private final Symbol symbol;
+	private final Functor symbol;
 	private final List<Term> terms;
 	private final boolean ground;
 
-	private FunctionTerm(Symbol symbol, List<Term> terms) {
+	private FunctionTerm(Functor symbol, List<Term> terms) {
 		if (symbol == null) {
 			throw new IllegalArgumentException();
 		}
 
 		this.symbol = symbol;
+
+		if (terms.size() != symbol.getRank()) {
+			throw new IllegalArgumentException("Number of arguments does not match arity.");
+		}
+
 		this.terms = Collections.unmodifiableList(terms);
 
 		boolean ground = true;
@@ -36,23 +41,23 @@ public class FunctionTerm extends Term {
 		this.ground = ground;
 	}
 
-	public static FunctionTerm getInstance(Symbol functionSymbol, List<Term> termList) {
+	public static FunctionTerm getInstance(Functor functionSymbol, List<Term> termList) {
 		return INTERNER.intern(new FunctionTerm(functionSymbol, termList));
 	}
 
 	public static FunctionTerm getInstance(String functionSymbol, List<Term> termList) {
-		return getInstance(Symbol.getInstance(functionSymbol, termList.size()), termList);
+		return getInstance(Functor.getInstance(functionSymbol, termList.size()), termList);
 	}
 
 	public static FunctionTerm getInstance(String functionSymbol, Term... terms) {
-		return getInstance(Symbol.getInstance(functionSymbol, terms.length), Arrays.asList(terms));
+		return getInstance(Functor.getInstance(functionSymbol, terms.length), Arrays.asList(terms));
 	}
 
 	public List<Term> getTerms() {
 		return terms;
 	}
 
-	public Symbol getSymbol() {
+	public Functor getSymbol() {
 		return symbol;
 	}
 
@@ -62,8 +67,8 @@ public class FunctionTerm extends Term {
 	}
 
 	@Override
-	public List<VariableTerm> getOccurringVariables() {
-		LinkedList<VariableTerm> vars = new LinkedList<>();
+	public List<Variable> getOccurringVariables() {
+		LinkedList<Variable> vars = new LinkedList<>();
 		for (Term term : terms) {
 			vars.addAll(term.getOccurringVariables());
 		}
@@ -126,7 +131,7 @@ public class FunctionTerm extends Term {
 			return terms.size() - other.terms.size();
 		}
 
-		int result = symbol.compareTo(other.symbol);
+		int result = symbol.getSymbol().compareTo(other.symbol.getSymbol());
 
 		if (result != 0) {
 			return result;

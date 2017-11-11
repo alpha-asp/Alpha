@@ -1,10 +1,10 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.Constant;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Variable;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
@@ -12,18 +12,18 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
+import static at.ac.tuwien.kr.alpha.common.terms.Constant.getInstance;
 
 /**
- * Atoms corresponding to rule bodies use this predicate, first term is rule number,
+ * Atoms corresponding to rule bodies use this interpretation, first term is rule number,
  * second is a term containing variable substitutions.
  */
 public class RuleAtom implements Atom {
-	public static final Predicate PREDICATE = new Predicate("_R_", 2, true);
+	public static final Predicate PREDICATE = Predicate.getInstance("_R_", 2, true);
 
-	private final List<ConstantTerm<String>> terms;
+	private final List<Constant<String>> terms;
 
-	private RuleAtom(List<ConstantTerm<String>> terms) {
+	private RuleAtom(List<Constant<String>> terms) {
 		if (terms.size() != 2) {
 			throw new IllegalArgumentException();
 		}
@@ -58,13 +58,13 @@ public class RuleAtom implements Atom {
 	}
 
 	@Override
-	public List<VariableTerm> getBindingVariables() {
+	public List<Variable> getBindingVariables() {
 		// NOTE: Both terms are ConstantTerms, which have no variables by definition.
 		return Collections.emptyList();
 	}
 
 	@Override
-	public List<VariableTerm> getNonBindingVariables() {
+	public List<Variable> getNonBindingVariables() {
 		return Collections.emptyList();
 	}
 
@@ -94,6 +94,6 @@ public class RuleAtom implements Atom {
 
 	@Override
 	public String toString() {
-		return PREDICATE.getName() + "(" + terms.get(0) + "," + terms.get(1) + ')';
+		return PREDICATE.getSymbol() + "(" + terms.get(0) + "," + terms.get(1) + ')';
 	}
 }

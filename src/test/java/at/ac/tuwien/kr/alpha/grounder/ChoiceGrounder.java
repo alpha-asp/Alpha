@@ -30,7 +30,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -120,7 +120,7 @@ public class ChoiceGrounder implements Grounder {
 			if (!filter.test(atomPredicate)) {
 				continue;
 			}
-			if (atomPredicate.getName().startsWith("_")) {
+			if (atomPredicate.getSymbol().startsWith("_")) {
 				continue;
 			}
 			trueAtomPredicates.add(atomPredicate);
@@ -133,8 +133,8 @@ public class ChoiceGrounder implements Grounder {
 			predicateInstances.put(trueAtomPredicate, new TreeSet<>(singleton(basicAtom)));
 		}
 
-		// Note: This grounder only deals with 0-ary predicates, i.e., every atom is a predicate and there is
-		// 	 only one predicate instance representing 0 terms.
+		// Note: This grounder only deals with 0-ary predicates, i.e., every atom is a interpretation and there is
+		// 	 only one interpretation instance representing 0 terms.
 		return new BasicAnswerSet(trueAtomPredicates, predicateInstances);
 	}
 

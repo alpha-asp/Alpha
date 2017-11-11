@@ -4,8 +4,8 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.*;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.interpretations.*;
+import at.ac.tuwien.kr.alpha.common.terms.Constant;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
@@ -24,7 +24,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class Alpha {
-	private final Map<String, FixedInterpretationPredicate> predicateMethods = new HashMap<>();
+	private final Map<String, FixedInterpretation> predicateMethods = new HashMap<>();
 
 	private final String grounderName;
 	private final String solverName;
@@ -91,12 +91,12 @@ public class Alpha {
 			return;
 		}
 
-		if (method.getGenericReturnType().getTypeName().startsWith(FixedInterpretationPredicate.EVALUATE_RETURN_TYPE_NAME_PREFIX)) {
+		if (method.getGenericReturnType().getTypeName().startsWith(FixedInterpretation.EVALUATE_RETURN_TYPE_NAME_PREFIX)) {
 			this.predicateMethods.put(name, new ExternalBindingMethodPredicate(method));
 			return;
 		}
 
-		throw new IllegalArgumentException("Passed method has unexpected return type. Should be either boolean or start with " + FixedInterpretationPredicate.EVALUATE_RETURN_TYPE_NAME_PREFIX + ".");
+		throw new IllegalArgumentException("Passed method has unexpected return type. Should be either boolean or start with " + FixedInterpretation.EVALUATE_RETURN_TYPE_NAME_PREFIX + ".");
 	}
 
 	public void register(Method method) {
@@ -104,23 +104,23 @@ public class Alpha {
 	}
 
 	public <T> void register(String name, java.util.function.Predicate<T> predicate) {
-		this.predicateMethods.put(name, new ExternalPredicate<>(name, predicate));
+		this.predicateMethods.put(name, new ExternalPredicate<>(predicate));
 	}
 
 	public void register(String name, java.util.function.IntPredicate predicate) {
-		this.predicateMethods.put(name, new ExternalIntPredicate(name, predicate));
+		this.predicateMethods.put(name, new ExternalIntPredicate(predicate));
 	}
 
 	public void register(String name, java.util.function.LongPredicate predicate) {
-		this.predicateMethods.put(name, new ExternalLongPredicate(name, predicate));
+		this.predicateMethods.put(name, new ExternalLongPredicate(predicate));
 	}
 
 	public <T, U> void register(String name, java.util.function.BiPredicate<T, U> predicate) {
-		this.predicateMethods.put(name, new ExternalBiPredicate<>(name, predicate));
+		this.predicateMethods.put(name, new ExternalBiPredicate<>(predicate));
 	}
 
-	public void register(String name, java.util.function.Supplier<Set<List<ConstantTerm>>> supplier) {
-		this.predicateMethods.put(name, new ExternalSupplier(name, supplier));
+	public void register(String name, java.util.function.Supplier<Set<List<Constant>>> supplier) {
+		this.predicateMethods.put(name, new ExternalSupplier(supplier));
 	}
 
 	public void setProgram(Program program) {
@@ -135,7 +135,7 @@ public class Alpha {
 		final List<Atom> atoms = new ArrayList<>();
 
 		for (T it : c) {
-			atoms.add(new BasicAtom(new at.ac.tuwien.kr.alpha.common.predicates.Predicate(name, 1), ConstantTerm.getInstance(it)));
+			atoms.add(new BasicAtom(new at.ac.tuwien.kr.alpha.common.symbols.Predicate(name, 1), Constant.getInstance(it)));
 		}
 
 		final Program acc = new Program(Collections.emptyList(), atoms);
