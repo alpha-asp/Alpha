@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2016-2017, the Alpha Team.
  * All rights reserved.
- * 
+ *
  * Additional changes made by Siemens.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -35,7 +35,6 @@ import java.util.stream.IntStream;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
-import static java.util.Collections.singletonList;
 
 public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	protected final int[] literals;
@@ -150,7 +149,7 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	/**
 	 * Analyzes the type of this NoGood and checks if it is the so-called "body, not head" type. Uses the given {@code isRuleBody} interpretation to check whether an
 	 * atom represents a rule body.
-	 * 
+	 *
 	 * @return {@code true} iff: the NoGood is binary, and it has a head, and its tail is an atom representing a rule body.
 	 */
 	public boolean isBodyNotHead(Predicate<? super Integer> isRuleBody) {
@@ -167,7 +166,7 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	/**
 	 * Analyzes the type of this NoGood and checks if it is the so-called "body elements, not body" type. Uses the given {@code isRuleBody} interpretation to check
 	 * whether an atom represents a rule body.
-	 * 
+	 *
 	 * @return {@code true} iff: the NoGood contains at least two literals, and the head is a negative literal whose atom represents a rule body.
 	 */
 	public boolean isBodyElementsNotBody(Predicate<? super Integer> isRuleBody) {
@@ -188,7 +187,7 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 			}
 		};
 	}
-	
+
 	public IntStream stream() {
 		return Arrays.stream(literals);
 	}

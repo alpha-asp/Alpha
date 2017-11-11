@@ -45,6 +45,7 @@ public class FactIntervalEvaluator {
 		return unrollInstances(currentTerms, 0);
 	}
 
+	@SuppressWarnings("unchecked")
 	private static List<Instance> unrollInstances(Term[] currentTerms, int currentPosition) {
 		if (currentPosition == currentTerms.length) {
 			return Collections.singletonList(new Instance(currentTerms));

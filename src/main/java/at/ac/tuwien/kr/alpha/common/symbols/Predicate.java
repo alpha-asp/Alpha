@@ -44,13 +44,24 @@ public class Predicate implements Comparable<Predicate>, SymbolWithRank<String> 
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (!(o instanceof Predicate)) return false;
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof Predicate)) {
+			return false;
+		}
 
 		Predicate predicate = (Predicate) o;
 
-		if (rank != predicate.rank) return false;
-		if (internal != predicate.internal) return false;
+		if (rank != predicate.rank) {
+			return false;
+		}
+
+		if (internal != predicate.internal) {
+			return false;
+		}
+
 		return symbol != null ? symbol.equals(predicate.symbol) : predicate.symbol == null;
 	}
 

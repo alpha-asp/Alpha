@@ -30,6 +30,7 @@ public class IntervalAtom implements Literal {
 		this.intervalRepresentingVariable = intervalRepresentingVariable;
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<Substitution> getIntervalSubstitutions(Substitution partialSubstitution) {
 		List<Substitution> substitutions = new ArrayList<>();
 

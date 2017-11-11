@@ -122,7 +122,7 @@ public class BasicAtom implements Literal {
 		if (terms.isEmpty()) {
 			return result;
 		}
-		return join(result + "(", terms,")");
+		return join(result + "(", terms, ")");
 	}
 
 	@Override
