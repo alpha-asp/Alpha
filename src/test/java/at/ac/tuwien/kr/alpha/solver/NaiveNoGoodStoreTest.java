@@ -117,16 +117,6 @@ public class NaiveNoGoodStoreTest {
 	}
 
 	@Test
-	public void propagateBinarySecondTrue() {
-		assignment.assign(1, FALSE);
-
-		store.add(1, NoGood.headFirst(2, -1));
-		store.propagate();
-
-		assertEquals(FALSE, assignment.getTruth(2));
-	}
-
-	@Test
 	public void propagateBinaryMBT() {
 		assignment.assign(2, MBT);
 
@@ -210,10 +200,10 @@ public class NaiveNoGoodStoreTest {
 		assignment.assign(2, FALSE);
 		assignment.assign(3, FALSE);
 
-		store.add(1, NoGood.headFirst(1, -3, -2));
+		store.add(1, NoGood.headFirst(-1, -3, -2));
 		store.propagate();
 
-		assertEquals(FALSE, assignment.getTruth(1));
+		assertEquals(TRUE, assignment.getTruth(1));
 	}
 
 	@Test
@@ -275,11 +265,11 @@ public class NaiveNoGoodStoreTest {
 	@Test
 	public void propagateNaryFactsMultiple() {
 		NoGood[] noGoods = new NoGood[]{
-			headFirst(-1, 2, 3),  // 1 <-  2, 3.
-			headFirst(-5, -4, 1), // 5 <- -4, 1.
-			fact(4),              // -4.
-			fact(-3),             // 3.
-			fact(-2)              // 2.
+			headFirst(-1, 2, 3), // 1 <- 2, 3.
+			headFirst(-5, 4, 1), // 5 <- 4, 1.
+			fact(-4),            // 4.
+			fact(-3),            // 3.
+			fact(-2)             // 2.
 		};
 		for (int i = 0; i < noGoods.length; i++) {
 			assertNull(store.add(i + 1, noGoods[i]));
@@ -341,8 +331,8 @@ public class NaiveNoGoodStoreTest {
 
 	@Test
 	public void conflictingFact() {
-		final NoGood noGood = fact(1);
-		assignment.assign(1, TRUE);
+		final NoGood noGood = fact(-1);
+		assignment.assign(1, FALSE);
 		ConflictCause conflictCause = store.add(1, noGood);
 		assertNotNull(conflictCause);
 		assertEquals(noGood, conflictCause.getViolatedNoGood());

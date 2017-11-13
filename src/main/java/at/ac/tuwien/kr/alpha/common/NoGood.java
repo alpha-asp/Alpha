@@ -29,11 +29,10 @@ package at.ac.tuwien.kr.alpha.common;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 
 public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	public static final int HEAD = 0;
@@ -70,6 +69,10 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	}
 
 	public static NoGood headFirst(int... literals) {
+		if (literals[0] > 0) {
+			throw oops("Head is not negative");
+		}
+
 		return new NoGood(literals, true);
 	}
 

@@ -340,9 +340,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	}
 
 	private ConflictCause assignStrongComplement(final NoGood impliedBy, int decisionLevel) {
-		final int literal = impliedBy.getLiteral(0);
-		ThriceTruth truth = isNegated(literal) ? TRUE : FALSE;
-		return assignTruth(atomOf(literal), truth, impliedBy, decisionLevel);
+		return assignTruth(impliedBy.getAtom(0), TRUE, impliedBy, decisionLevel);
 	}
 
 	private ConflictCause assignTruth(int atom, ThriceTruth truth, NoGood impliedBy, int decisionLevel) {
