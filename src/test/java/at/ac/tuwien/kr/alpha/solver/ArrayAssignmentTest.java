@@ -45,8 +45,8 @@ public class ArrayAssignmentTest {
 	public void initializeDecisionLevelState() throws Exception {
 		assignment.growForMaxAtomId(2);
 		assignment.assign(1, MBT);
-		assignment.guess(2, MBT);
-		assignment.guess(1, TRUE);
+		assignment.choose(2, MBT);
+		assignment.choose(1, TRUE);
 	}
 
 	@Test
@@ -79,7 +79,7 @@ public class ArrayAssignmentTest {
 		assertEquals(assignment.getTrueAssignments(), new HashSet<>(Collections.singletonList(3)));
 		assertEquals(1, assignment.getMBTCount());
 
-		assignment.guess(1, TRUE);
+		assignment.choose(1, TRUE);
 
 		assertEquals(TRUE, assignment.getTruth(1));
 		assertEquals(assignment.getTrueAssignments(), new HashSet<>(Arrays.asList(3, 1)));
@@ -93,7 +93,7 @@ public class ArrayAssignmentTest {
 		assertEquals(assignment.getTrueAssignments(), new HashSet<>(Collections.singletonList(3)));
 		assertEquals(1, assignment.getMBTCount());
 
-		assignment.guess(4, MBT);
+		assignment.choose(4, MBT);
 		assignment.assign(5, MBT);
 
 		assertEquals(MBT, assignment.getTruth(4));
@@ -104,7 +104,7 @@ public class ArrayAssignmentTest {
 		assertFalse(assignment.isAssigned(4));
 		assertFalse(assignment.isAssigned(5));
 
-		assignment.guess(4, TRUE);
+		assignment.choose(4, TRUE);
 
 		assertEquals(TRUE, assignment.getTruth(4));
 
@@ -137,8 +137,8 @@ public class ArrayAssignmentTest {
 		Queue<? extends Assignment.Entry> queue = assignment.getAssignmentsToProcess();
 		assertEquals(1, queue.remove().getAtom());
 
-		assignment.guess(2, MBT);
-		assignment.guess(1, TRUE);
+		assignment.choose(2, MBT);
+		assignment.choose(1, TRUE);
 
 		assertEquals(2, queue.remove().getAtom());
 		assertEquals(1, queue.element().getAtom());
@@ -153,7 +153,7 @@ public class ArrayAssignmentTest {
 		Iterator<Assignment.Entry> newAssignmentsIterator;
 
 		assignment.assign(1, MBT);
-		assignment.guess(2, MBT);
+		assignment.choose(2, MBT);
 
 		newAssignmentsIterator = assignment.getNewAssignmentsIterator();
 
@@ -162,7 +162,7 @@ public class ArrayAssignmentTest {
 		assertFalse(newAssignmentsIterator.hasNext());
 
 
-		assignment.guess(1, TRUE);
+		assignment.choose(1, TRUE);
 		assignment.backtrack();
 		assignment.assign(3, FALSE);
 
@@ -176,8 +176,8 @@ public class ArrayAssignmentTest {
 		assignment.growForMaxAtomId(3);
 		Iterator<Assignment.Entry> newAssignmentsIterator;
 
-		assignment.guess(1, MBT);
-		assignment.guess(2, MBT);
+		assignment.choose(1, MBT);
+		assignment.choose(2, MBT);
 		assignment.assign(3, MBT, null, 1);
 		assignment.backtrack();
 
@@ -195,10 +195,10 @@ public class ArrayAssignmentTest {
 		assignment.assign(1, MBT);
 		assertEquals(1, assignmentsToProcess.remove().getAtom());
 
-		assignment.guess(2, MBT);
+		assignment.choose(2, MBT);
 		assertEquals(2, assignmentsToProcess.remove().getAtom());
 
-		assignment.guess(1, TRUE);
+		assignment.choose(1, TRUE);
 		assertEquals(1, assignmentsToProcess.remove().getAtom());
 
 		assignment.backtrack();
@@ -210,13 +210,13 @@ public class ArrayAssignmentTest {
 	@Test
 	public void mbtCounterAssignMbtToFalseOnLowerDecisionLevel() {
 		assignment.growForMaxAtomId(4);
-		assertNull(assignment.guess(1, TRUE));
-		assertNull(assignment.guess(2, FALSE));
+		assertNull(assignment.choose(1, TRUE));
+		assertNull(assignment.choose(2, FALSE));
 
 		assertNull(assignment.assign(3, MBT, null, 2));
 		assertEquals(1, assignment.getMBTCount());
 
-		assertNull(assignment.guess(4, TRUE));
+		assertNull(assignment.choose(4, TRUE));
 
 		assertNotNull(assignment.assign(3, FALSE, null, 1));
 

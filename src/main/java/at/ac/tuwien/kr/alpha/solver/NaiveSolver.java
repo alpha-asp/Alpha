@@ -211,7 +211,7 @@ public class NaiveSolver extends AbstractSolver {
 		decisionLevels.add(decisionLevel, list);
 		trueAssignedFromMbt.add(decisionLevel, new ArrayList<>());
 		mbtAssignedFromUnassigned.add(decisionLevel, new ArrayList<>());
-		// We guess true for any unassigned choice atom (backtrackFast tries false)
+		// We choose true for any unassigned choice atom (backtrackFast tries false)
 		truthAssignments.put(nextChoice, true);
 		newTruthAssignments.add(nextChoice);
 		choiceStack.push(new Choice(nextChoice, true, false));
@@ -245,8 +245,8 @@ public class NaiveSolver extends AbstractSolver {
 
 		Choice lastChoice = choiceStack.pop();
 
-		int lastGuessedAtom = lastChoice.getAtom();
-		boolean lastGuessedTruthValue = lastChoice.getValue();
+		int lastChoiceAtom = lastChoice.getAtom();
+		boolean lastChoiceValue = lastChoice.getValue();
 
 		// Remove truth assignments of current decision level
 		for (Integer atomId : decisionLevels.get(decisionLevel)) {
@@ -267,12 +267,12 @@ public class NaiveSolver extends AbstractSolver {
 		mbtAssignedFromUnassigned.set(decisionLevel, new ArrayList<>());
 		trueAssignedFromMbt.set(decisionLevel, new ArrayList<>());
 
-		if (lastGuessedTruthValue) {
-			// Guess false now
-			truthAssignments.put(lastGuessedAtom, false);
-			choiceStack.push(new Choice(lastGuessedAtom, false, true));
-			newTruthAssignments.add(lastGuessedAtom);
-			decisionLevels.get(decisionLevel).add(lastGuessedAtom);
+		if (lastChoiceValue) {
+			// Choose false now
+			truthAssignments.put(lastChoiceAtom, false);
+			choiceStack.push(new Choice(lastChoiceAtom, false, true));
+			newTruthAssignments.add(lastChoiceAtom);
+			decisionLevels.get(decisionLevel).add(lastChoiceAtom);
 			didChange = true;
 		} else {
 			decisionLevel--;

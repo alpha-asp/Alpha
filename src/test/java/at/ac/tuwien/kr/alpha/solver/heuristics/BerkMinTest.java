@@ -172,9 +172,9 @@ public class BerkMinTest {
 	public void learnNoGood() {
 		NoGood learnedNoGood = new NoGood(1, 2);
 		int backjumpLevel = 1;
-		boolean clearLastGuessAfterBackjump = true;
+		boolean clearLastChoiceAfterBackjump = true;
 		Set<NoGood> noGoodsResponsibleForConflict = Collections.emptySet();
-		berkmin.analyzedConflict(new ConflictAnalysisResult(learnedNoGood, backjumpLevel, clearLastGuessAfterBackjump,
+		berkmin.analyzedConflict(new ConflictAnalysisResult(learnedNoGood, backjumpLevel, clearLastChoiceAfterBackjump,
 				noGoodsResponsibleForConflict));
 		assertEquals(learnedNoGood, berkmin.getCurrentTopClause());
 	}

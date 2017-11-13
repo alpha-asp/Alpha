@@ -65,7 +65,7 @@ public class ChoiceManager implements Checkable {
 	private boolean checksEnabled;
 	private final DebugWatcher debugWatcher;
 
-	private int guesses;
+	private int choices;
 	private int backtracks;
 	private int backjumps;
 
@@ -111,8 +111,8 @@ public class ChoiceManager implements Checkable {
 		return backtracks;
 	}
 
-	public int getGuesses() {
-		return guesses;
+	public int getChoices() {
+		return choices;
 	}
 
 	private class ChoicePoint {
@@ -189,11 +189,11 @@ public class ChoiceManager implements Checkable {
 		}
 	}
 
-	public void guess(Choice choice) {
-		guesses++;
-		LOGGER.debug("Guess {} is {}@{}", guesses, choice, assignment.getDecisionLevel());
+	public void choose(Choice choice) {
+		choices++;
+		LOGGER.debug("Choice {} is {}@{}", choices, choice, assignment.getDecisionLevel());
 
-		if (assignment.guess(choice.getAtom(), choice.getValue()) != null) {
+		if (assignment.choose(choice.getAtom(), choice.getValue()) != null) {
 			throw oops("Picked choice is incompatible with current assignment");
 		}
 
@@ -226,30 +226,30 @@ public class ChoiceManager implements Checkable {
 	 * handy in cases where higher level backtracking mechanisms already know what caused the backtracking and what
 	 * to do next.
 	 *
-	 * In order to analyze the guess that was backtracked, use the more expensive {@link #backtrackSlow()}.
+	 * In order to analyze the choice that was backtracked, use the more expensive {@link #backtrackSlow()}.
 	 */
 	public void backtrackFast() {
 		backtrack();
 
 		final Choice choice = choiceStack.pop();
 
-		LOGGER.debug("Backtracked (fast) to level {} from guess {}", assignment.getDecisionLevel(), choice);
+		LOGGER.debug("Backtracked (fast) to level {} from choice {}", assignment.getDecisionLevel(), choice);
 	}
 
 	/**
 	 * Slow backtracking will take more time, but allow to analyze the {@link Assignment.Entry} corresponding to the
-	 * guess that is being backtracked. Higher level backtracking mechanisms can use this information to change
+	 * choice that is being backtracked. Higher level backtracking mechanisms can use this information to change
 	 * their plans.
 	 *
-	 * @return the assignment entry of the guess being backtracked, or {@code null} if the guess cannot be
-	 *         backtracked any futher (it already is a backtracking guess)
+	 * @return the assignment entry of the choice being backtracked, or {@code null} if the choice cannot be
+	 *         backtracked any futher (it already is a backtracking choice)
 	 */
 	public Assignment.Entry backtrackSlow() {
 		final Choice choice = choiceStack.pop();
 		final Assignment.Entry lastChoiceEntry = assignment.get(choice.getAtom());
 
 		backtrack();
-		LOGGER.debug("Backtracked (slow) to level {} from guess {}", assignment.getDecisionLevel(), choice);
+		LOGGER.debug("Backtracked (slow) to level {} from choice {}", assignment.getDecisionLevel(), choice);
 
 		if (choice.isBacktracked()) {
 			return null;

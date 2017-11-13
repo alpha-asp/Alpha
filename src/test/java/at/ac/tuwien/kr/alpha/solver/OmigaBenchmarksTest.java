@@ -90,8 +90,7 @@ public class OmigaBenchmarksTest extends AbstractSolverTests {
 		CharStream programInputStream = CharStreams.fromPath(
 			Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName)
 		);
-		Solver solver = getInstance(programInputStream);
-		Optional<AnswerSet> answerSet = solver.stream().findFirst();
+		Optional<AnswerSet> answerSet = getInstance(programInputStream).stream().findFirst();
 		//System.out.println(answerSet);
 		// TODO: check correctness of answer set
 	}

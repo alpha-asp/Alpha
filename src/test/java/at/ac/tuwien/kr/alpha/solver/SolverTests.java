@@ -116,7 +116,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void testGuessingGroundProgram() throws Exception {
+	public void testChoiceGroundProgram() throws Exception {
 		assertAnswerSets(
 			"a :- not b. b :- not a.",
 
@@ -126,7 +126,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void testGuessingProgramNonGround() throws Exception {
+	public void testChoiceProgramNonGround() throws Exception {
 		assertAnswerSetsWithBase(
 			"dom(1). dom(2). dom(3)." +
 			"p(X) :- dom(X), not q(X)." +
@@ -146,7 +146,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void guessingProgram3Way() throws IOException {
+	public void choiceProgram3Way() throws IOException {
 		assertAnswerSets(
 			"a :- not b, not c." +
 			"b :- not a, not c." +
@@ -164,7 +164,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void guessingMultipleAnswerSets() throws IOException {
+	public void chooseMultipleAnswerSets() throws IOException {
 		assertAnswerSets(
 			"a :- not nota." +
 			"nota :- not a." +
@@ -207,7 +207,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void guessingProgramConstraint() throws IOException {
+	public void choiceProgramConstraint() throws IOException {
 		assertAnswerSetsWithBase(
 			"eq(1,1)." +
 			"eq(2,2)." +
@@ -232,7 +232,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void guessingProgramConstraintPermutation() throws IOException {
+	public void choiceProgramConstraintPermutation() throws IOException {
 		assertAnswerSetsWithBase(
 		"eq(1,1)." +
 			"eq(2,2)." +
@@ -268,7 +268,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void guessingAndPropagationAfterwards() throws IOException {
+	public void choiceAndPropagationAfterwards() throws IOException {
 		assertAnswerSetsWithBase(
 			"node(a)." +
 			"node(b)." +
@@ -286,7 +286,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void guessingAndConstraints() throws IOException {
+	public void choiceAndConstraints() throws IOException {
 		assertAnswerSetsWithBase(
 			"node(a)." +
 			"node(b)." +
@@ -340,7 +340,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void guessingConstraintsInequality() throws IOException {
+	public void choiceConstraintsInequality() throws IOException {
 		assertAnswerSetsWithBase(
 			"assign(L, R) :- not nassign(L, R), possible(L, R)." +
 			"nassign(L, R) :- not assign(L, R), possible(L, R)." +
@@ -423,7 +423,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void noPositiveCycleSelfFoundingGuess() throws IOException {
+	public void noPositiveCycleSelfFoundingChoice() throws IOException {
 		assertAnswerSets(
 			"c :- not d." +
 			"d :- not c." +

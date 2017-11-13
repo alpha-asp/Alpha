@@ -486,8 +486,8 @@ public class NaiveNoGoodStoreTest {
 	@Test
 	public void addedViolatedBinaryNoGoodPropagatesAfterBacktracking() {
 		NoGood noGood = new NoGood(70, 195);
-		assertNull(assignment.guess(70, MBT));
-		assertNull(assignment.guess(195, MBT));
+		assertNull(assignment.choose(70, MBT));
+		assertNull(assignment.choose(195, MBT));
 		assertNotNull(store.add(3, noGood));
 		assignment.backtrack();
 		assertNull(store.add(3, noGood));
@@ -498,9 +498,9 @@ public class NaiveNoGoodStoreTest {
 	@Test
 	public void addedViolatedNaryNoGoodPropagatesAfterBacktracking() {
 		NoGood noGood = new NoGood(70, 195, 36);
-		assertNull(assignment.guess(70, MBT));
-		assertNull(assignment.guess(195, MBT));
-		assertNull(assignment.guess(36, MBT));
+		assertNull(assignment.choose(70, MBT));
+		assertNull(assignment.choose(195, MBT));
+		assertNull(assignment.choose(36, MBT));
 		assertNotNull(store.add(3, noGood));
 		assignment.backtrack();
 		assertNull(store.add(3, noGood));
@@ -512,7 +512,7 @@ public class NaiveNoGoodStoreTest {
 	public void binaryNoGoodPropagatesTrueFromFalse() {
 		NoGood noGood = headFirst(-11, -12);
 		assertNull(store.add(5, noGood));
-		assertNull(assignment.guess(12, FALSE));
+		assertNull(assignment.choose(12, FALSE));
 		store.propagate();
 		assertTrue(TRUE.equals(assignment.getTruth(11)));
 	}
@@ -521,7 +521,7 @@ public class NaiveNoGoodStoreTest {
 	public void binaryNoGoodPropagatesTrueFromTrue() {
 		NoGood noGood = headFirst(-11, 12);
 		assertNull(store.add(5, noGood));
-		assertNull(assignment.guess(12, TRUE));
+		assertNull(assignment.choose(12, TRUE));
 		store.propagate();
 		assertTrue(TRUE.equals(assignment.getTruth(11)));
 	}
@@ -531,7 +531,7 @@ public class NaiveNoGoodStoreTest {
 	@Ignore("Checks for propagation in add.")
 	public void addedBinaryNoGoodPropagatesTrueFromFalse() {
 		NoGood noGood = headFirst(-11, -12);
-		assertNull(assignment.guess(12, FALSE));
+		assertNull(assignment.choose(12, FALSE));
 		assertNull(store.add(5, noGood));
 		assertTrue(TRUE.equals(assignment.getTruth(11)));
 	}
@@ -539,7 +539,7 @@ public class NaiveNoGoodStoreTest {
 	@Test
 	public void addedBinaryNoGoodPropagatesTrueFromTrue() {
 		NoGood noGood = headFirst(-11, 12);
-		assertNull(assignment.guess(12, TRUE));
+		assertNull(assignment.choose(12, TRUE));
 		assertNull(store.add(5, noGood));
 		store.propagate();
 		assertTrue(TRUE.equals(assignment.getTruth(11)));
@@ -571,9 +571,9 @@ public class NaiveNoGoodStoreTest {
 	@Ignore("Not decision-level aware.")
 	public void propagationAtLowerDecisionLevel() {
 		NoGood noGood = headFirst(-1, 2, -3);
-		assertNull(assignment.guess(3, FALSE));
-		assertNull(assignment.guess(2, TRUE));
-		assertNull(assignment.guess(4, TRUE));
+		assertNull(assignment.choose(3, FALSE));
+		assertNull(assignment.choose(2, TRUE));
+		assertNull(assignment.choose(4, TRUE));
 		assertNull(store.add(10, noGood));
 		assertNull(store.propagate());
 		assertEquals(TRUE, assignment.getTruth(1));

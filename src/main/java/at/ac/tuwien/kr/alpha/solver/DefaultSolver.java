@@ -102,10 +102,10 @@ public class DefaultSolver extends AbstractSolver {
 				throw oops("Enumeration nogood is not violated");
 			}
 			if (backjumpLevel == 0) {
-				// Search space exhausted (only happens if first guess is for TRUE at decision level 1 for an atom that was MBT at decision level 0 already).
+				// Search space exhausted (only happens if first choice is for TRUE at decision level 1 for an atom that was MBT at decision level 0 already).
 				return false;
 			}
-			// Backjump instead of backtrackSlow, enumerationNoGood will invert last guess.
+			// Backjump instead of backtrackSlow, enumerationNoGood will invert last choice.
 			choiceManager.backjump(backjumpLevel - 1);
 			LOGGER.debug("Adding enumeration nogood: {}", enumerationNoGood);
 			ConflictCause conflictCause = store.add(grounder.registerOutsideNoGood(enumerationNoGood), enumerationNoGood);
@@ -152,7 +152,7 @@ public class DefaultSolver extends AbstractSolver {
 					logStats();
 					return false;
 				}
-			} else if (guess()) {
+			} else if (choose()) {
 				LOGGER.debug("Did choice.");
 			} else if (close()) {
 				LOGGER.debug("Closed unassigned known atoms (assigning FALSE).");
@@ -178,7 +178,7 @@ public class DefaultSolver extends AbstractSolver {
 
 	/**
 	 * Analyzes the conflict and either learns a new NoGood (causing backjumping and addition to the NoGood store),
-	 * or backtracks the guess causing the conflict.
+	 * or backtracks the choice causing the conflict.
 	 * @return false iff the analysis result shows that the set of NoGoods is unsatisfiable.
 	 */
 	private boolean learnBackjumpAddFromConflict(ConflictCause conflictCause) {
@@ -193,7 +193,7 @@ public class DefaultSolver extends AbstractSolver {
 
 		branchingHeuristic.analyzedConflict(analysisResult);
 
-		if (analysisResult.learnedNoGood == null && analysisResult.clearLastGuessAfterBackjump) {
+		if (analysisResult.learnedNoGood == null && analysisResult.clearLastChoiceAfterBackjump) {
 			// TODO: Temporarily abort resolution with backtrackFast instead of learning a too large nogood.
 			backtrack();
 			return true;
@@ -214,7 +214,7 @@ public class DefaultSolver extends AbstractSolver {
 		choiceManager.backtrackFast();
 		store.propagate();
 		if (!store.didPropagate()) {
-			throw oops("Nothing to propagate after backtracking from conflict-causing guess");
+			throw oops("Nothing to propagate after backtracking from conflict-causing choice");
 		}
 
 		return true;
@@ -241,35 +241,35 @@ public class DefaultSolver extends AbstractSolver {
 	 */
 	private boolean backtrack() {
 		while (assignment.getDecisionLevel() != 0) {
-			final Assignment.Entry guess = choiceManager.backtrackSlow();
+			final Assignment.Entry choice = choiceManager.backtrackSlow();
 
-			if (guess == null) {
-				LOGGER.debug("Backtracking further, because last guess was already backtracked.");
+			if (choice == null) {
+				LOGGER.debug("Backtracking further, because last choice was already backtracked.");
 				continue;
 			}
 
-			final int lastGuess = guess.getAtom();
-			final boolean guessValue = guess.getTruth().toBoolean();
+			final int lastChoice = choice.getAtom();
+			final boolean choiceValue = choice.getTruth().toBoolean();
 
-			// Chronological backtracking: guess inverse now.
-			// Guess FALSE if the previous guess was for TRUE and the atom was not already MBT at that time.
-			if (guessValue && MBT.equals(assignment.getTruth(lastGuess))) {
-				LOGGER.debug("Backtracking further, because last guess was MBT before guessing TRUE.");
+			// Chronological backtracking: choose inverse now.
+			// Choose FALSE if the previous choice was for TRUE and the atom was not already MBT at that time.
+			if (choiceValue && MBT.equals(assignment.getTruth(lastChoice))) {
+				LOGGER.debug("Backtracking further, because last choice was MBT before choosing TRUE.");
 				continue;
 			}
 
-			// If choice was assigned at lower decision level (due to added NoGoods), no inverted guess should be done.
-			if (guess.getImpliedBy() != null) {
-				LOGGER.debug("Last guess is now implied by {}", guess.getImpliedBy());
-				//if (guess.getDecisionLevel() == assignment.getDecisionLevel() + 1) {
+			// If choice was assigned at lower decision level (due to added NoGoods), no inverted choice should be done.
+			if (choice.getImpliedBy() != null) {
+				LOGGER.debug("Last choice is now implied by {}", choice.getImpliedBy());
+				//if (choice.getDecisionLevel() == assignment.getDecisionLevel() + 1) {
 				//	throw oops("Choice was assigned but not at a lower decision level");
 				//}
-				LOGGER.debug("Backtracking further, because last guess was assigned at a lower decision level.");
+				LOGGER.debug("Backtracking further, because last choice was assigned at a lower decision level.");
 				continue;
 			}
 
-			LOGGER.debug("Guessing inverse.");
-			choiceManager.guess(new Choice(lastGuess, !guessValue, true));
+			LOGGER.debug("Choosing inverse.");
+			choiceManager.choose(new Choice(lastChoice, !choiceValue, true));
 			break;
 		}
 
@@ -305,8 +305,8 @@ public class DefaultSolver extends AbstractSolver {
 	private NoGood fixContradiction(Map.Entry<Integer, NoGood> noGoodEntry, ConflictCause conflictCause) {
 		LOGGER.debug("Attempting to fix violation of {} caused by {}", noGoodEntry.getValue(), conflictCause);
 
-		if (conflictCause.getViolatedGuess() != null) {
-			choiceManager.backjump(conflictCause.getViolatedGuess().getDecisionLevel());
+		if (conflictCause.getViolatedChoice() != null) {
+			choiceManager.backjump(conflictCause.getViolatedChoice().getDecisionLevel());
 			choiceManager.backtrackFast();
 			return null;
 		}
@@ -318,7 +318,7 @@ public class DefaultSolver extends AbstractSolver {
 		branchingHeuristic.analyzedConflict(conflictAnalysisResult);
 
 		choiceManager.backjump(conflictAnalysisResult.backjumpLevel);
-		if (conflictAnalysisResult.clearLastGuessAfterBackjump) {
+		if (conflictAnalysisResult.clearLastChoiceAfterBackjump) {
 			choiceManager.backtrackFast();
 		}
 
@@ -332,7 +332,7 @@ public class DefaultSolver extends AbstractSolver {
 		return conflictAnalysisResult.learnedNoGood;
 	}
 
-	private boolean guess() {
+	private boolean choose() {
 		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
 		choiceManager.updateAssignments();
 
@@ -351,11 +351,11 @@ public class DefaultSolver extends AbstractSolver {
 			LOGGER.debug("Branching heuristic chose atom {}", grounder.atomToString(atom));
 		}
 
-		choiceManager.guess(new Choice(atom, branchingHeuristic.chooseSign(atom), false));
+		choiceManager.choose(new Choice(atom, branchingHeuristic.chooseSign(atom), false));
 		return true;
 	}
 	
 	private void logStats() {
-		LOGGER.debug("g=" + choiceManager.getGuesses() + ", bt=" + choiceManager.getBacktracks() + ", bj=" + choiceManager.getBackjumps() + ", mbt=" + mbtAtFixpoint);
+		LOGGER.debug("g=" + choiceManager.getChoices() + ", bt=" + choiceManager.getBacktracks() + ", bj=" + choiceManager.getBackjumps() + ", mbt=" + mbtAtFixpoint);
 	}
 }

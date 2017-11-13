@@ -159,7 +159,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 	}
 
 	@Override
-	public ConflictCause guess(int atom, ThriceTruth value) {
+	public ConflictCause choose(int atom, ThriceTruth value) {
 		atomsAssignedInDecisionLevel.add(new ArrayList<>());
 		propagationCounterPerDecisionLevel.add(0);
 		return assign(atom, value, null);

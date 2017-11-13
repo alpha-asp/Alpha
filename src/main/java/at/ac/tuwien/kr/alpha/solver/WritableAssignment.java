@@ -64,10 +64,10 @@ public interface WritableAssignment extends Assignment {
 		return assign(atom, value, null);
 	}
 
-	ConflictCause guess(int atom, ThriceTruth value);
+	ConflictCause choose(int atom, ThriceTruth value);
 
-	default ConflictCause guess(int atom, boolean value) {
-		return guess(atom, ThriceTruth.valueOf(value));
+	default ConflictCause choose(int atom, boolean value) {
+		return choose(atom, ThriceTruth.valueOf(value));
 	}
 
 	default int minimumConflictLevel(NoGood noGood) {

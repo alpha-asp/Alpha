@@ -55,24 +55,24 @@ public class GroundConflictNoGoodLearner {
 
 		public final NoGood learnedNoGood;
 		public final int backjumpLevel;
-		public final boolean clearLastGuessAfterBackjump;
+		public final boolean clearLastChoiceAfterBackjump;
 		public final Set<NoGood> noGoodsResponsibleForConflict;
 
 		private ConflictAnalysisResult() {
 			learnedNoGood = null;
 			backjumpLevel = -1;
-			clearLastGuessAfterBackjump = false;
+			clearLastChoiceAfterBackjump = false;
 			noGoodsResponsibleForConflict = null;
 		}
 
-		public ConflictAnalysisResult(NoGood learnedNoGood, int backjumpLevel, boolean clearLastGuessAfterBackjump, Set<NoGood> noGoodsResponsibleForConflict) {
+		public ConflictAnalysisResult(NoGood learnedNoGood, int backjumpLevel, boolean clearLastChoiceAfterBackjump, Set<NoGood> noGoodsResponsibleForConflict) {
 			if (backjumpLevel < 0) {
 				throw oops("Backjumping level is smaller than 0");
 			}
 
 			this.learnedNoGood = learnedNoGood;
 			this.backjumpLevel = backjumpLevel;
-			this.clearLastGuessAfterBackjump = clearLastGuessAfterBackjump;
+			this.clearLastChoiceAfterBackjump = clearLastChoiceAfterBackjump;
 			this.noGoodsResponsibleForConflict = noGoodsResponsibleForConflict;
 		}
 
@@ -118,12 +118,12 @@ public class GroundConflictNoGoodLearner {
 		// TODO: create ResolutionSequence
 		if (firstUIPPriorityQueue.size() == 1) {
 			// There is only one literal to process, i.e., only one literal in the violatedNoGood is from conflict decision level.
-			// This means that the NoGood already was unit but got violated, because another NoGood propagated earlier or a wrong guess was made.
+			// This means that the NoGood already was unit but got violated, because another NoGood propagated earlier or a wrong choice was made.
 			// The real conflict therefore is caused by either:
 			// a) two NoGoods propagating the same atom to different truth values in the current decisionLevel, or
-			// b) a NoGood propagating at a lower decision level to the inverse value of a guess with higher decision level.
+			// b) a NoGood propagating at a lower decision level to the inverse value of a choice with higher decision level.
 			// For a) we need to work also with the other NoGood.
-			// For b) we need to backtrack the wrong guess.
+			// For b) we need to backtrack the wrong choice.
 
 			Assignment.Entry atomAssignmentEntry = firstUIPPriorityQueue.poll();
 			NoGood otherContributingNoGood = atomAssignmentEntry.getImpliedBy();
@@ -151,7 +151,7 @@ public class GroundConflictNoGoodLearner {
 				//return new ConflictAnalysisResult(currentResolutionNoGood, computeBackjumpingDecisionLevel(currentResolutionNoGood), false, noGoodsResponsible);
 			} else if (currentResolutionNoGood.size() > 32) {
 				// Break if resolved NoGood becomes too large.
-				// Remove all current-dl elements from the resolution NoGood and add the last guess, then backjump like usual.
+				// Remove all current-dl elements from the resolution NoGood and add the last choice, then backjump like usual.
 				return new ConflictAnalysisResult(null, conflictDecisionLevel, true, noGoodsResponsible);	// Flag unsatisfiable abused here.
 				/*if (getAssignmentEntryRespectingLowerMBT(lastGuessedAtom).getDecisionLevel() <= conflictDecisionLevel) {
 					// If lastGuessedAtom is not unassigned after backjump, use repeatAnalysisIfNotAssigning.
