@@ -88,11 +88,11 @@ public class AlphaHeuristicTestAssumptions {
 		for (NoGood noGood : noGoods) {
 			n++;
 			boolean knownType = false;
-			if (noGood.isBodyNotHead(isRuleBody)) {
+			if (DependencyDrivenHeuristic.isBodyNotHead(noGood, isRuleBody)) {
 				bodyNotHead++;
 				knownType = true;
 			}
-			if (noGood.isBodyElementsNotBody(isRuleBody)) {
+			if (DependencyDrivenHeuristic.isBodyElementsNotBody(noGood, isRuleBody)) {
 				bodyElementsNotBody++;
 				knownType = true;
 			}

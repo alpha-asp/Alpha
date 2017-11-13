@@ -36,6 +36,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 
 public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
+	public static final int HEAD = 0;
 	public static final NoGood UNSAT = new NoGood();
 
 	protected final int[] literals;
@@ -63,7 +64,7 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 		this.literals = shift <= 0 ? literals : Arrays.copyOf(literals, literals.length - shift);
 	}
 
-	public NoGood(NoGood noGood) {
+	protected NoGood(NoGood noGood) {
 		this.literals = noGood.literals.clone();
 		this.head = noGood.head;
 	}
@@ -88,8 +89,8 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 		return literals.length == 2;
 	}
 
-	public int[] getLiteralsClone() {
-		return literals.clone();
+	public NoGood withoutHead() {
+		return new NoGood(literals.clone());
 	}
 
 	/**
@@ -103,44 +104,8 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 		return literals[index];
 	}
 
-	/**
-	 * Returns the index of the head literal, if present.
-	 * @throws IllegalStateException if there is no head.
-	 * @return the index of the head literal.
-	 */
-	public int getHead() {
-		return 0;
-	}
-
 	public boolean hasHead() {
 		return head;
-	}
-
-	/**
-	 * Analyzes the type of this NoGood and checks if it is the so-called "body, not head" type. Uses the given {@code isRuleBody} predicate to check whether an
-	 * atom represents a rule body.
-	 * 
-	 * @return {@code true} iff: the NoGood is binary, and it has a head, and its tail is an atom representing a rule body.
-	 */
-	public boolean isBodyNotHead(Predicate<? super Integer> isRuleBody) {
-		return isBinary() && hasHead() && isRuleBody.test(atomOf(getFirstTailLiteral()));
-	}
-
-	/**
-	 * Returns the first literal that is not pointed to by the head.
-	 */
-	private int getFirstTailLiteral() {
-		return head ? literals[1] : literals[0];
-	}
-
-	/**
-	 * Analyzes the type of this NoGood and checks if it is the so-called "body elements, not body" type. Uses the given {@code isRuleBody} predicate to check
-	 * whether an atom represents a rule body.
-	 * 
-	 * @return {@code true} iff: the NoGood contains at least two literals, and the head is a negative literal whose atom represents a rule body.
-	 */
-	public boolean isBodyElementsNotBody(Predicate<? super Integer> isRuleBody) {
-		return literals.length > 1 && hasHead() && isNegated(literals[0]) && isRuleBody.test(atomOf(literals[0]));
 	}
 
 	@Override

@@ -19,7 +19,12 @@ public interface AtomTranslator {
 	 * @return the string representation of the NoGood.
 	 */
 	default <T extends NoGood> String noGoodToString(T noGood) {
-		StringBuilder sb = new StringBuilder("{");
+		StringBuilder sb = new StringBuilder();
+
+		if (noGood.hasHead()) {
+			sb.append("*");
+		}
+		sb.append("{");
 
 		for (Iterator<Integer> iterator = noGood.iterator(); iterator.hasNext();) {
 			sb.append(literalToString(iterator.next()));
@@ -30,12 +35,6 @@ public interface AtomTranslator {
 		}
 
 		sb.append("}");
-
-		if (noGood.hasHead()) {
-			sb.append("[");
-			sb.append(noGood.getHead());
-			sb.append("]");
-		}
 
 		return sb.toString();
 	}

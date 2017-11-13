@@ -38,6 +38,7 @@ import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.NoGood.HEAD;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -95,7 +96,7 @@ public class GroundConflictNoGoodLearner {
 
 	private ConflictAnalysisResult analyzeConflictingNoGoodRepetition(NoGood violatedNoGood, Set<NoGood> noGoodsResponsible) {
 		noGoodsResponsible.add(violatedNoGood);
-		NoGood currentResolutionNoGood = new NoGood(violatedNoGood.getLiteralsClone());	// Clone violated NoGood and remove potential head.
+		NoGood currentResolutionNoGood = violatedNoGood.withoutHead();	// Clone violated NoGood and remove potential head.
 		// Find decision level where conflict occurs (i.e., highest decision level of violatedNoGood).
 		int conflictDecisionLevel = -1;
 		for (Integer literal : currentResolutionNoGood) {
@@ -272,7 +273,7 @@ public class GroundConflictNoGoodLearner {
 		int numLiteralsOfHighestDecisionLevel = -1;
 		if (learnedNoGood.isUnary()) {
 			// Singleton NoGoods induce a backjump to the decision level before the NoGood got violated.
-			int singleLiteralDecisionLevel = assignment.get(learnedNoGood.getAtom(0)).getDecisionLevel();
+			int singleLiteralDecisionLevel = assignment.get(learnedNoGood.getAtom(HEAD)).getDecisionLevel();
 			return singleLiteralDecisionLevel - 1 >= 0 ? singleLiteralDecisionLevel - 1 : 0;
 		}
 		for (Integer integer : learnedNoGood) {

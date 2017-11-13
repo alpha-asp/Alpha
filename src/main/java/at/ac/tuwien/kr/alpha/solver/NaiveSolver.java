@@ -39,6 +39,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.NoGood.HEAD;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static java.lang.Math.abs;
@@ -425,7 +426,7 @@ public class NaiveSolver extends AbstractSolver {
 			return false;
 		}
 
-		int headAtom = noGood.getAtom(noGood.getHead());
+		int headAtom = noGood.getAtom(HEAD);
 
 		// Check whether head is assigned MBT.
 		if (!mbtAssigned.contains(headAtom)) {
@@ -434,10 +435,7 @@ public class NaiveSolver extends AbstractSolver {
 
 		// Check that NoGood is violated except for the head (i.e., without the head set it would be unit)
 		// and that none of the true values is MBT.
-		for (int i = 0; i < noGood.size(); i++) {
-			if (noGood.getHead() == i) {
-				continue;
-			}
+		for (int i = 1; i < noGood.size(); i++) {
 			int literal = noGood.getLiteral(i);
 			if (!(isLiteralAssigned(literal) && isLiteralViolated(literal))) {
 				return false;

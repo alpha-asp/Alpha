@@ -2,6 +2,8 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
 
+import java.util.Arrays;
+
 public final class WatchedNoGood extends NoGood {
 	private int a;
 	private int b;

@@ -379,7 +379,7 @@ public class NaiveNoGoodStoreTest {
 		ConflictCause conflictCause = store.propagate();
 		assertNotNull(conflictCause);
 		assertFalse(store.didPropagate());
-		assertEquals(noGood, new NoGood(conflictCause.getViolatedNoGood()));
+		assertEquals(noGood, conflictCause.getViolatedNoGood());
 	}
 
 	@Test
@@ -402,7 +402,7 @@ public class NaiveNoGoodStoreTest {
 		ConflictCause conflictCause = store.propagate();
 		assertNotNull(conflictCause);
 		assertFalse(store.didPropagate());
-		assertEquals(noGood, new NoGood(conflictCause.getViolatedNoGood()));
+		assertEquals(noGood, conflictCause.getViolatedNoGood());
 	}
 
 	@Test
@@ -415,7 +415,7 @@ public class NaiveNoGoodStoreTest {
 		ConflictCause conflictCause = store.propagate();
 		assertNotNull(conflictCause);
 		assertFalse(store.didPropagate());
-		assertEquals(noGood, new NoGood(conflictCause.getViolatedNoGood()));
+		assertEquals(noGood, conflictCause.getViolatedNoGood());
 	}
 
 	@Test
