@@ -122,7 +122,7 @@ public class GroundConflictNoGoodLearner {
 			// a) two NoGoods propagating the same atom to different truth values in the current decisionLevel, or
 			// b) a NoGood propagating at a lower decision level to the inverse value of a guess with higher decision level.
 			// For a) we need to work also with the other NoGood.
-			// For b) we need to backtrackSlow the wrong guess.
+			// For b) we need to backtrack the wrong guess.
 
 			Assignment.Entry atomAssignmentEntry = firstUIPPriorityQueue.poll();
 			NoGood otherContributingNoGood = atomAssignmentEntry.getImpliedBy();

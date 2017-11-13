@@ -221,6 +221,13 @@ public class ChoiceManager implements Checkable {
 		}
 	}
 
+	/**
+	 * Fast backtracking will backtrack but not give any information about which choice was backtracked. This is
+	 * handy in cases where higher level backtracking mechanisms already know what caused the backtracking and what
+	 * to do next.
+	 *
+	 * In order to analyze the guess that was backtracked, use the more expensive {@link #backtrackSlow()}.
+	 */
 	public void backtrackFast() {
 		backtrack();
 
@@ -229,6 +236,14 @@ public class ChoiceManager implements Checkable {
 		LOGGER.debug("Backtracked (fast) to level {} from guess {}", assignment.getDecisionLevel(), choice);
 	}
 
+	/**
+	 * Slow backtracking will take more time, but allow to analyze the {@link Assignment.Entry} corresponding to the
+	 * guess that is being backtracked. Higher level backtracking mechanisms can use this information to change
+	 * their plans.
+	 *
+	 * @return the assignment entry of the guess being backtracked, or {@code null} if the guess cannot be
+	 *         backtracked any futher (it already is a backtracking guess)
+	 */
 	public Assignment.Entry backtrackSlow() {
 		final Choice choice = choiceStack.pop();
 		final Assignment.Entry lastChoiceEntry = assignment.get(choice.getAtom());
@@ -243,6 +258,10 @@ public class ChoiceManager implements Checkable {
 		return lastChoiceEntry;
 	}
 
+	/**
+	 * This method implements the backtracking "core" that will be executed for both slow and fast backtracking.
+	 * It backtracks the NoGoodStore and recomputes choice points.
+	 */
 	private void backtrack() {
 		store.backtrack();
 		backtracks++;
