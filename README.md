@@ -5,7 +5,20 @@
 [![Coverage Status](https://coveralls.io/repos/github/alpha-asp/Alpha/badge.svg?branch=master)](https://coveralls.io/github/alpha-asp/Alpha?branch=master)
 [![Code Quality Status](https://codebeat.co/badges/10b609be-9774-42a1-b7fe-2bb64382744d)](https://codebeat.co/projects/github-com-alpha-asp-alpha-master)
 
+Alpha is an [Answer Set Programming (ASP)](https://en.wikipedia.org/wiki/Answer_set_programming) system: It reads a
+logic program (a set of logical rules) and computes the corresponding answer sets. ASP falls into the category of
+declarative and logic programming. Its applications are solving combinatorial problems, but it also is a good tool for
+reasoning in the context of knowledge-representation and databases.
+
 Alpha is the successor of [OMiGA](http://www.kr.tuwien.ac.at/research/systems/omiga/) and currently in development.
+In contrast to many other ASP systems, Alpha implements a *lazy-grounding* approach in hopes of overcoming memory
+constraints when working with large input.
+
+Alpha is not the fastest system available, since its goal is not to be the fastest system with current technology but
+to explore new technologies rapidly. Those technologies, like lazy-grounding, allow Alpha to succeed where other ASP
+systems fail completely. The project deliberately chooses to trade shorter execution times (which would be possible by
+using unmanaged runtimes, e.g. C/C++, and low-level optimization) for a more straight forward system design and
+possibilities to interface with the ecosystem built around the Java Virtual Machine.
 
 ## Getting Started
 
