@@ -340,7 +340,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	}
 
 	private ConflictCause assignStrongComplement(final NoGood impliedBy, int decisionLevel) {
-		return assignTruth(impliedBy.getAtom(0), TRUE, impliedBy, decisionLevel);
+		return assignTruth(impliedBy.getAtom(HEAD), TRUE, impliedBy, decisionLevel);
 	}
 
 	private ConflictCause assignTruth(int atom, ThriceTruth truth, NoGood impliedBy, int decisionLevel) {
@@ -486,7 +486,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			boolean isNoGoodSatisfiedByHead = false;
 			Assignment.Entry headEntry = assignment.get(watchedNoGood.getAtom(HEAD));
 			// Check if the other watch already satisfies the noGood.
-			if (headEntry != null && TRUE.equals(headEntry.getTruth()) && !isPositive(watchedNoGood.getLiteral(0))) {
+			if (headEntry != null && TRUE.equals(headEntry.getTruth()) && !isPositive(watchedNoGood.getLiteral(HEAD))) {
 				isNoGoodSatisfiedByHead = true;
 			}
 
@@ -685,7 +685,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				throw oops("Watch invariant (alpha) violated");
 			}
 			for (WatchedNoGood watchedNoGood : watches.multary.getAlpha(truth)) {
-				int headLiteral = watchedNoGood.getLiteral(0);
+				int headLiteral = watchedNoGood.getLiteral(HEAD);
 				Assignment.Entry headEntry = assignment.get(atomOf(headLiteral));
 				boolean headViolates = headEntry != null && isPositive(headLiteral) == headEntry.getTruth().toBoolean();
 				int headDecisionLevel = strongDecisionLevel(headEntry);
