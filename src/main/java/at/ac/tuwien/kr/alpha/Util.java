@@ -94,7 +94,8 @@ public class Util {
 	}
 
 	public static RuntimeException oops(String message) {
-		return oops(message, null);
+		// We do not call oops(String, Exception) here to not bloat the stack trace.
+		return new RuntimeException(message + "! Should not happen.");
 	}
 
 	public static RuntimeException oops() {
