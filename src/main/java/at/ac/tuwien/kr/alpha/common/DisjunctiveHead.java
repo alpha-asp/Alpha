@@ -14,7 +14,7 @@ public class DisjunctiveHead extends Head {
 	public DisjunctiveHead(List<Atom> disjunctiveAtoms) {
 		this.disjunctiveAtoms = disjunctiveAtoms;
 		if (disjunctiveAtoms != null && disjunctiveAtoms.size() > 1) {
-			throw new RuntimeException("Disjunction in rule heads is not yet supported.");
+			throw new UnsupportedOperationException("Disjunction in rule heads is not yet supported");
 		}
 	}
 

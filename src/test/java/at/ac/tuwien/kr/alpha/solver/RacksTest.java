@@ -28,7 +28,6 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -42,11 +41,6 @@ import java.util.Optional;
  */
 @Ignore("disabled to save resources during CI")
 public class RacksTest extends AbstractSolverTests {
-	@Before
-	public void printSolverName() {
-		System.out.println(solverName);
-	}
-
 	@Test(timeout = 10000)
 	public void testRacks() throws IOException {
 		test();
@@ -58,9 +52,7 @@ public class RacksTest extends AbstractSolverTests {
 		);
 		Solver solver = getInstance(programInputStream);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
-		System.out.println(answerSet);
+		//System.out.println(answerSet);
 		// TODO: check correctness of answer set
-		System.out.println(((DefaultSolver) solver).getCounters().getDecisionCounter() + " choices," + ((DefaultSolver) solver).getCounters().getConflictCounter() + " conflicts");
 	}
-
 }

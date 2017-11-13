@@ -5,6 +5,8 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import java.util.LinkedList;
 import java.util.List;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
 /**
  * An IntervalTerm represents the shorthand notation for a set of rules where all elements in this interval occur once, e.g., fact(2..5).
  * An IntervalTerm is a meta-term and the grounder must replace it with its corresponding set of facts or rules.
@@ -49,14 +51,14 @@ public class IntervalTerm extends Term {
 
 	public int getLowerBound() {
 		if (!isGround()) {
-			throw new RuntimeException("Cannot get the lower bound of non-ground interval. Should not happen.");
+			throw oops("Cannot get the lower bound of non-ground interval");
 		}
 		return this.lowerBound;
 	}
 
 	public int getUpperBound() {
 		if (!isGround()) {
-			throw new RuntimeException("Cannot get the upper bound of non-ground interval. Should not happen.");
+			throw oops("Cannot get the upper bound of non-ground interval");
 		}
 		return this.upperBound;
 	}

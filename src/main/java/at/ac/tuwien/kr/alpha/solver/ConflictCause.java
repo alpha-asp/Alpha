@@ -24,4 +24,16 @@ public class ConflictCause {
 	public NoGood getViolatedNoGood() {
 		return violatedNoGood;
 	}
+
+	@Override
+	public String toString() {
+		if (violatedNoGood != null) {
+			return violatedNoGood.toString();
+		}
+		if (violatedGuess != null) {
+			return violatedGuess.toString();
+		}
+
+		return "null";
+	}
 }

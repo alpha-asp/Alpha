@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
@@ -108,9 +109,10 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	@Override
 	public ConflictCause add(int id, NoGood noGood) {
 		LOGGER.trace("Adding {}", noGood);
-		if (noGood.size() == 1) {
+
+		if (noGood.isUnary()) {
 			return addUnary(noGood);
-		} else if (noGood.size() == 2) {
+		} else if (noGood.isBinary()) {
 			return addAndWatchBinary(noGood);
 		} else {
 			return addAndWatch(noGood);
@@ -474,7 +476,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			final WatchedNoGood watchedNoGood = watchIterator.next();
 
 			if (!watchedNoGood.hasHead()) {
-				throw new RuntimeException("Strong propagation encountered NoGood without head. Should not happen.");
+				throw oops("Strong propagation encountered NoGood without head");
 			}
 
 			final int assignedIndex = watchedNoGood.getAlphaPointer();
@@ -679,7 +681,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 					|| headViolates) {	// Head "pointer" is never moved and violation is checked by weak propagation, hence a violated head is okay.
 					continue;
 				}
-				throw new RuntimeException("Watch invariant (alpha) violated. Should not happen.");
+				throw oops("Watch invariant (alpha) violated");
 			}
 			for (WatchedNoGood watchedNoGood : watches.multary.getAlpha(truth)) {
 				int headLiteral = watchedNoGood.getLiteral(watchedNoGood.getHead());
@@ -690,7 +692,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 					|| headViolates) {	// Head "pointer" is never moved and violation is checked by weak propagation, hence a violated head is okay.
 					continue;
 				}
-				throw new RuntimeException("Watch invariant (alpha) violated. Should not happen.");
+				throw oops("Watch invariant (alpha) violated");
 			}
 		}
 
@@ -707,7 +709,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				if (watchInvariant(atomSatisfies, atomDecisionLevel, otherLiteral, otherDecisionLevel, otherEntry)) {
 					continue;
 				}
-				throw new RuntimeException("Watch invariant violated. Should not happen.");
+				throw oops("Watch invariant violated");
 			}
 			for (WatchedNoGood watchedNoGood : watches.multary.getOrdinary(truth)) {
 				// Ensure both watches are either unassigned, or one satisfies NoGood, or both are on highest decision level.
@@ -718,7 +720,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				if (watchInvariant(atomSatisfies, atomDecisionLevel, otherLiteral, otherDecisionLevel, otherEntry)) {
 					continue;
 				}
-				throw new RuntimeException("Watch invariant violated. Should not happen.");
+				throw oops("Watch invariant violated");
 			}
 		}
 

@@ -79,9 +79,9 @@ public class MainTest {
 	@Test
 	public void previouslyProblematicRuns() {
 		// Run tests that formerly caused some sort of exception.
-		main(new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "200", "-i", "./src/test/resources/PreviouslyProblematic/3col-20-38.txt"});
-		main(new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119718541727902", "-n", "200", "-i", ".//src/test/resources/PreviouslyProblematic/3col-20-38.txt"});
-		main(new String[]{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "97598271567626", "-n", "2", "-i", "./src/test/resources/PreviouslyProblematic/vehicle_normal_small.asp"});
-		main(new String[]{"-DebugEnableInternalChecks", "-sort", "-g", "naive", "-s", "default", "-n", "400", "-i", "./src/test/resources/PreviouslyProblematic/3col-20-38.txt"});
+		main(new String[]{"-DebugEnableInternalChecks", "-q", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "200", "-i", "./src/test/resources/PreviouslyProblematic/3col-20-38.txt"});
+		main(new String[]{"-DebugEnableInternalChecks", "-q", "-g", "naive", "-s", "default", "-e", "1119718541727902", "-n", "200", "-i", ".//src/test/resources/PreviouslyProblematic/3col-20-38.txt"});
+		main(new String[]{"-DebugEnableInternalChecks", "-q", "-g", "naive", "-s", "default", "-e", "97598271567626", "-n", "2", "-i", "./src/test/resources/PreviouslyProblematic/vehicle_normal_small.asp"});
+		main(new String[]{"-DebugEnableInternalChecks", "-q", "-sort", "-g", "naive", "-s", "default", "-n", "400", "-i", "./src/test/resources/PreviouslyProblematic/3col-20-38.txt"});
 	}
 }

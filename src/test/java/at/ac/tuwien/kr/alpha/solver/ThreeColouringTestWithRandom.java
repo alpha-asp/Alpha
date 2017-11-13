@@ -25,10 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
@@ -163,25 +161,8 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 
 		Solver solver = getInstance(program);
 
-		StringBuilder sb = new StringBuilder();
-
-		for (Atom fact : program.getFacts()) {
-			sb.append(fact);
-			sb.append(".");
-		}
-		for (Rule rule : program.getRules()) {
-			if (!rule.isConstraint()) {
-				sb.append(rule.getHead());
-			}
-			sb.append(":-");
-			Util.appendDelimited(sb, rule.getBody());
-			sb.append(".");
-		}
-
-		System.out.println(sb);
-
 		Optional<AnswerSet> answerSet = solver.stream().findAny();
-		System.out.println(answerSet);
+		//System.out.println(answerSet);
 		// TODO: check correctness of answer set
 	}
 

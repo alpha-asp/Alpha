@@ -25,7 +25,6 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.Assignment;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Map;
@@ -38,8 +37,8 @@ import java.util.Map;
  */
 public class TestableChoiceManager extends ChoiceManager {
 
-	public TestableChoiceManager(Assignment assignment) {
-		super(assignment);
+	public TestableChoiceManager(WritableAssignment assignment, NoGoodStore store) {
+		super(assignment, store);
 	}
 
 	@Override

@@ -30,6 +30,9 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
+
 public interface WritableAssignment extends Assignment {
 	/**
 	 * Delete all information stored in the assignment.
@@ -65,5 +68,20 @@ public interface WritableAssignment extends Assignment {
 
 	default ConflictCause guess(int atom, boolean value) {
 		return guess(atom, ThriceTruth.valueOf(value));
+	}
+
+	default int minimumConflictLevel(NoGood noGood) {
+		int minimumConflictLevel = -1;
+		for (Integer literal : noGood) {
+			Assignment.Entry entry = get(atomOf(literal));
+			if (entry == null || isPositive(literal) != entry.getTruth().toBoolean()) {
+				return -1;
+			}
+			int literalDecisionLevel = entry.getPrevious() != null ? entry.getPrevious().getDecisionLevel() : entry.getDecisionLevel();
+			if (literalDecisionLevel > minimumConflictLevel) {
+				minimumConflictLevel = literalDecisionLevel;
+			}
+		}
+		return minimumConflictLevel;
 	}
 }

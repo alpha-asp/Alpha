@@ -119,7 +119,7 @@ public class NoGoodStoreAlphaRoamingTest {
 	public void propagateBinarySecondTrue() {
 		assignment.assign(1, FALSE);
 
-		store.add(1, new NoGood(new int[]{-1, 2}, 1));
+		store.add(1, headFirst(2, -1));
 		store.propagate();
 
 		assertEquals(FALSE, assignment.getTruth(2));
@@ -209,7 +209,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		assignment.assign(2, FALSE);
 		assignment.assign(3, FALSE);
 
-		store.add(1, new NoGood(new int[]{-3, -2, 1}, 2));
+		store.add(1, headFirst(1, -3, -2));
 		store.propagate();
 
 		assertEquals(FALSE, assignment.getTruth(1));

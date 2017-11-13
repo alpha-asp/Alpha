@@ -35,7 +35,7 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 			ChoiceHead choiceHead = (ChoiceHead) ruleHead;
 			// Choice rules with boundaries are not yet supported.
 			if (choiceHead.getLowerBound() != null || choiceHead.getUpperBound() != null) {
-				throw new RuntimeException("Found choice rule with bounds, which are not yet supported. Rule is: " + rule);
+				throw new UnsupportedOperationException("Found choice rule with bounds, which are not yet supported. Rule is: " + rule);
 			}
 
 			// Only rewrite rules with a choice in their head.
@@ -49,7 +49,7 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 				ruleBody.addAll(choiceElement.conditionLiterals);
 
 				if (head.containsIntervalTerms()) {
-					throw new RuntimeException("Program contains a choice rule with interval terms in its head. This is not supported (yet).");
+					throw new UnsupportedOperationException("Program contains a choice rule with interval terms in its head. This is not supported (yet).");
 				}
 
 				// Construct head atom for the guess.

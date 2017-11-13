@@ -36,6 +36,8 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 
 public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
+	public static final NoGood UNSAT = new NoGood();
+
 	protected final int[] literals;
 	private final int head;
 
@@ -43,7 +45,7 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 		this(literals, -1);
 	}
 
-	public NoGood(int[] literals, int head) {
+	private NoGood(int[] literals, int head) {
 		final int headLiteral = head != -1 ? literals[head] : 0;
 
 		// HINT: this might decrease performance if NoGoods are mostly small.
@@ -85,11 +87,11 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	}
 
 	public boolean isUnary() {
-		return size() == 1;
+		return literals.length == 1;
 	}
 
 	public boolean isBinary() {
-		return size() == 2;
+		return literals.length == 2;
 	}
 
 	public int[] getLiteralsClone() {
@@ -144,7 +146,7 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	 * @return {@code true} iff: the NoGood contains at least two literals, and the head is a negative literal whose atom represents a rule body.
 	 */
 	public boolean isBodyElementsNotBody(Predicate<? super Integer> isRuleBody) {
-		return size() > 1 && hasHead() && isNegated(literals[head]) && isRuleBody.test(atomOf(literals[head]));
+		return literals.length > 1 && hasHead() && isNegated(literals[head]) && isRuleBody.test(atomOf(literals[head]));
 	}
 
 	@Override

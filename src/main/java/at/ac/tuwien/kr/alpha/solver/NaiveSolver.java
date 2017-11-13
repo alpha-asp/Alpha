@@ -48,7 +48,7 @@ import static java.lang.Math.abs;
  */
 public class NaiveSolver extends AbstractSolver {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveSolver.class);
-	private final ChoiceStack choiceStack;
+	private final Stack<Choice> choiceStack;
 	private HashMap<Integer, Boolean> truthAssignments = new HashMap<>();
 	private ArrayList<Integer> newTruthAssignments = new ArrayList<>();
 	private ArrayList<ArrayList<Integer>> decisionLevels = new ArrayList<>();
@@ -70,7 +70,7 @@ public class NaiveSolver extends AbstractSolver {
 	NaiveSolver(Grounder grounder) {
 		super(grounder);
 
-		this.choiceStack = new ChoiceStack(grounder, false);
+		this.choiceStack = new Stack<>();
 
 		decisionLevels.add(0, new ArrayList<>());
 		mbtAssignedFromUnassigned.add(0, new ArrayList<>());
@@ -210,10 +210,10 @@ public class NaiveSolver extends AbstractSolver {
 		decisionLevels.add(decisionLevel, list);
 		trueAssignedFromMbt.add(decisionLevel, new ArrayList<>());
 		mbtAssignedFromUnassigned.add(decisionLevel, new ArrayList<>());
-		// We guess true for any unassigned choice atom (backtrack tries false)
+		// We guess true for any unassigned choice atom (backtrackFast tries false)
 		truthAssignments.put(nextChoice, true);
 		newTruthAssignments.add(nextChoice);
-		choiceStack.push(nextChoice, true);
+		choiceStack.push(new Choice(nextChoice, true, false));
 		// Record change to compute propagation fixpoint again.
 		didChange = true;
 	}
@@ -242,9 +242,10 @@ public class NaiveSolver extends AbstractSolver {
 			return;
 		}
 
-		int lastGuessedAtom = choiceStack.peekAtom();
-		boolean lastGuessedTruthValue = choiceStack.peekValue();
-		choiceStack.remove();
+		Choice lastChoice = choiceStack.pop();
+
+		int lastGuessedAtom = lastChoice.getAtom();
+		boolean lastGuessedTruthValue = lastChoice.getValue();
 
 		// Remove truth assignments of current decision level
 		for (Integer atomId : decisionLevels.get(decisionLevel)) {
@@ -268,7 +269,7 @@ public class NaiveSolver extends AbstractSolver {
 		if (lastGuessedTruthValue) {
 			// Guess false now
 			truthAssignments.put(lastGuessedAtom, false);
-			choiceStack.pushBacktrack(lastGuessedAtom, false);
+			choiceStack.push(new Choice(lastGuessedAtom, false, true));
 			newTruthAssignments.add(lastGuessedAtom);
 			decisionLevels.get(decisionLevel).add(lastGuessedAtom);
 			didChange = true;

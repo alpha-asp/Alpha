@@ -32,6 +32,8 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 
 import java.util.List;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
 /**
  * Represents a non-ground rule or a constraint for the semi-naive grounder.
  * Copyright (c) 2016, the Alpha Team.
@@ -110,7 +112,7 @@ public class Rule {
 
 	public boolean isGround() {
 		if (!head.isNormal()) {
-			throw new RuntimeException("Called isGround on non-normal rule. Should not happen");
+			throw oops("Called isGround on non-normal rule");
 		}
 		if (!isConstraint() && !((DisjunctiveHead)head).isGround()) {
 			return false;

@@ -41,6 +41,8 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 
 import java.util.*;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
 /**
  * Represents a non-ground rule or a constraint for the semi-naive grounder.
  * Copyright (c) 2017, the Alpha Team.
@@ -110,7 +112,7 @@ public class NonGroundRule {
 		Atom headAtom = null;
 		if (rule.getHead() != null) {
 			if (!rule.getHead().isNormal()) {
-				throw new RuntimeException("Trying to construct NonGroundRule from rule that is not normal. Should not happen.");
+				throw oops("Trying to construct NonGroundRule from rule that is not normal");
 			}
 			headAtom = ((DisjunctiveHead)rule.getHead()).disjunctiveAtoms.get(0);
 		}
