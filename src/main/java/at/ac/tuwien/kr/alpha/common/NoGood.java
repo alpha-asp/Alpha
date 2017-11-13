@@ -39,31 +39,25 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	public static final NoGood UNSAT = new NoGood();
 
 	protected final int[] literals;
-	private final int head;
+	private final boolean head;
 
 	public NoGood(int... literals) {
-		this(literals, -1);
+		this(literals, false);
 	}
 
-	private NoGood(int[] literals, int head) {
-		final int headLiteral = head != -1 ? literals[head] : 0;
+	private NoGood(int[] literals, boolean head) {
+		this.head = head;
 
 		// HINT: this might decrease performance if NoGoods are mostly small.
-		Arrays.sort(literals);
+		Arrays.sort(literals, head ? 1 : 0, literals.length);
 
-		// Remove duplicates and find position head was moved to in one pass.
-		int headPos = (head != -1 && headLiteral == literals[0]) ? 0 : -1; // check for head literal at position 0.
 		int shift = 0;
 		for (int i = 1; i < literals.length; i++) {
-			if (head != -1 && headPos == -1 && literals[i] == headLiteral) { // check for head literal at position i
-				headPos = i - shift;
-			}
 			if (literals[i - 1] == literals[i]) { // check for duplicate
 				shift++;
 			}
 			literals[i - shift] = literals[i]; // Remove duplicates in place by shifting remaining literals.
 		}
-		this.head = headPos;
 
 		// copy-shrink array if needed.
 		this.literals = shift <= 0 ? literals : Arrays.copyOf(literals, literals.length - shift);
@@ -75,7 +69,7 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	}
 
 	public static NoGood headFirst(int... literals) {
-		return new NoGood(literals, 0);
+		return new NoGood(literals, true);
 	}
 
 	public static NoGood fact(int literal) {
@@ -115,11 +109,11 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	 * @return the index of the head literal.
 	 */
 	public int getHead() {
-		return head;
+		return 0;
 	}
 
 	public boolean hasHead() {
-		return head >= 0;
+		return head;
 	}
 
 	/**
@@ -136,7 +130,7 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	 * Returns the first literal that is not pointed to by the head.
 	 */
 	private int getFirstTailLiteral() {
-		return head != 0 ? literals[0] : literals[1];
+		return head ? literals[1] : literals[0];
 	}
 
 	/**
@@ -146,7 +140,7 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	 * @return {@code true} iff: the NoGood contains at least two literals, and the head is a negative literal whose atom represents a rule body.
 	 */
 	public boolean isBodyElementsNotBody(Predicate<? super Integer> isRuleBody) {
-		return literals.length > 1 && hasHead() && isNegated(literals[head]) && isRuleBody.test(atomOf(literals[head]));
+		return literals.length > 1 && hasHead() && isNegated(literals[0]) && isRuleBody.test(atomOf(literals[0]));
 	}
 
 	@Override
@@ -172,6 +166,14 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	public int compareTo(NoGood o) {
 		if (o == null) {
 			throw new NullPointerException("Cannot compare against null.");
+		}
+
+		if (o.head && !head) {
+			return -1;
+		}
+
+		if (!o.head && head) {
+			return +1;
 		}
 
 		if (o.literals.length > literals.length) {
@@ -210,12 +212,16 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 
 	@Override
 	public int hashCode() {
-		return 31 * Arrays.hashCode(literals) + head;
+		return 31 * Arrays.hashCode(literals) * (head ? +1 : -1);
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
+
+		if (head) {
+			sb.append("*");
+		}
 
 		sb.append("{ ");
 
@@ -225,14 +231,6 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 		}
 
 		sb.append("}");
-
-		if (head == -1) {
-			return sb.toString();
-		}
-
-		sb.append("[");
-		sb.append(head);
-		sb.append("]");
 
 		return sb.toString();
 	}
