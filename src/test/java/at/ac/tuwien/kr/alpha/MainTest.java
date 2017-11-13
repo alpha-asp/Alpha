@@ -28,48 +28,46 @@
 package at.ac.tuwien.kr.alpha;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Arrays;
 
 import static at.ac.tuwien.kr.alpha.Main.main;
 import static org.junit.Assert.assertTrue;
 
+@RunWith(Parameterized.class)
 public class MainTest {
-	/**
-	 * Temporarily redirects System.err and System.out while running the solver from the main entry point with the given parameters.
-	 * Returns true if the output contains the given matches.
-	 * Warning: this test is fragile and may require adaptions if printing is changed anywhere in Alpha.
-	 * @param matchOutput output that must occur on System.out - may be null if irrelevant.
-	 * @param argv the arguments the solver is started with.
-	 * @return true if given output and errors appear on System.out and System.err while running main(argv).
-	 */
-	private boolean testMainForOutput(String matchOutput, String... argv) {
-		PrintStream oldErr = System.err;
-		PrintStream oldOut = System.out;
-		ByteArrayOutputStream newOut = new ByteArrayOutputStream();
-		ByteArrayOutputStream newErr = new ByteArrayOutputStream();
-		System.setOut(new PrintStream(newOut));
-		System.setErr(new PrintStream(newErr));
-		main(argv);
-		System.setOut(oldOut);
-		System.setErr(oldErr);
+	private static final String INPUT = "p(a). " + System.lineSeparator() + " b :- p(X)." + System.lineSeparator();
 
-		return !(matchOutput != null && !newOut.toString().contains(matchOutput));
+	@Parameters
+	public static Iterable<? extends String[][]> data() {
+		return Arrays.asList(new String[][][] {
+			{{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "20", "-str", INPUT}},
+			{{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "0", "-str", INPUT}},
+			{{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "1", "-str", INPUT}},
+			{{"-g", "naive", "-s", "default", "-r", "naive", "-e", "1119654162577372", "-n", "1", "-str", INPUT}}
+		});
 	}
 
-	@Test
-	public void testCommandLineOptions() {
-		// Exercise the main entry point of the solver.
-		final String ls = System.lineSeparator();
-		final String input = "p(a). " + ls + " b :- p(X)." + ls;
-		final String match = "{ b, p(a) }";
+	@Parameter
+	public String[] argv;
 
-		assertTrue(testMainForOutput(match, "-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "20", "-str", "p(a). \n b :- p(X).\n"));
-		assertTrue(testMainForOutput(match, "-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "0", "-str", "p(a). \n b :- p(X).\n"));
-		assertTrue(testMainForOutput(match, "-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "1", "-str", "p(a). \n b :- p(X).\n"));
-		assertTrue(testMainForOutput(match,"-g", "naive", "-s", "default", "-r", "naive", "-e", "1119654162577372", "-n", "1", "-str", "p(a). \n b :- p(X).\n"));
+	/**
+	 * Temporarily redirects System.err and System.out while running the solver from the main entry point with the given parameters.
+	 * Warning: this test is fragile and may require adaptions if printing is changed anywhere in Alpha.
+	 */
+	@Test
+	public void test() {
+		PrintStream sysOut = System.out;
+		ByteArrayOutputStream newOut = new ByteArrayOutputStream();
+		System.setOut(new PrintStream(newOut));
+		main(argv);
+		System.setOut(sysOut);
+		assertTrue(newOut.toString().contains("{ b, p(a) }"));
 	}
 }

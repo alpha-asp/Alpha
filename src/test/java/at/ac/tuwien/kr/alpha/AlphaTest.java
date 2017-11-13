@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static at.ac.tuwien.kr.alpha.Main.main;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.junit.Assert.assertEquals;
