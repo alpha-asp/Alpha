@@ -38,20 +38,15 @@ import static at.ac.tuwien.kr.alpha.Main.main;
 import static org.junit.Assert.assertTrue;
 
 public class MainTest {
-	public static InputStream stream(String file) {
-		return new ByteArrayInputStream(file.getBytes());
-	}
-
 	/**
 	 * Temporarily redirects System.err and System.out while running the solver from the main entry point with the given parameters.
 	 * Returns true if the output contains the given matches.
 	 * Warning: this test is fragile and may require adaptions if printing is changed anywhere in Alpha.
-	 * @param argv the arguments the solver is started with.
 	 * @param matchOutput output that must occur on System.out - may be null if irrelevant.
-	 * @param matchError the output that must occur on System.err - may be null if irrelevant.
+	 * @param argv the arguments the solver is started with.
 	 * @return true if given output and errors appear on System.out and System.err while running main(argv).
 	 */
-	private boolean testMainForOutput(String[] argv, String matchOutput, String matchError) {
+	private boolean testMainForOutput(String matchOutput, String... argv) {
 		PrintStream oldErr = System.err;
 		PrintStream oldOut = System.out;
 		ByteArrayOutputStream newOut = new ByteArrayOutputStream();
@@ -62,17 +57,19 @@ public class MainTest {
 		System.setOut(oldOut);
 		System.setErr(oldErr);
 
-		return !(matchOutput != null && !newOut.toString().contains(matchOutput))
-			&& !(matchError != null && !newErr.toString().contains(matchError));
+		return !(matchOutput != null && !newOut.toString().contains(matchOutput));
 	}
 
 	@Test
 	public void testCommandLineOptions() {
 		// Exercise the main entry point of the solver.
-		String ls = System.lineSeparator();
-		assertTrue(testMainForOutput(new String[] {"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "20", "-str", "p(a). " + ls + " b :- p(X)." + ls}, "{ b, p(a) }", null));
-		assertTrue(testMainForOutput(new String[] {"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "0", "-str", "p(a). " + ls + " b :- p(X)." + ls}, "{ b, p(a) }", null));
-		assertTrue(testMainForOutput(new String[] {"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "1", "-str", "p(a). " + ls + " b :- p(X)." + ls}, "{ b, p(a) }", null));
-		assertTrue(testMainForOutput(new String[] {"-g", "naive", "-s", "default", "-r", "naive", "-e", "1119654162577372", "-n", "1", "-str", "p(a). " + ls + " b :- p(X)." + ls}, "{ b, p(a) }", null));
+		final String ls = System.lineSeparator();
+		final String input = "p(a). " + ls + " b :- p(X)." + ls;
+		final String match = "{ b, p(a) }";
+
+		assertTrue(testMainForOutput(match, "-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "20", "-str", "p(a). \n b :- p(X).\n"));
+		assertTrue(testMainForOutput(match, "-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "0", "-str", "p(a). \n b :- p(X).\n"));
+		assertTrue(testMainForOutput(match, "-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "1", "-str", "p(a). \n b :- p(X).\n"));
+		assertTrue(testMainForOutput(match,"-g", "naive", "-s", "default", "-r", "naive", "-e", "1119654162577372", "-n", "1", "-str", "p(a). \n b :- p(X).\n"));
 	}
 }
