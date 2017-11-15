@@ -8,6 +8,21 @@ import java.util.*;
 
 /**
  * Provides the grounder with information on the order to ground the literals in the body of a rule.
+ * Grounding starts with some starting literal (i.e., one that does not require any variables to be bound already) and
+ * then may join this with any other literal that requires no other variables to be bound other than those already bound
+ * by the first literal. This class is prepared to take join-selectivities into account for finding a good grounding
+ * order.
+ *
+ * Since the grounder must yield all ground instantiations of rules whose positive body is true in the current assignment,
+ * a starting literals is a positive BasicAtom and the grounder can wait until after some instance in the working memory
+ * of the corresponding predicate arrives and only then start grounding.
+ *
+ * There is also the case that a rule has no ordinary positive literals (i.e., no positive BasicAtom) but is still safe.
+ * Such a rule has no starting literal but those rules have a fixed number of ground instantiations and they can be
+ * computed similar to facts at the beginning of the computation.
+ *
+ * Note that rules with self-joins (rules with p(X,Y), p(A,B) in their body) make it necessary that every positive
+ * literal (whose interpretation is not fixed) is a starting literal, at least for the current grounding procedure.
  * Copyright (c) 2017, the Alpha Team.
  */
 public class RuleGroundingOrder {
