@@ -86,7 +86,7 @@ public class AnswerSetBuilder {
 			predicates.add(predicate);
 		}
 
-		List<Term> termList = Stream.of(terms).map(Symbol::getInstance).map(ConstantTerm::getInstance).collect(Collectors.toList());
+		List<Term> termList = Stream.of(terms).map(ConstantTerm::getSymbolicInstance).collect(Collectors.toList());
 		instances.add(new BasicAtom(predicate, termList));
 		return this;
 	}

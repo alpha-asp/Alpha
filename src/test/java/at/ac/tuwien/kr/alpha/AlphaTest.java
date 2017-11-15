@@ -296,7 +296,6 @@ public class AlphaTest {
 	}
 
 	@Test
-	@Ignore("does not match, needs investigation. probably has something to do with a being symbolic")
 	public void basicUsage() throws Exception {
 		Alpha system = new Alpha();
 		Set<AnswerSet> actual = system.solve("p(a).").collect(Collectors.toSet());

@@ -1,8 +1,7 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
-import at.ac.tuwien.kr.alpha.common.symbols.FunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.Interner;
-import at.ac.tuwien.kr.alpha.common.symbols.SymbolWithRank;
+import at.ac.tuwien.kr.alpha.common.symbols.FunctionSymbol;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Collections;
@@ -87,13 +86,11 @@ public class ConstantTerm<T extends Comparable<T>> extends Term implements Funct
 	 * Establishes "priority" for ordering of constant terms depending on the type
 	 * of the corresponding object according to ASP-Core-2.03c.
 	 */
-	private static final int priority(final Class<?> clazz) {
+	private static final int priority(final Class<?> clazz, ConstantTerm<?> term) {
 		if (clazz.equals(Integer.class)) {
 			return 1;
-		} else if (clazz.equals(SymbolWithRank.class)) {
-			return 2;
 		} else if (clazz.equals(String.class)) {
-			return 3;
+			return term.symbolic ? 2 : 3;
 		}
 		return 0;
 	}
@@ -130,8 +127,8 @@ public class ConstantTerm<T extends Comparable<T>> extends Term implements Funct
 		Class<?> thisType = this.symbol.getClass();
 		Class<?> otherType = other.symbol.getClass();
 
-		int thisPrio = priority(thisType);
-		int otherPrio = priority(otherType);
+		int thisPrio = priority(thisType, this);
+		int otherPrio = priority(otherType, other);
 
 		if (thisPrio == 0 || otherPrio == 0) {
 			return thisType.getName().compareTo(otherType.getName());
