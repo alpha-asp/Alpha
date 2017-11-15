@@ -1,7 +1,6 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.predicates.FixedInterpretationPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -16,7 +15,7 @@ import java.util.*;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class BuiltinAtom extends FixedInterpretationAtom {
-	private final FixedInterpretationPredicate predicate;
+	private final Predicate predicate;
 	private final ComparisonOperator operator;
 	private final List<Term> terms;
 	private final boolean negated;
@@ -28,12 +27,7 @@ public class BuiltinAtom extends FixedInterpretationAtom {
 		this.operator = operator;
 		this.isNormalizedEquality = (!negated && operator == ComparisonOperator.EQ)
 			|| (negated && operator == ComparisonOperator.NE);
-		predicate = new FixedInterpretationPredicate(operator.toString(), 2, false) {
-			@Override
-			public Set<List<ConstantTerm>> evaluate(List<Term> terms) {
-				throw new UnsupportedOperationException();
-			}
-		};
+		predicate = new Predicate(operator.toString(), 2, false);
 	}
 
 	public boolean isNormalizedEquality() {
@@ -115,42 +109,41 @@ public class BuiltinAtom extends FixedInterpretationAtom {
 
 	@Override
 	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
-		// Treat case that this is X = t or t = X.
-		if (isLeftAssigning() || isRightAssigning()) {
-			VariableTerm variable = null;
-			Term expression = null;
-			if (isLeftAssigning()) {
-				variable = (VariableTerm) terms.get(0);
-				expression = terms.get(1);
-			}
-			if (isRightAssigning()) {
-				variable = (VariableTerm) terms.get(1);
-				expression = terms.get(0);
-			}
-			Term groundTerm = expression.substitute(partialSubstitution);
-			Term resultTerm = null;
-			// Check if the groundTerm is an arithmetic expression and evaluate it if so.
-			if (groundTerm instanceof ArithmeticTerm) {
-				Integer result = ArithmeticTerm.evaluateGroundTerm(groundTerm);
-				if (result == null) {
-					return Collections.emptyList();
-				}
-				resultTerm = ConstantTerm.getInstance(result);
+		// Treat case where this is just comparison with all variables bound by partialSubstitution.
+		if (!isLeftAssigning() && !isRightAssigning()) {
+			if (compare(terms.get(0).substitute(partialSubstitution), terms.get(1).substitute(partialSubstitution))) {
+				return Collections.singletonList(partialSubstitution);
 			} else {
-				// Ground term is another term (constant, or function term).
-				resultTerm = groundTerm;
+				return Collections.emptyList();
 			}
-			Substitution extendedSubstitution = new Substitution(partialSubstitution);
-			extendedSubstitution.put(variable, resultTerm);
-			return Collections.singletonList(extendedSubstitution);
 		}
-
-		// Treat all other cases, i.e., this is just comparison with all variables bound by partialSubstitution.
-		if (compare(terms.get(0).substitute(partialSubstitution), terms.get(1).substitute(partialSubstitution))) {
-			return Collections.singletonList(partialSubstitution);
+		// Treat case that this is X = t or t = X.
+		VariableTerm variable = null;
+		Term expression = null;
+		if (isLeftAssigning()) {
+			variable = (VariableTerm) terms.get(0);
+			expression = terms.get(1);
+		}
+		if (isRightAssigning()) {
+			variable = (VariableTerm) terms.get(1);
+			expression = terms.get(0);
+		}
+		Term groundTerm = expression.substitute(partialSubstitution);
+		Term resultTerm = null;
+		// Check if the groundTerm is an arithmetic expression and evaluate it if so.
+		if (groundTerm instanceof ArithmeticTerm) {
+			Integer result = ArithmeticTerm.evaluateGroundTerm(groundTerm);
+			if (result == null) {
+				return Collections.emptyList();
+			}
+			resultTerm = ConstantTerm.getInstance(result);
 		} else {
-			return Collections.emptyList();
+			// Ground term is another term (constant, or function term).
+			resultTerm = groundTerm;
 		}
+		Substitution extendedSubstitution = new Substitution(partialSubstitution);
+		extendedSubstitution.put(variable, resultTerm);
+		return Collections.singletonList(extendedSubstitution);
 	}
 
 	private boolean compare(Term x, Term y) {
