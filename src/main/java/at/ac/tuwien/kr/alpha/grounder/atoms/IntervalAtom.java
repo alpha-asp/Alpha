@@ -1,9 +1,8 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
-import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -14,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 /**
  * Helper for treating IntervalTerms in rules.
@@ -27,7 +28,7 @@ import java.util.List;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class IntervalAtom extends FixedInterpretationAtom {
-	private static final Predicate INTERVAL_PREDICATE = new Predicate("_interval", 2, true);
+	private static final Predicate INTERVAL_PREDICATE = Predicate.getInstance("_interval", 2, true);
 
 	private final List<Term> terms;
 
@@ -51,11 +52,11 @@ public class IntervalAtom extends FixedInterpretationAtom {
 		} else {
 			// The intervalRepresentingVariable is bound already, check if it is in the interval.
 			if (!(intervalRepresentingVariable instanceof ConstantTerm)
-				|| !(((ConstantTerm) intervalRepresentingVariable).getObject() instanceof Integer)) {
+				|| !(((ConstantTerm) intervalRepresentingVariable).getSymbol() instanceof Integer)) {
 				// Term is not bound to an integer constant, not in the interval.
 				return Collections.emptyList();
 			}
-			Integer integer = (Integer) ((ConstantTerm) intervalRepresentingVariable).getObject();
+			Integer integer = (Integer) ((ConstantTerm) intervalRepresentingVariable).getSymbol();
 			if (intervalTerm.getLowerBound() <= integer && integer <= intervalTerm.getUpperBound()) {
 				return Collections.singletonList(partialSubstitution);
 			}
@@ -98,12 +99,7 @@ public class IntervalAtom extends FixedInterpretationAtom {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder();
-		sb.append(INTERVAL_PREDICATE.getPredicateName());
-		sb.append("(");
-		Util.appendDelimited(sb, terms);
-		sb.append(")");
-		return sb.toString();
+		return join(INTERVAL_PREDICATE.getSymbol() + "(", terms, ")");
 	}
 
 	@Override

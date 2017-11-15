@@ -1,7 +1,8 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.interpretations.FixedInterpretation;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -16,6 +17,7 @@ import java.util.*;
  */
 public class BuiltinAtom extends FixedInterpretationAtom {
 	private final Predicate predicate;
+	private final FixedInterpretation interpretation;
 	private final ComparisonOperator operator;
 	private final List<Term> terms;
 	private final boolean negated;
@@ -27,7 +29,8 @@ public class BuiltinAtom extends FixedInterpretationAtom {
 		this.operator = operator;
 		this.isNormalizedEquality = (!negated && operator == ComparisonOperator.EQ)
 			|| (negated && operator == ComparisonOperator.NE);
-		predicate = new Predicate(operator.toString(), 2, false);
+		this.predicate = operator.toPredicate();
+		this.interpretation = operator.getInterpretation();
 	}
 
 	public boolean isNormalizedEquality() {

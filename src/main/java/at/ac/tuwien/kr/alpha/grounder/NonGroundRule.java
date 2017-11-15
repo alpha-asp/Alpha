@@ -27,17 +27,17 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static at.ac.tuwien.kr.alpha.Util.join;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
@@ -129,24 +129,15 @@ public class NonGroundRule {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-
-		if (!isConstraint()) {
-			sb.append(headAtom);
-			sb.append(" ");
-		}
-
-		sb.append(":- ");
-		Util.appendDelimited(sb, bodyAtomsPositive);
-		if (bodyAtomsPositive.size() > 0 && bodyAtomsNegative.size() > 0) {
-			sb.append(", ");
-		} else {
-			sb.append(" ");
-		}
-		Util.appendDelimited(sb, bodyAtomsNegative);
-		sb.append(".").append(System.lineSeparator());
-
-		return sb.toString();
+		return join(
+			join(
+				isConstraint() ? "" : ":- " + headAtom + " ",
+				bodyAtomsPositive,
+				bodyAtomsPositive.size() + bodyAtomsNegative.size() > 0 ? ", " : " "
+			),
+			bodyAtomsNegative,
+			"."
+		);
 	}
 
 	public Rule getRule() {

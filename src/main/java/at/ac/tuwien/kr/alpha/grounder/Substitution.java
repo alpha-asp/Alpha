@@ -151,7 +151,7 @@ public class Substitution {
 		}
 		Substitution specializingSubstitution = new Substitution();
 		String renamedVariablePrefix = "_Vrenamed_";	// Pick prefix guaranteed to not occur in generalAtom.
-		for (int i = 0; i < generalAtom.getPredicate().getArity(); i++) {
+		for (int i = 0; i < generalAtom.getPredicate().getRank(); i++) {
 			specializingSubstitution = specializeSubstitution(specializingSubstitution,
 				generalAtom.getTerms().get(i),
 				specificAtom.getTerms().get(i).renameVariables(renamedVariablePrefix));

@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder.rete;
 
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -8,6 +8,8 @@ import java.util.HashMap;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
+ *
+ * @deprecated
  */
 public class RetePredicate extends Predicate {
 	public final TupleStore tupleStore;
@@ -30,7 +32,7 @@ public class RetePredicate extends Predicate {
 	}
 
 	private RetePredicate(String predicateName, int arity) {
-		super(predicateName, arity);
+		super(predicateName, arity, false);
 		tupleStore = new TupleStore();
 	}
 }

@@ -5,8 +5,8 @@ import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
-import at.ac.tuwien.kr.alpha.common.predicates.FixedInterpretationPredicate;
+import at.ac.tuwien.kr.alpha.common.interpretations.FixedInterpretation;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.*;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -19,17 +19,17 @@ import static java.util.Collections.emptyList;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
-	private final Map<String, FixedInterpretationPredicate> externals;
+	private final Map<String, FixedInterpretation> externals;
 	private final boolean acceptVariables;
 
 	private Program inputProgram;
 	private boolean isCurrentLiteralNegated;
 
-	public ParseTreeVisitor(Map<String, FixedInterpretationPredicate> externals) {
+	public ParseTreeVisitor(Map<String, FixedInterpretation> externals) {
 		this(externals, true);
 	}
 
-	public ParseTreeVisitor(Map<String, FixedInterpretationPredicate> externals, boolean acceptVariables) {
+	public ParseTreeVisitor(Map<String, FixedInterpretation> externals, boolean acceptVariables) {
 		this.externals = externals;
 		this.acceptVariables = acceptVariables;
 	}
@@ -286,11 +286,12 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Literal visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
 		// builtin_atom : term binop term;
-		ComparisonOperator op = visitBinop(ctx.binop());
 		return new BuiltinAtom(
 			(Term) visit(ctx.term(0)),
 			(Term) visit(ctx.term(1)),
-			isCurrentLiteralNegated, op);
+			isCurrentLiteralNegated,
+			visitBinop(ctx.binop())
+		);
 	}
 
 	@Override
@@ -315,7 +316,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		}
 
 		final List<Term> terms = visitTerms(ctx.terms());
-		return new BasicAtom(new Predicate(ctx.ID().getText(), terms.size()), terms, isCurrentLiteralNegated);
+		return new BasicAtom(Predicate.getInstance(ctx.ID().getText(), terms.size()), terms, isCurrentLiteralNegated);
 	}
 
 	@Override
@@ -341,12 +342,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public ConstantTerm visitTerm_const(ASPCore2Parser.Term_constContext ctx) {
-		return ConstantTerm.getInstance(Symbol.getInstance(ctx.ID().getText()));
+		return ConstantTerm.getSymbolicInstance(ctx.ID().getText());
 	}
 
 	@Override
 	public ConstantTerm visitTerm_string(ASPCore2Parser.Term_stringContext ctx) {
-		return ConstantTerm.getInstance(ctx.STRING().getText());
+		String quotedString = ctx.QUOTED_STRING().getText();
+		return ConstantTerm.getInstance(quotedString.substring(1, quotedString.length() - 1));
 	}
 
 	@Override
@@ -385,21 +387,22 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			throw notSupported(ctx);
 		}
 
-		List<Term> outputTerms = visitTerms(ctx.output);
-		List<VariableTerm> output = new ArrayList<>(outputTerms.size());
+		final String predicateName = ctx.ID().getText();
+		final FixedInterpretation interpretation = externals.get(predicateName);
 
-		for (Term t : outputTerms) {
-			if (!(t instanceof VariableTerm)) {
-				throw notSupported(ctx.output);
-			}
-			output.add((VariableTerm) t);
+		if (interpretation == null) {
+			throw new IllegalArgumentException("Unknown interpretation name encountered: " + predicateName);
 		}
 
-		FixedInterpretationPredicate predicate = externals.get(ctx.ID().getText());
+		List<Term> outputTerms = visitTerms(ctx.output);
 
-		// TODO: Throw if predicate is null.
-
-		return new ExternalAtom(predicate, visitTerms(ctx.input), output, isCurrentLiteralNegated);
+		return new ExternalAtom(
+			Predicate.getInstance(predicateName, outputTerms.size()),
+			interpretation,
+			visitTerms(ctx.input),
+			outputTerms,
+			isCurrentLiteralNegated
+		);
 	}
 
 	@Override

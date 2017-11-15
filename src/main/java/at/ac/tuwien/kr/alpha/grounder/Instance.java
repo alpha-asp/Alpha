@@ -1,10 +1,11 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 /**
  * An instance is a positional association of terms, e.g., representing a variable substitution, or a ground instance of
@@ -42,9 +43,6 @@ public class Instance {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder("(");
-		Util.appendDelimited(sb, terms);
-		sb.append(")");
-		return sb.toString();
+		return join("(", terms, ")");
 	}
 }

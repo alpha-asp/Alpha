@@ -1,7 +1,8 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
+import at.ac.tuwien.kr.alpha.common.symbols.FunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.Interner;
-import at.ac.tuwien.kr.alpha.common.Symbol;
+import at.ac.tuwien.kr.alpha.common.symbols.SymbolWithRank;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Collections;
@@ -10,22 +11,25 @@ import java.util.List;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class ConstantTerm<T extends Comparable<T>> extends Term {
+public class ConstantTerm<T extends Comparable<T>> extends Term implements FunctionSymbol<T> {
 	private static final Interner<ConstantTerm> INTERNER = new Interner<>();
 
-	public T getObject() {
-		return object;
-	}
+	private final T symbol;
+	private final boolean symbolic;
 
-	private final T object;
-
-	private ConstantTerm(T object) {
-		this.object = object;
+	private ConstantTerm(T symbol, boolean symbolic) {
+		this.symbol = symbol;
+		this.symbolic = symbolic;
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T extends Comparable<T>> ConstantTerm<T> getInstance(T object) {
-		return (ConstantTerm<T>) INTERNER.intern(new ConstantTerm<>(object));
+	public static <T extends Comparable<T>> ConstantTerm<T> getInstance(T symbol) {
+		return (ConstantTerm<T>) INTERNER.intern(new ConstantTerm<>(symbol, false));
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T extends Comparable<T>> ConstantTerm<T> getSymbolicInstance(String symbol) {
+		return (ConstantTerm<T>) INTERNER.intern(new ConstantTerm<>(symbol, true));
 	}
 
 	@Override
@@ -39,13 +43,22 @@ public class ConstantTerm<T extends Comparable<T>> extends Term {
 	}
 
 	@Override
-	public ConstantTerm<T> substitute(Substitution substitution) {
+	public Term substitute(Substitution substitution) {
 		return this;
 	}
 
 	@Override
 	public String toString() {
-		return object.toString();
+		if (symbol instanceof String) {
+			if (symbolic) {
+				return (String) symbol;
+			} else {
+				return "\"" + symbol + "\"";
+			}
+		}
+		return symbol.toString();
+
+		// return symbol + "/" + rank;
 	}
 
 	@Override
@@ -60,12 +73,14 @@ public class ConstantTerm<T extends Comparable<T>> extends Term {
 
 		ConstantTerm that = (ConstantTerm) o;
 
-		return object.equals(that.object);
+		return symbol.equals(that.symbol);
 	}
 
 	@Override
 	public int hashCode() {
-		return object.hashCode();
+		int result = symbol.hashCode();
+		result = 31 * result + (symbolic ? 1 : 0);
+		return result;
 	}
 
 	/**
@@ -75,7 +90,7 @@ public class ConstantTerm<T extends Comparable<T>> extends Term {
 	private static final int priority(final Class<?> clazz) {
 		if (clazz.equals(Integer.class)) {
 			return 1;
-		} else if (clazz.equals(Symbol.class)) {
+		} else if (clazz.equals(SymbolWithRank.class)) {
 			return 2;
 		} else if (clazz.equals(String.class)) {
 			return 3;
@@ -98,22 +113,22 @@ public class ConstantTerm<T extends Comparable<T>> extends Term {
 
 		// We will perform an unchecked cast.
 		// Because of type erasure, we cannot know the exact type
-		// of other.object.
-		// However, may assume that other.object actually is of
+		// of other.symbol.
+		// However, may assume that other.symbol actually is of
 		// type T.
-		// We know that this.object if of type T and implements
-		// Comparable<T>. We ensure that the class of other.object
-		// equals the class of this.object, which in turn is T.
+		// We know that this.symbol if of type T and implements
+		// Comparable<T>. We ensure that the class of other.symbol
+		// equals the class of this.symbol, which in turn is T.
 		// That assumption should be quite safe. It can only be
 		// wrong if we have some bug that generates strange
 		// ConstantTerms at runtime, bypassing the check for T
 		// at compile-time.
-		if (other.object.getClass() == this.object.getClass()) {
-			return this.object.compareTo((T) other.object);
+		if (other.symbol.getClass() == this.symbol.getClass()) {
+			return this.symbol.compareTo((T) other.symbol);
 		}
 
-		Class<?> thisType = this.object.getClass();
-		Class<?> otherType = other.object.getClass();
+		Class<?> thisType = this.symbol.getClass();
+		Class<?> otherType = other.symbol.getClass();
 
 		int thisPrio = priority(thisType);
 		int otherPrio = priority(otherType);
@@ -129,5 +144,15 @@ public class ConstantTerm<T extends Comparable<T>> extends Term {
 	public Term renameVariables(String renamePrefix) {
 		// Constant contains no variables, hence stays the same.
 		return this;
+	}
+
+	@Override
+	public T getSymbol() {
+		return symbol;
+	}
+
+	@Override
+	public int getRank() {
+		return 0;
 	}
 }

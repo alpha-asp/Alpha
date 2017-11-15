@@ -9,7 +9,7 @@ import java.util.List;
  * Examples of such atoms are builtin atoms and external atoms.
  * Copyright (c) 2017, the Alpha Team.
  */
-public abstract class FixedInterpretationAtom implements Literal{
+public abstract class FixedInterpretationAtom implements Literal {
 
 	public abstract List<Substitution> getSubstitutions(Substitution partialSubstitution);
 }

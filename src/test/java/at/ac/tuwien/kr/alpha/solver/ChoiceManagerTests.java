@@ -62,7 +62,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 			for (Integer literal : noGood) {
 				int atom = atomOf(literal);
 				String atomToString = grounder.atomToString(atom);
-				if (atomToString.startsWith(RuleAtom.PREDICATE.getPredicateName())) {
+				if (atomToString.startsWith(RuleAtom.PREDICATE.getSymbol())) {
 					assertTrue("Atom not choice: " + atomToString, choiceManager.isAtomChoice(atom));
 				}
 			}

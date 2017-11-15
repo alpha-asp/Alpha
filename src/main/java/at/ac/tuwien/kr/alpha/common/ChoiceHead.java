@@ -1,51 +1,51 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 import java.util.List;
+
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 /**
  * Represents the head of a choice rule.
  */
 public class ChoiceHead extends Head {
 	private final List<ChoiceElement> choiceElements;
+
 	private final Term lowerBound;
 	private final ComparisonOperator lowerOp;
+
 	private final Term upperBound;
 	private final ComparisonOperator upperOp;
 
 	public static class ChoiceElement {
-		public final BasicAtom choiceAtom;
+		public final Atom choiceAtom;
 		public final List<Literal> conditionLiterals;
 
-		public ChoiceElement(BasicAtom choiceAtom, List<Literal> conditionLiterals) {
+		public ChoiceElement(Atom choiceAtom, List<Literal> conditionLiterals) {
 			this.choiceAtom = choiceAtom;
 			this.conditionLiterals = conditionLiterals;
 		}
 
 		@Override
 		public String toString() {
-			StringBuilder sb = new StringBuilder();
+			String result = choiceAtom.toString();
 
-			sb.append(choiceAtom);
 			if (conditionLiterals == null || conditionLiterals.size() == 0) {
-				return sb.toString();
+				return result;
 			}
-			sb.append(" : ");
-			Util.appendDelimited(sb, ", ", conditionLiterals);
 
-			return sb.toString();
+			return join(result + " : ", conditionLiterals, "");
 		}
 	}
 
-	public ComparisonOperator getLowerOp() {
+	public ComparisonOperator getLowerOperator() {
 		return lowerOp;
 	}
 
-	public ComparisonOperator getUpperOp() {
+	public ComparisonOperator getUpperOperator() {
 		return upperOp;
 	}
 
@@ -76,22 +76,18 @@ public class ChoiceHead extends Head {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
+		String result = "";
 
 		if (lowerBound != null) {
-			sb.append(lowerBound);
-			sb.append(lowerOp);
+			result += lowerBound.toString() + lowerOp;
 		}
-		sb.append("{ ");
-		Util.appendDelimited(sb, "; ", choiceElements);
-		sb.append(" }");
+
+		result += join("{ ", choiceElements, "; ", " }");
 
 		if (upperBound != null) {
-			sb.append(upperOp);
-			sb.append(upperBound);
+			result += upperOp.toString() + upperBound;
 		}
 
-
-		return sb.toString();
+		return result;
 	}
 }

@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.common.predicates;
+package at.ac.tuwien.kr.alpha.common.interpretations;
 
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import org.apache.commons.lang3.ClassUtils;
@@ -11,7 +11,7 @@ public class ExternalMethodPredicate extends ExternalNonBindingPredicate {
 	private final Method method;
 
 	public ExternalMethodPredicate(Method method) {
-		super(method.getName(), method.getParameterCount());
+		super(method.getParameterCount());
 
 		if (!method.getReturnType().equals(boolean.class)) {
 			throw new IllegalArgumentException("method must return boolean");
@@ -26,7 +26,7 @@ public class ExternalMethodPredicate extends ExternalNonBindingPredicate {
 		final Object[] arguments = new Object[terms.size()];
 
 		for (int i = 0; i < arguments.length; i++) {
-			arguments[i] = terms.get(i).getObject();
+			arguments[i] = terms.get(i).getSymbol();
 
 			final Class<?> expected = parameterTypes[i];
 			final Class<?> actual = arguments[i].getClass();
@@ -40,8 +40,7 @@ public class ExternalMethodPredicate extends ExternalNonBindingPredicate {
 			}
 
 			throw new IllegalArgumentException(
-				"Parameter type mismatch when calling " + getPredicateName() +
-					" at position " + i + ". Expected " + expected + " but got " +
+				"Parameter type mismatch at position " + i + ". Expected " + expected + " but got " +
 					actual + "."
 			);
 		}

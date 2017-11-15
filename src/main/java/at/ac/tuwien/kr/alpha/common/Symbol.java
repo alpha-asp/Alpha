@@ -23,7 +23,7 @@ public class Symbol implements Comparable<Symbol> {
 		return INTERNER.intern(new Symbol(symbol, arity));
 	}
 
-	public int getArity() {
+	public int getRank() {
 		return arity;
 	}
 

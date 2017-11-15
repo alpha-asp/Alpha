@@ -23,7 +23,7 @@ public class FactIntervalEvaluator {
 	 */
 	public static List<Instance> constructFactInstances(Atom fact) {
 		// Construct instance(s) from the fact.
-		int arity = fact.getPredicate().getArity();
+		int arity = fact.getPredicate().getRank();
 		Term[] currentTerms = new Term[arity];
 		boolean containsIntervals = false;
 		// Check if instance contains intervals at all.

@@ -72,7 +72,8 @@ public class RuleGroundingOrder {
 				fixedStartingLiterals.add(literal);
 			}
 		}
-		// If there are no positive BasicAtoms, the rule only contains fixed ground instantiation literals and those are starting for the one-time grounding.
+		// If there are no positive BasicAtoms, the rule only contains fixed ground
+		// instantiation literals and those are starting for the one-time grounding.
 		if (!ordinaryStartingLiterals.isEmpty()) {
 			startingLiterals = new LinkedList<>(ordinaryStartingLiterals);
 			return false;
@@ -82,7 +83,6 @@ public class RuleGroundingOrder {
 		} else {
 			throw new RuntimeException("Unsafe rule encountered: " + nonGroundRule.getRule());
 		}
-
 	}
 
 	Collection<Literal> getStartingLiterals() {

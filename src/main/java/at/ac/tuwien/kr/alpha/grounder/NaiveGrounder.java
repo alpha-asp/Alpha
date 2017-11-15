@@ -32,7 +32,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
@@ -156,10 +156,10 @@ public class NaiveGrounder extends BridgedGrounder {
 	private void adaptWorkingMemoryForPredicate(Predicate predicate) {
 		// Create working memory for predicate if it does not exist
 		if (!workingMemory.containsKey(predicate)) {
-			IndexedInstanceStorage instanceStoragePos = new IndexedInstanceStorage(predicate.getPredicateName() + "+", predicate.getArity());
-			IndexedInstanceStorage instanceStorageNeg = new IndexedInstanceStorage(predicate.getPredicateName() + "-", predicate.getArity());
+			IndexedInstanceStorage instanceStoragePos = new IndexedInstanceStorage(predicate.getSymbol() + "+", predicate.getRank());
+			IndexedInstanceStorage instanceStorageNeg = new IndexedInstanceStorage(predicate.getSymbol() + "-", predicate.getRank());
 			// Index all positions of the storage (may impair efficiency)
-			for (int i = 0; i < predicate.getArity(); i++) {
+			for (int i = 0; i < predicate.getRank(); i++) {
 				instanceStoragePos.addIndexPosition(i);
 				instanceStorageNeg.addIndexPosition(i);
 			}
