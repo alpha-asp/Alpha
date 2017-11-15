@@ -1,7 +1,8 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
+import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationAtom;
 import at.ac.tuwien.kr.alpha.common.predicates.FixedInterpretationPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -13,11 +14,17 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import java.util.*;
 
 /**
- * Helper for treating IntervalTerms in rules. Each IntervalTerm is replaced by a variable and a special IntervalAtom
+ * Helper for treating IntervalTerms in rules.
+ *
+ * Each IntervalTerm is replaced by a variable and this special IntervalAtom
  * is added to the rule body for generating all bindings of the variable.
+ *
+ * The first term of this atom is an IntervalTerm while the second term is any Term (if it is a VariableTerm, this will
+ * bind to all elements of the interval, otherwise it is a simple check whether the Term is a ConstantTerm<Integer>
+ * with the Integer being inside the interval.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class IntervalAtom implements Literal {
+public class IntervalAtom extends FixedInterpretationAtom {
 	private static final FixedInterpretationPredicate INTERVAL_PREDICATE = new FixedInterpretationPredicate("_interval", 2, true) {
 		@Override
 		public Set<List<ConstantTerm>> evaluate(List<Term> terms) {
@@ -26,22 +33,38 @@ public class IntervalAtom implements Literal {
 		}
 	};
 
-	private final IntervalTerm intervalTerm;
-	private final VariableTerm intervalRepresentingVariable;
+	private final List<Term> terms;
 
-	public IntervalAtom(IntervalTerm intervalTerm, VariableTerm intervalRepresentingVariable) {
-		this.intervalTerm = intervalTerm;
-		this.intervalRepresentingVariable = intervalRepresentingVariable;
+	public IntervalAtom(IntervalTerm intervalTerm, Term intervalRepresentingVariable) {
+		this.terms = Arrays.asList(intervalTerm, intervalRepresentingVariable);
 	}
 
 	public List<Substitution> getIntervalSubstitutions(Substitution partialSubstitution) {
 		List<Substitution> substitutions = new ArrayList<>();
-		for (int i = intervalTerm.getLowerBound(); i <= intervalTerm.getUpperBound(); i++) {
-			Substitution ith = new Substitution(partialSubstitution);
-			ith.put(intervalRepresentingVariable, ConstantTerm.getInstance(i));
-			substitutions.add(ith);
+		Term intervalRepresentingVariable = terms.get(1);
+		IntervalTerm intervalTerm = (IntervalTerm) terms.get(0);
+		// Check whether intervalRepresentingVariable is bound already.
+		if (intervalRepresentingVariable instanceof VariableTerm) {
+			// Still a variable, generate all elements in the interval.
+			for (int i = intervalTerm.getLowerBound(); i <= intervalTerm.getUpperBound(); i++) {
+				Substitution ith = new Substitution(partialSubstitution);
+				ith.put((VariableTerm) intervalRepresentingVariable, ConstantTerm.getInstance(i));
+				substitutions.add(ith);
+			}
+			return substitutions;
+		} else {
+			// The intervalRepresentingVariable is bound already, check if it is in the interval.
+			if (!(intervalRepresentingVariable instanceof ConstantTerm)
+				|| !(((ConstantTerm) intervalRepresentingVariable).getObject() instanceof Integer)) {
+				// Term is not bound to an integer constant, not in the interval.
+				return Collections.emptyList();
+			}
+			Integer integer = (Integer) ((ConstantTerm) intervalRepresentingVariable).getObject();
+			if (intervalTerm.getLowerBound() <= integer && integer <= intervalTerm.getUpperBound()) {
+				return Collections.singletonList(partialSubstitution);
+			}
+			return Collections.emptyList();
 		}
-		return substitutions;
 	}
 
 	@Override
@@ -51,7 +74,7 @@ public class IntervalAtom implements Literal {
 
 	@Override
 	public List<Term> getTerms() {
-		return Arrays.asList(intervalRepresentingVariable, intervalTerm);
+		return terms;
 	}
 
 	@Override
@@ -61,27 +84,62 @@ public class IntervalAtom implements Literal {
 
 	@Override
 	public List<VariableTerm> getBindingVariables() {
-		return Collections.singletonList(intervalRepresentingVariable);
+		if (terms.get(1) instanceof VariableTerm) {
+			return Collections.singletonList((VariableTerm) terms.get(1));
+		}
+		return Collections.emptyList();
 	}
 
 	@Override
 	public List<VariableTerm> getNonBindingVariables() {
-		return intervalTerm.getOccurringVariables();
+		return terms.get(0).getOccurringVariables();
 	}
 
 	@Override
 	public Atom substitute(Substitution substitution) {
-		return new IntervalAtom(intervalTerm.substitute(substitution), intervalRepresentingVariable);
+		return new IntervalAtom((IntervalTerm)terms.get(0).substitute(substitution), terms.get(1).substitute(substitution));
 	}
 
 	@Override
 	public String toString() {
-		return INTERVAL_PREDICATE.getPredicateName() + "(" + intervalRepresentingVariable + ", " + intervalTerm + ")";
+		final StringBuilder sb = new StringBuilder();
+		sb.append(INTERVAL_PREDICATE.getPredicateName());
+		sb.append("(");
+		Util.appendDelimited(sb, terms);
+		sb.append(")");
+		return sb.toString();
 	}
 
 	@Override
 	public boolean isNegated() {
 		// IntervalAtoms only occur positively.
 		return false;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		IntervalAtom that = (IntervalAtom) o;
+
+		return terms.equals(that.terms);
+	}
+
+	@Override
+	public int hashCode() {
+		return terms.hashCode();
+	}
+
+	@Override
+	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
+		// Substitute variables occurring in the interval itself.
+		IntervalAtom groundInterval = (IntervalAtom) substitute(partialSubstitution);
+		// Generate all substitutions for the interval representing variable.
+		return groundInterval.getIntervalSubstitutions(partialSubstitution);
 	}
 }

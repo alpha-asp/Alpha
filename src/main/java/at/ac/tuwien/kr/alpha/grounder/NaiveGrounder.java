@@ -30,17 +30,17 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
-import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
+import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -148,6 +148,8 @@ public class NaiveGrounder extends BridgedGrounder {
 		new ChoiceHeadToNormal().transform(program);
 		// Transform intervals.
 		new IntervalTermToIntervalAtom().transform(program);
+		// Remove variable equalities.
+		new VariableEqualityRemoval().transform(program);
 	}
 
 	private void adaptWorkingMemoryForPredicate(Predicate predicate) {
@@ -277,19 +279,10 @@ public class NaiveGrounder extends BridgedGrounder {
 			if (!nonGroundRule.groundingOrder.fixedInstantiation()) {
 				continue;
 			}
-
-			// Check if rule contains intervals (but is otherwise ground).
-			if (nonGroundRule.containsIntervals()) {
-				// Then generate all substitutions of the intervals and generate the resulting nogoods.
-				Literal startingLiteral = nonGroundRule.groundingOrder.getStartingLiterals().iterator().next();
-				Literal[] groundingOrder = nonGroundRule.groundingOrder.orderStartingFrom(startingLiteral);
-				List<Substitution> substitutions = bindNextAtomInRule(groundingOrder, 0, new Substitution(), null);
-				for (Substitution substitution : substitutions) {
-					createNoGoodFromSubstitution(nonGroundRule, substitution, noGoodsFromFacts);
-				}
-			} else {
-				// Generate nogoods of ground rules (where no intervals occur).
-				createNoGoodFromSubstitution(nonGroundRule, new Substitution(), noGoodsFromFacts);
+			Literal[] groundingOrder = nonGroundRule.groundingOrder.getFixedGroundingOrder();
+			List<Substitution> substitutions = bindNextAtomInRule(groundingOrder, 0, new Substitution(), null);
+			for (Substitution substitution : substitutions) {
+				createNoGoodFromSubstitution(nonGroundRule, substitution, noGoodsFromFacts);
 			}
 		}
 
@@ -397,17 +390,9 @@ public class NaiveGrounder extends BridgedGrounder {
 		}
 
 		Literal currentAtom = groundingOrder[orderPosition];
-		if (currentAtom instanceof ExternalAtom || currentAtom instanceof IntervalAtom) {
-			// Generate all substitutions for the external/interval atom.
-			List<Substitution> substitutions;
-			if (currentAtom instanceof ExternalAtom) {
-				substitutions = ((ExternalAtom)currentAtom).getSubstitutions(partialSubstitution);
-			} else {
-				// Substitute variables occurring in the interval itself.
-				IntervalAtom groundInterval = (IntervalAtom) currentAtom.substitute(partialSubstitution);
-				// Generate all substitutions for the interval representing variable.
-				substitutions = groundInterval.getIntervalSubstitutions(partialSubstitution);
-			}
+		if (currentAtom instanceof FixedInterpretationAtom) {
+			// Generate all substitutions for the builtin/external/interval atom.
+			List<Substitution> substitutions = ((FixedInterpretationAtom)currentAtom).getSubstitutions(partialSubstitution);
 
 			if (substitutions.isEmpty()) {
 				return emptyList();

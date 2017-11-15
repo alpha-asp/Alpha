@@ -4,10 +4,7 @@ import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.predicates.FixedInterpretationPredicate;
 import at.ac.tuwien.kr.alpha.common.terms.*;
@@ -290,15 +287,10 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	public Literal visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
 		// builtin_atom : term binop term;
 		BinaryOperator op = visitBinop(ctx.binop());
-
-		if (isCurrentLiteralNegated) {
-			op = op.getNegation();
-		}
-
-		return new ExternalAtom(op.toPredicate(), Arrays.asList(
+		return new BuiltinAtom(
 			(Term) visit(ctx.term(0)),
-			(Term) visit(ctx.term(1))
-		), Collections.emptyList(), isCurrentLiteralNegated);
+			(Term) visit(ctx.term(1)),
+			isCurrentLiteralNegated, op);
 	}
 
 	@Override
@@ -436,7 +428,24 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public Object visitTerm_binopTerm(ASPCore2Parser.Term_binopTermContext ctx) {
-		throw notSupported(ctx);
+	public ArithmeticTerm visitTerm_binopTerm(ASPCore2Parser.Term_binopTermContext ctx) {
+		// term arithop term
+		return ArithmeticTerm.getInstance((Term)visit(ctx.term(0)), visitArithop(ctx.arithop()), (Term)visit(ctx.term(1)));
+	}
+
+	@Override
+	public ArithmeticTerm.ArithmeticOperator visitArithop(ASPCore2Parser.ArithopContext ctx) {
+		// arithop : PLUS | MINUS | TIMES | DIV;
+		if (ctx.PLUS() != null) {
+			return ArithmeticTerm.ArithmeticOperator.PLUS;
+		} else if (ctx.MINUS() != null) {
+			return ArithmeticTerm.ArithmeticOperator.MINUS;
+		} else if (ctx.TIMES() != null) {
+			return ArithmeticTerm.ArithmeticOperator.TIMES;
+		} else if (ctx.DIV() != null) {
+			return ArithmeticTerm.ArithmeticOperator.DIV;
+		} else {
+			throw notSupported(ctx);
+		}
 	}
 }

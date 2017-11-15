@@ -21,13 +21,13 @@ import java.util.Map;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class IntervalTermToIntervalAtom implements ProgramTransformation {
-	public static final String INTERVAL_VARIABLE_PREFIX = "_Interval";
+	private static final String INTERVAL_VARIABLE_PREFIX = "_Interval";
 
 	/**
 	 * Rewrites intervals into a new variable and special IntervalAtom.
 	 * @return true if some interval occurs in the rule.
 	 */
-	public static boolean rewriteIntervalSpecifications(Rule rule) {
+	private static boolean rewriteIntervalSpecifications(Rule rule) {
 		// Collect all intervals and replace them with variables.
 		Map<VariableTerm, IntervalTerm> intervalReplacements = new HashMap<>();
 		for (Literal literal : rule.getBody()) {

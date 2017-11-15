@@ -1,7 +1,9 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BuiltinAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -86,6 +88,18 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 			for (int i = 0; i < literal.getTerms().size(); i++) {
 				Term replaced = literal.getTerms().get(i).substitute(replacementSubstitution);
 				literal.getTerms().set(i, replaced);
+			}
+		}
+		// Replace variables in head.
+		if (rule.getHead() != null) {
+			if (!rule.getHead().isNormal()) {
+				throw new UnsupportedOperationException("Cannot treat non-normal rule heads yet.");
+			}
+			DisjunctiveHead head = (DisjunctiveHead) rule.getHead();
+			Atom headAtom = head.disjunctiveAtoms.get(0);
+			for (int i = 0; i < headAtom.getTerms().size(); i++) {
+				Term replaced = headAtom.getTerms().get(i).substitute(replacementSubstitution);
+				headAtom.getTerms().set(i, replaced);
 			}
 		}
 	}

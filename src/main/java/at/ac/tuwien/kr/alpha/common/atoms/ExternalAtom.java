@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 
-public class ExternalAtom implements Literal {
+public class ExternalAtom extends FixedInterpretationAtom {
 	private final List<Term> input;
 	private final List<VariableTerm> output;
 

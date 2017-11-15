@@ -1,8 +1,5 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.common.predicates.BuiltinBiPredicate;
-import at.ac.tuwien.kr.alpha.common.predicates.FixedInterpretationPredicate;
-
 public enum BinaryOperator {
 	EQ("="),
 	NE("!="),
@@ -12,20 +9,14 @@ public enum BinaryOperator {
 	GE(">=");
 
 	private String asString;
-	private FixedInterpretationPredicate asPredicate;
 
 	BinaryOperator(String asString) {
 		this.asString = asString;
-		this.asPredicate = new BuiltinBiPredicate(this);
 	}
 
 	@Override
 	public String toString() {
 		return asString;
-	}
-
-	public FixedInterpretationPredicate toPredicate() {
-		return asPredicate;
 	}
 
 	public BinaryOperator getNegation() {

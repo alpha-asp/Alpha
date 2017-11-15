@@ -2,9 +2,8 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
-import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -39,6 +38,7 @@ public class NoGoodGenerator {
 	 * Generates all NoGoods resulting from a non-ground rule and a variable substitution.
 	 * @param nonGroundRule the non-ground rule.
 	 * @param substitution the grounding substitution, i.e., applying substitution to nonGroundRule results in a ground rule.
+	 *                     Assumption: atoms with fixed interpretation evaluate to true under the substitution.
 	 * @return the NoGoods corresponding to the ground rule.
 	 */
 	List<NoGood> generateNoGoodsFromGroundSubstitution(NonGroundRule nonGroundRule, Substitution substitution) {
@@ -46,28 +46,14 @@ public class NoGoodGenerator {
 		// Collect ground atoms in the body
 		ArrayList<Integer> bodyAtomsPositive = new ArrayList<>();
 		ArrayList<Integer> bodyAtomsNegative = new ArrayList<>();
+		// FIXME: iterate on literals of the rule instead of NonGroundRule.
 		for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
-			if (atom instanceof ExternalAtom) {
-				ExternalAtom external = (ExternalAtom) atom;
-
-				if (external.hasOutput()) {
-					continue;
-				}
-
-				// Truth of builtin atoms does not depend on any assignment
-				// hence, they need not be represented as long as they evaluate to true
-				List<Substitution> substitutions = external.getSubstitutions(substitution);
-
-				if (substitutions.isEmpty()) {
-					return emptyList();
-				} else {
-					continue;
-				}
-			}
-			if (atom instanceof IntervalAtom) {
-				// IntervalAtoms are needed for deriving all substitutions of intervals but otherwise can be ignored.
+			if (atom instanceof FixedInterpretationAtom) {
+				// Atom has fixed interpretation, hence was checked earlier that it evaluates to true under the given substitution.
+				// FixedInterpretationAtoms need not be shown to the solver, skip it.
 				continue;
 			}
+
 			Atom groundAtom = atom.substitute(substitution);
 			// Consider facts to eliminate ground atoms from the generated nogoods that are always true
 			// and eliminate nogoods that are always satisfied due to facts.

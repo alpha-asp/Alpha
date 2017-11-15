@@ -38,6 +38,7 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import junit.framework.TestCase;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -599,6 +600,23 @@ public class SolverTests extends AbstractSolverTests {
 		List<AnswerSet> actual = solver.collectList();
 		assertEquals(2, actual.size());
 		assertEquals(AnswerSetsParser.parse("{} { a }"), new HashSet<>(actual));
+	}
+
+	@Test
+	public void simpleArithmetics() throws IOException {
+		assertAnswerSet("eight(X) :- X = 4 + 5 - 1." +
+			"three(X) :- X = Z, Y = 1..10, Z = Y / 3, Z > 2, Z < 4.",
+
+			"eight(8), three(3)");
+	}
+
+	@Test
+	@Ignore
+	public void arithmeticsMultiplicationBeforeAddition() throws IOException {
+		// TODO: with current parser yields wrong result (9).
+		assertAnswerSet("seven(X) :- 1+2 * 3 = X.",
+
+			"seven(7)");
 	}
 
 	@Test

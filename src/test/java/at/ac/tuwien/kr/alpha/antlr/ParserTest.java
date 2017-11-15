@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.antlr;
 
+import at.ac.tuwien.kr.alpha.common.BinaryOperator;
 import at.ac.tuwien.kr.alpha.common.ChoiceHead;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -106,8 +107,8 @@ public class ParserTest {
 		assertFalse(conditionalLiterals.get(0).isNegated());
 		assertTrue(conditionalLiterals.get(1).isNegated());
 		assertEquals(ConstantTerm.getInstance(1), choiceHead.getLowerBound());
-		assertEquals("<", choiceHead.getLowerOp().toPredicate().getPredicateName());
+		assertEquals(BinaryOperator.LT, choiceHead.getLowerOp());
 		assertEquals(ConstantTerm.getInstance(13), choiceHead.getUpperBound());
-		assertEquals("<=", choiceHead.getUpperOp().toPredicate().getPredicateName());
+		assertEquals(BinaryOperator.LE, choiceHead.getUpperOp());
 	}
 }
