@@ -401,7 +401,7 @@ public class NaiveGrounder extends BridgedGrounder {
 			ArrayList<Substitution> generatedSubstitutions = new ArrayList<>();
 			for (Substitution substitution : substitutions) {
 				// Continue grounding with each of the generated values.
-				generatedSubstitutions.addAll(bindNextAtomInRule(groundingOrder, orderPosition + 1 , substitution, currentAssignment));
+				generatedSubstitutions.addAll(bindNextAtomInRule(groundingOrder, orderPosition + 1, substitution, currentAssignment));
 			}
 			return generatedSubstitutions;
 		}
