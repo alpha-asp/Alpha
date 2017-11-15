@@ -4,7 +4,7 @@ import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BuiltinAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -30,10 +30,10 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 		//HashSet<VariableTerm> equalVariables = new LinkedHashSet<>();
 		HashSet<Literal> equalitiesToRemove = new HashSet<>();
 		for (Literal literal : rule.getBody()) {
-			if (!(literal instanceof BuiltinAtom)) {
+			if (!(literal instanceof ComparisonAtom)) {
 				continue;
 			}
-			if (!((BuiltinAtom) literal).isNormalizedEquality()) {
+			if (!((ComparisonAtom) literal).isNormalizedEquality()) {
 				continue;
 			}
 			if (literal.getTerms().get(0) instanceof VariableTerm && literal.getTerms().get(1) instanceof VariableTerm) {

@@ -286,7 +286,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Literal visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
 		// builtin_atom : term binop term;
-		return new BuiltinAtom(
+		return new ComparisonAtom(
 			(Term) visit(ctx.term(0)),
 			(Term) visit(ctx.term(1)),
 			isCurrentLiteralNegated,
