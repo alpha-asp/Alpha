@@ -44,17 +44,6 @@ public class BasicAtom implements Literal {
 		this(predicate, terms, false);
 	}
 
-	public BasicAtom(Literal clone) {
-		this(clone, clone.isNegated());
-	}
-
-	public BasicAtom(Atom clone, boolean negated) {
-		this.predicate = clone.getPredicate();
-		this.terms = new ArrayList<>(clone.getTerms());
-		this.ground = clone.isGround();
-		this.negated = negated;
-	}
-
 	public BasicAtom(Predicate predicate, Term... terms) {
 		this(predicate, Arrays.asList(terms));
 	}

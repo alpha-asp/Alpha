@@ -10,6 +10,5 @@ import java.util.List;
  * Copyright (c) 2017, the Alpha Team.
  */
 public abstract class FixedInterpretationAtom implements Literal {
-
 	public abstract List<Substitution> getSubstitutions(Substitution partialSubstitution);
 }

@@ -59,16 +59,16 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 				Predicate negPredicate = Predicate.getInstance(PREDICATE_NEGATION_PREFIX + headPredicate.getSymbol(), headPredicate.getRank() + 1, true);
 				List<Term> headTerms = new ArrayList<>(head.getTerms());
 				headTerms.add(0, ConstantTerm.getInstance("1"));	// FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for classical negative atoms.
-				BasicAtom negHead = new BasicAtom(negPredicate, headTerms);
+				Atom negHead = new BasicAtom(negPredicate, headTerms);
 
-				// Construct two choice rules.
-				List<Literal> choiceRuleBodyWithNegHead = new ArrayList<>(ruleBody);
-				choiceRuleBodyWithNegHead.add(new BasicAtom(head, true));
-				additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(negHead)), choiceRuleBodyWithNegHead));
+				// Construct two guessing rules.
+				List<Literal> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
+				guessingRuleBodyWithNegHead.add(new BasicAtom(head.getPredicate(), head.getTerms(), true));
+				additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(negHead)), guessingRuleBodyWithNegHead));
 
-				List<Literal> choiceRuleBodyWithHead = new ArrayList<>(ruleBody);
-				choiceRuleBodyWithHead.add(new BasicAtom(negHead, true));
-				additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(head)), choiceRuleBodyWithHead));
+				List<Literal> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
+				guessingRuleBodyWithHead.add(new BasicAtom(negPredicate, headTerms, true));
+				additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(head)), guessingRuleBodyWithHead));
 
 				// TODO: when cardinality constraints are possible, process the boundaries by adding a constraint with a cardinality check.
 			}

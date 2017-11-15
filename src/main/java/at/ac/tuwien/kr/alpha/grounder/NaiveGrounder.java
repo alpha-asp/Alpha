@@ -484,7 +484,7 @@ public class NaiveGrounder extends BridgedGrounder {
 			}
 
 			// Check if atom is also assigned true.
-			BasicAtom substituteClone = new BasicAtom((BasicAtom) substitute);
+			Atom substituteClone = new BasicAtom(substitute.getPredicate(), substitute.getTerms());
 			Atom substitutedAtom = substituteClone.substitute(unified);
 			if (!substitutedAtom.isGround()) {
 				throw oops("Grounded atom should be ground but is not");
