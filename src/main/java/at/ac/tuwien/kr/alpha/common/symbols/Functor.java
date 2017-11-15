@@ -23,7 +23,7 @@ public final class Functor implements FunctionSymbol<String> {
 	}
 
 	@Override
-	public int getRank() {
+	public int getArity() {
 		return rank;
 	}
 
@@ -39,7 +39,7 @@ public final class Functor implements FunctionSymbol<String> {
 
 		FunctionSymbol other = (FunctionSymbol) o;
 
-		if (rank != other.getRank()) {
+		if (rank != other.getArity()) {
 			return false;
 		}
 

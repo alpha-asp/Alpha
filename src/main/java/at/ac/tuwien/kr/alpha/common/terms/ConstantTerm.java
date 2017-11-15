@@ -149,7 +149,7 @@ public class ConstantTerm<T extends Comparable<T>> extends Term implements Funct
 	}
 
 	@Override
-	public int getRank() {
+	public int getArity() {
 		return 0;
 	}
 }

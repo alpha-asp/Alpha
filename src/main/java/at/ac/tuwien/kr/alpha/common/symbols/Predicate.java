@@ -5,7 +5,7 @@ import at.ac.tuwien.kr.alpha.common.Interner;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class Predicate implements Comparable<Predicate>, SymbolWithRank<String> {
+public class Predicate implements Comparable<Predicate>, SymbolWithArity<String> {
 	private static final Interner<Predicate> INTERNER = new Interner<>();
 
 	private final String symbol;
@@ -69,7 +69,7 @@ public class Predicate implements Comparable<Predicate>, SymbolWithRank<String> 
 			return result;
 		}
 
-		return Integer.compare(getRank(), other.getRank());
+		return Integer.compare(getArity(), other.getArity());
 	}
 
 	@Override
@@ -78,7 +78,7 @@ public class Predicate implements Comparable<Predicate>, SymbolWithRank<String> 
 	}
 
 	@Override
-	public int getRank() {
+	public int getArity() {
 		return rank;
 	}
 }

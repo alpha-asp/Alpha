@@ -25,7 +25,7 @@ public class FunctionTerm extends Term {
 
 		this.symbol = symbol;
 
-		if (terms.size() != symbol.getRank()) {
+		if (terms.size() != symbol.getArity()) {
 			throw new IllegalArgumentException("Number of arguments does not match arity.");
 		}
 

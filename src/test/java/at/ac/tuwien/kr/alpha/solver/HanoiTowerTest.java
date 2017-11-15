@@ -101,7 +101,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		int steps = getSteps(parsedProgram);
 		SortedSet<Atom> onInstancesInAnswerSet = answerSet.getPredicateInstances(on);
 		for (Atom atom : parsedProgram.getFacts()) {
-			if (atom.getPredicate().getSymbol().equals(ongoal.getSymbol()) && atom.getPredicate().getRank() == ongoal.getRank()) {
+			if (atom.getPredicate().getSymbol().equals(ongoal.getSymbol()) && atom.getPredicate().getArity() == ongoal.getArity()) {
 				Term expectedTop = ConstantTerm.getInstance(atom.getTerms().get(0).toString());
 				Term expectedBottom = ConstantTerm.getInstance(atom.getTerms().get(1).toString());
 				Term expectedSteps = ConstantTerm.getInstance(String.valueOf(steps));
@@ -114,7 +114,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	private int getSteps(Program parsedProgram) {
 		Predicate steps = Predicate.getInstance("steps", 1);
 		for (Atom atom : parsedProgram.getFacts()) {
-			if (atom.getPredicate().getSymbol().equals(steps.getSymbol()) && atom.getPredicate().getRank() == steps.getRank()) {
+			if (atom.getPredicate().getSymbol().equals(steps.getSymbol()) && atom.getPredicate().getArity() == steps.getArity()) {
 				return Integer.valueOf(atom.getTerms().get(0).toString());
 			}
 		}

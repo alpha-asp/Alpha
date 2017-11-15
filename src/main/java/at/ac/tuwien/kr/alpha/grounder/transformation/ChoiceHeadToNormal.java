@@ -56,7 +56,7 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 
 				// Construct head atom for the choice.
 				Predicate headPredicate = head.getPredicate();
-				Predicate negPredicate = Predicate.getInstance(PREDICATE_NEGATION_PREFIX + headPredicate.getSymbol(), headPredicate.getRank() + 1, true);
+				Predicate negPredicate = Predicate.getInstance(PREDICATE_NEGATION_PREFIX + headPredicate.getSymbol(), headPredicate.getArity() + 1, true);
 				List<Term> headTerms = new ArrayList<>(head.getTerms());
 				headTerms.add(0, ConstantTerm.getInstance("1"));	// FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for classical negative atoms.
 				Atom negHead = new BasicAtom(negPredicate, headTerms);
