@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.BinaryOperator;
+import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.predicates.FixedInterpretationPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm;
@@ -17,17 +17,17 @@ import java.util.*;
  */
 public class BuiltinAtom extends FixedInterpretationAtom {
 	private final FixedInterpretationPredicate predicate;
-	private final BinaryOperator operator;
+	private final ComparisonOperator operator;
 	private final List<Term> terms;
 	private final boolean negated;
 	private final boolean isNormalizedEquality;
 
-	public BuiltinAtom(Term left, Term right, boolean negated, BinaryOperator operator) {
+	public BuiltinAtom(Term left, Term right, boolean negated, ComparisonOperator operator) {
 		this.terms = Arrays.asList(left, right);
 		this.negated = negated;
 		this.operator = operator;
-		this.isNormalizedEquality = (!negated && operator == BinaryOperator.EQ)
-			|| (negated && operator == BinaryOperator.NE);
+		this.isNormalizedEquality = (!negated && operator == ComparisonOperator.EQ)
+			|| (negated && operator == ComparisonOperator.NE);
 		predicate = new FixedInterpretationPredicate(operator.toString(), 2, false) {
 			@Override
 			public Set<List<ConstantTerm>> evaluate(List<Term> terms) {
@@ -158,7 +158,7 @@ public class BuiltinAtom extends FixedInterpretationAtom {
 
 		boolean result;
 
-		BinaryOperator operator = isNegated() ? this.operator.getNegation() : this.operator;
+		ComparisonOperator operator = isNegated() ? this.operator.getNegation() : this.operator;
 		switch (operator) {
 			case EQ:
 				result = comparison ==  0;

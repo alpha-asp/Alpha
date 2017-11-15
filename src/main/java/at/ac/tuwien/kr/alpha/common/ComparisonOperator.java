@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.common;
 
-public enum BinaryOperator {
+public enum ComparisonOperator {
 	EQ("="),
 	NE("!="),
 	LT("<"),
@@ -10,7 +10,7 @@ public enum BinaryOperator {
 
 	private String asString;
 
-	BinaryOperator(String asString) {
+	ComparisonOperator(String asString) {
 		this.asString = asString;
 	}
 
@@ -19,7 +19,7 @@ public enum BinaryOperator {
 		return asString;
 	}
 
-	public BinaryOperator getNegation() {
+	public ComparisonOperator getNegation() {
 		switch (this) {
 			case EQ: return NE;
 			case NE: return EQ;

@@ -193,9 +193,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	public Head visitChoice(ASPCore2Parser.ChoiceContext ctx) {
 		// choice : (lt=term lop=binop)? CURLY_OPEN choice_elements? CURLY_CLOSE (uop=binop ut=term)?;
 		Term lt = null;
-		BinaryOperator lop = null;
+		ComparisonOperator lop = null;
 		Term ut = null;
-		BinaryOperator uop = null;
+		ComparisonOperator uop = null;
 		if (ctx.lt != null) {
 			lt = (Term) visit(ctx.lt);
 			lop = visitBinop(ctx.lop);
@@ -264,20 +264,20 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public BinaryOperator visitBinop(ASPCore2Parser.BinopContext ctx) {
+	public ComparisonOperator visitBinop(ASPCore2Parser.BinopContext ctx) {
 		// binop : EQUAL | UNEQUAL | LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ;
 		if (ctx.EQUAL() != null) {
-			return BinaryOperator.EQ;
+			return ComparisonOperator.EQ;
 		} else if (ctx.UNEQUAL() != null) {
-			return BinaryOperator.NE;
+			return ComparisonOperator.NE;
 		} else if (ctx.LESS() != null) {
-			return BinaryOperator.LT;
+			return ComparisonOperator.LT;
 		} else if (ctx.LESS_OR_EQ() != null) {
-			return BinaryOperator.LE;
+			return ComparisonOperator.LE;
 		} else if (ctx.GREATER() != null) {
-			return BinaryOperator.GT;
+			return ComparisonOperator.GT;
 		} else if (ctx.GREATER_OR_EQ() != null) {
-			return BinaryOperator.GE;
+			return ComparisonOperator.GE;
 		} else {
 			throw notSupported(ctx);
 		}
@@ -286,7 +286,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Literal visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
 		// builtin_atom : term binop term;
-		BinaryOperator op = visitBinop(ctx.binop());
+		ComparisonOperator op = visitBinop(ctx.binop());
 		return new BuiltinAtom(
 			(Term) visit(ctx.term(0)),
 			(Term) visit(ctx.term(1)),
