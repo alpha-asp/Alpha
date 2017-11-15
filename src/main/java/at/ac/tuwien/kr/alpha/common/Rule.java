@@ -3,6 +3,8 @@ package at.ac.tuwien.kr.alpha.common;
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -15,7 +17,9 @@ public class Rule {
 
 	public Rule(Head head, List<Literal> body) {
 		this.head = head;
-		this.body = body;
+		// Remove duplicate body literals.
+		LinkedHashSet<Literal> bodyLiterals = new LinkedHashSet<>(body);
+		this.body = new ArrayList<>(bodyLiterals);
 
 		if (!isSafe()) {
 			// TODO: safety check needs to be adapted to solver what the solver actually understands. Will change in the future, adapt exception message accordingly.
