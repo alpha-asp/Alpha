@@ -127,8 +127,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	@Ignore
-	// TODO: test program is not safe (external lacking output variables). This should throw some exception.
+	@Ignore("Test program is not safe (external lacking output variables). This should throw some exception.")
 	public void smallGraphNoNeighbors() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("neighbors", int.class));
@@ -159,8 +158,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	@Ignore
-	// TODO: test program is not safe (external lacking output variables). This should throw some exception.
+	@Ignore("Test program is not safe (external lacking output variables). This should throw some exception.")
 	public void smallGraphSingleNeighborNoTerm() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("neighbors", int.class));
@@ -232,8 +230,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	@Ignore
-	// TODO: test external atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.
+	@Ignore("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
 	public void withExternalInvocationCounted1() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", int.class));
@@ -248,7 +245,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	@Ignore
+	@Ignore("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
 	public void withExternalInvocationCounted2() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", int.class));
@@ -263,7 +260,7 @@ public class AlphaTest {
 	}
 
 	@Test
-	@Ignore
+	@Ignore("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
 	public void withExternalInvocationCounted3() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", int.class));

@@ -30,36 +30,37 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 		//HashSet<VariableTerm> equalVariables = new LinkedHashSet<>();
 		HashSet<Literal> equalitiesToRemove = new HashSet<>();
 		for (Literal literal : rule.getBody()) {
-			if (literal instanceof BuiltinAtom) {
-				if (!((BuiltinAtom) literal).isNormalizedEquality()) {
-					continue;
+			if (!(literal instanceof BuiltinAtom)) {
+				continue;
+			}
+			if (!((BuiltinAtom) literal).isNormalizedEquality()) {
+				continue;
+			}
+			if (literal.getTerms().get(0) instanceof VariableTerm && literal.getTerms().get(1) instanceof VariableTerm) {
+				VariableTerm leftVariable = (VariableTerm) literal.getTerms().get(0);
+				VariableTerm rightVariable = (VariableTerm) literal.getTerms().get(1);
+				HashSet<VariableTerm> leftEqualVariables = variableToEqualVariables.get(leftVariable);
+				HashSet<VariableTerm> rightEqualVariables = variableToEqualVariables.get(rightVariable);
+				if (leftEqualVariables == null && rightEqualVariables == null) {
+					HashSet<VariableTerm> equalVariables = new LinkedHashSet<>(Arrays.asList(leftVariable, rightVariable));
+					variableToEqualVariables.put(leftVariable, equalVariables);
+					variableToEqualVariables.put(rightVariable, equalVariables);
 				}
-				if (literal.getTerms().get(0) instanceof VariableTerm && literal.getTerms().get(1) instanceof VariableTerm) {
-					VariableTerm leftVariable = (VariableTerm) literal.getTerms().get(0);
-					VariableTerm rightVariable = (VariableTerm) literal.getTerms().get(1);
-					HashSet<VariableTerm> leftEqualVariables = variableToEqualVariables.get(leftVariable);
-					HashSet<VariableTerm> rightEqualVariables = variableToEqualVariables.get(rightVariable);
-					if (leftEqualVariables == null && rightEqualVariables == null) {
-						HashSet<VariableTerm> equalVariables = new LinkedHashSet<>(Arrays.asList(leftVariable, rightVariable));
-						variableToEqualVariables.put(leftVariable, equalVariables);
-						variableToEqualVariables.put(rightVariable, equalVariables);
-					}
-					if (leftEqualVariables == null && rightEqualVariables != null) {
-						rightEqualVariables.add(leftVariable);
-						variableToEqualVariables.put(leftVariable, rightEqualVariables);
-					}
-					if (leftEqualVariables != null && rightEqualVariables == null) {
-						leftEqualVariables.add(rightVariable);
-						variableToEqualVariables.put(rightVariable, leftEqualVariables);
-					}
-					if (leftEqualVariables != null && rightEqualVariables != null) {
-						leftEqualVariables.addAll(rightEqualVariables);
-						for (VariableTerm rightEqualVariable : rightEqualVariables) {
-							variableToEqualVariables.put(rightEqualVariable, leftEqualVariables);
-						}
-					}
-					equalitiesToRemove.add(literal);
+				if (leftEqualVariables == null && rightEqualVariables != null) {
+					rightEqualVariables.add(leftVariable);
+					variableToEqualVariables.put(leftVariable, rightEqualVariables);
 				}
+				if (leftEqualVariables != null && rightEqualVariables == null) {
+					leftEqualVariables.add(rightVariable);
+					variableToEqualVariables.put(rightVariable, leftEqualVariables);
+				}
+				if (leftEqualVariables != null && rightEqualVariables != null) {
+					leftEqualVariables.addAll(rightEqualVariables);
+					for (VariableTerm rightEqualVariable : rightEqualVariables) {
+						variableToEqualVariables.put(rightEqualVariable, leftEqualVariables);
+					}
+				}
+				equalitiesToRemove.add(literal);
 			}
 		}
 		if (variableToEqualVariables.isEmpty()) {

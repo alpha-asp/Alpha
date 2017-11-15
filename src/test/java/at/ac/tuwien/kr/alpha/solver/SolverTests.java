@@ -611,9 +611,9 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	@Ignore
+	@Ignore("Yields wrong result (9) with current parser.")
 	public void arithmeticsMultiplicationBeforeAddition() throws IOException {
-		// TODO: with current parser yields wrong result (9).
+		//
 		assertAnswerSet("seven(X) :- 1+2 * 3 = X.",
 
 			"seven(7)");
