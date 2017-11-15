@@ -13,10 +13,6 @@ public final class Functor implements FunctionSymbol<String> {
 		this.rank = rank;
 	}
 
-	public static Functor getInstance(String symbol) {
-		return getInstance(symbol, 0);
-	}
-
 	public static Functor getInstance(String symbol, int rank) {
 		return INTERNER.intern(new Functor(symbol, rank));
 	}

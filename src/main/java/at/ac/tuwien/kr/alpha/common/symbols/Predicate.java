@@ -18,10 +18,6 @@ public class Predicate implements Comparable<Predicate>, SymbolWithRank<String> 
 		this.internal = internal;
 	}
 
-	public static Predicate getInstance(String symbol) {
-		return getInstance(symbol, 0);
-	}
-
 	public static Predicate getInstance(String symbol, int arity) {
 		return getInstance(symbol, arity, false);
 	}
