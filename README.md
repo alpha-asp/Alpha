@@ -69,6 +69,13 @@ and pick up `build/libs/alpha-bundled.jar`.
  * [Conflict-Driven Answer Set Solving: From Theory to Practice](http://www.cs.uni-potsdam.de/wv/pdfformat/gekasc12c.pdf)
  * [Learning Non-Ground Rules for Answer-Set Solving](http://kr.irlab.org/sites/10.56.35.200.gttv13/files/gttv13.pdf#page=31)
 
+### Research Papers on Alpha
+
+ * [Blending Lazy-Grounding and CDNL Search for Answer-Set Solving](https://doi.org/10.1007/978-3-319-61660-5_17) ([preprint](http://www.kr.tuwien.ac.at/research/systems/alpha/blending_lazy_grounding.pdf))
+ * [Introducing Heuristics for Lazy-Grounding ASP Solving](https://sites.google.com/site/paoasp2017/Taupe-et-al.pdf)
+ * [Lazy-Grounding for Answer Set Programs with External Source Access](https://www.ijcai.org/proceedings/2017/0141.pdf)
+ * [Techniques for Efficient Lazy-Grounding ASP Solving](https://www.uni-wuerzburg.de/fileadmin/10030100/Publications/TR_Declare17.pdf#page=131)
+
 ## Similar Work
 
  * [Smodels](http://www.tcs.hut.fi/Software/smodels/), a solver usually used in conjunction with lparse.
