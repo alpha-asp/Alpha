@@ -137,7 +137,7 @@ public class Rule {
 		}
 		sb.append(":- ");
 		Util.appendDelimited(sb, body);
-		sb.append(".").append(System.lineSeparator());
+		sb.append(".");
 
 		return sb.toString();
 	}
