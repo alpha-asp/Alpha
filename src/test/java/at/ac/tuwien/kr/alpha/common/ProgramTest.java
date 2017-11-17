@@ -1,8 +1,6 @@
 /**
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017 Siemens AG
  * All rights reserved.
- * 
- * Additional changes made by Siemens.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -27,50 +25,23 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import org.junit.Test;
 
-import java.util.Collections;
-import java.util.List;
+import static org.junit.Assert.assertEquals;
 
-/**
- * Alpha-internal representation of an ASP program, i.e., a set of ASP rules.
- * Copyright (c) 2017, the Alpha Team.
- */
-public class Program {
-	public static final Program EMPTY = new Program(Collections.emptyList(), Collections.emptyList());
-
-	private final List<Rule> rules;
-	private final List<Atom> facts;
-
-	public Program(List<Rule> rules, List<Atom> facts) {
-		this.rules = rules;
-		this.facts = facts;
-	}
-
-	public List<Rule> getRules() {
-		return rules;
-	}
-
-	public List<Atom> getFacts() {
-		return facts;
-	}
-
-	public void accumulate(Program program) {
-		rules.addAll(program.rules);
-		facts.addAll(program.facts);
-	}
-
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-
-		for (Atom fact : facts) {
-			sb.append(fact).append(".").append(System.lineSeparator());
-		}
-		for (Rule rule : rules) {
-			sb.append(rule).append(System.lineSeparator());
-		}
-
-		return sb.toString();
+public class ProgramTest {
+	
+	@Test
+	public void testToString() {
+		Program parsedProgram = new ProgramParser().parse(
+				"p(a)." + System.lineSeparator() +
+					"q(X) :- p(X)." + System.lineSeparator() +
+					"p(b).");
+		assertEquals(
+				"p(a)." + System.lineSeparator() +
+					"p(b)." + System.lineSeparator() +
+					"q(X) :- p(X)." + System.lineSeparator(),
+				parsedProgram.toString());
 	}
 }
