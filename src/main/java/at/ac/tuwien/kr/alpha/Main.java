@@ -263,7 +263,7 @@ public class Main {
 		HelpFormatter formatter = new HelpFormatter();
 		// TODO(flowlo): This is quite optimistic. How do we know that the program
 		// really was invoked as "java -jar ..."?
-		formatter.printHelp("java -jar alpha-bundled.jar\njava -jar alpha.jar", options);
+		formatter.printHelp("java -jar alpha-bundled.jar" + System.lineSeparator() + "java -jar alpha.jar", options);
 		System.exit(exitCode);
 	}
 
