@@ -37,6 +37,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.RecognitionException;
 import org.apache.commons.cli.*;
@@ -46,12 +47,18 @@ import org.slf4j.LoggerFactory;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.CodingErrorAction;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static at.ac.tuwien.kr.alpha.Util.literate;
+import static at.ac.tuwien.kr.alpha.Util.streamToChannel;
+import static java.nio.file.Files.lines;
 
 /**
  * Main entry point for Alpha.
@@ -70,6 +77,7 @@ public class Main {
 	private static final String OPT_DETERMINISTIC = "deterministic";
 	private static final String OPT_STORE = "store";
 	private static final String OPT_QUIET = "quiet";
+	private static final String OPT_LITERATE = "literate";
 
 	private static final String OPT_BRANCHING_HEURISTIC = "branchingHeuristic";
 	private static final String DEFAULT_GROUNDER = "naive";
@@ -151,6 +159,9 @@ public class Main {
 		Option quietOption = new Option("q", OPT_QUIET, false, "do not print answer sets");
 		options.addOption(quietOption);
 
+		Option literateOption = new Option("l", OPT_LITERATE, false, "enable literate programming mode");
+		options.addOption(literateOption);
+
 		try {
 			commandLine = new DefaultParser().parse(options, args);
 		} catch (ParseException e) {
@@ -191,21 +202,18 @@ public class Main {
 		}
 
 		boolean debugInternalChecks = commandLine.hasOption(OPT_DEBUG_INTERNAL_CHECKS);
+		boolean literate = commandLine.hasOption(OPT_LITERATE);
+
+		ProgramParser parser = new ProgramParser();
 
 		Program program = null;
-		try {
-			ProgramParser parser = new ProgramParser();
 
+		try {
 			if (commandLine.hasOption(OPT_STRING)) {
 				program = parser.parse(commandLine.getOptionValue(OPT_STRING));
 			} else {
 				// Parse all input files and accumulate their results in one Program.
-				String[] inputFileNames = commandLine.getOptionValues(OPT_INPUT);
-				program = parser.parse(CharStreams.fromFileName(inputFileNames[0]));
-
-				for (int i = 1; i < inputFileNames.length; i++) {
-					program.accumulate(parser.parse(CharStreams.fromFileName(inputFileNames[i])));
-				}
+				program = combineInput(parser, literate, commandLine.getOptionValues(OPT_INPUT));
 			}
 		} catch (RecognitionException e) {
 			// In case a recognitionexception occured, parseVisit will
@@ -280,5 +288,26 @@ public class Main {
 	private static void bailOut(String format, Object... arguments) {
 		LOGGER.error(format, arguments);
 		System.exit(1);
+	}
+
+	private static Program combineInput(ProgramParser parser, boolean literate, String... fileNames) throws IOException {
+		final Program result = new Program();
+
+		for (String fileName : fileNames) {
+			CharStream stream;
+			if (!literate) {
+				stream = CharStreams.fromFileName(fileName);
+			} else {
+				stream = CharStreams.fromChannel(
+					streamToChannel(literate(lines(Paths.get(fileName)))),
+					4096,
+					CodingErrorAction.REPLACE,
+					fileName
+				);
+			}
+			result.accumulate(parser.parse(stream));
+		}
+
+		return result;
 	}
 }
