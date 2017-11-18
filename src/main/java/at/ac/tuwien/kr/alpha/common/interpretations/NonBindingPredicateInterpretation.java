@@ -7,14 +7,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public abstract class ExternalNonBindingPredicate extends FixedInterpretation {
+/**
+ * Template for predicate interpretations that do not generate new bindings but only return
+ * a truth value.
+ */
+public abstract class NonBindingPredicateInterpretation implements PredicateInterpretation {
 	private final int arity;
 
-	public ExternalNonBindingPredicate(int arity) {
+	public NonBindingPredicateInterpretation(int arity) {
 		this.arity = arity;
 	}
 
-	public ExternalNonBindingPredicate() {
+	public NonBindingPredicateInterpretation() {
 		this(1);
 	}
 

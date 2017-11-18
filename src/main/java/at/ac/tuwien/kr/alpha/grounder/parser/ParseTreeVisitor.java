@@ -5,8 +5,8 @@ import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
-import at.ac.tuwien.kr.alpha.common.interpretations.FixedInterpretation;
-import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.interpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.*;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -19,17 +19,17 @@ import static java.util.Collections.emptyList;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
-	private final Map<String, FixedInterpretation> externals;
+	private final Map<String, PredicateInterpretation> externals;
 	private final boolean acceptVariables;
 
 	private Program inputProgram;
 	private boolean isCurrentLiteralNegated;
 
-	public ParseTreeVisitor(Map<String, FixedInterpretation> externals) {
+	public ParseTreeVisitor(Map<String, PredicateInterpretation> externals) {
 		this(externals, true);
 	}
 
-	public ParseTreeVisitor(Map<String, FixedInterpretation> externals, boolean acceptVariables) {
+	public ParseTreeVisitor(Map<String, PredicateInterpretation> externals, boolean acceptVariables) {
 		this.externals = externals;
 		this.acceptVariables = acceptVariables;
 	}
@@ -388,7 +388,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		}
 
 		final String predicateName = ctx.ID().getText();
-		final FixedInterpretation interpretation = externals.get(predicateName);
+		final PredicateInterpretation interpretation = externals.get(predicateName);
 
 		if (interpretation == null) {
 			throw new IllegalArgumentException("Unknown interpretation name encountered: " + predicateName);

@@ -1,8 +1,8 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationAtom;
-import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.InterpretableLiteral;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -27,7 +27,7 @@ import static at.ac.tuwien.kr.alpha.Util.join;
  * with the Integer being inside the interval.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class IntervalAtom extends FixedInterpretationAtom {
+public class IntervalAtom implements InterpretableLiteral {
 	private static final Predicate INTERVAL_PREDICATE = Predicate.getInstance("_interval", 2, true);
 
 	private final List<Term> terms;
@@ -36,7 +36,7 @@ public class IntervalAtom extends FixedInterpretationAtom {
 		this.terms = Arrays.asList(intervalTerm, intervalRepresentingVariable);
 	}
 
-	public List<Substitution> getIntervalSubstitutions(Substitution partialSubstitution) {
+	private List<Substitution> getIntervalSubstitutions(Substitution partialSubstitution) {
 		List<Substitution> substitutions = new ArrayList<>();
 		Term intervalRepresentingVariable = terms.get(1);
 		IntervalTerm intervalTerm = (IntervalTerm) terms.get(0);
@@ -52,11 +52,11 @@ public class IntervalAtom extends FixedInterpretationAtom {
 		} else {
 			// The intervalRepresentingVariable is bound already, check if it is in the interval.
 			if (!(intervalRepresentingVariable instanceof ConstantTerm)
-				|| !(((ConstantTerm) intervalRepresentingVariable).getSymbol() instanceof Integer)) {
+				|| !(((ConstantTerm) intervalRepresentingVariable).getObject() instanceof Integer)) {
 				// Term is not bound to an integer constant, not in the interval.
 				return Collections.emptyList();
 			}
-			Integer integer = (Integer) ((ConstantTerm) intervalRepresentingVariable).getSymbol();
+			Integer integer = (Integer) ((ConstantTerm) intervalRepresentingVariable).getObject();
 			if (intervalTerm.getLowerBound() <= integer && integer <= intervalTerm.getUpperBound()) {
 				return Collections.singletonList(partialSubstitution);
 			}
@@ -99,7 +99,7 @@ public class IntervalAtom extends FixedInterpretationAtom {
 
 	@Override
 	public String toString() {
-		return join(INTERVAL_PREDICATE.getSymbol() + "(", terms, ")");
+		return join(INTERVAL_PREDICATE.getName() + "(", terms, ")");
 	}
 
 	@Override

@@ -30,7 +30,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -120,7 +120,7 @@ public class ChoiceGrounder implements Grounder {
 			if (!filter.test(atomPredicate)) {
 				continue;
 			}
-			if (atomPredicate.getSymbol().startsWith("_")) {
+			if (atomPredicate.getName().startsWith("_")) {
 				continue;
 			}
 			trueAtomPredicates.add(atomPredicate);

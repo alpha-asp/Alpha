@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -14,7 +14,7 @@ import java.util.*;
  * Represents a builtin atom according to the standard.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class ComparisonAtom extends FixedInterpretationAtom {
+public class ComparisonAtom implements InterpretableLiteral {
 	private final Predicate predicate;
 	private final ComparisonOperator operator;
 	private final List<Term> terms;

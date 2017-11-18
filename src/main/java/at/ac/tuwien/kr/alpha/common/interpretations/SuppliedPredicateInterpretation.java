@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
-public class ExternalSupplier extends FixedInterpretation {
+public class SuppliedPredicateInterpretation implements BindingPredicateInterpretation {
 	private final Supplier<Set<List<ConstantTerm>>> supplier;
 
-	public ExternalSupplier(Supplier<Set<List<ConstantTerm>>> supplier) {
+	public SuppliedPredicateInterpretation(Supplier<Set<List<ConstantTerm>>> supplier) {
 		this.supplier = supplier;
 	}
 

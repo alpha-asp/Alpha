@@ -59,9 +59,9 @@ public class ArithmeticTerm extends Term {
 
 	private static Integer evaluateGroundTermHelper(Term term) {
 		if (term instanceof ConstantTerm
-			&& ((ConstantTerm) term).getSymbol() instanceof Integer) {
+			&& ((ConstantTerm) term).getObject() instanceof Integer) {
 			// Extract integer from the constant.
-			return (Integer) ((ConstantTerm) term).getSymbol();
+			return (Integer) ((ConstantTerm) term).getObject();
 		} else if (term instanceof ArithmeticTerm) {
 			return ((ArithmeticTerm) term).evaluateExpression();
 		} else {

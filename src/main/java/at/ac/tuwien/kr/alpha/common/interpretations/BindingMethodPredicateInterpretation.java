@@ -9,10 +9,10 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
 
-public class ExternalBindingMethodPredicate extends FixedInterpretation {
+public class BindingMethodPredicateInterpretation implements BindingPredicateInterpretation {
 	private final Method method;
 
-	public ExternalBindingMethodPredicate(Method method) {
+	public BindingMethodPredicateInterpretation(Method method) {
 		if (!method.getReturnType().equals(Set.class)) {
 			throw new IllegalArgumentException("method must return Set");
 		}
@@ -42,7 +42,7 @@ public class ExternalBindingMethodPredicate extends FixedInterpretation {
 				);
 			}
 
-			arguments[i] = ((ConstantTerm) terms.get(i)).getSymbol();
+			arguments[i] = ((ConstantTerm) terms.get(i)).getObject();
 
 			final Class<?> expected = parameterTypes[i];
 			final Class<?> actual = arguments[i].getClass();

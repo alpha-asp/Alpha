@@ -7,10 +7,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
-public class ExternalMethodPredicate extends ExternalNonBindingPredicate {
+public class MethodPredicateInterpretation extends NonBindingPredicateInterpretation {
 	private final Method method;
 
-	public ExternalMethodPredicate(Method method) {
+	public MethodPredicateInterpretation(Method method) {
 		super(method.getParameterCount());
 
 		if (!method.getReturnType().equals(boolean.class)) {
@@ -26,7 +26,7 @@ public class ExternalMethodPredicate extends ExternalNonBindingPredicate {
 		final Object[] arguments = new Object[terms.size()];
 
 		for (int i = 0; i < arguments.length; i++) {
-			arguments[i] = terms.get(i).getSymbol();
+			arguments[i] = terms.get(i).getObject();
 
 			final Class<?> expected = parameterTypes[i];
 			final Class<?> actual = arguments[i].getClass();

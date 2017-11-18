@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -70,6 +70,6 @@ public class ChoiceAtom implements Atom {
 
 	@Override
 	public String toString() {
-		return join(predicate.getSymbol() + "(", terms, ")");
+		return join(predicate.getName() + "(", terms, ")");
 	}
 }

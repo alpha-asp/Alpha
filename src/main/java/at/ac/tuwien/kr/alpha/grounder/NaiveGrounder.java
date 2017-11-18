@@ -30,9 +30,9 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.InterpretableLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
@@ -156,8 +156,8 @@ public class NaiveGrounder extends BridgedGrounder {
 	private void adaptWorkingMemoryForPredicate(Predicate predicate) {
 		// Create working memory for predicate if it does not exist
 		if (!workingMemory.containsKey(predicate)) {
-			IndexedInstanceStorage instanceStoragePos = new IndexedInstanceStorage(predicate.getSymbol() + "+", predicate.getArity());
-			IndexedInstanceStorage instanceStorageNeg = new IndexedInstanceStorage(predicate.getSymbol() + "-", predicate.getArity());
+			IndexedInstanceStorage instanceStoragePos = new IndexedInstanceStorage(predicate.getName() + "+", predicate.getArity());
+			IndexedInstanceStorage instanceStorageNeg = new IndexedInstanceStorage(predicate.getName() + "-", predicate.getArity());
 			// Index all positions of the storage (may impair efficiency)
 			for (int i = 0; i < predicate.getArity(); i++) {
 				instanceStoragePos.addIndexPosition(i);
@@ -391,9 +391,9 @@ public class NaiveGrounder extends BridgedGrounder {
 		}
 
 		Literal currentAtom = groundingOrder[orderPosition];
-		if (currentAtom instanceof FixedInterpretationAtom) {
+		if (currentAtom instanceof InterpretableLiteral) {
 			// Generate all substitutions for the builtin/external/interval atom.
-			List<Substitution> substitutions = ((FixedInterpretationAtom)currentAtom).getSubstitutions(partialSubstitution);
+			List<Substitution> substitutions = ((InterpretableLiteral)currentAtom).getSubstitutions(partialSubstitution);
 
 			if (substitutions.isEmpty()) {
 				return emptyList();

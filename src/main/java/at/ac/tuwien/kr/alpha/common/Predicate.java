@@ -1,19 +1,17 @@
-package at.ac.tuwien.kr.alpha.common.symbols;
-
-import at.ac.tuwien.kr.alpha.common.Interner;
+package at.ac.tuwien.kr.alpha.common;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class Predicate implements Comparable<Predicate>, SymbolWithArity<String> {
+public class Predicate implements Comparable<Predicate> {
 	private static final Interner<Predicate> INTERNER = new Interner<>();
 
-	private final String symbol;
+	private final String name;
 	private final int rank;
 	private final boolean internal;
 
-	protected Predicate(String symbol, int rank, boolean internal) {
-		this.symbol = symbol;
+	protected Predicate(String name, int rank, boolean internal) {
+		this.name = name;
 		this.rank = rank;
 		this.internal = internal;
 	}
@@ -28,7 +26,7 @@ public class Predicate implements Comparable<Predicate>, SymbolWithArity<String>
 
 	@Override
 	public int hashCode() {
-		int result = symbol != null ? symbol.hashCode() : 0;
+		int result = name != null ? name.hashCode() : 0;
 		result = 31 * result + rank;
 		result = 31 * result + (internal ? 1 : 0);
 		return result;
@@ -54,7 +52,7 @@ public class Predicate implements Comparable<Predicate>, SymbolWithArity<String>
 			return false;
 		}
 
-		return symbol != null ? symbol.equals(predicate.symbol) : predicate.symbol == null;
+		return name != null ? name.equals(predicate.name) : predicate.name == null;
 	}
 
 	public boolean isInternal() {
@@ -63,7 +61,7 @@ public class Predicate implements Comparable<Predicate>, SymbolWithArity<String>
 
 	@Override
 	public int compareTo(Predicate other) {
-		int result = getSymbol().compareTo(other.getSymbol());
+		int result = getName().compareTo(other.getName());
 
 		if (result != 0) {
 			return result;
@@ -72,12 +70,10 @@ public class Predicate implements Comparable<Predicate>, SymbolWithArity<String>
 		return Integer.compare(getArity(), other.getArity());
 	}
 
-	@Override
-	public String getSymbol() {
-		return symbol;
+	public String getName() {
+		return name;
 	}
 
-	@Override
 	public int getArity() {
 		return rank;
 	}

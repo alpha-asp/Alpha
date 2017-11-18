@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
-import at.ac.tuwien.kr.alpha.common.interpretations.FixedInterpretation;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.interpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -16,15 +16,15 @@ import java.util.stream.Collectors;
 import static at.ac.tuwien.kr.alpha.Util.join;
 import static java.util.Collections.emptyList;
 
-public class ExternalAtom extends FixedInterpretationAtom {
+public class ExternalAtom implements InterpretableLiteral {
 	private final List<Term> input;
 	private final List<Term> output;
 
 	protected Predicate predicate;
-	protected final FixedInterpretation interpretation;
+	protected final PredicateInterpretation interpretation;
 	protected final boolean negated;
 
-	public ExternalAtom(Predicate predicate, FixedInterpretation interpretation, List<Term> input, List<Term> output, boolean negated) {
+	public ExternalAtom(Predicate predicate, PredicateInterpretation interpretation, List<Term> input, List<Term> output, boolean negated) {
 		this.predicate = predicate;
 		this.interpretation = interpretation;
 		this.input = input;
@@ -44,7 +44,7 @@ public class ExternalAtom extends FixedInterpretationAtom {
 		Set<List<ConstantTerm>> results = interpretation.evaluate(substitutes);
 
 		if (results == null) {
-			throw new NullPointerException("Predicate " + getPredicate().getSymbol() + " returned null. It must return a Set.");
+			throw new NullPointerException("Predicate " + getPredicate().getName() + " returned null. It must return a Set.");
 		}
 
 		if (results.isEmpty()) {
@@ -53,7 +53,7 @@ public class ExternalAtom extends FixedInterpretationAtom {
 
 		for (List<ConstantTerm> bindings : results) {
 			if (bindings.size() < output.size()) {
-				throw new RuntimeException("Predicate " + getPredicate().getSymbol() + " returned " + bindings.size() + " terms when at least " + output.size() + " were expected.");
+				throw new RuntimeException("Predicate " + getPredicate().getName() + " returned " + bindings.size() + " terms when at least " + output.size() + " were expected.");
 			}
 
 			Substitution ith = new Substitution(partialSubstitution);
@@ -93,7 +93,7 @@ public class ExternalAtom extends FixedInterpretationAtom {
 		return predicate;
 	}
 
-	public FixedInterpretation getInterpretation() {
+	public PredicateInterpretation getInterpretation() {
 		return interpretation;
 	}
 
@@ -165,7 +165,7 @@ public class ExternalAtom extends FixedInterpretationAtom {
 
 	@Override
 	public String toString() {
-		String result = "&" + predicate.getSymbol();
+		String result = "&" + predicate.getName();
 		if (!output.isEmpty()) {
 			result += join("[", output, "]");
 		}
