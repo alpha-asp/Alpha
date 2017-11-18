@@ -3,6 +3,8 @@ package at.ac.tuwien.kr.alpha.common;
 import at.ac.tuwien.kr.alpha.common.predicates.BuiltinBiPredicate;
 import at.ac.tuwien.kr.alpha.common.predicates.FixedInterpretationPredicate;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
 public enum BinaryOperator {
 	EQ("="),
 	NE("!="),
@@ -37,6 +39,6 @@ public enum BinaryOperator {
 			case LE: return GT;
 			case GE: return LT;
 		}
-		throw new RuntimeException("Unknown binary operator encountered, cannot negate it.");
+		throw oops("Unknown binary operator encountered, cannot negate it");
 	}
 }

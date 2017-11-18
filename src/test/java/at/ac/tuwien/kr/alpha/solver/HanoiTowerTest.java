@@ -34,7 +34,6 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.antlr.v4.runtime.CharStreams;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -52,11 +51,6 @@ import static org.junit.Assert.assertTrue;
 @Ignore("disabled to save resources during CI")
 public class HanoiTowerTest extends AbstractSolverTests {
 	private final ProgramParser parser = new ProgramParser();
-
-	@Before
-	public void printSolverName() {
-		System.out.println(solverName);
-	}
 
 	@Test(timeout = 10000)
 	public void testInstance1() throws IOException {
@@ -93,7 +87,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		Solver solver = getInstance(parsedProgram);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		assertTrue(answerSet.isPresent());
-		System.out.println(answerSet.get());
+		//System.out.println(answerSet.get());
 		checkGoal(parsedProgram, answerSet.get());
 	}
 

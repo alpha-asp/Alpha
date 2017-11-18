@@ -88,4 +88,17 @@ public class Util {
 
 		return 0;
 	}
+
+	public static RuntimeException oops(String message, Exception e) {
+		return new RuntimeException(message + "! Should not happen.", e);
+	}
+
+	public static RuntimeException oops(String message) {
+		// We do not call oops(String, Exception) here to not bloat the stack trace.
+		return new RuntimeException(message + "! Should not happen.");
+	}
+
+	public static RuntimeException oops() {
+		return oops("Reached fatal state");
+	}
 }

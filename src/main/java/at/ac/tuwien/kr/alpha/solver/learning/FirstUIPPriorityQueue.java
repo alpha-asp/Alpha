@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.PriorityQueue;
 import java.util.Set;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
@@ -35,7 +37,7 @@ public class FirstUIPPriorityQueue {
 			return;
 		}
 		if (entry.getPropagationLevel() > lastPollPropagationLevel) {
-			throw new RuntimeException("Adding to 1UIP queue an entry with higher propagationLevel than returned by the last poll. Should not happen.");
+			throw oops("Adding to 1UIP queue an entry with higher propagationLevel than returned by the last poll");
 		}
 		if (alreadyAdded.contains(entry)) {
 			// Ignore already added assignments.

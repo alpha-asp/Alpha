@@ -28,7 +28,7 @@ public class FirstUIPPriorityQueueTest {
 
 	@Test
 	public void nonlinearEntries() {
-		assignment.guess(1, ThriceTruth.MBT);
+		assignment.choose(1, ThriceTruth.MBT);
 		assignment.assign(2, ThriceTruth.TRUE);
 		assignment.assign(3, ThriceTruth.FALSE);
 		assignment.assign(4, ThriceTruth.MBT);
@@ -55,7 +55,7 @@ public class FirstUIPPriorityQueueTest {
 
 	@Test
 	public void ignoreDuplicates() {
-		assignment.guess(1, ThriceTruth.MBT);
+		assignment.choose(1, ThriceTruth.MBT);
 		assignment.assign(2, ThriceTruth.TRUE);
 		assignment.assign(3, ThriceTruth.FALSE);
 

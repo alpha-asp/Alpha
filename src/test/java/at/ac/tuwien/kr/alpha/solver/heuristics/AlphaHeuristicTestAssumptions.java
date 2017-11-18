@@ -25,14 +25,12 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.solver.ArrayAssignment;
-import at.ac.tuwien.kr.alpha.solver.TestableChoiceManager;
+import at.ac.tuwien.kr.alpha.solver.*;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -54,7 +52,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class AlphaHeuristicTestAssumptions {
 	private Grounder grounder;
-	private Assignment assignment;
+	private WritableAssignment assignment;
 	private TestableChoiceManager choiceManager;
 	
 	@Before
@@ -63,7 +61,7 @@ public class AlphaHeuristicTestAssumptions {
 		Program parsedProgram = new ProgramParser().parse(testProgram);
 		this.grounder = new NaiveGrounder(parsedProgram);
 		this.assignment = new ArrayAssignment();
-		this.choiceManager = new TestableChoiceManager(assignment);
+		this.choiceManager = new TestableChoiceManager(assignment, new NaiveNoGoodStore(assignment));
 	}
 
 	@Test
@@ -90,11 +88,11 @@ public class AlphaHeuristicTestAssumptions {
 		for (NoGood noGood : noGoods) {
 			n++;
 			boolean knownType = false;
-			if (noGood.isBodyNotHead(isRuleBody)) {
+			if (DependencyDrivenHeuristic.isBodyNotHead(noGood, isRuleBody)) {
 				bodyNotHead++;
 				knownType = true;
 			}
-			if (noGood.isBodyElementsNotBody(isRuleBody)) {
+			if (DependencyDrivenHeuristic.isBodyElementsNotBody(noGood, isRuleBody)) {
 				bodyElementsNotBody++;
 				knownType = true;
 			}

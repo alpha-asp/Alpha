@@ -34,7 +34,7 @@ public class FactIntervalEvaluator {
 				containsIntervals = true;
 			} else if (term instanceof FunctionTerm && IntervalTerm.functionTermContainsIntervals((FunctionTerm) term)) {
 				containsIntervals = true;
-				throw new RuntimeException("Intervals inside function terms in facts are not supported yet. Try turning the fact into a rule.");
+				throw new UnsupportedOperationException("Intervals inside function terms in facts are not supported yet. Try turning the fact into a rule.");
 			}
 		}
 		// If fact contains no intervals, simply return the single instance.

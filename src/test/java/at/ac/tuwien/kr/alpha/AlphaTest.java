@@ -8,6 +8,9 @@ import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -17,6 +20,7 @@ import java.util.stream.Collectors;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class AlphaTest {
 	private static int invocations;
@@ -274,5 +278,34 @@ public class AlphaTest {
 		Set<AnswerSet> actual = system.solve("a.").collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
+	}
+
+	/**
+	 * Runs tests that formerly caused some sort of exception.
+	 */
+	@Test
+	public void problematicRuns() throws IOException {
+		/* NOTE: This was constructed from the following commandline invocations:
+
+			-DebugEnableInternalChecks -q -g naive -s default -e 1119654162577372 -n 200 -i 3col-20-38.txt
+			-DebugEnableInternalChecks -q -g naive -s default -e 1119718541727902 -n 200 -i 3col-20-38.txt
+			-DebugEnableInternalChecks -q -g naive -s default -e 97598271567626   -n   2 -i vehicle_normal_small.asp
+			-DebugEnableInternalChecks -q -g naive -s default -sort               -n 400 -i 3col-20-38.txt
+		*/
+
+		final Path base = Paths.get("src", "test", "resources", "PreviouslyProblematic");
+		final Alpha system = new Alpha("naive", "default", "alpharoaming", true);
+
+		system.setSeed(1119654162577372L);
+		assertFalse(system.solve(base.resolve("3col-20-38.txt")).limit(200).collect(Collectors.toList()).isEmpty());
+
+		system.setSeed(1119718541727902L);
+		assertFalse(system.solve(base.resolve("3col-20-38.txt")).limit(200).collect(Collectors.toList()).isEmpty());
+
+		system.setSeed(1119718541727902L);
+		assertFalse(system.solve(base.resolve("vehicle_normal_small.asp")).limit(2).collect(Collectors.toList()).isEmpty());
+
+		system.setSeed(1119718541727902L);
+		assertFalse(system.solve(base.resolve("3col-20-38.txt")).sorted().limit(400).collect(Collectors.toList()).isEmpty());
 	}
 }

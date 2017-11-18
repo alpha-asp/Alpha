@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
 import static at.ac.tuwien.kr.alpha.Util.entry;
+import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 
@@ -32,10 +33,10 @@ public class DummyGrounder implements Grounder {
 	private static final int RULE_B = 13; // { -_br1, a, b }
 	private static final int RULE_H = 14; // { -c, _br1 }
 	private static final Map<Integer, NoGood> NOGOODS = Stream.of(
-		entry(FACT_A, new NoGood(new int[]{-1 }, 0)),
-		entry(FACT_B, new NoGood(new int[]{-2 }, 0)),
-		entry(RULE_B, new NoGood(new int[]{-3, 1, 2 }, 0)),
-		entry(RULE_H, new NoGood(new int[]{-4, 3 }, 0))
+		entry(FACT_A, headFirst(-1)),
+		entry(FACT_B, headFirst(-2)),
+		entry(RULE_B, headFirst(-3, 1, 2)),
+		entry(RULE_H, headFirst(-4, 3))
 	).collect(entriesToMap());
 	private static Map<Integer, String> atomIdToString = Stream.of(
 		entry(1, "a"),

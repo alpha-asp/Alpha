@@ -31,6 +31,8 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 
 import java.util.*;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
 /**
  * This class stores ground atoms and provides the translation from an (integer) atomId to a (structured) predicate instance.
  * Copyright (c) 2016-2017, the Alpha Team.
@@ -69,7 +71,7 @@ public class AtomStore {
 		try {
 			return atomIdsToInternalBasicAtoms.get(atomId);
 		} catch (IndexOutOfBoundsException e) {
-			throw new RuntimeException("AtomStore: Unknown atomId encountered: " + atomId, e);
+			throw oops("Unknown atom ID encountered: " + atomId, e);
 		}
 	}
 

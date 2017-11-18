@@ -1,5 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
 /**
  * Generates unique, sequential integers starting at 0, i.e., it maintains a counter that is incremented for each getNextId().
  * Copyright (c) 2016, the Alpha Team.
@@ -17,7 +19,7 @@ public class IntIdGenerator {
 
 	public int getNextId() {
 		if (highestId == Integer.MAX_VALUE) {
-			throw new RuntimeException("Ran out of Ids (integer overflow).");
+			throw oops("Ran out of IDs (integer overflow)");
 		}
 		return highestId++;
 	}

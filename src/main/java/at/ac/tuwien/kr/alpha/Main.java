@@ -50,6 +50,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -68,6 +69,7 @@ public class Main {
 	private static final String OPT_SORT = "sort";
 	private static final String OPT_DETERMINISTIC = "deterministic";
 	private static final String OPT_STORE = "store";
+	private static final String OPT_QUIET = "quiet";
 
 	private static final String OPT_BRANCHING_HEURISTIC = "branchingHeuristic";
 	private static final String DEFAULT_GROUNDER = "naive";
@@ -145,6 +147,9 @@ public class Main {
 		branchingHeuristicOption.setArgs(1);
 		branchingHeuristicOption.setArgName("heuristic");
 		options.addOption(branchingHeuristicOption);
+
+		Option quietOption = new Option("q", OPT_QUIET, false, "do not print answer sets");
+		options.addOption(quietOption);
 
 		try {
 			commandLine = new DefaultParser().parse(options, args);
@@ -256,7 +261,12 @@ public class Main {
 			stream = stream.sorted();
 		}
 
-		stream.forEach(System.out::println);
+		if (!commandLine.hasOption(OPT_QUIET)) {
+			stream.forEach(System.out::println);
+		} else {
+			// Note: Even though we are not consuming the result, we will still compute answer sets.
+			stream.collect(Collectors.toList());
+		}
 	}
 
 	private static void exitWithHelp(Options options, int exitCode) {

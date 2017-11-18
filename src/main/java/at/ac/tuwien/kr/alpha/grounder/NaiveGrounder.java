@@ -48,6 +48,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
@@ -691,7 +692,7 @@ public class NaiveGrounder extends BridgedGrounder {
 			BasicAtom substituteClone = new BasicAtom((BasicAtom) substitute);
 			Atom substitutedAtom = substituteClone.substitute(unified);
 			if (!substitutedAtom.isGround()) {
-				throw new RuntimeException("Grounded atom should be ground but is not. Should not happen.");
+				throw oops("Grounded atom should be ground but is not");
 			}
 
 			if (factsFromProgram.get(substitutedAtom.getPredicate()) == null || !factsFromProgram.get(substitutedAtom.getPredicate()).contains(new Instance(substitutedAtom.getTerms()))) {

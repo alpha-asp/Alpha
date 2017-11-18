@@ -12,6 +12,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
@@ -20,6 +21,7 @@ import org.reflections.util.ConfigurationBuilder;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -29,6 +31,7 @@ public class Alpha {
 	private final String grounderName;
 	private final String solverName;
 	private final String storeName;
+	private final boolean debug;
 
 	private Solver solver;
 
@@ -36,10 +39,15 @@ public class Alpha {
 
 	private long seed;
 
-	public Alpha(String grounderName, String solverName, String storeName) {
+	public Alpha(String grounderName, String solverName, String storeName, boolean debug) {
 		this.grounderName = grounderName;
 		this.solverName = solverName;
 		this.storeName = storeName;
+		this.debug = debug;
+	}
+
+	public Alpha(String grounderName, String solverName, String storeName) {
+		this(grounderName, solverName, storeName, false);
 	}
 
 	public Alpha(String grounderName, String solverName) {
@@ -158,7 +166,15 @@ public class Alpha {
 		addFacts(c, simpleName.substring(0, 1).toLowerCase() + simpleName.substring(1));
 	}
 
+	public Stream<AnswerSet> solve(Path program) throws IOException {
+		return solve(CharStreams.fromPath(program));
+	}
+
 	public Stream<AnswerSet> solve(String program) throws IOException {
+		return solve(CharStreams.fromString(program));
+	}
+
+	private Stream<AnswerSet> solve(CharStream program) throws IOException {
 		if (solver != null) {
 			// TODO: Maybe cache the result and instantly return here without throwing.
 			throw new IllegalStateException("This system has already been used.");
@@ -166,7 +182,7 @@ public class Alpha {
 
 		ProgramParser parser = new ProgramParser(predicateMethods);
 
-		setProgram(parser.parse(CharStreams.fromString(program)));
+		setProgram(parser.parse(program));
 
 		// Obtain grounder instance and feed it with parsedProgram.
 		return solve();
@@ -174,7 +190,7 @@ public class Alpha {
 
 	public Stream<AnswerSet> solve() {
 		Grounder grounder = GrounderFactory.getInstance(grounderName, program);
-		Solver solver = SolverFactory.getInstance(solverName, storeName, grounder, new Random(seed), BranchingHeuristicFactory.Heuristic.NAIVE, false);
+		Solver solver = SolverFactory.getInstance(solverName, storeName, grounder, new Random(seed), BranchingHeuristicFactory.Heuristic.NAIVE, debug);
 		return solver.stream();
 	}
 }

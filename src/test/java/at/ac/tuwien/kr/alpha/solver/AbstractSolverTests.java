@@ -91,10 +91,16 @@ public abstract class AbstractSolverTests {
 			}
 		}
 
-		String seed = System.getProperty("seed", ci ? "0" : "");
-		boolean checks = Boolean.valueOf(System.getProperty("test.checks", String.valueOf(ci)));
+		// NOTE:
+		// It is handy to set the seed for reproducing bugs. However, the reverse is also sometimes needed:
+		// A test case fails, now what was the seed that "caused" it? To allow this, we need full control over
+		// the seed, so we generate one in any case.
+		// If your test case fails you can inspect the property called "seed" of AbstractSolverTests and extract
+		// its value.
+		String seedProperty = System.getProperty("seed", ci ? "0" : "");
+		long seed = seedProperty.isEmpty() ? (new Random().nextLong()) : Long.valueOf(seedProperty);
 
-		Random random = seed.isEmpty() ? new Random() : new Random(Long.valueOf(seed));
+		boolean checks = true;
 
 		Collection<Object[]> factories = new ArrayList<>();
 
@@ -103,7 +109,7 @@ public abstract class AbstractSolverTests {
 				for (String store : stores) {
 					for (String heuristic : heuristics) {
 						factories.add(new Object[]{
-							solver, grounder, store, BranchingHeuristicFactory.Heuristic.valueOf(heuristic), random, checks
+							solver, grounder, store, BranchingHeuristicFactory.Heuristic.valueOf(heuristic), seed, checks
 						});
 					}
 				}
@@ -126,13 +132,13 @@ public abstract class AbstractSolverTests {
 	public BranchingHeuristicFactory.Heuristic heuristic;
 
 	@Parameter(4)
-	public Random random;
+	public long seed;
 
 	@Parameter(5)
 	public boolean checks;
 
 	protected Solver getInstance(Grounder grounder) {
-		return SolverFactory.getInstance(solverName, storeName, grounder, random, heuristic, checks);
+		return SolverFactory.getInstance(solverName, storeName, grounder, new Random(seed), heuristic, checks);
 	}
 
 	protected Solver getInstance(Program program) {

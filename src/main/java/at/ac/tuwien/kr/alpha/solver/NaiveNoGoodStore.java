@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.NoGood.HEAD;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
 public class NaiveNoGoodStore implements NoGoodStore {
@@ -154,7 +155,7 @@ public class NaiveNoGoodStore implements NoGoodStore {
 			return null;
 		}
 
-		final int head = noGood.getAtom(noGood.getHead());
+		final int head = noGood.getAtom(HEAD);
 
 		if (assignment.getTruth(head) != MBT) {
 			return null;
@@ -164,11 +165,7 @@ public class NaiveNoGoodStore implements NoGoodStore {
 		// (i.e., without the head set it would be unit) and
 		// that none of the true values are assigned MBT, but
 		// instead are all TRUE.
-		for (int i = 0; i < noGood.size(); i++) {
-			if (noGood.getHead() == i) {
-				continue;
-			}
-
+		for (int i = 1; i < noGood.size(); i++) {
 			final int literal = noGood.getLiteral(i);
 
 			if (!assignment.isViolated(literal)) {

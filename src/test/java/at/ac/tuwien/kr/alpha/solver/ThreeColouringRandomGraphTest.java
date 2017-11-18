@@ -96,7 +96,7 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 		maybeShuffle(program);
 
 		Optional<AnswerSet> answerSet = getInstance(program).stream().findAny();
-		System.out.println(answerSet);
+		//System.out.println(answerSet);
 
 		// TODO: check correctness of answer set
 	}
