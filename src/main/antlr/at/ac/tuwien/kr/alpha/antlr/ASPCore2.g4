@@ -14,7 +14,9 @@ statements : statement+;
 
 query : classical_literal QUERY_MARK;
 
-statement : head DOT                     # statement_fact
+statement
+locals [boolean hr = false]
+          : head DOT                     # statement_fact
           | CONS body DOT                # statement_constraint
           | head CONS body DOT           # statement_rule
           | WCONS body? DOT SQUARE_OPEN weight_at_level SQUARE_CLOSE # statement_weightConstraint
@@ -22,7 +24,7 @@ statement : head DOT                     # statement_fact
 
 head : disjunction | choice;
 
-body : ( naf_literal | NAF? aggregate ) (COMMA body)?;
+body: ( naf_literal | NAF? aggregate | heuristic) (COMMA body)?;
 
 disjunction : classical_literal (OR disjunction)?;
 
@@ -31,6 +33,8 @@ choice : (lt=term lop=binop)? CURLY_OPEN choice_elements? CURLY_CLOSE (uop=binop
 choice_elements : choice_element (SEMICOLON choice_elements)?;
 
 choice_element : classical_literal (COLON naf_literals?)?;
+
+heuristic : PREDICATE_HEURISTIC PAREN_OPEN term (COMMA term)? PAREN_CLOSE;
 
 aggregate : (term binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (binop term)?;
 

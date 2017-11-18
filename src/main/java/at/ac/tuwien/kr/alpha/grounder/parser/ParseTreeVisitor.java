@@ -155,6 +155,8 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		return null;
 	}
 
+
+
 	@Override
 	public Object visitStatement_constraint(ASPCore2Parser.Statement_constraintContext ctx) {
 		// CONS body DOT
@@ -252,11 +254,15 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 		final List<Literal> literals = new ArrayList<>();
 		do {
-			if (ctx.naf_literal() == null) {
+			if (ctx.naf_literal() != null)
+				literals.add(visitNaf_literal(ctx.naf_literal()));
+			else if (ctx.heuristic() != null)
+				literals.add(visitHeuristic(ctx.heuristic()));
+			else {
 				throw notSupported(ctx.aggregate());
 			}
 
-			literals.add(visitNaf_literal(ctx.naf_literal()));
+
 		} while ((ctx = ctx.body()) != null);
 
 		return literals;
@@ -305,6 +311,11 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			return visitExternal_atom(ctx.external_atom());
 		}
 		throw notSupported(ctx);
+	}
+
+	@Override
+	public Literal visitHeuristic(ASPCore2Parser.HeuristicContext ctx) {
+		return new HeuristicAtom(visitTerms(ctx.terms()));
 	}
 
 	@Override

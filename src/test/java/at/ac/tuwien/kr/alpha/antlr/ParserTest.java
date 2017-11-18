@@ -87,6 +87,15 @@ public class ParserTest {
 		assertEquals("Program contains three rules.", 3, parsedProgram.getRules().size());
 	}
 
+	@Test
+	public void parseHeuristicProgram() throws IOException {
+		Program parsedProgram = parser.parse("a :- b, _h(1), not d.\n" +
+			"c(X) :- p(X,a,_), q(Xaa,xaa)." +
+			":- f(Y).");
+
+		assertEquals("Program contains three rules.", 3, parsedProgram.getRules().size());
+	}
+
 	@Test(expected = IllegalArgumentException.class)
 	public void parseBadSyntax() throws IOException {
 		parser.parse("Wrong Syntax.");
