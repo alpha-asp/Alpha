@@ -5,23 +5,35 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 
 public class ConflictCause {
 	private final NoGood violatedNoGood;
-	private final Assignment.Entry violatedGuess;
+	private final Assignment.Entry violatedChoice;
 
 	public ConflictCause(NoGood violatedNoGood) {
 		this.violatedNoGood = violatedNoGood;
-		this.violatedGuess = null;
+		this.violatedChoice = null;
 	}
 
-	public ConflictCause(Assignment.Entry violatedGuess) {
+	public ConflictCause(Assignment.Entry violatedChoice) {
 		this.violatedNoGood = null;
-		this.violatedGuess = violatedGuess;
+		this.violatedChoice = violatedChoice;
 	}
 
-	public Assignment.Entry getViolatedGuess() {
-		return violatedGuess;
+	public Assignment.Entry getViolatedChoice() {
+		return violatedChoice;
 	}
 
 	public NoGood getViolatedNoGood() {
 		return violatedNoGood;
+	}
+
+	@Override
+	public String toString() {
+		if (violatedNoGood != null) {
+			return violatedNoGood.toString();
+		}
+		if (violatedChoice != null) {
+			return violatedChoice.toString();
+		}
+
+		return "null";
 	}
 }

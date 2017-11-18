@@ -40,9 +40,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.common.NoGood.HEAD;
 import static at.ac.tuwien.kr.alpha.solver.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
@@ -239,30 +242,23 @@ public class DependencyDrivenHeuristic implements BranchingHeuristic {
 	}
 
 	protected void recordAtomRelationships(NoGood noGood) {
-		if (noGood.isBodyNotHead(choiceManager::isAtomChoice)) {
-			int headIndex = noGood.getHead();
-			int bodyIndex = headIndex != 0 ? 0 : 1;
-			int body = noGood.getAtom(bodyIndex);
-			int head = noGood.getAtom(headIndex);
+		if (isBodyNotHead(noGood, choiceManager::isAtomChoice)) {
+			int body = noGood.getAtom(1);
+			int head = noGood.getAtom(HEAD);
 			bodyToHead.put(body, head);
 			headToBodies.put(head, body);
 			atomsToBodies.put(head, body);
-		} else if (noGood.isBodyElementsNotBody(choiceManager::isAtomChoice)) {
+		} else if (isBodyElementsNotBody(noGood, choiceManager::isAtomChoice)) {
 			Set<Integer> literals = new HashSet<>();
-			int bodyAtom = 0;
+			int bodyAtom = noGood.getAtom(HEAD);
 			for (int i = 0; i < noGood.size(); i++) {
-				if (i == noGood.getHead()) {
-					bodyAtom = noGood.getAtom(i);
-				} else {
-					int literal = noGood.getLiteral(i);
-					literals.add(literal);
-					if (bodyAtom != 0) {
-						atomsToBodies.put(atomOf(literal), bodyAtom);
-					} // else {
-						// TODO
-					// }
-				}
-				// TODO: make more performant (maybe head could always come first in NoGood?)
+				int literal = noGood.getLiteral(i);
+				literals.add(literal);
+				if (bodyAtom != 0) {
+					atomsToBodies.put(atomOf(literal), bodyAtom);
+				} // else {
+					// TODO
+				// }
 			}
 			assert bodyAtom != 0;
 			bodyToLiterals.putAll(bodyAtom, literals);
@@ -333,4 +329,25 @@ public class DependencyDrivenHeuristic implements BranchingHeuristic {
 		return streamOfLiterals.map(Literals::atomOf).max(Comparator.comparingDouble(this::getActivity)).orElse(DEFAULT_CHOICE_ATOM);
 		// TODO: exploit synergy with getMostActiveChoosableAtom
 	}
+
+	/**
+	 * Analyzes the type of this NoGood and checks if it is the so-called "body, not head" type. Uses the given {@code isRuleBody} predicate to check whether an
+	 * atom represents a rule body.
+	 *
+	 * @return {@code true} iff: the NoGood is binary, and it has a head, and its tail is an atom representing a rule body.
+	 */
+	public static boolean isBodyNotHead(NoGood noGood, Predicate<? super Integer> isRuleBody) {
+		return noGood.isBinary() && noGood.hasHead() && isRuleBody.test(atomOf(1));
+	}
+
+	/**
+	 * Analyzes the type of this NoGood and checks if it is the so-called "body elements, not body" type. Uses the given {@code isRuleBody} predicate to check
+	 * whether an atom represents a rule body.
+	 *
+	 * @return {@code true} iff: the NoGood contains at least two literals, and the head is a negative literal whose atom represents a rule body.
+	 */
+	public static boolean isBodyElementsNotBody(NoGood noGood, Predicate<? super Integer> isRuleBody) {
+		return noGood.size() > 1 && noGood.hasHead() && isNegated(noGood.getLiteral(HEAD)) && isRuleBody.test(noGood.getAtom(HEAD));
+	}
+
 }

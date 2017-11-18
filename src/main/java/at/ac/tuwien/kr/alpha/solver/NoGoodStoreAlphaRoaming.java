@@ -34,7 +34,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.NoGood.HEAD;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
 /**
@@ -108,9 +110,10 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	@Override
 	public ConflictCause add(int id, NoGood noGood) {
 		LOGGER.trace("Adding {}", noGood);
-		if (noGood.size() == 1) {
+
+		if (noGood.isUnary()) {
 			return addUnary(noGood);
-		} else if (noGood.size() == 2) {
+		} else if (noGood.isBinary()) {
 			return addAndWatchBinary(noGood);
 		} else {
 			return addAndWatch(noGood);
@@ -123,9 +126,9 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	 */
 	private ConflictCause addUnary(final NoGood noGood) {
 		if (noGood.hasHead()) {
-			return assignStrongComplement(0, noGood, 0);
+			return assignStrongComplement(noGood, 0);
 		} else {
-			return assignWeakComplement(0, noGood, 0);
+			return assignWeakComplement(HEAD, noGood, 0);
 		}
 	}
 
@@ -171,7 +174,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				}
 			}
 			// Check strong unassigned for nogoods with head.
-			if (noGood.hasHead() && noGood.getHead() != i && (literalEntry == null || literalEntry.getTruth().isMBT())) {
+			if (noGood.hasHead() && i != HEAD && (literalEntry == null || literalEntry.getTruth().isMBT())) {
 				posStrongUnassigned = i;
 			}
 			// Check satisfaction
@@ -242,15 +245,15 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				wng.setAlphaPointer(posStrongUnassigned);
 			} else if (posSatisfiedLiteral1 == -1 && !containsPositiveAssignedMBT) {
 				// Strongly unit.
-				ConflictCause conflictCause = assignStrongComplement(noGood.getHead(), noGood, strongDecisionLevelHighestAssigned);
+				ConflictCause conflictCause = assignStrongComplement(noGood, strongDecisionLevelHighestAssigned);
 				if (conflictCause != null) {
 					return conflictCause;
 				}
 				wng.setAlphaPointer(posStrongHighestAssigned);
-			} else if (posSatisfiedLiteral1 == noGood.getHead() && posSatisfiedLiteral2 == -1 && posStrongUnassigned == -1) {
+			} else if (posSatisfiedLiteral1 == HEAD && posSatisfiedLiteral2 == -1 && posStrongUnassigned == -1) {
 				// The head is the only satisfying literal, hence it might propagate on lower decision level.
 				if (satisfiedLiteralEntry.getStrongDecisionLevel() > strongDecisionLevelHighestAssigned) {
-					ConflictCause conflictCause = assignStrongComplement(posSatisfiedLiteral1, noGood, strongDecisionLevelHighestAssigned);
+					ConflictCause conflictCause = assignStrongComplement(noGood, strongDecisionLevelHighestAssigned);
 					if (conflictCause != null) {
 						return conflictCause;
 					}
@@ -304,8 +307,8 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				return conflictCause;
 			}
 			// Propagate strongly if applicable.
-			if (noGood.hasHead() && noGood.getHead() == propagateePos && MBT != violatedEntry.getTruth()) {
-				conflictCause = assignStrongComplement(propagateePos, noGood, violatedEntry.getStrongDecisionLevel());
+			if (noGood.hasHead() && HEAD == propagateePos && MBT != violatedEntry.getTruth()) {
+				conflictCause = assignStrongComplement(noGood, violatedEntry.getStrongDecisionLevel());
 				if (conflictCause != null) {
 					return conflictCause;
 				}
@@ -322,11 +325,10 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		// might propagate TRUE (and not only FALSE or MBT, which
 		// are accounted for above).
 		if (noGood.hasHead()) {
-			final int head = noGood.getHead();
-			final int bodyLiteral = noGood.getLiteral(head == 0 ? 1 : 0);
+			final int bodyLiteral = noGood.getLiteral(1);
 
 			// Set up watch.
-			watches(bodyLiteral).binary.getAlpha(isPositive(bodyLiteral)).add(new BinaryWatch(noGood, head));
+			watches(bodyLiteral).binary.getAlpha(isPositive(bodyLiteral)).add(new BinaryWatch(noGood, HEAD));
 		}
 		return null;
 	}
@@ -337,10 +339,8 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		return assignTruth(atomOf(literal), truth, impliedBy, decisionLevel);
 	}
 
-	private ConflictCause assignStrongComplement(final int literalIndex, final NoGood impliedBy, int decisionLevel) {
-		final int literal = impliedBy.getLiteral(literalIndex);
-		ThriceTruth truth = isNegated(literal) ? TRUE : FALSE;
-		return assignTruth(atomOf(literal), truth, impliedBy, decisionLevel);
+	private ConflictCause assignStrongComplement(final NoGood impliedBy, int decisionLevel) {
+		return assignTruth(impliedBy.getAtom(HEAD), TRUE, impliedBy, decisionLevel);
 	}
 
 	private ConflictCause assignTruth(int atom, ThriceTruth truth, NoGood impliedBy, int decisionLevel) {
@@ -461,7 +461,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		// Process binary watches.
 		Watches<BinaryWatch, WatchedNoGood> watchesOfAssignedAtom = watches(entry.getAtom());
 		for (BinaryWatch binaryWatch : watchesOfAssignedAtom.binary.getAlpha(entry.getTruth().toBoolean())) {
-			ConflictCause conflictCause = assignStrongComplement(binaryWatch.getOtherLiteralIndex(), binaryWatch.getNoGood(), entry.getDecisionLevel());
+			if (binaryWatch.getOtherLiteralIndex() != HEAD) {
+				throw oops("Binary watch for nogood with head does not point at head");
+			}
+
+			ConflictCause conflictCause = assignStrongComplement(binaryWatch.getNoGood(), entry.getDecisionLevel());
 			if (conflictCause != null) {
 				return conflictCause;
 			}
@@ -474,16 +478,15 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			final WatchedNoGood watchedNoGood = watchIterator.next();
 
 			if (!watchedNoGood.hasHead()) {
-				throw new RuntimeException("Strong propagation encountered NoGood without head. Should not happen.");
+				throw oops("Strong propagation encountered NoGood without head");
 			}
 
 			final int assignedIndex = watchedNoGood.getAlphaPointer();
-			final int headIndex = watchedNoGood.getHead();
 
 			boolean isNoGoodSatisfiedByHead = false;
-			Assignment.Entry headEntry = assignment.get(atomOf(watchedNoGood.getLiteral(headIndex)));
+			Assignment.Entry headEntry = assignment.get(watchedNoGood.getAtom(HEAD));
 			// Check if the other watch already satisfies the noGood.
-			if (headEntry != null && TRUE.equals(headEntry.getTruth()) && !isPositive(watchedNoGood.getLiteral(headIndex))) {
+			if (headEntry != null && TRUE.equals(headEntry.getTruth()) && !isPositive(watchedNoGood.getLiteral(HEAD))) {
 				isNoGoodSatisfiedByHead = true;
 			}
 
@@ -492,8 +495,8 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			boolean foundPointerCandidate = false;
 
 			// Find new literal to watch.
-			for (int i = 0; i < watchedNoGood.size(); i++) {
-				if (i == assignedIndex || i == headIndex) {
+			for (int i = 1; i < watchedNoGood.size(); i++) {
+				if (i == assignedIndex) {
 					continue;
 				}
 				int currentLiteral = watchedNoGood.getLiteral(i);
@@ -527,7 +530,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			}
 
 			// NoGood is unit, propagate (on potentially lower decision level).
-			ConflictCause conflictCause = assignStrongComplement(headIndex, watchedNoGood, highestDecisionLevel);
+			ConflictCause conflictCause = assignStrongComplement(watchedNoGood, highestDecisionLevel);
 			if (conflictCause != null) {
 				return conflictCause;
 			}
@@ -679,10 +682,10 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 					|| headViolates) {	// Head "pointer" is never moved and violation is checked by weak propagation, hence a violated head is okay.
 					continue;
 				}
-				throw new RuntimeException("Watch invariant (alpha) violated. Should not happen.");
+				throw oops("Watch invariant (alpha) violated");
 			}
 			for (WatchedNoGood watchedNoGood : watches.multary.getAlpha(truth)) {
-				int headLiteral = watchedNoGood.getLiteral(watchedNoGood.getHead());
+				int headLiteral = watchedNoGood.getLiteral(HEAD);
 				Assignment.Entry headEntry = assignment.get(atomOf(headLiteral));
 				boolean headViolates = headEntry != null && isPositive(headLiteral) == headEntry.getTruth().toBoolean();
 				int headDecisionLevel = strongDecisionLevel(headEntry);
@@ -690,7 +693,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 					|| headViolates) {	// Head "pointer" is never moved and violation is checked by weak propagation, hence a violated head is okay.
 					continue;
 				}
-				throw new RuntimeException("Watch invariant (alpha) violated. Should not happen.");
+				throw oops("Watch invariant (alpha) violated");
 			}
 		}
 
@@ -707,7 +710,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				if (watchInvariant(atomSatisfies, atomDecisionLevel, otherLiteral, otherDecisionLevel, otherEntry)) {
 					continue;
 				}
-				throw new RuntimeException("Watch invariant violated. Should not happen.");
+				throw oops("Watch invariant violated");
 			}
 			for (WatchedNoGood watchedNoGood : watches.multary.getOrdinary(truth)) {
 				// Ensure both watches are either unassigned, or one satisfies NoGood, or both are on highest decision level.
@@ -718,7 +721,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				if (watchInvariant(atomSatisfies, atomDecisionLevel, otherLiteral, otherDecisionLevel, otherEntry)) {
 					continue;
 				}
-				throw new RuntimeException("Watch invariant violated. Should not happen.");
+				throw oops("Watch invariant violated");
 			}
 		}
 

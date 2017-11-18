@@ -98,7 +98,7 @@ public class ThreeColouringWheelTest extends AbstractSolverTests {
 		Solver solver = getInstance(program);
 
 		Optional<AnswerSet> answerSet = solver.stream().findAny();
-		System.out.println(answerSet);
+		//System.out.println(answerSet);
 
 		// TODO: check correctness of answer set
 	}

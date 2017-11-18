@@ -43,7 +43,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 
 /**
- * Represents a small ASP program with guesses {@code { aa :- not bb.  bb :- not aa. }}.
+ * Represents a small ASP program with choices {@code { aa :- not bb.  bb :- not aa. }}.
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ChoiceGrounder implements Grounder {

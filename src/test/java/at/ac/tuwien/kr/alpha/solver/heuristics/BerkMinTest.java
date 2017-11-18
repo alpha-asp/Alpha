@@ -25,10 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.ArrayAssignment;
-import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.solver.*;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,9 +54,13 @@ public class BerkMinTest {
 	
 	@Before
 	public void setUp() {
-		Assignment assignment = new ArrayAssignment();
+		WritableAssignment assignment = new ArrayAssignment();
 		assignment.growForMaxAtomId(2);
-		this.berkmin = new BerkMin(assignment, new PseudoChoiceManager(assignment), new Random());
+		this.berkmin = new BerkMin(
+			assignment,
+			new PseudoChoiceManager(assignment, new NaiveNoGoodStore(assignment)),
+			new Random()
+		);
 	}
 	
 	@Test
@@ -170,21 +172,21 @@ public class BerkMinTest {
 	public void learnNoGood() {
 		NoGood learnedNoGood = new NoGood(1, 2);
 		int backjumpLevel = 1;
-		boolean clearLastGuessAfterBackjump = true;
+		boolean clearLastChoiceAfterBackjump = true;
 		Set<NoGood> noGoodsResponsibleForConflict = Collections.emptySet();
-		berkmin.analyzedConflict(new ConflictAnalysisResult(learnedNoGood, backjumpLevel, clearLastGuessAfterBackjump,
-				noGoodsResponsibleForConflict, false));
+		berkmin.analyzedConflict(new ConflictAnalysisResult(learnedNoGood, backjumpLevel, clearLastChoiceAfterBackjump,
+				noGoodsResponsibleForConflict));
 		assertEquals(learnedNoGood, berkmin.getCurrentTopClause());
 	}
 
 	private static ConflictAnalysisResult pseudo(NoGood noGood) {
-		return new ConflictAnalysisResult(null, 0, false, Collections.singleton(noGood), false);
+		return new ConflictAnalysisResult(null, 0, false, Collections.singleton(noGood));
 	}
 
 	private static class PseudoChoiceManager extends ChoiceManager {
 
-		public PseudoChoiceManager(Assignment assignment) {
-			super(assignment);
+		public PseudoChoiceManager(WritableAssignment assignment, NoGoodStore store) {
+			super(assignment, store);
 		}
 
 		@Override

@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.solver.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
@@ -124,7 +125,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		for (Integer atom : atomsAssignedInDecisionLevel.remove(decisionLevelToRemove)) {
 			Entry current = assignment.get(atom);
 			if (current == null) {
-				throw new RuntimeException("Entry not in current assignment. Should not happen.");
+				throw oops("Entry not in current assignment");
 			}
 			// If assignment was moved to lower decision level, do not remove it while backtracking from previously higher decision level.
 			if (current.getDecisionLevel() < decisionLevelToRemove) {
@@ -158,7 +159,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 	}
 
 	@Override
-	public ConflictCause guess(int atom, ThriceTruth value) {
+	public ConflictCause choose(int atom, ThriceTruth value) {
 		atomsAssignedInDecisionLevel.add(new ArrayList<>());
 		propagationCounterPerDecisionLevel.add(0);
 		return assign(atom, value, null);
@@ -187,9 +188,9 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 	private ConflictCause assignWithDecisionLevel(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
 		if (checksEnabled) {
 			if (getMBTCount() != getMBTAssignedAtoms().size()) {
-				throw new RuntimeException("MBT counter and amount of actually MBT-assigned atoms disagree. Should not happen.");
+				throw oops("MBT counter and amount of actually MBT-assigned atoms disagree");
 			} else {
-				LOGGER.debug("MBT count agrees with amount of MBT-assigned atoms.");
+				LOGGER.trace("MBT count agrees with amount of MBT-assigned atoms.");
 			}
 		}
 		if (!isAtom(atom)) {
@@ -285,13 +286,13 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 				}
 				return null;
 		}
-		throw new RuntimeException("Statement should be unreachable, algorithm misses some case.");
+		throw oops("Statement should be unreachable, algorithm misses some case");
 	}
 
 	private void recordMBTBelowTrue(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
 		Entry oldEntry = get(atom);
 		if (!TRUE.equals(oldEntry.getTruth()) || !MBT.equals(value)) {
-			throw new RuntimeException("Recording MBT below TRUE but truth values do not match. Should not happen.");
+			throw oops("Recording MBT below TRUE but truth values do not match");
 		}
 		//final int previousPropagationLevel = atomsAssignedInDecisionLevel.get(decisionLevel).size();
 		final int previousPropagationLevel = propagationCounterPerDecisionLevel.get(decisionLevel);
@@ -316,10 +317,10 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 	private void recordAssignment(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel, Entry previous) {
 		Entry oldEntry = get(atom);
 		if (oldEntry != null && decisionLevel >= oldEntry.getDecisionLevel() && !(TRUE.equals(value) && MBT.equals(oldEntry.getTruth()))) {
-			throw new RuntimeException("Assigning value into higher decision level. Should not happen.");
+			throw oops("Assigning value into higher decision level");
 		}
 		if (previous != null && (!TRUE.equals(value) || !MBT.equals(previous.getTruth()))) {
-			throw new RuntimeException("Assignment has previous value, but truth values are not MBT (previously) and TRUE (now). Should not happen.");
+			throw oops("Assignment has previous value, but truth values are not MBT (previously) and TRUE (now)");
 		}
 		// Create and record new assignment entry.
 		final int propagationLevel = propagationCounterPerDecisionLevel.get(decisionLevel);
@@ -455,7 +456,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 			this.atom = atom;
 			this.isReassignAtLowerDecisionLevel = isReassignAtLowerDecisionLevel;
 			if (previous != null && !(value == TRUE && previous.value == MBT)) {
-				throw new RuntimeException("Assignment.Entry instantiated with previous entry set and truth values other than TRUE now and MBT previous. Should not happen.");
+				throw oops("Assignment.Entry instantiated with previous entry set and truth values other than TRUE now and MBT previous");
 			}
 		}
 
