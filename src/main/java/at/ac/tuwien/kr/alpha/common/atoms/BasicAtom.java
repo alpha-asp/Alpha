@@ -71,6 +71,11 @@ public class BasicAtom implements Literal {
 	}
 
 	@Override
+	public Type getType() {
+		return Type.BASIC_ATOM;
+	}
+
+	@Override
 	public boolean isNegated() {
 		return negated;
 	}

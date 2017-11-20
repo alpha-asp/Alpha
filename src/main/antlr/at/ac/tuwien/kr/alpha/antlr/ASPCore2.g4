@@ -34,7 +34,7 @@ choice_elements : choice_element (SEMICOLON choice_elements)?;
 
 choice_element : classical_literal (COLON naf_literals?)?;
 
-heuristic : PREDICATE_HEURISTIC PAREN_OPEN term (COMMA term)? PAREN_CLOSE;
+heuristic : PREDICATE_HEURISTIC PAREN_OPEN terms PAREN_CLOSE;
 
 aggregate : (term binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (binop term)?;
 

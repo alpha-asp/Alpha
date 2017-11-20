@@ -84,6 +84,11 @@ public class ExternalAtom implements FixedInterpretationLiteral {
 	}
 
 	@Override
+	public Type getType() {
+		return Type.EXTERNAL_ATOM;
+	}
+
+	@Override
 	public boolean isNegated() {
 		return negated;
 	}

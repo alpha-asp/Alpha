@@ -63,4 +63,6 @@ public interface Grounder extends AtomTranslator {
 	 * @return the highest atomId in use.
 	 */
 	int getMaxAtomId();
+
+	AtomStore getAtomStore();
 }

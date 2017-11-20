@@ -103,6 +103,11 @@ public class IntervalAtom implements FixedInterpretationLiteral {
 	}
 
 	@Override
+	public Type getType() {
+		return Type.INTERVAL_ATOM;
+	}
+
+	@Override
 	public boolean isNegated() {
 		// IntervalAtoms only occur positively.
 		return false;

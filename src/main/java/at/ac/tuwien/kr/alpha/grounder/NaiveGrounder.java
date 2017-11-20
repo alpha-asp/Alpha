@@ -517,6 +517,11 @@ public class NaiveGrounder extends BridgedGrounder {
 		return atomStore.getHighestAtomId();
 	}
 
+	@Override
+	public AtomStore getAtomStore() {
+		return this.atomStore;
+	}
+
 	public void printCurrentlyKnownGroundRules() {
 		System.out.println("Printing known ground rules:");
 		for (Map.Entry<NonGroundRule, HashSet<Substitution>> ruleSubstitutionsEntry : knownGroundingSubstitutions.entrySet()) {

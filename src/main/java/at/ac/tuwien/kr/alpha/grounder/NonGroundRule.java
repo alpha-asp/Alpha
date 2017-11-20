@@ -31,6 +31,7 @@ import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 
 import java.util.ArrayList;
@@ -53,10 +54,12 @@ public class NonGroundRule {
 	private final List<Literal> bodyAtomsPositive;
 	private final List<Literal> bodyAtomsNegative;
 	private final Atom headAtom;
+	private final HeuristicAtom heuristic;
 
 	final RuleGroundingOrder groundingOrder;
 
-	private NonGroundRule(Rule rule, int ruleId, List<Literal> bodyAtomsPositive, List<Literal> bodyAtomsNegative, Atom headAtom) {
+	private NonGroundRule(int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom,
+			      boolean containsIntervals, boolean containsExternals, HeuristicAtom heuristic) {
 		this.ruleId = ruleId;
 		this.rule = rule;
 
@@ -69,6 +72,7 @@ public class NonGroundRule {
 		this.bodyAtomsNegative = Collections.unmodifiableList(bodyAtomsNegative);
 
 		this.headAtom = headAtom;
+		this.heuristic = heuristic;
 
 		checkSafety();
 		this.groundingOrder = new RuleGroundingOrder(this);
@@ -91,7 +95,8 @@ public class NonGroundRule {
 			}
 			headAtom = ((DisjunctiveHead)rule.getHead()).disjunctiveAtoms.get(0);
 		}
-		return new NonGroundRule(rule, ID_GENERATOR.getNextId(), pos, neg, headAtom);
+		return new NonGroundRule(intIdGenerator.getNextId(), pos, neg, headAtom, containsIntervals,
+			containsExternals, rule.getHeuristic());
 	}
 
 	public int getRuleId() {
@@ -141,6 +146,10 @@ public class NonGroundRule {
 			bodyAtomsNegative,
 			"."
 		);
+	}
+
+	public HeuristicAtom getHeuristic() {
+		return heuristic;
 	}
 
 	public Rule getRule() {

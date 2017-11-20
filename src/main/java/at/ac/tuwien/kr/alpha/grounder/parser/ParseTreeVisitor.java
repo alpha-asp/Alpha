@@ -315,7 +315,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public Literal visitHeuristic(ASPCore2Parser.HeuristicContext ctx) {
-		return new HeuristicAtom(visitTerms(ctx.terms()));
+		return new HeuristicAtom(visitTerms(ctx.terms()), ctx);
 	}
 
 	@Override

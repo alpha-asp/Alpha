@@ -2,15 +2,15 @@ package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
 
@@ -19,12 +19,12 @@ import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
  * second is a term containing variable substitutions.
  */
 public class RuleAtom implements Atom {
-	public static final Predicate PREDICATE = Predicate.getInstance("_R_", 2, true);
+	public static final Predicate PREDICATE = new Predicate("_R_", 4, true);
 
-	private final List<ConstantTerm<String>> terms;
+	private final List<ConstantTerm> terms;
 
-	private RuleAtom(List<ConstantTerm<String>> terms) {
-		if (terms.size() != 2) {
+	private RuleAtom(List<ConstantTerm> terms) {
+		if (terms.size() != 4) {
 			throw new IllegalArgumentException();
 		}
 
@@ -32,10 +32,17 @@ public class RuleAtom implements Atom {
 	}
 
 	public RuleAtom(NonGroundRule nonGroundRule, Substitution substitution) {
-		this(Arrays.asList(
+		this(getTerms(nonGroundRule, substitution));
+	}
+
+	private static List<ConstantTerm> getTerms(NonGroundRule nonGroundRule, Substitution substitution) {
+		List<ConstantTerm> constantTerms = new ArrayList<>(4);
+		constantTerms.addAll(Arrays.asList(
 			getInstance(Integer.toString(nonGroundRule.getRuleId())),
 			getInstance(substitution.toString())
 		));
+		nonGroundRule.getHeuristic().substitute(substitution).getTerms().forEach(p ->constantTerms.add((ConstantTerm) p));
+		return Collections.unmodifiableList(constantTerms);
 	}
 
 	@Override
@@ -45,10 +52,7 @@ public class RuleAtom implements Atom {
 
 	@Override
 	public List<Term> getTerms() {
-		return Arrays.asList(
-			terms.get(0),
-			terms.get(1)
-		);
+		return terms.stream().map(ct -> (Term)ct).collect(Collectors.toList());
 	}
 
 	@Override
@@ -94,6 +98,7 @@ public class RuleAtom implements Atom {
 
 	@Override
 	public String toString() {
-		return PREDICATE.getName() + "(" + terms.get(0) + "," + terms.get(1) + ')';
+		return PREDICATE.getPredicateName() + "(" + terms.stream().map(ConstantTerm::toString)
+			.collect(Collectors.joining(",")) + ")";
 	}
 }
