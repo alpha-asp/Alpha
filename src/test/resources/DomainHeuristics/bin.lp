@@ -5,8 +5,8 @@ item(1..5).
 bin(1..5).
 
 % GUESS
-in(I,B):- not out(I,B), item(I), bin(B).
-out(I,B):- not in(I,B), item(I), bin(B).
+in(I,B):- not out(I,B), item(I), bin(B), _h(B,2).
+out(I,B):- not in(I,B), item(I), bin(B), _h(B,1).
 
 %CHECK
 placed(I) :- in(I,_).
