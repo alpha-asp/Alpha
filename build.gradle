@@ -69,6 +69,12 @@ compileTestJava {
 	options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }
 
+// Fix checkstyle version.
+checkstyle {
+	toolVersion = "7.6"
+}
+
+
 task bundledJar(type: Jar) {
 	manifest {
 		attributes 'Main-Class': mainClassName
