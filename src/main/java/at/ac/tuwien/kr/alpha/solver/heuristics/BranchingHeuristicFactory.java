@@ -38,6 +38,7 @@ public final class BranchingHeuristicFactory {
 
 	public enum Heuristic {
 		NAIVE,
+		DOMAIN_BERKMIN,
 		BERKMIN,
 		BERKMINLITERAL,
 		DD,
@@ -69,6 +70,8 @@ public final class BranchingHeuristicFactory {
 			return new NaiveHeuristic(choiceManager);
 		case BERKMIN:
 			return new BerkMin(assignment, choiceManager, random);
+		case DOMAIN_BERKMIN:
+			return new DomainBerkMin(assignment, choiceManager, random, grounder);
 		case BERKMINLITERAL:
 			return new BerkMinLiteral(assignment, choiceManager, random);
 		case DD:
