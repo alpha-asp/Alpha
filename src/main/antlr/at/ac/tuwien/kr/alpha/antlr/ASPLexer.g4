@@ -17,6 +17,7 @@ DIV : '/';
 AT : '@';
 SHARP : '#'; // NOT Core2 syntax but gringo
 AMPERSAND : '&';
+QUOTE : '"';
 
 PAREN_OPEN : '(';
 PAREN_CLOSE : ')';
@@ -39,7 +40,7 @@ AGGREGATE_SUM : '#sum';
 ID : ('a'..'z') ( 'A'..'Z' | 'a'..'z' | '0'..'9' | '_' )*;
 VARIABLE : ('A'..'Z') ( 'A'..'Z' | 'a'..'z' | '0'..'9' | '_' )*;
 NUMBER : '0' | ('1'..'9') ('0'..'9')*;
-STRING : '"' ( '\\"' | . )*? '"';
+QUOTED_STRING : QUOTE ( '\\"' | . )*? QUOTE;
 
 COMMENT : '%' ~[\r\n]* -> channel(HIDDEN);
 MULTI_LINE_COMMEN : '%*' .*? '*%' -> channel(HIDDEN);

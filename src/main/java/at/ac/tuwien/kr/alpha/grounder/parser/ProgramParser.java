@@ -4,7 +4,7 @@ import at.ac.tuwien.kr.alpha.CustomErrorListener;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.predicates.FixedInterpretationPredicate;
+import at.ac.tuwien.kr.alpha.common.interpretations.PredicateInterpretation;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
@@ -14,9 +14,9 @@ import java.util.Collections;
 import java.util.Map;
 
 public class ProgramParser {
-	private final Map<String, FixedInterpretationPredicate> externals;
+	private final Map<String, PredicateInterpretation> externals;
 
-	public ProgramParser(Map<String, FixedInterpretationPredicate> externals) {
+	public ProgramParser(Map<String, PredicateInterpretation> externals) {
 		this.externals = externals;
 	}
 

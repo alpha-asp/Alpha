@@ -33,11 +33,12 @@ import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import junit.framework.TestCase;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -65,7 +66,7 @@ public class SolverTests extends AbstractSolverTests {
 	public void testObjectProgram() throws IOException {
 		final Thingy thingy = new Thingy();
 
-		final Atom fact = new BasicAtom(new Predicate("foo", 1), ConstantTerm.getInstance(thingy));
+		final Atom fact = new BasicAtom(Predicate.getInstance("foo", 1), ConstantTerm.getInstance(thingy));
 
 		final Program program = new Program(
 			Collections.emptyList(),
@@ -503,6 +504,16 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
+	public void emptyIntervals() throws IOException {
+		assertAnswerSets(
+			"p(3..1)." +
+				"dom(5)." +
+				"p(X) :- dom(X), X = 7..2 .",
+			"dom(5)"
+		);
+	}
+
+	@Test
 	public void intervalInFunctionTermsInRules() throws IOException {
 		assertAnswerSets(
 			"a :- q(f(1..3,g(4..5)))." +
@@ -589,6 +600,23 @@ public class SolverTests extends AbstractSolverTests {
 		List<AnswerSet> actual = solver.collectList();
 		assertEquals(2, actual.size());
 		assertEquals(AnswerSetsParser.parse("{} { a }"), new HashSet<>(actual));
+	}
+
+	@Test
+	public void simpleArithmetics() throws IOException {
+		assertAnswerSet("eight(X) :- X = 4 + 5 - 1." +
+			"three(X) :- X = Z, Y = 1..10, Z = Y / 3, Z > 2, Z < 4.",
+
+			"eight(8), three(3)");
+	}
+
+	@Test
+	@Ignore("Yields wrong result (9) with current parser.")
+	public void arithmeticsMultiplicationBeforeAddition() throws IOException {
+		//
+		assertAnswerSet("seven(X) :- 1+2 * 3 = X.",
+
+			"seven(7)");
 	}
 
 	@Test

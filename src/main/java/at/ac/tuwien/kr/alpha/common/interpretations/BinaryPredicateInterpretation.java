@@ -1,14 +1,14 @@
-package at.ac.tuwien.kr.alpha.common.predicates;
+package at.ac.tuwien.kr.alpha.common.interpretations;
 
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 
 import java.util.List;
 
-public class ExternalBiPredicate<T, U> extends ExternalNonBindingPredicate {
+public class BinaryPredicateInterpretation<T, U> extends NonBindingPredicateInterpretation {
 	private final java.util.function.BiPredicate<T, U> predicate;
 
-	public ExternalBiPredicate(String name, java.util.function.BiPredicate<T, U> predicate) {
-		super(name, 2);
+	public BinaryPredicateInterpretation(java.util.function.BiPredicate<T, U> predicate) {
+		super(2);
 		this.predicate = predicate;
 	}
 

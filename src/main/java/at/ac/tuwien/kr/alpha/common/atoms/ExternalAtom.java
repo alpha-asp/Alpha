@@ -1,28 +1,32 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.predicates.FixedInterpretationPredicate;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.interpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import static at.ac.tuwien.kr.alpha.Util.join;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.unmodifiableList;
 
-public class ExternalAtom implements Literal {
+public class ExternalAtom implements InterpretableLiteral {
 	private final List<Term> input;
-	private final List<VariableTerm> output;
+	private final List<Term> output;
 
-	protected final FixedInterpretationPredicate predicate;
+	protected Predicate predicate;
+	protected final PredicateInterpretation interpretation;
 	protected final boolean negated;
 
-	public ExternalAtom(FixedInterpretationPredicate predicate, List<Term> input, List<VariableTerm> output, boolean negated) {
+	public ExternalAtom(Predicate predicate, PredicateInterpretation interpretation, List<Term> input, List<Term> output, boolean negated) {
 		this.predicate = predicate;
+		this.interpretation = interpretation;
 		this.input = input;
 		this.output = output;
 		this.negated = negated;
@@ -37,10 +41,10 @@ public class ExternalAtom implements Literal {
 			substitutes.add(t.substitute(partialSubstitution));
 		}
 
-		Set<List<ConstantTerm>> results = predicate.evaluate(substitutes);
+		Set<List<ConstantTerm>> results = interpretation.evaluate(substitutes);
 
 		if (results == null) {
-			throw new NullPointerException("Predicate " + getPredicate().getPredicateName() + " returned null. It must return a Set.");
+			throw new NullPointerException("Predicate " + getPredicate().getName() + " returned null. It must return a Set.");
 		}
 
 		if (results.isEmpty()) {
@@ -49,13 +53,27 @@ public class ExternalAtom implements Literal {
 
 		for (List<ConstantTerm> bindings : results) {
 			if (bindings.size() < output.size()) {
-				throw new RuntimeException("Predicate " + getPredicate().getPredicateName() + " returned " + bindings.size() + " terms when at least " + output.size() + " were expected.");
+				throw new RuntimeException("Predicate " + getPredicate().getName() + " returned " + bindings.size() + " terms when at least " + output.size() + " were expected.");
 			}
+
 			Substitution ith = new Substitution(partialSubstitution);
+			boolean skip = false;
 			for (int i = 0; i < output.size(); i++) {
-				ith.put(output.get(i), bindings.get(i));
+				Term out = output.get(i);
+
+				if (out instanceof VariableTerm) {
+					ith.put((VariableTerm) out, bindings.get(i));
+				} else {
+					if (!bindings.get(i).equals(out)) {
+						skip = true;
+						break;
+					}
+				}
 			}
-			substitutions.add(ith);
+
+			if (!skip) {
+				substitutions.add(ith);
+			}
 		}
 
 		return substitutions;
@@ -75,6 +93,10 @@ public class ExternalAtom implements Literal {
 		return predicate;
 	}
 
+	public PredicateInterpretation getInterpretation() {
+		return interpretation;
+	}
+
 	@Override
 	public List<Term> getTerms() {
 		return input;
@@ -90,7 +112,20 @@ public class ExternalAtom implements Literal {
 		// If the external atom is negative, then all variables of input and output are non-binding
 		// and there are no binding variables (like for ordinary atoms).
 		// If the external atom is positive, then variables of output are binding.
-		return negated ? emptyList() : unmodifiableList(output);
+
+		if (isNegated()) {
+			return emptyList();
+		}
+
+		List<VariableTerm> binding = new ArrayList<>(output.size());
+
+		for (Term out : output) {
+			if (out instanceof VariableTerm) {
+				binding.add((VariableTerm) out);
+			}
+		}
+
+		return binding;
 	}
 
 	@Override
@@ -104,7 +139,11 @@ public class ExternalAtom implements Literal {
 
 		// If the external atom is negative, then all variables of input and output are non-binding.
 		if (negated) {
-			nonbindingVariables.addAll(output);
+			for (Term out : output) {
+				if (out instanceof VariableTerm) {
+					nonbindingVariables.add((VariableTerm) out);
+				}
+			}
 		}
 
 		return nonbindingVariables;
@@ -114,6 +153,7 @@ public class ExternalAtom implements Literal {
 	public Atom substitute(Substitution substitution) {
 		return new ExternalAtom(
 			predicate,
+			interpretation,
 			input
 				.stream()
 				.map(t -> t.substitute(substitution))
@@ -125,18 +165,13 @@ public class ExternalAtom implements Literal {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder("&");
-		sb.append(predicate.getPredicateName());
+		String result = "&" + predicate.getName();
 		if (!output.isEmpty()) {
-			sb.append("[");
-			Util.appendDelimited(sb, output);
-			sb.append("]");
+			result += join("[", output, "]");
 		}
 		if (!input.isEmpty()) {
-			sb.append("(");
-			Util.appendDelimited(sb, input);
-			sb.append(")");
+			result += join("(", input, ")");
 		}
-		return sb.toString();
+		return result;
 	}
 }

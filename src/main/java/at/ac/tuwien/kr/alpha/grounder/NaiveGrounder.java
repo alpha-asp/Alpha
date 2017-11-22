@@ -30,16 +30,17 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.InterpretableLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
-import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
+import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -50,7 +51,6 @@ import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 
 /**
  * A semi-naive grounder.
@@ -59,13 +59,11 @@ import static java.util.Collections.singletonList;
 public class NaiveGrounder extends BridgedGrounder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
 
-	protected HashMap<Predicate, ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage>> workingMemory = new HashMap<>();
-	protected Map<NoGood, Integer> noGoodIdentifiers = new LinkedHashMap<>();
-	protected AtomStore atomStore = new AtomStore();
+	private HashMap<Predicate, ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage>> workingMemory = new HashMap<>();
+	AtomStore atomStore = new AtomStore();
+	private final NoGoodGenerator noGoodGenerator = new NoGoodGenerator(new IntIdGenerator(), new IntIdGenerator(), this);
 
 	private final IntIdGenerator intIdGenerator = new IntIdGenerator();
-	private final IntIdGenerator nogoodIdGenerator = new IntIdGenerator();
-	private final IntIdGenerator choiceAtomsGenerator = new IntIdGenerator();
 
 	private HashMap<Predicate, LinkedHashSet<Instance>> factsFromProgram = new LinkedHashMap<>();
 	private final ArrayList<NonGroundRule> rulesFromProgram = new ArrayList<>();
@@ -73,7 +71,6 @@ public class NaiveGrounder extends BridgedGrounder {
 
 	private boolean prepareFacts = true;
 
-	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newChoiceAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
 	private final HashSet<Predicate> knownPredicates = new HashSet<>();
 	private final HashMap<NonGroundRule, HashSet<Substitution>> knownGroundingSubstitutions = new HashMap<>();
 
@@ -152,13 +149,15 @@ public class NaiveGrounder extends BridgedGrounder {
 		new ChoiceHeadToNormal().transform(program);
 		// Transform intervals.
 		new IntervalTermToIntervalAtom().transform(program);
+		// Remove variable equalities.
+		new VariableEqualityRemoval().transform(program);
 	}
 
 	private void adaptWorkingMemoryForPredicate(Predicate predicate) {
 		// Create working memory for predicate if it does not exist
 		if (!workingMemory.containsKey(predicate)) {
-			IndexedInstanceStorage instanceStoragePos = new IndexedInstanceStorage(predicate.getPredicateName() + "+", predicate.getArity());
-			IndexedInstanceStorage instanceStorageNeg = new IndexedInstanceStorage(predicate.getPredicateName() + "-", predicate.getArity());
+			IndexedInstanceStorage instanceStoragePos = new IndexedInstanceStorage(predicate.getName() + "+", predicate.getArity());
+			IndexedInstanceStorage instanceStorageNeg = new IndexedInstanceStorage(predicate.getName() + "-", predicate.getArity());
 			// Index all positions of the storage (may impair efficiency)
 			for (int i = 0; i < predicate.getArity(); i++) {
 				instanceStoragePos.addIndexPosition(i);
@@ -187,46 +186,29 @@ public class NaiveGrounder extends BridgedGrounder {
 		}
 		rulesFromProgram.add(nonGroundRule);
 
-		// Register the rule at the working memory corresponding to its first predicate.
-		Predicate firstBodyPredicate = nonGroundRule.usedFirstBodyPredicate();
-		if (firstBodyPredicate == null) {
-			// No ordinary first body predicate, hence it only contains ground builtin predicates.
+		// If the rule has fixed ground instantiations, it is not registered but grounded once like facts.
+		if (nonGroundRule.groundingOrder.fixedInstantiation()) {
 			return;
 		}
 
-		// Register each atom occurring in the body of the rule at its corresponding working memory.
-		HashSet<Atom> registeredPositiveAtoms = new HashSet<>();
-		for (int i = 0; i < nonGroundRule.getBodyAtomsPositive().size(); i++) {
-			registerAtomAtWorkingMemory(true, nonGroundRule, registeredPositiveAtoms, i);
-		}
-
-		// Register negative literals only if the rule contains no positive literals (necessary grounding is ensured by safety of rules).
-		if (nonGroundRule.getBodyAtomsPositive().isEmpty()) {
-			HashSet<Atom> registeredNegativeAtoms = new HashSet<>();
-			for (int i = 0; i < nonGroundRule.getBodyAtomsNegative().size(); i++) {
-				registerAtomAtWorkingMemory(false, nonGroundRule, registeredNegativeAtoms, i);
-			}
+		// Register each starting literal at the corresponding working memory.
+		for (Literal literal : nonGroundRule.groundingOrder.getStartingLiterals()) {
+			registerLiteralAtWorkingMemory(literal, nonGroundRule);
 		}
 	}
 
 	/**
-	 * Registers an atom occurring in a rule at its corresponding working memory if it has not already been treated this way.
-	 * @param isPositive indicates whether the atom occurs positively or negatively in the rule.
-	 * @param nonGroundRule the rule into which the atom occurs.
-	 * @param registeredAtoms a set of already registered atoms (will skip if the predicate of the current atom occurs in this set). This set will be extended by the current atom.
-	 * @param atomPos the position in the rule of the atom.
+	 * Registers a starting literal of a NonGroundRule at its corresponding working memory.
+	 * @param nonGroundRule   the rule in which the literal occurs.
 	 */
-	private void registerAtomAtWorkingMemory(boolean isPositive, NonGroundRule nonGroundRule, HashSet<Atom> registeredAtoms, int atomPos) {
-		Atom bodyAtom = isPositive ? nonGroundRule.getBodyAtomsPositive().get(atomPos) : nonGroundRule.getBodyAtomsNegative().get(atomPos);
-		if (registeredAtoms.contains(bodyAtom)) {
-			return;
+	private void registerLiteralAtWorkingMemory(Literal literal, NonGroundRule nonGroundRule) {
+		Predicate predicate = literal.getPredicate();
+		if (literal.isNegated()) {
+			throw new RuntimeException("Literal to register is negated. Should not happen.");
 		}
-
-		Predicate predicate = bodyAtom.getPredicate();
-		registeredAtoms.add(bodyAtom);
-		IndexedInstanceStorage workingMemory = isPositive ? this.workingMemory.get(predicate).getLeft() : this.workingMemory.get(predicate).getRight();
+		IndexedInstanceStorage workingMemory = this.workingMemory.get(predicate).getLeft();
 		rulesUsingPredicateWorkingMemory.putIfAbsent(workingMemory, new ArrayList<>());
-		rulesUsingPredicateWorkingMemory.get(workingMemory).add(new FirstBindingAtom(nonGroundRule, atomPos, bodyAtom));
+		rulesUsingPredicateWorkingMemory.get(workingMemory).add(new FirstBindingAtom(nonGroundRule, literal));
 	}
 
 	@Override
@@ -258,6 +240,10 @@ public class NaiveGrounder extends BridgedGrounder {
 		// Add true atoms from facts.
 		for (Map.Entry<Predicate, LinkedHashSet<Instance>> facts : factsFromProgram.entrySet()) {
 			Predicate factPredicate = facts.getKey();
+			// Skip predicates without any instances.
+			if (facts.getValue().isEmpty()) {
+				continue;
+			}
 			knownPredicates.add(factPredicate);
 			predicateInstances.putIfAbsent(factPredicate, new TreeSet<>());
 			for (Instance factInstance : facts.getValue()) {
@@ -271,18 +257,6 @@ public class NaiveGrounder extends BridgedGrounder {
 		}
 
 		return new BasicAnswerSet(knownPredicates, predicateInstances);
-	}
-
-	/**
-	 * Helper methods to analyze average nogood length.
-	 * @return
-	 */
-	public float computeAverageNoGoodLength() {
-		int totalSizes = 0;
-		for (Map.Entry<NoGood, Integer> noGoodEntry : noGoodIdentifiers.entrySet()) {
-			totalSizes += noGoodEntry.getKey().size();
-		}
-		return ((float) totalSizes) / noGoodIdentifiers.size();
 	}
 
 	/**
@@ -302,29 +276,43 @@ public class NaiveGrounder extends BridgedGrounder {
 		}
 
 		for (NonGroundRule nonGroundRule : rulesFromProgram) {
-			// Generate nogoods for all rules that are ground already.
-			if (!nonGroundRule.isOriginallyGround()) {
+			// Generate NoGoods for all rules that have a fixed grounding.
+			if (!nonGroundRule.groundingOrder.fixedInstantiation()) {
 				continue;
 			}
-
-			// Check if rule contains intervals (but is otherwise ground).
-			if (nonGroundRule.containsIntervals()) {
-				// Then generate all substitutions of the intervals and generate the resulting nogoods.
-				List<Substitution> substitutions = bindNextAtomInRule(nonGroundRule, 0, -1, new Substitution(), null);
-				for (Substitution substitution : substitutions) {
-					register(generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution), noGoodsFromFacts);
-				}
-			} else {
-				// Generate nogoods of ground rules (where no intervals occur).
-				register(generateNoGoodsFromGroundSubstitution(nonGroundRule, new Substitution()), noGoodsFromFacts);
+			Literal[] groundingOrder = nonGroundRule.groundingOrder.getFixedGroundingOrder();
+			List<Substitution> substitutions = bindNextAtomInRule(groundingOrder, 0, new Substitution(), null);
+			for (Substitution substitution : substitutions) {
+				createNoGoodFromSubstitution(nonGroundRule, substitution, noGoodsFromFacts);
 			}
 		}
 
 		return noGoodsFromFacts;
 	}
 
-	private NoGood supportednessNoGoodUniqueRule(int headAtom, int ruleBodyAtom) {
-		return new NoGood(headAtom, -ruleBodyAtom);
+
+	Set<Instance> getFactsFromProgram(Predicate predicate) {
+		LinkedHashSet<Instance> facts = factsFromProgram.get(predicate);
+		return facts == null ? null : Collections.unmodifiableSet(facts);
+	}
+
+	boolean createsUniqueGroundHead(NonGroundRule nonGroundRule) {
+		return uniqueGroundRulePerGroundHead.contains(nonGroundRule);
+
+	}
+
+	private void createNoGoodFromSubstitution(NonGroundRule nonGroundRule, Substitution substitution, Map<Integer, NoGood> noGoodsFromFacts) {
+		if (LOGGER.isDebugEnabled()) {
+			// Debugging helper: record known grounding substitutions.
+			knownGroundingSubstitutions.putIfAbsent(nonGroundRule, new LinkedHashSet<>());
+			knownGroundingSubstitutions.get(nonGroundRule).add(substitution);
+		}
+		noGoodGenerator.register(noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution), noGoodsFromFacts);
+	}
+
+	boolean existsRuleWithPredicateInHead(Predicate predicate) {
+		HashSet<NonGroundRule> definingRules = ruleHeadsToDefiningRules.get(predicate);
+		return definingRules != null && !definingRules.isEmpty();
 	}
 
 	@Override
@@ -349,21 +337,24 @@ public class NaiveGrounder extends BridgedGrounder {
 
 			for (FirstBindingAtom firstBindingAtom : firstBindingAtoms) {
 				// Use the recently added instances from the modified working memory to construct an initial substitution
-				NonGroundRule nonGroundRule = firstBindingAtom.rule;
 				List<Substitution> substitutions = new ArrayList<>();
+				NonGroundRule nonGroundRule = firstBindingAtom.rule;
 
 				// Generate substitutions from each recent instance.
 				for (Instance instance : modifiedWorkingMemory.getRecentlyAddedInstances()) {
 					// Check instance if it matches with the atom.
 
-					Substitution unified = unify(firstBindingAtom.firstBindingAtom, instance, new Substitution());
+					Substitution unified = Substitution.unify(firstBindingAtom.startingLiteral, instance, new Substitution());
 					if (unified != null) {
-						substitutions.addAll(bindNextAtomInRule(nonGroundRule, 0, firstBindingAtom.firstBindingAtomPos, unified, currentAssignment));
+						substitutions.addAll(bindNextAtomInRule(
+							nonGroundRule.groundingOrder.orderStartingFrom(firstBindingAtom.startingLiteral),
+							0,
+							unified, currentAssignment));
 					}
 				}
 
 				for (Substitution substitution : substitutions) {
-					register(generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution), newNoGoods);
+					createNoGoodFromSubstitution(nonGroundRule, substitution, newNoGoods);
 				}
 			}
 
@@ -383,234 +374,35 @@ public class NaiveGrounder extends BridgedGrounder {
 			for (Map.Entry<Integer, NoGood> noGoodEntry : newNoGoods.entrySet()) {
 				LOGGER.debug("{} == {}", noGoodEntry.getValue(), noGoodToString(noGoodEntry.getValue()));
 			}
-			LOGGER.debug("Choice information is:");
-			for (Map.Entry<Integer, Integer> enablers : newChoiceAtoms.getLeft().entrySet()) {
-				LOGGER.debug("{} enabled by {}.", enablers.getKey(), enablers.getValue());
-			}
-			for (Map.Entry<Integer, Integer> disablers : newChoiceAtoms.getRight().entrySet()) {
-				LOGGER.debug("{} disabled by {}.", disablers.getKey(), disablers.getValue());
-			}
+			noGoodGenerator.logChoiceInformation();
 		}
 		return newNoGoods;
 	}
 
 	boolean disableInstanceRemoval;
 
-	private void register(Iterable<NoGood> noGoods, Map<Integer, NoGood> difference) {
-		for (NoGood noGood : noGoods) {
-			// Check if noGood was already derived earlier, add if it is new
-			if (!noGoodIdentifiers.containsKey(noGood)) {
-				int noGoodId = nogoodIdGenerator.getNextId();
-				noGoodIdentifiers.put(noGood, noGoodId);
-				difference.put(noGoodId, noGood);
-			}
-		}
-	}
-
-	/**
-	 * Generates all NoGoods resulting from a non-ground rule and a variable substitution.
-	 * @param nonGroundRule
-	 * @param substitution
-	 * @return
-	 */
-	private List<NoGood> generateNoGoodsFromGroundSubstitution(NonGroundRule nonGroundRule, Substitution substitution) {
-		if (LOGGER.isDebugEnabled()) {
-			// Debugging helper: record known grounding substitutions.
-			knownGroundingSubstitutions.putIfAbsent(nonGroundRule, new LinkedHashSet<>());
-			knownGroundingSubstitutions.get(nonGroundRule).add(substitution);
-		}
-
-		// Collect ground atoms in the body
-		ArrayList<Integer> bodyAtomsPositive = new ArrayList<>();
-		ArrayList<Integer> bodyAtomsNegative = new ArrayList<>();
-		for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
-			if (atom instanceof ExternalAtom) {
-				ExternalAtom external = (ExternalAtom) atom;
-
-				if (external.hasOutput()) {
-					continue;
-				}
-
-				// Truth of builtin atoms does not depend on any assignment
-				// hence, they need not be represented as long as they evaluate to true
-				List<Substitution> substitutions = external.getSubstitutions(substitution);
-
-				if (substitutions.isEmpty()) {
-					return emptyList();
-				} else {
-					continue;
-				}
-			}
-			if (atom instanceof IntervalAtom) {
-				// IntervalAtoms are needed for deriving all substitutions of intervals but otherwise can be ignored.
-				continue;
-			}
-			Atom groundAtom = atom.substitute(substitution);
-			// Consider facts to eliminate ground atoms from the generated nogoods that are always true
-			// and eliminate nogoods that are always satisfied due to facts.
-			HashSet<Instance> factInstances = factsFromProgram.get(groundAtom.getPredicate());
-			if (factInstances != null && factInstances.contains(new Instance(groundAtom.getTerms()))) {
-				// Skip positive atoms that are always true.
-				continue;
-			}
-			HashSet<NonGroundRule> definingRules = ruleHeadsToDefiningRules.get(groundAtom.getPredicate());
-			if (definingRules == null || definingRules.isEmpty()) {
-				// Atom is no fact and no rule defines it, it cannot be derived (i.e., is always false), skip whole rule as it will never fire.
-				return emptyList();
-			}
-			int groundAtomPositive = atomStore.add(groundAtom);
-			bodyAtomsPositive.add(groundAtomPositive);
-		}
-
-		for (Atom atom : nonGroundRule.getBodyAtomsNegative()) {
-			Atom groundAtom = atom.substitute(substitution);
-			HashSet<Instance> factInstances = factsFromProgram.get(groundAtom.getPredicate());
-			if (factInstances != null && factInstances.contains(new Instance(groundAtom.getTerms()))) {
-				// Negative atom that is always true encountered, skip whole rule as it will never fire.
-				return emptyList();
-			}
-			HashSet<NonGroundRule> definingRules = ruleHeadsToDefiningRules.get(groundAtom.getPredicate());
-			if (definingRules == null || definingRules.isEmpty()) {
-				// Negative atom is no fact and no rule defines it, it is always false, skip it.
-				continue;
-			}
-			int groundAtomNegative = atomStore.add(groundAtom);
-			bodyAtomsNegative.add(groundAtomNegative);
-		}
-
-		int bodySize = bodyAtomsPositive.size() + bodyAtomsNegative.size();
-
-		// A constraint is represented by exactly one NoGood.
-		if (nonGroundRule.isConstraint()) {
-			int[] constraintLiterals = new int[bodySize];
-			int i = 0;
-			for (Integer atomId : bodyAtomsPositive) {
-				constraintLiterals[i++] = +atomId;
-			}
-			for (Integer atomId : bodyAtomsNegative) {
-				constraintLiterals[i++] = -atomId;
-			}
-			return singletonList(new NoGood(constraintLiterals));
-		}
-
-		// Prepare atom representing the rule body
-		Atom ruleBodyRepresentingPredicate = new RuleAtom(nonGroundRule, substitution);
-		// Check uniqueness of ground rule by testing whether the body representing atom already has an id
-		if (atomStore.contains(ruleBodyRepresentingPredicate)) {
-			// The current ground instance already exists, therefore all NoGoods have already been created.
-			return emptyList();
-		}
-
-		int bodyRepresentingAtomId = atomStore.add(ruleBodyRepresentingPredicate);
-
-		// Prepare head atom
-		int headAtomId = atomStore.add(nonGroundRule.getHeadAtom().substitute(substitution));
-
-		// Create NoGood for body.
-		int[] bodyLiterals = new int[bodySize + 1];
-		bodyLiterals[0] = -bodyRepresentingAtomId;
-		int i = 1;
-		for (Integer atomId : bodyAtomsPositive) {
-			bodyLiterals[i++] = atomId;
-		}
-		for (Integer atomId : bodyAtomsNegative) {
-			bodyLiterals[i++] = -atomId;
-		}
-		NoGood ruleBody = NoGood.headFirst(bodyLiterals);
-
-		List<NoGood> generatedNoGoods = new ArrayList<>();
-
-		// Generate NoGoods such that the atom representing the body is true iff the body is true.
-		for (int j = 1; j < bodyLiterals.length; j++) {
-			generatedNoGoods.add(new NoGood(bodyRepresentingAtomId, -bodyLiterals[j]));
-		}
-
-		// Create NoGood for head.
-		NoGood ruleHead = NoGood.headFirst(-headAtomId, bodyRepresentingAtomId);
-
-		generatedNoGoods.add(ruleBody);
-		generatedNoGoods.add(ruleHead);
-
-		// Check if the rule head is unique, add support then:
-		if (uniqueGroundRulePerGroundHead.contains(nonGroundRule)) {
-			generatedNoGoods.add(supportednessNoGoodUniqueRule(headAtomId, bodyRepresentingAtomId));
-		}
-
-		// Check if the body of the rule contains negation, add choices then
-		if (bodyAtomsNegative.size() != 0) {
-			Map<Integer, Integer> newChoiceOn = newChoiceAtoms.getLeft();
-			Map<Integer, Integer> newChoiceOff = newChoiceAtoms.getRight();
-			// Choice is on the body representing atom
-
-			// ChoiceOn if all positive body atoms are satisfied
-			int[] choiceOnLiterals = new int[bodyAtomsPositive.size() + 1];
-			i = 1;
-			for (Integer atomId : bodyAtomsPositive) {
-				choiceOnLiterals[i++] = atomId;
-			}
-			int choiceId = choiceAtomsGenerator.getNextId();
-			Atom choiceOnAtom = ChoiceAtom.on(choiceId);
-			int choiceOnAtomIdInt = atomStore.add(choiceOnAtom);
-			choiceOnLiterals[0] = -choiceOnAtomIdInt;
-			// Add corresponding NoGood and ChoiceOn
-			generatedNoGoods.add(NoGood.headFirst(choiceOnLiterals));	// ChoiceOn and ChoiceOff NoGoods avoid MBT and directly set to true, hence the rule head pointer.
-			newChoiceOn.put(bodyRepresentingAtomId, choiceOnAtomIdInt);
-
-			// ChoiceOff if some negative body atom is contradicted
-			Atom choiceOffAtom = ChoiceAtom.off(choiceId);
-			int choiceOffAtomIdInt = atomStore.add(choiceOffAtom);
-			for (Integer negAtomId : bodyAtomsNegative) {
-				// Choice is off if any of the negative atoms is assigned true, hence we add one NoGood for each such atom.
-				generatedNoGoods.add(NoGood.headFirst(-choiceOffAtomIdInt, negAtomId));
-			}
-			newChoiceOff.put(bodyRepresentingAtomId, choiceOffAtomIdInt);
-		}
-		return generatedNoGoods;
-	}
-
 	private LinkedHashSet<Atom> removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
 	private int maxAtomIdBeforeGroundingNewNoGoods = -1;
 
-	private List<Substitution> bindNextAtomInRule(NonGroundRule rule, int atomPos, int firstBindingPos, Substitution partialSubstitution, Assignment currentAssignment) {
-		if (atomPos == rule.getNumBodyAtoms()) {
+
+	private List<Substitution> bindNextAtomInRule(Literal[] groundingOrder, int orderPosition, Substitution partialSubstitution, Assignment currentAssignment) {
+		if (orderPosition == groundingOrder.length) {
 			return Collections.singletonList(partialSubstitution);
 		}
 
-		if (atomPos == firstBindingPos) {
-			// Binding for this position was already computed, skip it.
-			return bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, partialSubstitution, currentAssignment);
-		}
-
-		Atom currentAtom = rule.getBodyAtom(atomPos);
-		if (currentAtom instanceof ExternalAtom) {
-			// Assumption: all variables occurring in the builtin atom are already bound
-			// (as ensured by the body atom sorting)
-
-			// Generate all substitutions for the interval representing variable.
-			List<Substitution> substitutions = ((ExternalAtom)currentAtom).getSubstitutions(partialSubstitution);
+		Literal currentAtom = groundingOrder[orderPosition];
+		if (currentAtom instanceof InterpretableLiteral) {
+			// Generate all substitutions for the builtin/external/interval atom.
+			List<Substitution> substitutions = ((InterpretableLiteral)currentAtom).getSubstitutions(partialSubstitution);
 
 			if (substitutions.isEmpty()) {
 				return emptyList();
 			}
 
 			ArrayList<Substitution> generatedSubstitutions = new ArrayList<>();
-			for (Substitution intervalSubstitution : substitutions) {
+			for (Substitution substitution : substitutions) {
 				// Continue grounding with each of the generated values.
-				generatedSubstitutions.addAll(bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, intervalSubstitution, currentAssignment));
-			}
-			return generatedSubstitutions;
-		}
-		if (currentAtom instanceof IntervalAtom) {
-			// Assumption: IntervalAtoms occur before all BuiltinAtoms and after all positive ordinary atoms in the body, to have their values bound at evaluation.
-			// Generate the set of substitutions stemming from this interval specification.
-			IntervalAtom groundInterval = (IntervalAtom) currentAtom.substitute(partialSubstitution);	// Substitute variables occurring in the interval itself.
-
-			// Generate all substitutions for the interval representing variable.
-			List<Substitution> intervalSubstitutions = groundInterval.getIntervalSubstitutions(partialSubstitution);
-			ArrayList<Substitution> generatedSubstitutions = new ArrayList<>();
-			for (Substitution intervalSubstitution : intervalSubstitutions) {
-				// Continue grounding with each of the generated values.
-				generatedSubstitutions.addAll(bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, intervalSubstitution, currentAssignment));
+				generatedSubstitutions.addAll(bindNextAtomInRule(groundingOrder, orderPosition + 1, substitution, currentAssignment));
 			}
 			return generatedSubstitutions;
 		}
@@ -620,7 +412,7 @@ public class NaiveGrounder extends BridgedGrounder {
 
 		if (substitute.isGround()) {
 			// Substituted atom is ground, in case it is positive, only ground if it also holds true
-			if (rule.isBodyAtomPositive(atomPos)) {
+			if (!currentAtom.isNegated()) {
 				IndexedInstanceStorage wm = workingMemory.get(currentAtom.getPredicate()).getLeft();
 				if (wm.containsInstance(new Instance(substitute.getTerms()))) {
 					// Check if atom is also assigned true.
@@ -642,7 +434,7 @@ public class NaiveGrounder extends BridgedGrounder {
 						}
 					}
 					// Ground literal holds, continue finding a variable substitution.
-					return bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, partialSubstitution, currentAssignment);
+					return bindNextAtomInRule(groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
 				}
 
 				// Generate no variable substitution.
@@ -650,12 +442,15 @@ public class NaiveGrounder extends BridgedGrounder {
 			}
 
 			// Atom occurs negated in the rule, continue grounding
-			return bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, partialSubstitution, currentAssignment);
+			return bindNextAtomInRule(groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
 		}
 
 		// substituted atom contains variables
+		if (currentAtom.isNegated()) {
+			throw new RuntimeException("Current atom should be positive at this point but is not. Should not happen.");
+		}
 		ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> wms = workingMemory.get(currentAtom.getPredicate());
-		IndexedInstanceStorage storage = rule.isBodyAtomPositive(atomPos) ? wms.getLeft() : wms.getRight();
+		IndexedInstanceStorage storage = wms.getLeft();
 		Collection<Instance> instances;
 		if (partialSubstitution.isEmpty()) {
 			// No variables are bound, but first atom in the body became recently true, consider all instances now.
@@ -683,13 +478,13 @@ public class NaiveGrounder extends BridgedGrounder {
 		ArrayList<Substitution> generatedSubstitutions = new ArrayList<>();
 		for (Instance instance : instances) {
 			// Check each instance if it matches with the atom.
-			Substitution unified = unify(substitute, instance, new Substitution(partialSubstitution));
+			Substitution unified = Substitution.unify(substitute, instance, new Substitution(partialSubstitution));
 			if (unified == null) {
 				continue;
 			}
 
 			// Check if atom is also assigned true.
-			BasicAtom substituteClone = new BasicAtom((BasicAtom) substitute);
+			Atom substituteClone = new BasicAtom(substitute.getPredicate(), substitute.getTerms());
 			Atom substitutedAtom = substituteClone.substitute(unified);
 			if (!substitutedAtom.isGround()) {
 				throw oops("Grounded atom should be ground but is not");
@@ -710,36 +505,16 @@ public class NaiveGrounder extends BridgedGrounder {
 					}
 				}
 			}
-			List<Substitution> boundSubstitutions = bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, unified, currentAssignment);
+			List<Substitution> boundSubstitutions = bindNextAtomInRule(groundingOrder, orderPosition + 1, unified, currentAssignment);
 			generatedSubstitutions.addAll(boundSubstitutions);
 		}
 
 		return generatedSubstitutions;
 	}
 
-	/**
-	 * Computes the unifier of the atom and the instance and stores it in the variable substitution.
-	 * @param atom the body atom to unify
-	 * @param instance the ground instance
-	 * @param substitution if the atom does not unify, this is left unchanged.
-	 * @return true if the atom and the instance unify. False otherwise
-	 */
-	protected Substitution unify(Atom atom, Instance instance, Substitution substitution) {
-		for (int i = 0; i < instance.terms.size(); i++) {
-			if (instance.terms.get(i) == atom.getTerms().get(i) ||
-				substitution.unifyTerms(atom.getTerms().get(i), instance.terms.get(i))) {
-				continue;
-			}
-			return null;
-		}
-		return substitution;
-	}
-
 	@Override
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
-		Pair<Map<Integer, Integer>, Map<Integer, Integer>> currentChoiceAtoms = newChoiceAtoms;
-		newChoiceAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
-		return currentChoiceAtoms;
+		return noGoodGenerator.getChoiceAtoms();
 	}
 
 	@Override
@@ -780,12 +555,7 @@ public class NaiveGrounder extends BridgedGrounder {
 
 	@Override
 	public int registerOutsideNoGood(NoGood noGood) {
-		if (!noGoodIdentifiers.containsKey(noGood)) {
-			int noGoodId = nogoodIdGenerator.getNextId();
-			noGoodIdentifiers.put(noGood, noGoodId);
-			return noGoodId;
-		}
-		return noGoodIdentifiers.get(noGood);
+		return noGoodGenerator.registerOutsideNoGood(noGood);
 	}
 
 	@Override
@@ -840,14 +610,12 @@ public class NaiveGrounder extends BridgedGrounder {
 	}
 
 	private static class FirstBindingAtom {
-		public NonGroundRule rule;
-		public int firstBindingAtomPos;
-		public Atom firstBindingAtom;
+		NonGroundRule rule;
+		Literal startingLiteral;
 
-		public FirstBindingAtom(NonGroundRule rule, int firstBindingAtomPos, Atom firstBindingAtom) {
+		FirstBindingAtom(NonGroundRule rule, Literal startingLiteral) {
 			this.rule = rule;
-			this.firstBindingAtomPos = firstBindingAtomPos;
-			this.firstBindingAtom = firstBindingAtom;
+			this.startingLiteral = startingLiteral;
 		}
 	}
 }

@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -19,7 +19,7 @@ import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
  * second is a term containing variable substitutions.
  */
 public class RuleAtom implements Atom {
-	public static final Predicate PREDICATE = new Predicate("_R_", 2, true);
+	public static final Predicate PREDICATE = Predicate.getInstance("_R_", 2, true);
 
 	private final List<ConstantTerm<String>> terms;
 
@@ -94,6 +94,6 @@ public class RuleAtom implements Atom {
 
 	@Override
 	public String toString() {
-		return PREDICATE.getPredicateName() + "(" + terms.get(0) + "," + terms.get(1) + ')';
+		return PREDICATE.getName() + "(" + terms.get(0) + "," + terms.get(1) + ')';
 	}
 }

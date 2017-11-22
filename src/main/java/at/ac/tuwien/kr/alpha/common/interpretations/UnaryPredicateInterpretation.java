@@ -1,14 +1,13 @@
-package at.ac.tuwien.kr.alpha.common.predicates;
+package at.ac.tuwien.kr.alpha.common.interpretations;
 
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 
 import java.util.List;
 
-public class ExternalPredicate<T> extends ExternalNonBindingPredicate {
+public class UnaryPredicateInterpretation<T> extends NonBindingPredicateInterpretation {
 	private final java.util.function.Predicate<T> predicate;
 
-	public ExternalPredicate(String name, java.util.function.Predicate<T> predicate) {
-		super(name, 1);
+	public UnaryPredicateInterpretation(java.util.function.Predicate<T> predicate) {
 		this.predicate = predicate;
 	}
 
