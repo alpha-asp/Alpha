@@ -414,11 +414,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		throw notSupported(ctx);
 	}
 
-	@Override
-	public Object visitTerm_minusTerm(ASPCore2Parser.Term_minusTermContext ctx) {
-		throw notSupported(ctx);
-	}
-
 	public IntervalTerm visitTerm_interval(ASPCore2Parser.Term_intervalContext ctx) {
 		// interval : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE);
 		ASPCore2Parser.IntervalContext ictx = ctx.interval();
@@ -430,24 +425,29 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public ArithmeticTerm visitTerm_binopTerm(ASPCore2Parser.Term_binopTermContext ctx) {
-		// term arithop term
-		return ArithmeticTerm.getInstance((Term)visit(ctx.term(0)), visitArithop(ctx.arithop()), (Term)visit(ctx.term(1)));
+	public Object visitTerm_minusArithTerm(ASPCore2Parser.Term_minusArithTermContext ctx) {
+		// | MINUS term
+		return ArithmeticTerm.MinusTerm.getInstance((Term)visit(ctx));
 	}
 
 	@Override
-	public ArithmeticTerm.ArithmeticOperator visitArithop(ASPCore2Parser.ArithopContext ctx) {
-		// arithop : PLUS | MINUS | TIMES | DIV;
-		if (ctx.PLUS() != null) {
-			return ArithmeticTerm.ArithmeticOperator.PLUS;
-		} else if (ctx.MINUS() != null) {
-			return ArithmeticTerm.ArithmeticOperator.MINUS;
-		} else if (ctx.TIMES() != null) {
-			return ArithmeticTerm.ArithmeticOperator.TIMES;
-		} else if (ctx.DIV() != null) {
-			return ArithmeticTerm.ArithmeticOperator.DIV;
-		} else {
-			throw notSupported(ctx);
-		}
+	public Object visitTerm_timesdivArithTerm(ASPCore2Parser.Term_timesdivArithTermContext ctx) {
+		// | term op=(TIMES | DIV) term
+		ArithmeticTerm.ArithmeticOperator op = ctx.TIMES() != null ? ArithmeticTerm.ArithmeticOperator.TIMES : ArithmeticTerm.ArithmeticOperator.DIV;
+		return ArithmeticTerm.getInstance((Term)visit(ctx.term(0)), op, (Term)visit(ctx.term(1)));
+	}
+
+	@Override
+	public Object visitTerm_plusminusArithTerm(ASPCore2Parser.Term_plusminusArithTermContext ctx) {
+		// | term op=(PLUS | MINUS) term
+		ArithmeticTerm.ArithmeticOperator op = ctx.PLUS() != null ? ArithmeticTerm.ArithmeticOperator.PLUS : ArithmeticTerm.ArithmeticOperator.MINUS;
+		return ArithmeticTerm.getInstance((Term)visit(ctx.term(0)), op, (Term)visit(ctx.term(1)));
+	}
+
+	@Override
+	public Object visitTerm_powerArithTerm(ASPCore2Parser.Term_powerArithTermContext ctx) {
+		// |<assoc=right> term POWER term
+		ArithmeticTerm.ArithmeticOperator op = ArithmeticTerm.ArithmeticOperator.POWER;
+		return ArithmeticTerm.getInstance((Term)visit(ctx.term(0)), op, (Term)visit(ctx.term(1)));
 	}
 }

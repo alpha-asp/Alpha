@@ -61,11 +61,12 @@ term : ID                                   # term_const
      | VARIABLE                             # term_variable
      | ANONYMOUS_VARIABLE                   # term_anonymousVariable
      | PAREN_OPEN term PAREN_CLOSE          # term_parenthesisedTerm
-     | MINUS term                           # term_minusTerm
-     | term arithop term                    # term_binopTerm
-     | interval                             # term_interval; // syntax extension
-
-arithop : PLUS | MINUS | TIMES | DIV;
+     | interval                             # term_interval // Syntax extension.
+     | MINUS term                           # term_minusArithTerm
+     |<assoc=right> term POWER term         # term_powerArithTerm
+     | term (TIMES | DIV) term           # term_timesdivArithTerm
+     | term (PLUS | MINUS) term          # term_plusminusArithTerm
+     ;
 
 interval : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE); // NOT Core2 syntax, but widespread
 

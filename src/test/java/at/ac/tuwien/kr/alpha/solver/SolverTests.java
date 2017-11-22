@@ -38,7 +38,6 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import junit.framework.TestCase;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -611,9 +610,7 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
-	@Ignore("Yields wrong result (9) with current parser.")
 	public void arithmeticsMultiplicationBeforeAddition() throws IOException {
-		//
 		assertAnswerSet("seven(X) :- 1+2 * 3 = X.",
 
 			"seven(7)");
