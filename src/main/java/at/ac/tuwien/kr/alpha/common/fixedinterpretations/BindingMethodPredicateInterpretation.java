@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.common.interpretations;
+package at.ac.tuwien.kr.alpha.common.fixedinterpretations;
 
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;

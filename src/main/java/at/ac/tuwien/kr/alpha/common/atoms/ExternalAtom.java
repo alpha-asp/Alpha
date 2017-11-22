@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.interpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import static at.ac.tuwien.kr.alpha.Util.join;
 import static java.util.Collections.emptyList;
 
-public class ExternalAtom implements InterpretableLiteral {
+public class ExternalAtom implements FixedInterpretationLiteral {
 	private final List<Term> input;
 	private final List<Term> output;
 

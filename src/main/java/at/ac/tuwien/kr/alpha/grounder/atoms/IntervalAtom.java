@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.InterpretableLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
@@ -27,7 +27,7 @@ import static at.ac.tuwien.kr.alpha.Util.join;
  * with the Integer being inside the interval.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class IntervalAtom implements InterpretableLiteral {
+public class IntervalAtom implements FixedInterpretationLiteral {
 	private static final Predicate INTERVAL_PREDICATE = Predicate.getInstance("_interval", 2, true);
 
 	private final List<Term> terms;

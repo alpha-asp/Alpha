@@ -9,6 +9,6 @@ import java.util.List;
  * Examples of such atoms are builtin atoms and external atoms.
  * Copyright (c) 2017, the Alpha Team.
  */
-public interface InterpretableLiteral extends Literal {
+public interface FixedInterpretationLiteral extends Literal {
 	List<Substitution> getSubstitutions(Substitution partialSubstitution);
 }

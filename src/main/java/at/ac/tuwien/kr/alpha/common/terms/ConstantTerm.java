@@ -55,8 +55,6 @@ public class ConstantTerm<T extends Comparable<T>> extends Term {
 			}
 		}
 		return object.toString();
-
-		// return object + "/" + rank;
 	}
 
 	@Override
