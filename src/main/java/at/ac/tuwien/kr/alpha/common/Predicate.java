@@ -7,12 +7,12 @@ public class Predicate implements Comparable<Predicate> {
 	private static final Interner<Predicate> INTERNER = new Interner<>();
 
 	private final String name;
-	private final int rank;
+	private final int arity;
 	private final boolean internal;
 
-	protected Predicate(String name, int rank, boolean internal) {
+	protected Predicate(String name, int arity, boolean internal) {
 		this.name = name;
-		this.rank = rank;
+		this.arity = arity;
 		this.internal = internal;
 	}
 
@@ -27,7 +27,7 @@ public class Predicate implements Comparable<Predicate> {
 	@Override
 	public int hashCode() {
 		int result = name != null ? name.hashCode() : 0;
-		result = 31 * result + rank;
+		result = 31 * result + arity;
 		result = 31 * result + (internal ? 1 : 0);
 		return result;
 	}
@@ -44,7 +44,7 @@ public class Predicate implements Comparable<Predicate> {
 
 		Predicate predicate = (Predicate) o;
 
-		if (rank != predicate.rank) {
+		if (arity != predicate.arity) {
 			return false;
 		}
 
@@ -75,6 +75,6 @@ public class Predicate implements Comparable<Predicate> {
 	}
 
 	public int getArity() {
-		return rank;
+		return arity;
 	}
 }

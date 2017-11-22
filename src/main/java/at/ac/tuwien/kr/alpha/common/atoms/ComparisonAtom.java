@@ -14,7 +14,7 @@ import java.util.*;
  * Represents a builtin atom according to the standard.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class ComparisonAtom implements InterpretableLiteral {
+public class ComparisonAtom implements FixedInterpretationLiteral {
 	private final Predicate predicate;
 	private final ComparisonOperator operator;
 	private final List<Term> terms;
