@@ -1,24 +1,23 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
 import at.ac.tuwien.kr.alpha.common.Interner;
-import at.ac.tuwien.kr.alpha.common.Symbol;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.*;
 
-import static at.ac.tuwien.kr.alpha.Util.appendDelimited;
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2017, the Alpha Team.
  */
 public class FunctionTerm extends Term {
 	private static final Interner<FunctionTerm> INTERNER = new Interner<>();
 
-	private final Symbol symbol;
+	private final String symbol;
 	private final List<Term> terms;
 	private final boolean ground;
 
-	private FunctionTerm(Symbol symbol, List<Term> terms) {
+	private FunctionTerm(String symbol, List<Term> terms) {
 		if (symbol == null) {
 			throw new IllegalArgumentException();
 		}
@@ -36,23 +35,19 @@ public class FunctionTerm extends Term {
 		this.ground = ground;
 	}
 
-	public static FunctionTerm getInstance(Symbol functionSymbol, List<Term> termList) {
+	public static FunctionTerm getInstance(String functionSymbol, List<Term> termList) {
 		return INTERNER.intern(new FunctionTerm(functionSymbol, termList));
 	}
 
-	public static FunctionTerm getInstance(String functionSymbol, List<Term> termList) {
-		return getInstance(Symbol.getInstance(functionSymbol, termList.size()), termList);
-	}
-
 	public static FunctionTerm getInstance(String functionSymbol, Term... terms) {
-		return getInstance(Symbol.getInstance(functionSymbol, terms.length), Arrays.asList(terms));
+		return getInstance(functionSymbol, Arrays.asList(terms));
 	}
 
 	public List<Term> getTerms() {
 		return terms;
 	}
 
-	public Symbol getSymbol() {
+	public String getSymbol() {
 		return symbol;
 	}
 
@@ -82,13 +77,10 @@ public class FunctionTerm extends Term {
 	@Override
 	public String toString() {
 		if (terms.isEmpty()) {
-			return symbol.toString();
+			return symbol;
 		}
 
-		final StringBuilder sb = new StringBuilder(symbol.toString() + "(");
-		appendDelimited(sb, terms);
-		sb.append(")");
-		return sb.toString();
+		return join(symbol + "(", terms, ")");
 	}
 
 	@Override

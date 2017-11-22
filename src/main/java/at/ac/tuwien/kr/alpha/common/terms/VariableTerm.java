@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2017, the Alpha Team.
  */
 public class VariableTerm extends Term {
 	private static final Interner<VariableTerm> INTERNER = new Interner<>();

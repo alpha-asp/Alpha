@@ -3,8 +3,8 @@ package at.ac.tuwien.kr.alpha;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.ExternalMethodPredicate;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.interpretations.MethodPredicateInterpretation;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -78,6 +78,22 @@ public class AlphaTest {
 		system.register("connected", (Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3));
 
 		Set<AnswerSet> answerSets = system.solve("node(1). node(2). node(3). a :- &connected[1,2].").collect(Collectors.toSet());
+	}
+
+	@Test
+	public void filterOutput() throws Exception {
+		Alpha system = new Alpha();
+		system.register("getLargeGraphEdges", () ->
+			new HashSet<>(asList(
+				asList(ConstantTerm.getInstance(1), ConstantTerm.getInstance(2)),
+				asList(ConstantTerm.getInstance(2), ConstantTerm.getInstance(1)),
+				asList(ConstantTerm.getInstance(13), ConstantTerm.getInstance(1))
+			))
+		);
+
+		Set<AnswerSet> actual = system.solve("node(1). node(2). outgoing13(X) :- node(X), &getLargeGraphEdges(13,X).").collect(Collectors.toSet());
+		Set<AnswerSet> expected = AnswerSetsParser.parse("{ node(1), node(2), outgoing13(1) }");
+		assertEquals(expected, actual);
 	}
 
 	@Test
@@ -191,10 +207,11 @@ public class AlphaTest {
 		SubThingy thingy = new SubThingy();
 
 		Rule rule = new Rule(
-			new DisjunctiveHead(Collections.singletonList(new BasicAtom(new Predicate("p", 1), ConstantTerm.getInstance("x")))),
+			new DisjunctiveHead(Collections.singletonList(new BasicAtom(Predicate.getInstance("p", 1), ConstantTerm.getInstance("x")))),
 			singletonList(
 				new ExternalAtom(
-					new ExternalMethodPredicate(this.getClass().getMethod("thinger", Thingy.class)),
+					Predicate.getInstance("thinger", 1),
+					new MethodPredicateInterpretation(this.getClass().getMethod("thinger", Thingy.class)),
 					singletonList(ConstantTerm.getInstance(thingy)),
 					emptyList(),
 					false
@@ -281,8 +298,16 @@ public class AlphaTest {
 	@Test
 	public void basicUsage() throws Exception {
 		Alpha system = new Alpha();
-		Set<AnswerSet> actual = system.solve("a.").collect(Collectors.toSet());
-		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
+		Set<AnswerSet> actual = system.solve("p(a).").collect(Collectors.toSet());
+		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("p").symbolicInstance("a").build()));
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void basicUsageWithString() throws Exception {
+		Alpha system = new Alpha();
+		Set<AnswerSet> actual = system.solve("p(\"a\").").collect(Collectors.toSet());
+		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("p").instance("a").build()));
 		assertEquals(expected, actual);
 	}
 

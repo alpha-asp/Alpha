@@ -2,7 +2,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.InterpretableLiteral;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -48,7 +48,7 @@ public class NoGoodGenerator {
 		ArrayList<Integer> bodyAtomsNegative = new ArrayList<>();
 		// FIXME: iterate on literals of the rule instead of NonGroundRule.
 		for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
-			if (atom instanceof FixedInterpretationAtom) {
+			if (atom instanceof InterpretableLiteral) {
 				// Atom has fixed interpretation, hence was checked earlier that it evaluates to true under the given substitution.
 				// FixedInterpretationAtoms need not be shown to the solver, skip it.
 				continue;

@@ -32,7 +32,7 @@ import at.ac.tuwien.kr.alpha.common.ChoiceHead;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
@@ -56,7 +56,7 @@ public class ParserTest {
 		Program parsedProgram = parser.parse("p(a,b).");
 
 		assertEquals("Program contains one fact.", 1, parsedProgram.getFacts().size());
-		assertEquals("Predicate name of fact is p.", "p", parsedProgram.getFacts().get(0).getPredicate().getPredicateName());
+		assertEquals("Predicate name of fact is p.", "p", parsedProgram.getFacts().get(0).getPredicate().getName());
 		assertEquals("Fact has two terms.", 2, parsedProgram.getFacts().get(0).getPredicate().getArity());
 		assertEquals("First term is a.", "a", (parsedProgram.getFacts().get(0).getTerms().get(0)).toString());
 		assertEquals("Second term is b.", "b", (parsedProgram.getFacts().get(0).getTerms().get(1)).toString());
@@ -67,10 +67,10 @@ public class ParserTest {
 		Program parsedProgram = parser.parse("p(f(a),g(h(Y))).");
 
 		assertEquals("Program contains one fact.", 1, parsedProgram.getFacts().size());
-		assertEquals("Predicate name of fact is p.", "p", parsedProgram.getFacts().get(0).getPredicate().getPredicateName());
+		assertEquals("Predicate name of fact is p.", "p", parsedProgram.getFacts().get(0).getPredicate().getName());
 		assertEquals("Fact has two terms.", 2, parsedProgram.getFacts().get(0).getPredicate().getArity());
-		assertEquals("First term is function term f.", "f", ((FunctionTerm)parsedProgram.getFacts().get(0).getTerms().get(0)).getSymbol().toString());
-		assertEquals("Second term is function term g.", "g", ((FunctionTerm)parsedProgram.getFacts().get(0).getTerms().get(1)).getSymbol().toString());
+		assertEquals("First term is function term f.", "f", ((FunctionTerm)parsedProgram.getFacts().get(0).getTerms().get(0)).getSymbol());
+		assertEquals("Second term is function term g.", "g", ((FunctionTerm)parsedProgram.getFacts().get(0).getTerms().get(1)).getSymbol());
 	}
 
 	@Test
@@ -114,7 +114,7 @@ public class ParserTest {
 	public void parseChoiceRule() throws IOException {
 		Program parsedProgram = parser.parse("dom(1). dom(2). { a ; b } :- dom(X).");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
-		BasicAtom atomA = new BasicAtom(new Predicate("a", 0));
+		BasicAtom atomA = new BasicAtom(Predicate.getInstance("a", 0));
 		assertEquals(2, choiceHead.getChoiceElements().size());
 		assertTrue(choiceHead.getChoiceElements().get(0).choiceAtom.toString().equals("a"));
 		assertTrue(choiceHead.getChoiceElements().get(1).choiceAtom.toString().equals("b"));
@@ -126,7 +126,7 @@ public class ParserTest {
 	public void parseChoiceRuleBounded() throws IOException {
 		Program parsedProgram = parser.parse("dom(1). dom(2). 1 < { a: p(v,w), not r; b } <= 13 :- dom(X). foo.");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
-		BasicAtom atomA = new BasicAtom(new Predicate("a", 0));
+		BasicAtom atomA = new BasicAtom(Predicate.getInstance("a", 0));
 		assertEquals(2, choiceHead.getChoiceElements().size());
 		assertTrue(choiceHead.getChoiceElements().get(0).choiceAtom.toString().equals("a"));
 		assertTrue(choiceHead.getChoiceElements().get(1).choiceAtom.toString().equals("b"));
@@ -135,8 +135,8 @@ public class ParserTest {
 		assertFalse(conditionalLiterals.get(0).isNegated());
 		assertTrue(conditionalLiterals.get(1).isNegated());
 		assertEquals(ConstantTerm.getInstance(1), choiceHead.getLowerBound());
-		assertEquals(ComparisonOperator.LT, choiceHead.getLowerOp());
+		assertEquals(ComparisonOperator.LT, choiceHead.getLowerOperator());
 		assertEquals(ConstantTerm.getInstance(13), choiceHead.getUpperBound());
-		assertEquals(ComparisonOperator.LE, choiceHead.getUpperOp());
+		assertEquals(ComparisonOperator.LE, choiceHead.getUpperOperator());
 	}
 }

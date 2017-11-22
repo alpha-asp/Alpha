@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -14,20 +14,20 @@ import java.util.*;
  * Represents a builtin atom according to the standard.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class BuiltinAtom extends FixedInterpretationAtom {
+public class ComparisonAtom implements InterpretableLiteral {
 	private final Predicate predicate;
 	private final ComparisonOperator operator;
 	private final List<Term> terms;
 	private final boolean negated;
 	private final boolean isNormalizedEquality;
 
-	public BuiltinAtom(Term left, Term right, boolean negated, ComparisonOperator operator) {
+	public ComparisonAtom(Term left, Term right, boolean negated, ComparisonOperator operator) {
 		this.terms = Arrays.asList(left, right);
 		this.negated = negated;
 		this.operator = operator;
 		this.isNormalizedEquality = (!negated && operator == ComparisonOperator.EQ)
 			|| (negated && operator == ComparisonOperator.NE);
-		predicate = new Predicate(operator.toString(), 2, false);
+		this.predicate = Predicate.getInstance(operator.toString(), 2);
 	}
 
 	public boolean isNormalizedEquality() {
@@ -102,7 +102,7 @@ public class BuiltinAtom extends FixedInterpretationAtom {
 
 	@Override
 	public Atom substitute(Substitution substitution) {
-		return new BuiltinAtom(terms.get(0).substitute(substitution),
+		return new ComparisonAtom(terms.get(0).substitute(substitution),
 			terms.get(1).substitute(substitution),
 			negated, operator);
 	}
@@ -149,32 +149,23 @@ public class BuiltinAtom extends FixedInterpretationAtom {
 	private boolean compare(Term x, Term y) {
 		final int comparison = x.compareTo(y);
 
-		boolean result;
-
 		ComparisonOperator operator = isNegated() ? this.operator.getNegation() : this.operator;
 		switch (operator) {
 			case EQ:
-				result = comparison ==  0;
-				break;
+				return comparison ==  0;
 			case LT:
-				result = comparison < 0;
-				break;
+				return comparison < 0;
 			case GT:
-				result = comparison > 0;
-				break;
+				return comparison > 0;
 			case LE:
-				result = comparison <= 0;
-				break;
+				return comparison <= 0;
 			case GE:
-				result = comparison >= 0;
-				break;
+				return comparison >= 0;
 			case NE:
-				result = comparison != 0;
-				break;
+				return comparison != 0;
 			default:
 				throw new UnsupportedOperationException("Unknown comparison operator requested!");
 		}
-		return result;
 	}
 
 	@Override
@@ -197,7 +188,7 @@ public class BuiltinAtom extends FixedInterpretationAtom {
 			return false;
 		}
 
-		BuiltinAtom that = (BuiltinAtom) o;
+		ComparisonAtom that = (ComparisonAtom) o;
 
 		if (negated != that.negated) {
 			return false;

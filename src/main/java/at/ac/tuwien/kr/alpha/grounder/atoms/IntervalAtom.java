@@ -1,9 +1,8 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
-import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.InterpretableLiteral;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -14,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 /**
  * Helper for treating IntervalTerms in rules.
@@ -26,8 +27,8 @@ import java.util.List;
  * with the Integer being inside the interval.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class IntervalAtom extends FixedInterpretationAtom {
-	private static final Predicate INTERVAL_PREDICATE = new Predicate("_interval", 2, true);
+public class IntervalAtom implements InterpretableLiteral {
+	private static final Predicate INTERVAL_PREDICATE = Predicate.getInstance("_interval", 2, true);
 
 	private final List<Term> terms;
 
@@ -35,7 +36,7 @@ public class IntervalAtom extends FixedInterpretationAtom {
 		this.terms = Arrays.asList(intervalTerm, intervalRepresentingVariable);
 	}
 
-	public List<Substitution> getIntervalSubstitutions(Substitution partialSubstitution) {
+	private List<Substitution> getIntervalSubstitutions(Substitution partialSubstitution) {
 		List<Substitution> substitutions = new ArrayList<>();
 		Term intervalRepresentingVariable = terms.get(1);
 		IntervalTerm intervalTerm = (IntervalTerm) terms.get(0);
@@ -98,12 +99,7 @@ public class IntervalAtom extends FixedInterpretationAtom {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder();
-		sb.append(INTERVAL_PREDICATE.getPredicateName());
-		sb.append("(");
-		Util.appendDelimited(sb, terms);
-		sb.append(")");
-		return sb.toString();
+		return join(INTERVAL_PREDICATE.getName() + "(", terms, ")");
 	}
 
 	@Override
