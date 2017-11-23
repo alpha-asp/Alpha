@@ -1,16 +1,19 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Rewrites the ordinary atom whose name is given in the input program by the enumeration directive #enum_atom_is into
@@ -26,7 +29,7 @@ public class EnumerationRewriting implements ProgramTransformation  {
 			// Directive not set, nothing to rewrite.
 			return;
 		}
-		Predicate enumPredicate = new Predicate(enumDirective, 3);
+		Predicate enumPredicate = Predicate.getInstance(enumDirective, 3);
 
 		// Rewrite all enumeration atoms occurring in facts.
 		Iterator<Atom> it = inputProgram.getFacts().iterator();
@@ -43,8 +46,11 @@ public class EnumerationRewriting implements ProgramTransformation  {
 
 		// Rewrite all enumeration atoms in rules.
 		for (Rule rule : inputProgram.getRules()) {
-			if (rule.getHead() != null && rule.getHead().getPredicate().equals(enumPredicate)) {
-				throw new RuntimeException("Atom declared as enumeration atom by directive occurs in head of the rule: " + rule);
+			if (rule.getHead() != null && !rule.getHead().isNormal()) {
+				throw oops("Encountered rule whose head is not normal: " + rule);
+			}
+			if (rule.getHead() != null && ((DisjunctiveHead)rule.getHead()).disjunctiveAtoms.get(0).getPredicate().equals(enumPredicate)) {
+				throw oops("Atom declared as enumeration atom by directive occurs in head of the rule: " + rule);
 			}
 			Iterator<Literal> rit = rule.getBody().iterator();
 			LinkedList<Literal> rewrittenLiterals = new LinkedList<>();

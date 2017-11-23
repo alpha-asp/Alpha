@@ -118,7 +118,7 @@ public class Substitution {
 	public String toString() {
 		final StringBuilder ret = new StringBuilder();
 		for (Map.Entry<VariableTerm, Term> e : substitution.entrySet()) {
-			ret.append("_").append(e.getKey()).append(":").append(e.getValue());
+			ret.append(e.getKey()).append("->").append(e.getValue()).append(" ");
 		}
 		return ret.toString();
 	}

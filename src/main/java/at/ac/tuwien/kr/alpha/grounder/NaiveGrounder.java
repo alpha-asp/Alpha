@@ -36,7 +36,6 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
-import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
@@ -185,8 +184,6 @@ public class NaiveGrounder extends BridgedGrounder {
 		new IntervalTermToIntervalAtom().transform(program);
 		// Remove variable equalities.
 		new VariableEqualityRemoval().transform(program);
-		// Transform intervals.
-		new IntervalTermToIntervalAtom().transform(program);
 		// Transform enumeration atoms.
 		new EnumerationRewriting().transform(program);
 		EnumerationAtom.resetEnumerations();
@@ -234,6 +231,12 @@ public class NaiveGrounder extends BridgedGrounder {
 		// Add true atoms from facts.
 		for (Map.Entry<Predicate, LinkedHashSet<Instance>> facts : factsFromProgram.entrySet()) {
 			Predicate factPredicate = facts.getKey();
+
+			// Skip filtered predicates.
+			if (!filter.test(factPredicate)) {
+				continue;
+			}
+
 			// Skip predicates without any instances.
 			if (facts.getValue().isEmpty()) {
 				continue;
@@ -376,7 +379,7 @@ public class NaiveGrounder extends BridgedGrounder {
 		if (currentAtom instanceof EnumerationAtom) {
 			// Get the enumeration value and add it to the current partialSubstitution.
 			((EnumerationAtom) currentAtom).addEnumerationToSubstitution(partialSubstitution);
-			return bindNextAtomInRule(rule, atomPos + 1, firstBindingPos, partialSubstitution, currentAssignment);
+			return bindNextAtomInRule(groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
 		}
 
 		// check if partialVariableSubstitution already yields a ground atom

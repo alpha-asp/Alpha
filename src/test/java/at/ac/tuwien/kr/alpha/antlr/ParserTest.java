@@ -178,7 +178,7 @@ public class ParserTest {
 	@Test
 	public void parseEnumerationDirective() throws IOException {
 		Program parsedProgram = parser.parse("p(a,1)." +
-			"# enum_predicate_is mune." +
+			"# enumeration_predicate_is mune." +
 			"r(X) :- p(X), mune(X)." +
 			"p(b,2).");
 		String directive = parsedProgram.getInlineDirectives().getDirectiveValue(InlineDirectives.DIRECTIVE.enum_predicate_is);

@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -21,17 +21,17 @@ import java.util.List;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class EnumerationAtom extends BasicAtom {
-	public static final Predicate ENUMERATION_PREDICATE = new Predicate("_Enumeration", 3);
-	private static final HashMap<ConstantTerm, HashMap<Term, Integer>> ENUMERATIONS = new HashMap<>();
+	public static final Predicate ENUMERATION_PREDICATE = Predicate.getInstance("_Enumeration", 3);
+	private static final HashMap<Term, HashMap<Term, Integer>> ENUMERATIONS = new HashMap<>();
 
 	public EnumerationAtom(BasicAtom clone) {
 		super(ENUMERATION_PREDICATE, clone.getTerms(), clone.isNegated());
 		if (getTerms().size() != 3) {
 			throw new RuntimeException("EnumerationAtom must have arity three. Given one does not: " + clone);
 		}
-		if (!(getTerms().get(0) instanceof ConstantTerm)) {
+		/*if (!(getTerms().get(0) instanceof ConstantTerm)) {
 			throw new RuntimeException("First parameter of EnumerationAtom must be a constant: " + clone);
-		}
+		}*/
 		if (!(getTerms().get(2) instanceof VariableTerm)) {
 			throw new RuntimeException("Third parameter of EnumerationAtom must be a variable: " + clone);
 		}
@@ -41,7 +41,7 @@ public class EnumerationAtom extends BasicAtom {
 		ENUMERATIONS.clear();
 	}
 
-	private Integer getEnumerationIndex(ConstantTerm identifier, Term enumerationTerm) {
+	private Integer getEnumerationIndex(Term identifier, Term enumerationTerm) {
 		ENUMERATIONS.putIfAbsent(identifier, new HashMap<>());
 		HashMap<Term, Integer> enumeratedTerms = ENUMERATIONS.get(identifier);
 		Integer assignedInteger = enumeratedTerms.get(enumerationTerm);
@@ -56,7 +56,7 @@ public class EnumerationAtom extends BasicAtom {
 	}
 
 	public void addEnumerationToSubstitution(Substitution substitution) {
-		ConstantTerm idTerm = (ConstantTerm) getTerms().get(0);
+		Term idTerm = getTerms().get(0).substitute(substitution);
 		Term enumerationTerm  = getTerms().get(1).substitute(substitution);
 		if (!enumerationTerm.isGround()) {
 			throw new RuntimeException("Enumeration term is not ground after substitution. Should not happen.");
