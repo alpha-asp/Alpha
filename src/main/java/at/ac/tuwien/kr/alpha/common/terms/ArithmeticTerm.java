@@ -115,7 +115,10 @@ public class ArithmeticTerm extends Term {
 		MINUS("-"),
 		TIMES("*"),
 		DIV("/"),
-		POWER("**");
+		POWER("**"),
+		MODULO("\\"),
+		BITXOR("^");
+
 
 		private String asString;
 
@@ -140,6 +143,10 @@ public class ArithmeticTerm extends Term {
 					return left / right;
 				case POWER:
 					return IntMath.checkedPow(left, right);
+				case MODULO:
+					return left % right;
+				case BITXOR:
+					return left ^ right;
 				default:
 					throw new RuntimeException("Unknown arithmetic operator encountered.");
 

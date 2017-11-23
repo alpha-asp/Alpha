@@ -64,8 +64,9 @@ term : ID                                   # term_const
      | interval                             # term_interval // Syntax extension.
      | MINUS term                           # term_minusArithTerm
      |<assoc=right> term POWER term         # term_powerArithTerm
-     | term (TIMES | DIV) term           # term_timesdivArithTerm
-     | term (PLUS | MINUS) term          # term_plusminusArithTerm
+     | term (TIMES | DIV | MODULO) term     # term_timesdivmodArithTerm
+     | term (PLUS | MINUS) term             # term_plusminusArithTerm
+     | term BITXOR term                     # term_bitxorArithTerm
      ;
 
 interval : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE); // NOT Core2 syntax, but widespread

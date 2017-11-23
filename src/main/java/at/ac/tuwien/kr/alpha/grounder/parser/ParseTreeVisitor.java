@@ -427,19 +427,21 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Object visitTerm_minusArithTerm(ASPCore2Parser.Term_minusArithTermContext ctx) {
 		// | MINUS term
-		return ArithmeticTerm.MinusTerm.getInstance((Term)visit(ctx));
+		return ArithmeticTerm.MinusTerm.getInstance((Term)visit(ctx.term()));
 	}
 
 	@Override
-	public Object visitTerm_timesdivArithTerm(ASPCore2Parser.Term_timesdivArithTermContext ctx) {
-		// | term op=(TIMES | DIV) term
-		ArithmeticTerm.ArithmeticOperator op = ctx.TIMES() != null ? ArithmeticTerm.ArithmeticOperator.TIMES : ArithmeticTerm.ArithmeticOperator.DIV;
+	public Object visitTerm_timesdivmodArithTerm(ASPCore2Parser.Term_timesdivmodArithTermContext ctx) {
+		// | term (TIMES | DIV | MODULO) term
+		ArithmeticTerm.ArithmeticOperator op = ctx.TIMES() != null ? ArithmeticTerm.ArithmeticOperator.TIMES
+			: ctx.DIV() != null ? ArithmeticTerm.ArithmeticOperator.DIV
+			: ArithmeticTerm.ArithmeticOperator.MODULO;
 		return ArithmeticTerm.getInstance((Term)visit(ctx.term(0)), op, (Term)visit(ctx.term(1)));
 	}
 
 	@Override
 	public Object visitTerm_plusminusArithTerm(ASPCore2Parser.Term_plusminusArithTermContext ctx) {
-		// | term op=(PLUS | MINUS) term
+		// | term (PLUS | MINUS) term
 		ArithmeticTerm.ArithmeticOperator op = ctx.PLUS() != null ? ArithmeticTerm.ArithmeticOperator.PLUS : ArithmeticTerm.ArithmeticOperator.MINUS;
 		return ArithmeticTerm.getInstance((Term)visit(ctx.term(0)), op, (Term)visit(ctx.term(1)));
 	}
@@ -449,5 +451,11 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		// |<assoc=right> term POWER term
 		ArithmeticTerm.ArithmeticOperator op = ArithmeticTerm.ArithmeticOperator.POWER;
 		return ArithmeticTerm.getInstance((Term)visit(ctx.term(0)), op, (Term)visit(ctx.term(1)));
+	}
+
+	@Override
+	public Object visitTerm_bitxorArithTerm(ASPCore2Parser.Term_bitxorArithTermContext ctx) {
+		// | term BITXOR term
+		return ArithmeticTerm.getInstance((Term)visit(ctx.term(0)), ArithmeticTerm.ArithmeticOperator.BITXOR, (Term)visit(ctx.term(1)));
 	}
 }
