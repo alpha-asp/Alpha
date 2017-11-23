@@ -25,7 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -78,7 +79,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		testHanoiTower(4);
 	}
 
-	@Test(timeout = 60000)
+	@Test(timeout = 10000)
 	public void testSimple() throws IOException {
 		ignoreTestForNaiveSolver();
 		ignoreNonDefaultDomainIndependentHeuristics();
