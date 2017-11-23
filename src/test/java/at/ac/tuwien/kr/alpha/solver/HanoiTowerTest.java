@@ -65,12 +65,12 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		testHanoiTower(3);
 	}
 
-	@Test // (timeout = 10000)
+	@Test(timeout = 10000)
 	public void testInstance4() throws IOException {
 		testHanoiTower(4);
 	}
 
-	@Test(timeout = 60000)
+	@Test(timeout = 10000)
 	public void testSimple() throws IOException {
 		testHanoiTower("simple");
 	}
@@ -85,7 +85,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		Solver solver = getInstance(parsedProgram);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		assertTrue(answerSet.isPresent());
-		//System.out.println(answerSet.get());
+		System.out.println(answerSet.get());
 		checkGoal(parsedProgram, answerSet.get());
 	}
 
@@ -100,9 +100,9 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		SortedSet<Atom> onInstancesInAnswerSet = answerSet.getPredicateInstances(on);
 		for (Atom atom : parsedProgram.getFacts()) {
 			if (atom.getPredicate().getName().equals(ongoal.getName()) && atom.getPredicate().getArity() == ongoal.getArity()) {
-				Term expectedTop = ConstantTerm.getInstance(atom.getTerms().get(0).toString());
-				Term expectedBottom = ConstantTerm.getInstance(atom.getTerms().get(1).toString());
-				Term expectedSteps = ConstantTerm.getInstance(String.valueOf(steps));
+				Term expectedTop = atom.getTerms().get(0);
+				Term expectedBottom = atom.getTerms().get(1);
+				Term expectedSteps = ConstantTerm.getInstance(steps);
 				Atom expectedAtom = new BasicAtom(on, expectedSteps, expectedBottom, expectedTop);
 				assertTrue("Answer set does not contain " + expectedAtom, onInstancesInAnswerSet.contains(expectedAtom));
 			}
