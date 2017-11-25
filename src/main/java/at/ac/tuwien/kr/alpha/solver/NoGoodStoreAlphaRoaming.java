@@ -432,12 +432,22 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				watchedNoGood.setPointer(assignedPointer, pointerCandidateIndex);
 				watchIterator.remove();
 				addOrdinaryWatch(watchedNoGood, assignedPointer);
+				LOGGER.trace("Moved watch pointers of nogood:");
+				logNoGoodAndAssignment(watchedNoGood, assignment);
 			} else {
 				// NoGood is unit, propagate (on potentially lower decision level).
 				// Note: Violation is detected by Assignment.
+				LOGGER.trace("Nogood is unit:");
+				logNoGoodAndAssignment(watchedNoGood, assignment);
 				ConflictCause conflictCause = assignWeakComplement(otherIndex, watchedNoGood, highestDecisionLevel);
 
 				if (conflictCause != null) {
+					// NoGood is violated.
+					// Ensure watches are at highest decision level (assignments on lower decision levels may cause this to not be the case).
+					if (otherEntry.getDecisionLevel() < highestDecisionLevel || assignedDecisionLevel < highestDecisionLevel) {
+						// Rectify watches.
+						resetWatchesToHighestDecisionLevels(watchIterator, watchedNoGood, assignedPointer, otherPointer, otherIndex);
+					}
 					return conflictCause;
 				}
 
@@ -446,10 +456,95 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 					watchedNoGood.setPointer(assignedPointer, pointerCandidateIndex);
 					watchIterator.remove();
 					addOrdinaryWatch(watchedNoGood, assignedPointer);
+					LOGGER.trace("Moved watch pointers after propagation:");
+					logNoGoodAndAssignment(watchedNoGood, assignment);
 				}
 			}
 		}
 		return null;
+	}
+
+	private void resetWatchesToHighestDecisionLevels(Iterator<WatchedNoGood> watchIterator, WatchedNoGood watchedNoGood, int assignedPointer, int otherPointer, int otherIndex) {
+		AbstractMap.SimpleEntry<Integer, Integer> newWatchPositions = computeTwoHighestDecisionLevels(watchedNoGood, assignment);
+		Integer pos1 = newWatchPositions.getKey();
+		Integer pos2 = newWatchPositions.getValue();
+
+		// Set new watches and try to avoid moving the other watch.
+		boolean moveBothWatches = false;
+		Integer posForThisWatch = -1;
+		if (otherIndex == pos1) {
+			posForThisWatch = pos2;
+		} else if (otherIndex == pos2) {
+			posForThisWatch = pos1;
+		} else {
+			moveBothWatches = true;
+		}
+		if (!moveBothWatches) {
+			// Only adjust the assigned watch.
+			watchIterator.remove();
+			watchedNoGood.setPointer(assignedPointer, posForThisWatch);
+			addOrdinaryWatch(watchedNoGood, assignedPointer);
+		} else {
+			// Adjust both watches.
+			watchIterator.remove();
+			watchedNoGood.setPointer(assignedPointer, pos1);
+			addOrdinaryWatch(watchedNoGood, assignedPointer);
+
+			removeOrdinaryWatch(watchedNoGood, otherPointer);
+			watchedNoGood.setPointer(otherPointer, pos2);
+			addOrdinaryWatch(watchedNoGood, otherPointer);
+		}
+		LOGGER.trace("Moved watch pointers of violated nogood:");
+		logNoGoodAndAssignment(watchedNoGood, assignment);
+	}
+
+	private void removeOrdinaryWatch(WatchedNoGood watchedNoGood, int pointer) {
+		final int literal = watchedNoGood.getLiteral(watchedNoGood.getPointer(pointer));
+		boolean didRemove = watches(literal).multary.getOrdinary(isPositive(literal)).remove(watchedNoGood);
+		if (!didRemove) {
+			throw oops("Removed ordinary watch was not found in watch list.");
+		}
+	}
+
+	private AbstractMap.SimpleEntry<Integer, Integer> computeTwoHighestDecisionLevels(WatchedNoGood watchedNoGood, WritableAssignment assignment) {
+		// Assumption: watchedNoGood is violated by assignment.
+		int highestPos = -1;
+		int highestDecisionLevel = -1;
+		int secondHighestPos = -1;
+		int secondHighestDecisionLevel = -1;
+		for (int i = 0; i < watchedNoGood.size(); i++) {
+			Integer atom = atomOf(watchedNoGood.getLiteral(i));
+			Assignment.Entry entry = assignment.get(atom);
+			if (entry.getPrevious() != null) {
+				entry = entry.getPrevious();
+			}
+			int literalDecisionLevel = entry.getDecisionLevel();
+			if (literalDecisionLevel >= highestPos) {
+				secondHighestDecisionLevel = highestDecisionLevel;
+				secondHighestPos = highestPos;
+				highestDecisionLevel = literalDecisionLevel;
+				highestPos = i;
+			} else if (literalDecisionLevel > secondHighestDecisionLevel) {
+				secondHighestDecisionLevel = literalDecisionLevel;
+				secondHighestPos = i;
+			}
+		}
+		return new AbstractMap.SimpleEntry<>(highestPos, secondHighestPos);
+	}
+
+	private void logNoGoodAndAssignment(WatchedNoGood noGood, Assignment assignment) {
+		if (!LOGGER.isTraceEnabled()) {
+			return;
+		}
+		StringBuilder sb = new StringBuilder("Watched NoGood is: " + noGood + "\t\t Assigned: ");
+		for (Integer integer : noGood) {
+			Assignment.Entry entry = assignment.get(atomOf(integer));
+			sb.append(atomOf(integer));
+			sb.append("=");
+			sb.append(entry);
+			sb.append(", ");
+		}
+		LOGGER.trace(sb.toString());
 	}
 
 	private ConflictCause propagateStrongly(final Assignment.Entry entry) {
