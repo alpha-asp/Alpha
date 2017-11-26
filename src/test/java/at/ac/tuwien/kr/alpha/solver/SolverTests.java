@@ -620,6 +620,19 @@ public class SolverTests extends AbstractSolverTests {
 	}
 
 	@Test
+	public void involvedUnsatisfiableProgram() throws IOException {
+		assertAnswerSets("x :- c1, c2, not x." +
+			"c1 :- not a1." +
+			"c1 :- not b1." +
+			"c2 :- not a2." +
+			"c2 :- not b2." +
+			"a1 :- not b1." +
+			"b1 :- not a1." +
+			"a2 :- not b2." +
+			"b2 :- not a2.");
+	}
+
+	@Test
 	public void dummyGrounder() {
 		TestCase.assertEquals(DummyGrounder.EXPECTED, getInstance(new DummyGrounder()).collectSet());
 	}
