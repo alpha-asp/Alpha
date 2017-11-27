@@ -479,14 +479,14 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		} else {
 			moveBothWatches = true;
 		}
+
+		watchIterator.remove();
 		if (!moveBothWatches) {
 			// Only adjust the assigned watch.
-			watchIterator.remove();
 			watchedNoGood.setPointer(assignedPointer, posForThisWatch);
 			addOrdinaryWatch(watchedNoGood, assignedPointer);
 		} else {
 			// Adjust both watches.
-			watchIterator.remove();
 			watchedNoGood.setPointer(assignedPointer, pos1);
 			addOrdinaryWatch(watchedNoGood, assignedPointer);
 
@@ -537,11 +537,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			return;
 		}
 		StringBuilder sb = new StringBuilder("Watched NoGood is: " + noGood + "\t\t Assigned: ");
-		for (Integer integer : noGood) {
-			Assignment.Entry entry = assignment.get(atomOf(integer));
-			sb.append(atomOf(integer));
+		for (Integer literal : noGood) {
+			Assignment.Entry assignmentEntry = assignment.get(atomOf(literal));
+			sb.append(atomOf(literal));
 			sb.append("=");
-			sb.append(entry);
+			sb.append(assignmentEntry);
 			sb.append(", ");
 		}
 		LOGGER.trace(sb.toString());
