@@ -577,11 +577,11 @@ public class NoGoodStoreAlphaRoamingTest {
 		assertNull(store.add(4, new NoGood(3, 4, 5)));
 
 		assertNull(assignment.choose(7, FALSE));
-		store.propagate();
+		assertNull(store.propagate());
 		assertNull(assignment.choose(6, FALSE));
-		store.propagate();
+		assertNull(store.propagate());
 		assertNull(assignment.choose(5, TRUE));
-		store.propagate();
+		assertNull(store.propagate());
 
 		assertNull(store.add(5, new NoGood(-1)));
 		ConflictCause cause = store.propagate();
