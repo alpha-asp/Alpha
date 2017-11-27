@@ -46,7 +46,7 @@ public class EnumerationAtom extends BasicAtom {
 		HashMap<Term, Integer> enumeratedTerms = ENUMERATIONS.get(identifier);
 		Integer assignedInteger = enumeratedTerms.get(enumerationTerm);
 		if (assignedInteger == null) {
-			int enumerationIndex = enumeratedTerms.size();
+			int enumerationIndex = enumeratedTerms.size() + 1;
 			enumeratedTerms.put(enumerationTerm, enumerationIndex);
 			return enumerationIndex;
 		} else {

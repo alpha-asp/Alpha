@@ -696,7 +696,7 @@ public class SolverTests extends AbstractSolverTests {
 		boolean usedPositions[] = new boolean[numPositions];
 		for (Atom position : positions) {
 			@SuppressWarnings("unchecked")
-			Integer atomPos = ((ConstantTerm<Integer>) position.getTerms().get(1)).getObject();
+			Integer atomPos = ((ConstantTerm<Integer>) position.getTerms().get(1)).getObject() - 1;
 			assertTrue(atomPos < numPositions);
 			usedPositions[atomPos] = true;
 		}
