@@ -371,7 +371,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	@Override
-	public int getNumberOfMBTs() {
+	public int getNumberOfBacktracksDueToRemnantMBTs() {
 		return mbtAtFixpoint;
 	}
 

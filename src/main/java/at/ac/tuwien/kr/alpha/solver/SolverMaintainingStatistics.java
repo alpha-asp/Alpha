@@ -35,10 +35,10 @@ public interface SolverMaintainingStatistics {
 
 	int getNumberOfBackjumps();
 
-	int getNumberOfMBTs();
+	int getNumberOfBacktracksDueToRemnantMBTs();
 
 	default String getStatisticsString() {
-		return "g=" + getNumberOfChoices() + ", bt=" + getNumberOfBacktracks() + ", bj=" + getNumberOfBackjumps() + ", mbt=" + getNumberOfMBTs();
+		return "g=" + getNumberOfChoices() + ", bt=" + getNumberOfBacktracks() + ", bj=" + getNumberOfBackjumps() + ", mbt=" + getNumberOfBacktracksDueToRemnantMBTs();
 	}
 
 	default void printStatistics(PrintStream out) {
