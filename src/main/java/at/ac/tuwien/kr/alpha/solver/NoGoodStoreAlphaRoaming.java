@@ -369,21 +369,33 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		Watches<BinaryWatch, WatchedNoGood> watchesOfAssignedAtom = watches(entry.getAtom());
 
 		// Process binary watches.
-		for (BinaryWatch binaryWatch : watchesOfAssignedAtom.binary.getOrdinary(entry.getTruth().toBoolean())) {
-			ConflictCause conflictCause = assignWeakComplement(binaryWatch.getOtherLiteralIndex(), binaryWatch.getNoGood(), entry.getDecisionLevel());
+		Set<BinaryWatch> ordinaryBinaryWatches = watchesOfAssignedAtom.binary.getOrdinary(entry.getTruth().toBoolean());
+		ConflictCause conflictCause = processBinaryWatchesWeakly(ordinaryBinaryWatches, entry.getDecisionLevel());
+		if (conflictCause != null) {
+			return conflictCause;
+		}
+
+		// Check all watched multi-ary NoGoods.
+		Set<WatchedNoGood> ordinaryMultaryWatches = watchesOfAssignedAtom.multary.getOrdinary(entry.getTruth().toBoolean());
+		return processMultaryWatchesWeakly(ordinaryMultaryWatches, entry.getWeakDecisionLevel(), entry.getLiteral());
+	}
+
+	private ConflictCause processBinaryWatchesWeakly(Set<BinaryWatch> ordinaryBinaryWatches, int decisionLevel) {
+		for (BinaryWatch binaryWatch : ordinaryBinaryWatches) {
+			ConflictCause conflictCause = assignWeakComplement(binaryWatch.getOtherLiteralIndex(), binaryWatch.getNoGood(), decisionLevel);
 			if (conflictCause != null) {
 				return conflictCause;
 			}
 		}
+		return null;
+	}
 
-		int assignedDecisionLevel = entry.getWeakDecisionLevel();
-
-		// Check all watched multi-ary NoGoods.
-		Iterator<WatchedNoGood> watchIterator = watchesOfAssignedAtom.multary.getOrdinary(entry.getTruth().toBoolean()).iterator();
+	private ConflictCause processMultaryWatchesWeakly(Set<WatchedNoGood> ordinaryMultaryWatches, int assignedDecisionLevel, int entryLiteral) {
+		Iterator<WatchedNoGood> watchIterator = ordinaryMultaryWatches.iterator();
 		while (watchIterator.hasNext()) {
 			final WatchedNoGood watchedNoGood = watchIterator.next();
 
-			final int assignedPointer = watchedNoGood.getLiteralAtPointer(0) == entry.getLiteral() ? 0 : 1;
+			final int assignedPointer = watchedNoGood.getLiteralAtPointer(0) == entryLiteral ? 0 : 1;
 			final int otherPointer = 1 - assignedPointer;
 
 			final int assignedIndex = watchedNoGood.getPointer(assignedPointer);
@@ -555,20 +567,32 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 
 		// Process binary watches.
 		Watches<BinaryWatch, WatchedNoGood> watchesOfAssignedAtom = watches(entry.getAtom());
-		for (BinaryWatch binaryWatch : watchesOfAssignedAtom.binary.getAlpha(entry.getTruth().toBoolean())) {
+		Set<BinaryWatch> alphaBinaryWatches = watchesOfAssignedAtom.binary.getAlpha(entry.getTruth().toBoolean());
+		ConflictCause conflictCause = processBinaryWatchesStrongly(alphaBinaryWatches, entry.getDecisionLevel());
+		if (conflictCause != null) {
+			return conflictCause;
+		}
+
+		Set<WatchedNoGood> alphaMultaryWatches = watchesOfAssignedAtom.multary.getAlpha(entry.getTruth().toBoolean());
+		return processMultaryWatchesStrongly(alphaMultaryWatches, entry.getStrongDecisionLevel());
+	}
+
+	private ConflictCause processBinaryWatchesStrongly(Set<BinaryWatch> alphaBinaryWatches, int decisionLevel) {
+		for (BinaryWatch binaryWatch : alphaBinaryWatches) {
 			if (binaryWatch.getOtherLiteralIndex() != HEAD) {
 				throw oops("Binary watch for nogood with head does not point at head");
 			}
 
-			ConflictCause conflictCause = assignStrongComplement(binaryWatch.getNoGood(), entry.getDecisionLevel());
+			ConflictCause conflictCause = assignStrongComplement(binaryWatch.getNoGood(), decisionLevel);
 			if (conflictCause != null) {
 				return conflictCause;
 			}
 		}
+		return null;
+	}
 
-		int assignedDecisionLevel = entry.getStrongDecisionLevel();
-
-		Iterator<WatchedNoGood> watchIterator = watchesOfAssignedAtom.multary.getAlpha(entry.getTruth().toBoolean()).iterator();
+	private ConflictCause processMultaryWatchesStrongly(Set<WatchedNoGood> alphaMultaryWatches, int assignedDecisionLevel) {
+		Iterator<WatchedNoGood> watchIterator = alphaMultaryWatches.iterator();
 		while (watchIterator.hasNext()) {
 			final WatchedNoGood watchedNoGood = watchIterator.next();
 
