@@ -34,12 +34,8 @@ public class ComparisonAtom implements FixedInterpretationLiteral {
 		return isNormalizedEquality;
 	}
 
-	private boolean isLeftAssigning() {
-		return isNormalizedEquality && terms.get(0) instanceof VariableTerm;
-	}
-
-	private boolean isRightAssigning() {
-		return isNormalizedEquality && terms.get(1) instanceof VariableTerm;
+	private boolean assignable(Term term) {
+		return isNormalizedEquality && term instanceof VariableTerm;
 	}
 
 	@Override
@@ -64,36 +60,38 @@ public class ComparisonAtom implements FixedInterpretationLiteral {
 
 	@Override
 	public List<VariableTerm> getBindingVariables() {
-		if (isLeftAssigning() && isRightAssigning()) {
+		final Term left = terms.get(0);
+		final Term right = terms.get(1);
+		if (assignable(left) && assignable(right)) {
 			// In case this is "X = Y" or "not X != Y" then both sides are binding given that the other is.
 			// In this case non-binding and binding variables cannot be reported accurately, in fact, the double variable could be compiled away.
 			throw new RuntimeException("Builtin equality with left and right side being variables encountered. Should not happen.");
 		}
-		if (isLeftAssigning()) {
-			return Collections.singletonList((VariableTerm)terms.get(0));
+		if (assignable(left)) {
+			return Collections.singletonList((VariableTerm) left);
 		}
-		if (isRightAssigning()) {
-			return Collections.singletonList((VariableTerm)terms.get(1));
+		if (assignable(right)) {
+			return Collections.singletonList((VariableTerm) right);
 		}
 		return Collections.emptyList();
 	}
 
 	@Override
 	public List<VariableTerm> getNonBindingVariables() {
-		Term left = terms.get(0);
-		Term right = terms.get(1);
+		final Term left = terms.get(0);
+		final Term right = terms.get(1);
 		HashSet<VariableTerm> occurringVariables = new HashSet<>();
 		List<VariableTerm> leftOccurringVariables = new LinkedList<>(left.getOccurringVariables());
 		List<VariableTerm> rightOccurringVariables = new LinkedList<>(right.getOccurringVariables());
-		if (isLeftAssigning()) {
+		if (assignable(left)) {
 			leftOccurringVariables.remove(left);
 		}
-		if (isRightAssigning()) {
+		if (assignable(right)) {
 			rightOccurringVariables.remove(right);
 		}
 		occurringVariables.addAll(leftOccurringVariables);
 		occurringVariables.addAll(rightOccurringVariables);
-		if (isLeftAssigning() || isRightAssigning()) {
+		if (assignable(left) || assignable(right)) {
 			return new ArrayList<>(occurringVariables);
 		}
 		// Neither left- nor right-assigning, hence no variable is binding.
@@ -110,8 +108,30 @@ public class ComparisonAtom implements FixedInterpretationLiteral {
 	@Override
 	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
 		// Treat case where this is just comparison with all variables bound by partialSubstitution.
-		if (!isLeftAssigning() && !isRightAssigning()) {
-			if (compare(terms.get(0).substitute(partialSubstitution), terms.get(1).substitute(partialSubstitution))) {
+		final Term left = terms.get(0).substitute(partialSubstitution);
+		final Term right = terms.get(1).substitute(partialSubstitution);
+		final boolean leftAssigning = assignable(left);
+		final boolean rightAssigning = assignable(right);
+		if (!leftAssigning && !rightAssigning) {
+			// No assignment (variables are bound by partialSubstitution), thus evaluate comparison only.
+			Term leftSubstitute = left;
+			Term rightSubstitute = right;
+			// Evaluate arithmetics.
+			if (left instanceof ArithmeticTerm) {
+				Integer leftResult = ArithmeticTerm.evaluateGroundTerm(left);
+				if (leftResult == null) {
+					return Collections.emptyList();
+				}
+				leftSubstitute = ConstantTerm.getInstance(leftResult);
+			}
+			if (right instanceof ArithmeticTerm) {
+				Integer rightResult = ArithmeticTerm.evaluateGroundTerm(right);
+				if (rightResult == null) {
+					return Collections.emptyList();
+				}
+				rightSubstitute = ConstantTerm.getInstance(rightResult);
+			}
+			if (compare(leftSubstitute, rightSubstitute)) {
 				return Collections.singletonList(partialSubstitution);
 			} else {
 				return Collections.emptyList();
@@ -120,11 +140,11 @@ public class ComparisonAtom implements FixedInterpretationLiteral {
 		// Treat case that this is X = t or t = X.
 		VariableTerm variable = null;
 		Term expression = null;
-		if (isLeftAssigning()) {
+		if (leftAssigning) {
 			variable = (VariableTerm) terms.get(0);
 			expression = terms.get(1);
 		}
-		if (isRightAssigning()) {
+		if (rightAssigning) {
 			variable = (VariableTerm) terms.get(1);
 			expression = terms.get(0);
 		}
@@ -170,13 +190,7 @@ public class ComparisonAtom implements FixedInterpretationLiteral {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder(negated ? "not " : "");
-		sb.append(terms.get(0));
-		sb.append(" ");
-		sb.append(operator);
-		sb.append(" ");
-		sb.append(terms.get(1));
-		return sb.toString();
+		return (negated ? "not " : "") + terms.get(0) + " " + operator + " " + terms.get(1);
 	}
 
 	@Override
