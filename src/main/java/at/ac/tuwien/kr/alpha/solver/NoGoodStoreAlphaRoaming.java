@@ -519,7 +519,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				entry = entry.getPrevious();
 			}
 			int literalDecisionLevel = entry.getDecisionLevel();
-			if (literalDecisionLevel >= highestPos) {
+			if (literalDecisionLevel >= highestDecisionLevel) {
 				secondHighestDecisionLevel = highestDecisionLevel;
 				secondHighestPos = highestPos;
 				highestDecisionLevel = literalDecisionLevel;
@@ -542,6 +542,10 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			sb.append(atomOf(literal));
 			sb.append("=");
 			sb.append(assignmentEntry);
+			if (assignmentEntry != null && assignmentEntry.getPrevious() != null) {
+				sb.append("/");
+				sb.append(assignmentEntry.getPrevious());
+			}
 			sb.append(", ");
 		}
 		LOGGER.trace(sb.toString());
