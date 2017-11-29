@@ -569,4 +569,22 @@ public class NoGoodStoreAlphaRoamingTest {
 		assertEquals(2, entry.getDecisionLevel());
 	}
 
+	@Test
+	public void violationByPropagationAtLowerDecisionLevel() {
+		assertNull(store.add(1, new NoGood(1, -2)));
+		assertNull(store.add(2, new NoGood(2, -3)));
+		assertNull(store.add(3, new NoGood(2, -4)));
+		assertNull(store.add(4, new NoGood(3, 4, 5)));
+
+		assertNull(assignment.choose(7, FALSE));
+		assertNull(store.propagate());
+		assertNull(assignment.choose(6, FALSE));
+		assertNull(store.propagate());
+		assertNull(assignment.choose(5, TRUE));
+		assertNull(store.propagate());
+
+		assertNull(store.add(5, new NoGood(-1)));
+		ConflictCause cause = store.propagate();
+		assertNotNull(cause);
+	}
 }

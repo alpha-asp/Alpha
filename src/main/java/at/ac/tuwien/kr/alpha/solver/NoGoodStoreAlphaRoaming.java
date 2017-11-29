@@ -366,7 +366,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			return null;
 		}
 
-		Watches<BinaryWatch, WatchedNoGood> watchesOfAssignedAtom = watches(entry.getAtom());
+		final Watches<BinaryWatch, WatchedNoGood> watchesOfAssignedAtom = watches(entry.getAtom());
 
 		// Process binary watches.
 		for (BinaryWatch binaryWatch : watchesOfAssignedAtom.binary.getOrdinary(entry.getTruth().toBoolean())) {
@@ -376,80 +376,205 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			}
 		}
 
-		int assignedDecisionLevel = entry.getWeakDecisionLevel();
+		final int assignedDecisionLevel = entry.getWeakDecisionLevel();
+		final int assignedLiteral = entry.getLiteral();
 
 		// Check all watched multi-ary NoGoods.
 		Iterator<WatchedNoGood> watchIterator = watchesOfAssignedAtom.multary.getOrdinary(entry.getTruth().toBoolean()).iterator();
 		while (watchIterator.hasNext()) {
-			final WatchedNoGood watchedNoGood = watchIterator.next();
-
-			final int assignedPointer = watchedNoGood.getLiteralAtPointer(0) == entry.getLiteral() ? 0 : 1;
-			final int otherPointer = 1 - assignedPointer;
-
-			final int assignedIndex = watchedNoGood.getPointer(assignedPointer);
-			final int otherIndex = watchedNoGood.getPointer(otherPointer);
-
-			boolean isNoGoodSatisfiedByOtherWatch = false;
-			Assignment.Entry otherEntry = assignment.get(atomOf(watchedNoGood.getLiteral(otherIndex)));
-			// Check if the other watch already satisfies the noGood.
-			if (otherEntry != null && otherEntry.getTruth().toBoolean() != isPositive(watchedNoGood.getLiteral(otherIndex))) {
-				isNoGoodSatisfiedByOtherWatch = true;
-			}
-
-			int highestDecisionLevel = assignedDecisionLevel;
-			int pointerCandidateIndex = assignedIndex;
-			boolean foundPointerCandidate = false;
-
-			// Find new literal to watch.
-			for (int i = 0; i < watchedNoGood.size(); i++) {
-				if (i == assignedIndex || i == otherIndex) {
-					continue;
-				}
-				int currentLiteral = watchedNoGood.getLiteral(i);
-				Assignment.Entry currentEntry = assignment.get(atomOf(currentLiteral));
-
-				// Break if: 1) current literal is unassigned, 2) satisfies the nogood, or
-				// 3) the nogood is satisfied by the other watch and the current literal has decision level greater than the satisfying literal.
-				if (currentEntry == null
-					|| currentEntry.getTruth().toBoolean() != isPositive(currentLiteral)
-					|| (isNoGoodSatisfiedByOtherWatch && currentEntry.getWeakDecisionLevel() >= otherEntry.getWeakDecisionLevel())
-					) {
-					foundPointerCandidate = true;
-					pointerCandidateIndex = i;
-					break;
-				}
-
-				// Record literal if it has highest decision level so far.
-				int currentDecisionLevel = currentEntry.getWeakDecisionLevel();
-				if (currentDecisionLevel > highestDecisionLevel) {
-					highestDecisionLevel = currentDecisionLevel;
-					pointerCandidateIndex = i;
-				}
-			}
-
-			if (foundPointerCandidate) {
-				// Move pointer to new literal.
-				watchedNoGood.setPointer(assignedPointer, pointerCandidateIndex);
-				watchIterator.remove();
-				addOrdinaryWatch(watchedNoGood, assignedPointer);
-			} else {
-				// NoGood is unit, propagate (on potentially lower decision level).
-				// Note: Violation is detected by Assignment.
-				ConflictCause conflictCause = assignWeakComplement(otherIndex, watchedNoGood, highestDecisionLevel);
-
-				if (conflictCause != null) {
-					return conflictCause;
-				}
-
-				// Move assigned watch to now-highest position (if it changed).
-				if (pointerCandidateIndex != assignedIndex) {
-					watchedNoGood.setPointer(assignedPointer, pointerCandidateIndex);
-					watchIterator.remove();
-					addOrdinaryWatch(watchedNoGood, assignedPointer);
-				}
+			ConflictCause conflictCause = processWeaklyWatchedNoGood(assignedDecisionLevel, assignedLiteral, watchIterator);
+			if (conflictCause != null) {
+				return conflictCause;
 			}
 		}
 		return null;
+	}
+
+	private ConflictCause processWeaklyWatchedNoGood(int assignedDecisionLevel, int assignedLiteral, Iterator<WatchedNoGood> watchIterator) {
+		final WatchedNoGood watchedNoGood = watchIterator.next();
+
+		final int assignedPointer = watchedNoGood.getLiteralAtPointer(0) == assignedLiteral ? 0 : 1;
+		final int otherPointer = 1 - assignedPointer;
+
+		final int assignedIndex = watchedNoGood.getPointer(assignedPointer);
+		final int otherIndex = watchedNoGood.getPointer(otherPointer);
+
+		final Assignment.Entry otherEntry = assignment.get(atomOf(watchedNoGood.getLiteral(otherIndex)));
+
+		// Find new literal to watch.
+		final ResultFindNewWatch newWatch = findNewWatch(watchedNoGood, assignedIndex, otherIndex, otherEntry, assignedDecisionLevel);
+
+		if (newWatch.foundPointerCandidate) {
+			// Move pointer to new literal.
+			watchedNoGood.setPointer(assignedPointer, newWatch.pointerCandidateIndex);
+			watchIterator.remove();
+			addOrdinaryWatch(watchedNoGood, assignedPointer);
+			LOGGER.trace("Moved watch pointers of nogood:");
+			logNoGoodAndAssignment(watchedNoGood, assignment);
+		} else {
+			// NoGood is unit, propagate (on potentially lower decision level).
+			// Note: Violation is detected by Assignment.
+			LOGGER.trace("Nogood is unit:");
+			logNoGoodAndAssignment(watchedNoGood, assignment);
+			ConflictCause conflictCause = assignWeakComplement(otherIndex, watchedNoGood, newWatch.highestDecisionLevel);
+
+			// Return conflict if noGood is violated.
+			if (conflictCause != null) {
+				// Ensure watches are at highest decision level (assignments on lower
+				// decision levels may cause this to not be the case).
+				if (otherEntry.getDecisionLevel() < newWatch.highestDecisionLevel || assignedDecisionLevel < newWatch.highestDecisionLevel) {
+					// Rectify watches.
+					resetWatchesToHighestDecisionLevels(watchIterator, watchedNoGood, assignedPointer, otherPointer, otherIndex);
+				}
+				return conflictCause;
+			}
+
+			// Move assigned watch to now-highest position (if it changed).
+			if (newWatch.pointerCandidateIndex != assignedIndex) {
+				watchedNoGood.setPointer(assignedPointer, newWatch.pointerCandidateIndex);
+				watchIterator.remove();
+				addOrdinaryWatch(watchedNoGood, assignedPointer);
+				LOGGER.trace("Moved watch pointers after propagation:");
+				logNoGoodAndAssignment(watchedNoGood, assignment);
+			}
+		}
+		return null;
+	}
+
+	private static final class ResultFindNewWatch {
+		boolean foundPointerCandidate;
+		int pointerCandidateIndex;
+		int highestDecisionLevel;
+
+		ResultFindNewWatch(boolean foundPointerCandidate, int pointerCandidateIndex, int highestDecisionLevel) {
+			this.foundPointerCandidate = foundPointerCandidate;
+			this.pointerCandidateIndex = pointerCandidateIndex;
+			this.highestDecisionLevel = highestDecisionLevel;
+		}
+	}
+
+	private ResultFindNewWatch findNewWatch(WatchedNoGood watchedNoGood, int assignedIndex, int otherIndex, Assignment.Entry otherEntry, int highestDecisionLevel) {
+		ResultFindNewWatch result = new ResultFindNewWatch(false, assignedIndex, highestDecisionLevel);
+
+		// Check if the other watch already satisfies the noGood.
+		boolean isNoGoodSatisfiedByOtherWatch = false;
+		if (otherEntry != null && otherEntry.getTruth().toBoolean() != isPositive(watchedNoGood.getLiteral(otherIndex))) {
+			isNoGoodSatisfiedByOtherWatch = true;
+		}
+
+		for (int i = 0; i < watchedNoGood.size(); i++) {
+			if (i == assignedIndex || i == otherIndex) {
+				continue;
+			}
+			final int currentLiteral = watchedNoGood.getLiteral(i);
+			final Assignment.Entry currentEntry = assignment.get(atomOf(currentLiteral));
+
+			// Break if: 1) current literal is unassigned, 2) satisfies the nogood, or
+			// 3) the nogood is satisfied by the other watch and the current literal has decision level greater than the satisfying literal.
+			if (currentEntry == null
+				|| currentEntry.getTruth().toBoolean() != isPositive(currentLiteral)
+				|| (isNoGoodSatisfiedByOtherWatch && currentEntry.getWeakDecisionLevel() >= otherEntry.getWeakDecisionLevel())
+				) {
+				result.foundPointerCandidate = true;
+				result.pointerCandidateIndex = i;
+				break;
+			}
+
+			// Record literal if it has highest decision level so far.
+			final int currentDecisionLevel = currentEntry.getWeakDecisionLevel();
+			if (currentDecisionLevel > result.highestDecisionLevel) {
+				result.highestDecisionLevel = currentDecisionLevel;
+				result.pointerCandidateIndex = i;
+			}
+		}
+		return result;
+	}
+
+	private void resetWatchesToHighestDecisionLevels(Iterator<WatchedNoGood> watchIterator, WatchedNoGood watchedNoGood, int assignedPointer, int otherPointer, int otherIndex) {
+		AbstractMap.SimpleEntry<Integer, Integer> newWatchPositions = computeTwoHighestDecisionLevels(watchedNoGood, assignment);
+		Integer pos1 = newWatchPositions.getKey();
+		Integer pos2 = newWatchPositions.getValue();
+
+		// Set new watches and try to avoid moving the other watch.
+		boolean moveBothWatches = false;
+		Integer posForThisWatch = -1;
+		if (otherIndex == pos1) {
+			posForThisWatch = pos2;
+		} else if (otherIndex == pos2) {
+			posForThisWatch = pos1;
+		} else {
+			moveBothWatches = true;
+		}
+
+		watchIterator.remove();
+		if (!moveBothWatches) {
+			// Only adjust the assigned watch.
+			watchedNoGood.setPointer(assignedPointer, posForThisWatch);
+			addOrdinaryWatch(watchedNoGood, assignedPointer);
+		} else {
+			// Adjust both watches.
+			watchedNoGood.setPointer(assignedPointer, pos1);
+			addOrdinaryWatch(watchedNoGood, assignedPointer);
+
+			removeOrdinaryWatch(watchedNoGood, otherPointer);
+			watchedNoGood.setPointer(otherPointer, pos2);
+			addOrdinaryWatch(watchedNoGood, otherPointer);
+		}
+		LOGGER.trace("Moved watch pointers of violated nogood:");
+		logNoGoodAndAssignment(watchedNoGood, assignment);
+	}
+
+	private void removeOrdinaryWatch(WatchedNoGood watchedNoGood, int pointer) {
+		final int literal = watchedNoGood.getLiteral(watchedNoGood.getPointer(pointer));
+		boolean didRemove = watches(literal).multary.getOrdinary(isPositive(literal)).remove(watchedNoGood);
+		if (!didRemove) {
+			throw oops("Removed ordinary watch was not found in watch list.");
+		}
+	}
+
+	private AbstractMap.SimpleEntry<Integer, Integer> computeTwoHighestDecisionLevels(WatchedNoGood watchedNoGood, WritableAssignment assignment) {
+		// Assumption: watchedNoGood is violated by assignment.
+		int highestPos = -1;
+		int highestDecisionLevel = -1;
+		int secondHighestPos = -1;
+		int secondHighestDecisionLevel = -1;
+		for (int i = 0; i < watchedNoGood.size(); i++) {
+			Integer atom = atomOf(watchedNoGood.getLiteral(i));
+			Assignment.Entry entry = assignment.get(atom);
+			if (entry.getPrevious() != null) {
+				entry = entry.getPrevious();
+			}
+			int literalDecisionLevel = entry.getDecisionLevel();
+			if (literalDecisionLevel >= highestDecisionLevel) {
+				secondHighestDecisionLevel = highestDecisionLevel;
+				secondHighestPos = highestPos;
+				highestDecisionLevel = literalDecisionLevel;
+				highestPos = i;
+			} else if (literalDecisionLevel > secondHighestDecisionLevel) {
+				secondHighestDecisionLevel = literalDecisionLevel;
+				secondHighestPos = i;
+			}
+		}
+		return new AbstractMap.SimpleEntry<>(highestPos, secondHighestPos);
+	}
+
+	private void logNoGoodAndAssignment(WatchedNoGood noGood, Assignment assignment) {
+		if (!LOGGER.isTraceEnabled()) {
+			return;
+		}
+		StringBuilder sb = new StringBuilder("Watched NoGood is: " + noGood + "\t\t Assigned: ");
+		for (Integer literal : noGood) {
+			Assignment.Entry assignmentEntry = assignment.get(atomOf(literal));
+			sb.append(atomOf(literal));
+			sb.append("=");
+			sb.append(assignmentEntry);
+			if (assignmentEntry != null && assignmentEntry.getPrevious() != null) {
+				sb.append("/");
+				sb.append(assignmentEntry.getPrevious());
+			}
+			sb.append(", ");
+		}
+		LOGGER.trace(sb.toString());
 	}
 
 	private ConflictCause propagateStrongly(final Assignment.Entry entry) {

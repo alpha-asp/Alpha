@@ -30,10 +30,10 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.AnswerSetsParser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
@@ -617,6 +617,22 @@ public class SolverTests extends AbstractSolverTests {
 		assertAnswerSet("seven(X) :- 1+2 * 3 = X.",
 
 			"seven(7)");
+	}
+
+	/**
+	 * Tests the fix for issue #101
+	 */
+	@Test
+	public void involvedUnsatisfiableProgram() throws IOException {
+		assertAnswerSets("x :- c1, c2, not x." +
+			"c1 :- not a1." +
+			"c1 :- not b1." +
+			"c2 :- not a2." +
+			"c2 :- not b2." +
+			"a1 :- not b1." +
+			"b1 :- not a1." +
+			"a2 :- not b2." +
+			"b2 :- not a2.");
 	}
 
 	@Test

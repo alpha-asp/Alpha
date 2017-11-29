@@ -57,12 +57,12 @@ public abstract class AbstractSolverTests {
 	/**
 	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
 	 */
-	private static void enableTracing() {
+	protected static void enableTracing() {
 		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		root.setLevel(ch.qos.logback.classic.Level.TRACE);
 	}
 
-	private static void enableDebugLog() {
+	protected static void enableDebugLog() {
 		Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		root.setLevel(Level.DEBUG);
 	}
