@@ -57,7 +57,7 @@ terms : term (COMMA terms)?;
 term : ID                                   # term_const
      | ID (PAREN_OPEN terms? PAREN_CLOSE)   # term_func
      | NUMBER                               # term_number
-     | STRING                               # term_string
+     | QUOTED_STRING                        # term_string
      | VARIABLE                             # term_variable
      | ANONYMOUS_VARIABLE                   # term_anonymousVariable
      | PAREN_OPEN term PAREN_CLOSE          # term_parenthesisedTerm
@@ -77,7 +77,7 @@ basic_terms : basic_term (COMMA basic_terms)? ;
 
 basic_term : ground_term | variable_term;
 
-ground_term : /*SYMBOLIC_CONSTANT*/ ID | STRING | MINUS? NUMBER;
+ground_term : /*SYMBOLIC_CONSTANT*/ ID | QUOTED_STRING | MINUS? NUMBER;
 
 variable_term : VARIABLE | ANONYMOUS_VARIABLE;
 

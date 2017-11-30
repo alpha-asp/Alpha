@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
+import at.ac.tuwien.kr.alpha.common.Interner;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.LinkedList;
@@ -13,6 +14,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class IntervalTerm extends Term {
+	private static final Interner<IntervalTerm> INTERNER = new Interner<>();
 	private final Term lowerBoundTerm;
 	private final Term upperBoundTerm;
 
@@ -41,7 +43,7 @@ public class IntervalTerm extends Term {
 	}
 
 	public static IntervalTerm getInstance(Term lowerBound, Term upperBound) {
-		return new IntervalTerm(lowerBound, upperBound);
+		return INTERNER.intern(new IntervalTerm(lowerBound, upperBound));
 	}
 
 	@Override
@@ -108,14 +110,17 @@ public class IntervalTerm extends Term {
 
 	@Override
 	public int hashCode() {
-		int result = lowerBoundTerm.hashCode();
-		result = 31 * result + upperBoundTerm.hashCode();
-		return result;
+		return 31 * lowerBoundTerm.hashCode() + upperBoundTerm.hashCode();
 	}
 
 	@Override
 	public int compareTo(Term o) {
 		throw new UnsupportedOperationException("Intervals cannot be compared.");
+	}
+
+	@Override
+	public Term renameVariables(String renamePrefix) {
+		return new IntervalTerm(lowerBoundTerm.renameVariables(renamePrefix), upperBoundTerm.renameVariables(renamePrefix));
 	}
 
 	/**

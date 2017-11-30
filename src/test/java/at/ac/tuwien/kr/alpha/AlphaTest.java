@@ -3,9 +3,10 @@ package at.ac.tuwien.kr.alpha;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
-import at.ac.tuwien.kr.alpha.common.predicates.ExternalMethodPredicate;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
+import at.ac.tuwien.kr.alpha.common.fixedinterpretations.MethodPredicateInterpretation;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -80,6 +81,22 @@ public class AlphaTest {
 	}
 
 	@Test
+	public void filterOutput() throws Exception {
+		Alpha system = new Alpha();
+		system.register("getLargeGraphEdges", () ->
+			new HashSet<>(asList(
+				asList(ConstantTerm.getInstance(1), ConstantTerm.getInstance(2)),
+				asList(ConstantTerm.getInstance(2), ConstantTerm.getInstance(1)),
+				asList(ConstantTerm.getInstance(13), ConstantTerm.getInstance(1))
+			))
+		);
+
+		Set<AnswerSet> actual = system.solve("node(1). node(2). outgoing13(X) :- node(X), &getLargeGraphEdges(13,X).").collect(Collectors.toSet());
+		Set<AnswerSet> expected = AnswerSetsParser.parse("{ node(1), node(2), outgoing13(1) }");
+		assertEquals(expected, actual);
+	}
+
+	@Test
 	public void supplier() throws Exception {
 		Alpha system = new Alpha();
 		system.register("bestNode", () -> singleton(singletonList(ConstantTerm.getInstance(1))));
@@ -130,6 +147,7 @@ public class AlphaTest {
 	}
 
 	@Test
+	@Ignore("Test program is not safe (external lacking output variables). This should throw some exception.")
 	public void smallGraphNoNeighbors() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("neighbors", int.class));
@@ -160,6 +178,7 @@ public class AlphaTest {
 	}
 
 	@Test
+	@Ignore("Test program is not safe (external lacking output variables). This should throw some exception.")
 	public void smallGraphSingleNeighborNoTerm() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("neighbors", int.class));
@@ -188,10 +207,11 @@ public class AlphaTest {
 		SubThingy thingy = new SubThingy();
 
 		Rule rule = new Rule(
-			new DisjunctiveHead(Collections.singletonList(new BasicAtom(new Predicate("p", 1), ConstantTerm.getInstance("x")))),
+			new DisjunctiveHead(Collections.singletonList(new BasicAtom(Predicate.getInstance("p", 1), ConstantTerm.getInstance("x")))),
 			singletonList(
 				new ExternalAtom(
-					new ExternalMethodPredicate(this.getClass().getMethod("thinger", Thingy.class)),
+					Predicate.getInstance("thinger", 1),
+					new MethodPredicateInterpretation(this.getClass().getMethod("thinger", Thingy.class)),
 					singletonList(ConstantTerm.getInstance(thingy)),
 					emptyList(),
 					false
@@ -231,6 +251,7 @@ public class AlphaTest {
 	}
 
 	@Test
+	@Ignore("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
 	public void withExternalInvocationCounted1() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", int.class));
@@ -245,6 +266,7 @@ public class AlphaTest {
 	}
 
 	@Test
+	@Ignore("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
 	public void withExternalInvocationCounted2() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", int.class));
@@ -259,6 +281,7 @@ public class AlphaTest {
 	}
 
 	@Test
+	@Ignore("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
 	public void withExternalInvocationCounted3() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", int.class));
@@ -275,8 +298,16 @@ public class AlphaTest {
 	@Test
 	public void basicUsage() throws Exception {
 		Alpha system = new Alpha();
-		Set<AnswerSet> actual = system.solve("a.").collect(Collectors.toSet());
-		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
+		Set<AnswerSet> actual = system.solve("p(a).").collect(Collectors.toSet());
+		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("p").symbolicInstance("a").build()));
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void basicUsageWithString() throws Exception {
+		Alpha system = new Alpha();
+		Set<AnswerSet> actual = system.solve("p(\"a\").").collect(Collectors.toSet());
+		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("p").instance("a").build()));
 		assertEquals(expected, actual);
 	}
 

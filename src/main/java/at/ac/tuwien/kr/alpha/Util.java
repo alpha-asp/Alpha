@@ -32,10 +32,7 @@ import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
-import java.util.AbstractMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.SortedSet;
+import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -51,30 +48,19 @@ public class Util {
 		return Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue);
 	}
 
-	public static <E> void appendDelimited(StringBuilder sb, String delimiter, Iterable<E> iterable) {
-		for (Iterator<E> iterator = iterable.iterator(); iterator.hasNext();) {
-			sb.append(iterator.next());
-			if (iterator.hasNext()) {
-				sb.append(delimiter);
-			}
+	public static <E> String join(String prefix, Iterable<E> iterable, String suffix) {
+		return join(prefix, iterable, ", ", suffix);
+	}
+
+	public static <E> String join(String prefix, Iterable<E> iterable, String delimiter, String suffix) {
+		StringJoiner joiner = new StringJoiner(delimiter, prefix, suffix);
+		for (E element : iterable) {
+			joiner.add(element.toString());
 		}
+		return joiner.toString();
 	}
 
-	public static <E> void appendDelimited(StringBuilder sb, Iterable<E> iterable) {
-		appendDelimited(sb, ", ", iterable);
-	}
-
-	public static <E> void appendDelimitedPrefix(StringBuilder sb, String prefix, Iterable<E> iterable) {
-		for (Iterator<E> iterator = iterable.iterator(); iterator.hasNext();) {
-			sb.append(prefix);
-			sb.append(iterator.next());
-			if (iterator.hasNext()) {
-				sb.append(", ");
-			}
-		}
-	}
-
-	public static <T extends Comparable<T>> int compareSortedSets(SortedSet<T> a, SortedSet<T> b) {
+	public static <U extends T, T extends Comparable<T>> int compareSortedSets(SortedSet<U> a, SortedSet<U> b) {
 		if (a.size() != b.size()) {
 			return a.size() - b.size();
 		}
@@ -83,8 +69,8 @@ public class Util {
 			return 0;
 		}
 
-		final Iterator<T> ita = a.iterator();
-		final Iterator<T> itb = b.iterator();
+		final Iterator<U> ita = a.iterator();
+		final Iterator<U> itb = b.iterator();
 
 		do {
 			final int result = ita.next().compareTo(itb.next());

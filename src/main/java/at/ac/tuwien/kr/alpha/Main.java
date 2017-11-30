@@ -28,8 +28,8 @@
 package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
@@ -186,7 +186,7 @@ public class Main {
 		java.util.function.Predicate<Predicate> filter = DEFAULT_FILTER;
 		if (commandLine.hasOption(OPT_FILTER)) {
 			Set<String> desiredPredicates = new HashSet<>(Arrays.asList(commandLine.getOptionValues(OPT_FILTER)));
-			filter = p -> desiredPredicates.contains(p.getPredicateName());
+			filter = p -> desiredPredicates.contains(p.getName());
 		}
 
 		int limit = 0;
