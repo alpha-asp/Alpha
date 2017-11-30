@@ -3,7 +3,7 @@ package at.ac.tuwien.kr.alpha.common;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.Variable;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import org.junit.Test;
 
 import java.util.LinkedList;
@@ -40,9 +40,9 @@ public class TermTest {
 	@Test
 	public void testTermVariableOccurrences() {
 		ConstantTerm ta = ConstantTerm.getInstance("a");
-		Variable tx = Variable.getInstance("X");
+		VariableTerm tx = VariableTerm.getInstance("X");
 		FunctionTerm tf = FunctionTerm.getInstance("f", ta, tx);
-		List<Variable> occurringVariables = tf.getOccurringVariables();
+		List<VariableTerm> occurringVariables = tf.getOccurringVariables();
 
 		assertEquals("Variable occurring as subterm must be reported as occurring variable.", occurringVariables.get(0), tx);
 	}

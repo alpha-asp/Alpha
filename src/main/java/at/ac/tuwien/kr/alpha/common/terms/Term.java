@@ -32,7 +32,7 @@ import java.util.List;
 public abstract class Term implements Comparable<Term> {
 	public abstract boolean isGround();
 
-	public abstract List<Variable> getOccurringVariables();
+	public abstract List<VariableTerm> getOccurringVariables();
 
 	/**
 	 * Applies a substitution, result may be nonground.
@@ -47,7 +47,7 @@ public abstract class Term implements Comparable<Term> {
 			return 1;
 		} else if (clazz.equals(FunctionTerm.class)) {
 			return 2;
-		} else if (clazz.equals(Variable.class)) {
+		} else if (clazz.equals(VariableTerm.class)) {
 			return 3;
 		}
 		throw new UnsupportedOperationException("Can only compare constant term, function terms and variable terms among each other.");

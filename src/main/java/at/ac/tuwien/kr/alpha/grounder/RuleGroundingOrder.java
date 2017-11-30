@@ -2,8 +2,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.Variable;
-import at.ac.tuwien.kr.alpha.common.terms.Variable;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
 import java.util.*;
 
@@ -125,7 +124,7 @@ public class RuleGroundingOrder {
 
 	private void computeGroundingOrder(Literal startingLiteral) {
 		List<Literal> bodyLiterals = nonGroundRule.getRule().getBody();
-		HashSet<Variable> boundVariables = new HashSet<>();
+		HashSet<VariableTerm> boundVariables = new HashSet<>();
 		boundVariables.addAll(startingLiteral.getBindingVariables());
 		LinkedHashSet<Literal> remainingLiterals = new LinkedHashSet<>(bodyLiterals);
 		remainingLiterals.remove(startingLiteral);
@@ -151,7 +150,7 @@ public class RuleGroundingOrder {
 		groundingOrder.put(startingLiteral, literalsOrder.toArray(new Literal[0]));
 	}
 
-	private Literal selectNextGroundingLiteral(LinkedHashSet<Literal> remainingLiterals, Set<Variable> boundVariables) {
+	private Literal selectNextGroundingLiteral(LinkedHashSet<Literal> remainingLiterals, Set<VariableTerm> boundVariables) {
 		Float bestSelectivity = Float.MAX_VALUE;
 		Literal bestLiteral = null;
 		boolean bestLiteralSharesVariables = false;
@@ -175,7 +174,7 @@ public class RuleGroundingOrder {
 		return bestLiteral;
 	}
 
-	private boolean sharesVariables(Collection<Variable> set1, Collection<Variable> set2part1, Collection<Variable> set2part2) {
+	private boolean sharesVariables(Collection<VariableTerm> set1, Collection<VariableTerm> set2part1, Collection<VariableTerm> set2part2) {
 		return !Collections.disjoint(set1, set2part1) || !Collections.disjoint(set1, set2part2);
 	}
 }

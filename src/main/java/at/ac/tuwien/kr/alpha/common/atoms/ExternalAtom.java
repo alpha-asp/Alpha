@@ -4,7 +4,7 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.Variable;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.ArrayList;
@@ -21,9 +21,8 @@ public class ExternalAtom implements FixedInterpretationLiteral {
 	private final List<Term> output;
 
 	protected Predicate predicate;
-	protected final boolean negated;
-
 	protected final PredicateInterpretation interpretation;
+	protected final boolean negated;
 
 	public ExternalAtom(Predicate predicate, PredicateInterpretation interpretation, List<Term> input, List<Term> output, boolean negated) {
 		this.predicate = predicate;
@@ -62,8 +61,8 @@ public class ExternalAtom implements FixedInterpretationLiteral {
 			for (int i = 0; i < output.size(); i++) {
 				Term out = output.get(i);
 
-				if (out instanceof Variable) {
-					ith.put((Variable) out, bindings.get(i));
+				if (out instanceof VariableTerm) {
+					ith.put((VariableTerm) out, bindings.get(i));
 				} else {
 					if (!bindings.get(i).equals(out)) {
 						skip = true;
@@ -109,7 +108,7 @@ public class ExternalAtom implements FixedInterpretationLiteral {
 	}
 
 	@Override
-	public List<Variable> getBindingVariables() {
+	public List<VariableTerm> getBindingVariables() {
 		// If the external atom is negative, then all variables of input and output are non-binding
 		// and there are no binding variables (like for ordinary atoms).
 		// If the external atom is positive, then variables of output are binding.
@@ -118,11 +117,11 @@ public class ExternalAtom implements FixedInterpretationLiteral {
 			return emptyList();
 		}
 
-		List<Variable> binding = new ArrayList<>(output.size());
+		List<VariableTerm> binding = new ArrayList<>(output.size());
 
 		for (Term out : output) {
-			if (out instanceof Variable) {
-				binding.add((Variable) out);
+			if (out instanceof VariableTerm) {
+				binding.add((VariableTerm) out);
 			}
 		}
 
@@ -130,10 +129,10 @@ public class ExternalAtom implements FixedInterpretationLiteral {
 	}
 
 	@Override
-	public List<Variable> getNonBindingVariables() {
+	public List<VariableTerm> getNonBindingVariables() {
 		// External atoms have their input always non-binding, since they cannot
 		// be queried without some concrete input.
-		LinkedList<Variable> nonbindingVariables = new LinkedList<>();
+		LinkedList<VariableTerm> nonbindingVariables = new LinkedList<>();
 		for (Term term : input) {
 			nonbindingVariables.addAll(term.getOccurringVariables());
 		}
@@ -141,8 +140,8 @@ public class ExternalAtom implements FixedInterpretationLiteral {
 		// If the external atom is negative, then all variables of input and output are non-binding.
 		if (negated) {
 			for (Term out : output) {
-				if (out instanceof Variable) {
-					nonbindingVariables.add((Variable) out);
+				if (out instanceof VariableTerm) {
+					nonbindingVariables.add((VariableTerm) out);
 				}
 			}
 		}

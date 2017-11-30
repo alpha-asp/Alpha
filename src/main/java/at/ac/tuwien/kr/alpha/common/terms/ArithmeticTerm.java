@@ -34,8 +34,8 @@ public class ArithmeticTerm extends Term {
 	}
 
 	@Override
-	public List<Variable> getOccurringVariables() {
-		LinkedHashSet<Variable> occurringVariables = new LinkedHashSet<>(left.getOccurringVariables());
+	public List<VariableTerm> getOccurringVariables() {
+		LinkedHashSet<VariableTerm> occurringVariables = new LinkedHashSet<>(left.getOccurringVariables());
 		occurringVariables.addAll(right.getOccurringVariables());
 		return new ArrayList<>(occurringVariables);
 	}

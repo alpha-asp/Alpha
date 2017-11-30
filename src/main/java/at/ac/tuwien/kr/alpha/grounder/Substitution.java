@@ -1,21 +1,19 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.terms.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 public class Substitution {
-	private TreeMap<Variable, Term> substitution;
+	private TreeMap<VariableTerm, Term> substitution;
 
-	private Substitution(TreeMap<Variable, Term> substitution) {
+	private Substitution(TreeMap<VariableTerm, Term> substitution) {
 		this.substitution = substitution;
 	}
 
@@ -58,8 +56,8 @@ public class Substitution {
 		} else if (termNonGround instanceof ConstantTerm) {
 			// Since right term is ground, both terms differ
 			return false;
-		} else if (termNonGround instanceof Variable) {
-			Variable variableTerm = (Variable)termNonGround;
+		} else if (termNonGround instanceof VariableTerm) {
+			VariableTerm variableTerm = (VariableTerm)termNonGround;
 			// Left term is variable, bind it to the right term.
 			Term bound = eval(variableTerm);
 
@@ -93,63 +91,22 @@ public class Substitution {
 
 	/**
 	 * This method should be used to obtain the {@link Term} to be used in place of
-	 * a given {@link Variable} under this substitution.
+	 * a given {@link VariableTerm} under this substitution.
 	 *
 	 * @param variableTerm the variable term to substitute, if possible
 	 * @return a constant term if the substitution contains the given variable, {@code null} otherwise.
 	 */
-	public Term eval(Variable variableTerm) {
+	public Term eval(VariableTerm variableTerm) {
 		return this.substitution.get(variableTerm);
 	}
 
-	public <T extends Comparable<T>> Term put(Variable variableTerm, Term groundTerm) {
+	public <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term groundTerm) {
 		// Note: We're destroying type information here.
 		return substitution.put(variableTerm, groundTerm);
 	}
 
 	public boolean isEmpty() {
 		return substitution.isEmpty();
-	}
-
-	public Term apply(Term term) {
-		if (term.isGround()) {
-			return term;
-		}
-
-		if (term instanceof FunctionTerm) {
-			return apply((FunctionTerm) term);
-		} else if (term instanceof Variable) {
-			return apply((Variable) term);
-		} else if (term instanceof IntervalTerm) {
-			return apply((IntervalTerm) term);
-		} else {
-			throw new RuntimeException("Unknown term type discovered.");
-		}
-	}
-
-	public FunctionTerm apply(FunctionTerm ft) {
-		if (ft.isGround()) {
-			return ft;
-		}
-
-		List<Term> groundTermList = new ArrayList<>(ft.getTerms().size());
-		for (Term term : ft.getTerms()) {
-			groundTermList.add(apply(term));
-		}
-		return FunctionTerm.getInstance(ft.getSymbol(), groundTermList);
-	}
-
-	public IntervalTerm apply(IntervalTerm it) {
-		if (it.isGround()) {
-			return it;
-		}
-
-		throw new UnsupportedOperationException("");
-		//return IntervalTerm.getInstance(apply(it.getLowerBound()), apply(it.getUpperBound()));
-	}
-
-	public Term apply(Variable variable) {
-		return eval(variable);
 	}
 
 	/**
@@ -160,7 +117,7 @@ public class Substitution {
 	@Override
 	public String toString() {
 		final StringBuilder ret = new StringBuilder();
-		for (Map.Entry<Variable, Term> e : substitution.entrySet()) {
+		for (Map.Entry<VariableTerm, Term> e : substitution.entrySet()) {
 			ret.append("_").append(e.getKey()).append(":").append(e.getValue());
 		}
 		return ret.toString();
@@ -210,11 +167,11 @@ public class Substitution {
 			return substitution;
 		}
 		// If the general term is a variable, check its current substitution and see whether this matches the specific term.
-		if (generalTerm instanceof Variable) {
-			Term substitutedGeneralTerm = substitution.eval((Variable) generalTerm);
+		if (generalTerm instanceof VariableTerm) {
+			Term substitutedGeneralTerm = substitution.eval((VariableTerm) generalTerm);
 			// If the variable is not bound already, bind it to the specific term.
 			if (substitutedGeneralTerm == null) {
-				substitution.put((Variable) generalTerm, specificTerm);
+				substitution.put((VariableTerm) generalTerm, specificTerm);
 				return substitution;
 			}
 			// The variable is bound, check whether its result is exactly the specific term.

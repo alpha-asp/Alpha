@@ -2,7 +2,7 @@ package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.Variable;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.List;
@@ -20,13 +20,13 @@ public interface Atom extends Comparable<Atom> {
 	 * List of all variables occurring in the Atom that are potentially binding, i.e., variables in positive atoms.
 	 * @return
 	 */
-	List<Variable> getBindingVariables();
+	List<VariableTerm> getBindingVariables();
 
 	/**
 	 * List of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
 	 * @return
 	 */
-	List<Variable> getNonBindingVariables();
+	List<VariableTerm> getNonBindingVariables();
 
 	/**
 	 * This method applies a substitution to a potentially non-substitute atom.

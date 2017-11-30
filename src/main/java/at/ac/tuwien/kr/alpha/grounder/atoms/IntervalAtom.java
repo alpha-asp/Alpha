@@ -1,13 +1,12 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.Variable;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.ArrayList;
@@ -42,11 +41,11 @@ public class IntervalAtom implements FixedInterpretationLiteral {
 		Term intervalRepresentingVariable = terms.get(1);
 		IntervalTerm intervalTerm = (IntervalTerm) terms.get(0);
 		// Check whether intervalRepresentingVariable is bound already.
-		if (intervalRepresentingVariable instanceof Variable) {
+		if (intervalRepresentingVariable instanceof VariableTerm) {
 			// Still a variable, generate all elements in the interval.
 			for (int i = intervalTerm.getLowerBound(); i <= intervalTerm.getUpperBound(); i++) {
 				Substitution ith = new Substitution(partialSubstitution);
-				ith.put((Variable) intervalRepresentingVariable, ConstantTerm.getInstance(i));
+				ith.put((VariableTerm) intervalRepresentingVariable, ConstantTerm.getInstance(i));
 				substitutions.add(ith);
 			}
 			return substitutions;
@@ -81,15 +80,15 @@ public class IntervalAtom implements FixedInterpretationLiteral {
 	}
 
 	@Override
-	public List<Variable> getBindingVariables() {
-		if (terms.get(1) instanceof Variable) {
-			return Collections.singletonList((Variable) terms.get(1));
+	public List<VariableTerm> getBindingVariables() {
+		if (terms.get(1) instanceof VariableTerm) {
+			return Collections.singletonList((VariableTerm) terms.get(1));
 		}
 		return Collections.emptyList();
 	}
 
 	@Override
-	public List<Variable> getNonBindingVariables() {
+	public List<VariableTerm> getNonBindingVariables() {
 		return terms.get(0).getOccurringVariables();
 	}
 

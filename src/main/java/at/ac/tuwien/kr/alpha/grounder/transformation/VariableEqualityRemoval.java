@@ -7,7 +7,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.Variable;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.*;
@@ -26,7 +26,7 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 
 	private void findAndReplaceVariableEquality(Rule rule) {
 		// Collect all equal variables.
-		HashMap<Variable, HashSet<Variable>> variableToEqualVariables = new HashMap<>();
+		HashMap<VariableTerm, HashSet<VariableTerm>> variableToEqualVariables = new HashMap<>();
 		//HashSet<Variable> equalVariables = new LinkedHashSet<>();
 		HashSet<Literal> equalitiesToRemove = new HashSet<>();
 		for (Literal literal : rule.getBody()) {
@@ -36,13 +36,13 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 			if (!((ComparisonAtom) literal).isNormalizedEquality()) {
 				continue;
 			}
-			if (literal.getTerms().get(0) instanceof Variable && literal.getTerms().get(1) instanceof Variable) {
-				Variable leftVariable = (Variable) literal.getTerms().get(0);
-				Variable rightVariable = (Variable) literal.getTerms().get(1);
-				HashSet<Variable> leftEqualVariables = variableToEqualVariables.get(leftVariable);
-				HashSet<Variable> rightEqualVariables = variableToEqualVariables.get(rightVariable);
+			if (literal.getTerms().get(0) instanceof VariableTerm && literal.getTerms().get(1) instanceof VariableTerm) {
+				VariableTerm leftVariable = (VariableTerm) literal.getTerms().get(0);
+				VariableTerm rightVariable = (VariableTerm) literal.getTerms().get(1);
+				HashSet<VariableTerm> leftEqualVariables = variableToEqualVariables.get(leftVariable);
+				HashSet<VariableTerm> rightEqualVariables = variableToEqualVariables.get(rightVariable);
 				if (leftEqualVariables == null && rightEqualVariables == null) {
-					HashSet<Variable> equalVariables = new LinkedHashSet<>(Arrays.asList(leftVariable, rightVariable));
+					HashSet<VariableTerm> equalVariables = new LinkedHashSet<>(Arrays.asList(leftVariable, rightVariable));
 					variableToEqualVariables.put(leftVariable, equalVariables);
 					variableToEqualVariables.put(rightVariable, equalVariables);
 				}
@@ -56,7 +56,7 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 				}
 				if (leftEqualVariables != null && rightEqualVariables != null) {
 					leftEqualVariables.addAll(rightEqualVariables);
-					for (Variable rightEqualVariable : rightEqualVariables) {
+					for (VariableTerm rightEqualVariable : rightEqualVariables) {
 						variableToEqualVariables.put(rightEqualVariable, leftEqualVariables);
 					}
 				}
@@ -71,9 +71,9 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 		// Use substitution for actual replacement.
 		Substitution replacementSubstitution = new Substitution();
 		// For each set of equal variables, take the first variable and replace all others by it.
-		for (Map.Entry<Variable, HashSet<Variable>> variableEqualityEntry : variableToEqualVariables.entrySet()) {
-			Variable variableToReplace = variableEqualityEntry.getKey();
-			Variable replacementVariable = variableEqualityEntry.getValue().iterator().next();
+		for (Map.Entry<VariableTerm, HashSet<VariableTerm>> variableEqualityEntry : variableToEqualVariables.entrySet()) {
+			VariableTerm variableToReplace = variableEqualityEntry.getKey();
+			VariableTerm replacementVariable = variableEqualityEntry.getValue().iterator().next();
 			if (variableToReplace == replacementVariable) {
 				continue;
 			}

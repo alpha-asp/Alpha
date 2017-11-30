@@ -34,13 +34,8 @@ import java.util.*;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
-<<<<<<< HEAD
- * This class stores ground atoms and provides the translation from an (integer) atomId to a (structured) interpretation instance.
- * Copyright (c) 2016, the Alpha Team.
-=======
  * This class stores ground atoms and provides the translation from an (integer) atomId to a (structured) predicate instance.
  * Copyright (c) 2016-2017, the Alpha Team.
->>>>>>> master
  */
 public class AtomStore {
 	private List<Atom> atomIdsToInternalBasicAtoms = new ArrayList<>();
@@ -59,7 +54,7 @@ public class AtomStore {
 	}
 
 	/**
-	 * Returns the AtomId associated with a given ground interpretation instance (=ground atom).
+	 * Returns the AtomId associated with a given ground predicate instance (=ground atom).
 	 * @param groundAtom
 	 * @return
 	 */

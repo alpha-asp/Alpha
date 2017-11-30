@@ -112,7 +112,6 @@ public class Alpha {
 	}
 
 	public <T> void register(String name, java.util.function.Predicate<T> predicate) {
-
 		this.predicateMethods.put(name, new UnaryPredicateInterpretation<>(predicate));
 	}
 

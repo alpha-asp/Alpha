@@ -36,7 +36,7 @@ public class ConstantTerm<T extends Comparable<T>> extends Term {
 	}
 
 	@Override
-	public List<Variable> getOccurringVariables() {
+	public List<VariableTerm> getOccurringVariables() {
 		return Collections.emptyList();
 	}
 

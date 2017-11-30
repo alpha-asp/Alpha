@@ -315,7 +315,6 @@ public class AlphaTest {
 	 * Runs tests that formerly caused some sort of exception.
 	 */
 	@Test
-	@Ignore
 	public void problematicRuns() throws IOException {
 		/* NOTE: This was constructed from the following commandline invocations:
 

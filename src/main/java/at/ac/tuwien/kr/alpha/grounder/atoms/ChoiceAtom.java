@@ -1,10 +1,10 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.Variable;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Collections;
@@ -53,13 +53,13 @@ public class ChoiceAtom implements Atom {
 	}
 
 	@Override
-	public List<Variable> getBindingVariables() {
+	public List<VariableTerm> getBindingVariables() {
 		// NOTE: Term is a ConstantTerm, which has no variables by definition.
 		return Collections.emptyList();
 	}
 
 	@Override
-	public List<Variable> getNonBindingVariables() {
+	public List<VariableTerm> getNonBindingVariables() {
 		return Collections.emptyList();
 	}
 

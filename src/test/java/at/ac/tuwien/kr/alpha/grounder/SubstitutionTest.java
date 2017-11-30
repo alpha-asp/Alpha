@@ -27,12 +27,12 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.Variable;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.junit.Test;
 
@@ -47,8 +47,8 @@ public class SubstitutionTest {
 	private static ConstantTerm<?> b = ConstantTerm.getSymbolicInstance("b");
 	private static ConstantTerm<?> c = ConstantTerm.getSymbolicInstance("c");
 
-	private static Variable x = Variable.getInstance("X");
-	private static Variable y = Variable.getInstance("Y");
+	private static VariableTerm x = VariableTerm.getInstance("X");
+	private static VariableTerm y = VariableTerm.getInstance("Y");
 
 	@Test
 	public void unifyTermsSimpleBinding() throws Exception {
@@ -67,8 +67,8 @@ public class SubstitutionTest {
 
 		substitution.unifyTerms(nongroundFunctionTerm, groundFunctionTerm);
 
-		assertEquals(c, substitution.apply(x));
-		assertEquals(a, substitution.apply(y));
+		assertEquals(c, substitution.eval(x));
+		assertEquals(a, substitution.eval(y));
 	}
 
 	@Test

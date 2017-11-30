@@ -1,10 +1,10 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.Variable;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
@@ -15,7 +15,7 @@ import java.util.List;
 import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
 
 /**
- * Atoms corresponding to rule bodies use this interpretation, first term is rule number,
+ * Atoms corresponding to rule bodies use this predicate, first term is rule number,
  * second is a term containing variable substitutions.
  */
 public class RuleAtom implements Atom {
@@ -58,13 +58,13 @@ public class RuleAtom implements Atom {
 	}
 
 	@Override
-	public List<Variable> getBindingVariables() {
+	public List<VariableTerm> getBindingVariables() {
 		// NOTE: Both terms are ConstantTerms, which have no variables by definition.
 		return Collections.emptyList();
 	}
 
 	@Override
-	public List<Variable> getNonBindingVariables() {
+	public List<VariableTerm> getNonBindingVariables() {
 		return Collections.emptyList();
 	}
 

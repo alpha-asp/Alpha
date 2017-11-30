@@ -4,13 +4,8 @@ import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.*;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -361,21 +356,21 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public Variable visitTerm_anonymousVariable(ASPCore2Parser.Term_anonymousVariableContext ctx) {
+	public VariableTerm visitTerm_anonymousVariable(ASPCore2Parser.Term_anonymousVariableContext ctx) {
 		if (!acceptVariables) {
 			throw notSupported(ctx);
 		}
 
-		return Variable.getAnonymousInstance();
+		return VariableTerm.getAnonymousInstance();
 	}
 
 	@Override
-	public Variable visitTerm_variable(ASPCore2Parser.Term_variableContext ctx) {
+	public VariableTerm visitTerm_variable(ASPCore2Parser.Term_variableContext ctx) {
 		if (!acceptVariables) {
 			throw notSupported(ctx);
 		}
 
-		return Variable.getInstance(ctx.VARIABLE().getText());
+		return VariableTerm.getInstance(ctx.VARIABLE().getText());
 	}
 
 	@Override
@@ -429,8 +424,8 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		ASPCore2Parser.IntervalContext ictx = ctx.interval();
 		String lowerText = ictx.lower.getText();
 		String upperText = ictx.upper.getText();
-		Term lower = ictx.lower.getType() == ASPCore2Lexer.NUMBER ? ConstantTerm.getInstance(Integer.parseInt(lowerText)) : Variable.getInstance(lowerText);
-		Term upper = ictx.upper.getType() == ASPCore2Lexer.NUMBER ? ConstantTerm.getInstance(Integer.parseInt(upperText)) : Variable.getInstance(upperText);
+		Term lower = ictx.lower.getType() == ASPCore2Lexer.NUMBER ? ConstantTerm.getInstance(Integer.parseInt(lowerText)) : VariableTerm.getInstance(lowerText);
+		Term upper = ictx.upper.getType() == ASPCore2Lexer.NUMBER ? ConstantTerm.getInstance(Integer.parseInt(upperText)) : VariableTerm.getInstance(upperText);
 		return IntervalTerm.getInstance(lower, upper);
 	}
 

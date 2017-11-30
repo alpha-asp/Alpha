@@ -32,9 +32,10 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.Variable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -121,95 +122,8 @@ public class NonGroundRule {
 	 * @return true if this rule is safe.
 	 */
 	private void checkSafety() {
-		Set<Variable> bindingVariables = new HashSet<>();
-		Set<Variable> nonbindingVariables = new HashSet<>();
-
-		// Check that all negative variables occur in the positive body.
-		for (Atom posAtom : bodyAtomsPositive) {
-			bindingVariables.addAll(posAtom.getBindingVariables());
-			nonbindingVariables.addAll(posAtom.getNonBindingVariables());
-		}
-
-		for (Atom negAtom : bodyAtomsNegative) {
-			// No variables in a negated atom are binding.
-			nonbindingVariables.addAll(negAtom.getBindingVariables());
-			nonbindingVariables.addAll(negAtom.getNonBindingVariables());
-		}
-
-		// Rule heads must be safe, i.e., all their variables must be bound by the body.
-		if (!isConstraint()) {
-			nonbindingVariables.addAll(headAtom.getBindingVariables());
-			nonbindingVariables.addAll(headAtom.getNonBindingVariables());
-		}
-
-		// Check that all non-binding variables are bound in this rule.
-		nonbindingVariables.removeAll(bindingVariables);
-
-		if (nonbindingVariables.isEmpty()) {
-			return;
-		}
-
-		throw new RuntimeException("Encountered unsafe variable " + nonbindingVariables.iterator().next().toString() + " in rule: " + toString()
-			+ "\nNotice: A rule is considered safe if all variables occurring in negative literals, builtin atoms, and the head of the rule also occur in some positive litera.");
-	}
-
-	/**
-	 * Returns the interpretation occurring first in the body of the rule.
-	 * @return the first interpretation of the body or null if the first interpretation is a builtin interpretation.
-	 */
-	public Predicate usedFirstBodyPredicate() {
-		if (!bodyAtomsPositive.isEmpty()) {
-			return (bodyAtomsPositive.get(0)).getPredicate();
-		} else if (!bodyAtomsNegative.isEmpty()) {
-			return (bodyAtomsNegative.get(0)).getPredicate();
-		}
-		throw new RuntimeException("Encountered NonGroundRule with empty body, which should have been treated as a fact.");
-	}
-
-	public boolean isFirstBodyPredicatePositive() {
-		return bodyAtomsPositive.size() > 0;
-	}
-
-	/**
-	 * Returns the n-th atom in the body of this non-ground rule.
-	 * @param atomPosition 0-based position of the body atom.
-	 * @return
-	 */
-	public Literal getBodyAtom(int atomPosition) {
-		if (atomPosition < bodyAtomsPositive.size()) {
-			return bodyAtomsPositive.get(atomPosition);
-		} else {
-			return bodyAtomsNegative.get(atomPosition - bodyAtomsPositive.size());
-		}
-	}
-
-	public int getFirstOccurrenceOfPredicate(Predicate predicate) {
-		for (int i = 0; i < getNumBodyAtoms(); i++) {
-			if (getBodyAtom(i).getPredicate().equals(predicate)) {
-				return i;
-			}
-		}
-		throw new RuntimeException("Predicate " + predicate + " does not occur in rule " + this);
-	}
-
-	public boolean isBodyAtomPositive(int atomPosition) {
-		return atomPosition < bodyAtomsPositive.size();
-	}
-
-	/**
-	 * Returns all predicates occurring in the negative body of the rule.
-	 * @return
-	 */
-	public List<Predicate> usedNegativeBodyPredicates() {
-		ArrayList<Predicate> usedPredicates = new ArrayList<>(bodyAtomsNegative.size());
-		for (Atom basicAtom : bodyAtomsNegative) {
-			usedPredicates.add(basicAtom.getPredicate());
-		}
-		return usedPredicates;
-	}
-
-	public int getNumBodyAtoms() {
-		return bodyAtomsPositive.size() + bodyAtomsNegative.size();
+		// TODO: either do full check here or rely on RuleGroundingOrder to detect non-safety (on already-transformed rules, however).
+		return;
 	}
 
 	public boolean isConstraint() {
@@ -227,36 +141,6 @@ public class NonGroundRule {
 			bodyAtomsNegative,
 			"."
 		);
-	}
-
-	private class SortingBodyComponent {
-		private final Set<Variable> occurringVariables;
-		private final Set<Literal> atoms;
-		private final List<Literal> atomSequence;
-		int numAtoms;
-
-		SortingBodyComponent(Literal atom) {
-			this.occurringVariables = new LinkedHashSet<>(atom.getBindingVariables());
-			this.atoms = new LinkedHashSet<>();
-			this.atoms.add(atom);
-			this.atomSequence = new ArrayList<>();
-			this.atomSequence.add(atom);
-			this.numAtoms = 1;
-		}
-
-		void add(Literal atom) {
-			this.atoms.add(atom);
-			this.atomSequence.add(atom);
-			this.occurringVariables.addAll(atom.getBindingVariables());
-			this.numAtoms++;
-		}
-
-		void merge(SortingBodyComponent other) {
-			occurringVariables.addAll(other.occurringVariables);
-			atoms.addAll(other.atoms);
-			numAtoms += other.numAtoms;
-			atomSequence.addAll(other.atomSequence);
-		}
 	}
 
 	public Rule getRule() {

@@ -57,8 +57,8 @@ public class FunctionTerm extends Term {
 	}
 
 	@Override
-	public List<Variable> getOccurringVariables() {
-		LinkedList<Variable> vars = new LinkedList<>();
+	public List<VariableTerm> getOccurringVariables() {
+		LinkedList<VariableTerm> vars = new LinkedList<>();
 		for (Term term : terms) {
 			vars.addAll(term.getOccurringVariables());
 		}
