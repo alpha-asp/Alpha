@@ -1,9 +1,12 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
+import at.ac.tuwien.kr.alpha.common.Interner;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.LinkedList;
 import java.util.List;
+
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * An IntervalTerm represents the shorthand notation for a set of rules where all elements in this interval occur once, e.g., fact(2..5).
@@ -11,8 +14,12 @@ import java.util.List;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class IntervalTerm extends Term {
+	private static final Interner<IntervalTerm> INTERNER = new Interner<>();
 	private final Term lowerBoundTerm;
 	private final Term upperBoundTerm;
+
+	private final int lowerBound;
+	private final int upperBound;
 
 	private final boolean ground;
 
@@ -21,14 +28,22 @@ public class IntervalTerm extends Term {
 			throw new IllegalArgumentException();
 		}
 
-		this.ground = lowerBound.isGround() && upperBound.isGround();
+		this.ground = !((lowerBound instanceof Variable) || (upperBound instanceof Variable));
 
 		this.lowerBoundTerm = lowerBound;
 		this.upperBoundTerm = upperBound;
+
+		if (this.ground) {
+			this.upperBound = Integer.parseInt(upperBoundTerm.toString());
+			this.lowerBound = Integer.parseInt(lowerBoundTerm.toString());
+		} else {
+			this.upperBound = -1;
+			this.lowerBound = -1;
+		}
 	}
 
 	public static IntervalTerm getInstance(Term lowerBound, Term upperBound) {
-		return new IntervalTerm(lowerBound, upperBound);
+		return INTERNER.intern(new IntervalTerm(lowerBound, upperBound));
 	}
 
 	@Override
@@ -36,18 +51,18 @@ public class IntervalTerm extends Term {
 		return this.ground;
 	}
 
-	public Term getLowerBound() {
+	public int getLowerBound() {
 		if (!isGround()) {
-			throw new RuntimeException("Cannot get the lower bound of non-ground interval. Should not happen.");
+			throw oops("Cannot get the lower bound of non-ground interval");
 		}
-		return this.lowerBoundTerm;
+		return this.lowerBound;
 	}
 
-	public Term getUpperBound() {
+	public int getUpperBound() {
 		if (!isGround()) {
-			throw new RuntimeException("Cannot get the upper bound of non-ground interval. Should not happen.");
+			throw oops("Cannot get the upper bound of non-ground interval");
 		}
-		return this.upperBoundTerm;
+		return this.upperBound;
 	}
 
 	@Override
@@ -86,19 +101,26 @@ public class IntervalTerm extends Term {
 
 		IntervalTerm that = (IntervalTerm) o;
 
-		return lowerBoundTerm.equals(that.lowerBoundTerm) && upperBoundTerm.equals(that.upperBoundTerm);
+		if (!lowerBoundTerm.equals(that.lowerBoundTerm)) {
+			return false;
+		}
+		return upperBoundTerm.equals(that.upperBoundTerm);
+
 	}
 
 	@Override
 	public int hashCode() {
-		int result = lowerBoundTerm.hashCode();
-		result = 31 * result + upperBoundTerm.hashCode();
-		return result;
+		return 31 * lowerBoundTerm.hashCode() + upperBoundTerm.hashCode();
 	}
 
 	@Override
 	public int compareTo(Term o) {
 		throw new UnsupportedOperationException("Intervals cannot be compared.");
+	}
+
+	@Override
+	public Term renameVariables(String renamePrefix) {
+		return new IntervalTerm(lowerBoundTerm.renameVariables(renamePrefix), upperBoundTerm.renameVariables(renamePrefix));
 	}
 
 	/**
@@ -128,6 +150,4 @@ public class IntervalTerm extends Term {
 		}
 		return false;
 	}
-
-
 }

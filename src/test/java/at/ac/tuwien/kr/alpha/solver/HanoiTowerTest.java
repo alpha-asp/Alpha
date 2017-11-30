@@ -29,12 +29,11 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.Constant;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.antlr.v4.runtime.CharStreams;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -52,11 +51,6 @@ import static org.junit.Assert.assertTrue;
 @Ignore("disabled to save resources during CI")
 public class HanoiTowerTest extends AbstractSolverTests {
 	private final ProgramParser parser = new ProgramParser();
-
-	@Before
-	public void printSolverName() {
-		System.out.println(solverName);
-	}
 
 	@Test(timeout = 10000)
 	public void testInstance1() throws IOException {
@@ -93,7 +87,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		Solver solver = getInstance(parsedProgram);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		assertTrue(answerSet.isPresent());
-		System.out.println(answerSet.get());
+		//System.out.println(answerSet.get());
 		checkGoal(parsedProgram, answerSet.get());
 	}
 
@@ -102,15 +96,15 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	 * fact in the input there is a corresponding on/3 atom in the output.
 	 */
 	private void checkGoal(Program parsedProgram, AnswerSet answerSet) {
-		Predicate ongoal = new Predicate("ongoal", 2);
-		Predicate on = new Predicate("on", 3);
+		Predicate ongoal = Predicate.getInstance("ongoal", 2);
+		Predicate on = Predicate.getInstance("on", 3);
 		int steps = getSteps(parsedProgram);
 		SortedSet<Atom> onInstancesInAnswerSet = answerSet.getPredicateInstances(on);
 		for (Atom atom : parsedProgram.getFacts()) {
-			if (atom.getPredicate().getSymbol().equals(ongoal.getSymbol()) && atom.getPredicate().getRank() == ongoal.getRank()) {
-				Term expectedTop = Constant.getInstance(atom.getTerms().get(0).toString());
-				Term expectedBottom = Constant.getInstance(atom.getTerms().get(1).toString());
-				Term expectedSteps = Constant.getInstance(String.valueOf(steps));
+			if (atom.getPredicate().getName().equals(ongoal.getName()) && atom.getPredicate().getArity() == ongoal.getArity()) {
+				Term expectedTop = ConstantTerm.getInstance(atom.getTerms().get(0).toString());
+				Term expectedBottom = ConstantTerm.getInstance(atom.getTerms().get(1).toString());
+				Term expectedSteps = ConstantTerm.getInstance(String.valueOf(steps));
 				Atom expectedAtom = new BasicAtom(on, expectedSteps, expectedBottom, expectedTop);
 				assertTrue("Answer set does not contain " + expectedAtom, onInstancesInAnswerSet.contains(expectedAtom));
 			}
@@ -118,9 +112,9 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	}
 
 	private int getSteps(Program parsedProgram) {
-		Predicate steps = new Predicate("steps", 1);
+		Predicate steps = Predicate.getInstance("steps", 1);
 		for (Atom atom : parsedProgram.getFacts()) {
-			if (atom.getPredicate().getSymbol().equals(steps.getSymbol()) && atom.getPredicate().getRank() == steps.getRank()) {
+			if (atom.getPredicate().getName().equals(steps.getName()) && atom.getPredicate().getArity() == steps.getArity()) {
 				return Integer.valueOf(atom.getTerms().get(0).toString());
 			}
 		}

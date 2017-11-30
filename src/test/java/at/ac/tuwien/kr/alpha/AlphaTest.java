@@ -1,19 +1,27 @@
 package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
-import at.ac.tuwien.kr.alpha.common.interpretations.ExternalMethodPredicate;
-import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.Constant;
+import at.ac.tuwien.kr.alpha.common.fixedinterpretations.MethodPredicateInterpretation;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.*;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class AlphaTest {
 	private static int invocations;
@@ -77,9 +85,9 @@ public class AlphaTest {
 		Alpha system = new Alpha();
 		system.register("getLargeGraphEdges", () ->
 			new HashSet<>(asList(
-				asList(Constant.getInstance(1), Constant.getInstance(2)),
-				asList(Constant.getInstance(2), Constant.getInstance(1)),
-				asList(Constant.getInstance(13), Constant.getInstance(1))
+				asList(ConstantTerm.getInstance(1), ConstantTerm.getInstance(2)),
+				asList(ConstantTerm.getInstance(2), ConstantTerm.getInstance(1)),
+				asList(ConstantTerm.getInstance(13), ConstantTerm.getInstance(1))
 			))
 		);
 
@@ -91,7 +99,7 @@ public class AlphaTest {
 	@Test
 	public void supplier() throws Exception {
 		Alpha system = new Alpha();
-		system.register("bestNode", () -> singleton(singletonList(Constant.getInstance(1))));
+		system.register("bestNode", () -> singleton(singletonList(ConstantTerm.getInstance(1))));
 
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ node(1), a }");
 		Set<AnswerSet> actual = system.solve("node(1). a :- &bestNode(X), node(X).").collect(Collectors.toSet());
@@ -99,8 +107,8 @@ public class AlphaTest {
 	}
 
 	@at.ac.tuwien.kr.alpha.Predicate
-	public static Set<List<Constant>> bestNode() {
-		return singleton(singletonList(Constant.getInstance(1)));
+	public static Set<List<ConstantTerm>> bestNode() {
+		return singleton(singletonList(ConstantTerm.getInstance(1)));
 	}
 
 	@Test
@@ -121,17 +129,17 @@ public class AlphaTest {
 		system.solve("a :- &connected[\"hello\",2].").collect(Collectors.toSet());
 	}
 
-	public static Set<List<Constant<Integer>>> neighbors(int node) {
+	public static Set<List<ConstantTerm<Integer>>> neighbors(int node) {
 		if (node == 1) {
 			return new HashSet<>(asList(
-				singletonList(Constant.getInstance(2)),
-				singletonList(Constant.getInstance(3))
+				singletonList(ConstantTerm.getInstance(2)),
+				singletonList(ConstantTerm.getInstance(3))
 			));
 		}
 		return emptySet();
 	}
 
-	public static Set<List<Constant<Integer>>> coolNode(int node) {
+	public static Set<List<ConstantTerm<Integer>>> coolNode(int node) {
 		if (node == 1) {
 			return singleton(emptyList());
 		}
@@ -139,6 +147,7 @@ public class AlphaTest {
 	}
 
 	@Test
+	@Ignore("Test program is not safe (external lacking output variables). This should throw some exception.")
 	public void smallGraphNoNeighbors() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("neighbors", int.class));
@@ -169,6 +178,7 @@ public class AlphaTest {
 	}
 
 	@Test
+	@Ignore("Test program is not safe (external lacking output variables). This should throw some exception.")
 	public void smallGraphSingleNeighborNoTerm() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("neighbors", int.class));
@@ -197,12 +207,12 @@ public class AlphaTest {
 		SubThingy thingy = new SubThingy();
 
 		Rule rule = new Rule(
-			new DisjunctiveHead(Collections.singletonList(new BasicAtom(new Predicate("p", 1), Constant.getInstance("x")))),
+			new DisjunctiveHead(Collections.singletonList(new BasicAtom(Predicate.getInstance("p", 1), ConstantTerm.getInstance("x")))),
 			singletonList(
 				new ExternalAtom(
-					new Predicate("thinger", 1),
-					new ExternalMethodPredicate(this.getClass().getMethod("thinger", Thingy.class)),
-					singletonList(Constant.getInstance(thingy)),
+					Predicate.getInstance("thinger", 1),
+					new MethodPredicateInterpretation(this.getClass().getMethod("thinger", Thingy.class)),
+					singletonList(ConstantTerm.getInstance(thingy)),
 					emptyList(),
 					false
 				)
@@ -241,6 +251,7 @@ public class AlphaTest {
 	}
 
 	@Test
+	@Ignore("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
 	public void withExternalInvocationCounted1() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", int.class));
@@ -255,6 +266,7 @@ public class AlphaTest {
 	}
 
 	@Test
+	@Ignore("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
 	public void withExternalInvocationCounted2() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", int.class));
@@ -269,6 +281,7 @@ public class AlphaTest {
 	}
 
 	@Test
+	@Ignore("External atom has state, which is not allowed. Caching of calls makes the number of invocations wrong.")
 	public void withExternalInvocationCounted3() throws Exception {
 		Alpha system = new Alpha();
 		system.register(this.getClass().getMethod("isOne", int.class));
@@ -296,5 +309,35 @@ public class AlphaTest {
 		Set<AnswerSet> actual = system.solve("p(\"a\").").collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("p").instance("a").build()));
 		assertEquals(expected, actual);
+	}
+
+	/**
+	 * Runs tests that formerly caused some sort of exception.
+	 */
+	@Test
+	@Ignore
+	public void problematicRuns() throws IOException {
+		/* NOTE: This was constructed from the following commandline invocations:
+
+			-DebugEnableInternalChecks -q -g naive -s default -e 1119654162577372 -n 200 -i 3col-20-38.txt
+			-DebugEnableInternalChecks -q -g naive -s default -e 1119718541727902 -n 200 -i 3col-20-38.txt
+			-DebugEnableInternalChecks -q -g naive -s default -e 97598271567626   -n   2 -i vehicle_normal_small.asp
+			-DebugEnableInternalChecks -q -g naive -s default -sort               -n 400 -i 3col-20-38.txt
+		*/
+
+		final Path base = Paths.get("src", "test", "resources", "PreviouslyProblematic");
+		final Alpha system = new Alpha("naive", "default", "alpharoaming", true);
+
+		system.setSeed(1119654162577372L);
+		assertFalse(system.solve(base.resolve("3col-20-38.txt")).limit(200).collect(Collectors.toList()).isEmpty());
+
+		system.setSeed(1119718541727902L);
+		assertFalse(system.solve(base.resolve("3col-20-38.txt")).limit(200).collect(Collectors.toList()).isEmpty());
+
+		system.setSeed(1119718541727902L);
+		assertFalse(system.solve(base.resolve("vehicle_normal_small.asp")).limit(2).collect(Collectors.toList()).isEmpty());
+
+		system.setSeed(1119718541727902L);
+		assertFalse(system.solve(base.resolve("3col-20-38.txt")).sorted().limit(400).collect(Collectors.toList()).isEmpty());
 	}
 }

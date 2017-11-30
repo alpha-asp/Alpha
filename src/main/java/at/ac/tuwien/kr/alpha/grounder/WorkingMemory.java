@@ -2,7 +2,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.HashMap;
@@ -23,10 +23,10 @@ public class WorkingMemory {
 			return;
 		}
 
-		IndexedInstanceStorage pos = new IndexedInstanceStorage(predicate.getSymbol() + "+", predicate.getRank());
-		IndexedInstanceStorage neg = new IndexedInstanceStorage(predicate.getSymbol() + "-", predicate.getRank());
+		IndexedInstanceStorage pos = new IndexedInstanceStorage(predicate.getName() + "+", predicate.getArity());
+		IndexedInstanceStorage neg = new IndexedInstanceStorage(predicate.getName() + "-", predicate.getArity());
 		// Index all positions of the storage (may impair efficiency)
-		for (int i = 0; i < predicate.getRank(); i++) {
+		for (int i = 0; i < predicate.getArity(); i++) {
 			pos.addIndexPosition(i);
 			neg.addIndexPosition(i);
 		}

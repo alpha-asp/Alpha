@@ -3,7 +3,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
 import static at.ac.tuwien.kr.alpha.Util.entry;
+import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 
@@ -32,10 +33,10 @@ public class DummyGrounder implements Grounder {
 	private static final int RULE_B = 13; // { -_br1, a, b }
 	private static final int RULE_H = 14; // { -c, _br1 }
 	private static final Map<Integer, NoGood> NOGOODS = Stream.of(
-		entry(FACT_A, new NoGood(new int[]{-1 }, 0)),
-		entry(FACT_B, new NoGood(new int[]{-2 }, 0)),
-		entry(RULE_B, new NoGood(new int[]{-3, 1, 2 }, 0)),
-		entry(RULE_H, new NoGood(new int[]{-4, 3 }, 0))
+		entry(FACT_A, headFirst(-1)),
+		entry(FACT_B, headFirst(-2)),
+		entry(RULE_B, headFirst(-3, 1, 2)),
+		entry(RULE_H, headFirst(-4, 3))
 	).collect(entriesToMap());
 	private static Map<Integer, String> atomIdToString = Stream.of(
 		entry(1, "a"),
@@ -108,11 +109,11 @@ public class DummyGrounder implements Grounder {
 
 		SortedSet<Predicate> trueAtomPredicates = new TreeSet<>();
 		for (int trueAtom : trueAtoms) {
-			Predicate atomPredicate = new Predicate(atomIdToString.get(trueAtom), 0);
+			Predicate atomPredicate = Predicate.getInstance(atomIdToString.get(trueAtom), 0);
 			if (!filter.test(atomPredicate)) {
 				continue;
 			}
-			if ("_br1".equals(atomPredicate.getSymbol())) {
+			if ("_br1".equals(atomPredicate.getName())) {
 				continue;
 			}
 			trueAtomPredicates.add(atomPredicate);

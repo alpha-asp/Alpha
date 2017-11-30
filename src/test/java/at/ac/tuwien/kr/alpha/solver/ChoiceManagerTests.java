@@ -50,7 +50,8 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 		Program parsedProgram = new ProgramParser().parse(testProgram);
 		this.grounder = new NaiveGrounder(parsedProgram);
 		WritableAssignment assignment = new ArrayAssignment();
-		this.choiceManager = new ChoiceManager(assignment);
+		NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment);
+		this.choiceManager = new ChoiceManager(assignment, store);
 	}
 
 	@Test
@@ -61,7 +62,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 			for (Integer literal : noGood) {
 				int atom = atomOf(literal);
 				String atomToString = grounder.atomToString(atom);
-				if (atomToString.startsWith(RuleAtom.PREDICATE.getSymbol())) {
+				if (atomToString.startsWith(RuleAtom.PREDICATE.getName())) {
 					assertTrue("Atom not choice: " + atomToString, choiceManager.isAtomChoice(atom));
 				}
 			}

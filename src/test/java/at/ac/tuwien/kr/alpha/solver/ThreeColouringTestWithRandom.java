@@ -26,11 +26,11 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.Constant;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.junit.Ignore;
@@ -160,11 +160,8 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 		program.getFacts().addAll(createEdges(n, shuffle, seed));
 
 		Solver solver = getInstance(program);
-
-		System.out.println(program);
-
 		Optional<AnswerSet> answerSet = solver.stream().findAny();
-		System.out.println(answerSet);
+		//System.out.println(answerSet);
 		// TODO: check correctness of answer set
 	}
 
@@ -172,8 +169,8 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 		List<Atom> facts = new ArrayList<>(colours.length);
 		for (String colour : colours) {
 			List<Term> terms = new ArrayList<>(1);
-			terms.add(Constant.getInstance(colour));
-			facts.add(new BasicAtom(new Predicate("c", 1), terms));
+			terms.add(ConstantTerm.getInstance(colour));
+			facts.add(new BasicAtom(Predicate.getInstance("c", 1), terms));
 		}
 		return facts;
 	}
@@ -216,9 +213,9 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 
 	private Atom fact(String predicateName, int... iTerms) {
 		List<Term> terms = new ArrayList<>(iTerms.length);
-		Predicate predicate = new Predicate(predicateName, iTerms.length);
+		Predicate predicate = Predicate.getInstance(predicateName, iTerms.length);
 		for (int i : iTerms) {
-			terms.add(Constant.getInstance(i));
+			terms.add(ConstantTerm.getInstance(i));
 		}
 		return new BasicAtom(predicate, terms);
 	}

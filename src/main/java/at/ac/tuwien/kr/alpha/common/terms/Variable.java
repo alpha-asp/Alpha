@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2017, the Alpha Team.
  */
 public class Variable extends Term {
 	private static final Interner<Variable> INTERNER = new Interner<>();
@@ -87,5 +87,10 @@ public class Variable extends Term {
 
 		Variable other = (Variable)o;
 		return variableName.compareTo(other.variableName);
+	}
+
+	@Override
+	public Term renameVariables(String renamePrefix) {
+		return VariableTerm.getInstance(renamePrefix + variableName);
 	}
 }

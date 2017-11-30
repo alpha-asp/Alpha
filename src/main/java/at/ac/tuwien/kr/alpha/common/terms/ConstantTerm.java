@@ -1,8 +1,6 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
-import at.ac.tuwien.kr.alpha.common.symbols.FunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.Interner;
-import at.ac.tuwien.kr.alpha.common.symbols.SymbolWithRank;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Collections;
@@ -11,25 +9,25 @@ import java.util.List;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class Constant<T extends Comparable<T>> extends Term implements FunctionSymbol<T> {
-	private static final Interner<Constant> INTERNER = new Interner<>();
+public class ConstantTerm<T extends Comparable<T>> extends Term {
+	private static final Interner<ConstantTerm> INTERNER = new Interner<>();
 
-	private final T symbol;
+	private final T object;
 	private final boolean symbolic;
 
-	private Constant(T symbol, boolean symbolic) {
-		this.symbol = symbol;
+	private ConstantTerm(T object, boolean symbolic) {
+		this.object = object;
 		this.symbolic = symbolic;
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T extends Comparable<T>> Constant<T> getInstance(T symbol) {
-		return (Constant<T>) INTERNER.intern(new Constant<>(symbol, false));
+	public static <T extends Comparable<T>> ConstantTerm<T> getInstance(T symbol) {
+		return (ConstantTerm<T>) INTERNER.intern(new ConstantTerm<>(symbol, false));
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T extends Comparable<T>> Constant<T> getSymbolicInstance(String symbol) {
-		return (Constant<T>) INTERNER.intern(new Constant<>(symbol, true));
+	public static <T extends Comparable<T>> ConstantTerm<T> getSymbolicInstance(String symbol) {
+		return (ConstantTerm<T>) INTERNER.intern(new ConstantTerm<>(symbol, true));
 	}
 
 	@Override
@@ -49,16 +47,14 @@ public class Constant<T extends Comparable<T>> extends Term implements FunctionS
 
 	@Override
 	public String toString() {
-		if (symbol instanceof String) {
+		if (object instanceof String) {
 			if (symbolic) {
-				return (String) symbol;
+				return (String) object;
 			} else {
-				return "\"" + symbol + "\"";
+				return "\"" + object + "\"";
 			}
 		}
-		return symbol.toString();
-
-		// return symbol + "/" + rank;
+		return object.toString();
 	}
 
 	@Override
@@ -71,14 +67,14 @@ public class Constant<T extends Comparable<T>> extends Term implements FunctionS
 			return false;
 		}
 
-		Constant that = (Constant) o;
+		ConstantTerm that = (ConstantTerm) o;
 
-		return symbol.equals(that.symbol);
+		return object.equals(that.object);
 	}
 
 	@Override
 	public int hashCode() {
-		int result = symbol.hashCode();
+		int result = object.hashCode();
 		result = 31 * result + (symbolic ? 1 : 0);
 		return result;
 	}
@@ -87,13 +83,11 @@ public class Constant<T extends Comparable<T>> extends Term implements FunctionS
 	 * Establishes "priority" for ordering of constant terms depending on the type
 	 * of the corresponding object according to ASP-Core-2.03c.
 	 */
-	private static final int priority(final Class<?> clazz) {
+	private static final int priority(final Class<?> clazz, ConstantTerm<?> term) {
 		if (clazz.equals(Integer.class)) {
 			return 1;
-		} else if (clazz.equals(SymbolWithRank.class)) {
-			return 2;
 		} else if (clazz.equals(String.class)) {
-			return 3;
+			return term.symbolic ? 2 : 3;
 		}
 		return 0;
 	}
@@ -105,33 +99,33 @@ public class Constant<T extends Comparable<T>> extends Term implements FunctionS
 			return 0;
 		}
 
-		if (!(o instanceof Constant)) {
+		if (!(o instanceof ConstantTerm)) {
 			return super.compareTo(o);
 		}
 
-		Constant other = (Constant) o;
+		ConstantTerm other = (ConstantTerm) o;
 
 		// We will perform an unchecked cast.
 		// Because of type erasure, we cannot know the exact type
-		// of other.symbol.
-		// However, may assume that other.symbol actually is of
+		// of other.object.
+		// However, may assume that other.object actually is of
 		// type T.
-		// We know that this.symbol if of type T and implements
-		// Comparable<T>. We ensure that the class of other.symbol
-		// equals the class of this.symbol, which in turn is T.
+		// We know that this.object if of type T and implements
+		// Comparable<T>. We ensure that the class of other.object
+		// equals the class of this.object, which in turn is T.
 		// That assumption should be quite safe. It can only be
 		// wrong if we have some bug that generates strange
 		// ConstantTerms at runtime, bypassing the check for T
 		// at compile-time.
-		if (other.symbol.getClass() == this.symbol.getClass()) {
-			return this.symbol.compareTo((T) other.symbol);
+		if (other.object.getClass() == this.object.getClass()) {
+			return this.object.compareTo((T) other.object);
 		}
 
-		Class<?> thisType = this.symbol.getClass();
-		Class<?> otherType = other.symbol.getClass();
+		Class<?> thisType = this.object.getClass();
+		Class<?> otherType = other.object.getClass();
 
-		int thisPrio = priority(thisType);
-		int otherPrio = priority(otherType);
+		int thisPrio = priority(thisType, this);
+		int otherPrio = priority(otherType, other);
 
 		if (thisPrio == 0 || otherPrio == 0) {
 			return thisType.getName().compareTo(otherType.getName());
@@ -141,12 +135,12 @@ public class Constant<T extends Comparable<T>> extends Term implements FunctionS
 	}
 
 	@Override
-	public T getSymbol() {
-		return symbol;
+	public Term renameVariables(String renamePrefix) {
+		// Constant contains no variables, hence stays the same.
+		return this;
 	}
 
-	@Override
-	public int getRank() {
-		return 0;
+	public T getObject() {
+		return object;
 	}
 }

@@ -39,6 +39,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.NoGood.HEAD;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static java.lang.Math.abs;
@@ -48,7 +49,7 @@ import static java.lang.Math.abs;
  */
 public class NaiveSolver extends AbstractSolver {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveSolver.class);
-	private final ChoiceStack choiceStack;
+	private final Stack<Choice> choiceStack;
 	private HashMap<Integer, Boolean> truthAssignments = new HashMap<>();
 	private ArrayList<Integer> newTruthAssignments = new ArrayList<>();
 	private ArrayList<ArrayList<Integer>> decisionLevels = new ArrayList<>();
@@ -70,7 +71,7 @@ public class NaiveSolver extends AbstractSolver {
 	NaiveSolver(Grounder grounder) {
 		super(grounder);
 
-		this.choiceStack = new ChoiceStack(grounder, false);
+		this.choiceStack = new Stack<>();
 
 		decisionLevels.add(0, new ArrayList<>());
 		mbtAssignedFromUnassigned.add(0, new ArrayList<>());
@@ -210,10 +211,10 @@ public class NaiveSolver extends AbstractSolver {
 		decisionLevels.add(decisionLevel, list);
 		trueAssignedFromMbt.add(decisionLevel, new ArrayList<>());
 		mbtAssignedFromUnassigned.add(decisionLevel, new ArrayList<>());
-		// We guess true for any unassigned choice atom (backtrack tries false)
+		// We choose true for any unassigned choice atom (backtrackFast tries false)
 		truthAssignments.put(nextChoice, true);
 		newTruthAssignments.add(nextChoice);
-		choiceStack.push(nextChoice, true);
+		choiceStack.push(new Choice(nextChoice, true, false));
 		// Record change to compute propagation fixpoint again.
 		didChange = true;
 	}
@@ -242,9 +243,10 @@ public class NaiveSolver extends AbstractSolver {
 			return;
 		}
 
-		int lastGuessedAtom = choiceStack.peekAtom();
-		boolean lastGuessedTruthValue = choiceStack.peekValue();
-		choiceStack.remove();
+		Choice lastChoice = choiceStack.pop();
+
+		int lastChoiceAtom = lastChoice.getAtom();
+		boolean lastChoiceValue = lastChoice.getValue();
 
 		// Remove truth assignments of current decision level
 		for (Integer atomId : decisionLevels.get(decisionLevel)) {
@@ -265,12 +267,12 @@ public class NaiveSolver extends AbstractSolver {
 		mbtAssignedFromUnassigned.set(decisionLevel, new ArrayList<>());
 		trueAssignedFromMbt.set(decisionLevel, new ArrayList<>());
 
-		if (lastGuessedTruthValue) {
-			// Guess false now
-			truthAssignments.put(lastGuessedAtom, false);
-			choiceStack.pushBacktrack(lastGuessedAtom, false);
-			newTruthAssignments.add(lastGuessedAtom);
-			decisionLevels.get(decisionLevel).add(lastGuessedAtom);
+		if (lastChoiceValue) {
+			// Choose false now
+			truthAssignments.put(lastChoiceAtom, false);
+			choiceStack.push(new Choice(lastChoiceAtom, false, true));
+			newTruthAssignments.add(lastChoiceAtom);
+			decisionLevels.get(decisionLevel).add(lastChoiceAtom);
 			didChange = true;
 		} else {
 			decisionLevel--;
@@ -424,7 +426,7 @@ public class NaiveSolver extends AbstractSolver {
 			return false;
 		}
 
-		int headAtom = noGood.getAtom(noGood.getHead());
+		int headAtom = noGood.getAtom(HEAD);
 
 		// Check whether head is assigned MBT.
 		if (!mbtAssigned.contains(headAtom)) {
@@ -433,10 +435,7 @@ public class NaiveSolver extends AbstractSolver {
 
 		// Check that NoGood is violated except for the head (i.e., without the head set it would be unit)
 		// and that none of the true values is MBT.
-		for (int i = 0; i < noGood.size(); i++) {
-			if (noGood.getHead() == i) {
-				continue;
-			}
+		for (int i = 1; i < noGood.size(); i++) {
 			int literal = noGood.getLiteral(i);
 			if (!(isLiteralAssigned(literal) && isLiteralViolated(literal))) {
 				return false;

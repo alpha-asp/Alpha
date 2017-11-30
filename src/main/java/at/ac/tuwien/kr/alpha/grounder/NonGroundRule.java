@@ -1,19 +1,43 @@
+/**
+ * Copyright (c) 2016-2017, the Alpha Team.
+ * All rights reserved.
+ * 
+ * Additional changes made by Siemens.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1) Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 
+ * 2) Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.interpretations.BuiltinBiPredicate;
-import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Variable;
-import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
-import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 
 import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Represents a non-ground rule or a constraint for the semi-naive grounder.
@@ -23,36 +47,20 @@ public class NonGroundRule {
 	private static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
 
 	private final int ruleId;
+	private final Rule rule;
 
 	private final List<Literal> bodyAtomsPositive;
 	private final List<Literal> bodyAtomsNegative;
 	private final Atom headAtom;
 
-	private final boolean containsIntervals;
-	private final boolean containsExternals;
-	private final boolean isOriginallyGround;
+	final RuleGroundingOrder groundingOrder;
 
-	public boolean containsIntervals() {
-		return containsIntervals;
-	}
-
-	public boolean containsExternals() {
-		return containsExternals;
-	}
-
-	public boolean isOriginallyGround() {
-		return isOriginallyGround;
-	}
-
-	private NonGroundRule(int ruleId, List<Literal> bodyAtomsPositive, List<Literal> bodyAtomsNegative, Atom headAtom, boolean containsIntervals, boolean containsExternals) {
+	private NonGroundRule(Rule rule, int ruleId, List<Literal> bodyAtomsPositive, List<Literal> bodyAtomsNegative, Atom headAtom) {
 		this.ruleId = ruleId;
-
-		this.isOriginallyGround = isOriginallyGround(bodyAtomsPositive, bodyAtomsNegative, headAtom);
-		this.containsIntervals = containsIntervals;
-		this.containsExternals = containsExternals;
+		this.rule = rule;
 
 		// Sort for better join order.
-		this.bodyAtomsPositive = Collections.unmodifiableList(sortAtoms(bodyAtomsPositive));
+		this.bodyAtomsPositive = Collections.unmodifiableList(bodyAtomsPositive);
 
 		// Since rule is safe, all variables in the negative body are already bound,
 		// i.e., joining them cannot degenerate into cross-product.
@@ -62,6 +70,8 @@ public class NonGroundRule {
 		this.headAtom = headAtom;
 
 		checkSafety();
+		this.groundingOrder = new RuleGroundingOrder(this);
+		groundingOrder.computeGroundingOrders();
 	}
 
 	// FIXME: NonGroundRule should extend Rule and then its constructor directly be used.
@@ -69,68 +79,18 @@ public class NonGroundRule {
 		List<Literal> body = rule.getBody();
 		final List<Literal> pos = new ArrayList<>(body.size() / 2);
 		final List<Literal> neg = new ArrayList<>(body.size() / 2);
-		boolean containsIntervals = false;
-		boolean containsExternals = false;
-		for (Literal literal : body) {
-			if (literal instanceof IntervalAtom) {
-				containsIntervals = true;
-			}
-			if (literal instanceof ExternalAtom) {
-				if (((ExternalAtom) literal).hasOutput()) {
-					containsExternals = true;
-				}
-			}
 
+		for (Literal literal : body) {
 			(literal.isNegated() ? neg : pos).add(literal);
 		}
 		Atom headAtom = null;
 		if (rule.getHead() != null) {
 			if (!rule.getHead().isNormal()) {
-				throw new RuntimeException("Trying to construct NonGroundRule from rule that is not normal. Should not happen.");
+				throw oops("Trying to construct NonGroundRule from rule that is not normal");
 			}
 			headAtom = ((DisjunctiveHead)rule.getHead()).disjunctiveAtoms.get(0);
 		}
-		return new NonGroundRule(ID_GENERATOR.getNextId(), pos, neg, headAtom, containsIntervals, containsExternals);
-	}
-
-	private static boolean isOriginallyGround(List<Literal> bodyAtomsPositive, List<Literal> bodyAtomsNegative, Atom headAtom) {
-		/* TODO: Why does this not work?
-		if (headAtom != null && !headAtom.isGround()) {
-			return false;
-		}
-		for (Atom atom : bodyAtomsPositive) {
-			if (!atom.isGround()) {
-				return false;
-			}
-		}
-		for (Atom atom : bodyAtomsNegative) {
-			if (!atom.isGround()) {
-				return false;
-			}
-		}
-		*/
-
-		List<Variable> occurringVariables = new ArrayList<>();
-		if (headAtom != null) {
-			occurringVariables.addAll(headAtom.getBindingVariables());
-			occurringVariables.addAll(headAtom.getNonBindingVariables());
-		}
-		for (Atom atom : bodyAtomsPositive) {
-			occurringVariables.addAll(atom.getBindingVariables());
-			occurringVariables.addAll(atom.getNonBindingVariables());
-		}
-		for (Atom atom : bodyAtomsNegative) {
-			occurringVariables.addAll(atom.getBindingVariables());
-			occurringVariables.addAll(atom.getNonBindingVariables());
-		}
-		for (Variable variable : occurringVariables) {
-			// Ignore variables introduced by interval rewriting.
-			if (variable.toString().startsWith(IntervalTermToIntervalAtom.INTERVAL_VARIABLE_PREFIX)) {
-				continue;
-			}
-			return false;
-		}
-		return true;
+		return new NonGroundRule(rule, ID_GENERATOR.getNextId(), pos, neg, headAtom);
 	}
 
 	public int getRuleId() {
@@ -191,73 +151,6 @@ public class NonGroundRule {
 
 		throw new RuntimeException("Encountered unsafe variable " + nonbindingVariables.iterator().next().toString() + " in rule: " + toString()
 			+ "\nNotice: A rule is considered safe if all variables occurring in negative literals, builtin atoms, and the head of the rule also occur in some positive litera.");
-	}
-
-	/**
-	 * Sorts atoms such that the join-order of the atoms is improved (= cannot degenerate into cross-product).
-	 * Note that the below sorting can be improved to yield smaller joins.
-	 */
-	private List<Literal> sortAtoms(List<Literal> atoms) {
-		final Set<SortingBodyComponent> components = new LinkedHashSet<>();
-		final Set<ExternalAtom> builtinAtoms = new LinkedHashSet<>();
-		final Set<IntervalAtom> intervalAtoms = new LinkedHashSet<>();
-
-		for (Literal atom : atoms) {
-			// FIXME: The following case assumes that builtin predicates do not create bindings?!
-			if ((atom instanceof ExternalAtom) && (((ExternalAtom)atom).getInterpretation()) instanceof BuiltinBiPredicate) {
-				// Sort out builtin atoms (we consider them as not creating new bindings)
-				builtinAtoms.add((ExternalAtom) atom);
-				continue;
-			}
-			if (atom instanceof IntervalAtom) {
-				intervalAtoms.add((IntervalAtom) atom);
-				continue;
-			}
-			final Set<SortingBodyComponent> hits = new LinkedHashSet<>();
-
-			// For each variable
-			for (Variable variableTerm : atom.getBindingVariables()) {
-				// Find all components it also occurs and record in hitting components
-				for (SortingBodyComponent component : components) {
-					if (component.occurringVariables.contains(variableTerm)) {
-						hits.add(component);
-					}
-				}
-			}
-
-			// If no components were hit, create new component, else merge components
-			if (hits.isEmpty()) {
-				components.add(new SortingBodyComponent(atom));
-				continue;
-			}
-
-			// If only one component hit, add atom to it
-			if (hits.size() == 1) {
-				hits.iterator().next().add(atom);
-				continue;
-			}
-
-			// Merge all components that are hit by the current atom
-			SortingBodyComponent firstComponent = hits.iterator().next();
-			firstComponent.add(atom);
-			for (SortingBodyComponent hitComponent : hits) {
-				if (hitComponent != firstComponent) {
-					firstComponent.merge(hitComponent);
-					// Remove merged component from the set of available components
-					components.remove(hitComponent);
-				}
-			}
-		}
-
-		// Components now contains all components that are internally connected but not connected to another component
-		List<Literal> sortedPositiveBodyAtoms = new ArrayList<>(components.size());
-		for (SortingBodyComponent component : components) {
-			sortedPositiveBodyAtoms.addAll(component.atomSequence);
-		}
-
-		sortedPositiveBodyAtoms.addAll(intervalAtoms); // Put interval atoms after positive literals generating their bindings and before builtin atom.
-		sortedPositiveBodyAtoms.addAll(builtinAtoms);	// Put builtin atoms after positive literals and before negative ones.
-		return sortedPositiveBodyAtoms;
 	}
 
 	/**
@@ -323,10 +216,6 @@ public class NonGroundRule {
 		return headAtom == null;
 	}
 
-	public boolean hasNegativeBodyAtoms() {
-		return !bodyAtomsNegative.isEmpty();
-	}
-
 	@Override
 	public String toString() {
 		return join(
@@ -368,6 +257,10 @@ public class NonGroundRule {
 			numAtoms += other.numAtoms;
 			atomSequence.addAll(other.atomSequence);
 		}
+	}
+
+	public Rule getRule() {
+		return rule;
 	}
 
 	public List<Literal> getBodyAtomsPositive() {

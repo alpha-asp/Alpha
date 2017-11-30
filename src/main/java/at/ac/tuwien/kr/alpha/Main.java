@@ -28,8 +28,8 @@
 package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
@@ -50,6 +50,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -68,6 +69,7 @@ public class Main {
 	private static final String OPT_SORT = "sort";
 	private static final String OPT_DETERMINISTIC = "deterministic";
 	private static final String OPT_STORE = "store";
+	private static final String OPT_QUIET = "quiet";
 
 	private static final String OPT_BRANCHING_HEURISTIC = "branchingHeuristic";
 	private static final String DEFAULT_GROUNDER = "naive";
@@ -146,6 +148,9 @@ public class Main {
 		branchingHeuristicOption.setArgName("heuristic");
 		options.addOption(branchingHeuristicOption);
 
+		Option quietOption = new Option("q", OPT_QUIET, false, "do not print answer sets");
+		options.addOption(quietOption);
+
 		try {
 			commandLine = new DefaultParser().parse(options, args);
 		} catch (ParseException e) {
@@ -169,7 +174,7 @@ public class Main {
 
 		if (commandLine.hasOption(OPT_FILTER)) {
 			Set<String> desiredPredicates = new HashSet<>(Arrays.asList(commandLine.getOptionValues(OPT_FILTER)));
-			filter = p -> desiredPredicates.contains(p.getSymbol());
+			filter = p -> desiredPredicates.contains(p.getName());
 		}
 
 		Bridge[] bridges = new Bridge[0];
@@ -256,14 +261,19 @@ public class Main {
 			stream = stream.sorted();
 		}
 
-		stream.forEach(System.out::println);
+		if (!commandLine.hasOption(OPT_QUIET)) {
+			stream.forEach(System.out::println);
+		} else {
+			// Note: Even though we are not consuming the result, we will still compute answer sets.
+			stream.collect(Collectors.toList());
+		}
 	}
 
 	private static void exitWithHelp(Options options, int exitCode) {
 		HelpFormatter formatter = new HelpFormatter();
 		// TODO(flowlo): This is quite optimistic. How do we know that the program
 		// really was invoked as "java -jar ..."?
-		formatter.printHelp("java -jar alpha-bundled.jar\njava -jar alpha.jar", options);
+		formatter.printHelp("java -jar alpha-bundled.jar" + System.lineSeparator() + "java -jar alpha.jar", options);
 		System.exit(exitCode);
 	}
 

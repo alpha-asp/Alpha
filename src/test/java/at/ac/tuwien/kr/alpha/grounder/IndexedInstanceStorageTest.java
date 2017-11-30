@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.terms.Constant;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import org.junit.Test;
 
 import java.util.List;
@@ -16,12 +16,12 @@ public class IndexedInstanceStorageTest {
 		IndexedInstanceStorage storage = new IndexedInstanceStorage("A test storage of arity 4", 4);
 		storage.addIndexPosition(0);
 		storage.addIndexPosition(2);
-		Constant t0 = Constant.getInstance("0");
-		Constant t1 = Constant.getInstance("1");
-		Constant t2 = Constant.getInstance("2");
-		Constant t3 = Constant.getInstance("3");
-		Constant t4 = Constant.getInstance("4");
-		Constant t5 = Constant.getInstance("5");
+		ConstantTerm t0 = ConstantTerm.getInstance("0");
+		ConstantTerm t1 = ConstantTerm.getInstance("1");
+		ConstantTerm t2 = ConstantTerm.getInstance("2");
+		ConstantTerm t3 = ConstantTerm.getInstance("3");
+		ConstantTerm t4 = ConstantTerm.getInstance("4");
+		ConstantTerm t5 = ConstantTerm.getInstance("5");
 
 		Instance badInst1 = new Instance(t1, t1, t0);
 		Instance badInst2 = new Instance(t5, t5, t5, t5, t5);

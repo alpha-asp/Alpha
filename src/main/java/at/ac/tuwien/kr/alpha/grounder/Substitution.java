@@ -1,6 +1,11 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.terms.*;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +28,24 @@ public class Substitution {
 	}
 
 	/**
+	 * Computes the unifier of the atom and the instance and stores it in the variable substitution.
+	 * @param atom the body atom to unify
+	 * @param instance the ground instance
+	 * @param substitution if the atom does not unify, this is left unchanged.
+	 * @return true if the atom and the instance unify. False otherwise
+	 */
+	static Substitution unify(Atom atom, Instance instance, Substitution substitution) {
+		for (int i = 0; i < instance.terms.size(); i++) {
+			if (instance.terms.get(i) == atom.getTerms().get(i) ||
+				substitution.unifyTerms(atom.getTerms().get(i), instance.terms.get(i))) {
+				continue;
+			}
+			return null;
+		}
+		return substitution;
+	}
+
+	/**
 	 * Checks if the left possible non-ground term unifies with the ground term.
 	 * @param termNonGround
 	 * @param termGround
@@ -32,7 +55,7 @@ public class Substitution {
 		if (termNonGround == termGround) {
 			// Both terms are either the same constant or the same variable term
 			return true;
-		} else if (termNonGround instanceof Constant) {
+		} else if (termNonGround instanceof ConstantTerm) {
 			// Since right term is ground, both terms differ
 			return false;
 		} else if (termNonGround instanceof Variable) {
@@ -69,7 +92,7 @@ public class Substitution {
 	}
 
 	/**
-	 * This method should be used to obtain the {@link Constant} to be used in place of
+	 * This method should be used to obtain the {@link Term} to be used in place of
 	 * a given {@link Variable} under this substitution.
 	 *
 	 * @param variableTerm the variable term to substitute, if possible
@@ -79,7 +102,7 @@ public class Substitution {
 		return this.substitution.get(variableTerm);
 	}
 
-	public <T extends Comparable<T>> Term put(Variable variableTerm, Constant<T> groundTerm) {
+	public <T extends Comparable<T>> Term put(Variable variableTerm, Term groundTerm) {
 		// Note: We're destroying type information here.
 		return substitution.put(variableTerm, groundTerm);
 	}
@@ -121,7 +144,8 @@ public class Substitution {
 			return it;
 		}
 
-		return IntervalTerm.getInstance(apply(it.getLowerBound()), apply(it.getUpperBound()));
+		throw new UnsupportedOperationException("");
+		//return IntervalTerm.getInstance(apply(it.getLowerBound()), apply(it.getUpperBound()));
 	}
 
 	public Term apply(Variable variable) {
@@ -159,5 +183,71 @@ public class Substitution {
 	@Override
 	public int hashCode() {
 		return substitution != null ? substitution.hashCode() : 0;
+	}
+
+	public static Substitution findEqualizingSubstitution(BasicAtom generalAtom, BasicAtom specificAtom) {
+		// Some hard examples:
+		// p(A,f(A)) with p(X,A) where variable occurs as subterm again and where some variable is shared!
+		// First, rename all variables in the specific
+		if (!generalAtom.getPredicate().equals(specificAtom.getPredicate())) {
+			return null;
+		}
+		Substitution specializingSubstitution = new Substitution();
+		String renamedVariablePrefix = "_Vrenamed_";	// Pick prefix guaranteed to not occur in generalAtom.
+		for (int i = 0; i < generalAtom.getPredicate().getArity(); i++) {
+			specializingSubstitution = specializeSubstitution(specializingSubstitution,
+				generalAtom.getTerms().get(i),
+				specificAtom.getTerms().get(i).renameVariables(renamedVariablePrefix));
+			if (specializingSubstitution == null) {
+				return null;
+			}
+		}
+		return specializingSubstitution;
+	}
+
+	private static Substitution specializeSubstitution(Substitution substitution, Term generalTerm, Term specificTerm) {
+		if (generalTerm == specificTerm) {
+			return substitution;
+		}
+		// If the general term is a variable, check its current substitution and see whether this matches the specific term.
+		if (generalTerm instanceof Variable) {
+			Term substitutedGeneralTerm = substitution.eval((Variable) generalTerm);
+			// If the variable is not bound already, bind it to the specific term.
+			if (substitutedGeneralTerm == null) {
+				substitution.put((Variable) generalTerm, specificTerm);
+				return substitution;
+			}
+			// The variable is bound, check whether its result is exactly the specific term.
+			// Note: checking whether the bounded term is more general than the specific one would yield
+			//       wrong results, e.g.: p(X,X) and p(f(A),f(g(B))) are incomparable, but f(A) is more general than f(g(B)).
+			if (substitutedGeneralTerm != specificTerm) {
+				return null;
+			}
+		}
+		if (generalTerm instanceof FunctionTerm) {
+			// Check if both given terms are function terms.
+			if (!(specificTerm instanceof FunctionTerm)) {
+				return null;
+			}
+			// Check that they are the same function.
+			FunctionTerm fgeneralTerm = (FunctionTerm) generalTerm;
+			FunctionTerm fspecificTerm = (FunctionTerm) specificTerm;
+			if (fgeneralTerm.getSymbol() != fspecificTerm.getSymbol()
+				|| fgeneralTerm.getTerms().size() != fspecificTerm.getTerms().size()) {
+				return null;
+			}
+			// Check/specialize their subterms.
+			for (int i = 0; i < fgeneralTerm.getTerms().size(); i++) {
+				substitution = specializeSubstitution(substitution, fgeneralTerm, fspecificTerm);
+				if (substitution == null) {
+					return null;
+				}
+			}
+		}
+		if (generalTerm instanceof ConstantTerm) {
+			// Equality was already checked above, so terms are different.
+			return null;
+		}
+		throw new RuntimeException("Trying to specialize a term that is neither variable, constant, nor function. Should not happen");
 	}
 }

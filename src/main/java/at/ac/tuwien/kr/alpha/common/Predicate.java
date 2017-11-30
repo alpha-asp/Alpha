@@ -1,25 +1,19 @@
-package at.ac.tuwien.kr.alpha.common.symbols;
-
-import at.ac.tuwien.kr.alpha.common.Interner;
+package at.ac.tuwien.kr.alpha.common;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class Predicate implements Comparable<Predicate>, SymbolWithRank<String> {
+public class Predicate implements Comparable<Predicate> {
 	private static final Interner<Predicate> INTERNER = new Interner<>();
 
-	private final String symbol;
-	private final int rank;
+	private final String name;
+	private final int arity;
 	private final boolean internal;
 
-	protected Predicate(String symbol, int rank, boolean internal) {
-		this.symbol = symbol;
-		this.rank = rank;
+	protected Predicate(String name, int arity, boolean internal) {
+		this.name = name;
+		this.arity = arity;
 		this.internal = internal;
-	}
-
-	public static Predicate getInstance(String symbol) {
-		return getInstance(symbol, 0);
 	}
 
 	public static Predicate getInstance(String symbol, int arity) {
@@ -30,14 +24,10 @@ public class Predicate implements Comparable<Predicate>, SymbolWithRank<String> 
 		return INTERNER.intern(new Predicate(symbol, arity, internal));
 	}
 
-	public Predicate(String name, int arity) {
-		this(name, arity, false);
-	}
-
 	@Override
 	public int hashCode() {
-		int result = symbol != null ? symbol.hashCode() : 0;
-		result = 31 * result + rank;
+		int result = name != null ? name.hashCode() : 0;
+		result = 31 * result + arity;
 		result = 31 * result + (internal ? 1 : 0);
 		return result;
 	}
@@ -54,7 +44,7 @@ public class Predicate implements Comparable<Predicate>, SymbolWithRank<String> 
 
 		Predicate predicate = (Predicate) o;
 
-		if (rank != predicate.rank) {
+		if (arity != predicate.arity) {
 			return false;
 		}
 
@@ -62,7 +52,7 @@ public class Predicate implements Comparable<Predicate>, SymbolWithRank<String> 
 			return false;
 		}
 
-		return symbol != null ? symbol.equals(predicate.symbol) : predicate.symbol == null;
+		return name != null ? name.equals(predicate.name) : predicate.name == null;
 	}
 
 	public boolean isInternal() {
@@ -71,22 +61,20 @@ public class Predicate implements Comparable<Predicate>, SymbolWithRank<String> 
 
 	@Override
 	public int compareTo(Predicate other) {
-		int result = getSymbol().compareTo(other.getSymbol());
+		int result = getName().compareTo(other.getName());
 
 		if (result != 0) {
 			return result;
 		}
 
-		return Integer.compare(getRank(), other.getRank());
+		return Integer.compare(getArity(), other.getArity());
 	}
 
-	@Override
-	public String getSymbol() {
-		return symbol;
+	public String getName() {
+		return name;
 	}
 
-	@Override
-	public int getRank() {
-		return rank;
+	public int getArity() {
+		return arity;
 	}
 }

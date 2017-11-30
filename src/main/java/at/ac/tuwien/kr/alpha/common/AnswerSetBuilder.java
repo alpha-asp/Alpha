@@ -2,8 +2,7 @@ package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.Constant;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 import java.util.*;
@@ -36,7 +35,7 @@ public class AnswerSetBuilder {
 
 	private void flush() {
 		if (firstInstance) {
-			predicate = new Predicate(predicateSymbol, 0);
+			predicate = Predicate.getInstance(predicateSymbol, 0);
 			predicates.add(predicate);
 			predicateInstances.put(predicate, new TreeSet<>(singletonList(new BasicAtom(predicate))));
 		} else {
@@ -64,7 +63,7 @@ public class AnswerSetBuilder {
 	public final <T extends Comparable<T>> AnswerSetBuilder instance(final T... terms) {
 		if (firstInstance) {
 			firstInstance = false;
-			predicate = new Predicate(predicateSymbol, terms.length);
+			predicate = Predicate.getInstance(predicateSymbol, terms.length);
 			predicates.add(predicate);
 		}
 
@@ -72,7 +71,7 @@ public class AnswerSetBuilder {
 		// since we are only reading, not writing.
 		List<Term> termList = Stream
 			.of(terms)
-			.map(Constant::getInstance)
+			.map(ConstantTerm::getInstance)
 			.collect(Collectors.toList());
 
 		instances.add(new BasicAtom(predicate, termList));
@@ -82,11 +81,11 @@ public class AnswerSetBuilder {
 	public AnswerSetBuilder symbolicInstance(String... terms) {
 		if (firstInstance) {
 			firstInstance = false;
-			predicate = new Predicate(predicateSymbol, terms.length);
+			predicate = Predicate.getInstance(predicateSymbol, terms.length);
 			predicates.add(predicate);
 		}
 
-		List<Term> termList = Stream.of(terms).map(Constant::getSymbolicInstance).collect(Collectors.toList());
+		List<Term> termList = Stream.of(terms).map(ConstantTerm::getSymbolicInstance).collect(Collectors.toList());
 		instances.add(new BasicAtom(predicate, termList));
 		return this;
 	}

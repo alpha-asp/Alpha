@@ -39,11 +39,11 @@ public class GroundConflictNoGoodLearnerTest {
 		store.add(15, n6);
 		store.add(16, n7);
 
-		assignment.guess(9, ThriceTruth.TRUE);
-		assignment.guess(8, ThriceTruth.FALSE);
+		assignment.choose(9, ThriceTruth.TRUE);
+		assignment.choose(8, ThriceTruth.FALSE);
 		assertNull(store.propagate());
 		assertFalse(store.didPropagate());
-		assignment.guess(7, ThriceTruth.FALSE);
+		assignment.choose(7, ThriceTruth.FALSE);
 		ConflictCause conflictCause = store.propagate();
 		assertTrue(store.didPropagate());
 
@@ -56,17 +56,17 @@ public class GroundConflictNoGoodLearnerTest {
 		assertEquals(new NoGood(1, -8), learnedNoGood);
 		int backjumpingDecisionLevel = analysisResult.backjumpLevel;
 		assertEquals(backjumpingDecisionLevel, 2);
-		assertFalse(analysisResult.clearLastGuessAfterBackjump);
+		assertFalse(analysisResult.clearLastChoiceAfterBackjump);
 	}
 
 	@Test
-	public void subCurrentDLPropagationWithGuessCauseOfConflict() {
+	public void subCurrentDLPropagationWithChoiceCauseOfConflict() {
 		GroundConflictNoGoodLearner learner = new GroundConflictNoGoodLearner(assignment);
 		NoGood n1 = new NoGood(1, -2);
 		NoGood n2 = new NoGood(2, 3);
 		store.add(10, n1);
-		assignment.guess(1, ThriceTruth.TRUE);
-		assignment.guess(3, ThriceTruth.TRUE);
+		assignment.choose(1, ThriceTruth.TRUE);
+		assignment.choose(3, ThriceTruth.TRUE);
 		store.propagate();
 		assertEquals(ThriceTruth.MBT, assignment.get(2).getTruth());
 		assertEquals(1, assignment.get(2).getDecisionLevel());

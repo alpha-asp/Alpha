@@ -30,7 +30,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -43,7 +43,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 
 /**
- * Represents a small ASP program with guesses {@code { aa :- not bb.  bb :- not aa. }}.
+ * Represents a small ASP program with choices {@code { aa :- not bb.  bb :- not aa. }}.
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ChoiceGrounder implements Grounder {
@@ -116,11 +116,11 @@ public class ChoiceGrounder implements Grounder {
 	public AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms) {
 		SortedSet<Predicate> trueAtomPredicates = new TreeSet<>();
 		for (int trueAtom : trueAtoms) {
-			Predicate atomPredicate = new Predicate(atomIdToString.get(trueAtom), 0);
+			Predicate atomPredicate = Predicate.getInstance(atomIdToString.get(trueAtom), 0);
 			if (!filter.test(atomPredicate)) {
 				continue;
 			}
-			if (atomPredicate.getSymbol().startsWith("_")) {
+			if (atomPredicate.getName().startsWith("_")) {
 				continue;
 			}
 			trueAtomPredicates.add(atomPredicate);

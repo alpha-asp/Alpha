@@ -1,8 +1,8 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.Constant;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.Variable;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static at.ac.tuwien.kr.alpha.common.terms.Constant.getInstance;
+import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
 
 /**
  * Atoms corresponding to rule bodies use this interpretation, first term is rule number,
@@ -21,9 +21,9 @@ import static at.ac.tuwien.kr.alpha.common.terms.Constant.getInstance;
 public class RuleAtom implements Atom {
 	public static final Predicate PREDICATE = Predicate.getInstance("_R_", 2, true);
 
-	private final List<Constant<String>> terms;
+	private final List<ConstantTerm<String>> terms;
 
-	private RuleAtom(List<Constant<String>> terms) {
+	private RuleAtom(List<ConstantTerm<String>> terms) {
 		if (terms.size() != 2) {
 			throw new IllegalArgumentException();
 		}
@@ -94,6 +94,6 @@ public class RuleAtom implements Atom {
 
 	@Override
 	public String toString() {
-		return PREDICATE.getSymbol() + "(" + terms.get(0) + "," + terms.get(1) + ')';
+		return PREDICATE.getName() + "(" + terms.get(0) + "," + terms.get(1) + ')';
 	}
 }

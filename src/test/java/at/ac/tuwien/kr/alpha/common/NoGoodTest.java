@@ -48,37 +48,34 @@ public class NoGoodTest {
 
 	@Test
 	public void deleteDuplicates() {
-		NoGood ng = new NoGood(new int[]{1, -2, -2, 3}, 3);
+		NoGood ng = NoGood.headFirst(-3, 1, -2, -2);
 		assertEquals("Duplicate entry must be removed.", 3, ng.size());
-		assertEquals("Head pointer must be moved to correct position.", 2, ng.getHead());
-		assertEquals(-2, ng.getLiteral(0));
-		assertEquals(1, ng.getLiteral(1));
-		assertEquals(3, ng.getLiteral(2));
+		assertEquals(-3, ng.getLiteral(0));
+		assertEquals(-2, ng.getLiteral(1));
+		assertEquals(1, ng.getLiteral(2));
 
-		NoGood ng2 = new NoGood(new int[]{3, 3, -6, -1, 2, 5, 5, -6, 7}, 4);
+		NoGood ng2 = NoGood.headFirst(-2, 3, 3, -6, -1, 5, 5, -6, 7);
 		assertEquals("Duplicate entries must be removed.", 6, ng2.size());
-		assertEquals("Head pointer must be moved to correct position.", 2, ng2.getHead());
-		assertEquals(-6, ng2.getLiteral(0));
-		assertEquals(-1, ng2.getLiteral(1));
-		assertEquals(2, ng2.getLiteral(2));
+		assertEquals(-2, ng2.getLiteral(0));
+		assertEquals(-6, ng2.getLiteral(1));
+		assertEquals(-1, ng2.getLiteral(2));
 		assertEquals(3, ng2.getLiteral(3));
 		assertEquals(5, ng2.getLiteral(4));
 		assertEquals(7, ng2.getLiteral(5));
 
-		NoGood ng3 = new NoGood(new int[]{1, 2, -3, -4}, 0);
+		NoGood ng3 = NoGood.headFirst(-1, 2, -3, -4);
 		assertEquals("NoGood contains no duplicates, size must stay the same.", 4, ng3.size());
-		assertEquals("Head pointer must be moved to correct position.", 2, ng3.getHead());
-		assertEquals(-4, ng3.getLiteral(0));
-		assertEquals(-3, ng3.getLiteral(1));
-		assertEquals(1, ng3.getLiteral(2));
+		assertEquals(-1, ng3.getLiteral(0));
+		assertEquals(-4, ng3.getLiteral(1));
+		assertEquals(-3, ng3.getLiteral(2));
 		assertEquals(2, ng3.getLiteral(3));
 	}
 
 	@Test
 	public void noGoodsInHashMap() {
-		NoGood ng1 = new NoGood(new int[]{1, 2, -3, -4}, 0);
-		NoGood ng2 = new NoGood(new int[]{1, 2, -4}, 0);
-		NoGood ng3 = new NoGood(new int[]{1, 2, -3, -4}, 0);
+		NoGood ng1 = NoGood.headFirst(-1, 2, -3, -4);
+		NoGood ng2 = NoGood.headFirst(-1, 2, -4);
+		NoGood ng3 = NoGood.headFirst(-1, 2, -3, -4);
 		Map<NoGood, Integer> noGoodIdentifiers = new LinkedHashMap<>();
 		noGoodIdentifiers.put(ng1, 1);
 		noGoodIdentifiers.put(ng1, 2);

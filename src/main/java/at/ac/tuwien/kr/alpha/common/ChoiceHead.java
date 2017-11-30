@@ -15,10 +15,10 @@ public class ChoiceHead extends Head {
 	private final List<ChoiceElement> choiceElements;
 
 	private final Term lowerBound;
-	private final BinaryOperator lowerOp;
+	private final ComparisonOperator lowerOp;
 
 	private final Term upperBound;
-	private final BinaryOperator upperOp;
+	private final ComparisonOperator upperOp;
 
 	public static class ChoiceElement {
 		public final Atom choiceAtom;
@@ -41,11 +41,11 @@ public class ChoiceHead extends Head {
 		}
 	}
 
-	public BinaryOperator getLowerOperator() {
+	public ComparisonOperator getLowerOperator() {
 		return lowerOp;
 	}
 
-	public BinaryOperator getUpperOperator() {
+	public ComparisonOperator getUpperOperator() {
 		return upperOp;
 	}
 
@@ -61,7 +61,7 @@ public class ChoiceHead extends Head {
 		return upperBound;
 	}
 
-	public ChoiceHead(List<ChoiceElement> choiceElements, Term lowerBound, BinaryOperator lowerOp, Term upperBound, BinaryOperator upperOp) {
+	public ChoiceHead(List<ChoiceElement> choiceElements, Term lowerBound, ComparisonOperator lowerOp, Term upperBound, ComparisonOperator upperOp) {
 		this.choiceElements = choiceElements;
 		this.lowerBound = lowerBound;
 		this.lowerOp = lowerOp;

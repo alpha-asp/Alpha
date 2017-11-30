@@ -14,18 +14,10 @@ import java.util.List;
  *         <li>
  *                 Constant terms according to their corresponding object and its type
  *                 <ol>
- *                         <li>{@link Constant <Integer>} ordered by value of the integers</li>
- *                         <li>{@link Constant < SymbolWithRank >} lexicographically ordered on the symbol</li>
- *                         <li>{@link Constant <String>} lexicographicall
- * First, all constant terms with integers
- * ordered according to the values of the integers, then all constant terms with symbols, according to the lexicographic
- * order of their symbols, then all constant terms with strings, according to the lexicographic order of their strings,
- * then all constant terms with other objects, where the ordering of comparison is the ordering imposed by
- * {@link Comparable} for terms of the same type, and the lexicograSymbolphical ordering of the type names for constants of
- * different types. Then all function symbols follow, ordered by arity, functor name, and ordering based on the
- * arguments.
- * Variable terms are last.y ordered on the string</li>
- *                         <li>{@link Constant} for all other types, where {@link Comparable#compareTo(Object)} is
+ *                         <li>{@link ConstantTerm<Integer>} ordered by value of the integers</li>
+ *                         <li>{@link ConstantTerm<String>} and symbolic, lexicographically ordered on the symbol</li>
+ *                         <li>{@link ConstantTerm<String>} lexicographically
+ *                         <li>{@link ConstantTerm} for all other types, where {@link Comparable#compareTo(Object)} is
  *                         used as ordering whenever possible (i.e. two terms' objects have the same type). For two
  *                         terms with objects of different type, the result is the lexicographic ordering of the type
  *                         names.</li>
@@ -35,7 +27,7 @@ import java.util.List;
  *         <li>Variable terms (lexicographically ordered on their variable names)</li>
  * </ol>
  *
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2016-2017, the Alpha Team.
  */
 public abstract class Term implements Comparable<Term> {
 	public abstract boolean isGround();
@@ -51,7 +43,7 @@ public abstract class Term implements Comparable<Term> {
 
 	private static int priority(Term term) {
 		final Class<?> clazz = term.getClass();
-		if (clazz.equals(Constant.class)) {
+		if (clazz.equals(ConstantTerm.class)) {
 			return 1;
 		} else if (clazz.equals(FunctionTerm.class)) {
 			return 2;
@@ -65,4 +57,11 @@ public abstract class Term implements Comparable<Term> {
 	public int compareTo(Term o) {
 		return o == null ? 1 : Integer.compare(priority(this), priority(o));
 	}
+
+	/**
+	 * Rename all variables occurring in this Term by prefixing their name.
+	 * @param renamePrefix the name to prefix all occurring variables.
+	 * @return the term with all variables renamed.
+	 */
+	public abstract Term renameVariables(String renamePrefix);
 }

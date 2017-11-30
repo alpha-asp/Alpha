@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.Variable;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
@@ -42,17 +42,6 @@ public class BasicAtom implements Literal {
 	 */
 	public BasicAtom(Predicate predicate, List<Term> terms) {
 		this(predicate, terms, false);
-	}
-
-	public BasicAtom(Literal clone) {
-		this(clone, clone.isNegated());
-	}
-
-	public BasicAtom(Atom clone, boolean negated) {
-		this.predicate = clone.getPredicate();
-		this.terms = new ArrayList<>(clone.getTerms());
-		this.ground = clone.isGround();
-		this.negated = negated;
 	}
 
 	public BasicAtom(Predicate predicate, Term... terms) {
@@ -118,11 +107,12 @@ public class BasicAtom implements Literal {
 
 	@Override
 	public String toString() {
-		String result = (negated ? "not " : "") + predicate.getSymbol();
+		final String prefix = (negated ? "not " : "") + predicate.getName();
 		if (terms.isEmpty()) {
-			return result;
+			return prefix;
 		}
-		return join(result + "(", terms, ")");
+
+		return join(prefix + "(", terms, ")");
 	}
 
 	@Override

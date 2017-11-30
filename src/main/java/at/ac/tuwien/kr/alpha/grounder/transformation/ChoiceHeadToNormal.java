@@ -4,8 +4,8 @@ import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.symbols.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.Constant;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 
@@ -40,7 +40,7 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 			ChoiceHead choiceHead = (ChoiceHead) ruleHead;
 			// Choice rules with boundaries are not yet supported.
 			if (choiceHead.getLowerBound() != null || choiceHead.getUpperBound() != null) {
-				throw new RuntimeException("Found choice rule with bounds, which are not yet supported. Rule is: " + rule);
+				throw new UnsupportedOperationException("Found choice rule with bounds, which are not yet supported. Rule is: " + rule);
 			}
 
 			// Only rewrite rules with a choice in their head.
@@ -56,20 +56,21 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 					throw new RuntimeException("Program contains a choice rule with interval terms in its head. This is not supported (yet).");
 				}
 
-				// Construct head atom for the guess.
+				// Construct head atom for the choice.
 				Predicate headPredicate = head.getPredicate();
-				Predicate negPredicate = Predicate.getInstance(PREDICATE_NEGATION_PREFIX + headPredicate.getSymbol(), headPredicate.getRank() + 1, true);
+
+				Predicate negPredicate = Predicate.getInstance(PREDICATE_NEGATION_PREFIX + headPredicate.getName(), headPredicate.getArity() + 1, true);
 				List<Term> headTerms = new ArrayList<>(head.getTerms());
-				headTerms.add(0, Constant.getInstance("1"));	// FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for classical negative atoms.
+				headTerms.add(0, ConstantTerm.getInstance("1"));	// FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for classical negative atoms.
 				Atom negHead = new BasicAtom(negPredicate, headTerms);
 
 				// Construct two guessing rules.
 				List<Literal> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
-				guessingRuleBodyWithNegHead.add(new BasicAtom(head, true));
+				guessingRuleBodyWithNegHead.add(new BasicAtom(head.getPredicate(), head.getTerms(), true));
 				additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(negHead)), guessingRuleBodyWithNegHead));
 
 				List<Literal> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
-				guessingRuleBodyWithHead.add(new BasicAtom(negHead, true));
+				guessingRuleBodyWithHead.add(new BasicAtom(negPredicate, headTerms, true));
 				additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(head)), guessingRuleBodyWithHead));
 
 				// TODO: when cardinality constraints are possible, process the boundaries by adding a constraint with a cardinality check.

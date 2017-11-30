@@ -1,6 +1,5 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
-import at.ac.tuwien.kr.alpha.common.symbols.Functor;
 import at.ac.tuwien.kr.alpha.common.Interner;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
@@ -9,26 +8,21 @@ import java.util.*;
 import static at.ac.tuwien.kr.alpha.Util.join;
 
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2017, the Alpha Team.
  */
 public class FunctionTerm extends Term {
 	private static final Interner<FunctionTerm> INTERNER = new Interner<>();
 
-	private final Functor symbol;
+	private final String symbol;
 	private final List<Term> terms;
 	private final boolean ground;
 
-	private FunctionTerm(Functor symbol, List<Term> terms) {
+	private FunctionTerm(String symbol, List<Term> terms) {
 		if (symbol == null) {
 			throw new IllegalArgumentException();
 		}
 
 		this.symbol = symbol;
-
-		if (terms.size() != symbol.getRank()) {
-			throw new IllegalArgumentException("Number of arguments does not match arity.");
-		}
-
 		this.terms = Collections.unmodifiableList(terms);
 
 		boolean ground = true;
@@ -41,23 +35,19 @@ public class FunctionTerm extends Term {
 		this.ground = ground;
 	}
 
-	public static FunctionTerm getInstance(Functor functionSymbol, List<Term> termList) {
+	public static FunctionTerm getInstance(String functionSymbol, List<Term> termList) {
 		return INTERNER.intern(new FunctionTerm(functionSymbol, termList));
 	}
 
-	public static FunctionTerm getInstance(String functionSymbol, List<Term> termList) {
-		return getInstance(Functor.getInstance(functionSymbol, termList.size()), termList);
-	}
-
 	public static FunctionTerm getInstance(String functionSymbol, Term... terms) {
-		return getInstance(Functor.getInstance(functionSymbol, terms.length), Arrays.asList(terms));
+		return getInstance(functionSymbol, Arrays.asList(terms));
 	}
 
 	public List<Term> getTerms() {
 		return terms;
 	}
 
-	public Functor getSymbol() {
+	public String getSymbol() {
 		return symbol;
 	}
 
@@ -87,10 +77,10 @@ public class FunctionTerm extends Term {
 	@Override
 	public String toString() {
 		if (terms.isEmpty()) {
-			return symbol.toString();
+			return symbol;
 		}
 
-		return join(symbol.toString() + "(", terms, ")");
+		return join(symbol + "(", terms, ")");
 	}
 
 	@Override
@@ -131,7 +121,7 @@ public class FunctionTerm extends Term {
 			return terms.size() - other.terms.size();
 		}
 
-		int result = symbol.getSymbol().compareTo(other.symbol.getSymbol());
+		int result = symbol.compareTo(other.symbol);
 
 		if (result != 0) {
 			return result;
@@ -145,5 +135,14 @@ public class FunctionTerm extends Term {
 		}
 
 		return 0;
+	}
+
+	@Override
+	public Term renameVariables(String renamePrefix) {
+		ArrayList<Term> renamedTerms = new ArrayList<>(terms.size());
+		for (Term term : terms) {
+			renamedTerms.add(term.renameVariables(renamePrefix));
+		}
+		return FunctionTerm.getInstance(symbol, renamedTerms);
 	}
 }

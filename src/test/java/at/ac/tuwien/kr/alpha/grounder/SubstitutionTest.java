@@ -27,21 +27,25 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.terms.Constant;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.Variable;
+import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
 public class SubstitutionTest {
-	private static Constant<?> a = Constant.getSymbolicInstance("a");
-	private static Constant<?> b = Constant.getSymbolicInstance("b");
-	private static Constant<?> c = Constant.getSymbolicInstance("c");
+	private static ConstantTerm<?> a = ConstantTerm.getSymbolicInstance("a");
+	private static ConstantTerm<?> b = ConstantTerm.getSymbolicInstance("b");
+	private static ConstantTerm<?> c = ConstantTerm.getSymbolicInstance("c");
 
 	private static Variable x = Variable.getInstance("X");
 	private static Variable y = Variable.getInstance("Y");
@@ -65,5 +69,29 @@ public class SubstitutionTest {
 
 		assertEquals(c, substitution.apply(x));
 		assertEquals(a, substitution.apply(y));
+	}
+
+	@Test
+	public void equalizingSubstitution() {
+		BasicAtom atom1 = parseAtom("p(X,Y)");
+		BasicAtom atom2 = parseAtom("p(A,B)");
+		assertNotEquals(null, Substitution.findEqualizingSubstitution(atom1, atom2));
+		assertNotEquals(null, Substitution.findEqualizingSubstitution(atom2, atom1));
+
+		BasicAtom atom3 = parseAtom("p(X,Y)");
+		BasicAtom atom4 = parseAtom("p(a,f(X))");
+		assertNotEquals(null, Substitution.findEqualizingSubstitution(atom3, atom4));
+		assertEquals(null, Substitution.findEqualizingSubstitution(atom4, atom3));
+
+		BasicAtom atom5 = parseAtom("p(X,X)");
+		BasicAtom atom6 = parseAtom("p(a,Y)");
+		assertEquals(null, Substitution.findEqualizingSubstitution(atom5, atom6));
+		assertEquals(null, Substitution.findEqualizingSubstitution(atom6, atom5));
+	}
+
+	private BasicAtom parseAtom(String atom) {
+		ProgramParser programParser = new ProgramParser();
+		Program program = programParser.parse(atom + ".");
+		return (BasicAtom) program.getFacts().get(0);
 	}
 }
