@@ -76,9 +76,9 @@ public abstract class AbstractSolverTests {
 		// Check whether we are running in a CI environment.
 		boolean ci = Boolean.valueOf(System.getenv("CI"));
 
-		String[] solvers = getProperty("solvers", ci ? "default" : "default,naive");
+		String[] solvers = getProperty("solvers", ci ? "default,naive" : "default");
 		String[] grounders = getProperty("grounders", "naive");
-		String[] stores = getProperty("stores", ci ? "alpharoaming" : "alpharoaming,naive");
+		String[] stores = getProperty("stores", ci ? "alpharoaming,naive" : "alpharoaming");
 		String[] heuristics = getProperty("heuristics", ci ? "ALL" : "NAIVE");
 
 		// "ALL" is a magic value that will be expanded to contain all heuristics.
