@@ -70,13 +70,19 @@ public class Program {
 	@Override
 	public String toString() {
 		final String ls = System.lineSeparator();
+		final String result = join(
+			"",
+			facts,
+			"." + ls,
+			"." + ls
+		);
+
+		if (rules.isEmpty()) {
+			return result;
+		}
+
 		return join(
-			join(
-				"",
-				facts,
-				"." + ls,
-				"." + ls
-			),
+			result,
 			rules,
 			ls,
 			ls
