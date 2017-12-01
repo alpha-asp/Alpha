@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -47,6 +48,10 @@ public class Program {
 	public Program(List<Rule> rules, List<Atom> facts) {
 		this.rules = rules;
 		this.facts = facts;
+	}
+
+	public Program() {
+		this(new ArrayList<>(), new ArrayList<>());
 	}
 
 	public List<Rule> getRules() {

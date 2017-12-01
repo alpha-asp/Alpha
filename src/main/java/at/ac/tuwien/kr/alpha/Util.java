@@ -27,11 +27,19 @@
  */
 package at.ac.tuwien.kr.alpha;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Util {
+	private static final String LITERATE_INDENT = "    ";
+
 	public static <K, V> Map.Entry<K, V> entry(K key, V value) {
 		return new AbstractMap.SimpleEntry<>(key, value);
 	}
@@ -86,5 +94,18 @@ public class Util {
 
 	public static RuntimeException oops() {
 		return oops("Reached fatal state");
+	}
+
+	public static Stream<String> literate(Stream<String> input) {
+		return input.map(l -> {
+			if (l.startsWith(LITERATE_INDENT)) {
+				return l.substring(LITERATE_INDENT.length());
+			}
+			return "% " + l;
+		});
+	}
+
+	public static ReadableByteChannel streamToChannel(Stream<String> lines) throws IOException {
+		return Channels.newChannel(new ByteArrayInputStream(lines.collect(Collectors.joining(System.lineSeparator())).getBytes(StandardCharsets.UTF_8)));
 	}
 }

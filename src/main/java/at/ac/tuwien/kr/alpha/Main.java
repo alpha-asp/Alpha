@@ -32,11 +32,11 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.RecognitionException;
 import org.apache.commons.cli.*;
@@ -46,6 +46,8 @@ import org.slf4j.LoggerFactory;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.CodingErrorAction;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
@@ -53,11 +55,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static at.ac.tuwien.kr.alpha.Util.literate;
+import static at.ac.tuwien.kr.alpha.Util.streamToChannel;
+import static java.nio.file.Files.lines;
+
 /**
  * Main entry point for Alpha.
  */
 public class Main {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
+	private static final ProgramParser PARSER = new ProgramParser();
 
 	private static final String OPT_INPUT = "input";
 	private static final String OPT_HELP  = "help";
@@ -70,6 +77,7 @@ public class Main {
 	private static final String OPT_DETERMINISTIC = "deterministic";
 	private static final String OPT_STORE = "store";
 	private static final String OPT_QUIET = "quiet";
+	private static final String OPT_LITERATE = "literate";
 
 	private static final String OPT_BRANCHING_HEURISTIC = "branchingHeuristic";
 	private static final String DEFAULT_GROUNDER = "naive";
@@ -78,6 +86,8 @@ public class Main {
 	private static final String OPT_SEED = "seed";
 	private static final String OPT_DEBUG_INTERNAL_CHECKS = "DebugEnableInternalChecks";
 	private static final String DEFAULT_BRANCHING_HEURISTIC = Heuristic.NAIVE.name();
+
+	private static final java.util.function.Predicate<Predicate> DEFAULT_FILTER = p -> true;
 
 	private static CommandLine commandLine;
 
@@ -151,6 +161,9 @@ public class Main {
 		Option quietOption = new Option("q", OPT_QUIET, false, "do not print answer sets");
 		options.addOption(quietOption);
 
+		Option literateOption = new Option("l", OPT_LITERATE, false, "enable literate programming mode");
+		options.addOption(literateOption);
+
 		try {
 			commandLine = new DefaultParser().parse(options, args);
 		} catch (ParseException e) {
@@ -170,17 +183,13 @@ public class Main {
 			return;
 		}
 
-		java.util.function.Predicate<Predicate> filter = p -> true;
-
+		java.util.function.Predicate<Predicate> filter = DEFAULT_FILTER;
 		if (commandLine.hasOption(OPT_FILTER)) {
 			Set<String> desiredPredicates = new HashSet<>(Arrays.asList(commandLine.getOptionValues(OPT_FILTER)));
 			filter = p -> desiredPredicates.contains(p.getName());
 		}
 
-		Bridge[] bridges = new Bridge[0];
-
 		int limit = 0;
-
 		try {
 			Number n = (Number)commandLine.getParsedOptionValue(OPT_NUM_AS);
 			if (n != null) {
@@ -190,25 +199,19 @@ public class Main {
 			bailOut("Failed to parse number of answer sets requested.", e);
 		}
 
-		boolean debugInternalChecks = commandLine.hasOption(OPT_DEBUG_INTERNAL_CHECKS);
+		final boolean debugInternalChecks = commandLine.hasOption(OPT_DEBUG_INTERNAL_CHECKS);
+		final boolean literate = commandLine.hasOption(OPT_LITERATE);
 
 		Program program = null;
 		try {
-			ProgramParser parser = new ProgramParser();
-
 			if (commandLine.hasOption(OPT_STRING)) {
-				program = parser.parse(commandLine.getOptionValue(OPT_STRING));
+				program = PARSER.parse(commandLine.getOptionValue(OPT_STRING));
 			} else {
 				// Parse all input files and accumulate their results in one Program.
-				String[] inputFileNames = commandLine.getOptionValues(OPT_INPUT);
-				program = parser.parse(CharStreams.fromFileName(inputFileNames[0]));
-
-				for (int i = 1; i < inputFileNames.length; i++) {
-					program.accumulate(parser.parse(CharStreams.fromFileName(inputFileNames[i])));
-				}
+				program = combineInput(literate, commandLine.getOptionValues(OPT_INPUT));
 			}
 		} catch (RecognitionException e) {
-			// In case a recognitionexception occured, parseVisit will
+			// In case a recognition exception occurred, parseVisit will
 			// already have printed an error message, so we just exit
 			// at this point without further logging.
 			System.exit(1);
@@ -218,12 +221,12 @@ public class Main {
 			bailOut("Failed to parse program.", e);
 		}
 
-		Grounder grounder = GrounderFactory.getInstance(
-			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), program, filter, bridges
+		final Grounder grounder = GrounderFactory.getInstance(
+			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), program, filter
 		);
 
 		// NOTE: Using time as seed is fine as the internal heuristics
-		// do not need to by cryptographically securely randomized.
+		// do not need to be cryptographically securely randomized.
 		long seed = commandLine.hasOption(OPT_DETERMINISTIC) ? 0 : System.nanoTime();
 
 		try {
@@ -237,9 +240,8 @@ public class Main {
 
 		LOGGER.info("Seed for pseudorandomization is {}.", seed);
 
-		String chosenSolver = commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER);
-		String chosenStore = commandLine.getOptionValue(OPT_STORE, DEFAULT_STORE);
-		String chosenBranchingHeuristic = commandLine.getOptionValue(OPT_BRANCHING_HEURISTIC, DEFAULT_BRANCHING_HEURISTIC);
+		final String chosenBranchingHeuristic = commandLine.getOptionValue(OPT_BRANCHING_HEURISTIC, DEFAULT_BRANCHING_HEURISTIC);
+
 		Heuristic parsedChosenBranchingHeuristic = null;
 		try {
 			parsedChosenBranchingHeuristic = Heuristic.valueOf(chosenBranchingHeuristic.replace("-", "_").toUpperCase());
@@ -247,6 +249,8 @@ public class Main {
 			bailOut("Unknown branching heuristic: {}. Please try one of the following: {}.", chosenBranchingHeuristic, Heuristic.listAllowedValues());
 		}
 
+		final String chosenSolver = commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER);
+		final String chosenStore = commandLine.getOptionValue(OPT_STORE, DEFAULT_STORE);
 		Solver solver = SolverFactory.getInstance(
 			chosenSolver, chosenStore, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks
 		);
@@ -271,7 +275,7 @@ public class Main {
 
 	private static void exitWithHelp(Options options, int exitCode) {
 		HelpFormatter formatter = new HelpFormatter();
-		// TODO(flowlo): This is quite optimistic. How do we know that the program
+		// TODO(lorenzleutgeb): This is quite optimistic. How do we know that the program
 		// really was invoked as "java -jar ..."?
 		formatter.printHelp("java -jar alpha-bundled.jar" + System.lineSeparator() + "java -jar alpha.jar", options);
 		System.exit(exitCode);
@@ -280,5 +284,26 @@ public class Main {
 	private static void bailOut(String format, Object... arguments) {
 		LOGGER.error(format, arguments);
 		System.exit(1);
+	}
+
+	private static Program combineInput(boolean literate, String... fileNames) throws IOException {
+		final Program result = new Program();
+
+		for (String fileName : fileNames) {
+			CharStream stream;
+			if (!literate) {
+				stream = CharStreams.fromFileName(fileName);
+			} else {
+				stream = CharStreams.fromChannel(
+					streamToChannel(literate(lines(Paths.get(fileName)))),
+					4096,
+					CodingErrorAction.REPLACE,
+					fileName
+				);
+			}
+			result.accumulate(PARSER.parse(stream));
+		}
+
+		return result;
 	}
 }

@@ -44,4 +44,4 @@ QUOTED_STRING : QUOTE ( '\\"' | . )*? QUOTE;
 
 COMMENT : '%' ~[\r\n]* -> channel(HIDDEN);
 MULTI_LINE_COMMEN : '%*' .*? '*%' -> channel(HIDDEN);
-BLANK : [ \t\r\n\f]+ -> channel(HIDDEN) ;
+BLANK : [ \t\r\n\f]+ -> channel(HIDDEN);
