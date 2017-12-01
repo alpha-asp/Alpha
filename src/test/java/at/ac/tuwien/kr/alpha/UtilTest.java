@@ -2,8 +2,6 @@ package at.ac.tuwien.kr.alpha;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public class UtilTest {
 	@Test(expected = RuntimeException.class)
 	public void oops() throws Exception {

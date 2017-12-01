@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static at.ac.tuwien.kr.alpha.Util.join;
+
 /**
  * Alpha-internal representation of an ASP program, i.e., a set of ASP rules.
  * Copyright (c) 2017, the Alpha Team.
@@ -67,15 +69,23 @@ public class Program {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
+		final String ls = System.lineSeparator();
+		final String result = join(
+			"",
+			facts,
+			"." + ls,
+			"." + ls
+		);
 
-		for (Atom fact : facts) {
-			sb.append(fact).append(".").append(System.lineSeparator());
-		}
-		for (Rule rule : rules) {
-			sb.append(rule).append(System.lineSeparator());
+		if (rules.isEmpty()) {
+			return result;
 		}
 
-		return sb.toString();
+		return join(
+			result,
+			rules,
+			ls,
+			ls
+		);
 	}
 }

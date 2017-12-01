@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import org.junit.Test;
 
@@ -13,7 +14,7 @@ import static org.junit.Assert.*;
 public class IndexedInstanceStorageTest {
 	@Test
 	public void testIndexedInstanceStorage() {
-		IndexedInstanceStorage storage = new IndexedInstanceStorage("A test storage of arity 4", 4);
+		IndexedInstanceStorage storage = new IndexedInstanceStorage(Predicate.getInstance("p", 4), false);
 		storage.addIndexPosition(0);
 		storage.addIndexPosition(2);
 		ConstantTerm t0 = ConstantTerm.getInstance("0");

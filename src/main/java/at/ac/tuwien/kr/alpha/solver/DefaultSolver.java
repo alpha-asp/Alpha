@@ -108,7 +108,7 @@ public class DefaultSolver extends AbstractSolver {
 			// Backjump instead of backtrackSlow, enumerationNoGood will invert last choice.
 			choiceManager.backjump(backjumpLevel - 1);
 			LOGGER.debug("Adding enumeration nogood: {}", enumerationNoGood);
-			ConflictCause conflictCause = store.add(grounder.registerOutsideNoGood(enumerationNoGood), enumerationNoGood);
+			ConflictCause conflictCause = store.add(grounder.register(enumerationNoGood), enumerationNoGood);
 			if (conflictCause != null) {
 				throw oops("Adding enumeration NoGood causes conflicts after backjump");
 			}
@@ -203,7 +203,7 @@ public class DefaultSolver extends AbstractSolver {
 			choiceManager.backjump(analysisResult.backjumpLevel);
 
 			final NoGood learnedNoGood = analysisResult.learnedNoGood;
-			if (store.add(grounder.registerOutsideNoGood(learnedNoGood), learnedNoGood) != null) {
+			if (store.add(grounder.register(learnedNoGood), learnedNoGood) != null) {
 				throw oops("Newly learned NoGood is violated after backjumping");
 			}
 			return true;
@@ -296,7 +296,7 @@ public class DefaultSolver extends AbstractSolver {
 
 			final NoGood learnedNoGood = fixContradiction(entry, conflictCause);
 			if (learnedNoGood != null) {
-				noGoodsToAdd.addFirst(new AbstractMap.SimpleEntry<>(grounder.registerOutsideNoGood(learnedNoGood), learnedNoGood));
+				noGoodsToAdd.addFirst(new AbstractMap.SimpleEntry<>(grounder.register(learnedNoGood), learnedNoGood));
 			}
 		}
 		return true;

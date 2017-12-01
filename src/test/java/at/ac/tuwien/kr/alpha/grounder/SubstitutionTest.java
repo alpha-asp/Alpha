@@ -43,25 +43,32 @@ import static org.junit.Assert.assertNotEquals;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class SubstitutionTest {
+	private static ConstantTerm<?> a = ConstantTerm.getSymbolicInstance("a");
+	private static ConstantTerm<?> b = ConstantTerm.getSymbolicInstance("b");
+	private static ConstantTerm<?> c = ConstantTerm.getSymbolicInstance("c");
+
+	private static VariableTerm x = VariableTerm.getInstance("X");
+	private static VariableTerm y = VariableTerm.getInstance("Y");
+
 	@Test
 	public void unifyTermsSimpleBinding() throws Exception {
 		Substitution substitution = new Substitution();
-		Term groundTerm = ConstantTerm.getInstance("abc");
-		Term nongroundTerm = VariableTerm.getInstance("Y");
-		substitution.unifyTerms(nongroundTerm, groundTerm);
-		assertEquals("Variable Y must bind to constant term abc", substitution.eval(VariableTerm.getInstance("Y")), ConstantTerm.getInstance("abc"));
+		substitution.unifyTerms(y, a);
+		assertEquals(a, substitution.eval(y));
 	}
 
 	@Test
 	public void unifyTermsFunctionTermBinding() throws Exception {
 		Substitution substitution = new Substitution();
-		substitution.put(VariableTerm.getInstance("Z"), ConstantTerm.getInstance("aa"));
-		FunctionTerm groundFunctionTerm = FunctionTerm.getInstance("f", ConstantTerm.getInstance("bb"), ConstantTerm.getInstance("cc"));
+		substitution.put(y, a);
 
-		Term nongroundFunctionTerm = FunctionTerm.getInstance("f", ConstantTerm.getInstance("bb"), VariableTerm.getInstance("X"));
+		FunctionTerm groundFunctionTerm = FunctionTerm.getInstance("f", b, c);
+		Term nongroundFunctionTerm = FunctionTerm.getInstance("f", b, x);
+
 		substitution.unifyTerms(nongroundFunctionTerm, groundFunctionTerm);
-		assertEquals("Variable X must bind to constant term cc", substitution.eval(VariableTerm.getInstance("X")), ConstantTerm.getInstance("cc"));
-		assertEquals("Variable Z must bind to constant term aa", substitution.eval(VariableTerm.getInstance("Z")), ConstantTerm.getInstance("aa"));
+
+		assertEquals(c, substitution.eval(x));
+		assertEquals(a, substitution.eval(y));
 	}
 
 	@Test

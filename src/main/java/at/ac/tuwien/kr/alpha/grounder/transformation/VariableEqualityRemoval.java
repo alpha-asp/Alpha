@@ -27,7 +27,7 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 	private void findAndReplaceVariableEquality(Rule rule) {
 		// Collect all equal variables.
 		HashMap<VariableTerm, HashSet<VariableTerm>> variableToEqualVariables = new HashMap<>();
-		//HashSet<VariableTerm> equalVariables = new LinkedHashSet<>();
+		//HashSet<Variable> equalVariables = new LinkedHashSet<>();
 		HashSet<Literal> equalitiesToRemove = new HashSet<>();
 		for (Literal literal : rule.getBody()) {
 			if (!(literal instanceof ComparisonAtom)) {

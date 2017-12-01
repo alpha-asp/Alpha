@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2016-2017, the Alpha Team.
  * All rights reserved.
- * 
+ *
  * Additional changes made by Siemens.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.common;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.stream.IntStream;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -80,6 +81,31 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 		return headFirst(literal);
 	}
 
+	public static NoGood support(int headAtom, int ruleBodyAtom) {
+		return new NoGood(headAtom, -ruleBodyAtom);
+	}
+
+	public static NoGood fromConstraint(List<Integer> pos, List<Integer> neg) {
+		return new NoGood(addPosNeg(new int[pos.size() + neg.size()], pos, neg, 0));
+	}
+
+	public static NoGood fromBody(List<Integer> pos, List<Integer> neg, int bodyAtom) {
+		int[] bodyLiterals = new int[pos.size() + neg.size() + 1];
+		bodyLiterals[0] = -bodyAtom;
+		return NoGood.headFirst(addPosNeg(bodyLiterals, pos, neg, 1));
+	}
+
+	private static int[] addPosNeg(int[] literals, List<Integer> pos, List<Integer> neg, int offset) {
+		int i = offset;
+		for (Integer atomId : pos) {
+			literals[i++] = atomId;
+		}
+		for (Integer atomId : neg) {
+			literals[i++] = -atomId;
+		}
+		return literals;
+	}
+
 	public int size() {
 		return literals.length;
 	}
@@ -125,7 +151,7 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 			}
 		};
 	}
-	
+
 	public IntStream stream() {
 		return Arrays.stream(literals);
 	}
