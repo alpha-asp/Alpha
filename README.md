@@ -2,7 +2,7 @@
 
 [![Travis-CI Build Status](https://travis-ci.org/alpha-asp/Alpha.svg?branch=master)](https://travis-ci.org/alpha-asp/Alpha)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/3wrwa7on0en01y7u?svg=true)](https://ci.appveyor.com/project/lorenzleutgeb/alpha)
-[![Coverage Status](https://coveralls.io/repos/github/alpha-asp/Alpha/badge.svg?branch=master)](https://coveralls.io/github/alpha-asp/Alpha?branch=master)
+[![codecov](https://codecov.io/gh/alpha-asp/Alpha/branch/master/graph/badge.svg)](https://codecov.io/gh/alpha-asp/Alpha)
 [![Code Quality Status](https://codebeat.co/badges/10b609be-9774-42a1-b7fe-2bb64382744d)](https://codebeat.co/projects/github-com-alpha-asp-alpha-master)
 
 Alpha is an [Answer Set Programming (ASP)](https://en.wikipedia.org/wiki/Answer_set_programming) system: It reads a
