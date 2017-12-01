@@ -132,27 +132,39 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		}
 	}
 
+	private static int getStrongAssignedLevel(Assignment.Entry entry) {
+		if (entry == null) {
+			return Integer.MAX_VALUE;
+		}
+		return entry.getTruth().isMBT() ? Integer.MAX_VALUE : entry.getDecisionLevel();
+	}
+
+	private static boolean isComplementaryAssigned(int literal, Assignment.Entry literalEntry) {
+		return literalEntry != null && literalEntry.getTruth().toBoolean() != isPositive(literal);
+	}
+
 	private ConflictCause addAndWatch(final NoGood noGood) {
 		// Collect potential watch candidates.
 		int posWeakUnassigned1 = -1;
 		int posWeakUnassigned2 = -1;
-		int posStrongUnassigned = -1;
 		int posSatisfiedLiteral1 = -1;
 		int posSatisfiedLiteral2 = -1;
 		int posWeakHighestAssigned = -1;
 		int weakDecisionLevelHighestAssigned = -1;
 		int posStrongHighestAssigned = -1;
 		int strongDecisionLevelHighestAssigned = -1;
-		boolean containsPositiveAssignedMBT = false;
+		int posPotentialAlphaWatch = -1;
 		Assignment.Entry satisfiedLiteralEntry = null;
 
 		// Used to detect always-satisfied NoGoods of form { L, -L, ... }.
 		Map<Integer, Boolean> occurringLiterals = new HashMap<>();
 
 		// Iterate noGood and record satisfying/unassigned/etc positions.
+		Assignment.Entry headEntry = noGood.hasHead() ? assignment.get(noGood.getAtom(HEAD)) : null;
+		final boolean isHeadTrue = noGood.hasHead() && headEntry != null && headEntry.getTruth().equals(TRUE);
 		for (int i = 0; i < noGood.size(); i++) {
-			int literal = noGood.getLiteral(i);
-			Assignment.Entry literalEntry = assignment.get(atomOf(literal));
+			final int literal = noGood.getLiteral(i);
+			final Assignment.Entry literalEntry = assignment.get(atomOf(literal));
 
 			// Check if NoGood can never be violated (atom occurring positive and negative)
 			if (occurringLiterals.containsKey(atomOf(literal))) {
@@ -173,9 +185,17 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 					posWeakUnassigned2 = i;
 				}
 			}
-			// Check strong unassigned for nogoods with head.
-			if (noGood.hasHead() && i != HEAD && (literalEntry == null || literalEntry.getTruth().isMBT())) {
-				posStrongUnassigned = i;
+			// Alpha watch:
+			if (posPotentialAlphaWatch == -1 && noGood.hasHead() && i != HEAD) {
+				// Current literal is potential alpha watch if:
+				// 1) the head of the nogood is true and the literal is assigned at a higher-or-equal decision level.
+				// 2) the literal is complementary assigned and thus satisfies the nogood, or
+				// 3) the literal is unassigned or assigned must-be-true.
+				if (isHeadTrue && getStrongAssignedLevel(literalEntry) >= getStrongAssignedLevel(headEntry)
+					|| isComplementaryAssigned(noGood.getLiteral(i), literalEntry)
+					|| getStrongAssignedLevel(literalEntry) == Integer.MAX_VALUE) {
+					posPotentialAlphaWatch = i;
+				}
 			}
 			// Check satisfaction
 			if (literalEntry != null && literalEntry.getTruth().toBoolean() != isPositive(literal)) {
@@ -196,9 +216,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 					&& literalEntry.getStrongDecisionLevel() > strongDecisionLevelHighestAssigned) {
 					strongDecisionLevelHighestAssigned = literalEntry.getStrongDecisionLevel();
 					posStrongHighestAssigned = i;
-				}
-				if (literalEntry.getTruth().isMBT()) {
-					containsPositiveAssignedMBT = true;
 				}
 			}
 		}
@@ -240,31 +257,25 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 
 		// Compute alpha watch:
 		if (noGood.hasHead()) {
-			if (posStrongUnassigned != -1) {
-				// Unassigned or MBT-assigned positive literal exists
-				wng.setAlphaPointer(posStrongUnassigned);
-			} else if (posSatisfiedLiteral1 == -1 && !containsPositiveAssignedMBT) {
-				// Strongly unit.
+			if (posPotentialAlphaWatch != -1) {
+				// Found potential alpha watch.
+				wng.setAlphaPointer(posPotentialAlphaWatch);
+			} else {
+				// No potential alpha watch found: noGood must be strongly unit.
 				ConflictCause conflictCause = assignStrongComplement(noGood, strongDecisionLevelHighestAssigned);
 				if (conflictCause != null) {
 					return conflictCause;
 				}
 				wng.setAlphaPointer(posStrongHighestAssigned);
-			} else if (posSatisfiedLiteral1 == HEAD && posSatisfiedLiteral2 == -1 && posStrongUnassigned == -1) {
-				// The head is the only satisfying literal, hence it might propagate on lower decision level.
-				if (satisfiedLiteralEntry.getStrongDecisionLevel() > strongDecisionLevelHighestAssigned) {
-					ConflictCause conflictCause = assignStrongComplement(noGood, strongDecisionLevelHighestAssigned);
-					if (conflictCause != null) {
-						return conflictCause;
-					}
-				}
 			}
 		}
 
-		// Set watches and register at watches structure:
+		if (wng.getAlphaPointer() == -1 && noGood.hasHead()) {
+			throw oops("Did not set alpha watch for nogood with head.");
+		}
+
+		// Register alpha watch if present.
 		if (wng.getAlphaPointer() != -1) {
-			// Only look at the alpha pointer if it points at a legal index. It might not
-			// in case the noGood has no head or no positive literal.
 			addAlphaWatch(wng);
 		}
 		// Set ordinary watches.
