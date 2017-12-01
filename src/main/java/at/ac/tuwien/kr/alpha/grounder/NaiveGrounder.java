@@ -77,7 +77,7 @@ public class NaiveGrounder extends BridgedGrounder {
 	private Set<NonGroundRule> uniqueGroundRulePerGroundHead = new HashSet<>();
 	private Map<Predicate, HashSet<NonGroundRule>> ruleHeadsToDefiningRules = new HashMap<>();
 
-	private HashSet<IndexedInstanceStorage> modifiedWorkingMemories = new HashSet<>();
+	private HashSet<IndexedInstanceStorage> modifiedWorkingMemories = new LinkedHashSet<>();
 
 	public NaiveGrounder(Program program, Bridge... bridges) {
 		this(program, p -> true, bridges);
