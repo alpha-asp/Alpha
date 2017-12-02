@@ -34,6 +34,7 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.antlr.v4.runtime.CharStreams;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -51,21 +52,25 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	private final ProgramParser parser = new ProgramParser();
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testInstance1() throws IOException {
 		testHanoiTower(1);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testInstance2() throws IOException {
 		testHanoiTower(2);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testInstance3() throws IOException {
 		testHanoiTower(3);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testInstance4() throws IOException {
 		testHanoiTower(4);
 	}
