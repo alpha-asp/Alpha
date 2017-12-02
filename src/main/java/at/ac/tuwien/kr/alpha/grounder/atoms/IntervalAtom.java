@@ -1,8 +1,8 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -28,7 +28,7 @@ import static at.ac.tuwien.kr.alpha.Util.join;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class IntervalAtom implements FixedInterpretationLiteral {
-	private static final Predicate INTERVAL_PREDICATE = Predicate.getInstance("_interval", 2, true);
+	private static final Predicate PREDICATE = Predicate.getInstance("_interval", 2, true);
 
 	private final List<Term> terms;
 
@@ -66,7 +66,7 @@ public class IntervalAtom implements FixedInterpretationLiteral {
 
 	@Override
 	public Predicate getPredicate() {
-		return INTERVAL_PREDICATE;
+		return PREDICATE;
 	}
 
 	@Override
@@ -99,7 +99,7 @@ public class IntervalAtom implements FixedInterpretationLiteral {
 
 	@Override
 	public String toString() {
-		return join(INTERVAL_PREDICATE.getName() + "(", terms, ")");
+		return join(PREDICATE.getName() + "(", terms, ")");
 	}
 
 	@Override

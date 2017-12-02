@@ -27,21 +27,25 @@
  */
 package at.ac.tuwien.kr.alpha.antlr;
 
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.ChoiceHead;
+import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import org.antlr.v4.runtime.CharStreams;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.channels.ReadableByteChannel;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 
@@ -138,5 +142,21 @@ public class ParserTest {
 		assertEquals(ComparisonOperator.LT, choiceHead.getLowerOperator());
 		assertEquals(ConstantTerm.getInstance(13), choiceHead.getUpperBound());
 		assertEquals(ComparisonOperator.LE, choiceHead.getUpperOperator());
+	}
+
+	@Test
+	public void literate() throws IOException {
+		final ReadableByteChannel input = Util.streamToChannel(Util.literate(Stream.of(
+			"This is some description.",
+			"",
+			"    p(a).",
+			"",
+			"Test!"
+		)));
+
+		final String actual = new ProgramParser().parse(CharStreams.fromChannel(input)).toString();
+		final String expected = "p(a)." + System.lineSeparator();
+
+		assertEquals(expected, actual);
 	}
 }

@@ -77,4 +77,9 @@ public class Predicate implements Comparable<Predicate> {
 	public int getArity() {
 		return arity;
 	}
+
+	@Override
+	public String toString() {
+		return name + "/" + arity;
+	}
 }

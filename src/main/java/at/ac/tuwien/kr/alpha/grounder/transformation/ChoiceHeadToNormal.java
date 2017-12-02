@@ -4,7 +4,6 @@ import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -33,7 +32,10 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 				// Rule is constraint or without choice in the head. Leave as is.
 				continue;
 			}
+
+			// Remove this rule, as it will be transformed.
 			ruleIterator.remove();
+
 			ChoiceHead choiceHead = (ChoiceHead) ruleHead;
 			// Choice rules with boundaries are not yet supported.
 			if (choiceHead.getLowerBound() != null || choiceHead.getUpperBound() != null) {
@@ -41,9 +43,8 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 			}
 
 			// Only rewrite rules with a choice in their head.
-			List<ChoiceHead.ChoiceElement> choiceElements = choiceHead.getChoiceElements();
-			for (ChoiceHead.ChoiceElement choiceElement : choiceElements) {
-				// Create two choice rules for each choiceElement.
+			for (ChoiceHead.ChoiceElement choiceElement : choiceHead.getChoiceElements()) {
+				// Create two guessing rules for each choiceElement.
 
 				// Construct common body to both rules.
 				Atom head = choiceElement.choiceAtom;
@@ -56,6 +57,7 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 
 				// Construct head atom for the choice.
 				Predicate headPredicate = head.getPredicate();
+
 				Predicate negPredicate = Predicate.getInstance(PREDICATE_NEGATION_PREFIX + headPredicate.getName(), headPredicate.getArity() + 1, true);
 				List<Term> headTerms = new ArrayList<>(head.getTerms());
 				headTerms.add(0, ConstantTerm.getInstance("1"));	// FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for classical negative atoms.
@@ -78,10 +80,10 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 
 	private static boolean containsIntervalTerms(Atom atom) {
 		for (Term term : atom.getTerms()) {
-				if (IntervalTerm.termContainsIntervalTerm(term)) {
-						return true;
-					}
+			if (IntervalTerm.termContainsIntervalTerm(term)) {
+				return true;
 			}
+		}
 		return false;
 	}
 }

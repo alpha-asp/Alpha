@@ -150,6 +150,4 @@ public class IntervalTerm extends Term {
 		}
 		return false;
 	}
-
-
 }

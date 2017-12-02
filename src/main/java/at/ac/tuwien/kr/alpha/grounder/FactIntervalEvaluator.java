@@ -50,15 +50,20 @@ public class FactIntervalEvaluator {
 			return Collections.singletonList(new Instance(currentTerms));
 		}
 		Term currentTerm = currentTerms[currentPosition];
-		if (currentTerm instanceof IntervalTerm) {
-			List<Instance> instances = new ArrayList<>();
-			for (int i = ((IntervalTerm) currentTerm).getLowerBound(); i <= ((IntervalTerm) currentTerm).getUpperBound(); i++) {
-				Term[] clonedTerms = currentTerms.clone();
-				clonedTerms[currentPosition] = ConstantTerm.getInstance(i);
-				instances.addAll(unrollInstances(clonedTerms, currentPosition + 1));
-			}
-			return instances;
+		if (!(currentTerm instanceof IntervalTerm)) {
+			return unrollInstances(currentTerms, currentPosition + 1);
 		}
-		return unrollInstances(currentTerms, currentPosition + 1);
+
+		List<Instance> instances = new ArrayList<>();
+
+		int lower = ((IntervalTerm) currentTerm).getLowerBound();
+		int upper = ((IntervalTerm) currentTerm).getUpperBound();
+
+		for (int i = lower; i <= upper; i++) {
+			Term[] clonedTerms = currentTerms.clone();
+			clonedTerms[currentPosition] = ConstantTerm.getInstance(i);
+			instances.addAll(unrollInstances(clonedTerms, currentPosition + 1));
+		}
+		return instances;
 	}
 }

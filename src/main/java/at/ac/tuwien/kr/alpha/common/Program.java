@@ -29,8 +29,11 @@ package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 /**
  * Alpha-internal representation of an ASP program, i.e., a set of ASP rules.
@@ -45,6 +48,10 @@ public class Program {
 	public Program(List<Rule> rules, List<Atom> facts) {
 		this.rules = rules;
 		this.facts = facts;
+	}
+
+	public Program() {
+		this(new ArrayList<>(), new ArrayList<>());
 	}
 
 	public List<Rule> getRules() {
@@ -62,15 +69,23 @@ public class Program {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
+		final String ls = System.lineSeparator();
+		final String result = join(
+			"",
+			facts,
+			"." + ls,
+			"." + ls
+		);
 
-		for (Atom fact : facts) {
-			sb.append(fact).append(".").append(System.lineSeparator());
-		}
-		for (Rule rule : rules) {
-			sb.append(rule).append(System.lineSeparator());
+		if (rules.isEmpty()) {
+			return result;
 		}
 
-		return sb.toString();
+		return join(
+			result,
+			rules,
+			ls,
+			ls
+		);
 	}
 }

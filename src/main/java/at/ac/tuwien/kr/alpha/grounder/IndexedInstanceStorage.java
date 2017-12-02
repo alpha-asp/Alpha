@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 import java.util.*;
@@ -11,32 +12,43 @@ import java.util.*;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class IndexedInstanceStorage {
-	private final String description;	// An (arbitrary) description of what is stored here, mainly for debugging.
-	private final int arity;		// All instances stored have to have this number of termIds.
-	private LinkedHashSet<Instance> instances;	// A collection of all instances currently stored in this storage.
-	private ArrayList<HashMap<Term, ArrayList<Instance>>> indices;	// For each position, a mapping of termIds to list of instances with this termId at the corresponding position
-	private ArrayList<Instance> recentlyAddedInstances;
+	private final Predicate predicate;
+	private final boolean negated;
 
-	public IndexedInstanceStorage(String description, int arity) {
-		this.description = description;
-		this.arity = arity;
-		instances = new LinkedHashSet<>();
-		recentlyAddedInstances = new ArrayList<>();
+	/**
+	 * A collection of all instances currently stored in this storage.
+	 */
+	private final LinkedHashSet<Instance> instances = new LinkedHashSet<>();
+
+	/**
+	 * For each position, a mapping of termIds to list of instances with this termId at the corresponding position
+	 */
+	private final ArrayList<HashMap<Term, ArrayList<Instance>>> indices = new ArrayList<>();
+
+	private final ArrayList<Instance> recentlyAddedInstances = new ArrayList<>();
+
+	public IndexedInstanceStorage(Predicate predicate, boolean negated) {
+		this.predicate = predicate;
+		this.negated = negated;
+
 		// Create list of mappings, initialize to null.
-		indices = new ArrayList<>();
-		while (indices.size() < arity) {
+		while (indices.size() < predicate.getArity()) {
 			indices.add(null);
 		}
 	}
 
+	public Predicate getPredicate() {
+		return predicate;
+	}
+
 	public void markRecentlyAddedInstancesDone() {
-		recentlyAddedInstances = new ArrayList<>();
+		recentlyAddedInstances.clear();
 	}
 
 	public void addIndexPosition(int position) {
-		if (position < 0 || position > arity - 1) {
+		if (position < 0 || position > predicate.getArity() - 1) {
 			throw new RuntimeException("Requested to create indices for attribute out of range." +
-				"IndexedInstanceStorage: " + description + " arity: " + arity + "  requested indices position: " + position);
+				"IndexedInstanceStorage: " + this + "  requested indices position: " + position);
 		}
 		// Add index
 		indices.set(position, new LinkedHashMap<>());
@@ -50,9 +62,9 @@ public class IndexedInstanceStorage {
 	}
 
 	public void removeIndexPosition(int position) {
-		if (position < 0 || position > arity - 1) {
+		if (position < 0 || position > predicate.getArity() - 1) {
 			throw new RuntimeException("Requested to create indices for attribute out of range." +
-				"IndexedInstanceStorage: " + description + " arity: " + arity + "  requested indices position: " + position);
+				"IndexedInstanceStorage: " + this + "  requested indices position: " + position);
 		}
 		indices.set(position, null);
 	}
@@ -67,10 +79,10 @@ public class IndexedInstanceStorage {
 	}
 
 	public void addInstance(Instance instance) {
-		if (instance.terms.size() != arity) {
+		if (instance.terms.size() != predicate.getArity()) {
 			throw new RuntimeException("Instance length does not match arity of IndexedInstanceStorage: " +
 				"instance size: " + instance.terms.size()
-				+ "IndexedInstanceStorage size: " + arity);
+				+ "IndexedInstanceStorage: " + this);
 		}
 		instances.add(instance);
 		recentlyAddedInstances.add(instance);
@@ -133,4 +145,8 @@ public class IndexedInstanceStorage {
 		return instances;
 	}
 
+	@Override
+	public String toString() {
+		return (negated ? "-" : "+") + predicate;
+	}
 }

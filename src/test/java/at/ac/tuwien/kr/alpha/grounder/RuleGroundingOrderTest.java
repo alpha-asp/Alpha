@@ -26,19 +26,19 @@ public class RuleGroundingOrderTest {
 			"p(a) :- b = a.");
 		new VariableEqualityRemoval().transform(program);
 		Rule rule0 = program.getRules().get(0);
-		NonGroundRule nonGroundRule0 = NonGroundRule.constructNonGroundRule(new IntIdGenerator(), rule0);
+		NonGroundRule nonGroundRule0 = NonGroundRule.constructNonGroundRule(rule0);
 		RuleGroundingOrder rgo0 = new RuleGroundingOrder(nonGroundRule0);
 		rgo0.computeGroundingOrders();
 		assertEquals(4, rgo0.getStartingLiterals().size());
 
 		Rule rule1 = program.getRules().get(1);
-		NonGroundRule nonGroundRule1 = NonGroundRule.constructNonGroundRule(new IntIdGenerator(), rule1);
+		NonGroundRule nonGroundRule1 = NonGroundRule.constructNonGroundRule(rule1);
 		RuleGroundingOrder rgo1 = new RuleGroundingOrder(nonGroundRule1);
 		rgo1.computeGroundingOrders();
 		assertEquals(4, rgo1.getStartingLiterals().size());
 
 		Rule rule2 = program.getRules().get(2);
-		NonGroundRule nonGroundRule2 = NonGroundRule.constructNonGroundRule(new IntIdGenerator(), rule2);
+		NonGroundRule nonGroundRule2 = NonGroundRule.constructNonGroundRule(rule2);
 		RuleGroundingOrder rgo2 = new RuleGroundingOrder(nonGroundRule2);
 		rgo2.computeGroundingOrders();
 		assertTrue(rgo2.fixedInstantiation());
@@ -49,7 +49,7 @@ public class RuleGroundingOrderTest {
 		Program program = parser.parse("h(X,C) :- X = Y, Y = C .. 3, C = X.");
 		new VariableEqualityRemoval().transform(program);
 		Rule rule0 = program.getRules().get(0);
-		NonGroundRule nonGroundRule0 = NonGroundRule.constructNonGroundRule(new IntIdGenerator(), rule0);
+		NonGroundRule nonGroundRule0 = NonGroundRule.constructNonGroundRule(rule0);
 		RuleGroundingOrder rgo0 = new RuleGroundingOrder(nonGroundRule0);
 		rgo0.computeGroundingOrders();
 	}
