@@ -12,7 +12,7 @@ import java.util.Set;
 
 public class WorkingMemory {
 	protected HashMap<Predicate, ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage>> workingMemory = new HashMap<>();
-	private HashSet<IndexedInstanceStorage> modifiedWorkingMemories = new HashSet<>();
+	private HashSet<IndexedInstanceStorage> modifiedWorkingMemories = new LinkedHashSet<>();
 
 	public boolean contains(Predicate predicate) {
 		return workingMemory.containsKey(predicate);

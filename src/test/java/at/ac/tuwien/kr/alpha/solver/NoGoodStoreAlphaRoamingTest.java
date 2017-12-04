@@ -587,4 +587,22 @@ public class NoGoodStoreAlphaRoamingTest {
 		ConflictCause cause = store.propagate();
 		assertNotNull(cause);
 	}
+
+	@Test
+	public void alphaWatchNotIgnored() {
+		assertNull(assignment.choose(2, TRUE));
+		assertNull(store.propagate());
+		assertNull(assignment.choose(3, TRUE));
+		assertNull(store.propagate());
+		assertNull(assignment.choose(1, TRUE));
+		assertNull(store.propagate());
+
+		assertNull(store.add(1, headFirst(-1, 2, 3)));
+
+		store.backtrack();
+		store.backtrack();
+		assertNull(assignment.choose(3, TRUE));
+		assertNull(store.propagate());
+		assertEquals(TRUE, assignment.getTruth(1));
+	}
 }
