@@ -8,7 +8,7 @@ import ASPLexer;
  * It is extended a bit to parse widespread syntax (e.g. used by gringo/clasp).
  */
 
-program : statements? query?;
+program : statements? query? EOF;
 
 statements : statement+;
 
@@ -83,4 +83,4 @@ variable_term : VARIABLE | ANONYMOUS_VARIABLE;
 
 answer_set : CURLY_OPEN classical_literal? (COMMA classical_literal)* CURLY_CLOSE;
 
-answer_sets: answer_set*;
+answer_sets: answer_set* EOF;
