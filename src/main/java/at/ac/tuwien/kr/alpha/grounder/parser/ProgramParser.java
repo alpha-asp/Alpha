@@ -36,7 +36,7 @@ public class ProgramParser {
 			// If there were issues parsing the given string, we
 			// throw something that suggests that the input string
 			// is malformed.
-			throw new IllegalArgumentException("Could not parse answer sets.", e);
+			throw new IllegalArgumentException("Could not parse input program.", e);
 		}
 	}
 
@@ -91,6 +91,11 @@ public class ProgramParser {
 		// is attempted) and the user will only see the first error encountered.
 		if (errorListener.getRecognitionException() != null) {
 			throw errorListener.getRecognitionException();
+		}
+
+		// Abort parsing if there were some (recoverable) syntax errors.
+		if (parser.getNumberOfSyntaxErrors() != 0) {
+			throw new ParseCancellationException();
 		}
 
 		// Construct internal program representation.

@@ -159,4 +159,18 @@ public class ParserTest {
 
 		assertEquals(expected, actual);
 	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testMalformedInputNotIgnored() {
+		String program = "foo(a) :- p(b).\n" +
+			"// rule :- q.\n" +
+			"r(1).\n" +
+			"r(2).\n";
+		parser.parse(program);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testMissingDotNotIgnored() {
+		parser.parse("p(X,Y) :- q(X), r(Y) p(a). q(b).");
+	}
 }
