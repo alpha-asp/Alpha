@@ -54,7 +54,7 @@ public class Program {
 	}
 
 	public Program() {
-		this(new ArrayList<>(), new ArrayList<>());
+		this(new ArrayList<>(), new ArrayList<>(), new InlineDirectives());
 	}
 
 	public List<Rule> getRules() {
