@@ -20,8 +20,8 @@ public class TarjanSCC<V> {
 		public HashSet<V> scc = new HashSet<>();
 	}
 
-	public HashSet<SCC> getSCCs() {
-		return SCCs;
+	public HashSet<SCC> getStronglyConnectedComponents() {
+		return stronglyConnectedComponents;
 	}
 
 	public HashMap<V, SCC> getVertexInSCC() {
@@ -32,7 +32,7 @@ public class TarjanSCC<V> {
 		return reverseTopoSortSCCs;
 	}
 
-	private HashSet<SCC> SCCs = new HashSet<>();
+	private HashSet<SCC> stronglyConnectedComponents = new HashSet<>();
 	private HashMap<V, SCC> vertexInSCC = new HashMap<>();
 	private ArrayList<SCC> reverseTopoSortSCCs = new ArrayList<>();
 
@@ -83,7 +83,7 @@ public class TarjanSCC<V> {
 
 		if (v_lowlink[vpos] == v_index[vpos]) {
 			SCC<V> currentSCC = new SCC<>();
-			this.SCCs.add(currentSCC);
+			this.stronglyConnectedComponents.add(currentSCC);
 			int wpos;
 			do {
 				wpos = stack.pop();

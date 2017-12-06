@@ -1,13 +1,13 @@
 package at.ac.tuwien.kr.alpha.grounder.structure;
 
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.Rule;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import com.google.common.collect.HashBiMap;
 
 import java.util.*;
+
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Copyright (c) 2017, the Alpha Team.
@@ -42,11 +42,16 @@ public class PredicateDependencyGraph {
 		PredicateDependencyGraph predicateDependencyGraph = new PredicateDependencyGraph();
 		// Iterate over all rules and facts to initialize the graph.
 		for (Rule rule : program.getRules()) {
-			Atom head = rule.getHead();
 			// Skip constraints.
-			if (head == null) {
+			if (rule.isConstraint()) {
 				continue;
 			}
+			Head ruleHead = rule.getHead();
+			if (!ruleHead.isNormal()) {
+				throw oops("Non-normal rule encountered: " + rule);
+			}
+			Atom head = ((DisjunctiveHead)ruleHead).disjunctiveAtoms.get(0);
+
 			List<Predicate> fromPredicates = Collections.singletonList(head.getPredicate());
 			/*if (head instanceof ChoiceAtom) {
 				// TODO: treat choice heads and disjunction here, i.e., have more fromPredicates.

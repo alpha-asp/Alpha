@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder.structure;
 
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.predicates.Predicate;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.junit.Test;
 
@@ -22,10 +22,10 @@ public class PredicateDependencyGraphTest {
 	public void simpleProgramDependency() throws IOException {
 		Program program = new ProgramParser(new HashMap<>()).parse("a :- b. d:- c. b :- c. ");
 		PredicateDependencyGraph dependencyGraph = PredicateDependencyGraph.buildFromProgram(program);
-		Set<Predicate> aDependsOn = dependencyGraph.getDependencies(new Predicate("a", 0));
+		Set<Predicate> aDependsOn = dependencyGraph.getDependencies(Predicate.getInstance("a", 0));
 		assertEquals(2, aDependsOn.size());
-		assertTrue(aDependsOn.containsAll(Arrays.asList(new Predicate("b", 0), new Predicate("c", 0))));
-		assertTrue(dependencyGraph.getDependencies(new Predicate("d", 0)).contains(new Predicate("c", 0)));
+		assertTrue(aDependsOn.containsAll(Arrays.asList(Predicate.getInstance("b", 0), Predicate.getInstance("c", 0))));
+		assertTrue(dependencyGraph.getDependencies(Predicate.getInstance("d", 0)).contains(Predicate.getInstance("c", 0)));
 	}
 
 }
