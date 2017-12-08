@@ -37,6 +37,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
+import at.ac.tuwien.kr.alpha.grounder.structure.PredicateDependencyGraph;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
@@ -55,7 +56,7 @@ import static java.util.Collections.singletonList;
  * A semi-naive grounder.
  * Copyright (c) 2016, the Alpha Team.
  */
-public class NaiveGrounder extends BridgedGrounder {
+public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGrounder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
 
 	private final WorkingMemory workingMemory = new WorkingMemory();
@@ -63,6 +64,7 @@ public class NaiveGrounder extends BridgedGrounder {
 	private final NogoodRegistry registry = new NogoodRegistry();
 	private final NoGoodGenerator noGoodGenerator;
 	private final ChoiceRecorder choiceRecorder;
+	private final PredicateDependencyGraph predicateDependencyGraph;
 
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram = new LinkedHashMap<>();
 	private final Map<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
@@ -80,7 +82,7 @@ public class NaiveGrounder extends BridgedGrounder {
 	public NaiveGrounder(Program program, java.util.function.Predicate<Predicate> filter, Bridge... bridges) {
 		super(filter, bridges);
 
-		// TODO: initialize based on program.
+		predicateDependencyGraph = PredicateDependencyGraph.buildFromProgram(program);
 
 		// Apply program transformations/rewritings.
 		applyProgramTransformations(program);

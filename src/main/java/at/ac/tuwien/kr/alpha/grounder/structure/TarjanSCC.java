@@ -10,31 +10,36 @@ public class TarjanSCC<V> {
 	private final Graph<V> graph;
 	private final LinkedHashMap<V, List<V>> adjacencyList;
 	private final int graphSize;
-	private ArrayList<V> vertex;
 	private int[] v_index;
 	private int[] v_lowlink;
 	private boolean[] v_onStack;
 	private int index;
+	private Stack<Integer> stack;
+	private final Graph<SCC<V>>  sccGraph;
+
+	public Graph<SCC<V>> getSccGraph() {
+		return sccGraph;
+	}
 
 	public static class SCC<V> {
 		public HashSet<V> scc = new HashSet<>();
 	}
 
-	public HashSet<SCC> getStronglyConnectedComponents() {
+	public HashSet<SCC<V>> getStronglyConnectedComponents() {
 		return stronglyConnectedComponents;
 	}
 
-	public HashMap<V, SCC> getVertexInSCC() {
+	public HashMap<V, SCC<V>> getVertexInSCC() {
 		return vertexInSCC;
 	}
 
-	public ArrayList<SCC> getReverseTopoSortSCCs() {
+	public ArrayList<SCC<V>> getReverseTopoSortSCCs() {
 		return reverseTopoSortSCCs;
 	}
 
-	private HashSet<SCC> stronglyConnectedComponents = new HashSet<>();
-	private HashMap<V, SCC> vertexInSCC = new HashMap<>();
-	private ArrayList<SCC> reverseTopoSortSCCs = new ArrayList<>();
+	private HashSet<SCC<V>> stronglyConnectedComponents = new HashSet<>();
+	private HashMap<V, SCC<V>> vertexInSCC = new HashMap<>();
+	private ArrayList<SCC<V>> reverseTopoSortSCCs = new ArrayList<>();
 
 	public TarjanSCC(Graph<V> graph) {
 		this.graph = graph;
@@ -44,27 +49,35 @@ public class TarjanSCC<V> {
 		Arrays.fill(v_index, -1);
 		this.v_lowlink = new int[graphSize];
 		this.v_onStack = new boolean[graphSize];
-		this.vertex = new ArrayList<>(graphSize);
-		int vpos = 0;
-		for (Map.Entry<V, List<V>> entry : adjacencyList.entrySet()) {
-			this.vertex.add(vpos++, entry.getKey());
-		}
+		this.computeSCCs();
+		this.sccGraph = constructSCCGraph();
 	}
 
-	public void computeSCCs() {
+	private Graph<SCC<V>> constructSCCGraph() {
+		Graph<SCC<V>> sccGraph = new Graph<>();
+		for (Map.Entry<V, List<V>> entry : adjacencyList.entrySet()) {
+			SCC<V> fromSCC = vertexInSCC.get(entry.getKey());
+			sccGraph.addVertex(fromSCC);
+			for (V v : entry.getValue()) {
+				SCC<V> toSCC = vertexInSCC.get(v);
+				sccGraph.addEdge(fromSCC, toSCC);
+			}
+		}
+		return sccGraph;
+	}
+
+	private void computeSCCs() {
 		index = 0;
 		stack = new Stack<>();
 		for (int i = 0; i < graphSize; i++) {
-			if (v_index[i] == 0) {
+			if (v_index[i] == -1) {
 				strongconnect(i);
 			}
 		}
 	}
 
-	private Stack<Integer> stack;
-
 	private void strongconnect(int vpos) {
-		V v = vertex.get(vpos);
+		V v = graph.getPositionToVertex().get(vpos);
 		v_index[vpos] = index;
 		v_lowlink[vpos] = index;
 		index++;
@@ -72,8 +85,8 @@ public class TarjanSCC<V> {
 		v_onStack[vpos] = true;
 
 		for (V w : adjacencyList.get(v)) {
-			int wpos = graph.getVertexPositions().get(w);
-			if (v_index[wpos] < 0) {
+			int wpos = graph.getVertexToPosition().get(w);
+			if (v_index[wpos] == -1) {
 				strongconnect(wpos);
 				v_lowlink[vpos] = Math.min(v_lowlink[vpos], v_lowlink[wpos]);
 			} else if (v_onStack[wpos]) {
@@ -87,7 +100,7 @@ public class TarjanSCC<V> {
 			int wpos;
 			do {
 				wpos = stack.pop();
-				V w = vertex.get(wpos);
+				V w = graph.getPositionToVertex().get(wpos);
 				v_onStack[wpos] = false;
 				currentSCC.scc.add(w);
 				this.vertexInSCC.put(w, currentSCC);

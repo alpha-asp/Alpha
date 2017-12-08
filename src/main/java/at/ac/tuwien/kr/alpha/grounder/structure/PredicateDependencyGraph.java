@@ -3,19 +3,18 @@ package at.ac.tuwien.kr.alpha.grounder.structure;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import com.google.common.collect.HashBiMap;
 
 import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
+ * Extracts and stores the dependency among predicates in a given program.
  * Copyright (c) 2017, the Alpha Team.
  */
 public class PredicateDependencyGraph {
 
-	private final Set<Predicate> predicates;
-	private final Map<Predicate, Predicate> edges;
+	private final Graph<Predicate> inputGraph;
 	private final Map<Predicate, Set<Predicate>> dependencies;
 
 	public Set<Predicate> getDependencies(Predicate predicate) {
@@ -23,19 +22,22 @@ public class PredicateDependencyGraph {
 	}
 
 	private PredicateDependencyGraph() {
-		predicates = new LinkedHashSet<>();
-		edges = new LinkedHashMap<>();
+		inputGraph = new Graph<>();
 		dependencies = new HashMap<>();
 	}
 
 	private void addPredicate(Predicate predicate) {
-		predicates.add(predicate);
+		inputGraph.addVertex(predicate);
 	}
 
 	private void addEdge(Predicate from, Predicate to) {
-		addPredicate(from);
-		addPredicate(to);
-		edges.put(from, to);
+		inputGraph.addEdge(from, to);
+	}
+
+	private void addEdges(Predicate from, List<Predicate> toPredicates) {
+		for (Predicate toPredicate : toPredicates) {
+			addEdge(from, toPredicate);
+		}
 	}
 
 	public static PredicateDependencyGraph buildFromProgram(Program program) {
@@ -46,26 +48,27 @@ public class PredicateDependencyGraph {
 			if (rule.isConstraint()) {
 				continue;
 			}
-			Head ruleHead = rule.getHead();
-			if (!ruleHead.isNormal()) {
-				throw oops("Non-normal rule encountered: " + rule);
-			}
-			Atom head = ((DisjunctiveHead)ruleHead).disjunctiveAtoms.get(0);
 
-			List<Predicate> fromPredicates = Collections.singletonList(head.getPredicate());
-			/*if (head instanceof ChoiceAtom) {
-				// TODO: treat choice heads and disjunction here, i.e., have more fromPredicates.
-			}*/
-			LinkedHashSet<Predicate> toPredicates = new LinkedHashSet<>();
+			Head ruleHead = rule.getHead();
+			ArrayList<Predicate> predicatesInBody = new ArrayList<>(rule.getBody().size());
 			for (Literal literal : rule.getBody()) {
-				toPredicates.add(literal.getPredicate());
-				// TODO: aggregates in body require more treatment here.
+				predicatesInBody.add(literal.getPredicate());
 			}
-			// Create and add edges.
-			for (Predicate fromPredicate : fromPredicates) {
-				for (Predicate toPredicate : toPredicates) {
-					predicateDependencyGraph.addEdge(fromPredicate, toPredicate);
+			if (ruleHead instanceof ChoiceHead) {
+				for (ChoiceHead.ChoiceElement choiceElement : ((ChoiceHead) ruleHead).getChoiceElements()) {
+					Predicate fromPredicate = choiceElement.choiceAtom.getPredicate();
+					for (Literal conditionLiteral : choiceElement.conditionLiterals) {
+						predicateDependencyGraph.addEdge(fromPredicate, conditionLiteral.getPredicate());
+					}
+					predicateDependencyGraph.addEdges(fromPredicate, predicatesInBody);
 				}
+			} else if (ruleHead instanceof DisjunctiveHead) {
+				for (Atom disjunctiveHeadAtom : ((DisjunctiveHead) ruleHead).disjunctiveAtoms) {
+					Predicate fromPredicate = disjunctiveHeadAtom.getPredicate();
+					predicateDependencyGraph.addEdges(fromPredicate, predicatesInBody);
+				}
+			} else {
+				oops("Unknown rule head encountered.");
 			}
 		}
 		// Add facts as vertices.
@@ -73,25 +76,27 @@ public class PredicateDependencyGraph {
 			predicateDependencyGraph.addPredicate(atom.getPredicate());
 		}
 
-		// Compute transitive closure.
-		predicateDependencyGraph.computeTransitiveClosure();
+		// Compute transitive closure based on StronglyConnectedComponents.
+		TarjanSCC<Predicate> tarjanSCC = new TarjanSCC<>(predicateDependencyGraph.inputGraph);
+		predicateDependencyGraph.computeTransitiveClosure(tarjanSCC);
+
 		return predicateDependencyGraph;
 	}
 
-	private void computeTransitiveClosure() {
-		// Associate each predicate a position.
-		int size = predicates.size();
-		HashBiMap<Predicate, Integer> predicatePosition = HashBiMap.create(size);
-		int pos = 0;
-		for (Predicate predicate : predicates) {
-			predicatePosition.put(predicate, pos++);
-		}
+	private void computeTransitiveClosure(TarjanSCC<Predicate> tarjanSCC) {
+		// Note: We compute reachability on the graph of SCCs,
+		//       since it is often smaller than the original graph and our reachability is O(n^3).
+
+		// Get mapping SCC <-> position.
+		Graph<TarjanSCC.SCC<Predicate>> sccGraph = tarjanSCC.getSccGraph();
+		Map<TarjanSCC.SCC<Predicate>, Integer> sccToPosition = sccGraph.getVertexToPosition();
+		List<TarjanSCC.SCC<Predicate>> positionToSCC = sccGraph.getPositionToVertex();
+
 		// Initialize array for transitive closure.
-		boolean reachable[][] = new boolean[size][size];
-		for (Map.Entry<Predicate, Predicate> edge : edges.entrySet()) {
-			reachable[predicatePosition.get(edge.getKey())][predicatePosition.get(edge.getValue())] = true;
-		}
+		boolean reachable[][] = sccGraph.getAdjacencyMatrix().clone();
+
 		// Connect all reachable nodes via node k.
+		int size = sccGraph.getNumVertices();
 		for (int k = 0; k < size; k++) {
 			// Check all pair of nodes nodes i,j whether they are connected via k.
 			for (int i = 0; i < size; i++) {
@@ -103,12 +108,17 @@ public class PredicateDependencyGraph {
 				}
 			}
 		}
-		// Store reachable predicates as dependencies.
-		for (Predicate predicate : predicates) {
-			Set<Predicate> dependsOn = new LinkedHashSet<>();
+
+		// Extract dependency among predicates from reachable matrix.
+		for (Predicate predicate : inputGraph.getVertices()) {
+			TarjanSCC.SCC<Predicate> predicateSCC = tarjanSCC.getVertexInSCC().get(predicate);
+			// Predicate depends on all predicates in its SCC and those of SCCs its SCC depends on.
+			Set<Predicate> dependsOn = new LinkedHashSet<>(predicateSCC.scc);
 			for (int i = 0; i < size; i++) {
-				if (reachable[predicatePosition.get(predicate)][i]) {
-					dependsOn.add(predicatePosition.inverse().get(i));
+				Integer sccPosition = sccToPosition.get(predicateSCC);
+				if (reachable[sccPosition][i]) {
+					TarjanSCC.SCC<Predicate> reachableSCC = positionToSCC.get(i);
+					dependsOn.addAll(reachableSCC.scc);
 				}
 			}
 			dependencies.put(predicate, dependsOn);
