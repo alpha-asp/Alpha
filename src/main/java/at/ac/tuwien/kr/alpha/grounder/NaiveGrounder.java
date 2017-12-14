@@ -37,7 +37,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
-import at.ac.tuwien.kr.alpha.grounder.structure.PredicateDependencyGraph;
+import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
@@ -64,7 +64,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final NogoodRegistry registry = new NogoodRegistry();
 	private final NoGoodGenerator noGoodGenerator;
 	private final ChoiceRecorder choiceRecorder;
-	private final PredicateDependencyGraph predicateDependencyGraph;
+	private final ProgramAnalysis programAnalysis;
 
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram = new LinkedHashMap<>();
 	private final Map<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
@@ -82,7 +82,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	public NaiveGrounder(Program program, java.util.function.Predicate<Predicate> filter, Bridge... bridges) {
 		super(filter, bridges);
 
-		predicateDependencyGraph = PredicateDependencyGraph.buildFromProgram(program);
+		programAnalysis = new ProgramAnalysis(program);
 
 		// Apply program transformations/rewritings.
 		applyProgramTransformations(program);
@@ -109,8 +109,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		workingMemory.initialize(ChoiceAtom.ON);
 
 		// Initialize rules and constraints.
-		final Map<Predicate, HashSet<NonGroundRule>> ruleHeadsToDefiningRules = new HashMap<>();
-
 		for (Rule rule : program.getRules()) {
 			// Record the rule for later use
 			NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
@@ -118,8 +116,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			// Record defining rules for each predicate.
 			if (nonGroundRule.getHeadAtom() != null) {
 				Predicate headPredicate = nonGroundRule.getHeadAtom().getPredicate();
-				ruleHeadsToDefiningRules.putIfAbsent(headPredicate, new HashSet<>());
-				ruleHeadsToDefiningRules.get(headPredicate).add(nonGroundRule);
+				programAnalysis.recordDefiningRule(headPredicate, nonGroundRule);
 			}
 
 			// Create working memories for all predicates occurring in the rule
@@ -144,7 +141,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// Record all unique rule heads.
 		final Set<NonGroundRule> uniqueGroundRulePerGroundHead = new HashSet<>();
 
-		for (Map.Entry<Predicate, HashSet<NonGroundRule>> headDefiningRules : ruleHeadsToDefiningRules.entrySet()) {
+		for (Map.Entry<Predicate, HashSet<NonGroundRule>> headDefiningRules : programAnalysis.getPredicateDefiningRules().entrySet()) {
 			if (headDefiningRules.getValue().size() != 1) {
 				continue;
 			}
@@ -174,7 +171,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 
 		choiceRecorder = new ChoiceRecorder(atomStore);
-		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, ruleHeadsToDefiningRules, uniqueGroundRulePerGroundHead);
+		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, programAnalysis, uniqueGroundRulePerGroundHead);
 	}
 
 	private void applyProgramTransformations(Program program) {
