@@ -4,6 +4,7 @@ import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BodyElement;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
@@ -15,6 +16,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Rewrites all interval terms in a rule into a new variable and an IntervalAtom.
@@ -30,8 +33,11 @@ public class IntervalTermToIntervalAtom implements ProgramTransformation {
 	private static boolean rewriteIntervalSpecifications(Rule rule) {
 		// Collect all intervals and replace them with variables.
 		Map<VariableTerm, IntervalTerm> intervalReplacements = new HashMap<>();
-		for (Literal literal : rule.getBody()) {
-			rewriteAtom(literal, intervalReplacements);
+		for (BodyElement literal : rule.getBody()) {
+			if (!(literal instanceof Literal)) {
+				throw oops("Tried to rewrite intervals in rule with BodyElement that is no Literal.");
+			}
+			rewriteAtom((Literal)literal, intervalReplacements);
 		}
 		if (rule.getHead() != null) {
 			if (!rule.getHead().isNormal()) {

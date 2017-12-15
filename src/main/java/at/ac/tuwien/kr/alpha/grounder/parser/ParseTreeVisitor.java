@@ -266,13 +266,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public List<Literal> visitBody(ASPCore2Parser.BodyContext ctx) {
+	public List<BodyElement> visitBody(ASPCore2Parser.BodyContext ctx) {
 		// body : ( naf_literal | NAF? aggregate ) (COMMA body)?;
 		if (ctx == null) {
 			return emptyList();
 		}
 
-		final List<Literal> literals = new ArrayList<>();
+		final List<BodyElement> literals = new ArrayList<>();
 		do {
 			if (ctx.naf_literal() == null) {
 				throw notSupported(ctx.aggregate());

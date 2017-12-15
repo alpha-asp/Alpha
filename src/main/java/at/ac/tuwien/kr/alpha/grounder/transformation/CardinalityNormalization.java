@@ -2,7 +2,7 @@ package at.ac.tuwien.kr.alpha.grounder.transformation;
 
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.BodyElement;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
 /**
@@ -50,8 +50,9 @@ public class CardinalityNormalization implements ProgramTransformation {
 	}
 
 	private void rewriteAggregates(Rule rule, Program inputProgram) {
-		for (Literal literal : rule.getBody()) {
+		for (BodyElement literal : rule.getBody()) {
 			// TODO: if literal is an aggregate, rewrite it and add rules connecting it to the sorting circuit.
+			int i  = 4 + 3; // TODO: remove.
 
 			// Example rewriting/connection:
 			// num(K) :-  K <= #count {X,Y,Z : p(X,Y,Z) }, dom(K).

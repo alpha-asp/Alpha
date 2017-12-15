@@ -4,6 +4,7 @@ import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BodyElement;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -11,6 +12,8 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.*;
+
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Removes variable equalities from rules by replacing one variable with the other.
@@ -28,17 +31,18 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 		// Collect all equal variables.
 		HashMap<VariableTerm, HashSet<VariableTerm>> variableToEqualVariables = new HashMap<>();
 		//HashSet<Variable> equalVariables = new LinkedHashSet<>();
-		HashSet<Literal> equalitiesToRemove = new HashSet<>();
-		for (Literal literal : rule.getBody()) {
-			if (!(literal instanceof ComparisonAtom)) {
+		HashSet<BodyElement> equalitiesToRemove = new HashSet<>();
+		for (BodyElement bodyElement : rule.getBody()) {
+			if (!(bodyElement instanceof ComparisonAtom)) {
 				continue;
 			}
-			if (!((ComparisonAtom) literal).isNormalizedEquality()) {
+			ComparisonAtom comparisonAtom = (ComparisonAtom) bodyElement;
+			if (!comparisonAtom.isNormalizedEquality()) {
 				continue;
 			}
-			if (literal.getTerms().get(0) instanceof VariableTerm && literal.getTerms().get(1) instanceof VariableTerm) {
-				VariableTerm leftVariable = (VariableTerm) literal.getTerms().get(0);
-				VariableTerm rightVariable = (VariableTerm) literal.getTerms().get(1);
+			if (comparisonAtom.getTerms().get(0) instanceof VariableTerm && comparisonAtom.getTerms().get(1) instanceof VariableTerm) {
+				VariableTerm leftVariable = (VariableTerm) comparisonAtom.getTerms().get(0);
+				VariableTerm rightVariable = (VariableTerm) comparisonAtom.getTerms().get(1);
 				HashSet<VariableTerm> leftEqualVariables = variableToEqualVariables.get(leftVariable);
 				HashSet<VariableTerm> rightEqualVariables = variableToEqualVariables.get(rightVariable);
 				if (leftEqualVariables == null && rightEqualVariables == null) {
@@ -60,7 +64,7 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 						variableToEqualVariables.put(rightEqualVariable, leftEqualVariables);
 					}
 				}
-				equalitiesToRemove.add(literal);
+				equalitiesToRemove.add(comparisonAtom);
 			}
 		}
 		if (variableToEqualVariables.isEmpty()) {
@@ -80,9 +84,13 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 			replacementSubstitution.put(variableToReplace, replacementVariable);
 		}
 		// Replace/Substitute in each literal every term where one of the common variables occurs.
-		Iterator<Literal> bodyIterator = rule.getBody().iterator();
+		Iterator<BodyElement> bodyIterator = rule.getBody().iterator();
 		while (bodyIterator.hasNext()) {
-			Literal literal = bodyIterator.next();
+			BodyElement bodyElement = bodyIterator.next();
+			if (!(bodyElement instanceof Literal)) {
+				throw oops("BodyElement is not a Literal.");
+			}
+			Literal literal = (Literal) bodyElement;
 			if (equalitiesToRemove.contains(literal)) {
 				bodyIterator.remove();
 			}

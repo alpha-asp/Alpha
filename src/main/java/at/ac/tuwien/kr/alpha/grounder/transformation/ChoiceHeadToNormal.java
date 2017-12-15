@@ -3,7 +3,7 @@ package at.ac.tuwien.kr.alpha.grounder.transformation;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.BodyElement;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -48,7 +48,7 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 
 				// Construct common body to both rules.
 				Atom head = choiceElement.choiceAtom;
-				List<Literal> ruleBody = new ArrayList<>(rule.getBody());
+				List<BodyElement> ruleBody = new ArrayList<>(rule.getBody());
 				ruleBody.addAll(choiceElement.conditionLiterals);
 
 				if (containsIntervalTerms(head)) {
@@ -64,11 +64,11 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 				Atom negHead = new BasicAtom(negPredicate, headTerms);
 
 				// Construct two guessing rules.
-				List<Literal> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
+				List<BodyElement> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithNegHead.add(new BasicAtom(head.getPredicate(), head.getTerms(), true));
 				additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(negHead)), guessingRuleBodyWithNegHead));
 
-				List<Literal> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
+				List<BodyElement> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithHead.add(new BasicAtom(negPredicate, headTerms, true));
 				additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(head)), guessingRuleBodyWithHead));
 

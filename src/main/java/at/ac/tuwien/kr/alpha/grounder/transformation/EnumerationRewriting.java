@@ -6,6 +6,7 @@ import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.BodyElement;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
@@ -52,10 +53,10 @@ public class EnumerationRewriting implements ProgramTransformation  {
 			if (rule.getHead() != null && ((DisjunctiveHead)rule.getHead()).disjunctiveAtoms.get(0).getPredicate().equals(enumPredicate)) {
 				throw oops("Atom declared as enumeration atom by directive occurs in head of the rule: " + rule);
 			}
-			Iterator<Literal> rit = rule.getBody().iterator();
+			Iterator<BodyElement> rit = rule.getBody().iterator();
 			LinkedList<Literal> rewrittenLiterals = new LinkedList<>();
 			while (rit.hasNext()) {
-				Literal literal = rit.next();
+				BodyElement literal = rit.next();
 				if (!(literal instanceof BasicAtom)) {
 					continue;
 				}

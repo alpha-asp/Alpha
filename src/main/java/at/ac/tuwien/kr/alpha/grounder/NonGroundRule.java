@@ -31,6 +31,7 @@ import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BodyElement;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 
 import java.util.ArrayList;
@@ -77,11 +78,16 @@ public class NonGroundRule {
 
 	// FIXME: NonGroundRule should extend Rule and then its constructor directly be used.
 	public static NonGroundRule constructNonGroundRule(Rule rule) {
-		List<Literal> body = rule.getBody();
+		List<BodyElement> body = rule.getBody();
 		final List<Literal> pos = new ArrayList<>(body.size() / 2);
 		final List<Literal> neg = new ArrayList<>(body.size() / 2);
 
-		for (Literal literal : body) {
+		for (BodyElement bodyElement: body) {
+			// Ensure the rule has been transformed already.
+			if (!(bodyElement instanceof Literal)) {
+				throw oops("Encountered BodyElement that is no Literal.");
+			}
+			Literal literal = (Literal) bodyElement;
 			(literal.isNegated() ? neg : pos).add(literal);
 		}
 		Atom headAtom = null;
@@ -96,6 +102,14 @@ public class NonGroundRule {
 
 	public int getRuleId() {
 		return ruleId;
+	}
+
+	public List<Literal> getBodyLiterals() {
+		ArrayList<Literal> ret = new ArrayList<>(rule.getBody().size());
+		for (BodyElement bodyElement : rule.getBody()) {
+			ret.add((Literal) bodyElement);
+		}
+		return ret;
 	}
 
 	/**

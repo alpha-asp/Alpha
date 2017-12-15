@@ -44,7 +44,7 @@ public class RuleGroundingOrder {
 
 	private void resetLiteralSelectivity() {
 		// Set selectivity of all literals to 1.0f.
-		for (Literal literal : nonGroundRule.getRule().getBody()) {
+		for (Literal literal : nonGroundRule.getBodyLiterals()) {
 			literalSelectivity.put(literal, 1.0f);
 		}
 	}
@@ -57,7 +57,7 @@ public class RuleGroundingOrder {
 		LinkedHashSet<Literal> fixedStartingLiterals = new LinkedHashSet<>();
 		LinkedHashSet<Literal> ordinaryStartingLiterals = new LinkedHashSet<>();
 		// Check each literal in the rule body whether it is eligible.
-		for (Literal literal : nonGroundRule.getRule().getBody()) {
+		for (Literal literal : nonGroundRule.getBodyLiterals()) {
 			// Only literals that need no variables already bound can start grounding.
 			if (literal.getNonBindingVariables().size() != 0) {
 				continue;
@@ -123,7 +123,7 @@ public class RuleGroundingOrder {
 	}
 
 	private void computeGroundingOrder(Literal startingLiteral) {
-		List<Literal> bodyLiterals = nonGroundRule.getRule().getBody();
+		List<Literal> bodyLiterals = nonGroundRule.getBodyLiterals();
 		HashSet<VariableTerm> boundVariables = new HashSet<>();
 		boundVariables.addAll(startingLiteral.getBindingVariables());
 		LinkedHashSet<Literal> remainingLiterals = new LinkedHashSet<>(bodyLiterals);
