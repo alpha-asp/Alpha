@@ -1,19 +1,17 @@
 /**
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017 Siemens AG
  * All rights reserved.
- *
- * Additional changes made by Siemens.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *
+ * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -28,32 +26,24 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
-import java.util.Deque;
-import java.util.LinkedList;
 import java.util.Random;
-
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import java.util.stream.Stream;
 
 /**
- * A BerkMin-like heuristics that uses activity of literals and a fixed-size queue instead of a stack of NoGoods.
- * Copyright (c) 2017, the Alpha Team.
+ * A variant of {@link BerkMinLiteral} preferring to assign true to choice points already assigned {@link at.ac.tuwien.kr.alpha.solver.ThriceTruth#MBT}.
  */
-public class BerkMinLiteral extends BerkMin {
+public class BerkMinLiteralPreferringMBT extends BerkMinLiteral {
 
-	protected Deque<Integer> activeLiterals = new LinkedList<>();
-	private static final int DEFAULT_QUEUE_SIZE = 32;
-	private final int queueSize;
-
-	BerkMinLiteral(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, int queueSize) {
-		super(assignment, choiceManager, decayAge, decayFactor, random);
-		this.queueSize = queueSize;
+	BerkMinLiteralPreferringMBT(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, int queueSize) {
+		super(assignment, choiceManager, decayAge, decayFactor, random, queueSize);
 	}
 
-	BerkMinLiteral(Assignment assignment, ChoiceManager choiceManager, Random random) {
-		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random, DEFAULT_QUEUE_SIZE);
+	BerkMinLiteralPreferringMBT(Assignment assignment, ChoiceManager choiceManager, Random random) {
+		super(assignment, choiceManager, random);
 	}
 
 	/**
@@ -65,25 +55,25 @@ public class BerkMinLiteral extends BerkMin {
 	 */
 	@Override
 	public int chooseAtom() {
-		return  getMostActiveChoosableAtom(activeLiterals.stream());
+		Stream<Integer> literalsToConsider;
+		if (streamMbtAtoms().findAny().isPresent()) {
+			literalsToConsider = streamMbtAtoms();
+		} else {
+			literalsToConsider = activeLiterals.stream();
+		}
+
+		return getMostActiveChoosableAtom(literalsToConsider);
 	}
 
-	private void pushToStack(Integer literal) {
-		if (choiceManager.isAtomChoice(atomOf(literal))) {
-			activeLiterals.addFirst(literal);
-			// Restrict the size of the queue.
-			if (activeLiterals.size() > queueSize) {
-				activeLiterals.removeLast();
-			}
-		}
+	private Stream<Integer> streamMbtAtoms() {
+		return activeLiterals.stream().map(Literals::atomOf).filter(a -> assignment.getTruth(a) == ThriceTruth.MBT);
 	}
 
 	@Override
-	protected void pushToStack(NoGood noGood) {
-		if (noGood != null) {
-			for (Integer literal : noGood) {
-				pushToStack(literal);
-			}
+	public boolean chooseSign(int atom) {
+		if (assignment.getTruth(atom) == ThriceTruth.MBT) {
+			return true;
 		}
+		return super.chooseSign(atom);
 	}
 }
