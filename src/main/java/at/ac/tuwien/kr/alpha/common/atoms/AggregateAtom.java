@@ -1,7 +1,6 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
@@ -9,53 +8,28 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import java.util.LinkedList;
 import java.util.List;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
-
 /**
  * Copyright (c) 2017, the Alpha Team.
  */
-public class AggregateAtom implements Literal {
-
-	public static class AggregateElement {
-		public final List<Term> elementTerms;
-		public final List<Literal> elementLiterals;
-
-		public AggregateElement(List<Term> elementTerms, List<Literal> elementLiterals) {
-			this.elementTerms = elementTerms;
-			this.elementLiterals = elementLiterals;
-		}
-	}
+public class AggregateAtom implements BodyElement {
 
 	private final boolean negated;
 	private final ComparisonOperator lowerBoundOperator;
 	private final Term lowerBoundTerm;
 	private final ComparisonOperator upperBoundOperator;
 	private final Term upperBoundTerm;
+	private final AGGREGATEFUNCTION aggregatefunction;
 	private final List<AggregateElement> aggregateElements;
 
-	public AggregateAtom(boolean negated, ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, ComparisonOperator upperBoundOperator, Term upperBoundTerm, List<AggregateElement> aggregateElements) {
+	public AggregateAtom(boolean negated, ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, ComparisonOperator upperBoundOperator, Term upperBoundTerm, AGGREGATEFUNCTION aggregatefunction, List<AggregateElement> aggregateElements) {
 		this.negated = negated;
 		this.lowerBoundOperator = lowerBoundOperator;
 		this.lowerBoundTerm = lowerBoundTerm;
 		this.upperBoundOperator = upperBoundOperator;
 		this.upperBoundTerm = upperBoundTerm;
+		this.aggregatefunction = aggregatefunction;
 		this.aggregateElements = aggregateElements;
 		// TODO: add defaults if some bound is not given!
-	}
-
-	@Override
-	public boolean isNegated() {
-		return negated;
-	}
-
-	@Override
-	public Predicate getPredicate() {
-		throw oops("Aggregates have no predicate.");
-	}
-
-	@Override
-	public List<Term> getTerms() {
-		throw oops("Aggregates have no predicate.");
 	}
 
 	@Override
@@ -107,13 +81,98 @@ public class AggregateAtom implements Literal {
 		// TODO: collect all occurring variables but only report the global ones
 		List<VariableTerm> nonBindingVariables = new LinkedList<>();
 		for (AggregateElement aggregateElement : aggregateElements) {
-
+			nonBindingVariables = null; // TODO: remove.
 		}
 		return nonBindingVariables;
 	}
 
 	@Override
-	public Atom substitute(Substitution substitution) {
+	public AggregateAtom substitute(Substitution substitution) {
 		return null;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		AggregateAtom that = (AggregateAtom) o;
+
+		if (negated != that.negated) {
+			return false;
+		}
+		if (lowerBoundOperator != that.lowerBoundOperator) {
+			return false;
+		}
+		if (lowerBoundTerm != null ? !lowerBoundTerm.equals(that.lowerBoundTerm) : that.lowerBoundTerm != null) {
+			return false;
+		}
+		if (upperBoundOperator != that.upperBoundOperator) {
+			return false;
+		}
+		if (upperBoundTerm != null ? !upperBoundTerm.equals(that.upperBoundTerm) : that.upperBoundTerm != null) {
+			return false;
+		}
+		if (aggregateElements != null ? !aggregateElements.equals(that.aggregateElements) : that.aggregateElements != null) {
+			return false;
+		}
+		return aggregatefunction == that.aggregatefunction;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = negated ? 1 : 0;
+		result = 31 * result + (lowerBoundOperator != null ? lowerBoundOperator.hashCode() : 0);
+		result = 31 * result + (lowerBoundTerm != null ? lowerBoundTerm.hashCode() : 0);
+		result = 31 * result + (upperBoundOperator != null ? upperBoundOperator.hashCode() : 0);
+		result = 31 * result + (upperBoundTerm != null ? upperBoundTerm.hashCode() : 0);
+		result = 31 * result + (aggregateElements != null ? aggregateElements.hashCode() : 0);
+		result = 31 * result + (aggregatefunction != null ? aggregatefunction.hashCode() : 0);
+		return result;
+	}
+
+	public enum AGGREGATEFUNCTION {
+		COUNT,
+		MAX,
+		MIN,
+		SUM
+	}
+
+	public static class AggregateElement {
+		final List<Term> elementTerms;
+		final List<Literal> elementLiterals;
+
+		public AggregateElement(List<Term> elementTerms, List<Literal> elementLiterals) {
+			this.elementTerms = elementTerms;
+			this.elementLiterals = elementLiterals;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+
+			AggregateElement that = (AggregateElement) o;
+
+			if (elementTerms != null ? !elementTerms.equals(that.elementTerms) : that.elementTerms != null) {
+				return false;
+			}
+			return elementLiterals != null ? elementLiterals.equals(that.elementLiterals) : that.elementLiterals == null;
+		}
+
+		@Override
+		public int hashCode() {
+			int result = elementTerms != null ? elementTerms.hashCode() : 0;
+			result = 31 * result + (elementLiterals != null ? elementLiterals.hashCode() : 0);
+			return result;
+		}
 	}
 }

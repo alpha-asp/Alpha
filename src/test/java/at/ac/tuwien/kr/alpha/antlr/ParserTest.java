@@ -32,19 +32,20 @@ import at.ac.tuwien.kr.alpha.common.ChoiceHead;
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.BodyElement;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.common.terms.*;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.antlr.v4.runtime.CharStreams;
-import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -183,5 +184,20 @@ public class ParserTest {
 			"p(b,2).");
 		String directive = parsedProgram.getInlineDirectives().getDirectiveValue(InlineDirectives.DIRECTIVE.enum_predicate_is);
 		assertEquals("mune", directive);
+	}
+
+	@Test
+	public void cardinalityAggregate() throws IOException {
+		Program parsedProgram = parser.parse("num(K) :-  K <= #count {X,Y,Z : p(X,Y,Z) }, dom(K).");
+		BodyElement bodyElement = parsedProgram.getRules().get(0).getBody().get(0);
+		assertTrue(bodyElement instanceof AggregateAtom);
+		AggregateAtom parsedAggregate = (AggregateAtom) bodyElement;
+		VariableTerm x = VariableTerm.getInstance("X");
+		VariableTerm y = VariableTerm.getInstance("Y");
+		VariableTerm z = VariableTerm.getInstance("Z");
+		List<Term> basicTerms = Arrays.asList(x, y, z);
+		AggregateAtom.AggregateElement aggregateElement = new AggregateAtom.AggregateElement(basicTerms, Collections.singletonList(new BasicAtom(Predicate.getInstance("p", 3), x, y, z)));
+		AggregateAtom expectedAggregate = new AggregateAtom(false, ComparisonOperator.LE, VariableTerm.getInstance("K"), null, null, AggregateAtom.AGGREGATEFUNCTION.COUNT, Collections.singletonList(aggregateElement));
+		assertEquals(expectedAggregate, parsedAggregate);
 	}
 }

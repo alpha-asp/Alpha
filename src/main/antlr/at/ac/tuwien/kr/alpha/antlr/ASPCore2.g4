@@ -22,7 +22,7 @@ statement : head DOT                     # statement_fact
 
 head : disjunction | choice;
 
-body : ( naf_literal | NAF? aggregate ) (COMMA body)?;
+body : ( naf_literal | aggregate ) (COMMA body)?;
 
 disjunction : classical_literal (OR disjunction)?;
 
@@ -32,7 +32,7 @@ choice_elements : choice_element (SEMICOLON choice_elements)?;
 
 choice_element : classical_literal (COLON naf_literals?)?;
 
-aggregate : (term binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (binop term)?;
+aggregate : NAF? (lt=term lop=binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (uop=binop ut=term)?;
 
 aggregate_elements : aggregate_element (SEMICOLON aggregate_elements)?;
 
