@@ -52,10 +52,6 @@ public class CardinalityNormalization implements ProgramTransformation {
 			"sorting_network_sorted_count(1, 0).\n" +
 			"sorting_network_sorted_count(N, D) :- sorting_network_log2(N, P), sorting_network_odd_even_level(_, P, P, D).\n" +
 			"sorting_network_log2(Ip2, I) :- Ip2 = 2 ** I, I = 0..30.\n";
-			//"#enumeration_predicate_is sorting_network_index.\n" +
-			//"sorting_network_input_number(A, I) :- sorting_network_input(A, X), sorting_network_index(A, X, I).";
-
-		// TODO: enumeration rewriting expects non-internal predicate. => Do not use the directive but instantiate the atom directly (create the rule by hand).
 
 		// Connect/Rewrite every aggregate in each rule.
 		ArrayList<Rule> additionalRules = new ArrayList<>();
@@ -71,8 +67,8 @@ public class CardinalityNormalization implements ProgramTransformation {
 
 		// Add enumeration rule that uses the special EnumerationAtom.
 		// The enumeration rule is: "sorting_network_input_number(A, I) :- sorting_network_input(A, X), sorting_network_index(A, X, I)."
-		Rule enumerationRule = makePredicatesInternal(new ProgramParser().parse("sorting_network_input_number(A, I) :- sorting_network_input(A, X).")).getRules().get(0);
-		EnumerationAtom enumerationAtom = new EnumerationAtom((BasicAtom) new ProgramParser().parse("sorting_network_index(A, X, I).").getFacts().get(0));
+		Rule enumerationRule = makePredicatesInternal(parse("sorting_network_input_number(A, I) :- sorting_network_input(A, X).")).getRules().get(0);
+		EnumerationAtom enumerationAtom = new EnumerationAtom((BasicAtom) parse("sorting_network_index(A, X, I).").getFacts().get(0));
 		enumerationRule.getBody().add(enumerationAtom);
 		cardinalityEncoding.getRules().add(enumerationRule);
 
@@ -90,11 +86,11 @@ public class CardinalityNormalization implements ProgramTransformation {
 		// sorting_network_bound(aggregate_arguments(-731776545), K) :- dom(K).
 
 		// Create interface atoms to the aggregate encoding.
-		final BasicAtom aggregateOutputAtom = (BasicAtom) makePredicatesInternal(new ProgramParser().parse(
+		final BasicAtom aggregateOutputAtom = (BasicAtom) makePredicatesInternal(parse(
 			"sorting_network_output(aggregate_arguments(AGGREGATE_ID), LOWER_BOUND).")).getFacts().get(0);
-		final BasicAtom aggregateInputAtom = (BasicAtom) makePredicatesInternal(new ProgramParser().parse(
+		final BasicAtom aggregateInputAtom = (BasicAtom) makePredicatesInternal(parse(
 			"sorting_network_input(aggregate_arguments(AGGREGATE_ID), ELEMENT_TUPLE).")).getFacts().get(0);
-		final BasicAtom lowerBoundAtom = (BasicAtom) makePredicatesInternal(new ProgramParser().parse(
+		final BasicAtom lowerBoundAtom = (BasicAtom) makePredicatesInternal(parse(
 			"sorting_network_bound(aggregate_arguments(AGGREGATE_ID), LOWER_BOUND).")).getFacts().get(0);
 
 		ArrayList<Literal> aggregateOutputAtoms = new ArrayList<>();
