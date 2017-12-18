@@ -5,6 +5,7 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -29,6 +30,9 @@ public class AggregateAtom implements BodyElement {
 		this.upperBoundTerm = upperBoundTerm;
 		this.aggregatefunction = aggregatefunction;
 		this.aggregateElements = aggregateElements;
+		if (upperBoundOperator != null || lowerBoundOperator != ComparisonOperator.LE) {
+			throw new UnsupportedOperationException("Aggregate construct not yet supported.");
+		}
 		// TODO: add defaults if some bound is not given!
 	}
 
@@ -135,6 +139,34 @@ public class AggregateAtom implements BodyElement {
 		return result;
 	}
 
+	public boolean isNegated() {
+		return negated;
+	}
+
+	public ComparisonOperator getLowerBoundOperator() {
+		return lowerBoundOperator;
+	}
+
+	public Term getLowerBoundTerm() {
+		return lowerBoundTerm;
+	}
+
+	public ComparisonOperator getUpperBoundOperator() {
+		return upperBoundOperator;
+	}
+
+	public Term getUpperBoundTerm() {
+		return upperBoundTerm;
+	}
+
+	public AGGREGATEFUNCTION getAggregatefunction() {
+		return aggregatefunction;
+	}
+
+	public List<AggregateElement> getAggregateElements() {
+		return Collections.unmodifiableList(aggregateElements);
+	}
+
 	public enum AGGREGATEFUNCTION {
 		COUNT,
 		MAX,
@@ -149,6 +181,14 @@ public class AggregateAtom implements BodyElement {
 		public AggregateElement(List<Term> elementTerms, List<Literal> elementLiterals) {
 			this.elementTerms = elementTerms;
 			this.elementLiterals = elementLiterals;
+		}
+
+		public List<Term> getElementTerms() {
+			return elementTerms;
+		}
+
+		public List<Literal> getElementLiterals() {
+			return elementLiterals;
 		}
 
 		@Override

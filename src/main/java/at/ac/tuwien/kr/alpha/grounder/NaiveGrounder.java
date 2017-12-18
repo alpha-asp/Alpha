@@ -38,10 +38,7 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
-import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
-import at.ac.tuwien.kr.alpha.grounder.transformation.EnumerationRewriting;
-import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
-import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
+import at.ac.tuwien.kr.alpha.grounder.transformation.*;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -180,6 +177,8 @@ public class NaiveGrounder extends BridgedGrounder {
 	private void applyProgramTransformations(Program program) {
 		// Transform choice rules.
 		new ChoiceHeadToNormal().transform(program);
+		// Transform cardinality aggregates.
+		new CardinalityNormalization().transform(program);
 		// Transform intervals.
 		new IntervalTermToIntervalAtom().transform(program);
 		// Remove variable equalities.
@@ -231,6 +230,11 @@ public class NaiveGrounder extends BridgedGrounder {
 		// Add true atoms from facts.
 		for (Map.Entry<Predicate, LinkedHashSet<Instance>> facts : factsFromProgram.entrySet()) {
 			Predicate factPredicate = facts.getKey();
+
+			// Skip atoms over internal predicates.
+			if (factPredicate.isInternal()) {
+				continue;
+			}
 
 			// Skip filtered predicates.
 			if (!filter.test(factPredicate)) {
@@ -290,7 +294,11 @@ public class NaiveGrounder extends BridgedGrounder {
 		maxAtomIdBeforeGroundingNewNoGoods = atomStore.getHighestAtomId();
 		// Compute new ground rule (evaluate joins with newly changed atoms)
 		for (IndexedInstanceStorage modifiedWorkingMemory : workingMemory.modified()) {
-			if (modifiedWorkingMemory.getPredicate().isInternal()) {
+			// Skip predicates solely used in the solver which do not occur in rules.
+			Predicate workingMemoryPredicate = modifiedWorkingMemory.getPredicate();
+			if (workingMemoryPredicate == RuleAtom.PREDICATE
+				|| workingMemoryPredicate == ChoiceAtom.ON
+				|| workingMemoryPredicate == ChoiceAtom.OFF) {
 				continue;
 			}
 

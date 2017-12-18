@@ -705,6 +705,27 @@ public class SolverTests extends AbstractSolverTests {
 		}
 	}
 
+	@Test
+	public void smallCardinalityAggregate() throws IOException {
+		assertAnswerSetsWithBase(
+			"dom(1..3)." +
+				"bound(1..4)." +
+				"{ value(X) : dom(X) }." +
+				"num(K) :-  K <= #count {X : value(X) }, bound(K).",
+
+			"dom(1), dom(2), dom(3), bound(1), bound(2), bound(3), bound(4)",
+			"",
+			"",
+			"value(1), num(1)",
+			"value(1), value(2), num(1), num(2)",
+			"value(1), value(2), value(3), num(1), num(2), num(3)",
+			"value(1), value(3), num(1), num(2)",
+			"value(2), num(1)",
+			"value(2), value(3), num(1), num(2)",
+			"value(3), num(1)"
+		);
+	}
+
 
 	@Test
 	public void dummyGrounder() {

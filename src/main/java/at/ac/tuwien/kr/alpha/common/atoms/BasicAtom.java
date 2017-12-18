@@ -102,7 +102,7 @@ public class BasicAtom implements Literal {
 	}
 
 	@Override
-	public Atom substitute(Substitution substitution) {
+	public BasicAtom substitute(Substitution substitution) {
 		return new BasicAtom(predicate, terms.stream()
 			.map(t -> t.substitute(substitution))
 			.collect(Collectors.toList()));
