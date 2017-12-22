@@ -33,12 +33,15 @@ public interface SolverMaintainingStatistics {
 
 	int getNumberOfBacktracks();
 
+	int getNumberOfBacktracksWithinBackjumps();
+
 	int getNumberOfBackjumps();
 
 	int getNumberOfBacktracksDueToRemnantMBTs();
 
 	default String getStatisticsString() {
-		return "g=" + getNumberOfChoices() + ", bt=" + getNumberOfBacktracks() + ", bj=" + getNumberOfBackjumps() + ", mbt=" + getNumberOfBacktracksDueToRemnantMBTs();
+		return "g=" + getNumberOfChoices() + ", bt=" + getNumberOfBacktracks() + ", bj=" + getNumberOfBackjumps() + ", bt_within_bj="
+				+ getNumberOfBacktracksWithinBackjumps() + ", mbt=" + getNumberOfBacktracksDueToRemnantMBTs();
 	}
 
 	default void printStatistics(PrintStream out) {

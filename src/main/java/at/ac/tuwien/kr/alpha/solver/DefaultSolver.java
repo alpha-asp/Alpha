@@ -366,6 +366,11 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	@Override
+	public int getNumberOfBacktracksWithinBackjumps() {
+		return choiceManager.getBacktracksWithinBackjumps();
+	}
+
+	@Override
 	public int getNumberOfBackjumps() {
 		return choiceManager.getBackjumps();
 	}
