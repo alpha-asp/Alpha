@@ -28,14 +28,14 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
-import org.antlr.v4.runtime.misc.Utils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,7 +47,7 @@ public class HeuristicAtom implements Literal {
 	private final List<Term> terms;
 	public final String PREDICATE_HEURISTIC = ASPCore2Lexer.VOCABULARY.getLiteralName(ASPCore2Lexer.PREDICATE_HEURISTIC)
 		.replace("'","");
-	private final Predicate predicate = new Predicate(PREDICATE_HEURISTIC,2, true);
+	private final Predicate predicate = Predicate.getInstance(PREDICATE_HEURISTIC, 2, true);
 	private final boolean ground;
 
 	private final Integer weight;
@@ -158,7 +158,7 @@ public class HeuristicAtom implements Literal {
 		sb.append(predicate.getName());
 		if (!terms.isEmpty()) {
 			sb.append("(");
-			Util.appendDelimited(sb, this.terms);
+			sb.append(Util.join(this.terms));
 			sb.append(")");
 		}
 		return sb.toString();

@@ -59,7 +59,8 @@ public class BerkMinTest {
 		this.berkmin = new BerkMin(
 			assignment,
 			new PseudoChoiceManager(assignment, new NaiveNoGoodStore(assignment)),
-			new Random()
+			new Random(),
+			null
 		);
 	}
 	

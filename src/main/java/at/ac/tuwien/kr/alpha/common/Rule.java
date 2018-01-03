@@ -27,17 +27,16 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -53,11 +52,11 @@ public class Rule {
 
 	public Rule(Head head, List<Literal> body) {
 		this.head = head;
-
-		this.heuristic = extractHeuristic(body);
+		// Remove duplicate body literals.
+		LinkedHashSet<Literal> bodyLiterals = new LinkedHashSet<>(body);
 		this.body = new ArrayList<>(bodyLiterals);
 
-
+		this.heuristic = extractHeuristic(body);
 
 		if (!isSafe()) {
 			// TODO: safety check needs to be adapted to solver what the solver actually understands. Will change in the future, adapt exception message accordingly.

@@ -51,14 +51,14 @@ public class NonGroundRule {
 	private final int ruleId;
 	private final Rule rule;
 
-	private final List<Literal> bodyAtomsPositive;
-	private final List<Literal> bodyAtomsNegative;
+	private final List<Atom> bodyAtomsPositive;
+	private final List<Atom> bodyAtomsNegative;
 	private final Atom headAtom;
 	private final HeuristicAtom heuristic;
 
 	final RuleGroundingOrder groundingOrder;
 
-	private NonGroundRule(int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom,
+	private NonGroundRule(Rule rule, int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom,
 			      boolean containsIntervals, boolean containsExternals, HeuristicAtom heuristic) {
 		this.ruleId = ruleId;
 		this.rule = rule;
@@ -82,8 +82,10 @@ public class NonGroundRule {
 	// FIXME: NonGroundRule should extend Rule and then its constructor directly be used.
 	public static NonGroundRule constructNonGroundRule(Rule rule) {
 		List<Literal> body = rule.getBody();
-		final List<Literal> pos = new ArrayList<>(body.size() / 2);
-		final List<Literal> neg = new ArrayList<>(body.size() / 2);
+		final List<Atom> pos = new ArrayList<>(body.size() / 2);
+		final List<Atom> neg = new ArrayList<>(body.size() / 2);
+		boolean containsIntervals = false;
+		boolean containsExternals = false;
 
 		for (Literal literal : body) {
 			(literal.isNegated() ? neg : pos).add(literal);
@@ -95,7 +97,7 @@ public class NonGroundRule {
 			}
 			headAtom = ((DisjunctiveHead)rule.getHead()).disjunctiveAtoms.get(0);
 		}
-		return new NonGroundRule(intIdGenerator.getNextId(), pos, neg, headAtom, containsIntervals,
+		return new NonGroundRule(rule, ID_GENERATOR.getNextId(), pos, neg, headAtom, containsIntervals,
 			containsExternals, rule.getHeuristic());
 	}
 
@@ -156,11 +158,11 @@ public class NonGroundRule {
 		return rule;
 	}
 
-	public List<Literal> getBodyAtomsPositive() {
+	public List<Atom> getBodyAtomsPositive() {
 		return bodyAtomsPositive;
 	}
 
-	public List<Literal> getBodyAtomsNegative() {
+	public List<Atom> getBodyAtomsNegative() {
 		return bodyAtomsNegative;
 	}
 

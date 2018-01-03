@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 
 import java.util.Deque;
@@ -20,13 +21,13 @@ public class BerkMinLiteral extends BerkMin {
 	private static final int DEFAULT_QUEUE_SIZE = 32;
 	private final int queueSize;
 
-	BerkMinLiteral(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, int queueSize) {
-		super(assignment, choiceManager, decayAge, decayFactor, random);
+	BerkMinLiteral(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, int queueSize, Grounder grounder) {
+		super(assignment, choiceManager, decayAge, decayFactor, random, grounder);
 		this.queueSize = queueSize;
 	}
 
-	BerkMinLiteral(Assignment assignment, ChoiceManager choiceManager, Random random) {
-		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random, DEFAULT_QUEUE_SIZE);
+	BerkMinLiteral(Assignment assignment, ChoiceManager choiceManager, Random random, Grounder grounder) {
+		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random, DEFAULT_QUEUE_SIZE, grounder);
 	}
 
 	/**
