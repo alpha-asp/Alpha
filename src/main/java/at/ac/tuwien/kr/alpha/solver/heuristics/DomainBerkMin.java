@@ -1,6 +1,8 @@
 /**
- * Copyright (c) 2016-2017 Siemens AG
+ * Copyright (c) 2017-2018, the Alpha Team.
  * All rights reserved.
+ *
+ * Additional changes made by Siemens.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -42,13 +44,6 @@ import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
-/**
- * The BerkMin heuristic, as described in (but adapted for lazy grounding):
- * Goldberg, E.; Novikov, Y. (2002): BerkMin: A fast and robust SAT-solver.
- * In : Design, Automation and Test in Europe Conference and Exhibition, 2002. Proceedings. IEEE, pp. 142-149.
- * 
- * Copyright (c) 2016 Siemens AG
- */
 public class DomainBerkMin extends BerkMin {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DomainBerkMin.class);
 
