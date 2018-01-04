@@ -58,8 +58,8 @@ public class NonGroundRule {
 
 	final RuleGroundingOrder groundingOrder;
 
-	private NonGroundRule(Rule rule, int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom,
-			      boolean containsIntervals, boolean containsExternals, HeuristicAtom heuristic) {
+	private NonGroundRule(Rule rule, int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom, boolean containsIntervals,
+			boolean containsExternals, HeuristicAtom heuristic) {
 		this.ruleId = ruleId;
 		this.rule = rule;
 

@@ -8,11 +8,11 @@
  * modification, are permitted provided that the following conditions are met:
  *
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ * list of conditions and the following disclaimer.
  *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -44,27 +44,27 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class HeuristicAtom implements Literal {
+	public static final String PREDICATE_HEURISTIC = ASPCore2Lexer.VOCABULARY.getLiteralName(ASPCore2Lexer.PREDICATE_HEURISTIC).replace("'", "");
+
 	private final List<Term> terms;
-	public final String PREDICATE_HEURISTIC = ASPCore2Lexer.VOCABULARY.getLiteralName(ASPCore2Lexer.PREDICATE_HEURISTIC)
-		.replace("'","");
 	private final Predicate predicate = Predicate.getInstance(PREDICATE_HEURISTIC, 2, true);
 	private final boolean ground;
 
 	private final Integer weight;
 	private final Integer level;
 
-
 	public HeuristicAtom(List<Term> terms, ASPCore2Parser.HeuristicContext ctx) {
-		if (terms.size()<1 || terms.size() > 2){
+		if (terms.size() < 1 || terms.size() > 2) {
 			throw new RuntimeException(getErrorMsg(ctx) +
-				PREDICATE_HEURISTIC +"(Weight) or " + PREDICATE_HEURISTIC + "(Weight,Level) was " +
-				"expected, but " + terms.size() + " terms found!");
+					PREDICATE_HEURISTIC + "(Weight) or " + PREDICATE_HEURISTIC + "(Weight,Level) was " +
+					"expected, but " + terms.size() + " terms found!");
 		}
 
 		List<Term> local = new ArrayList<>(2);
 		local.addAll(terms);
-		if (terms.size() < 2)
+		if (terms.size() < 2) {
 			local.add(ConstantTerm.getInstance(1));
+		}
 
 		this.terms = Collections.unmodifiableList(local);
 		this.weight = getConstant(this.terms.get(0), ctx);
@@ -75,7 +75,7 @@ public class HeuristicAtom implements Literal {
 
 	private String getErrorMsg(ASPCore2Parser.HeuristicContext ctx) {
 		return "Invalid syntax" +
-			((ctx != null) ? " in line " + ctx.getStart().getLine() : "") + "! ";
+				((ctx != null) ? " in line " + ctx.getStart().getLine() : "") + "! ";
 	}
 
 	public HeuristicAtom(List<Term> terms) {
@@ -83,15 +83,17 @@ public class HeuristicAtom implements Literal {
 	}
 
 	private Integer getConstant(Term term, ASPCore2Parser.HeuristicContext ctx) {
-		if (term instanceof FunctionTerm)
+		if (term instanceof FunctionTerm) {
 			throw new RuntimeException(getErrorMsg(ctx) + "Function terms cannot be used in heuristic atoms.");
+		}
 		if (!term.isGround()) {
 			return null;
 		}
-		if (term instanceof ConstantTerm)
-			return (Integer)((ConstantTerm)term).getObject();
+		if (term instanceof ConstantTerm) {
+			return (Integer) ((ConstantTerm<?>) term).getObject();
+		}
 		throw new RuntimeException(getErrorMsg(ctx) +
-			PREDICATE_HEURISTIC + "(Weight) or "+ PREDICATE_HEURISTIC + "(Weight,Level) was expected.");
+				PREDICATE_HEURISTIC + "(Weight) or " + PREDICATE_HEURISTIC + "(Weight,Level) was expected.");
 	}
 
 	public Integer getWeight() {
@@ -148,8 +150,8 @@ public class HeuristicAtom implements Literal {
 	@Override
 	public Atom substitute(Substitution substitution) {
 		return new HeuristicAtom(terms.stream()
-			.map(t -> t.substitute(substitution))
-			.collect(Collectors.toList()));
+				.map(t -> t.substitute(substitution))
+				.collect(Collectors.toList()));
 	}
 
 	@Override

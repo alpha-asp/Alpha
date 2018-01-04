@@ -254,15 +254,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 		final List<Literal> literals = new ArrayList<>();
 		do {
-			if (ctx.naf_literal() != null)
+			if (ctx.naf_literal() != null) {
 				literals.add(visitNaf_literal(ctx.naf_literal()));
-			else if (ctx.heuristic() != null)
+			} else if (ctx.heuristic() != null) {
 				literals.add(visitHeuristic(ctx.heuristic()));
-			else {
+			} else {
 				throw notSupported(ctx.aggregate());
 			}
-
-
 		} while ((ctx = ctx.body()) != null);
 
 		return literals;

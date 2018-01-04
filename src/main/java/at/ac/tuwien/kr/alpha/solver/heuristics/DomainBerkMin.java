@@ -1,17 +1,17 @@
 /**
  * Copyright (c) 2016-2017 Siemens AG
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 
+ * list of conditions and the following disclaimer.
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- * 
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -31,19 +31,16 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
-import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.solver.Atoms.isAtom;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 /**
  * The BerkMin heuristic, as described in (but adapted for lazy grounding):
@@ -52,17 +49,16 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
  * 
  * Copyright (c) 2016 Siemens AG
  */
-public class DomainBerkMin extends BerkMin{
+public class DomainBerkMin extends BerkMin {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DomainBerkMin.class);
 
 	DomainBerkMin(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, Grounder grounder) {
-		super(assignment, choiceManager, decayAge,decayFactor, random, grounder);
+		super(assignment, choiceManager, decayAge, decayFactor, random, grounder);
 	}
 
 	DomainBerkMin(Assignment assignment, ChoiceManager choiceManager, Random random, Grounder grounder) {
 		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random, grounder);
 	}
-
 
 	/**
 	 * {@inheritDoc}
@@ -87,25 +83,24 @@ public class DomainBerkMin extends BerkMin{
 	@Override
 	protected int getMostActiveChoosableAtom(Stream<Integer> streamOfLiterals) {
 		Set<Integer> activeChoices = streamOfLiterals
-			.map(Literals::atomOf)
-			.filter(this::isUnassigned)
-			.filter(choiceManager::isActiveChoiceAtom).collect(Collectors.toSet());
-		int maxWeight = activeChoices.stream().map(p -> (Integer)(getTermValue(p,3)))
-			.max(Comparator.naturalOrder()).orElse(1);
+				.map(Literals::atomOf)
+				.filter(this::isUnassigned)
+				.filter(choiceManager::isActiveChoiceAtom).collect(Collectors.toSet());
+		int maxWeight = activeChoices.stream().map(p -> (Integer) (getTermValue(p, 3)))
+				.max(Comparator.naturalOrder()).orElse(1);
 		Integer atom = activeChoices.stream().max(Comparator.comparingDouble(p -> getActivity(p) +
-			getTermIntValue(p, 2) + maxWeight * getTermIntValue(p, 3)))
-			.orElse(DEFAULT_CHOICE_ATOM);
+				getTermIntValue(p, 2) + maxWeight * getTermIntValue(p, 3)))
+				.orElse(DEFAULT_CHOICE_ATOM);
 		return atom;
 
-
 	}
 
-	private Object getTermValue(int literal, int termIndex){
-		return ((ConstantTerm)getGrounder().getAtomStore().get(atomOf(literal)).getTerms()
-			.get(termIndex)).getObject();
+	private Object getTermValue(int literal, int termIndex) {
+		return ((ConstantTerm) getGrounder().getAtomStore().get(atomOf(literal)).getTerms()
+				.get(termIndex)).getObject();
 	}
 
-	private int getTermIntValue(int literal, int termIndex){
-		return (Integer)getTermValue(literal, termIndex);
+	private int getTermIntValue(int literal, int termIndex) {
+		return (Integer) getTermValue(literal, termIndex);
 	}
 }

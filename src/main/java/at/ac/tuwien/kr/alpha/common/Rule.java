@@ -72,17 +72,19 @@ public class Rule {
 	private HeuristicAtom extractHeuristic(List<Literal> body) {
 		List<Literal> heuristicAtoms = body.stream().filter(p -> p.getType() == Literal.Type.HEURISTIC_ATOM)
 			.collect(Collectors.toList());
-		if (heuristicAtoms.size() > 1)
+		if (heuristicAtoms.size() > 1) {
 			throw new RuntimeException("More than one heuristic atom defined in a rule!");
-		if (heuristicAtoms.isEmpty())
+		}
+		if (heuristicAtoms.isEmpty()) {
 			return new HeuristicAtom(Collections.singletonList(ConstantTerm.getInstance(1)));
+		}
 		HeuristicAtom atom = (HeuristicAtom) heuristicAtoms.get(0);
 		body.remove(atom);
 		// check if all variables are "safe"
-		if (!atom.isGround()){
+		if (!atom.isGround()) {
 			List<VariableTerm> vars = body.stream().filter(l -> !l.isNegated())
 				.flatMap(a -> a.getBindingVariables().stream()).collect(Collectors.toList());
-			if (!vars.containsAll(atom.getBindingVariables())){
+			if (!vars.containsAll(atom.getBindingVariables())) {
 				throw new RuntimeException("Variables occurring in the heuristic atom must occur in " +
 						"at least one positive body atom: " + body);
 			}
