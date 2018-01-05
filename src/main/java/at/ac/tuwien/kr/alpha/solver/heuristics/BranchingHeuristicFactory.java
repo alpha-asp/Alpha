@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2018 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@ public final class BranchingHeuristicFactory {
 
 	public enum Heuristic {
 		NAIVE,
-		DOMAIN_BERKMIN,
+		DOMAIN,
 		BERKMIN,
 		BERKMINLITERAL,
 		DD,
@@ -70,8 +70,8 @@ public final class BranchingHeuristicFactory {
 			return new NaiveHeuristic(choiceManager);
 		case BERKMIN:
 			return new BerkMin(assignment, choiceManager, random, grounder);
-		case DOMAIN_BERKMIN:
-			return new DomainBerkMin(assignment, choiceManager, random, grounder);
+		case DOMAIN:
+			return new DomainSpecific(assignment, choiceManager, grounder);
 		case BERKMINLITERAL:
 			return new BerkMinLiteral(assignment, choiceManager, random, grounder);
 		case DD:
