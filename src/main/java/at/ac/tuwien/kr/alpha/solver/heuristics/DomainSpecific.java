@@ -30,6 +30,7 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
@@ -136,10 +137,10 @@ public class DomainSpecific implements BranchingHeuristic {
 				int atom1 = atomOf(literal1);
 				int choicePoint;
 				int potentialHeuristicAtom;
-				if (choiceManager.isAtomChoice(atom0)) {
+				if (isChoicePoint(atom0)) {
 					choicePoint = atom0;
 					potentialHeuristicAtom = atom1;
-				} else if (choiceManager.isAtomChoice(atom1)) {
+				} else if (isChoicePoint(atom1)) {
 					choicePoint = atom1;
 					potentialHeuristicAtom = atom0;
 				} else {
@@ -150,11 +151,19 @@ public class DomainSpecific implements BranchingHeuristic {
 		}
 	}
 
+	private boolean isChoicePoint(int atom) {
+		// we cannot use:
+		// return choiceManager.isAtomChoice(atom);
+		// because choiceManager does not know about choice points before the first choice is made
+		// TODO improve!?
+		return grounder.getAtomStore().get(atom) instanceof RuleAtom;
+	}
+
 	private void recordChoicePointIfHeuristicsGiven(int choicePoint, int potentialHeuristicAtomId) {
 		if (!knownChoicePoints.contains(choicePoint)) {
 			Atom potentialHeuristicAtom = grounder.getAtomStore().get(potentialHeuristicAtomId);
 			if (potentialHeuristicAtom instanceof HeuristicAtom) {
-				recordChoicePointAndHeuristicValues(choicePoint, ((HeuristicAtom) potentialHeuristicAtom));
+				recordChoicePointAndHeuristicValues(choicePoint, (HeuristicAtom) potentialHeuristicAtom);
 			}
 		}
 	}

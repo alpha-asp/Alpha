@@ -156,7 +156,7 @@ public class HeuristicAtom implements Literal {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = new StringBuilder("not ");
 		sb.append(predicate.getName());
 		if (!terms.isEmpty()) {
 			sb.append("(");

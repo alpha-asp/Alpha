@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017-2018, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -79,7 +79,6 @@ public class Rule {
 			return new HeuristicAtom(Collections.singletonList(ConstantTerm.getInstance(1)));
 		}
 		HeuristicAtom atom = (HeuristicAtom) heuristicAtoms.get(0);
-		body.remove(atom);
 		// check if all variables are "safe"
 		if (!atom.isGround()) {
 			List<VariableTerm> vars = body.stream().filter(l -> !l.isNegated())
