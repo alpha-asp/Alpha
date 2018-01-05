@@ -53,7 +53,7 @@ public class HeuristicAtom implements Literal {
 	private final Integer weight;
 	private final Integer level;
 
-	public HeuristicAtom(List<Term> terms, ASPCore2Parser.HeuristicContext ctx) {
+	public HeuristicAtom(List<Term> terms, ASPCore2Parser.Naf_heuristicContext ctx) {
 		if (terms.size() < 1 || terms.size() > 2) {
 			throw new RuntimeException(getErrorMsg(ctx) +
 					PREDICATE_HEURISTIC + "(Weight) or " + PREDICATE_HEURISTIC + "(Weight,Level) was " +
@@ -73,7 +73,7 @@ public class HeuristicAtom implements Literal {
 		this.ground = this.weight != null && this.level != null;
 	}
 
-	private String getErrorMsg(ASPCore2Parser.HeuristicContext ctx) {
+	private String getErrorMsg(ASPCore2Parser.Naf_heuristicContext ctx) {
 		return "Invalid syntax" +
 				((ctx != null) ? " in line " + ctx.getStart().getLine() : "") + "! ";
 	}
@@ -82,7 +82,7 @@ public class HeuristicAtom implements Literal {
 		this(terms, null);
 	}
 
-	private Integer getConstant(Term term, ASPCore2Parser.HeuristicContext ctx) {
+	private Integer getConstant(Term term, ASPCore2Parser.Naf_heuristicContext ctx) {
 		if (term instanceof FunctionTerm) {
 			throw new RuntimeException(getErrorMsg(ctx) + "Function terms cannot be used in heuristic atoms.");
 		}
@@ -111,7 +111,7 @@ public class HeuristicAtom implements Literal {
 
 	@Override
 	public boolean isNegated() {
-		return false;
+		return true;
 	}
 
 	@Override

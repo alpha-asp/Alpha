@@ -6,6 +6,7 @@ import ASPLexer;
  * https://www.mat.unical.it/aspcomp2013/files/ASP-CORE-2.01c.pdf
  * (sections 4 and 5, pages 10-12).
  * It is extended a bit to parse widespread syntax (e.g. used by gringo/clasp).
+ * It is also extended by a dedicated heuristic predicate for Alpha.
  */
 
 program : statements? query? EOF;
@@ -24,7 +25,7 @@ locals [boolean hr = false]
 
 head : disjunction | choice;
 
-body: ( naf_literal | NAF? aggregate | heuristic) (COMMA body)?;
+body: ( naf_literal | NAF? aggregate | naf_heuristic) (COMMA body)?;
 
 disjunction : classical_literal (OR disjunction)?;
 
@@ -34,7 +35,7 @@ choice_elements : choice_element (SEMICOLON choice_elements)?;
 
 choice_element : classical_literal (COLON naf_literals?)?;
 
-heuristic : PREDICATE_HEURISTIC PAREN_OPEN terms PAREN_CLOSE;
+naf_heuristic : NAF PREDICATE_HEURISTIC PAREN_OPEN terms PAREN_CLOSE;
 
 aggregate : (term binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (binop term)?;
 
