@@ -31,7 +31,6 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 
 import java.util.*;
@@ -130,7 +129,7 @@ public class NoGoodGenerator {
 				return null;
 			}
 
-			if (!existsRuleWithPredicateInHead(groundAtom.getPredicate()) && !(groundAtom instanceof HeuristicAtom)) {
+			if (!existsRuleWithPredicateInHead(groundAtom.getPredicate())) {
 				// Negative atom is no fact and no rule defines it, it is always false, skip it.
 				continue;
 			}

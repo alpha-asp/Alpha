@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -36,11 +37,11 @@ import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
 
 /**
@@ -50,28 +51,19 @@ import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
 public class RuleAtom implements Atom {
 	public static final Predicate PREDICATE = Predicate.getInstance("_R_", 4, true);
 
-	private final List<ConstantTerm> terms;
-
-	private RuleAtom(List<ConstantTerm> terms) {
-		if (terms.size() != 4) {
-			throw new IllegalArgumentException();
-		}
-
-		this.terms = terms;
-	}
+	private final List<ConstantTerm<?>> terms;
+	private final HeuristicAtom groundHeuristic;
 
 	public RuleAtom(NonGroundRule nonGroundRule, Substitution substitution) {
-		this(getTerms(nonGroundRule, substitution));
-	}
+		this.terms = new ArrayList<>(4);
+		terms.add(getInstance(Integer.toString(nonGroundRule.getRuleId())));
+		terms.add(getInstance(substitution.toString()));
+		this.groundHeuristic = nonGroundRule.getHeuristic().substitute(substitution);
+		groundHeuristic.getTerms().forEach(p -> terms.add((ConstantTerm<?>) p));
 
-	private static List<ConstantTerm> getTerms(NonGroundRule nonGroundRule, Substitution substitution) {
-		List<ConstantTerm> constantTerms = new ArrayList<>(4);
-		constantTerms.addAll(Arrays.asList(
-			getInstance(Integer.toString(nonGroundRule.getRuleId())),
-			getInstance(substitution.toString())
-		));
-		nonGroundRule.getHeuristic().substitute(substitution).getTerms().forEach(p ->constantTerms.add((ConstantTerm) p));
-		return Collections.unmodifiableList(constantTerms);
+		if (this.terms.size() != 4) {
+			oops("RuleAtom with " + this.terms.size() + " terms");
+		}
 	}
 
 	@Override
@@ -86,13 +78,13 @@ public class RuleAtom implements Atom {
 
 	@Override
 	public boolean isGround() {
-		// NOTE: Both terms are ConstantTerms, which are ground by definition.
+		// NOTE: All terms are ConstantTerms, which are ground by definition.
 		return true;
 	}
 
 	@Override
 	public List<VariableTerm> getBindingVariables() {
-		// NOTE: Both terms are ConstantTerms, which have no variables by definition.
+		// NOTE: All terms are ConstantTerms, which have no variables by definition.
 		return Collections.emptyList();
 	}
 
@@ -104,6 +96,10 @@ public class RuleAtom implements Atom {
 	@Override
 	public Atom substitute(Substitution substitution) {
 		return this;
+	}
+
+	public HeuristicAtom getGroundHeuristic() {
+		return groundHeuristic;
 	}
 
 	@Override

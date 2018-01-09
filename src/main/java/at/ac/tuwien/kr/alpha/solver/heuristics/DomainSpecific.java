@@ -27,7 +27,6 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
@@ -127,26 +126,11 @@ public class DomainSpecific implements BranchingHeuristic {
 	}
 
 	protected void analyseNoGoodAndRecordChoicePoint(NoGood noGood) {
-		// for each new choice point, we need to find the unique nogood that contains exactly two positive literals:
-		// the choice point and a heuristic atom
-		if (noGood != null && noGood.size() == 2) {
-			int literal0 = noGood.getLiteral(0);
-			int literal1 = noGood.getLiteral(1);
-			if (literal0 > 0 && literal1 > 0) {
-				int atom0 = atomOf(literal0);
-				int atom1 = atomOf(literal1);
-				int choicePoint;
-				int potentialHeuristicAtom;
-				if (isChoicePoint(atom0)) {
-					choicePoint = atom0;
-					potentialHeuristicAtom = atom1;
-				} else if (isChoicePoint(atom1)) {
-					choicePoint = atom1;
-					potentialHeuristicAtom = atom0;
-				} else {
-					return;
-				}
-				recordChoicePointIfHeuristicsGiven(choicePoint, potentialHeuristicAtom);
+		for (Integer literal : noGood) {
+			int atom = atomOf(literal);
+			if (isChoicePoint(atom) && !knownChoicePoints.contains(atom)) {
+				RuleAtom choicePoint = (RuleAtom) grounder.getAtomStore().get(atom);
+				recordChoicePointAndHeuristicValues(atom, choicePoint);
 			}
 		}
 	}
@@ -159,17 +143,9 @@ public class DomainSpecific implements BranchingHeuristic {
 		return grounder.getAtomStore().get(atom) instanceof RuleAtom;
 	}
 
-	private void recordChoicePointIfHeuristicsGiven(int choicePoint, int potentialHeuristicAtomId) {
-		if (!knownChoicePoints.contains(choicePoint)) {
-			Atom potentialHeuristicAtom = grounder.getAtomStore().get(potentialHeuristicAtomId);
-			if (potentialHeuristicAtom instanceof HeuristicAtom) {
-				recordChoicePointAndHeuristicValues(choicePoint, (HeuristicAtom) potentialHeuristicAtom);
-			}
-		}
-	}
-
-	private void recordChoicePointAndHeuristicValues(int choicePoint, HeuristicAtom heuristicAtom) {
-		recordChoicePointAndHeuristicValues(choicePoint, heuristicAtom.getWeight(), heuristicAtom.getLevel());
+	private void recordChoicePointAndHeuristicValues(int choicePointId, RuleAtom choicePointAtom) {
+		HeuristicAtom heuristicAtom = choicePointAtom.getGroundHeuristic();
+		recordChoicePointAndHeuristicValues(choicePointId, heuristicAtom.getWeight(), heuristicAtom.getLevel());
 	}
 
 	private void recordChoicePointAndHeuristicValues(int choicePoint, Integer weight, Integer level) {

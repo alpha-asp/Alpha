@@ -148,7 +148,7 @@ public class HeuristicAtom implements Literal {
 	}
 
 	@Override
-	public Atom substitute(Substitution substitution) {
+	public HeuristicAtom substitute(Substitution substitution) {
 		return new HeuristicAtom(terms.stream()
 				.map(t -> t.substitute(substitution))
 				.collect(Collectors.toList()));
