@@ -1,16 +1,16 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2018 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ * list of conditions and the following disclaimer.
  * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -58,9 +58,9 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
  * enrich the information available for a choice point. Intuitively, all atoms occurring in the head or the
  * body of a rule depend on a choice point representing the body of this rule.
  * 
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2018 Siemens AG
  */
-public class DependencyDrivenHeuristic implements BranchingHeuristic {
+public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristic {
 	protected static final Logger LOGGER = LoggerFactory.getLogger(DependencyDrivenHeuristic.class);
 	
 	public static final double DEFAULT_ACTIVITY = 0.0;
