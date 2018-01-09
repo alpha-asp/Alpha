@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, 2018 Siemens AG
+ * Copyright (c) 2018 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -25,57 +25,18 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
-
-import java.util.Collection;
-
 /**
- * A heuristic that selects an atom to choose on.
- * 
- * Copyright (c) 2016 Siemens AG
+ * A heuristic that selects an atom to choose on by maintaining activity values for literals.
  *
  */
-public interface BranchingHeuristic {
+public interface ActivityBasedBranchingHeuristic extends BranchingHeuristic {
 
 	/**
-	 * Stores a newly violated {@link NoGood} and updates associated activity and sign counters.
+	 * Gets the activity value associated with the given literal
 	 * 
-	 * @param violatedNoGood
+	 * @param literal
+	 * @return the activity value associated with the given literal
 	 */
-	void violatedNoGood(NoGood violatedNoGood);
-
-	/**
-	 * Processes the result of a conflict analysis, i.e. counts literals in
-	 * {@link NoGood}s responsible for the conflict and stores a newly learned
-	 * {@link NoGood}.
-	 * 
-	 * @param analysisResult
-	 */
-	void analyzedConflict(GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult);
-
-	/**
-	 * Stores a newly grounded {@link NoGood} and updates associated activity counters.
-	 * 
-	 * @param newNoGood
-	 */
-	void newNoGood(NoGood newNoGood);
-	
-	/**
-	 * @see #newNoGood(NoGood)
-	 */
-	void newNoGoods(Collection<NoGood> newNoGoods);
-	
-	/**
-	 * Determines an atom to choose on.
-	 *
-	 * @return the atom to choose on, or zero if no such atom can be determined.
-	 */
-	int chooseAtom();
-
-	/**
-	 * Chooses a truth value for the given atom.
-	 */
-	boolean chooseSign(int atom);
+	double getActivity(int literal);
 
 }

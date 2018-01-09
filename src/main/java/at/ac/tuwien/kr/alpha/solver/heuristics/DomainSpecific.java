@@ -96,12 +96,6 @@ public class DomainSpecific implements BranchingHeuristic {
 	public void newNoGoods(Collection<NoGood> newNoGoods) {
 		newNoGoods.forEach(this::newNoGood);
 	}
-
-	@Override
-	public double getActivity(int literal) {
-		return 0;
-		// TODO: should not be in interface, because irrelevant in this implementation!
-	}
 	
 	@Override
 	public int chooseAtom() {

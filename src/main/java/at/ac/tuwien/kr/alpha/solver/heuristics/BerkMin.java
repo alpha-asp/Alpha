@@ -51,7 +51,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
  * 
  * Copyright (c) 2016-2018 Siemens AG
  */
-public class BerkMin implements BranchingHeuristic {
+public class BerkMin implements ActivityBasedBranchingHeuristic {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BerkMin.class);
 	
 	static final double DEFAULT_ACTIVITY = 0.0;
