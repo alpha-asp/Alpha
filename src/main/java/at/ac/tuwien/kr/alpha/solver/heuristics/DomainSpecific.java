@@ -66,6 +66,8 @@ public class DomainSpecific implements BranchingHeuristic {
 	private final SortedMap<Integer, SortedMap<Integer, Set<Integer>>> mapWeightLevelChoicePoint = new TreeMap<>(Comparator.reverseOrder());
 
 	private final Set<Integer> knownChoicePoints = new HashSet<>();
+	private int highestKnownAtom = 0;
+	private int highestUnprocessedAtom = 0;
 
 	public Grounder getGrounder() {
 		return grounder;
@@ -99,6 +101,8 @@ public class DomainSpecific implements BranchingHeuristic {
 	
 	@Override
 	public int chooseAtom() {
+		processUnprocessedChoicePoints();
+
 		// iterate through weights in decreasing order, iterate through levels in decreasing order, return first applicable choice point
 		for (Entry<Integer, SortedMap<Integer, Set<Integer>>> entryMapLevelChoicePoint : mapWeightLevelChoicePoint.entrySet()) {
 			for (Entry<Integer, Set<Integer>> entryChoicePoints : entryMapLevelChoicePoint.getValue().entrySet()) {
@@ -122,19 +126,24 @@ public class DomainSpecific implements BranchingHeuristic {
 	protected void analyseNoGoodAndRecordChoicePoint(NoGood noGood) {
 		for (Integer literal : noGood) {
 			int atom = atomOf(literal);
+			if (atom > highestUnprocessedAtom) {
+				highestUnprocessedAtom = atom;
+			}
+		}
+	}
+
+	private void processUnprocessedChoicePoints() {
+		for (int atom = highestKnownAtom + 1; atom <= highestUnprocessedAtom; atom++) {
 			if (isChoicePoint(atom) && !knownChoicePoints.contains(atom)) {
 				RuleAtom choicePoint = (RuleAtom) grounder.getAtomStore().get(atom);
 				recordChoicePointAndHeuristicValues(atom, choicePoint);
 			}
 		}
+		highestKnownAtom = highestUnprocessedAtom;
 	}
 
 	private boolean isChoicePoint(int atom) {
-		// we cannot use:
-		// return choiceManager.isAtomChoice(atom);
-		// because choiceManager does not know about choice points before the first choice is made
-		// TODO improve!?
-		return grounder.getAtomStore().get(atom) instanceof RuleAtom;
+		return choiceManager.isAtomChoice(atom);
 	}
 
 	private void recordChoicePointAndHeuristicValues(int choicePointId, RuleAtom choicePointAtom) {
