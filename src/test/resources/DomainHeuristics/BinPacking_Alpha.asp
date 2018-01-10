@@ -9,8 +9,11 @@ not_item_bin(I,B) :- item(I), bin(B), not     item_bin(I,B).
 item_has_bin(I) :- item_bin(I,B).
 
 % :- bin_size(B,BS), BS < #sum { IS,I : item_size(I,IS), item_bin(I,B) }.
-:- bin_filled(B,F), bin_size(B,S), F > S.
-bin_filled(B,F) :- bin_filled(B,F,I).
+:- bin_filled(F), bin_size(BS), F > BS.
+bin_filled(F) :- bin_filled(B,F,I).
 bin_filled(B,0,0) :- bin(B).
 bin_filled(B,F,I) :- bin(B), item(I), item_bin(I,B), item_size(I,I_size), bin_filled(B,F_prev,I_prev), F = F_prev + I_size, I_prev < I, not between(B,I_prev,I).
 between(B,I_prev,I) :- bin(B), item(I_prev), item(I_bet), item(I), item_bin(I_prev,B), item_bin(I_bet,B), item_bin(I,B), I_prev < I_bet, I_bet < I.
+
+% every bin has the same size (this constraint is just for checking the input instance):
+:- bin_size(BS1), bin_size(BS2), BS1 < BS2.
