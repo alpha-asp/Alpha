@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -32,6 +32,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
@@ -63,6 +64,7 @@ public class NaiveGrounder extends BridgedGrounder {
 	private final NogoodRegistry registry = new NogoodRegistry();
 	private final NoGoodGenerator noGoodGenerator;
 	private final ChoiceRecorder choiceRecorder;
+	private final DomainSpecificHeuristicsRecorder domainSpecificHeuristicsRecorder = new DomainSpecificHeuristicsRecorder();
 
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram = new LinkedHashMap<>();
 	private final Map<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
@@ -172,7 +174,8 @@ public class NaiveGrounder extends BridgedGrounder {
 		}
 
 		choiceRecorder = new ChoiceRecorder(atomStore);
-		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, ruleHeadsToDefiningRules, uniqueGroundRulePerGroundHead);
+		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, domainSpecificHeuristicsRecorder, factsFromProgram, ruleHeadsToDefiningRules,
+				uniqueGroundRulePerGroundHead);
 	}
 
 	private void applyProgramTransformations(Program program) {
@@ -475,6 +478,11 @@ public class NaiveGrounder extends BridgedGrounder {
 	@Override
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
 		return choiceRecorder.getAndReset();
+	}
+	
+	@Override
+	public Map<Integer, DomainSpecificHeuristicValues> getDomainChoiceHeuristics() {
+		return domainSpecificHeuristicsRecorder.getAndReset();
 	}
 
 	@Override

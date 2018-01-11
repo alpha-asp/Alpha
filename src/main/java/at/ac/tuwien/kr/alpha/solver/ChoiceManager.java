@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -29,6 +29,9 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
+import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DomainSpecificHeuristicsStore;
+import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.EmptyDomainSpecificHeuristicsStore;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +51,7 @@ public class ChoiceManager implements Checkable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ChoiceManager.class);
 	private final WritableAssignment assignment;
 	private final Stack<Choice> choiceStack;
+	private final DomainSpecificHeuristicsStore domainSpecificHeuristics;
 
 	// Active choice points and all atoms that influence a choice point (enabler, disabler, choice atom itself).
 	private final Set<ChoicePoint> activeChoicePoints = new LinkedHashSet<>();
@@ -74,6 +78,10 @@ public class ChoiceManager implements Checkable {
 	}
 
 	public ChoiceManager(WritableAssignment assignment, NoGoodStore store, boolean checksEnabled) {
+		this(assignment, store, new EmptyDomainSpecificHeuristicsStore(), checksEnabled);
+	}
+
+	public ChoiceManager(WritableAssignment assignment, NoGoodStore store, DomainSpecificHeuristicsStore domainSpecificHeuristicsStore, boolean checksEnabled) {
 		this.store = store;
 		this.checksEnabled = checksEnabled;
 		this.assignment = assignment;
@@ -81,6 +89,7 @@ public class ChoiceManager implements Checkable {
 		highestDecisionLevel = 0;
 		modCount = 0;
 		this.choiceStack = new Stack<>();
+		this.domainSpecificHeuristics = domainSpecificHeuristicsStore;
 
 		if (checksEnabled) {
 			debugWatcher = new DebugWatcher();
@@ -297,6 +306,14 @@ public class ChoiceManager implements Checkable {
 			influencers.put(enabler, choicePoint);
 			influencers.put(disabler, choicePoint);
 		}
+	}
+
+	void addDomainSpecificHeuristicsInfo(Map<Integer, DomainSpecificHeuristicValues> domainSpecificHeuristicsInfo) {
+		domainSpecificHeuristics.addInfo(domainSpecificHeuristicsInfo);
+	}
+
+	public DomainSpecificHeuristicsStore getDomainSpecificHeuristics() {
+		return domainSpecificHeuristics;
 	}
 
 	public boolean isActiveChoiceAtom(int atom) {

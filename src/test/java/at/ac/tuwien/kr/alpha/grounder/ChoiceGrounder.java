@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -157,6 +158,11 @@ public class ChoiceGrounder implements Grounder {
 		} else {
 			return new ImmutablePair<>(new HashMap<>(), new HashMap<>());
 		}
+	}
+
+	@Override
+	public Map<Integer, DomainSpecificHeuristicValues> getDomainChoiceHeuristics() {
+		return Collections.emptyMap();
 	}
 
 	@Override

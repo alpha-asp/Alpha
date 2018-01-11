@@ -29,17 +29,15 @@ import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.Map.Entry;
+import java.util.Collection;
+import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -59,15 +57,6 @@ public class DomainSpecific implements BranchingHeuristic {
 
 	private final Assignment assignment;
 	private final ChoiceManager choiceManager;
-
-	/**
-	 * data structure: weight -> { level -> { rules } }
-	 */
-	private final SortedMap<Integer, SortedMap<Integer, Set<Integer>>> mapWeightLevelChoicePoint = new TreeMap<>(Comparator.reverseOrder());
-
-	private final Set<Integer> knownChoicePoints = new HashSet<>();
-	private int highestKnownAtom = 0;
-	private int highestUnprocessedAtom = 0;
 
 	public Grounder getGrounder() {
 		return grounder;
@@ -91,31 +80,23 @@ public class DomainSpecific implements BranchingHeuristic {
 
 	@Override
 	public void newNoGood(NoGood newNoGood) {
-		analyseNoGoodAndRecordChoicePoint(newNoGood);
 	}
 
 	@Override
 	public void newNoGoods(Collection<NoGood> newNoGoods) {
-		newNoGoods.forEach(this::newNoGood);
 	}
 	
 	@Override
 	public int chooseAtom() {
-		processUnprocessedChoicePoints();
+		return choiceManager.getDomainSpecificHeuristics().streamRuleAtomsOrderedByDecreasingPriority().map(this::chooseAtom).filter(a -> a != DEFAULT_CHOICE_ATOM)
+				.findFirst().orElse(DEFAULT_CHOICE_ATOM);
+	}
 
-		// iterate through weights in decreasing order, iterate through levels in decreasing order, return first applicable choice point
-		for (Entry<Integer, SortedMap<Integer, Set<Integer>>> entryMapLevelChoicePoint : mapWeightLevelChoicePoint.entrySet()) {
-			for (Entry<Integer, Set<Integer>> entryChoicePoints : entryMapLevelChoicePoint.getValue().entrySet()) {
-				if (LOGGER.isDebugEnabled()) {
-					LOGGER.debug("Choosing between {} rules with weight={} and level={}: {}", entryChoicePoints.getValue().size(), entryMapLevelChoicePoint.getKey(),
-							entryChoicePoints.getKey(), grounder.literalsToString(entryChoicePoints.getValue()));
-				}
-				for (Integer choicePoint : entryChoicePoints.getValue()) {
-					if (choiceManager.isActiveChoiceAtom(choicePoint) && isUnassigned(choicePoint)) {
-						return choicePoint;
-						// TODO: use fallback heuristics to choose between equally good choice points
-					}
-				}
+	private int chooseAtom(Set<Integer> possibleChoices) {
+		for (Integer choicePoint : possibleChoices) {
+			if (choiceManager.isActiveChoiceAtom(choicePoint) && isUnassigned(choicePoint)) {
+				return choicePoint;
+				// TODO: use fallback heuristics to choose between equally good choice points
 			}
 		}
 		return DEFAULT_CHOICE_ATOM;
@@ -126,50 +107,6 @@ public class DomainSpecific implements BranchingHeuristic {
 		// TODO: return true (except if falling back to other heuristic)
 		return true;
 	}
-
-	protected void analyseNoGoodAndRecordChoicePoint(NoGood noGood) {
-		for (Integer literal : noGood) {
-			int atom = atomOf(literal);
-			if (atom > highestUnprocessedAtom) {
-				highestUnprocessedAtom = atom;
-			}
-		}
-	}
-
-	private void processUnprocessedChoicePoints() {
-		for (int atom = highestKnownAtom + 1; atom <= highestUnprocessedAtom; atom++) {
-			if (isChoicePoint(atom) && !knownChoicePoints.contains(atom)) {
-				RuleAtom choicePoint = (RuleAtom) grounder.getAtomStore().get(atom);
-				recordChoicePointAndHeuristicValues(atom, choicePoint);
-			}
-		}
-		highestKnownAtom = highestUnprocessedAtom;
-	}
-
-	private boolean isChoicePoint(int atom) {
-		return choiceManager.isAtomChoice(atom);
-	}
-
-	private void recordChoicePointAndHeuristicValues(int choicePointId, RuleAtom choicePointAtom) {
-		HeuristicAtom heuristicAtom = choicePointAtom.getGroundHeuristic();
-		recordChoicePointAndHeuristicValues(choicePointId, heuristicAtom.getWeight(), heuristicAtom.getLevel());
-	}
-
-	private void recordChoicePointAndHeuristicValues(int choicePoint, Integer weight, Integer level) {
-		knownChoicePoints.add(choicePoint);
-
-		if (!mapWeightLevelChoicePoint.containsKey(weight)) {
-			mapWeightLevelChoicePoint.put(weight, new TreeMap<>(Comparator.reverseOrder()));
-		}
-
-		Map<Integer, Set<Integer>> mapLevelChoicePoint = mapWeightLevelChoicePoint.get(weight);
-		if (!mapLevelChoicePoint.containsKey(level)) {
-			mapLevelChoicePoint.put(level, new HashSet<>());
-		}
-
-		mapLevelChoicePoint.get(level).add(choicePoint);
-	}
-
 	protected boolean isUnassigned(int atom) {
 		ThriceTruth truth = assignment.getTruth(atom);
 		return truth != FALSE && truth != TRUE; // do not use assignment.isAssigned(atom) because we may also choose MBTs

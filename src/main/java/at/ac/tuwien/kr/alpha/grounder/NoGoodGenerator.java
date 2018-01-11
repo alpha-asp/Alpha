@@ -44,15 +44,18 @@ import static java.util.Collections.singletonList;
  */
 public class NoGoodGenerator {
 	private final AtomStore store;
-	private final ChoiceRecorder recorder;
+	private final ChoiceRecorder choiceRecorder;
+	private final DomainSpecificHeuristicsRecorder domainSpecificHeuristicsRecorder;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private final Map<Predicate, HashSet<NonGroundRule>> ruleHeadsToDefiningRules;
 	private final Set<NonGroundRule> uniqueGroundRulePerGroundHead;
 
-	NoGoodGenerator(AtomStore store, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram,
-			Map<Predicate, HashSet<NonGroundRule>> ruleHeadsToDefiningRules, Set<NonGroundRule> uniqueGroundRulePerGroundHead) {
+	NoGoodGenerator(AtomStore store, ChoiceRecorder choiceRecorder, DomainSpecificHeuristicsRecorder domainSpecificHeuristicsRecorder,
+			Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, Map<Predicate, HashSet<NonGroundRule>> ruleHeadsToDefiningRules,
+			Set<NonGroundRule> uniqueGroundRulePerGroundHead) {
 		this.store = store;
-		this.recorder = recorder;
+		this.choiceRecorder = choiceRecorder;
+		this.domainSpecificHeuristicsRecorder = domainSpecificHeuristicsRecorder;
 		this.factsFromProgram = factsFromProgram;
 		this.ruleHeadsToDefiningRules = ruleHeadsToDefiningRules;
 		this.uniqueGroundRulePerGroundHead = uniqueGroundRulePerGroundHead;
@@ -112,8 +115,11 @@ public class NoGoodGenerator {
 
 		// If the body of the rule contains negation, add choices.
 		if (!neg.isEmpty()) {
-			result.addAll(recorder.generate(pos, neg, bodyId));
+			result.addAll(choiceRecorder.generate(pos, neg, bodyId));
 		}
+		
+		// Record domain-specific heuristics for this ground rule.
+		domainSpecificHeuristicsRecorder.record(bodyId, nonGroundRule.getHeuristic().substitute(substitution));
 
 		return result;
 	}

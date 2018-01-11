@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -8,11 +8,11 @@
  * modification, are permitted provided that the following conditions are met:
  *
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ * list of conditions and the following disclaimer.
  *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -35,6 +35,7 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DefaultDomainSpecificHeuristicsStore;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,12 +67,19 @@ public class DefaultSolver extends AbstractSolver {
 	private boolean initialize = true;
 	private int mbtAtFixpoint;
 
-	public DefaultSolver(Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, Heuristic branchingHeuristic, boolean debugInternalChecks) {
+	public DefaultSolver(Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, Heuristic branchingHeuristic,
+			boolean debugInternalChecks) {
 		super(grounder);
 
 		this.assignment = assignment;
 		this.store = store;
-		this.choiceManager = new ChoiceManager(assignment, store, debugInternalChecks);
+
+		if (branchingHeuristic == Heuristic.DOMAIN) {
+			this.choiceManager = new ChoiceManager(assignment, store, new DefaultDomainSpecificHeuristicsStore(), debugInternalChecks);
+		} else {
+			this.choiceManager = new ChoiceManager(assignment, store, debugInternalChecks);
+		}
+
 		this.learner = new GroundConflictNoGoodLearner(assignment);
 		this.branchingHeuristic = BranchingHeuristicFactory.getInstance(branchingHeuristic, grounder, assignment, choiceManager, random);
 		this.fallbackBranchingHeuristic = new NaiveHeuristic(choiceManager);
@@ -125,8 +133,8 @@ public class DefaultSolver extends AbstractSolver {
 				// Learn from conflict.
 				NoGood violatedNoGood = conflictCause.getViolatedNoGood();
 				if (LOGGER.isDebugEnabled()) {
-    				LOGGER.debug("Violated nogood is: {}", grounder.noGoodToString(violatedNoGood));
-    				LOGGER.debug("Violating assignment is: {}", assignment);
+					LOGGER.debug("Violated nogood is: {}", grounder.noGoodToString(violatedNoGood));
+					LOGGER.debug("Violating assignment is: {}", assignment);
 				}
 				branchingHeuristic.violatedNoGood(violatedNoGood);
 				if (!afterAllAtomsAssigned) {
@@ -264,9 +272,9 @@ public class DefaultSolver extends AbstractSolver {
 			// If choice was assigned at lower decision level (due to added NoGoods), no inverted choice should be done.
 			if (choice.getImpliedBy() != null) {
 				LOGGER.debug("Last choice is now implied by {}", choice.getImpliedBy());
-				//if (choice.getDecisionLevel() == assignment.getDecisionLevel() + 1) {
-				//	throw oops("Choice was assigned but not at a lower decision level");
-				//}
+				// if (choice.getDecisionLevel() == assignment.getDecisionLevel() + 1) {
+				// throw oops("Choice was assigned but not at a lower decision level");
+				// }
 				LOGGER.debug("Backtracking further, because last choice was assigned at a lower decision level.");
 				continue;
 			}
@@ -307,7 +315,7 @@ public class DefaultSolver extends AbstractSolver {
 
 	private NoGood fixContradiction(Map.Entry<Integer, NoGood> noGoodEntry, ConflictCause conflictCause) {
 		if (LOGGER.isDebugEnabled()) {
-	    	LOGGER.debug("Attempting to fix violation of {} caused by {}", grounder.noGoodToString(noGoodEntry.getValue()), conflictCause);
+			LOGGER.debug("Attempting to fix violation of {} caused by {}", grounder.noGoodToString(noGoodEntry.getValue()), conflictCause);
 		}
 
 		if (conflictCause.getViolatedChoice() != null) {
@@ -341,6 +349,7 @@ public class DefaultSolver extends AbstractSolver {
 
 	private boolean choose() {
 		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
+		choiceManager.addDomainSpecificHeuristicsInfo(grounder.getDomainChoiceHeuristics());
 		choiceManager.updateAssignments();
 
 		// Hint: for custom heuristics, evaluate them here and pick a value if the heuristics suggests one.
@@ -361,7 +370,7 @@ public class DefaultSolver extends AbstractSolver {
 		choiceManager.choose(new Choice(atom, branchingHeuristic.chooseSign(atom), false));
 		return true;
 	}
-	
+
 	private void logStats() {
 		LOGGER.debug("g=" + choiceManager.getChoices() + ", bt=" + choiceManager.getBacktracks() + ", bj=" + choiceManager.getBackjumps() + ", mbt=" + mbtAtFixpoint);
 	}
