@@ -34,6 +34,7 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.DomainSpecific;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DefaultDomainSpecificHeuristicsStore;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
@@ -67,21 +68,35 @@ public class DefaultSolver extends AbstractSolver {
 	private boolean initialize = true;
 	private int mbtAtFixpoint;
 
-	public DefaultSolver(Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, Heuristic branchingHeuristic,
+	/**
+	 * 
+	 * @param grounder
+	 * @param store
+	 * @param assignment
+	 * @param random
+	 * @param respectDomSpecHeuristic
+	 *          if {@code true}, {@link DomainSpecific} heuristics are used which use {@code branchingHeuristic} as fallback if unable to make a decision; if
+	 *          {@code false}, only {@code branchingHeuristic} is used.
+	 * @param branchingHeuristic
+	 *          see {@code respectDomSpecHeuristic}
+	 * @param debugInternalChecks
+	 */
+	public DefaultSolver(Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, boolean respectDomSpecHeuristic,
+			Heuristic branchingHeuristic,
 			boolean debugInternalChecks) {
 		super(grounder);
 
 		this.assignment = assignment;
 		this.store = store;
 
-		if (branchingHeuristic == Heuristic.DOMAIN) {
+		if (respectDomSpecHeuristic) {
 			this.choiceManager = new ChoiceManager(assignment, store, new DefaultDomainSpecificHeuristicsStore(), debugInternalChecks);
 		} else {
 			this.choiceManager = new ChoiceManager(assignment, store, debugInternalChecks);
 		}
 
 		this.learner = new GroundConflictNoGoodLearner(assignment);
-		this.branchingHeuristic = BranchingHeuristicFactory.getInstance(branchingHeuristic, assignment, choiceManager, random);
+		this.branchingHeuristic = BranchingHeuristicFactory.getInstance(respectDomSpecHeuristic, branchingHeuristic, assignment, choiceManager, random);
 		this.fallbackBranchingHeuristic = new NaiveHeuristic(choiceManager);
 	}
 

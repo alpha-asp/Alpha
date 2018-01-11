@@ -194,6 +194,11 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	 */
 	@Override
 	public int chooseAtom() {
+		return chooseAtom(null);
+	}
+
+	@Override
+	public int chooseAtom(Set<Integer> admissibleChoices) {
 		for (NoGood noGood : stackOfNoGoods) {
 			int mostActiveAtom = getMostActiveAtom(noGood);
 			if (choiceManager.isActiveChoiceAtom(mostActiveAtom)) {
@@ -201,13 +206,21 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 			}
 
 			Collection<Integer> bodies = atomsToBodies.get(mostActiveAtom);
-			Optional<Integer> mostActiveBody = bodies.stream().filter(this::isUnassigned).filter(choiceManager::isActiveChoiceAtom)
-					.max(Comparator.comparingDouble(bodyActivity::get));
+			Optional<Integer> mostActiveBody = getMostActiveBody(bodies.stream(), admissibleChoices);
 			if (mostActiveBody.isPresent()) {
 				return mostActiveBody.get();
 			}
 		}
 		return DEFAULT_CHOICE_ATOM;
+	}
+
+	protected Optional<Integer> getMostActiveBody(Stream<Integer> streamOfBodies, Set<Integer> admissibleChoices) {
+		if (admissibleChoices != null) {
+			streamOfBodies = streamOfBodies.filter(admissibleChoices::contains);
+		}
+		Optional<Integer> mostActiveBody = streamOfBodies.filter(this::isUnassigned).filter(choiceManager::isActiveChoiceAtom)
+				.max(Comparator.comparingDouble(bodyActivity::get));
+		return mostActiveBody;
 	}
 
 	@Override

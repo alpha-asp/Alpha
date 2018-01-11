@@ -37,7 +37,6 @@ public final class BranchingHeuristicFactory {
 
 	public enum Heuristic {
 		NAIVE,
-		DOMAIN,
 		BERKMIN,
 		BERKMINLITERAL,
 		DD,
@@ -63,14 +62,22 @@ public final class BranchingHeuristicFactory {
 		}
 	}
 
+	public static BranchingHeuristic getInstance(boolean respectDomSpecHeuristic, Heuristic name, WritableAssignment assignment, ChoiceManager choiceManager,
+			Random random) {
+		BranchingHeuristic fallbackHeuristic = getInstance(name, assignment, choiceManager, random);
+		if (respectDomSpecHeuristic) {
+			return new DomainSpecific(assignment, choiceManager, fallbackHeuristic);
+		} else {
+			return fallbackHeuristic;
+		}
+	}
+
 	public static BranchingHeuristic getInstance(Heuristic name, WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
 		switch (name) {
 		case NAIVE:
 			return new NaiveHeuristic(choiceManager);
 		case BERKMIN:
 			return new BerkMin(assignment, choiceManager, random);
-		case DOMAIN:
-			return new DomainSpecific(assignment, choiceManager);
 		case BERKMINLITERAL:
 			return new BerkMinLiteral(assignment, choiceManager, random);
 		case DD:

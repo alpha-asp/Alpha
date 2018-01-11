@@ -34,6 +34,7 @@ import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
@@ -66,6 +67,11 @@ public class BerkMinLiteral extends BerkMin {
 	@Override
 	public int chooseAtom() {
 		return  getMostActiveChoosableAtom(activeLiterals.stream());
+	}
+
+	@Override
+	public int chooseAtom(Set<Integer> admissibleChoices) {
+		return getMostActiveChoosableAtom(activeLiterals.stream().filter(l -> admissibleChoices.contains(atomOf(l))));
 	}
 
 	private void pushToStack(Integer literal) {

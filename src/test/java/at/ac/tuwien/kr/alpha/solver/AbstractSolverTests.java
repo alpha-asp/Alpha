@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -138,7 +138,7 @@ public abstract class AbstractSolverTests {
 	public boolean checks;
 
 	protected Solver getInstance(Grounder grounder) {
-		return SolverFactory.getInstance(solverName, storeName, grounder, new Random(seed), heuristic, checks);
+		return SolverFactory.getInstance(solverName, storeName, grounder, new Random(seed), true, heuristic, checks);
 	}
 
 	protected Solver getInstance(Program program) {

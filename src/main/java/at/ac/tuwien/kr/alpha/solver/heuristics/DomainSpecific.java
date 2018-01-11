@@ -31,11 +31,14 @@ import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
+import org.apache.commons.collections4.SetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
@@ -47,8 +50,6 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
  * Both values default to 1.
  * When asked for a choice, the domain-specific heuristics will choose to fire from the applicable rules with the highest weight one of those with the highest
  * level.
- * TODO: use domain-specific heuristics per default; when multiple rules are in line for choosing, use fallback heuristics (which is specified as usual)
- * TODO: use fallback heuristic also if no rules with heuristic value >1 can be found (because rules without heuristic atoms are currently not recorded by DomainHeuristic)
  */
 public class DomainSpecific implements BranchingHeuristic {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DomainSpecific.class);
@@ -56,10 +57,12 @@ public class DomainSpecific implements BranchingHeuristic {
 
 	private final Assignment assignment;
 	private final ChoiceManager choiceManager;
+	private final BranchingHeuristic fallbackHeuristic;
 
-	DomainSpecific(Assignment assignment, ChoiceManager choiceManager) {
+	DomainSpecific(Assignment assignment, ChoiceManager choiceManager, BranchingHeuristic fallbackHeuristic) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
+		this.fallbackHeuristic = fallbackHeuristic;
 	}
 
 	@Override
@@ -80,18 +83,40 @@ public class DomainSpecific implements BranchingHeuristic {
 	
 	@Override
 	public int chooseAtom() {
-		return choiceManager.getDomainSpecificHeuristics().streamRuleAtomsOrderedByDecreasingPriority().map(this::chooseAtom).filter(a -> a != DEFAULT_CHOICE_ATOM)
-				.findFirst().orElse(DEFAULT_CHOICE_ATOM);
+		Optional<Integer> chosenAtom = choiceManager.getDomainSpecificHeuristics().streamRuleAtomsOrderedByDecreasingPriority().map(this::chooseFromEquallyWeighted)
+				.filter(a -> a != DEFAULT_CHOICE_ATOM).findFirst();
+		return chooseOrFallback(chosenAtom);
 	}
 
-	private int chooseAtom(Set<Integer> possibleChoices) {
-		for (Integer choicePoint : possibleChoices) {
-			if (choiceManager.isActiveChoiceAtom(choicePoint) && isUnassigned(choicePoint)) {
-				return choicePoint;
-				// TODO: use fallback heuristics to choose between equally good choice points
-			}
+	@Override
+	public int chooseAtom(Set<Integer> admissibleChoices) {
+		Optional<Integer> chosenAtom = choiceManager.getDomainSpecificHeuristics().streamRuleAtomsOrderedByDecreasingPriority()
+				.map(s -> SetUtils.intersection(s, admissibleChoices)).map(this::chooseFromEquallyWeighted)
+				.filter(a -> a != DEFAULT_CHOICE_ATOM).findFirst();
+		return chooseOrFallback(chosenAtom);
+	}
+
+	private int chooseFromEquallyWeighted(Set<Integer> possibleChoices) {
+		int chosenAtom;
+		Set<Integer> filteredChoices = possibleChoices.stream().filter(choiceManager::isActiveChoiceAtom).filter(this::isUnassigned).collect(Collectors.toSet());
+		if (filteredChoices.isEmpty()) {
+			chosenAtom = DEFAULT_CHOICE_ATOM;
+		} else if (filteredChoices.size() == 1) {
+			chosenAtom = filteredChoices.iterator().next();
+			LOGGER.debug("Unique best choice in terms of domain-specific heuristics: " + chosenAtom);
+		} else {
+			LOGGER.debug("Using fallback heuristics to choose from " + filteredChoices);
+			chosenAtom = fallbackHeuristic.chooseAtom(filteredChoices);
 		}
-		return DEFAULT_CHOICE_ATOM;
+		return chosenAtom;
+	}
+
+	private int chooseOrFallback(Optional<Integer> chosenAtom) {
+		if (chosenAtom.isPresent()) {
+			return chosenAtom.get();
+		} else {
+			return fallbackHeuristic.chooseAtom();
+		}
 	}
 
 	@Override

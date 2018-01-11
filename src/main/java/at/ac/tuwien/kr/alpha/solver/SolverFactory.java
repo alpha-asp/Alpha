@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -33,7 +33,8 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heurist
 import java.util.Random;
 
 public final class SolverFactory {
-	public static Solver getInstance(String name, String storeName, Grounder grounder, Random random, Heuristic heuristic, boolean debugInternalChecks) {
+	public static Solver getInstance(String name, String storeName, Grounder grounder, Random random, boolean respectDomSpecHeuristic,
+			Heuristic fallbackHeuristic, boolean debugInternalChecks) {
 		final ArrayAssignment assignment = new ArrayAssignment(grounder, debugInternalChecks);
 
 		NoGoodStore store;
@@ -53,7 +54,7 @@ public final class SolverFactory {
 			case "naive" :
 				return new NaiveSolver(grounder);
 			case "default":
-				return new DefaultSolver(grounder, store, assignment, random, heuristic, debugInternalChecks);
+				return new DefaultSolver(grounder, store, assignment, random, respectDomSpecHeuristic, fallbackHeuristic, debugInternalChecks);
 		}
 		throw new IllegalArgumentException("Unknown solver requested.");
 	}

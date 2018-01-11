@@ -35,11 +35,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.solver.Atoms.isAtom;
+import static at.ac.tuwien.kr.alpha.solver.ChoiceManager.DEFAULT_CHOICE_ATOM;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -55,7 +55,6 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 	
 	static final double DEFAULT_ACTIVITY = 0.0;
 	static final int DEFAULT_SIGN_COUNTER = 0;
-	static final int DEFAULT_CHOICE_ATOM = 0;
 
 	static final int DEFAULT_DECAY_AGE = 10;
 	static final double DEFAULT_DECAY_FACTOR = 0.25;
@@ -178,9 +177,14 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 	 */
 	@Override
 	public int chooseAtom() {
+		return chooseAtom(null);
+	}
+
+	@Override
+	public int chooseAtom(Set<Integer> admissibleChoices) {
 		for (NoGood noGood : stackOfNoGoods) {
 			if (assignment.isUndefined(noGood)) {
-				int mostActiveAtom = getMostActiveChoosableAtom(noGood);
+				int mostActiveAtom = getMostActiveChoosableAtom(noGood, admissibleChoices);
 				if (mostActiveAtom != DEFAULT_CHOICE_ATOM) {
 					return mostActiveAtom;
 				}
@@ -188,7 +192,7 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 		}
 		return DEFAULT_CHOICE_ATOM;
 	}
-	
+
 	@Override
 	public boolean chooseSign(int atom) {
 		if (!isAtom(atom)) {
@@ -265,28 +269,27 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 	 * @param noGood
 	 * @return
 	 */
-	protected int getMostActiveChoosableAtom(NoGood noGood) {
+	protected int getMostActiveChoosableAtom(NoGood noGood, Set<Integer> admissibleChoices) {
+		Stream<Integer> streamOfChoosableAtoms;
 		if (noGood != null) {
-			return getMostActiveChoosableAtom(noGood.stream().boxed());
+			streamOfChoosableAtoms = noGood.stream().boxed();
 		} else {
-			return getMostActiveChoosableAtom(activityCounters.keySet().stream());
+			streamOfChoosableAtoms = activityCounters.keySet().stream();
 		}
+		if (admissibleChoices != null) {
+			streamOfChoosableAtoms = streamOfChoosableAtoms.filter(admissibleChoices::contains);
+		}
+		return getMostActiveChoosableAtom(streamOfChoosableAtoms);
 	}
 	
 	protected int getMostActiveChoosableAtom(Stream<Integer> streamOfLiterals) {
-		Set<Integer> activeChoices = streamOfLiterals
+		return streamOfLiterals
 			.map(Literals::atomOf)
 			.filter(this::isUnassigned)
-			.filter(choiceManager::isActiveChoiceAtom).collect(Collectors.toSet());
-
-		return activeChoices.stream().max(Comparator.comparingDouble(this::getActivity))
+			.filter(choiceManager::isActiveChoiceAtom)
+			.max(Comparator.comparingDouble(this::getActivity))
 			.orElse(DEFAULT_CHOICE_ATOM);
-
-
 	}
-
-
-
 
 	protected boolean isUnassigned(int atom) {
 		ThriceTruth truth = assignment.getTruth(atom);

@@ -48,6 +48,9 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class ChoiceManager implements Checkable {
+
+	public static final int DEFAULT_CHOICE_ATOM = 0;
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(ChoiceManager.class);
 	private final WritableAssignment assignment;
 	private final Stack<Choice> choiceStack;
@@ -328,7 +331,7 @@ public class ChoiceManager implements Checkable {
 		if (checksEnabled) {
 			checkActiveChoicePoints();
 		}
-		return activeChoicePoints.size() > 0 ? activeChoicePoints.iterator().next().atom : 0;
+		return activeChoicePoints.size() > 0 ? activeChoicePoints.iterator().next().atom : DEFAULT_CHOICE_ATOM;
 	}
 
 	public boolean isAtomChoice(int atom) {

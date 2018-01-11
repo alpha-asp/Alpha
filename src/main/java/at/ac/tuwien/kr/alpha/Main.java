@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -78,13 +78,14 @@ public class Main {
 	private static final String OPT_STORE = "store";
 	private static final String OPT_QUIET = "quiet";
 	private static final String OPT_LITERATE = "literate";
+	private static final String OPT_SEED = "seed";
+	private static final String OPT_DEBUG_INTERNAL_CHECKS = "DebugEnableInternalChecks";
 
+	private static final String OPT_IGNORE_DOMSPEC_HEURISTIC = "ignoreDomSpecHeuristic";
 	private static final String OPT_BRANCHING_HEURISTIC = "branchingHeuristic";
 	private static final String DEFAULT_GROUNDER = "naive";
 	private static final String DEFAULT_SOLVER = "default";
 	private static final String DEFAULT_STORE = "alphaRoaming";
-	private static final String OPT_SEED = "seed";
-	private static final String OPT_DEBUG_INTERNAL_CHECKS = "DebugEnableInternalChecks";
 	private static final String DEFAULT_BRANCHING_HEURISTIC = Heuristic.NAIVE.name();
 
 	private static final java.util.function.Predicate<Predicate> DEFAULT_FILTER = p -> true;
@@ -152,6 +153,9 @@ public class Main {
 
 		Option debugFlags = new Option(OPT_DEBUG_INTERNAL_CHECKS, "run additional (time-consuming) safety checks.");
 		options.addOption(debugFlags);
+
+		Option ignoreDomSpecHeuristicOption = new Option("ds", OPT_IGNORE_DOMSPEC_HEURISTIC, false, "ignore domain-specific heuristics defined via _h prediacates");
+		options.addOption(ignoreDomSpecHeuristicOption);
 
 		Option branchingHeuristicOption = new Option("b", OPT_BRANCHING_HEURISTIC, false, "name of the branching heuristic to use");
 		branchingHeuristicOption.setArgs(1);
@@ -251,8 +255,9 @@ public class Main {
 
 		final String chosenSolver = commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER);
 		final String chosenStore = commandLine.getOptionValue(OPT_STORE, DEFAULT_STORE);
+		boolean ignoreDomSpecHeuristic = commandLine.hasOption(OPT_IGNORE_DOMSPEC_HEURISTIC);
 		Solver solver = SolverFactory.getInstance(
-			chosenSolver, chosenStore, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks
+				chosenSolver, chosenStore, grounder, new Random(seed), !ignoreDomSpecHeuristic, parsedChosenBranchingHeuristic, debugInternalChecks
 		);
 
 		Stream<AnswerSet> stream = solver.stream();

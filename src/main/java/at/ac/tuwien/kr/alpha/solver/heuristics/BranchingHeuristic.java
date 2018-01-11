@@ -29,6 +29,7 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
 
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * A heuristic that selects an atom to choose on.
@@ -72,6 +73,11 @@ public interface BranchingHeuristic {
 	 * @return the atom to choose on, or zero if no such atom can be determined.
 	 */
 	int chooseAtom();
+
+	/**
+	 * Determines an atom to choose on, ignoring all atoms except those in {@code admissibleChoices}.
+	 */
+	int chooseAtom(Set<Integer> admissibleChoices);
 
 	/**
 	 * Chooses a truth value for the given atom.

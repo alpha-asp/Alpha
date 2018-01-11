@@ -72,7 +72,7 @@ public class DomainSpecificHeuristicsTest {
 	}
 
 	private void solveAndAssertAnswerSets(Program program, String... expectedAnswerSets) {
-		Solver solver = SolverFactory.getInstance("default", "alpharoaming", GrounderFactory.getInstance("naive", program), new Random(), Heuristic.DOMAIN, true);
+		Solver solver = SolverFactory.getInstance("default", "alpharoaming", GrounderFactory.getInstance("naive", program), new Random(), true, Heuristic.NAIVE, true);
 		List<AnswerSet> listOfAnswerSets = solver.collectList();
 		assertEquals(expectedAnswerSets.length, listOfAnswerSets.size());
 		for (int i = 0; i < expectedAnswerSets.length; i++) {
