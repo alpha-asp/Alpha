@@ -28,7 +28,6 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
@@ -58,16 +57,9 @@ public class DomainSpecific implements BranchingHeuristic {
 	private final Assignment assignment;
 	private final ChoiceManager choiceManager;
 
-	public Grounder getGrounder() {
-		return grounder;
-	}
-
-	private final Grounder grounder;
-
-	DomainSpecific(Assignment assignment, ChoiceManager choiceManager, Grounder grounder) {
+	DomainSpecific(Assignment assignment, ChoiceManager choiceManager) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
-		this.grounder = grounder;
 	}
 
 	@Override

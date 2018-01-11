@@ -81,7 +81,7 @@ public class DefaultSolver extends AbstractSolver {
 		}
 
 		this.learner = new GroundConflictNoGoodLearner(assignment);
-		this.branchingHeuristic = BranchingHeuristicFactory.getInstance(branchingHeuristic, grounder, assignment, choiceManager, random);
+		this.branchingHeuristic = BranchingHeuristicFactory.getInstance(branchingHeuristic, assignment, choiceManager, random);
 		this.fallbackBranchingHeuristic = new NaiveHeuristic(choiceManager);
 	}
 

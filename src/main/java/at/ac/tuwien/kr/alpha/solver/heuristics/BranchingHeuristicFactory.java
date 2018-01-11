@@ -25,7 +25,6 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
@@ -64,16 +63,16 @@ public final class BranchingHeuristicFactory {
 		}
 	}
 
-	public static BranchingHeuristic getInstance(Heuristic name, Grounder grounder, WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
+	public static BranchingHeuristic getInstance(Heuristic name, WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
 		switch (name) {
 		case NAIVE:
 			return new NaiveHeuristic(choiceManager);
 		case BERKMIN:
-			return new BerkMin(assignment, choiceManager, random, grounder);
+			return new BerkMin(assignment, choiceManager, random);
 		case DOMAIN:
-			return new DomainSpecific(assignment, choiceManager, grounder);
+			return new DomainSpecific(assignment, choiceManager);
 		case BERKMINLITERAL:
-			return new BerkMinLiteral(assignment, choiceManager, random, grounder);
+			return new BerkMinLiteral(assignment, choiceManager, random);
 		case DD:
 			return new DependencyDrivenHeuristic(assignment, choiceManager, random, BodyActivityType.DEFAULT);
 		case DD_SUM:

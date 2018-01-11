@@ -28,7 +28,6 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
@@ -65,12 +64,6 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 	final ChoiceManager choiceManager;
 	final Random rand;
 
-	public Grounder getGrounder() {
-		return grounder;
-	}
-
-	private final Grounder grounder;
-
 	private Map<Integer, Double> activityCounters = new LinkedHashMap<>();
 	private Map<Integer, Integer> signCounters = new LinkedHashMap<>();
 
@@ -87,17 +80,16 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 	private double decayFactor;
 	private int stepsSinceLastDecay;
 
-	BerkMin(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, Grounder grounder) {
+	BerkMin(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
 		this.decayAge = decayAge;
 		this.decayFactor = decayFactor;
 		this.rand = random;
-		this.grounder = grounder;
 	}
 
-	BerkMin(Assignment assignment, ChoiceManager choiceManager, Random random, Grounder grounder) {
-		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random, grounder);
+	BerkMin(Assignment assignment, ChoiceManager choiceManager, Random random) {
+		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random);
 	}
 
 	/**

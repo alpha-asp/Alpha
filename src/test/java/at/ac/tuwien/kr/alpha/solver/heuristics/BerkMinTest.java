@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017 Siemens AG
+ * Copyright (c) 2016-2018 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -59,8 +59,7 @@ public class BerkMinTest {
 		this.berkmin = new BerkMin(
 			assignment,
 			new PseudoChoiceManager(assignment, new NaiveNoGoodStore(assignment)),
-			new Random(),
-			null
+			new Random()
 		);
 	}
 	
