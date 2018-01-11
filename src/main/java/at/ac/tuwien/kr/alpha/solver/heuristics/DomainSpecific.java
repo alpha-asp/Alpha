@@ -106,6 +106,10 @@ public class DomainSpecific implements BranchingHeuristic {
 		// iterate through weights in decreasing order, iterate through levels in decreasing order, return first applicable choice point
 		for (Entry<Integer, SortedMap<Integer, Set<Integer>>> entryMapLevelChoicePoint : mapWeightLevelChoicePoint.entrySet()) {
 			for (Entry<Integer, Set<Integer>> entryChoicePoints : entryMapLevelChoicePoint.getValue().entrySet()) {
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug("Choosing between {} rules with weight={} and level={}: {}", entryChoicePoints.getValue().size(), entryMapLevelChoicePoint.getKey(),
+							entryChoicePoints.getKey(), grounder.literalsToString(entryChoicePoints.getValue()));
+				}
 				for (Integer choicePoint : entryChoicePoints.getValue()) {
 					if (choiceManager.isActiveChoiceAtom(choicePoint) && isUnassigned(choicePoint)) {
 						return choicePoint;
@@ -116,7 +120,7 @@ public class DomainSpecific implements BranchingHeuristic {
 		}
 		return DEFAULT_CHOICE_ATOM;
 	}
-	
+
 	@Override
 	public boolean chooseSign(int atom) {
 		// TODO: return true (except if falling back to other heuristic)
@@ -155,7 +159,7 @@ public class DomainSpecific implements BranchingHeuristic {
 		knownChoicePoints.add(choicePoint);
 
 		if (!mapWeightLevelChoicePoint.containsKey(weight)) {
-			mapWeightLevelChoicePoint.put(weight, new TreeMap<>());
+			mapWeightLevelChoicePoint.put(weight, new TreeMap<>(Comparator.reverseOrder()));
 		}
 
 		Map<Integer, Set<Integer>> mapLevelChoicePoint = mapWeightLevelChoicePoint.get(weight);

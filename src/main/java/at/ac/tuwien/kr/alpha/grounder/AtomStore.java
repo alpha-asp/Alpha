@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -83,7 +83,7 @@ public class AtomStore {
 	 */
 	public int add(Atom groundAtom) {
 		if (!groundAtom.isGround()) {
-			throw new IllegalArgumentException("atom must be ground");
+			throw new IllegalArgumentException("Atom is not ground: " + groundAtom);
 		}
 
 		Integer id = predicateInstancesToAtomIds.get(groundAtom);

@@ -124,7 +124,10 @@ public class DefaultSolver extends AbstractSolver {
 			if (conflictCause != null) {
 				// Learn from conflict.
 				NoGood violatedNoGood = conflictCause.getViolatedNoGood();
-				LOGGER.debug("Violating assignment is: {}", assignment);
+				if (LOGGER.isDebugEnabled()) {
+    				LOGGER.debug("Violated nogood is: {}", grounder.noGoodToString(violatedNoGood));
+    				LOGGER.debug("Violating assignment is: {}", assignment);
+				}
 				branchingHeuristic.violatedNoGood(violatedNoGood);
 				if (!afterAllAtomsAssigned) {
 					if (!learnBackjumpAddFromConflict(conflictCause)) {
@@ -303,9 +306,12 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private NoGood fixContradiction(Map.Entry<Integer, NoGood> noGoodEntry, ConflictCause conflictCause) {
-		LOGGER.debug("Attempting to fix violation of {} caused by {}", noGoodEntry.getValue(), conflictCause);
+		if (LOGGER.isDebugEnabled()) {
+	    	LOGGER.debug("Attempting to fix violation of {} caused by {}", grounder.noGoodToString(noGoodEntry.getValue()), conflictCause);
+		}
 
 		if (conflictCause.getViolatedChoice() != null) {
+			LOGGER.debug("Violated choice: " + conflictCause.getViolatedChoice());
 			choiceManager.backjump(conflictCause.getViolatedChoice().getDecisionLevel());
 			choiceManager.backtrackFast();
 			return null;
@@ -315,6 +321,7 @@ public class DefaultSolver extends AbstractSolver {
 		if (conflictAnalysisResult == UNSAT) {
 			return NoGood.UNSAT;
 		}
+		LOGGER.debug("Learned NoGood: " + conflictAnalysisResult.learnedNoGood);
 		branchingHeuristic.analyzedConflict(conflictAnalysisResult);
 
 		choiceManager.backjump(conflictAnalysisResult.backjumpLevel);
