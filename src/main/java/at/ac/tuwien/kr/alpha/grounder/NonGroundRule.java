@@ -134,7 +134,7 @@ public class NonGroundRule {
 	public String toString() {
 		return join(
 			join(
-				isConstraint() ? "" : ":- " + headAtom + " ",
+				(isConstraint() ? "" : headAtom) + ":- ",
 				bodyAtomsPositive,
 				bodyAtomsPositive.size() + bodyAtomsNegative.size() > 0 ? ", " : " "
 			),
