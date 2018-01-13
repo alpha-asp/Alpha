@@ -10,7 +10,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
  */
 public class Unification {
 
-	public Substitution unifyAtoms(Atom left, Atom right) {
+	public static Substitution unifyAtoms(Atom left, Atom right) {
 		Substitution mgu = new Substitution();
 		if (!left.getPredicate().equals(right.getPredicate())) {
 			return null;
@@ -25,7 +25,7 @@ public class Unification {
 		return mgu;
 	}
 
-	private boolean unifyTerms(Term left, Term right, Substitution currentSubstitution) {
+	private static boolean unifyTerms(Term left, Term right, Substitution currentSubstitution) {
 		final Term leftSubs = left.substitute(currentSubstitution);
 		final Term rightSubs = right.substitute(currentSubstitution);
 		// TODO: before adding to substitution, check if variable is not yet set!

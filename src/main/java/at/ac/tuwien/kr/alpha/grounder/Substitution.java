@@ -7,8 +7,12 @@ import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 public class Substitution {
 	private TreeMap<VariableTerm, Term> substitution;
@@ -32,7 +36,7 @@ public class Substitution {
 	 * @param substitution if the atom does not unify, this is left unchanged.
 	 * @return true if the atom and the instance unify. False otherwise
 	 */
-	static Substitution unify(Atom atom, Instance instance, Substitution substitution) {
+	public static Substitution unify(Atom atom, Instance instance, Substitution substitution) {
 		for (int i = 0; i < instance.terms.size(); i++) {
 			if (instance.terms.get(i) == atom.getTerms().get(i) ||
 				substitution.unifyTerms(atom.getTerms().get(i), instance.terms.get(i))) {
@@ -195,7 +199,7 @@ public class Substitution {
 			}
 			// Check/specialize their subterms.
 			for (int i = 0; i < fgeneralTerm.getTerms().size(); i++) {
-				substitution = specializeSubstitution(substitution, fgeneralTerm, fspecificTerm);
+				substitution = specializeSubstitution(substitution, fgeneralTerm.getTerms().get(i), fspecificTerm.getTerms().get(i));
 				if (substitution == null) {
 					return null;
 				}
@@ -206,5 +210,76 @@ public class Substitution {
 			return null;
 		}
 		throw new RuntimeException("Trying to specialize a term that is neither variable, constant, nor function. Should not happen");
+	}
+
+	/**
+	 * Returns true if the left substitution is more precise than the right substitution.
+	 * @param left
+	 * @param right
+	 * @return
+	 */
+	public static boolean isMorePrecise(Substitution left, Substitution right) {
+		// TODO: create new atom over  the variables of the left substitution and use the specialize substitution check.
+		int atomsize = left.substitution.size();
+		List<Term> termListLeft = new ArrayList<>(atomsize);
+		for (Map.Entry<VariableTerm, Term> leftVariableEntry : left.substitution.entrySet()) {
+			termListLeft.add(leftVariableEntry.getKey());
+		}
+		String checkFunctionSymbol = "_f";
+		FunctionTerm generalFunctionTerm = FunctionTerm.getInstance(checkFunctionSymbol, termListLeft);
+		Term leftSubstitutedFunctionTerm = generalFunctionTerm.substitute(left);
+		Substitution substitution = specializeSubstitution(new Substitution(right), generalFunctionTerm, leftSubstitutedFunctionTerm);
+		return substitution != null;
+
+
+		/*for (Map.Entry<VariableTerm, Term> variableSubstitution : left.substitution.entrySet()) {
+			final VariableTerm variable = variableSubstitution.getKey();
+			final Term leftSubstitution = variableSubstitution.getValue();
+			Term rightSubstitution = right.substitution.get(variable);
+			// Skip variables that are only assigned in left substitution.
+			if (rightSubstitution == null) {
+				continue;
+			}
+			// Check if left substituted term is more precise than right.
+
+			if (!isMorePreciseTerm(leftSubstitution, rightSubstitution)) {
+				return false;
+			}
+		}
+		return true;*/
+	}
+
+	private static boolean isMorePreciseTerm(Term left, Term right) {
+		// TODO: this probably fails for f(X,Y) and f(X,X)!
+		if (left instanceof ConstantTerm) {
+			if (right instanceof VariableTerm || left.equals(right)) {
+				return true;
+			}
+			return false;
+
+		} else if (left instanceof FunctionTerm) {
+			if (!(right instanceof FunctionTerm)) {
+				return false;
+			} else {
+				FunctionTerm leftFt = (FunctionTerm) left;
+				FunctionTerm rightFt = (FunctionTerm) right;
+				if (!leftFt.getSymbol().equals(rightFt.getSymbol())
+					|| leftFt.getTerms().size() != rightFt.getTerms().size()) {
+					return false;
+				}
+				for (int i = 0; i < leftFt.getTerms().size(); i++) {
+					Term leftTerm = leftFt.getTerms().get(i);
+					Term rightTerm = rightFt.getTerms().get(i);
+					if (!isMorePreciseTerm(leftTerm, rightTerm)) {
+						return false;
+					}
+				}
+				return true;
+			}
+		} else if (left instanceof VariableTerm) {
+			return right instanceof VariableTerm;
+		} else {
+			throw oops("Unknown Term type.");
+		}
 	}
 }

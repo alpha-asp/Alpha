@@ -1,0 +1,81 @@
+package at.ac.tuwien.kr.alpha.grounder.structure;
+
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.grounder.AtomStore;
+import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.solver.ArrayAssignment;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+import org.junit.Test;
+
+import java.util.Collections;
+import java.util.Set;
+
+import static junit.framework.TestCase.assertFalse;
+
+/**
+ * Copyright (c) 2018, the Alpha Team.
+ */
+public class ProgramAnalysisTest {
+
+	private final ProgramParser parser = new ProgramParser();
+
+	@Test
+	public void justifySimpleRules() {
+		String program = "p(X) :- q(X)." +
+			"q(X) :- p(X)." +
+			"q(5) :- r." +
+			"r :- not nr." +
+			"nr :- not r." +
+			":- not p(5).";
+		Program parsedProgram = parser.parse(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		grounder.getNoGoods(null);
+		ArrayAssignment assignment = new ArrayAssignment(grounder);
+		AtomStore atomStore = grounder.programAnalysis.atomStore;
+		assignment.growForMaxAtomId(atomStore.getHighestAtomId());
+		assignment.assign(atomStore.getAtomId(new BasicAtom(Predicate.getInstance("r",0))), ThriceTruth.FALSE);
+		assignment.assign(atomStore.getAtomId(new BasicAtom(Predicate.getInstance("nr",0))), ThriceTruth.TRUE);
+		BasicAtom p5 = new BasicAtom(Predicate.getInstance("p", 1), Collections.singletonList(ConstantTerm.getInstance(5)));
+		assignment.assign(atomStore.getAtomId(p5), ThriceTruth.MBT);
+		Set<Literal> reasons = grounder.programAnalysis.reasonsForUnjustified(p5, assignment);
+		assertFalse(reasons.isEmpty());
+	}
+
+	@Test
+	public void justifyLargerRules() {
+		String program = "p(X) :- q(X,Y), r(Y), not s(X,Y)." +
+			"{ q(1,X)} :- dom(X)." +
+			"dom(1..3)." +
+			"{r(X)} :- p(X)." +
+			"{r(2)}." +
+			"{s(1,2)}." +
+			":- not p(1).";
+		Program parsedProgram = parser.parse(program);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		grounder.getNoGoods(null);
+		ArrayAssignment assignment = new ArrayAssignment(grounder);
+		AtomStore atomStore = grounder.programAnalysis.atomStore;
+		assignment.growForMaxAtomId(atomStore.getHighestAtomId());
+		Atom p1 = parser.parse("p(1).").getFacts().get(0);
+		Atom r2 = parser.parse("r(2).").getFacts().get(0);
+		Atom s12 = parser.parse("s(1,2).").getFacts().get(0);
+		Atom q11 = parser.parse("q(1,1).").getFacts().get(0);
+		Atom q12 = parser.parse("q(1,2).").getFacts().get(0);
+		Atom q13 = parser.parse("q(1,3).").getFacts().get(0);
+		assignment.assign(atomStore.getAtomId(p1), ThriceTruth.MBT);
+		assignment.assign(atomStore.getAtomId(r2), ThriceTruth.TRUE);
+		assignment.assign(atomStore.getAtomId(s12), ThriceTruth.TRUE);
+		assignment.assign(atomStore.getAtomId(q11), ThriceTruth.TRUE);
+		assignment.assign(atomStore.getAtomId(q12), ThriceTruth.TRUE);
+		assignment.assign(atomStore.getAtomId(q13), ThriceTruth.FALSE);
+
+		Set<Literal> reasons = grounder.programAnalysis.reasonsForUnjustified((Literal) p1, assignment);
+		assertFalse(reasons.isEmpty());
+	}
+}

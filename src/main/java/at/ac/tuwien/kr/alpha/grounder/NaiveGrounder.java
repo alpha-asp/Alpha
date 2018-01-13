@@ -32,7 +32,6 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
@@ -64,7 +63,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final NogoodRegistry registry = new NogoodRegistry();
 	private final NoGoodGenerator noGoodGenerator;
 	private final ChoiceRecorder choiceRecorder;
-	private final ProgramAnalysis programAnalysis;
+	public final ProgramAnalysis programAnalysis;
 
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram = new LinkedHashMap<>();
 	private final Map<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
@@ -82,7 +81,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	public NaiveGrounder(Program program, java.util.function.Predicate<Predicate> filter, Bridge... bridges) {
 		super(filter, bridges);
 
-		programAnalysis = new ProgramAnalysis(program);
+		programAnalysis = new ProgramAnalysis(program, atomStore, workingMemory, factsFromProgram);
 
 		// Apply program transformations/rewritings.
 		applyProgramTransformations(program);
@@ -415,23 +414,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			// No variables are bound, but first atom in the body became recently true, consider all instances now.
 			instances = storage.getAllInstances();
 		} else {
-			// For selection of the instances, find ground term on which to select
-			int firstGroundTermPos = 0;
-			Term firstGroundTerm = null;
-			for (int i = 0; i < substitute.getTerms().size(); i++) {
-				Term testTerm = substitute.getTerms().get(i);
-				if (testTerm.isGround()) {
-					firstGroundTermPos = i;
-					firstGroundTerm = testTerm;
-					break;
-				}
-			}
-			// Select matching instances
-			if (firstGroundTerm != null) {
-				instances = storage.getInstancesMatchingAtPosition(firstGroundTerm, firstGroundTermPos);
-			} else {
-				instances = new ArrayList<>(storage.getAllInstances());
-			}
+			instances = storage.getInstancesFromPartiallyGroundAtom(substitute);
 		}
 
 		ArrayList<Substitution> generatedSubstitutions = new ArrayList<>();
