@@ -55,13 +55,16 @@ public class ProgramAnalysis {
 		 * @return
 		 */
 		public static boolean isSpecialization(LiteralSet left, LiteralSet right) {
-			if (!left.literal.equals(right.literal)) {
+			if (Unification.unifyAtoms(left.literal, right.literal) == null) {
 				return false;
 			}
 			rightLoop:
 			for (Substitution rightComplementSubstitution : right.complementSubstitutions) {
+				Atom rightSubstitution = right.literal.substitute(rightComplementSubstitution).renameVariables("_X");
 				for (Substitution leftComplementSubstitution : left.complementSubstitutions) {
-					if (Substitution.isMorePrecise(leftComplementSubstitution, rightComplementSubstitution)) {
+					Atom leftSubstitution = left.literal.substitute(leftComplementSubstitution).renameVariables("_Y");
+					Substitution specializingSubstitution = Unification.isMoreGeneral(rightSubstitution, leftSubstitution);
+					if (specializingSubstitution != null) {
 						continue rightLoop;
 					}
 				}
