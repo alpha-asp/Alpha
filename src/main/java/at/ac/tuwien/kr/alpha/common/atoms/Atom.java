@@ -5,6 +5,7 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,6 +36,17 @@ public interface Atom extends Comparable<Atom> {
 	 * @return the atom resulting from the applying the substitution.
 	 */
 	Atom substitute(Substitution substitution);
+
+	default Atom renameVariables(String newVariablePrefix) {
+		ArrayList<VariableTerm> occurringVariables = new ArrayList<>(getBindingVariables());
+		occurringVariables.addAll(getNonBindingVariables());
+		Substitution renamingSubstitution = new Substitution();
+		int counter = 0;
+		for (VariableTerm variable : occurringVariables) {
+			renamingSubstitution.put(variable, VariableTerm.getInstance(newVariablePrefix + counter++));
+		}
+		return this.substitute(renamingSubstitution);
+	}
 
 	@Override
 	default int compareTo(Atom o) {

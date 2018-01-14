@@ -113,6 +113,10 @@ public class Substitution {
 		return substitution.isEmpty();
 	}
 
+	public boolean isVariableSet(VariableTerm variable) {
+		return substitution.get(variable) != null;
+	}
+
 	/**
 	 * Prints the variable substitution in a uniform way (sorted by variable names).
 	 *
