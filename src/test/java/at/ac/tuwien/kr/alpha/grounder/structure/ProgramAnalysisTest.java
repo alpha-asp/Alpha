@@ -40,8 +40,8 @@ public class ProgramAnalysisTest {
 		ArrayAssignment assignment = new ArrayAssignment(grounder);
 		AtomStore atomStore = grounder.programAnalysis.atomStore;
 		assignment.growForMaxAtomId(atomStore.getHighestAtomId());
-		assignment.assign(atomStore.getAtomId(new BasicAtom(Predicate.getInstance("r",0))), ThriceTruth.FALSE);
-		assignment.assign(atomStore.getAtomId(new BasicAtom(Predicate.getInstance("nr",0))), ThriceTruth.TRUE);
+		assignment.assign(atomStore.getAtomId(new BasicAtom(Predicate.getInstance("r", 0))), ThriceTruth.FALSE);
+		assignment.assign(atomStore.getAtomId(new BasicAtom(Predicate.getInstance("nr", 0))), ThriceTruth.TRUE);
 		BasicAtom p5 = new BasicAtom(Predicate.getInstance("p", 1), Collections.singletonList(ConstantTerm.getInstance(5)));
 		assignment.assign(atomStore.getAtomId(p5), ThriceTruth.MBT);
 		Set<Literal> reasons = grounder.programAnalysis.reasonsForUnjustified(p5, assignment);
@@ -107,17 +107,17 @@ public class ProgramAnalysisTest {
 		assignment.assign(atomStore.getAtomId(qe), ThriceTruth.FALSE);
 
 		Predicate nq = Predicate.getInstance("_nq", 2, true);
-		Atom _nqa = new BasicAtom(nq, Arrays.asList(ConstantTerm.getInstance("1"), ConstantTerm.getSymbolicInstance("a")));
-		Atom _nqb = new BasicAtom(nq, Arrays.asList(ConstantTerm.getInstance("1"), ConstantTerm.getSymbolicInstance("b")));
-		Atom _nqc = new BasicAtom(nq, Arrays.asList(ConstantTerm.getInstance("1"), ConstantTerm.getSymbolicInstance("c")));
-		Atom _nqd = new BasicAtom(nq, Arrays.asList(ConstantTerm.getInstance("1"), ConstantTerm.getSymbolicInstance("d")));
-		Atom _nqe = new BasicAtom(nq, Arrays.asList(ConstantTerm.getInstance("1"), ConstantTerm.getSymbolicInstance("e")));
+		Atom nqa = new BasicAtom(nq, Arrays.asList(ConstantTerm.getInstance("1"), ConstantTerm.getSymbolicInstance("a")));
+		Atom nqb = new BasicAtom(nq, Arrays.asList(ConstantTerm.getInstance("1"), ConstantTerm.getSymbolicInstance("b")));
+		Atom nqc = new BasicAtom(nq, Arrays.asList(ConstantTerm.getInstance("1"), ConstantTerm.getSymbolicInstance("c")));
+		Atom nqd = new BasicAtom(nq, Arrays.asList(ConstantTerm.getInstance("1"), ConstantTerm.getSymbolicInstance("d")));
+		Atom nqe = new BasicAtom(nq, Arrays.asList(ConstantTerm.getInstance("1"), ConstantTerm.getSymbolicInstance("e")));
 
-		assignment.assign(atomStore.getAtomId(_nqa), ThriceTruth.TRUE);
-		assignment.assign(atomStore.getAtomId(_nqb), ThriceTruth.TRUE);
-		assignment.assign(atomStore.getAtomId(_nqc), ThriceTruth.TRUE);
-		assignment.assign(atomStore.getAtomId(_nqd), ThriceTruth.TRUE);
-		assignment.assign(atomStore.getAtomId(_nqe), ThriceTruth.TRUE);
+		assignment.assign(atomStore.getAtomId(nqa), ThriceTruth.TRUE);
+		assignment.assign(atomStore.getAtomId(nqb), ThriceTruth.TRUE);
+		assignment.assign(atomStore.getAtomId(nqc), ThriceTruth.TRUE);
+		assignment.assign(atomStore.getAtomId(nqd), ThriceTruth.TRUE);
+		assignment.assign(atomStore.getAtomId(nqe), ThriceTruth.TRUE);
 
 		Atom pc = parser.parse("p(c).").getFacts().get(0);
 		Set<Literal> reasons = grounder.programAnalysis.reasonsForUnjustified((Literal) pc, assignment);
