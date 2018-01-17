@@ -172,6 +172,10 @@ public class ChoiceManager implements Checkable {
 			}
 		}
 
+		Integer getAtom() {
+			return atom;
+		}
+
 		@Override
 		public String toString() {
 			return String.valueOf(atom);
@@ -332,6 +336,13 @@ public class ChoiceManager implements Checkable {
 			checkActiveChoicePoints();
 		}
 		return activeChoicePoints.size() > 0 ? activeChoicePoints.iterator().next().atom : DEFAULT_CHOICE_ATOM;
+	}
+
+	public Set<Integer> getAllActiveChoiceAtoms() {
+		if (checksEnabled) {
+			checkActiveChoicePoints();
+		}
+		return activeChoicePoints.stream().map(ChoicePoint::getAtom).collect(Collectors.toSet());
 	}
 
 	public boolean isAtomChoice(int atom) {
