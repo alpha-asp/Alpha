@@ -28,6 +28,7 @@ package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -64,7 +65,10 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 
 	@Override
 	public Stream<Set<Integer>> streamRuleAtomsOrderedByDecreasingPriority() {
-		return mapWeightLevelChoicePoint.values().stream().flatMap(m -> m.values().stream());
+		Stream<Set<Integer>> flatMap = mapWeightLevelChoicePoint.values().stream().flatMap(m -> m.values().stream());
+		// do not return flatMap directly because of Java bug
+		// cf. https://stackoverflow.com/questions/29229373/why-filter-after-flatmap-is-not-completely-lazy-in-java-streams
+		return flatMap.collect(Collectors.toList()).stream();
 	}
 
 }
