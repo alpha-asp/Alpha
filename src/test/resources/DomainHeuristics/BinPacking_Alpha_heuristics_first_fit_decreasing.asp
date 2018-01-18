@@ -3,11 +3,10 @@
 
 % 1 { item_bin(I,B) : bin(B) } 1 :- item(I).
     item_bin(I,B) :- item(I), item_size(I,IS), bin(B), not not_item_bin(I,B), bin_capacity_geq_0(B), not item_has_other_bin(I,B), ISp1=IS+1, not _h(ISp1).%, bin_room_for(B,I)
-not_item_bin(I,B) :- item(I), bin(B), not     item_bin(I,B).
+not_item_bin(I,B) :- item_bin(I,B2), bin(B), B != B2.
 :- item(I), item_bin(I,B1), item_bin(I,B2), B1 < B2.
 :- item(I), not item_has_bin(I).
 item_has_bin(I) :- item_bin(I,B).
-item_has_other_bin(I,B) :- item_bin(I,B2), bin(B), B != B2. % will lead to space consumption problems! (but makes search faster)
 
 % do not put item into bin if not enough room left:
 % bin_room_for(B,I) :- item_bin(I,B). % Leads to recursive definition -- we do not have support for item_bin(I,B)!!!
