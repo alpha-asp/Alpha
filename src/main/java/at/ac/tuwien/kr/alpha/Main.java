@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -274,7 +274,7 @@ public class Main {
 		printStatisticsIfEnabled(solver);
 	}
 
-	private static int getRequestedNumberOfAnswerSets() {
+	static int getRequestedNumberOfAnswerSets() {
 		int limit = 0;
 
 		try {
