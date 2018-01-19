@@ -108,6 +108,10 @@ public class BasicAtom implements Literal {
 			.collect(Collectors.toList()), negated);
 	}
 
+	public Atom getPositiveVersion() {
+		return new BasicAtom(predicate, terms, false);
+	}
+
 	@Override
 	public String toString() {
 		final String prefix = (negated ? "not " : "") + predicate.getName();
