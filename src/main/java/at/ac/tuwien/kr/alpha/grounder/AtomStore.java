@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 
 import java.util.*;
 
@@ -86,12 +87,18 @@ public class AtomStore {
 			throw new IllegalArgumentException("atom must be ground");
 		}
 
-		Integer id = predicateInstancesToAtomIds.get(groundAtom);
+		Atom positiveVersion;
+		if (groundAtom instanceof BasicAtom) {
+			positiveVersion = ((BasicAtom) groundAtom).getPositiveVersion();
+		} else {
+			positiveVersion = groundAtom;
+		}
+		Integer id = predicateInstancesToAtomIds.get(positiveVersion);
 
 		if (id == null) {
 			id = atomIdGenerator.getNextId();
-			predicateInstancesToAtomIds.put(groundAtom, id);
-			atomIdsToInternalBasicAtoms.add(id, groundAtom);
+			predicateInstancesToAtomIds.put(positiveVersion, id);
+			atomIdsToInternalBasicAtoms.add(id, positiveVersion);
 		}
 
 		return id;
