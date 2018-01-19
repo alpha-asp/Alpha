@@ -208,6 +208,7 @@ public class Substitution {
 					return null;
 				}
 			}
+			return substitution;
 		}
 		if (generalTerm instanceof ConstantTerm) {
 			// Equality was already checked above, so terms are different.

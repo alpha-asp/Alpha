@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha.grounder.structure;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.grounder.*;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
@@ -39,23 +40,23 @@ public class ProgramAnalysis {
 		return Collections.unmodifiableMap(predicateDefiningRules);
 	}
 
-	public static class LiteralSet {
-		final Literal literal;
+	public static class AtomSet {
+		final Atom literal;
 		final Set<Substitution> complementSubstitutions;
 
-		public LiteralSet(Literal literal, Set<Substitution> complementSubstitutions) {
+		public AtomSet(Atom literal, Set<Substitution> complementSubstitutions) {
 			this.literal = literal;
 			this.complementSubstitutions = complementSubstitutions;
 		}
 
 		/**
-		 * Returns true if the left {@link LiteralSet} is a specialization of the right {@link LiteralSet}.
+		 * Returns true if the left {@link AtomSet} is a specialization of the right {@link AtomSet}.
 		 * @param left
 		 * @param right
 		 * @return
 		 */
-		public static boolean isSpecialization(LiteralSet left, LiteralSet right) {
-			if (Unification.unifyAtoms(left.literal, right.literal) == null) {
+		public static boolean isSpecialization(AtomSet left, AtomSet right) {
+			if (Unification.unifyRightAtom(left.literal, right.literal) == null) {
 				return false;
 			}
 			rightLoop:
@@ -82,26 +83,35 @@ public class ProgramAnalysis {
 
 	Map<Predicate, List<Atom>> assignedAtoms;
 
-	Set<Literal> reasonsForUnjustified(Literal literal, Assignment currentAssignment) {
+	public Set<Literal> reasonsForUnjustified(int atomToJustify, Assignment currentAssignment) {
+		Atom literal = atomStore.get(atomToJustify);
+		return reasonsForUnjustified(literal, currentAssignment);
+	}
+
+	public Set<Literal> reasonsForUnjustified(Atom atom, Assignment currentAssignment) {
 		assignedAtoms = new LinkedHashMap<>();
 		for (int i = 1; i <= atomStore.getHighestAtomId(); i++) {
 			Assignment.Entry entry = currentAssignment.get(i);
 			if (entry == null) {
 				continue;
 			}
-			Atom atom = atomStore.get(i);
-			assignedAtoms.putIfAbsent(atom.getPredicate(), new ArrayList<>());
-			assignedAtoms.get(atom.getPredicate()).add(atom);
+			Atom assignedAtom = atomStore.get(i);
+			assignedAtoms.putIfAbsent(assignedAtom.getPredicate(), new ArrayList<>());
+			assignedAtoms.get(assignedAtom.getPredicate()).add(assignedAtom);
 		}
-		return whyNotMore(new LiteralSet(literal, new LinkedHashSet<>()), new LinkedHashSet<>(), currentAssignment);
+		return whyNotMore(new AtomSet(atom, new LinkedHashSet<>()), new LinkedHashSet<>(), currentAssignment);
 	}
 
 	private int renamingCounter;
 
-	private Set<Literal> whyNotMore(LiteralSet toJustify, Set<LiteralSet> inJustificationHigherUp, Assignment currentAssignment) {
+	private Set<Literal> whyNotMore(AtomSet toJustify, Set<AtomSet> inJustificationHigherUp, Assignment currentAssignment) {
 		Set<Literal> reasons = new HashSet<>();
 
 		Predicate predicate = toJustify.literal.getPredicate();
+		// Check if literal is built-in with a fixed interpretation.
+		if (toJustify.literal instanceof FixedInterpretationLiteral) {
+			return reasons;
+		}
 		// Check if literal is a fact.
 		LinkedHashSet<Instance> factInstances = factsFromProgram.get(predicate);
 		if (factInstances != null) {
@@ -118,6 +128,10 @@ public class ProgramAnalysis {
 			}
 		}
 		HashSet<NonGroundRule> rulesDefiningPredicate = getPredicateDefiningRules().get(predicate);
+		if (rulesDefiningPredicate == null) {
+			// Literal is no fact and has no defining rule.
+			return reasons;
+		}
 		eachRule:
 		for (NonGroundRule nonGroundRule : rulesDefiningPredicate) {
 			// First rename all variables in the rule.
@@ -143,9 +157,9 @@ public class ProgramAnalysis {
 			if (!inJustificationHigherUp.isEmpty()) {
 				// Iterate over rule body and check each literal if it is a specialization of some covered by inJustificationHigherUp.
 				for (Literal bodyLiteral : body) {
-					final LiteralSet bodyLiteralSet = new LiteralSet((Literal) bodyLiteral.substitute(unifier), new LinkedHashSet<>());
-					for (LiteralSet higherLiteralSet : inJustificationHigherUp) {
-						if (LiteralSet.isSpecialization(bodyLiteralSet, higherLiteralSet)) {
+					final AtomSet bodyAtomSet = new AtomSet((Literal) bodyLiteral.substitute(unifier), new LinkedHashSet<>());
+					for (AtomSet higherAtomSet : inJustificationHigherUp) {
+						if (AtomSet.isSpecialization(bodyAtomSet, higherAtomSet)) {
 							continue eachRule;
 						}
 					}
@@ -161,23 +175,24 @@ public class ProgramAnalysis {
 				}
 				IndexedInstanceStorage positiveStorage = workingMemory.get(literal, true);
 				Atom bodyAtom = literal.substitute(unifier);
-				if (bodyAtom.isGround()) {
-					reasons.add((Literal)bodyAtom);
-				} else {
-					// Find more substitutions, consider currentAssignment.
-					List<Atom> assignedAtomsOverPredicate = assignedAtoms.get(bodyAtom.getPredicate());
-					if (assignedAtomsOverPredicate == null) {
+				// Find more substitutions, consider currentAssignment.
+				List<Atom> assignedAtomsOverPredicate = assignedAtoms.get(bodyAtom.getPredicate());
+				if (assignedAtomsOverPredicate == null) {
+					continue;
+				}
+				for (Atom assignedAtom : assignedAtomsOverPredicate) {
+					if (!currentAssignment.get(atomStore.getAtomId(assignedAtom)).getTruth().toBoolean()) {
+						// Atom is not assigned true/must-be-true, skip it.
 						continue;
 					}
-					for (Atom assignedAtom : assignedAtomsOverPredicate) {
-						Substitution unified = Substitution.unify(bodyAtom, new Instance(assignedAtom.getTerms()), new Substitution(unifier));
-						// Skip instance if it does not unify with the bodyAtom.
-						if (unified != null) {
-							matchingSubstitutions.add(unified);
-							// Record as reason (ground body literal is negated but stored as true).
-							reasons.add((Literal) bodyAtom.substitute(unified));
-						}
+					Substitution unified = Substitution.unify(bodyAtom, new Instance(assignedAtom.getTerms()), new Substitution(unifier));
+					// Skip instance if it does not unify with the bodyAtom.
+					if (unified != null) {
+						matchingSubstitutions.add(unified);
+						// Record as reason (ground body literal is negated but stored as true).
+						reasons.add((Literal) bodyAtom.substitute(unified));
 					}
+				}
 					/*
 					// Find more substitutions, consider current workingMemory.
 					Collection<Instance> potentiallyMatchingInstances = positiveStorage.getInstancesFromPartiallyGroundAtom(bodyAtom);
@@ -192,12 +207,11 @@ public class ProgramAnalysis {
 						}
 					}
 					*/
-				}
 			}
 
 			// d)
-			Set<LiteralSet> newHigherJustifications = new LinkedHashSet<>(inJustificationHigherUp);
-			newHigherJustifications.add(new LiteralSet((Literal) toJustify.literal.substitute(unifier), toJustify.complementSubstitutions));
+			Set<AtomSet> newHigherJustifications = new LinkedHashSet<>(inJustificationHigherUp);
+			newHigherJustifications.add(new AtomSet((Literal) toJustify.literal.substitute(unifier), toJustify.complementSubstitutions));
 			Set<Substitution> newComplementSubstitutions = new LinkedHashSet<>(toJustify.complementSubstitutions);
 			newComplementSubstitutions.addAll(matchingSubstitutions);
 			List<Literal> positiveBody = new ArrayList<>(body.size());
@@ -212,7 +226,7 @@ public class ProgramAnalysis {
 		return reasons;
 	}
 
-	private Collection<Literal> explainPosBody(List<Literal> bodyLiterals, Set<Substitution> unifiers, Set<LiteralSet> inJustificationHigherUp, Set<Substitution> complementSubstitutions, Assignment currentAssignment) {
+	private Collection<Literal> explainPosBody(List<Literal> bodyLiterals, Set<Substitution> unifiers, Set<AtomSet> inJustificationHigherUp, Set<Substitution> complementSubstitutions, Assignment currentAssignment) {
 		ArrayList<Literal> reasons = new ArrayList<>();
 		if (bodyLiterals.isEmpty()) {
 			return reasons;
@@ -221,9 +235,15 @@ public class ProgramAnalysis {
 		Literal bodyLiteral = bodyLiterals.get(pickedBodyLiteral);
 		for (Substitution unifier : unifiers) {
 			Atom substitutedBodyLiteral = bodyLiteral.substitute(unifier);
+			Set<Substitution> justifiedInstantiationsOfBodyLiteral = new LinkedHashSet<>();
+			// Consider FixedInterpretationLiterals here and evaluate them.
+			if (substitutedBodyLiteral instanceof FixedInterpretationLiteral && substitutedBodyLiteral.isGround()) {
+				List<Substitution> substitutions = ((FixedInterpretationLiteral) substitutedBodyLiteral).getSubstitutions(new Substitution(unifier));
+				justifiedInstantiationsOfBodyLiteral.addAll(substitutions);
+			}
+			// FIXME: might be better to use the instances from the assignment (and facts).
 			IndexedInstanceStorage storage = workingMemory.get(bodyLiteral, true);
 			Collection<Instance> matchingInstances = storage.getInstancesMatching(substitutedBodyLiteral);
-			Set<Substitution> justifiedInstantiationsOfBodyLiteral = new LinkedHashSet<>();
 			for (Instance matchingInstance : matchingInstances) {
 				// Check if matchingInstance of bodyLiteral is justified.
 				int matchingInstanceAtomId = atomStore.add(new BasicAtom(bodyLiteral.getPredicate(), matchingInstance.terms));
@@ -239,7 +259,7 @@ public class ProgramAnalysis {
 			Set<Substitution> newComplementSubstitution = new LinkedHashSet<>(complementSubstitutions);
 			newComplementSubstitution.addAll(justifiedInstantiationsOfBodyLiteral);
 			reasons.addAll(whyNotMore(
-				new LiteralSet((Literal) substitutedBodyLiteral, newComplementSubstitution),
+				new AtomSet((Literal) substitutedBodyLiteral, newComplementSubstitution),
 				inJustificationHigherUp,
 				currentAssignment));
 

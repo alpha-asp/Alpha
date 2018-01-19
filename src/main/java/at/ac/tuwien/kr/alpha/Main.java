@@ -78,6 +78,7 @@ public class Main {
 	private static final String OPT_STORE = "store";
 	private static final String OPT_QUIET = "quiet";
 	private static final String OPT_LITERATE = "literate";
+	private static final String OPT_NO_JUSTIFICATION = "disableJustifications";
 
 	private static final String OPT_BRANCHING_HEURISTIC = "branchingHeuristic";
 	private static final String DEFAULT_GROUNDER = "naive";
@@ -164,6 +165,9 @@ public class Main {
 		Option literateOption = new Option("l", OPT_LITERATE, false, "enable literate programming mode");
 		options.addOption(literateOption);
 
+		Option justificationOption = new Option(OPT_NO_JUSTIFICATION, "disable the search for justifications on must-be-true assigned atoms in the solver.");
+		options.addOption(justificationOption);
+
 		try {
 			commandLine = new DefaultParser().parse(options, args);
 		} catch (ParseException e) {
@@ -199,6 +203,7 @@ public class Main {
 			bailOut("Failed to parse number of answer sets requested.", e);
 		}
 
+		final boolean disableJustifications = commandLine.hasOption(OPT_NO_JUSTIFICATION);
 		final boolean debugInternalChecks = commandLine.hasOption(OPT_DEBUG_INTERNAL_CHECKS);
 		final boolean literate = commandLine.hasOption(OPT_LITERATE);
 
@@ -252,7 +257,7 @@ public class Main {
 		final String chosenSolver = commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER);
 		final String chosenStore = commandLine.getOptionValue(OPT_STORE, DEFAULT_STORE);
 		Solver solver = SolverFactory.getInstance(
-			chosenSolver, chosenStore, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks
+			chosenSolver, chosenStore, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks, disableJustifications
 		);
 
 		Stream<AnswerSet> stream = solver.stream();

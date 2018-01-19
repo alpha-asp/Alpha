@@ -138,7 +138,7 @@ public abstract class AbstractSolverTests {
 	public boolean checks;
 
 	protected Solver getInstance(Grounder grounder) {
-		return SolverFactory.getInstance(solverName, storeName, grounder, new Random(seed), heuristic, checks);
+		return SolverFactory.getInstance(solverName, storeName, grounder, new Random(seed), heuristic, checks, false);
 	}
 
 	protected Solver getInstance(Program program) {

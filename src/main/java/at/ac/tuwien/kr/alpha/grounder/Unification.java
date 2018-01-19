@@ -62,6 +62,14 @@ public class Unification {
 	}
 
 	public static Substitution unifyAtoms(Atom left, Atom right) {
+		return unifyAtoms(left, right, false);
+	}
+
+	public static Substitution unifyRightAtom(Atom left, Atom right) {
+		return unifyAtoms(left, right, true);
+	}
+
+	private static Substitution unifyAtoms(Atom left, Atom right, boolean keepLeftAsIs) {
 		Substitution mgu = new Substitution();
 		if (!left.getPredicate().equals(right.getPredicate())) {
 			return null;
@@ -69,26 +77,25 @@ public class Unification {
 		for (int i = 0; i < left.getPredicate().getArity(); i++) {
 			final Term leftTerm = left.getTerms().get(i);
 			final Term rightTerm = right.getTerms().get(i);
-			if (!unifyTerms(leftTerm, rightTerm, mgu)) {
+			if (!unifyTerms(leftTerm, rightTerm, mgu, keepLeftAsIs)) {
 				return null;
 			}
 		}
 		return mgu;
 	}
 
-	private static boolean unifyTerms(Term left, Term right, Substitution currentSubstitution) {
+	private static boolean unifyTerms(Term left, Term right, Substitution currentSubstitution, boolean keepLeftAsIs) {
 		final Term leftSubs = left.substitute(currentSubstitution);
 		final Term rightSubs = right.substitute(currentSubstitution);
-		// TODO: before adding to substitution, check if variable is not yet set!
-		if (leftSubs instanceof VariableTerm) {
+		if (leftSubs == rightSubs) {
+			return true;
+		}
+		if (!keepLeftAsIs && leftSubs instanceof VariableTerm && !currentSubstitution.isVariableSet((VariableTerm) leftSubs)) {
 			currentSubstitution.put((VariableTerm) leftSubs, rightSubs);
 			return true;
 		}
-		if (rightSubs instanceof VariableTerm) {
+		if (rightSubs instanceof VariableTerm && !currentSubstitution.isVariableSet((VariableTerm) rightSubs)) {
 			currentSubstitution.put((VariableTerm) rightSubs, leftSubs);
-			return true;
-		}
-		if (leftSubs == rightSubs) {
 			return true;
 		}
 		if (leftSubs instanceof FunctionTerm && rightSubs instanceof FunctionTerm) {
@@ -101,7 +108,7 @@ public class Unification {
 			for (int i = 0; i < leftFunction.getTerms().size(); i++) {
 				final Term leftTerm = leftFunction.getTerms().get(i);
 				final Term rightTerm = rightFunction.getTerms().get(i);
-				if (!unifyTerms(leftTerm, rightTerm, currentSubstitution)) {
+				if (!unifyTerms(leftTerm, rightTerm, currentSubstitution, keepLeftAsIs)) {
 					return false;
 				}
 			}

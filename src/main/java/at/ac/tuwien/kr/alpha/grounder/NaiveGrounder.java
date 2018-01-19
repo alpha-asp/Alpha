@@ -228,6 +228,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			if (facts.getValue().isEmpty()) {
 				continue;
 			}
+			// Skip filtered predicates.
+			if (!filter.test(factPredicate)) {
+				continue;
+			}
 			knownPredicates.add(factPredicate);
 			predicateInstances.putIfAbsent(factPredicate, new TreeSet<>());
 			for (Instance factInstance : facts.getValue()) {
@@ -533,6 +537,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private static String groundAtomToString(Atom bodyAtom, boolean isNegative, Substitution substitution, boolean isFirst) {
 		Atom groundBodyAtom = bodyAtom.substitute(substitution);
 		return  (isFirst ? ", " : "") + (isNegative ? "not " : "") + groundBodyAtom.toString();
+	}
+
+	public AtomStore getAtomStore() {
+		return atomStore;
 	}
 
 	private static class FirstBindingAtom {

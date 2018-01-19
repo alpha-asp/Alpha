@@ -361,6 +361,16 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		return assignment.get(atom);
 	}
 
+	public Integer getSomeMBTAssignedAtom() {
+		for (int i = 0; i < assignment.size(); i++) {
+			Entry entry = assignment.get(i);
+			if (entry != null && entry.getTruth() == MBT) {
+				return entry.atom;
+			}
+		}
+		throw oops("No atom is assigned MBT.");
+	}
+
 	/**
 	 * Debug helper collecting all atoms that are assigned MBT.
 	 * @return a list of all atomIds that are assigned MBT (and not TRUE).
