@@ -19,7 +19,7 @@ public class ProgramAnalysis {
 
 	private final Map<Predicate, HashSet<NonGroundRule>> predicateDefiningRules;
 	private final PredicateDependencyGraph predicateDependencyGraph;
-	public final AtomStore atomStore;
+	private final AtomStore atomStore;
 	private final WorkingMemory workingMemory;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 
@@ -44,7 +44,7 @@ public class ProgramAnalysis {
 		final Atom literal;
 		final Set<Substitution> complementSubstitutions;
 
-		public AtomSet(Atom literal, Set<Substitution> complementSubstitutions) {
+		AtomSet(Atom literal, Set<Substitution> complementSubstitutions) {
 			this.literal = literal;
 			this.complementSubstitutions = complementSubstitutions;
 		}
@@ -55,7 +55,7 @@ public class ProgramAnalysis {
 		 * @param right
 		 * @return
 		 */
-		public static boolean isSpecialization(AtomSet left, AtomSet right) {
+		static boolean isSpecialization(AtomSet left, AtomSet right) {
 			if (Unification.unifyRightAtom(left.literal, right.literal) == null) {
 				return false;
 			}
@@ -81,14 +81,14 @@ public class ProgramAnalysis {
 		}
 	}
 
-	Map<Predicate, List<Atom>> assignedAtoms;
+	private Map<Predicate, List<Atom>> assignedAtoms;
 
 	public Set<Literal> reasonsForUnjustified(int atomToJustify, Assignment currentAssignment) {
 		Atom literal = atomStore.get(atomToJustify);
 		return reasonsForUnjustified(literal, currentAssignment);
 	}
 
-	public Set<Literal> reasonsForUnjustified(Atom atom, Assignment currentAssignment) {
+	Set<Literal> reasonsForUnjustified(Atom atom, Assignment currentAssignment) {
 		assignedAtoms = new LinkedHashMap<>();
 		for (int i = 1; i <= atomStore.getHighestAtomId(); i++) {
 			Assignment.Entry entry = currentAssignment.get(i);
@@ -153,11 +153,11 @@ public class ProgramAnalysis {
 					continue eachRule;
 				}
 			}
-			// b)
+			// b) Check if this is already justified higher up.
 			if (!inJustificationHigherUp.isEmpty()) {
 				// Iterate over rule body and check each literal if it is a specialization of some covered by inJustificationHigherUp.
 				for (Literal bodyLiteral : body) {
-					final AtomSet bodyAtomSet = new AtomSet((Literal) bodyLiteral.substitute(unifier), new LinkedHashSet<>());
+					final AtomSet bodyAtomSet = new AtomSet(bodyLiteral.substitute(unifier), new LinkedHashSet<>());
 					for (AtomSet higherAtomSet : inJustificationHigherUp) {
 						if (AtomSet.isSpecialization(bodyAtomSet, higherAtomSet)) {
 							continue eachRule;
@@ -173,7 +173,6 @@ public class ProgramAnalysis {
 				if (!literal.isNegated()) {
 					continue;
 				}
-				IndexedInstanceStorage positiveStorage = workingMemory.get(literal, true);
 				Atom bodyAtom = literal.substitute(unifier);
 				// Find more substitutions, consider currentAssignment.
 				List<Atom> assignedAtomsOverPredicate = assignedAtoms.get(bodyAtom.getPredicate());
@@ -211,7 +210,7 @@ public class ProgramAnalysis {
 
 			// d)
 			Set<AtomSet> newHigherJustifications = new LinkedHashSet<>(inJustificationHigherUp);
-			newHigherJustifications.add(new AtomSet((Literal) toJustify.literal.substitute(unifier), toJustify.complementSubstitutions));
+			newHigherJustifications.add(new AtomSet(toJustify.literal.substitute(unifier), toJustify.complementSubstitutions));
 			Set<Substitution> newComplementSubstitutions = new LinkedHashSet<>(toJustify.complementSubstitutions);
 			newComplementSubstitutions.addAll(matchingSubstitutions);
 			List<Literal> positiveBody = new ArrayList<>(body.size());
@@ -259,7 +258,7 @@ public class ProgramAnalysis {
 			Set<Substitution> newComplementSubstitution = new LinkedHashSet<>(complementSubstitutions);
 			newComplementSubstitution.addAll(justifiedInstantiationsOfBodyLiteral);
 			reasons.addAll(whyNotMore(
-				new AtomSet((Literal) substitutedBodyLiteral, newComplementSubstitution),
+				new AtomSet(substitutedBodyLiteral, newComplementSubstitution),
 				inJustificationHigherUp,
 				currentAssignment));
 

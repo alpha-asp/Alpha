@@ -38,7 +38,7 @@ public class ProgramAnalysisTest {
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		grounder.getNoGoods(null);
 		ArrayAssignment assignment = new ArrayAssignment(grounder);
-		AtomStore atomStore = grounder.programAnalysis.atomStore;
+		AtomStore atomStore = grounder.getAtomStore();
 		assignment.growForMaxAtomId(atomStore.getHighestAtomId());
 		assignment.assign(atomStore.getAtomId(new BasicAtom(Predicate.getInstance("r", 0))), ThriceTruth.FALSE);
 		assignment.assign(atomStore.getAtomId(new BasicAtom(Predicate.getInstance("nr", 0))), ThriceTruth.TRUE);
@@ -61,7 +61,7 @@ public class ProgramAnalysisTest {
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		grounder.getNoGoods(null);
 		ArrayAssignment assignment = new ArrayAssignment(grounder);
-		AtomStore atomStore = grounder.programAnalysis.atomStore;
+		AtomStore atomStore = grounder.getAtomStore();
 		assignment.growForMaxAtomId(atomStore.getHighestAtomId());
 		Atom p1 = parser.parse("p(1).").getFacts().get(0);
 		Atom r2 = parser.parse("r(2).").getFacts().get(0);
@@ -92,7 +92,7 @@ public class ProgramAnalysisTest {
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
 		grounder.getNoGoods(null);
 		ArrayAssignment assignment = new ArrayAssignment(grounder);
-		AtomStore atomStore = grounder.programAnalysis.atomStore;
+		AtomStore atomStore = grounder.getAtomStore();
 		assignment.growForMaxAtomId(atomStore.getHighestAtomId());
 		Atom qa = parser.parse("q(a).").getFacts().get(0);
 		Atom qb = parser.parse("q(b).").getFacts().get(0);
