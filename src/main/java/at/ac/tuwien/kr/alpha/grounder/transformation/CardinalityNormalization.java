@@ -56,18 +56,18 @@ public class CardinalityNormalization implements ProgramTransformation {
 		// Connect/Rewrite every aggregate in each rule.
 		ArrayList<Rule> additionalRules = new ArrayList<>();
 		for (Rule rule : inputProgram.getRules()) {
-			additionalRules.addAll(rewriteAggregates(rule, inputProgram));
+			additionalRules.addAll(rewriteAggregates(rule));
 		}
 		// Leave program as-is if no aggregates occur.
 		if (additionalRules.isEmpty()) {
 			return;
 		}
-		Program cardinalityEncoding = makePredicatesInternal(new ProgramParser().parse(cardinalitySortingCircuit));
+		Program cardinalityEncoding = PredicateInternalizer.makePredicatesInternal(new ProgramParser().parse(cardinalitySortingCircuit));
 		cardinalityEncoding.getRules().addAll(additionalRules);
 
 		// Add enumeration rule that uses the special EnumerationAtom.
 		// The enumeration rule is: "sorting_network_input_number(A, I) :- sorting_network_input(A, X), sorting_network_index(A, X, I)."
-		Rule enumerationRule = makePredicatesInternal(parse("sorting_network_input_number(A, I) :- sorting_network_input(A, X).")).getRules().get(0);
+		Rule enumerationRule = PredicateInternalizer.makePredicatesInternal(parse("sorting_network_input_number(A, I) :- sorting_network_input(A, X).")).getRules().get(0);
 		EnumerationAtom enumerationAtom = new EnumerationAtom((BasicAtom) parse("sorting_network_index(A, X, I).").getFacts().get(0));
 		enumerationRule.getBody().add(enumerationAtom);
 		cardinalityEncoding.getRules().add(enumerationRule);
@@ -76,7 +76,7 @@ public class CardinalityNormalization implements ProgramTransformation {
 		inputProgram.accumulate(cardinalityEncoding);
 	}
 
-	private List<Rule> rewriteAggregates(Rule rule, Program inputProgram) {
+	private List<Rule> rewriteAggregates(Rule rule) {
 
 		// Example rewriting/connection:
 		// num(K) :-  K <= #count {X,Y,Z : p(X,Y,Z) }, dom(K).
@@ -86,11 +86,11 @@ public class CardinalityNormalization implements ProgramTransformation {
 		// sorting_network_bound(aggregate_arguments(-731776545), K) :- dom(K).
 
 		// Create interface atoms to the aggregate encoding.
-		final BasicAtom aggregateOutputAtom = (BasicAtom) makePredicatesInternal(parse(
+		final BasicAtom aggregateOutputAtom = (BasicAtom) PredicateInternalizer.makePredicatesInternal(parse(
 			"sorting_network_output(aggregate_arguments(AGGREGATE_ID), LOWER_BOUND).")).getFacts().get(0);
-		final BasicAtom aggregateInputAtom = (BasicAtom) makePredicatesInternal(parse(
+		final BasicAtom aggregateInputAtom = (BasicAtom) PredicateInternalizer.makePredicatesInternal(parse(
 			"sorting_network_input(aggregate_arguments(AGGREGATE_ID), ELEMENT_TUPLE).")).getFacts().get(0);
-		final BasicAtom lowerBoundAtom = (BasicAtom) makePredicatesInternal(parse(
+		final BasicAtom lowerBoundAtom = (BasicAtom) PredicateInternalizer.makePredicatesInternal(parse(
 			"sorting_network_bound(aggregate_arguments(AGGREGATE_ID), LOWER_BOUND).")).getFacts().get(0);
 
 		ArrayList<Literal> aggregateOutputAtoms = new ArrayList<>();
@@ -103,16 +103,23 @@ public class CardinalityNormalization implements ProgramTransformation {
 			if (!(bodyElement instanceof AggregateAtom)) {
 				continue;
 			}
-			iterator.remove();
 			AggregateAtom aggregateAtom = (AggregateAtom) bodyElement;
 
-			// FIXME: limited rewriting of lower-bounded cardinality aggregates only.
+			// FIXME: limited rewriting of lower-bounded cardinality/sum aggregates only.
 			if (aggregateAtom.isNegated() || aggregateAtom.getUpperBoundOperator() != null
-				|| aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.COUNT
+				|| (aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.COUNT
+					&& aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.SUM)
 				|| aggregatesInRule++ > 0) {
-				throw new UnsupportedOperationException("Only limited #count aggregates without upper bound are currently supported." +
+				throw new UnsupportedOperationException("Only limited #count/#sum aggregates without upper bound are currently supported." +
 					"No rule may have more than one aggregate.");
 			}
+
+			// Only treat count aggregates.
+			if (aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.COUNT) {
+				continue;
+			}
+			// Remove aggregate from rule body.
+			iterator.remove();
 
 			// Prepare aggregate parameters.
 			aggregateCount++;
@@ -146,46 +153,5 @@ public class CardinalityNormalization implements ProgramTransformation {
 		}
 		rule.getBody().addAll(aggregateOutputAtoms);
 		return additionalRules;
-	}
-
-	private Program makePredicatesInternal(Program program) {
-		Program internalizedProgram = new Program();
-		for (Atom atom : program.getFacts()) {
-			internalizedProgram.getFacts().add(makePredicateInternal(atom));
-
-		}
-		for (Rule rule : program.getRules()) {
-			internalizedProgram.getRules().add(makePredicateInternal(rule));
-		}
-		internalizedProgram.getInlineDirectives().accumulate(program.getInlineDirectives());
-		return internalizedProgram;
-	}
-
-	private Rule makePredicateInternal(Rule rule) {
-		Head newHead = null;
-		if (rule.getHead() != null) {
-			if (!rule.getHead().isNormal()) {
-				throw new UnsupportedOperationException("Cannot make predicates in rules internal whose head is not normal.");
-			}
-			newHead = new DisjunctiveHead(Collections.singletonList(
-				makePredicateInternal(((DisjunctiveHead)rule.getHead()).disjunctiveAtoms.get(0))));
-		}
-		List<BodyElement> newBody = new ArrayList<>();
-		for (BodyElement bodyElement : rule.getBody()) {
-			// Only rewrite BasicAtoms.
-			if (bodyElement instanceof BasicAtom) {
-				newBody.add(makePredicateInternal((Atom) bodyElement));
-			} else {
-				// Keep other body element as is.
-				newBody.add(bodyElement);
-			}
-		}
-		return new Rule(newHead, newBody);
-	}
-
-	private Atom makePredicateInternal(Atom atom) {
-		Predicate newInternalPredicate = Predicate.getInstance(atom.getPredicate().getName(),
-			atom.getPredicate().getArity(), true);
-		return new BasicAtom(newInternalPredicate, atom.getTerms());
 	}
 }

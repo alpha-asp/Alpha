@@ -179,6 +179,8 @@ public class NaiveGrounder extends BridgedGrounder {
 		new ChoiceHeadToNormal().transform(program);
 		// Transform cardinality aggregates.
 		new CardinalityNormalization().transform(program);
+		// Transform sum aggregates.
+		new SumNormalization().transform(program);
 		// Transform intervals.
 		new IntervalTermToIntervalAtom().transform(program);
 		// Remove variable equalities.
