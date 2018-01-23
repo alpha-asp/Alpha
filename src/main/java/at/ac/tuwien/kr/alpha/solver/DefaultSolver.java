@@ -53,7 +53,7 @@ import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.
  * The new default solver employed in Alpha.
  * Copyright (c) 2016, the Alpha Team.
  */
-public class DefaultSolver extends AbstractSolver {
+public class DefaultSolver extends AbstractSolver implements SolverMaintainingStatistics {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolver.class);
 
 	private final NoGoodStore store;
@@ -386,7 +386,32 @@ public class DefaultSolver extends AbstractSolver {
 		return true;
 	}
 
+	@Override
+	public int getNumberOfChoices() {
+		return choiceManager.getChoices();
+	}
+
+	@Override
+	public int getNumberOfBacktracks() {
+		return choiceManager.getBacktracks();
+	}
+
+	@Override
+	public int getNumberOfBacktracksWithinBackjumps() {
+		return choiceManager.getBacktracksWithinBackjumps();
+	}
+
+	@Override
+	public int getNumberOfBackjumps() {
+		return choiceManager.getBackjumps();
+	}
+
+	@Override
+	public int getNumberOfBacktracksDueToRemnantMBTs() {
+		return mbtAtFixpoint;
+	}
+
 	private void logStats() {
-		LOGGER.debug("g=" + choiceManager.getChoices() + ", bt=" + choiceManager.getBacktracks() + ", bj=" + choiceManager.getBackjumps() + ", mbt=" + mbtAtFixpoint);
+		LOGGER.debug(getStatisticsString());
 	}
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -8,11 +8,11 @@
  * modification, are permitted provided that the following conditions are met:
  * 
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ * list of conditions and the following disclaimer.
  * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -37,7 +38,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 
+import static at.ac.tuwien.kr.alpha.Main.getRequestedNumberOfAnswerSets;
 import static at.ac.tuwien.kr.alpha.Main.main;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
@@ -50,7 +53,7 @@ public class MainTest {
 			{{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "20", "-str", INPUT}},
 			{{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "0", "-str", INPUT}},
 			{{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "1", "-str", INPUT}},
-			{{"-g", "naive", "-s", "default", "-r", "naive", "-e", "1119654162577372", "-n", "1", "-str", INPUT}}
+			{{"-g", "naive", "-s", "default", "-r", "naive", "-e", "1119654162577372", "--numAS", "1", "-str", INPUT}}
 		});
 	}
 
@@ -69,5 +72,20 @@ public class MainTest {
 		main(argv);
 		System.setOut(sysOut);
 		assertTrue(newOut.toString().contains("{ b, p(a) }"));
+	}
+
+	@Test
+	public void testGetRequestedNumberOfAnswerSets() {
+		main(argv);
+		assertEquals(expectedRequestedNumberOfAnswerSets(), getRequestedNumberOfAnswerSets());
+	}
+
+	private int expectedRequestedNumberOfAnswerSets() {
+		for (int i = 0; i < argv.length - 1; i++) {
+			if (StringUtils.equals(argv[i], "-n") || StringUtils.equals(argv[i], "--numAS")) {
+				return Integer.parseInt(argv[i + 1]);
+			}
+		}
+		return 0;
 	}
 }
