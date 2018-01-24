@@ -77,7 +77,13 @@ public class ProgramAnalysis {
 
 		@Override
 		public String toString() {
-			return "(" + literal + ", " + complementSubstitutions +	")";
+			StringBuilder sb = new StringBuilder("(" + literal + ",{");
+			for (Substitution complementSubstitution : complementSubstitutions) {
+				sb.append(literal.substitute(complementSubstitution));
+				sb.append(", ");
+			}
+			sb.append("})");
+			return sb.toString();
 		}
 	}
 
@@ -112,6 +118,7 @@ public class ProgramAnalysis {
 		if (toJustify.literal instanceof FixedInterpretationLiteral) {
 			return reasons;
 		}
+		// TODO: remove fact check.
 		// Check if literal is a fact.
 		LinkedHashSet<Instance> factInstances = factsFromProgram.get(predicate);
 		if (factInstances != null) {
@@ -123,6 +130,7 @@ public class ProgramAnalysis {
 			// Literal is non-ground, search for matching instances.
 			for (Instance instance : factInstances) {
 				if (Substitution.unify(toJustify.literal, instance, new Substitution()) != null) {
+					// TODO: ensure that fact is not excluded by complementSubstitutions!
 					return reasons;
 				}
 			}
@@ -175,6 +183,7 @@ public class ProgramAnalysis {
 				}
 				Atom bodyAtom = literal.substitute(unifier);
 				// Find more substitutions, consider currentAssignment.
+				// TODO: consider fact instances here, too!!
 				List<Atom> assignedAtomsOverPredicate = assignedAtoms.get(bodyAtom.getPredicate());
 				if (assignedAtomsOverPredicate == null) {
 					continue;
@@ -241,6 +250,7 @@ public class ProgramAnalysis {
 				justifiedInstantiationsOfBodyLiteral.addAll(substitutions);
 			}
 			// FIXME: might be better to use the instances from the assignment (and facts).
+			// TODO: consider fact instances here, too!
 			IndexedInstanceStorage storage = workingMemory.get(bodyLiteral, true);
 			Collection<Instance> matchingInstances = storage.getInstancesMatching(substitutedBodyLiteral);
 			for (Instance matchingInstance : matchingInstances) {
