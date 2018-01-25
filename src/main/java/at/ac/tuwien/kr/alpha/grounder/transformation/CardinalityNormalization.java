@@ -10,10 +10,7 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Copyright (c) 2017, the Alpha Team.
@@ -121,10 +118,32 @@ public class CardinalityNormalization implements ProgramTransformation {
 			// Remove aggregate from rule body.
 			iterator.remove();
 
+			// Hacky way to get all global variables: take rules take variables from rest of rule,
+			HashSet<VariableTerm> occurringVariables = new HashSet<>();
+			for (BodyElement element : rule.getBody()) {
+				if (element instanceof AggregateAtom) {
+					continue;
+				}
+				occurringVariables.addAll(element.getBindingVariables());
+				occurringVariables.addAll(element.getNonBindingVariables());
+			}
+			LinkedHashSet<VariableTerm> globalVariables = new LinkedHashSet<>();
+			for (VariableTerm aggVariable : aggregateAtom.getAggregateVariables()) {
+				if (occurringVariables.contains(aggVariable)) {
+					globalVariables.add(aggVariable);
+				}
+			}
+
 			// Prepare aggregate parameters.
 			aggregateCount++;
 			Substitution aggregateSubstitution = new Substitution();
-			aggregateSubstitution.put(VariableTerm.getInstance("AGGREGATE_ID"), ConstantTerm.getInstance(aggregateCount));
+			if (globalVariables.isEmpty()) {
+				aggregateSubstitution.put(VariableTerm.getInstance("AGGREGATE_ID"), ConstantTerm.getInstance(aggregateCount));
+			} else {
+				// In case some variables are not local to the aggregate, add them to the aggregate identifier
+				ArrayList<Term> globalVariableTermlist = new ArrayList<>(globalVariables);
+				aggregateSubstitution.put(VariableTerm.getInstance("AGGREGATE_ID"), FunctionTerm.getInstance("agg", globalVariableTermlist));
+			}
 			aggregateSubstitution.put(VariableTerm.getInstance("LOWER_BOUND"), aggregateAtom.getLowerBoundTerm());
 
 			// Create new output atom for addition to rule body instead of the aggregate.
@@ -141,6 +160,11 @@ public class CardinalityNormalization implements ProgramTransformation {
 				// Create new rule for input.
 				BasicAtom inputHeadAtom = aggregateInputAtom.substitute(elementSubstitution);
 				List<BodyElement> elementLiterals = new ArrayList<>(aggregateElement.getElementLiterals());
+
+				// If there are global variables used inside the aggregate, add original rule body (minus the aggregate itself) to input rule.
+				if (!globalVariables.isEmpty()) {
+					elementLiterals.addAll(rule.getBody());
+				}
 				Rule inputRule = new Rule(new DisjunctiveHead(Collections.singletonList(inputHeadAtom)), elementLiterals);
 				additionalRules.add(inputRule);
 			}

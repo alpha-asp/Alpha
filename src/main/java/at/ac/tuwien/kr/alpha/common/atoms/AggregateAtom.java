@@ -90,6 +90,27 @@ public class AggregateAtom implements BodyElement {
 		return nonBindingVariables;
 	}
 
+
+	/**
+	 * Returns all variables occurring inside the aggregate, between { ... }.
+	 * @return each variable occurring in some aggregate element.
+	 */
+	public List<VariableTerm> getAggregateVariables() {
+		List<VariableTerm> occurringVariables = new LinkedList<>();
+		for (AggregateElement aggregateElement : aggregateElements) {
+			for (Term term : aggregateElement.getElementTerms()) {
+				if (term instanceof VariableTerm) {
+					occurringVariables.add((VariableTerm) term);
+				}
+			}
+			for (Literal literal : aggregateElement.getElementLiterals()) {
+				occurringVariables.addAll(literal.getBindingVariables());
+				occurringVariables.addAll(literal.getNonBindingVariables());
+			}
+		}
+		return occurringVariables;
+	}
+
 	@Override
 	public AggregateAtom substitute(Substitution substitution) {
 		return null;
