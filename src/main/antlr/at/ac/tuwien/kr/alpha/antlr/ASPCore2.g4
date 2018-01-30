@@ -19,8 +19,8 @@ statement
 locals [boolean hr = false]
           : head DOT                     # statement_fact
           | CONS body DOT                # statement_constraint
-          | head CONS body DOT           # statement_rule
-          | WCONS body? DOT SQUARE_OPEN weight_at_level SQUARE_CLOSE # statement_weightConstraint
+          | head CONS body DOT annotation? # statement_rule
+          | WCONS body? DOT annotation   # statement_weightConstraint
           | gringo_sharp                 # statement_gringoSharp;   // syntax extension
 
 head : disjunction | choice;
@@ -44,6 +44,8 @@ aggregate_elements : aggregate_element (SEMICOLON aggregate_elements)?;
 aggregate_element : basic_terms? (COLON naf_literals?)?;
 
 aggregate_function : AGGREGATE_COUNT | AGGREGATE_MAX | AGGREGATE_MIN | AGGREGATE_SUM;
+
+annotation : SQUARE_OPEN weight_at_level SQUARE_CLOSE;
 
 weight_at_level : term (AT term)? (COMMA terms)?;
 

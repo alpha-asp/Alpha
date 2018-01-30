@@ -29,13 +29,11 @@ package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicValues;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
@@ -48,15 +46,19 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 public class Rule {
 	private final Head head;
 	private final List<Literal> body;
-	private final HeuristicAtom heuristic;
+	private final NonGroundDomainSpecificHeuristicValues heuristic;
 
 	public Rule(Head head, List<Literal> body) {
+		this(head, body, null);
+	}
+
+	public Rule(Head head, List<Literal> body, RuleAnnotation annotation) {
 		this.head = head;
 		// Remove duplicate body literals.
 		LinkedHashSet<Literal> bodyLiterals = new LinkedHashSet<>(body);
 		this.body = new ArrayList<>(bodyLiterals);
 
-		this.heuristic = extractHeuristic(body);
+		this.heuristic = extractHeuristic(annotation);
 
 		if (!isSafe()) {
 			// TODO: safety check needs to be adapted to solver what the solver actually understands. Will change in the future, adapt exception message accordingly.
@@ -65,31 +67,56 @@ public class Rule {
 		}
 	}
 
-	public HeuristicAtom getHeuristic() {
+	public NonGroundDomainSpecificHeuristicValues getHeuristic() {
 		return heuristic;
 	}
 
-	private HeuristicAtom extractHeuristic(List<Literal> body) {
-		List<Literal> heuristicAtoms = body.stream().filter(p -> p.getType() == Literal.Type.HEURISTIC_ATOM)
-			.collect(Collectors.toList());
-		if (heuristicAtoms.size() > 1) {
-			throw new RuntimeException("More than one heuristic atom defined in a rule!");
+	private NonGroundDomainSpecificHeuristicValues extractHeuristic(RuleAnnotation annotation) {
+		Set<NonGroundDomainSpecificHeuristicValues> heuristicDefinitions = extractHeuristicAtoms();
+		addHeuristicAnnotationIfGiven(annotation, heuristicDefinitions);
+		if (heuristicDefinitions.size() > 1) {
+			throw new RuntimeException("More than one heuristic definitions in a rule!");
 		}
-		if (heuristicAtoms.isEmpty()) {
-			return new HeuristicAtom(Collections.singletonList(ConstantTerm.getInstance(1)));
+		if (heuristicDefinitions.isEmpty()) {
+			return new NonGroundDomainSpecificHeuristicValues(ConstantTerm.getInstance(1), ConstantTerm.getInstance(1));
 		}
-		HeuristicAtom atom = (HeuristicAtom) heuristicAtoms.get(0);
-		body.remove(atom);
+		NonGroundDomainSpecificHeuristicValues heuristicDefinition = heuristicDefinitions.iterator().next();
+		checkSafetyOfHeuristicDefinition(heuristicDefinition);
+		return heuristicDefinition;
+	}
+
+	private Set<NonGroundDomainSpecificHeuristicValues> extractHeuristicAtoms() {
+		Set<NonGroundDomainSpecificHeuristicValues> heuristicDefinitions = new HashSet<>();
+		Iterator<Literal> bodyIterator = body.iterator();
+		while (bodyIterator.hasNext()) {
+			Literal literal = bodyIterator.next();
+			if (literal instanceof HeuristicAtom) {
+				bodyIterator.remove();
+				heuristicDefinitions.add(NonGroundDomainSpecificHeuristicValues.fromHeuristicAtom((HeuristicAtom) literal));
+			}
+		}
+		return heuristicDefinitions;
+	}
+
+	private void addHeuristicAnnotationIfGiven(RuleAnnotation annotation, Set<NonGroundDomainSpecificHeuristicValues> heuristicDefinitions) {
+		if (annotation != null) {
+			NonGroundDomainSpecificHeuristicValues annotationValues = NonGroundDomainSpecificHeuristicValues.fromRuleAnnotation(annotation);
+			if (annotationValues != null) {
+				heuristicDefinitions.add(annotationValues);
+			}
+		}
+	}
+
+	private void checkSafetyOfHeuristicDefinition(NonGroundDomainSpecificHeuristicValues heuristicDefinition) {
 		// check if all variables are "safe"
-		if (!atom.isGround()) {
+		if (!heuristicDefinition.isGround()) {
 			List<VariableTerm> vars = body.stream().filter(l -> !l.isNegated())
-				.flatMap(a -> a.getBindingVariables().stream()).collect(Collectors.toList());
-			if (!vars.containsAll(atom.getBindingVariables())) {
+					.flatMap(a -> a.getBindingVariables().stream()).collect(Collectors.toList());
+			if (!vars.containsAll(heuristicDefinition.getOccurringVariables())) {
 				throw new RuntimeException("Variables occurring in the heuristic atom must occur in " +
 						"at least one positive body atom: " + body);
 			}
 		}
-		return atom;
 	}
 
 	public Head getHead() {

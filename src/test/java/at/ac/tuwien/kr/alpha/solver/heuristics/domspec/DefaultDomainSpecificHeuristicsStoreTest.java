@@ -25,9 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 
-import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -91,7 +89,7 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 	}
 
 	private DomainSpecificHeuristicValues info(int atom, int weight, int level) {
-		return new DomainSpecificHeuristicValues(atom, new HeuristicAtom(Arrays.asList(ConstantTerm.getInstance(weight), ConstantTerm.getInstance(level))));
+		return new DomainSpecificHeuristicValues(atom, weight, level);
 	}
 
 	@SafeVarargs

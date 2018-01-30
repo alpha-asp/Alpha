@@ -30,7 +30,9 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.AnnotationContext;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Naf_heuristicContext;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Weight_at_levelContext;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
@@ -194,8 +196,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public Object visitStatement_rule(ASPCore2Parser.Statement_ruleContext ctx) {
-		// head CONS body DOT
-		inputProgram.getRules().add(new Rule(visitHead(ctx.head()), visitBody(ctx.body())));
+		// head CONS body DOT annotation?
+		RuleAnnotation annotation = ctx.annotation() != null ? visitAnnotation(ctx.annotation()) : null;
+		inputProgram.getRules().add(new Rule(visitHead(ctx.head()), visitBody(ctx.body()), annotation));
 		return null;
 	}
 
@@ -342,6 +345,23 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public HeuristicAtom visitNaf_heuristic(Naf_heuristicContext ctx) {
 		return new HeuristicAtom(visitTerms(ctx.terms()), ctx);
+	}
+
+	@Override
+	public RuleAnnotation visitAnnotation(AnnotationContext ctx) {
+		return new RuleAnnotation(visitWeight_at_level(ctx.weight_at_level()));
+	}
+
+	@Override
+	public WeightAtLevel visitWeight_at_level(Weight_at_levelContext ctx) {
+		Term weight;
+		Term level = null;
+		weight = (Term) visit(ctx.term(0));
+		if (ctx.AT() != null) {
+			level = (Term) visit(ctx.term(1));
+		}
+
+		return new WeightAtLevel(weight, level);
 	}
 
 	@Override

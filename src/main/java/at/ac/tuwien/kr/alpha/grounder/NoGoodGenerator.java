@@ -31,6 +31,7 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicValues;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 
 import java.util.*;
@@ -119,7 +120,9 @@ public class NoGoodGenerator {
 		}
 		
 		// Record domain-specific heuristics for this ground rule.
-		domainSpecificHeuristicsRecorder.record(bodyId, nonGroundRule.getHeuristic().substitute(substitution));
+		NonGroundDomainSpecificHeuristicValues heuristicDefinition = nonGroundRule.getHeuristic();
+		domainSpecificHeuristicsRecorder.record(bodyId, heuristicDefinition.getWeight().substitute(substitution),
+				heuristicDefinition.getLevel().substitute(substitution));
 
 		return result;
 	}

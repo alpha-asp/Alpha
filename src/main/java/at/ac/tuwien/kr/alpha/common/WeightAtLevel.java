@@ -23,36 +23,29 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.common.heuristics;
+package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.common.RuleAnnotation;
-import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 /**
- * Holds values defined by a {@link HeuristicAtom} or a {@link RuleAnnotation} to steer domain-specific heuristic choice for a single ground rule
+ * Represents a weight-level pair defined within an annotation (either for heuristic values or for a weak constraint)
  *
  */
-public class DomainSpecificHeuristicValues {
+public class WeightAtLevel {
 
-	private int ruleAtomId;
-	private int weight;
-	private int level;
+	private Term weight;
+	private Term level;
 
-	public DomainSpecificHeuristicValues(int bodyId, int weight, int level) {
-		this.ruleAtomId = bodyId;
+	public WeightAtLevel(Term weight, Term level) {
 		this.weight = weight;
 		this.level = level;
 	}
-
-	public int getRuleAtomId() {
-		return ruleAtomId;
-	}
-
-	public int getWeight() {
+	
+	public Term getWeight() {
 		return weight;
 	}
 
-	public int getLevel() {
+	public Term getLevel() {
 		return level;
 	}
 

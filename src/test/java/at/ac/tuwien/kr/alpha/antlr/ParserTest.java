@@ -175,7 +175,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void parseHeuristicProgram() throws IOException {
+	public void parseProgramWithHeuristicAtoms() throws IOException {
 		Program parsedProgram = parser.parse(
 			"a :- b, not _h(1), not d.\n" +
 			"c(X) :- p(X,a,_), not _h(X), q(Xaa,xaa)." +
@@ -186,13 +186,30 @@ public class ParserTest {
 	}
 
 	@Test
-	public void parseIncorrectHeuristicProgram() throws IOException {
+	public void parseIncorrectProgramWithHeuristicAtoms() throws IOException {
 		int faults = 0;
 		faults += parseFaultyRule("a :- b, not _h(Y), not d.\n", 1);
 		faults += parseFaultyRule("c(X) :- p(X,a,_), not _h(X,Xaa,Z), q(Xaa,xaa).", 1);
 		faults += parseFaultyRule(":- f(Y), not _h(Y,X).", 1);
 
 		assertEquals("Three faults were expected", 3, faults);
+	}
+
+	@Test
+	public void parseProgramWithHeuristicAnnotation_W() {
+		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). [X]");
+
+		assertEquals("X", parsedProgram.getRules().iterator().next().getHeuristic().getWeight().toString());
+		System.out.println(parsedProgram.getRules().toString());
+	}
+
+	@Test
+	public void parseProgramWithHeuristicAnnotation_WL() {
+		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). [X@2]");
+
+		assertEquals("X", parsedProgram.getRules().iterator().next().getHeuristic().getWeight().toString());
+		assertEquals("2", parsedProgram.getRules().iterator().next().getHeuristic().getLevel().toString());
+		System.out.println(parsedProgram.getRules().toString());
 	}
 
 	private int parseFaultyRule(String program, int rules) {

@@ -31,8 +31,8 @@ import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicValues;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,12 +57,12 @@ public class NonGroundRule {
 	private final List<Atom> bodyAtomsPositive;
 	private final List<Atom> bodyAtomsNegative;
 	private final Atom headAtom;
-	private final HeuristicAtom heuristic;
+	private final NonGroundDomainSpecificHeuristicValues heuristic;
 
 	final RuleGroundingOrder groundingOrder;
 
 	private NonGroundRule(Rule rule, int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom, boolean containsIntervals,
-			boolean containsExternals, HeuristicAtom heuristic) {
+			boolean containsExternals, NonGroundDomainSpecificHeuristicValues heuristic) {
 		this.ruleId = ruleId;
 		this.rule = rule;
 
@@ -155,7 +155,7 @@ public class NonGroundRule {
 		);
 	}
 
-	public HeuristicAtom getHeuristic() {
+	public NonGroundDomainSpecificHeuristicValues getHeuristic() {
 		return heuristic;
 	}
 

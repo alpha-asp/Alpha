@@ -25,8 +25,9 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 
 import java.util.HashMap;
@@ -49,11 +50,25 @@ public class DomainSpecificHeuristicsRecorder {
 	 * @param groundHeuristicAtom
 	 *          the ground heuristic information taken from the corresponding ground rule
 	 */
-	public void record(int bodyId, HeuristicAtom groundHeuristicAtom) {
-		if (!groundHeuristicAtom.isGround()) {
-			oops("Atom is not ground: " + groundHeuristicAtom);
+	public void record(int bodyId, Term weightTerm, Term levelTerm) {
+		if (!weightTerm.isGround()) {
+			oops("Weight is not ground: " + weightTerm);
 		}
-		newValues.put(bodyId, new DomainSpecificHeuristicValues(bodyId, groundHeuristicAtom));
+		if (!levelTerm.isGround()) {
+			oops("Level is not ground: " + levelTerm);
+		}
+		newValues.put(bodyId, new DomainSpecificHeuristicValues(bodyId, toInt(weightTerm), toInt(levelTerm)));
+	}
+
+	/**
+	 * @param heuristicValueTerm
+	 * @return the integer value of heuristicValueTerm if it is an integer-typed ConstantTerm
+	 */
+	private int toInt(Term heuristicValueTerm) {
+		if (!(heuristicValueTerm instanceof ConstantTerm<?>)) {
+			oops("Not a constant integer: " + heuristicValueTerm);
+		}
+		return (Integer) ((ConstantTerm<?>) heuristicValueTerm).getObject();
 	}
 
 	/**

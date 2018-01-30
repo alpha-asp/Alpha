@@ -56,7 +56,7 @@ public class DomainSpecificHeuristicsTest {
 	}
 	
 	@Test
-	public void testSimpleHeuristicProgram_AB() {
+	public void testSimpleHeuristicProgram_HeuristicAtom_AB() {
 		Program program = parser.parse(
 				"a :- not b, not _h(2,1)." + System.lineSeparator() +
 				"b :- not a, not _h(1,1).");
@@ -64,10 +64,27 @@ public class DomainSpecificHeuristicsTest {
 	}
 
 	@Test
-	public void testSimpleHeuristicProgram_BA() {
+	public void testSimpleHeuristicProgram_HeuristicAtom_BA() {
 		Program program = parser.parse(
 				"a :- not b, not _h(1,1)." + System.lineSeparator() +
 				"b :- not a, not _h(2,1).");
+		solveAndAssertAnswerSets(program, "{ b }", "{ a }");
+	}
+
+	
+	@Test
+	public void testSimpleHeuristicProgram_HeuristicAnnotation_AB() {
+		Program program = parser.parse(
+				"a :- not b. [2@1]" + System.lineSeparator() +
+				"b :- not a. [1@1]");
+		solveAndAssertAnswerSets(program, "{ a }", "{ b }");
+	}
+
+	@Test
+	public void testSimpleHeuristicProgram_HeuristicAnnotation_BA() {
+		Program program = parser.parse(
+				"a :- not b. [1@1]" + System.lineSeparator() +
+				"b :- not a. [2@1]");
 		solveAndAssertAnswerSets(program, "{ b }", "{ a }");
 	}
 
