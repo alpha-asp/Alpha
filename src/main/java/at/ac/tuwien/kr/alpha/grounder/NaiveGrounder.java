@@ -36,6 +36,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
+import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
@@ -64,6 +65,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final NoGoodGenerator noGoodGenerator;
 	private final ChoiceRecorder choiceRecorder;
 	public final ProgramAnalysis programAnalysis;
+	public final AnalyzeUnjustified analyzeUnjustified;
 
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram = new LinkedHashMap<>();
 	private final Map<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
@@ -82,6 +84,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		super(filter, bridges);
 
 		programAnalysis = new ProgramAnalysis(program, atomStore, workingMemory, factsFromProgram);
+		analyzeUnjustified = new AnalyzeUnjustified(program, atomStore, workingMemory, factsFromProgram);
 
 		// Apply program transformations/rewritings.
 		applyProgramTransformations(program);
@@ -116,6 +119,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			if (nonGroundRule.getHeadAtom() != null) {
 				Predicate headPredicate = nonGroundRule.getHeadAtom().getPredicate();
 				programAnalysis.recordDefiningRule(headPredicate, nonGroundRule);
+				analyzeUnjustified.recordDefiningRule(headPredicate, nonGroundRule);
 			}
 
 			// Create working memories for all predicates occurring in the rule

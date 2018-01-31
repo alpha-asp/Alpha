@@ -10,6 +10,8 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.*;
 
+import static at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm.*;
+
 /**
  * Represents a builtin atom according to the standard.
  * Copyright (c) 2017, the Alpha Team.
@@ -111,7 +113,11 @@ public class ComparisonAtom implements FixedInterpretationLiteral {
 	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
 		// Treat case where this is just comparison with all variables bound by partialSubstitution.
 		if (!isLeftAssigning() && !isRightAssigning()) {
-			if (compare(terms.get(0).substitute(partialSubstitution), terms.get(1).substitute(partialSubstitution))) {
+			Term leftSubstitute = terms.get(0).substitute(partialSubstitution);
+			Term leftEvaluatedSubstitute = leftSubstitute instanceof ArithmeticTerm ? ConstantTerm.getInstance(evaluateGroundTerm(leftSubstitute)) : leftSubstitute;
+			Term rightSubstitute = terms.get(1).substitute(partialSubstitution);
+			Term rightEvaluatedSubstitute = rightSubstitute instanceof ArithmeticTerm ? ConstantTerm.getInstance(evaluateGroundTerm(rightSubstitute)) : rightSubstitute;
+			if (compare(leftEvaluatedSubstitute, rightEvaluatedSubstitute)) {
 				return Collections.singletonList(partialSubstitution);
 			} else {
 				return Collections.emptyList();
@@ -132,7 +138,7 @@ public class ComparisonAtom implements FixedInterpretationLiteral {
 		Term resultTerm = null;
 		// Check if the groundTerm is an arithmetic expression and evaluate it if so.
 		if (groundTerm instanceof ArithmeticTerm) {
-			Integer result = ArithmeticTerm.evaluateGroundTerm(groundTerm);
+			Integer result = evaluateGroundTerm(groundTerm);
 			if (result == null) {
 				return Collections.emptyList();
 			}

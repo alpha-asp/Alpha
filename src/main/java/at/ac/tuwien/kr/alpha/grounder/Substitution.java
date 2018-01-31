@@ -16,17 +16,26 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 
 public class Substitution {
 	private TreeMap<VariableTerm, Term> substitution;
+	private final TreeMap<VariableTerm, List<VariableTerm>> rightHandVariableOccurrences;
 
-	private Substitution(TreeMap<VariableTerm, Term> substitution) {
+	private Substitution(TreeMap<VariableTerm, Term> substitution, TreeMap<VariableTerm, List<VariableTerm>> rightHandVariableOccurrences) {
 		this.substitution = substitution;
+		this.rightHandVariableOccurrences = rightHandVariableOccurrences;
 	}
 
 	public Substitution() {
-		this(new TreeMap<>());
+		this(new TreeMap<>(), new TreeMap<>());
 	}
 
 	public Substitution(Substitution clone) {
-		this(new TreeMap<>(clone.substitution));
+		this(new TreeMap<>(clone.substitution), new TreeMap<>(clone.rightHandVariableOccurrences));
+	}
+
+	public Substitution extendWith(Substitution extension) {
+		for (Map.Entry<VariableTerm, Term> extensionVariable : extension.substitution.entrySet()) {
+			this.put(extensionVariable.getKey(), extensionVariable.getValue());
+		}
+		return this;
 	}
 
 	/**
@@ -105,8 +114,33 @@ public class Substitution {
 	}
 
 	public <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term groundTerm) {
+		// TODO: if groundTerm is not ground, we need to store this for right-hand side reverse-lookup
+		// TODO: For each variableTerm we must check whether it already occurs at the right hand side of some substitution here and update it.
+		if (!groundTerm.isGround()) {
+			for (VariableTerm rightHandVariable : groundTerm.getOccurringVariables()) {
+				rightHandVariableOccurrences.putIfAbsent(variableTerm, new ArrayList<>());
+				rightHandVariableOccurrences.get(variableTerm).add(rightHandVariable);
+			}
+		}
 		// Note: We're destroying type information here.
-		return substitution.put(variableTerm, groundTerm);
+		Term ret = substitution.put(variableTerm, groundTerm);
+
+		// Check if the just-assigned variable occurs somewhere in the right-hand side already.
+		List<VariableTerm> rightHandOccurrences = rightHandVariableOccurrences.get(variableTerm);
+		if (rightHandOccurrences != null) {
+			// Replace all occurrences on the right-hand side with the just-assigned term.
+			for (VariableTerm rightHandOccurrence : rightHandOccurrences) {
+				// Substitute the right hand where this assigned variable occurs with the new value and store it.
+				Term previousRightHand = substitution.get(rightHandOccurrence);
+				if (previousRightHand == null) {
+					// Variable does not occur on the lef-hand side, skip.
+					continue;
+				}
+				substitution.put(rightHandOccurrence, previousRightHand.substitute(this));
+			}
+		}
+
+		return ret;
 	}
 
 	public boolean isEmpty() {
@@ -179,13 +213,22 @@ public class Substitution {
 			Term substitutedGeneralTerm = substitution.eval((VariableTerm) generalTerm);
 			// If the variable is not bound already, bind it to the specific term.
 			if (substitutedGeneralTerm == null) {
-				substitution.put((VariableTerm) generalTerm, specificTerm);
+				substitution.put((VariableTerm) generalTerm, specificTerm.substitute(substitution));
+				// TODO: check in case we have X -> Y already and are adding Y -> c, if X -> Y must be replaced with X -> c.
+				for (Map.Entry<VariableTerm, Term> variableSubstitution : substitution.substitution.entrySet()) {
+					if (variableSubstitution.getValue() instanceof VariableTerm
+						&& variableSubstitution.getValue() == generalTerm) {
+						System.out.println("Problem.");
+					}
+				}
 				return substitution;
 			}
 			// The variable is bound, check whether its result is exactly the specific term.
 			// Note: checking whether the bounded term is more general than the specific one would yield
 			//       wrong results, e.g.: p(X,X) and p(f(A),f(g(B))) are incomparable, but f(A) is more general than f(g(B)).
-			if (substitutedGeneralTerm != specificTerm) {
+			if (substitutedGeneralTerm == specificTerm) {
+				return substitution;
+			} else {
 				return null;
 			}
 		}
@@ -197,7 +240,7 @@ public class Substitution {
 			// Check that they are the same function.
 			FunctionTerm fgeneralTerm = (FunctionTerm) generalTerm;
 			FunctionTerm fspecificTerm = (FunctionTerm) specificTerm;
-			if (fgeneralTerm.getSymbol() != fspecificTerm.getSymbol()
+			if (!fgeneralTerm.getSymbol().equals(fspecificTerm.getSymbol())
 				|| fgeneralTerm.getTerms().size() != fspecificTerm.getTerms().size()) {
 				return null;
 			}
