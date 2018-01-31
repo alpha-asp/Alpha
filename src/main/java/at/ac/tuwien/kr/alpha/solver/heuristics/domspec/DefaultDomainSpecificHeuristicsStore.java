@@ -39,8 +39,8 @@ import java.util.stream.Stream;
 public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuristicsStore {
 
 	/**
-	 * A mapping from weights to a mapping from levels to sets of rule atom IDs
-	 * (weight -> { level -> { rules } }).
+	 * A mapping from levels to a mapping from weights to sets of rule atom IDs
+	 * (level -> { weight -> { rules } }).
 	 * Maps are {@link TreeMap}s sorted in reverse order, which determines the order in which elements are retrieved by
 	 * {@link #streamRuleAtomsOrderedByDecreasingPriority()}.
 	 */
@@ -48,19 +48,19 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 
 	@Override
 	public void addInfo(DomainSpecificHeuristicValues info) {
-		int weight = info.getWeight();
 		int level = info.getLevel();
+		int weight = info.getWeight();
 
-		if (!mapWeightLevelChoicePoint.containsKey(weight)) {
-			mapWeightLevelChoicePoint.put(weight, new TreeMap<>(Comparator.reverseOrder()));
+		if (!mapWeightLevelChoicePoint.containsKey(level)) {
+			mapWeightLevelChoicePoint.put(level, new TreeMap<>(Comparator.reverseOrder()));
 		}
 
-		Map<Integer, Set<Integer>> mapLevelChoicePoint = mapWeightLevelChoicePoint.get(weight);
-		if (!mapLevelChoicePoint.containsKey(level)) {
-			mapLevelChoicePoint.put(level, new HashSet<>());
+		Map<Integer, Set<Integer>> mapLevelChoicePoint = mapWeightLevelChoicePoint.get(level);
+		if (!mapLevelChoicePoint.containsKey(weight)) {
+			mapLevelChoicePoint.put(weight, new HashSet<>());
 		}
 
-		mapLevelChoicePoint.get(level).add(info.getRuleAtomId());
+		mapLevelChoicePoint.get(weight).add(info.getRuleAtomId());
 	}
 
 	@Override

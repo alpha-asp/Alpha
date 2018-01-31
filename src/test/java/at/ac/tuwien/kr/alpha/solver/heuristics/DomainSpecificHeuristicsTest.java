@@ -56,35 +56,66 @@ public class DomainSpecificHeuristicsTest {
 	}
 	
 	@Test
-	public void testSimpleHeuristicProgram_HeuristicAtom_AB() {
+	public void testSimpleHeuristicProgram_HeuristicAtom_AB_SameLevel() {
 		Program program = parser.parse(
 				"a :- not b, not _h(2,1)." + System.lineSeparator() +
 				"b :- not a, not _h(1,1).");
 		solveAndAssertAnswerSets(program, "{ a }", "{ b }");
 	}
+	
+	@Test
+	public void testSimpleHeuristicProgram_HeuristicAtom_AB_DominatingLevel() {
+		Program program = parser.parse(
+				"a :- not b, not _h(1,2)." + System.lineSeparator() +
+				"b :- not a, not _h(2,1).");
+		solveAndAssertAnswerSets(program, "{ a }", "{ b }");
+	}
 
 	@Test
-	public void testSimpleHeuristicProgram_HeuristicAtom_BA() {
+	public void testSimpleHeuristicProgram_HeuristicAtom_BA_SameLevel() {
 		Program program = parser.parse(
 				"a :- not b, not _h(1,1)." + System.lineSeparator() +
 				"b :- not a, not _h(2,1).");
 		solveAndAssertAnswerSets(program, "{ b }", "{ a }");
 	}
 
+	@Test
+	public void testSimpleHeuristicProgram_HeuristicAtom_BA_DominatingLevel() {
+		Program program = parser.parse(
+				"a :- not b, not _h(2,1)." + System.lineSeparator() +
+				"b :- not a, not _h(1,2).");
+		solveAndAssertAnswerSets(program, "{ b }", "{ a }");
+	}
 	
 	@Test
-	public void testSimpleHeuristicProgram_HeuristicAnnotation_AB() {
+	public void testSimpleHeuristicProgram_HeuristicAnnotation_AB_SameLevel() {
 		Program program = parser.parse(
 				"a :- not b. [2@1]" + System.lineSeparator() +
 				"b :- not a. [1@1]");
 		solveAndAssertAnswerSets(program, "{ a }", "{ b }");
 	}
+	
+	@Test
+	public void testSimpleHeuristicProgram_HeuristicAnnotation_AB_DominatingLevel() {
+		Program program = parser.parse(
+				"a :- not b. [1@2]" + System.lineSeparator() +
+				"b :- not a. [2@1]");
+		solveAndAssertAnswerSets(program, "{ a }", "{ b }");
+	}
 
 	@Test
-	public void testSimpleHeuristicProgram_HeuristicAnnotation_BA() {
+	public void testSimpleHeuristicProgram_HeuristicAnnotation_BA_SameLevel() {
 		Program program = parser.parse(
 				"a :- not b. [1@1]" + System.lineSeparator() +
 				"b :- not a. [2@1]");
+		solveAndAssertAnswerSets(program, "{ b }", "{ a }");
+	}
+
+	@Test
+	public void testSimpleHeuristicProgram_HeuristicAnnotation_BA_DominatingLevel() {
+		Program program = parser.parse(
+				"a :- not b. [2@1]" + System.lineSeparator() +
+				"b :- not a. [1@2]");
 		solveAndAssertAnswerSets(program, "{ b }", "{ a }");
 	}
 
