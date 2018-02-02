@@ -28,12 +28,10 @@
 package at.ac.tuwien.kr.alpha.antlr;
 
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.ChoiceHead;
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicValues;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
@@ -209,6 +207,17 @@ public class ParserTest {
 
 		assertEquals("X", parsedProgram.getRules().iterator().next().getHeuristic().getWeight().toString());
 		assertEquals("2", parsedProgram.getRules().iterator().next().getHeuristic().getLevel().toString());
+		System.out.println(parsedProgram.getRules().toString());
+	}
+
+	@Test
+	public void parseProgramWithHeuristicAnnotation_Generator() {
+		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). [X@2 : not c(X)]");
+
+		NonGroundDomainSpecificHeuristicValues heuristic = parsedProgram.getRules().iterator().next().getHeuristic();
+		assertEquals("X", heuristic.getWeight().toString());
+		assertEquals("2", heuristic.getLevel().toString());
+		assertEquals("not c(X)", Literals.toString(heuristic.getGenerator()));
 		System.out.println(parsedProgram.getRules().toString());
 	}
 

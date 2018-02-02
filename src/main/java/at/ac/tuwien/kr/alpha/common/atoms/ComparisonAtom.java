@@ -128,7 +128,7 @@ public class ComparisonAtom implements FixedInterpretationLiteral {
 	}
 
 	@Override
-	public Atom substitute(Substitution substitution) {
+	public ComparisonAtom substitute(Substitution substitution) {
 		return new ComparisonAtom(terms.get(0).substitute(substitution),
 			terms.get(1).substitute(substitution),
 			negated, operator);

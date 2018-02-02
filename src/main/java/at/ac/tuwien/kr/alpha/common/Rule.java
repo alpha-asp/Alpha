@@ -30,7 +30,6 @@ package at.ac.tuwien.kr.alpha.common;
 import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicValues;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
 import java.util.*;
@@ -78,7 +77,7 @@ public class Rule {
 			throw new RuntimeException("More than one heuristic definitions in a rule!");
 		}
 		if (heuristicDefinitions.isEmpty()) {
-			return new NonGroundDomainSpecificHeuristicValues(ConstantTerm.getInstance(1), ConstantTerm.getInstance(1));
+			return null;
 		}
 		NonGroundDomainSpecificHeuristicValues heuristicDefinition = heuristicDefinitions.iterator().next();
 		checkSafetyOfHeuristicDefinition(heuristicDefinition);

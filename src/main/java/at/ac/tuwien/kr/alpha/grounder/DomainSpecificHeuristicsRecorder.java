@@ -25,15 +25,22 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
+import at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicValues;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicValues.DEFAULT_LEVEL;
+import static at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicValues.DEFAULT_WEIGHT;
 
 /**
  * Records a mapping between rule atom IDs and their corresponding domain-specific heuristic values
@@ -41,6 +48,13 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 public class DomainSpecificHeuristicsRecorder {
 
 	private Map<Integer, DomainSpecificHeuristicValues> newValues = new HashMap<>();
+	private final AtomStore atomStore;
+	private final WorkingMemory workingMemory;
+
+	public DomainSpecificHeuristicsRecorder(AtomStore atomStore, WorkingMemory workingMemory) {
+		this.atomStore = atomStore;
+		this.workingMemory = workingMemory;
+	}
 
 	/**
 	 * Adds the given mapping between rule body and domain-specific heuristic information
@@ -58,6 +72,53 @@ public class DomainSpecificHeuristicsRecorder {
 			oops("Level is not ground: " + levelTerm);
 		}
 		newValues.put(bodyId, new DomainSpecificHeuristicValues(bodyId, toInt(weightTerm), toInt(levelTerm)));
+	}
+
+	/**
+	 * Applies a substitution to non-ground heuristic information in a given rule, evaluates the result and records the resulting heuristic values.
+	 * 
+	 * @param bodyId
+	 *          the ID of a ground {@link RuleAtom}
+	 * @param nonGroundRule
+	 *          the non-ground rule whose heuristic values are to be recorded
+	 * @param substitution
+	 *          the substitution to apply to non-ground heuristic values and the heuristic generator
+	 * @param partialInterpretation
+	 *          the latest partial interpretation communicated by the solver
+	 */
+	public void record(int bodyId, NonGroundRule nonGroundRule, Substitution substitution, Assignment partialInterpretation) {
+		Term weightTerm = DEFAULT_WEIGHT;
+		Term levelTerm = DEFAULT_LEVEL;
+		NonGroundDomainSpecificHeuristicValues heuristicDefinition = nonGroundRule.getHeuristic();
+		if (heuristicDefinition != null) {
+			List<Literal> generator = substitution.applyTo(heuristicDefinition.getGenerator());
+			if (isSatisfiedInPartialInterpretation(generator, partialInterpretation)) {
+				weightTerm = substitution.applyTo(heuristicDefinition.getWeight());
+				levelTerm = substitution.applyTo(heuristicDefinition.getLevel());
+			}
+		}
+		record(bodyId, weightTerm, levelTerm);
+	}
+
+	private boolean isSatisfiedInPartialInterpretation(Collection<Literal> generator, Assignment partialInterpretation) {
+		return generator.isEmpty() || generator.stream().noneMatch(l -> isFalseInPartialInterpretation(l, partialInterpretation));
+	}
+
+	private boolean isFalseInPartialInterpretation(Literal literal, Assignment partialInterpretation) {
+		IndexedInstanceStorage instancesInWorkingMemory = workingMemory.get(literal);
+		if (instancesInWorkingMemory != null) {
+			return !instancesInWorkingMemory.containsInstance(new Instance(literal.getTerms()));
+		}
+		Integer integerLiteral = toIntegerLiteral(literal);
+		return integerLiteral != null && partialInterpretation.isViolated(integerLiteral);
+	}
+
+	private Integer toIntegerLiteral(Literal literal) {
+		Integer atomId = atomStore.getAtomId(literal);
+		if (atomId != null && literal.isNegated()) {
+			atomId *= -1;
+		}
+		return atomId;
 	}
 
 	/**

@@ -25,30 +25,14 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-
-import java.util.List;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 /**
- * Represents an annotation defined with a non-ground rule
+ * A common interface for types to which a {@link Substitution} can be applied
  *
  */
-public class RuleAnnotation {
+public interface Substitutable<T> {
 
-	private final WeightAtLevel weightAtLevel;
-	private final List<Literal> generator;
-
-	public RuleAnnotation(WeightAtLevel weightAtLevel, List<Literal> generator) {
-		this.weightAtLevel = weightAtLevel;
-		this.generator = generator;
-	}
-
-	public WeightAtLevel getWeightAtLevel() {
-		return weightAtLevel;
-	}
-
-	public List<Literal> getGenerator() {
-		return generator;
-	}
+	T substitute(Substitution substitution);
 
 }

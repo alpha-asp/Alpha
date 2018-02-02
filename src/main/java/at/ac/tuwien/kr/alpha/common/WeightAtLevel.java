@@ -49,4 +49,15 @@ public class WeightAtLevel {
 		return level;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(weight);
+		if (level != null) {
+			sb.append("@");
+			sb.append(level);
+		}
+		return sb.toString();
+	}
+
 }

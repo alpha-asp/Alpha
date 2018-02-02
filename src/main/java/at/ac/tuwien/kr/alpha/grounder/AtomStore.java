@@ -55,10 +55,11 @@ public class AtomStore {
 
 	/**
 	 * Returns the AtomId associated with a given ground predicate instance (=ground atom).
+	 * 
 	 * @param groundAtom
-	 * @return
+	 * @return the AtomId associated with a given ground predicate instance, or {@code null} if the groundAtom is not known.
 	 */
-	public int getAtomId(Atom groundAtom) {
+	public Integer getAtomId(Atom groundAtom) {
 		return predicateInstancesToAtomIds.get(groundAtom);
 	}
 

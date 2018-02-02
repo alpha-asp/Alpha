@@ -19,8 +19,8 @@ statement
 locals [boolean hr = false]
           : head DOT                     # statement_fact
           | CONS body DOT                # statement_constraint
-          | head CONS body DOT annotation? # statement_rule
-          | WCONS body? DOT annotation   # statement_weightConstraint
+          | head CONS body DOT heuristic_annotation? # statement_rule
+          | WCONS body? DOT weight_annotation        # statement_weightConstraint
           | gringo_sharp                 # statement_gringoSharp;   // syntax extension
 
 head : disjunction | choice;
@@ -45,7 +45,13 @@ aggregate_element : basic_terms? (COLON naf_literals?)?;
 
 aggregate_function : AGGREGATE_COUNT | AGGREGATE_MAX | AGGREGATE_MIN | AGGREGATE_SUM;
 
-annotation : SQUARE_OPEN weight_at_level SQUARE_CLOSE;
+heuristic_annotation : SQUARE_OPEN heuristic_weight_at_level (COLON heuristic_generator)? SQUARE_CLOSE;
+
+heuristic_weight_at_level : term (AT term)?;
+
+heuristic_generator: ( naf_literal | NAF? aggregate ) (COMMA heuristic_generator)?;
+
+weight_annotation : SQUARE_OPEN weight_at_level SQUARE_CLOSE;
 
 weight_at_level : term (AT term)? (COMMA terms)?;
 

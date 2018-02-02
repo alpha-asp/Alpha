@@ -64,7 +64,7 @@ public class NaiveGrounder extends BridgedGrounder {
 	private final NogoodRegistry registry = new NogoodRegistry();
 	private final NoGoodGenerator noGoodGenerator;
 	private final ChoiceRecorder choiceRecorder;
-	private final DomainSpecificHeuristicsRecorder domainSpecificHeuristicsRecorder = new DomainSpecificHeuristicsRecorder();
+	private final DomainSpecificHeuristicsRecorder domainSpecificHeuristicsRecorder = new DomainSpecificHeuristicsRecorder(atomStore, workingMemory);
 
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram = new LinkedHashMap<>();
 	private final Map<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
@@ -74,6 +74,7 @@ public class NaiveGrounder extends BridgedGrounder {
 	private LinkedHashSet<Atom> removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
 	private int maxAtomIdBeforeGroundingNewNoGoods = -1;
 	private boolean disableInstanceRemoval;
+	private Assignment latestAssignment;
 
 	public NaiveGrounder(Program program, Bridge... bridges) {
 		this(program, p -> true, bridges);
@@ -174,8 +175,7 @@ public class NaiveGrounder extends BridgedGrounder {
 		}
 
 		choiceRecorder = new ChoiceRecorder(atomStore);
-		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, domainSpecificHeuristicsRecorder, factsFromProgram, ruleHeadsToDefiningRules,
-				uniqueGroundRulePerGroundHead);
+		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, ruleHeadsToDefiningRules, uniqueGroundRulePerGroundHead);
 	}
 
 	private void applyProgramTransformations(Program program) {
@@ -264,9 +264,7 @@ public class NaiveGrounder extends BridgedGrounder {
 			// Generate NoGoods for all rules that have a fixed grounding.
 			Literal[] groundingOrder = nonGroundRule.groundingOrder.getFixedGroundingOrder();
 			List<Substitution> substitutions = bindNextAtomInRule(groundingOrder, 0, new Substitution(), null);
-			for (Substitution substitution : substitutions) {
-				registry.register(noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution), groundNogoods);
-			}
+			groundAndRegister(nonGroundRule, substitutions, groundNogoods);
 		}
 
 		fixedRules = null;
@@ -276,6 +274,8 @@ public class NaiveGrounder extends BridgedGrounder {
 
 	@Override
 	public Map<Integer, NoGood> getNoGoods(Assignment currentAssignment) {
+		this.latestAssignment = currentAssignment;
+
 		// In first call, prepare facts and ground rules.
 		final Map<Integer, NoGood> newNoGoods = fixedRules != null ? bootstrap() : new LinkedHashMap<>();
 
@@ -315,9 +315,7 @@ public class NaiveGrounder extends BridgedGrounder {
 						currentAssignment
 					);
 
-					for (Substitution substitution : substitutions) {
-						registry.register(noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution), newNoGoods);
-					}
+					groundAndRegister(nonGroundRule, substitutions, newNoGoods);
 				}
 			}
 
@@ -340,6 +338,30 @@ public class NaiveGrounder extends BridgedGrounder {
 			LOGGER.debug("{}", choiceRecorder);
 		}
 		return newNoGoods;
+	}
+
+	/**
+	 * Grounds the given {@code nonGroundRule} by applying the given {@code substitutions} and registers both the nogoods generated and the domain-specific
+	 * heuristics evaluated during that process.
+	 * 
+	 * @param nonGroundRule
+	 *          the rule to be grounded
+	 * @param substitutions
+	 *          the substitutions to be applied
+	 * @param newNoGoods
+	 *          a set of nogoods to which newly generated nogoods will be added
+	 */
+	private void groundAndRegister(final NonGroundRule nonGroundRule, final List<Substitution> substitutions, final Map<Integer, NoGood> newNoGoods) {
+		for (Substitution substitution : substitutions) {
+			Pair<Integer, List<NoGood>> generatedBodyIdAndNoGoods = noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution);
+			registry.register(generatedBodyIdAndNoGoods.getRight(), newNoGoods);
+
+			// Record domain-specific heuristics for this ground rule.
+			if (generatedBodyIdAndNoGoods.getLeft() != null) {
+				int bodyId = generatedBodyIdAndNoGoods.getLeft();
+				domainSpecificHeuristicsRecorder.record(bodyId, nonGroundRule, substitution, latestAssignment);
+			}
+		}
 	}
 
 	@Override

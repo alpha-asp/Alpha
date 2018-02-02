@@ -144,7 +144,7 @@ public class NonGroundRule {
 
 	@Override
 	public String toString() {
-		return join(
+		String ruleString = join(
 			join(
 						(isConstraint() ? "" : headAtom + " ") + ":- ",
 				bodyAtomsPositive,
@@ -153,6 +153,10 @@ public class NonGroundRule {
 			bodyAtomsNegative,
 			"."
 		);
+		if (heuristic != null) {
+			ruleString += " [" + heuristic + "]";
+		}
+		return ruleString;
 	}
 
 	public NonGroundDomainSpecificHeuristicValues getHeuristic() {

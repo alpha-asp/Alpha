@@ -35,6 +35,7 @@ import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -117,6 +118,46 @@ public class DomainSpecificHeuristicsTest {
 				"a :- not b. [2@1]" + System.lineSeparator() +
 				"b :- not a. [1@2]");
 		solveAndAssertAnswerSets(program, "{ b }", "{ a }");
+	}
+
+	@Test
+	public void testSimpleHeuristicProgram_HeuristicAnnotation_SimpleFactGenerator_NegativeLiteral() {
+		Program program = parser.parse(
+				"c." + System.lineSeparator() +
+				"a :- not b. [1@1 : c]" + System.lineSeparator() +
+				"b :- not a. [1@1 : not c]");
+		solveAndAssertAnswerSets(program, "{ a, c }", "{ b, c }");
+	}
+
+	@Test
+	public void testSimpleHeuristicProgram_HeuristicAnnotation_SimpleFactGenerator_PositiveLiteral() {
+		Program program = parser.parse(
+				"c." + System.lineSeparator() +
+				"a :- not b. [1@1 : c]" + System.lineSeparator() +
+				"b :- not a. [1@1 : not c]");
+		solveAndAssertAnswerSets(program, "{ a, c }", "{ b, c }");
+	}
+
+	@Test
+	@Ignore("currently, the generator is evaluated too early to take the choice into account")
+	public void testSimpleHeuristicProgram_HeuristicAnnotation_SimpleChoiceGenerator_NegativeLiteral() {
+		Program program = parser.parse(
+				"c :- not nc. [10@1]" + System.lineSeparator() +
+				"nc :- not c." + System.lineSeparator() +
+				"a :- not b. [1@1 : c]" + System.lineSeparator() +
+				"b :- not a. [1@1 : not c]");
+		solveAndAssertAnswerSets(program, "{ a, c }", "{ b, c }", "{ b, nc }", "{a, nc}");
+	}
+
+	@Test
+	@Ignore("currently, the generator is evaluated too early to take the choice into account")
+	public void testSimpleHeuristicProgram_HeuristicAnnotation_SimpleChoiceGenerator_PositiveLiteral() {
+		Program program = parser.parse(
+				"c :- not nc. [10@1]" + System.lineSeparator() +
+				"nc :- not c." + System.lineSeparator() +
+				"a :- not b. [1@1 : c]" + System.lineSeparator() +
+				"b :- not a. [1@1 : not c]");
+		solveAndAssertAnswerSets(program, "{ a, c }", "{ b, c }", "{ b, nc }", "{a, nc}");
 	}
 
 	private void solveAndAssertAnswerSets(Program program, String... expectedAnswerSets) {

@@ -31,8 +31,9 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
-import at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicValues;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 
@@ -46,17 +47,14 @@ import static java.util.Collections.singletonList;
 public class NoGoodGenerator {
 	private final AtomStore store;
 	private final ChoiceRecorder choiceRecorder;
-	private final DomainSpecificHeuristicsRecorder domainSpecificHeuristicsRecorder;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private final Map<Predicate, HashSet<NonGroundRule>> ruleHeadsToDefiningRules;
 	private final Set<NonGroundRule> uniqueGroundRulePerGroundHead;
 
-	NoGoodGenerator(AtomStore store, ChoiceRecorder choiceRecorder, DomainSpecificHeuristicsRecorder domainSpecificHeuristicsRecorder,
-			Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, Map<Predicate, HashSet<NonGroundRule>> ruleHeadsToDefiningRules,
-			Set<NonGroundRule> uniqueGroundRulePerGroundHead) {
+	NoGoodGenerator(AtomStore store, ChoiceRecorder choiceRecorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram,
+			Map<Predicate, HashSet<NonGroundRule>> ruleHeadsToDefiningRules, Set<NonGroundRule> uniqueGroundRulePerGroundHead) {
 		this.store = store;
 		this.choiceRecorder = choiceRecorder;
-		this.domainSpecificHeuristicsRecorder = domainSpecificHeuristicsRecorder;
 		this.factsFromProgram = factsFromProgram;
 		this.ruleHeadsToDefiningRules = ruleHeadsToDefiningRules;
 		this.uniqueGroundRulePerGroundHead = uniqueGroundRulePerGroundHead;
@@ -64,22 +62,25 @@ public class NoGoodGenerator {
 
 	/**
 	 * Generates all NoGoods resulting from a non-ground rule and a variable substitution.
-	 * @param nonGroundRule the non-ground rule.
-	 * @param substitution the grounding substitution, i.e., applying substitution to nonGroundRule results in a ground rule.
-	 *                     Assumption: atoms with fixed interpretation evaluate to true under the substitution.
-	 * @return the NoGoods corresponding to the ground rule.
+	 * 
+	 * @param nonGroundRule
+	 *          the non-ground rule.
+	 * @param substitution
+	 *          the grounding substitution, i.e., applying substitution to nonGroundRule results in a ground rule.
+	 *          Assumption: atoms with fixed interpretation evaluate to true under the substitution.
+	 * @return the ID of the body atom generated (if one has been generated), and a list of the NoGoods corresponding to the ground rule.
 	 */
-	List<NoGood> generateNoGoodsFromGroundSubstitution(final NonGroundRule nonGroundRule, final Substitution substitution) {
+	Pair<Integer, List<NoGood>> generateNoGoodsFromGroundSubstitution(final NonGroundRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> pos = collectPos(nonGroundRule, substitution);
 		final List<Integer> neg = collectNeg(nonGroundRule, substitution);
 
 		if (pos == null || neg == null) {
-			return emptyList();
+			return new ImmutablePair<>(null, emptyList());
 		}
 
 		// A constraint is represented by exactly one nogood.
 		if (nonGroundRule.isConstraint()) {
-			return singletonList(NoGood.fromConstraint(pos, neg));
+			return new ImmutablePair<>(null, singletonList(NoGood.fromConstraint(pos, neg)));
 		}
 
 		// Prepare atom representing the rule body.
@@ -90,7 +91,7 @@ public class NoGoodGenerator {
 		if (store.contains(bodyAtom)) {
 			// The current ground instance already exists,
 			// therefore all nogoods have already been created.
-			return emptyList();
+			return new ImmutablePair<>(null, emptyList());
 		}
 
 		final int bodyId = store.add(bodyAtom);
@@ -118,13 +119,8 @@ public class NoGoodGenerator {
 		if (!neg.isEmpty()) {
 			result.addAll(choiceRecorder.generate(pos, neg, bodyId));
 		}
-		
-		// Record domain-specific heuristics for this ground rule.
-		NonGroundDomainSpecificHeuristicValues heuristicDefinition = nonGroundRule.getHeuristic();
-		domainSpecificHeuristicsRecorder.record(bodyId, heuristicDefinition.getWeight().substitute(substitution),
-				heuristicDefinition.getLevel().substitute(substitution));
 
-		return result;
+		return new ImmutablePair<>(bodyId, result);
 	}
 
 	private List<Integer> collectNeg(final NonGroundRule nonGroundRule, final Substitution substitution) {

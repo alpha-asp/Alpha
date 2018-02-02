@@ -25,15 +25,20 @@
  */
 package at.ac.tuwien.kr.alpha.common.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.RuleAnnotation;
 import at.ac.tuwien.kr.alpha.common.WeightAtLevel;
 import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import static org.apache.commons.collections4.CollectionUtils.union;
 
 /**
  * Holds values defined by a {@link HeuristicAtom} or {@link RuleAnnotation} to steer domain-specific heuristic choice for a single non-ground rule
@@ -41,19 +46,26 @@ import java.util.Collection;
  */
 public class NonGroundDomainSpecificHeuristicValues {
 
-	private static final Term DEFAULT_WEIGHT = ConstantTerm.getInstance(1);
-	private static final Term DEFAULT_LEVEL = ConstantTerm.getInstance(1);
+	public static final Term DEFAULT_WEIGHT = ConstantTerm.getInstance(1);
+	public static final Term DEFAULT_LEVEL = ConstantTerm.getInstance(1);
 
-	private Term weight;
-	private Term level;
+	private final Term weight;
+	private final Term level;
+	private final List<Literal> generator;
+
+	public NonGroundDomainSpecificHeuristicValues(Term weight, Term level) {
+		this(weight, level, Collections.emptyList());
+	}
 
 	/**
 	 * @param weight
 	 * @param level
+	 * @param generator
 	 */
-	public NonGroundDomainSpecificHeuristicValues(Term weight, Term level) {
+	public NonGroundDomainSpecificHeuristicValues(Term weight, Term level, List<Literal> generator) {
 		this.weight = weight != null ? weight : DEFAULT_WEIGHT;
 		this.level = level != null ? level : DEFAULT_LEVEL;
+		this.generator = generator;
 	}
 
 	/**
@@ -71,6 +83,13 @@ public class NonGroundDomainSpecificHeuristicValues {
 	}
 
 	/**
+	 * @return the generator
+	 */
+	public List<Literal> getGenerator() {
+		return generator;
+	}
+
+	/**
 	 * @param heuristicAtom
 	 */
 	public static NonGroundDomainSpecificHeuristicValues fromHeuristicAtom(HeuristicAtom heuristicAtom) {
@@ -84,7 +103,7 @@ public class NonGroundDomainSpecificHeuristicValues {
 	public static NonGroundDomainSpecificHeuristicValues fromRuleAnnotation(RuleAnnotation annotation) {
 		WeightAtLevel weightAtLevel = annotation.getWeightAtLevel();
 		if (weightAtLevel != null) {
-			return new NonGroundDomainSpecificHeuristicValues(weightAtLevel.getWeight(), weightAtLevel.getLevel());
+			return new NonGroundDomainSpecificHeuristicValues(weightAtLevel.getWeight(), weightAtLevel.getLevel(), annotation.getGenerator());
 		}
 		return null;
 	}
@@ -94,7 +113,25 @@ public class NonGroundDomainSpecificHeuristicValues {
 	}
 
 	public Collection<VariableTerm> getOccurringVariables() {
-		return CollectionUtils.union(weight.getOccurringVariables(), level.getOccurringVariables());
+		Collection<VariableTerm> occurringVariables = union(weight.getOccurringVariables(), level.getOccurringVariables());
+		for (Literal literal : generator) {
+			occurringVariables = union(occurringVariables, literal.getBindingVariables());
+			occurringVariables = union(occurringVariables, literal.getNonBindingVariables());
+		}
+		return occurringVariables;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(weight);
+		sb.append("@");
+		sb.append(level);
+		if (!generator.isEmpty()) {
+			sb.append(" : ");
+			sb.append(Literals.toString(generator));
+		}
+		return sb.toString();
 	}
 
 }
