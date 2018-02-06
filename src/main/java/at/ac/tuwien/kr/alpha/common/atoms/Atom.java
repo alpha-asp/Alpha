@@ -34,6 +34,8 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -55,6 +57,13 @@ public interface Atom extends Comparable<Atom>, Substitutable<Atom> {
 	 * @return
 	 */
 	List<VariableTerm> getNonBindingVariables();
+
+	/**
+	 * Collection of all variables occuring in the Atom
+	 */
+	default Set<VariableTerm> getOccurringVariables() {
+		return getTerms().stream().flatMap(t -> t.getOccurringVariables().stream()).collect(Collectors.toSet());
+	}
 
 	/**
 	 * This method applies a substitution to a potentially non-substitute atom.

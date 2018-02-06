@@ -221,6 +221,36 @@ public class ParserTest {
 		System.out.println(parsedProgram.getRules().toString());
 	}
 
+	@Test
+	public void parseProgramWithHeuristicAnnotation_GeneratorWithArithmetics() {
+		Program parsedProgram = parser.parse("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
+				+ "[LTp1mT@1 : holds(F,Tp1), Tp1=T+1, LTp1mT=LT+1-T]");
+
+		NonGroundDomainSpecificHeuristicValues heuristic = parsedProgram.getRules().iterator().next().getHeuristic();
+		assertEquals("LTp1mT", heuristic.getWeight().toString());
+		assertEquals("1", heuristic.getLevel().toString());
+		assertEquals("holds(F, Tp1), Tp1 = T + 1, LTp1mT = LT + 1 - T", Literals.toString(heuristic.getGenerator()));
+		System.out.println(parsedProgram.getRules().toString());
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void parseProgramWithHeuristicAnnotation_GeneratorWithArithmetics_Unsafe1() {
+		parser.parse("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
+				+ "[T2@1 : holds(F,Tp1), Tp1=T+1, LTp1mT=LT+1-T]");
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void parseProgramWithHeuristicAnnotation_GeneratorWithArithmetics_Unsafe2() {
+		parser.parse("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
+				+ "[LTp1mT@1 : holds(F,T2), Tp1=T+1, LTp1mT=LT+1-T]");
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void parseProgramWithHeuristicAnnotation_GeneratorWithArithmetics_Unsafe3() {
+		parser.parse("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
+				+ "[LTp1mT@1 : holds(F,Tp1), Tp1=T2+1, LTp1mT=LT+1-T]");
+	}
+
 	private int parseFaultyRule(String program, int rules) {
 		try {
 			Program prg = parser.parse(program);

@@ -8,11 +8,11 @@
  * modification, are permitted provided that the following conditions are met:
  * 
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ * list of conditions and the following disclaimer.
  * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicValues;
@@ -107,15 +108,39 @@ public class Rule {
 	}
 
 	private void checkSafetyOfHeuristicDefinition(NonGroundDomainSpecificHeuristicValues heuristicDefinition) {
-		// check if all variables are "safe"
-		if (!heuristicDefinition.isGround()) {
-			List<VariableTerm> vars = body.stream().filter(l -> !l.isNegated())
-					.flatMap(a -> a.getBindingVariables().stream()).collect(Collectors.toList());
-			if (!vars.containsAll(heuristicDefinition.getOccurringVariables())) {
-				throw new RuntimeException("Variables occurring in the heuristic atom must occur in " +
-						"at least one positive body atom: " + body);
+		if (!isSafe(heuristicDefinition)) {
+			throw new RuntimeException("Heuristic definition is not safe: " + heuristicDefinition);
+		}
+	}
+
+	/**
+	 * Checks if the given heuristic definition is safe.
+	 * 
+	 * A heuristic definition is safe if all variables in the weight and the level, all variables in non-{@link FixedInterpretationLiteral}s of the generator and
+	 * all non-binding variables in {@link FixedInterpretationLiteral}s of the generator are bound by a binding variables. Binding variables are those that occur
+	 * in positive atoms of the rule and the binding variables in {@link FixedInterpretationLiteral}s of the generator.
+	 * 
+	 * @param heuristicDefinition
+	 * @return {@code true} iff the heuristic definition is ground or all variables in it that must be bound are bound
+	 */
+	private boolean isSafe(NonGroundDomainSpecificHeuristicValues heuristicDefinition) {
+		if (heuristicDefinition.isGround()) {
+			return true;
+		}
+		Set<VariableTerm> bindingVariables = body.stream().filter(l -> !l.isNegated())
+				.flatMap(a -> a.getBindingVariables().stream()).collect(Collectors.toSet());
+		Set<VariableTerm> boundVariables = new HashSet<>();
+		boundVariables.addAll(heuristicDefinition.getWeight().getOccurringVariables());
+		boundVariables.addAll(heuristicDefinition.getLevel().getOccurringVariables());
+		for (Literal generatorLiteral : heuristicDefinition.getGenerator()) {
+			if (generatorLiteral instanceof FixedInterpretationLiteral) {
+				bindingVariables.addAll(generatorLiteral.getBindingVariables());
+				boundVariables.addAll(generatorLiteral.getNonBindingVariables());
+			} else {
+				boundVariables.addAll(generatorLiteral.getOccurringVariables());
 			}
 		}
+		return bindingVariables.containsAll(boundVariables);
 	}
 
 	public Head getHead() {
@@ -172,14 +197,14 @@ public class Rule {
 		List<VariableTerm> headVariables = head.getOccurringVariables();
 		headVariables.removeAll(positiveVariables);
 		return headVariables.isEmpty();
-		*/
+		 */
 	}
 
 	public boolean isGround() {
 		if (!head.isNormal()) {
 			throw oops("Called isGround on non-normal rule");
 		}
-		if (!isConstraint() && !((DisjunctiveHead)head).isGround()) {
+		if (!isConstraint() && !((DisjunctiveHead) head).isGround()) {
 			return false;
 		}
 		for (Literal atom : body) {

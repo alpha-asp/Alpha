@@ -32,13 +32,9 @@ import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import static org.apache.commons.collections4.CollectionUtils.union;
 
 /**
  * Holds values defined by a {@link HeuristicAtom} or {@link RuleAnnotation} to steer domain-specific heuristic choice for a single non-ground rule
@@ -110,15 +106,6 @@ public class NonGroundDomainSpecificHeuristicValues {
 
 	public boolean isGround() {
 		return weight.isGround() && level.isGround();
-	}
-
-	public Collection<VariableTerm> getOccurringVariables() {
-		Collection<VariableTerm> occurringVariables = union(weight.getOccurringVariables(), level.getOccurringVariables());
-		for (Literal literal : generator) {
-			occurringVariables = union(occurringVariables, literal.getBindingVariables());
-			occurringVariables = union(occurringVariables, literal.getNonBindingVariables());
-		}
-		return occurringVariables;
 	}
 
 	@Override
