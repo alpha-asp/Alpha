@@ -32,6 +32,8 @@ import at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicV
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -46,6 +48,7 @@ import static at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeu
  * Records a mapping between rule atom IDs and their corresponding domain-specific heuristic values
  */
 public class DomainSpecificHeuristicsRecorder {
+	private static final Logger LOGGER = LoggerFactory.getLogger(DomainSpecificHeuristicsRecorder.class);
 
 	private Map<Integer, DomainSpecificHeuristicValues> newValues = new HashMap<>();
 	private final AtomStore atomStore;
@@ -98,6 +101,7 @@ public class DomainSpecificHeuristicsRecorder {
 			}
 		}
 		record(bodyId, weightTerm, levelTerm);
+		LOGGER.debug("Recorded heuristic values {}@{} for rule {} with substitution {}", weightTerm, levelTerm, nonGroundRule.getRuleId(), substitution);
 	}
 
 	private boolean isSatisfiedInPartialInterpretation(Collection<Literal> generator, Assignment partialInterpretation) {
