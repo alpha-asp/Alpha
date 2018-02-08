@@ -113,7 +113,7 @@ public class SubstitutionTest {
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
 		String printedString = NaiveGrounder.groundAndPrintRule(nonGroundRule, substitution);
-		assertEquals("x :- p(a,b), not q(a,b).", printedString);
+		assertEquals("x :- p(a, b), not q(a, b).", printedString);
 	}
 	
 	private void substituteBasicAtom(boolean negated) {
@@ -146,7 +146,7 @@ public class SubstitutionTest {
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
 		String printedString = NaiveGrounder.groundAtomToString(atom, substitution, true);
-		assertEquals((negated ? "not " : "") + "p(a,b)", printedString);
+		assertEquals((negated ? "not " : "") + "p(a, b)", printedString);
 	}
 
 	private BasicAtom parseAtom(String atom) {
