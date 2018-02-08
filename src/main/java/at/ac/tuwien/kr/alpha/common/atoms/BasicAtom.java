@@ -101,6 +101,11 @@ public class BasicAtom implements Literal {
 	public boolean isNegated() {
 		return negated;
 	}
+	
+	@Override
+	public BasicAtom negate() {
+		return new BasicAtom(predicate, terms, !negated);
+	}
 
 	@Override
 	public List<VariableTerm> getBindingVariables() {

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -53,7 +53,7 @@ import static java.util.Collections.singletonList;
 
 /**
  * A semi-naive grounder.
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  */
 public class NaiveGrounder extends BridgedGrounder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
@@ -61,7 +61,7 @@ public class NaiveGrounder extends BridgedGrounder {
 	private final WorkingMemory workingMemory = new WorkingMemory();
 	private final AtomStore atomStore = new AtomStore();
 	private final NogoodRegistry registry = new NogoodRegistry();
-	private final NoGoodGenerator noGoodGenerator;
+	final NoGoodGenerator noGoodGenerator;
 	private final ChoiceRecorder choiceRecorder;
 
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram = new LinkedHashMap<>();
@@ -537,20 +537,20 @@ public class NaiveGrounder extends BridgedGrounder {
 		ret.append(" :- ");
 		boolean isFirst = true;
 		for (Atom bodyAtom : rule.getBodyAtomsPositive()) {
-			ret.append(groundAtomToString(bodyAtom, false, substitution, isFirst));
+			ret.append(groundAtomToString(bodyAtom, substitution, isFirst));
 			isFirst = false;
 		}
 		for (Atom bodyAtom : rule.getBodyAtomsNegative()) {
-			ret.append(groundAtomToString(bodyAtom, true, substitution, isFirst));
+			ret.append(groundAtomToString(bodyAtom, substitution, isFirst));
 			isFirst = false;
 		}
 		ret.append(".");
 		return ret.toString();
 	}
 
-	private static String groundAtomToString(Atom bodyAtom, boolean isNegative, Substitution substitution, boolean isFirst) {
+	static String groundAtomToString(Atom bodyAtom, Substitution substitution, boolean isFirst) {
 		Atom groundBodyAtom = bodyAtom.substitute(substitution);
-		return  (isFirst ? ", " : "") + (isNegative ? "not " : "") + groundBodyAtom.toString();
+		return  (isFirst ? ", " : "") + groundBodyAtom.toString();
 	}
 
 	private static class FirstBindingAtom {
