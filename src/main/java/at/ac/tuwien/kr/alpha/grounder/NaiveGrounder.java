@@ -550,7 +550,7 @@ public class NaiveGrounder extends BridgedGrounder {
 
 	static String groundAtomToString(Atom bodyAtom, Substitution substitution, boolean isFirst) {
 		Atom groundBodyAtom = bodyAtom.substitute(substitution);
-		return  (isFirst ? ", " : "") + groundBodyAtom.toString();
+		return  (isFirst ? "" : ", ") + groundBodyAtom.toString();
 	}
 
 	private static class FirstBindingAtom {
