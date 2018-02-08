@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -36,11 +37,13 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  */
 public class SubstitutionTest {
 	private static ConstantTerm<?> a = ConstantTerm.getSymbolicInstance("a");
@@ -87,6 +90,29 @@ public class SubstitutionTest {
 		BasicAtom atom6 = parseAtom("p(a,Y)");
 		assertEquals(null, Substitution.findEqualizingSubstitution(atom5, atom6));
 		assertEquals(null, Substitution.findEqualizingSubstitution(atom6, atom5));
+	}
+	
+	@Test
+	public void substitutePositiveBasicAtom() {
+		substituteBasicAtom(false);
+	}
+	
+	@Test
+	public void substituteNegativeBasicAtom() {
+		substituteBasicAtom(true);
+	}
+	
+	private void substituteBasicAtom(boolean negated) {
+		Predicate p = Predicate.getInstance("p", 2);
+		BasicAtom atom = new BasicAtom(p, Arrays.asList(x, y), negated);
+		Substitution substitution = new Substitution();
+		substitution.unifyTerms(x, a);
+		substitution.unifyTerms(y, b);
+		atom = atom.substitute(substitution);
+		assertEquals(p, atom.getPredicate());
+		assertEquals(a, atom.getTerms().get(0));
+		assertEquals(b, atom.getTerms().get(1));
+		assertEquals(negated, atom.isNegated());
 	}
 
 	private BasicAtom parseAtom(String atom) {
