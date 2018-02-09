@@ -104,33 +104,23 @@ public class ComparisonAtom implements Literal, FixedInterpretationAtom { // TOD
 	}
 
 	@Override
-	public List<VariableTerm> getBindingVariables() {
-		return getBindingVariables(negated);
-	}
-
-	@Override
-	public List<VariableTerm> getBindingVariables(boolean negated) {
+	public Set<VariableTerm> getBindingVariables() {
 		if (isLeftAssigning() && isRightAssigning()) {
 			// In case this is "X = Y" or "not X != Y" then both sides are binding given that the other is.
 			// In this case non-binding and binding variables cannot be reported accurately, in fact, the double variable could be compiled away.
 			throw new RuntimeException("Builtin equality with left and right side being variables encountered. Should not happen.");
 		}
 		if (isLeftAssigning()) {
-			return Collections.singletonList((VariableTerm) terms.get(0));
+			return Collections.singleton((VariableTerm) terms.get(0));
 		}
 		if (isRightAssigning()) {
-			return Collections.singletonList((VariableTerm) terms.get(1));
+			return Collections.singleton((VariableTerm) terms.get(1));
 		}
-		return Collections.emptyList();
+		return Collections.emptySet();
 	}
 
 	@Override
-	public List<VariableTerm> getNonBindingVariables() {
-		return getNonBindingVariables(negated);
-	}
-	
-	@Override
-	public List<VariableTerm> getNonBindingVariables(boolean negated) {
+	public Set<VariableTerm> getNonBindingVariables() {
 		Term left = terms.get(0);
 		Term right = terms.get(1);
 		HashSet<VariableTerm> occurringVariables = new HashSet<>();
@@ -145,10 +135,10 @@ public class ComparisonAtom implements Literal, FixedInterpretationAtom { // TOD
 		occurringVariables.addAll(leftOccurringVariables);
 		occurringVariables.addAll(rightOccurringVariables);
 		if (isLeftAssigning() || isRightAssigning()) {
-			return new ArrayList<>(occurringVariables);
+			return occurringVariables;
 		}
 		// Neither left- nor right-assigning, hence no variable is binding.
-		return new ArrayList<>(occurringVariables);
+		return occurringVariables;
 	}
 
 	@Override

@@ -8,11 +8,11 @@
  * modification, are permitted provided that the following conditions are met:
  * 
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ * list of conditions and the following disclaimer.
  * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -31,52 +31,66 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import org.apache.commons.collections4.SetUtils;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Copyright (c) 2017-2018, the Alpha Team.
  */
 public interface Literal {
-	
+
 	Atom getAtom();
 
 	boolean isNegated();
-	
+
 	/**
 	 * Returns a new copy of this literal whose {@link Literal#isNegated()} status is inverted
 	 * (if the atom cannot be negated, the literal may be returned without creating a copy)
 	 */
 	Literal negate();
-	
+
 	/**
 	 * @see Atom#substitute(Substitution)
 	 */
 	Literal substitute(Substitution substitution);
 
 	/**
-	 * List of all variables occurring in the Atom that are potentially binding, i.e., variables in positive atoms.
+	 * Set of all variables occurring in the Atom that are potentially binding, i.e., variables in positive atoms.
+	 * 
 	 * @return
 	 */
-	default List<VariableTerm> getBindingVariables() {
-		return getAtom().getBindingVariables(isNegated());
+	default Set<VariableTerm> getBindingVariables() {
+		if (isNegated()) {
+			return Collections.emptySet();
+		} else {
+			return getAtom().getBindingVariables();
+		}
 	}
 
 	/**
-	 * List of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
+	 * Set of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
+	 * 
 	 * @return
 	 */
-	default List<VariableTerm> getNonBindingVariables() {
-		return getAtom().getNonBindingVariables(isNegated());
+	default Set<VariableTerm> getNonBindingVariables() {
+		if (isNegated()) {
+			Atom atom = getAtom();
+			return SetUtils.union(atom.getBindingVariables(), atom.getNonBindingVariables());
+		} else {
+			return Collections.emptySet();
+		}
 	}
-	
+
 	/**
 	 * @see Atom#getPredicate()
 	 */
 	default Predicate getPredicate() {
 		return getAtom().getPredicate();
 	}
-	
+
 	/**
 	 * @see Atom#getTerms()
 	 */

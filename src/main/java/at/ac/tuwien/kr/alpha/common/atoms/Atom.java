@@ -33,6 +33,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -44,16 +45,16 @@ public interface Atom extends Comparable<Atom> {
 	boolean isGround();
 
 	/**
-	 * List of all variables occurring in the Atom that are potentially binding, i.e., variables in positive atoms.
+	 * Set of all variables occurring in the Atom that are potentially binding, i.e., variables in positive atoms.
 	 * @return
 	 */
-	List<VariableTerm> getBindingVariables(boolean negated);
+	Set<VariableTerm> getBindingVariables();
 
 	/**
-	 * List of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
+	 * Set of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
 	 * @return
 	 */
-	List<VariableTerm> getNonBindingVariables(boolean negated);
+	Set<VariableTerm> getNonBindingVariables();
 
 	/**
 	 * This method applies a substitution to a potentially non-substitute atom.

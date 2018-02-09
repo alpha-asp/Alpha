@@ -32,10 +32,7 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
@@ -92,12 +89,8 @@ public class BasicAtom implements Atom {
 	}
 
 	@Override
-	public List<VariableTerm> getBindingVariables(boolean negated) {
-		if (negated) {
-			// Negative literal has no binding variables.
-			return Collections.emptyList();
-		}
-		LinkedList<VariableTerm> bindingVariables = new LinkedList<>();
+	public Set<VariableTerm> getBindingVariables() {
+		Set<VariableTerm> bindingVariables = new HashSet<>();
 		for (Term term : terms) {
 			bindingVariables.addAll(term.getOccurringVariables());
 		}
@@ -105,12 +98,8 @@ public class BasicAtom implements Atom {
 	}
 
 	@Override
-	public List<VariableTerm> getNonBindingVariables(boolean negated) {
-		if (!negated) {
-			// Positive literal has only binding variables.
-			return Collections.emptyList();
-		}
-		LinkedList<VariableTerm> nonbindingVariables = new LinkedList<>();
+	public Set<VariableTerm> getNonBindingVariables() {
+		Set<VariableTerm> nonbindingVariables = new HashSet<>();
 		for (Term term : terms) {
 			nonbindingVariables.addAll(term.getOccurringVariables());
 		}

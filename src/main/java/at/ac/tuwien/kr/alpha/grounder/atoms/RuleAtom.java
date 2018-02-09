@@ -38,6 +38,7 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
 
@@ -85,14 +86,14 @@ public class RuleAtom implements Atom {
 	}
 
 	@Override
-	public List<VariableTerm> getBindingVariables(boolean negated) {
+	public Set<VariableTerm> getBindingVariables() {
 		// NOTE: Both terms are ConstantTerms, which have no variables by definition.
-		return Collections.emptyList();
+		return Collections.emptySet();
 	}
 
 	@Override
-	public List<VariableTerm> getNonBindingVariables(boolean negated) {
-		return Collections.emptyList();
+	public Set<VariableTerm> getNonBindingVariables() {
+		return Collections.emptySet();
 	}
 
 	@Override

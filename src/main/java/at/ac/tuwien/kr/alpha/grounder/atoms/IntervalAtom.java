@@ -35,11 +35,9 @@ import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import com.google.common.collect.Sets;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 
@@ -107,16 +105,16 @@ public class IntervalAtom implements FixedInterpretationAtom {
 	}
 
 	@Override
-	public List<VariableTerm> getBindingVariables(boolean negated) {
+	public Set<VariableTerm> getBindingVariables() {
 		if (terms.get(1) instanceof VariableTerm) {
-			return Collections.singletonList((VariableTerm) terms.get(1));
+			return Collections.singleton((VariableTerm) terms.get(1));
 		}
-		return Collections.emptyList();
+		return Collections.emptySet();
 	}
 
 	@Override
-	public List<VariableTerm> getNonBindingVariables(boolean negated) {
-		return terms.get(0).getOccurringVariables();
+	public Set<VariableTerm> getNonBindingVariables() {
+		return Sets.newHashSet(terms.get(0).getOccurringVariables());
 	}
 
 	@Override

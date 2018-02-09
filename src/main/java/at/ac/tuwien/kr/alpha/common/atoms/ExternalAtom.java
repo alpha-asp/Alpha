@@ -35,7 +35,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -127,16 +127,11 @@ public class ExternalAtom implements FixedInterpretationAtom {
 	}
 
 	@Override
-	public List<VariableTerm> getBindingVariables(boolean negated) {
+	public Set<VariableTerm> getBindingVariables() {
 		// If the external atom is negative, then all variables of input and output are non-binding
 		// and there are no binding variables (like for ordinary atoms).
 		// If the external atom is positive, then variables of output are binding.
-
-		if (negated) {
-			return emptyList();
-		}
-
-		List<VariableTerm> binding = new ArrayList<>(output.size());
+		Set<VariableTerm> binding = new HashSet<>(output.size());
 
 		for (Term out : output) {
 			if (out instanceof VariableTerm) {
@@ -148,21 +143,12 @@ public class ExternalAtom implements FixedInterpretationAtom {
 	}
 
 	@Override
-	public List<VariableTerm> getNonBindingVariables(boolean negated) {
+	public Set<VariableTerm> getNonBindingVariables() {
 		// External atoms have their input always non-binding, since they cannot
 		// be queried without some concrete input.
-		LinkedList<VariableTerm> nonbindingVariables = new LinkedList<>();
+		Set<VariableTerm> nonbindingVariables = new HashSet<>();
 		for (Term term : input) {
 			nonbindingVariables.addAll(term.getOccurringVariables());
-		}
-
-		// If the external atom is negative, then all variables of input and output are non-binding.
-		if (negated) {
-			for (Term out : output) {
-				if (out instanceof VariableTerm) {
-					nonbindingVariables.add((VariableTerm) out);
-				}
-			}
 		}
 
 		return nonbindingVariables;
