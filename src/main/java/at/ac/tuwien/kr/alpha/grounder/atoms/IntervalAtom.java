@@ -147,7 +147,7 @@ public class IntervalAtom implements FixedInterpretationAtom {
 	}
 
 	@Override
-	public List<Substitution> getSubstitutions(Substitution partialSubstitution, boolean negated) {
+	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
 		// Substitute variables occurring in the interval itself.
 		IntervalAtom groundInterval = (IntervalAtom) substitute(partialSubstitution);
 		// Generate all substitutions for the interval representing variable.

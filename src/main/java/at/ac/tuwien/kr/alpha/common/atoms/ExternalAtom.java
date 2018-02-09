@@ -57,7 +57,7 @@ public class ExternalAtom implements FixedInterpretationAtom {
 		this.output = output;
 	}
 
-	public List<Substitution> getSubstitutions(Substitution partialSubstitution, boolean negated) {
+	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
 		List<Substitution> substitutions = new ArrayList<>();
 		List<Term> substitutes = new ArrayList<>(input.size());
 

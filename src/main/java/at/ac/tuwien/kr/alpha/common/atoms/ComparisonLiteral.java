@@ -29,30 +29,34 @@ package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Represents a builtin atom according to the standard.
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public class ComparisonAtom implements FixedInterpretationAtom {
-	private final Predicate predicate;
-	final ComparisonOperator operator;
-	private final List<Term> terms;
+public class ComparisonLiteral implements FixedInterpretationLiteral {
+	private final ComparisonAtom atom;
+	private final boolean negated;
 	private final boolean isNormalizedEquality;
+
+	public ComparisonLiteral(Term left, Term right, boolean negated, ComparisonOperator operator) {
+		this(Arrays.asList(left, right), negated, operator);
+	}
 	
-	ComparisonAtom(List<Term> terms, ComparisonOperator operator) {
-		this.terms = terms;
-		this.operator = operator;
-		this.predicate = Predicate.getInstance(operator.toString(), 2);
-		this.isNormalizedEquality = operator == ComparisonOperator.EQ;
+	private ComparisonLiteral(List<Term> terms, boolean negated, ComparisonOperator operator) {
+		this(new ComparisonAtom(terms, operator), negated);
+	}
+	
+	private ComparisonLiteral(ComparisonAtom atom, boolean negated) {
+		this.atom = atom;
+		this.negated = negated;
+		this.isNormalizedEquality = (!negated && atom.operator == ComparisonOperator.EQ)
+				|| (negated && atom.operator == ComparisonOperator.NE);
 	}
 
 	public boolean isNormalizedEquality() {
@@ -60,26 +64,41 @@ public class ComparisonAtom implements FixedInterpretationAtom {
 	}
 
 	boolean isLeftAssigning() {
-		return isNormalizedEquality && terms.get(0) instanceof VariableTerm;
+		return isNormalizedEquality && atom.isLeftAssigning();
 	}
 
 	boolean isRightAssigning() {
-		return isNormalizedEquality && terms.get(1) instanceof VariableTerm;
+		return isNormalizedEquality && atom.isRightAssigning();
+	}
+	
+	@Override
+	public Atom getAtom() {
+		return atom;
+	}
+	
+	@Override
+	public boolean isNegated() {
+		return negated;
+	}
+	
+	@Override
+	public ComparisonLiteral negate() {
+		return new ComparisonLiteral(atom, !negated);
 	}
 
 	@Override
 	public Predicate getPredicate() {
-		return predicate;
+		return atom.getPredicate();
 	}
 
 	@Override
 	public List<Term> getTerms() {
-		return terms;
+		return atom.getTerms();
 	}
 
 	@Override
 	public boolean isGround() {
-		return terms.get(0).isGround() && terms.get(1).isGround();
+		return atom.isGround();
 	}
 
 	@Override
@@ -90,18 +109,18 @@ public class ComparisonAtom implements FixedInterpretationAtom {
 			throw new RuntimeException("Builtin equality with left and right side being variables encountered. Should not happen.");
 		}
 		if (isLeftAssigning()) {
-			return Collections.singleton((VariableTerm) terms.get(0));
+			return Collections.singleton((VariableTerm) getTerms().get(0));
 		}
 		if (isRightAssigning()) {
-			return Collections.singleton((VariableTerm) terms.get(1));
+			return Collections.singleton((VariableTerm) getTerms().get(1));
 		}
 		return Collections.emptySet();
 	}
 
 	@Override
 	public Set<VariableTerm> getNonBindingVariables() {
-		Term left = terms.get(0);
-		Term right = terms.get(1);
+		Term left = getTerms().get(0);
+		Term right = getTerms().get(1);
 		HashSet<VariableTerm> occurringVariables = new HashSet<>();
 		List<VariableTerm> leftOccurringVariables = new LinkedList<>(left.getOccurringVariables());
 		List<VariableTerm> rightOccurringVariables = new LinkedList<>(right.getOccurringVariables());
@@ -121,83 +140,19 @@ public class ComparisonAtom implements FixedInterpretationAtom {
 	}
 
 	@Override
-	public ComparisonAtom substitute(Substitution substitution) {
-		List<Term> substitutedTerms = terms.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
-		return new ComparisonAtom(substitutedTerms, operator);
+	public ComparisonLiteral substitute(Substitution substitution) {
+		return new ComparisonLiteral(atom.substitute(substitution),			negated);
 	}
 
 	@Override
 	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
-		return getSubstitutions(this, partialSubstitution, operator);
-	}
-
-	static List<Substitution> getSubstitutions(ComparisonAtom atom, Substitution partialSubstitution, ComparisonOperator operator) {
-		// Treat case where this is just comparison with all variables bound by partialSubstitution.
-		if (!atom.isLeftAssigning() && !atom.isRightAssigning()) {
-			if (compare(atom.terms.get(0).substitute(partialSubstitution), atom.terms.get(1).substitute(partialSubstitution), operator)) {
-				return Collections.singletonList(partialSubstitution);
-			} else {
-				return Collections.emptyList();
-			}
-		}
-		// Treat case that this is X = t or t = X.
-		VariableTerm variable = null;
-		Term expression = null;
-		if (atom.isLeftAssigning()) {
-			variable = (VariableTerm) atom.terms.get(0);
-			expression = atom.terms.get(1);
-		}
-		if (atom.isRightAssigning()) {
-			variable = (VariableTerm) atom.terms.get(1);
-			expression = atom.terms.get(0);
-		}
-		Term groundTerm = expression.substitute(partialSubstitution);
-		Term resultTerm = null;
-		// Check if the groundTerm is an arithmetic expression and evaluate it if so.
-		if (groundTerm instanceof ArithmeticTerm) {
-			Integer result = ArithmeticTerm.evaluateGroundTerm(groundTerm);
-			if (result == null) {
-				return Collections.emptyList();
-			}
-			resultTerm = ConstantTerm.getInstance(result);
-		} else {
-			// Ground term is another term (constant, or function term).
-			resultTerm = groundTerm;
-		}
-		Substitution extendedSubstitution = new Substitution(partialSubstitution);
-		extendedSubstitution.put(variable, resultTerm);
-		return Collections.singletonList(extendedSubstitution);
-	}
-
-	static boolean compare(Term x, Term y, final ComparisonOperator operator) {
-		int comparisonResult = x.compareTo(y);
-		switch (operator) {
-			case EQ:
-				return comparisonResult ==  0;
-			case LT:
-				return comparisonResult < 0;
-			case GT:
-				return comparisonResult > 0;
-			case LE:
-				return comparisonResult <= 0;
-			case GE:
-				return comparisonResult >= 0;
-			case NE:
-				return comparisonResult != 0;
-			default:
-				throw new UnsupportedOperationException("Unknown comparison operator requested!");
-		}
+		ComparisonOperator operator = negated ? atom.operator.getNegation() : atom.operator;
+		return ComparisonAtom.getSubstitutions(atom, partialSubstitution, operator);
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(terms.get(0));
-		sb.append(" ");
-		sb.append(operator);
-		sb.append(" ");
-		sb.append(terms.get(1));
-		return sb.toString();
+		return (negated ? "not " : "") + atom;
 	}
 
 	@Override
@@ -209,16 +164,19 @@ public class ComparisonAtom implements FixedInterpretationAtom {
 			return false;
 		}
 
-		ComparisonAtom that = (ComparisonAtom) o;
+		ComparisonLiteral that = (ComparisonLiteral) o;
 
-		if (operator != that.operator) {
+		if (negated != that.negated) {
 			return false;
 		}
-		return terms.equals(that.terms);
+		if (atom.operator != that.atom.operator) {
+			return false;
+		}
+		return getTerms().equals(that.getTerms());
 	}
 
 	@Override
 	public int hashCode() {
-		return 31 * (31 * operator.hashCode() + terms.hashCode());
+		return atom.hashCode() + (negated ? 1 : 0);
 	}
 }
