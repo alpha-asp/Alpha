@@ -116,7 +116,7 @@ public class DomainSpecificHeuristicsRecorder {
 	}
 
 	private Integer toIntegerLiteral(Literal literal) {
-		Integer atomId = atomStore.getAtomId(literal);
+		Integer atomId = atomStore.getAtomId(literal.getAtom());
 		if (atomId != null && literal.isNegated()) {
 			atomId *= -1;
 		}

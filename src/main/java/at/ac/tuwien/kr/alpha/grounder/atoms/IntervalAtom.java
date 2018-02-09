@@ -8,12 +8,12 @@
  * modification, are permitted provided that the following conditions are met:
  *
  * 1) Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
- *
+ *    list of conditions and the following disclaimer.
+ * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
- *
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -28,17 +28,15 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import com.google.common.collect.Sets;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 
@@ -53,7 +51,7 @@ import static at.ac.tuwien.kr.alpha.Util.join;
  * with the Integer being inside the interval.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class IntervalAtom implements FixedInterpretationLiteral {
+public class IntervalAtom implements FixedInterpretationAtom {
 	private static final Predicate PREDICATE = Predicate.getInstance("_interval", 2, true);
 
 	private final List<Term> terms;
@@ -106,16 +104,16 @@ public class IntervalAtom implements FixedInterpretationLiteral {
 	}
 
 	@Override
-	public List<VariableTerm> getBindingVariables() {
+	public Set<VariableTerm> getBindingVariables() {
 		if (terms.get(1) instanceof VariableTerm) {
-			return Collections.singletonList((VariableTerm) terms.get(1));
+			return Collections.singleton((VariableTerm) terms.get(1));
 		}
-		return Collections.emptyList();
+		return Collections.emptySet();
 	}
 
 	@Override
-	public List<VariableTerm> getNonBindingVariables() {
-		return terms.get(0).getOccurringVariables();
+	public Set<VariableTerm> getNonBindingVariables() {
+		return Sets.newHashSet(terms.get(0).getOccurringVariables());
 	}
 
 	@Override
@@ -126,17 +124,6 @@ public class IntervalAtom implements FixedInterpretationLiteral {
 	@Override
 	public String toString() {
 		return join(PREDICATE.getName() + "(", terms, ")");
-	}
-
-	@Override
-	public Type getType() {
-		return Type.INTERVAL_ATOM;
-	}
-
-	@Override
-	public boolean isNegated() {
-		// IntervalAtoms only occur positively.
-		return false;
 	}
 
 	@Override

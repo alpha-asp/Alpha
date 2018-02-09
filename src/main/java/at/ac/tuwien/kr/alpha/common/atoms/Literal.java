@@ -27,15 +27,82 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-/**
- * Copyright (c) 2017, the Alpha Team.
- */
-public interface Literal extends Atom {
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Substitutable;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import org.apache.commons.collections4.SetUtils;
 
-	enum Type {
-		BASIC_ATOM, COMPARISON_ATOM, EXTERNAL_ATOM, HEURISTIC_ATOM, INTERVAL_ATOM
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * Copyright (c) 2017-2018, the Alpha Team.
+ */
+public interface Literal extends Substitutable<Literal> {
+
+	Atom getAtom();
+
+	boolean isNegated();
+
+	/**
+	 * Returns a new copy of this literal whose {@link Literal#isNegated()} status is inverted
+	 * (if the atom cannot be negated, the literal may be returned without creating a copy)
+	 */
+	Literal negate();
+
+	/**
+	 * @see Atom#substitute(Substitution)
+	 */
+	Literal substitute(Substitution substitution);
+
+	/**
+	 * Set of all variables occurring in the Atom that are potentially binding, i.e., variables in positive atoms.
+	 * 
+	 * @return
+	 */
+	default Set<VariableTerm> getBindingVariables() {
+		if (isNegated()) {
+			return Collections.emptySet();
+		} else {
+			return getAtom().getBindingVariables();
+		}
 	}
 
-	Type getType();
-	boolean isNegated();
+	/**
+	 * Set of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
+	 * 
+	 * @return
+	 */
+	default Set<VariableTerm> getNonBindingVariables() {
+		if (isNegated()) {
+			Atom atom = getAtom();
+			return SetUtils.union(atom.getBindingVariables(), atom.getNonBindingVariables());
+		} else {
+			return Collections.emptySet();
+		}
+	}
+
+	/**
+	 * @see Atom#getPredicate()
+	 */
+	default Predicate getPredicate() {
+		return getAtom().getPredicate();
+	}
+
+	/**
+	 * @see Atom#getTerms()
+	 */
+	default List<Term> getTerms() {
+		return getAtom().getTerms();
+	}
+
+	/**
+	 * @see Atom#isGround()
+	 */
+	default boolean isGround() {
+		return getAtom().isGround();
+	}
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2017-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -30,7 +30,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -42,7 +42,7 @@ import static java.util.Collections.singletonList;
 
 /**
  * Class to generate ground NoGoods out of non-ground rules and grounding substitutions.
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017-2018, the Alpha Team.
  */
 public class NoGoodGenerator {
 	private final AtomStore store;
@@ -123,10 +123,11 @@ public class NoGoodGenerator {
 		return new ImmutablePair<>(bodyId, result);
 	}
 
-	private List<Integer> collectNeg(final NonGroundRule nonGroundRule, final Substitution substitution) {
+	List<Integer> collectNeg(final NonGroundRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> bodyAtomsNegative = new ArrayList<>();
 		for (Atom atom : nonGroundRule.getBodyAtomsNegative()) {
-			final Atom groundAtom = atom.substitute(substitution);
+			Atom groundAtom = atom.substitute(substitution);
+			
 			final Set<Instance> factInstances = factsFromProgram.get(groundAtom.getPredicate());
 
 			if (factInstances != null && factInstances.contains(new Instance(groundAtom.getTerms()))) {
@@ -147,7 +148,7 @@ public class NoGoodGenerator {
 	private List<Integer> collectPos(final NonGroundRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> bodyAtomsPositive = new ArrayList<>();
 		for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
-			if (atom instanceof FixedInterpretationLiteral) {
+			if (atom instanceof FixedInterpretationAtom) {
 				// Atom has fixed interpretation, hence was checked earlier that it
 				// evaluates to true under the given substitution.
 				// FixedInterpretationAtoms need not be shown to the solver, skip it.

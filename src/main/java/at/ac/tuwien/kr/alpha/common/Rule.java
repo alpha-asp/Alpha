@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
@@ -41,7 +42,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Represents a non-ground rule or a constraint for the semi-naive grounder.
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  */
 public class Rule {
 	private final Head head;
@@ -89,10 +90,10 @@ public class Rule {
 		Set<NonGroundDomainSpecificHeuristicValues> heuristicDefinitions = new HashSet<>();
 		Iterator<Literal> bodyIterator = body.iterator();
 		while (bodyIterator.hasNext()) {
-			Literal literal = bodyIterator.next();
-			if (literal instanceof HeuristicAtom) {
+			Atom atom = bodyIterator.next().getAtom();
+			if (atom instanceof HeuristicAtom) {
 				bodyIterator.remove();
-				heuristicDefinitions.add(NonGroundDomainSpecificHeuristicValues.fromHeuristicAtom((HeuristicAtom) literal));
+				heuristicDefinitions.add(NonGroundDomainSpecificHeuristicValues.fromHeuristicAtom((HeuristicAtom) atom));
 			}
 		}
 		return heuristicDefinitions;
@@ -135,10 +136,10 @@ public class Rule {
 		for (Literal generatorLiteral : heuristicDefinition.getGenerator()) {
 			if (generatorLiteral instanceof FixedInterpretationLiteral) {
 				bindingVariables.addAll(generatorLiteral.getBindingVariables());
-				boundVariables.addAll(generatorLiteral.getNonBindingVariables());
 			} else {
-				boundVariables.addAll(generatorLiteral.getOccurringVariables());
+				boundVariables.addAll(generatorLiteral.getBindingVariables());
 			}
+			boundVariables.addAll(generatorLiteral.getNonBindingVariables());
 		}
 		return bindingVariables.containsAll(boundVariables);
 	}
@@ -207,8 +208,8 @@ public class Rule {
 		if (!isConstraint() && !((DisjunctiveHead) head).isGround()) {
 			return false;
 		}
-		for (Literal atom : body) {
-			if (!atom.isGround()) {
+		for (Literal literal : body) {
+			if (!literal.isGround()) {
 				return false;
 			}
 		}

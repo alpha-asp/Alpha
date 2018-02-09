@@ -45,7 +45,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Represents a non-ground rule or a constraint for the semi-naive grounder.
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017-2018, the Alpha Team.
  */
 public class NonGroundRule {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NonGroundRule.class);
@@ -93,7 +93,7 @@ public class NonGroundRule {
 		boolean containsExternals = false;
 
 		for (Literal literal : body) {
-			(literal.isNegated() ? neg : pos).add(literal);
+			(literal.isNegated() ? neg : pos).add(literal.getAtom());
 		}
 		Atom headAtom = null;
 		if (rule.getHead() != null) {
@@ -148,9 +148,10 @@ public class NonGroundRule {
 			join(
 						(isConstraint() ? "" : headAtom + " ") + ":- ",
 				bodyAtomsPositive,
-				bodyAtomsPositive.size() + bodyAtomsNegative.size() > 0 ? ", " : " "
+				bodyAtomsNegative.size() > 0 ? ", not " : ""
 			),
 			bodyAtomsNegative,
+			", not ",
 			"."
 		);
 		if (heuristic != null) {

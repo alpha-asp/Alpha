@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -38,6 +38,7 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -79,14 +80,14 @@ public class RuleAtom implements Atom {
 	}
 
 	@Override
-	public List<VariableTerm> getBindingVariables() {
+	public Set<VariableTerm> getBindingVariables() {
 		// NOTE: All terms are ConstantTerms, which have no variables by definition.
-		return Collections.emptyList();
+		return Collections.emptySet();
 	}
 
 	@Override
-	public List<VariableTerm> getNonBindingVariables() {
-		return Collections.emptyList();
+	public Set<VariableTerm> getNonBindingVariables() {
+		return Collections.emptySet();
 	}
 
 	@Override

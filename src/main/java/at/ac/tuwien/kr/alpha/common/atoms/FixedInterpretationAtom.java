@@ -32,10 +32,10 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import java.util.List;
 
 /**
- * Represents a literal whose ground truth value(s) are independent of the current assignment.
- * Examples of such literals are builtin atoms and external atoms.
+ * Represents an atom whose ground truth value(s) are independent of the current assignment.
+ * Examples of such atoms are builtin atoms and external atoms.
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public interface FixedInterpretationLiteral extends Literal {
+public interface FixedInterpretationAtom extends Atom {
 	List<Substitution> getSubstitutions(Substitution partialSubstitution);
 }

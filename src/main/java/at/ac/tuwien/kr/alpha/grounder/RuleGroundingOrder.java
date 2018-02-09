@@ -92,7 +92,7 @@ public class RuleGroundingOrder {
 				continue;
 			}
 
-			if (literal instanceof BasicAtom && !literal.isNegated()) {
+			if (literal.getAtom() instanceof BasicAtom && !literal.isNegated()) {
 				// Positive BasicAtom is the main/ordinary case.
 				ordinaryStartingLiterals.add(literal);
 			} else {

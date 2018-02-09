@@ -8,12 +8,12 @@
  * modification, are permitted provided that the following conditions are met:
  *
  * 1) Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
- *
+ *    list of conditions and the following disclaimer.
+ * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
- *
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -35,7 +35,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -43,23 +43,20 @@ import java.util.stream.Collectors;
 import static at.ac.tuwien.kr.alpha.Util.join;
 import static java.util.Collections.emptyList;
 
-public class ExternalAtom implements FixedInterpretationLiteral {
+public class ExternalAtom implements FixedInterpretationAtom {
 	private final List<Term> input;
 	private final List<Term> output;
 
 	protected Predicate predicate;
 	protected final PredicateInterpretation interpretation;
-	protected final boolean negated;
 
-	public ExternalAtom(Predicate predicate, PredicateInterpretation interpretation, List<Term> input, List<Term> output, boolean negated) {
+	public ExternalAtom(Predicate predicate, PredicateInterpretation interpretation, List<Term> input, List<Term> output) {
 		this.predicate = predicate;
 		this.interpretation = interpretation;
 		this.input = input;
 		this.output = output;
-		this.negated = negated;
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
 		List<Substitution> substitutions = new ArrayList<>();
 		List<Term> substitutes = new ArrayList<>(input.size());
@@ -111,16 +108,6 @@ public class ExternalAtom implements FixedInterpretationLiteral {
 	}
 
 	@Override
-	public Type getType() {
-		return Type.EXTERNAL_ATOM;
-	}
-
-	@Override
-	public boolean isNegated() {
-		return negated;
-	}
-
-	@Override
 	public Predicate getPredicate() {
 		return predicate;
 	}
@@ -140,16 +127,11 @@ public class ExternalAtom implements FixedInterpretationLiteral {
 	}
 
 	@Override
-	public List<VariableTerm> getBindingVariables() {
+	public Set<VariableTerm> getBindingVariables() {
 		// If the external atom is negative, then all variables of input and output are non-binding
 		// and there are no binding variables (like for ordinary atoms).
 		// If the external atom is positive, then variables of output are binding.
-
-		if (isNegated()) {
-			return emptyList();
-		}
-
-		List<VariableTerm> binding = new ArrayList<>(output.size());
+		Set<VariableTerm> binding = new HashSet<>(output.size());
 
 		for (Term out : output) {
 			if (out instanceof VariableTerm) {
@@ -161,21 +143,12 @@ public class ExternalAtom implements FixedInterpretationLiteral {
 	}
 
 	@Override
-	public List<VariableTerm> getNonBindingVariables() {
+	public Set<VariableTerm> getNonBindingVariables() {
 		// External atoms have their input always non-binding, since they cannot
 		// be queried without some concrete input.
-		LinkedList<VariableTerm> nonbindingVariables = new LinkedList<>();
+		Set<VariableTerm> nonbindingVariables = new HashSet<>();
 		for (Term term : input) {
 			nonbindingVariables.addAll(term.getOccurringVariables());
-		}
-
-		// If the external atom is negative, then all variables of input and output are non-binding.
-		if (negated) {
-			for (Term out : output) {
-				if (out instanceof VariableTerm) {
-					nonbindingVariables.add((VariableTerm) out);
-				}
-			}
 		}
 
 		return nonbindingVariables;
@@ -190,8 +163,7 @@ public class ExternalAtom implements FixedInterpretationLiteral {
 				.stream()
 				.map(t -> t.substitute(substitution))
 				.collect(Collectors.toList()),
-			output,
-			negated
+			output
 		);
 	}
 

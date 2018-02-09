@@ -1,19 +1,17 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2018 Siemens AG
  * All rights reserved.
- *
- * Additional changes made by Siemens.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- *
+ * list of conditions and the following disclaimer.
+ * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -29,13 +27,44 @@ package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.List;
-
 /**
- * Represents a literal whose ground truth value(s) are independent of the current assignment.
- * Examples of such literals are builtin atoms and external atoms.
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Contains a potentially negated {@link Atom}
  */
-public interface FixedInterpretationLiteral extends Literal {
-	List<Substitution> getSubstitutions(Substitution partialSubstitution);
+public class AtomLiteral implements Literal {
+	private final Atom atom;
+	protected final boolean negated;
+	
+	public AtomLiteral(Atom atom, boolean negated) {
+		this.atom = atom;
+		this.negated = negated;
+	}
+	
+	@Override
+	public Atom getAtom() {
+		return atom;
+	}
+
+	public boolean isNegated() {
+		return negated;
+	}
+	
+	/**
+	 * Returns a new copy of this literal whose {@link AtomLiteral#isNegated()} status is inverted
+	 * (if the atom cannot be negated, the literal may be returned without creating a copy)
+	 */
+	public AtomLiteral negate() {
+		return new AtomLiteral(atom, !negated);
+	}
+	
+	/**
+	 * @see Atom#substitute(Substitution)
+	 */
+	public AtomLiteral substitute(Substitution substitution) {
+		return new AtomLiteral(atom.substitute(substitution), negated);
+	}
+	
+	@Override
+	public String toString() {
+		return (negated ? "not " : "") + atom.toString();
+	}
 }

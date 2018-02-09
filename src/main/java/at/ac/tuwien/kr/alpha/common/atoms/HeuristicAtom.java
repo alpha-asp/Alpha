@@ -36,13 +36,10 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
-public class HeuristicAtom implements Literal {
+public class HeuristicAtom implements Atom {
 	public static final String PREDICATE_HEURISTIC = ASPCore2Lexer.VOCABULARY.getLiteralName(ASPCore2Lexer.PREDICATE_HEURISTIC).replace("'", "");
 
 	private final List<Term> terms;
@@ -83,16 +80,6 @@ public class HeuristicAtom implements Literal {
 	}
 
 	@Override
-	public Type getType() {
-		return Type.HEURISTIC_ATOM;
-	}
-
-	@Override
-	public boolean isNegated() {
-		return true;
-	}
-
-	@Override
 	public Predicate getPredicate() {
 		return this.predicate;
 	}
@@ -108,8 +95,8 @@ public class HeuristicAtom implements Literal {
 	}
 
 	@Override
-	public List<VariableTerm> getBindingVariables() {
-		LinkedList<VariableTerm> bindingVariables = new LinkedList<>();
+	public Set<VariableTerm> getBindingVariables() {
+		Set<VariableTerm> bindingVariables = new HashSet<>();
 		for (Term term : terms) {
 			bindingVariables.addAll(term.getOccurringVariables());
 		}
@@ -117,8 +104,8 @@ public class HeuristicAtom implements Literal {
 	}
 
 	@Override
-	public List<VariableTerm> getNonBindingVariables() {
-		LinkedList<VariableTerm> nonbindingVariables = new LinkedList<>();
+	public Set<VariableTerm> getNonBindingVariables() {
+		Set<VariableTerm> nonbindingVariables = new HashSet<>();
 		for (Term term : terms) {
 			nonbindingVariables.addAll(term.getOccurringVariables());
 		}
@@ -134,7 +121,7 @@ public class HeuristicAtom implements Literal {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder("not ");
+		final StringBuilder sb = new StringBuilder();
 		sb.append(predicate.getName());
 		if (!terms.isEmpty()) {
 			sb.append("(");

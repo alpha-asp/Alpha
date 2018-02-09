@@ -8,11 +8,11 @@
  * modification, are permitted provided that the following conditions are met:
  *
  * 1) Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ *    list of conditions and the following disclaimer.
  *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -41,22 +41,23 @@ import java.util.stream.Collectors;
  * Copyright (c) 2016, the Alpha Team.
  */
 public interface Atom extends Comparable<Atom>, Substitutable<Atom> {
+	
 	Predicate getPredicate();
 	List<Term> getTerms();
 
 	boolean isGround();
 
 	/**
-	 * List of all variables occurring in the Atom that are potentially binding, i.e., variables in positive atoms.
+	 * Set of all variables occurring in the Atom that are potentially binding, i.e., variables in positive atoms.
 	 * @return
 	 */
-	List<VariableTerm> getBindingVariables();
+	Set<VariableTerm> getBindingVariables();
 
 	/**
-	 * List of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
+	 * Set of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
 	 * @return
 	 */
-	List<VariableTerm> getNonBindingVariables();
+	Set<VariableTerm> getNonBindingVariables();
 
 	/**
 	 * Collection of all variables occuring in the Atom
@@ -72,6 +73,22 @@ public interface Atom extends Comparable<Atom>, Substitutable<Atom> {
 	 * @return the atom resulting from the applying the substitution.
 	 */
 	Atom substitute(Substitution substitution);
+	
+	/**
+	 * Creates a non-negated literal containing this atom
+	 */
+	default Literal toLiteral() {
+		return toLiteral(true);
+	}
+	
+	/**
+	 * Creates a literal containing this atom which will be negated if {@code positive} is {@code false}
+	 * @param positive
+	 * @return
+	 */
+	default Literal toLiteral(boolean positive) {
+		return new AtomLiteral(this, !positive);
+	}
 
 	@Override
 	default int compareTo(Atom o) {
