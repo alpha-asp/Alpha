@@ -120,24 +120,6 @@ public class DomainSpecificHeuristicsTest {
 	}
 
 	@Test
-	public void testSimpleHeuristicProgram_HeuristicAnnotation_SimpleFactGenerator_NegativeLiteral() {
-		Program program = parser.parse(
-				"c." + System.lineSeparator() +
-				"a :- not b. [1@1 : c]" + System.lineSeparator() +
-				"b :- not a. [1@1 : not c]");
-		solveAndAssertAnswerSets(program, "{ a, c }", "{ b, c }");
-	}
-
-	@Test
-	public void testSimpleHeuristicProgram_HeuristicAnnotation_SimpleFactGenerator_PositiveLiteral() {
-		Program program = parser.parse(
-				"c." + System.lineSeparator() +
-				"a :- not b. [1@1 : c]" + System.lineSeparator() +
-				"b :- not a. [1@1 : not c]");
-		solveAndAssertAnswerSets(program, "{ a, c }", "{ b, c }");
-	}
-
-	@Test
 	public void testSimpleHeuristicProgram_HeuristicAnnotation_SimpleChoiceGenerator_NegativeLiteral() {
 		Program program = parser.parse(
 				"c :- not nc. [10@1]" + System.lineSeparator() +
