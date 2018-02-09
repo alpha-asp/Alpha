@@ -25,8 +25,10 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -50,5 +52,20 @@ public interface DomainSpecificHeuristicsStore {
 	 * second-to-highest level, etc.
 	 */
 	Stream<Set<Integer>> streamRuleAtomsOrderedByDecreasingPriority();
+	
+	/**
+	 * Returns the set of literals that have to be true for the non-default heuristic values to apply to the given rule.
+	 */
+	Collection<Integer> getConditionLiterals(int ruleAtomId);
+	
+	/**
+	 * Checks if the condition for the given rule is satisfied by the given assignment
+	 * @param ruleAtomId the ID of a body-representing atom
+	 * @param assignment
+	 * @return {@code true} iff for none of the literals in {@link #getConditionLiterals(int)} it holds that {@link Assignment#isViolated(int)} for the given {@code assignment}
+	 */
+	default boolean isConditionSatisfied(int ruleAtomId, Assignment assignment) {
+		return getConditionLiterals(ruleAtomId).stream().noneMatch(assignment::isViolated);
+	}
 
 }

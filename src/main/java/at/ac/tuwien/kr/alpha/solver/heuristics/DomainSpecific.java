@@ -30,6 +30,7 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DomainSpecificHeuristicsStore;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 import org.apache.commons.collections4.SetUtils;
 import org.slf4j.Logger;
@@ -97,8 +98,13 @@ public class DomainSpecific implements BranchingHeuristic {
 	}
 
 	private int chooseFromEquallyWeighted(Set<Integer> possibleChoices) {
+		DomainSpecificHeuristicsStore domainSpecificHeuristics = choiceManager.getDomainSpecificHeuristics();
 		int chosenAtom;
-		Set<Integer> filteredChoices = possibleChoices.stream().filter(choiceManager::isActiveChoiceAtom).filter(this::isUnassigned).collect(Collectors.toSet());
+		Set<Integer> filteredChoices = possibleChoices.stream()
+				.filter(choiceManager::isActiveChoiceAtom)
+				.filter(this::isUnassigned)
+				.filter(a -> domainSpecificHeuristics.isConditionSatisfied(a, assignment))
+				.collect(Collectors.toSet());
 		if (filteredChoices.isEmpty()) {
 			chosenAtom = DEFAULT_CHOICE_ATOM;
 		} else if (filteredChoices.size() == 1) {
@@ -108,6 +114,7 @@ public class DomainSpecific implements BranchingHeuristic {
 			LOGGER.debug("Using fallback heuristics to choose from " + filteredChoices);
 			chosenAtom = fallbackHeuristic.chooseAtom(filteredChoices);
 		}
+		// TODO: also log weight and level? (currently not known at this point)
 		return chosenAtom;
 	}
 
@@ -124,6 +131,7 @@ public class DomainSpecific implements BranchingHeuristic {
 		// TODO: return true (except if falling back to other heuristic)
 		return true;
 	}
+	
 	protected boolean isUnassigned(int atom) {
 		ThriceTruth truth = assignment.getTruth(atom);
 		return truth != FALSE && truth != TRUE; // do not use assignment.isAssigned(atom) because we may also choose MBTs

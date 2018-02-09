@@ -46,6 +46,8 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 	 */
 	private final SortedMap<Integer, SortedMap<Integer, Set<Integer>>> mapWeightLevelChoicePoint = new TreeMap<>(Comparator.reverseOrder());
 
+	private final Map<Integer, Collection<Integer>> mapChoicePointConditionLiterals = new HashMap<>();
+
 	@Override
 	public void addInfo(DomainSpecificHeuristicValues info) {
 		int level = info.getLevel();
@@ -60,7 +62,9 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 			mapLevelChoicePoint.put(weight, new HashSet<>());
 		}
 
-		mapLevelChoicePoint.get(weight).add(info.getRuleAtomId());
+		int ruleAtomId = info.getRuleAtomId();
+		mapLevelChoicePoint.get(weight).add(ruleAtomId);
+		mapChoicePointConditionLiterals.put(ruleAtomId, info.getConditionLiterals());
 	}
 
 	@Override
@@ -69,6 +73,11 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 		// do not return flatMap directly because of Java bug
 		// cf. https://stackoverflow.com/questions/29229373/why-filter-after-flatmap-is-not-completely-lazy-in-java-streams
 		return flatMap.collect(Collectors.toList()).stream();
+	}
+	
+	@Override
+	public Collection<Integer> getConditionLiterals(int ruleAtomId) {
+		return mapChoicePointConditionLiterals.get(ruleAtomId);
 	}
 
 }

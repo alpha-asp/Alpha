@@ -38,6 +38,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
+import at.ac.tuwien.kr.alpha.grounder.heuristics.domspec.DomainSpecificHeuristicsRecorder;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
@@ -64,7 +65,7 @@ public class NaiveGrounder extends BridgedGrounder {
 	private final NogoodRegistry registry = new NogoodRegistry();
 	private final NoGoodGenerator noGoodGenerator;
 	private final ChoiceRecorder choiceRecorder;
-	private final DomainSpecificHeuristicsRecorder domainSpecificHeuristicsRecorder = new DomainSpecificHeuristicsRecorder(atomStore, workingMemory);
+	private final DomainSpecificHeuristicsRecorder domainSpecificHeuristicsRecorder = new DomainSpecificHeuristicsRecorder(atomStore);
 
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram = new LinkedHashMap<>();
 	private final Map<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
@@ -74,7 +75,6 @@ public class NaiveGrounder extends BridgedGrounder {
 	private LinkedHashSet<Atom> removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
 	private int maxAtomIdBeforeGroundingNewNoGoods = -1;
 	private boolean disableInstanceRemoval;
-	private Assignment latestAssignment;
 
 	public NaiveGrounder(Program program, Bridge... bridges) {
 		this(program, p -> true, bridges);
@@ -274,8 +274,6 @@ public class NaiveGrounder extends BridgedGrounder {
 
 	@Override
 	public Map<Integer, NoGood> getNoGoods(Assignment currentAssignment) {
-		this.latestAssignment = currentAssignment;
-
 		// In first call, prepare facts and ground rules.
 		final Map<Integer, NoGood> newNoGoods = fixedRules != null ? bootstrap() : new LinkedHashMap<>();
 
@@ -359,7 +357,7 @@ public class NaiveGrounder extends BridgedGrounder {
 			// Record domain-specific heuristics for this ground rule.
 			if (generatedBodyIdAndNoGoods.getLeft() != null) {
 				int bodyId = generatedBodyIdAndNoGoods.getLeft();
-				domainSpecificHeuristicsRecorder.record(bodyId, nonGroundRule, substitution, latestAssignment);
+				domainSpecificHeuristicsRecorder.record(bodyId, nonGroundRule, substitution);
 			}
 		}
 	}

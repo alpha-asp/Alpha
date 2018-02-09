@@ -27,6 +27,8 @@ package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 
 import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -42,6 +44,11 @@ public class EmptyDomainSpecificHeuristicsStore implements DomainSpecificHeurist
 	@Override
 	public Stream<Set<Integer>> streamRuleAtomsOrderedByDecreasingPriority() {
 		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public Collection<Integer> getConditionLiterals(int ruleAtomId) {
+		return Collections.emptySet();
 	}
 
 }

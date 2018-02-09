@@ -23,50 +23,20 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.common.heuristics;
+package at.ac.tuwien.kr.alpha.grounder.heuristics.domspec;
 
-import at.ac.tuwien.kr.alpha.common.RuleAnnotation;
-import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
-
-import java.util.Collection;
-import java.util.Collections;
 
 /**
- * Holds values defined by a {@link HeuristicAtom} or a {@link RuleAnnotation} to steer domain-specific heuristic choice for a single ground rule
- *
+ * Indicates that the generator/condition of a heuristic definition ({@link at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicValues#getGenerator()} is unsatisfiable
  */
-public class DomainSpecificHeuristicValues {
+public class UnsatisfiableHeuristicConditionException extends Exception {
 
-	private int ruleAtomId;
-	private int weight;
-	private int level;
-	private Collection<Integer> conditionLiterals;
+	private static final long serialVersionUID = 2001531810768556756L;
 
-	public DomainSpecificHeuristicValues(int bodyId, int weight, int level, Collection<Integer> conditionLiterals) {
-		this.ruleAtomId = bodyId;
-		this.weight = weight;
-		this.level = level;
-		this.conditionLiterals = Collections.unmodifiableCollection(conditionLiterals);
+	public UnsatisfiableHeuristicConditionException() {
 	}
 
-	public DomainSpecificHeuristicValues(int atom, int weight, int level) {
-		this(atom, weight, level, Collections.emptySet());
+	public UnsatisfiableHeuristicConditionException(String message) {
+		super(message);
 	}
-
-	public int getRuleAtomId() {
-		return ruleAtomId;
-	}
-
-	public int getWeight() {
-		return weight;
-	}
-
-	public int getLevel() {
-		return level;
-	}
-
-	public Collection<Integer> getConditionLiterals() {
-		return conditionLiterals;
-	}
-
 }

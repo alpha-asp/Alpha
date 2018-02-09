@@ -42,8 +42,10 @@ import java.util.List;
  */
 public class NonGroundDomainSpecificHeuristicValues {
 
-	public static final Term DEFAULT_WEIGHT = ConstantTerm.getInstance(1);
-	public static final Term DEFAULT_LEVEL = ConstantTerm.getInstance(1);
+	public static final Term DEFAULT_WEIGHT_TERM = ConstantTerm.getInstance(1);
+	public static final Term DEFAULT_LEVEL_TERM = ConstantTerm.getInstance(1);
+	public static final int DEFAULT_WEIGHT = 1;
+	public static final int DEFAULT_LEVEL = 1;
 
 	private final Term weight;
 	private final Term level;
@@ -59,8 +61,8 @@ public class NonGroundDomainSpecificHeuristicValues {
 	 * @param generator
 	 */
 	public NonGroundDomainSpecificHeuristicValues(Term weight, Term level, List<Literal> generator) {
-		this.weight = weight != null ? weight : DEFAULT_WEIGHT;
-		this.level = level != null ? level : DEFAULT_LEVEL;
+		this.weight = weight != null ? weight : DEFAULT_WEIGHT_TERM;
+		this.level = level != null ? level : DEFAULT_LEVEL_TERM;
 		this.generator = generator;
 	}
 
