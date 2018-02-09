@@ -1,7 +1,35 @@
+/**
+ * Copyright (c) 2017-2018, the Alpha Team.
+ * All rights reserved.
+ *
+ * Additional changes made by Siemens.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1) Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ * 2) Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicValues;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
 import java.util.*;
@@ -23,7 +51,8 @@ import java.util.*;
  *
  * Note that rules with self-joins (rules with p(X,Y), p(A,B) in their body) make it necessary that every positive
  * literal (whose interpretation is not fixed) is a starting literal, at least for the current grounding procedure.
- * Copyright (c) 2017, the Alpha Team.
+ * 
+ * Copyright (c) 2017-2018, the Alpha Team.
  */
 public class RuleGroundingOrder {
 	private final NonGroundRule nonGroundRule;
@@ -44,7 +73,7 @@ public class RuleGroundingOrder {
 
 	private void resetLiteralSelectivity() {
 		// Set selectivity of all literals to 1.0f.
-		for (Literal literal : nonGroundRule.getRule().getBody()) {
+		for (Literal literal : getLiteralsToBeGrounded()) {
 			literalSelectivity.put(literal, 1.0f);
 		}
 	}
@@ -56,8 +85,8 @@ public class RuleGroundingOrder {
 	private boolean computeStartingLiterals() {
 		LinkedHashSet<Literal> fixedStartingLiterals = new LinkedHashSet<>();
 		LinkedHashSet<Literal> ordinaryStartingLiterals = new LinkedHashSet<>();
-		// Check each literal in the rule body whether it is eligible.
-		for (Literal literal : nonGroundRule.getRule().getBody()) {
+		
+		for (Literal literal : getLiteralsToBeGrounded()) {
 			// Only literals that need no variables already bound can start grounding.
 			if (literal.getNonBindingVariables().size() != 0) {
 				continue;
@@ -83,6 +112,20 @@ public class RuleGroundingOrder {
 		} else {
 			throw new RuntimeException("Unsafe rule encountered: " + nonGroundRule.getRule());
 		}
+	}
+
+	/**
+	 * Gets all literals that (may) have to be grounded, i.e. literals appearing in the rule's body and heuristic generator.
+	 */
+	private List<Literal> getLiteralsToBeGrounded() {
+		List<Literal> literals = new ArrayList<>(nonGroundRule.getRule().getBody());
+		literals.addAll(getGeneratorLiterals());
+		return literals;
+	}
+
+	private List<Literal> getGeneratorLiterals() {
+		NonGroundDomainSpecificHeuristicValues heuristic = nonGroundRule.getHeuristic();
+		return heuristic != null ? heuristic.getGenerator() : Collections.emptyList();
 	}
 
 	Collection<Literal> getStartingLiterals() {
@@ -123,7 +166,7 @@ public class RuleGroundingOrder {
 	}
 
 	private void computeGroundingOrder(Literal startingLiteral) {
-		List<Literal> bodyLiterals = nonGroundRule.getRule().getBody();
+		List<Literal> bodyLiterals = getLiteralsToBeGrounded();
 		HashSet<VariableTerm> boundVariables = new HashSet<>();
 		boundVariables.addAll(startingLiteral.getBindingVariables());
 		LinkedHashSet<Literal> remainingLiterals = new LinkedHashSet<>(bodyLiterals);

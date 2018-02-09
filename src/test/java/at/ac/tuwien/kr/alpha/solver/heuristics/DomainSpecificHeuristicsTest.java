@@ -35,7 +35,6 @@ import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -139,7 +138,6 @@ public class DomainSpecificHeuristicsTest {
 	}
 
 	@Test
-	@Ignore("currently, the generator is evaluated too early to take the choice into account")
 	public void testSimpleHeuristicProgram_HeuristicAnnotation_SimpleChoiceGenerator_NegativeLiteral() {
 		Program program = parser.parse(
 				"c :- not nc. [10@1]" + System.lineSeparator() +
@@ -150,7 +148,6 @@ public class DomainSpecificHeuristicsTest {
 	}
 
 	@Test
-	@Ignore("currently, the generator is evaluated too early to take the choice into account")
 	public void testSimpleHeuristicProgram_HeuristicAnnotation_SimpleChoiceGenerator_PositiveLiteral() {
 		Program program = parser.parse(
 				"c :- not nc. [10@1]" + System.lineSeparator() +
@@ -158,6 +155,15 @@ public class DomainSpecificHeuristicsTest {
 				"a :- not b. [1@1 : c]" + System.lineSeparator() +
 				"b :- not a. [1@1 : not c]");
 		solveAndAssertAnswerSets(program, "{ a, c }", "{ b, c }", "{ b, nc }", "{a, nc}");
+	}
+	
+	@Test
+	public void testSimpleHeuristicProgram_HeuristicAnnotation_SimpleNonGroundArithmetics() {
+		Program program = parser.parse(
+				"n(2)." + System.lineSeparator() +
+				"a :- n(N), not b. [Np1@1 : Np1=N+1]" + System.lineSeparator() +
+				"b :- not a. [1]");
+		solveAndAssertAnswerSets(program, "{ a, n(2) }", "{ b, n(2) }");
 	}
 
 	private void solveAndAssertAnswerSets(Program program, String... expectedAnswerSets) {
