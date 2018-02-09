@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2018 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,16 @@ import static org.junit.Assert.assertEquals;
  */
 public class RuleToStringTest {
 	private final ProgramParser parser = new ProgramParser();
+	
+	@Test
+	public void positiveRuleToString() {
+		parseSingleRuleAndCheckToString("a :- b1, b2.");
+	}
+	
+	@Test
+	public void ruleWithNegativeBodyToString() {
+		parseSingleRuleAndCheckToString("a :- b1, b2.");
+	}
 
 	@Test
 	public void normalRuleToString() {
@@ -48,6 +58,16 @@ public class RuleToStringTest {
 	@Test
 	public void constraintToString() {
 		parseSingleRuleAndCheckToString(":- b1, b2, not c1, not c2.");
+	}
+	
+	@Test
+	public void nonGroundPositiveRuleToString() {
+		constructNonGroundRuleAndCheckToString("a :- b1, b2.");
+	}
+	
+	@Test
+	public void nonGroundRuleWithNegativeBodyToString() {
+		constructNonGroundRuleAndCheckToString("a :- b1, b2.");
 	}
 
 	@Test

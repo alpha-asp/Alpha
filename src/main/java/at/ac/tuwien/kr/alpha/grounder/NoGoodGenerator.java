@@ -30,8 +30,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 
 import java.util.*;
@@ -122,7 +121,6 @@ public class NoGoodGenerator {
 		final List<Integer> bodyAtomsNegative = new ArrayList<>();
 		for (Atom atom : nonGroundRule.getBodyAtomsNegative()) {
 			Atom groundAtom = atom.substitute(substitution);
-			groundAtom = negateIfNegativeLiteral(groundAtom);
 			
 			final Set<Instance> factInstances = factsFromProgram.get(groundAtom.getPredicate());
 
@@ -141,20 +139,10 @@ public class NoGoodGenerator {
 		return bodyAtomsNegative;
 	}
 
-	private Atom negateIfNegativeLiteral(Atom atom) {
-		if (atom instanceof Literal) {
-			Literal literal = (Literal)atom;
-			if (literal.isNegated()) {
-				return literal.negate();
-			}
-		}
-		return atom;
-	}
-
 	private List<Integer> collectPos(final NonGroundRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> bodyAtomsPositive = new ArrayList<>();
 		for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
-			if (atom instanceof FixedInterpretationLiteral) {
+			if (atom instanceof FixedInterpretationAtom) {
 				// Atom has fixed interpretation, hence was checked earlier that it
 				// evaluates to true under the given substitution.
 				// FixedInterpretationAtoms need not be shown to the solver, skip it.

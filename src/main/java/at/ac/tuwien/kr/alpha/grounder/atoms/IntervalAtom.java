@@ -29,7 +29,7 @@ package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -54,7 +54,7 @@ import static at.ac.tuwien.kr.alpha.Util.join;
  * with the Integer being inside the interval.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class IntervalAtom implements FixedInterpretationLiteral {
+public class IntervalAtom implements FixedInterpretationAtom {
 	private static final Predicate PREDICATE = Predicate.getInstance("_interval", 2, true);
 
 	private final List<Term> terms;
@@ -107,7 +107,7 @@ public class IntervalAtom implements FixedInterpretationLiteral {
 	}
 
 	@Override
-	public List<VariableTerm> getBindingVariables() {
+	public List<VariableTerm> getBindingVariables(boolean negated) {
 		if (terms.get(1) instanceof VariableTerm) {
 			return Collections.singletonList((VariableTerm) terms.get(1));
 		}
@@ -115,7 +115,7 @@ public class IntervalAtom implements FixedInterpretationLiteral {
 	}
 
 	@Override
-	public List<VariableTerm> getNonBindingVariables() {
+	public List<VariableTerm> getNonBindingVariables(boolean negated) {
 		return terms.get(0).getOccurringVariables();
 	}
 
@@ -127,17 +127,6 @@ public class IntervalAtom implements FixedInterpretationLiteral {
 	@Override
 	public String toString() {
 		return join(PREDICATE.getName() + "(", terms, ")");
-	}
-
-	@Override
-	public boolean isNegated() {
-		// IntervalAtoms only occur positively.
-		return false;
-	}
-	
-	@Override
-	public IntervalAtom negate() {
-		return this;
 	}
 
 	@Override
@@ -160,7 +149,7 @@ public class IntervalAtom implements FixedInterpretationLiteral {
 	}
 
 	@Override
-	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
+	public List<Substitution> getSubstitutions(Substitution partialSubstitution, boolean negated) {
 		// Substitute variables occurring in the interval itself.
 		IntervalAtom groundInterval = (IntervalAtom) substitute(partialSubstitution);
 		// Generate all substitutions for the interval representing variable.

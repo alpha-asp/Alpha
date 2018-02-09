@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2017-2018, the Alpha Team.
  * All rights reserved.
- * 
+ *
  * Additional changes made by Siemens.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -27,67 +27,15 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.List;
 
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Represents an atom whose ground truth value(s) are independent of the current assignment.
+ * Examples of such atoms are builtin atoms and external atoms.
+ * Copyright (c) 2017, the Alpha Team.
  */
-public interface Literal {
-	
-	Atom getAtom();
-
-	boolean isNegated();
-	
-	/**
-	 * Returns a new copy of this literal whose {@link Literal#isNegated()} status is inverted
-	 * (if the atom cannot be negated, the literal may be returned without creating a copy)
-	 */
-	Literal negate();
-	
-	/**
-	 * @see Atom#substitute(Substitution)
-	 */
-	Literal substitute(Substitution substitution);
-
-	/**
-	 * List of all variables occurring in the Atom that are potentially binding, i.e., variables in positive atoms.
-	 * @return
-	 */
-	default List<VariableTerm> getBindingVariables() {
-		return getAtom().getBindingVariables(isNegated());
-	}
-
-	/**
-	 * List of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
-	 * @return
-	 */
-	default List<VariableTerm> getNonBindingVariables() {
-		return getAtom().getNonBindingVariables(isNegated());
-	}
-	
-	/**
-	 * @see Atom#getPredicate()
-	 */
-	default Predicate getPredicate() {
-		return getAtom().getPredicate();
-	}
-	
-	/**
-	 * @see Atom#getTerms()
-	 */
-	default List<Term> getTerms() {
-		return getAtom().getTerms();
-	}
-
-	/**
-	 * @see Atom#isGround()
-	 */
-	default boolean isGround() {
-		return getAtom().isGround();
-	}
+public interface FixedInterpretationAtom extends Atom {
+	List<Substitution> getSubstitutions(Substitution partialSubstitution, boolean negated);
 }

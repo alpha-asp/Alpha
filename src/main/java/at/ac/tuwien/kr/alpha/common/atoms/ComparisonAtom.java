@@ -41,7 +41,7 @@ import java.util.*;
  * Represents a builtin atom according to the standard.
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public class ComparisonAtom implements FixedInterpretationLiteral {
+public class ComparisonAtom implements Literal, FixedInterpretationAtom { // TODO: rename to Literal
 	private final Predicate predicate;
 	private final ComparisonOperator operator;
 	private final List<Term> terms;
@@ -72,7 +72,12 @@ public class ComparisonAtom implements FixedInterpretationLiteral {
 	private boolean isRightAssigning() {
 		return isNormalizedEquality && terms.get(1) instanceof VariableTerm;
 	}
-
+	
+	@Override
+	public Atom getAtom() {
+		return this;
+	}
+	
 	@Override
 	public boolean isNegated() {
 		return negated;
@@ -100,22 +105,32 @@ public class ComparisonAtom implements FixedInterpretationLiteral {
 
 	@Override
 	public List<VariableTerm> getBindingVariables() {
+		return getBindingVariables(negated);
+	}
+
+	@Override
+	public List<VariableTerm> getBindingVariables(boolean negated) {
 		if (isLeftAssigning() && isRightAssigning()) {
 			// In case this is "X = Y" or "not X != Y" then both sides are binding given that the other is.
 			// In this case non-binding and binding variables cannot be reported accurately, in fact, the double variable could be compiled away.
 			throw new RuntimeException("Builtin equality with left and right side being variables encountered. Should not happen.");
 		}
 		if (isLeftAssigning()) {
-			return Collections.singletonList((VariableTerm)terms.get(0));
+			return Collections.singletonList((VariableTerm) terms.get(0));
 		}
 		if (isRightAssigning()) {
-			return Collections.singletonList((VariableTerm)terms.get(1));
+			return Collections.singletonList((VariableTerm) terms.get(1));
 		}
 		return Collections.emptyList();
 	}
 
 	@Override
 	public List<VariableTerm> getNonBindingVariables() {
+		return getNonBindingVariables(negated);
+	}
+	
+	@Override
+	public List<VariableTerm> getNonBindingVariables(boolean negated) {
 		Term left = terms.get(0);
 		Term right = terms.get(1);
 		HashSet<VariableTerm> occurringVariables = new HashSet<>();
@@ -137,14 +152,18 @@ public class ComparisonAtom implements FixedInterpretationLiteral {
 	}
 
 	@Override
-	public Atom substitute(Substitution substitution) {
+	public ComparisonAtom substitute(Substitution substitution) {
 		return new ComparisonAtom(terms.get(0).substitute(substitution),
 			terms.get(1).substitute(substitution),
 			negated, operator);
 	}
 
-	@Override
 	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
+		return getSubstitutions(partialSubstitution, negated);
+	}
+	
+	@Override
+	public List<Substitution> getSubstitutions(Substitution partialSubstitution, boolean negated) {
 		// Treat case where this is just comparison with all variables bound by partialSubstitution.
 		if (!isLeftAssigning() && !isRightAssigning()) {
 			if (compare(terms.get(0).substitute(partialSubstitution), terms.get(1).substitute(partialSubstitution))) {
@@ -185,7 +204,7 @@ public class ComparisonAtom implements FixedInterpretationLiteral {
 	private boolean compare(Term x, Term y) {
 		final int comparison = x.compareTo(y);
 
-		ComparisonOperator operator = isNegated() ? this.operator.getNegation() : this.operator;
+		ComparisonOperator operator = negated ? this.operator.getNegation() : this.operator;
 		switch (operator) {
 			case EQ:
 				return comparison ==  0;

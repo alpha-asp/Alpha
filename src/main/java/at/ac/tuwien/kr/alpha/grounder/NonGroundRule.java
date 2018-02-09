@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -42,7 +42,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Represents a non-ground rule or a constraint for the semi-naive grounder.
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017-2018, the Alpha Team.
  */
 public class NonGroundRule {
 	private static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
@@ -50,13 +50,13 @@ public class NonGroundRule {
 	private final int ruleId;
 	private final Rule rule;
 
-	private final List<Literal> bodyAtomsPositive;
-	private final List<Literal> bodyAtomsNegative;
+	private final List<Atom> bodyAtomsPositive;
+	private final List<Atom> bodyAtomsNegative;
 	private final Atom headAtom;
 
 	final RuleGroundingOrder groundingOrder;
 
-	private NonGroundRule(Rule rule, int ruleId, List<Literal> bodyAtomsPositive, List<Literal> bodyAtomsNegative, Atom headAtom) {
+	private NonGroundRule(Rule rule, int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
 		this.ruleId = ruleId;
 		this.rule = rule;
 
@@ -78,11 +78,11 @@ public class NonGroundRule {
 	// FIXME: NonGroundRule should extend Rule and then its constructor directly be used.
 	public static NonGroundRule constructNonGroundRule(Rule rule) {
 		List<Literal> body = rule.getBody();
-		final List<Literal> pos = new ArrayList<>(body.size() / 2);
-		final List<Literal> neg = new ArrayList<>(body.size() / 2);
+		final List<Atom> pos = new ArrayList<>(body.size() / 2);
+		final List<Atom> neg = new ArrayList<>(body.size() / 2);
 
 		for (Literal literal : body) {
-			(literal.isNegated() ? neg : pos).add(literal);
+			(literal.isNegated() ? neg : pos).add(literal.getAtom());
 		}
 		Atom headAtom = null;
 		if (rule.getHead() != null) {
@@ -136,9 +136,10 @@ public class NonGroundRule {
 			join(
 						(isConstraint() ? "" : headAtom + " ") + ":- ",
 				bodyAtomsPositive,
-				bodyAtomsPositive.size() + bodyAtomsNegative.size() > 0 ? ", " : " "
+				bodyAtomsNegative.size() > 0 ? ", not " : ""
 			),
 			bodyAtomsNegative,
+			", not ",
 			"."
 		);
 	}
@@ -147,11 +148,11 @@ public class NonGroundRule {
 		return rule;
 	}
 
-	public List<Literal> getBodyAtomsPositive() {
+	public List<Atom> getBodyAtomsPositive() {
 		return bodyAtomsPositive;
 	}
 
-	public List<Literal> getBodyAtomsNegative() {
+	public List<Atom> getBodyAtomsNegative() {
 		return bodyAtomsNegative;
 	}
 

@@ -43,24 +43,21 @@ import java.util.stream.Collectors;
 import static at.ac.tuwien.kr.alpha.Util.join;
 import static java.util.Collections.emptyList;
 
-public class ExternalAtom implements FixedInterpretationLiteral {
+public class ExternalAtom implements FixedInterpretationAtom {
 	private final List<Term> input;
 	private final List<Term> output;
 
 	protected Predicate predicate;
 	protected final PredicateInterpretation interpretation;
-	protected final boolean negated;
 
-	public ExternalAtom(Predicate predicate, PredicateInterpretation interpretation, List<Term> input, List<Term> output, boolean negated) {
+	public ExternalAtom(Predicate predicate, PredicateInterpretation interpretation, List<Term> input, List<Term> output) {
 		this.predicate = predicate;
 		this.interpretation = interpretation;
 		this.input = input;
 		this.output = output;
-		this.negated = negated;
 	}
 
-	@SuppressWarnings("unchecked")
-	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
+	public List<Substitution> getSubstitutions(Substitution partialSubstitution, boolean negated) {
 		List<Substitution> substitutions = new ArrayList<>();
 		List<Term> substitutes = new ArrayList<>(input.size());
 
@@ -111,16 +108,6 @@ public class ExternalAtom implements FixedInterpretationLiteral {
 	}
 
 	@Override
-	public boolean isNegated() {
-		return negated;
-	}
-	
-	@Override
-	public ExternalAtom negate() {
-		return new ExternalAtom(predicate, interpretation, input, output, !negated);
-	}
-
-	@Override
 	public Predicate getPredicate() {
 		return predicate;
 	}
@@ -140,12 +127,12 @@ public class ExternalAtom implements FixedInterpretationLiteral {
 	}
 
 	@Override
-	public List<VariableTerm> getBindingVariables() {
+	public List<VariableTerm> getBindingVariables(boolean negated) {
 		// If the external atom is negative, then all variables of input and output are non-binding
 		// and there are no binding variables (like for ordinary atoms).
 		// If the external atom is positive, then variables of output are binding.
 
-		if (isNegated()) {
+		if (negated) {
 			return emptyList();
 		}
 
@@ -161,7 +148,7 @@ public class ExternalAtom implements FixedInterpretationLiteral {
 	}
 
 	@Override
-	public List<VariableTerm> getNonBindingVariables() {
+	public List<VariableTerm> getNonBindingVariables(boolean negated) {
 		// External atoms have their input always non-binding, since they cannot
 		// be queried without some concrete input.
 		LinkedList<VariableTerm> nonbindingVariables = new LinkedList<>();
@@ -190,8 +177,7 @@ public class ExternalAtom implements FixedInterpretationLiteral {
 				.stream()
 				.map(t -> t.substitute(substitution))
 				.collect(Collectors.toList()),
-			output,
-			negated
+			output
 		);
 	}
 

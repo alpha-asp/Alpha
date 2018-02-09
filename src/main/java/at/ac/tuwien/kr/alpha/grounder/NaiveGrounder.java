@@ -30,7 +30,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -158,10 +158,10 @@ public class NaiveGrounder extends BridgedGrounder {
 			}
 
 			// Collect head and body variables.
-			HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.getBindingVariables());
+			HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.getBindingVariables(false));
 			HashSet<VariableTerm> occurringVariablesBody = new HashSet<>();
 			for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
-				occurringVariablesBody.addAll(atom.getBindingVariables());
+				occurringVariablesBody.addAll(atom.getBindingVariables(false));
 			}
 			occurringVariablesBody.removeAll(occurringVariablesHead);
 
@@ -349,10 +349,11 @@ public class NaiveGrounder extends BridgedGrounder {
 			return singletonList(partialSubstitution);
 		}
 
-		Literal currentAtom = groundingOrder[orderPosition];
-		if (currentAtom instanceof FixedInterpretationLiteral) {
+		Literal currentLiteral = groundingOrder[orderPosition];
+		Atom currentAtom = currentLiteral.getAtom();
+		if (currentAtom instanceof FixedInterpretationAtom) {
 			// Generate all substitutions for the builtin/external/interval atom.
-			final List<Substitution> substitutions = ((FixedInterpretationLiteral)currentAtom).getSubstitutions(partialSubstitution);
+			final List<Substitution> substitutions = ((FixedInterpretationAtom)currentAtom).getSubstitutions(partialSubstitution, currentLiteral.isNegated());
 
 			if (substitutions.isEmpty()) {
 				return emptyList();
@@ -371,7 +372,7 @@ public class NaiveGrounder extends BridgedGrounder {
 
 		if (substitute.isGround()) {
 			// Substituted atom is ground, in case it is positive, only ground if it also holds true
-			if (currentAtom.isNegated()) {
+			if (currentLiteral.isNegated()) {
 				// Atom occurs negated in the rule, continue grounding
 				return bindNextAtomInRule(groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
 			}
@@ -406,7 +407,7 @@ public class NaiveGrounder extends BridgedGrounder {
 		}
 
 		// substituted atom contains variables
-		if (currentAtom.isNegated()) {
+		if (currentLiteral.isNegated()) {
 			throw oops("Current atom should be positive at this point but is not");
 		}
 
@@ -537,20 +538,20 @@ public class NaiveGrounder extends BridgedGrounder {
 		ret.append(" :- ");
 		boolean isFirst = true;
 		for (Atom bodyAtom : rule.getBodyAtomsPositive()) {
-			ret.append(groundAtomToString(bodyAtom, substitution, isFirst));
+			ret.append(groundLiteralToString(bodyAtom.toLiteral(), substitution, isFirst));
 			isFirst = false;
 		}
 		for (Atom bodyAtom : rule.getBodyAtomsNegative()) {
-			ret.append(groundAtomToString(bodyAtom, substitution, isFirst));
+			ret.append(groundLiteralToString(bodyAtom.toLiteral(false), substitution, isFirst));
 			isFirst = false;
 		}
 		ret.append(".");
 		return ret.toString();
 	}
 
-	static String groundAtomToString(Atom bodyAtom, Substitution substitution, boolean isFirst) {
-		Atom groundBodyAtom = bodyAtom.substitute(substitution);
-		return  (isFirst ? "" : ", ") + groundBodyAtom.toString();
+	static String groundLiteralToString(Literal literal, Substitution substitution, boolean isFirst) {
+		Literal groundLiteral = literal.substitute(substitution);
+		return  (isFirst ? "" : ", ") + groundLiteral.toString();
 	}
 
 	private static class FirstBindingAtom {

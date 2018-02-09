@@ -43,13 +43,17 @@ import static at.ac.tuwien.kr.alpha.Util.join;
 /**
  * Copyright (c) 2016-2018, the Alpha Team.
  */
-public class BasicAtom implements Literal {
+public class BasicAtom implements Atom {
 	private final Predicate predicate;
 	private final List<Term> terms;
 	private final boolean ground;
-	private final boolean negated;
 
-	public BasicAtom(Predicate predicate, List<Term> terms, boolean negated) {
+	/**
+	 * Creates a positive BasicAtom over predicate and terms.
+	 * @param predicate
+	 * @param terms
+	 */
+	public BasicAtom(Predicate predicate, List<Term> terms) {
 		this.predicate = predicate;
 		this.terms = terms;
 
@@ -62,16 +66,6 @@ public class BasicAtom implements Literal {
 		}
 
 		this.ground = ground;
-		this.negated = negated;
-	}
-
-	/**
-	 * Creates a positive BasicAtom over predicate and terms.
-	 * @param predicate
-	 * @param terms
-	 */
-	public BasicAtom(Predicate predicate, List<Term> terms) {
-		this(predicate, terms, false);
 	}
 
 	public BasicAtom(Predicate predicate, Term... terms) {
@@ -98,17 +92,7 @@ public class BasicAtom implements Literal {
 	}
 
 	@Override
-	public boolean isNegated() {
-		return negated;
-	}
-	
-	@Override
-	public BasicAtom negate() {
-		return new BasicAtom(predicate, terms, !negated);
-	}
-
-	@Override
-	public List<VariableTerm> getBindingVariables() {
+	public List<VariableTerm> getBindingVariables(boolean negated) {
 		if (negated) {
 			// Negative literal has no binding variables.
 			return Collections.emptyList();
@@ -121,7 +105,7 @@ public class BasicAtom implements Literal {
 	}
 
 	@Override
-	public List<VariableTerm> getNonBindingVariables() {
+	public List<VariableTerm> getNonBindingVariables(boolean negated) {
 		if (!negated) {
 			// Positive literal has only binding variables.
 			return Collections.emptyList();
@@ -137,12 +121,12 @@ public class BasicAtom implements Literal {
 	public BasicAtom substitute(Substitution substitution) {
 		return new BasicAtom(predicate, terms.stream()
 			.map(t -> t.substitute(substitution))
-			.collect(Collectors.toList()), negated);
+			.collect(Collectors.toList()));
 	}
 
 	@Override
 	public String toString() {
-		final String prefix = (negated ? "not " : "") + predicate.getName();
+		final String prefix = predicate.getName();
 		if (terms.isEmpty()) {
 			return prefix;
 		}

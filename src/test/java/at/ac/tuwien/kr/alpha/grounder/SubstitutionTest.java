@@ -30,7 +30,9 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
+import at.ac.tuwien.kr.alpha.common.atoms.AtomLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -97,12 +99,12 @@ public class SubstitutionTest {
 	
 	@Test
 	public void substitutePositiveBasicAtom() {
-		substituteBasicAtom(false);
+		substituteBasicAtomLiteral(false);
 	}
 	
 	@Test
 	public void substituteNegativeBasicAtom() {
-		substituteBasicAtom(true);
+		substituteBasicAtomLiteral(true);
 	}
 	
 	@Test
@@ -116,36 +118,37 @@ public class SubstitutionTest {
 		assertEquals("x :- p(a, b), not q(a, b).", printedString);
 	}
 	
-	private void substituteBasicAtom(boolean negated) {
+	private void substituteBasicAtomLiteral(boolean negated) {
 		Predicate p = Predicate.getInstance("p", 2);
-		BasicAtom atom = new BasicAtom(p, Arrays.asList(X, Y), negated);
+		BasicAtom atom = new BasicAtom(p, Arrays.asList(X, Y));
+		Literal literal = new AtomLiteral(atom, negated);
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
-		atom = atom.substitute(substitution);
-		assertEquals(p, atom.getPredicate());
-		assertEquals(A, atom.getTerms().get(0));
-		assertEquals(B, atom.getTerms().get(1));
-		assertEquals(negated, atom.isNegated());
+		literal = literal.substitute(substitution);
+		assertEquals(p, literal.getPredicate());
+		assertEquals(A, literal.getTerms().get(0));
+		assertEquals(B, literal.getTerms().get(1));
+		assertEquals(negated, literal.isNegated());
 	}
 	
 	@Test
-	public void groundAtomToString_PositiveBasicAtom() {
-		groundAtomToString(false);
+	public void groundLiteralToString_PositiveBasicAtom() {
+		groundLiteralToString(false);
 	}
 	
 	@Test
-	public void groundAtomToString_NegativeBasicAtom() {
-		groundAtomToString(true);
+	public void groundLiteralToString_NegativeBasicAtom() {
+		groundLiteralToString(true);
 	}
 	
-	private void groundAtomToString(boolean negated) {
+	private void groundLiteralToString(boolean negated) {
 		Predicate p = Predicate.getInstance("p", 2);
-		BasicAtom atom = new BasicAtom(p, Arrays.asList(X, Y), negated);
+		BasicAtom atom = new BasicAtom(p, Arrays.asList(X, Y));
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
-		String printedString = NaiveGrounder.groundAtomToString(atom, substitution, true);
+		String printedString = NaiveGrounder.groundLiteralToString(atom.toLiteral(!negated), substitution, true);
 		assertEquals((negated ? "not " : "") + "p(a, b)", printedString);
 	}
 
