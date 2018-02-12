@@ -8,11 +8,11 @@
  * modification, are permitted provided that the following conditions are met:
  * 
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ * list of conditions and the following disclaimer.
  * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -39,22 +39,19 @@ import java.util.*;
  * Represents a builtin atom according to the standard.
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public class ComparisonLiteral implements FixedInterpretationLiteral {
-	private final ComparisonAtom atom;
-	private final boolean negated;
+public class ComparisonLiteral extends Literal implements FixedInterpretationLiteral {
 	private final boolean isNormalizedEquality;
 
 	public ComparisonLiteral(Term left, Term right, boolean negated, ComparisonOperator operator) {
 		this(Arrays.asList(left, right), negated, operator);
 	}
-	
+
 	private ComparisonLiteral(List<Term> terms, boolean negated, ComparisonOperator operator) {
 		this(new ComparisonAtom(terms, operator), negated);
 	}
-	
+
 	private ComparisonLiteral(ComparisonAtom atom, boolean negated) {
-		this.atom = atom;
-		this.negated = negated;
+		super(atom, negated);
 		this.isNormalizedEquality = (!negated && atom.operator == ComparisonOperator.EQ)
 				|| (negated && atom.operator == ComparisonOperator.NE);
 	}
@@ -64,26 +61,21 @@ public class ComparisonLiteral implements FixedInterpretationLiteral {
 	}
 
 	boolean isLeftAssigning() {
-		return isNormalizedEquality && atom.isLeftAssigning();
+		return isNormalizedEquality && getAtom().isLeftAssigning();
 	}
 
 	boolean isRightAssigning() {
-		return isNormalizedEquality && atom.isRightAssigning();
+		return isNormalizedEquality && getAtom().isRightAssigning();
 	}
-	
+
 	@Override
-	public Atom getAtom() {
-		return atom;
+	public ComparisonAtom getAtom() {
+		return (ComparisonAtom) atom;
 	}
-	
-	@Override
-	public boolean isNegated() {
-		return negated;
-	}
-	
+
 	@Override
 	public ComparisonLiteral negate() {
-		return new ComparisonLiteral(atom, !negated);
+		return new ComparisonLiteral(getAtom(), !negated);
 	}
 
 	@Override
@@ -141,18 +133,14 @@ public class ComparisonLiteral implements FixedInterpretationLiteral {
 
 	@Override
 	public ComparisonLiteral substitute(Substitution substitution) {
-		return new ComparisonLiteral(atom.substitute(substitution),			negated);
+		return new ComparisonLiteral(getAtom().substitute(substitution), negated);
 	}
 
 	@Override
 	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
+		ComparisonAtom atom = getAtom();
 		ComparisonOperator operator = negated ? atom.operator.getNegation() : atom.operator;
 		return ComparisonAtom.getSubstitutions(atom, partialSubstitution, operator);
-	}
-
-	@Override
-	public String toString() {
-		return (negated ? "not " : "") + atom;
 	}
 
 	@Override
@@ -169,7 +157,7 @@ public class ComparisonLiteral implements FixedInterpretationLiteral {
 		if (negated != that.negated) {
 			return false;
 		}
-		if (atom.operator != that.atom.operator) {
+		if (getAtom().operator != that.getAtom().operator) {
 			return false;
 		}
 		return getTerms().equals(that.getTerms());

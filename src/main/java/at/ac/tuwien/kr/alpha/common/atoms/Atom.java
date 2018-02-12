@@ -77,7 +77,7 @@ public interface Atom extends Comparable<Atom> {
 	 * @return
 	 */
 	default Literal toLiteral(boolean positive) {
-		return new AtomLiteral(this, !positive);
+		return new Literal(this, !positive);
 	}
 
 	@Override

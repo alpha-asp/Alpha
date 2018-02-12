@@ -36,6 +36,6 @@ import java.util.List;
  * Examples of such literals are builtin atoms and external atoms.
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public interface FixedInterpretationLiteral extends Literal {
+public interface FixedInterpretationLiteral {
 	List<Substitution> getSubstitutions(Substitution partialSubstitution);
 }
