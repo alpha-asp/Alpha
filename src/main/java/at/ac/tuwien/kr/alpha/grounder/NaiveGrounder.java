@@ -260,7 +260,7 @@ public class NaiveGrounder extends BridgedGrounder {
 		for (NonGroundRule nonGroundRule : fixedRules) {
 			// Generate NoGoods for all rules that have a fixed grounding.
 			Literal[] groundingOrder = nonGroundRule.groundingOrder.getFixedGroundingOrder();
-			List<Substitution> substitutions = bindNextAtomInRule(groundingOrder, 0, new Substitution(), null);
+			List<Substitution> substitutions = bindNextAtomInRule(groundingOrder, 0, nonGroundRule.getLiteralsOnlyOccurringInHeuristic(), new Substitution(), null);
 			groundAndRegister(nonGroundRule, substitutions, groundNogoods);
 		}
 
@@ -306,6 +306,7 @@ public class NaiveGrounder extends BridgedGrounder {
 					final List<Substitution> substitutions = bindNextAtomInRule(
 						nonGroundRule.groundingOrder.orderStartingFrom(firstBindingAtom.startingLiteral),
 						0,
+						nonGroundRule.getLiteralsOnlyOccurringInHeuristic(),
 						unifier,
 						currentAssignment
 					);
@@ -364,7 +365,7 @@ public class NaiveGrounder extends BridgedGrounder {
 		return registry.register(noGood);
 	}
 
-	private List<Substitution> bindNextAtomInRule(Literal[] groundingOrder, int orderPosition, Substitution partialSubstitution, Assignment currentAssignment) {
+	private List<Substitution> bindNextAtomInRule(Literal[] groundingOrder, int orderPosition, Set<Literal> literalsOnlyOccurringInHeuristic, Substitution partialSubstitution, Assignment currentAssignment) {
 		if (orderPosition == groundingOrder.length) {
 			return singletonList(partialSubstitution);
 		}
@@ -387,7 +388,7 @@ public class NaiveGrounder extends BridgedGrounder {
 			final List<Substitution> generatedSubstitutions = new ArrayList<>();
 			for (Substitution substitution : substitutions) {
 				// Continue grounding with each of the generated values.
-				generatedSubstitutions.addAll(bindNextAtomInRule(groundingOrder, orderPosition + 1, substitution, currentAssignment));
+				generatedSubstitutions.addAll(bindNextAtomInRule(groundingOrder, orderPosition + 1, literalsOnlyOccurringInHeuristic, substitution, currentAssignment));
 			}
 			return generatedSubstitutions;
 		}
@@ -397,11 +398,11 @@ public class NaiveGrounder extends BridgedGrounder {
 
 		if (substitute.isGround()) {
 			// Substituted atom is ground, in case it is positive, only ground if it also holds true
-			if (currentLiteral.isNegated()) {
-				// Atom occurs negated in the rule, continue grounding
-				return bindNextAtomInRule(groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
+			if (currentLiteral.isNegated() || literalsOnlyOccurringInHeuristic.contains(currentLiteral)) {
+				// Atom occurs negated in the rule or occurs only in the heuristic generator: continue grounding
+				return bindNextAtomInRule(groundingOrder, orderPosition + 1, literalsOnlyOccurringInHeuristic, partialSubstitution, currentAssignment);
 			}
-
+			
 			if (!workingMemory.get(currentAtom.getPredicate(), true).containsInstance(new Instance(substitute.getTerms()))) {
 				// Generate no variable substitution.
 				return emptyList();
@@ -411,7 +412,7 @@ public class NaiveGrounder extends BridgedGrounder {
 			final LinkedHashSet<Instance> instances = factsFromProgram.get(substitute.getPredicate());
 			if (!(instances == null || !instances.contains(new Instance(substitute.getTerms())))) {
 				// Ground literal holds, continue finding a variable substitution.
-				return bindNextAtomInRule(groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
+				return bindNextAtomInRule(groundingOrder, orderPosition + 1, literalsOnlyOccurringInHeuristic, partialSubstitution, currentAssignment);
 			}
 
 			// Atom is not a fact already.
@@ -491,7 +492,7 @@ public class NaiveGrounder extends BridgedGrounder {
 					}
 				}
 			}
-			List<Substitution> boundSubstitutions = bindNextAtomInRule(groundingOrder, orderPosition + 1, unified, currentAssignment);
+			List<Substitution> boundSubstitutions = bindNextAtomInRule(groundingOrder, orderPosition + 1, literalsOnlyOccurringInHeuristic, unified, currentAssignment);
 			generatedSubstitutions.addAll(boundSubstitutions);
 		}
 

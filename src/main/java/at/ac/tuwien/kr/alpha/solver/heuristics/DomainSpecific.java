@@ -31,12 +31,13 @@ import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DomainSpecificHeuristicsStore;
+import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DomainSpecificHeuristicsStore.Entry;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
-import org.apache.commons.collections4.SetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -84,37 +85,47 @@ public class DomainSpecific implements BranchingHeuristic {
 	
 	@Override
 	public int chooseAtom() {
-		Optional<Integer> chosenAtom = choiceManager.getDomainSpecificHeuristics().streamRuleAtomsOrderedByDecreasingPriority().map(this::chooseFromEquallyWeighted)
+		Optional<Integer> chosenAtom = choiceManager.getDomainSpecificHeuristics().streamEntriesOrderedByDecreasingPriority().map(this::chooseFromEquallyWeighted)
 				.filter(a -> a != DEFAULT_CHOICE_ATOM).findFirst();
 		return chooseOrFallback(chosenAtom);
 	}
 
 	@Override
 	public int chooseAtom(Set<Integer> admissibleChoices) {
-		Optional<Integer> chosenAtom = choiceManager.getDomainSpecificHeuristics().streamRuleAtomsOrderedByDecreasingPriority()
-				.map(s -> SetUtils.intersection(s, admissibleChoices)).map(this::chooseFromEquallyWeighted)
+		Optional<Integer> chosenAtom = choiceManager.getDomainSpecificHeuristics().streamEntriesOrderedByDecreasingPriority()
+				.map(s -> keepAdmissibleEntries(s, admissibleChoices)).map(c -> chooseFromEquallyWeighted(c))
 				.filter(a -> a != DEFAULT_CHOICE_ATOM).findFirst();
 		return chooseOrFallback(chosenAtom);
 	}
 
-	private int chooseFromEquallyWeighted(Set<Integer> possibleChoices) {
+	private Set<Entry> keepAdmissibleEntries(Set<Entry> entries, Set<Integer> admissibleChoices) {
+		Set<Entry> filtered = new HashSet<>();
+		for (Entry entry : entries) {
+			if (admissibleChoices.contains(entry.getChoicePoint())) {
+				filtered.add(entry);
+			}
+		}
+		return filtered;
+	}
+
+	private int chooseFromEquallyWeighted(Set<Entry> possibleChoices) {
 		DomainSpecificHeuristicsStore domainSpecificHeuristics = choiceManager.getDomainSpecificHeuristics();
 		int chosenAtom;
-		Set<Integer> filteredChoices = possibleChoices.stream()
-				.filter(choiceManager::isActiveChoiceAtom)
-				.filter(this::isUnassigned)
-				.filter(a -> domainSpecificHeuristics.isConditionSatisfied(a, assignment))
+		Set<Entry> filteredChoices = possibleChoices.stream()
+				.filter(e -> choiceManager.isActiveChoiceAtom(e.getChoicePoint()))
+				.filter(e -> isUnassigned(e.getChoicePoint()))
+				.filter(e -> domainSpecificHeuristics.isConditionSatisfied(e.getChoicePoint(), assignment))
 				.collect(Collectors.toSet());
 		if (filteredChoices.isEmpty()) {
 			chosenAtom = DEFAULT_CHOICE_ATOM;
 		} else if (filteredChoices.size() == 1) {
-			chosenAtom = filteredChoices.iterator().next();
-			LOGGER.debug("Unique best choice in terms of domain-specific heuristics: " + chosenAtom);
+			Entry chosenEntry = filteredChoices.iterator().next();
+			chosenAtom = chosenEntry.getChoicePoint();
+			LOGGER.debug("Unique best choice in terms of domain-specific heuristics: " + chosenEntry);
 		} else {
 			LOGGER.debug("Using fallback heuristics to choose from " + filteredChoices);
-			chosenAtom = fallbackHeuristic.chooseAtom(filteredChoices);
+			chosenAtom = fallbackHeuristic.chooseAtom(filteredChoices.stream().map(Entry::getChoicePoint).collect(Collectors.toSet()));
 		}
-		// TODO: also log weight and level? (currently not known at this point)
 		return chosenAtom;
 	}
 
@@ -122,7 +133,14 @@ public class DomainSpecific implements BranchingHeuristic {
 		if (chosenAtom.isPresent()) {
 			return chosenAtom.get();
 		} else {
-			return fallbackHeuristic.chooseAtom();
+			Set<Integer> ruleAtomsWithDefaultPriority = choiceManager.getDomainSpecificHeuristics().getChoicePointsWithDefaultPriority(assignment);
+			if (!ruleAtomsWithDefaultPriority.isEmpty()) {
+				LOGGER.debug("Using fallback heuristics to choose from atoms with default priority: " + ruleAtomsWithDefaultPriority);
+				return fallbackHeuristic.chooseAtom(ruleAtomsWithDefaultPriority);
+			} else {
+				LOGGER.debug("Using fallback heuristics to choose");
+				return fallbackHeuristic.chooseAtom();
+			}
 		}
 	}
 

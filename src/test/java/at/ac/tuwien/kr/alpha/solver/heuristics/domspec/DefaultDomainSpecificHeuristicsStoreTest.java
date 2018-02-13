@@ -6,11 +6,11 @@
  * modification, are permitted provided that the following conditions are met:
  * 
  * 1) Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ *    list of conditions and the following disclaimer.
  * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -26,6 +26,7 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 
 import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
+import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DomainSpecificHeuristicsStore.Entry;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -46,20 +47,20 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 	@Test
 	public void testInsert_1_atom() {
 		store.addInfo(info(1, 1, 1));
-		List<Set<Integer>> orderedList = store.streamRuleAtomsOrderedByDecreasingPriority().collect(Collectors.toList());
+		List<Set<Entry>> orderedList = store.streamEntriesOrderedByDecreasingPriority().collect(Collectors.toList());
 		assertEquals(1, orderedList.size());
-		Iterator<Set<Integer>> iterator = orderedList.iterator();
-		assertEquals(set(1), iterator.next());
+		Iterator<Set<Entry>> iterator = orderedList.iterator();
+		assertEquals(set(1), nextSetOfChoicePoints(iterator));
 	}
 
 	@Test
 	public void testInsert_2_atoms_sameWeight_sameLevel() {
 		store.addInfo(info(1, 2, 3));
 		store.addInfo(info(2, 2, 3));
-		List<Set<Integer>> orderedList = store.streamRuleAtomsOrderedByDecreasingPriority().collect(Collectors.toList());
+		List<Set<Entry>> orderedList = store.streamEntriesOrderedByDecreasingPriority().collect(Collectors.toList());
 		assertEquals(1, orderedList.size());
-		Iterator<Set<Integer>> iterator = orderedList.iterator();
-		assertEquals(set(1, 2), iterator.next());
+		Iterator<Set<Entry>> iterator = orderedList.iterator();
+		assertEquals(set(1, 2), nextSetOfChoicePoints(iterator));
 	}
 
 	@Test
@@ -67,12 +68,12 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 		store.addInfo(info(1, 2, 3));
 		store.addInfo(info(2, 2, 1));
 		store.addInfo(info(3, 2, 2));
-		List<Set<Integer>> orderedList = store.streamRuleAtomsOrderedByDecreasingPriority().collect(Collectors.toList());
+		List<Set<Entry>> orderedList = store.streamEntriesOrderedByDecreasingPriority().collect(Collectors.toList());
 		assertEquals(3, orderedList.size());
-		Iterator<Set<Integer>> iterator = orderedList.iterator();
-		assertEquals(set(1), iterator.next());
-		assertEquals(set(3), iterator.next());
-		assertEquals(set(2), iterator.next());
+		Iterator<Set<Entry>> iterator = orderedList.iterator();
+		assertEquals(set(1), nextSetOfChoicePoints(iterator));
+		assertEquals(set(3), nextSetOfChoicePoints(iterator));
+		assertEquals(set(2), nextSetOfChoicePoints(iterator));
 	}
 
 	@Test
@@ -80,12 +81,12 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 		store.addInfo(info(1, 4, 1));
 		store.addInfo(info(2, 2, 1));
 		store.addInfo(info(3, 3, 1));
-		List<Set<Integer>> orderedList = store.streamRuleAtomsOrderedByDecreasingPriority().collect(Collectors.toList());
+		List<Set<Entry>> orderedList = store.streamEntriesOrderedByDecreasingPriority().collect(Collectors.toList());
 		assertEquals(3, orderedList.size());
-		Iterator<Set<Integer>> iterator = orderedList.iterator();
-		assertEquals(set(1), iterator.next());
-		assertEquals(set(3), iterator.next());
-		assertEquals(set(2), iterator.next());
+		Iterator<Set<Entry>> iterator = orderedList.iterator();
+		assertEquals(set(1), nextSetOfChoicePoints(iterator));
+		assertEquals(set(3), nextSetOfChoicePoints(iterator));
+		assertEquals(set(2), nextSetOfChoicePoints(iterator));
 	}
 
 	private DomainSpecificHeuristicValues info(int atom, int weight, int level) {
@@ -95,6 +96,10 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 	@SafeVarargs
 	private final <T> Set<T> set(T... elements) {
 		return Arrays.stream(elements).collect(Collectors.toSet());
+	}
+
+	private Set<Integer> nextSetOfChoicePoints(Iterator<Set<Entry>> iterator) {
+		return iterator.next().stream().map(Entry::getChoicePoint).collect(Collectors.toSet());
 	}
 
 }

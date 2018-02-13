@@ -6,11 +6,11 @@
  * modification, are permitted provided that the following conditions are met:
  * 
  * 1) Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ *    list of conditions and the following disclaimer.
  * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -31,12 +31,49 @@ import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicValues.DEFAULT_LEVEL;
+import static at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicValues.DEFAULT_WEIGHT;
 
 /**
  * Stores a mapping between rule atom IDs and their corresponding domain-specific heuristic values
  */
 public interface DomainSpecificHeuristicsStore {
+	
+	public class Entry {
+		private final int level;
+		private final int weight;
+		private final int choicePoint;
+
+		Entry(int level, int weight, int choicePoint) {
+			this.level = level;
+			this.weight = weight;
+			this.choicePoint = choicePoint;
+		}
+
+		public int getLevel() {
+			return level;
+		}
+
+		public int getWeight() {
+			return weight;
+		}
+
+		public int getChoicePoint() {
+			return choicePoint;
+		}
+		
+		public boolean isDefaultPriority() {
+			return level == DEFAULT_LEVEL && weight == DEFAULT_WEIGHT;
+		}
+		
+		@Override
+		public String toString() {
+			return String.format("%d [%d@%d]", choicePoint, weight, level);
+		}
+	}
 
 	void addInfo(DomainSpecificHeuristicValues domainSpecificHeuristicsInfo);
 
@@ -51,7 +88,7 @@ public interface DomainSpecificHeuristicsStore {
 	 * e.g. the first set contains all rule atoms of the highest weight and the highest level, the second contains all of the highest weight and the
 	 * second-to-highest level, etc.
 	 */
-	Stream<Set<Integer>> streamRuleAtomsOrderedByDecreasingPriority();
+	Stream<Set<Entry>> streamEntriesOrderedByDecreasingPriority();
 	
 	/**
 	 * Returns the set of literals that have to be true for the non-default heuristic values to apply to the given rule.
@@ -65,7 +102,16 @@ public interface DomainSpecificHeuristicsStore {
 	 * @return {@code true} iff for none of the literals in {@link #getConditionLiterals(int)} it holds that {@link Assignment#isViolated(int)} for the given {@code assignment}
 	 */
 	default boolean isConditionSatisfied(int ruleAtomId, Assignment assignment) {
-		return getConditionLiterals(ruleAtomId).stream().noneMatch(assignment::isViolated);
+		return getConditionLiterals(ruleAtomId).stream().noneMatch(assignment::isUnsatisfied);
+	}
+	
+	Set<Entry> getAllEntries();
+
+	/**
+	 * Returns the set of choice points which are either defined to have priority 1@1 or whose condition is not satisfied under the given assignment
+	 */
+	default Set<Integer> getChoicePointsWithDefaultPriority(Assignment assignment) {
+		return getAllEntries().stream().filter(e -> e.isDefaultPriority() || !isConditionSatisfied(e.choicePoint, assignment)).map(Entry::getChoicePoint).collect(Collectors.toSet());
 	}
 
 }

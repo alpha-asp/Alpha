@@ -42,8 +42,13 @@ public class EmptyDomainSpecificHeuristicsStore implements DomainSpecificHeurist
 	}
 
 	@Override
-	public Stream<Set<Integer>> streamRuleAtomsOrderedByDecreasingPriority() {
-		throw new UnsupportedOperationException();
+	public Stream<Set<Entry>> streamEntriesOrderedByDecreasingPriority() {
+		return Stream.empty();
+	}
+	
+	@Override
+	public Set<Entry> getAllEntries() {
+		return Collections.emptySet();
 	}
 	
 	@Override

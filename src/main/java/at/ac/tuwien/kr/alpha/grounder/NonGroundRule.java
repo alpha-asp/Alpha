@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
@@ -36,9 +37,7 @@ import at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicV
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -58,6 +57,7 @@ public class NonGroundRule {
 	private final List<Atom> bodyAtomsNegative;
 	private final Atom headAtom;
 	private final NonGroundDomainSpecificHeuristicValues heuristic;
+	private final Set<Literal> literalsOnlyOccurringInHeuristic;
 
 	final RuleGroundingOrder groundingOrder;
 
@@ -80,6 +80,7 @@ public class NonGroundRule {
 		checkSafety();
 		this.groundingOrder = new RuleGroundingOrder(this);
 		groundingOrder.computeGroundingOrders();
+		this.literalsOnlyOccurringInHeuristic = computeLiteralsOnlyOccurringInHeuristic();
 
 		LOGGER.debug("Rule ID {} assigned to {}", ruleId, rule);
 	}
@@ -125,6 +126,11 @@ public class NonGroundRule {
 		if (!isConstraint()) {
 			predicateList.add(headAtom.getPredicate());
 		}
+		if (heuristic != null) {
+			for (Literal literal : heuristic.getGenerator()) {
+				predicateList.add(literal.getPredicate());
+			}
+		}
 		return predicateList;
 	}
 
@@ -162,6 +168,20 @@ public class NonGroundRule {
 
 	public NonGroundDomainSpecificHeuristicValues getHeuristic() {
 		return heuristic;
+	}
+
+	public Set<Literal> getLiteralsOnlyOccurringInHeuristic() {
+		return Collections.unmodifiableSet(literalsOnlyOccurringInHeuristic);
+	}
+
+	private Set<Literal> computeLiteralsOnlyOccurringInHeuristic() {
+		Set<Literal> literals = new HashSet<>();
+		if (heuristic != null) {
+			literals.addAll(heuristic.getGenerator());
+			Literals.removeAtomsFromLiterals(bodyAtomsPositive, literals);
+			Literals.removeAtomsFromLiterals(bodyAtomsNegative, literals);
+		}
+		return literals;
 	}
 
 	public Rule getRule() {

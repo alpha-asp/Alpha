@@ -27,8 +27,11 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.Collection;
 
 import static java.lang.Math.abs;
 
@@ -66,5 +69,17 @@ public final class Literals {
 	 */
 	public static String toString(Iterable<Literal> literals) {
 		return StringUtils.join(literals, ", ");
+	}
+
+	/**
+	 * Removes both positive and negative occurences of {@code atoms} from a collection of {@code literals}
+	 * @param atoms
+	 * @param literals
+	 */
+	public static void removeAtomsFromLiterals(Collection<Atom> atoms, Collection<Literal> literals) {
+		for (Atom atom : atoms) {
+			literals.remove(atom.toLiteral(true));
+			literals.remove(atom.toLiteral(false));
+		}
 	}
 }
