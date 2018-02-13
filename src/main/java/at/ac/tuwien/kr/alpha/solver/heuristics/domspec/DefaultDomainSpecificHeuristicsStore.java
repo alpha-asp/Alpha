@@ -44,7 +44,7 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 	 * Maps are {@link TreeMap}s sorted in reverse order, which determines the order in which elements are retrieved by
 	 * {@link #streamRuleAtomsOrderedByDecreasingPriority()}.
 	 */
-	private final SortedMap<Integer, SortedMap<Integer, Set<Integer>>> mapWeightLevelChoicePoint = new TreeMap<>(Comparator.reverseOrder());
+	private final SortedMap<Integer, SortedMap<Integer, Set<Integer>>> mapLevelWeightChoicePoint = new TreeMap<>(Comparator.reverseOrder());
 
 	private final Map<Integer, Collection<Integer>> mapChoicePointConditionLiterals = new HashMap<>();
 
@@ -53,23 +53,23 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 		int level = info.getLevel();
 		int weight = info.getWeight();
 
-		if (!mapWeightLevelChoicePoint.containsKey(level)) {
-			mapWeightLevelChoicePoint.put(level, new TreeMap<>(Comparator.reverseOrder()));
+		if (!mapLevelWeightChoicePoint.containsKey(level)) {
+			mapLevelWeightChoicePoint.put(level, new TreeMap<>(Comparator.reverseOrder()));
 		}
 
-		Map<Integer, Set<Integer>> mapLevelChoicePoint = mapWeightLevelChoicePoint.get(level);
-		if (!mapLevelChoicePoint.containsKey(weight)) {
-			mapLevelChoicePoint.put(weight, new HashSet<>());
+		Map<Integer, Set<Integer>> mapWeightChoicePoint = mapLevelWeightChoicePoint.get(level);
+		if (!mapWeightChoicePoint.containsKey(weight)) {
+			mapWeightChoicePoint.put(weight, new HashSet<>());
 		}
 
 		int ruleAtomId = info.getRuleAtomId();
-		mapLevelChoicePoint.get(weight).add(ruleAtomId);
+		mapWeightChoicePoint.get(weight).add(ruleAtomId);
 		mapChoicePointConditionLiterals.put(ruleAtomId, info.getConditionLiterals());
 	}
 
 	@Override
 	public Stream<Set<Integer>> streamRuleAtomsOrderedByDecreasingPriority() {
-		Stream<Set<Integer>> flatMap = mapWeightLevelChoicePoint.values().stream().flatMap(m -> m.values().stream());
+		Stream<Set<Integer>> flatMap = mapLevelWeightChoicePoint.values().stream().flatMap(m -> m.values().stream());
 		// do not return flatMap directly because of Java bug
 		// cf. https://stackoverflow.com/questions/29229373/why-filter-after-flatmap-is-not-completely-lazy-in-java-streams
 		return flatMap.collect(Collectors.toList()).stream();
