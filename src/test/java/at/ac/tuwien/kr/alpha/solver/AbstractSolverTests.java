@@ -203,6 +203,18 @@ public abstract class AbstractSolverTests {
 	}
 
 	protected void assertAnswerSets(String program, Set<AnswerSet> answerSets) throws IOException {
-		assertEquals(answerSets, collectSet(program));
+		Set<AnswerSet> actualAnswerSets = emptySet();
+		try {
+			actualAnswerSets = collectSet(program);
+			assertEquals(answerSets, actualAnswerSets);
+		} catch (AssertionError e) {
+			Set<AnswerSet> expectedMinusActual = new LinkedHashSet<>(answerSets);
+			expectedMinusActual.removeAll(actualAnswerSets);
+			Set<AnswerSet> actualMinusExpected = new LinkedHashSet<>(actualAnswerSets);
+			actualMinusExpected.removeAll(answerSets);
+			String setDiffs = "Expected and computed answer sets do not agree, differences are:\nExpected \\ Actual:\n" + expectedMinusActual + "\nActual \\ Expected:\n" + actualMinusExpected;
+			throw new AssertionError(setDiffs + e.getMessage(), e);
+		}
+
 	}
 }
