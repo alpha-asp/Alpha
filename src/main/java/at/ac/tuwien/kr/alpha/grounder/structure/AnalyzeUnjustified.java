@@ -28,7 +28,7 @@ public class AnalyzeUnjustified {
 		this.atomStore = atomStore;
 		this.workingMemory = workingMemory;
 		this.factsFromProgram = factsFromProgram;
-		predicateDefiningRules = new HashMap<>();
+		predicateDefiningRules = new LinkedHashMap<>();
 		predicateDependencyGraph = PredicateDependencyGraph.buildFromProgram(program);
 	}
 
@@ -37,7 +37,7 @@ public class AnalyzeUnjustified {
 	}
 
 	public void recordDefiningRule(Predicate headPredicate, NonGroundRule rule) {
-		predicateDefiningRules.putIfAbsent(headPredicate, new HashSet<>());
+		predicateDefiningRules.putIfAbsent(headPredicate, new LinkedHashSet<>());
 		predicateDefiningRules.get(headPredicate).add(rule);
 	}
 
@@ -80,17 +80,18 @@ public class AnalyzeUnjustified {
 		Set<Substitution> vN = new LinkedHashSet<>(x.getComplementSubstitutions());
 		ReturnExplainUnjust ret = new ReturnExplainUnjust();
 
-		// Construct set of all 'rules' such that head unifies with p.
+		// Line 2: construct set of all 'rules' such that head unifies with p.
 		List<RuleAndUnifier> rulesUnifyingWithP = rulesHeadUnifyingWith(p);
-		if (rulesUnifyingWithP == null) {
-			return new ReturnExplainUnjust();
-		}
+		rulesLoop:
 		for (RuleAndUnifier ruleUnifier : rulesUnifyingWithP) {
 			Substitution sigma = ruleUnifier.unifier;
 			List<Literal> bodyR = ruleUnifier.ruleBody;
+			Atom sigmaHr = ruleUnifier.originalHead.substitute(sigma);
 			// Line 3 below.
-			if (coveredBy(sigma, vN)) {
-				continue;
+			for (Substitution sigmaN : vN) {
+				if (Unification.unifyAtoms(p.substitute(sigmaN), sigmaHr) != null) {
+					continue rulesLoop;
+				}
 			}
 			// Line 5.
 			for (Literal lit : bodyR) {
@@ -106,7 +107,14 @@ public class AnalyzeUnjustified {
 						continue;
 					}
 					// Line 6.
-					if (coveredBy(pB.substitute(sigmad), litSet)) {
+					boolean isCovered = true;
+					for (Substitution sigmaND : vND) {
+						if (Unification.unifyAtoms(pD.substitute(sigmaND), pB.substitute(sigmad)) != null) {
+							isCovered = false;
+							break;
+						}
+					}
+					if (isCovered) {
 						Substitution sigmacirc = new Substitution(sigma).extendWith(sigmad);
 						vN.add(sigmacirc);
 					}
@@ -119,14 +127,28 @@ public class AnalyzeUnjustified {
 				}
 				Atom lb = lit.substitute(sigma);
 				for (Atom lg : getAssignedAtomsOverPredicate(lb.getPredicate())) {
+					if (atomStore.contains(lg)) {
+						int atomId = atomStore.getAtomId(lg);
+						if (currentAssignment.getTruth(atomId) != ThriceTruth.TRUE) {
+							continue;
+						}
+					} // Note: in case the atom is not in the atomStore, it came from a fact and hence is true.
 					Substitution sigmagb = Unification.unifyAtoms(lg, lb);
 					if (sigmagb == null) {
 						continue;
 					}
 					// Line 9.
-					if (!coveredBy(sigmagb, vN)) {
+					boolean isCovered = false;
+					for (Substitution sigmaN : vN) {
+						if (Unification.unifyAtoms(p.substitute(sigmaN), sigmaHr.substitute(sigmagb)) != null) {
+							isCovered = true;
+							break;
+						}
+					}
+					if (!isCovered) {
 						// Line 10
-						vN.add(sigma.extendWith(sigmagb));
+						Substitution sigmacirc = sigma.extendWith(sigmagb);
+						vN.add(sigmacirc);
 						ret.vL.add((Literal) lg);
 					}
 				}
@@ -171,7 +193,16 @@ public class AnalyzeUnjustified {
 			}
 			unifierLoop:
 			for (Substitution sigmaY : vY) {
-				if (Substitution.isMorePrecise(sigma, sigmaY)) {
+				if (Unification.unifyAtoms(b.substitute(sigmaY), b.substitute(sigma)) != null) {
+					for (Substitution sigmaN : vN) {
+						if (Unification.unifyAtoms(b.substitute(sigmaN), b.substitute(sigma)) != null) {
+							continue unifierLoop;
+						}
+					}
+					vYp.add(sigma);
+					break;
+				}
+				/*if (Substitution.isMorePrecise(sigma, sigmaY)) {
 					for (Substitution sigmaN : vN) {
 						if (Substitution.isMorePrecise(sigmaN, sigma)) {
 							continue unifierLoop;
@@ -179,7 +210,7 @@ public class AnalyzeUnjustified {
 					}
 					vYp.add(sigma);
 					break;
-				}
+				}*/
 			}
 		}
 
@@ -233,7 +264,7 @@ public class AnalyzeUnjustified {
 		Predicate predicate = p.getPredicate();
 		// Check if literal is built-in with a fixed interpretation.
 		if (p instanceof FixedInterpretationLiteral) {
-			return null;
+			return Collections.emptyList();
 		}
 		ArrayList<FactOrNonGroundRule> definingRulesAndFacts = new ArrayList<>();
 		// Get facts over the same predicate.
@@ -273,7 +304,7 @@ public class AnalyzeUnjustified {
 			if (unifier == null) {
 				continue;
 			}
-			rulesWithUnifier.add(new RuleAndUnifier(renamedBody, unifier, factOrNonGroundRule));
+			rulesWithUnifier.add(new RuleAndUnifier(renamedBody, unifier, factOrNonGroundRule, headAtom));
 		}
 		return rulesWithUnifier;
 	}
@@ -291,12 +322,12 @@ public class AnalyzeUnjustified {
 	private static class RuleAndUnifier {
 		final List<Literal> ruleBody;
 		final Substitution unifier;
-		final FactOrNonGroundRule original;
+		final Atom originalHead;
 
-		private RuleAndUnifier(List<Literal> ruleBody, Substitution unifier, FactOrNonGroundRule original) {
+		private RuleAndUnifier(List<Literal> ruleBody, Substitution unifier, FactOrNonGroundRule original, Atom originalHead) {
 			this.ruleBody = ruleBody;
 			this.unifier = unifier;
-			this.original = original;
+			this.originalHead = originalHead;
 		}
 	}
 
