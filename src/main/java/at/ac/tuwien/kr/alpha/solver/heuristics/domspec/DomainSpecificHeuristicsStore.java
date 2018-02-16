@@ -102,7 +102,7 @@ public interface DomainSpecificHeuristicsStore {
 	 * @return {@code true} iff for none of the literals in {@link #getConditionLiterals(int)} it holds that {@link Assignment#isViolated(int)} for the given {@code assignment}
 	 */
 	default boolean isConditionSatisfied(int ruleAtomId, Assignment assignment) {
-		return getConditionLiterals(ruleAtomId).stream().noneMatch(assignment::isUnsatisfied);
+		return getConditionLiterals(ruleAtomId).stream().allMatch(assignment::isSatisfied);
 	}
 	
 	Set<Entry> getAllEntries();

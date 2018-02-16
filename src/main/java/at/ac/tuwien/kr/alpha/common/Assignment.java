@@ -176,6 +176,20 @@ public interface Assignment {
 		final ThriceTruth truth = getTruth(atom);
 		return truth != null && isNegated(literal) == truth.toBoolean();
 	}
+	
+	/**
+	 * Checks if the given literal is satisfied under the current partial assignment
+	 * @param literal
+	 * @return {@code true} iff ({@code literal} is positive and
+	 * assigned either {@link ThriceTruth#TRUE} or {@link ThriceTruth#MBT})
+	 * or ({@code literal} is negative and either unassigned or {@link ThriceTruth#FALSE}). 
+	 */
+	default boolean isSatisfied(int literal) {
+		final int atom = atomOf(literal);
+		final ThriceTruth truth = getTruth(atom);
+		final boolean assignedTrue = truth != null && truth.toBoolean();
+		return (!isNegated(literal) && assignedTrue) || (isNegated(literal) && !assignedTrue);
+	}
 
 	default boolean violates(NoGood noGood) {
 		// Check each NoGood, if it is violated
