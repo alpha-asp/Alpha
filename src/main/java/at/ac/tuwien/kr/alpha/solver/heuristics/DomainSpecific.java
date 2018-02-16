@@ -112,6 +112,7 @@ public class DomainSpecific implements BranchingHeuristic {
 		DomainSpecificHeuristicsStore domainSpecificHeuristics = choiceManager.getDomainSpecificHeuristics();
 		int chosenAtom;
 		Set<Entry> filteredChoices = possibleChoices.stream()
+				.filter(e -> !e.isDefaultPriority()) // entries with default prio are handled together with unsatisfied conditions in chooseOrFallback 
 				.filter(e -> choiceManager.isActiveChoiceAtom(e.getChoicePoint()))
 				.filter(e -> isUnassigned(e.getChoicePoint()))
 				.filter(e -> domainSpecificHeuristics.isConditionSatisfied(e.getChoicePoint(), assignment))

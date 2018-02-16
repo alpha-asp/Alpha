@@ -197,8 +197,8 @@ public class DomainSpecificHeuristicsTest {
 		Program program = parser.parse(
 				"c :- not nc. [10@1]" + System.lineSeparator() +
 				"nc :- not c." + System.lineSeparator() +
-				"a :- not b. [1@1 : c]" + System.lineSeparator() +
-				"b :- not a. [1@1 : not c]");
+				"a :- not b. [2@1 : c]" + System.lineSeparator() +
+				"b :- not a. [2@1 : not c]");
 		solveAndAssertAnswerSets(program, "{ a, c }", "{ b, c }", "{ b, nc }", "{ a, nc }");
 	}
 
@@ -208,8 +208,8 @@ public class DomainSpecificHeuristicsTest {
 				"n(1)." + System.lineSeparator() +
 				"c(N) :- n(N), not nc(N). [10@1]" + System.lineSeparator() +
 				"nc(N) :- n(N), not c(N)." + System.lineSeparator() +
-				"a(N) :- n(N), not b(N). [1@1 : c(N)]" + System.lineSeparator() +
-				"b(N) :- n(N), not a(N). [1@1 : not c(N)]");
+				"a(N) :- n(N), not b(N). [2@1 : c(N)]" + System.lineSeparator() +
+				"b(N) :- n(N), not a(N). [2@1 : not c(N)]");
 		solveAndAssertAnswerSets(program, "{ a(1), c(1), n(1) }", "{ b(1), c(1), n(1) }", "{ b(1), n(1), nc(1) }", "{ a(1), n(1), nc(1) }");
 	}
 
@@ -218,8 +218,8 @@ public class DomainSpecificHeuristicsTest {
 		Program program = parser.parse(
 				"c :- not nc. [10@1]" + System.lineSeparator() +
 				"nc :- not c." + System.lineSeparator() +
-				"a :- not b. [1@1 : c]" + System.lineSeparator() +
-				"b :- not a. [1@1 : not c]");
+				"a :- not b. [2@1 : c]" + System.lineSeparator() +
+				"b :- not a. [2@1 : not c]");
 		solveAndAssertAnswerSets(program, "{ a, c }", "{ b, c }", "{ b, nc }", "{ a, nc }");
 	}
 
@@ -229,8 +229,8 @@ public class DomainSpecificHeuristicsTest {
 				"n(1)." + System.lineSeparator() +
 				"c(N) :- n(N), not nc(N). [10@1]" + System.lineSeparator() +
 				"nc(N) :- n(N), not c(N)." + System.lineSeparator() +
-				"a(N) :- n(N), not b(N). [1@1 : c(N)]" + System.lineSeparator() +
-				"b(N) :- n(N), not a(N). [1@1 : not c(N)]");
+				"a(N) :- n(N), not b(N). [2@1 : c(N)]" + System.lineSeparator() +
+				"b(N) :- n(N), not a(N). [2@1 : not c(N)]");
 		solveAndAssertAnswerSets(program, "{ a(1), c(1), n(1) }", "{ b(1), c(1), n(1) }", "{ b(1), n(1), nc(1) }", "{ a(1), n(1), nc(1) }");
 	}
 	
