@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2018 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -37,24 +37,24 @@ public class SolverStatisticsTests extends AbstractSolverTests {
 	@Test
 	public void checkStatsStringZeroChoices() {
 		Solver solver = getInstance("a.");
-		collectAnswerSetsAndCheckStats(solver, 1, 0, 0, 0, 0, 0);
+		collectAnswerSetsAndCheckStats(solver, 1, 0, 0, 0, 0, 0, 0);
 	}
 
 	@Test
 	public void checkStatsStringOneChoice() {
 		Solver solver = getInstance("a :- not b. b :- not a.");
-		collectAnswerSetsAndCheckStats(solver, 2, 1, 1, 1, 1, 0);
+		collectAnswerSetsAndCheckStats(solver, 2, 1, 1, 1, 1, 0, 0);
 	}
 
 	private void collectAnswerSetsAndCheckStats(Solver solver, int expectedNumberOfAnswerSets, int expectedNumberOfGuesses, int expectedTotalNumberOfBacktracks,
-			int expectedNumberOfBacktracksWithinBackjumps, int expectedNumberOfBackjumps, int expectedNumberOfMBTs) {
+			int expectedNumberOfBacktracksWithinBackjumps, int expectedNumberOfBackjumps, int expectedNumberOfMBTs, int expectedNumberOfConflictsAfterClosing) {
 		Set<AnswerSet> answerSets = solver.collectSet();
 		assertEquals(expectedNumberOfAnswerSets, answerSets.size());
 		if (solver instanceof SolverMaintainingStatistics) {
 			SolverMaintainingStatistics solverMaintainingStatistics = (SolverMaintainingStatistics) solver;
 			assertEquals(
-					String.format("g=%d, bt=%d, bj=%d, bt_within_bj=%d, mbt=%d", expectedNumberOfGuesses, expectedTotalNumberOfBacktracks, expectedNumberOfBackjumps,
-							expectedNumberOfBacktracksWithinBackjumps, expectedNumberOfMBTs),
+					String.format("g=%d, bt=%d, bj=%d, bt_within_bj=%d, mbt=%d, cac=%d", expectedNumberOfGuesses, expectedTotalNumberOfBacktracks, expectedNumberOfBackjumps,
+							expectedNumberOfBacktracksWithinBackjumps, expectedNumberOfMBTs, expectedNumberOfConflictsAfterClosing),
 					solverMaintainingStatistics.getStatisticsString());
 		}
 	}
