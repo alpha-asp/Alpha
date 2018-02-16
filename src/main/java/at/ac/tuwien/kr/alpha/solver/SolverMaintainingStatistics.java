@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2018 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -38,10 +38,15 @@ public interface SolverMaintainingStatistics {
 	int getNumberOfBackjumps();
 
 	int getNumberOfBacktracksDueToRemnantMBTs();
+	
+	/**
+	 * @return the number of times the solver had to backtrack after closing unassigned atoms
+	 */
+	int getNumberOfConflictsAfterClosing();
 
 	default String getStatisticsString() {
 		return "g=" + getNumberOfChoices() + ", bt=" + getNumberOfBacktracks() + ", bj=" + getNumberOfBackjumps() + ", bt_within_bj="
-				+ getNumberOfBacktracksWithinBackjumps() + ", mbt=" + getNumberOfBacktracksDueToRemnantMBTs();
+				+ getNumberOfBacktracksWithinBackjumps() + ", mbt=" + getNumberOfBacktracksDueToRemnantMBTs() + ", cac=" + getNumberOfConflictsAfterClosing();
 	}
 
 	default void printStatistics(PrintStream out) {
