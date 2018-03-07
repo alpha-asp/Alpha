@@ -337,7 +337,7 @@ public class DependencyDrivenHeuristic implements BranchingHeuristic {
 	 * @return {@code true} iff: the NoGood is binary, and it has a head, and its tail is an atom representing a rule body.
 	 */
 	public static boolean isBodyNotHead(NoGood noGood, Predicate<? super Integer> isRuleBody) {
-		return noGood.isBinary() && noGood.hasHead() && isRuleBody.test(atomOf(1));
+		return noGood.isBinary() && noGood.hasHead() && isRuleBody.test(noGood.getAtom(1));
 	}
 
 	/**
