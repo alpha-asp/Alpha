@@ -47,8 +47,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests assumptions made by {@link AlphaHeuristic}. Even if these test cases do not test {@link AlphaHeuristic} directly, it will break if these test cases
- * break.
+ * Tests assumptions made by {@link DependencyDrivenHeuristic} and other domain-independent heuristics.
+ * Even if these test cases do not test {@link DependencyDrivenHeuristic} directly,
+ * it will break if these test cases break.
  * 
  * Copyright (c) 2017-2018 Siemens AG
  *
