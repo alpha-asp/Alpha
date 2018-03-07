@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -65,6 +65,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	private boolean initialize = true;
 	private int mbtAtFixpoint;
+	private int conflictsAfterClosing;
 
 	public DefaultSolver(Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, Heuristic branchingHeuristic, boolean debugInternalChecks) {
 		super(grounder);
@@ -134,6 +135,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				} else {
 					// Will not learn from violated NoGood, do simple backtrackSlow.
 					LOGGER.debug("NoGood was violated after all unassigned atoms were assigned to false; will not learn from it; skipping.");
+					conflictsAfterClosing++;
 					if (!backtrack()) {
 						logStats();
 						return false;
@@ -378,6 +380,11 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	@Override
 	public int getNumberOfBacktracksDueToRemnantMBTs() {
 		return mbtAtFixpoint;
+	}
+	
+	@Override
+	public int getNumberOfConflictsAfterClosing() {
+		return conflictsAfterClosing;
 	}
 
 	private void logStats() {
