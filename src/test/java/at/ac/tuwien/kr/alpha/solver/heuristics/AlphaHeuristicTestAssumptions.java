@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2018 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -35,22 +35,23 @@ import at.ac.tuwien.kr.alpha.solver.NaiveNoGoodStore;
 import at.ac.tuwien.kr.alpha.solver.TestableChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests assumptions made by {@link AlphaHeuristic}. Even if these test cases do not test {@link AlphaHeuristic} directly, it will break if these test cases
- * break.
+ * Tests assumptions made by {@link DependencyDrivenHeuristic} and other domain-independent heuristics.
+ * Even if these test cases do not test {@link DependencyDrivenHeuristic} directly,
+ * it will break if these test cases break.
  * 
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2018 Siemens AG
  *
  */
 public class AlphaHeuristicTestAssumptions {
@@ -60,7 +61,12 @@ public class AlphaHeuristicTestAssumptions {
 	
 	@Before
 	public void setUp() throws IOException {
-		String testProgram = "h :- b1, b2, not b3, not b4.";
+		String testProgram = ""
+				+ "b1."
+				+ "b2."
+				+ "{b3}."
+				+ "{b4}."
+				+ "h :- b1, b2, not b3, not b4.";
 		Program parsedProgram = new ProgramParser().parse(testProgram);
 		this.grounder = new NaiveGrounder(parsedProgram);
 		this.assignment = new ArrayAssignment();
@@ -68,13 +74,11 @@ public class AlphaHeuristicTestAssumptions {
 	}
 
 	@Test
-	@Ignore("Test strictly depends on generated NoGoods. Grounder optimisations change generated NoGoods.")
 	public void testNumbersOfNoGoods_GrounderIsAtomChoicePoint() {
 		testNumbersOfNoGoods(grounder::isAtomChoicePoint);
 	}
 
 	@Test
-	@Ignore("Test strictly depends on generated NoGoods. Grounder optimisations change generated NoGoods.")
 	public void testNumbersOfNoGoods_ChoiceManagerIsAtomChoice() {
 		testNumbersOfNoGoods(choiceManager::isAtomChoice);
 	}
@@ -107,9 +111,11 @@ public class AlphaHeuristicTestAssumptions {
 				other++;
 			}
 		}
+		
+		System.out.println(noGoods.stream().map(grounder::noGoodToString).collect(Collectors.joining(", ")));
 
-		assertEquals("Unexpected number of bodyNotHead nogoods", 1, bodyNotHead);
-		assertEquals("Unexpected number of bodyElementsNotBody nogoods", 1, bodyElementsNotBody);
+		assertEquals("Unexpected number of bodyNotHead nogoods", 5, bodyNotHead);
+		assertEquals("Unexpected number of bodyElementsNotBody nogoods", 5, bodyElementsNotBody);
 		assertGreaterThan("Unexpected number of nogoods without head", 4, noHead);
 
 		// there may be other nogoods (e.g. for ChoiceOn, ChoiceOff) which we do not care for here
