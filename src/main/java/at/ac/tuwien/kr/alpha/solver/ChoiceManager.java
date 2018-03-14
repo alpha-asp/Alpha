@@ -223,8 +223,10 @@ public class ChoiceManager implements Checkable {
 	}
 
 	public void choose(Choice choice) {
-		choices++;
 		LOGGER.debug("Choice {} is {}@{}", choices, choice, assignment.getDecisionLevel());
+		if (!choice.isBacktracked()) {
+			choices++;
+		}
 
 		if (assignment.choose(choice.getAtom(), choice.getValue()) != null) {
 			throw oops("Picked choice is incompatible with current assignment");
