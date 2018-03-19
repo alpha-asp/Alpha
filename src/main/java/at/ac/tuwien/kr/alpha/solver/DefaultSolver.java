@@ -153,6 +153,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 					LOGGER.debug("Violating assignment is: {}", assignment);
 				}
 				branchingHeuristic.violatedNoGood(violatedNoGood);
+				fallbackBranchingHeuristic.violatedNoGood(violatedNoGood);
 				if (!afterAllAtomsAssigned) {
 					if (!learnBackjumpAddFromConflict(conflictCause)) {
 						logStats();
@@ -220,6 +221,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 
 		branchingHeuristic.analyzedConflict(analysisResult);
+		fallbackBranchingHeuristic.analyzedConflict(analysisResult);
 
 		if (analysisResult.learnedNoGood == null && analysisResult.clearLastChoiceAfterBackjump) {
 			// TODO: Temporarily abort resolution with backtrackFast instead of learning a too large nogood.
@@ -306,6 +308,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	private boolean ingest(Map<Integer, NoGood> obtained) {
 		branchingHeuristic.newNoGoods(obtained.values());
+		fallbackBranchingHeuristic.newNoGoods(obtained.values());
 		assignment.growForMaxAtomId(grounder.getMaxAtomId());
 
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
@@ -348,6 +351,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 		LOGGER.debug("Learned NoGood: " + conflictAnalysisResult.learnedNoGood);
 		branchingHeuristic.analyzedConflict(conflictAnalysisResult);
+		fallbackBranchingHeuristic.analyzedConflict(conflictAnalysisResult);
 
 		choiceManager.backjump(conflictAnalysisResult.backjumpLevel);
 		if (conflictAnalysisResult.clearLastChoiceAfterBackjump) {
@@ -375,6 +379,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 		if ((atom = branchingHeuristic.chooseAtom()) == 0) {
 			if ((atom = fallbackBranchingHeuristic.chooseAtom()) == 0) {
+				// TODO: redundancy if DomainSpecific is used, because DomainSpecific also uses fallback to fall back?!
 				LOGGER.debug("No choices!");
 				return false;
 			} else if (LOGGER.isDebugEnabled()) {

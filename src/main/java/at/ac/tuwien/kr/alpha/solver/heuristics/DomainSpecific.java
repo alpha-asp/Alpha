@@ -60,6 +60,8 @@ public class DomainSpecific implements BranchingHeuristic {
 	private final Assignment assignment;
 	private final ChoiceManager choiceManager;
 	private final BranchingHeuristic fallbackHeuristic;
+	
+	private int rememberedAtom;
 
 	DomainSpecific(Assignment assignment, ChoiceManager choiceManager, BranchingHeuristic fallbackHeuristic) {
 		this.assignment = assignment;
@@ -69,18 +71,22 @@ public class DomainSpecific implements BranchingHeuristic {
 
 	@Override
 	public void violatedNoGood(NoGood violatedNoGood) {
+		fallbackHeuristic.violatedNoGood(violatedNoGood);
 	}
 
 	@Override
 	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
+		fallbackHeuristic.analyzedConflict(analysisResult);
 	}
 
 	@Override
 	public void newNoGood(NoGood newNoGood) {
+		fallbackHeuristic.newNoGood(newNoGood);
 	}
 
 	@Override
 	public void newNoGoods(Collection<NoGood> newNoGoods) {
+		fallbackHeuristic.newNoGoods(newNoGoods);
 	}
 	
 	@Override
@@ -132,7 +138,8 @@ public class DomainSpecific implements BranchingHeuristic {
 
 	private int chooseOrFallback(Optional<Integer> chosenAtom) {
 		if (chosenAtom.isPresent()) {
-			return chosenAtom.get();
+			rememberedAtom = chosenAtom.get(); 
+			return rememberedAtom;
 		} else {
 			Set<Integer> ruleAtomsWithDefaultPriority = choiceManager.getDomainSpecificHeuristics().getChoicePointsWithDefaultPriority(assignment);
 			if (!ruleAtomsWithDefaultPriority.isEmpty()) {
@@ -147,8 +154,11 @@ public class DomainSpecific implements BranchingHeuristic {
 
 	@Override
 	public boolean chooseSign(int atom) {
-		// TODO: return true (except if falling back to other heuristic)
-		return true;
+		if (atom == rememberedAtom) {
+			return true;
+		} else {
+			return fallbackHeuristic.chooseSign(atom);
+		}
 	}
 	
 	protected boolean isUnassigned(int atom) {
