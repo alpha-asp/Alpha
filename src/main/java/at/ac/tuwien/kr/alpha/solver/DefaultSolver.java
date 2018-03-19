@@ -34,6 +34,7 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.ChainOfBranchingHeuristics;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
 import org.slf4j.Logger;
@@ -62,7 +63,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final GroundConflictNoGoodLearner learner;
 
 	private final BranchingHeuristic branchingHeuristic;
-	private final BranchingHeuristic fallbackBranchingHeuristic;
 
 	private boolean initialize = true;
 	private int mbtAtFixpoint;
@@ -75,8 +75,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		this.store = store;
 		this.choiceManager = new ChoiceManager(assignment, store, debugInternalChecks);
 		this.learner = new GroundConflictNoGoodLearner(assignment);
-		this.branchingHeuristic = BranchingHeuristicFactory.getInstance(branchingHeuristic, grounder, assignment, choiceManager, random);
-		this.fallbackBranchingHeuristic = new NaiveHeuristic(choiceManager);
+		this.branchingHeuristic = ChainOfBranchingHeuristics.chainOf(
+				BranchingHeuristicFactory.getInstance(branchingHeuristic, grounder, assignment, choiceManager, random),
+				new NaiveHeuristic(choiceManager));
 	}
 
 	@Override
@@ -344,12 +345,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		int literal;
 
 		if ((literal = branchingHeuristic.chooseLiteral()) == DEFAULT_CHOICE_LITERAL) {
-			if ((literal = fallbackBranchingHeuristic.chooseLiteral()) == DEFAULT_CHOICE_LITERAL) {
-				LOGGER.debug("No choices!");
-				return false;
-			} else if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("Naive heuristic chose literal {}", grounder.literalToString(literal));
-			}
+			LOGGER.debug("No choices!");
+			return false;
 		} else if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Branching heuristic chose literal {}", grounder.literalToString(literal));
 		}
