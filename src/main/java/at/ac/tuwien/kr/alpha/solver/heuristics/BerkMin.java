@@ -38,7 +38,6 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.solver.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.solver.ChoiceManager.DEFAULT_CHOICE_ATOM;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
@@ -158,16 +157,11 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 	}
 
 	@Override
-	public void newNoGoods(Collection<NoGood> newNoGoods) {
-		newNoGoods.forEach(this::newNoGood);
-	}
-
-	@Override
 	public double getActivity(int literal) {
 		int key = atomOf(literal);
 		return activityCounters.getOrDefault(key, DEFAULT_ACTIVITY);
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * In BerkMin, the atom to choose on is the most active atom in the current top clause.
@@ -176,29 +170,25 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 	 * nogood in the stack, then the one after that and so on.
 	 */
 	@Override
-	public int chooseAtom() {
-		return chooseAtom(null);
+	public int chooseLiteral() {
+		int atom = chooseAtom();
+		boolean sign = chooseSign(atom);
+		return sign ? atom : -atom;
 	}
-
-	@Override
-	public int chooseAtom(Set<Integer> admissibleChoices) {
+	
+	protected int chooseAtom() {
 		for (NoGood noGood : stackOfNoGoods) {
 			if (assignment.isUndefined(noGood)) {
 				int mostActiveAtom = getMostActiveChoosableAtom(noGood, admissibleChoices);
-				if (mostActiveAtom != DEFAULT_CHOICE_ATOM) {
+				if (mostActiveAtom != DEFAULT_CHOICE_LITERAL) {
 					return mostActiveAtom;
 				}
 			}
 		}
-		return DEFAULT_CHOICE_ATOM;
+		return DEFAULT_CHOICE_LITERAL;
 	}
 
-	@Override
-	public boolean chooseSign(int atom) {
-		if (!isAtom(atom)) {
-			throw new IllegalArgumentException("Atom must be a positive integer.");
-		}
-
+	private boolean chooseSign(int atom) {
 		if (assignment.getTruth(atom) == ThriceTruth.MBT) {
 			return true;
 		}
@@ -288,7 +278,7 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 			.filter(this::isUnassigned)
 			.filter(choiceManager::isActiveChoiceAtom)
 			.max(Comparator.comparingDouble(this::getActivity))
-			.orElse(DEFAULT_CHOICE_ATOM);
+			.orElse(DEFAULT_CHOICE_LITERAL);
 	}
 
 	protected boolean isUnassigned(int atom) {

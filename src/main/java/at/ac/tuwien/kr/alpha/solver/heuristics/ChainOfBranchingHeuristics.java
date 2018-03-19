@@ -1,8 +1,6 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2018 Siemens AG
  * All rights reserved.
- * 
- * Additional changes made by Siemens.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,56 +26,65 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
-import org.apache.commons.collections4.SetUtils;
-import org.apache.commons.collections4.SetUtils.SetView;
 
-import java.util.Collection;
-import java.util.Set;
+import java.util.LinkedList;
+import java.util.List;
 
-import static at.ac.tuwien.kr.alpha.solver.ChoiceManager.DEFAULT_CHOICE_ATOM;
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
- * The default heuristic that had been used by {@link at.ac.tuwien.kr.alpha.solver.DefaultSolver} before {@link BerkMin} was implemented.
- *
+ * A chain of branching heuristics in which the entry at position n+1 is used as a fallback if the entry at position n cannot make a decision. 
  */
-public class NaiveHeuristic implements BranchingHeuristic {
-
-	private final ChoiceManager choiceManager;
-
-	public NaiveHeuristic(ChoiceManager choiceManager) {
-		this.choiceManager = choiceManager;
-	}
-
+public class ChainOfBranchingHeuristics implements BranchingHeuristic {
+	
+	private List<BranchingHeuristic> chain = new LinkedList<>();
+	
 	@Override
 	public void violatedNoGood(NoGood violatedNoGood) {
+		for (BranchingHeuristic element : chain) {
+			element.violatedNoGood(violatedNoGood);
+		}
 	}
 
 	@Override
 	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
+		for (BranchingHeuristic element : chain) {
+			element.analyzedConflict(analysisResult);
+		}
 	}
 
 	@Override
 	public void newNoGood(NoGood newNoGood) {
-	}
-
-	@Override
-	public void newNoGoods(Collection<NoGood> newNoGoods) {
-	}
-
-	@Override
-	public int chooseLiteral() {
-		return choiceManager.getNextActiveChoiceAtom();
-	}
-
-	@Override
-	public int chooseAtom(Set<Integer> admissibleChoices) {
-		SetView<Integer> admissibleActiveChoices = SetUtils.intersection(choiceManager.getAllActiveChoiceAtoms(), admissibleChoices);
-		if (admissibleActiveChoices.isEmpty()) {
-			return DEFAULT_CHOICE_ATOM;
-		} else {
-			return admissibleActiveChoices.iterator().next();
+		for (BranchingHeuristic element : chain) {
+			element.newNoGood(newNoGood);
 		}
 	}
+	
+	@Override
+	public int chooseLiteral() {
+		for (BranchingHeuristic element : chain) {
+			int chosenLiteral = element.chooseLiteral();
+			if (chosenLiteral != DEFAULT_CHOICE_LITERAL) {
+				return chosenLiteral;
+			}
+		}
+		return DEFAULT_CHOICE_LITERAL;
+	}
+	
+	public void add(BranchingHeuristic element) {
+		if (chain.contains(element)) {
+			throw oops("Cycle detected in chain of branching heuristics");
+		}
+		chain.add(element);
+	}
+	
+	public static ChainOfBranchingHeuristics chainOf(BranchingHeuristic... branchingHeuristics) {
+		ChainOfBranchingHeuristics chain = new ChainOfBranchingHeuristics();
+		for (BranchingHeuristic element : branchingHeuristics) {
+			chain.add(element);
+		}
+		return chain;
+	}
+
 }

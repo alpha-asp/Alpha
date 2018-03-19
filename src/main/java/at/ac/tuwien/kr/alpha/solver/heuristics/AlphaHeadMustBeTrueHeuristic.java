@@ -53,7 +53,7 @@ public class AlphaHeadMustBeTrueHeuristic extends DependencyDrivenHeuristic {
 	}
 
 	@Override
-	public int chooseAtom() {
+	public int chooseLiteral() {
 		return chooseAtom(null);
 	}
 
@@ -66,15 +66,7 @@ public class AlphaHeadMustBeTrueHeuristic extends DependencyDrivenHeuristic {
 			rememberedAtom = mostActiveBody.get();
 			return rememberedAtom;
 		}
-		return super.chooseAtom();
-	}
-
-	@Override
-	public boolean chooseSign(int atom) {
-		if (atom == rememberedAtom) {
-			return true;
-		}
-		return super.chooseSign(atom);
+		return super.chooseLiteral();
 	}
 
 }

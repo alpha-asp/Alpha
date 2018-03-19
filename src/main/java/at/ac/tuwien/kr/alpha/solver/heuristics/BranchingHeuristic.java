@@ -34,10 +34,11 @@ import java.util.Set;
 /**
  * A heuristic that selects an atom to choose on.
  * 
- * Copyright (c) 2016 Siemens AG
+ * Copyright (c) 2016, 2018 Siemens AG
  *
  */
 public interface BranchingHeuristic {
+	static final int DEFAULT_CHOICE_LITERAL = 0;
 
 	/**
 	 * Stores a newly violated {@link NoGood} and updates associated activity and sign counters.
@@ -65,23 +66,19 @@ public interface BranchingHeuristic {
 	/**
 	 * @see #newNoGood(NoGood)
 	 */
-	void newNoGoods(Collection<NoGood> newNoGoods);
-	
+	default void newNoGoods(Collection<NoGood> newNoGoods) {
+		newNoGoods.forEach(this::newNoGood);
+	}
 	/**
-	 * Determines an atom to choose on.
+	 * Determines a literal (= atom + sign) to choose.
 	 *
-	 * @return the atom to choose on, or zero if no such atom can be determined.
+	 * @return the literal to choose, or {@link BranchingHeuristic#DEFAULT_CHOICE_LITERAL} if no such atom can be determined.
 	 */
-	int chooseAtom();
+	int chooseLiteral();
 
 	/**
 	 * Determines an atom to choose on, ignoring all atoms except those in {@code admissibleChoices}.
 	 */
 	int chooseAtom(Set<Integer> admissibleChoices);
-
-	/**
-	 * Chooses a truth value for the given atom.
-	 */
-	boolean chooseSign(int atom);
 
 }

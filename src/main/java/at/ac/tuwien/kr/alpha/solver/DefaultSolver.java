@@ -34,7 +34,7 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
-import at.ac.tuwien.kr.alpha.solver.heuristics.DomainSpecific;
+import at.ac.tuwien.kr.alpha.solver.heuristics.ChainOfBranchingHeuristics;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DefaultDomainSpecificHeuristicsStore;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
@@ -47,11 +47,12 @@ import java.util.function.Consumer;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
 import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
 
 /**
  * The new default solver employed in Alpha.
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  */
 public class DefaultSolver extends AbstractSolver implements SolverMaintainingStatistics {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolver.class);
@@ -63,7 +64,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final GroundConflictNoGoodLearner learner;
 
 	private final BranchingHeuristic branchingHeuristic;
-	private final BranchingHeuristic fallbackBranchingHeuristic;
 
 	private boolean initialize = true;
 	private int mbtAtFixpoint;
@@ -97,8 +97,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 
 		this.learner = new GroundConflictNoGoodLearner(assignment);
-		this.branchingHeuristic = BranchingHeuristicFactory.getInstance(respectDomSpecHeuristic, branchingHeuristic, assignment, choiceManager, random);
-		this.fallbackBranchingHeuristic = new NaiveHeuristic(choiceManager);
+		this.branchingHeuristic = ChainOfBranchingHeuristics.chainOf(
+				BranchingHeuristicFactory.getInstance(branchingHeuristic, grounder, assignment, choiceManager, random),
+				new NaiveHeuristic(choiceManager));
 	}
 
 	@Override
@@ -375,21 +376,17 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 		// Hint: for custom heuristics, evaluate them here and pick a value if the heuristics suggests one.
 
-		int atom;
+		int literal;
 
-		if ((atom = branchingHeuristic.chooseAtom()) == 0) {
-			if ((atom = fallbackBranchingHeuristic.chooseAtom()) == 0) {
+		if ((literal = branchingHeuristic.chooseLiteral()) == DEFAULT_CHOICE_LITERAL) {
 				// TODO: redundancy if DomainSpecific is used, because DomainSpecific also uses fallback to fall back?!
-				LOGGER.debug("No choices!");
-				return false;
-			} else if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("Naive heuristics chose atom {}", grounder.atomToString(atom));
-			}
+			LOGGER.debug("No choices!");
+			return false;
 		} else if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Branching heuristic chose atom {}", grounder.atomToString(atom));
+			LOGGER.debug("Branching heuristic chose literal {}", grounder.literalToString(literal));
 		}
 
-		choiceManager.choose(new Choice(atom, branchingHeuristic.chooseSign(atom), false));
+		choiceManager.choose(new Choice(literal, false));
 		return true;
 	}
 

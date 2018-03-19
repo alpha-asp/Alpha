@@ -8,11 +8,11 @@
  * modification, are permitted provided that the following conditions are met:
  *
  * 1) Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ *    list of conditions and the following disclaimer.
  *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -40,7 +40,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
 /**
  * A BerkMin-like heuristics that uses activity of literals and a fixed-size queue instead of a stack of NoGoods.
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017-2018, the Alpha Team.
  */
 public class BerkMinLiteral extends BerkMin {
 
@@ -57,13 +57,6 @@ public class BerkMinLiteral extends BerkMin {
 		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random, DEFAULT_QUEUE_SIZE);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * In BerkMin, the atom to choose on is the most active atom in the current top clause.
-	 * Here, we can only consider atoms which are currently active choice points. If we do
-	 * not find such an atom in the current top clause, we consider the next undefined
-	 * nogood in the stack, then the one after that and so on.
-	 */
 	@Override
 	public int chooseAtom() {
 		return  getMostActiveChoosableAtom(activeLiterals.stream());
