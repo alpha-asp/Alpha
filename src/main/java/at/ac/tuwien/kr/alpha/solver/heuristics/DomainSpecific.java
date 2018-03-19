@@ -60,8 +60,6 @@ public class DomainSpecific implements BranchingHeuristic {
 	private final Assignment assignment;
 	private final ChoiceManager choiceManager;
 	private final BranchingHeuristic fallbackHeuristic;
-	
-	private int rememberedAtom;
 
 	DomainSpecific(Assignment assignment, ChoiceManager choiceManager, BranchingHeuristic fallbackHeuristic) {
 		this.assignment = assignment;
@@ -90,14 +88,14 @@ public class DomainSpecific implements BranchingHeuristic {
 	}
 	
 	@Override
-	public int chooseAtom() {
+	public int chooseLiteral() {
 		Optional<Integer> chosenAtom = choiceManager.getDomainSpecificHeuristics().streamEntriesOrderedByDecreasingPriority().map(this::chooseFromEquallyWeighted)
 				.filter(a -> a != DEFAULT_CHOICE_ATOM).findFirst();
 		return chooseOrFallback(chosenAtom);
 	}
 
 	@Override
-	public int chooseAtom(Set<Integer> admissibleChoices) {
+	public int chooseLiteral(Set<Integer> admissibleChoices) {
 		Optional<Integer> chosenAtom = choiceManager.getDomainSpecificHeuristics().streamEntriesOrderedByDecreasingPriority()
 				.map(s -> keepAdmissibleEntries(s, admissibleChoices)).map(c -> chooseFromEquallyWeighted(c))
 				.filter(a -> a != DEFAULT_CHOICE_ATOM).findFirst();
@@ -131,33 +129,23 @@ public class DomainSpecific implements BranchingHeuristic {
 			LOGGER.debug("Unique best choice in terms of domain-specific heuristics: " + chosenEntry);
 		} else {
 			LOGGER.debug("Using fallback heuristics to choose from " + filteredChoices);
-			chosenAtom = fallbackHeuristic.chooseAtom(filteredChoices.stream().map(Entry::getChoicePoint).collect(Collectors.toSet()));
+			chosenAtom = fallbackHeuristic.chooseLiteral(filteredChoices.stream().map(Entry::getChoicePoint).collect(Collectors.toSet()));
 		}
 		return chosenAtom;
 	}
 
 	private int chooseOrFallback(Optional<Integer> chosenAtom) {
 		if (chosenAtom.isPresent()) {
-			rememberedAtom = chosenAtom.get(); 
-			return rememberedAtom;
+			return chosenAtom.get();
 		} else {
 			Set<Integer> ruleAtomsWithDefaultPriority = choiceManager.getDomainSpecificHeuristics().getChoicePointsWithDefaultPriority(assignment);
 			if (!ruleAtomsWithDefaultPriority.isEmpty()) {
 				LOGGER.debug("Using fallback heuristics to choose from atoms with default priority: " + ruleAtomsWithDefaultPriority);
-				return fallbackHeuristic.chooseAtom(ruleAtomsWithDefaultPriority);
+				return fallbackHeuristic.chooseLiteral(ruleAtomsWithDefaultPriority);
 			} else {
 				LOGGER.debug("Using fallback heuristics to choose");
-				return fallbackHeuristic.chooseAtom();
+				return fallbackHeuristic.chooseLiteral();
 			}
-		}
-	}
-
-	@Override
-	public boolean chooseSign(int atom) {
-		if (atom == rememberedAtom) {
-			return true;
-		} else {
-			return fallbackHeuristic.chooseSign(atom);
 		}
 	}
 	

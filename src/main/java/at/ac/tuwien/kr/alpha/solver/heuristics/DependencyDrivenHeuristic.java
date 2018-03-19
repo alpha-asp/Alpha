@@ -193,17 +193,17 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	 */
 	@Override
 	public int chooseLiteral() {
-		int atom = chooseAtom();
+		return chooseLiteral(null);
+	}
+	
+	@Override
+	public int chooseLiteral(Set<Integer> admissibleChoices) {
+		int atom = chooseAtom(admissibleChoices);
 		boolean sign = chooseSign(atom);
 		return sign ? atom : -atom;
 	}
 	
-	protected int chooseAtom() {
-		return chooseAtom(null);
-	}
-
-	@Override
-	public int chooseAtom(Set<Integer> admissibleChoices) {
+	protected int chooseAtom(Set<Integer> admissibleChoices) {
 		for (NoGood noGood : stackOfNoGoods) {
 			int mostActiveAtom = getMostActiveAtom(noGood);
 			if (choiceManager.isActiveChoiceAtom(mostActiveAtom)) {

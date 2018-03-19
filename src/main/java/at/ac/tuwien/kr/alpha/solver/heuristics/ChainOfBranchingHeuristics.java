@@ -30,6 +30,7 @@ import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.Conflic
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
@@ -63,6 +64,11 @@ public class ChainOfBranchingHeuristics implements BranchingHeuristic {
 	
 	@Override
 	public int chooseLiteral() {
+		return chooseLiteral(null);
+	}
+	
+	@Override
+	public int chooseLiteral(Set<Integer> admissibleChoices) {
 		for (BranchingHeuristic element : chain) {
 			int chosenLiteral = element.chooseLiteral();
 			if (chosenLiteral != DEFAULT_CHOICE_LITERAL) {

@@ -77,8 +77,8 @@ public interface BranchingHeuristic {
 	int chooseLiteral();
 
 	/**
-	 * Determines an atom to choose on, ignoring all atoms except those in {@code admissibleChoices}.
+	 * Determines a literal to choose, ignoring all atoms (!) except those in {@code admissibleChoices}.
 	 */
-	int chooseAtom(Set<Integer> admissibleChoices);
+	int chooseLiteral(Set<Integer> admissibleChoices);
 
 }

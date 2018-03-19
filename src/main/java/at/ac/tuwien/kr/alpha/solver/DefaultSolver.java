@@ -31,11 +31,8 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.*;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
-import at.ac.tuwien.kr.alpha.solver.heuristics.ChainOfBranchingHeuristics;
-import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DefaultDomainSpecificHeuristicsStore;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
 import org.slf4j.Logger;
@@ -98,7 +95,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 		this.learner = new GroundConflictNoGoodLearner(assignment);
 		this.branchingHeuristic = ChainOfBranchingHeuristics.chainOf(
-				BranchingHeuristicFactory.getInstance(branchingHeuristic, grounder, assignment, choiceManager, random),
+				BranchingHeuristicFactory.getInstance(respectDomSpecHeuristic, branchingHeuristic, assignment, choiceManager, random),
 				new NaiveHeuristic(choiceManager));
 	}
 
@@ -154,7 +151,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 					LOGGER.debug("Violating assignment is: {}", assignment);
 				}
 				branchingHeuristic.violatedNoGood(violatedNoGood);
-				fallbackBranchingHeuristic.violatedNoGood(violatedNoGood);
 				if (!afterAllAtomsAssigned) {
 					if (!learnBackjumpAddFromConflict(conflictCause)) {
 						logStats();
@@ -222,7 +218,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 
 		branchingHeuristic.analyzedConflict(analysisResult);
-		fallbackBranchingHeuristic.analyzedConflict(analysisResult);
 
 		if (analysisResult.learnedNoGood == null && analysisResult.clearLastChoiceAfterBackjump) {
 			// TODO: Temporarily abort resolution with backtrackFast instead of learning a too large nogood.
@@ -309,7 +304,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	private boolean ingest(Map<Integer, NoGood> obtained) {
 		branchingHeuristic.newNoGoods(obtained.values());
-		fallbackBranchingHeuristic.newNoGoods(obtained.values());
 		assignment.growForMaxAtomId(grounder.getMaxAtomId());
 
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
@@ -352,7 +346,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 		LOGGER.debug("Learned NoGood: " + conflictAnalysisResult.learnedNoGood);
 		branchingHeuristic.analyzedConflict(conflictAnalysisResult);
-		fallbackBranchingHeuristic.analyzedConflict(conflictAnalysisResult);
 
 		choiceManager.backjump(conflictAnalysisResult.backjumpLevel);
 		if (conflictAnalysisResult.clearLastChoiceAfterBackjump) {
@@ -379,7 +372,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		int literal;
 
 		if ((literal = branchingHeuristic.chooseLiteral()) == DEFAULT_CHOICE_LITERAL) {
-				// TODO: redundancy if DomainSpecific is used, because DomainSpecific also uses fallback to fall back?!
 			LOGGER.debug("No choices!");
 			return false;
 		} else if (LOGGER.isDebugEnabled()) {

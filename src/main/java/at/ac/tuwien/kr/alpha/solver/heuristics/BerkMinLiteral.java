@@ -58,13 +58,12 @@ public class BerkMinLiteral extends BerkMin {
 	}
 
 	@Override
-	public int chooseAtom() {
-		return  getMostActiveChoosableAtom(activeLiterals.stream());
-	}
-
-	@Override
 	public int chooseAtom(Set<Integer> admissibleChoices) {
-		return getMostActiveChoosableAtom(activeLiterals.stream().filter(l -> admissibleChoices.contains(atomOf(l))));
+		if (admissibleChoices == null) {
+			return getMostActiveChoosableAtom(activeLiterals.stream());
+		} else {
+			return getMostActiveChoosableAtom(activeLiterals.stream().filter(l -> admissibleChoices.contains(atomOf(l))));
+		}
 	}
 
 	private void pushToStack(Integer literal) {
