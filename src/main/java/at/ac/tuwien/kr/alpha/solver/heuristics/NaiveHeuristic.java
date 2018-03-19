@@ -62,12 +62,7 @@ public class NaiveHeuristic implements BranchingHeuristic {
 	}
 
 	@Override
-	public int chooseAtom() {
+	public int chooseLiteral() {
 		return choiceManager.getNextActiveChoiceAtom();
-	}
-
-	@Override
-	public boolean chooseSign(int atom) {
-		return true;
 	}
 }

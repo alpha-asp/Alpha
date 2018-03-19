@@ -46,7 +46,6 @@ import java.util.stream.Stream;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 import static at.ac.tuwien.kr.alpha.common.NoGood.HEAD;
-import static at.ac.tuwien.kr.alpha.solver.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -193,7 +192,13 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	 * When choosing between dependent atoms, a {@link BodyActivityProvider} is employed to define the activity of a choice point.
 	 */
 	@Override
-	public int chooseAtom() {
+	public int chooseLiteral() {
+		int atom = chooseAtom();
+		boolean sign = chooseSign(atom);
+		return sign ? atom : -atom;
+	}
+	
+	protected int chooseAtom() {
 		for (NoGood noGood : stackOfNoGoods) {
 			int mostActiveAtom = getMostActiveAtom(noGood);
 			if (choiceManager.isActiveChoiceAtom(mostActiveAtom)) {
@@ -210,11 +215,7 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 		return DEFAULT_CHOICE_ATOM;
 	}
 
-	@Override
-	public boolean chooseSign(int atom) {
-		if (!isAtom(atom)) {
-			throw new IllegalArgumentException("Atom must be a positive integer.");
-		}
+	protected boolean chooseSign(int atom) {
 		atom = getAtomForChooseSign(atom);
 
 		if (assignment.getTruth(atom) == ThriceTruth.MBT) {
