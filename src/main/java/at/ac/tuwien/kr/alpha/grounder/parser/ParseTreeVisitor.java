@@ -332,9 +332,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		if (ctx.builtin_atom() != null) {
 			return visitBuiltin_atom(ctx.builtin_atom());
 		} else if (ctx.classical_literal() != null) {
-			return new AtomLiteral(visitClassical_literal(ctx.classical_literal()), isCurrentLiteralNegated);
+			return new Literal(visitClassical_literal(ctx.classical_literal()), isCurrentLiteralNegated);
 		} else if (ctx.external_atom() != null) {
-			return new AtomLiteral(visitExternal_atom(ctx.external_atom()), isCurrentLiteralNegated);
+			return new Literal(visitExternal_atom(ctx.external_atom()), isCurrentLiteralNegated);
 		}
 		throw notSupported(ctx);
 	}

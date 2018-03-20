@@ -29,9 +29,9 @@ package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.AtomLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.MethodPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import org.junit.Ignore;
@@ -237,7 +237,7 @@ public class AlphaTest {
 		Rule rule = new Rule(
 				new DisjunctiveHead(Collections.singletonList(new BasicAtom(Predicate.getInstance("p", 1), ConstantTerm.getInstance("x")))),
 				singletonList(
-						new AtomLiteral(new ExternalAtom(
+						new Literal(new ExternalAtom(
 								Predicate.getInstance("thinger", 1),
 								new MethodPredicateInterpretation(this.getClass().getMethod("thinger", Thingy.class)),
 								singletonList(ConstantTerm.getInstance(thingy)),

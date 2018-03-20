@@ -39,35 +39,52 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * Contains a potentially negated {@link Atom}
+ * 
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public interface Literal extends Substitutable<Literal> {
+public class Literal {
+	protected final Atom atom;
+	protected final boolean negated;
+	
+	public Literal(Atom atom, boolean negated) {
+		this.atom = atom;
+		this.negated = negated;
+	}
 
-	Atom getAtom();
+	public Atom getAtom() {
+		return atom;
+	}
 
-	boolean isNegated();
+	public boolean isNegated() {
+		return negated;
+	}
 
 	/**
 	 * Returns a new copy of this literal whose {@link Literal#isNegated()} status is inverted
 	 * (if the atom cannot be negated, the literal may be returned without creating a copy)
 	 */
-	Literal negate();
+	public Literal negate() {
+		return new Literal(atom, !negated);
+	}
 
 	/**
 	 * @see Atom#substitute(Substitution)
 	 */
-	Literal substitute(Substitution substitution);
+	public Literal substitute(Substitution substitution) {
+		return new Literal(atom.substitute(substitution), negated);
+	}
 
 	/**
 	 * Set of all variables occurring in the Atom that are potentially binding, i.e., variables in positive atoms.
 	 * 
 	 * @return
 	 */
-	default Set<VariableTerm> getBindingVariables() {
+	public Set<VariableTerm> getBindingVariables() {
 		if (isNegated()) {
 			return Collections.emptySet();
 		} else {
-			return getAtom().getBindingVariables();
+			return atom.getBindingVariables();
 		}
 	}
 
@@ -76,9 +93,8 @@ public interface Literal extends Substitutable<Literal> {
 	 * 
 	 * @return
 	 */
-	default Set<VariableTerm> getNonBindingVariables() {
+	public Set<VariableTerm> getNonBindingVariables() {
 		if (isNegated()) {
-			Atom atom = getAtom();
 			return SetUtils.union(atom.getBindingVariables(), atom.getNonBindingVariables());
 		} else {
 			return Collections.emptySet();
@@ -88,21 +104,45 @@ public interface Literal extends Substitutable<Literal> {
 	/**
 	 * @see Atom#getPredicate()
 	 */
-	default Predicate getPredicate() {
-		return getAtom().getPredicate();
+	public Predicate getPredicate() {
+		return atom.getPredicate();
 	}
 
 	/**
 	 * @see Atom#getTerms()
 	 */
-	default List<Term> getTerms() {
-		return getAtom().getTerms();
+	public List<Term> getTerms() {
+		return atom.getTerms();
 	}
 
 	/**
 	 * @see Atom#isGround()
 	 */
-	default boolean isGround() {
-		return getAtom().isGround();
+	public boolean isGround() {
+		return atom.isGround();
+	}
+	
+	@Override
+	public String toString() {
+		return (negated ? "not " : "") + atom.toString();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		Literal that = (Literal) o;
+
+		return atom.equals(that.atom) && negated == that.negated;
+	}
+
+	@Override
+	public int hashCode() {
+		return 12 * atom.hashCode() + (negated ? 1 : 0);
 	}
 }

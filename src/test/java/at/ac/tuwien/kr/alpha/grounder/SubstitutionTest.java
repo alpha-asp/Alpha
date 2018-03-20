@@ -30,7 +30,6 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
-import at.ac.tuwien.kr.alpha.common.atoms.AtomLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -121,7 +120,7 @@ public class SubstitutionTest {
 	private void substituteBasicAtomLiteral(boolean negated) {
 		Predicate p = Predicate.getInstance("p", 2);
 		BasicAtom atom = new BasicAtom(p, Arrays.asList(X, Y));
-		Literal literal = new AtomLiteral(atom, negated);
+		Literal literal = new Literal(atom, negated);
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
