@@ -43,7 +43,7 @@ import java.util.Set;
  * 
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public class Literal {
+public class Literal implements Substitutable<Literal> {
 	protected final Atom atom;
 	protected final boolean negated;
 	
