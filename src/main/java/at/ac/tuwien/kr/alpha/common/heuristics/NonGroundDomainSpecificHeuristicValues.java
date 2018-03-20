@@ -111,7 +111,7 @@ public class NonGroundDomainSpecificHeuristicValues {
 	}
 
 	public boolean isGround() {
-		return weight.isGround() && level.isGround();
+		return weight.isGround() && level.isGround() && generator.stream().allMatch(Literal::isGround);
 	}
 
 	@Override
