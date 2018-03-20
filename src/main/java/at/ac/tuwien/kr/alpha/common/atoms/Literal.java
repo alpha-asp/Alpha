@@ -125,4 +125,23 @@ public class Literal {
 	public String toString() {
 		return (negated ? "not " : "") + atom.toString();
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		Literal that = (Literal) o;
+
+		return atom.equals(that.atom) && negated == that.negated;
+	}
+
+	@Override
+	public int hashCode() {
+		return 12 * atom.hashCode() + (negated ? 1 : 0);
+	}
 }
