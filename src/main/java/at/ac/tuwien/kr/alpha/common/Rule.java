@@ -50,9 +50,13 @@ public class Rule {
 	private final NonGroundDomainSpecificHeuristicValues heuristic;
 
 	public Rule(Head head, List<Literal> body) {
-		this(head, body, null);
+		this(head, body, (RuleAnnotation)null);
 	}
 
+	public Rule(Head head, List<Literal> body, NonGroundDomainSpecificHeuristicValues heuristic) {
+		this(head, body, heuristic == null ? null : heuristic.toRuleAnnotation());
+	}
+	
 	public Rule(Head head, List<Literal> body, RuleAnnotation annotation) {
 		this.head = head;
 		// Remove duplicate body literals.

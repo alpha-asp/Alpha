@@ -106,6 +106,10 @@ public class NonGroundDomainSpecificHeuristicValues {
 		return null;
 	}
 
+	public RuleAnnotation toRuleAnnotation() {
+		return new RuleAnnotation(new WeightAtLevel(weight, level), generator);
+	}
+
 	public boolean isGround() {
 		return weight.isGround() && level.isGround();
 	}

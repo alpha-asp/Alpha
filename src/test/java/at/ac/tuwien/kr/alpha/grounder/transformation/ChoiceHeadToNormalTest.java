@@ -6,11 +6,11 @@
  * modification, are permitted provided that the following conditions are met:
  * 
  * 1) Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ *    list of conditions and the following disclaimer.
  * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -23,37 +23,35 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.common;
+package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import org.junit.Test;
 
-import java.util.List;
+import static org.junit.Assert.assertEquals;
 
 /**
- * Represents an annotation defined with a non-ground rule
- *
+ * Tests {@link ChoiceHeadToNormal}.
  */
-public class RuleAnnotation {
-
-	private final WeightAtLevel weightAtLevel;
-	private final List<Literal> generator;
-
-	public RuleAnnotation(WeightAtLevel weightAtLevel, List<Literal> generator) {
-		this.weightAtLevel = weightAtLevel;
-		this.generator = generator;
-	}
-
-	public WeightAtLevel getWeightAtLevel() {
-		return weightAtLevel;
-	}
-
-	public List<Literal> getGenerator() {
-		return generator;
+public class ChoiceHeadToNormalTest {
+	private final ProgramParser parser = new ProgramParser();
+	
+	@Test
+	public void testNumberOfRulesAfterTransformationEqualsTwo() {
+		Program program = parser.parse("n(1..2). "
+				+ "{ x(N) } :- n(N).");
+		new ChoiceHeadToNormal().transform(program);
+		assertEquals(2, program.getRules().size());
 	}
 	
-	@Override
-	public String toString() {
-		return weightAtLevel + " : " + Literals.toString(generator);
+	@Test
+	public void checkHeuristicAnnotationIsCopied() {
+		final String heuristic = "N@1 : not x(N)";
+		Program program = parser.parse("n(1..2). "
+				+ "{ x(N) } :- n(N). [" + heuristic + "]");
+		new ChoiceHeadToNormal().transform(program);
+		program.getRules().stream().allMatch(r -> r.getHeuristic().toString().equals(heuristic));
 	}
 
 }
