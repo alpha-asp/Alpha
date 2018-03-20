@@ -166,7 +166,7 @@ public class RuleGroundingOrder {
 	}
 
 	private void computeGroundingOrder(Literal startingLiteral) {
-		List<Literal> bodyLiterals = getLiteralsToBeGrounded();
+		List<Literal> bodyLiterals = nonGroundRule.getRule().getBody();
 		HashSet<VariableTerm> boundVariables = new HashSet<>();
 		boundVariables.addAll(startingLiteral.getBindingVariables());
 		LinkedHashSet<Literal> remainingLiterals = new LinkedHashSet<>(bodyLiterals);
@@ -178,6 +178,24 @@ public class RuleGroundingOrder {
 		} else {
 			literalsOrder = new ArrayList<>(bodyLiterals.size() - 1);
 		}
+		processRemainingLiterals(remainingLiterals, startingLiteral, literalsOrder, boundVariables);
+		addGeneratorLiteralsMinusBodyLiterals(remainingLiterals);
+		// process generator literals only after body has been processed:
+		processRemainingLiterals(remainingLiterals, startingLiteral, literalsOrder, boundVariables);
+		if (fixedGroundingInstantiation) {
+			fixedGroundingOrder = literalsOrder.toArray(new Literal[0]);
+		}
+		groundingOrder.put(startingLiteral, literalsOrder.toArray(new Literal[0]));
+	}
+
+	private void addGeneratorLiteralsMinusBodyLiterals(LinkedHashSet<Literal> remainingLiterals) {
+		Set<Literal> generatorLiterals = new HashSet<>(getGeneratorLiterals());
+		generatorLiterals.removeAll(nonGroundRule.getRule().getBody());
+		remainingLiterals.addAll(generatorLiterals);
+	}
+
+	void processRemainingLiterals(LinkedHashSet<Literal> remainingLiterals, Literal startingLiteral, ArrayList<Literal> literalsOrder,
+			HashSet<VariableTerm> boundVariables) {
 		while (!remainingLiterals.isEmpty()) {
 			Literal nextGroundingLiteral = selectNextGroundingLiteral(remainingLiterals, boundVariables);
 			if (nextGroundingLiteral == null) {
@@ -187,10 +205,6 @@ public class RuleGroundingOrder {
 			boundVariables.addAll(nextGroundingLiteral.getBindingVariables());
 			literalsOrder.add(nextGroundingLiteral);
 		}
-		if (fixedGroundingInstantiation) {
-			fixedGroundingOrder = literalsOrder.toArray(new Literal[0]);
-		}
-		groundingOrder.put(startingLiteral, literalsOrder.toArray(new Literal[0]));
 	}
 
 	private Literal selectNextGroundingLiteral(LinkedHashSet<Literal> remainingLiterals, Set<VariableTerm> boundVariables) {
