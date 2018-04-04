@@ -215,7 +215,8 @@ public class DefaultSolver extends AbstractSolver {
 				mbtAtFixpoint++;
 				if (!disableJustifications && grounder instanceof NaiveGrounder && assignment instanceof ArrayAssignment) {
 					Integer toJustify = ((ArrayAssignment) assignment).getSomeMBTAssignedAtom();
-					LOGGER.info("Searching for justification of " + toJustify + " / " + grounder.atomToString(atomOf(toJustify)));
+					LOGGER.debug("Searching for justification of " + toJustify + " / " + grounder.atomToString(atomOf(toJustify)));
+					LOGGER.debug("Assignment is (TRUE part only):" + translate(assignment.getTrueAssignments()));
 					Set<Literal> reasonsForUnjustified = //((NaiveGrounder) grounder).programAnalysis.reasonsForUnjustified(toJustify, assignment);
 						((NaiveGrounder) grounder).analyzeUnjustified.analyze(toJustify, assignment);
 					int[] reasons = new int[reasonsForUnjustified.size() + 1];
@@ -228,7 +229,7 @@ public class DefaultSolver extends AbstractSolver {
 					int noGoodID = grounder.register(noGood);
 					Map<Integer, NoGood> obtained = new LinkedHashMap<>();
 					obtained.put(noGoodID, noGood);
-					LOGGER.info("Learned NoGood is: " + grounder.noGoodToString(noGood));
+					LOGGER.debug("Learned NoGood is: " + grounder.noGoodToString(noGood));
 					if (!ingest(obtained)) {
 						logStats();
 						return false;

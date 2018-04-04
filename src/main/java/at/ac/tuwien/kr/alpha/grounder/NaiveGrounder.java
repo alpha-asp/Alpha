@@ -84,10 +84,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		super(filter, bridges);
 
 		programAnalysis = new ProgramAnalysis(program, atomStore, workingMemory, factsFromProgram);
-		analyzeUnjustified = new AnalyzeUnjustified(program, atomStore, workingMemory, factsFromProgram);
+		analyzeUnjustified = new AnalyzeUnjustified(program, atomStore, factsFromProgram);
 
 		// Apply program transformations/rewritings.
 		applyProgramTransformations(program);
+		LOGGER.debug("Transformed input program is:\n" + program);
 
 		// initialize all facts
 		for (Atom fact : program.getFacts()) {

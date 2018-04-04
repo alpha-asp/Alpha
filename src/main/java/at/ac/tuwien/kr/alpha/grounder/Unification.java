@@ -5,6 +5,10 @@ import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
+import java.util.HashSet;
+
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
 /**
  * Copyright (c) 2017, the Alpha Team.
  */
@@ -70,6 +74,18 @@ public class Unification {
 	}
 
 	private static Substitution unifyAtoms(Atom left, Atom right, boolean keepLeftAsIs) {
+		HashSet<VariableTerm> leftOccurringVariables = new HashSet<>(left.getBindingVariables());
+		leftOccurringVariables.addAll(left.getNonBindingVariables());
+		HashSet<VariableTerm> rightOccurringVaribles = new HashSet<>(right.getBindingVariables());
+		rightOccurringVaribles.addAll(right.getNonBindingVariables());
+		boolean leftSmaller = leftOccurringVariables.size() < rightOccurringVaribles.size();
+		HashSet<VariableTerm> smallerSet = leftSmaller ? leftOccurringVariables : rightOccurringVaribles;
+		HashSet<VariableTerm> largerSet = leftSmaller ? rightOccurringVaribles : leftOccurringVariables;
+		for (VariableTerm variableTerm : smallerSet) {
+			if (largerSet.contains(variableTerm)) {
+				throw oops("Left and right atom share variables.");
+			}
+		}
 		Substitution mgu = new Substitution();
 		if (!left.getPredicate().equals(right.getPredicate())) {
 			return null;

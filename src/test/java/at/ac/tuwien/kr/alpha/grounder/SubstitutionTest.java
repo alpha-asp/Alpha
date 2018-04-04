@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
@@ -69,6 +70,38 @@ public class SubstitutionTest {
 
 		assertEquals(c, substitution.eval(x));
 		assertEquals(a, substitution.eval(y));
+	}
+
+	@Test
+	public void extendSubstitution() {
+		VariableTerm varX = VariableTerm.getInstance("X");
+		VariableTerm varY = VariableTerm.getInstance("Y");
+		Substitution sub1 = new Substitution();
+		sub1.put(varX, varY);
+		Substitution sub2 = new Substitution();
+		sub2.put(varY, ConstantTerm.getInstance("a"));
+
+		sub1.extendWith(sub2);
+		BasicAtom atom1 = parseAtom("p(X)");
+
+		Atom atomSubstituted = atom1.substitute(sub1);
+		assertEquals(ConstantTerm.getInstance("a"), atomSubstituted.getTerms().get(0));
+	}
+
+	@Test
+	public void mergeSubstitutionsIntoLeft() {
+		VariableTerm varX = VariableTerm.getInstance("X");
+		VariableTerm varY = VariableTerm.getInstance("Y");
+		VariableTerm varZ = VariableTerm.getInstance("Z");
+		Term constA = ConstantTerm.getInstance("a");
+		Substitution left = new Substitution();
+		left.put(varX, varY);
+		left.put(varZ, varY);
+		Substitution right = new Substitution();
+		right.put(varX, constA);
+		Substitution merged = Substitution.mergeIntoLeft(left, right);
+		assertEquals(merged.eval(varY), constA);
+		assertEquals(merged.eval(varZ), constA);
 	}
 
 	@Test

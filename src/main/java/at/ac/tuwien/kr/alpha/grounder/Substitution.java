@@ -19,6 +19,9 @@ public class Substitution {
 	private final TreeMap<VariableTerm, List<VariableTerm>> rightHandVariableOccurrences;
 
 	private Substitution(TreeMap<VariableTerm, Term> substitution, TreeMap<VariableTerm, List<VariableTerm>> rightHandVariableOccurrences) {
+		if (substitution == null) {
+			throw oops("Substitution is null.");
+		}
 		this.substitution = substitution;
 		this.rightHandVariableOccurrences = rightHandVariableOccurrences;
 	}
@@ -118,8 +121,8 @@ public class Substitution {
 		// TODO: For each variableTerm we must check whether it already occurs at the right hand side of some substitution here and update it.
 		if (!groundTerm.isGround()) {
 			for (VariableTerm rightHandVariable : groundTerm.getOccurringVariables()) {
-				rightHandVariableOccurrences.putIfAbsent(variableTerm, new ArrayList<>());
-				rightHandVariableOccurrences.get(variableTerm).add(rightHandVariable);
+				rightHandVariableOccurrences.putIfAbsent(rightHandVariable, new ArrayList<>());
+				rightHandVariableOccurrences.get(rightHandVariable).add(variableTerm);
 			}
 		}
 		// Note: We're destroying type information here.
@@ -158,10 +161,17 @@ public class Substitution {
 	 */
 	@Override
 	public String toString() {
-		final StringBuilder ret = new StringBuilder();
+		final StringBuilder ret = new StringBuilder("{");
+		boolean isFirst = true;
 		for (Map.Entry<VariableTerm, Term> e : substitution.entrySet()) {
-			ret.append("_").append(e.getKey()).append(":").append(e.getValue());
+			if (isFirst) {
+				isFirst = false;
+			} else {
+				ret.append(",");
+			}
+			ret.append(e.getKey()).append("->").append(e.getValue());
 		}
+		ret.append("}");
 		return ret.toString();
 	}
 
@@ -329,5 +339,44 @@ public class Substitution {
 		} else {
 			throw oops("Unknown Term type.");
 		}
+	}
+
+	/**
+	 * Merge substitution right into left as used in the AnalyzeUnjustified.
+	 * Left mappings are seen as equalities, i.e.,
+	 * if left has A -> B and right has A -> t then the result will have A -> t and B -> t.
+	 * If both substitutions are inconsistent, i.e., A -> t1 in left and A -> t2 in right, then null is returned.
+	 *
+	 * @param left
+	 * @param right
+	 * @return
+	 */
+	public static Substitution mergeIntoLeft(Substitution left, Substitution right) {
+		// Note: we assume both substitutions are free of chains, i.e., no A->B, B->C but A->C, B->C.
+		Substitution ret = new Substitution(left);
+		for (Map.Entry<VariableTerm, Term> mapping : right.substitution.entrySet()) {
+			VariableTerm variable = mapping.getKey();
+			Term term = mapping.getValue();
+			// If variable is unset, simply add.
+			if (!ret.isVariableSet(variable)) {
+				ret.put(variable, term);
+				continue;
+			}
+			// Variable is already set.
+			Term setTerm = ret.eval(variable);
+			if (setTerm instanceof VariableTerm) {
+				// Variable maps to another variable in left.
+				// Add a new mapping of the setTerm variable into our right-assigned term.
+				ret.put((VariableTerm) setTerm, term);
+				// Note: Substitution.put takes care of resolving the chain variable->setTerm->term.
+				continue;
+			}
+			// Check for inconsistency.
+			if (setTerm != term) {
+				return null;
+			}
+			// Now setTerm equals term, no action needed.
+		}
+		return ret;
 	}
 }
