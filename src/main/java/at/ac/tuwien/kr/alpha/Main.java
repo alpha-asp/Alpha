@@ -52,6 +52,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -271,7 +272,8 @@ public class Main {
 		}
 
 		if (!commandLine.hasOption(OPT_QUIET)) {
-			stream.forEach(System.out::println);
+			AtomicInteger counter = new AtomicInteger(0);
+			stream.forEach(as -> System.out.println("Answer set " + counter.incrementAndGet() + ":\n" + as.toString()));
 		} else {
 			// Note: Even though we are not consuming the result, we will still compute answer sets.
 			stream.collect(Collectors.toList());

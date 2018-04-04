@@ -5,10 +5,7 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
@@ -16,7 +13,7 @@ import static at.ac.tuwien.kr.alpha.Util.join;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public class BasicAtom implements Literal {
+public class BasicAtom implements Literal, VariableNormalizableAtom {
 	private final Predicate predicate;
 	private final List<Term> terms;
 	private final boolean ground;
@@ -110,6 +107,16 @@ public class BasicAtom implements Literal {
 
 	public Atom getPositiveVersion() {
 		return new BasicAtom(predicate, terms, false);
+	}
+
+	@Override
+	public BasicAtom normalizeVariables(String prefix, int counterStartingValue) {
+		List<Term> renamedTerms = new ArrayList<>(terms.size());
+		Term.RenameCounter renameCounter = new Term.RenameCounter(counterStartingValue);
+		for (int i = 0; i < terms.size(); i++) {
+			renamedTerms.add(terms.get(i).normalizeVariables(prefix, renameCounter));
+		}
+		return new BasicAtom(predicate, renamedTerms);
 	}
 
 	@Override

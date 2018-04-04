@@ -16,7 +16,7 @@ import static at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm.*;
  * Represents a builtin atom according to the standard.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class ComparisonAtom implements FixedInterpretationLiteral {
+public class ComparisonAtom implements FixedInterpretationLiteral, VariableNormalizableAtom {
 	private final Predicate predicate;
 	private final ComparisonOperator operator;
 	private final List<Term> terms;
@@ -208,5 +208,15 @@ public class ComparisonAtom implements FixedInterpretationLiteral {
 	@Override
 	public int hashCode() {
 		return 31 * (31 * operator.hashCode() + terms.hashCode()) + (negated ? 1 : 0);
+	}
+
+	@Override
+	public ComparisonAtom normalizeVariables(String prefix, int counterStartingValue) {
+		List<Term> renamedTerms = new ArrayList<>(terms.size());
+		Term.RenameCounter renameCounter = new Term.RenameCounter(counterStartingValue);
+		for (int i = 0; i < terms.size(); i++) {
+			renamedTerms.add(terms.get(i).normalizeVariables(prefix, renameCounter));
+		}
+		return new ComparisonAtom(renamedTerms.get(0), renamedTerms.get(1), negated, operator);
 	}
 }

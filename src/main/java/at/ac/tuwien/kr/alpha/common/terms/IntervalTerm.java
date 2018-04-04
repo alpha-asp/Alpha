@@ -123,6 +123,11 @@ public class IntervalTerm extends Term {
 		return new IntervalTerm(lowerBoundTerm.renameVariables(renamePrefix), upperBoundTerm.renameVariables(renamePrefix));
 	}
 
+	@Override
+	public Term normalizeVariables(String renamePrefix, RenameCounter counter) {
+		throw new UnsupportedOperationException();
+	}
+
 	/**
 	 * Returns true if the term contains (or is) some IntervalTerm.
 	 * @param term the term to test
