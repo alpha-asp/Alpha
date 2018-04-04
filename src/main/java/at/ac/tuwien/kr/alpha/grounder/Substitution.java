@@ -92,6 +92,9 @@ public class Substitution {
 			if (!(ftNonGround.getSymbol().equals(ftGround.getSymbol()))) {
 				return false;
 			}
+			if (ftNonGround.getTerms().size() != ftGround.getTerms().size()) {
+				return false;
+			}
 
 			// Iterate over all subterms of both function terms
 			for (int i = 0; i < ftNonGround.getTerms().size(); i++) {
