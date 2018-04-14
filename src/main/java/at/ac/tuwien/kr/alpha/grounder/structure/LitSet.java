@@ -17,21 +17,21 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  * Copyright (c) 2018, the Alpha Team.
  */
 public class LitSet {
-	private final Atom literal;
+	private final Atom atom;
 	private final Set<Substitution> complementSubstitutions;
 	private final int hashCode;
 	private final Atom normalizedLiteral;
 	private final Set<Substitution> normalizedSubstitutions;
 	private static int litSetCounter = 1;
 
-	LitSet(Atom literal, Set<Substitution> complementSubstitutions) {
-		this.literal = literal.renameVariables("_AS" + litSetCounter++);
+	LitSet(Atom atom, Set<Substitution> complementSubstitutions) {
+		this.atom = atom.renameVariables("_AS" + litSetCounter++);
 		this.complementSubstitutions = new HashSet<>();
 		for (Substitution complementSubstitution : complementSubstitutions) {
 			if (complementSubstitution == null) {
 				throw oops("Substitution is null.");
 			}
-			Substitution unifyRightAtom = normalizeSubstitution(literal, complementSubstitution, this.literal);
+			Substitution unifyRightAtom = normalizeSubstitution(atom, complementSubstitution, this.atom);
 			if (unifyRightAtom == null) {
 				throw oops("Unification result is null.");
 			}
@@ -60,15 +60,15 @@ public class LitSet {
 	 */
 	public boolean coversNothing() {
 		for (Substitution substitution : complementSubstitutions) {
-			if (Unification.unifyRightAtom(literal, literal.substitute(substitution)) != null) {
+			if (Unification.unifyRightAtom(atom, atom.substitute(substitution)) != null) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public Atom getLiteral() {
-		return literal;
+	public Atom getAtom() {
+		return atom;
 	}
 
 	Set<Substitution> getComplementSubstitutions() {
@@ -77,9 +77,9 @@ public class LitSet {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder("(" + literal + ",{");
+		StringBuilder sb = new StringBuilder("(" + atom + ",{");
 		for (Substitution complementSubstitution : complementSubstitutions) {
-			sb.append(literal.substitute(complementSubstitution));
+			sb.append(atom.substitute(complementSubstitution));
 			//sb.append(complementSubstitution);
 			sb.append(", ");
 		}
@@ -121,19 +121,19 @@ public class LitSet {
 	}
 
 	private Atom computeNormalizedLiteral() {
-		if (literal instanceof BasicAtom) {
-			return ((BasicAtom)literal).normalizeVariables("_N", 0);
-		} else if (literal instanceof ComparisonAtom) {
-			return ((ComparisonAtom) literal).normalizeVariables("_N", 0);
+		if (atom instanceof BasicAtom) {
+			return ((BasicAtom) atom).normalizeVariables("_N", 0);
+		} else if (atom instanceof ComparisonAtom) {
+			return ((ComparisonAtom) atom).normalizeVariables("_N", 0);
 		} else {
-			throw oops("Atom to normalize is of unknonw type: " + literal);
+			throw oops("Atom to normalize is of unknonw type: " + atom);
 		}
 	}
 
 	private Set<Substitution> computeNormalizedSubstitutions() {
 		Set<Substitution> ret = new LinkedHashSet<>();
 		for (Substitution substitution : complementSubstitutions) {
-			ret.add(normalizeSubstitution(literal, substitution, normalizedLiteral));
+			ret.add(normalizeSubstitution(atom, substitution, normalizedLiteral));
 		}
 		return ret;
 	}

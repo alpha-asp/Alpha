@@ -80,7 +80,7 @@ public class AnalyzeUnjustified {
 		padDepth += 2;
 		log("Begin explainUnjust(): " + x);
 		log("Done already: " + vD);
-		Atom p = x.getLiteral();
+		Atom p = x.getAtom();
 
 		ReturnExplainUnjust ret = new ReturnExplainUnjust();
 
@@ -128,7 +128,7 @@ public class AnalyzeUnjustified {
 				log("Checking whether (subsituted) body literal " + pB + " is already covered.");
 				for (LitSet litSet : vD) {
 					log("Checking whether " + pB + " is covered by: " + litSet);
-					Atom pD = litSet.getLiteral();
+					Atom pD = litSet.getAtom();
 					Set<Substitution> vND = litSet.getComplementSubstitutions();
 					Substitution sigmad = Unification.unifyRightAtom(pB, pD);	// FIXME: different from paper, only unify pD, leave pB unchanged!
 					if (sigmad == null) {
