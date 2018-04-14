@@ -83,8 +83,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	public NaiveGrounder(Program program, java.util.function.Predicate<Predicate> filter, Bridge... bridges) {
 		super(filter, bridges);
 
-		programAnalysis = new ProgramAnalysis(program, atomStore, workingMemory, factsFromProgram);
-		analyzeUnjustified = new AnalyzeUnjustified(program, atomStore, factsFromProgram);
+		programAnalysis = new ProgramAnalysis(program);
+		analyzeUnjustified = new AnalyzeUnjustified(programAnalysis, atomStore, factsFromProgram);
 
 		// Apply program transformations/rewritings.
 		applyProgramTransformations(program);
@@ -120,7 +120,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			if (nonGroundRule.getHeadAtom() != null) {
 				Predicate headPredicate = nonGroundRule.getHeadAtom().getPredicate();
 				programAnalysis.recordDefiningRule(headPredicate, nonGroundRule);
-				analyzeUnjustified.recordDefiningRule(headPredicate, nonGroundRule);
 			}
 
 			// Create working memories for all predicates occurring in the rule

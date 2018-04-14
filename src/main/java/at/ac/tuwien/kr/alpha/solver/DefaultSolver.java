@@ -154,7 +154,7 @@ public class DefaultSolver extends AbstractSolver {
 						Map<Integer, NoGood> obtained = new LinkedHashMap<>();
 						for (Integer literalToJustify : toJustify) {
 							LOGGER.debug("Searching for justification(s) of " + toJustify + " / " + grounder.atomToString(atomOf(literalToJustify)));
-							Set<Literal> reasonsForUnjustified = ((NaiveGrounder) grounder).programAnalysis.reasonsForUnjustified(atomOf(literalToJustify), assignment);
+							Set<Literal> reasonsForUnjustified = ((NaiveGrounder) grounder).analyzeUnjustified.analyze(atomOf(literalToJustify), assignment);
 							int[] reasons = new int[reasonsForUnjustified.size() + 1];
 							reasons[0] = atomOf(literalToJustify);
 							int arrpos = 1;
@@ -217,8 +217,7 @@ public class DefaultSolver extends AbstractSolver {
 					Integer toJustify = ((ArrayAssignment) assignment).getSomeMBTAssignedAtom();
 					LOGGER.debug("Searching for justification of " + toJustify + " / " + grounder.atomToString(atomOf(toJustify)));
 					LOGGER.debug("Assignment is (TRUE part only):" + translate(assignment.getTrueAssignments()));
-					Set<Literal> reasonsForUnjustified = //((NaiveGrounder) grounder).programAnalysis.reasonsForUnjustified(toJustify, assignment);
-						((NaiveGrounder) grounder).analyzeUnjustified.analyze(toJustify, assignment);
+					Set<Literal> reasonsForUnjustified = ((NaiveGrounder) grounder).analyzeUnjustified.analyze(toJustify, assignment);
 					int[] reasons = new int[reasonsForUnjustified.size() + 1];
 					reasons[0] = toJustify;
 					int arrpos = 1;

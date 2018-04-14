@@ -19,28 +19,17 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  */
 public class AnalyzeUnjustified {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AnalyzeUnjustified.class);
-	private final Map<Predicate, HashSet<NonGroundRule>> predicateDefiningRules;
-	private final PredicateDependencyGraph predicateDependencyGraph;
+	private final ProgramAnalysis programAnalysis;
 	private final AtomStore atomStore;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private int renamingCounter;
 	private int padDepth;
 
-	public AnalyzeUnjustified(Program program, AtomStore atomStore, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram) {
+	public AnalyzeUnjustified(ProgramAnalysis programAnalysis, AtomStore atomStore, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram) {
+		this.programAnalysis = programAnalysis;
 		this.atomStore = atomStore;
 		this.factsFromProgram = factsFromProgram;
-		predicateDefiningRules = new LinkedHashMap<>();
-		predicateDependencyGraph = PredicateDependencyGraph.buildFromProgram(program);
 		padDepth = 0;
-	}
-
-	public Map<Predicate, HashSet<NonGroundRule>> getPredicateDefiningRules() {
-		return Collections.unmodifiableMap(predicateDefiningRules);
-	}
-
-	public void recordDefiningRule(Predicate headPredicate, NonGroundRule rule) {
-		predicateDefiningRules.putIfAbsent(headPredicate, new LinkedHashSet<>());
-		predicateDefiningRules.get(headPredicate).add(rule);
 	}
 
 	private Map<Predicate, List<Atom>> assignedAtoms;
@@ -314,15 +303,6 @@ public class AnalyzeUnjustified {
 			Set<Substitution> vYpUN = new LinkedHashSet<>();
 			vYpUN.addAll(vYp);
 			vYpUN.addAll(vN);
-			/*for (Substitution sigmaN : vN) {
-				Substitution merged = Substitution.mergeIntoLeft(sigmaY, sigmaN);
-				// Ignore inconsistent merges.
-				if (merged == null) {
-					continue;
-				}
-				//Substitution sigmaNsimga = new Substitution(sigmaN).extendWith(sigmaY);
-				vYpUN.add(merged);
-			}*/
 			LitSet toJustify = new LitSet(bSigma, vYpUN);
 			if (!toJustify.coversNothing()) {
 				log("New litset to do: " + toJustify);
@@ -380,7 +360,7 @@ public class AnalyzeUnjustified {
 			}
 		}
 
-		HashSet<NonGroundRule> rulesDefiningPredicate = getPredicateDefiningRules().get(predicate);
+		HashSet<NonGroundRule> rulesDefiningPredicate = programAnalysis.getPredicateDefiningRules().get(predicate);
 		if (rulesDefiningPredicate != null) {
 			for (NonGroundRule nonGroundRule : rulesDefiningPredicate) {
 				definingRulesAndFacts.add(new FactOrNonGroundRule(nonGroundRule));
