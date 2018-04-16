@@ -65,7 +65,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	
 	@Test
 	public void testPositiveComparisonLiteral_EQ_LeftAssigning() {
-		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), Y = 5.").getRules().get(0).getBody().get(1);
+		Literal literal = parser.parse("p(X) :- q(X,Y), Y = 5.").getRules().get(0).getBody().get(1);
 		assertEquals(false, literal.isNegated());
 		expectVariables(literal.getBindingVariables(), "Y");
 		expectVariables(literal.getNonBindingVariables());
@@ -73,7 +73,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	
 	@Test
 	public void testNegativeComparisonLiteral_EQ_LeftAssigning() {
-		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), not Y = 5.").getRules().get(0).getBody().get(1);
+		Literal literal = parser.parse("p(X) :- q(X,Y), not Y = 5.").getRules().get(0).getBody().get(1);
 		assertEquals(true, literal.isNegated());
 		expectVariables(literal.getBindingVariables());
 		expectVariables(literal.getNonBindingVariables(), "Y");
@@ -81,7 +81,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	
 	@Test
 	public void testPositiveComparisonLiteral_EQ_RightAssigning() {
-		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), 5 = Y.").getRules().get(0).getBody().get(1);
+		Literal literal = parser.parse("p(X) :- q(X,Y), 5 = Y.").getRules().get(0).getBody().get(1);
 		assertEquals(false, literal.isNegated());
 		expectVariables(literal.getBindingVariables(), "Y");
 		expectVariables(literal.getNonBindingVariables());
@@ -89,7 +89,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	
 	@Test
 	public void testNegativeComparisonLiteral_EQ_RightAssigning() {
-		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), not 5 = Y.").getRules().get(0).getBody().get(1);
+		Literal literal = parser.parse("p(X) :- q(X,Y), not 5 = Y.").getRules().get(0).getBody().get(1);
 		assertEquals(true, literal.isNegated());
 		expectVariables(literal.getBindingVariables());
 		expectVariables(literal.getNonBindingVariables(), "Y");
@@ -98,7 +98,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	@Test
 	@Ignore("Literals of this kind are compiled away by VariableEqualityRemoval")
 	public void testPositiveComparisonLiteral_EQ_Bidirectional() {
-		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), X = Y.").getRules().get(0).getBody().get(1);
+		Literal literal = parser.parse("p(X) :- q(X,Y), X = Y.").getRules().get(0).getBody().get(1);
 		assertEquals(false, literal.isNegated());
 		expectVariables(literal.getBindingVariables());
 		expectVariables(literal.getNonBindingVariables(), "X", "Y");
@@ -106,7 +106,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	
 	@Test
 	public void testNegativeComparisonLiteral_EQ_Bidirectional() {
-		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), not X = Y.").getRules().get(0).getBody().get(1);
+		Literal literal = parser.parse("p(X) :- q(X,Y), not X = Y.").getRules().get(0).getBody().get(1);
 		assertEquals(true, literal.isNegated());
 		expectVariables(literal.getBindingVariables());
 		expectVariables(literal.getNonBindingVariables(), "X", "Y");
@@ -114,7 +114,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	
 	@Test
 	public void testPositiveComparisonLiteral_NEQ_LeftAssigning() {
-		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), Y != 5.").getRules().get(0).getBody().get(1);
+		Literal literal = parser.parse("p(X) :- q(X,Y), Y != 5.").getRules().get(0).getBody().get(1);
 		assertEquals(false, literal.isNegated());
 		expectVariables(literal.getBindingVariables());
 		expectVariables(literal.getNonBindingVariables(), "Y");
@@ -122,7 +122,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	
 	@Test
 	public void testNegativeComparisonLiteral_NEQ_LeftAssigning() {
-		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), not Y != 5.").getRules().get(0).getBody().get(1);
+		Literal literal = parser.parse("p(X) :- q(X,Y), not Y != 5.").getRules().get(0).getBody().get(1);
 		assertEquals(true, literal.isNegated());
 		expectVariables(literal.getBindingVariables(), "Y");
 		expectVariables(literal.getNonBindingVariables());
@@ -130,7 +130,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	
 	@Test
 	public void testPositiveComparisonLiteral_NEQ_RightAssigning() {
-		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), 5 != Y.").getRules().get(0).getBody().get(1);
+		Literal literal = parser.parse("p(X) :- q(X,Y), 5 != Y.").getRules().get(0).getBody().get(1);
 		assertEquals(false, literal.isNegated());
 		expectVariables(literal.getBindingVariables());
 		expectVariables(literal.getNonBindingVariables(), "Y");
@@ -138,7 +138,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	
 	@Test
 	public void testNegativeComparisonLiteral_NEQ_RightAssigning() {
-		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), not 5 != Y.").getRules().get(0).getBody().get(1);
+		Literal literal = parser.parse("p(X) :- q(X,Y), not 5 != Y.").getRules().get(0).getBody().get(1);
 		assertEquals(true, literal.isNegated());
 		expectVariables(literal.getBindingVariables(), "Y");
 		expectVariables(literal.getNonBindingVariables());
@@ -146,7 +146,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	
 	@Test
 	public void testPositiveComparisonLiteral_NEQ_Bidirectional() {
-		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), X != Y.").getRules().get(0).getBody().get(1);
+		Literal literal = parser.parse("p(X) :- q(X,Y), X != Y.").getRules().get(0).getBody().get(1);
 		assertEquals(false, literal.isNegated());
 		expectVariables(literal.getBindingVariables());
 		expectVariables(literal.getNonBindingVariables(), "X", "Y");
@@ -155,7 +155,7 @@ public class LiteralBindingNonBindingVariablesTest {
 	@Test
 	@Ignore("Literals of this kind are compiled away by VariableEqualityRemoval")
 	public void testNegativeComparisonLiteral_NEQ_Bidirectional() {
-		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), not X != Y.").getRules().get(0).getBody().get(1);
+		Literal literal = parser.parse("p(X) :- q(X,Y), not X != Y.").getRules().get(0).getBody().get(1);
 		assertEquals(true, literal.isNegated());
 		expectVariables(literal.getBindingVariables(), "X", "Y");
 		expectVariables(literal.getNonBindingVariables());

@@ -306,12 +306,11 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public Literal visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
+	public ComparisonAtom visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
 		// builtin_atom : term binop term;
-		return new ComparisonLiteral(
+		return new ComparisonAtom(
 			(Term) visit(ctx.term(0)),
 			(Term) visit(ctx.term(1)),
-			isCurrentLiteralNegated,
 			visitBinop(ctx.binop())
 		);
 	}
@@ -321,7 +320,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		// naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
 		isCurrentLiteralNegated = ctx.NAF() != null;
 		if (ctx.builtin_atom() != null) {
-			return visitBuiltin_atom(ctx.builtin_atom());
+			return new Literal(visitBuiltin_atom(ctx.builtin_atom()), isCurrentLiteralNegated);
 		} else if (ctx.classical_literal() != null) {
 			return new Literal(visitClassical_literal(ctx.classical_literal()), isCurrentLiteralNegated);
 		} else if (ctx.external_atom() != null) {

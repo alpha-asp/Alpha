@@ -28,7 +28,10 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.common.atoms.*;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
@@ -350,12 +353,7 @@ public class NaiveGrounder extends BridgedGrounder {
 		Atom currentAtom = currentLiteral.getAtom();
 		if (currentAtom instanceof FixedInterpretationAtom) {
 			// Generate all substitutions for the builtin/external/interval atom.
-			final List<Substitution> substitutions;
-			if (currentLiteral instanceof FixedInterpretationLiteral) {
-				substitutions = ((FixedInterpretationLiteral)currentLiteral).getSubstitutions(partialSubstitution);
-			} else {
-				substitutions = ((FixedInterpretationAtom)currentAtom).getSubstitutions(partialSubstitution);
-			}
+			final List<Substitution> substitutions = ((FixedInterpretationAtom)currentAtom).getSubstitutions(partialSubstitution, currentLiteral.isNegated());
 
 			if (substitutions.isEmpty()) {
 				return emptyList();

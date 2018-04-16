@@ -37,5 +37,10 @@ import java.util.List;
  * Copyright (c) 2017-2018, the Alpha Team.
  */
 public interface FixedInterpretationAtom extends Atom {
-	List<Substitution> getSubstitutions(Substitution partialSubstitution);
+	
+	default List<Substitution> getSubstitutions(Substitution partialSubstitution) {
+		return getSubstitutions(partialSubstitution, false);
+	}
+	
+	List<Substitution> getSubstitutions(Substitution partialSubstitution, boolean negated);
 }

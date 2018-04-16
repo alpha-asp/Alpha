@@ -31,9 +31,7 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
-import org.apache.commons.collections4.SetUtils;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -79,11 +77,7 @@ public class Literal {
 	 * @return
 	 */
 	public Set<VariableTerm> getBindingVariables() {
-		if (isNegated()) {
-			return Collections.emptySet();
-		} else {
-			return atom.getBindingVariables();
-		}
+		return atom.getBindingVariables(negated);
 	}
 
 	/**
@@ -92,11 +86,7 @@ public class Literal {
 	 * @return
 	 */
 	public Set<VariableTerm> getNonBindingVariables() {
-		if (isNegated()) {
-			return SetUtils.union(atom.getBindingVariables(), atom.getNonBindingVariables());
-		} else {
-			return Collections.emptySet();
-		}
+		return atom.getNonBindingVariables(negated);
 	}
 
 	/**

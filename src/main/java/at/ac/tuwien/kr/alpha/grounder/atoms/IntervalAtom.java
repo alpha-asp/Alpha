@@ -40,6 +40,7 @@ import com.google.common.collect.Sets;
 import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Helper for treating IntervalTerms in rules.
@@ -105,7 +106,11 @@ public class IntervalAtom implements FixedInterpretationAtom {
 	}
 
 	@Override
-	public Set<VariableTerm> getBindingVariables() {
+	public Set<VariableTerm> getBindingVariables(boolean negated) {
+		if (negated) {
+			throw oops("IntervalAtom should only occur positively");
+		}
+		
 		if (terms.get(1) instanceof VariableTerm) {
 			return Collections.singleton((VariableTerm) terms.get(1));
 		}
@@ -113,7 +118,11 @@ public class IntervalAtom implements FixedInterpretationAtom {
 	}
 
 	@Override
-	public Set<VariableTerm> getNonBindingVariables() {
+	public Set<VariableTerm> getNonBindingVariables(boolean negated) {
+		if (negated) {
+			throw oops("IntervalAtom should only occur positively");
+		}
+		
 		return Sets.newHashSet(terms.get(0).getOccurringVariables());
 	}
 
@@ -147,7 +156,11 @@ public class IntervalAtom implements FixedInterpretationAtom {
 	}
 
 	@Override
-	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
+	public List<Substitution> getSubstitutions(Substitution partialSubstitution, boolean negated) {
+		if (negated) {
+			throw oops("IntervalAtom should only occur positively");
+		}
+		
 		// Substitute variables occurring in the interval itself.
 		IntervalAtom groundInterval = (IntervalAtom) substitute(partialSubstitution);
 		// Generate all substitutions for the interval representing variable.

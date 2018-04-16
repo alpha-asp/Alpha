@@ -46,25 +46,40 @@ public class ComparisonAtom implements FixedInterpretationAtom {
 	private final Predicate predicate;
 	final ComparisonOperator operator;
 	private final List<Term> terms;
-	private final boolean isNormalizedEquality;
 	
 	ComparisonAtom(List<Term> terms, ComparisonOperator operator) {
 		this.terms = terms;
 		this.operator = operator;
 		this.predicate = Predicate.getInstance(operator.toString(), 2);
-		this.isNormalizedEquality = operator == ComparisonOperator.EQ;
+	}
+
+	public ComparisonAtom(Term term1, Term term2, ComparisonOperator operator) {
+		this(Arrays.asList(term1, term2), operator);
 	}
 
 	public boolean isNormalizedEquality() {
-		return isNormalizedEquality;
+		return isNormalizedEquality(false);
 	}
-
+	
+	public boolean isNormalizedEquality(boolean negated) {
+		return (!negated && operator == ComparisonOperator.EQ)
+				|| (negated && operator == ComparisonOperator.NE);
+	}
+	
 	boolean isLeftAssigning() {
-		return isNormalizedEquality && terms.get(0) instanceof VariableTerm;
+		return isLeftAssigning(false);
 	}
 
+	private boolean isLeftAssigning(boolean negated) {
+		return isNormalizedEquality(negated) && terms.get(0) instanceof VariableTerm;
+	}
+	
 	boolean isRightAssigning() {
-		return isNormalizedEquality && terms.get(1) instanceof VariableTerm;
+		return isRightAssigning(false);
+	}
+
+	private boolean isRightAssigning(boolean negated) {
+		return isNormalizedEquality(negated) && terms.get(1) instanceof VariableTerm;
 	}
 
 	@Override
@@ -83,37 +98,37 @@ public class ComparisonAtom implements FixedInterpretationAtom {
 	}
 
 	@Override
-	public Set<VariableTerm> getBindingVariables() {
-		if (isLeftAssigning() && isRightAssigning()) {
+	public Set<VariableTerm> getBindingVariables(boolean negated) {
+		if (isLeftAssigning(negated) && isRightAssigning(negated)) {
 			// In case this is "X = Y" or "not X != Y" then both sides are binding given that the other is.
 			// In this case non-binding and binding variables cannot be reported accurately, in fact, the double variable could be compiled away.
 			throw new RuntimeException("Builtin equality with left and right side being variables encountered. Should not happen.");
 		}
-		if (isLeftAssigning()) {
+		if (isLeftAssigning(negated)) {
 			return Collections.singleton((VariableTerm) terms.get(0));
 		}
-		if (isRightAssigning()) {
+		if (isRightAssigning(negated)) {
 			return Collections.singleton((VariableTerm) terms.get(1));
 		}
 		return Collections.emptySet();
 	}
 
 	@Override
-	public Set<VariableTerm> getNonBindingVariables() {
+	public Set<VariableTerm> getNonBindingVariables(boolean negated) {
 		Term left = terms.get(0);
 		Term right = terms.get(1);
 		HashSet<VariableTerm> occurringVariables = new HashSet<>();
 		List<VariableTerm> leftOccurringVariables = new LinkedList<>(left.getOccurringVariables());
 		List<VariableTerm> rightOccurringVariables = new LinkedList<>(right.getOccurringVariables());
-		if (isLeftAssigning()) {
+		if (isLeftAssigning(negated)) {
 			leftOccurringVariables.remove(left);
 		}
-		if (isRightAssigning()) {
+		if (isRightAssigning(negated)) {
 			rightOccurringVariables.remove(right);
 		}
 		occurringVariables.addAll(leftOccurringVariables);
 		occurringVariables.addAll(rightOccurringVariables);
-		if (isLeftAssigning() || isRightAssigning()) {
+		if (isLeftAssigning(negated) || isRightAssigning(negated)) {
 			return occurringVariables;
 		}
 		// Neither left- nor right-assigning, hence no variable is binding.
@@ -127,13 +142,15 @@ public class ComparisonAtom implements FixedInterpretationAtom {
 	}
 
 	@Override
-	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
-		return getSubstitutions(this, partialSubstitution, operator);
+	public List<Substitution> getSubstitutions(Substitution partialSubstitution, boolean negated) {
+		return getSubstitutions(this, partialSubstitution, negated);
 	}
 
-	static List<Substitution> getSubstitutions(ComparisonAtom atom, Substitution partialSubstitution, ComparisonOperator operator) {
+	static List<Substitution> getSubstitutions(ComparisonAtom atom, Substitution partialSubstitution, boolean negated) {
+		ComparisonOperator operator = negated ? atom.operator.getNegation() : atom.operator;
+		
 		// Treat case where this is just comparison with all variables bound by partialSubstitution.
-		if (!atom.isLeftAssigning() && !atom.isRightAssigning()) {
+		if (!atom.isLeftAssigning(negated) && !atom.isRightAssigning(negated)) {
 			if (compare(atom.terms.get(0).substitute(partialSubstitution), atom.terms.get(1).substitute(partialSubstitution), operator)) {
 				return Collections.singletonList(partialSubstitution);
 			} else {
@@ -143,11 +160,11 @@ public class ComparisonAtom implements FixedInterpretationAtom {
 		// Treat case that this is X = t or t = X.
 		VariableTerm variable = null;
 		Term expression = null;
-		if (atom.isLeftAssigning()) {
+		if (atom.isLeftAssigning(negated)) {
 			variable = (VariableTerm) atom.terms.get(0);
 			expression = atom.terms.get(1);
 		}
-		if (atom.isRightAssigning()) {
+		if (atom.isRightAssigning(negated)) {
 			variable = (VariableTerm) atom.terms.get(1);
 			expression = atom.terms.get(0);
 		}

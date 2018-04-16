@@ -48,13 +48,27 @@ public interface Atom extends Comparable<Atom> {
 	 * Set of all variables occurring in the Atom that are potentially binding, i.e., variables in positive atoms.
 	 * @return
 	 */
-	Set<VariableTerm> getBindingVariables();
+	default Set<VariableTerm> getBindingVariables() {
+		return getBindingVariables(false);
+	}
+	
+	/**
+	 * Like {@link #getBindingVariables()}, but respects the negation status of this atom in a {@link Literal}
+	 */
+	Set<VariableTerm> getBindingVariables(boolean negated);
 
 	/**
 	 * Set of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
 	 * @return
 	 */
-	Set<VariableTerm> getNonBindingVariables();
+	default Set<VariableTerm> getNonBindingVariables() {
+		return getNonBindingVariables(false);
+	}
+	
+	/**
+	 * Like {@link #getNonBindingVariables()}, but respects the negation status of this atom in a {@link Literal}
+	 */
+	Set<VariableTerm> getNonBindingVariables(boolean negated);
 
 	/**
 	 * This method applies a substitution to a potentially non-substitute atom.

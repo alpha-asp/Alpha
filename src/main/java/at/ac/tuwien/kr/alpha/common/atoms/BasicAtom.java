@@ -89,7 +89,11 @@ public class BasicAtom implements Atom {
 	}
 
 	@Override
-	public Set<VariableTerm> getBindingVariables() {
+	public Set<VariableTerm> getBindingVariables(boolean negated) {
+		if (negated) {
+			// Negative literal has no binding variables.
+			return Collections.emptySet();
+		}
 		Set<VariableTerm> bindingVariables = new HashSet<>();
 		for (Term term : terms) {
 			bindingVariables.addAll(term.getOccurringVariables());
@@ -98,7 +102,11 @@ public class BasicAtom implements Atom {
 	}
 
 	@Override
-	public Set<VariableTerm> getNonBindingVariables() {
+	public Set<VariableTerm> getNonBindingVariables(boolean negated) {
+		if (!negated) {
+			// Positive literal has only binding variables.
+			return Collections.emptySet();
+		}
 		Set<VariableTerm> nonbindingVariables = new HashSet<>();
 		for (Term term : terms) {
 			nonbindingVariables.addAll(term.getOccurringVariables());

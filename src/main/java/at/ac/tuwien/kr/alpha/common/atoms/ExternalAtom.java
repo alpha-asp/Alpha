@@ -34,10 +34,7 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
@@ -57,7 +54,7 @@ public class ExternalAtom implements FixedInterpretationAtom {
 		this.output = output;
 	}
 
-	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
+	public List<Substitution> getSubstitutions(Substitution partialSubstitution, boolean negated) {
 		List<Substitution> substitutions = new ArrayList<>();
 		List<Term> substitutes = new ArrayList<>(input.size());
 
@@ -127,10 +124,15 @@ public class ExternalAtom implements FixedInterpretationAtom {
 	}
 
 	@Override
-	public Set<VariableTerm> getBindingVariables() {
+	public Set<VariableTerm> getBindingVariables(boolean negated) {
 		// If the external atom is negative, then all variables of input and output are non-binding
 		// and there are no binding variables (like for ordinary atoms).
 		// If the external atom is positive, then variables of output are binding.
+
+		if (negated) {
+			return Collections.emptySet();
+		}
+
 		Set<VariableTerm> binding = new HashSet<>(output.size());
 
 		for (Term out : output) {
@@ -143,12 +145,21 @@ public class ExternalAtom implements FixedInterpretationAtom {
 	}
 
 	@Override
-	public Set<VariableTerm> getNonBindingVariables() {
+	public Set<VariableTerm> getNonBindingVariables(boolean negated) {
 		// External atoms have their input always non-binding, since they cannot
 		// be queried without some concrete input.
 		Set<VariableTerm> nonbindingVariables = new HashSet<>();
 		for (Term term : input) {
 			nonbindingVariables.addAll(term.getOccurringVariables());
+		}
+
+		// If the external atom is negative, then all variables of input and output are non-binding.
+		if (negated) {
+			for (Term out : output) {
+				if (out instanceof VariableTerm) {
+					nonbindingVariables.add((VariableTerm) out);
+				}
+			}
 		}
 
 		return nonbindingVariables;
