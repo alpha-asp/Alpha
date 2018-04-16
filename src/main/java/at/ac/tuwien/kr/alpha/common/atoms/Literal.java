@@ -61,7 +61,6 @@ public class Literal {
 
 	/**
 	 * Returns a new copy of this literal whose {@link Literal#isNegated()} status is inverted
-	 * (if the atom cannot be negated, the literal may be returned without creating a copy)
 	 */
 	public Literal negate() {
 		return new Literal(atom, !negated);
