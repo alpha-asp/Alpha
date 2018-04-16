@@ -38,148 +38,148 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Tests the behaviour of {@link Atom#getBindingVariables()} and {@link Atom#getNonBindingVariables()}
+ * Tests the behaviour of {@link Literal#getBindingVariables()} and {@link Literal#getNonBindingVariables()}
  * on classes implementing {@link Atom}.
  *
  */
-public class AtomBindingNonBindingVariablesTest {
+public class LiteralBindingNonBindingVariablesTest {
 
 	private final Map<String, PredicateInterpretation> externals = new HashMap<>();
 	private final ProgramParser parser = new ProgramParser(externals);
 	
 	@Test
-	public void testPositiveBasicAtom() {
-		BasicAtom atom = (BasicAtom)parser.parse("p(X,Y).").getFacts().get(0);
-		assertEquals(false, atom.isNegated());
-		expectVariables(atom.getBindingVariables(), "X", "Y");
-		expectVariables(atom.getNonBindingVariables());
+	public void testPositiveBasicLiteral() {
+		Literal literal = parser.parse("p(X,Y) :- q(X,Y).").getRules().get(0).getBody().get(0);
+		assertEquals(false, literal.isNegated());
+		expectVariables(literal.getBindingVariables(), "X", "Y");
+		expectVariables(literal.getNonBindingVariables());
 	}
 	
 	@Test
-	public void testNegativeBasicAtom() {
-		BasicAtom atom = (BasicAtom)parser.parse("p(X,Y) :- q(X,Y), not r(X,Y).").getRules().get(0).getBody().get(1);
-		assertEquals(true, atom.isNegated());
-		expectVariables(atom.getBindingVariables());
-		expectVariables(atom.getNonBindingVariables(), "X", "Y");
+	public void testNegativeBasicLiteral() {
+		Literal literal = parser.parse("p(X,Y) :- q(X,Y), not r(X,Y).").getRules().get(0).getBody().get(1);
+		assertEquals(true, literal.isNegated());
+		expectVariables(literal.getBindingVariables());
+		expectVariables(literal.getNonBindingVariables(), "X", "Y");
 	}
 	
 	@Test
-	public void testPositiveComparisonAtom_EQ_LeftAssigning() {
-		ComparisonAtom atom = (ComparisonAtom)parser.parse("p(X) :- q(X,Y), Y = 5.").getRules().get(0).getBody().get(1);
-		assertEquals(false, atom.isNegated());
-		expectVariables(atom.getBindingVariables(), "Y");
-		expectVariables(atom.getNonBindingVariables());
+	public void testPositiveComparisonLiteral_EQ_LeftAssigning() {
+		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), Y = 5.").getRules().get(0).getBody().get(1);
+		assertEquals(false, literal.isNegated());
+		expectVariables(literal.getBindingVariables(), "Y");
+		expectVariables(literal.getNonBindingVariables());
 	}
 	
 	@Test
-	public void testNegativeComparisonAtom_EQ_LeftAssigning() {
-		ComparisonAtom atom = (ComparisonAtom)parser.parse("p(X) :- q(X,Y), not Y = 5.").getRules().get(0).getBody().get(1);
-		assertEquals(true, atom.isNegated());
-		expectVariables(atom.getBindingVariables());
-		expectVariables(atom.getNonBindingVariables(), "Y");
+	public void testNegativeComparisonLiteral_EQ_LeftAssigning() {
+		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), not Y = 5.").getRules().get(0).getBody().get(1);
+		assertEquals(true, literal.isNegated());
+		expectVariables(literal.getBindingVariables());
+		expectVariables(literal.getNonBindingVariables(), "Y");
 	}
 	
 	@Test
-	public void testPositiveComparisonAtom_EQ_RightAssigning() {
-		ComparisonAtom atom = (ComparisonAtom)parser.parse("p(X) :- q(X,Y), 5 = Y.").getRules().get(0).getBody().get(1);
-		assertEquals(false, atom.isNegated());
-		expectVariables(atom.getBindingVariables(), "Y");
-		expectVariables(atom.getNonBindingVariables());
+	public void testPositiveComparisonLiteral_EQ_RightAssigning() {
+		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), 5 = Y.").getRules().get(0).getBody().get(1);
+		assertEquals(false, literal.isNegated());
+		expectVariables(literal.getBindingVariables(), "Y");
+		expectVariables(literal.getNonBindingVariables());
 	}
 	
 	@Test
-	public void testNegativeComparisonAtom_EQ_RightAssigning() {
-		ComparisonAtom atom = (ComparisonAtom)parser.parse("p(X) :- q(X,Y), not 5 = Y.").getRules().get(0).getBody().get(1);
-		assertEquals(true, atom.isNegated());
-		expectVariables(atom.getBindingVariables());
-		expectVariables(atom.getNonBindingVariables(), "Y");
+	public void testNegativeComparisonLiteral_EQ_RightAssigning() {
+		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), not 5 = Y.").getRules().get(0).getBody().get(1);
+		assertEquals(true, literal.isNegated());
+		expectVariables(literal.getBindingVariables());
+		expectVariables(literal.getNonBindingVariables(), "Y");
 	}
 	
 	@Test
-	@Ignore("Atoms of this kind are compiled away by VariableEqualityRemoval")
-	public void testPositiveComparisonAtom_EQ_Bidirectional() {
-		ComparisonAtom atom = (ComparisonAtom)parser.parse("p(X) :- q(X,Y), X = Y.").getRules().get(0).getBody().get(1);
-		assertEquals(false, atom.isNegated());
-		expectVariables(atom.getBindingVariables());
-		expectVariables(atom.getNonBindingVariables(), "X", "Y");
+	@Ignore("Literals of this kind are compiled away by VariableEqualityRemoval")
+	public void testPositiveComparisonLiteral_EQ_Bidirectional() {
+		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), X = Y.").getRules().get(0).getBody().get(1);
+		assertEquals(false, literal.isNegated());
+		expectVariables(literal.getBindingVariables());
+		expectVariables(literal.getNonBindingVariables(), "X", "Y");
 	}
 	
 	@Test
-	public void testNegativeComparisonAtom_EQ_Bidirectional() {
-		ComparisonAtom atom = (ComparisonAtom)parser.parse("p(X) :- q(X,Y), not X = Y.").getRules().get(0).getBody().get(1);
-		assertEquals(true, atom.isNegated());
-		expectVariables(atom.getBindingVariables());
-		expectVariables(atom.getNonBindingVariables(), "X", "Y");
+	public void testNegativeComparisonLiteral_EQ_Bidirectional() {
+		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), not X = Y.").getRules().get(0).getBody().get(1);
+		assertEquals(true, literal.isNegated());
+		expectVariables(literal.getBindingVariables());
+		expectVariables(literal.getNonBindingVariables(), "X", "Y");
 	}
 	
 	@Test
-	public void testPositiveComparisonAtom_NEQ_LeftAssigning() {
-		ComparisonAtom atom = (ComparisonAtom)parser.parse("p(X) :- q(X,Y), Y != 5.").getRules().get(0).getBody().get(1);
-		assertEquals(false, atom.isNegated());
-		expectVariables(atom.getBindingVariables());
-		expectVariables(atom.getNonBindingVariables(), "Y");
+	public void testPositiveComparisonLiteral_NEQ_LeftAssigning() {
+		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), Y != 5.").getRules().get(0).getBody().get(1);
+		assertEquals(false, literal.isNegated());
+		expectVariables(literal.getBindingVariables());
+		expectVariables(literal.getNonBindingVariables(), "Y");
 	}
 	
 	@Test
-	public void testNegativeComparisonAtom_NEQ_LeftAssigning() {
-		ComparisonAtom atom = (ComparisonAtom)parser.parse("p(X) :- q(X,Y), not Y != 5.").getRules().get(0).getBody().get(1);
-		assertEquals(true, atom.isNegated());
-		expectVariables(atom.getBindingVariables(), "Y");
-		expectVariables(atom.getNonBindingVariables());
+	public void testNegativeComparisonLiteral_NEQ_LeftAssigning() {
+		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), not Y != 5.").getRules().get(0).getBody().get(1);
+		assertEquals(true, literal.isNegated());
+		expectVariables(literal.getBindingVariables(), "Y");
+		expectVariables(literal.getNonBindingVariables());
 	}
 	
 	@Test
-	public void testPositiveComparisonAtom_NEQ_RightAssigning() {
-		ComparisonAtom atom = (ComparisonAtom)parser.parse("p(X) :- q(X,Y), 5 != Y.").getRules().get(0).getBody().get(1);
-		assertEquals(false, atom.isNegated());
-		expectVariables(atom.getBindingVariables());
-		expectVariables(atom.getNonBindingVariables(), "Y");
+	public void testPositiveComparisonLiteral_NEQ_RightAssigning() {
+		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), 5 != Y.").getRules().get(0).getBody().get(1);
+		assertEquals(false, literal.isNegated());
+		expectVariables(literal.getBindingVariables());
+		expectVariables(literal.getNonBindingVariables(), "Y");
 	}
 	
 	@Test
-	public void testNegativeComparisonAtom_NEQ_RightAssigning() {
-		ComparisonAtom atom = (ComparisonAtom)parser.parse("p(X) :- q(X,Y), not 5 != Y.").getRules().get(0).getBody().get(1);
-		assertEquals(true, atom.isNegated());
-		expectVariables(atom.getBindingVariables(), "Y");
-		expectVariables(atom.getNonBindingVariables());
+	public void testNegativeComparisonLiteral_NEQ_RightAssigning() {
+		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), not 5 != Y.").getRules().get(0).getBody().get(1);
+		assertEquals(true, literal.isNegated());
+		expectVariables(literal.getBindingVariables(), "Y");
+		expectVariables(literal.getNonBindingVariables());
 	}
 	
 	@Test
-	public void testPositiveComparisonAtom_NEQ_Bidirectional() {
-		ComparisonAtom atom = (ComparisonAtom)parser.parse("p(X) :- q(X,Y), X != Y.").getRules().get(0).getBody().get(1);
-		assertEquals(false, atom.isNegated());
-		expectVariables(atom.getBindingVariables());
-		expectVariables(atom.getNonBindingVariables(), "X", "Y");
+	public void testPositiveComparisonLiteral_NEQ_Bidirectional() {
+		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), X != Y.").getRules().get(0).getBody().get(1);
+		assertEquals(false, literal.isNegated());
+		expectVariables(literal.getBindingVariables());
+		expectVariables(literal.getNonBindingVariables(), "X", "Y");
 	}
 	
 	@Test
-	@Ignore("Atoms of this kind are compiled away by VariableEqualityRemoval")
-	public void testNegativeComparisonAtom_NEQ_Bidirectional() {
-		ComparisonAtom atom = (ComparisonAtom)parser.parse("p(X) :- q(X,Y), not X != Y.").getRules().get(0).getBody().get(1);
-		assertEquals(true, atom.isNegated());
-		expectVariables(atom.getBindingVariables(), "X", "Y");
-		expectVariables(atom.getNonBindingVariables());
+	@Ignore("Literals of this kind are compiled away by VariableEqualityRemoval")
+	public void testNegativeComparisonLiteral_NEQ_Bidirectional() {
+		ComparisonLiteral literal = (ComparisonLiteral)parser.parse("p(X) :- q(X,Y), not X != Y.").getRules().get(0).getBody().get(1);
+		assertEquals(true, literal.isNegated());
+		expectVariables(literal.getBindingVariables(), "X", "Y");
+		expectVariables(literal.getNonBindingVariables());
 	}
 	
 	@Test
-	public void testPositiveExternalAtom() {
+	public void testPositiveExternalLiteral() {
 		externals.put("ext", new IntPredicateInterpretation(i -> i > 0));
-		ExternalAtom atom = (ExternalAtom)parser.parse("p(X) :- q(Y), &ext[Y](X).").getRules().get(0).getBody().get(1);
-		assertEquals(false, atom.isNegated());
-		expectVariables(atom.getBindingVariables(), "X");
-		expectVariables(atom.getNonBindingVariables(), "Y");
+		Literal literal = parser.parse("p(X) :- q(Y), &ext[Y](X).").getRules().get(0).getBody().get(1);
+		assertEquals(false, literal.isNegated());
+		expectVariables(literal.getBindingVariables(), "X");
+		expectVariables(literal.getNonBindingVariables(), "Y");
 	}
 	
 	@Test
-	public void testNegativeExternalAtom() {
+	public void testNegativeExternalLiteral() {
 		externals.put("ext", new IntPredicateInterpretation(i -> i > 0));
-		ExternalAtom atom = (ExternalAtom)parser.parse("p(X) :- q(Y), not &ext[Y](X).").getRules().get(0).getBody().get(1);
-		assertEquals(true, atom.isNegated());
-		expectVariables(atom.getBindingVariables());
-		expectVariables(atom.getNonBindingVariables(), "X", "Y");
+		Literal literal = parser.parse("p(X) :- q(Y), not &ext[Y](X).").getRules().get(0).getBody().get(1);
+		assertEquals(true, literal.isNegated());
+		expectVariables(literal.getBindingVariables());
+		expectVariables(literal.getNonBindingVariables(), "X", "Y");
 	}
 
-	private void expectVariables(List<VariableTerm> variables, String... expectedVariableNames) {
+	private void expectVariables(Collection<VariableTerm> variables, String... expectedVariableNames) {
 		Set<String> setActualVariableNames = variables.stream().map(VariableTerm::toString).collect(Collectors.toSet());
 		Set<String> setExpectedVariableNames = Arrays.stream(expectedVariableNames).collect(Collectors.toSet());
 		assertEquals(setExpectedVariableNames, setActualVariableNames);
