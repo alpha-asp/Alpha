@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2018 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,6 @@ import java.util.stream.Stream;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 import static at.ac.tuwien.kr.alpha.common.NoGood.HEAD;
-import static at.ac.tuwien.kr.alpha.solver.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -58,9 +57,9 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
  * enrich the information available for a choice point. Intuitively, all atoms occurring in the head or the
  * body of a rule depend on a choice point representing the body of this rule.
  * 
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2018 Siemens AG
  */
-public class DependencyDrivenHeuristic implements BranchingHeuristic {
+public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristic {
 	protected static final Logger LOGGER = LoggerFactory.getLogger(DependencyDrivenHeuristic.class);
 	
 	public static final double DEFAULT_ACTIVITY = 0.0;
@@ -193,7 +192,13 @@ public class DependencyDrivenHeuristic implements BranchingHeuristic {
 	 * When choosing between dependent atoms, a {@link BodyActivityProvider} is employed to define the activity of a choice point.
 	 */
 	@Override
-	public int chooseAtom() {
+	public int chooseLiteral() {
+		int atom = chooseAtom();
+		boolean sign = chooseSign(atom);
+		return sign ? atom : -atom;
+	}
+	
+	protected int chooseAtom() {
 		for (NoGood noGood : stackOfNoGoods) {
 			int mostActiveAtom = getMostActiveAtom(noGood);
 			if (choiceManager.isActiveChoiceAtom(mostActiveAtom)) {
@@ -210,11 +215,7 @@ public class DependencyDrivenHeuristic implements BranchingHeuristic {
 		return DEFAULT_CHOICE_ATOM;
 	}
 
-	@Override
-	public boolean chooseSign(int atom) {
-		if (!isAtom(atom)) {
-			throw new IllegalArgumentException("Atom must be a positive integer.");
-		}
+	protected boolean chooseSign(int atom) {
 		atom = getAtomForChooseSign(atom);
 
 		if (assignment.getTruth(atom) == ThriceTruth.MBT) {
