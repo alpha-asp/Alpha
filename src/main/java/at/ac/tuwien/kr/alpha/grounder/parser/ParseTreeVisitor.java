@@ -320,17 +320,17 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		// naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
 		isCurrentLiteralNegated = ctx.NAF() != null;
 		if (ctx.builtin_atom() != null) {
-			return new Literal(visitBuiltin_atom(ctx.builtin_atom()), isCurrentLiteralNegated);
+			return new ComparisonLiteral(visitBuiltin_atom(ctx.builtin_atom()), isCurrentLiteralNegated);
 		} else if (ctx.classical_literal() != null) {
-			return new Literal(visitClassical_literal(ctx.classical_literal()), isCurrentLiteralNegated);
+			return new BasicLiteral(visitClassical_literal(ctx.classical_literal()), isCurrentLiteralNegated);
 		} else if (ctx.external_atom() != null) {
-			return new Literal(visitExternal_atom(ctx.external_atom()), isCurrentLiteralNegated);
+			return new ExternalLiteral(visitExternal_atom(ctx.external_atom()), isCurrentLiteralNegated);
 		}
 		throw notSupported(ctx);
 	}
 
 	@Override
-	public Atom visitClassical_literal(ASPCore2Parser.Classical_literalContext ctx) {
+	public BasicAtom visitClassical_literal(ASPCore2Parser.Classical_literalContext ctx) {
 		// classical_literal : MINUS? ID (PAREN_OPEN terms PAREN_CLOSE)?;
 		if (ctx.MINUS() != null) {
 			throw notSupported(ctx);
@@ -401,7 +401,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public Atom visitExternal_atom(ASPCore2Parser.External_atomContext ctx) {
+	public ExternalAtom visitExternal_atom(ASPCore2Parser.External_atomContext ctx) {
 		// external_atom : AMPERSAND ID (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?;
 
 		if (ctx.MINUS() != null) {

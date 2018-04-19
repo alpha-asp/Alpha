@@ -29,18 +29,16 @@ package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
-import static java.util.Collections.emptyList;
 
-public class ExternalAtom implements FixedInterpretationAtom {
+public class ExternalAtom implements Atom {
 	private final List<Term> input;
 	private final List<Term> output;
 
@@ -52,52 +50,6 @@ public class ExternalAtom implements FixedInterpretationAtom {
 		this.interpretation = interpretation;
 		this.input = input;
 		this.output = output;
-	}
-
-	public List<Substitution> getSubstitutions(Substitution partialSubstitution, boolean negated) {
-		List<Substitution> substitutions = new ArrayList<>();
-		List<Term> substitutes = new ArrayList<>(input.size());
-
-		for (Term t : input) {
-			substitutes.add(t.substitute(partialSubstitution));
-		}
-
-		Set<List<ConstantTerm>> results = interpretation.evaluate(substitutes);
-
-		if (results == null) {
-			throw new NullPointerException("Predicate " + getPredicate().getName() + " returned null. It must return a Set.");
-		}
-
-		if (results.isEmpty()) {
-			return emptyList();
-		}
-
-		for (List<ConstantTerm> bindings : results) {
-			if (bindings.size() < output.size()) {
-				throw new RuntimeException("Predicate " + getPredicate().getName() + " returned " + bindings.size() + " terms when at least " + output.size() + " were expected.");
-			}
-
-			Substitution ith = new Substitution(partialSubstitution);
-			boolean skip = false;
-			for (int i = 0; i < output.size(); i++) {
-				Term out = output.get(i);
-
-				if (out instanceof VariableTerm) {
-					ith.put((VariableTerm) out, bindings.get(i));
-				} else {
-					if (!bindings.get(i).equals(out)) {
-						skip = true;
-						break;
-					}
-				}
-			}
-
-			if (!skip) {
-				substitutions.add(ith);
-			}
-		}
-
-		return substitutions;
 	}
 
 	public boolean hasOutput() {
@@ -112,6 +64,14 @@ public class ExternalAtom implements FixedInterpretationAtom {
 	public PredicateInterpretation getInterpretation() {
 		return interpretation;
 	}
+	
+	List<Term> getInput() {
+		return Collections.unmodifiableList(input);
+	}
+	
+	List<Term> getOutput() {
+		return Collections.unmodifiableList(output);
+	}
 
 	@Override
 	public List<Term> getTerms() {
@@ -124,49 +84,7 @@ public class ExternalAtom implements FixedInterpretationAtom {
 	}
 
 	@Override
-	public Set<VariableTerm> getBindingVariables(boolean negated) {
-		// If the external atom is negative, then all variables of input and output are non-binding
-		// and there are no binding variables (like for ordinary atoms).
-		// If the external atom is positive, then variables of output are binding.
-
-		if (negated) {
-			return Collections.emptySet();
-		}
-
-		Set<VariableTerm> binding = new HashSet<>(output.size());
-
-		for (Term out : output) {
-			if (out instanceof VariableTerm) {
-				binding.add((VariableTerm) out);
-			}
-		}
-
-		return binding;
-	}
-
-	@Override
-	public Set<VariableTerm> getNonBindingVariables(boolean negated) {
-		// External atoms have their input always non-binding, since they cannot
-		// be queried without some concrete input.
-		Set<VariableTerm> nonbindingVariables = new HashSet<>();
-		for (Term term : input) {
-			nonbindingVariables.addAll(term.getOccurringVariables());
-		}
-
-		// If the external atom is negative, then all variables of input and output are non-binding.
-		if (negated) {
-			for (Term out : output) {
-				if (out instanceof VariableTerm) {
-					nonbindingVariables.add((VariableTerm) out);
-				}
-			}
-		}
-
-		return nonbindingVariables;
-	}
-
-	@Override
-	public Atom substitute(Substitution substitution) {
+	public ExternalAtom substitute(Substitution substitution) {
 		return new ExternalAtom(
 			predicate,
 			interpretation,
@@ -176,6 +94,11 @@ public class ExternalAtom implements FixedInterpretationAtom {
 				.collect(Collectors.toList()),
 			output
 		);
+	}
+
+	@Override
+	public ExternalLiteral toLiteral(boolean negated) {
+		return new ExternalLiteral(this, negated);
 	}
 
 	@Override

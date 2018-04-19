@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -84,15 +85,20 @@ public class RuleAtom implements Atom {
 		// NOTE: Both terms are ConstantTerms, which are ground by definition.
 		return true;
 	}
+	
+	@Override
+	public Literal toLiteral(boolean negated) {
+		throw new UnsupportedOperationException("RuleAtom cannot be literalized");
+	}
 
 	@Override
-	public Set<VariableTerm> getBindingVariables(boolean negated) {
+	public Set<VariableTerm> getBindingVariables() {
 		// NOTE: Both terms are ConstantTerms, which have no variables by definition.
 		return Collections.emptySet();
 	}
 
 	@Override
-	public Set<VariableTerm> getNonBindingVariables(boolean negated) {
+	public Set<VariableTerm> getNonBindingVariables() {
 		return Collections.emptySet();
 	}
 

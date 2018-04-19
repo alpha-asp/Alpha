@@ -31,6 +31,7 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
@@ -120,7 +121,7 @@ public class SubstitutionTest {
 	private void substituteBasicAtomLiteral(boolean negated) {
 		Predicate p = Predicate.getInstance("p", 2);
 		BasicAtom atom = new BasicAtom(p, Arrays.asList(X, Y));
-		Literal literal = new Literal(atom, negated);
+		Literal literal = new BasicLiteral(atom, negated);
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
@@ -147,7 +148,7 @@ public class SubstitutionTest {
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
-		String printedString = NaiveGrounder.groundLiteralToString(atom.toLiteral(!negated), substitution, true);
+		String printedString = NaiveGrounder.groundLiteralToString(atom.toLiteral(negated), substitution, true);
 		assertEquals((negated ? "not " : "") + "p(a, b)", printedString);
 	}
 
