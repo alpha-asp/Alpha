@@ -34,9 +34,9 @@ import java.util.List;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
- * A chain of branching heuristics in which the entry at position n+1 is used as a fallback if the entry at position n cannot make a decision. 
+ * A "chained" list of branching heuristics in which the entry at position n+1 is used as a fallback if the entry at position n cannot make a decision. 
  */
-public class ChainOfBranchingHeuristics implements BranchingHeuristic {
+public class ChainedBranchingHeuristics implements BranchingHeuristic {
 	
 	private List<BranchingHeuristic> chain = new LinkedList<>();
 	
@@ -79,8 +79,8 @@ public class ChainOfBranchingHeuristics implements BranchingHeuristic {
 		chain.add(element);
 	}
 	
-	public static ChainOfBranchingHeuristics chainOf(BranchingHeuristic... branchingHeuristics) {
-		ChainOfBranchingHeuristics chain = new ChainOfBranchingHeuristics();
+	public static ChainedBranchingHeuristics chainOf(BranchingHeuristic... branchingHeuristics) {
+		ChainedBranchingHeuristics chain = new ChainedBranchingHeuristics();
 		for (BranchingHeuristic element : branchingHeuristics) {
 			chain.add(element);
 		}

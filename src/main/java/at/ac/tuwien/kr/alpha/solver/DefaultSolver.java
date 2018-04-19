@@ -34,7 +34,7 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
-import at.ac.tuwien.kr.alpha.solver.heuristics.ChainOfBranchingHeuristics;
+import at.ac.tuwien.kr.alpha.solver.heuristics.ChainedBranchingHeuristics;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
 import org.slf4j.Logger;
@@ -75,7 +75,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		this.store = store;
 		this.choiceManager = new ChoiceManager(assignment, store, debugInternalChecks);
 		this.learner = new GroundConflictNoGoodLearner(assignment);
-		this.branchingHeuristic = ChainOfBranchingHeuristics.chainOf(
+		this.branchingHeuristic = ChainedBranchingHeuristics.chainOf(
 				BranchingHeuristicFactory.getInstance(branchingHeuristic, grounder, assignment, choiceManager, random),
 				new NaiveHeuristic(choiceManager));
 	}
