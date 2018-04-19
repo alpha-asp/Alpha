@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2018 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,7 @@ public class AlphaHeadMustBeTrueHeuristic extends DependencyDrivenHeuristic {
 	}
 
 	@Override
-	public int chooseAtom() {
+	public int chooseLiteral() {
 		Set<Integer> heads = headToBodies.keySet();
 		Stream<Integer> bodiesOfMbtHeads = heads.stream().map(Literals::atomOf).filter(a -> assignment.getTruth(a) == ThriceTruth.MBT).flatMap(h -> headToBodies.get(h).stream());
 		Optional<Integer> mostActiveBody = bodiesOfMbtHeads.filter(this::isUnassigned).filter(choiceManager::isActiveChoiceAtom)
@@ -63,15 +63,7 @@ public class AlphaHeadMustBeTrueHeuristic extends DependencyDrivenHeuristic {
 			rememberedAtom = mostActiveBody.get();
 			return rememberedAtom;
 		}
-		return super.chooseAtom();
-	}
-
-	@Override
-	public boolean chooseSign(int atom) {
-		if (atom == rememberedAtom) {
-			return true;
-		}
-		return super.chooseSign(atom);
+		return super.chooseLiteral();
 	}
 
 }

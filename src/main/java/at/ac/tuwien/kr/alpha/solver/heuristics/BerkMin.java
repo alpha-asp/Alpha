@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017 Siemens AG
+ * Copyright (c) 2016-2018 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,6 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.solver.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -47,14 +46,13 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
  * Goldberg, E.; Novikov, Y. (2002): BerkMin: A fast and robust SAT-solver.
  * In : Design, Automation and Test in Europe Conference and Exhibition, 2002. Proceedings. IEEE, pp. 142-149.
  * 
- * Copyright (c) 2016 Siemens AG
+ * Copyright (c) 2016-2018 Siemens AG
  */
-public class BerkMin implements BranchingHeuristic {
+public class BerkMin implements ActivityBasedBranchingHeuristic {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BerkMin.class);
 	
 	static final double DEFAULT_ACTIVITY = 0.0;
 	static final int DEFAULT_SIGN_COUNTER = 0;
-	static final int DEFAULT_CHOICE_ATOM = 0;
 
 	static final int DEFAULT_DECAY_AGE = 10;
 	static final double DEFAULT_DECAY_FACTOR = 0.25;
@@ -149,15 +147,10 @@ public class BerkMin implements BranchingHeuristic {
 	}
 
 	@Override
-	public void newNoGoods(Collection<NoGood> newNoGoods) {
-		newNoGoods.forEach(this::newNoGood);
-	}
-
-	@Override
 	public double getActivity(int literal) {
 		return activityCounters.getOrDefault(atomOf(literal), DEFAULT_ACTIVITY);
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * In BerkMin, the atom to choose on is the most active atom in the current top clause.
@@ -166,24 +159,25 @@ public class BerkMin implements BranchingHeuristic {
 	 * nogood in the stack, then the one after that and so on.
 	 */
 	@Override
-	public int chooseAtom() {
+	public int chooseLiteral() {
+		int atom = chooseAtom();
+		boolean sign = chooseSign(atom);
+		return sign ? atom : -atom;
+	}
+	
+	protected int chooseAtom() {
 		for (NoGood noGood : stackOfNoGoods) {
 			if (assignment.isUndefined(noGood)) {
 				int mostActiveAtom = getMostActiveChoosableAtom(noGood);
-				if (mostActiveAtom != DEFAULT_CHOICE_ATOM) {
+				if (mostActiveAtom != DEFAULT_CHOICE_LITERAL) {
 					return mostActiveAtom;
 				}
 			}
 		}
-		return DEFAULT_CHOICE_ATOM;
+		return DEFAULT_CHOICE_LITERAL;
 	}
 	
-	@Override
-	public boolean chooseSign(int atom) {
-		if (!isAtom(atom)) {
-			throw new IllegalArgumentException("Atom must be a positive integer.");
-		}
-
+	private boolean chooseSign(int atom) {
 		if (assignment.getTruth(atom) == ThriceTruth.MBT) {
 			return true;
 		}
@@ -268,7 +262,7 @@ public class BerkMin implements BranchingHeuristic {
 			.filter(this::isUnassigned)
 			.filter(choiceManager::isActiveChoiceAtom)
 			.max(Comparator.comparingDouble(this::getActivity))
-			.orElse(DEFAULT_CHOICE_ATOM);
+			.orElse(DEFAULT_CHOICE_LITERAL);
 	}
 
 	private boolean isUnassigned(int atom) {
