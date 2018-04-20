@@ -98,7 +98,6 @@ public class AnalyzeUnjustified {
 			log("Line 3.");
 			Set<Substitution> vN = new LinkedHashSet<>(x.getComplementSubstitutions());
 			for (Substitution sigmaN : vN) {
-				// FIXME: changed below line to keep sigmaHr unchanged. Deviates from described Algorithm.
 				if (Unification.unifyRightAtom(sigmaHr, p.substitute(sigmaN)) != null) {
 					log("Line 4.");
 					log("Unifier is excluded by: " + sigmaN);
@@ -119,6 +118,7 @@ public class AnalyzeUnjustified {
 			log("Adapting N to N'. Original N is " + vN);
 			log("Adapted N' is " + vNp);
 			// Line 6.
+			/* Note: heuristic loop-check has been replaced by check in analyze(..), yet might be profitable in some cases.
 			log("Line 6.");
 			for (Literal lit : bodyR) {
 				if (lit.isNegated()) {
@@ -130,7 +130,7 @@ public class AnalyzeUnjustified {
 					log("Checking whether " + pB + " is covered by: " + litSet);
 					Atom pD = litSet.getAtom();
 					Set<Substitution> vND = litSet.getComplementSubstitutions();
-					Substitution sigmad = Unification.unifyRightAtom(pB, pD);	// FIXME: different from paper, only unify pD, leave pB unchanged!
+					Substitution sigmad = Unification.unifyRightAtom(pB, pD);
 					if (sigmad == null) {
 						log("Does not unify, skipping.");
 						continue;
@@ -138,8 +138,6 @@ public class AnalyzeUnjustified {
 					log("LitSet atom unifies with " + pB);
 					// Line 6.
 					log("Line 7.");
-					// FIXME: different from paper, we use N' here to check if some instances are excluded by N', so that the cover still holds
-					// FIXME: line 7 should read: if (pD, ND) covers (σd(pB), N')
 					boolean isCovered = true;
 					exceptionLoop:
 					for (Substitution sigmaND : vND) {
@@ -167,7 +165,7 @@ public class AnalyzeUnjustified {
 						log("LitSet is not covered, ignoring.");
 					}
 				}
-			}
+			}//*/
 			// Line 8.
 			log("Line 9.");
 			log("Searching for falsified negated literals in the body: " + bodyR);
@@ -197,7 +195,6 @@ public class AnalyzeUnjustified {
 					log("Checking if " + lb + " is already covered.");
 					boolean isCovered = false;
 					for (Substitution sigmaN : vN) {
-						// FIXME: change from algorithm, only allow sigmaN(p) to be modified for unification.
 						if (Unification.unifyRightAtom(sigmaHr.substitute(sigmagb), p.substitute(sigmaN)) != null) {
 							log(lb + " is already covered by " + sigmaN);
 							isCovered = true;
@@ -225,14 +222,14 @@ public class AnalyzeUnjustified {
 				}
 			}
 			log("Calling UnjustCover() for positive body.");
-			ret.vToDo.addAll(unjustCoverFixed(bodyPos, Collections.singleton(sigma), vNp, currentAssignment));
+			ret.vToDo.addAll(unjustCover(bodyPos, Collections.singleton(sigma), vNp, currentAssignment));
 		}
 		log("End explainUnjust().");
 		padDepth -= 2;
 		return ret;
 	}
 
-	private Set<LitSet> unjustCoverFixed(List<Literal> vB, Set<Substitution> vY, Set<Substitution> vN, Assignment currentAssignment) {
+	private Set<LitSet> unjustCover(List<Literal> vB, Set<Substitution> vY, Set<Substitution> vN, Assignment currentAssignment) {
 		padDepth += 2;
 		log("Begin UnjustCoverFixed()");
 		log("Finding unjustified body literals in: " + vB + " / " + vY + " excluded " + vN);
@@ -241,7 +238,7 @@ public class AnalyzeUnjustified {
 		if (vB.isEmpty() || vY.isEmpty()) {
 			// Line 2.
 			log("Line 2.");
-			log("End unjustCoverFixed().");
+			log("End unjustCover().");
 			padDepth -= 2;
 			return Collections.emptySet();
 		}
@@ -252,10 +249,9 @@ public class AnalyzeUnjustified {
 		log("Picked literal from body is: " + b);
 		// Line 4.
 		for (Substitution sigmaY : vY) {
-			ArrayList<Literal> newB = new ArrayList<>(vB);        // FIXME: need to create copy of body list for each substitution. Differs from described algorithm.
 			log("Line 4.");
-			Atom bSigma = b.substitute(sigmaY);
-			log("Treating substitution for: " + bSigma);
+			Atom bSigmaY = b.substitute(sigmaY);
+			log("Treating substitution for: " + bSigmaY);
 			Set<Substitution> vYp = new LinkedHashSet<>();
 
 			log("Checking atoms over predicate: " + b.getPredicate());
@@ -271,28 +267,25 @@ public class AnalyzeUnjustified {
 						continue;
 					}
 				} // Note: in case the atom is not in the atomStore, it came from a fact and hence is true.
-				Substitution sigmap = Unification.unifyRightAtom(atom, b);
-				if (sigmap == null) {
+				Substitution sigma = Unification.unifyRightAtom(atom, b);
+				if (sigma == null) {
 					log("Atom does not unify with picked body literal.");
 					continue;
 				}
 
-				Atom bSigmap = b.substitute(sigmap);
-				if (!bSigmap.isGround()) {
+				Atom bSigma = b.substitute(sigma);
+				if (!bSigma.isGround()) {
 					throw oops("Resulting atom is not ground.");
 				}
-				if (Unification.unifyAtoms(bSigma, bSigmap) != null) {
+				if (Unification.unifyAtoms(bSigmaY, bSigma) != null) {
 					for (Substitution sigmaN : vN) {
-						// FIXME: maybe this should use sigma' \circ sigma, like Bart wrote? Since bSigmap is ground, this should be implicitly given already.
-						if (Unification.unifyAtoms(b.substitute(sigmaN), bSigmap) != null) {
+						if (Unification.unifyAtoms(b.substitute(sigmaN), bSigma) != null) {
 							log("Atom is excluded by: " + sigmaN);
 							continue atomLoop;
 						}
 					}
-					log("Adding corresponding substitution to Y': " + sigmap);
-					vYp.add(sigmap);
-					// TODO: sigmap should be more precise than sigma!
-					// TODO: more precise =?= sigma unifies into sigmap on normalized atom and variables of more precise is superset of variables assigned by less precise?
+					log("Adding corresponding substitution to Y': " + sigma);
+					vYp.add(sigma);
 				}
 			}
 
@@ -303,18 +296,19 @@ public class AnalyzeUnjustified {
 			Set<Substitution> vYpUN = new LinkedHashSet<>();
 			vYpUN.addAll(vYp);
 			vYpUN.addAll(vN);
-			LitSet toJustify = new LitSet(bSigma, vYpUN);
+			LitSet toJustify = new LitSet(bSigmaY, vYpUN);
 			if (!toJustify.coversNothing()) {
 				log("New litset to do: " + toJustify);
 				ret.add(toJustify);
 			} else {
 				log("Generated LitSet covers nothing. Ignoring: " + toJustify);
 			}
+			ArrayList<Literal> newB = new ArrayList<>(vB);
 			newB.remove(chosenLiteralPos);
-			ret.addAll(unjustCoverFixed(newB, vYp, vN, currentAssignment));
+			ret.addAll(unjustCover(newB, vYp, vN, currentAssignment));
 			log("Literal set(s) to treat: " + ret);
 		}
-		log("End unjustCoverFixed().");
+		log("End unjustCover().");
 		padDepth -= 2;
 		return ret;
 	}
