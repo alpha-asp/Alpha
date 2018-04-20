@@ -32,18 +32,17 @@ import at.ac.tuwien.kr.alpha.common.Substitutable;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
-import org.apache.commons.collections4.SetUtils;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Contains a potentially negated {@link Atom}
+ * A potentially negated {@link Atom}
  * 
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public class Literal implements Substitutable<Literal> {
+public abstract class Literal implements Substitutable<Literal> {
+	
 	protected final Atom atom;
 	protected final boolean negated;
 	
@@ -59,47 +58,14 @@ public class Literal implements Substitutable<Literal> {
 	public boolean isNegated() {
 		return negated;
 	}
-
-	/**
-	 * Returns a new copy of this literal whose {@link Literal#isNegated()} status is inverted
-	 * (if the atom cannot be negated, the literal may be returned without creating a copy)
-	 */
-	public Literal negate() {
-		return new Literal(atom, !negated);
-	}
-
-	/**
-	 * @see Atom#substitute(Substitution)
-	 */
-	public Literal substitute(Substitution substitution) {
-		return new Literal(atom.substitute(substitution), negated);
-	}
-
-	/**
-	 * Set of all variables occurring in the Atom that are potentially binding, i.e., variables in positive atoms.
-	 * 
-	 * @return
-	 */
-	public Set<VariableTerm> getBindingVariables() {
-		if (isNegated()) {
-			return Collections.emptySet();
-		} else {
-			return atom.getBindingVariables();
-		}
-	}
-
-	/**
-	 * Set of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
-	 * 
-	 * @return
-	 */
-	public Set<VariableTerm> getNonBindingVariables() {
-		if (isNegated()) {
-			return SetUtils.union(atom.getBindingVariables(), atom.getNonBindingVariables());
-		} else {
-			return Collections.emptySet();
-		}
-	}
+	
+	public abstract Literal negate();
+	
+	public abstract Literal substitute(Substitution substitution);
+	
+	public abstract Set<VariableTerm> getBindingVariables();
+	
+	public abstract Set<VariableTerm> getNonBindingVariables();
 
 	/**
 	 * @see Atom#getPredicate()
@@ -145,4 +111,5 @@ public class Literal implements Substitutable<Literal> {
 	public int hashCode() {
 		return 12 * atom.hashCode() + (negated ? 1 : 0);
 	}
+
 }

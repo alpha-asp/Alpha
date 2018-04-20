@@ -29,10 +29,11 @@ package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
@@ -89,28 +90,15 @@ public class BasicAtom implements Atom {
 	}
 
 	@Override
-	public Set<VariableTerm> getBindingVariables() {
-		Set<VariableTerm> bindingVariables = new HashSet<>();
-		for (Term term : terms) {
-			bindingVariables.addAll(term.getOccurringVariables());
-		}
-		return bindingVariables;
-	}
-
-	@Override
-	public Set<VariableTerm> getNonBindingVariables() {
-		Set<VariableTerm> nonbindingVariables = new HashSet<>();
-		for (Term term : terms) {
-			nonbindingVariables.addAll(term.getOccurringVariables());
-		}
-		return nonbindingVariables;
-	}
-
-	@Override
 	public BasicAtom substitute(Substitution substitution) {
 		return new BasicAtom(predicate, terms.stream()
 			.map(t -> t.substitute(substitution))
 			.collect(Collectors.toList()));
+	}
+	
+	@Override
+	public BasicLiteral toLiteral(boolean negated) {
+		return new BasicLiteral(this, negated);
 	}
 
 	@Override

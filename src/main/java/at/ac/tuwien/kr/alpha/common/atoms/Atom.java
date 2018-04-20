@@ -48,16 +48,20 @@ public interface Atom extends Comparable<Atom>, Substitutable<Atom> {
 	boolean isGround();
 
 	/**
-	 * Set of all variables occurring in the Atom that are potentially binding, i.e., variables in positive atoms.
+	 * Set of all variables occurring in the Atom that are potentially binding
 	 * @return
 	 */
-	Set<VariableTerm> getBindingVariables();
+	default Set<VariableTerm> getBindingVariables() {
+		return toLiteral().getBindingVariables();
+	}
 
 	/**
 	 * Set of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
 	 * @return
 	 */
-	Set<VariableTerm> getNonBindingVariables();
+	default Set<VariableTerm> getNonBindingVariables() {
+		return toLiteral().getNonBindingVariables();
+	}
 
 	/**
 	 * Collection of all variables occuring in the Atom
@@ -78,17 +82,15 @@ public interface Atom extends Comparable<Atom>, Substitutable<Atom> {
 	 * Creates a non-negated literal containing this atom
 	 */
 	default Literal toLiteral() {
-		return toLiteral(true);
+		return toLiteral(false);
 	}
 	
 	/**
-	 * Creates a literal containing this atom which will be negated if {@code positive} is {@code false}
-	 * @param positive
+	 * Creates a literal containing this atom which will be negated if {@code negated} is {@code true}
+	 * @param negated
 	 * @return
 	 */
-	default Literal toLiteral(boolean positive) {
-		return new Literal(this, !positive);
-	}
+	Literal toLiteral(boolean negated);
 
 	@Override
 	default int compareTo(Atom o) {

@@ -154,7 +154,7 @@ public class Alpha {
 		this.predicateMethods.put(name, new BinaryPredicateInterpretation<>(predicate));
 	}
 
-	public void register(String name, java.util.function.Supplier<Set<List<ConstantTerm>>> supplier) {
+	public void register(String name, java.util.function.Supplier<Set<List<ConstantTerm<?>>>> supplier) {
 		this.predicateMethods.put(name, new SuppliedPredicateInterpretation(supplier));
 	}
 

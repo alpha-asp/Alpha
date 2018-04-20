@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -78,6 +79,11 @@ public class ChoiceAtom implements Atom {
 	public boolean isGround() {
 		// NOTE: Term is a ConstantTerm, which is ground by definition.
 		return true;
+	}
+	
+	@Override
+	public Literal toLiteral(boolean negated) {
+		throw new UnsupportedOperationException("ChoiceAtom cannot be literalized");
 	}
 
 	@Override

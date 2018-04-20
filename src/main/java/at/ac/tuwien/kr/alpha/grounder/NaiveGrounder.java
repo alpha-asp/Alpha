@@ -28,8 +28,10 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.common.atoms.*;
-import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
@@ -372,14 +374,9 @@ public class NaiveGrounder extends BridgedGrounder {
 
 		Literal currentLiteral = groundingOrder[orderPosition];
 		Atom currentAtom = currentLiteral.getAtom();
-		if (currentAtom instanceof FixedInterpretationAtom) {
+		if (currentLiteral instanceof FixedInterpretationLiteral) {
 			// Generate all substitutions for the builtin/external/interval atom.
-			final List<Substitution> substitutions;
-			if (currentLiteral instanceof FixedInterpretationLiteral) {
-				substitutions = ((FixedInterpretationLiteral)currentLiteral).getSubstitutions(partialSubstitution);
-			} else {
-				substitutions = ((FixedInterpretationAtom)currentAtom).getSubstitutions(partialSubstitution);
-			}
+			final List<Substitution> substitutions = ((FixedInterpretationLiteral)currentLiteral).getSubstitutions(partialSubstitution);
 
 			if (substitutions.isEmpty()) {
 				return emptyList();
@@ -578,7 +575,7 @@ public class NaiveGrounder extends BridgedGrounder {
 			isFirst = false;
 		}
 		for (Atom bodyAtom : rule.getBodyAtomsNegative()) {
-			ret.append(groundLiteralToString(bodyAtom.toLiteral(false), substitution, isFirst));
+			ret.append(groundLiteralToString(bodyAtom.toLiteral(true), substitution, isFirst));
 			isFirst = false;
 		}
 		ret.append(".");
