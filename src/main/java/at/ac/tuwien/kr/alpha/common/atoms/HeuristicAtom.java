@@ -93,6 +93,11 @@ public class HeuristicAtom implements Atom {
 	public boolean isGround() {
 		return this.ground;
 	}
+	
+	@Override
+	public Literal toLiteral(boolean negated) {
+		return new HeuristicLiteral(this, negated);
+	}
 
 	@Override
 	public Set<VariableTerm> getBindingVariables() {
