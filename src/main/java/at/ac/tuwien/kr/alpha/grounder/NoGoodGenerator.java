@@ -192,7 +192,8 @@ public class NoGoodGenerator {
 		
 		for (Literal literal : nonGroundRule.getHeuristic().getGenerator()) {
 			Atom atom = literal.getAtom();
-			if (atom instanceof FixedInterpretationAtom) {
+			if (atom.toLiteral() instanceof FixedInterpretationLiteral) { 
+				// TODO: conversion of atom to literal is ugly. NonGroundRule could manage atoms instead of literals, cf. FIXME there 
 				// Atom has fixed interpretation, hence was checked earlier that it
 				// evaluates to true under the given substitution.
 				// FixedInterpretationAtoms need not be shown to the solver, skip it.

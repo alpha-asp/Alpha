@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
@@ -108,13 +109,5 @@ public class IntervalAtom implements Atom {
 	@Override
 	public int hashCode() {
 		return terms.hashCode();
-	}
-
-	@Override
-	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
-		// Substitute variables occurring in the interval itself.
-		IntervalAtom groundInterval = (IntervalAtom) substitute(partialSubstitution);
-		// Generate all substitutions for the interval representing variable.
-		return groundInterval.getIntervalSubstitutions(partialSubstitution);
 	}
 }
