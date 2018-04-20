@@ -6,11 +6,11 @@
  * modification, are permitted provided that the following conditions are met:
  * 
  * 1) Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ *    list of conditions and the following disclaimer.
  * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -35,9 +35,9 @@ import java.util.Set;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
- * A chain of branching heuristics in which the entry at position n+1 is used as a fallback if the entry at position n cannot make a decision. 
+ * A "chained" list of branching heuristics in which the entry at position n+1 is used as a fallback if the entry at position n cannot make a decision. 
  */
-public class ChainOfBranchingHeuristics implements BranchingHeuristic {
+public class ChainedBranchingHeuristics implements BranchingHeuristic {
 	
 	private List<BranchingHeuristic> chain = new LinkedList<>();
 	
@@ -85,8 +85,8 @@ public class ChainOfBranchingHeuristics implements BranchingHeuristic {
 		chain.add(element);
 	}
 	
-	public static ChainOfBranchingHeuristics chainOf(BranchingHeuristic... branchingHeuristics) {
-		ChainOfBranchingHeuristics chain = new ChainOfBranchingHeuristics();
+	public static ChainedBranchingHeuristics chainOf(BranchingHeuristic... branchingHeuristics) {
+		ChainedBranchingHeuristics chain = new ChainedBranchingHeuristics();
 		for (BranchingHeuristic element : branchingHeuristics) {
 			chain.add(element);
 		}
