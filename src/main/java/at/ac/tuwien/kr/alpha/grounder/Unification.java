@@ -69,8 +69,14 @@ public class Unification {
 		return unifyAtoms(left, right, false);
 	}
 
-	public static Substitution unifyRightAtom(Atom left, Atom right) {
-		return unifyAtoms(left, right, true);
+	/**
+	 * Instantiates the general Atom to match the specific one and returns the corresponding substitution.
+	 * @param general the general Atom to instantiate.
+	 * @param specific the specific Atom.
+	 * @return a Substitution sigma such that specific == general.substitute(sigma), returns null if no such sigma exists.
+	 */
+	public static Substitution instantiate(Atom general, Atom specific) {
+		return unifyAtoms(specific, general, true);
 	}
 
 	private static Substitution unifyAtoms(Atom left, Atom right, boolean keepLeftAsIs) {

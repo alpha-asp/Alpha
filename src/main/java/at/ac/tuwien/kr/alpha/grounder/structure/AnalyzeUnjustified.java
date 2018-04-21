@@ -61,9 +61,7 @@ public class AnalyzeUnjustified {
 			log("");
 			log("Treating now: " + x);
 			vDone.add(x);
-			LinkedHashSet<LitSet> caredFor = new LinkedHashSet<>(vToDo);
-			caredFor.addAll(vDone);
-			ReturnExplainUnjust unjustRet = explainUnjust(x, caredFor, currentAssignment);
+			ReturnExplainUnjust unjustRet = explainUnjust(x, currentAssignment);
 			log("Additional ToDo: " + unjustRet.vToDo);
 			// Check each new LitSet if it does not already occur as done.
 			for (LitSet todoLitSet : unjustRet.vToDo) {
@@ -76,10 +74,9 @@ public class AnalyzeUnjustified {
 		return vL;
 	}
 
-	private ReturnExplainUnjust explainUnjust(LitSet x, LinkedHashSet<LitSet> vD, Assignment currentAssignment) {
+	private ReturnExplainUnjust explainUnjust(LitSet x, Assignment currentAssignment) {
 		padDepth += 2;
 		log("Begin explainUnjust(): " + x);
-		log("Done already: " + vD);
 		Atom p = x.getAtom();
 
 		ReturnExplainUnjust ret = new ReturnExplainUnjust();
@@ -98,7 +95,7 @@ public class AnalyzeUnjustified {
 			log("Line 3.");
 			Set<Substitution> vN = new LinkedHashSet<>(x.getComplementSubstitutions());
 			for (Substitution sigmaN : vN) {
-				if (Unification.unifyRightAtom(sigmaHr, p.substitute(sigmaN)) != null) {
+				if (Unification.instantiate(p.substitute(sigmaN), sigmaHr) != null) {
 					log("Line 4.");
 					log("Unifier is excluded by: " + sigmaN);
 					continue rulesLoop;
@@ -117,55 +114,6 @@ public class AnalyzeUnjustified {
 			}
 			log("Adapting N to N'. Original N is " + vN);
 			log("Adapted N' is " + vNp);
-			// Line 6.
-			/* Note: heuristic loop-check has been replaced by check in analyze(..), yet might be profitable in some cases.
-			log("Line 6.");
-			for (Literal lit : bodyR) {
-				if (lit.isNegated()) {
-					continue;
-				}
-				Atom pB = lit.substitute(sigma);
-				log("Checking whether (subsituted) body literal " + pB + " is already covered.");
-				for (LitSet litSet : vD) {
-					log("Checking whether " + pB + " is covered by: " + litSet);
-					Atom pD = litSet.getAtom();
-					Set<Substitution> vND = litSet.getComplementSubstitutions();
-					Substitution sigmad = Unification.unifyRightAtom(pB, pD);
-					if (sigmad == null) {
-						log("Does not unify, skipping.");
-						continue;
-					}
-					log("LitSet atom unifies with " + pB);
-					// Line 6.
-					log("Line 7.");
-					boolean isCovered = true;
-					exceptionLoop:
-					for (Substitution sigmaND : vND) {
-						if (Unification.unifyRightAtom(pD.substitute(sigmaND), pB.substitute(sigmad)) != null) {
-							log("Checking if seemingly excluding " + sigmaND + " is not also excluded by N'.");
-							// Check coverage regarding N': if excluding substitution is also excluded by N' then this is still covered.
-							for (Substitution sigmaNp : vNp) {
-								if (Unification.unifyRightAtom(pD.substitute(sigmaND), pB.substitute(sigmaNp)) != null) {
-									log("Excluding substitution " + sigmaND + " is itself excluded by " + sigmaNp);
-									continue exceptionLoop;
-								}
-							}
-							isCovered = false;
-							log("Excluded " + sigmaND + " is not covered (and not excluded by N').");
-							break;
-						}
-					}
-					if (isCovered) {
-						log("Line 8.");
-						log(pB.substitute(sigmad) + " is covered by " + litSet);
-						Substitution sigmacirc = new Substitution(sigma).extendWith(sigmad);
-						vNp.add(sigmacirc);
-						log("Extending litset N' with: " + sigmacirc + " coming from " + sigma + " and " + sigmad);
-					} else {
-						log("LitSet is not covered, ignoring.");
-					}
-				}
-			}//*/
 			// Line 8.
 			log("Line 9.");
 			log("Searching for falsified negated literals in the body: " + bodyR);
@@ -195,7 +143,7 @@ public class AnalyzeUnjustified {
 					log("Checking if " + lb + " is already covered.");
 					boolean isCovered = false;
 					for (Substitution sigmaN : vN) {
-						if (Unification.unifyRightAtom(sigmaHr.substitute(sigmagb), p.substitute(sigmaN)) != null) {
+						if (Unification.instantiate(p.substitute(sigmaN), sigmaHr.substitute(sigmagb)) != null) {
 							log(lb + " is already covered by " + sigmaN);
 							isCovered = true;
 							break;
@@ -267,7 +215,7 @@ public class AnalyzeUnjustified {
 						continue;
 					}
 				} // Note: in case the atom is not in the atomStore, it came from a fact and hence is true.
-				Substitution sigma = Unification.unifyRightAtom(atom, b);
+				Substitution sigma = Unification.instantiate(b, atom);
 				if (sigma == null) {
 					log("Atom does not unify with picked body literal.");
 					continue;

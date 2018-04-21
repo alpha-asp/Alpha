@@ -51,7 +51,7 @@ public class LitSet {
 	 */
 	private Substitution normalizeSubstitution(Atom originalAtom, Substitution substitution, Atom normalizedAtom) {
 		Atom substitutedLiteral = originalAtom.substitute(substitution);
-		return Unification.unifyRightAtom(substitutedLiteral, normalizedAtom);
+		return Unification.instantiate(normalizedAtom, substitutedLiteral);
 	}
 
 	/**
@@ -60,7 +60,7 @@ public class LitSet {
 	 */
 	public boolean coversNothing() {
 		for (Substitution substitution : complementSubstitutions) {
-			if (Unification.unifyRightAtom(atom, atom.substitute(substitution)) != null) {
+			if (Unification.instantiate(atom.substitute(substitution), atom) != null) {
 				return true;
 			}
 		}
