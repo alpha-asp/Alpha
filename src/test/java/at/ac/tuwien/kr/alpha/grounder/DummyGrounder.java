@@ -102,6 +102,11 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
+	public Atom getAtom(int atom) {
+		return new BasicAtom(Predicate.getInstance(atomIdToString.get(atom), 0));
+	}
+
+	@Override
 	public AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms) {
 		// Note: This grounder only deals with 0-ary predicates, i.e., every atom is a predicate and there is
 		// 	 only one predicate instance representing 0 terms.

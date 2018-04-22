@@ -507,6 +507,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return atomStore.getHighestAtomId();
 	}
 
+	@Override
+	public Atom getAtom(int atom) {
+		return atomStore.get(atom);
+	}
+
 	public void printCurrentlyKnownGroundRules() {
 		System.out.println("Printing known ground rules:");
 		for (Map.Entry<NonGroundRule, HashSet<Substitution>> ruleSubstitutionsEntry : knownGroundingSubstitutions.entrySet()) {

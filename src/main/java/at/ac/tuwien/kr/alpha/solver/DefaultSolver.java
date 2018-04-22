@@ -152,10 +152,12 @@ public class DefaultSolver extends AbstractSolver {
 							}
 						}
 						Map<Integer, NoGood> obtained = new LinkedHashMap<>();
+						// TODO: for RuleAtoms in toJustify the corresponding ground body contains BasicAtoms that have been assigned FALSE in the closing.
 						for (Integer literalToJustify : toJustify) {
 							LOGGER.debug("Searching for justification(s) of " + toJustify + " / " + grounder.atomToString(atomOf(literalToJustify)));
 							Set<Literal> reasonsForUnjustified = ((NaiveGrounder) grounder).analyzeUnjustified.analyze(atomOf(literalToJustify), assignment);
 							int[] reasons = new int[reasonsForUnjustified.size() + 1];
+							// TODO: all reasons of all toJustify probably should be in one NoGood (only one of the atoms toJustify must change its value, not each of them)!
 							reasons[0] = atomOf(literalToJustify);
 							int arrpos = 1;
 							for (Literal literal : reasonsForUnjustified) {
@@ -214,7 +216,7 @@ public class DefaultSolver extends AbstractSolver {
 				LOGGER.debug("Backtracking from wrong choices ({} MBTs).", assignment.getMBTCount());
 				mbtAtFixpoint++;
 				if (!disableJustifications && grounder instanceof NaiveGrounder && assignment instanceof ArrayAssignment) {
-					Integer toJustify = ((ArrayAssignment) assignment).getSomeMBTAssignedAtom();
+					Integer toJustify = ((ArrayAssignment) assignment).getSomeMBTAssignedAtom(grounder);
 					LOGGER.debug("Searching for justification of " + toJustify + " / " + grounder.atomToString(atomOf(toJustify)));
 					LOGGER.debug("Assignment is (TRUE part only):" + translate(assignment.getTrueAssignments()));
 					Set<Literal> reasonsForUnjustified = ((NaiveGrounder) grounder).analyzeUnjustified.analyze(toJustify, assignment);

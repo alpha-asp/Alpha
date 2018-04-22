@@ -1,6 +1,9 @@
 package at.ac.tuwien.kr.alpha.grounder.structure;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
@@ -35,7 +38,16 @@ public class AnalyzeUnjustified {
 	private Map<Predicate, List<Atom>> assignedAtoms;
 	public Set<Literal> analyze(int atomToJustify, Assignment currentAssignment) {
 		padDepth = 0;
-		BasicAtom literal = (BasicAtom) atomStore.get(atomToJustify);
+		Atom atom = atomStore.get(atomToJustify);
+		if (!(atom instanceof BasicAtom)) {
+			throw oops("Starting atom must be a BasicAtom, but received: " + atom + " of type: " + atom.getClass());
+		}
+		// TODO: starting atom must be a BasicAtom, but due to circumstances this atom might be of different type.
+		// Calling code must make sure it is a BasicAtom and take precautions if not immediately.
+		// Potential solutions:
+		// If atom instanceof RuleAtom and atom is MBT, then the corresponding rule body has a BasicAtom that is MBT.
+		// If atom instanceof ChoiceAtom and atom is MBT, then the corresponding rule body has a BasicAtom that is MBT.
+		// If atom instanceof RuleAtom and atom is FALSE, then this comes from a violated constraint in the end and the corresponding rule body can be taken as the single rule deriving the RuleAtom.
 		assignedAtoms = new LinkedHashMap<>();
 		for (int i = 1; i <= atomStore.getHighestAtomId(); i++) {
 			Assignment.Entry entry = currentAssignment.get(i);
@@ -46,7 +58,7 @@ public class AnalyzeUnjustified {
 			assignedAtoms.putIfAbsent(assignedAtom.getPredicate(), new ArrayList<>());
 			assignedAtoms.get(assignedAtom.getPredicate()).add(assignedAtom);
 		}
-		return analyze(literal, currentAssignment);
+		return analyze((BasicAtom) atom, currentAssignment);
 	}
 
 	private Set<Literal> analyze(BasicAtom atom, Assignment currentAssignment) {
@@ -225,9 +237,9 @@ public class AnalyzeUnjustified {
 				if (!bSigma.isGround()) {
 					throw oops("Resulting atom is not ground.");
 				}
-				if (Unification.unifyAtoms(bSigmaY, bSigma) != null) {
+				if (Unification.instantiate(bSigmaY, bSigma) != null) {
 					for (Substitution sigmaN : vN) {
-						if (Unification.unifyAtoms(b.substitute(sigmaN), bSigma) != null) {
+						if (Unification.instantiate(b.substitute(sigmaN), bSigma) != null) {
 							log("Atom is excluded by: " + sigmaN);
 							continue atomLoop;
 						}
