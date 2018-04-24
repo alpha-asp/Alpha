@@ -37,7 +37,7 @@ public class LitSet {
 			}
 			this.complementSubstitutions.add(unifyRightAtom);
 		}
-		this.normalizedLiteral = computeNormalizedLiteral();
+		this.normalizedLiteral = computeNormalized(this.atom, "_N");
 		this.normalizedSubstitutions = computeNormalizedSubstitutions();
 		this.hashCode = computeHashCode();
 	}
@@ -120,11 +120,11 @@ public class LitSet {
 		return result;
 	}
 
-	private Atom computeNormalizedLiteral() {
+	private Atom computeNormalized(Atom atom, String prefix) {
 		if (atom instanceof BasicAtom) {
-			return ((BasicAtom) atom).normalizeVariables("_N", 0);
+			return ((BasicAtom) atom).normalizeVariables(prefix, 0);
 		} else if (atom instanceof ComparisonAtom) {
-			return ((ComparisonAtom) atom).normalizeVariables("_N", 0);
+			return ((ComparisonAtom) atom).normalizeVariables(prefix, 0);
 		} else {
 			throw oops("Atom to normalize is of unknonw type: " + atom);
 		}
@@ -133,7 +133,14 @@ public class LitSet {
 	private Set<Substitution> computeNormalizedSubstitutions() {
 		Set<Substitution> ret = new LinkedHashSet<>();
 		for (Substitution substitution : complementSubstitutions) {
-			ret.add(normalizeSubstitution(atom, substitution, normalizedLiteral));
+			Substitution preNormalizedSubstitution = normalizeSubstitution(atom, substitution, normalizedLiteral);
+			// Substitution may still contain variables in the right-hand side, those have to be normalized, too.
+			Atom appliedSub = normalizedLiteral.substitute(preNormalizedSubstitution);
+			// Apply substitution and normalize all remaining variables, i.e., those appearing at the right-hand side of the substitution.
+			Atom normalized = computeNormalized(appliedSub, "_X");
+			// Compute final substitution from normalized atom to the one where also variables are normalized.
+			Substitution normalizedSubstitution = Unification.instantiate(normalizedLiteral, normalized);
+			ret.add(normalizedSubstitution);
 		}
 		return ret;
 	}
