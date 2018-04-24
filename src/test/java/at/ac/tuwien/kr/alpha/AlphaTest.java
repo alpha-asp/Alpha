@@ -107,7 +107,7 @@ public class AlphaTest {
 	}
 
 	@at.ac.tuwien.kr.alpha.Predicate
-	public static Set<List<ConstantTerm>> bestNode() {
+	public static Set<List<ConstantTerm<?>>> bestNode() {
 		return singleton(singletonList(ConstantTerm.getInstance(1)));
 	}
 
@@ -312,31 +312,56 @@ public class AlphaTest {
 	}
 
 	/**
-	 * Runs tests that formerly caused some sort of exception.
+	 * Runs a test that formerly caused some sort of exception.
 	 */
 	@Test
-	public void problematicRuns() throws IOException {
-		/* NOTE: This was constructed from the following commandline invocations:
-
+	public void problematicRun_3col_1119654162577372() throws IOException {
+		/* NOTE: This was constructed from the following commandline invocation:
 			-DebugEnableInternalChecks -q -g naive -s default -e 1119654162577372 -n 200 -i 3col-20-38.txt
-			-DebugEnableInternalChecks -q -g naive -s default -e 1119718541727902 -n 200 -i 3col-20-38.txt
-			-DebugEnableInternalChecks -q -g naive -s default -e 97598271567626   -n   2 -i vehicle_normal_small.asp
-			-DebugEnableInternalChecks -q -g naive -s default -sort               -n 400 -i 3col-20-38.txt
 		*/
+		problematicRun("3col-20-38.txt", 1119654162577372L, 200);
+}
 
+	/**
+	 * Runs a test that formerly caused some sort of exception.
+	 */
+	@Test
+	public void problematicRun_3col_1119718541727902() throws IOException {
+		/* NOTE: This was constructed from the following commandline invocation:
+			-DebugEnableInternalChecks -q -g naive -s default -e 1119718541727902 -n 200 -i 3col-20-38.txt
+		*/
+		problematicRun("3col-20-38.txt", 1119718541727902L, 200);
+}
+
+	/**
+	 * Runs a test that formerly caused some sort of exception.
+	 */
+	@Test
+	public void problematicRun_vehicle_97598271567626() throws IOException {
+		/* NOTE: This was constructed from the following commandline invocation:
+			-DebugEnableInternalChecks -q -g naive -s default -e 97598271567626 -n 2 -i vehicle_normal_small.asp
+		*/
+		problematicRun("vehicle_normal_small.asp", 1119718541727902L, 2);
+	}
+
+	/**
+	 * Runs a test that formerly caused some sort of exception.
+	 */
+	@Test
+	public void problematicRun_3col_1119718541727902_sorted_400() throws IOException {
+		/* NOTE: This was constructed from the following commandline invocation:
+			-DebugEnableInternalChecks -q -g naive -s default -sort -n 400 -i 3col-20-38.txt
+		*/
 		final Path base = Paths.get("src", "test", "resources", "PreviouslyProblematic");
 		final Alpha system = new Alpha("naive", "default", "alpharoaming", true);
-
-		system.setSeed(1119654162577372L);
-		assertFalse(system.solve(base.resolve("3col-20-38.txt")).limit(200).collect(Collectors.toList()).isEmpty());
-
-		system.setSeed(1119718541727902L);
-		assertFalse(system.solve(base.resolve("3col-20-38.txt")).limit(200).collect(Collectors.toList()).isEmpty());
-
-		system.setSeed(1119718541727902L);
-		assertFalse(system.solve(base.resolve("vehicle_normal_small.asp")).limit(2).collect(Collectors.toList()).isEmpty());
-
 		system.setSeed(1119718541727902L);
 		assertFalse(system.solve(base.resolve("3col-20-38.txt")).sorted().limit(400).collect(Collectors.toList()).isEmpty());
+	}
+	
+	private void problematicRun(String program, long seed, int limit) throws IOException {
+		final Path base = Paths.get("src", "test", "resources", "PreviouslyProblematic");
+		final Alpha system = new Alpha("naive", "default", "alpharoaming", true);
+		system.setSeed(seed);
+		assertFalse(system.solve(base.resolve(program)).limit(limit).collect(Collectors.toList()).isEmpty());
 	}
 }
