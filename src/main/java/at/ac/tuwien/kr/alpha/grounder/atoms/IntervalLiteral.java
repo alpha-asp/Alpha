@@ -28,7 +28,6 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -44,7 +43,7 @@ import java.util.Set;
 /**
  * @see IntervalAtom
  */
-public class IntervalLiteral extends Literal implements FixedInterpretationLiteral {
+public class IntervalLiteral extends FixedInterpretationLiteral {
 
 	public IntervalLiteral(IntervalAtom atom) {
 		super(atom, false);

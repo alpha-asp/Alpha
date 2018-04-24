@@ -36,7 +36,11 @@ import java.util.List;
  * Examples of atoms underlying such literals are builtin atoms and external atoms.
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public interface FixedInterpretationLiteral {
+public abstract class FixedInterpretationLiteral extends Literal {
 	
-	List<Substitution> getSubstitutions(Substitution partialSubstitution);
+	public FixedInterpretationLiteral(Atom atom, boolean negated) {
+		super(atom, negated);
+	}
+	
+	public abstract List<Substitution> getSubstitutions(Substitution partialSubstitution);
 }

@@ -39,7 +39,7 @@ import static java.util.Collections.emptyList;
 /**
  * Contains a potentially negated {@link ExternalAtom}.
  */
-public class ExternalLiteral extends Literal implements FixedInterpretationLiteral {
+public class ExternalLiteral extends FixedInterpretationLiteral {
 
 	public ExternalLiteral(ExternalAtom atom, boolean negated) {
 		super(atom, negated);
