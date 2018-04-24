@@ -30,9 +30,17 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.Rule;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
+import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
@@ -144,15 +152,51 @@ public class DefaultSolver extends AbstractSolver {
 					failureAfterAllAtomsAssignedNotLearning++;
 					if (!disableJustificationAfterClosing && !disableJustifications && grounder instanceof NaiveGrounder && assignment instanceof ArrayAssignment) {
 						LOGGER.debug("Justifying atoms in violated nogood.");
-						ArrayList<Integer> toJustify = new ArrayList<>();
+						LinkedHashSet<Integer> toJustify = new LinkedHashSet<>();
 						// Find those literals in violatedNoGood that were just assigned false.
 						for (Integer literal : violatedNoGood) {
 							if (unassignedAtoms.contains(atomOf(literal))) {
 								toJustify.add(literal);
 							}
 						}
+						// Since the violatedNoGood may contain atoms other than BasicAtom, these have to be treated.
 						Map<Integer, NoGood> obtained = new LinkedHashMap<>();
-						// TODO: for RuleAtoms in toJustify the corresponding ground body contains BasicAtoms that have been assigned FALSE in the closing.
+						Iterator<Integer> toJustifyIterator = toJustify.iterator();
+						ArrayList<Integer> ruleAtomReplacements = new ArrayList<>();
+						while (toJustifyIterator.hasNext()) {
+							Integer literal = toJustifyIterator.next();
+							Atom atom = grounder.getAtom(atomOf(literal));
+							if (atom instanceof BasicAtom) {
+								continue;
+							}
+							if (atom instanceof RuleAtom) {
+								// For RuleAtoms in toJustify the corresponding ground body contains BasicAtoms that have been assigned FALSE in the closing.
+								// First, translate RuleAtom back to NonGroundRule + Substitution.
+								String ruleId = (String) ((ConstantTerm)atom.getTerms().get(0)).getObject();
+								NonGroundRule nonGroundRule = ((NaiveGrounder) grounder).getNonGroundRule(Integer.parseInt(ruleId));
+								String substitution = (String) ((ConstantTerm)atom.getTerms().get(1)).getObject();
+								Substitution groundingSubstitution = Substitution.fromString(substitution);
+								Rule rule = nonGroundRule.getRule();
+								// Find ground literals in the body that have been assigned false and justify those.
+								for (Literal bodyLiteral : rule.getBody()) {
+									Atom groundAtom = bodyLiteral.substitute(groundingSubstitution);
+									if (groundAtom instanceof ComparisonAtom || ((NaiveGrounder) grounder).isFact(groundAtom)) {
+										// Facts and ComparisonAtoms are always true, no justification needed.
+										continue;
+									}
+									int groundAtomId = ((NaiveGrounder) grounder).getAtomStore().getAtomId(groundAtom);
+									Assignment.Entry entry = assignment.get(groundAtomId);
+									// Check if atom was assigned to FALSE during the closing.
+									if (entry.getImpliedBy() == closingIndicator) {
+										ruleAtomReplacements.add(-groundAtomId);
+									}
+								}
+								toJustifyIterator.remove();
+							} else {
+								toJustifyIterator.remove();
+							}
+						}
+						toJustify.addAll(ruleAtomReplacements);
 						for (Integer literalToJustify : toJustify) {
 							LOGGER.debug("Searching for justification(s) of " + toJustify + " / " + grounder.atomToString(atomOf(literalToJustify)));
 							Set<Literal> reasonsForUnjustified = ((NaiveGrounder) grounder).analyzeUnjustified.analyze(atomOf(literalToJustify), assignment);
@@ -291,6 +335,7 @@ public class DefaultSolver extends AbstractSolver {
 	}
 
 	private LinkedHashSet<Integer> unassignedAtoms;
+	private static NoGood closingIndicator = new NoGood(0);
 	private boolean close() {
 		unassignedAtoms = new LinkedHashSet<>();
 		unassignedAtoms.addAll(grounder.getUnassignedAtoms(assignment));
@@ -300,7 +345,7 @@ public class DefaultSolver extends AbstractSolver {
 		}
 
 		for (Integer atom : unassignedAtoms) {
-			assignment.assign(atom, FALSE, null);
+			assignment.assign(atom, FALSE, closingIndicator);
 		}
 
 		return true;
