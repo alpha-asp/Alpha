@@ -42,12 +42,12 @@ public class ArithmeticTerm extends Term {
 
 	@Override
 	public Term substitute(Substitution substitution) {
-		return new ArithmeticTerm(left.substitute(substitution), arithmeticOperator, right.substitute(substitution));
+		return getInstance(left.substitute(substitution), arithmeticOperator, right.substitute(substitution));
 	}
 
 	@Override
 	public Term renameVariables(String renamePrefix) {
-		return new ArithmeticTerm(left.renameVariables(renamePrefix), arithmeticOperator, right.renameVariables(renamePrefix));
+		return getInstance(left.renameVariables(renamePrefix), arithmeticOperator, right.renameVariables(renamePrefix));
 	}
 
 	@Override
