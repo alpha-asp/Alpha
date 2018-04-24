@@ -77,7 +77,9 @@ public class AlphaTest {
 		Alpha system = new Alpha();
 		system.register("connected", (Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3));
 
-		Set<AnswerSet> answerSets = system.solve("node(1). node(2). node(3). a :- &connected[1,2].").collect(Collectors.toSet());
+		Set<AnswerSet> actual = system.solve("node(1). node(2). node(3). a :- &connected[1,2].").collect(Collectors.toSet());
+		Set<AnswerSet> expected = AnswerSetsParser.parse("{ a, node(1), node(2), node(3) }");
+		assertEquals(expected, actual);
 	}
 
 	@Test
