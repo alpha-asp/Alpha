@@ -1,20 +1,26 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.parser.ParseTreeVisitor;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
 public class Substitution {
+	private static final ParseTreeVisitor VISITOR = new ParseTreeVisitor(Collections.emptyMap(), false);
+
 	private TreeMap<VariableTerm, Term> substitution;
 	private final TreeMap<VariableTerm, List<VariableTerm>> rightHandVariableOccurrences;
 
@@ -176,6 +182,31 @@ public class Substitution {
 		}
 		ret.append("}");
 		return ret.toString();
+	}
+
+	public static Substitution fromString(String substitution) {
+		String bare = substitution.substring(1, substitution.length() - 1);
+		String assignments[] = bare.split(",");
+		Substitution ret = new Substitution();
+		for (String assignment : assignments) {
+			String keyVal[] = assignment.split("->");
+			VariableTerm variable = VariableTerm.getInstance(keyVal[0]);
+			Term assignedTerm = parseTerm(keyVal[1]);
+			ret.put(variable, assignedTerm);
+		}
+		return ret;
+	}
+
+	private static Term parseTerm(String s) {
+		try {
+			final ASPCore2Parser parser = new ASPCore2Parser(new CommonTokenStream(new ASPCore2Lexer(CharStreams.fromString(s))));
+			return (Term)VISITOR.visit(parser.term());
+		} catch (RecognitionException | ParseCancellationException e) {
+			// If there were issues parsing the given string, we
+			// throw something that suggests that the input string
+			// is malformed.
+			throw new IllegalArgumentException("Could not parse term.", e);
+		}
 	}
 
 	@Override

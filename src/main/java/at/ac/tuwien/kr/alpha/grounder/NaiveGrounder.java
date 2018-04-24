@@ -70,6 +70,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram = new LinkedHashMap<>();
 	private final Map<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
 	private final Map<NonGroundRule, HashSet<Substitution>> knownGroundingSubstitutions = new HashMap<>();
+	private final Map<Integer, NonGroundRule> knownNonGroundRules = new HashMap<>();
 
 	private ArrayList<NonGroundRule> fixedRules = new ArrayList<>();
 	private LinkedHashSet<Atom> removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
@@ -115,6 +116,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		for (Rule rule : program.getRules()) {
 			// Record the rule for later use
 			NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
+			knownNonGroundRules.put(nonGroundRule.getRuleId(), nonGroundRule);
 
 			// Record defining rules for each predicate.
 			if (nonGroundRule.getHeadAtom() != null) {
@@ -550,6 +552,18 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	public AtomStore getAtomStore() {
 		return atomStore;
+	}
+
+	public NonGroundRule getNonGroundRule(Integer ruleId) {
+		return knownNonGroundRules.get(ruleId);
+	}
+
+	public boolean isFact(Atom atom) {
+		LinkedHashSet<Instance> instances = factsFromProgram.get(atom.getPredicate());
+		if (instances == null) {
+			return false;
+		}
+		return instances.contains(new Instance(atom.getTerms()));
 	}
 
 	private static class FirstBindingAtom {
