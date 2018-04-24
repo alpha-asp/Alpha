@@ -309,8 +309,7 @@ public class DefaultSolver extends AbstractSolver {
 
 		if (analysisResult.learnedNoGood == null && analysisResult.clearLastChoiceAfterBackjump) {
 			// TODO: Temporarily abort resolution with backtrackFast instead of learning a too large nogood.
-			backtrack();
-			return true;
+			return backtrack();
 		}
 
 		if (analysisResult.learnedNoGood != null) {
