@@ -39,7 +39,7 @@ import java.util.*;
 /**
  * Contains a potentially negated {@link ComparisonAtom}.
  */
-public class ComparisonLiteral extends Literal implements FixedInterpretationLiteral {
+public class ComparisonLiteral extends FixedInterpretationLiteral {
 
 	public ComparisonLiteral(ComparisonAtom atom, boolean negated) {
 		super(atom, negated);

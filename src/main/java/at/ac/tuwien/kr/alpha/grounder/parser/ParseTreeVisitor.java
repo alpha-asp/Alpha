@@ -53,7 +53,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	private final boolean acceptVariables;
 
 	private Program inputProgram;
-	private boolean isCurrentLiteralNegated;
 
 	public ParseTreeVisitor(Map<String, PredicateInterpretation> externals) {
 		this(externals, true);
@@ -205,7 +204,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		if (ctx.disjunction() != null) {
 			throw notSupported(ctx);
 		}
-		isCurrentLiteralNegated = false;
 		return new DisjunctiveHead(Collections.singletonList(visitClassical_literal(ctx.classical_literal())));
 	}
 
@@ -327,7 +325,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Literal visitNaf_literal(ASPCore2Parser.Naf_literalContext ctx) {
 		// naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
-		isCurrentLiteralNegated = ctx.NAF() != null;
+		boolean isCurrentLiteralNegated = ctx.NAF() != null;
 		if (ctx.builtin_atom() != null) {
 			return new ComparisonLiteral(visitBuiltin_atom(ctx.builtin_atom()), isCurrentLiteralNegated);
 		} else if (ctx.classical_literal() != null) {
@@ -408,17 +406,17 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public ConstantTerm visitTerm_number(ASPCore2Parser.Term_numberContext ctx) {
+	public ConstantTerm<?> visitTerm_number(ASPCore2Parser.Term_numberContext ctx) {
 		return ConstantTerm.getInstance(Integer.parseInt(ctx.NUMBER().getText()));
 	}
 
 	@Override
-	public ConstantTerm visitTerm_const(ASPCore2Parser.Term_constContext ctx) {
+	public ConstantTerm<?> visitTerm_const(ASPCore2Parser.Term_constContext ctx) {
 		return ConstantTerm.getSymbolicInstance(ctx.ID().getText());
 	}
 
 	@Override
-	public ConstantTerm visitTerm_string(ASPCore2Parser.Term_stringContext ctx) {
+	public ConstantTerm<?> visitTerm_string(ASPCore2Parser.Term_stringContext ctx) {
 		String quotedString = ctx.QUOTED_STRING().getText();
 		return ConstantTerm.getInstance(quotedString.substring(1, quotedString.length() - 1));
 	}
