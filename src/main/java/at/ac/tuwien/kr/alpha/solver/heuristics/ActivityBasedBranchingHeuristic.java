@@ -1,8 +1,6 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2018 Siemens AG
  * All rights reserved.
- * 
- * Additional changes made by Siemens.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,22 +23,20 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.common.fixedinterpretations;
+package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
+/**
+ * A heuristic that selects an atom to choose on by maintaining activity values for literals.
+ *
+ */
+public interface ActivityBasedBranchingHeuristic extends BranchingHeuristic {
 
-import java.util.List;
-import java.util.Set;
+	/**
+	 * Gets the activity value associated with the given literal
+	 * 
+	 * @param literal
+	 * @return the activity value associated with the given literal
+	 */
+	double getActivity(int literal);
 
-import static java.util.Collections.*;
-
-@FunctionalInterface
-public interface PredicateInterpretation {
-	Set<List<ConstantTerm<?>>> TRUE = singleton(emptyList());
-	Set<List<ConstantTerm<?>>> FALSE = emptySet();
-
-	String EVALUATE_RETURN_TYPE_NAME_PREFIX = Set.class.getName() + "<" + List.class.getName() + "<" + ConstantTerm.class.getName();
-
-	Set<List<ConstantTerm<?>>> evaluate(List<Term> terms);
 }

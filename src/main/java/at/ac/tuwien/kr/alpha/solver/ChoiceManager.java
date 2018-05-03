@@ -67,6 +67,7 @@ public class ChoiceManager implements Checkable {
 
 	private int choices;
 	private int backtracks;
+	private int backtracksWithinBackjumps;
 	private int backjumps;
 
 	public ChoiceManager(WritableAssignment assignment, NoGoodStore store) {
@@ -107,8 +108,24 @@ public class ChoiceManager implements Checkable {
 		return backjumps;
 	}
 
+	/**
+	 * Returns the total number of backtracks.
+	 * 
+	 * The number of backtracks excluding those within backjumps is {@link #getBacktracks()} minus {@link #getBacktracksWithinBackjumps()}.
+	 * 
+	 * @return the total number of backtracks
+	 */
 	public int getBacktracks() {
 		return backtracks;
+	}
+
+	/**
+	 * Returns the number of backtracks made within backjumps.
+	 * 
+	 * @return the number of backtracks made within backjumps.
+	 */
+	public int getBacktracksWithinBackjumps() {
+		return backtracksWithinBackjumps;
 	}
 
 	public int getChoices() {
@@ -190,8 +207,10 @@ public class ChoiceManager implements Checkable {
 	}
 
 	public void choose(Choice choice) {
-		choices++;
 		LOGGER.debug("Choice {} is {}@{}", choices, choice, assignment.getDecisionLevel());
+		if (!choice.isBacktracked()) {
+			choices++;
+		}
 
 		if (assignment.choose(choice.getAtom(), choice.getValue()) != null) {
 			throw oops("Picked choice is incompatible with current assignment");
@@ -218,6 +237,7 @@ public class ChoiceManager implements Checkable {
 		// Remove everything above the target level, but keep the target level unchanged.
 		while (assignment.getDecisionLevel() > target) {
 			backtrackFast();
+			backtracksWithinBackjumps++;
 		}
 	}
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017-2018, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -42,7 +42,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Represents a non-ground rule or a constraint for the semi-naive grounder.
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  */
 public class Rule {
 	private final Head head;
@@ -155,8 +155,8 @@ public class Rule {
 		if (!isConstraint() && !((DisjunctiveHead)head).isGround()) {
 			return false;
 		}
-		for (Literal atom : body) {
-			if (!atom.isGround()) {
+		for (Literal literal : body) {
+			if (!literal.isGround()) {
 				return false;
 			}
 		}

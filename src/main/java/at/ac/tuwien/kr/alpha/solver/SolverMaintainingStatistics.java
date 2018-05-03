@@ -1,8 +1,6 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2018 Siemens AG
  * All rights reserved.
- * 
- * Additional changes made by Siemens.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,22 +23,41 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.common.fixedinterpretations;
+package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
+import java.io.PrintStream;
 
-import java.util.List;
-import java.util.Set;
+public interface SolverMaintainingStatistics {
 
-import static java.util.Collections.*;
+	int getNumberOfChoices();
 
-@FunctionalInterface
-public interface PredicateInterpretation {
-	Set<List<ConstantTerm<?>>> TRUE = singleton(emptyList());
-	Set<List<ConstantTerm<?>>> FALSE = emptySet();
+	int getNumberOfBacktracks();
 
-	String EVALUATE_RETURN_TYPE_NAME_PREFIX = Set.class.getName() + "<" + List.class.getName() + "<" + ConstantTerm.class.getName();
+	int getNumberOfBacktracksWithinBackjumps();
 
-	Set<List<ConstantTerm<?>>> evaluate(List<Term> terms);
+	int getNumberOfBackjumps();
+
+	int getNumberOfBacktracksDueToRemnantMBTs();
+	
+	/**
+	 * @return the number of times the solver had to backtrack after closing unassigned atoms
+	 */
+	int getNumberOfConflictsAfterClosing();
+
+	default String getStatisticsString() {
+		return "g=" + getNumberOfChoices() + ", bt=" + getNumberOfBacktracks() + ", bj=" + getNumberOfBackjumps() + ", bt_within_bj="
+				+ getNumberOfBacktracksWithinBackjumps() + ", mbt=" + getNumberOfBacktracksDueToRemnantMBTs() + ", cac=" + getNumberOfConflictsAfterClosing();
+	}
+	
+	default String getStatisticsCSV() {
+		return String.format("%d,%d,%d,%d,%d,%d", getNumberOfChoices(), getNumberOfBacktracks(), getNumberOfBackjumps(), getNumberOfBacktracksWithinBackjumps(), getNumberOfBacktracksDueToRemnantMBTs(), getNumberOfConflictsAfterClosing());
+	}
+
+	default void printStatistics(PrintStream out) {
+		out.println(getStatisticsString());
+	}
+
+	default void printStatistics() {
+		printStatistics(System.out);
+	}
 }

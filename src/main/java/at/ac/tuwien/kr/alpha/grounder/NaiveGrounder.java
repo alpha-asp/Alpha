@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -54,7 +54,7 @@ import static java.util.Collections.singletonList;
 
 /**
  * A semi-naive grounder.
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  */
 public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGrounder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
@@ -62,7 +62,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final WorkingMemory workingMemory = new WorkingMemory();
 	private final AtomStore atomStore = new AtomStore();
 	private final NogoodRegistry registry = new NogoodRegistry();
-	private final NoGoodGenerator noGoodGenerator;
+	final NoGoodGenerator noGoodGenerator;
 	private final ChoiceRecorder choiceRecorder;
 	public final ProgramAnalysis programAnalysis;
 	public final AnalyzeUnjustified analyzeUnjustified;
@@ -357,10 +357,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			return singletonList(partialSubstitution);
 		}
 
-		Literal currentAtom = groundingOrder[orderPosition];
-		if (currentAtom instanceof FixedInterpretationLiteral) {
+		Literal currentLiteral = groundingOrder[orderPosition];
+		Atom currentAtom = currentLiteral.getAtom();
+		if (currentLiteral instanceof FixedInterpretationLiteral) {
 			// Generate all substitutions for the builtin/external/interval atom.
-			final List<Substitution> substitutions = ((FixedInterpretationLiteral)currentAtom).getSubstitutions(partialSubstitution);
+			final List<Substitution> substitutions = ((FixedInterpretationLiteral)currentLiteral).getSubstitutions(partialSubstitution);
 
 			if (substitutions.isEmpty()) {
 				return emptyList();
@@ -379,7 +380,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 		if (substitute.isGround()) {
 			// Substituted atom is ground, in case it is positive, only ground if it also holds true
-			if (currentAtom.isNegated()) {
+			if (currentLiteral.isNegated()) {
 				// Atom occurs negated in the rule, continue grounding
 				return bindNextAtomInRule(groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
 			}
@@ -414,7 +415,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 
 		// substituted atom contains variables
-		if (currentAtom.isNegated()) {
+		if (currentLiteral.isNegated()) {
 			throw oops("Current atom should be positive at this point but is not");
 		}
 
@@ -534,20 +535,20 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		ret.append(" :- ");
 		boolean isFirst = true;
 		for (Atom bodyAtom : rule.getBodyAtomsPositive()) {
-			ret.append(groundAtomToString(bodyAtom, false, substitution, isFirst));
+			ret.append(groundLiteralToString(bodyAtom.toLiteral(), substitution, isFirst));
 			isFirst = false;
 		}
 		for (Atom bodyAtom : rule.getBodyAtomsNegative()) {
-			ret.append(groundAtomToString(bodyAtom, true, substitution, isFirst));
+			ret.append(groundLiteralToString(bodyAtom.toLiteral(true), substitution, isFirst));
 			isFirst = false;
 		}
 		ret.append(".");
 		return ret.toString();
 	}
 
-	private static String groundAtomToString(Atom bodyAtom, boolean isNegative, Substitution substitution, boolean isFirst) {
-		Atom groundBodyAtom = bodyAtom.substitute(substitution);
-		return  (isFirst ? ", " : "") + (isNegative ? "not " : "") + groundBodyAtom.toString();
+	static String groundLiteralToString(Literal literal, Substitution substitution, boolean isFirst) {
+		Literal groundLiteral = literal.substitute(substitution);
+		return  (isFirst ? "" : ", ") + groundLiteral.toString();
 	}
 
 	public AtomStore getAtomStore() {

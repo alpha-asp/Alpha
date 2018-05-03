@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -35,6 +35,7 @@ import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
+import at.ac.tuwien.kr.alpha.solver.SolverMaintainingStatistics;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -79,6 +80,7 @@ public class Main {
 	private static final String OPT_STORE = "store";
 	private static final String OPT_QUIET = "quiet";
 	private static final String OPT_LITERATE = "literate";
+	private static final String OPT_STATS = "stats";
 	private static final String OPT_NO_JUSTIFICATION = "disableJustifications";
 
 	private static final String OPT_BRANCHING_HEURISTIC = "branchingHeuristic";
@@ -166,6 +168,9 @@ public class Main {
 		Option literateOption = new Option("l", OPT_LITERATE, false, "enable literate programming mode");
 		options.addOption(literateOption);
 
+		Option statsOption = new Option("st", OPT_STATS, false, "print statistics");
+		options.addOption(statsOption);
+
 		Option justificationOption = new Option(OPT_NO_JUSTIFICATION, "disable the search for justifications on must-be-true assigned atoms in the solver.");
 		options.addOption(justificationOption);
 
@@ -192,16 +197,6 @@ public class Main {
 		if (commandLine.hasOption(OPT_FILTER)) {
 			Set<String> desiredPredicates = new HashSet<>(Arrays.asList(commandLine.getOptionValues(OPT_FILTER)));
 			filter = p -> desiredPredicates.contains(p.getName());
-		}
-
-		int limit = 0;
-		try {
-			Number n = (Number)commandLine.getParsedOptionValue(OPT_NUM_AS);
-			if (n != null) {
-				limit = n.intValue();
-			}
-		} catch (ParseException e) {
-			bailOut("Failed to parse number of answer sets requested.", e);
 		}
 
 		final boolean disableJustifications = commandLine.hasOption(OPT_NO_JUSTIFICATION);
@@ -261,8 +256,13 @@ public class Main {
 			chosenSolver, chosenStore, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks, disableJustifications
 		);
 
+		computeAndConsumeAnswerSets(solver);
+	}
+
+	private static void computeAndConsumeAnswerSets(Solver solver) {
 		Stream<AnswerSet> stream = solver.stream();
 
+		int limit = getRequestedNumberOfAnswerSets();
 		if (limit > 0) {
 			stream = stream.limit(limit);
 		}
@@ -277,6 +277,28 @@ public class Main {
 		} else {
 			// Note: Even though we are not consuming the result, we will still compute answer sets.
 			stream.collect(Collectors.toList());
+		}
+		printStatisticsIfEnabled(solver);
+	}
+
+	static int getRequestedNumberOfAnswerSets() {
+		int limit = 0;
+
+		try {
+			Number n = (Number) commandLine.getParsedOptionValue(OPT_NUM_AS);
+			if (n != null) {
+				limit = n.intValue();
+			}
+		} catch (ParseException e) {
+			bailOut("Failed to parse number of answer sets requested.", e);
+		}
+
+		return limit;
+	}
+
+	private static void printStatisticsIfEnabled(Solver solver) {
+		if (commandLine.hasOption(OPT_STATS) && solver instanceof SolverMaintainingStatistics) {
+			((SolverMaintainingStatistics) solver).printStatistics();
 		}
 	}
 
