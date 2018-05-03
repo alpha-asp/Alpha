@@ -50,8 +50,8 @@ public class WorkingMemory {
 			return;
 		}
 
-		IndexedInstanceStorage pos = new IndexedInstanceStorage(predicate, false);
-		IndexedInstanceStorage neg = new IndexedInstanceStorage(predicate, true);
+		IndexedInstanceStorage pos = new IndexedInstanceStorage(predicate, true);
+		IndexedInstanceStorage neg = new IndexedInstanceStorage(predicate, false);
 		// Index all positions of the storage (may impair efficiency)
 		for (int i = 0; i < predicate.getArity(); i++) {
 			pos.addIndexPosition(i);

@@ -41,8 +41,8 @@ import static java.util.Collections.emptyList;
  */
 public class ExternalLiteral extends FixedInterpretationLiteral {
 
-	public ExternalLiteral(ExternalAtom atom, boolean negated) {
-		super(atom, negated);
+	public ExternalLiteral(ExternalAtom atom, boolean positive) {
+		super(atom, positive);
 	}
 	
 	@Override
@@ -55,7 +55,7 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 	 */
 	@Override
 	public ExternalLiteral negate() {
-		return new ExternalLiteral(getAtom(), !negated);
+		return new ExternalLiteral(getAtom(), !positive);
 	}
 
 	/**
@@ -63,7 +63,7 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 	 */
 	@Override
 	public ExternalLiteral substitute(Substitution substitution) {
-		return new ExternalLiteral(getAtom().substitute(substitution), negated);
+		return new ExternalLiteral(getAtom().substitute(substitution), positive);
 	}
 
 	@Override
@@ -72,7 +72,7 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 		// and there are no binding variables (like for ordinary atoms).
 		// If the external atom is positive, then variables of output are binding.
 
-		if (negated) {
+		if (!positive) {
 			return Collections.emptySet();
 		}
 		
@@ -102,7 +102,7 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 		}
 
 		// If the external atom is negative, then all variables of input and output are non-binding.
-		if (negated) {
+		if (!positive) {
 			for (Term out : output) {
 				if (out instanceof VariableTerm) {
 					nonbindingVariables.add((VariableTerm) out);

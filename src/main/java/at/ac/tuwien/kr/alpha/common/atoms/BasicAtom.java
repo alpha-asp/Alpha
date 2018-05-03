@@ -97,8 +97,8 @@ public class BasicAtom implements Atom {
 	}
 	
 	@Override
-	public BasicLiteral toLiteral(boolean negated) {
-		return new BasicLiteral(this, negated);
+	public BasicLiteral toLiteral(boolean positive) {
+		return new BasicLiteral(this, positive);
 	}
 
 	@Override

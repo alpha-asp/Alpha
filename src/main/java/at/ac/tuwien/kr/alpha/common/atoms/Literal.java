@@ -43,11 +43,11 @@ import java.util.Set;
 public abstract class Literal {
 	
 	protected final Atom atom;
-	protected final boolean negated;
+	protected final boolean positive;
 	
-	public Literal(Atom atom, boolean negated) {
+	public Literal(Atom atom, boolean positive) {
 		this.atom = atom;
-		this.negated = negated;
+		this.positive = positive;
 	}
 
 	public Atom getAtom() {
@@ -55,7 +55,7 @@ public abstract class Literal {
 	}
 
 	public boolean isNegated() {
-		return negated;
+		return !positive;
 	}
 	
 	public abstract Literal negate();
@@ -89,7 +89,7 @@ public abstract class Literal {
 	
 	@Override
 	public String toString() {
-		return (negated ? "not " : "") + atom.toString();
+		return (positive ? "" : "not ") + atom.toString();
 	}
 
 	@Override
@@ -103,12 +103,12 @@ public abstract class Literal {
 
 		Literal that = (Literal) o;
 
-		return atom.equals(that.atom) && negated == that.negated;
+		return atom.equals(that.atom) && positive == that.positive;
 	}
 
 	@Override
 	public int hashCode() {
-		return 12 * atom.hashCode() + (negated ? 1 : 0);
+		return 12 * atom.hashCode() + (positive ? 1 : 0);
 	}
 
 }

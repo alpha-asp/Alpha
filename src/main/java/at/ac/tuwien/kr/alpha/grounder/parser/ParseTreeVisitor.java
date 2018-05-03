@@ -318,11 +318,11 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		// naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
 		boolean isCurrentLiteralNegated = ctx.NAF() != null;
 		if (ctx.builtin_atom() != null) {
-			return new ComparisonLiteral(visitBuiltin_atom(ctx.builtin_atom()), isCurrentLiteralNegated);
+			return new ComparisonLiteral(visitBuiltin_atom(ctx.builtin_atom()), !isCurrentLiteralNegated);
 		} else if (ctx.classical_literal() != null) {
-			return new BasicLiteral(visitClassical_literal(ctx.classical_literal()), isCurrentLiteralNegated);
+			return new BasicLiteral(visitClassical_literal(ctx.classical_literal()), !isCurrentLiteralNegated);
 		} else if (ctx.external_atom() != null) {
-			return new ExternalLiteral(visitExternal_atom(ctx.external_atom()), isCurrentLiteralNegated);
+			return new ExternalLiteral(visitExternal_atom(ctx.external_atom()), !isCurrentLiteralNegated);
 		}
 		throw notSupported(ctx);
 	}

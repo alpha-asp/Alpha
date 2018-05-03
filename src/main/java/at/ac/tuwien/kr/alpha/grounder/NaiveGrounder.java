@@ -542,7 +542,7 @@ public class NaiveGrounder extends BridgedGrounder {
 			isFirst = false;
 		}
 		for (Atom bodyAtom : rule.getBodyAtomsNegative()) {
-			ret.append(groundLiteralToString(bodyAtom.toLiteral(true), substitution, isFirst));
+			ret.append(groundLiteralToString(bodyAtom.toLiteral(false), substitution, isFirst));
 			isFirst = false;
 		}
 		ret.append(".");

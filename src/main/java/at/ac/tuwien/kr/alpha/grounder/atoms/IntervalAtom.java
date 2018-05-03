@@ -75,8 +75,8 @@ public class IntervalAtom implements Atom {
 	}
 	
 	@Override
-	public IntervalLiteral toLiteral(boolean negated) {
-		if (negated) {
+	public IntervalLiteral toLiteral(boolean positive) {
+		if (!positive) {
 			throw oops("IntervalLiteral cannot be negated");
 		}
 		return new IntervalLiteral(this);
