@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018 Siemens AG
+ * Copyright (c) 2018 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -25,25 +25,9 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.junit.Test;
+/**
+ * Represents a statement starting with {@code #}, e.g. {@code #heuristic a : b.} 
+ */
+public abstract class Directive {
 
-import static org.junit.Assert.assertEquals;
-
-public class ProgramTest {
-	
-	@Test
-	public void testToString() {
-		Program parsedProgram = new ProgramParser().parse(
-				"#heuristic q(X) : p(X). [X@2]" + System.lineSeparator() +
-					"p(a)." + System.lineSeparator() +
-					"q(X) :- p(X)." + System.lineSeparator() +
-					"p(b).");
-		assertEquals(
-				"p(a)." + System.lineSeparator() +
-					"p(b)." + System.lineSeparator() +
-					"q(X) :- p(X)." + System.lineSeparator() +
-					"#heuristic q(X) : p(X). [X@2]" + System.lineSeparator(),
-				parsedProgram.toString());
-	}
 }

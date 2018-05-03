@@ -1,8 +1,6 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2018 Siemens AG
  * All rights reserved.
- * 
- * Additional changes made by Siemens.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -27,82 +25,60 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 
 /**
- * Alpha-internal representation of an ASP program, i.e., a set of ASP rules.
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Represents a heuristic directive, e.g. {@code #heuristic a : b. [2@1]}
  */
-public class Program {
-	public static final Program EMPTY = new Program(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+public class HeuristicDirective extends Directive {
 
-	private final List<Rule> rules;
-	private final List<Atom> facts;
-	private final List<Directive> directives;
+	public static final int DEFAULT_WEIGHT = 1;
+	public static final int DEFAULT_PRIORITY = 1;
+	public static final Term DEFAULT_WEIGHT_TERM = ConstantTerm.getInstance(DEFAULT_WEIGHT);
+	public static final Term DEFAULT_PRIORITY_TERM = ConstantTerm.getInstance(DEFAULT_PRIORITY);
 	
-	public Program(List<Rule> rules, List<Atom> facts, List<Directive> directives) {
-		this.rules = rules;
-		this.facts = facts;
-		this.directives = directives;
+	private final Literal head;
+	private final List<Literal> body;
+	private final Term weight;
+	private final Term priority;
+	
+	private HeuristicDirective(Literal head, List<Literal> body, Term weight, Term priority) {
+		super();
+		this.head = head;
+		this.body = body;
+		this.weight = weight != null ? weight : DEFAULT_WEIGHT_TERM;
+		this.priority = priority != null ? priority : DEFAULT_PRIORITY_TERM;
 	}
 
-	public Program() {
-		this(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+	public HeuristicDirective(Literal head, List<Literal> body, WeightAtLevel weightAtLevel) {
+		this(head, body, weightAtLevel.getWeight(), weightAtLevel.getLevel());
 	}
 
-	public List<Rule> getRules() {
-		return rules;
+	public Literal getHead() {
+		return head;
 	}
 
-	public List<Atom> getFacts() {
-		return facts;
+	public List<Literal> getBody() {
+		return body;
+	}
+
+	public Term getWeight() {
+		return weight;
+	}
+
+	public Term getPriority() {
+		return priority;
 	}
 	
-	public List<Directive> getDirectives() {
-		return directives;
-	}
-
-	public void accumulate(Program program) {
-		rules.addAll(program.rules);
-		facts.addAll(program.facts);
-	}
-
 	@Override
 	public String toString() {
-		final String ls = System.lineSeparator();
-		String result = join(
-			"",
-			facts,
-			"." + ls,
-			"." + ls
-		);
-
-		if (rules.isEmpty()) {
-			return result;
-		}
-
-		result = join(
-			result,
-			rules,
-			ls,
-			ls
-		);
-		
-		if (directives.isEmpty()) {
-			return result;
-		}
-		
-		return join(
-			result,
-			directives,
-			ls,
-			ls
-		);
+		return join("#heuristic " + head + " : ", body, ". [" + weight + "@" + priority + "]");
 	}
+	
 }

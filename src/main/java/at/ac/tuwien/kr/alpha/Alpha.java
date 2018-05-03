@@ -173,7 +173,7 @@ public class Alpha {
 			atoms.add(new BasicAtom(at.ac.tuwien.kr.alpha.common.Predicate.getInstance(name, 1), ConstantTerm.getInstance(it)));
 		}
 
-		final Program acc = new Program(Collections.emptyList(), atoms);
+		final Program acc = new Program(Collections.emptyList(), atoms, Collections.emptyList());
 
 		if (this.program == null) {
 			this.program = acc;

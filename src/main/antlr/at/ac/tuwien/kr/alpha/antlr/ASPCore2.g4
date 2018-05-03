@@ -21,7 +21,10 @@ locals [boolean hr = false]
           | CONS body DOT                # statement_constraint
           | head CONS body DOT heuristic_annotation? # statement_rule
           | WCONS body? DOT weight_annotation        # statement_weightConstraint
-          | gringo_sharp                 # statement_gringoSharp;   // syntax extension
+          | gringo_sharp                 # statement_gringoSharp   // syntax extension
+          | DIRECTIVE_KEYWORD_HEURISTIC naf_literal (COLON body)? DOT weight_annotation?         # statement_heuristicDirective;
+          		// TODO: conflict with gringo_sharp?!
+          		// TODO: replace naf_literal by classical_literal in statement_heuristicDirective
 
 head : disjunction | choice;
 

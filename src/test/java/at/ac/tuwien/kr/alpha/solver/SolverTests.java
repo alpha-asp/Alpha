@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -70,7 +70,8 @@ public class SolverTests extends AbstractSolverTests {
 
 		final Program program = new Program(
 			Collections.emptyList(),
-			Collections.singletonList(fact)
+			Collections.singletonList(fact),
+			Collections.emptyList()
 		);
 
 		assertEquals(singleton(new AnswerSetBuilder()

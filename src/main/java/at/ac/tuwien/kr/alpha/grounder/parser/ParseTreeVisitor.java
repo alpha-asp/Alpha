@@ -30,10 +30,7 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Heuristic_annotationContext;
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Heuristic_generatorContext;
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Heuristic_weight_at_levelContext;
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Naf_heuristicContext;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.*;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
@@ -154,7 +151,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			return Program.EMPTY;
 		}
 
-		inputProgram = new Program(new ArrayList<>(), new ArrayList<>());
+		inputProgram = new Program(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 		visitStatements(ctx.statements());
 		return inputProgram;
 	}
@@ -377,6 +374,26 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 		return literals;
 	}
+	
+	@Override
+	public WeightAtLevel visitWeight_annotation(Weight_annotationContext ctx) {
+		// SQUARE_OPEN weight_at_level SQUARE_CLOSE
+		return visitWeight_at_level(ctx.weight_at_level());
+	}
+	
+	@Override
+	public WeightAtLevel visitWeight_at_level(Weight_at_levelContext ctx) {
+		// term (AT term)? (COMMA terms)?
+		Term weight;
+		Term level = null;
+		weight = (Term) visit(ctx.term(0));
+		if (ctx.AT() != null) {
+			level = (Term) visit(ctx.term(1));
+		}
+		// FIXME: further terms are currently ignored
+
+		return new WeightAtLevel(weight, level);
+	}
 
 	@Override
 	public BasicAtom visitClassical_literal(ASPCore2Parser.Classical_literalContext ctx) {
@@ -482,6 +499,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Object visitStatement_gringoSharp(ASPCore2Parser.Statement_gringoSharpContext ctx) {
 		throw notSupported(ctx);
+	}
+	
+	@Override
+	public Object visitStatement_heuristicDirective(Statement_heuristicDirectiveContext ctx) {
+		// DIRECTIVE_KEYWORD_HEURISTIC naf_literal (COLON body)? DOT weight_annotation?
+		inputProgram.getDirectives().add(new HeuristicDirective(visitNaf_literal(ctx.naf_literal()), visitBody(ctx.body()), visitWeight_annotation(ctx.weight_annotation())));
+		return null;
 	}
 
 	@Override

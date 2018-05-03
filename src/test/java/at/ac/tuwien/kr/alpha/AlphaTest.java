@@ -251,6 +251,7 @@ public class AlphaTest {
 
 		system.setProgram(new Program(
 			singletonList(rule),
+			emptyList(),
 			emptyList()
 		));
 

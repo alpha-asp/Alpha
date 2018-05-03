@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -38,6 +38,7 @@ import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.antlr.v4.runtime.CharStreams;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -48,10 +49,15 @@ import java.util.stream.Stream;
 import static org.junit.Assert.*;
 
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  */
 public class ParserTest {
 	private final ProgramParser parser = new ProgramParser();
+	
+	@Before
+	public void setUp() {
+		VariableTerm.ANONYMOUS_VARIABLE_COUNTER.resetGenerator();
+	}
 
 	@Test
 	public void parseFact() throws IOException {
@@ -249,6 +255,72 @@ public class ParserTest {
 	public void parseProgramWithHeuristicAnnotation_GeneratorWithArithmetics_Unsafe3() {
 		parser.parse("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
 				+ "[LTp1mT@1 : holds(F,Tp1), Tp1=T2+1, LTp1mT=LT+1-T]");
+	}
+
+	@Test
+	public void parseProgramWithHeuristicDirective_W() {
+		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
+				+ "#heuristic c(X) : p(X,a,_), q(Xaa,xaa). [X]");
+
+		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getDirectives().iterator().next();
+		assertEquals("c(X)", directive.getHead().toString());
+		assertEquals("[p(X, a, _1), q(Xaa, xaa)]", directive.getBody().toString());
+		assertEquals("X", directive.getWeight().toString());
+		assertEquals("1", directive.getPriority().toString());
+	}
+
+	@Test
+	public void parseProgramWithHeuristicDirective_WP() {
+		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
+				+ "#heuristic c(X) : p(X,a,_), q(Xaa,xaa). [X@2]");
+
+		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getDirectives().iterator().next();
+		assertEquals("c(X)", directive.getHead().toString());
+		assertEquals("[p(X, a, _1), q(Xaa, xaa)]", directive.getBody().toString());
+		assertEquals("X", directive.getWeight().toString());
+		assertEquals("2", directive.getPriority().toString());
+	}
+
+	@Test
+	public void parseProgramWithHeuristicDirective_Generator() {
+		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
+				+ "#heuristic c(X) : p(X,a,_), q(Xaa,xaa), not c(X). [X@2]");
+
+		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getDirectives().iterator().next();
+		assertEquals("c(X)", directive.getHead().toString());
+		assertEquals("[p(X, a, _1), q(Xaa, xaa), not c(X)]", directive.getBody().toString());
+		assertEquals("X", directive.getWeight().toString());
+		assertEquals("2", directive.getPriority().toString());
+	}
+
+	@Test
+	public void parseProgramWithHeuristicDirective_GeneratorWithArithmetics() {
+		Program parsedProgram = parser.parse("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
+				+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T), holds(F,Tp1), Tp1=T+1, LTp1mT=LT+1-T. [LTp1mT@1]");
+
+		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getDirectives().iterator().next();
+		assertEquals("holds(F, T)", directive.getHead().toString());
+		assertEquals("[fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F, T), holds(F, Tp1), Tp1 = T + 1, LTp1mT = LT + 1 - T]", directive.getBody().toString());
+		assertEquals("LTp1mT", directive.getWeight().toString());
+		assertEquals("1", directive.getPriority().toString());
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void parseProgramWithHeuristicDirective_GeneratorWithArithmetics_Unsafe1() {
+		parser.parse("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
+				+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T), holds(F,Tp1), Tp1=T+1, LTp1mT=LT+1-T. [T2@1]");
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void parseProgramWithHeuristicDirective_GeneratorWithArithmetics_Unsafe2() {
+		parser.parse("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
+				+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T), holds(F,T2), Tp1=T+1, LTp1mT=LT+1-T. [LTp1mT@1]");
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void parseProgramWithHeuristicDirective_GeneratorWithArithmetics_Unsafe3() {
+		parser.parse("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
+				+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T), holds(F,Tp1), Tp1=T2+1, LTp1mT=LT+1-T. [LTp1mT@1]");
 	}
 
 	private int parseFaultyRule(String program, int rules) {

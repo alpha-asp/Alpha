@@ -38,6 +38,7 @@ AGGREGATE_MIN : '#min';
 AGGREGATE_SUM : '#sum';
 
 PREDICATE_HEURISTIC : '_h';
+DIRECTIVE_KEYWORD_HEURISTIC : '#heuristic'; 
 
 ID : ('a'..'z') ( 'A'..'Z' | 'a'..'z' | '0'..'9' | '_' )*;
 VARIABLE : ('A'..'Z') ( 'A'..'Z' | 'a'..'z' | '0'..'9' | '_' )*;
