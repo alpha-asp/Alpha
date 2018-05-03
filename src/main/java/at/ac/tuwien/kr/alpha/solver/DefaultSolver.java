@@ -181,7 +181,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 								Rule rule = nonGroundRule.getRule();
 								// Find ground literals in the body that have been assigned false and justify those.
 								for (Literal bodyLiteral : rule.getBody()) {
-									Atom groundAtom = bodyLiteral.substitute(groundingSubstitution);
+									Atom groundAtom = bodyLiteral.getAtom().substitute(groundingSubstitution);
 									if (groundAtom instanceof ComparisonAtom || ((NaiveGrounder) grounder).isFact(groundAtom)) {
 										// Facts and ComparisonAtoms are always true, no justification needed.
 										continue;
@@ -207,7 +207,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 							reasons[0] = atomOf(literalToJustify);
 							int arrpos = 1;
 							for (Literal literal : reasonsForUnjustified) {
-								reasons[arrpos++] = ((NaiveGrounder) grounder).getAtomStore().add(literal);
+								reasons[arrpos++] = (literal.isNegated() ? -1 : 1) * ((NaiveGrounder) grounder).getAtomStore().add(literal.getAtom());
 							}
 							NoGood noGood = new NoGood(reasons);
 							int noGoodID = grounder.register(noGood);
@@ -270,7 +270,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 					reasons[0] = toJustify;
 					int arrpos = 1;
 					for (Literal literal : reasonsForUnjustified) {
-						reasons[arrpos++] = ((NaiveGrounder) grounder).getAtomStore().add(literal);
+						reasons[arrpos++] = (literal.isNegated() ? -1 : 1) * ((NaiveGrounder) grounder).getAtomStore().add(literal.getAtom());
 					}
 					NoGood noGood = new NoGood(reasons);
 					int noGoodID = grounder.register(noGood);

@@ -122,6 +122,6 @@ public class ComparisonAtom implements Atom, VariableNormalizableAtom {
 		for (int i = 0; i < terms.size(); i++) {
 			renamedTerms.add(terms.get(i).normalizeVariables(prefix, renameCounter));
 		}
-		return new ComparisonAtom(renamedTerms.get(0), renamedTerms.get(1), negated, operator);
+		return new ComparisonAtom(renamedTerms.get(0), renamedTerms.get(1), operator);
 	}
 }

@@ -36,6 +36,8 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.*;
 
+import static at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm.evaluateGroundTerm;
+
 /**
  * Contains a potentially negated {@link ComparisonAtom}.
  */
@@ -121,10 +123,14 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 	@Override
 	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
 		List<Term> terms = getTerms();
-		
+
 		// Treat case where this is just comparison with all variables bound by partialSubstitution.
 		if (!isLeftAssigning() && !isRightAssigning()) {
-			if (compare(terms.get(0).substitute(partialSubstitution), terms.get(1).substitute(partialSubstitution))) {
+			Term leftSubstitute = terms.get(0).substitute(partialSubstitution);
+			Term leftEvaluatedSubstitute = leftSubstitute instanceof ArithmeticTerm ? ConstantTerm.getInstance(evaluateGroundTerm(leftSubstitute)) : leftSubstitute;
+			Term rightSubstitute = terms.get(1).substitute(partialSubstitution);
+			Term rightEvaluatedSubstitute = rightSubstitute instanceof ArithmeticTerm ? ConstantTerm.getInstance(evaluateGroundTerm(rightSubstitute)) : rightSubstitute;
+			if (compare(leftEvaluatedSubstitute, rightEvaluatedSubstitute)) {
 				return Collections.singletonList(partialSubstitution);
 			} else {
 				return Collections.emptyList();

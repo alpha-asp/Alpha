@@ -133,7 +133,7 @@ public class AnalyzeUnjustified {
 				if (!lit.isNegated()) {
 					continue;
 				}
-				Atom lb = lit.substitute(sigma);
+				Atom lb = lit.getAtom().substitute(sigma);
 				log("Found: " + lit + ", searching falsifying ground instances of " + lb + " (with unifier from the head) now.");
 				for (Atom lg : getAssignedAtomsOverPredicate(lb.getPredicate())) {
 					log("Considering: " + lg);
@@ -167,7 +167,7 @@ public class AnalyzeUnjustified {
 						Substitution sigmacirc = new Substitution(sigma).extendWith(sigmagb);
 						vNp.add(sigmacirc);
 						log("Literal " + lg + " is not excluded and falsifies body literal " + lit);
-						ret.vL.add((Literal) lg);
+						ret.vL.add(lg.toLiteral());
 						log("Reasons extended by: " + lg);
 					}
 				}
@@ -205,7 +205,7 @@ public class AnalyzeUnjustified {
 		// Line 3.
 		log("Line 3.");
 		int chosenLiteralPos = 0;
-		Literal b = vB.get(chosenLiteralPos);
+		Atom b = vB.get(chosenLiteralPos).getAtom();
 		log("Picked literal from body is: " + b);
 		// Line 4.
 		for (Substitution sigmaY : vY) {
