@@ -25,6 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -40,27 +41,31 @@ public class HeuristicDirective extends Directive {
 
 	public static final int DEFAULT_WEIGHT = 1;
 	public static final int DEFAULT_PRIORITY = 1;
+	public static final boolean DEFAULT_SIGN = true;
 	public static final Term DEFAULT_WEIGHT_TERM = ConstantTerm.getInstance(DEFAULT_WEIGHT);
 	public static final Term DEFAULT_PRIORITY_TERM = ConstantTerm.getInstance(DEFAULT_PRIORITY);
+	public static final Term DEFAULT_SIGN_TERM = ConstantTerm.getInstance(DEFAULT_SIGN);
 	
-	private final Literal head;
+	private final BasicAtom head;	// TODO: replace by classical literal and drop sign?
 	private final List<Literal> body;
 	private final Term weight;
 	private final Term priority;
+	private final Term sign;	//Term, not boolean, in case we want to support variable signs
 	
-	private HeuristicDirective(Literal head, List<Literal> body, Term weight, Term priority) {
+	private HeuristicDirective(BasicAtom head, List<Literal> body, Term weight, Term priority, Term sign) {
 		super();
 		this.head = head;
 		this.body = body;
 		this.weight = weight != null ? weight : DEFAULT_WEIGHT_TERM;
 		this.priority = priority != null ? priority : DEFAULT_PRIORITY_TERM;
+		this.sign = sign != null ? sign : DEFAULT_SIGN_TERM;
 	}
 
-	public HeuristicDirective(Literal head, List<Literal> body, WeightAtLevel weightAtLevel) {
-		this(head, body, weightAtLevel.getWeight(), weightAtLevel.getLevel());
+	public HeuristicDirective(BasicAtom head, List<Literal> body, WeightAtLevel weightAtLevel, boolean sign) {
+		this(head, body, weightAtLevel.getWeight(), weightAtLevel.getLevel(), ConstantTerm.getInstance(sign));
 	}
 
-	public Literal getHead() {
+	public BasicAtom getHead() {
 		return head;
 	}
 
@@ -74,6 +79,10 @@ public class HeuristicDirective extends Directive {
 
 	public Term getPriority() {
 		return priority;
+	}
+	
+	public Term getSign() {
+		return sign;
 	}
 	
 	@Override

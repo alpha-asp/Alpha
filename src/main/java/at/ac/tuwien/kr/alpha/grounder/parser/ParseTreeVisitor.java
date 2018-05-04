@@ -503,8 +503,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	
 	@Override
 	public Object visitStatement_heuristicDirective(Statement_heuristicDirectiveContext ctx) {
-		// DIRECTIVE_KEYWORD_HEURISTIC naf_literal (COLON body)? DOT weight_annotation?
-		inputProgram.getDirectives().add(new HeuristicDirective(visitNaf_literal(ctx.naf_literal()), visitBody(ctx.body()), visitWeight_annotation(ctx.weight_annotation())));
+		// DIRECTIVE_KEYWORD_HEURISTIC MINUS? classical_literal (COLON body)? DOT weight_annotation?
+		boolean positive = ctx.MINUS() == null;
+		inputProgram.getDirectives().add(new HeuristicDirective(visitClassical_literal(ctx.classical_literal()), visitBody(ctx.body()), visitWeight_annotation(ctx.weight_annotation()), positive));
 		return null;
 	}
 
