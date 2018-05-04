@@ -40,24 +40,24 @@ import static at.ac.tuwien.kr.alpha.Util.join;
 public class HeuristicDirective extends Directive {
 
 	public static final int DEFAULT_WEIGHT = 1;
-	public static final int DEFAULT_PRIORITY = 1;
+	public static final int DEFAULT_LEVEL = 1;
 	public static final boolean DEFAULT_SIGN = true;
 	public static final Term DEFAULT_WEIGHT_TERM = ConstantTerm.getInstance(DEFAULT_WEIGHT);
-	public static final Term DEFAULT_PRIORITY_TERM = ConstantTerm.getInstance(DEFAULT_PRIORITY);
+	public static final Term DEFAULT_LEVEL_TERM = ConstantTerm.getInstance(DEFAULT_LEVEL);
 	public static final Term DEFAULT_SIGN_TERM = ConstantTerm.getInstance(DEFAULT_SIGN);
 	
 	private final BasicAtom head;	// TODO: replace by classical literal and drop sign?
 	private final List<Literal> body;
 	private final Term weight;
-	private final Term priority;
+	private final Term level;
 	private final Term sign;	//Term, not boolean, in case we want to support variable signs
 	
-	private HeuristicDirective(BasicAtom head, List<Literal> body, Term weight, Term priority, Term sign) {
+	private HeuristicDirective(BasicAtom head, List<Literal> body, Term weight, Term level, Term sign) {
 		super();
 		this.head = head;
 		this.body = body;
 		this.weight = weight != null ? weight : DEFAULT_WEIGHT_TERM;
-		this.priority = priority != null ? priority : DEFAULT_PRIORITY_TERM;
+		this.level = level != null ? level : DEFAULT_LEVEL_TERM;
 		this.sign = sign != null ? sign : DEFAULT_SIGN_TERM;
 	}
 
@@ -77,8 +77,8 @@ public class HeuristicDirective extends Directive {
 		return weight;
 	}
 
-	public Term getPriority() {
-		return priority;
+	public Term getLevel() {
+		return level;
 	}
 	
 	public Term getSign() {
@@ -87,7 +87,7 @@ public class HeuristicDirective extends Directive {
 	
 	@Override
 	public String toString() {
-		return join("#heuristic " + head + " : ", body, ". [" + weight + "@" + priority + "]");
+		return join("#heuristic " + head + " : ", body, ". [" + weight + "@" + level + "]");
 	}
 	
 }
