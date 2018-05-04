@@ -244,7 +244,7 @@ public class AlphaTest {
 								new MethodPredicateInterpretation(this.getClass().getMethod("thinger", Thingy.class)),
 								singletonList(ConstantTerm.getInstance(thingy)),
 								emptyList()),
-								false
+								true
 							)
 						)
 				);

@@ -72,15 +72,15 @@ public interface Atom extends Comparable<Atom> {
 	 * Creates a non-negated literal containing this atom
 	 */
 	default Literal toLiteral() {
-		return toLiteral(false);
+		return toLiteral(true);
 	}
 	
 	/**
-	 * Creates a literal containing this atom which will be negated if {@code negated} is {@code true}
-	 * @param negated
+	 * Creates a literal containing this atom which will be negated if {@code positive} is {@code false}
+	 * @param positive
 	 * @return
 	 */
-	Literal toLiteral(boolean negated);
+	Literal toLiteral(boolean positive);
 
 	@Override
 	default int compareTo(Atom o) {

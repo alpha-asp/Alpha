@@ -38,8 +38,8 @@ import java.util.List;
  */
 public abstract class FixedInterpretationLiteral extends Literal {
 	
-	public FixedInterpretationLiteral(Atom atom, boolean negated) {
-		super(atom, negated);
+	public FixedInterpretationLiteral(Atom atom, boolean positive) {
+		super(atom, positive);
 	}
 	
 	public abstract List<Substitution> getSubstitutions(Substitution partialSubstitution);
