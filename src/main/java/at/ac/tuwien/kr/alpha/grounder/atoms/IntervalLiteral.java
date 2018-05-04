@@ -46,7 +46,7 @@ import java.util.Set;
 public class IntervalLiteral extends FixedInterpretationLiteral {
 
 	public IntervalLiteral(IntervalAtom atom) {
-		super(atom, false);
+		super(atom, true);
 	}
 	
 	@Override

@@ -154,7 +154,7 @@ public class SubstitutionTest {
 	private void substituteBasicAtomLiteral(boolean negated) {
 		Predicate p = Predicate.getInstance("p", 2);
 		BasicAtom atom = new BasicAtom(p, Arrays.asList(X, Y));
-		Literal literal = new BasicLiteral(atom, negated);
+		Literal literal = new BasicLiteral(atom, !negated);
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
@@ -181,7 +181,7 @@ public class SubstitutionTest {
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
-		String printedString = NaiveGrounder.groundLiteralToString(atom.toLiteral(negated), substitution, true);
+		String printedString = NaiveGrounder.groundLiteralToString(atom.toLiteral(!negated), substitution, true);
 		assertEquals((negated ? "not " : "") + "p(a, b)", printedString);
 	}
 

@@ -1,3 +1,30 @@
+/**
+ * Copyright (c) 2016-2018, the Alpha Team.
+ * All rights reserved.
+ *
+ * Additional changes made by Siemens.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1) Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ * 2) Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -10,11 +37,11 @@ import java.util.*;
  * A storage for instances with a certain arity, where each position of the instance can be indexed.
  * This aids in matching and joining instances. An index can be added or removed at any time for a desired position of
  * all instances.
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  */
 public class IndexedInstanceStorage {
 	private final Predicate predicate;
-	private final boolean negated;
+	private final boolean positive;
 
 	/**
 	 * A collection of all instances currently stored in this storage.
@@ -28,9 +55,9 @@ public class IndexedInstanceStorage {
 
 	private final ArrayList<Instance> recentlyAddedInstances = new ArrayList<>();
 
-	public IndexedInstanceStorage(Predicate predicate, boolean negated) {
+	public IndexedInstanceStorage(Predicate predicate, boolean positive) {
 		this.predicate = predicate;
-		this.negated = negated;
+		this.positive = positive;
 
 		// Create list of mappings, initialize to null.
 		while (indices.size() < predicate.getArity()) {
@@ -183,6 +210,6 @@ public class IndexedInstanceStorage {
 
 	@Override
 	public String toString() {
-		return (negated ? "-" : "+") + predicate;
+		return (positive ? "+" : "-") + predicate;
 	}
 }

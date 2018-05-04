@@ -105,8 +105,8 @@ public class BasicAtom implements Atom, VariableNormalizableAtom {
 	}
 
 	@Override
-	public BasicLiteral toLiteral(boolean negated) {
-		return new BasicLiteral(this, negated);
+	public BasicLiteral toLiteral(boolean positive) {
+		return new BasicLiteral(this, positive);
 	}
 
 	@Override

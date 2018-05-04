@@ -97,8 +97,8 @@ public class ExternalAtom implements Atom {
 	}
 
 	@Override
-	public ExternalLiteral toLiteral(boolean negated) {
-		return new ExternalLiteral(this, negated);
+	public ExternalLiteral toLiteral(boolean positive) {
+		return new ExternalLiteral(this, positive);
 	}
 
 	@Override
