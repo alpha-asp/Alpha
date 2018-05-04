@@ -77,8 +77,8 @@ public class ComparisonAtom implements Atom {
 	}
 
 	@Override
-	public ComparisonLiteral toLiteral(boolean negated) {
-		return new ComparisonLiteral(this, negated);
+	public ComparisonLiteral toLiteral(boolean positive) {
+		return new ComparisonLiteral(this, positive);
 	}
 
 	@Override

@@ -42,8 +42,8 @@ import java.util.Set;
  */
 public class BasicLiteral extends Literal {
 	
-	public BasicLiteral(BasicAtom atom, boolean negated) {
-		super(atom, negated);
+	public BasicLiteral(BasicAtom atom, boolean positive) {
+		super(atom, positive);
 	}
 	
 	@Override
@@ -56,7 +56,7 @@ public class BasicLiteral extends Literal {
 	 */
 	@Override
 	public BasicLiteral negate() {
-		return new BasicLiteral(getAtom(), !negated);
+		return new BasicLiteral(getAtom(), !positive);
 	}
 
 	/**
@@ -64,7 +64,7 @@ public class BasicLiteral extends Literal {
 	 */
 	@Override
 	public BasicLiteral substitute(Substitution substitution) {
-		return new BasicLiteral(getAtom().substitute(substitution), negated);
+		return new BasicLiteral(getAtom().substitute(substitution), positive);
 	}
 
 	/**
@@ -74,7 +74,7 @@ public class BasicLiteral extends Literal {
 	 */
 	@Override
 	public Set<VariableTerm> getBindingVariables() {
-		if (negated) {
+		if (!positive) {
 			// Negative literal has no binding variables.
 			return Collections.emptySet();
 		}
@@ -92,7 +92,7 @@ public class BasicLiteral extends Literal {
 	 */
 	@Override
 	public Set<VariableTerm> getNonBindingVariables() {
-		if (!negated) {
+		if (positive) {
 			// Positive literal has only binding variables.
 			return Collections.emptySet();
 		}

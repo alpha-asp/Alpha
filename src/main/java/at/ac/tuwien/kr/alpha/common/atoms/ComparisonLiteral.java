@@ -41,8 +41,8 @@ import java.util.*;
  */
 public class ComparisonLiteral extends FixedInterpretationLiteral {
 
-	public ComparisonLiteral(ComparisonAtom atom, boolean negated) {
-		super(atom, negated);
+	public ComparisonLiteral(ComparisonAtom atom, boolean positive) {
+		super(atom, positive);
 	}
 	
 	@Override
@@ -52,8 +52,8 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 	
 	public boolean isNormalizedEquality() {
 		ComparisonOperator operator = getAtom().operator;
-		return (!negated && operator == ComparisonOperator.EQ)
-				|| (negated && operator == ComparisonOperator.NE);
+		return (positive && operator == ComparisonOperator.EQ)
+				|| (!positive && operator == ComparisonOperator.NE);
 	}
 
 	private boolean isLeftAssigning() {
@@ -69,7 +69,7 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 	 */
 	@Override
 	public ComparisonLiteral negate() {
-		return new ComparisonLiteral(getAtom(), !negated);
+		return new ComparisonLiteral(getAtom(), !positive);
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 	 */
 	@Override
 	public ComparisonLiteral substitute(Substitution substitution) {
-		return new ComparisonLiteral(getAtom().substitute(substitution), negated);
+		return new ComparisonLiteral(getAtom().substitute(substitution), positive);
 	}
 
 	@Override

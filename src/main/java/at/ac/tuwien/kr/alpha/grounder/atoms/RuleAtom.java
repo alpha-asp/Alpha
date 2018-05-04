@@ -81,7 +81,7 @@ public class RuleAtom implements Atom {
 	}
 	
 	@Override
-	public Literal toLiteral(boolean negated) {
+	public Literal toLiteral(boolean positive) {
 		throw new UnsupportedOperationException("RuleAtom cannot be literalized");
 	}
 

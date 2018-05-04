@@ -43,12 +43,12 @@ public class HeuristicLiteral extends Literal {
 
 	@Override
 	public HeuristicLiteral negate() {
-		return new HeuristicLiteral(getAtom(), !negated);
+		return new HeuristicLiteral(getAtom(), !positive);
 	}
 
 	@Override
 	public HeuristicLiteral substitute(Substitution substitution) {
-		return new HeuristicLiteral(getAtom().substitute(substitution), negated);
+		return new HeuristicLiteral(getAtom().substitute(substitution), positive);
 	}
 
 	@Override
