@@ -71,4 +71,11 @@ public interface Grounder extends AtomTranslator {
 	 * @return the Atom object represented by the int.
 	 */
 	Atom getAtom(int atom);
+
+	/**
+	 * Translates an atom represented as Atom objec into an int.
+	 * @param atom the Atom object to translate.
+	 * @return the int representing the Atom object.
+	 */
+	int getAtom(Atom atom);
 }

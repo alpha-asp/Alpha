@@ -36,10 +36,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.grounder.*;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
@@ -152,85 +149,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				} else {
 					LOGGER.debug("Assignment is violated after all unassigned atoms have been assigned false.");
 					conflictsAfterClosing++;
-					if (!disableJustificationAfterClosing && !disableJustifications && grounder instanceof NaiveGrounder && assignment instanceof ArrayAssignment) {
-						LOGGER.debug("Justifying atoms in violated nogood.");
-						LinkedHashSet<Integer> toJustify = new LinkedHashSet<>();
-						// Find those literals in violatedNoGood that were just assigned false.
-						for (Integer literal : violatedNoGood) {
-							if (unassignedAtoms.contains(atomOf(literal))) {
-								toJustify.add(literal);
-							}
-						}
-						// Since the violatedNoGood may contain atoms other than BasicAtom, these have to be treated.
-						Map<Integer, NoGood> obtained = new LinkedHashMap<>();
-						Iterator<Integer> toJustifyIterator = toJustify.iterator();
-						ArrayList<Integer> ruleAtomReplacements = new ArrayList<>();
-						while (toJustifyIterator.hasNext()) {
-							Integer literal = toJustifyIterator.next();
-							Atom atom = grounder.getAtom(atomOf(literal));
-							if (atom instanceof BasicAtom) {
-								continue;
-							}
-							if (atom instanceof RuleAtom) {
-								// For RuleAtoms in toJustify the corresponding ground body contains BasicAtoms that have been assigned FALSE in the closing.
-								// First, translate RuleAtom back to NonGroundRule + Substitution.
-								String ruleId = (String) ((ConstantTerm)atom.getTerms().get(0)).getObject();
-								NonGroundRule nonGroundRule = ((NaiveGrounder) grounder).getNonGroundRule(Integer.parseInt(ruleId));
-								String substitution = (String) ((ConstantTerm)atom.getTerms().get(1)).getObject();
-								Substitution groundingSubstitution = Substitution.fromString(substitution);
-								Rule rule = nonGroundRule.getRule();
-								// Find ground literals in the body that have been assigned false and justify those.
-								for (Literal bodyLiteral : rule.getBody()) {
-									Atom groundAtom = bodyLiteral.getAtom().substitute(groundingSubstitution);
-									if (groundAtom instanceof ComparisonAtom || ((NaiveGrounder) grounder).isFact(groundAtom)) {
-										// Facts and ComparisonAtoms are always true, no justification needed.
-										continue;
-									}
-									int groundAtomId = ((NaiveGrounder) grounder).getAtomStore().getAtomId(groundAtom);
-									Assignment.Entry entry = assignment.get(groundAtomId);
-									// Check if atom was assigned to FALSE during the closing.
-									if (entry.getImpliedBy() == closingIndicator) {
-										ruleAtomReplacements.add(-groundAtomId);
-									}
-								}
-								toJustifyIterator.remove();
-							} else {
-								toJustifyIterator.remove();
-							}
-						}
-						toJustify.addAll(ruleAtomReplacements);
-						for (Integer literalToJustify : toJustify) {
-							LOGGER.debug("Searching for justification(s) of " + toJustify + " / " + grounder.atomToString(atomOf(literalToJustify)));
-							Set<Literal> reasonsForUnjustified = ((NaiveGrounder) grounder).analyzeUnjustified.analyze(atomOf(literalToJustify), assignment);
-							int[] reasons = new int[reasonsForUnjustified.size() + 1];
-							// TODO: all reasons of all toJustify probably should be in one NoGood (only one of the atoms toJustify must change its value, not each of them)!
-							reasons[0] = atomOf(literalToJustify);
-							int arrpos = 1;
-							for (Literal literal : reasonsForUnjustified) {
-								reasons[arrpos++] = (literal.isNegated() ? -1 : 1) * ((NaiveGrounder) grounder).getAtomStore().add(literal.getAtom());
-							}
-							NoGood noGood = new NoGood(reasons);
-							int noGoodID = grounder.register(noGood);
-							obtained.put(noGoodID, noGood);
-							LOGGER.debug("Learned NoGood is: " + grounder.noGoodToString(noGood));
-						}
-						// Backtrack to remove the violation.
-						if (!backtrack()) {
-							logStats();
-							return false;
-						}
-						// Add newly obtained noGoods.
-						if (!ingest(obtained)) {
-							logStats();
-							return false;
-						}
-					} else {
-						// Will not learn from violated NoGood, do simple backtrackSlow.
-						LOGGER.debug("NoGood was violated after all unassigned atoms were assigned to false; will not learn from it; skipping.");
-						if (!backtrack()) {
-							logStats();
-							return false;
-						}
+					if (!treatConflictAfterClosing(violatedNoGood)) {
+						return false;
 					}
 					afterAllAtomsAssigned = false;
 				}
@@ -260,32 +180,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				return true;
 			} else {
 				LOGGER.debug("Backtracking from wrong choices ({} MBTs).", assignment.getMBTCount());
-				mbtAtFixpoint++;
-				if (!disableJustifications && grounder instanceof NaiveGrounder && assignment instanceof ArrayAssignment) {
-					Integer toJustify = ((ArrayAssignment) assignment).getSomeMBTAssignedAtom(grounder);
-					LOGGER.debug("Searching for justification of " + toJustify + " / " + grounder.atomToString(atomOf(toJustify)));
-					LOGGER.debug("Assignment is (TRUE part only):" + translate(assignment.getTrueAssignments()));
-					Set<Literal> reasonsForUnjustified = ((NaiveGrounder) grounder).analyzeUnjustified.analyze(toJustify, assignment);
-					int[] reasons = new int[reasonsForUnjustified.size() + 1];
-					reasons[0] = toJustify;
-					int arrpos = 1;
-					for (Literal literal : reasonsForUnjustified) {
-						reasons[arrpos++] = (literal.isNegated() ? -1 : 1) * ((NaiveGrounder) grounder).getAtomStore().add(literal.getAtom());
-					}
-					NoGood noGood = new NoGood(reasons);
-					int noGoodID = grounder.register(noGood);
-					Map<Integer, NoGood> obtained = new LinkedHashMap<>();
-					obtained.put(noGoodID, noGood);
-					LOGGER.debug("Learned NoGood is: " + grounder.noGoodToString(noGood));
-					if (!ingest(obtained)) {
-						logStats();
-						return false;
-					}
-				} else {
-					if (!backtrack()) {
-						logStats();
-						return false;
-					}
+				if (!justifyMbtAndBacktrack()) {
+					return false;
 				}
 				afterAllAtomsAssigned = false;
 			}
@@ -332,6 +228,129 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			throw oops("Nothing to propagate after backtracking from conflict-causing choice");
 		}
 
+		return true;
+	}
+
+	private boolean justifyMbtAndBacktrack() {
+		mbtAtFixpoint++;
+		// Run justification if enabled and possible.
+		if (!disableJustifications && grounder instanceof ProgramAnalyzingGrounder) {
+			ProgramAnalyzingGrounder analyzingGrounder = (ProgramAnalyzingGrounder) grounder;
+			// Justify one MBT assigned atom.
+			Integer toJustify = ((ArrayAssignment) assignment).getSomeMBTAssignedAtom(grounder);
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("Searching for justification of " + toJustify + " / " + grounder.atomToString(atomOf(toJustify)));
+				LOGGER.debug("Assignment is (TRUE part only):" + translate(assignment.getTrueAssignments()));
+			}
+			Set<Literal> reasonsForUnjustified = analyzingGrounder.justifyAtom(toJustify, assignment);
+
+			// Turn the justification into a NoGood.
+			int[] reasons = new int[reasonsForUnjustified.size() + 1];
+			reasons[0] = toJustify;
+			int arrpos = 1;
+			for (Literal literal : reasonsForUnjustified) {
+				reasons[arrpos++] = (literal.isNegated() ? -1 : 1) * grounder.getAtom(literal.getAtom());
+			}
+			NoGood noGood = new NoGood(reasons);
+			int noGoodID = grounder.register(noGood);
+			Map<Integer, NoGood> obtained = new LinkedHashMap<>();
+			obtained.put(noGoodID, noGood);
+			LOGGER.debug("Learned NoGood is: " + grounder.noGoodToString(noGood));
+			// Add NoGood and trigger backjumping.
+			if (!ingest(obtained)) {
+				logStats();
+				return false;
+			}
+		} else {
+			if (!backtrack()) {
+				logStats();
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean treatConflictAfterClosing(NoGood violatedNoGood) {
+		if (!disableJustificationAfterClosing && !disableJustifications && grounder instanceof ProgramAnalyzingGrounder) {
+			ProgramAnalyzingGrounder analyzingGrounder = (ProgramAnalyzingGrounder) grounder;
+			LOGGER.debug("Justifying atoms in violated nogood.");
+			LinkedHashSet<Integer> toJustify = new LinkedHashSet<>();
+			// Find those literals in violatedNoGood that were just assigned false.
+			for (Integer literal : violatedNoGood) {
+				if (unassignedAtoms.contains(atomOf(literal))) {
+					toJustify.add(literal);
+				}
+			}
+			// Since the violatedNoGood may contain atoms other than BasicAtom, these have to be treated.
+			Map<Integer, NoGood> obtained = new LinkedHashMap<>();
+			Iterator<Integer> toJustifyIterator = toJustify.iterator();
+			ArrayList<Integer> ruleAtomReplacements = new ArrayList<>();
+			while (toJustifyIterator.hasNext()) {
+				Integer literal = toJustifyIterator.next();
+				Atom atom = grounder.getAtom(atomOf(literal));
+				if (atom instanceof BasicAtom) {
+					continue;
+				}
+				if (atom instanceof RuleAtom) {
+					// For RuleAtoms in toJustify the corresponding ground body contains BasicAtoms that have been assigned FALSE in the closing.
+					// First, translate RuleAtom back to NonGroundRule + Substitution.
+					String ruleId = (String) ((ConstantTerm)atom.getTerms().get(0)).getObject();
+					NonGroundRule nonGroundRule = analyzingGrounder.getNonGroundRule(Integer.parseInt(ruleId));
+					String substitution = (String) ((ConstantTerm)atom.getTerms().get(1)).getObject();
+					Substitution groundingSubstitution = Substitution.fromString(substitution);
+					Rule rule = nonGroundRule.getRule();
+					// Find ground literals in the body that have been assigned false and justify those.
+					for (Literal bodyLiteral : rule.getBody()) {
+						Atom groundAtom = bodyLiteral.getAtom().substitute(groundingSubstitution);
+						if (groundAtom instanceof ComparisonAtom || analyzingGrounder.isFact(groundAtom)) {
+							// Facts and ComparisonAtoms are always true, no justification needed.
+							continue;
+						}
+						int groundAtomId = grounder.getAtom(groundAtom);
+						Assignment.Entry entry = assignment.get(groundAtomId);
+						// Check if atom was assigned to FALSE during the closing.
+						if (entry.getImpliedBy() == closingIndicator) {
+							ruleAtomReplacements.add(-groundAtomId);
+						}
+					}
+					toJustifyIterator.remove();
+				} else {
+					toJustifyIterator.remove();
+				}
+			}
+			toJustify.addAll(ruleAtomReplacements);
+			for (Integer literalToJustify : toJustify) {
+				LOGGER.debug("Searching for justification(s) of " + toJustify + " / " + grounder.atomToString(atomOf(literalToJustify)));
+				Set<Literal> reasonsForUnjustified = analyzingGrounder.justifyAtom(atomOf(literalToJustify), assignment);
+				int[] reasons = new int[reasonsForUnjustified.size() + 1];
+				reasons[0] = atomOf(literalToJustify);
+				int arrpos = 1;
+				for (Literal literal : reasonsForUnjustified) {
+					reasons[arrpos++] = (literal.isNegated() ? -1 : 1) * grounder.getAtom(literal.getAtom());
+				}
+				NoGood noGood = new NoGood(reasons);
+				int noGoodID = grounder.register(noGood);
+				obtained.put(noGoodID, noGood);
+				LOGGER.debug("Learned NoGood is: " + grounder.noGoodToString(noGood));
+			}
+			// Backtrack to remove the violation.
+			if (!backtrack()) {
+				logStats();
+				return false;
+			}
+			// Add newly obtained noGoods.
+			if (!ingest(obtained)) {
+				logStats();
+				return false;
+			}
+		} else {
+			// Will not learn from violated NoGood, do simple backtrack.
+			LOGGER.debug("NoGood was violated after all unassigned atoms were assigned to false; will not learn from it; skipping.");
+			if (!backtrack()) {
+				logStats();
+				return false;
+			}
+		}
 		return true;
 	}
 

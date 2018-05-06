@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
 import static at.ac.tuwien.kr.alpha.Util.entry;
+import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
@@ -104,6 +105,16 @@ public class DummyGrounder implements Grounder {
 	@Override
 	public Atom getAtom(int atom) {
 		return new BasicAtom(Predicate.getInstance(atomIdToString.get(atom), 0));
+	}
+
+	@Override
+	public int getAtom(Atom atom) {
+		for (Map.Entry<Integer, String> atomIdString : atomIdToString.entrySet()) {
+			if (atomIdString.getValue().equals(atom.toString())) {
+				return atomIdString.getKey();
+			}
+		}
+		throw oops("Given Atom is not known: " + atom);
 	}
 
 	@Override

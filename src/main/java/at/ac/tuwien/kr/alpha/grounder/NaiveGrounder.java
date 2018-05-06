@@ -64,8 +64,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final NogoodRegistry registry = new NogoodRegistry();
 	final NoGoodGenerator noGoodGenerator;
 	private final ChoiceRecorder choiceRecorder;
-	public final ProgramAnalysis programAnalysis;
-	public final AnalyzeUnjustified analyzeUnjustified;
+	private final ProgramAnalysis programAnalysis;
+	private final AnalyzeUnjustified analyzeUnjustified;
 
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram = new LinkedHashMap<>();
 	private final Map<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
@@ -81,7 +81,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		this(program, p -> true, bridges);
 	}
 
-	public NaiveGrounder(Program program, java.util.function.Predicate<Predicate> filter, Bridge... bridges) {
+	NaiveGrounder(Program program, java.util.function.Predicate<Predicate> filter, Bridge... bridges) {
 		super(filter, bridges);
 
 		programAnalysis = new ProgramAnalysis(program);
@@ -515,6 +515,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return atomStore.get(atom);
 	}
 
+	@Override
+	public int getAtom(Atom atom) {
+		return atomStore.add(atom);
+	}
+
 	public void printCurrentlyKnownGroundRules() {
 		System.out.println("Printing known ground rules:");
 		for (Map.Entry<NonGroundRule, HashSet<Substitution>> ruleSubstitutionsEntry : knownGroundingSubstitutions.entrySet()) {
@@ -551,20 +556,23 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return  (isFirst ? "" : ", ") + groundLiteral.toString();
 	}
 
-	public AtomStore getAtomStore() {
-		return atomStore;
-	}
-
+	@Override
 	public NonGroundRule getNonGroundRule(Integer ruleId) {
 		return knownNonGroundRules.get(ruleId);
 	}
 
+	@Override
 	public boolean isFact(Atom atom) {
 		LinkedHashSet<Instance> instances = factsFromProgram.get(atom.getPredicate());
 		if (instances == null) {
 			return false;
 		}
 		return instances.contains(new Instance(atom.getTerms()));
+	}
+
+	@Override
+	public Set<Literal> justifyAtom(int atomToJustify, Assignment currentAssignment) {
+		return analyzeUnjustified.analyze(atomToJustify, currentAssignment);
 	}
 
 	private static class FirstBindingAtom {

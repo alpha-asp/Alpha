@@ -42,8 +42,7 @@ public class AnalyzeUnjustified {
 		if (!(atom instanceof BasicAtom)) {
 			throw oops("Starting atom must be a BasicAtom, but received: " + atom + " of type: " + atom.getClass());
 		}
-		// TODO: starting atom must be a BasicAtom, but due to circumstances this atom might be of different type.
-		// Calling code must make sure it is a BasicAtom and take precautions if not immediately.
+		// Calling code must make sure it is a BasicAtom and take precautions.
 		// Potential solutions:
 		// If atom instanceof RuleAtom and atom is MBT, then the corresponding rule body has a BasicAtom that is MBT.
 		// If atom instanceof ChoiceAtom and atom is MBT, then the corresponding rule body has a BasicAtom that is MBT.
