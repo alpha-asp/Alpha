@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Substitutable;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
@@ -91,6 +92,13 @@ public interface Atom extends Comparable<Atom>, Substitutable<Atom> {
 	 * @return
 	 */
 	Literal toLiteral(boolean positive);
+	
+	/**
+	 * Converts this atom to a function term (which is needed if the atom is to be nested in another term)
+	 */
+	default FunctionTerm toFunctionTerm() {
+		throw new UnsupportedOperationException(this + " cannot be converted to a function term.");
+	}
 
 	@Override
 	default int compareTo(Atom o) {

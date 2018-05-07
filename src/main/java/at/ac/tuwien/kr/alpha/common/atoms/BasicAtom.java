@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
@@ -99,6 +100,11 @@ public class BasicAtom implements Atom {
 	@Override
 	public BasicLiteral toLiteral(boolean positive) {
 		return new BasicLiteral(this, positive);
+	}
+	
+	@Override
+	public FunctionTerm toFunctionTerm() {
+		return FunctionTerm.getInstance(predicate.getName(), terms);
 	}
 
 	@Override

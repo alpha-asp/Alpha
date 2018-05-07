@@ -30,8 +30,10 @@ package at.ac.tuwien.kr.alpha.common.atoms;
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
+import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
@@ -43,9 +45,14 @@ public class HeuristicAtom implements Atom {
 	public static final String PREDICATE_HEURISTIC = ASPCore2Lexer.VOCABULARY.getLiteralName(ASPCore2Lexer.PREDICATE_HEURISTIC).replace("'", "");
 
 	private final List<Term> terms;
-	private final Predicate predicate = Predicate.getInstance(PREDICATE_HEURISTIC, 2, true);
+	private final Predicate predicate;
 	private final boolean ground;
 
+	/**
+	 * Constructs a heuristic atom that has been parsed from the input program.
+	 * @deprecated because heuristic atoms in the input program will be dropped in favor of {@link HeuristicDirective}s.
+	 */
+	@Deprecated
 	public HeuristicAtom(List<Term> terms, ASPCore2Parser.Naf_heuristicContext ctx) {
 		if (terms.size() < 1 || terms.size() > 2) {
 			throw new RuntimeException(getErrorMsg(ctx) +
@@ -59,7 +66,21 @@ public class HeuristicAtom implements Atom {
 			local.add(ConstantTerm.getInstance(1));
 		}
 		this.terms = Collections.unmodifiableList(local);
+		this.predicate = Predicate.getInstance(PREDICATE_HEURISTIC, 2, true);
 		this.ground = local.stream().allMatch(Term::isGround);
+	}
+	
+	/**
+	 * Constructs a heuristic atom using information from a {@link HeuristicDirective}.
+	 */
+	public HeuristicAtom(Atom head, Term weight, Term level, Term sign) {
+		terms = new ArrayList<>(4);
+		terms.add(weight);
+		terms.add(level);
+		terms.add(sign);
+		terms.add(head.toFunctionTerm());
+		this.predicate = Predicate.getInstance(PREDICATE_HEURISTIC, 4, true);
+		this.ground = terms.stream().allMatch(Term::isGround);
 	}
 
 	private String getErrorMsg(ASPCore2Parser.Naf_heuristicContext ctx) {
@@ -77,6 +98,22 @@ public class HeuristicAtom implements Atom {
 
 	public Term getLevel() {
 		return terms.get(1);
+	}
+	
+	public Term getSign() {
+		if (terms.size() > 2) {
+			return terms.get(2);
+		} else {
+			return null;
+		}
+	}
+	
+	public FunctionTerm getHead() {
+		if (terms.size() > 3) {
+			return (FunctionTerm) terms.get(3);
+		} else {
+			return null;
+		}
 	}
 
 	@Override
@@ -134,5 +171,9 @@ public class HeuristicAtom implements Atom {
 			sb.append(")");
 		}
 		return sb.toString();
+	}
+
+	public static HeuristicAtom fromHeuristicDirective(HeuristicDirective heuristicDirective) {
+		return new HeuristicAtom(heuristicDirective.getHead(), heuristicDirective.getWeight(), heuristicDirective.getLevel(), heuristicDirective.getSign());
 	}
 }

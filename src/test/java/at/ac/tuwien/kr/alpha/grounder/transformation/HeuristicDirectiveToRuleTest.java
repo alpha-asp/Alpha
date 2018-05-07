@@ -1,19 +1,17 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2018 Siemens AG
  * All rights reserved.
- *
- * Additional changes made by Siemens.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *
+ * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,50 +23,38 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.common;
+package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
-
-import static at.ac.tuwien.kr.alpha.Util.join;
+import static org.junit.Assert.assertEquals;
 
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Tests {@link HeuristicDirectiveToRule}.
  */
-public class DisjunctiveHead extends Head {
-	public final List<Atom> disjunctiveAtoms;
-
-	public DisjunctiveHead(List<Atom> disjunctiveAtoms) {
-		this.disjunctiveAtoms = disjunctiveAtoms;
-		if (disjunctiveAtoms != null && disjunctiveAtoms.size() > 1) {
-			throw new UnsupportedOperationException("Disjunction in rule heads is not yet supported");
-		}
+public class HeuristicDirectiveToRuleTest {
+	private final ProgramParser parser = new ProgramParser();
+	
+	@Test
+	public void testPositiveDirectiveWithBodyWeightAndLevel() {
+		Program program = parser.parse("a(1)."
+				+ "{ b(N) } :- a(N)."
+				+ "#heuristic b(N) : a(N). [N@2]");
+		
+		new HeuristicDirectiveToRule().transform(program);
+		assertEquals("_h(N, 2, true, b(N)) :- a(N).", program.getRules().get(program.getRules().size() - 1).toString());
 	}
 	
-	public DisjunctiveHead(Atom singletonHead) {
-		this(Arrays.asList(singletonHead));
+	@Test
+	public void testNegativeDirectiveWithBodyWeightAndLevel() {
+		Program program = parser.parse("a(1)."
+				+ "{ b(N) } :- a(N)."
+				+ "#heuristic -b(N) : a(N). [N@2]");
+		
+		new HeuristicDirectiveToRule().transform(program);
+		assertEquals("_h(N, 2, false, b(N)) :- a(N).", program.getRules().get(program.getRules().size() - 1).toString());
 	}
 
-	public boolean isNormal() {
-		return disjunctiveAtoms != null && disjunctiveAtoms.size() <= 1;
-	}
-
-	@Override
-	public String toString() {
-		if (isNormal()) {
-			return disjunctiveAtoms.get(0).toString();
-		}
-		return join("", disjunctiveAtoms, " | ", "");
-	}
-
-	public boolean isGround() {
-		for (Atom atom : disjunctiveAtoms) {
-			if (!atom.isGround()) {
-				return false;
-			}
-		}
-		return true;
-	}
 }
