@@ -28,10 +28,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -40,6 +37,7 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.domspec.DomainSpecificHeuristicsRecorder;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
+import at.ac.tuwien.kr.alpha.grounder.transformation.HeuristicDirectiveToRule;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
@@ -117,8 +115,9 @@ public class NaiveGrounder extends BridgedGrounder {
 			NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
 
 			// Record defining rules for each predicate.
-			if (nonGroundRule.getHeadAtom() != null) {
-				Predicate headPredicate = nonGroundRule.getHeadAtom().getPredicate();
+			Atom headAtom = nonGroundRule.getHeadAtom();
+			if (headAtom != null && !(headAtom instanceof HeuristicAtom)) {
+				Predicate headPredicate = headAtom.getPredicate();
 				ruleHeadsToDefiningRules.putIfAbsent(headPredicate, new HashSet<>());
 				ruleHeadsToDefiningRules.get(headPredicate).add(nonGroundRule);
 			}
@@ -181,6 +180,8 @@ public class NaiveGrounder extends BridgedGrounder {
 	private void applyProgramTransformations(Program program) {
 		// Transform choice rules.
 		new ChoiceHeadToNormal().transform(program);
+		// Transform heuristic directives.
+		new HeuristicDirectiveToRule().transform(program);
 		// Transform intervals.
 		new IntervalTermToIntervalAtom().transform(program);
 		// Remove variable equalities.
@@ -499,7 +500,7 @@ public class NaiveGrounder extends BridgedGrounder {
 
 	@Override
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
-		return choiceRecorder.getAndReset();
+		return choiceRecorder.getAndResetChoices();
 	}
 	
 	@Override

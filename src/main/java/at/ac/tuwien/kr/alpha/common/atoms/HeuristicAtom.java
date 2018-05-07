@@ -41,8 +41,12 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
 public class HeuristicAtom implements Atom {
 	public static final String PREDICATE_HEURISTIC = ASPCore2Lexer.VOCABULARY.getLiteralName(ASPCore2Lexer.PREDICATE_HEURISTIC).replace("'", "");
+	public static final Predicate ON = Predicate.getInstance("HeuOn", 4, true);
+	public static final Predicate OFF = Predicate.getInstance("HeuOff", 4, true);
 
 	private final List<Term> terms;
 	private final Predicate predicate;
@@ -54,7 +58,7 @@ public class HeuristicAtom implements Atom {
 	 */
 	@Deprecated
 	public HeuristicAtom(List<Term> terms, ASPCore2Parser.Naf_heuristicContext ctx) {
-		if (terms.size() < 1 || terms.size() > 2) {
+		if (ctx != null && (terms.size() < 1 || terms.size() > 2)) {
 			throw new RuntimeException(getErrorMsg(ctx) +
 					PREDICATE_HEURISTIC + "(Weight) or " + PREDICATE_HEURISTIC + "(Weight,Level) was " +
 					"expected, but " + terms.size() + " terms found!");
@@ -90,6 +94,22 @@ public class HeuristicAtom implements Atom {
 
 	public HeuristicAtom(List<Term> terms) {
 		this(terms, null);
+	}
+
+	/**
+	 * Constructs a HeuristicOn / HeuristicOff atom.
+	 */
+	public HeuristicAtom(Predicate predicate, HeuristicAtom groundHeuristicAtom, int headId) {
+		if (!groundHeuristicAtom.isGround()) {
+			throw oops("Should be ground but isn't: " + groundHeuristicAtom);
+		}
+		terms = new ArrayList<>(4);
+		terms.add(groundHeuristicAtom.getWeight());
+		terms.add(groundHeuristicAtom.getLevel());
+		terms.add(groundHeuristicAtom.getSign());
+		terms.add(ConstantTerm.getInstance(headId));
+		this.predicate = predicate;
+		this.ground = true;
 	}
 
 	public Term getWeight() {
@@ -175,5 +195,13 @@ public class HeuristicAtom implements Atom {
 
 	public static HeuristicAtom fromHeuristicDirective(HeuristicDirective heuristicDirective) {
 		return new HeuristicAtom(heuristicDirective.getHead(), heuristicDirective.getWeight(), heuristicDirective.getLevel(), heuristicDirective.getSign());
+	}
+
+	public static Atom on(HeuristicAtom heuristicAtom, int headId) {
+		return new HeuristicAtom(ON, heuristicAtom, headId);
+	}
+
+	public static Atom off(HeuristicAtom heuristicAtom, int headId) {
+		return new HeuristicAtom(OFF, heuristicAtom, headId);
 	}
 }

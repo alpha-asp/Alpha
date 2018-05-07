@@ -29,9 +29,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -85,44 +83,53 @@ public class NoGoodGenerator {
 			return new ImmutablePair<>(null, singletonList(NoGood.fromConstraint(pos, neg)));
 		}
 
-		// Prepare atom representing the rule body.
-		final RuleAtom bodyAtom = new RuleAtom(nonGroundRule, substitution);
-
-		// Check uniqueness of ground rule by testing whether the
-		// body representing atom already has an id.
-		if (store.contains(bodyAtom)) {
-			// The current ground instance already exists,
-			// therefore all nogoods have already been created.
-			return new ImmutablePair<>(null, emptyList());
-		}
-
-		final int bodyId = store.add(bodyAtom);
-		final int headId = store.add(nonGroundRule.getHeadAtom().substitute(substitution));
-
 		final List<NoGood> result = new ArrayList<>();
 
-		// Create a nogood for the head.
-		result.add(NoGood.headFirst(-headId, bodyId));
-
-		final NoGood ruleBody = NoGood.fromBody(pos, neg, bodyId);
-		result.add(ruleBody);
-
-		// Nogoods such that the atom representing the body is true iff the body is true.
-		for (int j = 1; j < ruleBody.size(); j++) {
-			result.add(new NoGood(bodyId, -ruleBody.getLiteral(j)));
-		}
-
-		// If the rule head is unique, add support.
-		if (uniqueGroundRulePerGroundHead.contains(nonGroundRule)) {
-			result.add(NoGood.support(headId, bodyId));
-		}
-
-		// If the body of the rule contains negation, add choices.
-		if (!neg.isEmpty()) {
-			result.addAll(choiceRecorder.generate(pos, neg, bodyId));
+		Integer bodyId = null;
+		Atom groundHeadAtom = nonGroundRule.getHeadAtom().substitute(substitution);
+		if (groundHeadAtom instanceof HeuristicAtom) {
+			BasicAtom groundHeuristicHead = ((HeuristicAtom)groundHeadAtom).getHead().toAtom();
+			final int heuristicHeadId = store.add(groundHeuristicHead);
+			result.addAll(choiceRecorder.generateHeuristicNoGoods(pos, neg, (HeuristicAtom)groundHeadAtom, heuristicHeadId));
+		} else {
+			// Prepare atom representing the rule body.
+			final RuleAtom bodyAtom = new RuleAtom(nonGroundRule, substitution);
+	
+			// Check uniqueness of ground rule by testing whether the
+			// body representing atom already has an id.
+			if (store.contains(bodyAtom)) {
+				// The current ground instance already exists,
+				// therefore all nogoods have already been created.
+				return new ImmutablePair<>(null, emptyList());
+			}
+	
+			bodyId = store.add(bodyAtom);
+			final int headId = store.add(groundHeadAtom);
+	
+			// Create a nogood for the head.
+			result.add(NoGood.headFirst(-headId, bodyId));
+	
+			final NoGood ruleBody = NoGood.fromBody(pos, neg, bodyId);
+			result.add(ruleBody);
+	
+			// Nogoods such that the atom representing the body is true iff the body is true.
+			for (int j = 1; j < ruleBody.size(); j++) {
+				result.add(new NoGood(bodyId, -ruleBody.getLiteral(j)));
+			}
+	
+			// If the rule head is unique, add support.
+			if (uniqueGroundRulePerGroundHead.contains(nonGroundRule)) {
+				result.add(NoGood.support(headId, bodyId));
+			}
+	
+			// If the body of the rule contains negation, add choices.
+			if (!neg.isEmpty()) {
+				result.addAll(choiceRecorder.generateChoiceNoGoods(pos, neg, bodyId));
+			}
 		}
 
 		return new ImmutablePair<>(bodyId, result);
+		// TODO: when heuristic annotations are discarded, we do not need to return bodyId any longer
 	}
 
 	List<Integer> collectNeg(final NonGroundRule nonGroundRule, final Substitution substitution) {
