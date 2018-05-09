@@ -1,20 +1,21 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+
+import static at.ac.tuwien.kr.alpha.Util.join;
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Copyright (c) 2017, the Alpha Team.
  */
-public class AggregateAtom implements BodyElement {
+public class AggregateAtom implements Atom {
 
-	private final boolean negated;
 	private final ComparisonOperator lowerBoundOperator;
 	private final Term lowerBoundTerm;
 	private final ComparisonOperator upperBoundOperator;
@@ -22,8 +23,7 @@ public class AggregateAtom implements BodyElement {
 	private final AGGREGATEFUNCTION aggregatefunction;
 	private final List<AggregateElement> aggregateElements;
 
-	public AggregateAtom(boolean negated, ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, ComparisonOperator upperBoundOperator, Term upperBoundTerm, AGGREGATEFUNCTION aggregatefunction, List<AggregateElement> aggregateElements) {
-		this.negated = negated;
+	public AggregateAtom(ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, ComparisonOperator upperBoundOperator, Term upperBoundTerm, AGGREGATEFUNCTION aggregatefunction, List<AggregateElement> aggregateElements) {
 		this.lowerBoundOperator = lowerBoundOperator;
 		this.lowerBoundTerm = lowerBoundTerm;
 		this.upperBoundOperator = upperBoundOperator;
@@ -57,39 +57,21 @@ public class AggregateAtom implements BodyElement {
 		return true;
 	}
 
-	private VariableTerm boundBindingVariable(ComparisonOperator op, Term bound, boolean isNegated) {
-		boolean isNormalizedEquality = op == ComparisonOperator.EQ && !isNegated || op == ComparisonOperator.NE && isNegated;
-		if (isNormalizedEquality &&  bound instanceof VariableTerm) {
-			return (VariableTerm) bound;
-		}
-		return null;
+
+	@Override
+	public AggregateLiteral toLiteral(boolean positive) {
+		return new AggregateLiteral(this, positive);
 	}
 
 	@Override
-	public List<VariableTerm> getBindingVariables() {
-		List<VariableTerm> bindingVariables = new LinkedList<>();
-		if (boundBindingVariable(lowerBoundOperator, lowerBoundTerm, negated) != null) {
-			bindingVariables.add((VariableTerm) lowerBoundTerm);
-		}
-		if (boundBindingVariable(upperBoundOperator, upperBoundTerm, negated) != null) {
-			bindingVariables.add((VariableTerm) upperBoundTerm);
-		}
-		return bindingVariables;
+	public List<Term> getTerms() {
+		throw oops("Aggregate atom cannot report terms.");
 	}
 
 	@Override
-	public List<VariableTerm> getNonBindingVariables() {
-		// TODO: every local variable that also occurs globally in the rule is a nonBindingVariable.
-		// TODO: the element conditions must be locally safe
-		// TODO: need a notion of variable global in a rule.
-		// TODO: collect all occurring variables but only report the global ones
-		List<VariableTerm> nonBindingVariables = new LinkedList<>();
-		for (AggregateElement aggregateElement : aggregateElements) {
-			nonBindingVariables = null; // TODO: remove.
-		}
-		return nonBindingVariables;
+	public Predicate getPredicate() {
+		throw oops("Aggregate atom cannot report predicate.");
 	}
-
 
 	/**
 	 * Returns all variables occurring inside the aggregate, between { ... }.
@@ -127,9 +109,6 @@ public class AggregateAtom implements BodyElement {
 
 		AggregateAtom that = (AggregateAtom) o;
 
-		if (negated != that.negated) {
-			return false;
-		}
 		if (lowerBoundOperator != that.lowerBoundOperator) {
 			return false;
 		}
@@ -149,19 +128,21 @@ public class AggregateAtom implements BodyElement {
 	}
 
 	@Override
+	public String toString() {
+		String lowerBound = lowerBoundTerm == null ? "" : (lowerBoundTerm.toString() + lowerBoundOperator);
+		String upperBound = upperBoundTerm == null ? "" : (upperBoundOperator.toString() + upperBoundTerm);
+		return lowerBound + "#" + aggregatefunction + "{ " + join("", aggregateElements, "; ", "") + " }" + upperBound;
+	}
+
+	@Override
 	public int hashCode() {
-		int result = negated ? 1 : 0;
-		result = 31 * result + (lowerBoundOperator != null ? lowerBoundOperator.hashCode() : 0);
+		int result = lowerBoundOperator != null ? lowerBoundOperator.hashCode() : 0;
 		result = 31 * result + (lowerBoundTerm != null ? lowerBoundTerm.hashCode() : 0);
 		result = 31 * result + (upperBoundOperator != null ? upperBoundOperator.hashCode() : 0);
 		result = 31 * result + (upperBoundTerm != null ? upperBoundTerm.hashCode() : 0);
 		result = 31 * result + (aggregateElements != null ? aggregateElements.hashCode() : 0);
 		result = 31 * result + (aggregatefunction != null ? aggregatefunction.hashCode() : 0);
 		return result;
-	}
-
-	public boolean isNegated() {
-		return negated;
 	}
 
 	public ComparisonOperator getLowerBoundOperator() {
@@ -234,6 +215,11 @@ public class AggregateAtom implements BodyElement {
 			int result = elementTerms != null ? elementTerms.hashCode() : 0;
 			result = 31 * result + (elementLiterals != null ? elementLiterals.hashCode() : 0);
 			return result;
+		}
+
+		@Override
+		public String toString() {
+			return join("", elementTerms, " : ") + join("", elementLiterals, "");
 		}
 	}
 }

@@ -29,36 +29,18 @@ package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public interface Atom extends Comparable<Atom>, BodyElement {
+public interface Atom extends Comparable<Atom> {
 	Predicate getPredicate();
 	List<Term> getTerms();
 
 	boolean isGround();
-
-	/**
-	 * Set of all variables occurring in the Atom that are potentially binding
-	 * @return
-	 */
-	default Set<VariableTerm> getBindingVariables() {
-		return toLiteral().getBindingVariables();
-	}
-
-	/**
-	 * Set of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
-	 * @return
-	 */
-	default Set<VariableTerm> getNonBindingVariables() {
-		return toLiteral().getNonBindingVariables();
-	}
 
 	/**
 	 * This method applies a substitution to a potentially non-substitute atom.

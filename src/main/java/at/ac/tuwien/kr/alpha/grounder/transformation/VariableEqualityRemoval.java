@@ -31,8 +31,6 @@ import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BodyElement;
-import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -40,8 +38,6 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.*;
-
-import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Removes variable equalities from rules by replacing one variable with the other.
@@ -59,12 +55,12 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 		// Collect all equal variables.
 		HashMap<VariableTerm, HashSet<VariableTerm>> variableToEqualVariables = new HashMap<>();
 		//HashSet<Variable> equalVariables = new LinkedHashSet<>();
-		HashSet<BodyElement> equalitiesToRemove = new HashSet<>();
-		for (BodyElement bodyElement : rule.getBody()) {
+		HashSet<Literal> equalitiesToRemove = new HashSet<>();
+		for (Literal bodyElement : rule.getBody()) {
 			if (!(bodyElement instanceof ComparisonLiteral)) {
 				continue;
 			}
-			ComparisonLiteral comparisonLiteral = (ComparisonAtom) bodyElement;
+			ComparisonLiteral comparisonLiteral = (ComparisonLiteral) bodyElement;
 			if (!comparisonLiteral.isNormalizedEquality()) {
 				continue;
 			}
@@ -112,13 +108,9 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 			replacementSubstitution.put(variableToReplace, replacementVariable);
 		}
 		// Replace/Substitute in each literal every term where one of the common variables occurs.
-		Iterator<BodyElement> bodyIterator = rule.getBody().iterator();
+		Iterator<Literal> bodyIterator = rule.getBody().iterator();
 		while (bodyIterator.hasNext()) {
-			BodyElement bodyElement = bodyIterator.next();
-			if (!(bodyElement instanceof Literal)) {
-				throw oops("BodyElement is not a Literal.");
-			}
-			Literal literal = (Literal) bodyElement;
+			Literal literal = bodyIterator.next();
 			if (equalitiesToRemove.contains(literal)) {
 				bodyIterator.remove();
 			}

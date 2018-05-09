@@ -3,7 +3,8 @@ package at.ac.tuwien.kr.alpha.grounder.transformation;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.BodyElement;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,11 +39,11 @@ public class PredicateInternalizer {
 			newHead = new DisjunctiveHead(Collections.singletonList(
 				makePredicateInternal(((DisjunctiveHead)rule.getHead()).disjunctiveAtoms.get(0))));
 		}
-		List<BodyElement> newBody = new ArrayList<>();
-		for (BodyElement bodyElement : rule.getBody()) {
+		List<Literal> newBody = new ArrayList<>();
+		for (Literal bodyElement : rule.getBody()) {
 			// Only rewrite BasicAtoms.
-			if (bodyElement instanceof BasicAtom) {
-				newBody.add(makePredicateInternal((Atom) bodyElement));
+			if (bodyElement instanceof BasicLiteral) {
+				newBody.add(makePredicateInternal(bodyElement.getAtom()).toLiteral());
 			} else {
 				// Keep other body element as is.
 				newBody.add(bodyElement);

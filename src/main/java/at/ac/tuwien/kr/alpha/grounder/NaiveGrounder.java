@@ -157,10 +157,10 @@ public class NaiveGrounder extends BridgedGrounder {
 			}
 
 			// Collect head and body variables.
-			HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.getBindingVariables());
+			HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.toLiteral().getBindingVariables());
 			HashSet<VariableTerm> occurringVariablesBody = new HashSet<>();
 			for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
-				occurringVariablesBody.addAll(atom.getBindingVariables());
+				occurringVariablesBody.addAll(atom.toLiteral().getBindingVariables());
 			}
 			occurringVariablesBody.removeAll(occurringVariablesHead);
 

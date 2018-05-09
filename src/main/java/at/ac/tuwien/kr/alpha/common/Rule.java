@@ -27,7 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.common.atoms.BodyElement;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -42,12 +42,12 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  */
 public class Rule {
 	private final Head head;
-	private final List<BodyElement> body;
+	private final List<Literal> body;
 
-	public Rule(Head head, List<BodyElement> body) {
+	public Rule(Head head, List<Literal> body) {
 		this.head = head;
 		// Remove duplicate body literals.
-		LinkedHashSet<BodyElement> bodyLiterals = new LinkedHashSet<>(body);
+		LinkedHashSet<Literal> bodyLiterals = new LinkedHashSet<>(body);
 		this.body = new ArrayList<>(bodyLiterals);
 
 		if (!isSafe()) {
@@ -61,7 +61,7 @@ public class Rule {
 		return head;
 	}
 
-	public List<BodyElement> getBody() {
+	public List<Literal> getBody() {
 		return body;
 	}
 
@@ -121,7 +121,7 @@ public class Rule {
 		if (!isConstraint() && !((DisjunctiveHead)head).isGround()) {
 			return false;
 		}
-		for (BodyElement bodyElement : body) {
+		for (Literal bodyElement : body) {
 			if (!bodyElement.isGround()) {
 				return false;
 			}

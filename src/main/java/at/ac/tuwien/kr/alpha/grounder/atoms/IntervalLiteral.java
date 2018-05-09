@@ -105,7 +105,7 @@ public class IntervalLiteral extends FixedInterpretationLiteral {
 	@Override
 	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
 		// Substitute variables occurring in the interval itself.
-		IntervalLiteral groundInterval = (IntervalLiteral) substitute(partialSubstitution);
+		IntervalLiteral groundInterval = substitute(partialSubstitution);
 		// Generate all substitutions for the interval representing variable.
 		return groundInterval.getIntervalSubstitutions(partialSubstitution);
 	}

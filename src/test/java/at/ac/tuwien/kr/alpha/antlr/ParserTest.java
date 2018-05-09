@@ -33,8 +33,8 @@ import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.BodyElement;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.*;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
@@ -189,15 +189,15 @@ public class ParserTest {
 	@Test
 	public void cardinalityAggregate() throws IOException {
 		Program parsedProgram = parser.parse("num(K) :-  K <= #count {X,Y,Z : p(X,Y,Z) }, dom(K).");
-		BodyElement bodyElement = parsedProgram.getRules().get(0).getBody().get(0);
-		assertTrue(bodyElement instanceof AggregateAtom);
-		AggregateAtom parsedAggregate = (AggregateAtom) bodyElement;
+		Literal bodyElement = parsedProgram.getRules().get(0).getBody().get(0);
+		assertTrue(bodyElement instanceof AggregateLiteral);
+		AggregateLiteral parsedAggregate = (AggregateLiteral) bodyElement;
 		VariableTerm x = VariableTerm.getInstance("X");
 		VariableTerm y = VariableTerm.getInstance("Y");
 		VariableTerm z = VariableTerm.getInstance("Z");
 		List<Term> basicTerms = Arrays.asList(x, y, z);
-		AggregateAtom.AggregateElement aggregateElement = new AggregateAtom.AggregateElement(basicTerms, Collections.singletonList(new BasicAtom(Predicate.getInstance("p", 3), x, y, z)));
-		AggregateAtom expectedAggregate = new AggregateAtom(false, ComparisonOperator.LE, VariableTerm.getInstance("K"), null, null, AggregateAtom.AGGREGATEFUNCTION.COUNT, Collections.singletonList(aggregateElement));
-		assertEquals(expectedAggregate, parsedAggregate);
+		AggregateAtom.AggregateElement aggregateElement = new AggregateAtom.AggregateElement(basicTerms, Collections.singletonList(new BasicAtom(Predicate.getInstance("p", 3), x, y, z).toLiteral()));
+		AggregateAtom expectedAggregate = new AggregateAtom(ComparisonOperator.LE, VariableTerm.getInstance("K"), null, null, AggregateAtom.AGGREGATEFUNCTION.COUNT, Collections.singletonList(aggregateElement));
+		assertEquals(expectedAggregate, parsedAggregate.getAtom());
 	}
 }

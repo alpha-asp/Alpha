@@ -72,7 +72,7 @@ public class SumNormalization implements ProgramTransformation {
 		// The enumeration rule is: "input_number_with_first(A, I, F) :- input_with_first(A, X, F), _index(A, X, I)."
 		Rule enumerationRule = makePredicatesInternal(parse("input_number_with_first(A, I, F) :- input_with_first(A, X, F).")).getRules().get(0);
 		EnumerationAtom enumerationAtom = new EnumerationAtom((BasicAtom) parse("index(A, X, I).").getFacts().get(0));
-		enumerationRule.getBody().add(enumerationAtom);
+		enumerationRule.getBody().add(enumerationAtom.toLiteral());
 		summationEncoding.getRules().add(enumerationRule);
 
 		// Add sum encoding to program.
@@ -105,16 +105,17 @@ public class SumNormalization implements ProgramTransformation {
 		int aggregatesInRule = 0;	// Only needed for limited rewriting.
 		ArrayList<Rule> additionalRules = new ArrayList<>();
 
-		for (Iterator<BodyElement> iterator = rule.getBody().iterator(); iterator.hasNext();) {
-			BodyElement bodyElement = iterator.next();
+		for (Iterator<Literal> iterator = rule.getBody().iterator(); iterator.hasNext();) {
+			Literal bodyElement = iterator.next();
 			// Skip non-aggregates.
-			if (!(bodyElement instanceof AggregateAtom)) {
+			if (!(bodyElement instanceof AggregateLiteral)) {
 				continue;
 			}
-			AggregateAtom aggregateAtom = (AggregateAtom) bodyElement;
+			AggregateLiteral aggregateLiteral = (AggregateLiteral) bodyElement;
+			AggregateAtom aggregateAtom = aggregateLiteral.getAtom();
 
 			// FIXME: limited rewriting of lower-bounded cardinality/sum aggregates only.
-			if (aggregateAtom.isNegated() || aggregateAtom.getUpperBoundOperator() != null
+			if (aggregateLiteral.isNegated() || aggregateAtom.getUpperBoundOperator() != null
 				|| (aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.COUNT
 					&& aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.SUM)
 				|| aggregatesInRule++ > 0) {
@@ -136,7 +137,7 @@ public class SumNormalization implements ProgramTransformation {
 			aggregateSubstitution.put(VariableTerm.getInstance("LOWER_BOUND"), aggregateAtom.getLowerBoundTerm());
 
 			// Create new output atom for addition to rule body instead of the aggregate.
-			aggregateOutputAtoms.add(aggregateOutputAtom.substitute(aggregateSubstitution));
+			aggregateOutputAtoms.add(aggregateOutputAtom.substitute(aggregateSubstitution).toLiteral());
 
 			// Create input to sorting network from aggregate elements.
 			for (AggregateAtom.AggregateElement aggregateElement : aggregateAtom.getAggregateElements()) {
@@ -149,7 +150,7 @@ public class SumNormalization implements ProgramTransformation {
 
 				// Create new rule for input.
 				BasicAtom inputHeadAtom = aggregateInputAtom.substitute(elementSubstitution);
-				List<BodyElement> elementLiterals = new ArrayList<>(aggregateElement.getElementLiterals());
+				List<Literal> elementLiterals = new ArrayList<>(aggregateElement.getElementLiterals());
 				Rule inputRule = new Rule(new DisjunctiveHead(Collections.singletonList(inputHeadAtom)), elementLiterals);
 				additionalRules.add(inputRule);
 			}
@@ -157,7 +158,7 @@ public class SumNormalization implements ProgramTransformation {
 			// Create lower bound for the aggregate.
 			BasicAtom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateSubstitution);
 			// FIXME: we need a deep copy of the rule body here (as otherwise, e.g., interval atoms are shared and their later rewriting fails).
-			List<BodyElement> lowerBoundBody = rule.getBody();	// FIXME: this is only correct if no other aggregate occurs in the rule.
+			List<Literal> lowerBoundBody = rule.getBody();	// FIXME: this is only correct if no other aggregate occurs in the rule.
 			additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(lowerBoundHeadAtom)), lowerBoundBody));
 
 		}

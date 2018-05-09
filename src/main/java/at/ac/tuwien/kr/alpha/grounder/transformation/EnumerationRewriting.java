@@ -6,7 +6,7 @@ import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.BodyElement;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
@@ -53,19 +53,19 @@ public class EnumerationRewriting implements ProgramTransformation  {
 			if (rule.getHead() != null && ((DisjunctiveHead)rule.getHead()).disjunctiveAtoms.get(0).getPredicate().equals(enumPredicate)) {
 				throw oops("Atom declared as enumeration atom by directive occurs in head of the rule: " + rule);
 			}
-			Iterator<BodyElement> rit = rule.getBody().iterator();
+			Iterator<Literal> rit = rule.getBody().iterator();
 			LinkedList<Literal> rewrittenLiterals = new LinkedList<>();
 			while (rit.hasNext()) {
-				BodyElement literal = rit.next();
-				if (!(literal instanceof BasicAtom)) {
+				Literal literal = rit.next();
+				if (!(literal instanceof BasicLiteral)) {
 					continue;
 				}
-				BasicAtom atom = (BasicAtom) literal;
-				if (!atom.getPredicate().equals(enumPredicate)) {
+				BasicLiteral basicLiteral = (BasicLiteral) literal;
+				if (!basicLiteral.getPredicate().equals(enumPredicate)) {
 					continue;
 				}
 				rit.remove();
-				rewrittenLiterals.add(new EnumerationAtom(atom));
+				rewrittenLiterals.add(new EnumerationAtom(basicLiteral.getAtom()).toLiteral());
 			}
 			rule.getBody().addAll(rewrittenLiterals);
 		}

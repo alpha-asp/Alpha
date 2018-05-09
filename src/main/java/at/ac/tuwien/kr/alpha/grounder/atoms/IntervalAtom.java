@@ -83,6 +83,11 @@ public class IntervalAtom implements Atom {
 	}
 
 	@Override
+	public IntervalLiteral toLiteral() {
+		return toLiteral(true);
+	}
+
+	@Override
 	public String toString() {
 		return join(PREDICATE.getName() + "(", terms, ")");
 	}

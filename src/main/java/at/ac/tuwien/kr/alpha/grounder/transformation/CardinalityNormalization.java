@@ -66,7 +66,7 @@ public class CardinalityNormalization implements ProgramTransformation {
 		// The enumeration rule is: "sorting_network_input_number(A, I) :- sorting_network_input(A, X), sorting_network_index(A, X, I)."
 		Rule enumerationRule = PredicateInternalizer.makePredicatesInternal(parse("sorting_network_input_number(A, I) :- sorting_network_input(A, X).")).getRules().get(0);
 		EnumerationAtom enumerationAtom = new EnumerationAtom((BasicAtom) parse("sorting_network_index(A, X, I).").getFacts().get(0));
-		enumerationRule.getBody().add(enumerationAtom);
+		enumerationRule.getBody().add(enumerationAtom.toLiteral());
 		cardinalityEncoding.getRules().add(enumerationRule);
 
 		// Add cardinality encoding to program.
@@ -94,16 +94,17 @@ public class CardinalityNormalization implements ProgramTransformation {
 		int aggregatesInRule = 0;	// Only needed for limited rewriting.
 		ArrayList<Rule> additionalRules = new ArrayList<>();
 
-		for (Iterator<BodyElement> iterator = rule.getBody().iterator(); iterator.hasNext();) {
-			BodyElement bodyElement = iterator.next();
+		for (Iterator<Literal> iterator = rule.getBody().iterator(); iterator.hasNext();) {
+			Literal bodyElement = iterator.next();
 			// Skip non-aggregates.
-			if (!(bodyElement instanceof AggregateAtom)) {
+			if (!(bodyElement instanceof AggregateLiteral)) {
 				continue;
 			}
-			AggregateAtom aggregateAtom = (AggregateAtom) bodyElement;
+			AggregateLiteral aggregateLiteral = (AggregateLiteral) bodyElement;
+			AggregateAtom aggregateAtom = aggregateLiteral.getAtom();
 
 			// FIXME: limited rewriting of lower-bounded cardinality/sum aggregates only.
-			if (aggregateAtom.isNegated() || aggregateAtom.getUpperBoundOperator() != null
+			if (aggregateLiteral.isNegated() || aggregateAtom.getUpperBoundOperator() != null
 				|| (aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.COUNT
 					&& aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.SUM)
 				|| aggregatesInRule++ > 0) {
@@ -120,8 +121,8 @@ public class CardinalityNormalization implements ProgramTransformation {
 
 			// Hacky way to get all global variables: take rules take variables from rest of rule,
 			HashSet<VariableTerm> occurringVariables = new HashSet<>();
-			for (BodyElement element : rule.getBody()) {
-				if (element instanceof AggregateAtom) {
+			for (Literal element : rule.getBody()) {
+				if (element instanceof AggregateLiteral) {
 					continue;
 				}
 				occurringVariables.addAll(element.getBindingVariables());
@@ -147,7 +148,7 @@ public class CardinalityNormalization implements ProgramTransformation {
 			aggregateSubstitution.put(VariableTerm.getInstance("LOWER_BOUND"), aggregateAtom.getLowerBoundTerm());
 
 			// Create new output atom for addition to rule body instead of the aggregate.
-			aggregateOutputAtoms.add(aggregateOutputAtom.substitute(aggregateSubstitution));
+			aggregateOutputAtoms.add(aggregateOutputAtom.substitute(aggregateSubstitution).toLiteral());
 
 			// Create input to sorting network from aggregate elements.
 			for (AggregateAtom.AggregateElement aggregateElement : aggregateAtom.getAggregateElements()) {
@@ -159,7 +160,7 @@ public class CardinalityNormalization implements ProgramTransformation {
 
 				// Create new rule for input.
 				BasicAtom inputHeadAtom = aggregateInputAtom.substitute(elementSubstitution);
-				List<BodyElement> elementLiterals = new ArrayList<>(aggregateElement.getElementLiterals());
+				List<Literal> elementLiterals = new ArrayList<>(aggregateElement.getElementLiterals());
 
 				// If there are global variables used inside the aggregate, add original rule body (minus the aggregate itself) to input rule.
 				if (!globalVariables.isEmpty()) {
@@ -171,7 +172,7 @@ public class CardinalityNormalization implements ProgramTransformation {
 
 			// Create lower bound for the aggregate.
 			BasicAtom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateSubstitution);
-			List<BodyElement> lowerBoundBody = rule.getBody();	// FIXME: this is only correct if no other aggregate occurs in the rule.
+			List<Literal> lowerBoundBody = rule.getBody();	// FIXME: this is only correct if no other aggregate occurs in the rule.
 			additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(lowerBoundHeadAtom)), lowerBoundBody));
 
 		}

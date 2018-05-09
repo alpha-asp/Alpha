@@ -32,12 +32,10 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 
@@ -80,21 +78,10 @@ public class ChoiceAtom implements Atom {
 		// NOTE: Term is a ConstantTerm, which is ground by definition.
 		return true;
 	}
-	
+
 	@Override
 	public Literal toLiteral(boolean negated) {
 		throw new UnsupportedOperationException("ChoiceAtom cannot be literalized");
-	}
-
-	@Override
-	public Set<VariableTerm> getBindingVariables() {
-		// NOTE: Term is a ConstantTerm, which has no variables by definition.
-		return Collections.emptySet();
-	}
-
-	@Override
-	public Set<VariableTerm> getNonBindingVariables() {
-		return Collections.emptySet();
 	}
 
 	@Override

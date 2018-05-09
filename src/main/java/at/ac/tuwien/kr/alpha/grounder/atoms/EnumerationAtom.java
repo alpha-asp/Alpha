@@ -7,10 +7,9 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Represents ground-instance enumeration atom of form: enum(aggId, term, sequenceNo).
@@ -25,7 +24,7 @@ public class EnumerationAtom extends BasicAtom {
 	private static final HashMap<Term, HashMap<Term, Integer>> ENUMERATIONS = new HashMap<>();
 
 	public EnumerationAtom(BasicAtom clone) {
-		super(ENUMERATION_PREDICATE, clone.getTerms(), clone.isNegated());
+		super(ENUMERATION_PREDICATE, clone.getTerms());
 		if (getTerms().size() != 3) {
 			throw new RuntimeException("EnumerationAtom must have arity three. Given one does not: " + clone);
 		}
@@ -66,21 +65,20 @@ public class EnumerationAtom extends BasicAtom {
 	}
 
 	@Override
-	public List<VariableTerm> getBindingVariables() {
-		return Collections.singletonList((VariableTerm) getTerms().get(2));
+	public EnumerationAtom substitute(Substitution substitution) {
+		return new EnumerationAtom(super.substitute(substitution));
 	}
 
 	@Override
-	public List<VariableTerm> getNonBindingVariables() {
-		List<VariableTerm> ret = new ArrayList<>(2);
-		Term idTerm = getTerms().get(0);
-		Term enumTerm = getTerms().get(1);
-		if (idTerm instanceof VariableTerm) {
-			ret.add((VariableTerm) idTerm);
+	public EnumerationLiteral toLiteral(boolean positive) {
+		if (!positive) {
+			throw oops("IntervalLiteral cannot be negated");
 		}
-		if (enumTerm instanceof VariableTerm) {
-			ret.add((VariableTerm) enumTerm);
-		}
-		return ret;
+		return new EnumerationLiteral(this);
+	}
+
+	@Override
+	public EnumerationLiteral toLiteral() {
+		return toLiteral(true);
 	}
 }

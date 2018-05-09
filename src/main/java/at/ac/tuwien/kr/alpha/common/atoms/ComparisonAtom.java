@@ -30,7 +30,6 @@ package at.ac.tuwien.kr.alpha.common.atoms;
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Arrays;
@@ -46,7 +45,7 @@ public class ComparisonAtom implements Atom {
 	final ComparisonOperator operator;
 	private final List<Term> terms;
 
-	ComparisonAtom(List<Term> terms, ComparisonOperator operator) {
+	private ComparisonAtom(List<Term> terms, ComparisonOperator operator) {
 		this.terms = terms;
 		this.operator = operator;
 		this.predicate = Predicate.getInstance(operator.toString(), 2);

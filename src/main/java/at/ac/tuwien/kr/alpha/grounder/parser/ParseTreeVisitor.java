@@ -288,13 +288,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public List<BodyElement> visitBody(ASPCore2Parser.BodyContext ctx) {
+	public List<Literal> visitBody(ASPCore2Parser.BodyContext ctx) {
 		// body : ( naf_literal | aggregate ) (COMMA body)?;
 		if (ctx == null) {
 			return emptyList();
 		}
 
-		final List<BodyElement> literals = new ArrayList<>();
+		final List<Literal> literals = new ArrayList<>();
 		do {
 			if (ctx.naf_literal() != null) {
 				literals.add(visitNaf_literal(ctx.naf_literal()));
@@ -307,9 +307,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public AggregateAtom visitAggregate(ASPCore2Parser.AggregateContext ctx) {
+	public AggregateLiteral visitAggregate(ASPCore2Parser.AggregateContext ctx) {
 		// aggregate : NAF? (lt=term lop=binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (uop=binop ut=term)?;
-		boolean isNegated = ctx.NAF() != null;
+		boolean isPositive = ctx.NAF() == null;
 		Term lt = null;
 		ComparisonOperator lop = null;
 		Term ut = null;
@@ -324,7 +324,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		}
 		AggregateAtom.AGGREGATEFUNCTION aggregateFunction = visitAggregate_function(ctx.aggregate_function());
 		List<AggregateAtom.AggregateElement> aggregateElements = visitAggregate_elements(ctx.aggregate_elements());
-		return new AggregateAtom(isNegated, lop, lt, uop, ut, aggregateFunction, aggregateElements);
+		return new AggregateAtom(lop, lt, uop, ut, aggregateFunction, aggregateElements).toLiteral(isPositive);
 	}
 
 	@Override
