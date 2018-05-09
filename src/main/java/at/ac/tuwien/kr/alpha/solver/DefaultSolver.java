@@ -66,7 +66,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	private final NoGoodStore store;
 	private final ChoiceManager choiceManager;
-	private final WritableAssignment assignment;
+	private final WritableAssignment<?> assignment;
 
 	private final GroundConflictNoGoodLearner learner;
 
@@ -77,7 +77,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private int conflictsAfterClosing;
 	private final boolean disableJustifications;
 
-	public DefaultSolver(Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, Heuristic branchingHeuristic, boolean debugInternalChecks, boolean disableJustifications) {
+	public DefaultSolver(Grounder grounder, NoGoodStore store, WritableAssignment<?> assignment, Random random, Heuristic branchingHeuristic, boolean debugInternalChecks, boolean disableJustifications) {
 		super(grounder);
 
 		this.assignment = assignment;
@@ -237,7 +237,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		if (!disableJustifications && grounder instanceof ProgramAnalyzingGrounder) {
 			ProgramAnalyzingGrounder analyzingGrounder = (ProgramAnalyzingGrounder) grounder;
 			// Justify one MBT assigned atom.
-			Integer toJustify = ((ArrayAssignment) assignment).getSomeMBTAssignedAtom(grounder);
+			Integer toJustify = analyzingGrounder.getSomeMBTAssignedAtom(assignment);
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.debug("Searching for justification of " + toJustify + " / " + grounder.atomToString(atomOf(toJustify)));
 				LOGGER.debug("Assignment is (TRUE part only):" + translate(assignment.getTrueAssignments()));

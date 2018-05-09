@@ -54,7 +54,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NoGoodStoreAlphaRoaming.class);
 
-	private final WritableAssignment assignment;
+	private final WritableAssignment<?> assignment;
 	private final Map<Integer, Watches<BinaryWatch, WatchedNoGood>> watches = new LinkedHashMap<>();
 
 	private boolean checksEnabled;
