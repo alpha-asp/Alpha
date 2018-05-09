@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -34,6 +34,7 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.ChainedBranchingHeuristics;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
 import org.slf4j.Logger;
@@ -45,13 +46,14 @@ import java.util.function.Consumer;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
 import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
 
 /**
  * The new default solver employed in Alpha.
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  */
-public class DefaultSolver extends AbstractSolver {
+public class DefaultSolver extends AbstractSolver implements SolverMaintainingStatistics {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolver.class);
 
 	private final NoGoodStore store;
@@ -61,10 +63,10 @@ public class DefaultSolver extends AbstractSolver {
 	private final GroundConflictNoGoodLearner learner;
 
 	private final BranchingHeuristic branchingHeuristic;
-	private final BranchingHeuristic fallbackBranchingHeuristic;
 
 	private boolean initialize = true;
 	private int mbtAtFixpoint;
+	private int conflictsAfterClosing;
 
 	public DefaultSolver(Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, Heuristic branchingHeuristic, boolean debugInternalChecks) {
 		super(grounder);
@@ -73,8 +75,9 @@ public class DefaultSolver extends AbstractSolver {
 		this.store = store;
 		this.choiceManager = new ChoiceManager(assignment, store, debugInternalChecks);
 		this.learner = new GroundConflictNoGoodLearner(assignment);
-		this.branchingHeuristic = BranchingHeuristicFactory.getInstance(branchingHeuristic, grounder, assignment, choiceManager, random);
-		this.fallbackBranchingHeuristic = new NaiveHeuristic(choiceManager);
+		this.branchingHeuristic = ChainedBranchingHeuristics.chainOf(
+				BranchingHeuristicFactory.getInstance(branchingHeuristic, grounder, assignment, choiceManager, random),
+				new NaiveHeuristic(choiceManager));
 	}
 
 	@Override
@@ -134,6 +137,7 @@ public class DefaultSolver extends AbstractSolver {
 				} else {
 					// Will not learn from violated NoGood, do simple backtrackSlow.
 					LOGGER.debug("NoGood was violated after all unassigned atoms were assigned to false; will not learn from it; skipping.");
+					conflictsAfterClosing++;
 					if (!backtrack()) {
 						logStats();
 						return false;
@@ -338,24 +342,50 @@ public class DefaultSolver extends AbstractSolver {
 
 		// Hint: for custom heuristics, evaluate them here and pick a value if the heuristics suggests one.
 
-		int atom;
+		int literal;
 
-		if ((atom = branchingHeuristic.chooseAtom()) == 0) {
-			if ((atom = fallbackBranchingHeuristic.chooseAtom()) == 0) {
-				LOGGER.debug("No choices!");
-				return false;
-			} else if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("Naive heuristics chose atom {}", grounder.atomToString(atom));
-			}
+		if ((literal = branchingHeuristic.chooseLiteral()) == DEFAULT_CHOICE_LITERAL) {
+			LOGGER.debug("No choices!");
+			return false;
 		} else if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Branching heuristic chose atom {}", grounder.atomToString(atom));
+			LOGGER.debug("Branching heuristic chose literal {}", grounder.literalToString(literal));
 		}
 
-		choiceManager.choose(new Choice(atom, branchingHeuristic.chooseSign(atom), false));
+		choiceManager.choose(new Choice(literal, false));
 		return true;
 	}
 	
+	@Override
+	public int getNumberOfChoices() {
+		return choiceManager.getChoices();
+	}
+
+	@Override
+	public int getNumberOfBacktracks() {
+		return choiceManager.getBacktracks();
+	}
+
+	@Override
+	public int getNumberOfBacktracksWithinBackjumps() {
+		return choiceManager.getBacktracksWithinBackjumps();
+	}
+
+	@Override
+	public int getNumberOfBackjumps() {
+		return choiceManager.getBackjumps();
+	}
+
+	@Override
+	public int getNumberOfBacktracksDueToRemnantMBTs() {
+		return mbtAtFixpoint;
+	}
+	
+	@Override
+	public int getNumberOfConflictsAfterClosing() {
+		return conflictsAfterClosing;
+	}
+
 	private void logStats() {
-		LOGGER.debug("g=" + choiceManager.getChoices() + ", bt=" + choiceManager.getBacktracks() + ", bj=" + choiceManager.getBackjumps() + ", mbt=" + mbtAtFixpoint);
+		LOGGER.debug(getStatisticsString());
 	}
 }

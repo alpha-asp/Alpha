@@ -11,6 +11,9 @@ jdk:
   - oraclejdk8
   - oraclejdk9
 
+env:
+  - GRADLE_VERSION=4.4
+
 # As of 2016-06 Travis CI is running an outdated
 # version of Gradle, so this workaround fetches
 # a given version before carrying out the build.

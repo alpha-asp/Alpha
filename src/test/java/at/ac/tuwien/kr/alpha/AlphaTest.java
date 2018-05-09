@@ -1,9 +1,37 @@
+/**
+ * Copyright (c) 2017-2018, the Alpha Team.
+ * All rights reserved.
+ *
+ * Additional changes made by Siemens.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1) Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ * 2) Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.MethodPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import org.junit.Ignore;
@@ -78,7 +106,9 @@ public class AlphaTest {
 		Alpha system = new Alpha();
 		system.register("connected", (Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3));
 
-		Set<AnswerSet> answerSets = system.solve("node(1). node(2). node(3). a :- &connected[1,2].").collect(Collectors.toSet());
+		Set<AnswerSet> actual = system.solve("node(1). node(2). node(3). a :- &connected[1,2].").collect(Collectors.toSet());
+		Set<AnswerSet> expected = AnswerSetsParser.parse("{ a, node(1), node(2), node(3) }");
+		assertEquals(expected, actual);
 	}
 
 	@Test
@@ -108,7 +138,7 @@ public class AlphaTest {
 	}
 
 	@at.ac.tuwien.kr.alpha.Predicate
-	public static Set<List<ConstantTerm>> bestNode() {
+	public static Set<List<ConstantTerm<?>>> bestNode() {
 		return singleton(singletonList(ConstantTerm.getInstance(1)));
 	}
 
@@ -208,17 +238,17 @@ public class AlphaTest {
 		SubThingy thingy = new SubThingy();
 
 		Rule rule = new Rule(
-			new DisjunctiveHead(Collections.singletonList(new BasicAtom(Predicate.getInstance("p", 1), ConstantTerm.getInstance("x")))),
-			singletonList(
-				new ExternalAtom(
-					Predicate.getInstance("thinger", 1),
-					new MethodPredicateInterpretation(this.getClass().getMethod("thinger", Thingy.class)),
-					singletonList(ConstantTerm.getInstance(thingy)),
-					emptyList(),
-					false
-				)
-			)
-		);
+				new DisjunctiveHead(Collections.singletonList(new BasicAtom(Predicate.getInstance("p", 1), ConstantTerm.getInstance("x")))),
+				singletonList(
+						new ExternalLiteral(new ExternalAtom(
+								Predicate.getInstance("thinger", 1),
+								new MethodPredicateInterpretation(this.getClass().getMethod("thinger", Thingy.class)),
+								singletonList(ConstantTerm.getInstance(thingy)),
+								emptyList()),
+								true
+							)
+						)
+				);
 
 		Alpha system = new Alpha();
 
@@ -314,31 +344,56 @@ public class AlphaTest {
 	}
 
 	/**
-	 * Runs tests that formerly caused some sort of exception.
+	 * Runs a test that formerly caused some sort of exception.
 	 */
 	@Test
-	public void problematicRuns() throws IOException {
-		/* NOTE: This was constructed from the following commandline invocations:
-
+	public void problematicRun_3col_1119654162577372() throws IOException {
+		/* NOTE: This was constructed from the following commandline invocation:
 			-DebugEnableInternalChecks -q -g naive -s default -e 1119654162577372 -n 200 -i 3col-20-38.txt
-			-DebugEnableInternalChecks -q -g naive -s default -e 1119718541727902 -n 200 -i 3col-20-38.txt
-			-DebugEnableInternalChecks -q -g naive -s default -e 97598271567626   -n   2 -i vehicle_normal_small.asp
-			-DebugEnableInternalChecks -q -g naive -s default -sort               -n 400 -i 3col-20-38.txt
 		*/
+		problematicRun("3col-20-38.txt", 1119654162577372L, 200);
+}
 
+	/**
+	 * Runs a test that formerly caused some sort of exception.
+	 */
+	@Test
+	public void problematicRun_3col_1119718541727902() throws IOException {
+		/* NOTE: This was constructed from the following commandline invocation:
+			-DebugEnableInternalChecks -q -g naive -s default -e 1119718541727902 -n 200 -i 3col-20-38.txt
+		*/
+		problematicRun("3col-20-38.txt", 1119718541727902L, 200);
+}
+
+	/**
+	 * Runs a test that formerly caused some sort of exception.
+	 */
+	@Test
+	public void problematicRun_vehicle_97598271567626() throws IOException {
+		/* NOTE: This was constructed from the following commandline invocation:
+			-DebugEnableInternalChecks -q -g naive -s default -e 97598271567626 -n 2 -i vehicle_normal_small.asp
+		*/
+		problematicRun("vehicle_normal_small.asp", 1119718541727902L, 2);
+	}
+
+	/**
+	 * Runs a test that formerly caused some sort of exception.
+	 */
+	@Test
+	public void problematicRun_3col_1119718541727902_sorted_400() throws IOException {
+		/* NOTE: This was constructed from the following commandline invocation:
+			-DebugEnableInternalChecks -q -g naive -s default -sort -n 400 -i 3col-20-38.txt
+		*/
 		final Path base = Paths.get("src", "test", "resources", "PreviouslyProblematic");
 		final Alpha system = new Alpha("naive", "default", "alpharoaming", true);
-
-		system.setSeed(1119654162577372L);
-		assertFalse(system.solve(base.resolve("3col-20-38.txt")).limit(200).collect(Collectors.toList()).isEmpty());
-
-		system.setSeed(1119718541727902L);
-		assertFalse(system.solve(base.resolve("3col-20-38.txt")).limit(200).collect(Collectors.toList()).isEmpty());
-
-		system.setSeed(1119718541727902L);
-		assertFalse(system.solve(base.resolve("vehicle_normal_small.asp")).limit(2).collect(Collectors.toList()).isEmpty());
-
 		system.setSeed(1119718541727902L);
 		assertFalse(system.solve(base.resolve("3col-20-38.txt")).sorted().limit(400).collect(Collectors.toList()).isEmpty());
+	}
+	
+	private void problematicRun(String program, long seed, int limit) throws IOException {
+		final Path base = Paths.get("src", "test", "resources", "PreviouslyProblematic");
+		final Alpha system = new Alpha("naive", "default", "alpharoaming", true);
+		system.setSeed(seed);
+		assertFalse(system.solve(base.resolve(program)).limit(limit).collect(Collectors.toList()).isEmpty());
 	}
 }

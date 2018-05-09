@@ -1,3 +1,30 @@
+/**
+ * Copyright (c) 2017-2018, the Alpha Team.
+ * All rights reserved.
+ *
+ * Additional changes made by Siemens.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1) Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ * 2) Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
 import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
@@ -6,6 +33,7 @@ import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BodyElement;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -17,7 +45,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Removes variable equalities from rules by replacing one variable with the other.
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017-2018, the Alpha Team.
  */
 public class VariableEqualityRemoval implements ProgramTransformation {
 	@Override
@@ -33,16 +61,16 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 		//HashSet<Variable> equalVariables = new LinkedHashSet<>();
 		HashSet<BodyElement> equalitiesToRemove = new HashSet<>();
 		for (BodyElement bodyElement : rule.getBody()) {
-			if (!(bodyElement instanceof ComparisonAtom)) {
+			if (!(bodyElement instanceof ComparisonLiteral)) {
 				continue;
 			}
-			ComparisonAtom comparisonAtom = (ComparisonAtom) bodyElement;
-			if (!comparisonAtom.isNormalizedEquality()) {
+			ComparisonLiteral comparisonLiteral = (ComparisonAtom) bodyElement;
+			if (!comparisonLiteral.isNormalizedEquality()) {
 				continue;
 			}
-			if (comparisonAtom.getTerms().get(0) instanceof VariableTerm && comparisonAtom.getTerms().get(1) instanceof VariableTerm) {
-				VariableTerm leftVariable = (VariableTerm) comparisonAtom.getTerms().get(0);
-				VariableTerm rightVariable = (VariableTerm) comparisonAtom.getTerms().get(1);
+			if (comparisonLiteral.getTerms().get(0) instanceof VariableTerm && comparisonLiteral.getTerms().get(1) instanceof VariableTerm) {
+				VariableTerm leftVariable = (VariableTerm) comparisonLiteral.getTerms().get(0);
+				VariableTerm rightVariable = (VariableTerm) comparisonLiteral.getTerms().get(1);
 				HashSet<VariableTerm> leftEqualVariables = variableToEqualVariables.get(leftVariable);
 				HashSet<VariableTerm> rightEqualVariables = variableToEqualVariables.get(rightVariable);
 				if (leftEqualVariables == null && rightEqualVariables == null) {
@@ -64,7 +92,7 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 						variableToEqualVariables.put(rightEqualVariable, leftEqualVariables);
 					}
 				}
-				equalitiesToRemove.add(comparisonAtom);
+				equalitiesToRemove.add(comparisonLiteral);
 			}
 		}
 		if (variableToEqualVariables.isEmpty()) {

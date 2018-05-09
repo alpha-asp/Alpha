@@ -1,19 +1,17 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2018 Siemens AG
  * All rights reserved.
- *
- * Additional changes made by Siemens.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *
+ * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,22 +23,41 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.common.atoms;
+package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import java.io.PrintStream;
 
-import java.util.List;
+public interface SolverMaintainingStatistics {
 
-/**
- * Represents a literal whose ground truth value(s) are independent of the current assignment.
- * Examples of atoms underlying such literals are builtin atoms and external atoms.
- * Copyright (c) 2017-2018, the Alpha Team.
- */
-public abstract class FixedInterpretationLiteral extends Literal {
+	int getNumberOfChoices();
+
+	int getNumberOfBacktracks();
+
+	int getNumberOfBacktracksWithinBackjumps();
+
+	int getNumberOfBackjumps();
+
+	int getNumberOfBacktracksDueToRemnantMBTs();
 	
-	public FixedInterpretationLiteral(Atom atom, boolean positive) {
-		super(atom, positive);
+	/**
+	 * @return the number of times the solver had to backtrack after closing unassigned atoms
+	 */
+	int getNumberOfConflictsAfterClosing();
+
+	default String getStatisticsString() {
+		return "g=" + getNumberOfChoices() + ", bt=" + getNumberOfBacktracks() + ", bj=" + getNumberOfBackjumps() + ", bt_within_bj="
+				+ getNumberOfBacktracksWithinBackjumps() + ", mbt=" + getNumberOfBacktracksDueToRemnantMBTs() + ", cac=" + getNumberOfConflictsAfterClosing();
 	}
 	
-	public abstract List<Substitution> getSubstitutions(Substitution partialSubstitution);
+	default String getStatisticsCSV() {
+		return String.format("%d,%d,%d,%d,%d,%d", getNumberOfChoices(), getNumberOfBacktracks(), getNumberOfBackjumps(), getNumberOfBacktracksWithinBackjumps(), getNumberOfBacktracksDueToRemnantMBTs(), getNumberOfConflictsAfterClosing());
+	}
+
+	default void printStatistics(PrintStream out) {
+		out.println(getStatisticsString());
+	}
+
+	default void printStatistics() {
+		printStatistics(System.out);
+	}
 }

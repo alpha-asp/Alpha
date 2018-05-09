@@ -1,3 +1,30 @@
+/**
+ * Copyright (c) 2016-2018, the Alpha Team.
+ * All rights reserved.
+ *
+ * Additional changes made by Siemens.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1) Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ * 2) Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
@@ -15,7 +42,7 @@ import java.util.*;
 import static java.util.Collections.emptyList;
 
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  */
 public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	private final Map<String, PredicateInterpretation> externals;
@@ -71,18 +98,14 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		Map<Predicate, SortedSet<Atom>> predicateInstances = new TreeMap<>();
 
 		for (ASPCore2Parser.Classical_literalContext classicalLiteralContext : ctx.classical_literal()) {
-			Literal literal = visitClassical_literal(classicalLiteralContext);
+			Atom atom = visitClassical_literal(classicalLiteralContext);
 
-			if (literal.isNegated()) {
-				throw notSupported(classicalLiteralContext);
-			}
-
-			predicates.add(literal.getPredicate());
-			predicateInstances.compute(literal.getPredicate(), (k, v) -> {
+			predicates.add(atom.getPredicate());
+			predicateInstances.compute(atom.getPredicate(), (k, v) -> {
 				if (v == null) {
 					v = new TreeSet<>();
 				}
-				v.add(literal);
+				v.add(atom);
 				return v;
 			});
 
@@ -190,7 +213,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		if (ctx.disjunction() != null) {
 			throw notSupported(ctx);
 		}
-		isCurrentLiteralNegated = false;
 		return new DisjunctiveHead(Collections.singletonList(visitClassical_literal(ctx.classical_literal())));
 	}
 
@@ -410,12 +432,11 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public Literal visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
+	public ComparisonAtom visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
 		// builtin_atom : term binop term;
 		return new ComparisonAtom(
 			(Term) visit(ctx.term(0)),
 			(Term) visit(ctx.term(1)),
-			isCurrentLiteralNegated,
 			visitBinop(ctx.binop())
 		);
 	}
@@ -423,26 +444,26 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Literal visitNaf_literal(ASPCore2Parser.Naf_literalContext ctx) {
 		// naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
-		isCurrentLiteralNegated = ctx.NAF() != null;
+		boolean isCurrentLiteralNegated = ctx.NAF() != null;
 		if (ctx.builtin_atom() != null) {
-			return visitBuiltin_atom(ctx.builtin_atom());
+			return new ComparisonLiteral(visitBuiltin_atom(ctx.builtin_atom()), !isCurrentLiteralNegated);
 		} else if (ctx.classical_literal() != null) {
-			return visitClassical_literal(ctx.classical_literal());
+			return new BasicLiteral(visitClassical_literal(ctx.classical_literal()), !isCurrentLiteralNegated);
 		} else if (ctx.external_atom() != null) {
-			return visitExternal_atom(ctx.external_atom());
+			return new ExternalLiteral(visitExternal_atom(ctx.external_atom()), !isCurrentLiteralNegated);
 		}
 		throw notSupported(ctx);
 	}
 
 	@Override
-	public Literal visitClassical_literal(ASPCore2Parser.Classical_literalContext ctx) {
+	public BasicAtom visitClassical_literal(ASPCore2Parser.Classical_literalContext ctx) {
 		// classical_literal : MINUS? ID (PAREN_OPEN terms PAREN_CLOSE)?;
 		if (ctx.MINUS() != null) {
 			throw notSupported(ctx);
 		}
 
 		final List<Term> terms = visitTerms(ctx.terms());
-		return new BasicAtom(Predicate.getInstance(ctx.ID().getText(), terms.size()), terms, isCurrentLiteralNegated);
+		return new BasicAtom(Predicate.getInstance(ctx.ID().getText(), terms.size()), terms);
 	}
 
 	@Override
@@ -462,17 +483,17 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public ConstantTerm visitTerm_number(ASPCore2Parser.Term_numberContext ctx) {
+	public ConstantTerm<?> visitTerm_number(ASPCore2Parser.Term_numberContext ctx) {
 		return ConstantTerm.getInstance(Integer.parseInt(ctx.NUMBER().getText()));
 	}
 
 	@Override
-	public ConstantTerm visitTerm_const(ASPCore2Parser.Term_constContext ctx) {
+	public ConstantTerm<?> visitTerm_const(ASPCore2Parser.Term_constContext ctx) {
 		return ConstantTerm.getSymbolicInstance(ctx.ID().getText());
 	}
 
 	@Override
-	public ConstantTerm visitTerm_string(ASPCore2Parser.Term_stringContext ctx) {
+	public ConstantTerm<?> visitTerm_string(ASPCore2Parser.Term_stringContext ctx) {
 		String quotedString = ctx.QUOTED_STRING().getText();
 		return ConstantTerm.getInstance(quotedString.substring(1, quotedString.length() - 1));
 	}
@@ -506,7 +527,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public Literal visitExternal_atom(ASPCore2Parser.External_atomContext ctx) {
+	public ExternalAtom visitExternal_atom(ASPCore2Parser.External_atomContext ctx) {
 		// external_atom : AMPERSAND ID (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?;
 
 		if (ctx.MINUS() != null) {
@@ -526,8 +547,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			Predicate.getInstance(predicateName, outputTerms.size()),
 			interpretation,
 			visitTerms(ctx.input),
-			outputTerms,
-			isCurrentLiteralNegated
+			outputTerms
 		);
 	}
 

@@ -1,19 +1,17 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2018 Siemens AG
  * All rights reserved.
- *
- * Additional changes made by Siemens.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *
+ * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,22 +23,20 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.common.atoms;
-
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
-
-import java.util.List;
+package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 /**
- * Represents a literal whose ground truth value(s) are independent of the current assignment.
- * Examples of atoms underlying such literals are builtin atoms and external atoms.
- * Copyright (c) 2017-2018, the Alpha Team.
+ * A heuristic that selects an atom to choose on by maintaining activity values for literals.
+ *
  */
-public abstract class FixedInterpretationLiteral extends Literal {
-	
-	public FixedInterpretationLiteral(Atom atom, boolean positive) {
-		super(atom, positive);
-	}
-	
-	public abstract List<Substitution> getSubstitutions(Substitution partialSubstitution);
+public interface ActivityBasedBranchingHeuristic extends BranchingHeuristic {
+
+	/**
+	 * Gets the activity value associated with the given literal
+	 * 
+	 * @param literal
+	 * @return the activity value associated with the given literal
+	 */
+	double getActivity(int literal);
+
 }

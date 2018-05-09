@@ -27,88 +27,79 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.List;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
- * A potentially negated {@link Atom}
+ * Contains a potentially negated {@link BasicAtom}.
  * 
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public abstract class Literal {
+public class BasicLiteral extends Literal {
 	
-	protected final Atom atom;
-	protected final boolean positive;
-	
-	public Literal(Atom atom, boolean positive) {
-		this.atom = atom;
-		this.positive = positive;
-	}
-
-	public Atom getAtom() {
-		return atom;
-	}
-
-	public boolean isNegated() {
-		return !positive;
-	}
-	
-	public abstract Literal negate();
-	
-	public abstract Literal substitute(Substitution substitution);
-	
-	public abstract Set<VariableTerm> getBindingVariables();
-	
-	public abstract Set<VariableTerm> getNonBindingVariables();
-
-	/**
-	 * @see Atom#getPredicate()
-	 */
-	public Predicate getPredicate() {
-		return atom.getPredicate();
-	}
-
-	/**
-	 * @see Atom#getTerms()
-	 */
-	public List<Term> getTerms() {
-		return atom.getTerms();
-	}
-
-	/**
-	 * @see Atom#isGround()
-	 */
-	public boolean isGround() {
-		return atom.isGround();
+	public BasicLiteral(BasicAtom atom, boolean positive) {
+		super(atom, positive);
 	}
 	
 	@Override
-	public String toString() {
-		return (positive ? "" : "not ") + atom.toString();
+	public BasicAtom getAtom() {
+		return (BasicAtom)atom;
 	}
 
+	/**
+	 * Returns a new copy of this literal whose {@link Literal#isNegated()} status is inverted
+	 */
 	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
+	public BasicLiteral negate() {
+		return new BasicLiteral(getAtom(), !positive);
+	}
+
+	/**
+	 * @see Atom#substitute(Substitution)
+	 */
+	@Override
+	public BasicLiteral substitute(Substitution substitution) {
+		return new BasicLiteral(getAtom().substitute(substitution), positive);
+	}
+
+	/**
+	 * Set of all variables occurring in the Atom that are potentially binding, i.e., variables in positive atoms.
+	 * 
+	 * @return
+	 */
+	@Override
+	public Set<VariableTerm> getBindingVariables() {
+		if (!positive) {
+			// Negative literal has no binding variables.
+			return Collections.emptySet();
 		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
+		Set<VariableTerm> bindingVariables = new HashSet<>();
+		for (Term term : atom.getTerms()) {
+			bindingVariables.addAll(term.getOccurringVariables());
 		}
-
-		Literal that = (Literal) o;
-
-		return atom.equals(that.atom) && positive == that.positive;
+		return bindingVariables;
 	}
 
+	/**
+	 * Set of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
+	 * 
+	 * @return
+	 */
 	@Override
-	public int hashCode() {
-		return 12 * atom.hashCode() + (positive ? 1 : 0);
+	public Set<VariableTerm> getNonBindingVariables() {
+		if (positive) {
+			// Positive literal has only binding variables.
+			return Collections.emptySet();
+		}
+		Set<VariableTerm> nonbindingVariables = new HashSet<>();
+		for (Term term : atom.getTerms()) {
+			nonbindingVariables.addAll(term.getOccurringVariables());
+		}
+		return nonbindingVariables;
 	}
-
 }
