@@ -40,14 +40,14 @@ public class ChoiceRecorder {
 	}
 
 	private NoGood generatePos(final int choiceId, List<Integer> pos, final int bodyAtom) {
-		final int choiceOnAtom = atomStore.add(on(choiceId));
+		final int choiceOnAtom = atomStore.putIfAbsent(on(choiceId));
 		newChoiceAtoms.getLeft().put(bodyAtom, choiceOnAtom);
 
 		return NoGood.fromBody(pos, emptyList(), choiceOnAtom);
 	}
 
 	private List<NoGood> generateNeg(final int choiceId, List<Integer> neg, final int bodyAtom)  {
-		final int choiceOffAtom = atomStore.add(off(choiceId));
+		final int choiceOffAtom = atomStore.putIfAbsent(off(choiceId));
 		newChoiceAtoms.getRight().put(bodyAtom, choiceOffAtom);
 
 		final List<NoGood> noGoods = new ArrayList<>(neg.size() + 1);
