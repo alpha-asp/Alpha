@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -26,6 +26,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package at.ac.tuwien.kr.alpha;
+
+import com.google.common.collect.Sets;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -62,6 +64,14 @@ public class Util {
 			joiner.add(element.toString());
 		}
 		return joiner.toString();
+	}
+	
+	public static <T> Set<T> union(Iterable<Set<T>> sets) {
+		Set<T> union = Collections.emptySet();
+		for (Set<T> set : sets) {
+			union = Sets.union(union, set);
+		}
+		return union;
 	}
 
 	public static <U extends T, T extends Comparable<T>> int compareSortedSets(SortedSet<U> a, SortedSet<U> b) {

@@ -47,6 +47,10 @@ public final class Literals {
 		}
 		return abs(literal);
 	}
+	
+	public static int fromAtomAndSign(int atom, boolean sign) {
+		return sign ? atom : -atom;
+	}
 
 	/**
 	 * A utility to check if a given literal is negated.

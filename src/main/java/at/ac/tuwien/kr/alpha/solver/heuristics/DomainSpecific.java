@@ -26,6 +26,7 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
@@ -42,6 +43,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.Util.union;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -107,8 +111,8 @@ public class DomainSpecific implements BranchingHeuristic {
 				}
 			}
 			if (activeHeuristicsToBodies.size() > 1) {
-				// TODO: let fallback pick ... only atom or also sign ?!?!
-				throw new UnsupportedOperationException();
+				Set<Integer> admissibleChoices = union(activeHeuristicsToBodies.values());
+				return askFallbackHeuristic(activeHeuristicsToBodies, admissibleChoices);
 			} else if (activeHeuristicsToBodies.size() == 1) {
 				Entry<HeuristicDirectiveValues, Set<Integer>> activeHeadToBodies = activeHeuristicsToBodies.entrySet().iterator().next();
 				HeuristicDirectiveValues heuristic = activeHeadToBodies.getKey();
@@ -116,17 +120,29 @@ public class DomainSpecific implements BranchingHeuristic {
 				if (bodies.isEmpty()) {
 					throw oops("Set of active bodies for heuristic is empty: " + heuristic);
 				} else if (bodies.size() > 1) {
-					// TODO: let fallback pick
-					throw new UnsupportedOperationException();
+					return askFallbackHeuristic(activeHeuristicsToBodies, bodies);
 				} else {
-					int bodyAtom = bodies.iterator().next();
-					return heuristic.getSign() ? bodyAtom : -bodyAtom;
+					return Literals.fromAtomAndSign(bodies.iterator().next(), heuristic.getSign());
 				}
 			}
 			// else: continue to set of heuristic values with lower priority
 		}
 
 		return DEFAULT_CHOICE_LITERAL;
+	}
+
+	private int askFallbackHeuristic(Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies, Set<Integer> admissibleChoices) {
+		// sign of literal chosen by fallback heuristic is ignored
+		// TODO: ask fallback heuristic only for atom?!
+		int literal = fallbackHeuristic.chooseLiteral(admissibleChoices);
+		int atom = atomOf(literal);
+		boolean sign = isPositive(literal);
+		for (Entry<HeuristicDirectiveValues, Set<Integer>> entry : activeHeuristicsToBodies.entrySet()) {
+			if (entry.getValue().contains(atom)) {
+				sign = entry.getKey().getSign();
+			}
+		}
+		return Literals.fromAtomAndSign(atom, sign);
 	}
 
 	@Override
