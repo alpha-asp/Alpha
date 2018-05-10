@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
- *
+ * 
  * Additional changes made by Siemens.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1) Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
- *
+ *    list of conditions and the following disclaimer.
+ * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
- *
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -286,9 +286,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			// If choice was assigned at lower decision level (due to added NoGoods), no inverted choice should be done.
 			if (choice.getImpliedBy() != null) {
 				LOGGER.debug("Last choice is now implied by {}", choice.getImpliedBy());
-				// if (choice.getDecisionLevel() == assignment.getDecisionLevel() + 1) {
-				// throw oops("Choice was assigned but not at a lower decision level");
-				// }
+				//if (choice.getDecisionLevel() == assignment.getDecisionLevel() + 1) {
+				//	throw oops("Choice was assigned but not at a lower decision level");
+				//}
 				LOGGER.debug("Backtracking further, because last choice was assigned at a lower decision level.");
 				continue;
 			}

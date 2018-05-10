@@ -15,9 +15,7 @@ statements : statement+;
 
 query : classical_literal QUERY_MARK;
 
-statement
-locals [boolean hr = false]
-          : head DOT                     # statement_fact
+statement : head DOT                     # statement_fact
           | CONS body DOT                # statement_constraint
           | head CONS body DOT heuristic_annotation? # statement_rule
           | WCONS body? DOT weight_annotation        # statement_weightConstraint
@@ -28,7 +26,7 @@ locals [boolean hr = false]
 
 head : disjunction | choice;
 
-body: ( naf_literal | NAF? aggregate ) (COMMA body)?;
+body : ( naf_literal | NAF? aggregate ) (COMMA body)?;
 
 disjunction : classical_literal (OR disjunction)?;
 
