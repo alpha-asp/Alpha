@@ -104,19 +104,19 @@ public class ChoiceRecorder {
 		return noGoods;
 	}
 
-	public Collection<NoGood> generateHeuristicNoGoods(final List<Integer> pos, final List<Integer> neg, HeuristicAtom groundHeuristicAtom, final int headId) {
+	public Collection<NoGood> generateHeuristicNoGoods(final List<Integer> pos, final List<Integer> neg, HeuristicAtom groundHeuristicAtom, final int heuristicAtomId, final int headId) {
 		// Obtain an ID for this new heuristic.
 		final int heuristicId = ID_GENERATOR.getNextId();
 		// Create HeuristicOn and HeuristicOff atoms.
 		final int heuristicOnAtom = atomStore.add(HeuristicInfluencerAtom.on(heuristicId));
-		newHeuristicAtoms.getLeft().put(heuristicId, heuristicOnAtom);
+		newHeuristicAtoms.getLeft().put(heuristicAtomId, heuristicOnAtom);
 		final int heuristicOffAtom = atomStore.add(HeuristicInfluencerAtom.off(heuristicId));
-		newHeuristicAtoms.getRight().put(heuristicId, heuristicOffAtom);
+		newHeuristicAtoms.getRight().put(heuristicAtomId, heuristicOffAtom);
 
 		final List<NoGood> noGoods = generateNeg(heuristicOffAtom, neg);
 		noGoods.add(generatePos(heuristicOnAtom, pos));
 
-		newHeuristicValues.put(heuristicId, HeuristicDirectiveValues.fromHeuristicAtom(groundHeuristicAtom, headId));
+		newHeuristicValues.put(heuristicAtomId, HeuristicDirectiveValues.fromHeuristicAtom(groundHeuristicAtom, headId));
 
 		return noGoods;
 	}

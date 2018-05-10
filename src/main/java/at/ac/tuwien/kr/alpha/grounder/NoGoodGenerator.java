@@ -29,7 +29,10 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.*;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -87,11 +90,13 @@ public class NoGoodGenerator {
 		final List<NoGood> result = new ArrayList<>();
 
 		Integer bodyId = null;
-		Atom groundHeadAtom = nonGroundRule.getHeadAtom().substitute(substitution);
+		final Atom groundHeadAtom = nonGroundRule.getHeadAtom().substitute(substitution);
+		final int headId = store.add(groundHeadAtom);
+		
 		if (groundHeadAtom instanceof HeuristicAtom) {
 			BasicAtom groundHeuristicHead = ((HeuristicAtom)groundHeadAtom).getHead().toAtom();
 			final int heuristicHeadId = store.add(groundHeuristicHead);
-			result.addAll(choiceRecorder.generateHeuristicNoGoods(pos, neg, (HeuristicAtom)groundHeadAtom, heuristicHeadId));
+			result.addAll(choiceRecorder.generateHeuristicNoGoods(pos, neg, (HeuristicAtom)groundHeadAtom, headId, heuristicHeadId));
 		} else {
 			// Prepare atom representing the rule body.
 			final RuleAtom bodyAtom = new RuleAtom(nonGroundRule, substitution);
@@ -105,7 +110,6 @@ public class NoGoodGenerator {
 			}
 	
 			bodyId = store.add(bodyAtom);
-			final int headId = store.add(groundHeadAtom);
 			choiceRecorder.addHeadToBody(headId, bodyId);
 	
 			// Create a nogood for the head.

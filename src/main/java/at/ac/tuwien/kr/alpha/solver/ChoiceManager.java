@@ -158,7 +158,6 @@ public class ChoiceManager implements Checkable {
 		final int disabler;
 		boolean isActive;
 		long lastModCount;
-		private boolean useHeuristicsInsteadOfChoices;
 		final Set<ChoicePoint> activeChoicePoints;
 
 		private ChoicePoint(Integer atom, Integer enabler, int disabler, boolean useHeuristicsInsteadOfChoices) {
@@ -166,7 +165,6 @@ public class ChoiceManager implements Checkable {
 			this.enabler = enabler;
 			this.disabler = disabler;
 			this.lastModCount = modCount;
-			this.useHeuristicsInsteadOfChoices = useHeuristicsInsteadOfChoices; // TODO: replace this parameter by polymorphism?!
 			this.activeChoicePoints = useHeuristicsInsteadOfChoices ? ChoiceManager.this.activeHeuristics : ChoiceManager.this.activeChoicePoints;
 		}
 
@@ -178,14 +176,7 @@ public class ChoiceManager implements Checkable {
 		}
 
 		protected boolean isNotChosen() {
-			int consideredAtom = atom;
-			if (useHeuristicsInsteadOfChoices) {
-				// For heuristics, there are no atoms representing the choice points in the atom store.
-				// When determining if the heuristic head is already assigned, one has to look at the "real" head atom.
-				consideredAtom = domainSpecificHeuristics.getValues(atom).getHeadAtomId();
-			}
-			
-			Assignment.Entry entry = assignment.get(consideredAtom);
+			Assignment.Entry entry = assignment.get(atom);
 			return entry == null || MBT.equals(entry.getTruth());
 		}
 
