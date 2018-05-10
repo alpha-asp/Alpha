@@ -8,11 +8,11 @@
  * modification, are permitted provided that the following conditions are met:
  *
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ * list of conditions and the following disclaimer.
  *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -44,6 +45,8 @@ public class ChoiceRecorder {
 	private final AtomStore atomStore;
 	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newChoiceAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
 	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newHeuristicAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
+	private Map<Integer, Set<HeuristicDirectiveValues>> newHeuristicValues = new LinkedHashMap<>();
+	private Map<Integer, Set<Integer>> newHeadsToBodies = new LinkedHashMap<>();
 
 	public ChoiceRecorder(AtomStore atomStore) {
 		this.atomStore = atomStore;
@@ -59,6 +62,18 @@ public class ChoiceRecorder {
 		Pair<Map<Integer, Integer>, Map<Integer, Integer>> currentHeuristicAtoms = newHeuristicAtoms;
 		newHeuristicAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
 		return currentHeuristicAtoms;
+	}
+
+	public Map<Integer, Set<HeuristicDirectiveValues>> getAndResetHeuristicValues() {
+		Map<Integer, Set<HeuristicDirectiveValues>> currentHeuristicValues = newHeuristicValues;
+		newHeuristicValues = new LinkedHashMap<>();
+		return currentHeuristicValues;
+	}
+
+	public Map<Integer, Set<Integer>> getAndResetHeadsToBodies() {
+		Map<Integer, Set<Integer>> currentHeadsToBodies = newHeadsToBodies;
+		newHeadsToBodies = new LinkedHashMap<>();
+		return currentHeadsToBodies;
 	}
 
 	public List<NoGood> generateChoiceNoGoods(final List<Integer> pos, final List<Integer> neg, final int bodyAtom) {
@@ -86,6 +101,11 @@ public class ChoiceRecorder {
 		final List<NoGood> noGoods = generateNeg(heuristicOffAtom, neg);
 		noGoods.add(generatePos(heuristicOnAtom, pos));
 
+		if (!newHeuristicValues.containsKey(headId)) {
+			newHeuristicValues.put(headId, new HashSet<>());
+		}
+		newHeuristicValues.get(headId).add(HeuristicDirectiveValues.fromHeuristicAtom(groundHeuristicAtom, headId));
+
 		return noGoods;
 	}
 
@@ -94,7 +114,7 @@ public class ChoiceRecorder {
 		return NoGood.fromBody(pos, emptyList(), atomOn);
 	}
 
-	private List<NoGood> generateNeg(final int atomOff, List<Integer> neg)  {
+	private List<NoGood> generateNeg(final int atomOff, List<Integer> neg) {
 		final List<NoGood> noGoods = new ArrayList<>(neg.size() + 1);
 		for (Integer negAtom : neg) {
 			// Choice/Heuristic is off if any of the negative atoms is assigned true,
@@ -102,6 +122,15 @@ public class ChoiceRecorder {
 			noGoods.add(NoGood.headFirst(-atomOff, negAtom));
 		}
 		return noGoods;
+	}
+
+	public void addHeadToBody(int headId, int bodyId) {
+		Set<Integer> existingBodies = newHeadsToBodies.get(headId);
+		if (existingBodies == null) {
+			existingBodies = new HashSet<>();
+			newHeadsToBodies.put(headId, existingBodies);
+		}
+		existingBodies.add(bodyId);
 	}
 
 	@Override

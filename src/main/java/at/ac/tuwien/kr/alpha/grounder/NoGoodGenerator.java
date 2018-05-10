@@ -105,6 +105,7 @@ public class NoGoodGenerator {
 	
 			bodyId = store.add(bodyAtom);
 			final int headId = store.add(groundHeadAtom);
+			choiceRecorder.addHeadToBody(headId, bodyId);
 	
 			// Create a nogood for the head.
 			result.add(NoGood.headFirst(-headId, bodyId));

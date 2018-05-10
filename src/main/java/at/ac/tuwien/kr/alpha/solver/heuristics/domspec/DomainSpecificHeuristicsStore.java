@@ -25,93 +25,40 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 
-import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicValues.DEFAULT_LEVEL;
-import static at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicValues.DEFAULT_WEIGHT;
 
 /**
  * Stores a mapping between rule atom IDs and their corresponding domain-specific heuristic values
+ * 
+ * TODO: update docs ...
  */
 public interface DomainSpecificHeuristicsStore {
 	
-	public class Entry {
-		private final int level;
-		private final int weight;
-		private final int choicePoint;
-
-		Entry(int level, int weight, int choicePoint) {
-			this.level = level;
-			this.weight = weight;
-			this.choicePoint = choicePoint;
-		}
-
-		public int getLevel() {
-			return level;
-		}
-
-		public int getWeight() {
-			return weight;
-		}
-
-		public int getChoicePoint() {
-			return choicePoint;
-		}
-		
-		public boolean isDefaultPriority() {
-			return level == DEFAULT_LEVEL && weight == DEFAULT_WEIGHT;
-		}
-		
-		@Override
-		public String toString() {
-			return String.format("%d [%d@%d]", choicePoint, weight, level);
+	void addInfo(HeuristicDirectiveValues values);
+	
+	default void addInfo(Collection<HeuristicDirectiveValues> valuesCollection) {
+		for (HeuristicDirectiveValues values : valuesCollection) {
+			addInfo(values);
 		}
 	}
 
-	void addInfo(DomainSpecificHeuristicValues domainSpecificHeuristicsInfo);
-
-	default void addInfo(Map<Integer, DomainSpecificHeuristicValues> domainSpecificHeuristicsInfo) {
-		for (DomainSpecificHeuristicValues values : domainSpecificHeuristicsInfo.values()) {
+	default void addInfo(Map<Integer, HeuristicDirectiveValues> valuesMap) {
+		for (HeuristicDirectiveValues values : valuesMap.values()) {
 			addInfo(values);
 		}
 	}
 
 	/**
-	 * Streams sets of rule atoms, each of which contains only rule atoms of the same priority. The stream returns rule atoms in decreasing order of priority,
-	 * e.g. the first set contains all rule atoms of the highest weight and the highest level, the second contains all of the highest weight and the
-	 * second-to-highest level, etc.
+	 * Returns sets of rule atoms, each of which contains only rule atoms of the same priority. The collection contains rule atoms in decreasing order of priority,
+	 * e.g. the first set contains all rule atoms of the highest level and the highest weight, the second contains all of the highest level and the
+	 * second-to-highest weight, etc.
 	 */
-	Stream<Set<Entry>> streamEntriesOrderedByDecreasingPriority();
+	Collection<Set<HeuristicDirectiveValues>> getValuesOrderedByDecreasingPriority();
 	
-	/**
-	 * Returns the set of literals that have to be true for the non-default heuristic values to apply to the given rule.
-	 */
-	Collection<Integer> getConditionLiterals(int ruleAtomId);
-	
-	/**
-	 * Checks if the condition for the given rule is satisfied by the given assignment
-	 * @param ruleAtomId the ID of a body-representing atom
-	 * @param assignment
-	 * @return {@code true} iff for none of the literals in {@link #getConditionLiterals(int)} it holds that {@link Assignment#isViolated(int)} for the given {@code assignment}
-	 */
-	default boolean isConditionSatisfied(int ruleAtomId, Assignment assignment) {
-		return getConditionLiterals(ruleAtomId).stream().allMatch(assignment::isSatisfied);
-	}
-	
-	Set<Entry> getAllEntries();
-
-	/**
-	 * Returns the set of choice points which are either defined to have priority 1@1 or whose condition is not satisfied under the given assignment
-	 */
-	default Set<Integer> getChoicePointsWithDefaultPriority(Assignment assignment) {
-		return getAllEntries().stream().filter(e -> e.isDefaultPriority() || !isConditionSatisfied(e.choicePoint, assignment)).map(Entry::getChoicePoint).collect(Collectors.toSet());
-	}
+	Set<HeuristicDirectiveValues> getAllEntries();
 
 }

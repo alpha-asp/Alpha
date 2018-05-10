@@ -29,14 +29,17 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
+import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DefaultDomainSpecificHeuristicsStore;
 import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DomainSpecificHeuristicsStore;
 import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.EmptyDomainSpecificHeuristicsStore;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -59,6 +62,11 @@ public class ChoiceManager implements Checkable {
 	// Active choice points and all atoms that influence a choice point (enabler, disabler, choice atom itself).
 	private final Set<ChoicePoint> activeChoicePoints = new LinkedHashSet<>();
 	private final Map<Integer, ChoicePoint> influencers = new HashMap<>();
+	private final Map<Integer, Set<Integer>> headsToBodies = new HashMap<>();
+
+	// Active heuristics, similar to active choice points (TODO: resolve duplication / terminology)
+	private final Set<ChoicePoint> activeHeuristics = new LinkedHashSet<>();
+	private final Map<Integer, ChoicePoint> heuristicInfluencers = new HashMap<>();
 
 	// Backtracking information.
 	private final Map<Integer, ArrayList<Integer>> modifiedInDecisionLevel = new HashMap<>();
@@ -81,7 +89,7 @@ public class ChoiceManager implements Checkable {
 		this(assignment, store, false);
 	}
 
-	public ChoiceManager(WritableAssignment assignment, NoGoodStore store, boolean checksEnabled) {
+	private ChoiceManager(WritableAssignment assignment, NoGoodStore store, boolean checksEnabled) {
 		this(assignment, store, new EmptyDomainSpecificHeuristicsStore(), checksEnabled);
 	}
 
@@ -150,12 +158,14 @@ public class ChoiceManager implements Checkable {
 		final int disabler;
 		boolean isActive;
 		long lastModCount;
+		final Set<ChoicePoint> activeChoicePoints;
 
-		private ChoicePoint(Integer atom, Integer enabler, int disabler) {
+		private ChoicePoint(Integer atom, Integer enabler, int disabler, Set<ChoicePoint> activeChoicePoints) {
 			this.atom = atom;
 			this.enabler = enabler;
 			this.disabler = disabler;
 			this.lastModCount = modCount;
+			this.activeChoicePoints = activeChoicePoints;
 		}
 
 		private boolean isActiveChoicePoint() {
@@ -207,18 +217,26 @@ public class ChoiceManager implements Checkable {
 		int currentDecisionLevel = assignment.getDecisionLevel();
 		while (it.hasNext()) {
 			Assignment.Entry entry = it.next();
-			ChoicePoint choicePoint = influencers.get(entry.getAtom());
-			if (choicePoint != null) {
-				if (entry.getDecisionLevel() <= currentDecisionLevel) {
-					// Updates may contain already-backtracked re-assignments at lower decision level that nevertheless change choice points.
-					// Only record if this is no such assignment.
-					modifiedInDecisionLevel.get(entry.getDecisionLevel()).add(entry.getAtom());        // Note that the weak decision level is not used here since disablers become TRUE due to generated NoGoods while an enabler being MBT is ignored, also for the atom itself only TRUE/FALSE is relevant.
-				}
-				choicePoint.recomputeActive();
-			}
+			updateAssignmentEntry(currentDecisionLevel, entry);
 		}
 		if (checksEnabled) {
 			checkActiveChoicePoints();
+		}
+	}
+
+	private void updateAssignmentEntry(int currentDecisionLevel, Assignment.Entry entry) {
+		updateAssignmentFromChoicePoint(currentDecisionLevel, entry, influencers.get(entry.getAtom()));
+		updateAssignmentFromChoicePoint(currentDecisionLevel, entry, heuristicInfluencers.get(entry.getAtom()));
+	}
+
+	void updateAssignmentFromChoicePoint(int currentDecisionLevel, Assignment.Entry entry, ChoicePoint choicePoint) {
+		if (choicePoint != null) {
+			if (entry.getDecisionLevel() <= currentDecisionLevel) {
+				// Updates may contain already-backtracked re-assignments at lower decision level that nevertheless change choice points.
+				// Only record if this is no such assignment.
+				modifiedInDecisionLevel.get(entry.getDecisionLevel()).add(entry.getAtom());        // Note that the weak decision level is not used here since disablers become TRUE due to generated NoGoods while an enabler being MBT is ignored, also for the atom itself only TRUE/FALSE is relevant.
+			}
+			choicePoint.recomputeActive();
 		}
 	}
 
@@ -305,12 +323,25 @@ public class ChoiceManager implements Checkable {
 		ArrayList<Integer> changedAtoms = modifiedInDecisionLevel.get(highestDecisionLevel);
 		for (Integer atom : changedAtoms) {
 			ChoicePoint choicePoint = influencers.get(atom);
+			if (choicePoint == null) {
+				choicePoint = heuristicInfluencers.get(atom);
+			}
 			choicePoint.recomputeActive();
 		}
 		highestDecisionLevel--;
 	}
 
-	void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms) {
+	void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms, Map<Integer, Set<Integer>> headsToBodies) {
+		addInformation(choiceAtoms, activeChoicePoints, influencers);
+		addHeadsToBodies(headsToBodies);
+	}
+
+	void addHeuristicInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> heuristicAtoms, Map<Integer, Set<HeuristicDirectiveValues>> heuristicValues) {
+		addInformation(heuristicAtoms, activeHeuristics, heuristicInfluencers);
+		addInformation(heuristicValues);
+	}
+
+	void addInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms, Set<ChoicePoint> activeChoicePoints, Map<Integer, ChoicePoint> influencers) {
 		// Assumption: we get all enabler/disabler pairs in one call.
 		Map<Integer, Integer> enablers = choiceAtoms.getLeft();
 		Map<Integer, Integer> disablers = choiceAtoms.getRight();
@@ -328,17 +359,32 @@ public class ChoiceManager implements Checkable {
 			if (enabler == null || disabler == null) {
 				throw oops("Incomplete choice point description found (no enabler or disabler)");
 			}
-			ChoicePoint choicePoint = new ChoicePoint(atom, enabler, disabler);
+			ChoicePoint choicePoint = new ChoicePoint(atom, enabler, disabler, activeChoicePoints);
 			influencers.put(atom, choicePoint);
 			influencers.put(enabler, choicePoint);
 			influencers.put(disabler, choicePoint);
 		}
 	}
-
-	void addDomainSpecificHeuristicsInfo(Map<Integer, DomainSpecificHeuristicValues> domainSpecificHeuristicsInfo) {
-		domainSpecificHeuristics.addInfo(domainSpecificHeuristicsInfo);
+	
+	private void addInformation(Map<Integer, Set<HeuristicDirectiveValues>> heuristicValues) {
+		for (Entry<Integer, Set<HeuristicDirectiveValues>> entry : heuristicValues.entrySet()) {
+			domainSpecificHeuristics.addInfo(entry.getValue());
+		}
 	}
 
+	private void addHeadsToBodies(Map<Integer, Set<Integer>> headsToBodies) {
+		for (Entry<Integer, Set<Integer>> entry : headsToBodies.entrySet()) {
+			Integer head = entry.getKey();
+			Set<Integer> newBodies = entry.getValue();
+			Set<Integer> existingBodies = this.headsToBodies.get(head);
+			if (existingBodies == null) {
+				existingBodies = new HashSet<>();
+				this.headsToBodies.put(head, existingBodies);
+			}
+			existingBodies.addAll(newBodies);
+		}
+	}
+	
 	public DomainSpecificHeuristicsStore getDomainSpecificHeuristics() {
 		return domainSpecificHeuristics;
 	}
@@ -387,6 +433,27 @@ public class ChoiceManager implements Checkable {
 			throw oops("ChoiceManger internal checker detected wrong activeChoicePoints");
 		}
 		LOGGER.trace("Checking internal choice manger: all ok.");
+	}
+
+	public Set<Integer> getAllActiveHeuristicAtoms() {
+		return activeHeuristics.stream().map(ChoicePoint::getAtom).collect(Collectors.toSet());
+	}
+
+	/**
+	 * TODO: docs
+	 * @param headAtomId
+	 * @return
+	 */
+	public Set<Integer> getActiveChoiceAtomsDerivingHead(int headAtomId) {
+		return Sets.intersection(headsToBodies.get(headAtomId), getAllActiveChoiceAtoms());
+	}
+	
+	public static ChoiceManager withoutDomainSpecificHeuristics(WritableAssignment assignment, NoGoodStore store, boolean checksEnabled) {
+		return new ChoiceManager(assignment, store, checksEnabled);
+	}
+	
+	public static ChoiceManager withDomainSpecificHeuristics(WritableAssignment assignment, NoGoodStore store, boolean checksEnabled) {
+		return new ChoiceManager(assignment, store, new DefaultDomainSpecificHeuristicsStore(), checksEnabled);
 	}
 
 	/**

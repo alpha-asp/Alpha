@@ -33,7 +33,6 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.*;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
-import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DefaultDomainSpecificHeuristicsStore;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,9 +87,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		this.store = store;
 
 		if (respectDomSpecHeuristic) {
-			this.choiceManager = new ChoiceManager(assignment, store, new DefaultDomainSpecificHeuristicsStore(), debugInternalChecks);
+			this.choiceManager = ChoiceManager.withDomainSpecificHeuristics(assignment, store, debugInternalChecks);
 		} else {
-			this.choiceManager = new ChoiceManager(assignment, store, debugInternalChecks);
+			this.choiceManager = ChoiceManager.withoutDomainSpecificHeuristics(assignment, store, debugInternalChecks);
 		}
 
 		this.learner = new GroundConflictNoGoodLearner(assignment);
@@ -363,8 +362,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private boolean choose() {
-		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
-		choiceManager.addDomainSpecificHeuristicsInfo(grounder.getDomainChoiceHeuristics());
+		choiceManager.addChoiceInformation(grounder.getChoiceAtoms(), grounder.getHeadsToBodies());
+		choiceManager.addHeuristicInformation(grounder.getHeuristicAtoms(), grounder.getHeuristicValues());
 		choiceManager.updateAssignments();
 
 		// Hint: for custom heuristics, evaluate them here and pick a value if the heuristics suggests one.

@@ -25,12 +25,11 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 
-import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * Does nothing (to be used instead of {@link DefaultDomainSpecificHeuristicsStore} in case the domain-specific heuristics are not used)
@@ -38,21 +37,16 @@ import java.util.stream.Stream;
 public class EmptyDomainSpecificHeuristicsStore implements DomainSpecificHeuristicsStore {
 
 	@Override
-	public void addInfo(DomainSpecificHeuristicValues domainSpecificHeuristicsInfo) {
+	public void addInfo(HeuristicDirectiveValues values) {
 	}
 
 	@Override
-	public Stream<Set<Entry>> streamEntriesOrderedByDecreasingPriority() {
-		return Stream.empty();
+	public Collection<Set<HeuristicDirectiveValues>> getValuesOrderedByDecreasingPriority() {
+		return Collections.emptyList();
 	}
 	
 	@Override
-	public Set<Entry> getAllEntries() {
-		return Collections.emptySet();
-	}
-	
-	@Override
-	public Collection<Integer> getConditionLiterals(int ruleAtomId) {
+	public Set<HeuristicDirectiveValues> getAllEntries() {
 		return Collections.emptySet();
 	}
 

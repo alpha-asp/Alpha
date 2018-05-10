@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
@@ -106,6 +107,8 @@ public class NaiveGrounder extends BridgedGrounder {
 		workingMemory.initialize(RuleAtom.PREDICATE);
 		workingMemory.initialize(ChoiceAtom.OFF);
 		workingMemory.initialize(ChoiceAtom.ON);
+		workingMemory.initialize(HeuristicAtom.OFF);
+		workingMemory.initialize(HeuristicAtom.ON);
 
 		// Initialize rules and constraints.
 		final Map<Predicate, HashSet<NonGroundRule>> ruleHeadsToDefiningRules = new HashMap<>();
@@ -504,6 +507,22 @@ public class NaiveGrounder extends BridgedGrounder {
 	}
 	
 	@Override
+	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getHeuristicAtoms() {
+		return choiceRecorder.getAndResetHeuristics();
+	}
+	
+	@Override
+	public Map<Integer, Set<HeuristicDirectiveValues>> getHeuristicValues() {
+		return choiceRecorder.getAndResetHeuristicValues();
+	}
+	
+	@Override
+	public Map<Integer, Set<Integer>> getHeadsToBodies() {
+		return choiceRecorder.getAndResetHeadsToBodies();
+	}
+	
+	@Override
+	@Deprecated
 	public Map<Integer, DomainSpecificHeuristicValues> getDomainChoiceHeuristics() {
 		return domainSpecificHeuristicsRecorder.getAndReset();
 	}

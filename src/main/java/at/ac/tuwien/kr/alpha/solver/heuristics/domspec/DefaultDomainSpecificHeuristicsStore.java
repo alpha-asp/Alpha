@@ -25,7 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 
-import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,6 +35,9 @@ import java.util.stream.Stream;
  * Stores a mapping between rule atom IDs and their corresponding domain-specific heuristic values.
  * 
  * The mapping is stored in the form of a hierarchical map.
+ * 
+ * TODO: this class has already partially been refactored from heuristic atoms/annotations to heuristic directives, has to be cleaned up
+ * TODO: is it better to constantly maintain a map of all heuristics (as is currently the case) or to compute just the map of currently active heuristics when a choice has to be made? 
  */
 public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuristicsStore {
 
@@ -44,51 +47,54 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 	 * Maps are {@link TreeMap}s sorted in reverse order, which determines the order in which elements are retrieved by
 	 * {@link #streamEntriesOrderedByDecreasingPriority()}.
 	 */
-	private final SortedMap<Integer, SortedMap<Integer, Set<Entry>>> mapLevelWeightChoicePoint = new TreeMap<>(Comparator.reverseOrder());
+	private final SortedMap<Integer, SortedMap<Integer, Set<HeuristicDirectiveValues>>> mapLevelWeightHeuristics = new TreeMap<>(Comparator.reverseOrder());
 
-	private final Map<Integer, Collection<Integer>> mapChoicePointConditionLiterals = new HashMap<>();
+	private final Map<Integer, Set<HeuristicDirectiveValues>> mapHeuristicHeadToHeuristicValues = new HashMap<>();
 
 	@Override
-	public void addInfo(DomainSpecificHeuristicValues info) {
-		int level = info.getLevel();
-		int weight = info.getWeight();
+	public void addInfo(HeuristicDirectiveValues values) {
+		int headId = values.getHeadAtomId();
+		int level = values.getLevel();
+		int weight = values.getWeight();
 
-		if (!mapLevelWeightChoicePoint.containsKey(level)) {
-			mapLevelWeightChoicePoint.put(level, new TreeMap<>(Comparator.reverseOrder()));
+		SortedMap<Integer, Set<HeuristicDirectiveValues>> mapWeightValues = mapLevelWeightHeuristics.get(level);
+		if (mapWeightValues == null) {
+			mapWeightValues = new TreeMap<>(Comparator.reverseOrder());
+			mapLevelWeightHeuristics.put(level, mapWeightValues);
 		}
-
-		Map<Integer, Set<Entry>> mapWeightChoicePoint = mapLevelWeightChoicePoint.get(level);
-		if (!mapWeightChoicePoint.containsKey(weight)) {
-			mapWeightChoicePoint.put(weight, new HashSet<>());
+		
+		Set<HeuristicDirectiveValues> valuesForWeightLevel = mapWeightValues.get(weight);
+		if (valuesForWeightLevel == null) {
+			valuesForWeightLevel = new HashSet<>();
+			mapWeightValues.put(weight, valuesForWeightLevel);
 		}
-
-		int ruleAtomId = info.getRuleAtomId();
-		mapWeightChoicePoint.get(weight).add(new Entry(level, weight, ruleAtomId));
-		mapChoicePointConditionLiterals.put(ruleAtomId, info.getConditionLiterals());
+		valuesForWeightLevel.add(values);
+		
+		Set<HeuristicDirectiveValues> valuesForHead = mapHeuristicHeadToHeuristicValues.get(headId);
+		if (valuesForHead == null) {
+			valuesForHead = new HashSet<>();
+			mapHeuristicHeadToHeuristicValues.put(headId, valuesForHead);
+		}
+		valuesForHead.add(values);
 	}
 
 	@Override
-	public Stream<Set<Entry>> streamEntriesOrderedByDecreasingPriority() {
-		Stream<Set<Entry>> flatMap = mapLevelWeightChoicePoint.values().stream().flatMap(m -> m.values().stream());
+	public Collection<Set<HeuristicDirectiveValues>> getValuesOrderedByDecreasingPriority() {
+		Stream<Set<HeuristicDirectiveValues>> flatMap = mapLevelWeightHeuristics.values().stream().flatMap(m -> m.values().stream());
 		// do not return flatMap directly because of Java bug
 		// cf. https://stackoverflow.com/questions/29229373/why-filter-after-flatmap-is-not-completely-lazy-in-java-streams
-		return flatMap.collect(Collectors.toList()).stream();
+		return flatMap.collect(Collectors.toList());
 	}
 	
 	@Override
-	public Set<Entry> getAllEntries() {
-		Set<Entry> entries = new HashSet<>();
-		for (SortedMap<Integer, Set<Entry>> mapWeightChoicePoint : mapLevelWeightChoicePoint.values()) {
-			for (Set<Entry> entriesForCurrentPriority : mapWeightChoicePoint.values()) {
+	public Set<HeuristicDirectiveValues> getAllEntries() {
+		Set<HeuristicDirectiveValues> entries = new HashSet<>();
+		for (SortedMap<Integer, Set<HeuristicDirectiveValues>> mapWeightChoicePoint : mapLevelWeightHeuristics.values()) {
+			for (Set<HeuristicDirectiveValues> entriesForCurrentPriority : mapWeightChoicePoint.values()) {
 				entries.addAll(entriesForCurrentPriority);
 			}
 		}
 		return entries;
-	}
-	
-	@Override
-	public Collection<Integer> getConditionLiterals(int ruleAtomId) {
-		return mapChoicePointConditionLiterals.get(ruleAtomId);
 	}
 
 }

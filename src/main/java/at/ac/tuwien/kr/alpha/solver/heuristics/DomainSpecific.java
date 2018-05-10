@@ -28,20 +28,20 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
-import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DomainSpecificHeuristicsStore;
-import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DomainSpecificHeuristicsStore.Entry;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -86,69 +86,105 @@ public class DomainSpecific implements BranchingHeuristic {
 	public void newNoGoods(Collection<NoGood> newNoGoods) {
 		fallbackHeuristic.newNoGoods(newNoGoods);
 	}
-	
+
 	@Override
 	public int chooseLiteral() {
-		Optional<Integer> chosenAtom = choiceManager.getDomainSpecificHeuristics().streamEntriesOrderedByDecreasingPriority().map(this::chooseFromEquallyWeighted)
-				.filter(a -> a != DEFAULT_CHOICE_ATOM).findFirst();
-		return chooseOrFallback(chosenAtom);
+		// TODO: improve performance of this method (and called methods)
+		Set<Integer> activeHeuristics = choiceManager.getAllActiveHeuristicAtoms();
+		Collection<Set<HeuristicDirectiveValues>> heuristicValuesOrderedByDecreasingPriority = choiceManager.getDomainSpecificHeuristics()
+				.getValuesOrderedByDecreasingPriority();
+		for (Set<HeuristicDirectiveValues> potentialHeuristicValues : heuristicValuesOrderedByDecreasingPriority) {
+			Map<HeuristicDirectiveValues, Set<Integer>> activeHeadsToBodies = new HashMap<>();
+			for (HeuristicDirectiveValues h : potentialHeuristicValues) {
+				int headAtomId = h.getHeadAtomId();
+				if (activeHeuristics.contains(headAtomId) && isUnassigned(headAtomId)) {
+					// TODO: do we mention in paper that MBT heads can be chosen?
+					Set<Integer> activeChoiceAtomsDerivingHead = choiceManager.getActiveChoiceAtomsDerivingHead(headAtomId);
+					if (!activeChoiceAtomsDerivingHead.isEmpty()) {
+						activeHeadsToBodies.put(h, activeChoiceAtomsDerivingHead);
+					}
+				}
+			}
+			if (activeHeadsToBodies.size() > 1) {
+				// TODO: let fallback pick ... only atom or also sign ?!?!
+				throw new UnsupportedOperationException();
+			} else if (activeHeadsToBodies.size() == 1) {
+				Entry<HeuristicDirectiveValues, Set<Integer>> activeHeadToBodies = activeHeadsToBodies.entrySet().iterator().next();
+				HeuristicDirectiveValues heuristic = activeHeadToBodies.getKey();
+				Set<Integer> bodies = activeHeadToBodies.getValue();
+				if (bodies.isEmpty()) {
+					throw oops("Set of active bodies for heuristic is empty: " + heuristic);
+				} else if (bodies.size() > 1) {
+					// TODO: let fallback pick
+					throw new UnsupportedOperationException();
+				} else {
+					int bodyAtom = bodies.iterator().next();
+					return heuristic.getSign() ? bodyAtom : -bodyAtom;
+				}
+			}
+			// else: continue to set of heuristic values with lower priority
+		}
+
+		return DEFAULT_CHOICE_LITERAL;
 	}
 
 	@Override
 	public int chooseLiteral(Set<Integer> admissibleChoices) {
-		Optional<Integer> chosenAtom = choiceManager.getDomainSpecificHeuristics().streamEntriesOrderedByDecreasingPriority()
-				.map(s -> keepAdmissibleEntries(s, admissibleChoices)).map(c -> chooseFromEquallyWeighted(c))
-				.filter(a -> a != DEFAULT_CHOICE_ATOM).findFirst();
-		return chooseOrFallback(chosenAtom);
+		// TODO: implement
+		// Optional<Integer> chosenAtom = choiceManager.getDomainSpecificHeuristics().streamEntriesOrderedByDecreasingPriority()
+		// .map(s -> keepAdmissibleEntries(s, admissibleChoices)).map(c -> chooseFromEquallyWeighted(c))
+		// .filter(a -> a != DEFAULT_CHOICE_ATOM).findFirst();
+		// return chooseOrFallback(chosenAtom);
+		return DEFAULT_CHOICE_LITERAL;
 	}
 
-	private Set<Entry> keepAdmissibleEntries(Set<Entry> entries, Set<Integer> admissibleChoices) {
-		Set<Entry> filtered = new HashSet<>();
-		for (Entry entry : entries) {
-			if (admissibleChoices.contains(entry.getChoicePoint())) {
-				filtered.add(entry);
-			}
-		}
-		return filtered;
-	}
+	// private Set<Entry> keepAdmissibleEntries(Set<Entry> entries, Set<Integer> admissibleChoices) {
+	// Set<Entry> filtered = new HashSet<>();
+	// for (Entry entry : entries) {
+	// if (admissibleChoices.contains(entry.getChoicePoint())) {
+	// filtered.add(entry);
+	// }
+	// }
+	// return filtered;
+	// }
+	//
+	// private int chooseFromEquallyWeighted(Set<Entry> possibleChoices) {
+	// DomainSpecificHeuristicsStore domainSpecificHeuristics = choiceManager.getDomainSpecificHeuristics();
+	// int chosenAtom;
+	// Set<Entry> filteredChoices = possibleChoices.stream()
+	// .filter(e -> !e.isDefaultPriority()) // entries with default prio are handled together with unsatisfied conditions in chooseOrFallback
+	// .filter(e -> choiceManager.isActiveChoiceAtom(e.getChoicePoint()))
+	// .filter(e -> isUnassigned(e.getChoicePoint()))
+	// .filter(e -> domainSpecificHeuristics.isConditionSatisfied(e.getChoicePoint(), assignment))
+	// .collect(Collectors.toSet());
+	// if (filteredChoices.isEmpty()) {
+	// chosenAtom = DEFAULT_CHOICE_ATOM;
+	// } else if (filteredChoices.size() == 1) {
+	// Entry chosenEntry = filteredChoices.iterator().next();
+	// chosenAtom = chosenEntry.getChoicePoint();
+	// LOGGER.debug("Unique best choice in terms of domain-specific heuristics: " + chosenEntry);
+	// } else {
+	// LOGGER.debug("Using fallback heuristics to choose from " + filteredChoices);
+	// chosenAtom = fallbackHeuristic.chooseLiteral(filteredChoices.stream().map(Entry::getChoicePoint).collect(Collectors.toSet()));
+	// }
+	// return chosenAtom;
+	// }
+	//
+	// private int chooseOrFallback(Optional<Integer> chosenAtom) {
+	// if (chosenAtom.isPresent()) {
+	// return chosenAtom.get();
+	// } else {
+	// Set<Integer> ruleAtomsWithDefaultPriority = choiceManager.getDomainSpecificHeuristics().getChoicePointsWithDefaultPriority(assignment);
+	// if (!ruleAtomsWithDefaultPriority.isEmpty()) {
+	// LOGGER.debug("Using fallback heuristics to choose from atoms with default priority: " + ruleAtomsWithDefaultPriority);
+	// return fallbackHeuristic.chooseLiteral(ruleAtomsWithDefaultPriority);
+	// } else {
+	// LOGGER.debug("Using fallback heuristics to choose");
+	// return fallbackHeuristic.chooseLiteral();
+	// }
+	// }
+	// }
 
-	private int chooseFromEquallyWeighted(Set<Entry> possibleChoices) {
-		DomainSpecificHeuristicsStore domainSpecificHeuristics = choiceManager.getDomainSpecificHeuristics();
-		int chosenAtom;
-		Set<Entry> filteredChoices = possibleChoices.stream()
-				.filter(e -> !e.isDefaultPriority()) // entries with default prio are handled together with unsatisfied conditions in chooseOrFallback 
-				.filter(e -> choiceManager.isActiveChoiceAtom(e.getChoicePoint()))
-				.filter(e -> isUnassigned(e.getChoicePoint()))
-				.filter(e -> domainSpecificHeuristics.isConditionSatisfied(e.getChoicePoint(), assignment))
-				.collect(Collectors.toSet());
-		if (filteredChoices.isEmpty()) {
-			chosenAtom = DEFAULT_CHOICE_ATOM;
-		} else if (filteredChoices.size() == 1) {
-			Entry chosenEntry = filteredChoices.iterator().next();
-			chosenAtom = chosenEntry.getChoicePoint();
-			LOGGER.debug("Unique best choice in terms of domain-specific heuristics: " + chosenEntry);
-		} else {
-			LOGGER.debug("Using fallback heuristics to choose from " + filteredChoices);
-			chosenAtom = fallbackHeuristic.chooseLiteral(filteredChoices.stream().map(Entry::getChoicePoint).collect(Collectors.toSet()));
-		}
-		return chosenAtom;
-	}
-
-	private int chooseOrFallback(Optional<Integer> chosenAtom) {
-		if (chosenAtom.isPresent()) {
-			return chosenAtom.get();
-		} else {
-			Set<Integer> ruleAtomsWithDefaultPriority = choiceManager.getDomainSpecificHeuristics().getChoicePointsWithDefaultPriority(assignment);
-			if (!ruleAtomsWithDefaultPriority.isEmpty()) {
-				LOGGER.debug("Using fallback heuristics to choose from atoms with default priority: " + ruleAtomsWithDefaultPriority);
-				return fallbackHeuristic.chooseLiteral(ruleAtomsWithDefaultPriority);
-			} else {
-				LOGGER.debug("Using fallback heuristics to choose");
-				return fallbackHeuristic.chooseLiteral();
-			}
-		}
-	}
-	
 	protected boolean isUnassigned(int atom) {
 		ThriceTruth truth = assignment.getTruth(atom);
 		return truth != FALSE && truth != TRUE; // do not use assignment.isAssigned(atom) because we may also choose MBTs

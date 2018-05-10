@@ -25,38 +25,30 @@
  */
 package at.ac.tuwien.kr.alpha.common.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.RuleAnnotation;
+import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
 import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
-
-import java.util.Collection;
-import java.util.Collections;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 
 /**
- * Holds values defined by a {@link HeuristicAtom} or a {@link RuleAnnotation} to steer domain-specific heuristic choice for a single ground rule
+ * Holds values defined by a {@link HeuristicDirective} to steer domain-specific heuristic choice for a single ground heuristic directive.
  *
- * @deprecated Use {@link HeuristicDirectiveValues} instead.
  */
-@Deprecated
-public class DomainSpecificHeuristicValues {
+public class HeuristicDirectiveValues {
 
-	private int ruleAtomId;
+	private int headAtomId;
 	private int weight;
 	private int level;
-	private Collection<Integer> conditionLiterals;
+	private boolean sign;
 
-	public DomainSpecificHeuristicValues(int bodyId, int weight, int level, Collection<Integer> conditionLiterals) {
-		this.ruleAtomId = bodyId;
+	public HeuristicDirectiveValues(int headAtomId, int weight, int level, boolean sign) {
+		this.headAtomId = headAtomId;
 		this.weight = weight;
 		this.level = level;
-		this.conditionLiterals = Collections.unmodifiableCollection(conditionLiterals);
+		this.sign = sign;
 	}
 
-	public DomainSpecificHeuristicValues(int atom, int weight, int level) {
-		this(atom, weight, level, Collections.emptySet());
-	}
-
-	public int getRuleAtomId() {
-		return ruleAtomId;
+	public int getHeadAtomId() {
+		return headAtomId;
 	}
 
 	public int getWeight() {
@@ -67,8 +59,40 @@ public class DomainSpecificHeuristicValues {
 		return level;
 	}
 
-	public Collection<Integer> getConditionLiterals() {
-		return conditionLiterals;
+	public boolean getSign() {
+		return sign;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		HeuristicDirectiveValues that = (HeuristicDirectiveValues) o;
+
+		return headAtomId == that.headAtomId && weight == that.weight && level == that.level && sign == that.sign;
+	}
+	
+	@Override
+	public int hashCode() {
+		return 60 * headAtomId + 53 * weight + 57 * level + (sign ? 1 : 0);
+	}
+	
+	@Override
+	public String toString() {
+		return String.format((sign ? "" : "-") + "%d [%d@%d]", headAtomId, weight, level);
+	}
+
+	/**
+	 * @param groundHeuristicAtom
+	 * @return
+	 */
+	public static HeuristicDirectiveValues fromHeuristicAtom(HeuristicAtom groundHeuristicAtom, int headAtomId) {
+		return new HeuristicDirectiveValues(headAtomId, ((ConstantTerm<Integer>)groundHeuristicAtom.getWeight()).getObject(), ((ConstantTerm<Integer>)groundHeuristicAtom.getLevel()).getObject(), ((ConstantTerm<Boolean>)groundHeuristicAtom.getSign()).getObject());
 	}
 
 }
