@@ -26,7 +26,7 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
 import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 
 import java.util.Iterator;
 

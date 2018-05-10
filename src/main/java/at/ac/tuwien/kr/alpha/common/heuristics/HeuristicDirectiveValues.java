@@ -26,8 +26,8 @@
 package at.ac.tuwien.kr.alpha.common.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
-import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 
 /**
  * Holds values defined by a {@link HeuristicDirective} to steer domain-specific heuristic choice for a single ground heuristic directive.

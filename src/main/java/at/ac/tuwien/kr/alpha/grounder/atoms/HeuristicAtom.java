@@ -25,128 +25,75 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.common.atoms;
+package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static at.ac.tuwien.kr.alpha.Util.oops;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
- * TODO: move to package at.ac.tuwien.kr.alpha.grounder.atoms? (because since heuristic atoms are not allowed in input programs anymore, this is a purely internal atom)
  * TODO: docs
  *
  */
 public class HeuristicAtom implements Atom {
-	public static final String PREDICATE_HEURISTIC = ASPCore2Lexer.VOCABULARY.getLiteralName(ASPCore2Lexer.PREDICATE_HEURISTIC).replace("'", "");
-
-	private final List<Term> terms;
-	private final Predicate predicate;
+	public static final Predicate PREDICATE = Predicate.getInstance("_h", 4, true);
+	
+	private final Term weight;
+	private final Term level;
+	private final Term sign;
+	private final FunctionTerm head;
 	private final boolean ground;
-
-	/**
-	 * Constructs a heuristic atom that has been parsed from the input program.
-	 * @deprecated because heuristic atoms in the input program will be dropped in favor of {@link HeuristicDirective}s.
-	 */
-	@Deprecated
-	public HeuristicAtom(List<Term> terms, ASPCore2Parser.Naf_heuristicContext ctx) {
-		if (ctx != null && (terms.size() < 1 || terms.size() > 2)) {
-			throw new RuntimeException(getErrorMsg(ctx) +
-					PREDICATE_HEURISTIC + "(Weight) or " + PREDICATE_HEURISTIC + "(Weight,Level) was " +
-					"expected, but " + terms.size() + " terms found!");
-		}
-
-		List<Term> local = new ArrayList<>(2);
-		local.addAll(terms);
-		if (terms.size() < 2) {
-			local.add(ConstantTerm.getInstance(1));
-		}
-		this.terms = Collections.unmodifiableList(local);
-		this.predicate = Predicate.getInstance(PREDICATE_HEURISTIC, 2, true);
-		this.ground = local.stream().allMatch(Term::isGround);
-	}
 	
 	/**
 	 * Constructs a heuristic atom using information from a {@link HeuristicDirective}.
 	 */
 	public HeuristicAtom(Atom head, Term weight, Term level, Term sign) {
-		terms = new ArrayList<>(4);
-		terms.add(weight);
-		terms.add(level);
-		terms.add(sign);
-		terms.add(head.toFunctionTerm());
-		this.predicate = Predicate.getInstance(PREDICATE_HEURISTIC, 4, true);
-		this.ground = terms.stream().allMatch(Term::isGround);
+		this(head.toFunctionTerm(), weight, level, sign);
 	}
-
-	private String getErrorMsg(ASPCore2Parser.Naf_heuristicContext ctx) {
-		return "Invalid syntax" +
-				((ctx != null) ? " in line " + ctx.getStart().getLine() : "") + "! ";
-	}
-
-	public HeuristicAtom(List<Term> terms) {
-		this(terms, null);
-	}
-
-	/**
-	 * Constructs a HeuristicOn / HeuristicOff atom.
-	 */
-	public HeuristicAtom(Predicate predicate, HeuristicAtom groundHeuristicAtom, int headId) {
-		if (!groundHeuristicAtom.isGround()) {
-			throw oops("Should be ground but isn't: " + groundHeuristicAtom);
-		}
-		terms = new ArrayList<>(4);
-		terms.add(groundHeuristicAtom.getWeight());
-		terms.add(groundHeuristicAtom.getLevel());
-		terms.add(groundHeuristicAtom.getSign());
-		terms.add(ConstantTerm.getInstance(headId));
-		this.predicate = predicate;
-		this.ground = true;
+	
+	private HeuristicAtom(FunctionTerm head, Term weight, Term level, Term sign) {
+		this.head = head;
+		this.weight = weight;
+		this.level = level;
+		this.sign = sign;
+		this.ground = getTerms().stream().allMatch(Term::isGround);
 	}
 
 	public Term getWeight() {
-		return terms.get(0);
+		return weight;
 	}
 
 	public Term getLevel() {
-		return terms.get(1);
+		return level;
 	}
 	
 	public Term getSign() {
-		if (terms.size() > 2) {
-			return terms.get(2);
-		} else {
-			return null;
-		}
+		return sign;
 	}
 	
 	public FunctionTerm getHead() {
-		if (terms.size() > 3) {
-			return (FunctionTerm) terms.get(3);
-		} else {
-			return null;
-		}
+		return head;
 	}
 
 	@Override
 	public Predicate getPredicate() {
-		return this.predicate;
+		return PREDICATE;
 	}
 
 	@Override
 	public List<Term> getTerms() {
-		return this.terms;
+		return Arrays.asList(weight, level, sign, head);
 	}
 
 	@Override
@@ -162,7 +109,7 @@ public class HeuristicAtom implements Atom {
 	@Override
 	public Set<VariableTerm> getBindingVariables() {
 		Set<VariableTerm> bindingVariables = new HashSet<>();
-		for (Term term : terms) {
+		for (Term term : getTerms()) {
 			bindingVariables.addAll(term.getOccurringVariables());
 		}
 		return bindingVariables;
@@ -171,7 +118,7 @@ public class HeuristicAtom implements Atom {
 	@Override
 	public Set<VariableTerm> getNonBindingVariables() {
 		Set<VariableTerm> nonbindingVariables = new HashSet<>();
-		for (Term term : terms) {
+		for (Term term : getTerms()) {
 			nonbindingVariables.addAll(term.getOccurringVariables());
 		}
 		return nonbindingVariables;
@@ -179,18 +126,21 @@ public class HeuristicAtom implements Atom {
 
 	@Override
 	public HeuristicAtom substitute(Substitution substitution) {
-		return new HeuristicAtom(terms.stream()
-				.map(t -> t.substitute(substitution))
-				.collect(Collectors.toList()));
+		return new HeuristicAtom(
+			head.substitute(substitution),
+			weight.substitute(substitution),
+			level.substitute(substitution),
+			sign.substitute(substitution)
+		);
 	}
 
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
-		sb.append(predicate.getName());
-		if (!terms.isEmpty()) {
+		sb.append(PREDICATE.getName());
+		if (!getTerms().isEmpty()) {
 			sb.append("(");
-			sb.append(Util.join(this.terms));
+			sb.append(Util.join(this.getTerms()));
 			sb.append(")");
 		}
 		return sb.toString();

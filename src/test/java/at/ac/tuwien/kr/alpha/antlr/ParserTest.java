@@ -181,27 +181,6 @@ public class ParserTest {
 	}
 
 	@Test
-	public void parseProgramWithHeuristicAtoms() throws IOException {
-		Program parsedProgram = parser.parse(
-			"a :- b, not _h(1), not d.\n" +
-			"c(X) :- p(X,a,_), not _h(X), q(Xaa,xaa)." +
-			":- f(Y).");
-
-		assertEquals("Program contains three rules.", 3, parsedProgram.getRules().size());
-		System.out.println(parsedProgram.getRules().toString());
-	}
-
-	@Test
-	public void parseIncorrectProgramWithHeuristicAtoms() throws IOException {
-		int faults = 0;
-		faults += parseFaultyRule("a :- b, not _h(Y), not d.\n", 1);
-		faults += parseFaultyRule("c(X) :- p(X,a,_), not _h(X,Xaa,Z), q(Xaa,xaa).", 1);
-		faults += parseFaultyRule(":- f(Y), not _h(Y,X).", 1);
-
-		assertEquals("Three faults were expected", 3, faults);
-	}
-
-	@Test
 	public void parseProgramWithHeuristicAnnotation_W() {
 		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). [X]");
 

@@ -279,8 +279,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		do {
 			if (ctx.naf_literal() != null) {
 				literals.add(visitNaf_literal(ctx.naf_literal()));
-			} else if (ctx.naf_heuristic() != null) {
-				literals.add(visitNaf_heuristic(ctx.naf_heuristic()).toLiteral(false));
 			} else {
 				throw notSupported(ctx.aggregate());
 			}
@@ -331,11 +329,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			return new ExternalLiteral(visitExternal_atom(ctx.external_atom()), !isCurrentLiteralNegated);
 		}
 		throw notSupported(ctx);
-	}
-
-	@Override
-	public HeuristicAtom visitNaf_heuristic(Naf_heuristicContext ctx) {
-		return new HeuristicAtom(visitTerms(ctx.terms()), ctx);
 	}
 
 	@Override

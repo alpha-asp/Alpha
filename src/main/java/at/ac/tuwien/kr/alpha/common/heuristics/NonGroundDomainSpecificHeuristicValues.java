@@ -28,10 +28,10 @@ package at.ac.tuwien.kr.alpha.common.heuristics;
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.RuleAnnotation;
 import at.ac.tuwien.kr.alpha.common.WeightAtLevel;
-import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 
 import java.util.Collections;
 import java.util.List;
