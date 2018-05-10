@@ -167,7 +167,7 @@ public class ChoiceGrounder implements Grounder {
 	}
 	
 	@Override
-	public Map<Integer, Set<HeuristicDirectiveValues>> getHeuristicValues() {
+	public Map<Integer, HeuristicDirectiveValues> getHeuristicValues() {
 		return Collections.emptyMap();
 	}
 	

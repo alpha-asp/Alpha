@@ -33,6 +33,7 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.apache.commons.lang3.tuple.Pair;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -47,6 +48,11 @@ public class NaiveGrounderTest {
 	private static final ProgramParser PARSER = new ProgramParser();
 	private static final VariableTerm N = VariableTerm.getInstance("N");
 	private static final ConstantTerm<Integer> ONE = ConstantTerm.getInstance(1);
+	
+	@Before
+	public void resetIdGenerator() {
+		ChoiceRecorder.ID_GENERATOR.resetGenerator();
+	}
 
 	@Test
 	public void testGenerateHeuristicNoGoods() {
@@ -64,9 +70,8 @@ public class NaiveGrounderTest {
 		assertNull(result.getLeft());
 		List<NoGood> generatedNoGoods = result.getRight();
 		assertEquals(2, generatedNoGoods.size());
-		Integer headId = grounder.getAtomStore().getAtomId(buildAtom("b", ONE));
-		assertEquals("*{-(HeuOff(1, 2, true, " + headId + ")), +(b(1))}", grounder.noGoodToString(generatedNoGoods.get(0)));
-		assertEquals("*{-(HeuOn(1, 2, true, " + headId + ")), +(a(1))}", grounder.noGoodToString(generatedNoGoods.get(1)));
+		assertEquals("*{-(HeuOff(\"0\")), +(b(1))}", grounder.noGoodToString(generatedNoGoods.get(0)));
+		assertEquals("*{-(HeuOn(\"0\")), +(a(1))}", grounder.noGoodToString(generatedNoGoods.get(1)));
 	}
 
 	private Rule findHeuristicRule(List<Rule> rules) {

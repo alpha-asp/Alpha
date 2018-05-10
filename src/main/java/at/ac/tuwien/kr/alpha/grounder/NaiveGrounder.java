@@ -34,6 +34,7 @@ import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicInfluencerAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.domspec.DomainSpecificHeuristicsRecorder;
@@ -107,8 +108,8 @@ public class NaiveGrounder extends BridgedGrounder {
 		workingMemory.initialize(RuleAtom.PREDICATE);
 		workingMemory.initialize(ChoiceAtom.OFF);
 		workingMemory.initialize(ChoiceAtom.ON);
-		workingMemory.initialize(HeuristicAtom.OFF);
-		workingMemory.initialize(HeuristicAtom.ON);
+		workingMemory.initialize(HeuristicInfluencerAtom.OFF);
+		workingMemory.initialize(HeuristicInfluencerAtom.ON);
 
 		// Initialize rules and constraints.
 		final Map<Predicate, HashSet<NonGroundRule>> ruleHeadsToDefiningRules = new HashMap<>();
@@ -512,7 +513,7 @@ public class NaiveGrounder extends BridgedGrounder {
 	}
 	
 	@Override
-	public Map<Integer, Set<HeuristicDirectiveValues>> getHeuristicValues() {
+	public Map<Integer, HeuristicDirectiveValues> getHeuristicValues() {
 		return choiceRecorder.getAndResetHeuristicValues();
 	}
 	

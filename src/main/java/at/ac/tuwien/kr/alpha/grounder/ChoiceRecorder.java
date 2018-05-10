@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
+import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicInfluencerAtom;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -40,12 +41,12 @@ import static at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom.on;
 import static java.util.Collections.emptyList;
 
 public class ChoiceRecorder {
-	private static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
+	static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
 
 	private final AtomStore atomStore;
 	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newChoiceAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
 	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newHeuristicAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
-	private Map<Integer, Set<HeuristicDirectiveValues>> newHeuristicValues = new LinkedHashMap<>();
+	private Map<Integer, HeuristicDirectiveValues> newHeuristicValues = new LinkedHashMap<>();
 	private Map<Integer, Set<Integer>> newHeadsToBodies = new LinkedHashMap<>();
 
 	public ChoiceRecorder(AtomStore atomStore) {
@@ -58,18 +59,30 @@ public class ChoiceRecorder {
 		return currentChoiceAtoms;
 	}
 
+	/**
+	 * TODO: docs
+	 * @return
+	 */
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getAndResetHeuristics() {
 		Pair<Map<Integer, Integer>, Map<Integer, Integer>> currentHeuristicAtoms = newHeuristicAtoms;
 		newHeuristicAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
 		return currentHeuristicAtoms;
 	}
 
-	public Map<Integer, Set<HeuristicDirectiveValues>> getAndResetHeuristicValues() {
-		Map<Integer, Set<HeuristicDirectiveValues>> currentHeuristicValues = newHeuristicValues;
+	/**
+	 * TODO: docs
+	 * @return
+	 */
+	public Map<Integer, HeuristicDirectiveValues> getAndResetHeuristicValues() {
+		Map<Integer, HeuristicDirectiveValues> currentHeuristicValues = newHeuristicValues;
 		newHeuristicValues = new LinkedHashMap<>();
 		return currentHeuristicValues;
 	}
 
+	/**
+	 * TODO: docs
+	 * @return
+	 */
 	public Map<Integer, Set<Integer>> getAndResetHeadsToBodies() {
 		Map<Integer, Set<Integer>> currentHeadsToBodies = newHeadsToBodies;
 		newHeadsToBodies = new LinkedHashMap<>();
@@ -92,19 +105,18 @@ public class ChoiceRecorder {
 	}
 
 	public Collection<NoGood> generateHeuristicNoGoods(final List<Integer> pos, final List<Integer> neg, HeuristicAtom groundHeuristicAtom, final int headId) {
+		// Obtain an ID for this new heuristic.
+		final int heuristicId = ID_GENERATOR.getNextId();
 		// Create HeuristicOn and HeuristicOff atoms.
-		final int heuristicOnAtom = atomStore.add(HeuristicAtom.on(groundHeuristicAtom, headId));
-		newHeuristicAtoms.getLeft().put(headId, heuristicOnAtom);
-		final int heuristicOffAtom = atomStore.add(HeuristicAtom.off(groundHeuristicAtom, headId));
-		newHeuristicAtoms.getRight().put(headId, heuristicOffAtom);
+		final int heuristicOnAtom = atomStore.add(HeuristicInfluencerAtom.on(heuristicId));
+		newHeuristicAtoms.getLeft().put(heuristicId, heuristicOnAtom);
+		final int heuristicOffAtom = atomStore.add(HeuristicInfluencerAtom.off(heuristicId));
+		newHeuristicAtoms.getRight().put(heuristicId, heuristicOffAtom);
 
 		final List<NoGood> noGoods = generateNeg(heuristicOffAtom, neg);
 		noGoods.add(generatePos(heuristicOnAtom, pos));
 
-		if (!newHeuristicValues.containsKey(headId)) {
-			newHeuristicValues.put(headId, new HashSet<>());
-		}
-		newHeuristicValues.get(headId).add(HeuristicDirectiveValues.fromHeuristicAtom(groundHeuristicAtom, headId));
+		newHeuristicValues.put(heuristicId, HeuristicDirectiveValues.fromHeuristicAtom(groundHeuristicAtom, headId));
 
 		return noGoods;
 	}

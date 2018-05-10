@@ -42,59 +42,58 @@ import java.util.stream.Stream;
 public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuristicsStore {
 
 	/**
-	 * A mapping from levels to a mapping from weights to sets of rule atom IDs
-	 * (level -> { weight -> { rules } }).
+	 * A mapping from levels to a mapping from weights to sets of heuristic IDs
+	 * (level -> { weight -> { heuristics } }).
 	 * Maps are {@link TreeMap}s sorted in reverse order, which determines the order in which elements are retrieved by
 	 * {@link #streamEntriesOrderedByDecreasingPriority()}.
 	 */
-	private final SortedMap<Integer, SortedMap<Integer, Set<HeuristicDirectiveValues>>> mapLevelWeightHeuristics = new TreeMap<>(Comparator.reverseOrder());
+	private final SortedMap<Integer, SortedMap<Integer, Set<Integer>>> mapLevelWeightHeuristics = new TreeMap<>(Comparator.reverseOrder());
 
-	private final Map<Integer, Set<HeuristicDirectiveValues>> mapHeuristicHeadToHeuristicValues = new HashMap<>();
+	private final Map<Integer, HeuristicDirectiveValues> mapHeuristicToHeuristicValue = new HashMap<>();
 
 	@Override
-	public void addInfo(HeuristicDirectiveValues values) {
-		int headId = values.getHeadAtomId();
+	public void addInfo(int heuristicId, HeuristicDirectiveValues values) {
 		int level = values.getLevel();
 		int weight = values.getWeight();
 
-		SortedMap<Integer, Set<HeuristicDirectiveValues>> mapWeightValues = mapLevelWeightHeuristics.get(level);
+		SortedMap<Integer, Set<Integer>> mapWeightValues = mapLevelWeightHeuristics.get(level);
 		if (mapWeightValues == null) {
 			mapWeightValues = new TreeMap<>(Comparator.reverseOrder());
 			mapLevelWeightHeuristics.put(level, mapWeightValues);
 		}
 		
-		Set<HeuristicDirectiveValues> valuesForWeightLevel = mapWeightValues.get(weight);
+		Set<Integer> valuesForWeightLevel = mapWeightValues.get(weight);
 		if (valuesForWeightLevel == null) {
 			valuesForWeightLevel = new HashSet<>();
 			mapWeightValues.put(weight, valuesForWeightLevel);
 		}
-		valuesForWeightLevel.add(values);
+		valuesForWeightLevel.add(heuristicId);
 		
-		Set<HeuristicDirectiveValues> valuesForHead = mapHeuristicHeadToHeuristicValues.get(headId);
-		if (valuesForHead == null) {
-			valuesForHead = new HashSet<>();
-			mapHeuristicHeadToHeuristicValues.put(headId, valuesForHead);
-		}
-		valuesForHead.add(values);
+		mapHeuristicToHeuristicValue.put(heuristicId, values);
 	}
 
 	@Override
-	public Collection<Set<HeuristicDirectiveValues>> getValuesOrderedByDecreasingPriority() {
-		Stream<Set<HeuristicDirectiveValues>> flatMap = mapLevelWeightHeuristics.values().stream().flatMap(m -> m.values().stream());
+	public Collection<Set<Integer>> getHeuristicsOrderedByDecreasingPriority() {
+		Stream<Set<Integer>> flatMap = mapLevelWeightHeuristics.values().stream().flatMap(m -> m.values().stream());
 		// do not return flatMap directly because of Java bug
 		// cf. https://stackoverflow.com/questions/29229373/why-filter-after-flatmap-is-not-completely-lazy-in-java-streams
 		return flatMap.collect(Collectors.toList());
 	}
 	
 	@Override
-	public Set<HeuristicDirectiveValues> getAllEntries() {
-		Set<HeuristicDirectiveValues> entries = new HashSet<>();
-		for (SortedMap<Integer, Set<HeuristicDirectiveValues>> mapWeightChoicePoint : mapLevelWeightHeuristics.values()) {
-			for (Set<HeuristicDirectiveValues> entriesForCurrentPriority : mapWeightChoicePoint.values()) {
+	public Set<Integer> getAllEntries() {
+		Set<Integer> entries = new HashSet<>();
+		for (SortedMap<Integer, Set<Integer>> mapWeightChoicePoint : mapLevelWeightHeuristics.values()) {
+			for (Set<Integer> entriesForCurrentPriority : mapWeightChoicePoint.values()) {
 				entries.addAll(entriesForCurrentPriority);
 			}
 		}
 		return entries;
+	}
+	
+	@Override
+	public HeuristicDirectiveValues getValues(int heuristicId) {
+		return mapHeuristicToHeuristicValue.get(heuristicId);
 	}
 
 }

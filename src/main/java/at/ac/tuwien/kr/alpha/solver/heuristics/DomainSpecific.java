@@ -91,25 +91,26 @@ public class DomainSpecific implements BranchingHeuristic {
 	public int chooseLiteral() {
 		// TODO: improve performance of this method (and called methods)
 		Set<Integer> activeHeuristics = choiceManager.getAllActiveHeuristicAtoms();
-		Collection<Set<HeuristicDirectiveValues>> heuristicValuesOrderedByDecreasingPriority = choiceManager.getDomainSpecificHeuristics()
-				.getValuesOrderedByDecreasingPriority();
-		for (Set<HeuristicDirectiveValues> potentialHeuristicValues : heuristicValuesOrderedByDecreasingPriority) {
-			Map<HeuristicDirectiveValues, Set<Integer>> activeHeadsToBodies = new HashMap<>();
-			for (HeuristicDirectiveValues h : potentialHeuristicValues) {
-				int headAtomId = h.getHeadAtomId();
-				if (activeHeuristics.contains(headAtomId) && isUnassigned(headAtomId)) {
+		Collection<Set<Integer>> heuristicsOrderedByDecreasingPriority = choiceManager.getDomainSpecificHeuristics()
+				.getHeuristicsOrderedByDecreasingPriority();
+		for (Set<Integer> potentialHeuristics : heuristicsOrderedByDecreasingPriority) {
+			Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies = new HashMap<>();
+			for (int h : potentialHeuristics) {
+				HeuristicDirectiveValues values = choiceManager.getDomainSpecificHeuristics().getValues(h);
+				int headAtomId = values.getHeadAtomId();
+				if (activeHeuristics.contains(h) && isUnassigned(headAtomId)) {
 					// TODO: do we mention in paper that MBT heads can be chosen?
 					Set<Integer> activeChoiceAtomsDerivingHead = choiceManager.getActiveChoiceAtomsDerivingHead(headAtomId);
 					if (!activeChoiceAtomsDerivingHead.isEmpty()) {
-						activeHeadsToBodies.put(h, activeChoiceAtomsDerivingHead);
+						activeHeuristicsToBodies.put(values, activeChoiceAtomsDerivingHead);
 					}
 				}
 			}
-			if (activeHeadsToBodies.size() > 1) {
+			if (activeHeuristicsToBodies.size() > 1) {
 				// TODO: let fallback pick ... only atom or also sign ?!?!
 				throw new UnsupportedOperationException();
-			} else if (activeHeadsToBodies.size() == 1) {
-				Entry<HeuristicDirectiveValues, Set<Integer>> activeHeadToBodies = activeHeadsToBodies.entrySet().iterator().next();
+			} else if (activeHeuristicsToBodies.size() == 1) {
+				Entry<HeuristicDirectiveValues, Set<Integer>> activeHeadToBodies = activeHeuristicsToBodies.entrySet().iterator().next();
 				HeuristicDirectiveValues heuristic = activeHeadToBodies.getKey();
 				Set<Integer> bodies = activeHeadToBodies.getValue();
 				if (bodies.isEmpty()) {

@@ -158,14 +158,16 @@ public class ChoiceManager implements Checkable {
 		final int disabler;
 		boolean isActive;
 		long lastModCount;
+		private boolean useHeuristicsInsteadOfChoices;
 		final Set<ChoicePoint> activeChoicePoints;
 
-		private ChoicePoint(Integer atom, Integer enabler, int disabler, Set<ChoicePoint> activeChoicePoints) {
+		private ChoicePoint(Integer atom, Integer enabler, int disabler, boolean useHeuristicsInsteadOfChoices) {
 			this.atom = atom;
 			this.enabler = enabler;
 			this.disabler = disabler;
 			this.lastModCount = modCount;
-			this.activeChoicePoints = activeChoicePoints;
+			this.useHeuristicsInsteadOfChoices = useHeuristicsInsteadOfChoices; // TODO: replace this parameter by polymorphism?!
+			this.activeChoicePoints = useHeuristicsInsteadOfChoices ? ChoiceManager.this.activeHeuristics : ChoiceManager.this.activeChoicePoints;
 		}
 
 		private boolean isActiveChoicePoint() {
@@ -175,8 +177,15 @@ public class ChoiceManager implements Checkable {
 				&& (disablerEntry == null || !disablerEntry.getTruth().toBoolean());
 		}
 
-		private boolean isNotChosen() {
-			Assignment.Entry entry = assignment.get(atom);
+		protected boolean isNotChosen() {
+			int consideredAtom = atom;
+			if (useHeuristicsInsteadOfChoices) {
+				// For heuristics, there are no atoms representing the choice points in the atom store.
+				// When determining if the heuristic head is already assigned, one has to look at the "real" head atom.
+				consideredAtom = domainSpecificHeuristics.getValues(atom).getHeadAtomId();
+			}
+			
+			Assignment.Entry entry = assignment.get(consideredAtom);
 			return entry == null || MBT.equals(entry.getTruth());
 		}
 
@@ -332,16 +341,17 @@ public class ChoiceManager implements Checkable {
 	}
 
 	void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms, Map<Integer, Set<Integer>> headsToBodies) {
-		addInformation(choiceAtoms, activeChoicePoints, influencers);
+		addInformation(choiceAtoms, influencers, false);
 		addHeadsToBodies(headsToBodies);
 	}
 
-	void addHeuristicInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> heuristicAtoms, Map<Integer, Set<HeuristicDirectiveValues>> heuristicValues) {
-		addInformation(heuristicAtoms, activeHeuristics, heuristicInfluencers);
+	void addHeuristicInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> heuristicAtoms, Map<Integer, HeuristicDirectiveValues> heuristicValues) {
+		addInformation(heuristicAtoms, heuristicInfluencers, true);
 		addInformation(heuristicValues);
 	}
 
-	void addInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms, Set<ChoicePoint> activeChoicePoints, Map<Integer, ChoicePoint> influencers) {
+	void addInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms, Map<Integer, ChoicePoint> influencers, boolean useHeuristicsInsteadOfChoices) {
+		// TODO: replace parameter boolean useHeuristicsInsteadOfChoices by polymorphic concept!?
 		// Assumption: we get all enabler/disabler pairs in one call.
 		Map<Integer, Integer> enablers = choiceAtoms.getLeft();
 		Map<Integer, Integer> disablers = choiceAtoms.getRight();
@@ -359,16 +369,16 @@ public class ChoiceManager implements Checkable {
 			if (enabler == null || disabler == null) {
 				throw oops("Incomplete choice point description found (no enabler or disabler)");
 			}
-			ChoicePoint choicePoint = new ChoicePoint(atom, enabler, disabler, activeChoicePoints);
+			ChoicePoint choicePoint = new ChoicePoint(atom, enabler, disabler, useHeuristicsInsteadOfChoices);
 			influencers.put(atom, choicePoint);
 			influencers.put(enabler, choicePoint);
 			influencers.put(disabler, choicePoint);
 		}
 	}
 	
-	private void addInformation(Map<Integer, Set<HeuristicDirectiveValues>> heuristicValues) {
-		for (Entry<Integer, Set<HeuristicDirectiveValues>> entry : heuristicValues.entrySet()) {
-			domainSpecificHeuristics.addInfo(entry.getValue());
+	private void addInformation(Map<Integer, HeuristicDirectiveValues> heuristicValues) {
+		for (Entry<Integer, HeuristicDirectiveValues> entry : heuristicValues.entrySet()) {
+			domainSpecificHeuristics.addInfo(entry.getKey(), entry.getValue());
 		}
 	}
 

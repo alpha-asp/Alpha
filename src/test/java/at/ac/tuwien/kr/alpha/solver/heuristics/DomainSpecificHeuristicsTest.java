@@ -277,6 +277,17 @@ public class DomainSpecificHeuristicsTest {
 	}
 	
 	@Test
+	public void testSimpleGroundHeuristicProgram_HeuristicDirective_TwoDirectivesForSameHead() {
+		Program program = parser.parse(
+				"a :- not b." + LS +
+				"b :- not a." + LS +
+				"#heuristic a : not b. [3@1]" + LS +
+				"#heuristic b : not a. [1@1]" + LS +
+				"#heuristic b : not a, not b. [2@1]");
+		solveAndAssertAnswerSets(program, "{ a }", "{ b }");
+	}
+	
+	@Test
 	public void testSimpleNonGroundHeuristicProgram_HeuristicDirective_AB_SameLevel() {
 		Program program = parser.parse(
 				"n(1)." + LS +

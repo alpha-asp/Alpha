@@ -28,7 +28,6 @@ package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -38,27 +37,17 @@ import java.util.Set;
  */
 public interface DomainSpecificHeuristicsStore {
 	
-	void addInfo(HeuristicDirectiveValues values);
-	
-	default void addInfo(Collection<HeuristicDirectiveValues> valuesCollection) {
-		for (HeuristicDirectiveValues values : valuesCollection) {
-			addInfo(values);
-		}
-	}
-
-	default void addInfo(Map<Integer, HeuristicDirectiveValues> valuesMap) {
-		for (HeuristicDirectiveValues values : valuesMap.values()) {
-			addInfo(values);
-		}
-	}
+	void addInfo(int heuristicId, HeuristicDirectiveValues values);
 
 	/**
 	 * Returns sets of rule atoms, each of which contains only rule atoms of the same priority. The collection contains rule atoms in decreasing order of priority,
 	 * e.g. the first set contains all rule atoms of the highest level and the highest weight, the second contains all of the highest level and the
 	 * second-to-highest weight, etc.
 	 */
-	Collection<Set<HeuristicDirectiveValues>> getValuesOrderedByDecreasingPriority();
+	Collection<Set<Integer>> getHeuristicsOrderedByDecreasingPriority();
 	
-	Set<HeuristicDirectiveValues> getAllEntries();
+	Set<Integer> getAllEntries();
+	
+	HeuristicDirectiveValues getValues(int heuristicId);
 
 }

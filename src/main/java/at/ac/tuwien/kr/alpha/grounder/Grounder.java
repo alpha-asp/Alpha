@@ -78,7 +78,7 @@ public interface Grounder extends AtomTranslator {
 	 * 
 	 * @return
 	 */
-	Map<Integer, Set<HeuristicDirectiveValues>> getHeuristicValues();
+	Map<Integer, HeuristicDirectiveValues> getHeuristicValues();
 
 	/**
 	 * TODO: docs

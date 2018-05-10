@@ -37,17 +37,22 @@ import java.util.Set;
 public class EmptyDomainSpecificHeuristicsStore implements DomainSpecificHeuristicsStore {
 
 	@Override
-	public void addInfo(HeuristicDirectiveValues values) {
+	public void addInfo(int heuristicId, HeuristicDirectiveValues values) {
 	}
 
 	@Override
-	public Collection<Set<HeuristicDirectiveValues>> getValuesOrderedByDecreasingPriority() {
+	public Collection<Set<Integer>> getHeuristicsOrderedByDecreasingPriority() {
 		return Collections.emptyList();
 	}
 	
 	@Override
-	public Set<HeuristicDirectiveValues> getAllEntries() {
+	public Set<Integer> getAllEntries() {
 		return Collections.emptySet();
+	}
+	
+	@Override
+	public HeuristicDirectiveValues getValues(int heuristicId) {
+		return null;
 	}
 
 }

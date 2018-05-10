@@ -43,10 +43,13 @@ import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
+/**
+ * TODO: move to package at.ac.tuwien.kr.alpha.grounder.atoms? (because since heuristic atoms are not allowed in input programs anymore, this is a purely internal atom)
+ * TODO: docs
+ *
+ */
 public class HeuristicAtom implements Atom {
 	public static final String PREDICATE_HEURISTIC = ASPCore2Lexer.VOCABULARY.getLiteralName(ASPCore2Lexer.PREDICATE_HEURISTIC).replace("'", "");
-	public static final Predicate ON = Predicate.getInstance("HeuOn", 4, true);
-	public static final Predicate OFF = Predicate.getInstance("HeuOff", 4, true);
 
 	private final List<Term> terms;
 	private final Predicate predicate;
@@ -195,13 +198,5 @@ public class HeuristicAtom implements Atom {
 
 	public static HeuristicAtom fromHeuristicDirective(HeuristicDirective heuristicDirective) {
 		return new HeuristicAtom(heuristicDirective.getHead(), heuristicDirective.getWeight(), heuristicDirective.getLevel(), heuristicDirective.getSign());
-	}
-
-	public static Atom on(HeuristicAtom heuristicAtom, int headId) {
-		return new HeuristicAtom(ON, heuristicAtom, headId);
-	}
-
-	public static Atom off(HeuristicAtom heuristicAtom, int headId) {
-		return new HeuristicAtom(OFF, heuristicAtom, headId);
 	}
 }

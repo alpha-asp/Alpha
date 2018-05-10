@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -41,28 +41,28 @@ import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 
-public class ChoiceAtom implements Atom {
-	public static final Predicate ON = Predicate.getInstance("ChoiceOn", 1, true);
-	public static final Predicate OFF = Predicate.getInstance("ChoiceOff", 1, true);
+public class HeuristicInfluencerAtom implements Atom {
+	public static final Predicate ON = Predicate.getInstance("HeuOn", 1, true);
+	public static final Predicate OFF = Predicate.getInstance("HeuOff", 1, true);
 
 	private final Predicate predicate;
 	private final List<Term> terms;
 
-	private ChoiceAtom(Predicate predicate, Term term) {
+	private HeuristicInfluencerAtom(Predicate predicate, Term term) {
 		this.predicate = predicate;
 		this.terms = Collections.singletonList(term);
 	}
 
-	private ChoiceAtom(Predicate predicate, int id) {
+	private HeuristicInfluencerAtom(Predicate predicate, int id) {
 		this(predicate, ConstantTerm.getInstance(Integer.toString(id)));
 	}
 
-	public static ChoiceAtom on(int id) {
-		return new ChoiceAtom(ON, id);
+	public static HeuristicInfluencerAtom on(int id) {
+		return new HeuristicInfluencerAtom(ON, id);
 	}
 
-	public static ChoiceAtom off(int id) {
-		return new ChoiceAtom(OFF, id);
+	public static HeuristicInfluencerAtom off(int id) {
+		return new HeuristicInfluencerAtom(OFF, id);
 	}
 
 	@Override
