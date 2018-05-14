@@ -203,6 +203,29 @@ public abstract class AbstractSolverTests {
 	}
 
 	protected void assertAnswerSets(String program, Set<AnswerSet> answerSets) throws IOException {
-		assertEquals(answerSets, collectSet(program));
+		Set<AnswerSet> computedAnswerSets = collectSet(program);
+		assertEquals(printDifferentAnswerSets(answerSets, computedAnswerSets), answerSets, computedAnswerSets);
+	}
+
+	private String printDifferentAnswerSets(Set<AnswerSet> expected, Set<AnswerSet> obtained) {
+		if (expected.equals(obtained)) {
+			return "";
+		}
+		StringBuilder sb = new StringBuilder("Sets of answer sets are different:\n");
+		Set<AnswerSet> notObtained = new HashSet<>(expected);
+		notObtained.removeAll(obtained);
+		Set<AnswerSet> notExpected = new HashSet<>(obtained);
+		notExpected.removeAll(expected);
+		if (!notObtained.isEmpty()) {
+			sb.append("Expected but missing answer set(s): ");
+			sb.append(notObtained);
+			sb.append("\n");
+		}
+		if (!notExpected.isEmpty()) {
+			sb.append("Obtained but not expected answer set(s): ");
+			sb.append(notExpected);
+			sb.append("\n");
+		}
+		return sb.toString();
 	}
 }
