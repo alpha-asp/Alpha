@@ -71,7 +71,7 @@ public class SumNormalization implements ProgramTransformation {
 		// Add enumeration rule that uses the special EnumerationAtom.
 		// The enumeration rule is: "input_number_with_first(A, I, F) :- input_with_first(A, X, F), _index(A, X, I)."
 		Rule enumerationRule = makePredicatesInternal(parse("input_number_with_first(A, I, F) :- input_with_first(A, X, F).")).getRules().get(0);
-		EnumerationAtom enumerationAtom = new EnumerationAtom((BasicAtom) parse("index(A, X, I).").getFacts().get(0));
+		EnumerationAtom enumerationAtom = new EnumerationAtom(parse("index(A, X, I).").getFacts().get(0).getTerms());
 		enumerationRule.getBody().add(enumerationAtom.toLiteral());
 		summationEncoding.getRules().add(enumerationRule);
 

@@ -8,6 +8,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.HashMap;
+import java.util.List;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
@@ -23,16 +24,16 @@ public class EnumerationAtom extends BasicAtom {
 	public static final Predicate ENUMERATION_PREDICATE = Predicate.getInstance("_Enumeration", 3);
 	private static final HashMap<Term, HashMap<Term, Integer>> ENUMERATIONS = new HashMap<>();
 
-	public EnumerationAtom(BasicAtom clone) {
-		super(ENUMERATION_PREDICATE, clone.getTerms());
-		if (getTerms().size() != 3) {
-			throw new RuntimeException("EnumerationAtom must have arity three. Given one does not: " + clone);
+	public EnumerationAtom(List<Term> terms) {
+		super(ENUMERATION_PREDICATE, terms);
+		if (terms.size() != 3) {
+			throw new RuntimeException("EnumerationAtom must have arity three. Given terms are of wrong size: " + terms);
 		}
 		/*if (!(getTerms().get(0) instanceof ConstantTerm)) {
 			throw new RuntimeException("First parameter of EnumerationAtom must be a constant: " + clone);
 		}*/
 		if (!(getTerms().get(2) instanceof VariableTerm)) {
-			throw new RuntimeException("Third parameter of EnumerationAtom must be a variable: " + clone);
+			throw new RuntimeException("Third parameter of EnumerationAtom must be a variable: " + terms);
 		}
 	}
 
@@ -66,7 +67,7 @@ public class EnumerationAtom extends BasicAtom {
 
 	@Override
 	public EnumerationAtom substitute(Substitution substitution) {
-		return new EnumerationAtom(super.substitute(substitution));
+		return new EnumerationAtom(super.substitute(substitution).getTerms());
 	}
 
 	@Override

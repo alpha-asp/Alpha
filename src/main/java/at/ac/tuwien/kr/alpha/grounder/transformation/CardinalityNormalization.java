@@ -65,7 +65,7 @@ public class CardinalityNormalization implements ProgramTransformation {
 		// Add enumeration rule that uses the special EnumerationAtom.
 		// The enumeration rule is: "sorting_network_input_number(A, I) :- sorting_network_input(A, X), sorting_network_index(A, X, I)."
 		Rule enumerationRule = PredicateInternalizer.makePredicatesInternal(parse("sorting_network_input_number(A, I) :- sorting_network_input(A, X).")).getRules().get(0);
-		EnumerationAtom enumerationAtom = new EnumerationAtom((BasicAtom) parse("sorting_network_index(A, X, I).").getFacts().get(0));
+		EnumerationAtom enumerationAtom = new EnumerationAtom(parse("sorting_network_index(A, X, I).").getFacts().get(0).getTerms());
 		enumerationRule.getBody().add(enumerationAtom.toLiteral());
 		cardinalityEncoding.getRules().add(enumerationRule);
 

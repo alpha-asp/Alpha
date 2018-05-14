@@ -65,7 +65,7 @@ public class EnumerationRewriting implements ProgramTransformation  {
 					continue;
 				}
 				rit.remove();
-				rewrittenLiterals.add(new EnumerationAtom(basicLiteral.getAtom()).toLiteral());
+				rewrittenLiterals.add(new EnumerationAtom(basicLiteral.getAtom().getTerms()).toLiteral());
 			}
 			rule.getBody().addAll(rewrittenLiterals);
 		}
