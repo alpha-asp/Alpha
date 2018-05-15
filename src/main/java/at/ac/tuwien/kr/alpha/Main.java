@@ -156,7 +156,7 @@ public class Main {
 		Option debugFlags = new Option(OPT_DEBUG_INTERNAL_CHECKS, "run additional (time-consuming) safety checks.");
 		options.addOption(debugFlags);
 
-		Option ignoreDomSpecHeuristicOption = new Option("ds", OPT_IGNORE_DOMSPEC_HEURISTIC, false, "ignore domain-specific heuristics defined via _h prediacates");
+		Option ignoreDomSpecHeuristicOption = new Option("ids", OPT_IGNORE_DOMSPEC_HEURISTIC, false, "ignore domain-specific heuristics defined via heuristic directives");
 		options.addOption(ignoreDomSpecHeuristicOption);
 
 		Option branchingHeuristicOption = new Option("b", OPT_BRANCHING_HEURISTIC, false, "name of the branching heuristic to use");
