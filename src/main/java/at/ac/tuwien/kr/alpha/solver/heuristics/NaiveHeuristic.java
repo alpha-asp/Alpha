@@ -73,6 +73,9 @@ public class NaiveHeuristic implements BranchingHeuristic {
 
 	@Override
 	public int chooseLiteral(Set<Integer> admissibleChoices) {
+		if (admissibleChoices == null) {
+			return chooseLiteral();
+		}
 		SetView<Integer> admissibleActiveChoices = SetUtils.intersection(choiceManager.getAllActiveChoiceAtoms(), admissibleChoices);
 		if (admissibleActiveChoices.isEmpty()) {
 			return DEFAULT_CHOICE_ATOM;
