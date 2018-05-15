@@ -93,6 +93,11 @@ public class DomainSpecific implements BranchingHeuristic {
 
 	@Override
 	public int chooseLiteral() {
+		return chooseLiteral(null);
+	}
+
+	@Override
+	public int chooseLiteral(Set<Integer> admissibleChoices) {
 		// TODO: improve performance of this method (and called methods)
 		Set<Integer> activeHeuristics = choiceManager.getAllActiveHeuristicAtoms();
 		Collection<Set<Integer>> heuristicsOrderedByDecreasingPriority = choiceManager.getDomainSpecificHeuristics()
@@ -111,12 +116,18 @@ public class DomainSpecific implements BranchingHeuristic {
 				}
 			}
 			if (activeHeuristicsToBodies.size() > 1) {
-				Set<Integer> admissibleChoices = union(activeHeuristicsToBodies.values());
-				return askFallbackHeuristic(activeHeuristicsToBodies, admissibleChoices);
+				Set<Integer> admissibleActiveChoices = union(activeHeuristicsToBodies.values());
+				if (admissibleChoices != null) {
+					admissibleActiveChoices.retainAll(admissibleChoices);
+				}
+				return askFallbackHeuristic(activeHeuristicsToBodies, admissibleActiveChoices);
 			} else if (activeHeuristicsToBodies.size() == 1) {
 				Entry<HeuristicDirectiveValues, Set<Integer>> activeHeadToBodies = activeHeuristicsToBodies.entrySet().iterator().next();
 				HeuristicDirectiveValues heuristic = activeHeadToBodies.getKey();
 				Set<Integer> bodies = activeHeadToBodies.getValue();
+				if (admissibleChoices != null) {
+					bodies.retainAll(admissibleChoices);
+				}
 				if (bodies.isEmpty()) {
 					throw oops("Set of active bodies for heuristic is empty: " + heuristic);
 				} else if (bodies.size() > 1) {
@@ -143,16 +154,6 @@ public class DomainSpecific implements BranchingHeuristic {
 			}
 		}
 		return Literals.fromAtomAndSign(atom, sign);
-	}
-
-	@Override
-	public int chooseLiteral(Set<Integer> admissibleChoices) {
-		// TODO: implement
-		// Optional<Integer> chosenAtom = choiceManager.getDomainSpecificHeuristics().streamEntriesOrderedByDecreasingPriority()
-		// .map(s -> keepAdmissibleEntries(s, admissibleChoices)).map(c -> chooseFromEquallyWeighted(c))
-		// .filter(a -> a != DEFAULT_CHOICE_ATOM).findFirst();
-		// return chooseOrFallback(chosenAtom);
-		return DEFAULT_CHOICE_LITERAL;
 	}
 
 	// private Set<Entry> keepAdmissibleEntries(Set<Entry> entries, Set<Integer> admissibleChoices) {
