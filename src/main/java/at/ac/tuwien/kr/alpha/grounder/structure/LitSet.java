@@ -1,8 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder.structure;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.VariableNormalizableAtom;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.Unification;
 
@@ -121,10 +120,8 @@ public class LitSet {
 	}
 
 	private Atom computeNormalized(Atom atom, String prefix) {
-		if (atom instanceof BasicAtom) {
-			return ((BasicAtom) atom).normalizeVariables(prefix, 0);
-		} else if (atom instanceof ComparisonAtom) {
-			return ((ComparisonAtom) atom).normalizeVariables(prefix, 0);
+		if (atom instanceof VariableNormalizableAtom) {
+			return ((VariableNormalizableAtom) atom).normalizeVariables(prefix, 0);
 		} else {
 			throw oops("Atom to normalize is of unknonw type: " + atom);
 		}

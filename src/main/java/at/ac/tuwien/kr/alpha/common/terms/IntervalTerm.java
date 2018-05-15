@@ -125,7 +125,9 @@ public class IntervalTerm extends Term {
 
 	@Override
 	public Term normalizeVariables(String renamePrefix, RenameCounter counter) {
-		throw new UnsupportedOperationException();
+		return IntervalTerm.getInstance(
+			lowerBoundTerm.normalizeVariables(renamePrefix, counter),
+			upperBoundTerm.normalizeVariables(renamePrefix, counter));
 	}
 
 	/**
