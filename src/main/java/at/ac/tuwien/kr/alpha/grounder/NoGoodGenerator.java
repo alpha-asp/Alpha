@@ -33,6 +33,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 
 import java.util.*;
 
@@ -47,14 +48,14 @@ public class NoGoodGenerator {
 	private final AtomStore store;
 	private final ChoiceRecorder recorder;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
-	private final Map<Predicate, HashSet<NonGroundRule>> ruleHeadsToDefiningRules;
+	private final ProgramAnalysis programAnalysis;
 	private final Set<NonGroundRule> uniqueGroundRulePerGroundHead;
 
-	NoGoodGenerator(AtomStore store, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, Map<Predicate, HashSet<NonGroundRule>> ruleHeadsToDefiningRules, Set<NonGroundRule> uniqueGroundRulePerGroundHead) {
+	NoGoodGenerator(AtomStore store, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, ProgramAnalysis programAnalysis, Set<NonGroundRule> uniqueGroundRulePerGroundHead) {
 		this.store = store;
 		this.recorder = recorder;
 		this.factsFromProgram = factsFromProgram;
-		this.ruleHeadsToDefiningRules = ruleHeadsToDefiningRules;
+		this.programAnalysis = programAnalysis;
 		this.uniqueGroundRulePerGroundHead = uniqueGroundRulePerGroundHead;
 	}
 
@@ -176,7 +177,7 @@ public class NoGoodGenerator {
 	}
 
 	private boolean existsRuleWithPredicateInHead(final Predicate predicate) {
-		final HashSet<NonGroundRule> definingRules = ruleHeadsToDefiningRules.get(predicate);
+		final HashSet<NonGroundRule> definingRules = programAnalysis.getPredicateDefiningRules().get(predicate);
 		return definingRules != null && !definingRules.isEmpty();
 	}
 }

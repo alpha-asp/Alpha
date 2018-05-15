@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -359,6 +360,15 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 	@Override
 	public Entry get(int atom) {
 		return assignment.get(atom);
+	}
+
+	Integer getSomeMBTAssignedAtom(Grounder grounder) {
+		for (Entry entry : assignment) {
+			if (entry != null && entry.getTruth() == MBT && grounder.getAtom(entry.atom) instanceof BasicAtom) {
+				return entry.atom;
+			}
+		}
+		throw oops("No BasicAtom is assigned MBT.");
 	}
 
 	/**

@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
 import static at.ac.tuwien.kr.alpha.Util.entry;
+import static at.ac.tuwien.kr.alpha.Util.oops;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 
@@ -204,5 +205,20 @@ public class ChoiceGrounder implements Grounder {
 	@Override
 	public int getMaxAtomId() {
 		return 8;
+	}
+
+	@Override
+	public Atom getAtom(int atom) {
+		return new BasicAtom(Predicate.getInstance(atomIdToString.get(atom), 0));
+	}
+
+	@Override
+	public int getAtom(Atom atom) {
+		for (Map.Entry<Integer, String> atomIdString : atomIdToString.entrySet()) {
+			if (atomIdString.getValue().equals(atom.toString())) {
+				return atomIdString.getKey();
+			}
+		}
+		throw oops("Given Atom is not known: " + atom);
 	}
 }

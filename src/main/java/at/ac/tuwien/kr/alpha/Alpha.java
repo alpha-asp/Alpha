@@ -218,7 +218,7 @@ public class Alpha {
 
 	public Stream<AnswerSet> solve() {
 		Grounder grounder = GrounderFactory.getInstance(grounderName, program);
-		Solver solver = SolverFactory.getInstance(solverName, storeName, grounder, new Random(seed), BranchingHeuristicFactory.Heuristic.NAIVE, debug);
+		Solver solver = SolverFactory.getInstance(solverName, storeName, grounder, new Random(seed), BranchingHeuristicFactory.Heuristic.NAIVE, debug, false);
 		return solver.stream();
 	}
 }

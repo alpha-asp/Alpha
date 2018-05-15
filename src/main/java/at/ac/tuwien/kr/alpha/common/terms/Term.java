@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.common.terms;
 
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -64,4 +65,15 @@ public abstract class Term implements Comparable<Term> {
 	 * @return the term with all variables renamed.
 	 */
 	public abstract Term renameVariables(String renamePrefix);
+
+	public abstract Term normalizeVariables(String renamePrefix, RenameCounter counter);
+
+	public static class RenameCounter {
+		int counter;
+		final HashMap<VariableTerm, VariableTerm> renamedVariables;
+		public RenameCounter(int startingValue) {
+			counter = startingValue;
+			renamedVariables = new HashMap<>();
+		}
+	}
 }

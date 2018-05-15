@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 import java.util.*;
@@ -166,6 +167,41 @@ public class IndexedInstanceStorage {
 		}
 		ArrayList<Instance> matchingInstances = indexForPosition.get(term);
 		return matchingInstances == null ? new ArrayList<>() : matchingInstances;
+	}
+
+
+	private int getFirstGroundTermPosition(Atom atom) {
+		for (int i = 0; i < atom.getTerms().size(); i++) {
+			Term testTerm = atom.getTerms().get(i);
+			if (testTerm.isGround()) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	public Collection<Instance> getInstancesFromPartiallyGroundAtom(Atom substitute) {
+		// For selection of the instances, find ground term on which to select.
+		int firstGroundTermPosition = getFirstGroundTermPosition(substitute);
+		// Select matching instances, select all if no ground term was found.
+		if (firstGroundTermPosition != -1) {
+			Term firstGroundTerm = substitute.getTerms().get(firstGroundTermPosition);
+			return getInstancesMatchingAtPosition(firstGroundTerm, firstGroundTermPosition);
+		} else {
+			return new ArrayList<>(getAllInstances());
+		}
+	}
+
+	public Collection<Instance> getInstancesMatching(Atom matchAtom) {
+		ArrayList<Instance> matchingInstances = new ArrayList<>();
+		for (Instance instance : getInstancesFromPartiallyGroundAtom(matchAtom)) {
+			Substitution unified = Substitution.unify(matchAtom, instance, new Substitution());
+			if (unified == null) {
+				continue;
+			}
+			matchingInstances.add(instance);
+		}
+		return matchingInstances;
 	}
 
 	public Set<Instance> getAllInstances() {

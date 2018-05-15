@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
@@ -50,7 +51,7 @@ import static org.junit.Assert.assertNotEquals;
  */
 public class SubstitutionTest {
 	private static final ProgramParser PARSER = new ProgramParser();
-	
+
 	private static final ConstantTerm<?> A = ConstantTerm.getSymbolicInstance("a");
 	private static final ConstantTerm<?> B = ConstantTerm.getSymbolicInstance("b");
 	private static final ConstantTerm<?> C = ConstantTerm.getSymbolicInstance("c");
@@ -80,6 +81,38 @@ public class SubstitutionTest {
 	}
 
 	@Test
+	public void extendSubstitution() {
+		VariableTerm varX = VariableTerm.getInstance("X");
+		VariableTerm varY = VariableTerm.getInstance("Y");
+		Substitution sub1 = new Substitution();
+		sub1.put(varX, varY);
+		Substitution sub2 = new Substitution();
+		sub2.put(varY, ConstantTerm.getInstance("a"));
+
+		sub1.extendWith(sub2);
+		BasicAtom atom1 = parseAtom("p(X)");
+
+		Atom atomSubstituted = atom1.substitute(sub1);
+		assertEquals(ConstantTerm.getInstance("a"), atomSubstituted.getTerms().get(0));
+	}
+
+	@Test
+	public void mergeSubstitutionsIntoLeft() {
+		VariableTerm varX = VariableTerm.getInstance("X");
+		VariableTerm varY = VariableTerm.getInstance("Y");
+		VariableTerm varZ = VariableTerm.getInstance("Z");
+		Term constA = ConstantTerm.getInstance("a");
+		Substitution left = new Substitution();
+		left.put(varX, varY);
+		left.put(varZ, varY);
+		Substitution right = new Substitution();
+		right.put(varX, constA);
+		Substitution merged = Substitution.mergeIntoLeft(left, right);
+		assertEquals(merged.eval(varY), constA);
+		assertEquals(merged.eval(varZ), constA);
+	}
+
+	@Test
 	public void equalizingSubstitution() {
 		BasicAtom atom1 = parseAtom("p(X,Y)");
 		BasicAtom atom2 = parseAtom("p(A,B)");
@@ -96,17 +129,17 @@ public class SubstitutionTest {
 		assertEquals(null, Substitution.findEqualizingSubstitution(atom5, atom6));
 		assertEquals(null, Substitution.findEqualizingSubstitution(atom6, atom5));
 	}
-	
+
 	@Test
 	public void substitutePositiveBasicAtom() {
 		substituteBasicAtomLiteral(false);
 	}
-	
+
 	@Test
 	public void substituteNegativeBasicAtom() {
 		substituteBasicAtomLiteral(true);
 	}
-	
+
 	@Test
 	public void groundAndPrintRule() {
 		Rule rule = PARSER.parse("x :- p(X,Y), not q(X,Y).").getRules().get(0);
@@ -117,7 +150,7 @@ public class SubstitutionTest {
 		String printedString = NaiveGrounder.groundAndPrintRule(nonGroundRule, substitution);
 		assertEquals("x :- p(a, b), not q(a, b).", printedString);
 	}
-	
+
 	private void substituteBasicAtomLiteral(boolean negated) {
 		Predicate p = Predicate.getInstance("p", 2);
 		BasicAtom atom = new BasicAtom(p, Arrays.asList(X, Y));
@@ -131,17 +164,17 @@ public class SubstitutionTest {
 		assertEquals(B, literal.getTerms().get(1));
 		assertEquals(negated, literal.isNegated());
 	}
-	
+
 	@Test
 	public void groundLiteralToString_PositiveBasicAtom() {
 		groundLiteralToString(false);
 	}
-	
+
 	@Test
 	public void groundLiteralToString_NegativeBasicAtom() {
 		groundLiteralToString(true);
 	}
-	
+
 	private void groundLiteralToString(boolean negated) {
 		Predicate p = Predicate.getInstance("p", 2);
 		BasicAtom atom = new BasicAtom(p, Arrays.asList(X, Y));

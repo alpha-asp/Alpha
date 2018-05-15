@@ -138,7 +138,7 @@ public abstract class AbstractSolverTests {
 	public boolean checks;
 
 	protected Solver getInstance(Grounder grounder) {
-		return SolverFactory.getInstance(solverName, storeName, grounder, new Random(seed), heuristic, checks);
+		return SolverFactory.getInstance(solverName, storeName, grounder, new Random(seed), heuristic, checks, false);
 	}
 
 	protected Solver getInstance(Program program) {
@@ -203,29 +203,18 @@ public abstract class AbstractSolverTests {
 	}
 
 	protected void assertAnswerSets(String program, Set<AnswerSet> answerSets) throws IOException {
-		Set<AnswerSet> computedAnswerSets = collectSet(program);
-		assertEquals(printDifferentAnswerSets(answerSets, computedAnswerSets), answerSets, computedAnswerSets);
-	}
+		Set<AnswerSet> actualAnswerSets = emptySet();
+		try {
+			actualAnswerSets = collectSet(program);
+			assertEquals(answerSets, actualAnswerSets);
+		} catch (AssertionError e) {
+			Set<AnswerSet> expectedMinusActual = new LinkedHashSet<>(answerSets);
+			expectedMinusActual.removeAll(actualAnswerSets);
+			Set<AnswerSet> actualMinusExpected = new LinkedHashSet<>(actualAnswerSets);
+			actualMinusExpected.removeAll(answerSets);
+			String setDiffs = "Expected and computed answer sets do not agree, differences are:\nExpected \\ Actual:\n" + expectedMinusActual + "\nActual \\ Expected:\n" + actualMinusExpected;
+			throw new AssertionError(setDiffs + e.getMessage(), e);
+		}
 
-	private String printDifferentAnswerSets(Set<AnswerSet> expected, Set<AnswerSet> obtained) {
-		if (expected.equals(obtained)) {
-			return "";
-		}
-		StringBuilder sb = new StringBuilder("Sets of answer sets are different:\n");
-		Set<AnswerSet> notObtained = new HashSet<>(expected);
-		notObtained.removeAll(obtained);
-		Set<AnswerSet> notExpected = new HashSet<>(obtained);
-		notExpected.removeAll(expected);
-		if (!notObtained.isEmpty()) {
-			sb.append("Expected but missing answer set(s): ");
-			sb.append(notObtained);
-			sb.append("\n");
-		}
-		if (!notExpected.isEmpty()) {
-			sb.append("Obtained but not expected answer set(s): ");
-			sb.append(notExpected);
-			sb.append("\n");
-		}
-		return sb.toString();
 	}
 }

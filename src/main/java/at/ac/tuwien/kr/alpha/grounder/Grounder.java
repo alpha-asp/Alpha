@@ -4,6 +4,7 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Iterator;
@@ -63,4 +64,18 @@ public interface Grounder extends AtomTranslator {
 	 * @return the highest atomId in use.
 	 */
 	int getMaxAtomId();
+
+	/**
+	 * Translates an atom represented as int into an Atom object.
+	 * @param atom the atom to translate.
+	 * @return the Atom object represented by the int.
+	 */
+	Atom getAtom(int atom);
+
+	/**
+	 * Translates an atom represented as Atom objec into an int.
+	 * @param atom the Atom object to translate.
+	 * @return the int representing the Atom object.
+	 */
+	int getAtom(Atom atom);
 }
