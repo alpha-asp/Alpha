@@ -70,7 +70,7 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 	@Override
 	public int chooseLiteral(Set<Integer> admissibleChoices) {
 		for (BranchingHeuristic element : chain) {
-			int chosenLiteral = element.chooseLiteral();
+			int chosenLiteral = element.chooseLiteral(admissibleChoices);
 			if (chosenLiteral != DEFAULT_CHOICE_LITERAL) {
 				return chosenLiteral;
 			}
