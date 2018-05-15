@@ -80,10 +80,10 @@ public class Unification {
 	}
 
 	private static Substitution unifyAtoms(Atom left, Atom right, boolean keepLeftAsIs) {
-		HashSet<VariableTerm> leftOccurringVariables = new HashSet<>(left.getBindingVariables());
-		leftOccurringVariables.addAll(left.getNonBindingVariables());
-		HashSet<VariableTerm> rightOccurringVaribles = new HashSet<>(right.getBindingVariables());
-		rightOccurringVaribles.addAll(right.getNonBindingVariables());
+		HashSet<VariableTerm> leftOccurringVariables = new HashSet<>(left.toLiteral().getBindingVariables());
+		leftOccurringVariables.addAll(left.toLiteral().getNonBindingVariables());
+		HashSet<VariableTerm> rightOccurringVaribles = new HashSet<>(right.toLiteral().getBindingVariables());
+		rightOccurringVaribles.addAll(right.toLiteral().getNonBindingVariables());
 		boolean leftSmaller = leftOccurringVariables.size() < rightOccurringVaribles.size();
 		HashSet<VariableTerm> smallerSet = leftSmaller ? leftOccurringVariables : rightOccurringVaribles;
 		HashSet<VariableTerm> largerSet = leftSmaller ? rightOccurringVaribles : leftOccurringVariables;

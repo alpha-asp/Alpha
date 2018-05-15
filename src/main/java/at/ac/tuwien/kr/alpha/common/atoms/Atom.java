@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.ArrayList;
@@ -66,8 +67,8 @@ public interface Atom extends Comparable<Atom> {
 	Literal toLiteral(boolean positive);
 
 	default Atom renameVariables(String newVariablePrefix) {
-		ArrayList<VariableTerm> occurringVariables = new ArrayList<>(getBindingVariables());
-		occurringVariables.addAll(getNonBindingVariables());
+		ArrayList<VariableTerm> occurringVariables = new ArrayList<>(this.toLiteral().getBindingVariables());
+		occurringVariables.addAll(this.toLiteral().getNonBindingVariables());
 		Substitution renamingSubstitution = new Substitution();
 		int counter = 0;
 		for (VariableTerm variable : occurringVariables) {
