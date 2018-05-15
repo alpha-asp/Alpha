@@ -71,6 +71,7 @@ public class Program {
 	public void accumulate(Program program) {
 		rules.addAll(program.rules);
 		facts.addAll(program.facts);
+		directives.addAll(program.directives);
 	}
 
 	@Override
