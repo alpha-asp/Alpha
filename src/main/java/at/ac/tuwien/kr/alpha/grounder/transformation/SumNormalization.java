@@ -39,8 +39,9 @@ public class SumNormalization implements ProgramTransformation {
 		String summationSubprogram = "interesting_number(R, 1..I1) :- input_number_with_first(R, I, _), I1 = I - 1.\n" +
 			"prefix_subset_sum(R, 0, 0) :- aggregate_function(R, \"#sum\").\n" +
 			"prefix_subset_sum(R, I, S) :- prefix_subset_sum(R, I1, S), I1 = I - 1, interesting_number(R, I).\n" +
-			"prefix_subset_sum(R, I, SF) :- prefix_subset_sum(R, I1, S), I1 = I - 1, SF = S + F, input_number_with_first(R, I, F).\n" +
-			"output(R, K) :- bound(R, K), K <= S, prefix_subset_sum(R, _, S).";
+			"prefix_subset_sum(R, I, SF) :- prefix_subset_sum(R, I1, S), I1 = I - 1, SF = S + F, input_number_with_first(R, I, F),  bound(R, K), SF < K.\n" +
+			"output(R, K) :- bound(R, K), K <= 0." +
+			"output(R, K) :- prefix_subset_sum(R, I1, S), I1 = I - 1, input_number_with_first(R, I, F), bound(R, K), K <= S + F.";
 
 		// Connect/Rewrite every aggregate in each rule.
 		ArrayList<Rule> additionalRules = new ArrayList<>();
