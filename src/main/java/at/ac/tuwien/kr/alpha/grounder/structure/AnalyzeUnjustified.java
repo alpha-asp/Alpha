@@ -61,7 +61,7 @@ public class AnalyzeUnjustified {
 	}
 
 	private Set<Literal> analyze(BasicAtom atom, Assignment currentAssignment) {
-		log(pad("Starting analyze, current assignment is: " + currentAssignment));
+		log(pad("Starting analyze, current assignment is: {}"), currentAssignment);
 		LinkedHashSet<Literal> vL = new LinkedHashSet<>();
 		LinkedHashSet<LitSet> vToDo = new LinkedHashSet<>(Collections.singleton(new LitSet(atom, new LinkedHashSet<>())));
 		LinkedHashSet<LitSet> vDone = new LinkedHashSet<>();
@@ -70,10 +70,10 @@ public class AnalyzeUnjustified {
 			LitSet x = it.next();
 			it.remove();
 			log("");
-			log("Treating now: " + x);
+			log("Treating now: {}", x);
 			vDone.add(x);
 			ReturnExplainUnjust unjustRet = explainUnjust(x, currentAssignment);
-			log("Additional ToDo: " + unjustRet.vToDo);
+			log("Additional ToDo: {}", unjustRet.vToDo);
 			// Check each new LitSet if it does not already occur as done.
 			for (LitSet todoLitSet : unjustRet.vToDo) {
 				if (!vDone.contains(todoLitSet)) {
@@ -87,7 +87,7 @@ public class AnalyzeUnjustified {
 
 	private ReturnExplainUnjust explainUnjust(LitSet x, Assignment currentAssignment) {
 		padDepth += 2;
-		log("Begin explainUnjust(): " + x);
+		log("Begin explainUnjust(): {}", x);
 		Atom p = x.getAtom();
 
 		ReturnExplainUnjust ret = new ReturnExplainUnjust();
@@ -95,20 +95,20 @@ public class AnalyzeUnjustified {
 		// Line 2: construct set of all 'rules' such that head unifies with p.
 		log("Line 2.");
 		List<RuleAndUnifier> rulesUnifyingWithP = rulesHeadUnifyingWith(p);
-		log("Rules unifying with " + p + " are: " + rulesUnifyingWithP);
+		log("Rules unifying with {} are {}", p, rulesUnifyingWithP);
 		rulesLoop:
 		for (RuleAndUnifier ruleUnifier : rulesUnifyingWithP) {
 			Substitution sigma = ruleUnifier.unifier;
 			List<Literal> bodyR = ruleUnifier.ruleBody;
 			Atom sigmaHr = ruleUnifier.originalHead.substitute(sigma);
-			log("Considering now: " + ruleUnifier);
+			log("Considering now: {}", ruleUnifier);
 			// Line 3 below.
 			log("Line 3.");
 			Set<Substitution> vN = new LinkedHashSet<>(x.getComplementSubstitutions());
 			for (Substitution sigmaN : vN) {
 				if (Unification.instantiate(p.substitute(sigmaN), sigmaHr) != null) {
 					log("Line 4.");
-					log("Unifier is excluded by: " + sigmaN);
+					log("Unifier is excluded by: {}", sigmaN);
 					continue rulesLoop;
 				}
 			}
@@ -123,39 +123,39 @@ public class AnalyzeUnjustified {
 				}
 				vNp.add(merged);
 			}
-			log("Adapting N to N'. Original N is " + vN);
-			log("Adapted N' is " + vNp);
+			log("Adapting N to N'. Original N is {}", vN);
+			log("Adapted N' is {}", vNp);
 			// Line 8.
 			log("Line 9.");
-			log("Searching for falsified negated literals in the body: " + bodyR);
+			log("Searching for falsified negated literals in the body: {}", bodyR);
 			for (Literal lit : bodyR) {
 				if (!lit.isNegated()) {
 					continue;
 				}
 				Atom lb = lit.getAtom().substitute(sigma);
-				log("Found: " + lit + ", searching falsifying ground instances of " + lb + " (with unifier from the head) now.");
+				log("Found: {}, searching falsifying ground instances of {} (with unifier from the head) now.", lit, lb);
 				for (Atom lg : getAssignedAtomsOverPredicate(lb.getPredicate())) {
-					log("Considering: " + lg);
+					log("Considering: {}", lg);
 					if (atomStore.contains(lg)) {
 						int atomId = atomStore.getAtomId(lg);
 						if (!currentAssignment.getTruth(atomId).toBoolean()) {
-							log("" + lg + " is not assigned TRUE or MBT. Skipping.");
+							log("{} is not assigned TRUE or MBT. Skipping.", lg);
 							continue;
 						}
 					} // Note: in case the atom is not in the atomStore, it came from a fact and hence is true.
-					log("" + lg + " is TRUE or MBT.");
+					log("{} is TRUE or MBT.", lg);
 					Substitution sigmagb = Unification.unifyAtoms(lg, lb);
 					if (sigmagb == null) {
-						log("" + lg + " does not unify with " + lb + "");
+						log("{} does not unify with {}", lg, lb);
 						continue;
 					}
 					// Line 9.
 					log("Line 10.");
-					log("Checking if " + lb + " is already covered.");
+					log("Checking if {} is already covered.", lb);
 					boolean isCovered = false;
 					for (Substitution sigmaN : vN) {
 						if (Unification.instantiate(p.substitute(sigmaN), sigmaHr.substitute(sigmagb)) != null) {
-							log(lb + " is already covered by " + sigmaN);
+							log("{} is already covered by {}", lb, sigmaN);
 							isCovered = true;
 							break;
 						}
@@ -165,9 +165,9 @@ public class AnalyzeUnjustified {
 						log("Line 11.");
 						Substitution sigmacirc = new Substitution(sigma).extendWith(sigmagb);
 						vNp.add(sigmacirc);
-						log("Literal " + lg + " is not excluded and falsifies body literal " + lit);
+						log("Literal {} is not excluded and falsifies body literal {}", lg ,lit);
 						ret.vL.add(lg.toLiteral());
-						log("Reasons extended by: " + lg);
+						log("Reasons extended by: {}", lg);
 					}
 				}
 
@@ -191,7 +191,7 @@ public class AnalyzeUnjustified {
 	private Set<LitSet> unjustCover(List<Literal> vB, Set<Substitution> vY, Set<Substitution> vN, Assignment currentAssignment) {
 		padDepth += 2;
 		log("Begin UnjustCoverFixed()");
-		log("Finding unjustified body literals in: " + vB + " / " + vY + " excluded " + vN);
+		log("Finding unjustified body literals in: {} / {} excluded {}", vB, vY, vN);
 		Set<LitSet> ret = new LinkedHashSet<>();
 		// Line 1.
 		if (vB.isEmpty() || vY.isEmpty()) {
@@ -205,20 +205,20 @@ public class AnalyzeUnjustified {
 		log("Line 3.");
 		int chosenLiteralPos = 0;
 		Atom b = vB.get(chosenLiteralPos).getAtom();
-		log("Picked literal from body is: " + b);
+		log("Picked literal from body is: {}", b);
 		// Line 4.
 		for (Substitution sigmaY : vY) {
 			log("Line 4.");
 			Atom bSigmaY = b.substitute(sigmaY);
-			log("Treating substitution for: " + bSigmaY);
+			log("Treating substitution for: {}", bSigmaY);
 			Set<Substitution> vYp = new LinkedHashSet<>();
 
-			log("Checking atoms over predicate: " + b.getPredicate());
+			log("Checking atoms over predicate: {}", b.getPredicate());
 			List<Atom> assignedAtomsOverPredicate = getAssignedAtomsOverPredicate(b.getPredicate());
 			atomLoop:
 			for (Atom atom : assignedAtomsOverPredicate) {
 				// Check that atom is justified/true.
-				log("Checking atom: " + atom);
+				log("Checking atom: {}", atom);
 				if (atomStore.contains(atom)) {
 					int atomId = atomStore.getAtomId(atom);
 					if (currentAssignment.getTruth(atomId) != ThriceTruth.TRUE) {
@@ -239,16 +239,16 @@ public class AnalyzeUnjustified {
 				if (Unification.instantiate(bSigmaY, bSigma) != null) {
 					for (Substitution sigmaN : vN) {
 						if (Unification.instantiate(b.substitute(sigmaN), bSigma) != null) {
-							log("Atom is excluded by: " + sigmaN);
+							log("Atom is excluded by: {}", sigmaN);
 							continue atomLoop;
 						}
 					}
-					log("Adding corresponding substitution to Y': " + sigma);
+					log("Adding corresponding substitution to Y': {}", sigma);
 					vYp.add(sigma);
 				}
 			}
 
-			log("Unjustified body literals: " + vYp);
+			log("Unjustified body literals: {}", vYp);
 
 			// Line 5.
 			log("Line 5.");
@@ -257,15 +257,15 @@ public class AnalyzeUnjustified {
 			vYpUN.addAll(vN);
 			LitSet toJustify = new LitSet(bSigmaY, vYpUN);
 			if (!toJustify.coversNothing()) {
-				log("New litset to do: " + toJustify);
+				log("New litset to do: {}", toJustify);
 				ret.add(toJustify);
 			} else {
-				log("Generated LitSet covers nothing. Ignoring: " + toJustify);
+				log("Generated LitSet covers nothing. Ignoring: {}", toJustify);
 			}
 			ArrayList<Literal> newB = new ArrayList<>(vB);
 			newB.remove(chosenLiteralPos);
 			ret.addAll(unjustCover(newB, vYp, vN, currentAssignment));
-			log("Literal set(s) to treat: " + ret);
+			log("Literal set(s) to treat: {}", ret);
 		}
 		log("End unjustCover().");
 		padDepth -= 2;
@@ -348,8 +348,8 @@ public class AnalyzeUnjustified {
 		return rulesWithUnifier;
 	}
 
-	private void log(String msg) {
-		LOGGER.trace(pad(msg));
+	private void log(String msg, Object ...refs) {
+		LOGGER.trace(pad(msg),refs);
 	}
 
 	private static class ReturnExplainUnjust {
