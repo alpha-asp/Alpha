@@ -134,7 +134,9 @@ public class AnalyzeUnjustified {
 				}
 				Atom lb = lit.getAtom().substitute(sigma);
 				log("Found: {}, searching falsifying ground instances of {} (with unifier from the head) now.", lit, lb);
-				for (Atom lg : getAssignedAtomsOverPredicate(lb.getPredicate())) {
+				AssignedAtomsIterator assignedAtomsOverPredicate = getAssignedAtomsOverPredicate(lb.getPredicate());
+				while (assignedAtomsOverPredicate.hasNext()) {
+					Atom lg = assignedAtomsOverPredicate.next();
 					log("Considering: {}", lg);
 					if (atomStore.contains(lg)) {
 						int atomId = atomStore.getAtomId(lg);
@@ -165,7 +167,7 @@ public class AnalyzeUnjustified {
 						log("Line 11.");
 						Substitution sigmacirc = new Substitution(sigma).extendWith(sigmagb);
 						vNp.add(sigmacirc);
-						log("Literal {} is not excluded and falsifies body literal {}", lg ,lit);
+						log("Literal {} is not excluded and falsifies body literal {}", lg, lit);
 						ret.vL.add(lg.toLiteral());
 						log("Reasons extended by: {}", lg);
 					}
@@ -214,9 +216,10 @@ public class AnalyzeUnjustified {
 			Set<Substitution> vYp = new LinkedHashSet<>();
 
 			log("Checking atoms over predicate: {}", b.getPredicate());
-			List<Atom> assignedAtomsOverPredicate = getAssignedAtomsOverPredicate(b.getPredicate());
+			AssignedAtomsIterator assignedAtomsOverPredicate = getAssignedAtomsOverPredicate(b.getPredicate());
 			atomLoop:
-			for (Atom atom : assignedAtomsOverPredicate) {
+			while (assignedAtomsOverPredicate.hasNext()) {
+				Atom atom = assignedAtomsOverPredicate.next();
 				// Check that atom is justified/true.
 				log("Checking atom: {}", atom);
 				if (atomStore.contains(atom)) {
@@ -281,18 +284,40 @@ public class AnalyzeUnjustified {
 		return sb.toString();
 	}
 
-	private List<Atom> getAssignedAtomsOverPredicate(Predicate predicate) {
+	private AssignedAtomsIterator getAssignedAtomsOverPredicate(Predicate predicate) {
 		// Find more substitutions, consider currentAssignment.
 		List<Atom> assignedAtoms = this.assignedAtoms.get(predicate);
-		List<Atom> assignedAtomsOverPredicate = new ArrayList<>(assignedAtoms != null ? assignedAtoms : Collections.emptyList());
-		// Add instances from facts.
+		// Consider instances from facts.
 		LinkedHashSet<Instance> factsOverPredicate = factsFromProgram.get(predicate);
-		if (factsOverPredicate != null) {
-			for (Instance factInstance : factsOverPredicate) {
-				assignedAtomsOverPredicate.add(new BasicAtom(predicate, factInstance.terms));
-			}
+		return new AssignedAtomsIterator(predicate, assignedAtoms, factsOverPredicate);
+	}
+
+	private static class AssignedAtomsIterator implements Iterator<Atom> {
+		private final Predicate predicate;
+		private final Iterator<Atom> assignedAtomsIterator;
+		private final Iterator<Instance> factsIterator;
+
+		public AssignedAtomsIterator(Predicate predicate, List<Atom> assignedAtoms, Set<Instance> facts) {
+			this.predicate = predicate;
+			this.assignedAtomsIterator = assignedAtoms == null ? Collections.emptyIterator() : assignedAtoms.iterator();
+			this.factsIterator = facts == null ? Collections.emptyIterator() : facts.iterator();
 		}
-		return assignedAtomsOverPredicate;
+
+		@Override
+		public boolean hasNext() {
+			return assignedAtomsIterator.hasNext() || factsIterator.hasNext();
+		}
+
+		@Override
+		public Atom next() {
+			if (assignedAtomsIterator.hasNext()) {
+				return assignedAtomsIterator.next();
+			}
+			if (factsIterator.hasNext()) {
+				return new BasicAtom(predicate, factsIterator.next().terms);
+			}
+			throw new NoSuchElementException();
+		}
 	}
 
 
@@ -348,8 +373,8 @@ public class AnalyzeUnjustified {
 		return rulesWithUnifier;
 	}
 
-	private void log(String msg, Object ...refs) {
-		LOGGER.trace(pad(msg),refs);
+	private void log(String msg, Object... refs) {
+		LOGGER.trace(pad(msg), refs);
 	}
 
 	private static class ReturnExplainUnjust {
