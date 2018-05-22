@@ -20,6 +20,15 @@ public class CardinalityNormalization implements ProgramTransformation {
 
 	private int aggregateCount;
 	private ProgramParser parser = new ProgramParser();
+	private final boolean useSortingCircuitEncoding;
+
+	public CardinalityNormalization() {
+		this(true);
+	}
+
+	public CardinalityNormalization(boolean useSortingCircuitEncoding) {
+		this.useSortingCircuitEncoding = useSortingCircuitEncoding;
+	}
 
 	private Program parse(String program) {
 		return parser.parse(program);
@@ -27,6 +36,14 @@ public class CardinalityNormalization implements ProgramTransformation {
 
 	@Override
 	public void transform(Program inputProgram) {
+		String cardinalityCountingGrid =
+			"span(R,1..I1) :- I1 = I-1, sorting_network_input_number(R,I).\n" +
+			"sum(R,0,0)    :- sorting_network_input_number(R,_).\n" +
+			"sum(R,I,S)    :- sum(R,I1,S), I1 = I-1, span(R,I).\n" +
+			"sum(R,I,S1)   :- sum(R,I1,S),S1 = S+1, I1 = I-1, sorting_network_input_number(R,I),\n" +
+			"                  sorting_network_bound(R,K), S < K.\n" +
+			"sorting_network_output(R,K) :- sorting_network_bound(R,K), K <= S, sum(R,_,S).\n";
+
 		// Transforms all cardinality-aggregates into normal logic rules employing a lazy-grounded sorting circuit.
 		String cardinalitySortingCircuit =
 			"sorting_network_wire_value(R, I, D) :- sorting_network_input_number(R, I), D = 0.\n" +
@@ -60,7 +77,8 @@ public class CardinalityNormalization implements ProgramTransformation {
 		if (additionalRules.isEmpty()) {
 			return;
 		}
-		Program cardinalityEncoding = PredicateInternalizer.makePredicatesInternal(new ProgramParser().parse(cardinalitySortingCircuit));
+		String usedCardinalityEncoding = useSortingCircuitEncoding ? cardinalitySortingCircuit : cardinalityCountingGrid;
+		Program cardinalityEncoding = PredicateInternalizer.makePredicatesInternal(new ProgramParser().parse(usedCardinalityEncoding));
 		for (Rule additionalRule : additionalRules) {
 			// Some rules might have an empty body, add them as facts.
 			if (additionalRule.getBody().isEmpty()) {

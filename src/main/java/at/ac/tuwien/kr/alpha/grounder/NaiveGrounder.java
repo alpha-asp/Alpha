@@ -78,12 +78,13 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private LinkedHashSet<Atom> removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
 	private int maxAtomIdBeforeGroundingNewNoGoods = -1;
 	private boolean disableInstanceRemoval;
+	private boolean useCountingGridNormalization;
 
 	public NaiveGrounder(Program program, AtomStore atomStore, Bridge... bridges) {
-		this(program, atomStore, p -> true, bridges);
+		this(program, atomStore, p -> true, false, bridges);
 	}
 
-	NaiveGrounder(Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, Bridge... bridges) {
+	NaiveGrounder(Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, boolean useCountingGrid, Bridge... bridges) {
 		super(filter, bridges);
 		this.atomStore = atomStore;
 
@@ -91,6 +92,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		analyzeUnjustified = new AnalyzeUnjustified(programAnalysis, atomStore, factsFromProgram);
 
 		// Apply program transformations/rewritings.
+		useCountingGridNormalization = useCountingGrid;
 		applyProgramTransformations(program);
 		LOGGER.debug("Transformed input program is:\n" + program);
 
@@ -194,7 +196,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// Transform choice rules.
 		new ChoiceHeadToNormal().transform(program);
 		// Transform cardinality aggregates.
-		new CardinalityNormalization().transform(program);
+		new CardinalityNormalization(!useCountingGridNormalization).transform(program);
 		// Transform sum aggregates.
 		new SumNormalization().transform(program);
 		// Transform intervals.
