@@ -161,7 +161,7 @@ public class IndexedInstanceStorage {
 	 * @return
 	 */
 	public List<Instance> getInstancesMatchingAtPosition(Term term, int position) {
-		HashMap<Term, ArrayList<Instance>> indexForPosition = indices.get(position);
+		Map<Term, ArrayList<Instance>> indexForPosition = indices.get(position);
 		if (indexForPosition == null) {
 			throw new RuntimeException("IndexedInstanceStorage queried for position " + position + " which is not indexed.");
 		}
@@ -180,7 +180,7 @@ public class IndexedInstanceStorage {
 		return -1;
 	}
 
-	public Collection<Instance> getInstancesFromPartiallyGroundAtom(Atom substitute) {
+	public List<Instance> getInstancesFromPartiallyGroundAtom(Atom substitute) {
 		// For selection of the instances, find ground term on which to select.
 		int firstGroundTermPosition = getFirstGroundTermPosition(substitute);
 		// Select matching instances, select all if no ground term was found.
@@ -190,18 +190,6 @@ public class IndexedInstanceStorage {
 		} else {
 			return new ArrayList<>(getAllInstances());
 		}
-	}
-
-	public Collection<Instance> getInstancesMatching(Atom matchAtom) {
-		ArrayList<Instance> matchingInstances = new ArrayList<>();
-		for (Instance instance : getInstancesFromPartiallyGroundAtom(matchAtom)) {
-			Substitution unified = Substitution.unify(matchAtom, instance, new Substitution());
-			if (unified == null) {
-				continue;
-			}
-			matchingInstances.add(instance);
-		}
-		return matchingInstances;
 	}
 
 	public Set<Instance> getAllInstances() {
