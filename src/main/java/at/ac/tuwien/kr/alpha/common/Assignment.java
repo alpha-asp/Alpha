@@ -11,7 +11,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
-public interface Assignment {
+public interface Assignment<E extends Assignment.Entry> extends Iterable<E> {
 	Entry get(int atom);
 
 	/**

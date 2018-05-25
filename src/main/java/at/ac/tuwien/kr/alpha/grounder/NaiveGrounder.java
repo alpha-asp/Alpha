@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
@@ -398,7 +399,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 
 			// Atom is not a fact already.
-			final int atomId = atomStore.add(substitute);
+			final int atomId = atomStore.putIfAbsent(substitute);
 
 			if (currentAssignment != null) {
 				final ThriceTruth truth = currentAssignment.getTruth(atomId);
@@ -444,7 +445,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 
 			if (factsFromProgram.get(substitutedAtom.getPredicate()) == null || !factsFromProgram.get(substitutedAtom.getPredicate()).contains(new Instance(substitutedAtom.getTerms()))) {
-				int atomId = atomStore.add(substitutedAtom);
+				int atomId = atomStore.putIfAbsent(substitutedAtom);
 
 				if (currentAssignment != null) {
 					ThriceTruth truth = currentAssignment.getTruth(atomId);
@@ -517,7 +518,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	@Override
 	public int getAtom(Atom atom) {
-		return atomStore.add(atom);
+		return atomStore.get(atom);
 	}
 
 	public void printCurrentlyKnownGroundRules() {
@@ -573,6 +574,16 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	@Override
 	public Set<Literal> justifyAtom(int atomToJustify, Assignment currentAssignment) {
 		return analyzeUnjustified.analyze(atomToJustify, currentAssignment);
+	}
+
+	@Override
+	public <E extends Assignment.Entry> Integer getSomeMBTAssignedAtom(Assignment<E> assignment) {
+		for (E entry : assignment) {
+			if (entry != null && entry.getTruth() == MBT && getAtom(entry.getAtom()) instanceof BasicAtom) {
+				return entry.getAtom();
+			}
+		}
+		throw oops("No BasicAtom is assigned MBT.");
 	}
 
 	private static class FirstBindingAtom {

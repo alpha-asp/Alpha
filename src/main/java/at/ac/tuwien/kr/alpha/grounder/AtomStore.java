@@ -75,13 +75,17 @@ public class AtomStore {
 		}
 	}
 
+	public int get(Atom atom) {
+		return predicateInstancesToAtomIds.get(atom);
+	}
+
 	/**
-	 * Creates a new atomId representing the given ground atom. Multiple calls with the same parameter result in
-	 * the same atomId (duplicates check).
-	 * @param groundAtom
-	 * @return
+	 * If the given ground atom is not already stored, associates it with a new ID and stores it, else returns
+	 * the current associated atom ID. Hence, multiple calls with the same parameter will return the same value.
+	 * @param groundAtom the ground atom to look up in the store.
+	 * @return the ID of the ground atom, possibly newly assigned.
 	 */
-	public int add(Atom groundAtom) {
+	public int putIfAbsent(Atom groundAtom) {
 		if (!groundAtom.isGround()) {
 			throw new IllegalArgumentException("atom must be ground");
 		}

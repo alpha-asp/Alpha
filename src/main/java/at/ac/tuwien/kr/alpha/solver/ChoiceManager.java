@@ -46,7 +46,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
  */
 public class ChoiceManager implements Checkable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ChoiceManager.class);
-	private final WritableAssignment assignment;
+	private final WritableAssignment<?> assignment;
 	private final Stack<Choice> choiceStack;
 
 	// Active choice points and all atoms that influence a choice point (enabler, disabler, choice atom itself).
@@ -187,7 +187,7 @@ public class ChoiceManager implements Checkable {
 		LOGGER.trace("Updating assignments of ChoiceManager.");
 
 		modCount++;
-		Iterator<Assignment.Entry> it = assignment.getNewAssignmentsForChoice();
+		Iterator<? extends Assignment.Entry> it = assignment.getNewAssignmentsForChoice();
 		int currentDecisionLevel = assignment.getDecisionLevel();
 		while (it.hasNext()) {
 			Assignment.Entry entry = it.next();

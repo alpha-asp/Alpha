@@ -33,7 +33,7 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
 
-public interface WritableAssignment extends Assignment {
+public interface WritableAssignment<E extends Assignment.Entry> extends Assignment<E> {
 	/**
 	 * Delete all information stored in the assignment.
 	 */

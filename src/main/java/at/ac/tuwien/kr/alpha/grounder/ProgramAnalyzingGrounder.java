@@ -33,5 +33,7 @@ public interface ProgramAnalyzingGrounder extends Grounder {
 	 */
 	NonGroundRule getNonGroundRule(Integer ruleId);
 
+	<E extends Assignment.Entry> Integer getSomeMBTAssignedAtom(Assignment<E> currentAssignment);
+
 	// FIXME: put further stuff here that the solver may use (e.g. SCC analysis for early closing).
 }

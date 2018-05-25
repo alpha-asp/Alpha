@@ -287,7 +287,6 @@ public class NaiveSolver extends AbstractSolver {
 		newTruthAssignments.clear();
 	}
 
-
 	private static final class Entry implements Assignment.Entry {
 		private final ThriceTruth value;
 		private final int atom;

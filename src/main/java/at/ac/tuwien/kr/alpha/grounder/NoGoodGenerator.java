@@ -89,8 +89,8 @@ public class NoGoodGenerator {
 			return emptyList();
 		}
 
-		final int bodyId = store.add(bodyAtom);
-		final int headId = store.add(nonGroundRule.getHeadAtom().substitute(substitution));
+		final int bodyId = store.putIfAbsent(bodyAtom);
+		final int headId = store.putIfAbsent(nonGroundRule.getHeadAtom().substitute(substitution));
 
 		final List<NoGood> result = new ArrayList<>();
 
@@ -135,7 +135,7 @@ public class NoGoodGenerator {
 				continue;
 			}
 
-			bodyAtomsNegative.add(store.add(groundAtom));
+			bodyAtomsNegative.add(store.putIfAbsent(groundAtom));
 		}
 		return bodyAtomsNegative;
 	}
@@ -166,7 +166,7 @@ public class NoGoodGenerator {
 				return null;
 			}
 
-			bodyAtomsPositive.add(store.add(groundAtom));
+			bodyAtomsPositive.add(store.putIfAbsent(groundAtom));
 		}
 		return bodyAtomsPositive;
 	}
