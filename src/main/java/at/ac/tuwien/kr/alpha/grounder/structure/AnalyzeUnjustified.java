@@ -1,9 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder.structure;
 
-import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Rule;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
@@ -23,12 +20,12 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 public class AnalyzeUnjustified {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AnalyzeUnjustified.class);
 	private final ProgramAnalysis programAnalysis;
-	private final AtomStore atomStore;
+	private final AtomTranslator atomStore;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private int renamingCounter;
 	private int padDepth;
 
-	public AnalyzeUnjustified(ProgramAnalysis programAnalysis, AtomStore atomStore, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram) {
+	public AnalyzeUnjustified(ProgramAnalysis programAnalysis, AtomTranslator atomStore, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram) {
 		this.programAnalysis = programAnalysis;
 		this.atomStore = atomStore;
 		this.factsFromProgram = factsFromProgram;
@@ -48,7 +45,7 @@ public class AnalyzeUnjustified {
 		// If atom instanceof ChoiceAtom and atom is MBT, then the corresponding rule body has a BasicAtom that is MBT.
 		// If atom instanceof RuleAtom and atom is FALSE, then this comes from a violated constraint in the end and the corresponding rule body can be taken as the single rule deriving the RuleAtom.
 		assignedAtoms = new LinkedHashMap<>();
-		for (int i = 1; i <= atomStore.getHighestAtomId(); i++) {
+		for (int i = 1; i <= atomStore.getMaxAtomId(); i++) {
 			Assignment.Entry entry = currentAssignment.get(i);
 			if (entry == null) {
 				continue;
@@ -139,7 +136,7 @@ public class AnalyzeUnjustified {
 					Atom lg = assignedAtomsOverPredicate.next();
 					log("Considering: {}", lg);
 					if (atomStore.contains(lg)) {
-						int atomId = atomStore.getAtomId(lg);
+						int atomId = atomStore.get(lg);
 						if (!currentAssignment.getTruth(atomId).toBoolean()) {
 							log("{} is not assigned TRUE or MBT. Skipping.", lg);
 							continue;
@@ -223,7 +220,7 @@ public class AnalyzeUnjustified {
 				// Check that atom is justified/true.
 				log("Checking atom: {}", atom);
 				if (atomStore.contains(atom)) {
-					int atomId = atomStore.getAtomId(atom);
+					int atomId = atomStore.get(atom);
 					if (currentAssignment.getTruth(atomId) != ThriceTruth.TRUE) {
 						log("Atom is not TRUE. Skipping.");
 						continue;

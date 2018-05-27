@@ -60,7 +60,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
 
 	private final WorkingMemory workingMemory = new WorkingMemory();
-	private final AtomStore atomStore = new AtomStore();
+	private final AtomTranslator atomStore;
 	private final NogoodRegistry registry = new NogoodRegistry();
 	final NoGoodGenerator noGoodGenerator;
 	private final ChoiceRecorder choiceRecorder;
@@ -77,12 +77,13 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private int maxAtomIdBeforeGroundingNewNoGoods = -1;
 	private boolean disableInstanceRemoval;
 
-	public NaiveGrounder(Program program, Bridge... bridges) {
-		this(program, p -> true, bridges);
+	public NaiveGrounder(Program program, AtomTranslator atomTranslator, Bridge... bridges) {
+		this(program, atomTranslator, p -> true, bridges);
 	}
 
-	NaiveGrounder(Program program, java.util.function.Predicate<Predicate> filter, Bridge... bridges) {
+	NaiveGrounder(Program program, AtomTranslator atomTranslator, java.util.function.Predicate<Predicate> filter, Bridge... bridges) {
 		super(filter, bridges);
+		this.atomStore = atomTranslator;
 
 		programAnalysis = new ProgramAnalysis(program);
 		analyzeUnjustified = new AnalyzeUnjustified(programAnalysis, atomStore, factsFromProgram);
@@ -284,7 +285,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// In first call, prepare facts and ground rules.
 		final Map<Integer, NoGood> newNoGoods = fixedRules != null ? bootstrap() : new LinkedHashMap<>();
 
-		maxAtomIdBeforeGroundingNewNoGoods = atomStore.getHighestAtomId();
+		maxAtomIdBeforeGroundingNewNoGoods = atomStore.getMaxAtomId();
 		// Compute new ground rule (evaluate joins with newly changed atoms)
 		for (IndexedInstanceStorage modifiedWorkingMemory : workingMemory.modified()) {
 			if (modifiedWorkingMemory.getPredicate().isInternal()) {
@@ -340,7 +341,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Grounded NoGoods are:");
 			for (Map.Entry<Integer, NoGood> noGoodEntry : newNoGoods.entrySet()) {
-				LOGGER.debug("{} == {}", noGoodEntry.getValue(), noGoodToString(noGoodEntry.getValue()));
+				LOGGER.debug("{} == {}", noGoodEntry.getValue(), atomStore.noGoodToString(noGoodEntry.getValue()));
 			}
 			LOGGER.debug("{}", choiceRecorder);
 		}
@@ -398,7 +399,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 
 			// Atom is not a fact already.
-			final int atomId = atomStore.add(substitute);
+			final int atomId = atomStore.putIfAbsent(substitute);
 
 			if (currentAssignment != null) {
 				final ThriceTruth truth = currentAssignment.getTruth(atomId);
@@ -444,7 +445,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 
 			if (factsFromProgram.get(substitutedAtom.getPredicate()) == null || !factsFromProgram.get(substitutedAtom.getPredicate()).contains(new Instance(substitutedAtom.getTerms()))) {
-				int atomId = atomStore.add(substitutedAtom);
+				int atomId = atomStore.putIfAbsent(substitutedAtom);
 
 				if (currentAssignment != null) {
 					ThriceTruth truth = currentAssignment.getTruth(atomId);
@@ -481,43 +482,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	@Override
 	public void forgetAssignment(int[] atomIds) {
 		throw new UnsupportedOperationException("Forgetting assignments is not implemented");
-	}
-
-	@Override
-	public List<Integer> getUnassignedAtoms(Assignment assignment) {
-		List<Integer> unassignedAtoms = new ArrayList<>();
-		// Check all known atoms: assumption is that AtomStore assigned continuous values and 0 is no valid atomId.
-		for (int i = 1; i <= atomStore.getHighestAtomId(); i++) {
-			if (!assignment.isAssigned(i)) {
-				unassignedAtoms.add(i);
-			}
-		}
-		return unassignedAtoms;
-	}
-
-	@Override
-	public String atomToString(int atomId) {
-		return atomStore.get(atomId).toString();
-	}
-
-	@Override
-	public boolean isAtomChoicePoint(int atom) {
-		return atomStore.get(atom) instanceof RuleAtom;
-	}
-
-	@Override
-	public int getMaxAtomId() {
-		return atomStore.getHighestAtomId();
-	}
-
-	@Override
-	public Atom getAtom(int atom) {
-		return atomStore.get(atom);
-	}
-
-	@Override
-	public int getAtom(Atom atom) {
-		return atomStore.add(atom);
 	}
 
 	public void printCurrentlyKnownGroundRules() {

@@ -27,9 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
@@ -222,8 +221,9 @@ public class Main {
 			bailOut("Failed to parse program.", e);
 		}
 
+		final AtomTranslator atomTranslator = new AtomStore();
 		final Grounder grounder = GrounderFactory.getInstance(
-			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), program, filter
+			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), program, atomTranslator, filter
 		);
 
 		// NOTE: Using time as seed is fine as the internal heuristics
@@ -253,7 +253,7 @@ public class Main {
 		final String chosenSolver = commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER);
 		final String chosenStore = commandLine.getOptionValue(OPT_STORE, DEFAULT_STORE);
 		Solver solver = SolverFactory.getInstance(
-			chosenSolver, chosenStore, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks, disableJustifications
+			chosenSolver, chosenStore, atomTranslator, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks, disableJustifications
 		);
 
 		computeAndConsumeAnswerSets(solver);

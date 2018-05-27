@@ -28,6 +28,8 @@
 package at.ac.tuwien.kr.alpha;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -216,8 +218,9 @@ public class Alpha {
 	}
 
 	public Stream<AnswerSet> solve() {
-		Grounder grounder = GrounderFactory.getInstance(grounderName, program);
-		Solver solver = SolverFactory.getInstance(solverName, storeName, grounder, new Random(seed), BranchingHeuristicFactory.Heuristic.NAIVE, debug, false);
+		AtomTranslator atomTranslator = new AtomStore();
+		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomTranslator);
+		Solver solver = SolverFactory.getInstance(solverName, storeName, atomTranslator, grounder, new Random(seed), BranchingHeuristicFactory.Heuristic.NAIVE, debug, false);
 		return solver.stream();
 	}
 }

@@ -31,7 +31,6 @@ import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +47,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 public class ArrayAssignment implements WritableAssignment, Checkable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ArrayAssignment.class);
 
-	private final AtomTranslator translator;
+	private final AtomTranslator atomTranslator;
 	private final ArrayList<Entry> assignment = new ArrayList<>();
 
 	private final List<List<Integer>> atomsAssignedInDecisionLevel;
@@ -60,17 +59,17 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 	private int mbtCount;
 	private boolean checksEnabled;
 
-	public ArrayAssignment(AtomTranslator translator, boolean checksEnabled) {
+	public ArrayAssignment(AtomTranslator atomTranslator, boolean checksEnabled) {
 		this.checksEnabled = checksEnabled;
-		this.translator = translator;
+		this.atomTranslator = atomTranslator;
 		this.atomsAssignedInDecisionLevel = new ArrayList<>();
 		this.atomsAssignedInDecisionLevel.add(new ArrayList<>());
 		this.propagationCounterPerDecisionLevel = new ArrayList<>();
 		this.propagationCounterPerDecisionLevel.add(0);
 	}
 
-	public ArrayAssignment(Grounder translator) {
-		this(translator, false);
+	public ArrayAssignment(AtomTranslator atomTranslator) {
+		this(atomTranslator, false);
 	}
 
 	public ArrayAssignment() {
@@ -172,7 +171,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 			throw new IllegalArgumentException("Given decisionLevel is outside range of possible decision levels. Given decisionLevel is: " + decisionLevel);
 		}
 		if (decisionLevel < getDecisionLevel() && LOGGER.isDebugEnabled()) {
-			String atomString = translator != null ? translator.atomToString(atom) : Integer.toString(atom);
+			String atomString = atomTranslator != null ? atomTranslator.atomToString(atom) : Integer.toString(atom);
 			LOGGER.trace("Assign called with lower decision level. Atom: {}_{}@{}.", value, atomString, decisionLevel);
 		}
 		ConflictCause isConflictFree = assignWithDecisionLevel(atom, value, impliedBy, decisionLevel);
@@ -362,9 +361,9 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		return assignment.get(atom);
 	}
 
-	Integer getSomeMBTAssignedAtom(Grounder grounder) {
+	Integer getSomeMBTAssignedAtom() {
 		for (Entry entry : assignment) {
-			if (entry != null && entry.getTruth() == MBT && grounder.getAtom(entry.atom) instanceof BasicAtom) {
+			if (entry != null && entry.getTruth() == MBT && atomTranslator.get(entry.atom) instanceof BasicAtom) {
 				return entry.atom;
 			}
 		}
@@ -417,8 +416,8 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 			isFirst = false;
 			sb.append(assignmentEntry.getTruth());
 			sb.append("_");
-			if (translator != null) {
-				sb.append(translator.atomToString(assignmentEntry.getAtom()));
+			if (atomTranslator != null) {
+				sb.append(atomTranslator.atomToString(assignmentEntry.getAtom()));
 			} else {
 				sb.append(assignmentEntry.getAtom());
 			}

@@ -27,10 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.Rule;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
@@ -78,8 +75,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final boolean disableJustifications;
 	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
 
-	public DefaultSolver(Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, Heuristic branchingHeuristic, boolean debugInternalChecks, boolean disableJustifications) {
-		super(grounder);
+	public DefaultSolver(AtomTranslator atomTranslator, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, Heuristic branchingHeuristic, boolean debugInternalChecks, boolean disableJustifications) {
+		super(atomTranslator, grounder);
 
 		this.assignment = assignment;
 		this.store = store;
@@ -242,9 +239,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 		ProgramAnalyzingGrounder analyzingGrounder = (ProgramAnalyzingGrounder) grounder;
 		// Justify one MBT assigned atom.
-		Integer toJustify = ((ArrayAssignment) assignment).getSomeMBTAssignedAtom(grounder);
+		Integer toJustify = ((ArrayAssignment) assignment).getSomeMBTAssignedAtom();
 		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Searching for justification of " + toJustify + " / " + grounder.atomToString(atomOf(toJustify)));
+			LOGGER.debug("Searching for justification of " + toJustify + " / " + atomTranslator.atomToString(atomOf(toJustify)));
 			LOGGER.debug("Assignment is (TRUE part only):" + translate(assignment.getTrueAssignments()));
 		}
 		Set<Literal> reasonsForUnjustified = analyzingGrounder.justifyAtom(toJustify, assignment);
@@ -254,13 +251,13 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		reasons[0] = toJustify;
 		int arrpos = 1;
 		for (Literal literal : reasonsForUnjustified) {
-			reasons[arrpos++] = (literal.isNegated() ? -1 : 1) * grounder.getAtom(literal.getAtom());
+			reasons[arrpos++] = (literal.isNegated() ? -1 : 1) * atomTranslator.get(literal.getAtom());
 		}
 		NoGood noGood = new NoGood(reasons);
 		int noGoodID = grounder.register(noGood);
 		Map<Integer, NoGood> obtained = new LinkedHashMap<>();
 		obtained.put(noGoodID, noGood);
-		LOGGER.debug("Learned NoGood is: " + grounder.noGoodToString(noGood));
+		LOGGER.debug("Learned NoGood is: " + atomTranslator.noGoodToString(noGood));
 		// Add NoGood and trigger backjumping.
 		if (!ingest(obtained)) {
 			logStats();
@@ -294,7 +291,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		ArrayList<Integer> ruleAtomReplacements = new ArrayList<>();
 		while (toJustifyIterator.hasNext()) {
 			Integer literal = toJustifyIterator.next();
-			Atom atom = grounder.getAtom(atomOf(literal));
+			Atom atom = atomTranslator.get(atomOf(literal));
 			if (atom instanceof BasicAtom) {
 				continue;
 			}
@@ -317,7 +314,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 					// Facts and ComparisonAtoms are always true, no justification needed.
 					continue;
 				}
-				int groundAtomId = grounder.getAtom(groundAtom);
+				int groundAtomId = atomTranslator.get(groundAtom);
 				Assignment.Entry entry = assignment.get(groundAtomId);
 				// Check if atom was assigned to FALSE during the closing.
 				if (entry.getImpliedBy() == closingIndicator) {
@@ -328,18 +325,18 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 		toJustify.addAll(ruleAtomReplacements);
 		for (Integer literalToJustify : toJustify) {
-			LOGGER.debug("Searching for justification(s) of " + toJustify + " / " + grounder.atomToString(atomOf(literalToJustify)));
+			LOGGER.debug("Searching for justification(s) of " + toJustify + " / " + atomTranslator.atomToString(atomOf(literalToJustify)));
 			Set<Literal> reasonsForUnjustified = analyzingGrounder.justifyAtom(atomOf(literalToJustify), assignment);
 			int[] reasons = new int[reasonsForUnjustified.size() + 1];
 			reasons[0] = atomOf(literalToJustify);
 			int arrpos = 1;
 			for (Literal literal : reasonsForUnjustified) {
-				reasons[arrpos++] = (literal.isNegated() ? -1 : 1) * grounder.getAtom(literal.getAtom());
+				reasons[arrpos++] = (literal.isNegated() ? -1 : 1) * atomTranslator.get(literal.getAtom());
 			}
 			NoGood noGood = new NoGood(reasons);
 			int noGoodID = grounder.register(noGood);
 			obtained.put(noGoodID, noGood);
-			LOGGER.debug("Learned NoGood is: " + grounder.noGoodToString(noGood));
+			LOGGER.debug("Learned NoGood is: " + atomTranslator.noGoodToString(noGood));
 		}
 		// Backtrack to remove the violation.
 		if (!backtrack()) {
@@ -358,7 +355,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private static NoGood closingIndicator = new NoGood(0);
 	private boolean close() {
 		unassignedAtoms = new LinkedHashSet<>();
-		unassignedAtoms.addAll(grounder.getUnassignedAtoms(assignment));
+		unassignedAtoms.addAll(atomTranslator.getUnassignedAtoms(assignment));
 
 		if (unassignedAtoms.isEmpty()) {
 			return false;
@@ -415,7 +412,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	private boolean ingest(Map<Integer, NoGood> obtained) {
 		branchingHeuristic.newNoGoods(obtained.values());
-		assignment.growForMaxAtomId(grounder.getMaxAtomId());
+		assignment.growForMaxAtomId(atomTranslator.getMaxAtomId());
 
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
 		Map.Entry<Integer, NoGood> entry;
@@ -481,7 +478,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			LOGGER.debug("No choices!");
 			return false;
 		} else if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Branching heuristic chose literal {}", grounder.literalToString(literal));
+			LOGGER.debug("Branching heuristic chose literal {}", atomTranslator.literalToString(literal));
 		}
 
 		choiceManager.choose(new Choice(literal, false));

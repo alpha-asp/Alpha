@@ -27,14 +27,15 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 
 import java.util.Random;
 
 public final class SolverFactory {
-	public static Solver getInstance(String name, String storeName, Grounder grounder, Random random, Heuristic heuristic, boolean debugInternalChecks, boolean disableJustifications) {
-		final ArrayAssignment assignment = new ArrayAssignment(grounder, debugInternalChecks);
+	public static Solver getInstance(String name, String storeName, AtomTranslator atomTranslator, Grounder grounder, Random random, Heuristic heuristic, boolean debugInternalChecks, boolean disableJustifications) {
+		final ArrayAssignment assignment = new ArrayAssignment(atomTranslator, debugInternalChecks);
 
 		NoGoodStore store;
 
@@ -51,9 +52,9 @@ public final class SolverFactory {
 
 		switch (name.toLowerCase()) {
 			case "naive" :
-				return new NaiveSolver(grounder);
+				return new NaiveSolver(atomTranslator, grounder);
 			case "default":
-				return new DefaultSolver(grounder, store, assignment, random, heuristic, debugInternalChecks, disableJustifications);
+				return new DefaultSolver(atomTranslator, grounder, store, assignment, random, heuristic, debugInternalChecks, disableJustifications);
 		}
 		throw new IllegalArgumentException("Unknown solver requested.");
 	}

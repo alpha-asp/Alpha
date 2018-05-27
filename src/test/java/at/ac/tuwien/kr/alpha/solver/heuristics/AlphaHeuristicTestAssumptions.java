@@ -25,6 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
@@ -58,6 +60,7 @@ public class AlphaHeuristicTestAssumptions {
 	private Grounder grounder;
 	private WritableAssignment assignment;
 	private TestableChoiceManager choiceManager;
+	private AtomTranslator atomTranslator;
 	
 	@Before
 	public void setUp() throws IOException {
@@ -68,14 +71,15 @@ public class AlphaHeuristicTestAssumptions {
 				+ "{b4}."
 				+ "h :- b1, b2, not b3, not b4.";
 		Program parsedProgram = new ProgramParser().parse(testProgram);
-		this.grounder = new NaiveGrounder(parsedProgram);
+		this.atomTranslator = new AtomStore();
+		this.grounder = new NaiveGrounder(parsedProgram, atomTranslator);
 		this.assignment = new ArrayAssignment();
 		this.choiceManager = new TestableChoiceManager(assignment, new NaiveNoGoodStore(assignment));
 	}
 
 	@Test
 	public void testNumbersOfNoGoods_GrounderIsAtomChoicePoint() {
-		testNumbersOfNoGoods(grounder::isAtomChoicePoint);
+		testNumbersOfNoGoods(atomTranslator::isAtomChoicePoint);
 	}
 
 	@Test
@@ -112,7 +116,7 @@ public class AlphaHeuristicTestAssumptions {
 			}
 		}
 		
-		System.out.println(noGoods.stream().map(grounder::noGoodToString).collect(Collectors.joining(", ")));
+		System.out.println(noGoods.stream().map(atomTranslator::noGoodToString).collect(Collectors.joining(", ")));
 
 		assertEquals("Unexpected number of bodyNotHead nogoods", 5, bodyNotHead);
 		assertEquals("Unexpected number of bodyElementsNotBody nogoods", 5, bodyElementsNotBody);
@@ -125,7 +129,7 @@ public class AlphaHeuristicTestAssumptions {
 
 	@Test
 	public void testIsAtomChoice_GrounderIsAtomChoicePoint() {
-		testIsAtomChoice(grounder::isAtomChoicePoint);
+		testIsAtomChoice(atomTranslator::isAtomChoicePoint);
 	}
 
 	@Test
@@ -139,7 +143,7 @@ public class AlphaHeuristicTestAssumptions {
 		for (NoGood noGood : noGoods) {
 			for (Integer literal : noGood) {
 				int atom = atomOf(literal);
-				String atomToString = grounder.atomToString(atom);
+				String atomToString = atomTranslator.atomToString(atom);
 				if (atomToString.startsWith("_R_")) {
 					assertTrue("Atom not choice: " + atomToString, isRuleBody.test(atom));
 				}

@@ -30,6 +30,8 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -38,7 +40,6 @@ import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
 import static at.ac.tuwien.kr.alpha.Util.entry;
-import static at.ac.tuwien.kr.alpha.Util.oops;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 
@@ -90,37 +91,40 @@ public class ChoiceGrounder implements Grounder {
 		entry(ATOM_BR1, ATOM_DIS_BR1),
 		entry(ATOM_BR2, ATOM_DIS_BR2)
 	).collect(entriesToMap());
-	private static Map<Integer, String> atomIdToString = Stream.of(
-		entry(ATOM_AA, "aa"),
-		entry(ATOM_BB, "bb"),
-		entry(ATOM_BR1, "_br1"),
-		entry(ATOM_BR2, "_br2"),
-		entry(ATOM_EN_BR1, "_en_br1"),
-		entry(ATOM_EN_BR2, "_en_br2"),
-		entry(ATOM_DIS_BR1, "_dis_br1"),
-		entry(ATOM_DIS_BR2, "_dis_br2")
-	).collect(entriesToMap());
+	private static Atom atomAA = new BasicAtom(Predicate.getInstance("aa", 0));
+	private static Atom atomBB = new BasicAtom(Predicate.getInstance("bb", 0));
+	private static Rule ruleAA = new Rule(new DisjunctiveHead(Collections.singletonList(atomAA)), Collections.singletonList(new BasicAtom(Predicate.getInstance("bb", 0)).toLiteral(false)));
+	private static Rule ruleBB = new Rule(new DisjunctiveHead(Collections.singletonList(atomBB)), Collections.singletonList(new BasicAtom(Predicate.getInstance("aa", 0)).toLiteral(false)));
+	private static Atom rule1 = new RuleAtom(NonGroundRule.constructNonGroundRule(ruleAA), new Substitution());
+	private static Atom rule2 = new RuleAtom(NonGroundRule.constructNonGroundRule(ruleBB), new Substitution());
+	private static Atom atomEnBR1 = ChoiceAtom.on(1);
+	private static Atom atomEnBR2 = ChoiceAtom.on(2);
+	private static Atom atomDisBR1 = ChoiceAtom.off(3);
+	private static Atom atomDisBR2 = ChoiceAtom.off(4);
+	private final AtomTranslator atomTranslator;
 	private boolean returnedAllNogoods;
 
 	private final java.util.function.Predicate<Predicate> filter;
 
-	public ChoiceGrounder() {
-		this(p -> true);
+	public ChoiceGrounder(AtomTranslator atomTranslator) {
+		this(atomTranslator, p -> true);
 	}
 
-	public ChoiceGrounder(java.util.function.Predicate<Predicate> filter) {
+	public ChoiceGrounder(AtomTranslator atomTranslator, java.util.function.Predicate<Predicate> filter) {
+		this.atomTranslator = atomTranslator;
 		this.filter = filter;
+		Arrays.asList(atomAA, atomBB, rule1, rule2, atomEnBR1, atomEnBR2, atomDisBR1, atomDisBR2).forEach(atomTranslator::putIfAbsent);
 	}
 
 	@Override
 	public AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms) {
 		SortedSet<Predicate> trueAtomPredicates = new TreeSet<>();
 		for (int trueAtom : trueAtoms) {
-			Predicate atomPredicate = Predicate.getInstance(atomIdToString.get(trueAtom), 0);
+			Predicate atomPredicate = atomTranslator.get(trueAtom).getPredicate();
 			if (!filter.test(atomPredicate)) {
 				continue;
 			}
-			if (atomPredicate.getName().startsWith("_")) {
+			if (atomPredicate.isInternal()) {
 				continue;
 			}
 			trueAtomPredicates.add(atomPredicate);
@@ -169,23 +173,6 @@ public class ChoiceGrounder implements Grounder {
 	public void forgetAssignment(int[] atomIds) {
 	}
 
-	@Override
-	public String atomToString(int atomId) {
-		return Integer.toString(atomId);
-	}
-
-	@Override
-	public List<Integer> getUnassignedAtoms(Assignment assignment) {
-		List<Integer> unassigned = new ArrayList<>();
-		List<Integer> knownAtomIds = new ArrayList<>(atomIdToString.keySet());
-		for (Integer atomId : knownAtomIds) {
-			if (!assignment.isAssigned(atomId)) {
-				unassigned.add(atomId);
-			}
-		}
-		return unassigned;
-	}
-
 	private int solverDerivedNoGoodIdCounter = 20;
 	private Map<NoGood, Integer> solverDerivedNoGoods = new HashMap<>();
 
@@ -195,30 +182,5 @@ public class ChoiceGrounder implements Grounder {
 			solverDerivedNoGoods.put(noGood, solverDerivedNoGoodIdCounter++);
 		}
 		return solverDerivedNoGoods.get(noGood);
-	}
-
-	@Override
-	public boolean isAtomChoicePoint(int atom) {
-		return atom == ATOM_BR1 || atom == ATOM_BR2;
-	}
-
-	@Override
-	public int getMaxAtomId() {
-		return 8;
-	}
-
-	@Override
-	public Atom getAtom(int atom) {
-		return new BasicAtom(Predicate.getInstance(atomIdToString.get(atom), 0));
-	}
-
-	@Override
-	public int getAtom(Atom atom) {
-		for (Map.Entry<Integer, String> atomIdString : atomIdToString.entrySet()) {
-			if (atomIdString.getValue().equals(atom.toString())) {
-				return atomIdString.getKey();
-			}
-		}
-		throw oops("Given Atom is not known: " + atom);
 	}
 }

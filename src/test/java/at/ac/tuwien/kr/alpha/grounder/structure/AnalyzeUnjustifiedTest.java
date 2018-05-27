@@ -1,5 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder.structure;
 
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
@@ -34,17 +36,18 @@ public class AnalyzeUnjustifiedTest {
 			"nr :- not r." +
 			":- not p(5).";
 		Program parsedProgram = parser.parse(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		AtomTranslator atomTranslator = new AtomStore();
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomTranslator);
 		grounder.getNoGoods(null);
-		ArrayAssignment assignment = new ArrayAssignment(grounder);
-		int rId = grounder.getAtom(new BasicAtom(Predicate.getInstance("r", 0)));
-		int nrId = grounder.getAtom(new BasicAtom(Predicate.getInstance("nr", 0)));
-		assignment.growForMaxAtomId(grounder.getMaxAtomId());
+		ArrayAssignment assignment = new ArrayAssignment(atomTranslator);
+		int rId = atomTranslator.get(new BasicAtom(Predicate.getInstance("r", 0)));
+		int nrId = atomTranslator.get(new BasicAtom(Predicate.getInstance("nr", 0)));
+		assignment.growForMaxAtomId(atomTranslator.getMaxAtomId());
 		assignment.assign(rId, ThriceTruth.FALSE);
 		assignment.assign(nrId, ThriceTruth.TRUE);
 		BasicAtom p5 = new BasicAtom(Predicate.getInstance("p", 1), Collections.singletonList(ConstantTerm.getInstance(5)));
-		assignment.assign(grounder.getAtom(p5), ThriceTruth.MBT);
-		Set<Literal> reasons = grounder.justifyAtom(grounder.getAtom(p5), assignment);
+		assignment.assign(atomTranslator.get(p5), ThriceTruth.MBT);
+		Set<Literal> reasons = grounder.justifyAtom(atomTranslator.get(p5), assignment);
 		assertFalse(reasons.isEmpty());
 	}
 
@@ -58,22 +61,23 @@ public class AnalyzeUnjustifiedTest {
 			"{s(1,2)}." +
 			":- not p(1).";
 		Program parsedProgram = parser.parse(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		AtomTranslator atomTranslator = new AtomStore();
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomTranslator);
 		grounder.getNoGoods(null);
-		ArrayAssignment assignment = new ArrayAssignment(grounder);
+		ArrayAssignment assignment = new ArrayAssignment(atomTranslator);
 		Atom p1 = parser.parse("p(1).").getFacts().get(0);
 		Atom r2 = parser.parse("r(2).").getFacts().get(0);
 		Atom s12 = parser.parse("s(1,2).").getFacts().get(0);
 		Atom q11 = parser.parse("q(1,1).").getFacts().get(0);
 		Atom q12 = parser.parse("q(1,2).").getFacts().get(0);
 		Atom q13 = parser.parse("q(1,3).").getFacts().get(0);
-		int p1Id = grounder.getAtom(p1);
-		int r2Id = grounder.getAtom(r2);
-		int s12Id = grounder.getAtom(s12);
-		int q11Id = grounder.getAtom(q11);
-		int q12Id = grounder.getAtom(q12);
-		int q13Id = grounder.getAtom(q13);
-		assignment.growForMaxAtomId(grounder.getMaxAtomId());
+		int p1Id = atomTranslator.get(p1);
+		int r2Id = atomTranslator.get(r2);
+		int s12Id = atomTranslator.get(s12);
+		int q11Id = atomTranslator.get(q11);
+		int q12Id = atomTranslator.get(q12);
+		int q13Id = atomTranslator.get(q13);
+		assignment.growForMaxAtomId(atomTranslator.getMaxAtomId());
 		assignment.assign(p1Id, ThriceTruth.MBT);
 		assignment.assign(r2Id, ThriceTruth.TRUE);
 		assignment.assign(s12Id, ThriceTruth.TRUE);
@@ -94,21 +98,22 @@ public class AnalyzeUnjustifiedTest {
 			"p(X) :- p(Y), s(Y,X)." +
 			":- not p(c).";
 		Program parsedProgram = parser.parse(program);
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram);
+		AtomTranslator atomTranslator = new AtomStore();
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomTranslator);
 		grounder.getNoGoods(null);
-		ArrayAssignment assignment = new ArrayAssignment(grounder);
+		ArrayAssignment assignment = new ArrayAssignment(atomTranslator);
 		Atom qa = parser.parse("q(a).").getFacts().get(0);
 		Atom qb = parser.parse("q(b).").getFacts().get(0);
 		Atom qc = parser.parse("q(c).").getFacts().get(0);
 		Atom qd = parser.parse("q(d).").getFacts().get(0);
 		Atom qe = parser.parse("q(e).").getFacts().get(0);
-		int qaId = grounder.getAtom(qa);
-		int qbId = grounder.getAtom(qb);
-		int qcId = grounder.getAtom(qc);
-		int qdId = grounder.getAtom(qd);
-		int qeId = grounder.getAtom(qe);
+		int qaId = atomTranslator.get(qa);
+		int qbId = atomTranslator.get(qb);
+		int qcId = atomTranslator.get(qc);
+		int qdId = atomTranslator.get(qd);
+		int qeId = atomTranslator.get(qe);
 
-		assignment.growForMaxAtomId(grounder.getMaxAtomId());
+		assignment.growForMaxAtomId(atomTranslator.getMaxAtomId());
 		assignment.assign(qaId, ThriceTruth.FALSE);
 		assignment.assign(qbId, ThriceTruth.FALSE);
 		assignment.assign(qcId, ThriceTruth.FALSE);
@@ -121,13 +126,13 @@ public class AnalyzeUnjustifiedTest {
 		Atom nqc = new BasicAtom(nq, Arrays.asList(ConstantTerm.getInstance("1"), ConstantTerm.getSymbolicInstance("c")));
 		Atom nqd = new BasicAtom(nq, Arrays.asList(ConstantTerm.getInstance("1"), ConstantTerm.getSymbolicInstance("d")));
 		Atom nqe = new BasicAtom(nq, Arrays.asList(ConstantTerm.getInstance("1"), ConstantTerm.getSymbolicInstance("e")));
-		int nqaId = grounder.getAtom(nqa);
-		int nqbId = grounder.getAtom(nqb);
-		int nqcId = grounder.getAtom(nqc);
-		int nqdId = grounder.getAtom(nqd);
-		int nqeId = grounder.getAtom(nqe);
+		int nqaId = atomTranslator.get(nqa);
+		int nqbId = atomTranslator.get(nqb);
+		int nqcId = atomTranslator.get(nqc);
+		int nqdId = atomTranslator.get(nqd);
+		int nqeId = atomTranslator.get(nqe);
 
-		assignment.growForMaxAtomId(grounder.getMaxAtomId());
+		assignment.growForMaxAtomId(atomTranslator.getMaxAtomId());
 		assignment.assign(nqaId, ThriceTruth.TRUE);
 		assignment.assign(nqbId, ThriceTruth.TRUE);
 		assignment.assign(nqcId, ThriceTruth.TRUE);
@@ -135,7 +140,7 @@ public class AnalyzeUnjustifiedTest {
 		assignment.assign(nqeId, ThriceTruth.TRUE);
 
 		Atom pc = parser.parse("p(c).").getFacts().get(0);
-		Set<Literal> reasons = grounder.justifyAtom(grounder.getAtom(pc), assignment);
+		Set<Literal> reasons = grounder.justifyAtom(atomTranslator.get(pc), assignment);
 		assertFalse(reasons.isEmpty());
 	}
 

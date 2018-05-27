@@ -29,6 +29,8 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.AnswerSetsParser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
@@ -137,12 +139,13 @@ public abstract class AbstractSolverTests {
 	@Parameter(5)
 	public boolean checks;
 
-	protected Solver getInstance(Grounder grounder) {
-		return SolverFactory.getInstance(solverName, storeName, grounder, new Random(seed), heuristic, checks, false);
+	protected Solver getInstance(AtomTranslator atomTranslator, Grounder grounder) {
+		return SolverFactory.getInstance(solverName, storeName, atomTranslator, grounder, new Random(seed), heuristic, checks, false);
 	}
 
 	protected Solver getInstance(Program program) {
-		return getInstance(GrounderFactory.getInstance(grounderName, program));
+		AtomTranslator atomTranslator = new AtomStore();
+		return getInstance(atomTranslator, GrounderFactory.getInstance(grounderName, program, atomTranslator));
 	}
 
 	protected Solver getInstance(String program) {

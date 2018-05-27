@@ -28,10 +28,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.AnswerSetsParser;
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -637,11 +634,13 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void dummyGrounder() {
-		TestCase.assertEquals(DummyGrounder.EXPECTED, getInstance(new DummyGrounder()).collectSet());
+		AtomStore atomStore = new AtomStore();
+		TestCase.assertEquals(DummyGrounder.EXPECTED, getInstance(atomStore, new DummyGrounder(atomStore)).collectSet());
 	}
 
 	@Test
 	public void choiceGrounder() {
-		TestCase.assertEquals(ChoiceGrounder.EXPECTED, getInstance(new ChoiceGrounder()).collectSet());
+		AtomStore atomStore = new AtomStore();
+		TestCase.assertEquals(ChoiceGrounder.EXPECTED, getInstance(atomStore, new ChoiceGrounder(atomStore)).collectSet());
 	}
 }
