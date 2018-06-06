@@ -139,6 +139,7 @@ public class DomainSpecific implements BranchingHeuristic {
 			// else: continue to set of heuristic values with lower priority
 		}
 
+		LOGGER.debug("DomainSpecific is clueless");
 		return DEFAULT_CHOICE_LITERAL;
 	}
 
