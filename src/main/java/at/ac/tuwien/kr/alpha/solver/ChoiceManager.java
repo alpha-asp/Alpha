@@ -61,11 +61,13 @@ public class ChoiceManager implements Checkable {
 
 	// Active choice points and all atoms that influence a choice point (enabler, disabler, choice atom itself).
 	private final Set<ChoicePoint> activeChoicePoints = new LinkedHashSet<>();
+	private final Set<Integer> activeChoicePointsAtoms = new LinkedHashSet<>();
 	private final Map<Integer, ChoicePoint> influencers = new HashMap<>();
 	private final Map<Integer, Set<Integer>> headsToBodies = new HashMap<>();
 
 	// Active heuristics, similar to active choice points (TODO: resolve duplication / terminology)
 	private final Set<ChoicePoint> activeHeuristics = new LinkedHashSet<>();
+	private final Set<Integer> activeHeuristicsAtoms = new LinkedHashSet<>();
 	private final Map<Integer, ChoicePoint> heuristicInfluencers = new HashMap<>();
 
 	// Backtracking information.
@@ -159,6 +161,7 @@ public class ChoiceManager implements Checkable {
 		boolean isActive;
 		long lastModCount;
 		final Set<ChoicePoint> activeChoicePoints;
+		final Set<Integer> activeChoicePointsAtoms;
 
 		private ChoicePoint(Integer atom, Integer enabler, int disabler, boolean useHeuristicsInsteadOfChoices) {
 			this.atom = atom;
@@ -166,6 +169,7 @@ public class ChoiceManager implements Checkable {
 			this.disabler = disabler;
 			this.lastModCount = modCount;
 			this.activeChoicePoints = useHeuristicsInsteadOfChoices ? ChoiceManager.this.activeHeuristics : ChoiceManager.this.activeChoicePoints;
+			this.activeChoicePointsAtoms = useHeuristicsInsteadOfChoices ? ChoiceManager.this.activeHeuristicsAtoms : ChoiceManager.this.activeChoicePointsAtoms;
 		}
 
 		private boolean isActiveChoicePoint() {
@@ -190,17 +194,15 @@ public class ChoiceManager implements Checkable {
 			lastModCount = modCount;
 			if (isActive) {
 				activeChoicePoints.add(this);
+				activeChoicePointsAtoms.add(atom);
 				LOGGER.debug("Activating choice point for atom {}", this.atom);
 			} else {
 				if (wasActive) {
 					activeChoicePoints.remove(this);
+					activeChoicePointsAtoms.remove(atom);
 					LOGGER.debug("Deactivating choice point for atom {}", this.atom);
 				}
 			}
-		}
-
-		Integer getAtom() {
-			return atom;
 		}
 
 		@Override
@@ -402,14 +404,14 @@ public class ChoiceManager implements Checkable {
 		if (checksEnabled) {
 			checkActiveChoicePoints();
 		}
-		return activeChoicePoints.size() > 0 ? activeChoicePoints.iterator().next().atom : DEFAULT_CHOICE_ATOM;
+		return activeChoicePointsAtoms.size() > 0 ? activeChoicePointsAtoms.iterator().next() : DEFAULT_CHOICE_ATOM;
 	}
 
 	public Set<Integer> getAllActiveChoiceAtoms() {
 		if (checksEnabled) {
 			checkActiveChoicePoints();
 		}
-		return activeChoicePoints.stream().map(ChoicePoint::getAtom).collect(Collectors.toSet());
+		return Collections.unmodifiableSet(activeChoicePointsAtoms);
 	}
 
 	public boolean isAtomChoice(int atom) {
@@ -437,7 +439,7 @@ public class ChoiceManager implements Checkable {
 	}
 
 	public Set<Integer> getAllActiveHeuristicAtoms() {
-		return activeHeuristics.stream().map(ChoicePoint::getAtom).collect(Collectors.toSet());
+		return Collections.unmodifiableSet(activeHeuristicsAtoms);
 	}
 
 	/**
