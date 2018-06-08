@@ -216,7 +216,7 @@ public class DomainSpecificHeuristicsTest {
 		Program program = parser.parse(
 				"n(1)." + LS +
 				"a(N) :- n(N), not b(N)." + LS +
-				"b(N) :- n(N), not a(N). [1@1]" + LS +
+				"b(N) :- n(N), not a(N)." + LS +
 				"#heuristic a(N) : n(N), not b(N). [2@1]" + LS +
 				"#heuristic b(N) : n(N), not a(N). [1@1]");
 		solveAndAssertAnswerSets(program, "{ a(1), n(1) }", "{ b(1), n(1) }");

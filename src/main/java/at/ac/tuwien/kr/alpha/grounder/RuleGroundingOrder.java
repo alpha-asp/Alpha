@@ -29,7 +29,6 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicValues;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
 import java.util.*;
@@ -115,17 +114,10 @@ public class RuleGroundingOrder {
 	}
 
 	/**
-	 * Gets all literals that (may) have to be grounded, i.e. literals appearing in the rule's body and heuristic generator.
+	 * Gets all literals that (may) have to be grounded, i.e. literals appearing in the rule's body.
 	 */
 	private List<Literal> getLiteralsToBeGrounded() {
-		List<Literal> literals = new ArrayList<>(nonGroundRule.getRule().getBody());
-		literals.addAll(getGeneratorLiterals());
-		return literals;
-	}
-
-	private List<Literal> getGeneratorLiterals() {
-		NonGroundDomainSpecificHeuristicValues heuristic = nonGroundRule.getHeuristic();
-		return heuristic != null ? heuristic.getGenerator() : Collections.emptyList();
+		return new ArrayList<>(nonGroundRule.getRule().getBody());
 	}
 
 	Collection<Literal> getStartingLiterals() {
@@ -179,19 +171,12 @@ public class RuleGroundingOrder {
 			literalsOrder = new ArrayList<>(bodyLiterals.size() - 1);
 		}
 		processRemainingLiterals(remainingLiterals, startingLiteral, literalsOrder, boundVariables);
-		addGeneratorLiteralsMinusBodyLiterals(remainingLiterals);
 		// process generator literals only after body has been processed:
 		processRemainingLiterals(remainingLiterals, startingLiteral, literalsOrder, boundVariables);
 		if (fixedGroundingInstantiation) {
 			fixedGroundingOrder = literalsOrder.toArray(new Literal[0]);
 		}
 		groundingOrder.put(startingLiteral, literalsOrder.toArray(new Literal[0]));
-	}
-
-	private void addGeneratorLiteralsMinusBodyLiterals(LinkedHashSet<Literal> remainingLiterals) {
-		Set<Literal> generatorLiterals = new HashSet<>(getGeneratorLiterals());
-		generatorLiterals.removeAll(nonGroundRule.getRule().getBody());
-		remainingLiterals.addAll(generatorLiterals);
 	}
 
 	void processRemainingLiterals(LinkedHashSet<Literal> remainingLiterals, Literal startingLiteral, ArrayList<Literal> literalsOrder,

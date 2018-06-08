@@ -31,8 +31,8 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
+import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Iterator;
@@ -57,8 +57,8 @@ public interface Grounder extends AtomTranslator {
 	Map<Integer, NoGood> getNoGoods(Assignment assignment);
 
 	/**
-	 * Return choice points and their enablers and disablers.
-	 * Must be preceeded by a call to getNoGoods().
+	 * Returns new choice points and their enablers and disablers.
+	 * Must be preceded by a call to {@link #getNoGoods(Assignment)}.
 	 * 
 	 * @return a pair (choiceOn, choiceOff) of two maps from atomIds to atomIds,
 	 *         choiceOn maps atoms (choice points) to their enabling atoms
@@ -67,35 +67,22 @@ public interface Grounder extends AtomTranslator {
 	Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms();
 
 	/**
-	 * TODO: docs
-	 * 
-	 * @return
+	 * Returns new heuristic atoms and their enablers and disablers.
+	 * Must be preceded by a call to {@link #getNoGoods(Assignment)}.
+	 * @see #getChoiceAtoms()
 	 */
 	Pair<Map<Integer, Integer>, Map<Integer, Integer>> getHeuristicAtoms();
 
 	/**
-	 * TODO: docs
-	 * 
-	 * @return
+	 * Returns a set of new mappings from heuristic atoms to {@link HeuristicDirectiveValues}.
+	 * Must be preceded by a call to {@link #getNoGoods(Assignment)}.
 	 */
 	Map<Integer, HeuristicDirectiveValues> getHeuristicValues();
 
 	/**
-	 * TODO: docs
-	 * 
-	 * @return
+	 * Returns a set of new mappings from head atoms to {@link RuleAtom}s deriving it.
 	 */
 	Map<Integer, Set<Integer>> getHeadsToBodies();
-
-	/**
-	 * Gets and resets the set of newly grounded information on domain-specific heuristic
-	 * 
-	 * @return a mapping from rule atom IDs to domain-specific heuristic values defined for the corresponding ground rule
-	 * 
-	 * @deprecated Use {@link #getHeuristicValues()} instead
-	 */
-	@Deprecated
-	Map<Integer, DomainSpecificHeuristicValues> getDomainChoiceHeuristics();
 
 	void updateAssignment(Iterator<Assignment.Entry> it);
 

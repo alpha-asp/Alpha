@@ -30,7 +30,9 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.*;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Statement_heuristicDirectiveContext;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Weight_annotationContext;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Weight_at_levelContext;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
@@ -190,8 +192,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Object visitStatement_rule(ASPCore2Parser.Statement_ruleContext ctx) {
 		// head CONS body DOT annotation?
-		RuleAnnotation annotation = ctx.heuristic_annotation() != null ? visitHeuristic_annotation(ctx.heuristic_annotation()) : null;
-		inputProgram.getRules().add(new Rule(visitHead(ctx.head()), visitBody(ctx.body()), annotation));
+		inputProgram.getRules().add(new Rule(visitHead(ctx.head()), visitBody(ctx.body())));
 		return null;
 	}
 
@@ -329,43 +330,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			return new ExternalLiteral(visitExternal_atom(ctx.external_atom()), !isCurrentLiteralNegated);
 		}
 		throw notSupported(ctx);
-	}
-
-	@Override
-	public RuleAnnotation visitHeuristic_annotation(Heuristic_annotationContext ctx) {
-		return new RuleAnnotation(visitHeuristic_weight_at_level(ctx.heuristic_weight_at_level()), visitHeuristic_generator(ctx.heuristic_generator()));
-	}
-
-	@Override
-	public WeightAtLevel visitHeuristic_weight_at_level(Heuristic_weight_at_levelContext ctx) {
-		// term (AT term)?
-		Term weight;
-		Term level = null;
-		weight = (Term) visit(ctx.term(0));
-		if (ctx.AT() != null) {
-			level = (Term) visit(ctx.term(1));
-		}
-
-		return new WeightAtLevel(weight, level);
-	}
-
-	@Override
-	public List<Literal> visitHeuristic_generator(Heuristic_generatorContext ctx) {
-		// ( naf_literal | NAF? aggregate ) (COMMA heuristic_generator)?
-		if (ctx == null) {
-			return emptyList();
-		}
-
-		final List<Literal> literals = new ArrayList<>();
-		do {
-			if (ctx.naf_literal() != null) {
-				literals.add(visitNaf_literal(ctx.naf_literal()));
-			} else {
-				throw notSupported(ctx.aggregate());
-			}
-		} while ((ctx = ctx.heuristic_generator()) != null);
-
-		return literals;
 	}
 	
 	@Override

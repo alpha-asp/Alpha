@@ -80,21 +80,6 @@ public class RuleToStringTest {
 		constructNonGroundRuleAndCheckToString(":- b1(X), b2(X), not c1(X), not c2(X).");
 	}
 
-	@Test
-	public void ruleWithHeuristicAnnotationToString_W() {
-		constructNonGroundRuleAndCheckToString("a(X) :- b1(X), b2(X), not c1(X), not c2(X). [X]", "a(X) :- b1(X), b2(X), not c1(X), not c2(X). [X@1]");
-	}
-
-	@Test
-	public void ruleWithHeuristicAnnotationToString_WL() {
-		constructNonGroundRuleAndCheckToString("a(X) :- b1(X), b2(X), not c1(X), not c2(X). [X@2]");
-	}
-
-	@Test
-	public void ruleWithHeuristicAnnotationToString_WLG() {
-		constructNonGroundRuleAndCheckToString("a(X) :- b1(X), b2(X), not c1(X), not c2(X). [X@2 : not c3(X), c4(X)]");
-	}
-
 	private void parseSingleRuleAndCheckToString(String rule) {
 		Rule parsedRule = parseSingleRule(rule);
 		assertEquals(rule, parsedRule.toString());

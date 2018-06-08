@@ -44,14 +44,5 @@ public class ChoiceHeadToNormalTest {
 		new ChoiceHeadToNormal().transform(program);
 		assertEquals(2, program.getRules().size());
 	}
-	
-	@Test
-	public void checkHeuristicAnnotationIsCopied() {
-		final String heuristic = "N@1 : not x(N)";
-		Program program = parser.parse("n(1..2). "
-				+ "{ x(N) } :- n(N). [" + heuristic + "]");
-		new ChoiceHeadToNormal().transform(program);
-		program.getRules().stream().allMatch(r -> r.getHeuristic().toString().equals(heuristic));
-	}
 
 }

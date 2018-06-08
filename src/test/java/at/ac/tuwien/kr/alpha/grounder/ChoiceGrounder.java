@@ -30,7 +30,6 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -173,12 +172,6 @@ public class ChoiceGrounder implements Grounder {
 	
 	@Override
 	public Map<Integer, Set<Integer>> getHeadsToBodies() {
-		return Collections.emptyMap();
-	}
-
-	@Override
-	@Deprecated
-	public Map<Integer, DomainSpecificHeuristicValues> getDomainChoiceHeuristics() {
 		return Collections.emptyMap();
 	}
 

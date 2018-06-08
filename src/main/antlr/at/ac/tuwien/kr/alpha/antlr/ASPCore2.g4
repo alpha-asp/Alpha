@@ -17,7 +17,7 @@ query : classical_literal QUERY_MARK;
 
 statement : head DOT                     # statement_fact
           | CONS body DOT                # statement_constraint
-          | head CONS body DOT heuristic_annotation? # statement_rule
+          | head CONS body DOT           # statement_rule
           | WCONS body? DOT weight_annotation        # statement_weightConstraint
           | gringo_sharp                 # statement_gringoSharp   // syntax extension
           | DIRECTIVE_KEYWORD_HEURISTIC MINUS? classical_literal (COLON body)? DOT weight_annotation?         # statement_heuristicDirective;
@@ -43,12 +43,6 @@ aggregate_elements : aggregate_element (SEMICOLON aggregate_elements)?;
 aggregate_element : basic_terms? (COLON naf_literals?)?;
 
 aggregate_function : AGGREGATE_COUNT | AGGREGATE_MAX | AGGREGATE_MIN | AGGREGATE_SUM;
-
-heuristic_annotation : SQUARE_OPEN heuristic_weight_at_level (COLON heuristic_generator)? SQUARE_CLOSE;
-
-heuristic_weight_at_level : term (AT term)?;
-
-heuristic_generator: ( naf_literal | NAF? aggregate ) (COMMA heuristic_generator)?;
 
 weight_annotation : SQUARE_OPEN weight_at_level SQUARE_CLOSE;
 

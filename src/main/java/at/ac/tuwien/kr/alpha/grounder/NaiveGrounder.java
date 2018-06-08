@@ -28,8 +28,10 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.common.atoms.*;
-import at.ac.tuwien.kr.alpha.common.heuristics.DomainSpecificHeuristicValues;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -38,7 +40,6 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicInfluencerAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
-import at.ac.tuwien.kr.alpha.grounder.heuristics.domspec.DomainSpecificHeuristicsRecorder;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
 import at.ac.tuwien.kr.alpha.grounder.transformation.HeuristicDirectiveToRule;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
@@ -66,7 +67,6 @@ public class NaiveGrounder extends BridgedGrounder {
 	private final NogoodRegistry registry = new NogoodRegistry();
 	final NoGoodGenerator noGoodGenerator;
 	private final ChoiceRecorder choiceRecorder;
-	private final DomainSpecificHeuristicsRecorder domainSpecificHeuristicsRecorder = new DomainSpecificHeuristicsRecorder(atomStore);
 
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram = new LinkedHashMap<>();
 	private final Map<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
@@ -270,7 +270,7 @@ public class NaiveGrounder extends BridgedGrounder {
 		for (NonGroundRule nonGroundRule : fixedRules) {
 			// Generate NoGoods for all rules that have a fixed grounding.
 			Literal[] groundingOrder = nonGroundRule.groundingOrder.getFixedGroundingOrder();
-			List<Substitution> substitutions = bindNextAtomInRule(groundingOrder, 0, nonGroundRule.getLiteralsOnlyOccurringInHeuristic(), new Substitution(), null);
+			List<Substitution> substitutions = bindNextAtomInRule(groundingOrder, 0, new Substitution(), null);
 			groundAndRegister(nonGroundRule, substitutions, groundNogoods);
 		}
 
@@ -316,7 +316,6 @@ public class NaiveGrounder extends BridgedGrounder {
 					final List<Substitution> substitutions = bindNextAtomInRule(
 						nonGroundRule.groundingOrder.orderStartingFrom(firstBindingAtom.startingLiteral),
 						0,
-						nonGroundRule.getLiteralsOnlyOccurringInHeuristic(),
 						unifier,
 						currentAssignment
 					);
@@ -347,8 +346,7 @@ public class NaiveGrounder extends BridgedGrounder {
 	}
 
 	/**
-	 * Grounds the given {@code nonGroundRule} by applying the given {@code substitutions} and registers both the nogoods generated and the domain-specific
-	 * heuristics evaluated during that process.
+	 * Grounds the given {@code nonGroundRule} by applying the given {@code substitutions} and registers the nogoods generated during that process.
 	 * 
 	 * @param nonGroundRule
 	 *          the rule to be grounded
@@ -359,14 +357,8 @@ public class NaiveGrounder extends BridgedGrounder {
 	 */
 	private void groundAndRegister(final NonGroundRule nonGroundRule, final List<Substitution> substitutions, final Map<Integer, NoGood> newNoGoods) {
 		for (Substitution substitution : substitutions) {
-			Pair<Integer, List<NoGood>> generatedBodyIdAndNoGoods = noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution);
-			registry.register(generatedBodyIdAndNoGoods.getRight(), newNoGoods);
-
-			// Record domain-specific heuristics for this ground rule.
-			if (generatedBodyIdAndNoGoods.getLeft() != null) {
-				int bodyId = generatedBodyIdAndNoGoods.getLeft();
-				domainSpecificHeuristicsRecorder.record(bodyId, nonGroundRule, substitution);
-			}
+			List<NoGood> generatedNoGoods = noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution);
+			registry.register(generatedNoGoods, newNoGoods);
 		}
 	}
 
@@ -375,7 +367,7 @@ public class NaiveGrounder extends BridgedGrounder {
 		return registry.register(noGood);
 	}
 
-	private List<Substitution> bindNextAtomInRule(Literal[] groundingOrder, int orderPosition, Set<Literal> literalsOnlyOccurringInHeuristic, Substitution partialSubstitution, Assignment currentAssignment) {
+	private List<Substitution> bindNextAtomInRule(Literal[] groundingOrder, int orderPosition, Substitution partialSubstitution, Assignment currentAssignment) {
 		if (orderPosition == groundingOrder.length) {
 			return singletonList(partialSubstitution);
 		}
@@ -393,7 +385,7 @@ public class NaiveGrounder extends BridgedGrounder {
 			final List<Substitution> generatedSubstitutions = new ArrayList<>();
 			for (Substitution substitution : substitutions) {
 				// Continue grounding with each of the generated values.
-				generatedSubstitutions.addAll(bindNextAtomInRule(groundingOrder, orderPosition + 1, literalsOnlyOccurringInHeuristic, substitution, currentAssignment));
+				generatedSubstitutions.addAll(bindNextAtomInRule(groundingOrder, orderPosition + 1, substitution, currentAssignment));
 			}
 			return generatedSubstitutions;
 		}
@@ -403,9 +395,9 @@ public class NaiveGrounder extends BridgedGrounder {
 
 		if (substitute.isGround()) {
 			// Substituted atom is ground, in case it is positive, only ground if it also holds true
-			if (currentLiteral.isNegated() || literalsOnlyOccurringInHeuristic.contains(currentLiteral)) {
-				// Atom occurs negated in the rule or occurs only in the heuristic generator: continue grounding
-				return bindNextAtomInRule(groundingOrder, orderPosition + 1, literalsOnlyOccurringInHeuristic, partialSubstitution, currentAssignment);
+			if (currentLiteral.isNegated()) {
+				// Atom occurs negated in the rule: continue grounding
+				return bindNextAtomInRule(groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
 			}
 			
 			if (!workingMemory.get(currentAtom.getPredicate(), true).containsInstance(new Instance(substitute.getTerms()))) {
@@ -417,7 +409,7 @@ public class NaiveGrounder extends BridgedGrounder {
 			final LinkedHashSet<Instance> instances = factsFromProgram.get(substitute.getPredicate());
 			if (!(instances == null || !instances.contains(new Instance(substitute.getTerms())))) {
 				// Ground literal holds, continue finding a variable substitution.
-				return bindNextAtomInRule(groundingOrder, orderPosition + 1, literalsOnlyOccurringInHeuristic, partialSubstitution, currentAssignment);
+				return bindNextAtomInRule(groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
 			}
 
 			// Atom is not a fact already.
@@ -497,7 +489,7 @@ public class NaiveGrounder extends BridgedGrounder {
 					}
 				}
 			}
-			List<Substitution> boundSubstitutions = bindNextAtomInRule(groundingOrder, orderPosition + 1, literalsOnlyOccurringInHeuristic, unified, currentAssignment);
+			List<Substitution> boundSubstitutions = bindNextAtomInRule(groundingOrder, orderPosition + 1, unified, currentAssignment);
 			generatedSubstitutions.addAll(boundSubstitutions);
 		}
 
@@ -522,12 +514,6 @@ public class NaiveGrounder extends BridgedGrounder {
 	@Override
 	public Map<Integer, Set<Integer>> getHeadsToBodies() {
 		return choiceRecorder.getAndResetHeadsToBodies();
-	}
-	
-	@Override
-	@Deprecated
-	public Map<Integer, DomainSpecificHeuristicValues> getDomainChoiceHeuristics() {
-		return domainSpecificHeuristicsRecorder.getAndReset();
 	}
 
 	@Override

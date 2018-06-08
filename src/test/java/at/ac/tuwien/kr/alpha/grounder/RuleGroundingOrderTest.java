@@ -27,18 +27,14 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Copyright (c) 2017-2018, the Alpha Team.
@@ -80,35 +76,6 @@ public class RuleGroundingOrderTest {
 		NonGroundRule nonGroundRule0 = NonGroundRule.constructNonGroundRule(rule0);
 		RuleGroundingOrder rgo0 = new RuleGroundingOrder(nonGroundRule0);
 		rgo0.computeGroundingOrders();
-	}
-
-	@Test
-	public void groundingOrderWithHeuristicGenerator() {
-		Program program = parser.parse(
-				"h(X,Y) :- x(X), y(Y). [2@2 : xy(X,Y)]"
-						+ "x(1)."
-						+ "{y(2)}."
-						+ "xy(X,Y) :- x(X), y(Y).");
-
-		Rule rule0 = program.getRules().get(0);
-		NonGroundRule nonGroundRule0 = NonGroundRule.constructNonGroundRule(rule0);
-		RuleGroundingOrder rgo0 = new RuleGroundingOrder(nonGroundRule0);
-		rgo0.computeGroundingOrders();
-		assertEquals(2, rgo0.getStartingLiterals().size());
-		assertArrayEquals(
-				new Literal[] {literal("y", variable("Y")), literal("xy", variable("X"), variable("Y"))},
-				rgo0.orderStartingFrom(literal("x", variable("X"))));
-		assertArrayEquals(
-				new Literal[] {literal("x", variable("X")), literal("xy", variable("X"), variable("Y"))},
-				rgo0.orderStartingFrom(literal("y", variable("Y"))));
-	}
-
-	private Literal literal(String predicate, Term... terms) {
-		return new BasicAtom(Predicate.getInstance(predicate, terms.length), terms).toLiteral();
-	}
-
-	private VariableTerm variable(String name) {
-		return VariableTerm.getInstance(name);
 	}
 
 }

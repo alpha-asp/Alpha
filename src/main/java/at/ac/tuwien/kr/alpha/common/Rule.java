@@ -27,15 +27,11 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicValues;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -47,14 +43,9 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 public class Rule {
 	private final Head head;
 	private final List<Literal> body;
-	private final NonGroundDomainSpecificHeuristicValues heuristic;
 
 	public Rule(Head head, List<Literal> body) {
 		this(head, body, (RuleAnnotation)null);
-	}
-
-	public Rule(Head head, List<Literal> body, NonGroundDomainSpecificHeuristicValues heuristic) {
-		this(head, body, heuristic == null ? null : heuristic.toRuleAnnotation());
 	}
 	
 	public Rule(Head head, List<Literal> body, RuleAnnotation annotation) {
@@ -63,89 +54,11 @@ public class Rule {
 		LinkedHashSet<Literal> bodyLiterals = new LinkedHashSet<>(body);
 		this.body = new ArrayList<>(bodyLiterals);
 
-		this.heuristic = extractHeuristic(annotation);
-
 		if (!isSafe()) {
 			// TODO: safety check needs to be adapted to solver what the solver actually understands. Will change in the future, adapt exception message accordingly.
 			throw new RuntimeException("Encountered unsafe rule: " + toString() + System.lineSeparator()
 					+ "Notice: A rule is considered safe if all variables occurring in negative literals, builtin atoms, and the head of the rule also occur in some positive literal.");
 		}
-	}
-
-	public NonGroundDomainSpecificHeuristicValues getHeuristic() {
-		return heuristic;
-	}
-
-	private NonGroundDomainSpecificHeuristicValues extractHeuristic(RuleAnnotation annotation) {
-		Set<NonGroundDomainSpecificHeuristicValues> heuristicDefinitions = extractHeuristicAtoms();
-		addHeuristicAnnotationIfGiven(annotation, heuristicDefinitions);
-		if (heuristicDefinitions.size() > 1) {
-			throw new RuntimeException("More than one heuristic definitions in a rule!");
-		}
-		if (heuristicDefinitions.isEmpty()) {
-			return null;
-		}
-		NonGroundDomainSpecificHeuristicValues heuristicDefinition = heuristicDefinitions.iterator().next();
-		checkSafetyOfHeuristicDefinition(heuristicDefinition);
-		return heuristicDefinition;
-	}
-
-	private Set<NonGroundDomainSpecificHeuristicValues> extractHeuristicAtoms() {
-		Set<NonGroundDomainSpecificHeuristicValues> heuristicDefinitions = new HashSet<>();
-		Iterator<Literal> bodyIterator = body.iterator();
-		while (bodyIterator.hasNext()) {
-			Atom atom = bodyIterator.next().getAtom();
-			if (atom instanceof HeuristicAtom) {
-				bodyIterator.remove();
-				heuristicDefinitions.add(NonGroundDomainSpecificHeuristicValues.fromHeuristicAtom((HeuristicAtom) atom));
-			}
-		}
-		return heuristicDefinitions;
-	}
-
-	private void addHeuristicAnnotationIfGiven(RuleAnnotation annotation, Set<NonGroundDomainSpecificHeuristicValues> heuristicDefinitions) {
-		if (annotation != null) {
-			NonGroundDomainSpecificHeuristicValues annotationValues = NonGroundDomainSpecificHeuristicValues.fromRuleAnnotation(annotation);
-			if (annotationValues != null) {
-				heuristicDefinitions.add(annotationValues);
-			}
-		}
-	}
-
-	private void checkSafetyOfHeuristicDefinition(NonGroundDomainSpecificHeuristicValues heuristicDefinition) {
-		if (!isSafe(heuristicDefinition)) {
-			throw new RuntimeException("Heuristic definition is not safe: " + heuristicDefinition);
-		}
-	}
-
-	/**
-	 * Checks if the given heuristic definition is safe.
-	 * 
-	 * A heuristic definition is safe if all variables in the weight and the level, all variables in non-{@link FixedInterpretationLiteral}s of the generator and
-	 * all non-binding variables in {@link FixedInterpretationLiteral}s of the generator are bound by a binding variables. Binding variables are those that occur
-	 * in positive atoms of the rule and the binding variables in {@link FixedInterpretationLiteral}s of the generator.
-	 * 
-	 * @param heuristicDefinition
-	 * @return {@code true} iff the heuristic definition is ground or all variables in it that must be bound are bound
-	 */
-	private boolean isSafe(NonGroundDomainSpecificHeuristicValues heuristicDefinition) {
-		if (heuristicDefinition.isGround()) {
-			return true;
-		}
-		Set<VariableTerm> bindingVariables = body.stream().filter(l -> !l.isNegated())
-				.flatMap(a -> a.getBindingVariables().stream()).collect(Collectors.toSet());
-		Set<VariableTerm> boundVariables = new HashSet<>();
-		boundVariables.addAll(heuristicDefinition.getWeight().getOccurringVariables());
-		boundVariables.addAll(heuristicDefinition.getLevel().getOccurringVariables());
-		for (Literal generatorLiteral : heuristicDefinition.getGenerator()) {
-			if (generatorLiteral instanceof FixedInterpretationLiteral) {
-				bindingVariables.addAll(generatorLiteral.getBindingVariables());
-			} else {
-				boundVariables.addAll(generatorLiteral.getBindingVariables());
-			}
-			boundVariables.addAll(generatorLiteral.getNonBindingVariables());
-		}
-		return bindingVariables.containsAll(boundVariables);
 	}
 
 	public Head getHead() {

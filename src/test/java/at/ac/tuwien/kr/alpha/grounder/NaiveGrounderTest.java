@@ -32,14 +32,12 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 /**
  * Tests {@link NaiveGrounder}
@@ -66,9 +64,7 @@ public class NaiveGrounderTest {
 		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(N, ONE);
-		Pair<Integer, List<NoGood>> result = noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution);
-		assertNull(result.getLeft());
-		List<NoGood> generatedNoGoods = result.getRight();
+		List<NoGood> generatedNoGoods = noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution);
 		assertEquals(2, generatedNoGoods.size());
 		assertEquals("*{-(HeuOff(\"0\")), +(b(1))}", grounder.noGoodToString(generatedNoGoods.get(0)));
 		assertEquals("*{-(HeuOn(\"0\")), +(a(1))}", grounder.noGoodToString(generatedNoGoods.get(1)));

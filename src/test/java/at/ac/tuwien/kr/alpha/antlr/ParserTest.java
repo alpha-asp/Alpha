@@ -31,7 +31,6 @@ import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.heuristics.NonGroundDomainSpecificHeuristicValues;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
@@ -178,46 +177,6 @@ public class ParserTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testMissingDotNotIgnored() {
 		parser.parse("p(X,Y) :- q(X), r(Y) p(a). q(b).");
-	}
-
-	@Test
-	public void parseProgramWithHeuristicAnnotation_W() {
-		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). [X]");
-
-		assertEquals("X", parsedProgram.getRules().iterator().next().getHeuristic().getWeight().toString());
-		System.out.println(parsedProgram.getRules().toString());
-	}
-
-	@Test
-	public void parseProgramWithHeuristicAnnotation_WL() {
-		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). [X@2]");
-
-		assertEquals("X", parsedProgram.getRules().iterator().next().getHeuristic().getWeight().toString());
-		assertEquals("2", parsedProgram.getRules().iterator().next().getHeuristic().getLevel().toString());
-		System.out.println(parsedProgram.getRules().toString());
-	}
-
-	@Test
-	public void parseProgramWithHeuristicAnnotation_Generator() {
-		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). [X@2 : not c(X)]");
-
-		NonGroundDomainSpecificHeuristicValues heuristic = parsedProgram.getRules().iterator().next().getHeuristic();
-		assertEquals("X", heuristic.getWeight().toString());
-		assertEquals("2", heuristic.getLevel().toString());
-		assertEquals("not c(X)", Literals.toString(heuristic.getGenerator()));
-		System.out.println(parsedProgram.getRules().toString());
-	}
-
-	@Test
-	public void parseProgramWithHeuristicAnnotation_GeneratorWithArithmetics() {
-		Program parsedProgram = parser.parse("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
-				+ "[LTp1mT@1 : holds(F,Tp1), Tp1=T+1, LTp1mT=LT+1-T]");
-
-		NonGroundDomainSpecificHeuristicValues heuristic = parsedProgram.getRules().iterator().next().getHeuristic();
-		assertEquals("LTp1mT", heuristic.getWeight().toString());
-		assertEquals("1", heuristic.getLevel().toString());
-		assertEquals("holds(F, Tp1), Tp1 = T + 1, LTp1mT = LT + 1 - T", Literals.toString(heuristic.getGenerator()));
-		System.out.println(parsedProgram.getRules().toString());
 	}
 
 	@Test(expected = RuntimeException.class)

@@ -31,6 +31,7 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicInfluencerAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -53,6 +54,9 @@ public class ChoiceRecorder {
 		this.atomStore = atomStore;
 	}
 
+	/**
+	 * @return new choice points and their enablers and disablers.
+	 */
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getAndResetChoices() {
 		Pair<Map<Integer, Integer>, Map<Integer, Integer>> currentChoiceAtoms = newChoiceAtoms;
 		newChoiceAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
@@ -60,8 +64,7 @@ public class ChoiceRecorder {
 	}
 
 	/**
-	 * TODO: docs
-	 * @return
+	 * @return new heuristic atoms and their enablers and disablers.
 	 */
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getAndResetHeuristics() {
 		Pair<Map<Integer, Integer>, Map<Integer, Integer>> currentHeuristicAtoms = newHeuristicAtoms;
@@ -70,8 +73,7 @@ public class ChoiceRecorder {
 	}
 
 	/**
-	 * TODO: docs
-	 * @return
+	 * @return a set of new mappings from heuristic atoms to {@link HeuristicDirectiveValues}.
 	 */
 	public Map<Integer, HeuristicDirectiveValues> getAndResetHeuristicValues() {
 		Map<Integer, HeuristicDirectiveValues> currentHeuristicValues = newHeuristicValues;
@@ -80,8 +82,7 @@ public class ChoiceRecorder {
 	}
 
 	/**
-	 * TODO: docs
-	 * @return
+	 * @return a set of new mappings from head atoms to {@link RuleAtom}s deriving it.
 	 */
 	public Map<Integer, Set<Integer>> getAndResetHeadsToBodies() {
 		Map<Integer, Set<Integer>> currentHeadsToBodies = newHeadsToBodies;

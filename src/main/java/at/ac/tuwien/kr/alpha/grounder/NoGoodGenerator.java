@@ -32,11 +32,8 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 
@@ -71,20 +68,19 @@ public class NoGoodGenerator {
 	 * @param substitution
 	 *          the grounding substitution, i.e., applying substitution to nonGroundRule results in a ground rule.
 	 *          Assumption: atoms with fixed interpretation evaluate to true under the substitution.
-	 * @return the ID of the body atom generated (if one has been generated), and a list of the NoGoods corresponding to the ground rule.
+	 * @return a list of the NoGoods corresponding to the ground rule.
 	 */
-	Pair<Integer, List<NoGood>> generateNoGoodsFromGroundSubstitution(final NonGroundRule nonGroundRule, final Substitution substitution) {
+	List<NoGood> generateNoGoodsFromGroundSubstitution(final NonGroundRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> pos = collectPos(nonGroundRule, substitution);
 		final List<Integer> neg = collectNeg(nonGroundRule, substitution);
-		groundCondition(nonGroundRule, substitution);
 
 		if (pos == null || neg == null) {
-			return new ImmutablePair<>(null, emptyList());
+			return emptyList();
 		}
 
 		// A constraint is represented by exactly one nogood.
 		if (nonGroundRule.isConstraint()) {
-			return new ImmutablePair<>(null, singletonList(NoGood.fromConstraint(pos, neg)));
+			return singletonList(NoGood.fromConstraint(pos, neg));
 		}
 
 		final List<NoGood> result = new ArrayList<>();
@@ -106,7 +102,7 @@ public class NoGoodGenerator {
 			if (store.contains(bodyAtom)) {
 				// The current ground instance already exists,
 				// therefore all nogoods have already been created.
-				return new ImmutablePair<>(null, emptyList());
+				return emptyList();
 			}
 	
 			bodyId = store.add(bodyAtom);
@@ -134,8 +130,7 @@ public class NoGoodGenerator {
 			}
 		}
 
-		return new ImmutablePair<>(bodyId, result);
-		// TODO: when heuristic annotations are discarded, we do not need to return bodyId any longer
+		return result;
 	}
 
 	List<Integer> collectNeg(final NonGroundRule nonGroundRule, final Substitution substitution) {
@@ -189,48 +184,6 @@ public class NoGoodGenerator {
 			bodyAtomsPositive.add(store.add(groundAtom));
 		}
 		return bodyAtomsPositive;
-	}
-
-	/**
-	 * Adds ground atoms appearing in a heuristic condition to the {@link AtomStore}.
-	 * 
-	 * Not needed for nogood generation, but without this method atoms might be missing
-	 * in the store if they only occur in a heuristic condition (or if they are first encountered in a heuristic condition).
-	 */
-	private List<Integer> groundCondition(final NonGroundRule nonGroundRule, final Substitution substitution) {
-		final List<Integer> conditionAtoms = new ArrayList<>();
-		if (nonGroundRule.getHeuristic() == null) {
-			return conditionAtoms;
-		}
-		
-		for (Literal literal : nonGroundRule.getHeuristic().getGenerator()) {
-			Atom atom = literal.getAtom();
-			if (atom.toLiteral() instanceof FixedInterpretationLiteral) { 
-				// TODO: conversion of atom to literal is ugly. NonGroundRule could manage atoms instead of literals, cf. FIXME there 
-				// Atom has fixed interpretation, hence was checked earlier that it
-				// evaluates to true under the given substitution.
-				// FixedInterpretationAtoms need not be shown to the solver, skip it.
-				continue;
-			}
-
-			final Atom groundAtom = atom.substitute(substitution);
-
-			// Consider facts to eliminate ground atoms from the generated nogoods that are always true
-			// and eliminate nogoods that are always satisfied due to facts.
-			Set<Instance> factInstances = factsFromProgram.get(groundAtom.getPredicate());
-			if (factInstances != null && factInstances.contains(new Instance(groundAtom.getTerms()))) {
-				// Skip positive atoms that are always true.
-				continue;
-			}
-
-			if (!existsRuleWithPredicateInHead(groundAtom.getPredicate())) {
-				// Atom is no fact and no rule defines it, it cannot be derived (i.e., is always false), skip whole rule as it will never fire.
-				return null;
-			}
-
-			conditionAtoms.add(store.add(groundAtom));
-		}
-		return conditionAtoms;
 	}
 
 	private boolean existsRuleWithPredicateInHead(final Predicate predicate) {
