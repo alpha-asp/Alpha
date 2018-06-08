@@ -1,4 +1,0 @@
-:- bin_size(BS), bin(B), item(I1), item_bin(I1,B), item_size(I1,IS1), item(I2), item_bin(I2,B), item_size(I2,IS2), I1 < I2, F=IS1+IS2, F > BS.
-:- bin_size(BS), bin(B), item(I1), item_bin(I1,B), item_size(I1,IS1), item(I2), item_bin(I2,B), item_size(I2,IS2), item(I3), item_bin(I3,B), item_size(I3,IS3), I1 < I2, I2 < I3, F=IS1+IS2+IS3, F > BS.
-:- bin_size(BS), bin(B), item(I1), item_bin(I1,B), item_size(I1,IS1), item(I2), item_bin(I2,B), item_size(I2,IS2), item(I3), item_bin(I3,B), item_size(I3,IS3), item(I4), item_bin(I4,B), item_size(I4,IS4), I1 < I2, I2 < I3, I3 < I4, F=IS1+IS2+IS3+IS4, F > BS.
-:- bin_size(BS), bin(B), item(I1), item_bin(I1,B), item_size(I1,IS1), item(I2), item_bin(I2,B), item_size(I2,IS2), item(I3), item_bin(I3,B), item_size(I3,IS3), item(I4), item_bin(I4,B), item_size(I4,IS4), item(I5), item_bin(I5,B), item_size(I5,IS5), I1 < I2, I2 < I3, I3 < I4, I4 < I5, F=IS1+IS2+IS3+IS4+IS5, F > BS.
