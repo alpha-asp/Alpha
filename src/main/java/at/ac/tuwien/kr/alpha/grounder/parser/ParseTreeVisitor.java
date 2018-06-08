@@ -452,11 +452,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	public Object visitStatement_weightConstraint(ASPCore2Parser.Statement_weightConstraintContext ctx) {
 		throw notSupported(ctx);
 	}
-
-	@Override
-	public Object visitStatement_gringoSharp(ASPCore2Parser.Statement_gringoSharpContext ctx) {
-		throw notSupported(ctx);
-	}
 	
 	@Override
 	public Object visitStatement_heuristicDirective(Statement_heuristicDirectiveContext ctx) {

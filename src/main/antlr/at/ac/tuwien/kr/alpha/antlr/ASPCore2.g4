@@ -19,9 +19,7 @@ statement : head DOT                     # statement_fact
           | CONS body DOT                # statement_constraint
           | head CONS body DOT           # statement_rule
           | WCONS body? DOT weight_annotation        # statement_weightConstraint
-          | gringo_sharp                 # statement_gringoSharp   // syntax extension
           | DIRECTIVE_KEYWORD_HEURISTIC MINUS? classical_literal (COLON body)? DOT weight_annotation?         # statement_heuristicDirective;
-          		// TODO: conflict with gringo_sharp?!
           		// TODO: drop MINUS? from statement_heuristicDirective and include it in classical_literal
 
 head : disjunction | choice;
