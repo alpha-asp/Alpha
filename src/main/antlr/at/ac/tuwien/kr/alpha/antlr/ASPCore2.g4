@@ -19,8 +19,7 @@ statement : head DOT                     # statement_fact
           | CONS body DOT                # statement_constraint
           | head CONS body DOT           # statement_rule
           | WCONS body? DOT weight_annotation        # statement_weightConstraint
-          | DIRECTIVE_KEYWORD_HEURISTIC MINUS? classical_literal (COLON body)? DOT weight_annotation?         # statement_heuristicDirective;
-          		// TODO: drop MINUS? from statement_heuristicDirective and include it in classical_literal
+          | DIRECTIVE_KEYWORD_HEURISTIC classical_literal (COLON body)? DOT weight_annotation?         # statement_heuristicDirective;
 
 head : disjunction | choice;
 
