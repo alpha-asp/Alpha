@@ -39,8 +39,6 @@ import java.util.Set;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.NoGood.HEAD;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -100,8 +98,8 @@ public class GroundConflictNoGoodLearner {
 		// Find decision level where conflict occurs (i.e., highest decision level of violatedNoGood).
 		int conflictDecisionLevel = -1;
 		for (Integer literal : currentResolutionNoGood) {
-			Assignment.Entry literalEntry = getAssignmentEntryRespectingLowerMBT(literal);
-			int literalDL = literalEntry.getDecisionLevel();
+			Assignment.Entry literalEntry = assignment.get(atomOf(literal));
+			int literalDL = literalEntry.getDecisionLevelRespectingLowerMBT();
 			if (literalDL > conflictDecisionLevel) {
 				conflictDecisionLevel = literalDL;
 			}
@@ -126,13 +124,13 @@ public class GroundConflictNoGoodLearner {
 			// For b) we need to backtrack the wrong choice.
 
 			Assignment.Entry atomAssignmentEntry = firstUIPPriorityQueue.poll();
-			NoGood otherContributingNoGood = atomAssignmentEntry.getImpliedBy();
+			NoGood otherContributingNoGood = atomAssignmentEntry.getImpliedByRespectingLowerMBT();
 			if (otherContributingNoGood == null) {
 				// Case b), the other assignment is a decision.
-				return new ConflictAnalysisResult(null, atomAssignmentEntry.getDecisionLevel(), true, noGoodsResponsible);
+				return new ConflictAnalysisResult(null, atomAssignmentEntry.getDecisionLevelRespectingLowerMBT(), true, noGoodsResponsible);
 			}
 			// Case a) take other implying NoGood into account.
-			currentResolutionNoGood = new NoGood(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, otherContributingNoGood, atomAssignmentEntry));
+			currentResolutionNoGood = new NoGood(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, otherContributingNoGood, atomAssignmentEntry.getAtom(), atomAssignmentEntry.getDecisionLevelRespectingLowerMBT(), atomAssignmentEntry.getPropagationLevelRespectingLowerMBT()));
 			noGoodsResponsible.add(otherContributingNoGood);
 
 			// TODO: create/edit ResolutionSequence
@@ -162,13 +160,10 @@ public class GroundConflictNoGoodLearner {
 
 			// Resolve next NoGood based on current literal
 			Assignment.Entry currentLiteralAssignment = firstUIPPriorityQueue.poll();
-			if (currentLiteralAssignment.getPrevious() != null) {
-				// Use previous MBT assignment if it exists.
-				currentLiteralAssignment = currentLiteralAssignment.getPrevious();
-			}
-
+			int decisionLevel = currentLiteralAssignment.getDecisionLevelRespectingLowerMBT();
+			int propagationLevel = currentLiteralAssignment.getPropagationLevelRespectingLowerMBT();
 			// Get NoGood it was implied by.
-			NoGood impliedByNoGood = currentLiteralAssignment.getImpliedBy();
+			NoGood impliedByNoGood = currentLiteralAssignment.getImpliedByRespectingLowerMBT();
 			if (impliedByNoGood == null) {
 				// Literal was a decision, keep it in the currentResolutionNoGood by simply skipping.
 				continue;
@@ -176,12 +171,12 @@ public class GroundConflictNoGoodLearner {
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.debug("ImpliedBy NoGood is: {}.", impliedByNoGood);
 				for (Integer literal : impliedByNoGood) {
-					LOGGER.debug("Literal assignment: {}={}, previously {}.", atomOf(literal), assignment.get(atomOf(literal)), assignment.get(atomOf(literal)).getPrevious());
+					LOGGER.debug("Literal assignment: {}={}.", atomOf(literal), assignment.get(atomOf(literal)));
 				}
 			}
 			// TODO: add entry in ResolutionSequence.
 
-			currentResolutionNoGood = new NoGood(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, impliedByNoGood, currentLiteralAssignment));
+			currentResolutionNoGood = new NoGood(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, impliedByNoGood, currentLiteralAssignment.getAtom(), decisionLevel, propagationLevel));
 			noGoodsResponsible.add(impliedByNoGood);
 		}
 	}
@@ -194,9 +189,6 @@ public class GroundConflictNoGoodLearner {
 	private Assignment.Entry getAssignmentEntryRespectingLowerMBT(Integer literal) {
 		Assignment.Entry literalEntry = assignment.get(atomOf(literal));
 		// If current assignment is TRUE and previous was MBT, take previous decision level.
-		if (literalEntry.getPrevious() != null) {
-			literalEntry = literalEntry.getPrevious();
-		}
 		return literalEntry;
 	}
 
@@ -217,35 +209,33 @@ public class GroundConflictNoGoodLearner {
 	 * @param firstUIPPriorityQueue
 	 * @param firstNoGood
 	 * @param secondNoGood
-	 * @param resolutionLiteral
 	 * @return
 	 */
-	private int[] resolveNoGoods(FirstUIPPriorityQueue firstUIPPriorityQueue, NoGood firstNoGood, NoGood secondNoGood, Assignment.Entry resolutionLiteral) {
+	private int[] resolveNoGoods(FirstUIPPriorityQueue firstUIPPriorityQueue, NoGood firstNoGood, NoGood secondNoGood, int resolutionAtom, int resolutionLiteralDecisionLevel, int resolutionLiteralPropagationLevel) {
 		// Resolve implied nogood into current resolution.
 		int resolvedLiterals[] = new int[secondNoGood.size() + firstNoGood.size() - 2];
 		int resolvedCounter = 0;
 		// Copy over all literals except the resolving ones.
 		for (int i = 0; i < firstNoGood.size(); i++) {
-			if (firstNoGood.getAtom(i) != resolutionLiteral.getAtom()) {
+			if (firstNoGood.getAtom(i) != resolutionAtom) {
 				resolvedLiterals[resolvedCounter++] = firstNoGood.getLiteral(i);
 			}
 		}
 		// Copy literals from implying nogood except the resolving one and sort additional literals into processing list.
 		for (int i = 0; i < secondNoGood.size(); i++) {
-			if (secondNoGood.getAtom(i) != resolutionLiteral.getAtom()) {
+			if (secondNoGood.getAtom(i) != resolutionAtom) {
 				resolvedLiterals[resolvedCounter++] = secondNoGood.getLiteral(i);
 
 				// Sort literal also into queue for further processing.
 				Assignment.Entry newLiteral = getAssignmentEntryRespectingLowerMBT(secondNoGood.getLiteral(i));
 				// Check for special case where literal was assigned from MBT to TRUE on the same decisionLevel and the propagationLevel of TRUE is higher than the one of the resolutionLiteral.
-				if (newLiteral.getDecisionLevel() == resolutionLiteral.getDecisionLevel()
-					&& newLiteral.getPropagationLevel() > resolutionLiteral.getPropagationLevel()) {
-					if (TRUE.equals(newLiteral.getTruth()) && newLiteral.getPrevious() != null
-						&& MBT.equals(newLiteral.getPrevious().getTruth())
-						&& newLiteral.getPrevious().getDecisionLevel() == resolutionLiteral.getDecisionLevel()
-						&& newLiteral.getPrevious().getPropagationLevel() < resolutionLiteral.getPropagationLevel()) {
+				if (newLiteral.getDecisionLevel() == resolutionLiteralDecisionLevel
+					&& newLiteral.getPropagationLevel() > resolutionLiteralPropagationLevel) {
+					if (newLiteral.hasPreviousMBT()
+						&& newLiteral.getMBTDecisionLevel() == resolutionLiteralDecisionLevel
+						&& newLiteral.getMBTPropagationLevel() < resolutionLiteralPropagationLevel) {
 						// Resort to the previous entry (i.e., the one for MBT) and use that one.
-						firstUIPPriorityQueue.add(newLiteral.getPrevious());
+						firstUIPPriorityQueue.add(newLiteral);
 						continue;
 					}
 					throw oops("Implying literal on current decisionLevel has higher propagationLevel than the implied literal and this was no assignment from MBT to TRUE");
@@ -278,11 +268,7 @@ public class GroundConflictNoGoodLearner {
 		}
 		for (Integer integer : learnedNoGood) {
 			Assignment.Entry assignmentEntry = assignment.get(atomOf(integer));
-			int atomDecisionLevel = assignmentEntry.getDecisionLevel();
-			if (TRUE.equals(assignmentEntry.getTruth()) && assignmentEntry.getPrevious() != null) {
-				// Literal is assigned TRUE and was MBT before, it gets unassigned only if the MBT assignment is backtracked.
-				atomDecisionLevel = assignmentEntry.getPrevious().getDecisionLevel();
-			}
+			int atomDecisionLevel = assignmentEntry.getDecisionLevelRespectingLowerMBT();
 			if (atomDecisionLevel == highestDecisionLevel) {
 				numLiteralsOfHighestDecisionLevel++;
 			}

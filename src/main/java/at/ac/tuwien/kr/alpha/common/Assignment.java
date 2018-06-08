@@ -85,14 +85,30 @@ public interface Assignment {
 
 	interface Entry {
 		ThriceTruth getTruth();
-		int getDecisionLevel();
-		Entry getPrevious();
-		NoGood getImpliedBy();
-
 		int getAtom();
-
+		int getDecisionLevel();
+		NoGood getImpliedBy();
 		int getPropagationLevel();
 		boolean isReassignAtLowerDecisionLevel();
+		boolean hasPreviousMBT();
+		int getMBTDecisionLevel();
+		int getMBTPropagationLevel();
+		NoGood getMBTImpliedBy();
+
+		default int getPropagationLevelRespectingLowerMBT() {
+			return hasPreviousMBT() ? getMBTPropagationLevel() : getPropagationLevel();
+		}
+
+		default int getDecisionLevelRespectingLowerMBT() {
+			return hasPreviousMBT() ? getMBTDecisionLevel() : getDecisionLevel();
+		}
+
+		default NoGood getImpliedByRespectingLowerMBT() {
+			if (hasPreviousMBT()) {
+				return getMBTImpliedBy();
+			}
+			return getImpliedBy();
+		}
 
 		/**
 		 * Returns the literal corresponding to this assignment
@@ -107,7 +123,7 @@ public interface Assignment {
 		 * @return the decision level of a previous MBT if it exists, otherwise the decision level of this entry.
 		 */
 		default int getWeakDecisionLevel() {
-			return getPrevious() != null ? getPrevious().getDecisionLevel() : getDecisionLevel();
+			return hasPreviousMBT() ? getMBTDecisionLevel() : getDecisionLevel();
 		}
 
 		/**

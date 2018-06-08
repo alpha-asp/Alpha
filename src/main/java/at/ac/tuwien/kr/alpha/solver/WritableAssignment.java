@@ -77,7 +77,7 @@ public interface WritableAssignment extends Assignment {
 			if (entry == null || isPositive(literal) != entry.getTruth().toBoolean()) {
 				return -1;
 			}
-			int literalDecisionLevel = entry.getPrevious() != null ? entry.getPrevious().getDecisionLevel() : entry.getDecisionLevel();
+			int literalDecisionLevel = entry.hasPreviousMBT() ? entry.getMBTDecisionLevel() : entry.getDecisionLevel();
 			if (literalDecisionLevel > minimumConflictLevel) {
 				minimumConflictLevel = literalDecisionLevel;
 			}

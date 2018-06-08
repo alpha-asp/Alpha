@@ -308,12 +308,37 @@ public class NaiveSolver extends AbstractSolver {
 		}
 
 		@Override
-		public NoGood getImpliedBy() {
+		public boolean hasPreviousMBT() {
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
-		public Entry getPrevious() {
+		public int getMBTDecisionLevel() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public int getMBTPropagationLevel() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public int getPropagationLevelRespectingLowerMBT() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public int getDecisionLevelRespectingLowerMBT() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public NoGood getMBTImpliedBy() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public NoGood getImpliedBy() {
 			throw new UnsupportedOperationException();
 		}
 

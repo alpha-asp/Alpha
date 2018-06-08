@@ -373,7 +373,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	 */
 	private ConflictCause propagateWeakly(final Assignment.Entry entry) {
 		// If assignment is for TRUE, previous MBT exists, and this is no reassignment, nothing changes for weak propagation.
-		if (entry.getPrevious() != null && !entry.isReassignAtLowerDecisionLevel()) {
+		if (entry.hasPreviousMBT() && !entry.isReassignAtLowerDecisionLevel()) {
 			return null;
 		}
 
@@ -552,10 +552,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		for (int i = 0; i < watchedNoGood.size(); i++) {
 			Integer atom = atomOf(watchedNoGood.getLiteral(i));
 			Assignment.Entry entry = assignment.get(atom);
-			if (entry.getPrevious() != null) {
-				entry = entry.getPrevious();
-			}
-			int literalDecisionLevel = entry.getDecisionLevel();
+			int literalDecisionLevel = entry.hasPreviousMBT() ? entry.getMBTDecisionLevel() : entry.getDecisionLevel();
 			if (literalDecisionLevel >= highestDecisionLevel) {
 				secondHighestDecisionLevel = highestDecisionLevel;
 				secondHighestPos = highestPos;
@@ -579,10 +576,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			sb.append(atomOf(literal));
 			sb.append("=");
 			sb.append(assignmentEntry);
-			if (assignmentEntry != null && assignmentEntry.getPrevious() != null) {
-				sb.append("/");
-				sb.append(assignmentEntry.getPrevious());
-			}
 			sb.append(", ");
 		}
 		LOGGER.trace(sb.toString());
@@ -797,7 +790,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		}
 
 		int weakDecisionLevel(Assignment.Entry entry) {
-			return entry == null ? Integer.MAX_VALUE : entry.getPrevious() != null ? entry.getPrevious().getDecisionLevel() : entry.getDecisionLevel();
+			return entry == null ? Integer.MAX_VALUE : entry.hasPreviousMBT() ? entry.getMBTDecisionLevel() : entry.getDecisionLevel();
 		}
 
 		int strongDecisionLevel(Assignment.Entry entry) {

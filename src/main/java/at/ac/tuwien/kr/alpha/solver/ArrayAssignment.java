@@ -131,13 +131,13 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 			if (current.getDecisionLevel() < decisionLevelToRemove) {
 				continue;
 			}
-			Entry previous = current.getPrevious();
 
-			if (previous != null && previous.getDecisionLevel() < decisionLevelToRemove) {
+			if (current.hasPreviousMBT() && current.getMBTDecisionLevel() < decisionLevelToRemove) {
 				// Restore previous MBT.
 				mbtCount++;
-				assignment.set(atom, previous);
-				LOGGER.trace("Backtracking assignment: {}={} restored to {}={}.", atom, current, atom, previous);
+				Entry restoredPrevious = new Entry(MBT, current.getAtom(), current.getMBTDecisionLevel(), current.getMBTPropagationLevel(), current.getMBTImpliedBy(), false);
+				assignment.set(atom, restoredPrevious);
+				LOGGER.trace("Backtracking assignment: {}={} restored to {}={}.", atom, current, atom, restoredPrevious);
 			} else {
 				if (MBT.equals(current.getTruth())) {
 					mbtCount--;
@@ -220,7 +220,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 			if (MBT.equals(value)) {
 				mbtCount++;
 			}
-			recordAssignment(atom, value, impliedBy, decisionLevel, null);
+			recordAssignment(atom, value, impliedBy, decisionLevel);
 			return null;
 		}
 
@@ -231,7 +231,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 			NoGood violated;
 			if (decisionLevel < current.getWeakDecisionLevel()) {
 				// New assignment is lower than the current one, hence cause is the reason for the (higher) current one.
-				violated = current.getPrevious() == null ? current.getImpliedBy() : current.getPrevious().getImpliedBy();	// take MBT reason if it exists.
+				violated = current.hasPreviousMBT() ? current.getMBTImpliedBy() : current.getImpliedBy();	// take MBT reason if it exists.
 				if (violated == null) {
 					conflictCause = new ConflictCause(current);
 				} else {
@@ -241,7 +241,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 				if (current.getTruth() == MBT) {
 					mbtCount--;
 				}
-				recordAssignment(atom, value, impliedBy, decisionLevel, null);
+				recordAssignment(atom, value, impliedBy, decisionLevel);
 				if (value == MBT) {
 					mbtCount++;
 				}
@@ -254,23 +254,24 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		switch (value) {
 			case FALSE:
 				// Previous must be false, simply re-assign it.
-				recordAssignment(atom, value, impliedBy, decisionLevel, null);
+				recordAssignment(atom, value, impliedBy, decisionLevel);
 				return null;
 			case TRUE:
-				ArrayAssignment.Entry eventualPreExistingMBT = current.getTruth().isMBT() ? current : current.getPrevious();
-				if (eventualPreExistingMBT != null && eventualPreExistingMBT.getDecisionLevel() <= decisionLevel) {
-					// TRUE is below current TRUE but above-or-equal a current MBT.
-					recordAssignment(atom, value, impliedBy, decisionLevel, eventualPreExistingMBT);
+				// Check if TRUE is below current TRUE but above-or-equal a current MBT.
+				if (current.getTruth() == MBT && current.getDecisionLevel() <= decisionLevel) {
+					recordAssignment(atom, value, impliedBy, decisionLevel, current.getDecisionLevel(), current.getPropagationLevel(), current.getImpliedBy());
+				} else if (current.hasPreviousMBT() && current.getMBTDecisionLevel() <= decisionLevel) {
+					recordAssignment(atom, value, impliedBy, decisionLevel, current.getMBTDecisionLevel(), current.getMBTPropagationLevel(), current.getMBTImpliedBy());
 				} else {
 					// TRUE is below current TRUE and below an eventual MBT.
-					recordAssignment(atom, value, impliedBy, decisionLevel, null);
+					recordAssignment(atom, value, impliedBy, decisionLevel);
 				}
 				if (current.getTruth().isMBT()) {
 					mbtCount--;
 				}
 				return null;
 			case MBT:
-				if (current.getPrevious() != null && current.getPrevious().getDecisionLevel() <= decisionLevel
+				if (current.hasPreviousMBT() && current.getMBTDecisionLevel() <= decisionLevel
 					|| TRUE.equals(current.getTruth()) && current.getDecisionLevel() <= decisionLevel) {
 					// New assignment is above-or-equal to an already existing MBT,
 					// or current is TRUE and at same decision level as the new MBT. Ignore it.
@@ -282,7 +283,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 					recordMBTBelowTrue(atom, value, impliedBy, decisionLevel);
 				} else {
 					// Current assignment is MBT and the new one is below it (no TRUE above exists).
-					recordAssignment(atom, value, impliedBy, decisionLevel, null);
+					recordAssignment(atom, value, impliedBy, decisionLevel);
 				}
 				return null;
 		}
@@ -297,15 +298,15 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		//final int previousPropagationLevel = atomsAssignedInDecisionLevel.get(decisionLevel).size();
 		final int previousPropagationLevel = propagationCounterPerDecisionLevel.get(decisionLevel);
 		propagationCounterPerDecisionLevel.set(decisionLevel, previousPropagationLevel + 1);
-		final Entry previous = new Entry(value, decisionLevel, previousPropagationLevel, impliedBy, null, atom, true);
-		atomsAssignedInDecisionLevel.get(decisionLevel).add(previous.getAtom());
+		final Entry previous = new Entry(value, atom, decisionLevel, previousPropagationLevel, impliedBy, true);
+		atomsAssignedInDecisionLevel.get(decisionLevel).add(atom);
 		assignmentsToProcess.add(previous); // Process MBT on lower decision level.
 		// Replace the current TRUE entry with one where previous is set correctly.
-		Entry trueEntry = new Entry(oldEntry.getTruth(), oldEntry.getDecisionLevel(), oldEntry.getPropagationLevel(), oldEntry.getImpliedBy(), previous, atom, oldEntry.isReassignAtLowerDecisionLevel());
+		Entry trueEntry = new Entry(oldEntry.getTruth(), atom, oldEntry.getDecisionLevel(), oldEntry.getPropagationLevel(), oldEntry.getImpliedBy(), oldEntry.isReassignAtLowerDecisionLevel(), decisionLevel, previousPropagationLevel, impliedBy);
 		if (LOGGER.isTraceEnabled()) {
-			LOGGER.trace("Recording assignment {}: MBT below TRUE {} impliedBy: {}", atom, trueEntry.getPrevious(), trueEntry.getPrevious().getImpliedBy());
-			if (trueEntry.getPrevious().getImpliedBy() != null) {
-				for (Integer literal : trueEntry.getPrevious().getImpliedBy()) {
+			LOGGER.trace("Recording assignment {}: MBT below TRUE {} impliedBy: {}", atom, trueEntry, trueEntry.getMBTImpliedBy());
+			if (trueEntry.getMBTImpliedBy() != null) {
+				for (Integer literal : trueEntry.getMBTImpliedBy()) {
 					LOGGER.trace("NoGood impliedBy literal assignment: {}={}.", atomOf(literal), assignment.get(atomOf(literal)));
 				}
 			}
@@ -314,19 +315,23 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		assignment.set(atom, trueEntry);
 	}
 
-	private void recordAssignment(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel, Entry previous) {
+	private void recordAssignment(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
+		recordAssignment(atom, value, impliedBy, decisionLevel, -1, -1, null);
+	}
+
+	private void recordAssignment(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel, int previousDecisionLevel, int previousPropagationLevel, NoGood previousImpliedBy) {
 		Entry oldEntry = get(atom);
 		if (oldEntry != null && decisionLevel >= oldEntry.getDecisionLevel() && !(TRUE.equals(value) && MBT.equals(oldEntry.getTruth()))) {
 			throw oops("Assigning value into higher decision level");
 		}
-		if (previous != null && (!TRUE.equals(value) || !MBT.equals(previous.getTruth()))) {
-			throw oops("Assignment has previous value, but truth values are not MBT (previously) and TRUE (now)");
+		if (previousDecisionLevel != -1 && TRUE != value) {
+			throw oops("Assignment has previous decision level, but truth value is not TRUE");
 		}
 		// Create and record new assignment entry.
 		final int propagationLevel = propagationCounterPerDecisionLevel.get(decisionLevel);
 		propagationCounterPerDecisionLevel.set(decisionLevel, propagationLevel + 1);
 		final boolean isReassignAtLowerDecisionLevel = oldEntry != null && oldEntry.getDecisionLevel() > decisionLevel && !isConflicting(oldEntry.getTruth(), value);
-		final Entry next = new Entry(value, decisionLevel, propagationLevel, impliedBy, previous, atom, isReassignAtLowerDecisionLevel);
+		final Entry next = new Entry(value, atom, decisionLevel, propagationLevel, impliedBy, isReassignAtLowerDecisionLevel, previousDecisionLevel, previousPropagationLevel, previousImpliedBy);
 		if (LOGGER.isTraceEnabled()) {
 			LOGGER.trace("Recording assignment {}: {} impliedBy: {}", atom, next, next.getImpliedBy());
 			if (next.getImpliedBy() != null) {
@@ -336,7 +341,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 			}
 		}
 		// Record atom for backtracking (avoid duplicate records if MBT and TRUE are assigned on the same decision level).
-		if (next.getPrevious() == null || next.getPrevious().getDecisionLevel() < decisionLevel) {
+		if (!next.hasPreviousMBT() || next.getMBTDecisionLevel() < decisionLevel) {
 			atomsAssignedInDecisionLevel.get(decisionLevel).add(next.getAtom());
 		}
 		assignmentsToProcess.add(next);
@@ -442,20 +447,28 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		private final ThriceTruth value;
 		private final int decisionLevel;
 		private final int propagationLevel;
-		private final Entry previous;
+		private final int previousDecisionLevel;
+		private final int previousPropagationLevel;
+		private final NoGood previousImpliedBy;
 		private final NoGood impliedBy;
 		private final int atom;
 		private boolean isReassignAtLowerDecisionLevel;
 
-		Entry(ThriceTruth value, int decisionLevel, int propagationLevel, NoGood noGood, Entry previous, int atom, boolean isReassignAtLowerDecisionLevel) {
+		Entry(ThriceTruth value, int atom, int decisionLevel, int propagationLevel, NoGood noGood, boolean isReassignAtLowerDecisionLevel) {
+			this(value, atom, decisionLevel, propagationLevel, noGood, isReassignAtLowerDecisionLevel, -1, -1, null);
+		}
+
+		Entry(ThriceTruth value, int atom, int decisionLevel, int propagationLevel, NoGood impliedBy, boolean isReassignAtLowerDecisionLevel, int previousDecisionLevel, int previousPropagationLevel, NoGood previousImpliedBy) {
 			this.value = value;
 			this.decisionLevel = decisionLevel;
 			this.propagationLevel = propagationLevel;
-			this.impliedBy = noGood;
-			this.previous = previous;
+			this.impliedBy = impliedBy;
+			this.previousDecisionLevel = previousDecisionLevel;
+			this.previousPropagationLevel = previousPropagationLevel;
+			this.previousImpliedBy = previousImpliedBy;
 			this.atom = atom;
 			this.isReassignAtLowerDecisionLevel = isReassignAtLowerDecisionLevel;
-			if (previous != null && !(value == TRUE && previous.value == MBT)) {
+			if (previousDecisionLevel != -1 && value != TRUE) {
 				throw oops("Assignment.Entry instantiated with previous entry set and truth values other than TRUE now and MBT previous");
 			}
 		}
@@ -471,13 +484,28 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		}
 
 		@Override
-		public NoGood getImpliedBy() {
-			return impliedBy;
+		public boolean hasPreviousMBT() {
+			return previousDecisionLevel != -1;
 		}
 
 		@Override
-		public Entry getPrevious() {
-			return previous;
+		public int getMBTDecisionLevel() {
+			return previousDecisionLevel;
+		}
+
+		@Override
+		public int getMBTPropagationLevel() {
+			return previousPropagationLevel;
+		}
+
+		@Override
+		public NoGood getMBTImpliedBy() {
+			return previousImpliedBy;
+		}
+
+		@Override
+		public NoGood getImpliedBy() {
+			return impliedBy;
 		}
 
 		@Override
@@ -501,7 +529,8 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 
 		@Override
 		public String toString() {
-			return value.toString() + "(" + decisionLevel + ", " + propagationLevel + ")";
+			return value.toString() + "(DL" + decisionLevel + ", PL" + propagationLevel + ")"
+				+ (hasPreviousMBT() ? "MBT(DL" + getMBTDecisionLevel() + ", PL" + getMBTPropagationLevel() + ")" : "");
 		}
 	}
 }
