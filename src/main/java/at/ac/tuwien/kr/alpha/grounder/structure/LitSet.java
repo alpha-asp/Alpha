@@ -123,7 +123,7 @@ public class LitSet {
 		if (atom instanceof VariableNormalizableAtom) {
 			return ((VariableNormalizableAtom) atom).normalizeVariables(prefix, 0);
 		} else {
-			throw oops("Atom to normalize is of unknonw type: " + atom);
+			throw oops("Atom to normalize is of unknown type: " + atom);
 		}
 	}
 
