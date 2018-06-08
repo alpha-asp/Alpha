@@ -32,11 +32,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Stores a mapping between rule atom IDs and their corresponding domain-specific heuristic values.
+ * Stores a mapping between heuristic IDs and their corresponding domain-specific heuristic values.
  * 
  * The mapping is stored in the form of a hierarchical map.
  * 
- * TODO: this class has already partially been refactored from heuristic atoms/annotations to heuristic directives, has to be cleaned up
  * TODO: is it better to constantly maintain a map of all heuristics (as is currently the case) or to compute just the map of currently active heuristics when a choice has to be made? 
  */
 public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuristicsStore {

@@ -31,9 +31,7 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * Stores a mapping between rule atom IDs and their corresponding domain-specific heuristic values
- * 
- * TODO: update docs ...
+ * Stores information on heuristic directives obtained from the grounder
  */
 public interface DomainSpecificHeuristicsStore {
 	

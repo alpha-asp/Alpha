@@ -43,12 +43,8 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 public class Rule {
 	private final Head head;
 	private final List<Literal> body;
-
-	public Rule(Head head, List<Literal> body) {
-		this(head, body, (RuleAnnotation)null);
-	}
 	
-	public Rule(Head head, List<Literal> body, RuleAnnotation annotation) {
+	public Rule(Head head, List<Literal> body) {
 		this.head = head;
 		// Remove duplicate body literals.
 		LinkedHashSet<Literal> bodyLiterals = new LinkedHashSet<>(body);
