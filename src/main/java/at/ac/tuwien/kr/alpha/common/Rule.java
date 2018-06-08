@@ -80,11 +80,9 @@ public class Rule {
 		}
 		List<VariableTerm> occurringVariables = new ArrayList<>();
 		Atom headAtom = ((DisjunctiveHead)head).disjunctiveAtoms.get(0);
-		occurringVariables.addAll(headAtom.getNonBindingVariables());
-		occurringVariables.addAll(headAtom.getBindingVariables());
+		occurringVariables.addAll(headAtom.getOccurringVariables());
 		for (Literal literal : body) {
-			occurringVariables.addAll(literal.getNonBindingVariables());
-			occurringVariables.addAll(literal.getBindingVariables());
+			occurringVariables.addAll(literal.getOccurringVariables());
 		}
 		Substitution variableReplacement = new Substitution();
 		for (VariableTerm occurringVariable : occurringVariables) {
