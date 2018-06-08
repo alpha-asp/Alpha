@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * TODO: docs
+ * An internal atom that stores information on domain-specific heuristics.
  *
  */
 public class HeuristicAtom implements Atom {
