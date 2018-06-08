@@ -36,13 +36,11 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
 
 /**
@@ -52,16 +50,21 @@ import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
 public class RuleAtom implements Atom {
 	public static final Predicate PREDICATE = Predicate.getInstance("_R_", 2, true);
 
-	private final List<ConstantTerm<?>> terms;
+	private final List<ConstantTerm<String>> terms;
+
+	private RuleAtom(List<ConstantTerm<String>> terms) {
+		if (terms.size() != 2) {
+			throw new IllegalArgumentException();
+		}
+
+		this.terms = terms;
+	}
 
 	public RuleAtom(NonGroundRule nonGroundRule, Substitution substitution) {
-		this.terms = new ArrayList<>(2);
-		terms.add(getInstance(Integer.toString(nonGroundRule.getRuleId())));
-		terms.add(getInstance(substitution.toString()));
-
-		if (this.terms.size() != 2) {
-			oops("RuleAtom with " + this.terms.size() + " terms");
-		}
+		this(Arrays.asList(
+			getInstance(Integer.toString(nonGroundRule.getRuleId())),
+			getInstance(substitution.toString())
+		));
 	}
 
 	@Override
@@ -71,12 +74,15 @@ public class RuleAtom implements Atom {
 
 	@Override
 	public List<Term> getTerms() {
-		return terms.stream().map(ct -> (Term)ct).collect(Collectors.toList());
+		return Arrays.asList(
+			terms.get(0),
+			terms.get(1)
+		);
 	}
 
 	@Override
 	public boolean isGround() {
-		// NOTE: All terms are ConstantTerms, which are ground by definition.
+		// NOTE: Both terms are ConstantTerms, which are ground by definition.
 		return true;
 	}
 	
@@ -87,7 +93,7 @@ public class RuleAtom implements Atom {
 
 	@Override
 	public Set<VariableTerm> getBindingVariables() {
-		// NOTE: All terms are ConstantTerms, which have no variables by definition.
+		// NOTE: Both terms are ConstantTerms, which have no variables by definition.
 		return Collections.emptySet();
 	}
 
@@ -122,7 +128,6 @@ public class RuleAtom implements Atom {
 
 	@Override
 	public String toString() {
-		return PREDICATE.getName() + "(" + terms.stream().map(ConstantTerm::toString)
-			.collect(Collectors.joining(",")) + ")";
+		return PREDICATE.getName() + "(" + terms.get(0) + "," + terms.get(1) + ')';
 	}
 }

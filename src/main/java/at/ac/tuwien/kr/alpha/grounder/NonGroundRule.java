@@ -141,7 +141,7 @@ public class NonGroundRule {
 
 	@Override
 	public String toString() {
-		String ruleString = join(
+		return join(
 			join(
 						(isConstraint() ? "" : headAtom + " ") + ":- ",
 				bodyAtomsPositive,
@@ -151,7 +151,6 @@ public class NonGroundRule {
 			", not ",
 			"."
 		);
-		return ruleString;
 	}
 
 	public Rule getRule() {

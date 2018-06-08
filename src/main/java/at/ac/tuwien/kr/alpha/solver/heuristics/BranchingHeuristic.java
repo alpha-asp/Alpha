@@ -69,6 +69,7 @@ public interface BranchingHeuristic {
 	default void newNoGoods(Collection<NoGood> newNoGoods) {
 		newNoGoods.forEach(this::newNoGood);
 	}
+	
 	/**
 	 * Determines a literal (= atom + sign) to choose.
 	 *
