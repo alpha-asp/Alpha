@@ -126,10 +126,8 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 
 		// Treat case where this is just comparison with all variables bound by partialSubstitution.
 		if (!isLeftAssigning() && !isRightAssigning()) {
-			Term leftSubstitute = terms.get(0).substitute(partialSubstitution);
-			Term leftEvaluatedSubstitute = leftSubstitute instanceof ArithmeticTerm ? ConstantTerm.getInstance(evaluateGroundTerm(leftSubstitute)) : leftSubstitute;
-			Term rightSubstitute = terms.get(1).substitute(partialSubstitution);
-			Term rightEvaluatedSubstitute = rightSubstitute instanceof ArithmeticTerm ? ConstantTerm.getInstance(evaluateGroundTerm(rightSubstitute)) : rightSubstitute;
+			Term leftEvaluatedSubstitute = substituteAndEvaluate(terms.get(0), partialSubstitution);
+			Term rightEvaluatedSubstitute = substituteAndEvaluate(terms.get(1), partialSubstitution);
 			if (compare(leftEvaluatedSubstitute, rightEvaluatedSubstitute)) {
 				return Collections.singletonList(partialSubstitution);
 			} else {
@@ -163,6 +161,11 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 		Substitution extendedSubstitution = new Substitution(partialSubstitution);
 		extendedSubstitution.put(variable, resultTerm);
 		return Collections.singletonList(extendedSubstitution);
+	}
+
+	private Term substituteAndEvaluate(Term term, Substitution partialSubstitution) {
+		Term substitute = term.substitute(partialSubstitution);
+		return substitute instanceof ArithmeticTerm ? ConstantTerm.getInstance(evaluateGroundTerm(substitute)) : substitute;
 	}
 
 	private boolean compare(Term x, Term y) {
