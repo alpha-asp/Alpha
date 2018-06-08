@@ -88,9 +88,12 @@ public class HeuristicDirectiveValues {
 	}
 
 	/**
-	 * @param groundHeuristicAtom
-	 * @return
+	 * Reads values from a ground {@link HeuristicAtom}.
+	 * @param groundHeuristicAtom a ground heuristic atom
+	 * @param headAtomId the ID of the head atom this heuristic applies to
+	 * @return a new instance of {@link HeuristicDirectiveValues} with the values from {@code groundHeuristicAtom}.
 	 */
+	@SuppressWarnings("unchecked")
 	public static HeuristicDirectiveValues fromHeuristicAtom(HeuristicAtom groundHeuristicAtom, int headAtomId) {
 		return new HeuristicDirectiveValues(headAtomId, ((ConstantTerm<Integer>)groundHeuristicAtom.getWeight()).getObject(), ((ConstantTerm<Integer>)groundHeuristicAtom.getLevel()).getObject(), ((ConstantTerm<Boolean>)groundHeuristicAtom.getSign()).getObject());
 	}
