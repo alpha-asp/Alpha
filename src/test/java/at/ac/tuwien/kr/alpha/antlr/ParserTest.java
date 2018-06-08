@@ -179,24 +179,6 @@ public class ParserTest {
 		parser.parse("p(X,Y) :- q(X), r(Y) p(a). q(b).");
 	}
 
-	@Test(expected = RuntimeException.class)
-	public void parseProgramWithHeuristicAnnotation_GeneratorWithArithmetics_Unsafe1() {
-		parser.parse("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
-				+ "[T2@1 : holds(F,Tp1), Tp1=T+1, LTp1mT=LT+1-T]");
-	}
-
-	@Test(expected = RuntimeException.class)
-	public void parseProgramWithHeuristicAnnotation_GeneratorWithArithmetics_Unsafe2() {
-		parser.parse("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
-				+ "[LTp1mT@1 : holds(F,T2), Tp1=T+1, LTp1mT=LT+1-T]");
-	}
-
-	@Test(expected = RuntimeException.class)
-	public void parseProgramWithHeuristicAnnotation_GeneratorWithArithmetics_Unsafe3() {
-		parser.parse("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
-				+ "[LTp1mT@1 : holds(F,Tp1), Tp1=T2+1, LTp1mT=LT+1-T]");
-	}
-
 	@Test
 	public void parseProgramWithHeuristicDirective_W() {
 		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
@@ -269,16 +251,5 @@ public class ParserTest {
 	private void parseProgramAndTransformHeuristicDirectives(String input) {
 		Program program = parser.parse(input);
 		new HeuristicDirectiveToRule().transform(program); // without transforming it to a rule, the safety of a heuristic directive is not checked currently
-	}
-
-	private int parseFaultyRule(String program, int rules) {
-		try {
-			Program prg = parser.parse(program);
-			assertEquals(prg.getRules().size(), rules);
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-			return 1;
-		}
-		return 0;
 	}
 }
