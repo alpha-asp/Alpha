@@ -24,6 +24,16 @@ public interface Assignment {
 		return entry == null ? null : entry.getTruth();
 	}
 
+	default int getWeakDecisionLevel(int atom) {
+		final Entry entry = get(atom);
+		return entry == null ? -1 : entry.getWeakDecisionLevel();
+	}
+
+	default int getStrongDecisionLevel(int atom) {
+		final Entry entry = get(atom);
+		return (entry == null || entry.getTruth().isMBT()) ? -1 : entry.getDecisionLevel();
+	}
+
 	default boolean isAssigned(int atom) {
 		return get(atom) != null;
 	}
@@ -97,10 +107,6 @@ public interface Assignment {
 
 		default int getPropagationLevelRespectingLowerMBT() {
 			return hasPreviousMBT() ? getMBTPropagationLevel() : getPropagationLevel();
-		}
-
-		default int getDecisionLevelRespectingLowerMBT() {
-			return hasPreviousMBT() ? getMBTDecisionLevel() : getDecisionLevel();
 		}
 
 		default NoGood getImpliedByRespectingLowerMBT() {

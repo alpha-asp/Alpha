@@ -147,15 +147,15 @@ public class ChoiceManager implements Checkable {
 		}
 
 		private boolean isActiveChoicePoint() {
-			Assignment.Entry enablerEntry = assignment.get(enabler);
-			Assignment.Entry disablerEntry = assignment.get(disabler);
-			return  enablerEntry != null && enablerEntry.getTruth() == TRUE
-				&& (disablerEntry == null || !disablerEntry.getTruth().toBoolean());
+			ThriceTruth enablerTruth = assignment.getTruth(enabler);
+			ThriceTruth disablerTruth = assignment.getTruth(disabler);
+			return  enablerTruth == TRUE
+				&& (disablerTruth == null || !disablerTruth.toBoolean());
 		}
 
 		private boolean isNotChosen() {
-			Assignment.Entry entry = assignment.get(atom);
-			return entry == null || MBT.equals(entry.getTruth());
+			ThriceTruth atomTruth = assignment.getTruth(atom);
+			return atomTruth == null || atomTruth == MBT;
 		}
 
 		void recomputeActive() {
@@ -342,12 +342,12 @@ public class ChoiceManager implements Checkable {
 	private void checkActiveChoicePoints() {
 		HashSet<ChoicePoint> actualActiveChoicePoints = new HashSet<>();
 		for (ChoicePoint choicePoint : influencers.values()) {
-			Assignment.Entry enablerEntry = assignment.get(choicePoint.enabler);
-			Assignment.Entry disablerEntry = assignment.get(choicePoint.disabler);
-			boolean isActive = enablerEntry != null && enablerEntry.getTruth() == TRUE
-				&& (disablerEntry == null || !disablerEntry.getTruth().toBoolean());
-			Assignment.Entry entry = assignment.get(choicePoint.atom);
-			boolean isNotChosen = entry == null || MBT.equals(entry.getTruth());
+			ThriceTruth enablerTruth = assignment.getTruth(choicePoint.enabler);
+			ThriceTruth disablerTruth = assignment.getTruth(choicePoint.disabler);
+			boolean isActive = enablerTruth == TRUE
+				&& (disablerTruth == null || !disablerTruth.toBoolean());
+			ThriceTruth atomTruth = assignment.getTruth(choicePoint.atom);
+			boolean isNotChosen = atomTruth == null || atomTruth == MBT;
 			if (isActive && isNotChosen) {
 				actualActiveChoicePoints.add(choicePoint);
 			}

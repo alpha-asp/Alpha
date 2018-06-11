@@ -32,7 +32,7 @@ public class FirstUIPPriorityQueue {
 	 * @param entry the entry to add.
 	 */
 	public void add(Assignment.Entry entry) {
-		if (entry.getDecisionLevelRespectingLowerMBT() != decisionLevel) {
+		if (entry.getWeakDecisionLevel() != decisionLevel) {
 			// Ignore assignments from lower decision levels.
 			return;
 		}

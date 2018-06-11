@@ -99,7 +99,7 @@ public class GroundConflictNoGoodLearner {
 		int conflictDecisionLevel = -1;
 		for (Integer literal : currentResolutionNoGood) {
 			Assignment.Entry literalEntry = assignment.get(atomOf(literal));
-			int literalDL = literalEntry.getDecisionLevelRespectingLowerMBT();
+			int literalDL = literalEntry.getWeakDecisionLevel();
 			if (literalDL > conflictDecisionLevel) {
 				conflictDecisionLevel = literalDL;
 			}
@@ -127,10 +127,10 @@ public class GroundConflictNoGoodLearner {
 			NoGood otherContributingNoGood = atomAssignmentEntry.getImpliedByRespectingLowerMBT();
 			if (otherContributingNoGood == null) {
 				// Case b), the other assignment is a decision.
-				return new ConflictAnalysisResult(null, atomAssignmentEntry.getDecisionLevelRespectingLowerMBT(), true, noGoodsResponsible);
+				return new ConflictAnalysisResult(null, atomAssignmentEntry.getWeakDecisionLevel(), true, noGoodsResponsible);
 			}
 			// Case a) take other implying NoGood into account.
-			currentResolutionNoGood = new NoGood(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, otherContributingNoGood, atomAssignmentEntry.getAtom(), atomAssignmentEntry.getDecisionLevelRespectingLowerMBT(), atomAssignmentEntry.getPropagationLevelRespectingLowerMBT()));
+			currentResolutionNoGood = new NoGood(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, otherContributingNoGood, atomAssignmentEntry.getAtom(), atomAssignmentEntry.getWeakDecisionLevel(), atomAssignmentEntry.getPropagationLevelRespectingLowerMBT()));
 			noGoodsResponsible.add(otherContributingNoGood);
 
 			// TODO: create/edit ResolutionSequence
@@ -160,7 +160,7 @@ public class GroundConflictNoGoodLearner {
 
 			// Resolve next NoGood based on current literal
 			Assignment.Entry currentLiteralAssignment = firstUIPPriorityQueue.poll();
-			int decisionLevel = currentLiteralAssignment.getDecisionLevelRespectingLowerMBT();
+			int decisionLevel = currentLiteralAssignment.getWeakDecisionLevel();
 			int propagationLevel = currentLiteralAssignment.getPropagationLevelRespectingLowerMBT();
 			// Get NoGood it was implied by.
 			NoGood impliedByNoGood = currentLiteralAssignment.getImpliedByRespectingLowerMBT();
@@ -268,7 +268,7 @@ public class GroundConflictNoGoodLearner {
 		}
 		for (Integer integer : learnedNoGood) {
 			Assignment.Entry assignmentEntry = assignment.get(atomOf(integer));
-			int atomDecisionLevel = assignmentEntry.getDecisionLevelRespectingLowerMBT();
+			int atomDecisionLevel = assignmentEntry.getWeakDecisionLevel();
 			if (atomDecisionLevel == highestDecisionLevel) {
 				numLiteralsOfHighestDecisionLevel++;
 			}

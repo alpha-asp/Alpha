@@ -55,6 +55,8 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 	private final Queue<ArrayAssignment.Entry> assignmentsToProcess = new LinkedList<>();
 	private Queue<Assignment.Entry> newAssignments = new LinkedList<>();
 	private Queue<Assignment.Entry> newAssignmentsForChoice = new LinkedList<>();
+	private int[] values;
+	private int[] strongDecisionLevels;
 
 	private int mbtCount;
 	private boolean checksEnabled;
@@ -66,6 +68,8 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		this.atomsAssignedInDecisionLevel.add(new ArrayList<>());
 		this.propagationCounterPerDecisionLevel = new ArrayList<>();
 		this.propagationCounterPerDecisionLevel.add(0);
+		this.values = new int[0];
+		this.strongDecisionLevels = new int[0];
 	}
 
 	public ArrayAssignment(Grounder translator) {
@@ -82,6 +86,8 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		atomsAssignedInDecisionLevel.add(new ArrayList<>());
 		assignment.clear();
 		mbtCount = 0;
+		Arrays.fill(values, 0);
+		Arrays.fill(strongDecisionLevels, -1);
 	}
 
 	@Override
@@ -137,14 +143,20 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 				mbtCount++;
 				Entry restoredPrevious = new Entry(MBT, current.getAtom(), current.getMBTDecisionLevel(), current.getMBTPropagationLevel(), current.getMBTImpliedBy(), false);
 				assignment.set(atom, restoredPrevious);
+				if (current.getMBTDecisionLevel() == -1) {
+					throw oops("MBT assigned at decision level -1.");
+				}
+				values[atom] = (current.getMBTDecisionLevel() << 2) | translateTruth(MBT);
 				LOGGER.trace("Backtracking assignment: {}={} restored to {}={}.", atom, current, atom, restoredPrevious);
 			} else {
 				if (MBT.equals(current.getTruth())) {
 					mbtCount--;
 				}
 				assignment.set(atom, null);
+				values[atom] = 0;
 				LOGGER.trace("Backtracking assignment: {}={} removed.", atom, current);
 			}
+			strongDecisionLevels[atom] = -1;
 		}
 
 		if (atomsAssignedInDecisionLevel.isEmpty()) {
@@ -177,6 +189,9 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		ConflictCause isConflictFree = assignWithDecisionLevel(atom, value, impliedBy, decisionLevel);
 		if (isConflictFree != null) {
 			LOGGER.debug("Assign is conflicting: atom: {}, value: {}, impliedBy: {}.", atom, value, impliedBy);
+		}
+		if (checksEnabled) {
+			runInternalChecks();
 		}
 		return isConflictFree;
 	}
@@ -313,6 +328,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		}
 		atomsAssignedInDecisionLevel.get(oldEntry.getDecisionLevel()).add(trueEntry.getAtom());
 		assignment.set(atom, trueEntry);
+		values[atom] = (trueEntry.getMBTDecisionLevel() << 2) | translateTruth(TRUE);
 	}
 
 	private void recordAssignment(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
@@ -340,6 +356,13 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 				}
 			}
 		}
+		int decisionLevelRespectingLowerMBT = previousDecisionLevel == -1 ? decisionLevel : previousDecisionLevel;
+		values[atom] = (decisionLevelRespectingLowerMBT << 2) | translateTruth(value);
+		if (value != MBT) {
+			strongDecisionLevels[atom] = decisionLevel;
+		} else {
+			strongDecisionLevels[atom] = -1;
+		}
 		// Record atom for backtracking (avoid duplicate records if MBT and TRUE are assigned on the same decision level).
 		if (!next.hasPreviousMBT() || next.getMBTDecisionLevel() < decisionLevel) {
 			atomsAssignedInDecisionLevel.get(decisionLevel).add(next.getAtom());
@@ -348,6 +371,51 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		newAssignments.add(next);
 		newAssignmentsForChoice.add(next);
 		assignment.set(atom, next);
+	}
+
+	private ThriceTruth translateTruth(int value) {
+		switch (value & 0x3) {
+			case 0:
+				return null;
+			case 1:
+				return FALSE;
+			case 2:
+				return MBT;
+			case 3:
+				return TRUE;
+			default:
+				throw oops("Unknown truth value.");
+		}
+	}
+
+	private int translateTruth(ThriceTruth value) {
+		if (value == null) {
+			return 0;
+		}
+		switch (value) {
+			case FALSE:
+				return 1;
+			case MBT:
+				return 2;
+			case TRUE:
+				return 3;
+		}
+		throw oops("Unknown truth value.");
+	}
+
+	@Override
+	public ThriceTruth getTruth(int atom) {
+		return translateTruth(values[atom]);
+	}
+
+	@Override
+	public int getWeakDecisionLevel(int atom) {
+		return values[atom] >> 2;
+	}
+
+	@Override
+	public int getStrongDecisionLevel(int atom) {
+		return strongDecisionLevels[atom];
 	}
 
 	@Override
@@ -364,6 +432,29 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 	@Override
 	public Entry get(int atom) {
 		return assignment.get(atom);
+	}
+
+	private void runInternalChecks() {
+		// Ensure that truth values in assignment entries agree with those in values array.
+		LOGGER.trace("Checking assignment.");
+		if (assignment.size() > values.length) {
+			throw oops("Assignment is bigger than values.");
+		}
+		for (int i = 0; i < assignment.size(); i++) {
+			if (assignment.get(i) == null) {
+				if (values[i] == 0) {
+					continue;
+				}
+				throw oops("Assigned truth values disagree for atom " + i + ", entry is " + assignment.get(i) + " and value is " + values[i] + ".");
+			}
+			if (!(assignment.get(i).getTruth() == translateTruth(values[i]) && assignment.get(i).getWeakDecisionLevel() == getWeakDecisionLevel(i))) {
+				throw oops("Assigned truth values disagree for atom " + i + ", entry is " + assignment.get(i) + " and value is " + values[i] + ".");
+			}
+			if (assignment.get(i).getStrongDecisionLevel() != strongDecisionLevels[i]) {
+				throw oops("Assigned strong decision levels disagree for atom " + i + ", entry is " + assignment.get(i) + " and strong decision level is " + strongDecisionLevels[i] + ".");
+			}
+		}
+		LOGGER.trace("Checking assignment: all good.");
 	}
 
 	/**
@@ -391,6 +482,22 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		for (int i = assignment.size(); i <= maxAtomId; i++) {
 			assignment.add(i, null);
 		}
+		// Grow arrays only if needed.
+		if (values.length > maxAtomId) {
+			return;
+		}
+		// Grow by 1.5 current size, except if bigger array is required due to maxAtomId.
+		int newCapacity = values.length + (values.length >> 1);
+		if (newCapacity < maxAtomId + 1) {
+			newCapacity = maxAtomId + 1;
+		}
+		int[] newValues = new int[newCapacity];
+		System.arraycopy(values, 0, newValues, 0, values.length);
+		values = newValues;
+		int[] newStrongDecisionLevels = new int[newCapacity];
+		System.arraycopy(strongDecisionLevels, 0, newStrongDecisionLevels, 0, strongDecisionLevels.length);
+		Arrays.fill(newStrongDecisionLevels, strongDecisionLevels.length, newStrongDecisionLevels.length, -1);
+		strongDecisionLevels = newStrongDecisionLevels;
 	}
 
 	@Override

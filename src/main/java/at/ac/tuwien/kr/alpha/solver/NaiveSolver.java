@@ -328,7 +328,7 @@ public class NaiveSolver extends AbstractSolver {
 		}
 
 		@Override
-		public int getDecisionLevelRespectingLowerMBT() {
+		public int getWeakDecisionLevel() {
 			throw new UnsupportedOperationException();
 		}
 
