@@ -134,14 +134,14 @@ public class ArrayAssignmentTest {
 		assignment.growForMaxAtomId(2);
 		assignment.assign(1, MBT);
 
-		Queue<? extends Assignment.Entry> queue = assignment.getAssignmentsToProcess();
+		Assignment.Pollable<? extends Assignment.Entry> queue = assignment.getAssignmentsToProcess();
 		assertEquals(1, queue.remove().getAtom());
 
 		assignment.choose(2, MBT);
 		assignment.choose(1, TRUE);
 
 		assertEquals(2, queue.remove().getAtom());
-		assertEquals(1, queue.element().getAtom());
+		assertEquals(1, queue.peek().getAtom());
 
 		queue = assignment.getAssignmentsToProcess();
 		assertEquals(1, queue.remove().getAtom());
@@ -190,7 +190,7 @@ public class ArrayAssignmentTest {
 	@Test
 	public void iteratorAndBacktracking() throws Exception {
 		assignment.growForMaxAtomId(3);
-		Queue<? extends Assignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
+		Assignment.Pollable<? extends Assignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
 
 		assignment.assign(1, MBT);
 		assertEquals(1, assignmentsToProcess.remove().getAtom());

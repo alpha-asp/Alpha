@@ -57,6 +57,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 	private Queue<Assignment.Entry> newAssignmentsForChoice = new LinkedList<>();
 	private int[] values;
 	private int[] strongDecisionLevels;
+	private NoGood[] impliedBy;
 
 	private int mbtCount;
 	private boolean checksEnabled;
@@ -70,6 +71,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		this.propagationCounterPerDecisionLevel.add(0);
 		this.values = new int[0];
 		this.strongDecisionLevels = new int[0];
+		this.impliedBy = new NoGood[0];
 	}
 
 	public ArrayAssignment(Grounder translator) {
@@ -90,13 +92,40 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		Arrays.fill(strongDecisionLevels, -1);
 	}
 
+	private static class ArrayPollable implements Pollable<ArrayAssignment.Entry> {
+		private final Queue<ArrayAssignment.Entry> delegate;
+
+		private ArrayPollable(Queue<Entry> delegate) {
+			this.delegate = delegate;
+		}
+
+		@Override
+		public Entry peek() {
+			return delegate.peek();
+		}
+
+		@Override
+		public Entry remove() {
+			return delegate.remove();
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return delegate.isEmpty();
+		}
+	}
+
 	@Override
-	public Queue<? extends Assignment.Entry> getAssignmentsToProcess() {
-		return assignmentsToProcess;
+	public Pollable<? extends Assignment.Entry> getAssignmentsToProcess() {
+		return new ArrayPollable(assignmentsToProcess);
 	}
 
 	@Override
 	public void backtrack() {
+		backtrackWithLowerAssignments();
+	}
+
+	private void backtrackWithLowerAssignments() {
 		// Remove all assignments on the current decision level from the queue of assignments to process.
 		HashSet<Integer> removedEntries = new HashSet<>();
 		for (Iterator<ArrayAssignment.Entry> iterator = assignmentsToProcess.iterator(); iterator.hasNext();) {
@@ -179,6 +208,10 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 
 	@Override
 	public ConflictCause assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
+		return assignWithLowverDecisionLevel(atom, value, impliedBy, decisionLevel);
+	}
+
+	private ConflictCause assignWithLowverDecisionLevel(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
 		if (decisionLevel > getDecisionLevel() || decisionLevel < 0) {
 			throw new IllegalArgumentException("Given decisionLevel is outside range of possible decision levels. Given decisionLevel is: " + decisionLevel);
 		}
@@ -196,8 +229,8 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		return isConflictFree;
 	}
 
-	private boolean assignmentsConsistent(Assignment.Entry oldAssignment, ThriceTruth value) {
-		return oldAssignment == null || oldAssignment.getTruth().toBoolean() == value.toBoolean();
+	private boolean assignmentsConsistent(ThriceTruth oldTruth, ThriceTruth value) {
+		return oldTruth == null || oldTruth.toBoolean() == value.toBoolean();
 	}
 
 	private ConflictCause assignWithDecisionLevel(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
@@ -221,16 +254,18 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 
 		// Check if the new assignments contradicts the current one.
 		final Entry current = get(atom);
+		final ThriceTruth currentTruth = getTruth(atom);
+		final int currentAtomWeakDecisionLevel = getWeakDecisionLevel(atom);
 
 		// Nothing to do if the new value is the same as the current one (or current is TRUE and new is MBT),
 		// and the current one has lower decision level.
-		if (current != null && current.getDecisionLevel() <= decisionLevel &&
-			(value.equals(current.getTruth()) || value.isMBT() && TRUE.equals(current.getTruth()))) {
+		if (currentTruth != null && current.getDecisionLevel() <= decisionLevel &&
+			(value == currentTruth || value.isMBT() && TRUE == currentTruth)) {
 			return null;
 		}
 
 		// If the atom currently is not assigned, simply record the assignment.
-		if (current == null) {
+		if (currentTruth == null) {
 			// If assigned value is MBT, increase counter.
 			if (MBT.equals(value)) {
 				mbtCount++;
@@ -240,11 +275,11 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		}
 
 		// Check consistency.
-		if (!assignmentsConsistent(current, value)) {
+		if (!assignmentsConsistent(currentTruth, value)) {
 			ConflictCause conflictCause = new ConflictCause(impliedBy);
 			// Assignments are inconsistent, prepare the reason.
 			NoGood violated;
-			if (decisionLevel < current.getWeakDecisionLevel()) {
+			if (decisionLevel < currentAtomWeakDecisionLevel) {
 				// New assignment is lower than the current one, hence cause is the reason for the (higher) current one.
 				violated = current.hasPreviousMBT() ? current.getMBTImpliedBy() : current.getImpliedBy();	// take MBT reason if it exists.
 				if (violated == null) {
@@ -253,7 +288,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 					conflictCause = new ConflictCause(violated);
 				}
 				// The lower assignment takes precedence over the current value, overwrite it and adjust mbtCounter.
-				if (current.getTruth() == MBT) {
+				if (currentTruth == MBT) {
 					mbtCount--;
 				}
 				recordAssignment(atom, value, impliedBy, decisionLevel);
@@ -273,7 +308,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 				return null;
 			case TRUE:
 				// Check if TRUE is below current TRUE but above-or-equal a current MBT.
-				if (current.getTruth() == MBT && current.getDecisionLevel() <= decisionLevel) {
+				if (currentTruth == MBT && current.getDecisionLevel() <= decisionLevel) {
 					recordAssignment(atom, value, impliedBy, decisionLevel, current.getDecisionLevel(), current.getPropagationLevel(), current.getImpliedBy());
 				} else if (current.hasPreviousMBT() && current.getMBTDecisionLevel() <= decisionLevel) {
 					recordAssignment(atom, value, impliedBy, decisionLevel, current.getMBTDecisionLevel(), current.getMBTPropagationLevel(), current.getMBTImpliedBy());
@@ -281,7 +316,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 					// TRUE is below current TRUE and below an eventual MBT.
 					recordAssignment(atom, value, impliedBy, decisionLevel);
 				}
-				if (current.getTruth().isMBT()) {
+				if (currentTruth.isMBT()) {
 					mbtCount--;
 				}
 				return null;
@@ -292,7 +327,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 					// or current is TRUE and at same decision level as the new MBT. Ignore it.
 					return null;
 				}
-				if (!current.getTruth().isMBT()) {
+				if (!currentTruth.isMBT()) {
 					// Current assignment is TRUE and new one is MBT below (and lower than a previous MBT).
 					LOGGER.debug("Updating current assignment {}: {} new MBT below at {}, impliedBy: {}.", atom, current, decisionLevel, impliedBy);
 					recordMBTBelowTrue(atom, value, impliedBy, decisionLevel);
@@ -498,6 +533,9 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		System.arraycopy(strongDecisionLevels, 0, newStrongDecisionLevels, 0, strongDecisionLevels.length);
 		Arrays.fill(newStrongDecisionLevels, strongDecisionLevels.length, newStrongDecisionLevels.length, -1);
 		strongDecisionLevels = newStrongDecisionLevels;
+		NoGood[] newimpliedBy = new NoGood[newCapacity];
+		System.arraycopy(impliedBy, 0, newimpliedBy, 0, impliedBy.length);
+		impliedBy = newimpliedBy;
 	}
 
 	@Override

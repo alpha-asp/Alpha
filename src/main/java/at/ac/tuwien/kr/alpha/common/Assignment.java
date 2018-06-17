@@ -3,7 +3,6 @@ package at.ac.tuwien.kr.alpha.common;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 import java.util.Iterator;
-import java.util.Queue;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
@@ -84,7 +83,13 @@ public interface Assignment {
 	 */
 	Iterator<Entry> getNewAssignmentsIterator();
 
-	Queue<? extends Entry> getAssignmentsToProcess();
+	Pollable<? extends Entry> getAssignmentsToProcess();
+
+	interface Pollable<T extends Entry> {
+		T peek();
+		T remove();
+		boolean isEmpty();
+	}
 
 	/**
 	 * Returns an iterator over all new assignments and additionally all backtracked reassignments at lower decision level).

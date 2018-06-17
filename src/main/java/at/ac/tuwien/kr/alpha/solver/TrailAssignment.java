@@ -274,6 +274,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		if (currentTruth == null) {
 			trail.add(atom);
 			values[atom] = (getDecisionLevel() << 2) | translateTruth(value);
+			this.impliedBy[atom] = impliedBy;
 			// Adjust MBT counter.
 			if (value == MBT) {
 				mbtCount++;
@@ -402,14 +403,6 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	@Override
 	public void growForMaxAtomId(int maxAtomId) {
-		/*if (assignment.size() > maxAtomId) {
-			return;
-		}
-		assignment.ensureCapacity(maxAtomId + 1);
-		// Grow backing array with nulls.
-		for (int i = assignment.size(); i <= maxAtomId; i++) {
-			assignment.add(i, null);
-		}*/
 		// Grow arrays only if needed.
 		if (values.length > maxAtomId) {
 			return;

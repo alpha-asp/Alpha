@@ -681,7 +681,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	public ConflictCause propagate() {
 		didPropagate = false;
 
-		Queue<? extends Assignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
+		Assignment.Pollable<? extends Assignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
 		while (!assignmentsToProcess.isEmpty()) {
 			final Assignment.Entry currentEntry = assignmentsToProcess.peek();
 			LOGGER.trace("Propagation processing entry: {}={}", currentEntry.getAtom(), currentEntry);
