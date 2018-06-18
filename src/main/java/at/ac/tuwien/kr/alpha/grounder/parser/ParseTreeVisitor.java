@@ -345,7 +345,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		if (ctx.naf_literals() != null) {
 			return new AggregateAtom.AggregateElement(basicTerms, visitNaf_literals(ctx.naf_literals()));
 		}
-		return new AggregateAtom.AggregateElement(basicTerms, null);
+		return new AggregateAtom.AggregateElement(basicTerms, Collections.emptyList());
 	}
 
 	@Override
