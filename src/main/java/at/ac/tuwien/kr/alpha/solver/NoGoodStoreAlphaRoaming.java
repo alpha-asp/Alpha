@@ -687,7 +687,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 
 		Queue<? extends Assignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
 		while (!assignmentsToProcess.isEmpty()) {
-			final Assignment.Entry currentEntry = assignmentsToProcess.remove();
+			final Assignment.Entry currentEntry = assignmentsToProcess.peek();
 			LOGGER.trace("Propagation processing entry: {}={}", currentEntry.getAtom(), currentEntry);
 
 			ConflictCause conflictCause = propagateWeakly(currentEntry);
@@ -701,6 +701,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				LOGGER.trace("Halting propagation due to conflict. Current assignment: {}.", assignment);
 				return conflictCause;
 			}
+			assignmentsToProcess.remove();
 		}
 		if (checksEnabled) {
 			runInternalChecks();
