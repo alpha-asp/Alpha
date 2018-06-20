@@ -73,10 +73,20 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 
 	@Override
 	public Collection<Set<Integer>> getHeuristicsOrderedByDecreasingPriority() {
-		Stream<Set<Integer>> flatMap = mapLevelWeightHeuristics.values().stream().flatMap(m -> m.values().stream());
+		Stream<Set<Integer>> flatMap = streamHeuristicsOrderedByDecreasingPriority();
 		// do not return flatMap directly because of Java bug
 		// cf. https://stackoverflow.com/questions/29229373/why-filter-after-flatmap-is-not-completely-lazy-in-java-streams
 		return flatMap.collect(Collectors.toList());
+	}
+
+	/**
+	 * Note: we have already tried to use this method instead of getHeuristicsOrderedByDecreasingPriority
+	 * in at.ac.tuwien.kr.alpha.solver.heuristics.DomainSpecific.chooseLiteral(Set<Integer>),
+	 * but it did not yield performance benefits
+	 */
+	@Override
+	public Stream<Set<Integer>> streamHeuristicsOrderedByDecreasingPriority() {
+		return mapLevelWeightHeuristics.values().stream().flatMap(m -> m.values().stream());
 	}
 	
 	@Override

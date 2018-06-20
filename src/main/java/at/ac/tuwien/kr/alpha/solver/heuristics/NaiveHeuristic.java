@@ -30,8 +30,6 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
-import org.apache.commons.collections4.SetUtils;
-import org.apache.commons.collections4.SetUtils.SetView;
 
 import java.util.Collection;
 import java.util.Set;
@@ -74,12 +72,14 @@ public class NaiveHeuristic implements BranchingHeuristic {
 		if (admissibleChoices == null) {
 			return chooseLiteral();
 		}
-		SetView<Integer> admissibleActiveChoices = SetUtils.intersection(choiceManager.getAllActiveChoiceAtoms(), admissibleChoices);
-		if (admissibleActiveChoices.isEmpty()) {
-			return DEFAULT_CHOICE_LITERAL;
-		} else {
-			return admissibleActiveChoices.iterator().next();
+
+		for (Integer atom : choiceManager.getAllActiveChoiceAtoms()) {
+			if (admissibleChoices.contains(atom)) {
+				return atom;
+			}
 		}
+		
+		return DEFAULT_CHOICE_ATOM;
 	}
 
 	@Override

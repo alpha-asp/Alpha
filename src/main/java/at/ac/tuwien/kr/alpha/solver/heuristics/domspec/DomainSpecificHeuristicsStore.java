@@ -29,6 +29,7 @@ import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Stores information on heuristic directives obtained from the grounder
@@ -43,6 +44,8 @@ public interface DomainSpecificHeuristicsStore {
 	 * second-to-highest weight, etc.
 	 */
 	Collection<Set<Integer>> getHeuristicsOrderedByDecreasingPriority();
+	
+	Stream<Set<Integer>> streamHeuristicsOrderedByDecreasingPriority();
 	
 	Set<Integer> getAllEntries();
 	

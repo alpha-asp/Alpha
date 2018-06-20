@@ -92,16 +92,16 @@ public class DomainSpecific implements BranchingHeuristic {
 
 	@Override
 	public int chooseLiteral(Set<Integer> admissibleChoices) {
-		// TODO: improve performance of this method (and called methods)
 		Set<Integer> activeHeuristics = choiceManager.getAllActiveHeuristicAtoms();
 		Collection<Set<Integer>> heuristicsOrderedByDecreasingPriority = choiceManager.getDomainSpecificHeuristics()
 				.getHeuristicsOrderedByDecreasingPriority();
 		for (Set<Integer> potentialHeuristics : heuristicsOrderedByDecreasingPriority) {
 			Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies = new HashMap<>();
+			potentialHeuristics.retainAll(activeHeuristics);
 			for (int h : potentialHeuristics) {
 				HeuristicDirectiveValues values = choiceManager.getDomainSpecificHeuristics().getValues(h);
 				int headAtomId = values.getHeadAtomId();
-				if (activeHeuristics.contains(h) && isUnassigned(headAtomId)) {
+				if (isUnassignedOrMBT(headAtomId)) {
 					Set<Integer> activeChoiceAtomsDerivingHead = choiceManager.getActiveChoiceAtomsDerivingHead(headAtomId);
 					if (!activeChoiceAtomsDerivingHead.isEmpty()) {
 						activeHeuristicsToBodies.put(values, activeChoiceAtomsDerivingHead);
@@ -151,7 +151,7 @@ public class DomainSpecific implements BranchingHeuristic {
 		return Literals.fromAtomAndSign(atom, sign);
 	}
 
-	protected boolean isUnassigned(int atom) {
+	protected boolean isUnassignedOrMBT(int atom) {
 		ThriceTruth truth = assignment.getTruth(atom);
 		return truth != FALSE && truth != TRUE; // do not use assignment.isAssigned(atom) because we may also choose MBTs
 	}

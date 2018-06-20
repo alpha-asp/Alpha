@@ -30,6 +30,7 @@ import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Does nothing (to be used instead of {@link DefaultDomainSpecificHeuristicsStore} in case the domain-specific heuristics are not used)
@@ -43,6 +44,11 @@ public class EmptyDomainSpecificHeuristicsStore implements DomainSpecificHeurist
 	@Override
 	public Collection<Set<Integer>> getHeuristicsOrderedByDecreasingPriority() {
 		return Collections.emptyList();
+	}
+	
+	@Override
+	public Stream<Set<Integer>> streamHeuristicsOrderedByDecreasingPriority() {
+		return Stream.empty();
 	}
 	
 	@Override
