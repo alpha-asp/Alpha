@@ -38,6 +38,7 @@ import java.util.Set;
  *
  */
 public interface BranchingHeuristic {
+	static final int DEFAULT_CHOICE_ATOM = 0;
 	static final int DEFAULT_CHOICE_LITERAL = 0;
 
 	/**
@@ -71,11 +72,29 @@ public interface BranchingHeuristic {
 	}
 	
 	/**
+	 * Determines an atom to choose.
+	 * If only the atom is needed (and the sign is determined by the caller),
+	 * calling this method may avoid some computational overhead invested by {@link #chooseLiteral()}
+	 * to determine the sign.
+	 * @return the atom to choose, or {@link BranchingHeuristic#DEFAULT_CHOICE_LITERAL} if no such atom can be determined.
+	 */
+	default int chooseAtom() {
+		return chooseAtom(null);
+	}
+
+	/**
+	 * Determines an atom to choose, ignoring all atoms except those in {@code admissibleChoices}.
+	 */
+	int chooseAtom(Set<Integer> admissibleChoices);
+	
+	/**
 	 * Determines a literal (= atom + sign) to choose.
 	 *
-	 * @return the literal to choose, or {@link BranchingHeuristic#DEFAULT_CHOICE_LITERAL} if no such atom can be determined.
+	 * @return the literal to choose, or {@link BranchingHeuristic#DEFAULT_CHOICE_LITERAL} if no such literal can be determined.
 	 */
-	int chooseLiteral();
+	default int chooseLiteral() {
+		return chooseLiteral(null);
+	}
 
 	/**
 	 * Determines a literal to choose, ignoring all atoms (!) except those in {@code admissibleChoices}.

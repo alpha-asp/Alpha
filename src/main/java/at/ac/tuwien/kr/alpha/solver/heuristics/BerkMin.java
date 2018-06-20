@@ -6,11 +6,11 @@
  * modification, are permitted provided that the following conditions are met:
  * 
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ * list of conditions and the following disclaimer.
  * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -50,7 +50,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
  */
 public class BerkMin implements ActivityBasedBranchingHeuristic {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BerkMin.class);
-	
+
 	static final double DEFAULT_ACTIVITY = 0.0;
 	static final int DEFAULT_SIGN_COUNTER = 0;
 
@@ -169,27 +169,23 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 	 * nogood in the stack, then the one after that and so on.
 	 */
 	@Override
-	public int chooseLiteral() {
-		return chooseLiteral(null);
-	}
-	
-	@Override
 	public int chooseLiteral(Set<Integer> admissibleChoices) {
 		int atom = chooseAtom(admissibleChoices);
 		boolean sign = chooseSign(atom);
 		return sign ? atom : -atom;
 	}
-	
-	protected int chooseAtom(Set<Integer> admissibleChoices) {
+
+	@Override
+	public int chooseAtom(Set<Integer> admissibleChoices) {
 		for (NoGood noGood : stackOfNoGoods) {
 			if (assignment.isUndefined(noGood)) {
 				int mostActiveAtom = getMostActiveChoosableAtom(noGood, admissibleChoices);
-				if (mostActiveAtom != DEFAULT_CHOICE_LITERAL) {
+				if (mostActiveAtom != DEFAULT_CHOICE_ATOM) {
 					return mostActiveAtom;
 				}
 			}
 		}
-		return DEFAULT_CHOICE_LITERAL;
+		return DEFAULT_CHOICE_ATOM;
 	}
 
 	private boolean chooseSign(int atom) {
@@ -229,7 +225,7 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 		// 2. make check cheaper, e.g. by using dedicated atom IDs (e.g. even
 		// integers for rule bodies, uneven for other atoms)
 	}
-	
+
 	private void incrementSignCounter(Integer literal) {
 		if (choiceManager.isAtomChoice(atomOf(literal))) {
 			signCounters.compute(literal, (k, v) -> (v == null ? DEFAULT_SIGN_COUNTER : v) + 1);
@@ -247,6 +243,7 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 
 	/**
 	 * Gets the most recent conflict that is still violated.
+	 * 
 	 * @return the violated nogood closest to the top of the stack of nogoods.
 	 */
 	NoGood getCurrentTopClause() {
@@ -257,9 +254,10 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * If {@code noGood != null}, returns the most active unassigned literal from {@code noGood}. Else, returns the most active atom of all the known atoms.
+	 * 
 	 * @param noGood
 	 * @return
 	 */
@@ -275,14 +273,14 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 		}
 		return getMostActiveChoosableAtom(streamOfChoosableAtoms);
 	}
-	
+
 	protected int getMostActiveChoosableAtom(Stream<Integer> streamOfLiterals) {
 		return streamOfLiterals
-			.map(Literals::atomOf)
-			.filter(this::isUnassigned)
-			.filter(choiceManager::isActiveChoiceAtom)
-			.max(Comparator.comparingDouble(this::getActivity))
-			.orElse(DEFAULT_CHOICE_LITERAL);
+				.map(Literals::atomOf)
+				.filter(this::isUnassigned)
+				.filter(choiceManager::isActiveChoiceAtom)
+				.max(Comparator.comparingDouble(this::getActivity))
+				.orElse(DEFAULT_CHOICE_LITERAL);
 	}
 
 	protected boolean isUnassigned(int atom) {

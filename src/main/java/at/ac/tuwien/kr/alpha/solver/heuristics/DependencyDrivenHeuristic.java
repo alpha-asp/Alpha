@@ -203,7 +203,8 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 		return sign ? atom : -atom;
 	}
 	
-	protected int chooseAtom(Set<Integer> admissibleChoices) {
+	@Override
+	public int chooseAtom(Set<Integer> admissibleChoices) {
 		for (NoGood noGood : stackOfNoGoods) {
 			int mostActiveAtom = getMostActiveAtom(noGood);
 			if (choiceManager.isActiveChoiceAtom(mostActiveAtom)) {

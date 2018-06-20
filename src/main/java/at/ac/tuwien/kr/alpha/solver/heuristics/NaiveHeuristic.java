@@ -36,8 +36,6 @@ import org.apache.commons.collections4.SetUtils.SetView;
 import java.util.Collection;
 import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.solver.ChoiceManager.DEFAULT_CHOICE_ATOM;
-
 /**
  * The default heuristic that had been used by {@link at.ac.tuwien.kr.alpha.solver.DefaultSolver} before {@link BerkMin} was implemented.
  *
@@ -67,20 +65,30 @@ public class NaiveHeuristic implements BranchingHeuristic {
 	}
 
 	@Override
-	public int chooseLiteral() {
+	public int chooseAtom() {
 		return choiceManager.getNextActiveChoiceAtom();
 	}
 
 	@Override
-	public int chooseLiteral(Set<Integer> admissibleChoices) {
+	public int chooseAtom(Set<Integer> admissibleChoices) {
 		if (admissibleChoices == null) {
 			return chooseLiteral();
 		}
 		SetView<Integer> admissibleActiveChoices = SetUtils.intersection(choiceManager.getAllActiveChoiceAtoms(), admissibleChoices);
 		if (admissibleActiveChoices.isEmpty()) {
-			return DEFAULT_CHOICE_ATOM;
+			return DEFAULT_CHOICE_LITERAL;
 		} else {
 			return admissibleActiveChoices.iterator().next();
 		}
+	}
+
+	@Override
+	public int chooseLiteral() {
+		return chooseAtom();
+	}
+
+	@Override
+	public int chooseLiteral(Set<Integer> admissibleChoices) {
+		return chooseAtom(admissibleChoices);
 	}
 }

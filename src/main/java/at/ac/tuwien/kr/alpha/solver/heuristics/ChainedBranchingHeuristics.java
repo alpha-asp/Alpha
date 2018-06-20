@@ -63,8 +63,36 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 	}
 	
 	@Override
+	public int chooseAtom() {
+		for (BranchingHeuristic element : chain) {
+			int chosenAtom = element.chooseAtom();
+			if (chosenAtom != DEFAULT_CHOICE_ATOM) {
+				return chosenAtom;
+			}
+		}
+		return DEFAULT_CHOICE_ATOM;
+	}
+	
+	@Override
+	public int chooseAtom(Set<Integer> admissibleChoices) {
+		for (BranchingHeuristic element : chain) {
+			int chosenAtom = element.chooseAtom(admissibleChoices);
+			if (chosenAtom != DEFAULT_CHOICE_ATOM) {
+				return chosenAtom;
+			}
+		}
+		return DEFAULT_CHOICE_ATOM;
+	}
+	
+	@Override
 	public int chooseLiteral() {
-		return chooseLiteral(null);
+		for (BranchingHeuristic element : chain) {
+			int chosenLiteral = element.chooseLiteral();
+			if (chosenLiteral != DEFAULT_CHOICE_LITERAL) {
+				return chosenLiteral;
+			}
+		}
+		return DEFAULT_CHOICE_LITERAL;
 	}
 	
 	@Override

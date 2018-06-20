@@ -45,7 +45,6 @@ import java.util.Set;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.Util.union;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -90,10 +89,10 @@ public class DomainSpecific implements BranchingHeuristic {
 	public void newNoGoods(Collection<NoGood> newNoGoods) {
 		fallbackHeuristic.newNoGoods(newNoGoods);
 	}
-
+	
 	@Override
-	public int chooseLiteral() {
-		return chooseLiteral(null);
+	public int chooseAtom(Set<Integer> admissibleChoices) {
+		return atomOf(chooseLiteral(admissibleChoices));
 	}
 
 	@Override
@@ -144,14 +143,15 @@ public class DomainSpecific implements BranchingHeuristic {
 
 	private int askFallbackHeuristic(Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies, Set<Integer> admissibleChoices) {
 		// sign of literal chosen by fallback heuristic is ignored
-		// TODO: ask fallback heuristic only for atom?!
-		int literal = fallbackHeuristic.chooseLiteral(admissibleChoices);
-		int atom = atomOf(literal);
-		boolean sign = isPositive(literal);
+		int atom = fallbackHeuristic.chooseAtom(admissibleChoices);
+		Boolean sign = null;
 		for (Entry<HeuristicDirectiveValues, Set<Integer>> entry : activeHeuristicsToBodies.entrySet()) {
 			if (entry.getValue().contains(atom)) {
 				sign = entry.getKey().getSign();
 			}
+		}
+		if (sign == null) {
+			throw oops("Could not determine sign for atom chosen by fallback heuristic: " + atom);
 		}
 		return Literals.fromAtomAndSign(atom, sign);
 	}
