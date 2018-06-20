@@ -96,18 +96,7 @@ public class DomainSpecific implements BranchingHeuristic {
 		Collection<Set<Integer>> heuristicsOrderedByDecreasingPriority = choiceManager.getDomainSpecificHeuristics()
 				.getHeuristicsOrderedByDecreasingPriority();
 		for (Set<Integer> potentialHeuristics : heuristicsOrderedByDecreasingPriority) {
-			Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies = new HashMap<>();
-			potentialHeuristics.retainAll(activeHeuristics);
-			for (int h : potentialHeuristics) {
-				HeuristicDirectiveValues values = choiceManager.getDomainSpecificHeuristics().getValues(h);
-				int headAtomId = values.getHeadAtomId();
-				if (isUnassignedOrMBT(headAtomId)) {
-					Set<Integer> activeChoiceAtomsDerivingHead = choiceManager.getActiveChoiceAtomsDerivingHead(headAtomId);
-					if (!activeChoiceAtomsDerivingHead.isEmpty()) {
-						activeHeuristicsToBodies.put(values, activeChoiceAtomsDerivingHead);
-					}
-				}
-			}
+			Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies = computeActiveHeuristicsToBodies(activeHeuristics, potentialHeuristics);
 			if (activeHeuristicsToBodies.size() > 1) {
 				Set<Integer> admissibleActiveChoices = union(activeHeuristicsToBodies.values());
 				if (admissibleChoices != null) {
@@ -115,25 +104,29 @@ public class DomainSpecific implements BranchingHeuristic {
 				}
 				return askFallbackHeuristic(activeHeuristicsToBodies, admissibleActiveChoices);
 			} else if (activeHeuristicsToBodies.size() == 1) {
-				Entry<HeuristicDirectiveValues, Set<Integer>> activeHeadToBodies = activeHeuristicsToBodies.entrySet().iterator().next();
-				HeuristicDirectiveValues heuristic = activeHeadToBodies.getKey();
-				Set<Integer> bodies = activeHeadToBodies.getValue();
-				if (admissibleChoices != null) {
-					bodies.retainAll(admissibleChoices);
-				}
-				if (bodies.isEmpty()) {
-					throw oops("Set of active bodies for heuristic is empty: " + heuristic);
-				} else if (bodies.size() > 1) {
-					return askFallbackHeuristic(activeHeuristicsToBodies, bodies);
-				} else {
-					return Literals.fromAtomAndSign(bodies.iterator().next(), heuristic.getSign());
-				}
+				return chooseAdmissibleBodyForHeuristic(activeHeuristicsToBodies, admissibleChoices);
 			}
 			// else: continue to set of heuristic values with lower priority
 		}
 
 		LOGGER.debug("DomainSpecific is clueless");
 		return DEFAULT_CHOICE_LITERAL;
+	}
+
+	private Map<HeuristicDirectiveValues, Set<Integer>> computeActiveHeuristicsToBodies(Set<Integer> activeHeuristics, Set<Integer> potentialHeuristics) {
+		Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies = new HashMap<>();
+		potentialHeuristics.retainAll(activeHeuristics);
+		for (int h : potentialHeuristics) {
+			HeuristicDirectiveValues values = choiceManager.getDomainSpecificHeuristics().getValues(h);
+			int headAtomId = values.getHeadAtomId();
+			if (isUnassignedOrMBT(headAtomId)) {
+				Set<Integer> activeChoiceAtomsDerivingHead = choiceManager.getActiveChoiceAtomsDerivingHead(headAtomId);
+				if (!activeChoiceAtomsDerivingHead.isEmpty()) {
+					activeHeuristicsToBodies.put(values, activeChoiceAtomsDerivingHead);
+				}
+			}
+		}
+		return activeHeuristicsToBodies;
 	}
 
 	private int askFallbackHeuristic(Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies, Set<Integer> admissibleChoices) {
@@ -149,6 +142,22 @@ public class DomainSpecific implements BranchingHeuristic {
 			throw oops("Could not determine sign for atom chosen by fallback heuristic: " + atom);
 		}
 		return Literals.fromAtomAndSign(atom, sign);
+	}
+
+	private int chooseAdmissibleBodyForHeuristic(Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies, Set<Integer> admissibleChoices) {
+		Entry<HeuristicDirectiveValues, Set<Integer>> activeHeadToBodies = activeHeuristicsToBodies.entrySet().iterator().next();
+		HeuristicDirectiveValues heuristic = activeHeadToBodies.getKey();
+		Set<Integer> bodies = activeHeadToBodies.getValue();
+		if (admissibleChoices != null) {
+			bodies.retainAll(admissibleChoices);
+		}
+		if (bodies.isEmpty()) {
+			throw oops("Set of active bodies for heuristic is empty: " + heuristic);
+		} else if (bodies.size() > 1) {
+			return askFallbackHeuristic(activeHeuristicsToBodies, bodies);
+		} else {
+			return Literals.fromAtomAndSign(bodies.iterator().next(), heuristic.getSign());
+		}
 	}
 
 	protected boolean isUnassignedOrMBT(int atom) {
