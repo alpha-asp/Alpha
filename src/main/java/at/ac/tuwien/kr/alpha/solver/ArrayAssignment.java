@@ -207,6 +207,14 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 	}
 
 	@Override
+	public void registerCallbackOnChange(int atom) {
+	}
+
+	@Override
+	public void setCallback(ChoiceManager choiceManager) {
+	}
+
+	@Override
 	public ConflictCause assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
 		return assignWithLowverDecisionLevel(atom, value, impliedBy, decisionLevel);
 	}

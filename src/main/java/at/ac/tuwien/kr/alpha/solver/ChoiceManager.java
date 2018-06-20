@@ -53,8 +53,6 @@ public class ChoiceManager implements Checkable {
 	private final Set<ChoicePoint> activeChoicePoints = new LinkedHashSet<>();
 	private final Map<Integer, ChoicePoint> influencers = new HashMap<>();
 
-	// Backtracking information.
-	private final Map<Integer, ArrayList<Integer>> modifiedInDecisionLevel = new HashMap<>();
 	private int highestDecisionLevel;
 
 	// The total number of modifications this ChoiceManager received (avoids re-computation in ChoicePoints).
@@ -78,7 +76,6 @@ public class ChoiceManager implements Checkable {
 		this.store = store;
 		this.checksEnabled = checksEnabled;
 		this.assignment = assignment;
-		modifiedInDecisionLevel.put(0, new ArrayList<>());
 		highestDecisionLevel = 0;
 		modCount = 0;
 		this.choiceStack = new Stack<>();
@@ -88,9 +85,10 @@ public class ChoiceManager implements Checkable {
 		} else {
 			debugWatcher = null;
 		}
+		assignment.setCallback(this);
 	}
 
-	public NoGood computeEnumeration() {
+	NoGood computeEnumeration() {
 		int[] enumerationLiterals = new int[choiceStack.size()];
 		int enumerationPos = 0;
 		for (Choice e : choiceStack) {
@@ -102,6 +100,13 @@ public class ChoiceManager implements Checkable {
 	@Override
 	public void setChecksEnabled(boolean checksEnabled) {
 		this.checksEnabled = checksEnabled;
+	}
+
+	public void callbackOnChanged(int atom) {
+		LOGGER.debug("Callback received on influencer atom: {}", atom);
+		modCount++;
+		ChoicePoint choicePoint = influencers.get(atom);
+		choicePoint.recomputeActive();
 	}
 
 	public int getBackjumps() {
@@ -160,9 +165,6 @@ public class ChoiceManager implements Checkable {
 
 		void recomputeActive() {
 			LOGGER.trace("Recomputing activity of atom {}.", atom);
-			if (lastModCount == modCount) {
-				return;
-			}
 			final boolean wasActive = isActive;
 			isActive = isNotChosen() & isActiveChoicePoint();
 			lastModCount = modCount;
@@ -185,22 +187,6 @@ public class ChoiceManager implements Checkable {
 
 	public void updateAssignments() {
 		LOGGER.trace("Updating assignments of ChoiceManager.");
-
-		modCount++;
-		Iterator<Assignment.Entry> it = assignment.getNewAssignmentsForChoice();
-		int currentDecisionLevel = assignment.getDecisionLevel();
-		while (it.hasNext()) {
-			Assignment.Entry entry = it.next();
-			ChoicePoint choicePoint = influencers.get(entry.getAtom());
-			if (choicePoint != null) {
-				if (entry.getDecisionLevel() <= currentDecisionLevel) {
-					// Updates may contain already-backtracked re-assignments at lower decision level that nevertheless change choice points.
-					// Only record if this is no such assignment.
-					modifiedInDecisionLevel.get(entry.getDecisionLevel()).add(entry.getAtom());        // Note that the weak decision level is not used here since disablers become TRUE due to generated NoGoods while an enabler being MBT is ignored, also for the atom itself only TRUE/FALSE is relevant.
-				}
-				choicePoint.recomputeActive();
-			}
-		}
 		if (checksEnabled) {
 			checkActiveChoicePoints();
 		}
@@ -221,7 +207,6 @@ public class ChoiceManager implements Checkable {
 		}
 
 		highestDecisionLevel++;
-		modifiedInDecisionLevel.put(highestDecisionLevel, new ArrayList<>());
 
 		choiceStack.push(choice);
 	}
@@ -286,11 +271,6 @@ public class ChoiceManager implements Checkable {
 		store.backtrack();
 		backtracks++;
 		modCount++;
-		ArrayList<Integer> changedAtoms = modifiedInDecisionLevel.get(highestDecisionLevel);
-		for (Integer atom : changedAtoms) {
-			ChoicePoint choicePoint = influencers.get(atom);
-			choicePoint.recomputeActive();
-		}
 		highestDecisionLevel--;
 	}
 
@@ -312,10 +292,14 @@ public class ChoiceManager implements Checkable {
 			if (enabler == null || disabler == null) {
 				throw oops("Incomplete choice point description found (no enabler or disabler)");
 			}
+			assignment.registerCallbackOnChange(atom);
+			assignment.registerCallbackOnChange(enabler);
+			assignment.registerCallbackOnChange(disabler);
 			ChoicePoint choicePoint = new ChoicePoint(atom, enabler, disabler);
 			influencers.put(atom, choicePoint);
 			influencers.put(enabler, choicePoint);
 			influencers.put(disabler, choicePoint);
+			choicePoint.recomputeActive();
 		}
 	}
 

@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.solver.learning;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +90,7 @@ public class GroundConflictNoGoodLearner {
 	}
 
 	public ConflictAnalysisResult analyzeConflictingNoGood(NoGood violatedNoGood) {
+		LOGGER.trace("Analyzing violated nogood: {}", violatedNoGood);
 		return analyzeConflictingNoGoodRepetition(violatedNoGood, new LinkedHashSet<>());
 	}
 
@@ -228,6 +230,10 @@ public class GroundConflictNoGoodLearner {
 
 				// Sort literal also into queue for further processing.
 				Assignment.Entry newLiteral = getAssignmentEntryRespectingLowerMBT(secondNoGood.getLiteral(i));
+				if (assignment instanceof TrailAssignment) {
+					firstUIPPriorityQueue.add(newLiteral);
+					continue;
+				}
 				// Check for special case where literal was assigned from MBT to TRUE on the same decisionLevel and the propagationLevel of TRUE is higher than the one of the resolutionLiteral.
 				if (newLiteral.getDecisionLevel() == resolutionLiteralDecisionLevel
 					&& newLiteral.getPropagationLevel() > resolutionLiteralPropagationLevel) {
@@ -258,13 +264,16 @@ public class GroundConflictNoGoodLearner {
 	 * @return -1 if there is no decisionLevel such that backjumping to it makes the learnedNoGood unit.
 	 */
 	private int computeBackjumpingDecisionLevel(NoGood learnedNoGood) {
+		LOGGER.trace("Computing backjumping decision level for {}.", learnedNoGood);
 		int highestDecisionLevel = -1;
 		int secondHighestDecisionLevel = -1;
 		int numLiteralsOfHighestDecisionLevel = -1;
 		if (learnedNoGood.isUnary()) {
 			// Singleton NoGoods induce a backjump to the decision level before the NoGood got violated.
 			int singleLiteralDecisionLevel = assignment.get(learnedNoGood.getAtom(HEAD)).getDecisionLevel();
-			return singleLiteralDecisionLevel - 1 >= 0 ? singleLiteralDecisionLevel - 1 : 0;
+			int singleLiteralBackjumpingLevel = singleLiteralDecisionLevel - 1 >= 0 ? singleLiteralDecisionLevel - 1 : 0;
+			LOGGER.trace("NoGood has only one literal, backjumping to level: {}", singleLiteralBackjumpingLevel);
+			return singleLiteralBackjumpingLevel;
 		}
 		for (Integer integer : learnedNoGood) {
 			Assignment.Entry assignmentEntry = assignment.get(atomOf(integer));
@@ -283,8 +292,10 @@ public class GroundConflictNoGoodLearner {
 			}
 		}
 		if (numLiteralsOfHighestDecisionLevel != 1) {
+			LOGGER.trace("NoGood contains not just one literal in the second-highest decision level. Backjumping decision level is -1.");
 			return -1;
 		}
+		LOGGER.trace("Backjumping decision level is: {}", secondHighestDecisionLevel);
 		return secondHighestDecisionLevel;
 	}
 }

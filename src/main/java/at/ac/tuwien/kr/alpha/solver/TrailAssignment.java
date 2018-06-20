@@ -48,10 +48,14 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TrailAssignment.class);
 
 	private final AtomTranslator translator;
+	private ChoiceManager choiceManagerCallback;
 
 	private int[] values;
 	private int[] strongDecisionLevels;
 	private NoGood[] impliedBy;
+	private int[] propagationLevels;
+	private int currentPropagationLevel;
+	private boolean[] callbackUponChange;
 	private ArrayList<OutOfOrderLiteral> outOfOrderLiterals = new ArrayList<>();
 	private int highestDecisionLevelContainingOutOfOrderLiterals;
 	private ArrayList<Integer> trail = new ArrayList<>();
@@ -74,6 +78,11 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			this.impliedBy = impliedBy;
 			this.value = value;
 		}
+
+		@Override
+		public String toString() {
+			return atom + "=" + value + "@" + decisionLevel + " implied by " + impliedBy;
+		}
 	}
 
 	private int mbtCount;
@@ -85,8 +94,14 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		this.values = new int[0];
 		this.strongDecisionLevels = new int[0];
 		this.impliedBy = new NoGood[0];
+		this.propagationLevels = new int[0];
+		this.callbackUponChange = new boolean[0];
 		this.trailIndicesOfDecisionLevels = new ArrayList<>();
 		this.trailIndicesOfDecisionLevels.add(0);
+		nextPositionInTrail = 0;
+		newAssignmentsIterator = 0;
+		newAssignmentsPositionInTrail = 0;
+		assignmentsForChoicePosition = 0;
 	}
 
 	public TrailAssignment(Grounder translator) {
@@ -102,6 +117,10 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		mbtCount = 0;
 		Arrays.fill(values, 0);
 		Arrays.fill(strongDecisionLevels, -1);
+		Arrays.fill(impliedBy, null);
+		currentPropagationLevel = 0;
+		Arrays.fill(propagationLevels, 0);
+		Arrays.fill(callbackUponChange, false);
 		outOfOrderLiterals = new ArrayList<>();
 		highestDecisionLevelContainingOutOfOrderLiterals = 0;
 		trail = new ArrayList<>();
@@ -111,6 +130,16 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		newAssignmentsIterator = 0;
 		newAssignmentsPositionInTrail = 0;
 		assignmentsForChoicePosition = 0;
+	}
+
+	@Override
+	public void registerCallbackOnChange(int atom) {
+		callbackUponChange[atom] = true;
+	}
+
+	@Override
+	public void setCallback(ChoiceManager choiceManager) {
+		choiceManagerCallback = choiceManager;
 	}
 
 	@Override
@@ -144,14 +173,35 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		return new TrailPollable();
 	}
 
-	private LinkedList<Assignment.Entry> buildNewAssignmentsFromTrail(int startingPosition) {
-		LinkedList<Assignment.Entry> ret = new LinkedList<>();
-		int propCount = 0;
-		for (int i = startingPosition; i < trail.size(); i++) {
-			Integer atom = trail.get(i);
-			ret.add(new Entry(getTruth(atom), atom, getDecisionLevel(), propCount++, impliedBy[atom]));
+	/**
+	 * Searches out-of-order literals for the lowest decision level the atom is assigned in.
+	 * @param atom the atom to check.
+	 * @return Integer.MAX_VALUE if the atom is not assigned out-of-order, otherwise the lowest decision level it is assigned.
+	 */
+	public int getOutOfOrderDecisionLevel(int atom) {
+		int lowestDecisionLevel = Integer.MAX_VALUE;
+		for (OutOfOrderLiteral outOfOrderLiteral : outOfOrderLiterals) {
+			if (outOfOrderLiteral.atom == atom && outOfOrderLiteral.decisionLevel < lowestDecisionLevel) {
+				lowestDecisionLevel = outOfOrderLiteral.decisionLevel;
+			}
 		}
-		return ret;
+		return lowestDecisionLevel;
+	}
+
+	public int getOutOfOrderStrongDecisionLevel(int atom) {
+		int lowestDecisionLevel = Integer.MAX_VALUE;
+		for (OutOfOrderLiteral outOfOrderLiteral : outOfOrderLiterals) {
+			if (outOfOrderLiteral.atom == atom && outOfOrderLiteral.value == TRUE && outOfOrderLiteral.decisionLevel < lowestDecisionLevel) {
+				lowestDecisionLevel = outOfOrderLiteral.decisionLevel;
+			}
+		}
+		return lowestDecisionLevel;
+	}
+
+	private void informCallback(Integer atom) {
+		if (callbackUponChange[atom]) {
+			choiceManagerCallback.callbackOnChanged(atom);
+		}
 	}
 
 	private void removeLastDecisionLevel() {
@@ -160,7 +210,12 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		ListIterator<Integer> backtrackIterator = trail.listIterator(start);
 		while (backtrackIterator.hasNext()) {
 			Integer backtrackAtom = backtrackIterator.next();
+			// Skip already backtracked atoms.
+			if (getTruth(backtrackAtom) == null) {
+				continue;
+			}
 			if (getWeakDecisionLevel(backtrackAtom) < getDecisionLevel()) {
+				// Restore TRUE to MBT if this was assigned at a lower level.
 				if (getTruth(backtrackAtom) != TRUE) {
 					throw oops("Backtracking assignment with lower decision level whose value is not TRUE.");
 				}
@@ -173,18 +228,26 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 				values[backtrackAtom] = 0;
 			}
 			strongDecisionLevels[backtrackAtom] = -1;
+			informCallback(backtrackAtom);
 		}
 		// Remove atoms from trail.
 		while (trail.size() > start) {
 			trail.remove(trail.size() - 1);
 		}
 		trailIndicesOfDecisionLevels.remove(trailIndicesOfDecisionLevels.size() - 1);
+
+		int trailCurrentIndex = trail.size();
+		int trailPrevIndex = trailIndicesOfDecisionLevels.size() < 1  ? 0 : trailIndicesOfDecisionLevels.get(trailIndicesOfDecisionLevels.size() - 1);
+		currentPropagationLevel = trailCurrentIndex - trailPrevIndex; // Note: due to MBT->TRUE assignments this may be higher than the actual decision level, but never below.
 	}
 
+
+	int replayCounter;
 	private void replayOutOfOrderLiterals() {
 		// Replay out-of-order assigned literals.
 		if (highestDecisionLevelContainingOutOfOrderLiterals >= getDecisionLevel()) {
 			// Replay all still-valid literals and remove invalid ones.
+			LOGGER.trace("Replaying out-of-order literals.");
 			int k = 0; // counter for out-of-order literals to keep further.
 			for (int i = 0; i < outOfOrderLiterals.size(); i++) {
 				OutOfOrderLiteral outOfOrderLiteral = outOfOrderLiterals.get(i);
@@ -197,12 +260,14 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 					}
 				}
 			}
+			replayCounter += outOfOrderLiterals.size();
+			LOGGER.trace("Replay list contained {} literals, {} were again assigned. Overall replays: {}.", outOfOrderLiterals.size(), k, replayCounter);
 			// Remove remaining entries from k onwards.
 			while (outOfOrderLiterals.size() > k) {
 				outOfOrderLiterals.remove(outOfOrderLiterals.size() - 1);
 			}
+			highestDecisionLevelContainingOutOfOrderLiterals = outOfOrderLiterals.isEmpty() ? 0 : getDecisionLevel();
 		}
-		highestDecisionLevelContainingOutOfOrderLiterals = getDecisionLevel();
 	}
 
 	private void backtrackWithReplayingLowerAssignments() {
@@ -228,6 +293,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	@Override
 	public ConflictCause choose(int atom, ThriceTruth value) {
 		trailIndicesOfDecisionLevels.add(trail.size());
+		currentPropagationLevel = 0;
 		return assign(atom, value, null);
 	}
 
@@ -236,7 +302,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		if (decisionLevel < getDecisionLevel()) {
 			outOfOrderLiterals.add(new OutOfOrderLiteral(atom, value, decisionLevel, impliedBy));
 			if (highestDecisionLevelContainingOutOfOrderLiterals < decisionLevel) {
-				highestDecisionLevelContainingOutOfOrderLiterals = decisionLevel;
+				highestDecisionLevelContainingOutOfOrderLiterals = getDecisionLevel();
 			}
 		}
 		ConflictCause conflictCause = assignWithTrail(atom, value, impliedBy);
@@ -275,10 +341,15 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			trail.add(atom);
 			values[atom] = (getDecisionLevel() << 2) | translateTruth(value);
 			this.impliedBy[atom] = impliedBy;
+			this.propagationLevels[atom] = ++currentPropagationLevel;
 			// Adjust MBT counter.
 			if (value == MBT) {
 				mbtCount++;
 			}
+			if (value == TRUE) {
+				strongDecisionLevels[atom] = getDecisionLevel();
+			}
+			informCallback(atom);
 			return null;
 		}
 
@@ -304,8 +375,10 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			strongDecisionLevels[atom] = getDecisionLevel();
 			// Adjust MBT counter.
 			mbtCount--;
+			informCallback(atom);
+			return null;
 		}
-		return null;
+		throw oops("Assignment conditions are not covered.");
 	}
 
 	private ThriceTruth translateTruth(int value) {
@@ -350,7 +423,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	@Override
 	public int getStrongDecisionLevel(int atom) {
-		return strongDecisionLevels[atom];
+		return getTruth(atom) == FALSE ? getWeakDecisionLevel(atom) : strongDecisionLevels[atom];
 	}
 
 	@Override
@@ -370,9 +443,9 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			return null;
 		}
 		if (strongDecisionLevels[atom] == -1) {
-			return new Entry(getTruth(atom), atom, getDecisionLevel(), -1, impliedBy[atom]);
+			return new Entry(getTruth(atom), atom, getWeakDecisionLevel(atom), propagationLevels[atom], impliedBy[atom]);
 		} else {
-			return new Entry(getTruth(atom), atom, strongDecisionLevels[atom], -1, impliedBy[atom], getWeakDecisionLevel(atom));
+			return new Entry(getTruth(atom), atom, strongDecisionLevels[atom], propagationLevels[atom], impliedBy[atom], getWeakDecisionLevel(atom));
 		}
 	}
 
@@ -422,12 +495,17 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		NoGood[] newimpliedBy = new NoGood[newCapacity];
 		System.arraycopy(impliedBy, 0, newimpliedBy, 0, impliedBy.length);
 		impliedBy = newimpliedBy;
+		int[] newPropagationLevels = new int[newCapacity];
+		System.arraycopy(propagationLevels, 0, newPropagationLevels, 0, propagationLevels.length);
+		propagationLevels = newPropagationLevels;
+		boolean[] newCallbackUponChange = new boolean[newCapacity];
+		System.arraycopy(callbackUponChange, 0, newCallbackUponChange, 0, callbackUponChange.length);
+		callbackUponChange = newCallbackUponChange;
 	}
 
 	@Override
 	public int getDecisionLevel() {
 		return trailIndicesOfDecisionLevels.size() - 1;
-		//return atomsAssignedInDecisionLevel.size() - 1;
 	}
 
 	@Override
@@ -459,14 +537,12 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	@Override
 	public AssignmentIterator getNewAssignmentsIterator() {
-		AssignmentIterator ret = new AssignmentIterator();
-		return ret;
+		return new AssignmentIterator();
 	}
 
 	@Override
-	public AssignmentIteratorForChoice getNewAssignmentsForChoice() {
-		AssignmentIteratorForChoice ret = new AssignmentIteratorForChoice();
-		return ret;
+	public AssignmentIterator getNewAssignmentsForChoice() {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -484,21 +560,6 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		@Override
 		public Assignment.Entry next() {
 			int atom = trail.get(newAssignmentsIterator++);
-			return new Entry(getTruth(atom), atom, getDecisionLevel(), -1, impliedBy[atom]);
-
-		}
-	}
-
-	private class AssignmentIteratorForChoice implements Iterator<Assignment.Entry> {
-
-		@Override
-		public boolean hasNext() {
-			return assignmentsForChoicePosition < trail.size();
-		}
-
-		@Override
-		public Assignment.Entry next() {
-			int atom = trail.get(assignmentsForChoicePosition++);
 			return new Entry(getTruth(atom), atom, getDecisionLevel(), -1, impliedBy[atom]);
 
 		}
@@ -550,12 +611,15 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 		@Override
 		public int getMBTPropagationLevel() {
+			if (previousDecisionLevel != -1) {
+				return previousDecisionLevel;
+			}
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public NoGood getMBTImpliedBy() {
-			throw new UnsupportedOperationException();
+			return impliedBy;
 		}
 
 		@Override
@@ -578,14 +642,42 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		}
 
 		@Override
+		public int getPropagationLevelRespectingLowerMBT() {
+			if (propagationLevel == -1) {
+				throw new UnsupportedOperationException();
+			} else {
+				return propagationLevel;
+			}
+		}
+
+		@Override
 		public boolean isReassignAtLowerDecisionLevel() {
 			return false;
 		}
 
 		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+
+			Entry entry = (Entry) o;
+
+			return atom == entry.atom;
+		}
+
+		@Override
+		public int hashCode() {
+			return atom;
+		}
+
+		@Override
 		public String toString() {
-			return value.toString() + "(DL" + decisionLevel + ", PL" + propagationLevel + ")"
-				+ (hasPreviousMBT() ? "MBT(DL" + getMBTDecisionLevel() + ", PL" + getMBTPropagationLevel() + ")" : "");
+			return atom + "=" + value.toString() + "(DL" + decisionLevel + ", PL" + propagationLevel + ")"
+				+ (hasPreviousMBT() ? "MBT(DL" + getMBTDecisionLevel() + ", PL-1 )" : "");
 		}
 	}
 }

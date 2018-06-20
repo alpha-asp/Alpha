@@ -66,6 +66,10 @@ public interface WritableAssignment extends Assignment {
 
 	ConflictCause choose(int atom, ThriceTruth value);
 
+	void registerCallbackOnChange(int atom);
+
+	void setCallback(ChoiceManager choiceManager);
+
 	default ConflictCause choose(int atom, boolean value) {
 		return choose(atom, ThriceTruth.valueOf(value));
 	}
