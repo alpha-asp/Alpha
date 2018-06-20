@@ -26,10 +26,10 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
-import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
@@ -49,12 +49,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 /**
- * Analyses {@link HeuristicAtom}s to follow domain-specific heuristics specified within the input program.
- * 
- * Each rule can contain a negative {@code _h(W,L)} atom where {@code W} denotes the rule's weight and {@code L} denotes the rule's level.
- * Both values default to 1.
- * When asked for a choice, the domain-specific heuristics will choose to fire from the applicable rules with the highest weight one of those with the highest
- * level.
+ * Analyses information obtained from {@link HeuristicDirective}s to follow domain-specific heuristics specified within the input program.
  */
 public class DomainSpecific implements BranchingHeuristic {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DomainSpecific.class);
