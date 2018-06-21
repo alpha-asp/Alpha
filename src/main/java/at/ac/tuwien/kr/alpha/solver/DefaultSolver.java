@@ -220,12 +220,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			choiceManager.backjump(analysisResult.backjumpLevel);
 
 			final NoGood learnedNoGood = analysisResult.learnedNoGood;
-			// Current learning and out-of-order literals may cause learnedNoGood to be violated even after backjumping.
-			// Use ingest mechanics for now.
-			ingest(Collections.singletonMap(grounder.register(learnedNoGood), learnedNoGood));
-			/*if (store.add(grounder.register(learnedNoGood), learnedNoGood) != null) {
+			if (store.add(grounder.register(learnedNoGood), learnedNoGood) != null) {
 				throw oops("Newly learned NoGood is violated after backjumping");
-			}*/
+			}
 			return true;
 		}
 

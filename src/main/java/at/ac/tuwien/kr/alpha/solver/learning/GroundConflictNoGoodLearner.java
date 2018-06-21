@@ -39,7 +39,6 @@ import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.NoGood.HEAD;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -142,7 +141,11 @@ public class GroundConflictNoGoodLearner {
 			// Check if 1UIP was reached.
 			if (firstUIPPriorityQueue.size() == 1) {
 				// Only one remaining literals to process, we reached 1UIP.
-				return new ConflictAnalysisResult(currentResolutionNoGood, computeBackjumpingDecisionLevel(currentResolutionNoGood), false, noGoodsResponsible);
+				int backjumpingDecisionLevel = computeBackjumpingDecisionLevel(currentResolutionNoGood);
+				if (backjumpingDecisionLevel < 0) {
+					return repeatAnalysisIfNotAssigning(currentResolutionNoGood, noGoodsResponsible);
+				}
+				return new ConflictAnalysisResult(currentResolutionNoGood, backjumpingDecisionLevel, false, noGoodsResponsible);
 			} else if (firstUIPPriorityQueue.size() < 1) {
 				// This can happen if some NoGood implied a literal at a higher decision level and later the implying literals become (re-)assigned at lower decision levels.
 				// Lowering the decision level may be possible but requires further analysis.
@@ -270,7 +273,10 @@ public class GroundConflictNoGoodLearner {
 		int numLiteralsOfHighestDecisionLevel = -1;
 		if (learnedNoGood.isUnary()) {
 			// Singleton NoGoods induce a backjump to the decision level before the NoGood got violated.
-			int singleLiteralDecisionLevel = assignment.get(learnedNoGood.getAtom(HEAD)).getDecisionLevel();
+			int singleLiteralDecisionLevel = assignment.get(learnedNoGood.getAtom(0)).getDecisionLevel();
+			if (assignment instanceof TrailAssignment) {
+				singleLiteralDecisionLevel = Math.min(singleLiteralDecisionLevel, ((TrailAssignment) assignment).getOutOfOrderDecisionLevel(learnedNoGood.getAtom(0)));
+			}
 			int singleLiteralBackjumpingLevel = singleLiteralDecisionLevel - 1 >= 0 ? singleLiteralDecisionLevel - 1 : 0;
 			LOGGER.trace("NoGood has only one literal, backjumping to level: {}", singleLiteralBackjumpingLevel);
 			return singleLiteralBackjumpingLevel;
@@ -278,6 +284,9 @@ public class GroundConflictNoGoodLearner {
 		for (Integer integer : learnedNoGood) {
 			Assignment.Entry assignmentEntry = assignment.get(atomOf(integer));
 			int atomDecisionLevel = assignmentEntry.getWeakDecisionLevel();
+			if (assignment instanceof TrailAssignment) {
+				atomDecisionLevel = Math.min(atomDecisionLevel, ((TrailAssignment) assignment).getOutOfOrderDecisionLevel(atomOf(integer)));
+			}
 			if (atomDecisionLevel == highestDecisionLevel) {
 				numLiteralsOfHighestDecisionLevel++;
 			}
