@@ -53,8 +53,6 @@ public class ChoiceManager implements Checkable {
 	private final Set<ChoicePoint> activeChoicePoints = new LinkedHashSet<>();
 	private final Map<Integer, ChoicePoint> influencers = new HashMap<>();
 
-	private int highestDecisionLevel;
-
 	// The total number of modifications this ChoiceManager received (avoids re-computation in ChoicePoints).
 	private long modCount;
 
@@ -76,7 +74,6 @@ public class ChoiceManager implements Checkable {
 		this.store = store;
 		this.checksEnabled = checksEnabled;
 		this.assignment = assignment;
-		highestDecisionLevel = 0;
 		modCount = 0;
 		this.choiceStack = new Stack<>();
 
@@ -206,8 +203,6 @@ public class ChoiceManager implements Checkable {
 			debugWatcher.runWatcher();
 		}
 
-		highestDecisionLevel++;
-
 		choiceStack.push(choice);
 	}
 
@@ -271,7 +266,6 @@ public class ChoiceManager implements Checkable {
 		store.backtrack();
 		backtracks++;
 		modCount++;
-		highestDecisionLevel--;
 	}
 
 	void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms) {

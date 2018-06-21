@@ -83,6 +83,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	@Override
 	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
 		boolean didChange = false;
+		long timeOnEntry = System.currentTimeMillis();
+		long timeLast = timeOnEntry;
+		int decisionsLast = 0;
 
 		// Initially, get NoGoods from grounder.
 		if (initialize) {
@@ -121,6 +124,16 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
+			long currentTime = System.currentTimeMillis();
+			int currentNumberOfChoices = getNumberOfChoices();
+			if (currentTime >= timeLast + 1000) {
+				LOGGER.info("Decisions in {}s: {}", (currentTime - timeLast) / 1000.0f, currentNumberOfChoices - decisionsLast);
+				timeLast = currentTime;
+				decisionsLast = currentNumberOfChoices;
+				float overallTime = (currentTime - timeOnEntry) / 1000.0f;
+				float decisionsPerSec = currentNumberOfChoices / overallTime;
+				LOGGER.info("Overall performance: {} decision in {}s or {} decisions per sec. Overall replayed assignments: {}.", currentNumberOfChoices, currentTime - timeOnEntry, decisionsPerSec, ((TrailAssignment)assignment).replayCounter);
+			}
 			ConflictCause conflictCause = store.propagate();
 			didChange |= store.didPropagate();
 			LOGGER.trace("Assignment after propagation is: {}", assignment);
@@ -207,9 +220,12 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			choiceManager.backjump(analysisResult.backjumpLevel);
 
 			final NoGood learnedNoGood = analysisResult.learnedNoGood;
-			if (store.add(grounder.register(learnedNoGood), learnedNoGood) != null) {
+			// Current learning and out-of-order literals may cause learnedNoGood to be violated even after backjumping.
+			// Use ingest mechanics for now.
+			ingest(Collections.singletonMap(grounder.register(learnedNoGood), learnedNoGood));
+			/*if (store.add(grounder.register(learnedNoGood), learnedNoGood) != null) {
 				throw oops("Newly learned NoGood is violated after backjumping");
-			}
+			}*/
 			return true;
 		}
 

@@ -54,7 +54,7 @@ public class BerkMinTest {
 	
 	@Before
 	public void setUp() {
-		WritableAssignment assignment = new ArrayAssignment();
+		WritableAssignment assignment = new TrailAssignment();
 		assignment.growForMaxAtomId(2);
 		this.berkmin = new BerkMin(
 			assignment,

@@ -15,11 +15,11 @@ import static org.junit.Assert.*;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class NaiveNoGoodStoreTest {
-	private final ArrayAssignment assignment;
+	private final TrailAssignment assignment;
 	private final NaiveNoGoodStore store;
 
 	public NaiveNoGoodStoreTest() {
-		assignment = new ArrayAssignment(null);
+		assignment = new TrailAssignment(null);
 		store = new NaiveNoGoodStore(assignment);
 	}
 

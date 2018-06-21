@@ -283,6 +283,9 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	@Override
 	public void backtrack() {
 		backtrackWithReplayingLowerAssignments();
+		if (checksEnabled) {
+			runInternalChecks();
+		}
 	}
 
 	@Override
@@ -292,6 +295,9 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	@Override
 	public ConflictCause choose(int atom, ThriceTruth value) {
+		if (checksEnabled) {
+			runInternalChecks();
+		}
 		trailIndicesOfDecisionLevels.add(trail.size());
 		currentPropagationLevel = 0;
 		return assign(atom, value, null);
@@ -301,16 +307,13 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	public ConflictCause assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
 		if (decisionLevel < getDecisionLevel()) {
 			outOfOrderLiterals.add(new OutOfOrderLiteral(atom, value, decisionLevel, impliedBy));
-			if (highestDecisionLevelContainingOutOfOrderLiterals < decisionLevel) {
+			if (highestDecisionLevelContainingOutOfOrderLiterals < getDecisionLevel()) {
 				highestDecisionLevelContainingOutOfOrderLiterals = getDecisionLevel();
 			}
 		}
 		ConflictCause conflictCause = assignWithTrail(atom, value, impliedBy);
 		if (conflictCause != null) {
 			LOGGER.debug("Assign is conflicting: atom: {}, value: {}, impliedBy: {}.", atom, value, impliedBy);
-		}
-		if (checksEnabled) {
-			runInternalChecks();
 		}
 		return conflictCause;
 	}
@@ -456,6 +459,15 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			throw oops("MBT counter and amount of actually MBT-assigned atoms disagree");
 		} else {
 			LOGGER.trace("MBT count agrees with amount of MBT-assigned atoms.");
+		}
+		for (OutOfOrderLiteral outOfOrderLiteral : outOfOrderLiterals) {
+			if (outOfOrderLiteral.decisionLevel <= getDecisionLevel()) {
+				ThriceTruth atomTruth = getTruth(outOfOrderLiteral.atom);
+				if (outOfOrderLiteral.value == atomTruth || outOfOrderLiteral.value == MBT && atomTruth == TRUE) {
+					continue;
+				}
+				throw oops("Out-of-order assigned literal is not in current assignment.");
+			}
 		}
 		LOGGER.trace("Checking assignment: all good.");
 	}

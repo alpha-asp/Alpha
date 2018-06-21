@@ -53,6 +53,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
  */
 public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NoGoodStoreAlphaRoaming.class);
+	private static final int UNASSIGNED = Integer.MAX_VALUE;
 
 	private final WritableAssignment assignment;
 	private final Map<Integer, Watches<BinaryWatch, WatchedNoGood>> watches = new LinkedHashMap<>();
@@ -138,7 +139,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 
 	private int strongDecisionLevel(int atom) {
 		int strongDecisionLevel = assignment.getStrongDecisionLevel(atom);
-		return strongDecisionLevel == -1 ? Integer.MAX_VALUE : strongDecisionLevel;
+		return strongDecisionLevel == -1 ? UNASSIGNED : strongDecisionLevel;
 	}
 
 	private ConflictCause addAndWatch(final NoGood noGood) {
@@ -794,7 +795,23 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		}
 
 		int weakDecisionLevel(Assignment.Entry entry) {
-			return entry == null ? Integer.MAX_VALUE : entry.hasPreviousMBT() ? entry.getMBTDecisionLevel() : entry.getDecisionLevel();
+			return entry == null ? UNASSIGNED : entry.hasPreviousMBT() ? entry.getMBTDecisionLevel() : entry.getDecisionLevel();
+		}
+
+		int weakReplayLevel(int atom) {
+			if (assignment instanceof TrailAssignment) {
+				return ((TrailAssignment) assignment).getOutOfOrderDecisionLevel(atom);
+			}
+			return UNASSIGNED;
+		}
+
+		int trailAwareStrongDecisionLevel(int atom) {
+			int trailStrongDecisionLevel = UNASSIGNED;
+			if (assignment instanceof TrailAssignment) {
+				trailStrongDecisionLevel = ((TrailAssignment) assignment).getOutOfOrderStrongDecisionLevel(atom);
+			}
+			int atomStrongDecisionLevel = strongDecisionLevel(atom);
+			return Math.min(trailStrongDecisionLevel, atomStrongDecisionLevel);
 		}
 
 		private void checkAlphaWatchesInvariant(int atom, NoGoodStoreAlphaRoaming.Watches<NoGoodStoreAlphaRoaming.BinaryWatch, WatchedNoGood> watches, boolean truth) {
@@ -804,9 +821,12 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			int atomDecisionLevel = strongDecisionLevel(atom);
 			for (NoGoodStoreAlphaRoaming.BinaryWatch binaryWatch : watches.binary.getAlpha(truth)) {
 				int headLiteral = binaryWatch.getNoGood().getLiteral(binaryWatch.getOtherLiteralIndex());
+				if (headLiteral == atomLiteral) {
+					throw oops("Watch invariant violated: alpha watch points at head.");
+				}
 				Assignment.Entry headEntry = assignment.get(atomOf(headLiteral));
 				boolean headViolates = headEntry != null && isPositive(headLiteral) == headEntry.getTruth().toBoolean();
-				int headDecisionLevel = strongDecisionLevel(atomOf(headLiteral));
+				int headDecisionLevel = trailAwareStrongDecisionLevel(atomOf(headLiteral));
 				if (watchInvariant(atomSatisfies, atomDecisionLevel, headLiteral, headDecisionLevel, headEntry)
 					|| headViolates) {	// Head "pointer" is never moved and violation is checked by weak propagation, hence a violated head is okay.
 					continue;
@@ -815,9 +835,12 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			}
 			for (WatchedNoGood watchedNoGood : watches.multary.getAlpha(truth)) {
 				int headLiteral = watchedNoGood.getLiteral(HEAD);
+				if (headLiteral == atomLiteral) {
+					throw oops("Watch invariant violated: alpha watch points at head.");
+				}
 				Assignment.Entry headEntry = assignment.get(atomOf(headLiteral));
 				boolean headViolates = headEntry != null && isPositive(headLiteral) == headEntry.getTruth().toBoolean();
-				int headDecisionLevel = strongDecisionLevel(atomOf(headLiteral));
+				int headDecisionLevel = trailAwareStrongDecisionLevel(atomOf(headLiteral));
 				if (watchInvariant(atomSatisfies, atomDecisionLevel, headLiteral, headDecisionLevel, headEntry)
 					|| headViolates) {	// Head "pointer" is never moved and violation is checked by weak propagation, hence a violated head is okay.
 					continue;
@@ -831,12 +854,16 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			int atomLiteral = truth ? atom : -atom;
 			boolean atomSatisfies = atomEntry != null && isPositive(atomLiteral) != atomEntry.getTruth().toBoolean();
 			int atomDecisionLevel = weakDecisionLevel(atomEntry);
+			int atomReplayLevel = weakReplayLevel(atom);
 			for (BinaryWatch binaryWatch : watches.binary.getOrdinary(truth)) {
 				// Ensure both watches are either unassigned, or one satisfies NoGood, or both are on highest decision level.
 				int otherLiteral = binaryWatch.getNoGood().getLiteral(binaryWatch.getOtherLiteralIndex());
-				Assignment.Entry otherEntry = assignment.get(atomOf(otherLiteral));
+				int otherAtom = atomOf(otherLiteral);
+				Assignment.Entry otherEntry = assignment.get(otherAtom);
+				boolean otherSatisfies = otherEntry != null && isPositive(otherLiteral) != otherEntry.getTruth().toBoolean();
 				int otherDecisionLevel = weakDecisionLevel(otherEntry);
-				if (watchInvariant(atomSatisfies, atomDecisionLevel, otherLiteral, otherDecisionLevel, otherEntry)) {
+				int otherReplayLevel = weakReplayLevel(otherAtom);
+				if (watchInvariant(atomSatisfies, otherSatisfies, atomDecisionLevel, atomReplayLevel, otherDecisionLevel, otherReplayLevel)) {
 					continue;
 				}
 				throw oops("Watch invariant violated");
@@ -845,13 +872,29 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				// Ensure both watches are either unassigned, or one satisfies NoGood, or both are on highest decision level.
 				int otherPointer = atom ==  watchedNoGood.getAtom(watchedNoGood.getPointer(1)) ? 0 : 1;
 				int otherLiteral = watchedNoGood.getLiteral(watchedNoGood.getPointer(otherPointer));
-				Assignment.Entry otherEntry = assignment.get(atomOf(otherLiteral));
+				int otherAtom = atomOf(otherLiteral);
+				Assignment.Entry otherEntry = assignment.get(otherAtom);
 				int otherDecisionLevel = weakDecisionLevel(otherEntry);
-				if (watchInvariant(atomSatisfies, atomDecisionLevel, otherLiteral, otherDecisionLevel, otherEntry)) {
+				int otherReplayLevel = weakReplayLevel(otherAtom);
+				boolean otherSatisfies = otherEntry != null && isPositive(otherLiteral) != otherEntry.getTruth().toBoolean();
+				if (watchInvariant(atomSatisfies, otherSatisfies, atomDecisionLevel, atomReplayLevel, otherDecisionLevel, otherReplayLevel)) {
 					continue;
 				}
 				throw oops("Watch invariant violated");
 			}
+		}
+
+		private boolean watchInvariant(boolean atomSatisfies, boolean otherAtomSatisfies, int atomDecisionLevel, int atomReplayLevel, int otherAtomDecisionLevel, int otherAtomReplayLevel) {
+			if (atomDecisionLevel == UNASSIGNED && otherAtomDecisionLevel == UNASSIGNED) {
+				// Both watches are unassigned.
+				return true;
+			}
+			if ((atomSatisfies && (otherAtomDecisionLevel >= atomDecisionLevel || otherAtomDecisionLevel >= atomReplayLevel))
+				|| (otherAtomSatisfies && (atomDecisionLevel >= otherAtomDecisionLevel || atomDecisionLevel >= otherAtomReplayLevel))) {
+				// One watch satisfies the nogood and the other is assigned at higher decision level (or higher than the replay level of the satisfying one).
+				return true;
+			}
+			return false;
 		}
 
 		private boolean watchInvariant(boolean atomSatisfies, int atomDecisionLevel, int otherLiteral, int otherDecisionLevel, Assignment.Entry otherEntry) {
