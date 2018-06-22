@@ -367,31 +367,27 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 
 	/**
 	 * Propagates from Unassigned to MBT/FALSE.
-	 * @param entry the assignment that triggers the propagation.
+	 * @param atom the atom that triggers the propagation.
+	 * @param truth the assigned truth value.
 	 */
-	private ConflictCause propagateWeakly(final Assignment.Entry entry) {
-		// If assignment is for TRUE, previous MBT exists, and this is no reassignment, nothing changes for weak propagation.
-		if (entry.hasPreviousMBT() && !entry.isReassignAtLowerDecisionLevel()) {
-			return null;
-		}
-
-		final Watches<BinaryWatch, WatchedNoGood> watchesOfAssignedAtom = watches(entry.getAtom());
+	private ConflictCause propagateWeakly(int atom, ThriceTruth truth) {
+		final int weakDecisionLevel = assignment.getWeakDecisionLevel(atom);
+		final Watches<BinaryWatch, WatchedNoGood> watchesOfAssignedAtom = watches(atom);
 
 		// Process binary watches.
-		for (BinaryWatch binaryWatch : watchesOfAssignedAtom.binary.getOrdinary(entry.getTruth().toBoolean())) {
-			ConflictCause conflictCause = assignWeakComplement(binaryWatch.getOtherLiteralIndex(), binaryWatch.getNoGood(), entry.getDecisionLevel());
+		for (BinaryWatch binaryWatch : watchesOfAssignedAtom.binary.getOrdinary(truth.toBoolean())) {
+			ConflictCause conflictCause = assignWeakComplement(binaryWatch.getOtherLiteralIndex(), binaryWatch.getNoGood(), weakDecisionLevel);
 			if (conflictCause != null) {
 				return conflictCause;
 			}
 		}
 
-		final int assignedDecisionLevel = entry.getWeakDecisionLevel();
-		final int assignedLiteral = entry.getLiteral();
+		final int assignedLiteral = atom * (truth.toBoolean() ? 1 : -1);
 
 		// Check all watched multi-ary NoGoods.
-		Iterator<WatchedNoGood> watchIterator = watchesOfAssignedAtom.multary.getOrdinary(entry.getTruth().toBoolean()).iterator();
+		Iterator<WatchedNoGood> watchIterator = watchesOfAssignedAtom.multary.getOrdinary(truth.toBoolean()).iterator();
 		while (watchIterator.hasNext()) {
-			ConflictCause conflictCause = processWeaklyWatchedNoGood(assignedDecisionLevel, assignedLiteral, watchIterator);
+			ConflictCause conflictCause = processWeaklyWatchedNoGood(weakDecisionLevel, assignedLiteral, watchIterator);
 			if (conflictCause != null) {
 				return conflictCause;
 			}
@@ -685,9 +681,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		Assignment.Pollable<? extends Assignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
 		while (!assignmentsToProcess.isEmpty()) {
 			final Assignment.Entry currentEntry = assignmentsToProcess.peek();
+			final int atom = currentEntry.getAtom();
 			LOGGER.trace("Propagation processing entry: {}={}", currentEntry.getAtom(), currentEntry);
 
-			ConflictCause conflictCause = propagateWeakly(currentEntry);
+			ThriceTruth currentTruth = assignment.getTruth(atom);
+			ConflictCause conflictCause = propagateWeakly(atom, currentTruth);
 			if (conflictCause != null) {
 				LOGGER.trace("Halting propagation due to conflict. Current assignment: {}.", assignment);
 				return conflictCause;
@@ -741,15 +739,15 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	 * @param <T> type used for referencing.
 	 */
 	private class WatchLists<T> {
-		private final Set<T> positive = new LinkedHashSet<>();
-		private final Set<T> negative = new LinkedHashSet<>();
-		private final Set<T> alphaPositive = new LinkedHashSet<>();
-		private final Set<T> alphaNegative = new LinkedHashSet<>();
+		private final ArrayList<T> positive = new ArrayList<>();
+		private final ArrayList<T> negative = new ArrayList<>();
+		private final ArrayList<T> alphaPositive = new ArrayList<>();
+		private final ArrayList<T> alphaNegative = new ArrayList<>();
 
-		private Set<T> getAlpha(boolean polarity) {
+		private ArrayList<T> getAlpha(boolean polarity) {
 			return polarity ? alphaPositive : alphaNegative;
 		}
-		private Set<T> getOrdinary(boolean polarity) {
+		private ArrayList<T> getOrdinary(boolean polarity) {
 			return polarity ? positive : negative;
 		}
 	}
