@@ -497,22 +497,13 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		if (newCapacity < maxAtomId + 1) {
 			newCapacity = maxAtomId + 1;
 		}
-		int[] newValues = new int[newCapacity];
-		System.arraycopy(values, 0, newValues, 0, values.length);
-		values = newValues;
-		int[] newStrongDecisionLevels = new int[newCapacity];
-		System.arraycopy(strongDecisionLevels, 0, newStrongDecisionLevels, 0, strongDecisionLevels.length);
-		Arrays.fill(newStrongDecisionLevels, strongDecisionLevels.length, newStrongDecisionLevels.length, -1);
-		strongDecisionLevels = newStrongDecisionLevels;
-		NoGood[] newimpliedBy = new NoGood[newCapacity];
-		System.arraycopy(impliedBy, 0, newimpliedBy, 0, impliedBy.length);
-		impliedBy = newimpliedBy;
-		int[] newPropagationLevels = new int[newCapacity];
-		System.arraycopy(propagationLevels, 0, newPropagationLevels, 0, propagationLevels.length);
-		propagationLevels = newPropagationLevels;
-		boolean[] newCallbackUponChange = new boolean[newCapacity];
-		System.arraycopy(callbackUponChange, 0, newCallbackUponChange, 0, callbackUponChange.length);
-		callbackUponChange = newCallbackUponChange;
+		values = Arrays.copyOf(values, newCapacity);
+		int oldLength = strongDecisionLevels.length;
+		strongDecisionLevels = Arrays.copyOf(strongDecisionLevels, newCapacity);
+		Arrays.fill(strongDecisionLevels, oldLength, strongDecisionLevels.length, -1);
+		impliedBy = Arrays.copyOf(impliedBy, newCapacity);
+		propagationLevels = Arrays.copyOf(propagationLevels, newCapacity);
+		callbackUponChange = Arrays.copyOf(callbackUponChange, newCapacity);
 	}
 
 	@Override
