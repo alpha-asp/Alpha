@@ -171,6 +171,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				}
 			} else if (choose()) {
 				LOGGER.debug("Did choice.");
+				didChange = true;
 			} else if (close()) {
 				LOGGER.debug("Closed unassigned known atoms (assigning FALSE).");
 				afterAllAtomsAssigned = true;
