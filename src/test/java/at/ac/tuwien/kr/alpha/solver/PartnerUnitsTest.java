@@ -33,6 +33,7 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.antlr.v4.runtime.CharStreams;
 import org.apache.commons.lang3.tuple.Pair;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -51,12 +52,22 @@ public class PartnerUnitsTest extends AbstractSolverTests {
 	private final ProgramParser parser = new ProgramParser();
 
 	@Test
+	public void testPartnerUnits_generated_010() throws IOException {
+		testPartnerUnits_generated("simple010_bf_startZ1.asp");
+	}
+
+	@Test
+	@Ignore("ignore to save resources during CI")
 	public void testPartnerUnits_generated_020() throws IOException {
+		testPartnerUnits_generated("simple020_bf_startZ1.asp");
+	}
+	
+	private void testPartnerUnits_generated(String instanceId) throws IOException {
 		Program parsedProgram = parser
 				.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "PartnerUnits", "pup.alpha_heu_20180510.asp")));
 		parsedProgram
 				.accumulate(parser.parse(CharStreams
-						.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "PartnerUnits", "instances", "generated", "simple020_bf_startZ1.asp"))));
+						.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "PartnerUnits", "instances", "generated", instanceId))));
 
 		Solver solver = getInstance(parsedProgram);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
