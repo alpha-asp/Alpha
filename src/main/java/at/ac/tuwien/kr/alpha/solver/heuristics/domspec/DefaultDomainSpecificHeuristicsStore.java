@@ -26,6 +26,7 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
+import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,10 +36,15 @@ import java.util.stream.Stream;
  * Stores a mapping between heuristic IDs and their corresponding domain-specific heuristic values.
  * 
  * The mapping is stored in the form of a hierarchical map.
- * 
- * TODO: is it better to constantly maintain a map of all heuristics (as is currently the case) or to compute just the map of currently active heuristics when a choice has to be made? 
  */
 public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuristicsStore {
+	
+	/**
+	 * A switch that indicates whether priorities shall be computed on demand just for heuristics currently active.
+	 * If {@code true}, the internal map of levels and weights to heuristics will be re-computed for currently active heuristics every time {@link #streamHeuristicsOrderedByDecreasingPriority()} is called;
+	 * if {@code false}, it will be extended each time {@link #addInfo(int, HeuristicDirectiveValues)} is called.
+	 */
+	private static final boolean COMPUTE_PRIORITIES_ON_DEMAND = true;
 
 	/**
 	 * A mapping from levels to a mapping from weights to sets of heuristic IDs
@@ -50,8 +56,23 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 
 	private final Map<Integer, HeuristicDirectiveValues> mapHeuristicToHeuristicValue = new HashMap<>();
 
+	private ChoiceManager choiceManager;
+	
+	public DefaultDomainSpecificHeuristicsStore(ChoiceManager choiceManager) {
+		super();
+		this.choiceManager = choiceManager;
+	}
+
 	@Override
 	public void addInfo(int heuristicId, HeuristicDirectiveValues values) {
+		if (!COMPUTE_PRIORITIES_ON_DEMAND) {
+			storePriorityInfo(heuristicId, values);
+		}
+		
+		mapHeuristicToHeuristicValue.put(heuristicId, values);
+	}
+
+	void storePriorityInfo(int heuristicId, HeuristicDirectiveValues values) {
 		int level = values.getLevel();
 		int weight = values.getWeight();
 
@@ -67,8 +88,6 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 			mapWeightValues.put(weight, valuesForWeightLevel);
 		}
 		valuesForWeightLevel.add(heuristicId);
-		
-		mapHeuristicToHeuristicValue.put(heuristicId, values);
 	}
 
 	@Override
@@ -86,18 +105,20 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 	 */
 	@Override
 	public Stream<Set<Integer>> streamHeuristicsOrderedByDecreasingPriority() {
+		if (COMPUTE_PRIORITIES_ON_DEMAND) {
+			updatePriorityInfos();
+		}
 		return mapLevelWeightHeuristics.values().stream().flatMap(m -> m.values().stream());
 	}
 	
-	@Override
-	public Set<Integer> getAllEntries() {
-		Set<Integer> entries = new HashSet<>();
-		for (SortedMap<Integer, Set<Integer>> mapWeightChoicePoint : mapLevelWeightHeuristics.values()) {
-			for (Set<Integer> entriesForCurrentPriority : mapWeightChoicePoint.values()) {
-				entries.addAll(entriesForCurrentPriority);
+	private void updatePriorityInfos() {
+		mapLevelWeightHeuristics.clear();
+		for (Integer activeHeuristic : choiceManager.getAllActiveHeuristicAtoms()) {
+			HeuristicDirectiveValues values = mapHeuristicToHeuristicValue.get(activeHeuristic);
+			if (values != null) {
+				storePriorityInfo(activeHeuristic, values);
 			}
 		}
-		return entries;
 	}
 	
 	@Override

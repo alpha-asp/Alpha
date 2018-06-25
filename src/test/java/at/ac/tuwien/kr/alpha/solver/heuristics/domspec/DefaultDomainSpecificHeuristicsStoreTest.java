@@ -26,12 +26,13 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
+import at.ac.tuwien.kr.alpha.solver.*;
+import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -40,52 +41,73 @@ import static org.junit.Assert.assertEquals;
  * Test {@link DefaultDomainSpecificHeuristicsStore}
  */
 public class DefaultDomainSpecificHeuristicsStoreTest {
+	private static final int INITIAL_GENERATED_ID = 100;
+	
+	private WritableAssignment assignment;
+	private ChoiceManager choiceManager;
+	private DefaultDomainSpecificHeuristicsStore store = new DefaultDomainSpecificHeuristicsStore(null);
+	private AtomicInteger idGenerator = new AtomicInteger(INITIAL_GENERATED_ID);
 
-	private final DefaultDomainSpecificHeuristicsStore store = new DefaultDomainSpecificHeuristicsStore();
+	@Before
+	public void setUp() throws IOException {
+		this.assignment = new ArrayAssignment();
+		this.choiceManager = new PseudoChoiceManager(assignment, new NaiveNoGoodStore(assignment));
+		this.store = new DefaultDomainSpecificHeuristicsStore(choiceManager);
+	}
 
+	
 	@Test
 	public void testInsert_1_atom() {
-		store.addInfo(100, info(1, 1, 1));
+		int id = idGenerator.getAndIncrement();
+		store.addInfo(id, info(1, 1, 1));
 		Collection<Set<Integer>> orderedList = store.getHeuristicsOrderedByDecreasingPriority();
 		assertEquals(1, orderedList.size());
 		Iterator<Set<Integer>> iterator = orderedList.iterator();
-		assertEquals(set(100), nextSetOfChoicePoints(iterator));
+		assertEquals(set(id), nextSetOfChoicePoints(iterator));
 	}
 
 	@Test
 	public void testInsert_2_atoms_sameWeight_sameLevel() {
-		store.addInfo(100, info(1, 2, 3));
-		store.addInfo(101, info(2, 2, 3));
+		int id1 = idGenerator.getAndIncrement();
+		int id2 = idGenerator.getAndIncrement();
+		store.addInfo(id1, info(1, 2, 3));
+		store.addInfo(id2, info(2, 2, 3));
 		Collection<Set<Integer>> orderedList = store.getHeuristicsOrderedByDecreasingPriority();
 		assertEquals(1, orderedList.size());
 		Iterator<Set<Integer>> iterator = orderedList.iterator();
-		assertEquals(set(100, 101), nextSetOfChoicePoints(iterator));
+		assertEquals(set(id1, id2), nextSetOfChoicePoints(iterator));
 	}
 
 	@Test
 	public void testInsert_3_atoms_sameWeight_differentLevel() {
-		store.addInfo(100, info(1, 2, 3));
-		store.addInfo(101, info(2, 2, 1));
-		store.addInfo(102, info(3, 2, 2));
+		int id1 = idGenerator.getAndIncrement();
+		int id2 = idGenerator.getAndIncrement();
+		int id3 = idGenerator.getAndIncrement();
+		store.addInfo(id1, info(1, 2, 3));
+		store.addInfo(id2, info(2, 2, 1));
+		store.addInfo(id3, info(3, 2, 2));
 		Collection<Set<Integer>> orderedList = store.getHeuristicsOrderedByDecreasingPriority();
 		assertEquals(3, orderedList.size());
 		Iterator<Set<Integer>> iterator = orderedList.iterator();
-		assertEquals(set(100), nextSetOfChoicePoints(iterator));
-		assertEquals(set(102), nextSetOfChoicePoints(iterator));
-		assertEquals(set(101), nextSetOfChoicePoints(iterator));
+		assertEquals(set(id1), nextSetOfChoicePoints(iterator));
+		assertEquals(set(id3), nextSetOfChoicePoints(iterator));
+		assertEquals(set(id2), nextSetOfChoicePoints(iterator));
 	}
 
 	@Test
 	public void testInsert_3_atoms_differentWeight_sameLevel() {
-		store.addInfo(100, info(1, 4, 1));
-		store.addInfo(101, info(2, 2, 1));
-		store.addInfo(102, info(3, 3, 1));
+		int id1 = idGenerator.getAndIncrement();
+		int id2 = idGenerator.getAndIncrement();
+		int id3 = idGenerator.getAndIncrement();
+		store.addInfo(id1, info(1, 4, 1));
+		store.addInfo(id2, info(2, 2, 1));
+		store.addInfo(id3, info(3, 3, 1));
 		Collection<Set<Integer>> orderedList = store.getHeuristicsOrderedByDecreasingPriority();
 		assertEquals(3, orderedList.size());
 		Iterator<Set<Integer>> iterator = orderedList.iterator();
-		assertEquals(set(100), nextSetOfChoicePoints(iterator));
-		assertEquals(set(102), nextSetOfChoicePoints(iterator));
-		assertEquals(set(101), nextSetOfChoicePoints(iterator));
+		assertEquals(set(id1), nextSetOfChoicePoints(iterator));
+		assertEquals(set(id3), nextSetOfChoicePoints(iterator));
+		assertEquals(set(id2), nextSetOfChoicePoints(iterator));
 	}
 
 	private HeuristicDirectiveValues info(int atom, int weight, int level) {
@@ -93,12 +115,29 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 	}
 
 	@SafeVarargs
-	private final <T> Set<T> set(T... elements) {
+	private static final <T> Set<T> set(T... elements) {
 		return Arrays.stream(elements).collect(Collectors.toSet());
 	}
 
 	private Set<Integer> nextSetOfChoicePoints(Iterator<Set<Integer>> iterator) {
 		return iterator.next().stream().collect(Collectors.toSet());
+	}
+
+	private class PseudoChoiceManager extends ChoiceManager {
+
+		public PseudoChoiceManager(WritableAssignment assignment, NoGoodStore store) {
+			super(assignment, store);
+		}
+		
+		@Override
+		public Set<Integer> getAllActiveHeuristicAtoms() {
+			Set<Integer> generatedIDs = new HashSet<>();
+			int maxID = idGenerator.get();
+			for (int i = INITIAL_GENERATED_ID; i <= maxID; i++) {
+				generatedIDs.add(i);
+			}
+			return generatedIDs;
+		}
 	}
 
 }

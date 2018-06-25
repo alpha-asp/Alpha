@@ -52,11 +52,6 @@ public class EmptyDomainSpecificHeuristicsStore implements DomainSpecificHeurist
 	}
 	
 	@Override
-	public Set<Integer> getAllEntries() {
-		return Collections.emptySet();
-	}
-	
-	@Override
 	public HeuristicDirectiveValues getValues(int heuristicId) {
 		return null;
 	}

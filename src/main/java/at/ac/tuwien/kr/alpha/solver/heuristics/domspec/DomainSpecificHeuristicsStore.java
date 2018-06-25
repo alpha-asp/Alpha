@@ -47,8 +47,6 @@ public interface DomainSpecificHeuristicsStore {
 	
 	Stream<Set<Integer>> streamHeuristicsOrderedByDecreasingPriority();
 	
-	Set<Integer> getAllEntries();
-	
 	HeuristicDirectiveValues getValues(int heuristicId);
 
 }

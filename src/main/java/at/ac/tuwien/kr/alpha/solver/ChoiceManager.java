@@ -81,11 +81,7 @@ public class ChoiceManager implements Checkable {
 	private int backjumps;
 
 	public ChoiceManager(WritableAssignment assignment, NoGoodStore store) {
-		this(assignment, store, false);
-	}
-
-	private ChoiceManager(WritableAssignment assignment, NoGoodStore store, boolean checksEnabled) {
-		this(assignment, store, new EmptyDomainSpecificHeuristicsStore(), checksEnabled);
+		this(assignment, store, new EmptyDomainSpecificHeuristicsStore(), false);
 	}
 
 	public ChoiceManager(WritableAssignment assignment, NoGoodStore store, DomainSpecificHeuristicsStore domainSpecificHeuristicsStore, boolean checksEnabled) {
@@ -97,7 +93,11 @@ public class ChoiceManager implements Checkable {
 		modifiedInDecisionLevel.put(0, new ArrayList<>());
 		highestDecisionLevel = 0;
 		this.choiceStack = new Stack<>();
-		this.domainSpecificHeuristics = domainSpecificHeuristicsStore;
+		if (domainSpecificHeuristicsStore != null) {
+			this.domainSpecificHeuristics = domainSpecificHeuristicsStore;
+		} else {
+			this.domainSpecificHeuristics = new DefaultDomainSpecificHeuristicsStore(this);
+		}
 
 		if (checksEnabled) {
 			debugWatcher = new DebugWatcher();
@@ -319,11 +319,11 @@ public class ChoiceManager implements Checkable {
 	}
 	
 	public static ChoiceManager withoutDomainSpecificHeuristics(WritableAssignment assignment, NoGoodStore store, boolean checksEnabled) {
-		return new ChoiceManager(assignment, store, checksEnabled);
+		return new ChoiceManager(assignment, store, new EmptyDomainSpecificHeuristicsStore(), checksEnabled);
 	}
 	
 	public static ChoiceManager withDomainSpecificHeuristics(WritableAssignment assignment, NoGoodStore store, boolean checksEnabled) {
-		return new ChoiceManager(assignment, store, new DefaultDomainSpecificHeuristicsStore(), checksEnabled);
+		return new ChoiceManager(assignment, store, null, checksEnabled);
 	}
 
 	/**
