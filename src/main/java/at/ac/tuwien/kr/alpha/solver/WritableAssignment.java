@@ -54,9 +54,9 @@ public interface WritableAssignment extends Assignment {
 	 * @param decisionLevel
 	 * @return
 	 */
-	ConflictCause assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel);
+	ConflictCause assign(int atom, ThriceTruth value, ImplicationReasonProvider impliedBy, int decisionLevel);
 
-	default ConflictCause assign(int atom, ThriceTruth value, NoGood impliedBy) {
+	default ConflictCause assign(int atom, ThriceTruth value, ImplicationReasonProvider impliedBy) {
 		return assign(atom, value, impliedBy, getDecisionLevel());
 	}
 
@@ -77,11 +77,11 @@ public interface WritableAssignment extends Assignment {
 	default int minimumConflictLevel(NoGood noGood) {
 		int minimumConflictLevel = -1;
 		for (Integer literal : noGood) {
-			Assignment.Entry entry = get(atomOf(literal));
-			if (entry == null || isPositive(literal) != entry.getTruth().toBoolean()) {
+			ThriceTruth atomTruth = getTruth(atomOf(literal));
+			if (atomTruth == null || isPositive(literal) != atomTruth.toBoolean()) {
 				return -1;
 			}
-			int literalDecisionLevel = entry.hasPreviousMBT() ? entry.getMBTDecisionLevel() : entry.getDecisionLevel();
+			int literalDecisionLevel = getWeakDecisionLevel(atomOf(literal));
 			if (literalDecisionLevel > minimumConflictLevel) {
 				minimumConflictLevel = literalDecisionLevel;
 			}

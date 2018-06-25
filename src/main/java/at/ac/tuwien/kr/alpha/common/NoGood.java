@@ -27,6 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.solver.ImplicationReasonProvider;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -35,7 +37,7 @@ import java.util.stream.IntStream;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
-public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
+public class NoGood implements ImplicationReasonProvider, Iterable<Integer>, Comparable<NoGood> {
 	public static final int HEAD = 0;
 	public static final NoGood UNSAT = new NoGood();
 
@@ -227,5 +229,10 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 		sb.append("}");
 
 		return sb.toString();
+	}
+
+	@Override
+	public NoGood getNoGood(int impliedAtom) {
+		return this;
 	}
 }

@@ -297,6 +297,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private boolean ingest(Map<Integer, NoGood> obtained) {
 		branchingHeuristic.newNoGoods(obtained.values());
 		assignment.growForMaxAtomId(grounder.getMaxAtomId());
+		store.growForMaxAtomId(grounder.getMaxAtomId());
 
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
 		Map.Entry<Integer, NoGood> entry;

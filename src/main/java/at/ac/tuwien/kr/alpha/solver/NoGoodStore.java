@@ -33,4 +33,6 @@ public interface NoGoodStore {
 	boolean didPropagate();
 
 	void backtrack();
+
+	void growForMaxAtomId(int maxAtomId);
 }

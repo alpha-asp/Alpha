@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import org.slf4j.Logger;
@@ -34,10 +35,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
 import static at.ac.tuwien.kr.alpha.common.NoGood.HEAD;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
+import static java.lang.Math.abs;
 
 /**
  * NoGoodStore using for each NoGood three watches, two ordinary ones and an alpha watch.
@@ -57,6 +60,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 
 	private final WritableAssignment assignment;
 	private final Map<Integer, Watches<BinaryWatch, WatchedNoGood>> watches = new LinkedHashMap<>();
+	private BinaryWatchList[] binaryWatches = new BinaryWatchList[0];
 
 	private boolean checksEnabled;
 	private boolean didPropagate;
@@ -73,6 +77,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	void clear() {
 		assignment.clear();
 		watches.clear();
+		binaryWatches = new BinaryWatchList[0];
 	}
 
 	@Override
@@ -86,6 +91,33 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				LOGGER.trace("Skipping watches check since there are assignments to process first.");
 			}
 		}
+	}
+
+	@Override
+	public void growForMaxAtomId(int maxAtomId) {
+		int requiredMaxSize = 2 * (maxAtomId + 2);
+		if (requiredMaxSize < binaryWatches.length) {
+			return;
+		}
+		int newCapacity = arrayGrowthSize(binaryWatches.length);
+		if (newCapacity < requiredMaxSize) {
+			newCapacity = requiredMaxSize;
+		}
+		int oldlength = binaryWatches.length;
+		binaryWatches = Arrays.copyOf(binaryWatches, newCapacity);
+		for (int i = oldlength; i < binaryWatches.length; i++) {
+			binaryWatches[i] = new BinaryWatchList(arrayPosToLiteral(i));
+		}
+	}
+
+	private int literalToArrayPos(int literal) {
+		// Note: it might be worthwhile to change the assigned numbers for a literal such that it is never negative. Then no conversion may be necessary.
+		// Suggestion for such literal could be: (varNum << 1) + (isPositive ? 0 : 1);
+		return (abs(literal) << 1) + (isPositive(literal) ? 0 : 1);
+	}
+
+	private int arrayPosToLiteral(int arrayPos) {
+		return (arrayPos >> 1) * ((arrayPos & 0x1) == 1 ? -1 : 1);
 	}
 
 	private Watches<BinaryWatch, WatchedNoGood> watches(int literal) {
@@ -115,7 +147,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		if (noGood.isUnary()) {
 			return addUnary(noGood);
 		} else if (noGood.isBinary()) {
-			return addAndWatchBinary(noGood);
+			return addAndWatchBinaryImproved(noGood);
 		} else {
 			return addAndWatch(noGood);
 		}
@@ -287,7 +319,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		return null;
 	}
 
-	private ConflictCause addAndWatchBinary(final NoGood noGood) {
+	private ConflictCause addAndWatchBinaryImproved(final NoGood noGood) {
 		// Shorthands for viewing the nogood as { a, b }.
 		final int a = noGood.getLiteral(0);
 		final int b = noGood.getLiteral(1);
@@ -298,6 +330,8 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		if (a != b && atomA == atomB) {
 			return null;
 		}
+
+		// Note: it might be faster to not check explicitly for violation but wait for conflict from assign.
 		final ThriceTruth atomATruthValue = assignment.getTruth(atomA);
 		final ThriceTruth atomBTruthValue = assignment.getTruth(atomB);
 
@@ -309,42 +343,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			return new ConflictCause(noGood);
 		}
 
-		// If one literal is violated the NoGood propagates.
-		final boolean doesPropagate = isViolatedA || isViolatedB;
-		final int propagateePos = isViolatedA ? 1 : 0;
-		final int violatedAtom = isViolatedA ? atomA : atomB;
-		final ThriceTruth violatedTruthValue = isViolatedA ? atomATruthValue : atomBTruthValue;
-		if (doesPropagate) {
-			// Propagate weakly.
-			ConflictCause conflictCause = assignWeakComplement(propagateePos, noGood, assignment.getWeakDecisionLevel(violatedAtom));
-			if (conflictCause != null) {
-				return conflictCause;
-			}
-			// Propagate strongly if applicable.
-			if (noGood.hasHead() && HEAD == propagateePos && MBT != violatedTruthValue) {
-				conflictCause = assignStrongComplement(noGood, assignment.getStrongDecisionLevel(violatedAtom));
-				if (conflictCause != null) {
-					return conflictCause;
-				}
-			}
+		ConflictCause conflictCause = binaryWatches[literalToArrayPos(a)].add(noGood);
+		if (conflictCause != null) {
+			return conflictCause;
 		}
-
-		// Set up watches, so that in case either a or b is assigned,
-		// an assignment for the respective other can be generated
-		// by unit propagation.
-		watches(a).binary.getOrdinary(isPositive(a)).add(new BinaryWatch(noGood, 1));
-		watches(b).binary.getOrdinary(isPositive(b)).add(new BinaryWatch(noGood, 0));
-
-		// If the nogood has a head literal, take extra care as it
-		// might propagate TRUE (and not only FALSE or MBT, which
-		// are accounted for above).
-		if (noGood.hasHead()) {
-			final int bodyLiteral = noGood.getLiteral(1);
-
-			// Set up watch.
-			watches(bodyLiteral).binary.getAlpha(isPositive(bodyLiteral)).add(new BinaryWatch(noGood, HEAD));
-		}
-		return null;
+		return binaryWatches[literalToArrayPos(b)].add(noGood);
 	}
 
 	private ConflictCause assignWeakComplement(final int literalIndex, final NoGood impliedBy, int decisionLevel) {
@@ -367,37 +370,39 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 
 	/**
 	 * Propagates from Unassigned to MBT/FALSE.
-	 * @param atom the atom that triggers the propagation.
+	 * @param literal the literal that triggers the propagation.
 	 * @param truth the assigned truth value.
 	 */
-	private ConflictCause propagateWeakly(int atom, ThriceTruth truth) {
+	private ConflictCause propagateWeakly(int literal, ThriceTruth truth) {
+		final int atom = atomOf(literal);
 		final int weakDecisionLevel = assignment.getWeakDecisionLevel(atom);
 		final Watches<BinaryWatch, WatchedNoGood> watchesOfAssignedAtom = watches(atom);
 
-		// Process binary watches.
-		for (BinaryWatch binaryWatch : watchesOfAssignedAtom.binary.getOrdinary(truth.toBoolean())) {
-			ConflictCause conflictCause = assignWeakComplement(binaryWatch.getOtherLiteralIndex(), binaryWatch.getNoGood(), weakDecisionLevel);
-			if (conflictCause != null) {
-				return conflictCause;
-			}
+		ConflictCause conflictCause = binaryWatches[literalToArrayPos(literal)].propagateWeakly();
+		if (conflictCause != null) {
+			return conflictCause;
 		}
-
-		final int assignedLiteral = atom * (truth.toBoolean() ? 1 : -1);
 
 		// Check all watched multi-ary NoGoods.
 		Iterator<WatchedNoGood> watchIterator = watchesOfAssignedAtom.multary.getOrdinary(truth.toBoolean()).iterator();
+		watchesOfAssignedAtom.multary.clearOrdinaryWatchList(truth.toBoolean());
 		while (watchIterator.hasNext()) {
-			ConflictCause conflictCause = processWeaklyWatchedNoGood(weakDecisionLevel, assignedLiteral, watchIterator);
+			WatchedNoGood nextNoGood = watchIterator.next();
+			conflictCause = processWeaklyWatchedNoGood(weakDecisionLevel, literal, nextNoGood);
 			if (conflictCause != null) {
+				// Copy over all non-treated NoGoods, so that they can be treated after backtracking.
+				ArrayList<WatchedNoGood> watchlist = watchesOfAssignedAtom.multary.getOrdinary(truth.toBoolean());
+				watchlist.add(nextNoGood);
+				while (watchIterator.hasNext()) {
+					watchlist.add(watchIterator.next());
+				}
 				return conflictCause;
 			}
 		}
 		return null;
 	}
 
-	private ConflictCause processWeaklyWatchedNoGood(int assignedDecisionLevel, int assignedLiteral, Iterator<WatchedNoGood> watchIterator) {
-		final WatchedNoGood watchedNoGood = watchIterator.next();
-
+	private ConflictCause processWeaklyWatchedNoGood(int assignedDecisionLevel, int assignedLiteral, WatchedNoGood watchedNoGood) {
 		final int assignedPointer = watchedNoGood.getLiteralAtPointer(0) == assignedLiteral ? 0 : 1;
 		final int otherPointer = 1 - assignedPointer;
 
@@ -414,7 +419,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		if (newWatch.foundPointerCandidate) {
 			// Move pointer to new literal.
 			watchedNoGood.setPointer(assignedPointer, newWatch.pointerCandidateIndex);
-			watchIterator.remove();
 			addOrdinaryWatch(watchedNoGood, assignedPointer);
 			LOGGER.trace("Moved watch pointers of nogood:");
 			logNoGoodAndAssignment(watchedNoGood, assignment);
@@ -431,19 +435,17 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				// decision levels may cause this to not be the case).
 				if (otherAtomWeakDecisionLevel < newWatch.highestDecisionLevel || assignedDecisionLevel < newWatch.highestDecisionLevel) {
 					// Rectify watches.
-					resetWatchesToHighestDecisionLevels(watchIterator, watchedNoGood, assignedPointer, otherPointer, otherIndex);
+					resetWatchesToHighestDecisionLevels(watchedNoGood, assignedPointer, otherPointer, otherIndex);
+					throw oops("NEVER USED NOW.");
 				}
 				return conflictCause;
 			}
 
-			// Move assigned watch to now-highest position (if it changed).
-			if (newWatch.pointerCandidateIndex != assignedIndex) {
-				watchedNoGood.setPointer(assignedPointer, newWatch.pointerCandidateIndex);
-				watchIterator.remove();
-				addOrdinaryWatch(watchedNoGood, assignedPointer);
-				LOGGER.trace("Moved watch pointers after propagation:");
-				logNoGoodAndAssignment(watchedNoGood, assignment);
-			}
+			// Move assigned watch to now-highest position.
+			watchedNoGood.setPointer(assignedPointer, newWatch.pointerCandidateIndex);
+			addOrdinaryWatch(watchedNoGood, assignedPointer);
+			LOGGER.trace("Moved watch pointers after propagation:");
+			logNoGoodAndAssignment(watchedNoGood, assignment);
 		}
 		return null;
 	}
@@ -498,7 +500,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		return result;
 	}
 
-	private void resetWatchesToHighestDecisionLevels(Iterator<WatchedNoGood> watchIterator, WatchedNoGood watchedNoGood, int assignedPointer, int otherPointer, int otherIndex) {
+	private void resetWatchesToHighestDecisionLevels(WatchedNoGood watchedNoGood, int assignedPointer, int otherPointer, int otherIndex) {
 		AbstractMap.SimpleEntry<Integer, Integer> newWatchPositions = computeTwoHighestDecisionLevels(watchedNoGood, assignment);
 		Integer pos1 = newWatchPositions.getKey();
 		Integer pos2 = newWatchPositions.getValue();
@@ -514,7 +516,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			moveBothWatches = true;
 		}
 
-		watchIterator.remove();
 		if (!moveBothWatches) {
 			// Only adjust the assigned watch.
 			watchedNoGood.setPointer(assignedPointer, posForThisWatch);
@@ -583,23 +584,20 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		if (entry.getTruth().isMBT()) {
 			return null;
 		}
+		final int assignedLiteral = entry.getLiteral();
 
-		// Process binary watches.
-		Watches<BinaryWatch, WatchedNoGood> watchesOfAssignedAtom = watches(entry.getAtom());
-		for (BinaryWatch binaryWatch : watchesOfAssignedAtom.binary.getAlpha(entry.getTruth().toBoolean())) {
-			if (binaryWatch.getOtherLiteralIndex() != HEAD) {
-				throw oops("Binary watch for nogood with head does not point at head");
-			}
-
-			ConflictCause conflictCause = assignStrongComplement(binaryWatch.getNoGood(), entry.getDecisionLevel());
-			if (conflictCause != null) {
-				return conflictCause;
-			}
+		ConflictCause conflictCause = binaryWatches[literalToArrayPos(assignedLiteral)].propagateStrongly();
+		if (conflictCause != null) {
+			return conflictCause;
 		}
+
+		Watches<BinaryWatch, WatchedNoGood> watchesOfAssignedAtom = watches(entry.getAtom());
 
 		int assignedDecisionLevel = entry.getStrongDecisionLevel();
 
 		Iterator<WatchedNoGood> watchIterator = watchesOfAssignedAtom.multary.getAlpha(entry.getTruth().toBoolean()).iterator();
+		watchesOfAssignedAtom.multary.clearAlphaWatchList(entry.getTruth().toBoolean());
+
 		while (watchIterator.hasNext()) {
 			final WatchedNoGood watchedNoGood = watchIterator.next();
 
@@ -653,23 +651,25 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			if (foundPointerCandidate) {
 				// Move pointer to new literal.
 				watchedNoGood.setAlphaPointer(pointerCandidateIndex);
-				watchIterator.remove();
 				addAlphaWatch(watchedNoGood);
 				continue;
 			}
 
 			// NoGood is unit, propagate (on potentially lower decision level).
-			ConflictCause conflictCause = assignStrongComplement(watchedNoGood, highestDecisionLevel);
+			conflictCause = assignStrongComplement(watchedNoGood, highestDecisionLevel);
 			if (conflictCause != null) {
+				// Copy over all non-treated NoGoods, so that they can be treated after backtracking.
+				ArrayList<WatchedNoGood> watchlist = watchesOfAssignedAtom.multary.getAlpha(entry.getTruth().toBoolean());
+				watchlist.add(watchedNoGood);
+				while (watchIterator.hasNext()) {
+					watchlist.add(watchIterator.next());
+				}
 				return conflictCause;
 			}
 
-			// Move assigned watch to now-highest position (if it changed).
-			if (pointerCandidateIndex != assignedIndex) {
-				watchedNoGood.setAlphaPointer(pointerCandidateIndex);
-				watchIterator.remove();
-				addAlphaWatch(watchedNoGood);
-			}
+			// Move assigned watch to now-highest position.
+			watchedNoGood.setAlphaPointer(pointerCandidateIndex);
+			addAlphaWatch(watchedNoGood);
 		}
 		return null;
 	}
@@ -682,10 +682,10 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		while (!assignmentsToProcess.isEmpty()) {
 			final Assignment.Entry currentEntry = assignmentsToProcess.peek();
 			final int atom = currentEntry.getAtom();
-			LOGGER.trace("Propagation processing entry: {}={}", currentEntry.getAtom(), currentEntry);
+			LOGGER.trace("Propagation processing entry: {}", currentEntry);
 
 			ThriceTruth currentTruth = assignment.getTruth(atom);
-			ConflictCause conflictCause = propagateWeakly(atom, currentTruth);
+			ConflictCause conflictCause = propagateWeakly(currentEntry.getLiteral(), currentTruth);
 			if (conflictCause != null) {
 				LOGGER.trace("Halting propagation due to conflict. Current assignment: {}.", assignment);
 				return conflictCause;
@@ -732,6 +732,111 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		}
 	}
 
+	private class BinaryWatchList implements ImplicationReasonProvider {
+		private int[] noGoodsWithoutHead = new int[10];
+		private int noGoodsWithoutHeadSize;
+		private int[] noGoodsWithHead = new int[10];
+		private int noGoodsWithHeadSize;
+		private final int forLiteral;
+
+		private BinaryWatchList(int forLiteral) {
+			this.forLiteral = forLiteral;
+		}
+
+		ConflictCause add(NoGood noGood) {
+			if (!noGood.isBinary()) {
+				throw oops("Received noGood is not binary.");
+			}
+			if (noGood.hasHead() && noGood.getLiteral(HEAD) != forLiteral) {
+				return addHeadedNoGood(noGood);
+			} else {
+				return addOrdinaryNoGood(noGood);
+			}
+		}
+
+		private ConflictCause addHeadedNoGood(NoGood noGood) {
+			if (noGoodsWithHeadSize + 1 > noGoodsWithHead.length) {
+				noGoodsWithHead = Arrays.copyOf(noGoodsWithHead, Util.arrayGrowthSize(noGoodsWithHeadSize));
+			}
+			int otherLiteral = noGood.getLiteral(0) == forLiteral ? noGood.getLiteral(1) : noGood.getLiteral(0);
+			if (isPositive(otherLiteral)) {
+				throw oops("NoGood has wrong head.");
+			}
+			noGoodsWithHead[noGoodsWithHeadSize++] = otherLiteral;
+			// Assign (weakly) otherLiteral if the newly added NoGood is unit.
+			ThriceTruth literalTruth = assignment.getTruth(atomOf(forLiteral));
+			if (literalTruth != null && literalTruth.toBoolean() == isPositive(forLiteral)) {
+				int weakDecisionLevel = assignment.getWeakDecisionLevel(atomOf(forLiteral));
+				ConflictCause conflictCause = assignment.assign(atomOf(otherLiteral), isPositive(otherLiteral) ? FALSE : MBT, this, weakDecisionLevel);
+				if (conflictCause != null) {
+					return conflictCause;
+				}
+			}
+			// Assign head (strongly) if the newly added NoGood is unit.
+			int strongDecisionLevel = assignment.getStrongDecisionLevel(atomOf(forLiteral));
+			if (strongDecisionLevel != -1 && assignment.getTruth(atomOf(forLiteral)).toBoolean() == isPositive(forLiteral)) {
+				return assignment.assign(atomOf(otherLiteral), TRUE, this, strongDecisionLevel);
+			}
+			return null;
+		}
+
+		private ConflictCause addOrdinaryNoGood(NoGood noGood) {
+			if (noGoodsWithoutHeadSize + 1 > noGoodsWithoutHead.length) {
+				noGoodsWithoutHead = Arrays.copyOf(noGoodsWithoutHead, Util.arrayGrowthSize(noGoodsWithoutHeadSize));
+			}
+			int otherLiteral = noGood.getLiteral(0) == forLiteral ? noGood.getLiteral(1) : noGood.getLiteral(0);
+			noGoodsWithoutHead[noGoodsWithoutHeadSize++] = otherLiteral;
+			// Assign otherLiteral if the newly added NoGood is unit.
+			ThriceTruth literalTruth = assignment.getTruth(atomOf(forLiteral));
+			if (literalTruth != null && literalTruth.toBoolean() == isPositive(forLiteral)) {
+				int weakDecisionLevel = assignment.getWeakDecisionLevel(atomOf(forLiteral));
+				return assignment.assign(atomOf(otherLiteral), isPositive(otherLiteral) ? FALSE : MBT, this, weakDecisionLevel);
+			}
+			return null;
+		}
+
+		@Override
+		public NoGood getNoGood(int impliedAtom) {
+			return new NoGood(impliedAtom, forLiteral);
+		}
+		
+		ConflictCause propagateWeakly() {
+			didPropagate |= noGoodsWithHeadSize > 0 || noGoodsWithoutHeadSize > 0;
+			for (int i = 0; i < noGoodsWithoutHeadSize; i++) {
+				final int otherLiteral = noGoodsWithoutHead[i];
+				ConflictCause conflictCause = assignment.assign(atomOf(otherLiteral), isPositive(otherLiteral) ? FALSE : MBT, this);
+				if (conflictCause != null) {
+					return conflictCause;
+				}
+			}
+			for (int i = 0; i < noGoodsWithHeadSize; i++) {
+				final int otherLiteral = noGoodsWithHead[i];
+				ConflictCause conflictCause = assignment.assign(atomOf(otherLiteral), isPositive(otherLiteral) ? FALSE : MBT, this);
+				if (conflictCause != null) {
+					return conflictCause;
+				}
+			}
+			return null;
+		}
+
+		ConflictCause propagateStrongly() {
+			didPropagate |= noGoodsWithHeadSize > 0;
+			for (int i = 0; i < noGoodsWithHeadSize; i++) {
+				final int headLiteral = noGoodsWithHead[i];
+				ConflictCause conflictCause = assignment.assign(atomOf(headLiteral), TRUE, this);
+				if (conflictCause != null) {
+					return conflictCause;
+				}
+			}
+			return null;
+		}
+
+		@Override
+		public String toString() {
+			return "BinaryWatchList(" + forLiteral + ")";
+		}
+	}
+
 	/**
 	 * A simple data structure to encapsulate watched delegate by truth value tailored to {@link ThriceTruth}. It
 	 * holds three separate sets that are used to refer to propagation based on assignment of one of the three truth
@@ -739,16 +844,32 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	 * @param <T> type used for referencing.
 	 */
 	private class WatchLists<T> {
-		private final ArrayList<T> positive = new ArrayList<>();
-		private final ArrayList<T> negative = new ArrayList<>();
-		private final ArrayList<T> alphaPositive = new ArrayList<>();
-		private final ArrayList<T> alphaNegative = new ArrayList<>();
+		private ArrayList<T> positive = new ArrayList<>();
+		private ArrayList<T> negative = new ArrayList<>();
+		private ArrayList<T> alphaPositive = new ArrayList<>();
+		private ArrayList<T> alphaNegative = new ArrayList<>();
 
 		private ArrayList<T> getAlpha(boolean polarity) {
 			return polarity ? alphaPositive : alphaNegative;
 		}
 		private ArrayList<T> getOrdinary(boolean polarity) {
 			return polarity ? positive : negative;
+		}
+
+		void clearOrdinaryWatchList(boolean polarity) {
+			if (polarity) {
+				positive = new ArrayList<>();
+			} else {
+				negative = new ArrayList<>();
+			}
+		}
+
+		void clearAlphaWatchList(boolean polarity) {
+			if (polarity) {
+				alphaPositive = new ArrayList<>();
+			} else {
+				alphaNegative = new ArrayList<>();
+			}
 		}
 	}
 
@@ -764,7 +885,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	 * @param <N> type used to resolve references from nogoods sizes greater than two
 	 */
 	private final class Watches<B, N> {
-		final WatchLists<B> binary = new WatchLists<>();
 		final WatchLists<N> multary = new WatchLists<>();
 	}
 
@@ -817,8 +937,9 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			int atomLiteral = truth ? atom : -atom;
 			boolean atomSatisfies = atomEntry != null && isPositive(atomLiteral) != atomEntry.getTruth().toBoolean();
 			int atomDecisionLevel = strongDecisionLevel(atom);
-			for (NoGoodStoreAlphaRoaming.BinaryWatch binaryWatch : watches.binary.getAlpha(truth)) {
-				int headLiteral = binaryWatch.getNoGood().getLiteral(binaryWatch.getOtherLiteralIndex());
+			BinaryWatchList binaryWatchList = binaryWatches[literalToArrayPos(atomLiteral)];
+			for (int i = 0; i < binaryWatchList.noGoodsWithHeadSize; i++) {
+				int headLiteral = binaryWatchList.noGoodsWithHead[i];
 				if (headLiteral == atomLiteral) {
 					throw oops("Watch invariant violated: alpha watch points at head.");
 				}
@@ -853,18 +974,14 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			boolean atomSatisfies = atomEntry != null && isPositive(atomLiteral) != atomEntry.getTruth().toBoolean();
 			int atomDecisionLevel = weakDecisionLevel(atomEntry);
 			int atomReplayLevel = weakReplayLevel(atom);
-			for (BinaryWatch binaryWatch : watches.binary.getOrdinary(truth)) {
-				// Ensure both watches are either unassigned, or one satisfies NoGood, or both are on highest decision level.
-				int otherLiteral = binaryWatch.getNoGood().getLiteral(binaryWatch.getOtherLiteralIndex());
-				int otherAtom = atomOf(otherLiteral);
-				Assignment.Entry otherEntry = assignment.get(otherAtom);
-				boolean otherSatisfies = otherEntry != null && isPositive(otherLiteral) != otherEntry.getTruth().toBoolean();
-				int otherDecisionLevel = weakDecisionLevel(otherEntry);
-				int otherReplayLevel = weakReplayLevel(otherAtom);
-				if (watchInvariant(atomSatisfies, otherSatisfies, atomDecisionLevel, atomReplayLevel, otherDecisionLevel, otherReplayLevel)) {
-					continue;
-				}
-				throw oops("Watch invariant violated");
+			BinaryWatchList binaryWatchList = binaryWatches[literalToArrayPos(atomLiteral)];
+			for (int i = 0; i < binaryWatchList.noGoodsWithoutHeadSize; i++) {
+				int otherLiteral = binaryWatchList.noGoodsWithoutHead[i];
+				checkBinaryWatch(atomSatisfies, atomDecisionLevel, atomReplayLevel, otherLiteral);
+			}
+			for (int i = 0; i < binaryWatchList.noGoodsWithHeadSize; i++) {
+				int otherLiteral = binaryWatchList.noGoodsWithHead[i];
+				checkBinaryWatch(atomSatisfies, atomDecisionLevel, atomReplayLevel, otherLiteral);
 			}
 			for (WatchedNoGood watchedNoGood : watches.multary.getOrdinary(truth)) {
 				// Ensure both watches are either unassigned, or one satisfies NoGood, or both are on highest decision level.
@@ -880,6 +997,18 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				}
 				throw oops("Watch invariant violated");
 			}
+		}
+
+		private void checkBinaryWatch(boolean atomSatisfies, int atomDecisionLevel, int atomReplayLevel, int otherLiteral) {
+			int otherAtom = atomOf(otherLiteral);
+			Assignment.Entry otherEntry = assignment.get(otherAtom);
+			boolean otherSatisfies = otherEntry != null && isPositive(otherLiteral) != otherEntry.getTruth().toBoolean();
+			int otherDecisionLevel = weakDecisionLevel(otherEntry);
+			int otherReplayLevel = weakReplayLevel(otherAtom);
+			if (watchInvariant(atomSatisfies, otherSatisfies, atomDecisionLevel, atomReplayLevel, otherDecisionLevel, otherReplayLevel)) {
+				return;
+			}
+			throw oops("Watch invariant violated");
 		}
 
 		private boolean watchInvariant(boolean atomSatisfies, boolean otherAtomSatisfies, int atomDecisionLevel, int atomReplayLevel, int otherAtomDecisionLevel, int otherAtomReplayLevel) {

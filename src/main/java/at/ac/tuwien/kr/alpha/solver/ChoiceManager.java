@@ -100,7 +100,7 @@ public class ChoiceManager implements Checkable {
 	}
 
 	public void callbackOnChanged(int atom) {
-		LOGGER.debug("Callback received on influencer atom: {}", atom);
+		LOGGER.trace("Callback received on influencer atom: {}", atom);
 		modCount++;
 		ChoicePoint choicePoint = influencers.get(atom);
 		choicePoint.recomputeActive();

@@ -96,6 +96,10 @@ public class NaiveNoGoodStore implements NoGoodStore {
 		assignment.backtrack();
 	}
 
+	@Override
+	public void growForMaxAtomId(int maxAtomId) {
+	}
+
 	/**
 	 * Infer an assignment from a nogood if it is weakly unit.
 	 *

@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.solver.Atoms.isAtom;
@@ -52,7 +53,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	private int[] values;
 	private int[] strongDecisionLevels;
-	private NoGood[] impliedBy;
+	private ImplicationReasonProvider[] impliedBy;
 	private int[] propagationLevels;
 	private int currentPropagationLevel;
 	private boolean[] callbackUponChange;
@@ -70,9 +71,9 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		final int atom;
 		final ThriceTruth value;
 		final int decisionLevel;
-		final NoGood impliedBy;
+		final ImplicationReasonProvider impliedBy;
 
-		private OutOfOrderLiteral(int atom, ThriceTruth value, int decisionLevel, NoGood impliedBy) {
+		private OutOfOrderLiteral(int atom, ThriceTruth value, int decisionLevel, ImplicationReasonProvider impliedBy) {
 			this.atom = atom;
 			this.decisionLevel = decisionLevel;
 			this.impliedBy = impliedBy;
@@ -93,7 +94,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		this.translator = translator;
 		this.values = new int[0];
 		this.strongDecisionLevels = new int[0];
-		this.impliedBy = new NoGood[0];
+		this.impliedBy = new ImplicationReasonProvider[0];
 		this.propagationLevels = new int[0];
 		this.callbackUponChange = new boolean[0];
 		this.trailIndicesOfDecisionLevels = new ArrayList<>();
@@ -152,7 +153,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		@Override
 		public Entry peek() {
 			int atom = trail.get(nextPositionInTrail);
-			return new Entry(getTruth(atom), atom, getDecisionLevel(), -1, impliedBy[atom]);
+			return new Entry(getTruth(atom), atom, getDecisionLevel(), -1, getImpliedBy(atom));
 		}
 
 		@Override
@@ -304,7 +305,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	}
 
 	@Override
-	public ConflictCause assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel) {
+	public ConflictCause assign(int atom, ThriceTruth value, ImplicationReasonProvider impliedBy, int decisionLevel) {
 		if (decisionLevel < getDecisionLevel()) {
 			outOfOrderLiterals.add(new OutOfOrderLiteral(atom, value, decisionLevel, impliedBy));
 			if (highestDecisionLevelContainingOutOfOrderLiterals < getDecisionLevel()) {
@@ -322,7 +323,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		return oldTruth == null || oldTruth.toBoolean() == value.toBoolean();
 	}
 
-	private ConflictCause assignWithTrail(int atom, ThriceTruth value, NoGood impliedBy) {
+	private ConflictCause assignWithTrail(int atom, ThriceTruth value, ImplicationReasonProvider impliedBy) {
 		if (!isAtom(atom)) {
 			throw new IllegalArgumentException("not an atom");
 		}
@@ -332,7 +333,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		if (LOGGER.isTraceEnabled()) {
 			LOGGER.trace("Recording assignment {}={}@{} impliedBy: {}", atom, value, getDecisionLevel(), impliedBy);
 			if (impliedBy != null) {
-				for (Integer literal : impliedBy) {
+				for (Integer literal : impliedBy.getNoGood(literalRepresentation(atom, value))) {
 					LOGGER.trace("NoGood impliedBy literal assignment: {}={}.", atomOf(literal), get(atomOf(literal)));
 				}
 			}
@@ -365,7 +366,9 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		if (!assignmentsConsistent(currentTruth, value)) {
 			// Assignments are inconsistent, prepare the reason.
 			// TODO: check if this really suffices now.
-			return new ConflictCause(impliedBy);
+			// Due to the conflict, the impliedBy NoGood is not the one for the current assignment but stems from this assignment.
+			int assignedLiteral = literalRepresentation(atom, value);
+			return new ConflictCause(impliedBy == null ? null : impliedBy.getNoGood(-assignedLiteral));
 		}
 
 		// Previous assignment exists, and the new one is consistent with it.
@@ -382,6 +385,10 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			return null;
 		}
 		throw oops("Assignment conditions are not covered.");
+	}
+
+	private int literalRepresentation(int atom, ThriceTruth value) {
+		return atom * (value.toBoolean() ? 1 : -1);
 	}
 
 	private ThriceTruth translateTruth(int value) {
@@ -429,6 +436,12 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		return getTruth(atom) == FALSE ? getWeakDecisionLevel(atom) : strongDecisionLevels[atom];
 	}
 
+	private NoGood getImpliedBy(int atom) {
+		int assignedLiteral = atom * (getTruth(atom).toBoolean() ? 1 : -1);
+		// Note that any atom was implied by a literal of opposite truth.
+		return impliedBy[atom] != null ? impliedBy[atom].getNoGood(-assignedLiteral) : null;
+	}
+
 	@Override
 	public Set<Integer> getTrueAssignments() {
 		Set<Integer> result = new HashSet<>();
@@ -446,9 +459,9 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			return null;
 		}
 		if (strongDecisionLevels[atom] == -1) {
-			return new Entry(getTruth(atom), atom, getWeakDecisionLevel(atom), propagationLevels[atom], impliedBy[atom]);
+			return new Entry(getTruth(atom), atom, getWeakDecisionLevel(atom), propagationLevels[atom], getImpliedBy(atom));
 		} else {
-			return new Entry(getTruth(atom), atom, strongDecisionLevels[atom], propagationLevels[atom], impliedBy[atom], getWeakDecisionLevel(atom));
+			return new Entry(getTruth(atom), atom, strongDecisionLevels[atom], propagationLevels[atom], getImpliedBy(atom), getWeakDecisionLevel(atom));
 		}
 	}
 
@@ -493,7 +506,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			return;
 		}
 		// Grow by 1.5 current size, except if bigger array is required due to maxAtomId.
-		int newCapacity = values.length + (values.length >> 1);
+		int newCapacity = arrayGrowthSize(values.length);
 		if (newCapacity < maxAtomId + 1) {
 			newCapacity = maxAtomId + 1;
 		}
@@ -544,11 +557,6 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	}
 
 	@Override
-	public AssignmentIterator getNewAssignmentsForChoice() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public void setChecksEnabled(boolean checksEnabled) {
 		this.checksEnabled = checksEnabled;
 	}
@@ -563,7 +571,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		@Override
 		public Assignment.Entry next() {
 			int atom = trail.get(newAssignmentsIterator++);
-			return new Entry(getTruth(atom), atom, getDecisionLevel(), -1, impliedBy[atom]);
+			return new Entry(getTruth(atom), atom, getDecisionLevel(), -1, getImpliedBy(atom));
 
 		}
 	}
@@ -651,11 +659,6 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			} else {
 				return propagationLevel;
 			}
-		}
-
-		@Override
-		public boolean isReassignAtLowerDecisionLevel() {
-			return false;
 		}
 
 		@Override

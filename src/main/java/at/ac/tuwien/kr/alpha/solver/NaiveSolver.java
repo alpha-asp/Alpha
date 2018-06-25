@@ -353,11 +353,6 @@ public class NaiveSolver extends AbstractSolver {
 		}
 
 		@Override
-		public boolean isReassignAtLowerDecisionLevel() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
 		public String toString() {
 			throw new UnsupportedOperationException();
 		}

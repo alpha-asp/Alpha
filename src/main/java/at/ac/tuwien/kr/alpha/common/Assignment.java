@@ -23,15 +23,19 @@ public interface Assignment {
 		return entry == null ? null : entry.getTruth();
 	}
 
-	default int getWeakDecisionLevel(int atom) {
-		final Entry entry = get(atom);
-		return entry == null ? -1 : entry.getWeakDecisionLevel();
-	}
+	/**
+	 * Returns the weak decision level of the atom if it is assigned.
+	 * @param atom the atom.
+	 * @return the weak decision level of the atom if it is assigned; otherwise any value may be returned.
+	 */
+	int getWeakDecisionLevel(int atom);
 
-	default int getStrongDecisionLevel(int atom) {
-		final Entry entry = get(atom);
-		return (entry == null || entry.getTruth().isMBT()) ? -1 : entry.getDecisionLevel();
-	}
+	/**
+	 * Returns the strong decision level of the atom.
+	 * @param atom the atom.
+	 * @return the strong decision level of the atom or -1.
+	 */
+	int getStrongDecisionLevel(int atom);
 
 	default boolean isAssigned(int atom) {
 		return get(atom) != null;
@@ -91,20 +95,13 @@ public interface Assignment {
 		boolean isEmpty();
 	}
 
-	/**
-	 * Returns an iterator over all new assignments and additionally all backtracked reassignments at lower decision level).
-	 * These assignments are only returned once.
-	 * @return
-	 */
-	Iterator<Entry> getNewAssignmentsForChoice();
-
 	interface Entry {
 		ThriceTruth getTruth();
 		int getAtom();
 		int getDecisionLevel();
 		NoGood getImpliedBy();
 		int getPropagationLevel();
-		boolean isReassignAtLowerDecisionLevel();
+
 		boolean hasPreviousMBT();
 		int getMBTDecisionLevel();
 		int getMBTPropagationLevel();

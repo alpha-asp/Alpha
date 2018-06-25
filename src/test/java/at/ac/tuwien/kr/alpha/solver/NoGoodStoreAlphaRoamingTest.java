@@ -27,6 +27,7 @@ public class NoGoodStoreAlphaRoamingTest {
 	@Before
 	public void setUp() {
 		store.clear();
+		store.growForMaxAtomId(200);
 		assignment.growForMaxAtomId(200);
 	}
 
