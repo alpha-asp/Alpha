@@ -33,6 +33,7 @@ import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
+import org.apache.commons.collections4.SetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,7 +116,7 @@ public class DomainSpecific implements BranchingHeuristic {
 
 	private Map<HeuristicDirectiveValues, Set<Integer>> computeActiveHeuristicsToBodies(Set<Integer> activeHeuristics, Set<Integer> potentialHeuristics) {
 		Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies = new HashMap<>();
-		potentialHeuristics.retainAll(activeHeuristics);
+		potentialHeuristics = SetUtils.intersection(potentialHeuristics, activeHeuristics);
 		for (int h : potentialHeuristics) {
 			HeuristicDirectiveValues values = choiceManager.getDomainSpecificHeuristics().getValues(h);
 			int headAtomId = values.getHeadAtomId();
