@@ -61,6 +61,12 @@ public class PartnerUnitsTest extends AbstractSolverTests {
 	public void testPartnerUnits_generated_020() throws IOException {
 		testPartnerUnits_generated("simple020_bf_startZ1.asp");
 	}
+
+	@Test
+	@Ignore("ignore to save resources during CI")
+	public void testPartnerUnits_generated_030() throws IOException {
+		testPartnerUnits_generated("simple030_bf_startZ1.asp");
+	}
 	
 	private void testPartnerUnits_generated(String instanceId) throws IOException {
 		Program parsedProgram = parser
