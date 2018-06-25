@@ -79,6 +79,60 @@ public class AggregatesTest extends AbstractSolverTests {
 				"x(2), x(3), ok", "x(1), x(2), x(3), exceedsMax");
 	}
 	
-	// TODO: more test cases (involving sum aggregates, ...)
+	@Test
+	public void testAggregate_Sum_Ground_Lower() throws IOException {
+		String program = "a." + LS
+				+ "b :- 5 <= #sum { 2 : a; 3 }.";
+		assertAnswerSet(program, "a,b");
+	}
+	
+	@Test
+	public void testAggregate_Sum_NonGround_LowerAndUpper() throws IOException {
+		String program = "n(1..3)." + LS
+				+ "{x(N)} :- n(N)." + LS
+				+ "min(3)." + LS
+				+ "max(4)." + LS
+				+ "ok :- min(M), M <= #sum { N : n(N), x(N) }, not exceedsMax." + LS
+				+ "exceedsMax :- max(M), M1 = M + 1, M1 <= #sum { N : n(N), x(N) }.";
+		System.out.println(program);
+		assertAnswerSetsWithBase(program, "n(1), n(2), n(3), min(3), max(4)",
+				"", "x(1)", "x(2)", "x(3), ok", "x(1), x(2), ok", "x(1), x(3), ok",
+				"x(2), x(3), exceedsMax", "x(1), x(2), x(3), exceedsMax");
+	}
+	
+	@Test
+	public void testAggregate_Sum_NonGround_Lower() throws IOException {
+		String program = "n(1..3)." + LS
+				+ "{x(N)} :- n(N)." + LS
+				+ "min(3)." + LS
+				+ "max(4)." + LS
+				+ "ok :- min(M), M <= #sum { N : n(N), x(N) }.";
+		System.out.println(program);
+		assertAnswerSetsWithBase(program, "n(1), n(2), n(3), min(3), max(4)",
+				"", "x(1)", "x(2)", "x(3), ok", "x(1), x(2), ok", "x(1), x(3), ok",
+				"x(2), x(3), ok", "x(1), x(2), x(3), ok");
+	}
+	
+	/**
+	 * TODO: Currently it is a bit tedious to compute sums. Support for equality comparison of aggregates, e.g. {@code sum(S) :- S = #sum { N : n(N), x(N) }.} is still lacking.
+	 */
+	@Test
+	public void testAggregate_Sum_Computed() throws IOException {
+		String program = "n(1..3)." + LS
+				+ "{x(N)} :- n(N)." + LS
+				+ "potential_sum(0..6)." + LS
+				+ "min(S) :- S <= #sum { N : n(N), x(N) }, potential_sum(S)." + LS
+				+ "sum(S) :- min(S), not min(Sp1), Sp1 = S+1.";
+		assertAnswerSetsWithBase(program, "n(1), n(2), n(3), potential_sum(0), potential_sum(1), "
+				+ "potential_sum(2), potential_sum(3), potential_sum(4), potential_sum(5), potential_sum(6)",
+				"min(0), sum(0)",
+				"x(1), min(0), min(1), sum(1)",
+				"x(2), min(0), min(1), min(2), sum(2)",
+				"x(3), min(0), min(1), min(2), min(3), sum(3)",
+				"x(1), x(2), min(0), min(1), min(2), min(3), sum(3)",
+				"x(1), x(3), min(0), min(1), min(2), min(3), min(4), sum(4)",
+				"x(2), x(3), min(0), min(1), min(2), min(3), min(4), min(5), sum(5)",
+				"x(1), x(2), x(3), min(0), min(1), min(2), min(3), min(4), min(5), min(6), sum(6)");
+	}
 
 }
