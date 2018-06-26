@@ -207,7 +207,7 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	public int chooseAtom(Set<Integer> admissibleChoices) {
 		for (NoGood noGood : stackOfNoGoods) {
 			int mostActiveAtom = getMostActiveAtom(noGood);
-			if (choiceManager.isActiveChoiceAtom(mostActiveAtom)) {
+			if (choiceManager.isActiveChoiceAtom(mostActiveAtom) && admissibleChoices.contains(mostActiveAtom)) {
 				return mostActiveAtom;
 			}
 
