@@ -5,8 +5,7 @@ import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import java.util.Iterator;
 import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.common.Literals.*;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -44,11 +43,6 @@ public interface Assignment {
 	default boolean contains(int literal) {
 		final Entry entry = get(atomOf(literal));
 		return entry != null && (isNegated(literal) ? FALSE : TRUE).equals(entry.getTruth());
-	}
-
-	default boolean containsWeakComplement(int literal) {
-		final Entry entry = get(atomOf(literal));
-		return entry != null && isNegated(literal) == !entry.getTruth().toBoolean();
 	}
 
 	/**
@@ -123,7 +117,7 @@ public interface Assignment {
 		 * @return atomId if this entry is TRUE/MBT and -atomId if entry is FALSE.
 		 */
 		default int getLiteral() {
-			return getTruth().toBoolean() ? getAtom() : -getAtom();
+			return getTruth().toBoolean() ? atomToLiteral(getAtom()) : atomToNegatedLiteral(getAtom());
 		}
 
 		/**

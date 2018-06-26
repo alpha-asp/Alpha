@@ -37,6 +37,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToNegatedLiteral;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -89,7 +91,7 @@ public class ChoiceManager implements Checkable {
 		int[] enumerationLiterals = new int[choiceStack.size()];
 		int enumerationPos = 0;
 		for (Choice e : choiceStack) {
-			enumerationLiterals[enumerationPos++] = e.getAtom() * (e.getValue() ? +1 : -1);
+			enumerationLiterals[enumerationPos++] = e.getValue() ? atomToLiteral(e.getAtom()) : atomToNegatedLiteral(e.getAtom());
 		}
 		return new NoGood(enumerationLiterals);
 	}

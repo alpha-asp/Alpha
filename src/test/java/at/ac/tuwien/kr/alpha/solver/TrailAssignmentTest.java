@@ -117,22 +117,6 @@ public class TrailAssignmentTest {
 	}
 
 	@Test
-	public void testContains() {
-		assignment.growForMaxAtomId(10);
-		assignment.assign(1, TRUE);
-		assertTrue(assignment.containsWeakComplement(+1));
-		assertFalse(assignment.containsWeakComplement(-1));
-
-		assignment.assign(2, FALSE);
-		assertTrue(assignment.containsWeakComplement(-2));
-		assertFalse(assignment.containsWeakComplement(+2));
-
-		assignment.assign(1, MBT);
-		assertTrue(assignment.containsWeakComplement(+1));
-		assertFalse(assignment.containsWeakComplement(-1));
-	}
-
-	@Test
 	public void assignmentsToProcess() throws Exception {
 		assignment.growForMaxAtomId(2);
 		assignment.assign(1, MBT);

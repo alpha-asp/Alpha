@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.*;
 
 public class NoGood implements ImplicationReasonProvider, Iterable<Integer>, Comparable<NoGood> {
 	public static final int HEAD = 0;
@@ -46,6 +46,18 @@ public class NoGood implements ImplicationReasonProvider, Iterable<Integer>, Com
 
 	public NoGood(int... literals) {
 		this(literals, false);
+	}
+
+	public static int[] fromOldLiterals(int... literals) {
+		int[] newLiterals = new int[literals.length];
+		for (int i = 0; i < literals.length; i++) {
+			newLiterals[i] = literals[i] >= 0 ? atomToLiteral(literals[i]) : atomToNegatedLiteral(-literals[i]);
+		}
+		return newLiterals;
+	}
+
+	public static int fromOldLiterals(int literal) {
+			return literal >= 0 ? atomToLiteral(literal) : atomToNegatedLiteral(-literal);
 	}
 
 	private NoGood(int[] literals, boolean head) {
@@ -72,7 +84,7 @@ public class NoGood implements ImplicationReasonProvider, Iterable<Integer>, Com
 	}
 
 	public static NoGood headFirst(int... literals) {
-		if (literals[0] > 0) {
+		if (!isNegated(literals[0])) {
 			throw oops("Head is not negative");
 		}
 
@@ -83,27 +95,27 @@ public class NoGood implements ImplicationReasonProvider, Iterable<Integer>, Com
 		return headFirst(literal);
 	}
 
-	public static NoGood support(int headAtom, int ruleBodyAtom) {
-		return new NoGood(headAtom, -ruleBodyAtom);
+	public static NoGood support(int headLiteral, int bodyRepresentingLiteral) {
+		return new NoGood(headLiteral, negateLiteral(bodyRepresentingLiteral));
 	}
 
-	public static NoGood fromConstraint(List<Integer> pos, List<Integer> neg) {
-		return new NoGood(addPosNeg(new int[pos.size() + neg.size()], pos, neg, 0));
+	public static NoGood fromConstraint(List<Integer> posLiterals, List<Integer> negLiterals) {
+		return new NoGood(addPosNeg(new int[posLiterals.size() + negLiterals.size()], posLiterals, negLiterals, 0));
 	}
 
-	public static NoGood fromBody(List<Integer> pos, List<Integer> neg, int bodyAtom) {
-		int[] bodyLiterals = new int[pos.size() + neg.size() + 1];
-		bodyLiterals[0] = -bodyAtom;
-		return NoGood.headFirst(addPosNeg(bodyLiterals, pos, neg, 1));
+	public static NoGood fromBody(List<Integer> posLiterals, List<Integer> negLiterals, int bodyRepresentingLiteral) {
+		int[] bodyLiterals = new int[posLiterals.size() + negLiterals.size() + 1];
+		bodyLiterals[0] = negateLiteral(bodyRepresentingLiteral);
+		return NoGood.headFirst(addPosNeg(bodyLiterals, posLiterals, negLiterals, 1));
 	}
 
-	private static int[] addPosNeg(int[] literals, List<Integer> pos, List<Integer> neg, int offset) {
+	private static int[] addPosNeg(int[] literals, List<Integer> posLiterals, List<Integer> negLiterals, int offset) {
 		int i = offset;
-		for (Integer atomId : pos) {
-			literals[i++] = atomId;
+		for (Integer literal : posLiterals) {
+			literals[i++] = literal;
 		}
-		for (Integer atomId : neg) {
-			literals[i++] = -atomId;
+		for (Integer literal : negLiterals) {
+			literals[i++] = negateLiteral(literal);
 		}
 		return literals;
 	}
@@ -127,8 +139,8 @@ public class NoGood implements ImplicationReasonProvider, Iterable<Integer>, Com
 	/**
 	 * A shorthand for <code>Literals.atomOf(getLiteral(...))</code>
 	 */
-	public int getAtom(int index) {
-		return atomOf(getLiteral(index));
+	public int getPositiveLiteral(int index) {
+		return positiveLiteral(getLiteral(index));
 	}
 
 	public int getLiteral(int index) {

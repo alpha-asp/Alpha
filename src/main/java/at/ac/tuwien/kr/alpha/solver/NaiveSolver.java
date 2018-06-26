@@ -125,7 +125,7 @@ public class NaiveSolver extends AbstractSolver {
 				if (LOGGER.isTraceEnabled()) {
 					LOGGER.trace("Currently MBT:");
 					for (Integer integer : mbtAssigned) {
-						LOGGER.trace(grounder.atomToString(integer));
+						LOGGER.trace(grounder.atomToString(atomOf(integer)));
 					}
 					LOGGER.trace("Choice stack: {}", choiceStack);
 				}
@@ -446,7 +446,7 @@ public class NaiveSolver extends AbstractSolver {
 			return false;
 		}
 
-		int headAtom = noGood.getAtom(HEAD);
+		int headAtom = atomOf(noGood.getLiteral(HEAD));
 
 		// Check whether head is assigned MBT.
 		if (!mbtAssigned.contains(headAtom)) {

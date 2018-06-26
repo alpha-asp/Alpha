@@ -5,6 +5,7 @@ import at.ac.tuwien.kr.alpha.solver.*;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import static at.ac.tuwien.kr.alpha.common.NoGood.fromOldLiterals;
 import static org.junit.Assert.*;
 
 /**
@@ -26,13 +27,13 @@ public class GroundConflictNoGoodLearnerTest {
 	public void smallConflictNonTrivial1UIP() {
 		GroundConflictNoGoodLearner learner = new GroundConflictNoGoodLearner(assignment);
 
-		NoGood n1 = new NoGood(2, -8, 1);
-		NoGood n2 = new NoGood(-1, -7);
-		NoGood n3 = new NoGood(-3, 1);
-		NoGood n4 = new NoGood(5, 3);
-		NoGood n5 = new NoGood(6, -5);
-		NoGood n6 = new NoGood(4, -2);
-		NoGood n7 = new NoGood(-6, -4);
+		NoGood n1 = new NoGood(fromOldLiterals(2, -8, 1));
+		NoGood n2 = new NoGood(fromOldLiterals(-1, -7));
+		NoGood n3 = new NoGood(fromOldLiterals(-3, 1));
+		NoGood n4 = new NoGood(fromOldLiterals(5, 3));
+		NoGood n5 = new NoGood(fromOldLiterals(6, -5));
+		NoGood n6 = new NoGood(fromOldLiterals(4, -2));
+		NoGood n7 = new NoGood(fromOldLiterals(-6, -4));
 		store.add(10, n1);
 		store.add(11, n2);
 		store.add(12, n3);
@@ -55,7 +56,7 @@ public class GroundConflictNoGoodLearnerTest {
 		assertTrue(violatedNoGood.equals(n5) || violatedNoGood.equals(n7));
 		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(violatedNoGood);
 		NoGood learnedNoGood = analysisResult.learnedNoGood;
-		assertEquals(new NoGood(1, -8), learnedNoGood);
+		assertEquals(new NoGood(fromOldLiterals(1, -8)), learnedNoGood);
 		int backjumpingDecisionLevel = analysisResult.backjumpLevel;
 		assertEquals(backjumpingDecisionLevel, 2);
 		assertFalse(analysisResult.clearLastChoiceAfterBackjump);
@@ -65,8 +66,8 @@ public class GroundConflictNoGoodLearnerTest {
 	@Test
 	public void subCurrentDLPropagationWithChoiceCauseOfConflict() {
 		GroundConflictNoGoodLearner learner = new GroundConflictNoGoodLearner(assignment);
-		NoGood n1 = new NoGood(1, -2);
-		NoGood n2 = new NoGood(2, 3);
+		NoGood n1 = new NoGood(fromOldLiterals(1, -2));
+		NoGood n2 = new NoGood(fromOldLiterals(2, 3));
 		store.add(10, n1);
 		assignment.choose(1, ThriceTruth.TRUE);
 		assignment.choose(3, ThriceTruth.TRUE);

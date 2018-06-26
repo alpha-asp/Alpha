@@ -222,13 +222,13 @@ public class GroundConflictNoGoodLearner {
 		int resolvedCounter = 0;
 		// Copy over all literals except the resolving ones.
 		for (int i = 0; i < firstNoGood.size(); i++) {
-			if (firstNoGood.getAtom(i) != resolutionAtom) {
+			if (atomOf(firstNoGood.getLiteral(i)) != resolutionAtom) {
 				resolvedLiterals[resolvedCounter++] = firstNoGood.getLiteral(i);
 			}
 		}
 		// Copy literals from implying nogood except the resolving one and sort additional literals into processing list.
 		for (int i = 0; i < secondNoGood.size(); i++) {
-			if (secondNoGood.getAtom(i) != resolutionAtom) {
+			if (atomOf(secondNoGood.getLiteral(i)) != resolutionAtom) {
 				resolvedLiterals[resolvedCounter++] = secondNoGood.getLiteral(i);
 
 				// Sort literal also into queue for further processing.
@@ -273,9 +273,9 @@ public class GroundConflictNoGoodLearner {
 		int numLiteralsOfHighestDecisionLevel = -1;
 		if (learnedNoGood.isUnary()) {
 			// Singleton NoGoods induce a backjump to the decision level before the NoGood got violated.
-			int singleLiteralDecisionLevel = assignment.get(learnedNoGood.getAtom(0)).getDecisionLevel();
+			int singleLiteralDecisionLevel = assignment.get(atomOf(learnedNoGood.getLiteral(0))).getDecisionLevel();
 			if (assignment instanceof TrailAssignment) {
-				singleLiteralDecisionLevel = Math.min(singleLiteralDecisionLevel, ((TrailAssignment) assignment).getOutOfOrderDecisionLevel(learnedNoGood.getAtom(0)));
+				singleLiteralDecisionLevel = Math.min(singleLiteralDecisionLevel, ((TrailAssignment) assignment).getOutOfOrderDecisionLevel(learnedNoGood.getPositiveLiteral(0)));
 			}
 			int singleLiteralBackjumpingLevel = singleLiteralDecisionLevel - 1 >= 0 ? singleLiteralDecisionLevel - 1 : 0;
 			LOGGER.trace("NoGood has only one literal, backjumping to level: {}", singleLiteralBackjumpingLevel);

@@ -244,14 +244,14 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 
 	protected void recordAtomRelationships(NoGood noGood) {
 		if (isBodyNotHead(noGood, choiceManager::isAtomChoice)) {
-			int body = noGood.getAtom(1);
-			int head = noGood.getAtom(HEAD);
+			int body = noGood.getPositiveLiteral(1);
+			int head = noGood.getPositiveLiteral(HEAD);
 			bodyToHead.put(body, head);
 			headToBodies.put(head, body);
 			atomsToBodies.put(head, body);
 		} else if (isBodyElementsNotBody(noGood, choiceManager::isAtomChoice)) {
 			Set<Integer> literals = new HashSet<>();
-			int bodyAtom = noGood.getAtom(HEAD);
+			int bodyAtom = noGood.getPositiveLiteral(HEAD);
 			for (int i = 0; i < noGood.size(); i++) {
 				int literal = noGood.getLiteral(i);
 				literals.add(literal);
@@ -338,7 +338,7 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	 * @return {@code true} iff: the NoGood is binary, and it has a head, and its tail is an atom representing a rule body.
 	 */
 	public static boolean isBodyNotHead(NoGood noGood, Predicate<? super Integer> isRuleBody) {
-		return noGood.isBinary() && noGood.hasHead() && isRuleBody.test(noGood.getAtom(1));
+		return noGood.isBinary() && noGood.hasHead() && isRuleBody.test(atomOf(noGood.getLiteral(1)));
 	}
 
 	/**
@@ -348,7 +348,7 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	 * @return {@code true} iff: the NoGood contains at least two literals, and the head is a negative literal whose atom represents a rule body.
 	 */
 	public static boolean isBodyElementsNotBody(NoGood noGood, Predicate<? super Integer> isRuleBody) {
-		return noGood.size() > 1 && noGood.hasHead() && isNegated(noGood.getLiteral(HEAD)) && isRuleBody.test(noGood.getAtom(HEAD));
+		return noGood.size() > 1 && noGood.hasHead() && isNegated(noGood.getLiteral(HEAD)) && isRuleBody.test(atomOf(noGood.getLiteral(HEAD)));
 	}
 
 }

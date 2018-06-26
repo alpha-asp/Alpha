@@ -34,6 +34,7 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -49,7 +50,7 @@ public class NoGoodGeneratorTest {
 	private static final VariableTerm Y = VariableTerm.getInstance("Y");
 	
 	/**
-	 * Calls {@link NoGoodGenerator#collectNeg(NonGroundRule, Substitution)},
+	 * Calls {@link NoGoodGenerator#collectNegLiterals(NonGroundRule, Substitution)},
 	 * which puts the atom occuring negatively in a rule into the atom store.
 	 * It is then checked whether the atom in the atom store is positive.
 	 */
@@ -66,9 +67,9 @@ public class NoGoodGeneratorTest {
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
-		List<Integer> collectedNeg = noGoodGenerator.collectNeg(nonGroundRule, substitution);
+		List<Integer> collectedNeg = noGoodGenerator.collectNegLiterals(nonGroundRule, substitution);
 		assertEquals(1, collectedNeg.size());
-		String negAtomString = grounder.atomToString(collectedNeg.get(0));
+		String negAtomString = grounder.atomToString(atomOf(collectedNeg.get(0)));
 		assertEquals("q(a, b)", negAtomString);
 	}
 

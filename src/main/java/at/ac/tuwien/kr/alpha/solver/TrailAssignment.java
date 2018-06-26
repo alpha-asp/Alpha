@@ -38,7 +38,7 @@ import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
 import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.*;
 import static at.ac.tuwien.kr.alpha.solver.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
@@ -365,10 +365,9 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		// Check if the new assignments contradicts the current one.
 		if (!assignmentsConsistent(currentTruth, value)) {
 			// Assignments are inconsistent, prepare the reason.
-			// TODO: check if this really suffices now.
-			// Due to the conflict, the impliedBy NoGood is not the one for the current assignment but stems from this assignment.
+			// Due to the conflict, the impliedBy NoGood is not the recorded one but the one this method is invoked with.
 			int assignedLiteral = literalRepresentation(atom, value);
-			return new ConflictCause(impliedBy == null ? null : impliedBy.getNoGood(-assignedLiteral));
+			return new ConflictCause(impliedBy == null ? null : impliedBy.getNoGood(negateLiteral(assignedLiteral)));
 		}
 
 		// Previous assignment exists, and the new one is consistent with it.
@@ -388,7 +387,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	}
 
 	private int literalRepresentation(int atom, ThriceTruth value) {
-		return atom * (value.toBoolean() ? 1 : -1);
+		return value.toBoolean() ? atomToLiteral(atom) : atomToNegatedLiteral(atom);
 	}
 
 	private ThriceTruth translateTruth(int value) {
@@ -437,9 +436,9 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	}
 
 	private NoGood getImpliedBy(int atom) {
-		int assignedLiteral = atom * (getTruth(atom).toBoolean() ? 1 : -1);
+		int assignedLiteral = getTruth(atom).toBoolean() ? atomToLiteral(atom) : atomToNegatedLiteral(atom);
 		// Note that any atom was implied by a literal of opposite truth.
-		return impliedBy[atom] != null ? impliedBy[atom].getNoGood(-assignedLiteral) : null;
+		return impliedBy[atom] != null ? impliedBy[atom].getNoGood(negateLiteral(assignedLiteral)) : null;
 	}
 
 	@Override

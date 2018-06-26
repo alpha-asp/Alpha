@@ -1,7 +1,5 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import static java.lang.Math.abs;
-
 public final class Literals {
 	/**
 	 * Given a literal, returns the corresponding atom.
@@ -9,10 +7,7 @@ public final class Literals {
 	 * @return the corresponding atom.
 	 */
 	public static int atomOf(int literal) {
-		if (literal == 0) {
-			throw new IllegalArgumentException("Zero is not a literal (because it cannot be negated).");
-		}
-		return abs(literal);
+		return literal >> 1;
 	}
 
 	/**
@@ -21,10 +16,26 @@ public final class Literals {
 	 * @return {@code true} iff the literal is negated, {@code false} otherwise.
 	 */
 	public static boolean isNegated(int literal) {
-		return literal < 0;
+		return (literal & 0x1) == 1;
 	}
 
 	public static boolean isPositive(int literal) {
-		return literal > 0;
+		return (literal & 0x1) == 0;
+	}
+
+	public static int negateLiteral(int literal) {
+		return literal ^ 0x1;
+	}
+
+	public static int atomToLiteral(int atom) {
+		return atom << 1;
+	}
+
+	public static int atomToNegatedLiteral(int atom) {
+		return negateLiteral(atomToLiteral(atom));
+	}
+
+	public static int positiveLiteral(int literal) {
+		return literal & ~0x1;
 	}
 }

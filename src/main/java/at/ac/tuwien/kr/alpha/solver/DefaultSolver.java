@@ -239,6 +239,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private boolean close() {
+		// TODO: we may change this to ask the Assignment directly instead since it now also knows the highest atomId!
+		// TODO: in fact, the assignment may directly apply the closing.
 		List<Integer> unassignedAtoms = grounder.getUnassignedAtoms(assignment);
 
 		if (unassignedAtoms.isEmpty()) {
