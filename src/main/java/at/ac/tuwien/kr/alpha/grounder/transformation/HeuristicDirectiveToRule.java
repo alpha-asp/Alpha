@@ -37,7 +37,7 @@ public class HeuristicDirectiveToRule implements ProgramTransformation {
 
 	@Override
 	public void transform(Program inputProgram) {
-		Iterator<Directive> directivesIterator = inputProgram.getDirectives().iterator();
+		Iterator<Directive> directivesIterator = inputProgram.getInlineDirectives().getDirectives().iterator();
 		while (directivesIterator.hasNext()) {
 			Directive directive = directivesIterator.next();
 			if (directive instanceof HeuristicDirective) {

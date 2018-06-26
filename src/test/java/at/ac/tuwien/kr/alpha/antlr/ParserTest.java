@@ -38,7 +38,6 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.HeuristicDirectiveToRule;
 import org.antlr.v4.runtime.CharStreams;
-import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -185,7 +184,7 @@ public class ParserTest {
 		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
 				+ "#heuristic c(X) : p(X,a,_), q(Xaa,xaa). [X]");
 
-		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getDirectives().iterator().next();
+		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getInlineDirectives().getDirectives().iterator().next();
 		assertEquals("c(X)", directive.getHead().toString());
 		assertEquals("[p(X, a, _1), q(Xaa, xaa)]", directive.getBody().toString());
 		assertEquals("X", directive.getWeight().toString());
@@ -197,7 +196,7 @@ public class ParserTest {
 		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
 				+ "#heuristic c(X) : p(X,a,_), q(Xaa,xaa). [X@2]");
 
-		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getDirectives().iterator().next();
+		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getInlineDirectives().getDirectives().iterator().next();
 		assertEquals("c(X)", directive.getHead().toString());
 		assertEquals("[p(X, a, _1), q(Xaa, xaa)]", directive.getBody().toString());
 		assertEquals("X", directive.getWeight().toString());
@@ -209,7 +208,7 @@ public class ParserTest {
 		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
 				+ "#heuristic c(X) : p(X,a,_), q(Xaa,xaa), not c(X). [X@2]");
 
-		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getDirectives().iterator().next();
+		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getInlineDirectives().getDirectives().iterator().next();
 		assertEquals("c(X)", directive.getHead().toString());
 		assertEquals("[p(X, a, _1), q(Xaa, xaa), not c(X)]", directive.getBody().toString());
 		assertEquals("X", directive.getWeight().toString());
@@ -221,7 +220,7 @@ public class ParserTest {
 		Program parsedProgram = parser.parse("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
 				+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T), holds(F,Tp1), Tp1=T+1, LTp1mT=LT+1-T. [LTp1mT@1]");
 
-		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getDirectives().iterator().next();
+		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getInlineDirectives().getDirectives().iterator().next();
 		assertEquals("holds(F, T)", directive.getHead().toString());
 		assertEquals("[fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F, T), holds(F, Tp1), Tp1 = T + 1, LTp1mT = LT + 1 - T]", directive.getBody().toString());
 		assertEquals("LTp1mT", directive.getWeight().toString());

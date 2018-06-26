@@ -74,9 +74,9 @@ interval : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE); // N
 
 external_atom : MINUS? AMPERSAND ID (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?; // NOT Core2 syntax.
 
-directive : directive_enumeration;  // NOT Core2 syntax, allows solver specific directives. Further directives shall be added here.
+directive : directive_heuristic;  // NOT Core2 syntax, allows solver specific directives. Further directives shall be added here.
 
-directive_enumeration : SHARP 'enum_atom_is' ID DOT;  // NOT Core2 syntax, used for aggregate translation.
+directive_heuristic : SHARP 'heuristic' classical_literal (COLON body)? DOT weight_annotation?;
 
 basic_terms : basic_term (COMMA basic_terms)? ;
 

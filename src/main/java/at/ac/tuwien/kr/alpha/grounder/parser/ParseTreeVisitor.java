@@ -30,13 +30,14 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Statement_heuristicDirectiveContext;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Directive_heuristicContext;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Weight_annotationContext;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Weight_at_levelContext;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.terms.*;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives.DIRECTIVE;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -154,7 +155,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		if (ctx.statements() == null) {
 			return Program.EMPTY;
 		}
-		inputProgram = new Program(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 		inlineDirectives = new InlineDirectives();
 		inputProgram = new Program(new ArrayList<>(), new ArrayList<>(), inlineDirectives);
 		visitStatements(ctx.statements());
@@ -270,13 +270,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		}
 		literals.add(0, visitNaf_literal(ctx.naf_literal()));
 		return literals;
-	}
-
-	@Override
-	public Object visitDirective_enumeration(ASPCore2Parser.Directive_enumerationContext ctx) {
-		// directive_enumeration : SHARP 'enum_atom_is' ID DOT;
-		inlineDirectives.addDirective(InlineDirectives.DIRECTIVE.enum_atom_is, ctx.ID().getText());
-		return null;
 	}
 
 	@Override
@@ -464,11 +457,11 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 	
 	@Override
-	public Object visitStatement_heuristicDirective(Statement_heuristicDirectiveContext ctx) {
-		// DIRECTIVE_KEYWORD_HEURISTIC classical_literal (COLON body)? DOT weight_annotation?
+	public Object visitDirective_heuristic(Directive_heuristicContext ctx) {
+		// SHARP 'heuristic' classical_literal (COLON body)? DOT weight_annotation?
 		currentlyInHeuristicDirective = true;
 		boolean positive = ctx.classical_literal().MINUS() == null;
-		inputProgram.getDirectives().add(new HeuristicDirective(visitClassical_literal(ctx.classical_literal()), visitBody(ctx.body()), visitWeight_annotation(ctx.weight_annotation()), positive));
+		inputProgram.getInlineDirectives().addDirective(DIRECTIVE.heuristic, new HeuristicDirective(visitClassical_literal(ctx.classical_literal()), visitBody(ctx.body()), visitWeight_annotation(ctx.weight_annotation()), positive));
 		currentlyInHeuristicDirective = false;
 		return null;
 	}

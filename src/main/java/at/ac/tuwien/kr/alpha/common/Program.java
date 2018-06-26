@@ -54,7 +54,7 @@ public class Program {
 	}
 
 	public Program() {
-		this(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+		this(new ArrayList<>(), new ArrayList<>(), new InlineDirectives());
 	}
 
 	public List<Rule> getRules() {
@@ -96,13 +96,13 @@ public class Program {
 			ls
 		);
 		
-		if (directives.isEmpty()) {
+		if (inlineDirectives.isEmpty()) {
 			return result;
 		}
 		
 		return join(
 			result,
-			directives,
+			inlineDirectives.getDirectives(),
 			ls,
 			ls
 		);

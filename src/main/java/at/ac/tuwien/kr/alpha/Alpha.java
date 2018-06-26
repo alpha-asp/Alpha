@@ -35,6 +35,7 @@ import at.ac.tuwien.kr.alpha.common.fixedinterpretations.*;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
@@ -173,7 +174,7 @@ public class Alpha {
 			atoms.add(new BasicAtom(at.ac.tuwien.kr.alpha.common.Predicate.getInstance(name, 1), ConstantTerm.getInstance(it)));
 		}
 
-		final Program acc = new Program(Collections.emptyList(), atoms, Collections.emptyList());
+		final Program acc = new Program(Collections.emptyList(), atoms, new InlineDirectives());
 
 		if (this.program == null) {
 			this.program = acc;

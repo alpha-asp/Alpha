@@ -37,6 +37,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import junit.framework.TestCase;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -71,7 +72,7 @@ public class SolverTests extends AbstractSolverTests {
 		final Program program = new Program(
 			Collections.emptyList(),
 			Collections.singletonList(fact),
-			Collections.emptyList()
+			new InlineDirectives()
 		);
 
 		assertEquals(singleton(new AnswerSetBuilder()

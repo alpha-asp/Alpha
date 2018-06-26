@@ -34,6 +34,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.MethodPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -254,7 +255,7 @@ public class AlphaTest {
 		system.setProgram(new Program(
 			singletonList(rule),
 			emptyList(),
-			emptyList()
+			new InlineDirectives()
 		));
 
 		Set<AnswerSet> actual = system.solve().collect(Collectors.toSet());
