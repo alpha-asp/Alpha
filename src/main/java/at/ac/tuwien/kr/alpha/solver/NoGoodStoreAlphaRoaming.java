@@ -460,7 +460,8 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			isNoGoodSatisfiedByOtherWatch = true;
 		}
 
-		for (int i = 0; i < watchedNoGood.size(); i++) {
+		for (int j = 0; j < watchedNoGood.size(); j++) {
+			int i = (j + assignedIndex) % watchedNoGood.size();	// Start iteration on currently watched index and loop around.
 			if (i == assignedIndex || i == otherIndex) {
 				continue;
 			}
