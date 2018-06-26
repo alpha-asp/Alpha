@@ -36,7 +36,6 @@ import at.ac.tuwien.kr.alpha.common.fixedinterpretations.MethodPredicateInterpre
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import org.junit.Ignore;
-import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import org.junit.Test;
 
 import java.io.IOException;

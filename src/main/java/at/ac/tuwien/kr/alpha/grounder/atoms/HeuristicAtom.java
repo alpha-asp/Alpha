@@ -35,13 +35,10 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * An internal atom that stores information on domain-specific heuristics.
@@ -99,24 +96,6 @@ public class HeuristicAtom implements Atom {
 	@Override
 	public Literal toLiteral(boolean negated) {
 		return new HeuristicLiteral(this, negated);
-	}
-
-	@Override
-	public Set<VariableTerm> getBindingVariables() {
-		Set<VariableTerm> bindingVariables = new HashSet<>();
-		for (Term term : getTerms()) {
-			bindingVariables.addAll(term.getOccurringVariables());
-		}
-		return bindingVariables;
-	}
-
-	@Override
-	public Set<VariableTerm> getNonBindingVariables() {
-		Set<VariableTerm> nonbindingVariables = new HashSet<>();
-		for (Term term : getTerms()) {
-			nonbindingVariables.addAll(term.getOccurringVariables());
-		}
-		return nonbindingVariables;
 	}
 
 	@Override

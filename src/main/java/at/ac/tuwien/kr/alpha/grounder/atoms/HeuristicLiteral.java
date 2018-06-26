@@ -26,9 +26,11 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class HeuristicLiteral extends Literal {
@@ -54,12 +56,20 @@ public class HeuristicLiteral extends Literal {
 
 	@Override
 	public Set<VariableTerm> getBindingVariables() {
-		return atom.getBindingVariables();
+		Set<VariableTerm> bindingVariables = new HashSet<>();
+		for (Term term : getTerms()) {
+			bindingVariables.addAll(term.getOccurringVariables());
+		}
+		return bindingVariables;
 	}
 
 	@Override
 	public Set<VariableTerm> getNonBindingVariables() {
-		return atom.getNonBindingVariables();
+		Set<VariableTerm> nonbindingVariables = new HashSet<>();
+		for (Term term : getTerms()) {
+			nonbindingVariables.addAll(term.getOccurringVariables());
+		}
+		return nonbindingVariables;
 	}
 
 }
