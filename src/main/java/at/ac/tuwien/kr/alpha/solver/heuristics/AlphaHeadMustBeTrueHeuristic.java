@@ -66,7 +66,7 @@ public class AlphaHeadMustBeTrueHeuristic extends DependencyDrivenHeuristic {
 			rememberedAtom = mostActiveBody.get();
 			return rememberedAtom;
 		}
-		return super.chooseLiteral();
+		return super.chooseAtom(admissibleChoices);
 	}
 
 }
