@@ -57,6 +57,7 @@ public class ChoiceInfluenceManager implements Checkable {
 	private final Map<Integer, ArrayList<Integer>> modifiedInDecisionLevel;
 
 	private boolean checksEnabled;
+	private boolean checksNecessary; 
 
 	/**
 	 * @param assignment 
@@ -119,6 +120,11 @@ public class ChoiceInfluenceManager implements Checkable {
 	}
 
 	void checkActiveChoicePoints() {
+		if (!checksNecessary) {
+			return;
+		}
+		checksNecessary = false;
+		
 		HashSet<ChoicePoint> actualActiveChoicePoints = new HashSet<>();
 		for (ChoicePoint choicePoint : influencers.values()) {
 			Assignment.Entry enablerEntry = assignment.get(choicePoint.enabler);
@@ -214,6 +220,7 @@ public class ChoiceInfluenceManager implements Checkable {
 					LOGGER.debug("Deactivating choice point for atom {}", this.atom);
 				}
 			}
+			checksNecessary = checksEnabled;
 		}
 
 		@Override
