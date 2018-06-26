@@ -134,13 +134,20 @@ public class DomainSpecific implements BranchingHeuristic {
 		// sign of literal chosen by fallback heuristic is ignored
 		int atom = fallbackHeuristic.chooseAtom(admissibleChoices);
 		Boolean sign = null;
-		for (Entry<HeuristicDirectiveValues, Set<Integer>> entry : activeHeuristicsToBodies.entrySet()) {
-			if (entry.getValue().contains(atom)) {
-				sign = entry.getKey().getSign();
+		if (atom != DEFAULT_CHOICE_ATOM) {
+			for (Entry<HeuristicDirectiveValues, Set<Integer>> entry : activeHeuristicsToBodies.entrySet()) {
+				if (entry.getValue().contains(atom)) {
+					sign = entry.getKey().getSign();
+				}
 			}
-		}
-		if (sign == null) {
-			throw oops("Could not determine sign for atom chosen by fallback heuristic: " + atom);
+			if (sign == null) {
+				throw oops("Could not determine sign for atom chosen by fallback heuristic: " + atom);
+			}
+		} else {
+			LOGGER.debug("Fallback heuristic is clueless. Choosing arbitrary literal known to domain-specific heuristics");
+			Entry<HeuristicDirectiveValues, Set<Integer>> entry = activeHeuristicsToBodies.entrySet().iterator().next();
+			atom = entry.getValue().iterator().next();
+			sign = entry.getKey().getSign();
 		}
 		return Literals.fromAtomAndSign(atom, sign);
 	}
