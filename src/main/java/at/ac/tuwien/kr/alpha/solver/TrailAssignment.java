@@ -305,6 +305,15 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	}
 
 	@Override
+	public ConflictCause assign(int atom, ThriceTruth value, ImplicationReasonProvider impliedBy) {
+		ConflictCause conflictCause = assignWithTrail(atom, value, impliedBy);
+		if (conflictCause != null) {
+			LOGGER.debug("Assign is conflicting: atom: {}, value: {}, impliedBy: {}.", atom, value, impliedBy);
+		}
+		return conflictCause;
+	}
+
+	@Override
 	public ConflictCause assign(int atom, ThriceTruth value, ImplicationReasonProvider impliedBy, int decisionLevel) {
 		if (decisionLevel < getDecisionLevel()) {
 			outOfOrderLiterals.add(new OutOfOrderLiteral(atom, value, decisionLevel, impliedBy));
@@ -312,11 +321,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 				highestDecisionLevelContainingOutOfOrderLiterals = getDecisionLevel();
 			}
 		}
-		ConflictCause conflictCause = assignWithTrail(atom, value, impliedBy);
-		if (conflictCause != null) {
-			LOGGER.debug("Assign is conflicting: atom: {}, value: {}, impliedBy: {}.", atom, value, impliedBy);
-		}
-		return conflictCause;
+		return assign(atom, value, impliedBy);
 	}
 
 	private boolean assignmentsConsistent(ThriceTruth oldTruth, ThriceTruth value) {
@@ -365,7 +370,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		// Check if the new assignments contradicts the current one.
 		if (!assignmentsConsistent(currentTruth, value)) {
 			// Assignments are inconsistent, prepare the reason.
-			// Due to the conflict, the impliedBy NoGood is not the recorded one but the one this method is invoked with.
+			// Due to the conflict, the impliedBy NoGood is not the recorded one but the one this method is invoked with.stems from this assignment.
 			int assignedLiteral = literalRepresentation(atom, value);
 			return new ConflictCause(impliedBy == null ? null : impliedBy.getNoGood(negateLiteral(assignedLiteral)));
 		}

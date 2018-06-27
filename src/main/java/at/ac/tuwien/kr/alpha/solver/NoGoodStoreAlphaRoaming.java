@@ -581,6 +581,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			final int atom = currentEntry.getAtom();
 			LOGGER.trace("Propagation processing entry: {}", currentEntry);
 
+			// TODO: if we had a guarantee that TRUE is only assigned after MBT, then propagateWeakly could skip TRUE alltogether!
 			ThriceTruth currentTruth = assignment.getTruth(atom);
 			ConflictCause conflictCause = propagateWeakly(currentEntry.getLiteral(), currentTruth);
 			if (conflictCause != null) {
