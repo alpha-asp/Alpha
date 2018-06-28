@@ -58,8 +58,9 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	private static final int UNASSIGNED = Integer.MAX_VALUE;
 
 	private final WritableAssignment assignment;
-	private final Map<Integer, Watches<BinaryWatch, WatchedNoGood>> watches = new LinkedHashMap<>();
+	private WatchLists[] watchesArr = new WatchLists[0];
 	private BinaryWatchList[] binaryWatches = new BinaryWatchList[0];
+	private int maxAtomId;
 
 	private boolean checksEnabled;
 	private boolean didPropagate;
@@ -75,8 +76,9 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 
 	void clear() {
 		assignment.clear();
-		watches.clear();
 		binaryWatches = new BinaryWatchList[0];
+		watchesArr = new WatchLists[0];
+		maxAtomId = 0;
 	}
 
 	@Override
@@ -107,26 +109,25 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		for (int i = oldlength; i < binaryWatches.length; i++) {
 			binaryWatches[i] = new BinaryWatchList(i);
 		}
+		watchesArr = Arrays.copyOf(watchesArr, newCapacity);
+		for (int i = oldlength; i < watchesArr.length; i++) {
+			watchesArr[i] = new WatchLists();
+		}
+		this.maxAtomId = maxAtomId;
 	}
 
-	private Watches<BinaryWatch, WatchedNoGood> watches(int literal) {
-		final int atom = atomOf(literal);
-		Watches<BinaryWatch, WatchedNoGood> result = watches.get(atom);
-		if (result == null) {
-			result = new Watches<>();
-			this.watches.put(atom, result);
-		}
-		return result;
+	private WatchLists watches(int literal) {
+		return watchesArr[atomOf(literal)];
 	}
 
 	private void addOrdinaryWatch(WatchedNoGood wng, int pointer) {
 		final int literal = wng.getLiteral(wng.getPointer(pointer));
-		watches(literal).multary.getOrdinary(isPositive(literal)).add(wng);
+		watches(literal).getOrdinary(isPositive(literal)).add(wng);
 	}
 
 	private void addAlphaWatch(WatchedNoGood wng) {
 		final int literal = wng.getLiteralAtAlpha();
-		watches(literal).multary.getAlpha(isPositive(literal)).add(wng);
+		watches(literal).getAlpha(isPositive(literal)).add(wng);
 	}
 
 	@Override
@@ -363,7 +364,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	 * @param truth the assigned truth value.
 	 */
 	private ConflictCause propagateWeakly(int literal, ThriceTruth truth) {
-		final Watches<BinaryWatch, WatchedNoGood> watchesOfAssignedAtom = watches(literal);
+		final WatchLists watchesOfAssignedAtom = watches(literal);
 
 		// Propagate binary watches.
 		ConflictCause conflictCause = binaryWatches[literal].propagateWeakly();
@@ -372,14 +373,14 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		}
 
 		// Check all watched multi-ary NoGoods.
-		Iterator<WatchedNoGood> watchIterator = watchesOfAssignedAtom.multary.getOrdinary(truth.toBoolean()).iterator();
-		watchesOfAssignedAtom.multary.clearOrdinaryWatchList(truth.toBoolean());
+		Iterator<WatchedNoGood> watchIterator = watchesOfAssignedAtom.getOrdinary(truth.toBoolean()).iterator();
+		watchesOfAssignedAtom.clearOrdinaryWatchList(truth.toBoolean());
 		while (watchIterator.hasNext()) {
 			WatchedNoGood nextNoGood = watchIterator.next();
 			conflictCause = processWeaklyWatchedNoGood(literal, nextNoGood);
 			if (conflictCause != null) {
 				// Copy over all non-treated NoGoods, so that they can be treated after backtracking.
-				ArrayList<WatchedNoGood> watchlist = watchesOfAssignedAtom.multary.getOrdinary(truth.toBoolean());
+				ArrayList<WatchedNoGood> watchlist = watchesOfAssignedAtom.getOrdinary(truth.toBoolean());
 				watchlist.add(nextNoGood);
 				while (watchIterator.hasNext()) {
 					watchlist.add(watchIterator.next());
@@ -487,12 +488,12 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			return conflictCause;
 		}
 
-		Watches<BinaryWatch, WatchedNoGood> watchesOfAssignedAtom = watches(assignedLiteral);
+		WatchLists watchesOfAssignedAtom = watches(assignedLiteral);
 
 		int assignedDecisionLevel = assignment.getStrongDecisionLevel(atomOf(assignedLiteral));
 
-		Iterator<WatchedNoGood> watchIterator = watchesOfAssignedAtom.multary.getAlpha(truth.toBoolean()).iterator();
-		watchesOfAssignedAtom.multary.clearAlphaWatchList(truth.toBoolean());
+		Iterator<WatchedNoGood> watchIterator = watchesOfAssignedAtom.getAlpha(truth.toBoolean()).iterator();
+		watchesOfAssignedAtom.clearAlphaWatchList(truth.toBoolean());
 
 		while (watchIterator.hasNext()) {
 			final WatchedNoGood watchedNoGood = watchIterator.next();
@@ -555,7 +556,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			conflictCause = assignStrongComplement(watchedNoGood, highestDecisionLevel);
 			if (conflictCause != null) {
 				// Copy over all non-treated NoGoods, so that they can be treated after backtracking.
-				ArrayList<WatchedNoGood> watchlist = watchesOfAssignedAtom.multary.getAlpha(truth.toBoolean());
+				ArrayList<WatchedNoGood> watchlist = watchesOfAssignedAtom.getAlpha(truth.toBoolean());
 				watchlist.add(watchedNoGood);
 				while (watchIterator.hasNext()) {
 					watchlist.add(watchIterator.next());
@@ -609,24 +610,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	@Override
 	public void setChecksEnabled(boolean checksEnabled) {
 		this.checksEnabled = checksEnabled;
-	}
-
-	private static final class BinaryWatch {
-		private final NoGood noGood;
-		private final int otherLiteralIndex;
-
-		private BinaryWatch(NoGood noGood, int otherLiteralIndex) {
-			this.noGood = noGood;
-			this.otherLiteralIndex = otherLiteralIndex;
-		}
-
-		NoGood getNoGood() {
-			return noGood;
-		}
-
-		int getOtherLiteralIndex() {
-			return otherLiteralIndex;
-		}
 	}
 
 	private class BinaryWatchList implements ImplicationReasonProvider {
@@ -738,18 +721,17 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	 * A simple data structure to encapsulate watched delegate by truth value tailored to {@link ThriceTruth}. It
 	 * holds three separate sets that are used to refer to propagation based on assignment of one of the three truth
 	 * values.
-	 * @param <T> type used for referencing.
 	 */
-	private class WatchLists<T> {
-		private ArrayList<T> positive = new ArrayList<>();
-		private ArrayList<T> negative = new ArrayList<>();
-		private ArrayList<T> alphaPositive = new ArrayList<>();
-		private ArrayList<T> alphaNegative = new ArrayList<>();
+	private class WatchLists {
+		private ArrayList<WatchedNoGood> positive = new ArrayList<>();
+		private ArrayList<WatchedNoGood> negative = new ArrayList<>();
+		private ArrayList<WatchedNoGood> alphaPositive = new ArrayList<>();
+		private ArrayList<WatchedNoGood> alphaNegative = new ArrayList<>();
 
-		private ArrayList<T> getAlpha(boolean polarity) {
+		private ArrayList<WatchedNoGood> getAlpha(boolean polarity) {
 			return polarity ? alphaPositive : alphaNegative;
 		}
-		private ArrayList<T> getOrdinary(boolean polarity) {
+		private ArrayList<WatchedNoGood> getOrdinary(boolean polarity) {
 			return polarity ? positive : negative;
 		}
 
@@ -770,21 +752,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		}
 	}
 
-	/**
-	 * A simple data structure to encapsulate watched delegate for an atom. It will hold two {@link WatchLists}s, one
-	 * for references resulting from nogoods containing exactly two atoms, and one for larger nogoods.
-	 *
-	 * To enable compact storage, you will want to use a smaller/simpler type for storing references resulting from
-	 * binary nogoods (such as an {@link Integer}) whereas in the more general case, you will probably refer to some
-	 * sort of {@link WatchedNoGood}.
-	 *
-	 * @param <B> type used to resolve references resulting from binary nogoods
-	 * @param <N> type used to resolve references from nogoods sizes greater than two
-	 */
-	private final class Watches<B, N> {
-		final WatchLists<N> multary = new WatchLists<>();
-	}
-
 	public void runInternalChecks() {
 		new WatchedNoGoodsChecker().doWatchesCheck();
 	}
@@ -798,9 +765,16 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		void doWatchesCheck() {
 			LOGGER.trace("Checking watch invariant.");
 			// Check all watched NoGoods, if their pointers adhere to the watch-pointer invariant.
-			for (Map.Entry<Integer, NoGoodStoreAlphaRoaming.Watches<NoGoodStoreAlphaRoaming.BinaryWatch, WatchedNoGood>> atomWatchesEntry : watches.entrySet()) {
-				int atom = atomWatchesEntry.getKey();
-				Watches<BinaryWatch, WatchedNoGood> atomWatchLists = atomWatchesEntry.getValue();
+			for (int literal = 0; literal < watchesArr.length; literal++) {
+				if (isNegated(literal)) {
+					// We treat positive and negative ones at the iteration of the positive literal.
+					continue;
+				}
+				final int atom = atomOf(literal);
+				if (atom > maxAtomId) {
+					break;
+				}
+				WatchLists atomWatchLists = watches(literal);
 				checkOrdinaryWatchesInvariant(atom, atomWatchLists, true);
 				checkOrdinaryWatchesInvariant(atom, atomWatchLists, false);
 				checkAlphaWatchesInvariant(atom, atomWatchLists, true);
@@ -829,7 +803,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			return Math.min(trailStrongDecisionLevel, atomStrongDecisionLevel);
 		}
 
-		private void checkAlphaWatchesInvariant(int atom, NoGoodStoreAlphaRoaming.Watches<NoGoodStoreAlphaRoaming.BinaryWatch, WatchedNoGood> watches, boolean truth) {
+		private void checkAlphaWatchesInvariant(int atom, WatchLists watches, boolean truth) {
 			Assignment.Entry atomEntry = assignment.get(atom);
 			int atomLiteral = truth ? atomToLiteral(atom) : atomToNegatedLiteral(atom);
 			boolean atomSatisfies = atomEntry != null && isPositive(atomLiteral) != atomEntry.getTruth().toBoolean();
@@ -849,7 +823,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				}
 				throw oops("Watch invariant (alpha) violated");
 			}
-			for (WatchedNoGood watchedNoGood : watches.multary.getAlpha(truth)) {
+			for (WatchedNoGood watchedNoGood : watches.getAlpha(truth)) {
 				int headLiteral = watchedNoGood.getLiteral(HEAD);
 				if (headLiteral == atomLiteral) {
 					throw oops("Watch invariant violated: alpha watch points at head.");
@@ -865,7 +839,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			}
 		}
 
-		private void checkOrdinaryWatchesInvariant(int atom, Watches<BinaryWatch, WatchedNoGood> watches, boolean truth) {
+		private void checkOrdinaryWatchesInvariant(int atom, WatchLists watches, boolean truth) {
 			Assignment.Entry atomEntry = assignment.get(atom);
 			int atomLiteral = truth ? atomToLiteral(atom) : atomToNegatedLiteral(atom);
 			boolean atomSatisfies = atomEntry != null && isPositive(atomLiteral) != atomEntry.getTruth().toBoolean();
@@ -880,7 +854,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				int otherLiteral = binaryWatchList.noGoodsWithHead[i];
 				checkBinaryWatch(atomSatisfies, atomDecisionLevel, atomReplayLevel, otherLiteral);
 			}
-			for (WatchedNoGood watchedNoGood : watches.multary.getOrdinary(truth)) {
+			for (WatchedNoGood watchedNoGood : watches.getOrdinary(truth)) {
 				// Ensure both watches are either unassigned, or one satisfies NoGood, or both are on highest decision level.
 				int otherPointer = atom ==  atomOf(watchedNoGood.getLiteral(watchedNoGood.getPointer(1))) ? 0 : 1;
 				int otherLiteral = watchedNoGood.getLiteral(watchedNoGood.getPointer(otherPointer));
