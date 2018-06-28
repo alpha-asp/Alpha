@@ -217,9 +217,14 @@ public class ChoiceManager implements Checkable {
 		LOGGER.debug("Backjumping to decision level {}.", target);
 
 		// Remove everything above the target level, but keep the target level unchanged.
-		while (assignment.getDecisionLevel() > target) {
-			backtrackFast();
+		int currentDecisionLevel = assignment.getDecisionLevel();
+		assignment.backjump(target);
+		while (currentDecisionLevel-- > target) {
+			final Choice choice = choiceStack.pop();
 			backtracksWithinBackjumps++;
+			backtracks++;
+			modCount++;
+			LOGGER.debug("Backjumping removed choice {}", choice);
 		}
 	}
 

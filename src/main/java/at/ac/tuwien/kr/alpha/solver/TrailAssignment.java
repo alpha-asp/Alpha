@@ -62,10 +62,10 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	private ArrayList<Integer> trail = new ArrayList<>();
 	private ArrayList<Integer> trailIndicesOfDecisionLevels = new ArrayList<>();
 
-	private static int nextPositionInTrail;
-	private static int newAssignmentsPositionInTrail;
-	private static int newAssignmentsIterator;
-	private static int assignmentsForChoicePosition;
+	private int nextPositionInTrail;
+	private int newAssignmentsPositionInTrail;
+	private int newAssignmentsIterator;
+	private int assignmentsForChoicePosition;
 
 	private static class OutOfOrderLiteral {
 		final int atom;
@@ -148,17 +148,16 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		return values[atom] != 0;
 	}
 
-	private class TrailPollable implements Pollable<TrailAssignment.Entry> {
+	private class TrailPollable implements Pollable {
 
 		@Override
-		public Entry peek() {
-			int atom = trail.get(nextPositionInTrail);
-			return new Entry(getTruth(atom), atom, getDecisionLevel(), -1, getImpliedBy(atom));
+		public int peek() {
+			return trail.get(nextPositionInTrail);
 		}
 
 		@Override
-		public Entry remove() {
-			Entry current = peek();
+		public int remove() {
+			Integer current = peek();
 			nextPositionInTrail++;
 			return current;
 		}
@@ -170,8 +169,22 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	}
 
 	@Override
-	public Pollable<? extends Assignment.Entry> getAssignmentsToProcess() {
+	public Pollable getAssignmentsToProcess() {
 		return new TrailPollable();
+	}
+
+	@Override
+	public int getRealWeakDecisionLevel(int atom) {
+		if (getTruth(atom) == null) {
+			return -1;
+		}
+		int lowestDecisionLevelForAtom = getWeakDecisionLevel(atom);
+		for (OutOfOrderLiteral outOfOrderLiteral : outOfOrderLiterals) {
+			if (outOfOrderLiteral.atom == atom && outOfOrderLiteral.decisionLevel < lowestDecisionLevelForAtom) {
+				lowestDecisionLevelForAtom = outOfOrderLiteral.decisionLevel;
+			}
+		}
+		return lowestDecisionLevelForAtom;
 	}
 
 	/**
@@ -271,22 +284,30 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		}
 	}
 
-	private void backtrackWithReplayingLowerAssignments() {
-		removeLastDecisionLevel();
-		// FIXME: when backjumping, the replay is only necessary once (after the last level has been removed), but backjumping is currently not supported by our interfaces.
+	private void resetTrailPointersAndReplayOutOfOrderLiterals() {
 		nextPositionInTrail = Math.min(nextPositionInTrail, trail.size());
 		newAssignmentsPositionInTrail = Math.min(newAssignmentsPositionInTrail, trail.size());
 		newAssignmentsIterator = Math.min(newAssignmentsIterator, trail.size());
 		assignmentsForChoicePosition = Math.min(assignmentsForChoicePosition, trail.size());
 		replayOutOfOrderLiterals();
+		if (checksEnabled) {
+			runInternalChecks();
+		}
+	}
+
+	@Override
+	public void backjump(int decisionLevel) {
+		// Remove everything above the target level, but keep the target level unchanged.
+		while (getDecisionLevel() > decisionLevel) {
+			removeLastDecisionLevel();
+		}
+		resetTrailPointersAndReplayOutOfOrderLiterals();
 	}
 
 	@Override
 	public void backtrack() {
-		backtrackWithReplayingLowerAssignments();
-		if (checksEnabled) {
-			runInternalChecks();
-		}
+		removeLastDecisionLevel();
+		resetTrailPointersAndReplayOutOfOrderLiterals();
 	}
 
 	@Override
@@ -556,7 +577,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	}
 
 	@Override
-	public AssignmentIterator getNewAssignmentsIterator() {
+	public AssignmentIterator getNewPositiveAssignmentsIterator() {
 		return new AssignmentIterator();
 	}
 
@@ -565,17 +586,27 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		this.checksEnabled = checksEnabled;
 	}
 
-	private class AssignmentIterator implements Iterator<Assignment.Entry> {
+	private class AssignmentIterator implements Iterator<Integer> {
+
+		private void advanceCursorToNextPositiveAssignment() {
+			while (newAssignmentsIterator < trail.size()) {
+				ThriceTruth truth = getTruth(trail.get(newAssignmentsIterator));
+				if (truth != null && truth.toBoolean()) {
+					return;
+				}
+				newAssignmentsIterator++;
+			}
+		}
 
 		@Override
 		public boolean hasNext() {
+			advanceCursorToNextPositiveAssignment();
 			return newAssignmentsIterator < trail.size();
 		}
 
 		@Override
-		public Assignment.Entry next() {
-			int atom = trail.get(newAssignmentsIterator++);
-			return new Entry(getTruth(atom), atom, getDecisionLevel(), -1, getImpliedBy(atom));
+		public Integer next() {
+			return trail.get(newAssignmentsIterator++);
 
 		}
 	}

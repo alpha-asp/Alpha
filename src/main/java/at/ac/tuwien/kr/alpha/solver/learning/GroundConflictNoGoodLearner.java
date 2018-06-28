@@ -48,6 +48,28 @@ public class GroundConflictNoGoodLearner {
 
 	private final Assignment assignment;
 
+	public int computeConflictFreeBackjumpingLevel(NoGood violatedNoGood) {
+		int highestDecisionLevel = -1;
+		int secondHighestDecisionLevel = -1;
+		int numAtomsInHighestLevel = 0;
+		for (Integer literal : violatedNoGood) {
+			int literalDecisionLevel = assignment.getRealWeakDecisionLevel(atomOf(literal));
+			if (literalDecisionLevel == highestDecisionLevel) {
+				numAtomsInHighestLevel++;
+			} else if (literalDecisionLevel > highestDecisionLevel) {
+				secondHighestDecisionLevel = highestDecisionLevel;
+				highestDecisionLevel = literalDecisionLevel;
+				numAtomsInHighestLevel = 1;
+			} else if (literalDecisionLevel > secondHighestDecisionLevel) {
+				secondHighestDecisionLevel = literalDecisionLevel;
+			}
+		}
+		if (numAtomsInHighestLevel == 1) {
+			return secondHighestDecisionLevel;
+		}
+		return highestDecisionLevel - 1;
+	}
+
 	public static class ConflictAnalysisResult {
 		public static final ConflictAnalysisResult UNSAT = new ConflictAnalysisResult();
 
@@ -121,6 +143,7 @@ public class GroundConflictNoGoodLearner {
 			// The real conflict therefore is caused by either:
 			// a) two NoGoods propagating the same atom to different truth values in the current decisionLevel, or
 			// b) a NoGood propagating at a lower decision level to the inverse value of a choice with higher decision level.
+			// TODO: b) should no longer be possible, since all propagation is on highest decision level now.
 			// For a) we need to work also with the other NoGood.
 			// For b) we need to backtrack the wrong choice.
 

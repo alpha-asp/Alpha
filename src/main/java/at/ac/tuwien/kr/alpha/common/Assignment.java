@@ -76,16 +76,24 @@ public interface Assignment {
 
 	/**
 	 * Returns an iterator over all new assignments. New assignments are only returned once.
-	 * getNewAssignmentsIterator and getNewAssignmentsIterator2 are independent of each other (i.e., each has its own backing collection).
+	 * getNewPositiveAssignmentsIterator and getNewAssignmentsIterator2 are independent of each other (i.e., each has its own backing collection).
 	 * @return
 	 */
-	Iterator<Entry> getNewAssignmentsIterator();
+	Iterator<Integer> getNewPositiveAssignmentsIterator();
 
-	Pollable<? extends Entry> getAssignmentsToProcess();
+	Pollable getAssignmentsToProcess();
 
-	interface Pollable<T extends Entry> {
-		T peek();
-		T remove();
+	/**
+	 * Returns the weak decision level of the atom considering also out-of-order assignments.
+	 * @param atom the atom.
+	 * @return the weakDecisionLevel of the atom if it is not an out-of-order assignment, otherwise the lowest
+	 * decision level at which it will be re-assigned.
+	 */
+	int getRealWeakDecisionLevel(int atom);
+
+	interface Pollable {
+		int peek();
+		int remove();
 		boolean isEmpty();
 	}
 

@@ -121,31 +121,31 @@ public class TrailAssignmentTest {
 		assignment.growForMaxAtomId(2);
 		assignment.assign(1, MBT);
 
-		Assignment.Pollable<? extends Assignment.Entry> queue = assignment.getAssignmentsToProcess();
-		assertEquals(1, queue.remove().getAtom());
+		Assignment.Pollable queue = assignment.getAssignmentsToProcess();
+		assertEquals(1, queue.remove());
 
 		assignment.choose(2, MBT);
 		assignment.choose(1, TRUE);
 
-		assertEquals(2, queue.remove().getAtom());
-		assertEquals(1, queue.peek().getAtom());
+		assertEquals(2, queue.remove());
+		assertEquals(1, queue.peek());
 
 		queue = assignment.getAssignmentsToProcess();
-		assertEquals(1, queue.remove().getAtom());
+		assertEquals(1, queue.remove());
 	}
 
 	@Test
 	public void newAssignmentsIteratorAndBacktracking() throws Exception {
 		assignment.growForMaxAtomId(3);
-		Iterator<Assignment.Entry> newAssignmentsIterator;
+		Iterator<Integer> newAssignmentsIterator;
 
 		assignment.assign(1, MBT);
 		assignment.choose(2, MBT);
 
-		newAssignmentsIterator = assignment.getNewAssignmentsIterator();
+		newAssignmentsIterator = assignment.getNewPositiveAssignmentsIterator();
 
-		assertEquals(1, newAssignmentsIterator.next().getAtom());
-		assertEquals(2, newAssignmentsIterator.next().getAtom());
+		assertEquals(1, (int)newAssignmentsIterator.next());
+		assertEquals(2, (int)newAssignmentsIterator.next());
 		assertFalse(newAssignmentsIterator.hasNext());
 
 
@@ -153,45 +153,45 @@ public class TrailAssignmentTest {
 		assignment.backtrack();
 		assignment.assign(3, FALSE);
 
-		newAssignmentsIterator = assignment.getNewAssignmentsIterator();
-		assertEquals(3, newAssignmentsIterator.next().getAtom());
+		newAssignmentsIterator = assignment.getNewPositiveAssignmentsIterator();
+		assertEquals(3, (int)newAssignmentsIterator.next());
 		assertFalse(newAssignmentsIterator.hasNext());
 	}
 
 	@Test
 	public void newAssignmentsIteratorLowerDecisionLevelAndBacktracking() throws Exception {
 		assignment.growForMaxAtomId(3);
-		Iterator<Assignment.Entry> newAssignmentsIterator;
+		Iterator<Integer> newAssignmentsIterator;
 
 		assignment.choose(1, MBT);
 		assignment.choose(2, MBT);
 		assignment.assign(3, MBT, null, 1);
 		assignment.backtrack();
 
-		newAssignmentsIterator = assignment.getNewAssignmentsIterator();
-		assertEquals(1, newAssignmentsIterator.next().getAtom());
-		assertEquals(3, newAssignmentsIterator.next().getAtom());
+		newAssignmentsIterator = assignment.getNewPositiveAssignmentsIterator();
+		assertEquals(1, (int)newAssignmentsIterator.next());
+		assertEquals(3, (int)newAssignmentsIterator.next());
 		assertFalse(newAssignmentsIterator.hasNext());
 	}
 
 	@Test
 	public void iteratorAndBacktracking() throws Exception {
 		assignment.growForMaxAtomId(3);
-		Assignment.Pollable<? extends Assignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
+		Assignment.Pollable assignmentsToProcess = assignment.getAssignmentsToProcess();
 
 		assignment.assign(1, MBT);
-		assertEquals(1, assignmentsToProcess.remove().getAtom());
+		assertEquals(1, assignmentsToProcess.remove());
 
 		assignment.choose(2, MBT);
-		assertEquals(2, assignmentsToProcess.remove().getAtom());
+		assertEquals(2, assignmentsToProcess.remove());
 
 		assignment.choose(1, TRUE);
-		assertEquals(1, assignmentsToProcess.remove().getAtom());
+		assertEquals(1, assignmentsToProcess.remove());
 
 		assignment.backtrack();
 
 		assignment.assign(3, FALSE);
-		assertEquals(3, assignmentsToProcess.remove().getAtom());
+		assertEquals(3, assignmentsToProcess.remove());
 	}
 
 	@Test

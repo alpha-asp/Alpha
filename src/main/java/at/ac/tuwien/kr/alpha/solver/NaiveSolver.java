@@ -40,8 +40,6 @@ import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
 import static at.ac.tuwien.kr.alpha.common.NoGood.HEAD;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static java.lang.Math.abs;
 
 /**
@@ -281,9 +279,7 @@ public class NaiveSolver extends AbstractSolver {
 	}
 
 	private void updateGrounderAssignments() {
-		grounder.updateAssignment(newTruthAssignments.stream().map(
-			atom -> (Assignment.Entry) new Entry(atom, truthAssignments.get(atom) ? TRUE : FALSE)
-		).iterator());
+		grounder.updateAssignment(newTruthAssignments.stream().filter(atom -> truthAssignments.get(atom)).iterator());
 		newTruthAssignments.clear();
 	}
 

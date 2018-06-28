@@ -40,11 +40,17 @@ public interface WritableAssignment extends Assignment {
 	void clear();
 
 	/**
+	 * Backtracks the most recent decision level.
+	 */
+	void backtrack();
+
+	/**
 	 * Backtracks to the indicated decision level. Every assignment on a higher decisionLevel is removed.
 	 * All assignments below (or equal to) decisionLevel are kept. Note that for atoms being TRUE this may require
 	 * setting the assigned value to MBT during backtracking.
+	 * @param decisionLevel the decision level to backjump to (this decision level is the highest that is kept).
 	 */
-	void backtrack();
+	void backjump(int decisionLevel);
 
 	/**
 	 * Assigns an atom some value on a lower decision level than the current one.

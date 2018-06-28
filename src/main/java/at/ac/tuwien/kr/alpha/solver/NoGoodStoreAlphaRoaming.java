@@ -476,24 +476,23 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		LOGGER.trace(sb.toString());
 	}
 
-	private ConflictCause propagateStrongly(final Assignment.Entry entry) {
+	private ConflictCause propagateStrongly(int assignedLiteral, ThriceTruth truth) {
 		// Nothing needs to be done in case MBT is assigned since MBT cannot trigger strong unit-propagation.
-		if (entry.getTruth().isMBT()) {
+		if (truth.isMBT()) {
 			return null;
 		}
-		final int assignedLiteral = entry.getLiteral();
 
 		ConflictCause conflictCause = binaryWatches[assignedLiteral].propagateStrongly();
 		if (conflictCause != null) {
 			return conflictCause;
 		}
 
-		Watches<BinaryWatch, WatchedNoGood> watchesOfAssignedAtom = watches(entry.getLiteral());
+		Watches<BinaryWatch, WatchedNoGood> watchesOfAssignedAtom = watches(assignedLiteral);
 
-		int assignedDecisionLevel = entry.getStrongDecisionLevel();
+		int assignedDecisionLevel = assignment.getStrongDecisionLevel(atomOf(assignedLiteral));
 
-		Iterator<WatchedNoGood> watchIterator = watchesOfAssignedAtom.multary.getAlpha(entry.getTruth().toBoolean()).iterator();
-		watchesOfAssignedAtom.multary.clearAlphaWatchList(entry.getTruth().toBoolean());
+		Iterator<WatchedNoGood> watchIterator = watchesOfAssignedAtom.multary.getAlpha(truth.toBoolean()).iterator();
+		watchesOfAssignedAtom.multary.clearAlphaWatchList(truth.toBoolean());
 
 		while (watchIterator.hasNext()) {
 			final WatchedNoGood watchedNoGood = watchIterator.next();
@@ -556,7 +555,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			conflictCause = assignStrongComplement(watchedNoGood, highestDecisionLevel);
 			if (conflictCause != null) {
 				// Copy over all non-treated NoGoods, so that they can be treated after backtracking.
-				ArrayList<WatchedNoGood> watchlist = watchesOfAssignedAtom.multary.getAlpha(entry.getTruth().toBoolean());
+				ArrayList<WatchedNoGood> watchlist = watchesOfAssignedAtom.multary.getAlpha(truth.toBoolean());
 				watchlist.add(watchedNoGood);
 				while (watchIterator.hasNext()) {
 					watchlist.add(watchIterator.next());
@@ -575,21 +574,21 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	public ConflictCause propagate() {
 		didPropagate = false;
 
-		Assignment.Pollable<? extends Assignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
+		Assignment.Pollable assignmentsToProcess = assignment.getAssignmentsToProcess();
 		while (!assignmentsToProcess.isEmpty()) {
-			final Assignment.Entry currentEntry = assignmentsToProcess.peek();
-			final int atom = currentEntry.getAtom();
-			LOGGER.trace("Propagation processing entry: {}", currentEntry);
+			final int atom = assignmentsToProcess.peek();
+			final ThriceTruth currentTruth = assignment.getTruth(atom);
+			final int literal = currentTruth.toBoolean() ? atomToLiteral(atom) : atomToNegatedLiteral(atom);
+			LOGGER.trace("Propagation processing atom: {}={}", atom, currentTruth);
 
 			// TODO: if we had a guarantee that TRUE is only assigned after MBT, then propagateWeakly could skip TRUE alltogether!
-			ThriceTruth currentTruth = assignment.getTruth(atom);
-			ConflictCause conflictCause = propagateWeakly(currentEntry.getLiteral(), currentTruth);
+			ConflictCause conflictCause = propagateWeakly(literal, currentTruth);
 			if (conflictCause != null) {
 				LOGGER.trace("Halting propagation due to conflict. Current assignment: {}.", assignment);
 				return conflictCause;
 			}
 
-			conflictCause = propagateStrongly(currentEntry);
+			conflictCause = propagateStrongly(literal, currentTruth);
 			if (conflictCause != null) {
 				LOGGER.trace("Halting propagation due to conflict. Current assignment: {}.", assignment);
 				return conflictCause;
