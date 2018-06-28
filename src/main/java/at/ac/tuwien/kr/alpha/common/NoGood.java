@@ -234,7 +234,8 @@ public class NoGood implements ImplicationReasonProvider, Iterable<Integer>, Com
 		sb.append("{ ");
 
 		for (int literal : literals) {
-			sb.append(literal);
+			sb.append(isPositive(literal) ? "+" : "-");
+			sb.append(atomOf(literal));
 			sb.append(" ");
 		}
 
