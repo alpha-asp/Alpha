@@ -315,7 +315,11 @@ public class ChoiceManager implements Checkable {
 	 * @return a subset of {@link #getAllActiveChoiceAtoms()} that can derive {@code headAtomId}.
 	 */
 	public Set<Integer> getActiveChoiceAtomsDerivingHead(int headAtomId) {
-		return Sets.intersection(headsToBodies.get(headAtomId), getAllActiveChoiceAtoms());
+		Set<Integer> bodies = headsToBodies.get(headAtomId);
+		if (bodies == null) {
+			return Collections.emptySet();
+		}
+		return Sets.intersection(bodies, getAllActiveChoiceAtoms());
 	}
 	
 	public static ChoiceManager withoutDomainSpecificHeuristics(WritableAssignment assignment, NoGoodStore store, boolean checksEnabled) {
