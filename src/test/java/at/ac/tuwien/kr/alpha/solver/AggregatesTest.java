@@ -134,5 +134,28 @@ public class AggregatesTest extends AbstractSolverTests {
 				"x(2), x(3), min(0), min(1), min(2), min(3), min(4), min(5), sum(5)",
 				"x(1), x(2), x(3), min(0), min(1), min(2), min(3), min(4), min(5), min(6), sum(6)");
 	}
+	
+	@Test
+	public void testAggregate_Count_GlobalVariable() throws IOException {
+		String program = "box(1..2)." + LS
+				+ "in(1,1)." + LS
+				+ "in(1,2)." + LS
+				+ "in(2,2)." + LS
+				+ "full(B) :- box(B), 2 <= #count { I : in(I,B) }.";
+		assertAnswerSetsWithBase(program, "box(1), box(2), in(1,1), in(1,2), in(2,2)",
+				"full(2)");
+	}
+	
+	@Test
+	public void testAggregate_Sum_GlobalVariable() throws IOException {
+		String program = "box(1..2)." + LS
+				+ "item_size(I,I) :- I=1..2." + LS
+				+ "in(1,1)." + LS
+				+ "in(1,2)." + LS
+				+ "in(2,2)." + LS
+				+ "full(B) :- box(B), 3 <= #sum { S : item_size(I,S), in(I,B) }.";
+		assertAnswerSetsWithBase(program, "box(1), box(2), item_size(1,1), item_size(2,2), in(1,1), in(1,2), in(2,2)",
+				"full(2)");
+	}
 
 }
