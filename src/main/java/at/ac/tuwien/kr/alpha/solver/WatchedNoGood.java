@@ -42,17 +42,6 @@ public final class WatchedNoGood implements ImplicationReasonProvider, Iterable<
 		}
 	}
 
-	public int getPointer(int index) {
-		switch (index) {
-			case 0:
-				return 0;
-			case 1:
-				return 1;
-			default:
-				throw new IndexOutOfBoundsException();
-		}
-	}
-
 	private void swap(int a, int b) {
 		int tmp = literals[a];
 		literals[a] = literals[b];
@@ -84,15 +73,11 @@ public final class WatchedNoGood implements ImplicationReasonProvider, Iterable<
 		return head;
 	}
 
-	public void setPointer(int index, int value) {
+	public void setWatch(int index, int value) {
 		if (index != 0 && index != 1) {
 			throw new IndexOutOfBoundsException();
 		}
 		swap(index, value);
-	}
-
-	public int getLiteralAtPointer(int index) {
-		return literals[index];
 	}
 
 	public int getLiteral(int index) {

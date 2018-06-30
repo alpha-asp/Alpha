@@ -134,7 +134,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	}
 
 	private void addOrdinaryWatch(WatchedNoGood wng, int pointer) {
-		final int literal = wng.getLiteral(wng.getPointer(pointer));
+		final int literal = wng.getLiteral(pointer);
 		watches(literal).add(wng);
 	}
 
@@ -430,33 +430,25 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	}
 
 	private ConflictCause processWeaklyWatchedNoGood(int assignedLiteral, WatchedNoGood watchedNoGood) {
-		final int assignedPointer = watchedNoGood.getLiteralAtPointer(0) == assignedLiteral ? 0 : 1;
-		final int otherPointer = 1 - assignedPointer;
+		final int assignedWatch = watchedNoGood.getLiteral(0) == assignedLiteral ? 0 : 1;
+		final int otherWatch = 1 - assignedWatch;
 
-		final int assignedIndex = watchedNoGood.getPointer(assignedPointer);
-		final int otherIndex = watchedNoGood.getPointer(otherPointer);
-
-		int otherAtom = atomOf(watchedNoGood.getLiteral(otherIndex));
-		final ThriceTruth otherAtomTruth = assignment.getTruth(otherAtom);
+		final int otherLiteral = watchedNoGood.getLiteral(otherWatch);
+		final ThriceTruth otherAtomTruth = assignment.getTruth(atomOf(otherLiteral));
 
 		// Find new literal to watch.
 		boolean foundPointerCandidate = false;
-		int pointerCandidateIndex = assignedIndex;
+		int pointerCandidateIndex = assignedWatch;
 
 		// Check if the other watch already satisfies the noGood.
-		if (otherAtomTruth != null && otherAtomTruth.toBoolean() != isPositive(watchedNoGood.getLiteral(otherIndex))) {
-			foundPointerCandidate = true;
+		if (otherAtomTruth != null && otherAtomTruth.toBoolean() != isPositive(otherLiteral)) {
 			// Keep this watch and return early.
-			// Note that other literal cannot have higher decision level than currently due to new out-of-order literals in assignment.
+			addOrdinaryWatch(watchedNoGood, assignedWatch);
+			return null;
 		} else {
-			for (int j = 0; j < watchedNoGood.size(); j++) {
-				int i = (j + assignedIndex) % watchedNoGood.size();        // Start iteration on currently watched index and loop around.
-				if (i == assignedIndex || i == otherIndex) {
-					continue;
-				}
+			for (int i = 2; i < watchedNoGood.size(); i++) {
 				final int currentLiteral = watchedNoGood.getLiteral(i);
-				final int currentAtom = atomOf(currentLiteral);
-				final ThriceTruth currentTruth = assignment.getTruth(currentAtom);
+				final ThriceTruth currentTruth = assignment.getTruth(atomOf(currentLiteral));
 
 				// Break if: 1) current literal is unassigned, or 2) satisfies the nogood.
 				if (currentTruth == null || currentTruth.toBoolean() != isPositive(currentLiteral)) {
@@ -469,35 +461,27 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 
 		if (foundPointerCandidate) {
 			// Move pointer to new literal.
-			watchedNoGood.setPointer(assignedPointer, pointerCandidateIndex);
-			addOrdinaryWatch(watchedNoGood, assignedPointer);
+			watchedNoGood.setWatch(assignedWatch, pointerCandidateIndex);
+			addOrdinaryWatch(watchedNoGood, assignedWatch);
 			if (LOGGER.isTraceEnabled()) {
 				LOGGER.trace("Moved watch pointers of nogood:");
 				logNoGoodAndAssignment(watchedNoGood, assignment);
 			}
 			return null;
 		}
-		// NoGood is unit, propagate (on potentially lower decision level).
+		// NoGood is unit, propagate the other watched literal.
 		// Note: Violation is detected by Assignment.
 		if (LOGGER.isTraceEnabled()) {
 			LOGGER.trace("Nogood is unit:");
 			logNoGoodAndAssignment(watchedNoGood, assignment);
 		}
-		ConflictCause conflictCause = assignWeakComplement(otherIndex, watchedNoGood, assignment.getDecisionLevel());
-
-		// TODO: since there is only propagation on current dl, if we propagate no watch should be required to move!
+		ConflictCause conflictCause = assignWeakComplement(otherWatch, watchedNoGood, assignment.getDecisionLevel());
 		// Return conflict if noGood is violated.
 		if (conflictCause != null) {
 			return conflictCause;
 		}
-
-		// Move assigned watch to now-highest position.
-		watchedNoGood.setPointer(assignedPointer, pointerCandidateIndex);
-		addOrdinaryWatch(watchedNoGood, assignedPointer);
-		if (LOGGER.isTraceEnabled()) {
-			LOGGER.trace("Moved watch pointers after propagation:");
-			logNoGoodAndAssignment(watchedNoGood, assignment);
-		}
+		// Watch same literal again.
+		addOrdinaryWatch(watchedNoGood, assignedWatch);
 		return null;
 	}
 
@@ -865,8 +849,8 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			}
 			for (WatchedNoGood watchedNoGood : watches(atomLiteral)) {
 				// Ensure both watches are either unassigned, or one satisfies NoGood, or both are on highest decision level.
-				int otherPointer = atom ==  atomOf(watchedNoGood.getLiteral(watchedNoGood.getPointer(1))) ? 0 : 1;
-				int otherLiteral = watchedNoGood.getLiteral(watchedNoGood.getPointer(otherPointer));
+				int otherPointer = atom ==  atomOf(watchedNoGood.getLiteral(1)) ? 0 : 1;
+				int otherLiteral = watchedNoGood.getLiteral(otherPointer);
 				int otherAtom = atomOf(otherLiteral);
 				Assignment.Entry otherEntry = assignment.get(otherAtom);
 				int otherDecisionLevel = weakDecisionLevel(otherEntry);
