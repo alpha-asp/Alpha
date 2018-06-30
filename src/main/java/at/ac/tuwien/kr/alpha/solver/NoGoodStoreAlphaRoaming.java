@@ -260,11 +260,16 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 
 		// Set ordinary and alpha watches now.
 		// Compute ordinary watches:
-		final WatchedNoGood wng;
+//		final WatchedNoGood wng;
+		final int watch1;
+		final int watch2;
+
 
 		if (posWeakUnassigned1 != -1 && posWeakUnassigned2 != -1) {
 			// NoGood has two unassigned literals.
-			wng = new WatchedNoGood(noGood, posWeakUnassigned1, posWeakUnassigned2, -1);
+			watch1 = posWeakUnassigned1;
+			watch2 = posWeakUnassigned2;
+//			wng = new WatchedNoGood(noGood, posWeakUnassigned1, posWeakUnassigned2, -1);
 		} else if (posSatisfiedLiteral1 != -1) {
 			// NoGood is satisfied.
 			int bestSecondPointer = posSatisfiedLiteral2 != -1 ? posSatisfiedLiteral2
@@ -280,33 +285,42 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 					}
 				}
 			}
-			wng = new WatchedNoGood(noGood, posSatisfiedLiteral1, bestSecondPointer, -1);
+			watch1 = posSatisfiedLiteral1;
+			watch2 = bestSecondPointer;
+//			wng = new WatchedNoGood(noGood, posSatisfiedLiteral1, bestSecondPointer, -1);
 		} else if (posWeakUnassigned1 != -1) {
 			// NoGood is weakly unit; propagate.
 			ConflictCause conflictCause = assignWeakComplement(posWeakUnassigned1, noGood, weakDecisionLevelHighestAssigned);
 			if (conflictCause != null) {
 				return conflictCause;
 			}
-			wng = new WatchedNoGood(noGood, posWeakUnassigned1, posWeakHighestAssigned, -1);
+			watch1 = posWeakUnassigned1;
+			watch2 = posWeakHighestAssigned;
+//			wng = new WatchedNoGood(noGood, posWeakUnassigned1, posWeakHighestAssigned, -1);
 		} else {
 			// NoGood is violated.
 			return new ConflictCause(noGood);
 		}
 
 		// Compute alpha watch:
+		int watchAlpha = -1;
 		if (noGood.hasHead()) {
 			if (posPotentialAlphaWatch != -1) {
 				// Found potential alpha watch.
-				wng.setAlphaPointer(posPotentialAlphaWatch);
+				watchAlpha = posPotentialAlphaWatch;
+//				wng.setAlphaPointer(posPotentialAlphaWatch);
 			} else {
 				// No potential alpha watch found: noGood must be strongly unit.
 				ConflictCause conflictCause = assignStrongComplement(noGood, strongDecisionLevelHighestAssigned);
 				if (conflictCause != null) {
 					return conflictCause;
 				}
-				wng.setAlphaPointer(posStrongHighestAssigned);
+				watchAlpha = posStrongHighestAssigned;
+//				wng.setAlphaPointer(posStrongHighestAssigned);
 			}
 		}
+		WatchedNoGood wng = new WatchedNoGood(noGood, watch1, watch2, watchAlpha);
+		LOGGER.trace("WatchedNoGood is {}.", wng);
 
 		if (wng.getAlphaPointer() == -1 && noGood.hasHead()) {
 			throw oops("Did not set alpha watch for nogood with head.");
@@ -353,17 +367,28 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		return binaryWatches[b].add(noGood);
 	}
 
+	private ConflictCause assignWeakComplement(final int literalIndex, final WatchedNoGood impliedBy, int decisionLevel) {
+		final int literal = impliedBy.getLiteral(literalIndex);
+		ThriceTruth truth = isNegated(literal) ? MBT : FALSE;
+		return assignTruth(atomOf(literal), truth, impliedBy, decisionLevel);
+	}
+
+	// FIXME: below method is a duplicate, since there is no common superclass of NoGood and WatchedNoGood. Should be changed, maybe put into ImplicationReasonProvider?
 	private ConflictCause assignWeakComplement(final int literalIndex, final NoGood impliedBy, int decisionLevel) {
 		final int literal = impliedBy.getLiteral(literalIndex);
 		ThriceTruth truth = isNegated(literal) ? MBT : FALSE;
 		return assignTruth(atomOf(literal), truth, impliedBy, decisionLevel);
 	}
 
+	private ConflictCause assignStrongComplement(final WatchedNoGood impliedBy, int decisionLevel) {
+		return assignTruth(atomOf(impliedBy.getHead()), TRUE, impliedBy, decisionLevel);
+	}
+
 	private ConflictCause assignStrongComplement(final NoGood impliedBy, int decisionLevel) {
 		return assignTruth(atomOf(impliedBy.getPositiveLiteral(HEAD)), TRUE, impliedBy, decisionLevel);
 	}
 
-	private ConflictCause assignTruth(int atom, ThriceTruth truth, NoGood impliedBy, int decisionLevel) {
+	private ConflictCause assignTruth(int atom, ThriceTruth truth, ImplicationReasonProvider impliedBy, int decisionLevel) {
 		ConflictCause cause = assignment.assign(atom, truth, impliedBy, decisionLevel);
 		if (cause == null) {
 			didPropagate = true;
@@ -460,6 +485,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		}
 		ConflictCause conflictCause = assignWeakComplement(otherIndex, watchedNoGood, assignment.getDecisionLevel());
 
+		// TODO: since there is only propagation on current dl, if we propagate no watch should be required to move!
 		// Return conflict if noGood is violated.
 		if (conflictCause != null) {
 			return conflictCause;
@@ -516,11 +542,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			final int assignedIndex = watchedNoGood.getAlphaPointer();
 
 			boolean isNoGoodSatisfiedByHead = false;
-			int headAtom = atomOf(watchedNoGood.getLiteral(HEAD));
+			int headAtom = atomOf(watchedNoGood.getHead());
 			ThriceTruth headAtomTruth = assignment.getTruth(headAtom);
 			int headAtomStrongDecisionLevel = assignment.getStrongDecisionLevel(headAtom);
 			// Check if the other watch already satisfies the noGood.
-			if (headAtomTruth != null && TRUE == headAtomTruth && !isPositive(watchedNoGood.getLiteral(HEAD))) {
+			if (headAtomTruth != null && TRUE == headAtomTruth && !isPositive(watchedNoGood.getHead())) {
 				isNoGoodSatisfiedByHead = true;
 			}
 
@@ -529,8 +555,8 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			boolean foundPointerCandidate = false;
 
 			// Find new literal to watch.
-			for (int i = 1; i < watchedNoGood.size(); i++) {
-				if (i == assignedIndex) {
+			for (int i = 0; i < watchedNoGood.size(); i++) {
+				if (i == assignedIndex || i == watchedNoGood.getHeadIndex()) {
 					continue;
 				}
 				int currentLiteral = watchedNoGood.getLiteral(i);
@@ -747,7 +773,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 	private class WatchedNoGoodsChecker {
 
 		void doWatchesCheck() {
-			LOGGER.trace("Checking watch invariant.");
+			LOGGER.debug("Checking watch invariant.");
 			// Check all watched NoGoods, if their pointers adhere to the watch-pointer invariant.
 			for (int literal = 0; literal < watches.length; literal++) {
 				if (isNegated(literal)) {
@@ -763,7 +789,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				checkAlphaWatchesInvariant(atom, true);
 				checkAlphaWatchesInvariant(atom, false);
 			}
-			LOGGER.trace("Checking watch invariant: all good.");
+			LOGGER.debug("Checking watch invariant: all good.");
 		}
 
 		int weakDecisionLevel(Assignment.Entry entry) {
@@ -807,7 +833,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				throw oops("Watch invariant (alpha) violated");
 			}
 			for (WatchedNoGood watchedNoGood : watchesAlpha(atomLiteral)) {
-				int headLiteral = watchedNoGood.getLiteral(HEAD);
+				int headLiteral = watchedNoGood.getHead();
 				if (headLiteral == atomLiteral) {
 					throw oops("Watch invariant violated: alpha watch points at head.");
 				}
