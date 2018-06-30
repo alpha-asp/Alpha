@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.NoGoodInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -260,7 +261,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 
 		// Set ordinary and alpha watches now.
 		// Compute ordinary watches:
-//		final WatchedNoGood wng;
 		final int watch1;
 		final int watch2;
 
@@ -269,7 +269,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			// NoGood has two unassigned literals.
 			watch1 = posWeakUnassigned1;
 			watch2 = posWeakUnassigned2;
-//			wng = new WatchedNoGood(noGood, posWeakUnassigned1, posWeakUnassigned2, -1);
 		} else if (posSatisfiedLiteral1 != -1) {
 			// NoGood is satisfied.
 			int bestSecondPointer = posSatisfiedLiteral2 != -1 ? posSatisfiedLiteral2
@@ -287,7 +286,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			}
 			watch1 = posSatisfiedLiteral1;
 			watch2 = bestSecondPointer;
-//			wng = new WatchedNoGood(noGood, posSatisfiedLiteral1, bestSecondPointer, -1);
 		} else if (posWeakUnassigned1 != -1) {
 			// NoGood is weakly unit; propagate.
 			ConflictCause conflictCause = assignWeakComplement(posWeakUnassigned1, noGood, weakDecisionLevelHighestAssigned);
@@ -296,7 +294,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			}
 			watch1 = posWeakUnassigned1;
 			watch2 = posWeakHighestAssigned;
-//			wng = new WatchedNoGood(noGood, posWeakUnassigned1, posWeakHighestAssigned, -1);
 		} else {
 			// NoGood is violated.
 			return new ConflictCause(noGood);
@@ -308,7 +305,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			if (posPotentialAlphaWatch != -1) {
 				// Found potential alpha watch.
 				watchAlpha = posPotentialAlphaWatch;
-//				wng.setAlphaPointer(posPotentialAlphaWatch);
 			} else {
 				// No potential alpha watch found: noGood must be strongly unit.
 				ConflictCause conflictCause = assignStrongComplement(noGood, strongDecisionLevelHighestAssigned);
@@ -316,7 +312,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 					return conflictCause;
 				}
 				watchAlpha = posStrongHighestAssigned;
-//				wng.setAlphaPointer(posStrongHighestAssigned);
 			}
 		}
 		WatchedNoGood wng = new WatchedNoGood(noGood, watch1, watch2, watchAlpha);
@@ -367,25 +362,14 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		return binaryWatches[b].add(noGood);
 	}
 
-	private ConflictCause assignWeakComplement(final int literalIndex, final WatchedNoGood impliedBy, int decisionLevel) {
+	private ConflictCause assignWeakComplement(final int literalIndex, final NoGoodInterface impliedBy, int decisionLevel) {
 		final int literal = impliedBy.getLiteral(literalIndex);
 		ThriceTruth truth = isNegated(literal) ? MBT : FALSE;
 		return assignTruth(atomOf(literal), truth, impliedBy, decisionLevel);
 	}
 
-	// FIXME: below method is a duplicate, since there is no common superclass of NoGood and WatchedNoGood. Should be changed, maybe put into ImplicationReasonProvider?
-	private ConflictCause assignWeakComplement(final int literalIndex, final NoGood impliedBy, int decisionLevel) {
-		final int literal = impliedBy.getLiteral(literalIndex);
-		ThriceTruth truth = isNegated(literal) ? MBT : FALSE;
-		return assignTruth(atomOf(literal), truth, impliedBy, decisionLevel);
-	}
-
-	private ConflictCause assignStrongComplement(final WatchedNoGood impliedBy, int decisionLevel) {
+	private ConflictCause assignStrongComplement(final NoGoodInterface impliedBy, int decisionLevel) {
 		return assignTruth(atomOf(impliedBy.getHead()), TRUE, impliedBy, decisionLevel);
-	}
-
-	private ConflictCause assignStrongComplement(final NoGood impliedBy, int decisionLevel) {
-		return assignTruth(atomOf(impliedBy.getPositiveLiteral(HEAD)), TRUE, impliedBy, decisionLevel);
 	}
 
 	private ConflictCause assignTruth(int atom, ThriceTruth truth, ImplicationReasonProvider impliedBy, int decisionLevel) {

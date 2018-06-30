@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.NoGoodInterface;
 
 import java.util.Iterator;
 
@@ -8,12 +9,12 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
 
-public final class WatchedNoGood implements ImplicationReasonProvider, Iterable<Integer> {
+public final class WatchedNoGood implements NoGoodInterface, Iterable<Integer> {
 	private final int[] literals;
 	private int alpha;
 	private int head;
 
-	public WatchedNoGood(NoGood noGood, int a, int b, int alpha) {
+	WatchedNoGood(NoGood noGood, int a, int b, int alpha) {
 		if (noGood.size() < 3) {
 			throw oops("WatchedNoGood should not be used for small NoGoods.");
 		}
@@ -61,41 +62,45 @@ public final class WatchedNoGood implements ImplicationReasonProvider, Iterable<
 		}
 	}
 
+	@Override
 	public boolean hasHead() {
 		return head != -1;
 	}
 
+	@Override
 	public int getHead() {
 		return literals[head];
 	}
 
-	public int getHeadIndex() {
+	int getHeadIndex() {
 		return head;
 	}
 
-	public void setWatch(int index, int value) {
+	void setWatch(int index, int value) {
 		if (index != 0 && index != 1) {
 			throw new IndexOutOfBoundsException();
 		}
 		swap(index, value);
 	}
 
+	@Override
 	public int getLiteral(int index) {
 		return literals[index];
 	}
 
-	public int getAlphaPointer() {
+	int getAlphaPointer() {
 		return alpha;
 	}
 
-	public void setAlphaPointer(int value) {
+	void setAlphaPointer(int value) {
 		alpha = value;
 	}
 
-	public int getLiteralAtAlpha() {
+	int getLiteralAtAlpha() {
 		return literals[alpha];
 	}
 
+	@Override
 	public int size() {
 		return literals.length;
 	}
