@@ -395,6 +395,9 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			int assignedLiteral = literalRepresentation(atom, value);
 			return new ConflictCause(impliedBy == null ? null : impliedBy.getNoGood(negateLiteral(assignedLiteral)));
 		}
+		if (value == TRUE && currentTruth != MBT) {
+			throw oops("Assigning TRUE without assigning MBT before.");
+		}
 
 		// Previous assignment exists, and the new one is consistent with it.
 		// There is nothing to do except if MBT becomes TRUE.

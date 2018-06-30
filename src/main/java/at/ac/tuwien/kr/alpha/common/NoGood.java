@@ -60,6 +60,9 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 
 	private NoGood(int[] literals, boolean head) {
 		this.head = head;
+		if (head && !isNegated(literals[0])) {
+			throw oops("Head is not negative");
+		}
 
 		// HINT: this might decrease performance if NoGoods are mostly small.
 		Arrays.sort(literals, head ? 1 : 0, literals.length);
@@ -82,10 +85,6 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 	}
 
 	public static NoGood headFirst(int... literals) {
-		if (!isNegated(literals[0])) {
-			throw oops("Head is not negative");
-		}
-
 		return new NoGood(literals, true);
 	}
 
