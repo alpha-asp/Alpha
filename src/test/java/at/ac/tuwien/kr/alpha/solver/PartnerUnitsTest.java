@@ -50,8 +50,14 @@ import static org.junit.Assert.fail;
  */
 public class PartnerUnitsTest extends AbstractSolverTests {
 	private final ProgramParser parser = new ProgramParser();
+	
+	@Test
+	public void testPartnerUnits_generated_003() throws IOException {
+		testPartnerUnits_generated("simple003_bf_startZ1.asp");
+	}
 
 	@Test
+	@Ignore("ignore to save resources during CI")
 	public void testPartnerUnits_generated_010() throws IOException {
 		testPartnerUnits_generated("simple010_bf_startZ1.asp");
 	}
