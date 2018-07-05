@@ -187,8 +187,9 @@ public class ParserTest {
 		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getInlineDirectives().getDirectives().iterator().next();
 		assertEquals("c(X)", directive.getHead().toString());
 		assertEquals("[p(X, a, _1), q(Xaa, xaa)]", directive.getBody().toString());
-		assertEquals("X", directive.getWeight().toString());
-		assertEquals("1", directive.getLevel().toString());
+		WeightAtLevel weightAtLevel = directive.getWeightAtLevel();
+		assertEquals("X", weightAtLevel.getWeight().toString());
+		assertEquals("1", weightAtLevel.getLevel().toString());
 	}
 
 	@Test
@@ -199,8 +200,9 @@ public class ParserTest {
 		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getInlineDirectives().getDirectives().iterator().next();
 		assertEquals("c(X)", directive.getHead().toString());
 		assertEquals("[p(X, a, _1), q(Xaa, xaa)]", directive.getBody().toString());
-		assertEquals("X", directive.getWeight().toString());
-		assertEquals("2", directive.getLevel().toString());
+		WeightAtLevel weightAtLevel = directive.getWeightAtLevel();
+		assertEquals("X", weightAtLevel.getWeight().toString());
+		assertEquals("2", weightAtLevel.getLevel().toString());
 	}
 
 	@Test
@@ -211,8 +213,9 @@ public class ParserTest {
 		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getInlineDirectives().getDirectives().iterator().next();
 		assertEquals("c(X)", directive.getHead().toString());
 		assertEquals("[p(X, a, _1), q(Xaa, xaa), not c(X)]", directive.getBody().toString());
-		assertEquals("X", directive.getWeight().toString());
-		assertEquals("2", directive.getLevel().toString());
+		WeightAtLevel weightAtLevel = directive.getWeightAtLevel();
+		assertEquals("X", weightAtLevel.getWeight().toString());
+		assertEquals("2", weightAtLevel.getLevel().toString());
 	}
 
 	@Test
@@ -223,8 +226,9 @@ public class ParserTest {
 		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getInlineDirectives().getDirectives().iterator().next();
 		assertEquals("holds(F, T)", directive.getHead().toString());
 		assertEquals("[fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F, T), holds(F, Tp1), Tp1 = T + 1, LTp1mT = LT + 1 - T]", directive.getBody().toString());
-		assertEquals("LTp1mT", directive.getWeight().toString());
-		assertEquals("1", directive.getLevel().toString());
+		WeightAtLevel weightAtLevel = directive.getWeightAtLevel();
+		assertEquals("LTp1mT", weightAtLevel.getWeight().toString());
+		assertEquals("1", weightAtLevel.getLevel().toString());
 	}
 
 	@Test(expected = RuntimeException.class)

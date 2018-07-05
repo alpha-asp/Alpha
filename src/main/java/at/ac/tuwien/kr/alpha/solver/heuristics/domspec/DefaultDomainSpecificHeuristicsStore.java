@@ -76,18 +76,26 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 		int level = values.getLevel();
 		int weight = values.getWeight();
 
+		Set<Integer> valuesForWeightLevel = getStoreForWeightLevel(weight, getStoreForLevel(level));
+		valuesForWeightLevel.add(heuristicId);
+	}
+
+	SortedMap<Integer, Set<Integer>> getStoreForLevel(int level) {
 		SortedMap<Integer, Set<Integer>> mapWeightValues = mapLevelWeightHeuristics.get(level);
 		if (mapWeightValues == null) {
 			mapWeightValues = new TreeMap<>(Comparator.reverseOrder());
 			mapLevelWeightHeuristics.put(level, mapWeightValues);
 		}
-		
+		return mapWeightValues;
+	}
+
+	Set<Integer> getStoreForWeightLevel(int weight, SortedMap<Integer, Set<Integer>> mapWeightValues) {
 		Set<Integer> valuesForWeightLevel = mapWeightValues.get(weight);
 		if (valuesForWeightLevel == null) {
 			valuesForWeightLevel = new HashSet<>();
 			mapWeightValues.put(weight, valuesForWeightLevel);
 		}
-		valuesForWeightLevel.add(heuristicId);
+		return valuesForWeightLevel;
 	}
 
 	@Override

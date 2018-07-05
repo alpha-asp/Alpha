@@ -79,17 +79,16 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	 * @param debugInternalChecks
 	 */
 	public DefaultSolver(Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, boolean respectDomSpecHeuristic,
-			Heuristic branchingHeuristic,
-			boolean debugInternalChecks) {
+			Heuristic branchingHeuristic) {
 		super(grounder);
 
 		this.assignment = assignment;
 		this.store = store;
 
 		if (respectDomSpecHeuristic) {
-			this.choiceManager = ChoiceManager.withDomainSpecificHeuristics(assignment, store, debugInternalChecks);
+			this.choiceManager = ChoiceManager.withDomainSpecificHeuristics(assignment, store);
 		} else {
-			this.choiceManager = ChoiceManager.withoutDomainSpecificHeuristics(assignment, store, debugInternalChecks);
+			this.choiceManager = ChoiceManager.withoutDomainSpecificHeuristics(assignment, store);
 		}
 
 		this.learner = new GroundConflictNoGoodLearner(assignment);
@@ -339,6 +338,10 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			return null;
 		}
 
+		return analyseConflictAndBackjump(noGoodEntry, conflictCause);
+	}
+
+	private NoGood analyseConflictAndBackjump(Map.Entry<Integer, NoGood> noGoodEntry, ConflictCause conflictCause) {
 		GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.getViolatedNoGood());
 		if (conflictAnalysisResult == UNSAT) {
 			return NoGood.UNSAT;
@@ -413,5 +416,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	private void logStats() {
 		LOGGER.debug(getStatisticsString());
+	}
+
+	public void setChecksEnabled(boolean checksEnabled) {
+		choiceManager.setChecksEnabled(checksEnabled);
 	}
 }

@@ -30,7 +30,6 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,8 +58,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 	private int mbtCount;
 	private boolean checksEnabled;
 
-	public ArrayAssignment(AtomTranslator translator, boolean checksEnabled) {
-		this.checksEnabled = checksEnabled;
+	public ArrayAssignment(AtomTranslator translator) {
 		this.translator = translator;
 		this.atomsAssignedInDecisionLevel = new ArrayList<>();
 		this.atomsAssignedInDecisionLevel.add(new ArrayList<>());
@@ -68,12 +66,8 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		this.propagationCounterPerDecisionLevel.add(0);
 	}
 
-	public ArrayAssignment(Grounder translator) {
-		this(translator, false);
-	}
-
 	public ArrayAssignment() {
-		this(null, false);
+		this(null);
 	}
 
 	@Override

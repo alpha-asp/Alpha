@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.grounder.atoms;
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.WeightAtLevel;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
@@ -49,8 +50,7 @@ import java.util.Set;
 public class HeuristicAtom implements Atom {
 	public static final Predicate PREDICATE = Predicate.getInstance("_h", 4, true);
 	
-	private final Term weight;
-	private final Term level;
+	private final WeightAtLevel weightAtLevel;
 	private final Term sign;
 	private final FunctionTerm head;
 	private final boolean ground;
@@ -58,24 +58,19 @@ public class HeuristicAtom implements Atom {
 	/**
 	 * Constructs a heuristic atom using information from a {@link HeuristicDirective}.
 	 */
-	public HeuristicAtom(Atom head, Term weight, Term level, Term sign) {
-		this(head.toFunctionTerm(), weight, level, sign);
+	public HeuristicAtom(Atom head, WeightAtLevel weightAtLevel, Term sign) {
+		this(head.toFunctionTerm(), weightAtLevel, sign);
 	}
 	
-	private HeuristicAtom(FunctionTerm head, Term weight, Term level, Term sign) {
+	private HeuristicAtom(FunctionTerm head, WeightAtLevel weightAtLevel, Term sign) {
 		this.head = head;
-		this.weight = weight;
-		this.level = level;
+		this.weightAtLevel = weightAtLevel;
 		this.sign = sign;
 		this.ground = getTerms().stream().allMatch(Term::isGround);
 	}
 
-	public Term getWeight() {
-		return weight;
-	}
-
-	public Term getLevel() {
-		return level;
+	public WeightAtLevel getWeightAtLevel() {
+		return weightAtLevel;
 	}
 	
 	public Term getSign() {
@@ -93,7 +88,7 @@ public class HeuristicAtom implements Atom {
 
 	@Override
 	public List<Term> getTerms() {
-		return Arrays.asList(weight, level, sign, head);
+		return Arrays.asList(weightAtLevel.getWeight(), weightAtLevel.getLevel(), sign, head);
 	}
 
 	@Override
@@ -128,25 +123,17 @@ public class HeuristicAtom implements Atom {
 	public HeuristicAtom substitute(Substitution substitution) {
 		return new HeuristicAtom(
 			head.substitute(substitution),
-			weight.substitute(substitution),
-			level.substitute(substitution),
+			weightAtLevel.substitute(substitution),
 			sign.substitute(substitution)
 		);
 	}
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder();
-		sb.append(PREDICATE.getName());
-		if (!getTerms().isEmpty()) {
-			sb.append("(");
-			sb.append(Util.join(this.getTerms()));
-			sb.append(")");
-		}
-		return sb.toString();
+		return Util.join(PREDICATE.getName() + "(", this.getTerms(), ")");
 	}
 
 	public static HeuristicAtom fromHeuristicDirective(HeuristicDirective heuristicDirective) {
-		return new HeuristicAtom(heuristicDirective.getHead(), heuristicDirective.getWeight(), heuristicDirective.getLevel(), heuristicDirective.getSign());
+		return new HeuristicAtom(heuristicDirective.getHead(), heuristicDirective.getWeightAtLevel(), heuristicDirective.getSign());
 	}
 }

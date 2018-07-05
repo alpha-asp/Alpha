@@ -26,6 +26,7 @@
 package at.ac.tuwien.kr.alpha.common.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
+import at.ac.tuwien.kr.alpha.common.WeightAtLevel;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 
@@ -95,7 +96,8 @@ public class HeuristicDirectiveValues {
 	 */
 	@SuppressWarnings("unchecked")
 	public static HeuristicDirectiveValues fromHeuristicAtom(HeuristicAtom groundHeuristicAtom, int headAtomId) {
-		return new HeuristicDirectiveValues(headAtomId, ((ConstantTerm<Integer>)groundHeuristicAtom.getWeight()).getObject(), ((ConstantTerm<Integer>)groundHeuristicAtom.getLevel()).getObject(), ((ConstantTerm<Boolean>)groundHeuristicAtom.getSign()).getObject());
+		WeightAtLevel weightAtLevel = groundHeuristicAtom.getWeightAtLevel();
+		return new HeuristicDirectiveValues(headAtomId, ((ConstantTerm<Integer>)weightAtLevel.getWeight()).getObject(), ((ConstantTerm<Integer>)weightAtLevel.getLevel()).getObject(), ((ConstantTerm<Boolean>)groundHeuristicAtom.getSign()).getObject());
 	}
 
 }

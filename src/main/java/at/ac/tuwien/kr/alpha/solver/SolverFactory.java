@@ -35,7 +35,8 @@ import java.util.Random;
 public final class SolverFactory {
 	public static Solver getInstance(String name, String storeName, Grounder grounder, Random random, boolean respectDomSpecHeuristic,
 			Heuristic fallbackHeuristic, boolean debugInternalChecks) {
-		final ArrayAssignment assignment = new ArrayAssignment(grounder, debugInternalChecks);
+		final ArrayAssignment assignment = new ArrayAssignment(grounder);
+		assignment.setChecksEnabled(debugInternalChecks);
 
 		NoGoodStore store;
 
@@ -54,7 +55,9 @@ public final class SolverFactory {
 			case "naive" :
 				return new NaiveSolver(grounder);
 			case "default":
-				return new DefaultSolver(grounder, store, assignment, random, respectDomSpecHeuristic, fallbackHeuristic, debugInternalChecks);
+				DefaultSolver solver = new DefaultSolver(grounder, store, assignment, random, respectDomSpecHeuristic, fallbackHeuristic);
+				solver.setChecksEnabled(debugInternalChecks);
+				return solver;
 		}
 		throw new IllegalArgumentException("Unknown solver requested.");
 	}

@@ -27,12 +27,13 @@ package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 /**
  * Represents a weight-level pair defined within an annotation (either for heuristic values or for a weak constraint)
  *
  */
-public class WeightAtLevel {
+public class WeightAtLevel implements Substitutable<WeightAtLevel> {
 	
 	public static final int DEFAULT_WEIGHT = 1;
 	public static final int DEFAULT_LEVEL = 1;
@@ -53,6 +54,11 @@ public class WeightAtLevel {
 
 	public Term getLevel() {
 		return level;
+	}
+	
+	@Override
+	public WeightAtLevel substitute(Substitution substitution) {
+		return new WeightAtLevel(weight.substitute(substitution), level.substitute(substitution));
 	}
 
 	@Override

@@ -67,12 +67,8 @@ public class HeuristicDirective extends Directive {
 		return body;
 	}
 
-	public Term getWeight() {
-		return weightAtLevel.getWeight();
-	}
-
-	public Term getLevel() {
-		return weightAtLevel.getLevel();
+	public WeightAtLevel getWeightAtLevel() {
+		return weightAtLevel;
 	}
 	
 	public Term getSign() {
