@@ -133,23 +133,30 @@ public class DomainSpecific implements BranchingHeuristic {
 	private int askFallbackHeuristic(Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies, Set<Integer> admissibleChoices) {
 		// sign of literal chosen by fallback heuristic is ignored
 		int atom = fallbackHeuristic.chooseAtom(admissibleChoices);
-		Boolean sign = null;
 		if (atom != DEFAULT_CHOICE_ATOM) {
-			for (Entry<HeuristicDirectiveValues, Set<Integer>> entry : activeHeuristicsToBodies.entrySet()) {
-				if (entry.getValue().contains(atom)) {
-					sign = entry.getKey().getSign();
-				}
-			}
-			if (sign == null) {
-				throw oops("Could not determine sign for atom chosen by fallback heuristic: " + atom);
-			}
+			return Literals.fromAtomAndSign(atom, determineSignForFallbackAtom(atom, activeHeuristicsToBodies));
 		} else {
-			LOGGER.debug("Fallback heuristic is clueless. Choosing arbitrary literal known to domain-specific heuristics");
-			Entry<HeuristicDirectiveValues, Set<Integer>> entry = activeHeuristicsToBodies.entrySet().iterator().next();
-			atom = entry.getValue().iterator().next();
-			sign = entry.getKey().getSign();
+			return chooseArbitraryLiteral(activeHeuristicsToBodies);
 		}
-		return Literals.fromAtomAndSign(atom, sign);
+	}
+
+	private Boolean determineSignForFallbackAtom(int atom, Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies) {
+		Boolean sign = null;
+		for (Entry<HeuristicDirectiveValues, Set<Integer>> entry : activeHeuristicsToBodies.entrySet()) {
+			if (entry.getValue().contains(atom)) {
+				sign = entry.getKey().getSign();
+			}
+		}
+		if (sign == null) {
+			throw oops("Could not determine sign for atom chosen by fallback heuristic: " + atom);
+		}
+		return sign;
+	}
+
+	private int chooseArbitraryLiteral(Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies) {
+		LOGGER.debug("Fallback heuristic is clueless. Choosing arbitrary literal known to domain-specific heuristics");
+		Entry<HeuristicDirectiveValues, Set<Integer>> entry = activeHeuristicsToBodies.entrySet().iterator().next();
+		return Literals.fromAtomAndSign(entry.getValue().iterator().next(), entry.getKey().getSign());
 	}
 
 	private int chooseAdmissibleBodyForHeuristic(Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies, Set<Integer> admissibleChoices) {

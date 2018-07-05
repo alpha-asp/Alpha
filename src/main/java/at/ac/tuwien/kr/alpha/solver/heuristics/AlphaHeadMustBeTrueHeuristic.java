@@ -59,14 +59,19 @@ public class AlphaHeadMustBeTrueHeuristic extends DependencyDrivenHeuristic {
 
 	@Override
 	public int chooseAtom(Set<Integer> admissibleChoices) {
-		Set<Integer> heads = headToBodies.keySet();
-		Stream<Integer> bodiesOfMbtHeads = heads.stream().map(Literals::atomOf).filter(a -> assignment.getTruth(a) == ThriceTruth.MBT).flatMap(h -> headToBodies.get(h).stream());
-		Optional<Integer> mostActiveBody = getMostActiveBody(bodiesOfMbtHeads, admissibleChoices);
+		Optional<Integer> mostActiveBody = determineMostActiveBody(admissibleChoices);
 		if (mostActiveBody.isPresent()) {
 			rememberedAtom = mostActiveBody.get();
 			return rememberedAtom;
 		}
 		return super.chooseAtom(admissibleChoices);
+	}
+
+	private Optional<Integer> determineMostActiveBody(Set<Integer> admissibleChoices) {
+		Set<Integer> heads = headToBodies.keySet();
+		Stream<Integer> bodiesOfMbtHeads = heads.stream().map(Literals::atomOf).filter(a -> assignment.getTruth(a) == ThriceTruth.MBT).flatMap(h -> headToBodies.get(h).stream());
+		Optional<Integer> mostActiveBody = getMostActiveBody(bodiesOfMbtHeads, admissibleChoices);
+		return mostActiveBody;
 	}
 
 }

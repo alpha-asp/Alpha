@@ -25,6 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 /**
@@ -32,13 +33,18 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
  *
  */
 public class WeightAtLevel {
+	
+	public static final int DEFAULT_WEIGHT = 1;
+	public static final int DEFAULT_LEVEL = 1;
+	public static final Term DEFAULT_WEIGHT_TERM = ConstantTerm.getInstance(DEFAULT_WEIGHT);
+	public static final Term DEFAULT_LEVEL_TERM = ConstantTerm.getInstance(DEFAULT_LEVEL);
 
 	private Term weight;
 	private Term level;
 
 	public WeightAtLevel(Term weight, Term level) {
-		this.weight = weight;
-		this.level = level;
+		this.weight = weight != null ? weight : DEFAULT_WEIGHT_TERM;
+		this.level = level != null ? level : DEFAULT_LEVEL_TERM;
 	}
 	
 	public Term getWeight() {

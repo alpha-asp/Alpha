@@ -39,30 +39,24 @@ import static at.ac.tuwien.kr.alpha.Util.join;
  */
 public class HeuristicDirective extends Directive {
 
-	public static final int DEFAULT_WEIGHT = 1;
-	public static final int DEFAULT_LEVEL = 1;
 	public static final boolean DEFAULT_SIGN = true;
-	public static final Term DEFAULT_WEIGHT_TERM = ConstantTerm.getInstance(DEFAULT_WEIGHT);
-	public static final Term DEFAULT_LEVEL_TERM = ConstantTerm.getInstance(DEFAULT_LEVEL);
 	public static final Term DEFAULT_SIGN_TERM = ConstantTerm.getInstance(DEFAULT_SIGN);
 	
 	private final BasicAtom head;	// TODO: replace by classical literal and drop sign?
 	private final List<Literal> body;
-	private final Term weight;
-	private final Term level;
+	private final WeightAtLevel weightAtLevel;
 	private final Term sign;	//Term, not boolean, in case we want to support variable signs
 	
-	private HeuristicDirective(BasicAtom head, List<Literal> body, Term weight, Term level, Term sign) {
+	public HeuristicDirective(BasicAtom head, List<Literal> body, WeightAtLevel weightAtLevel, Term sign) {
 		super();
 		this.head = head;
 		this.body = body;
-		this.weight = weight != null ? weight : DEFAULT_WEIGHT_TERM;
-		this.level = level != null ? level : DEFAULT_LEVEL_TERM;
+		this.weightAtLevel = weightAtLevel;
 		this.sign = sign != null ? sign : DEFAULT_SIGN_TERM;
 	}
-
+	
 	public HeuristicDirective(BasicAtom head, List<Literal> body, WeightAtLevel weightAtLevel, boolean sign) {
-		this(head, body, weightAtLevel.getWeight(), weightAtLevel.getLevel(), ConstantTerm.getInstance(sign));
+		this(head, body, weightAtLevel, ConstantTerm.getInstance(sign));
 	}
 
 	public BasicAtom getHead() {
@@ -74,11 +68,11 @@ public class HeuristicDirective extends Directive {
 	}
 
 	public Term getWeight() {
-		return weight;
+		return weightAtLevel.getWeight();
 	}
 
 	public Term getLevel() {
-		return level;
+		return weightAtLevel.getLevel();
 	}
 	
 	public Term getSign() {
@@ -87,7 +81,7 @@ public class HeuristicDirective extends Directive {
 	
 	@Override
 	public String toString() {
-		return join("#heuristic " + head + " : ", body, ". [" + weight + "@" + level + "]");
+		return join("#heuristic " + head + " : ", body, ". [" + weightAtLevel + "]");
 	}
 	
 }

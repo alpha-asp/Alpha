@@ -27,7 +27,9 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
-import java.util.Iterator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
@@ -41,19 +43,11 @@ public interface AtomTranslator {
 	}
 
 	default String literalsToString(Iterable<Integer> literals) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("{");
-
-		for (Iterator<Integer> iterator = literals.iterator(); iterator.hasNext();) {
-			sb.append(literalToString(iterator.next()));
-
-			if (iterator.hasNext()) {
-				sb.append(", ");
-			}
-		}
-
-		sb.append("}");
-		return sb.toString();
+		return literalsToString(StreamSupport.stream(literals.spliterator(), false));
+	}
+	
+	default String literalsToString(Stream<Integer> streamOfLiterals) {
+		return "{" + streamOfLiterals.map(this::literalToString).collect(Collectors.joining(", ")) + "}";
 	}
 
 	/**
@@ -67,7 +61,7 @@ public interface AtomTranslator {
 		if (noGood.hasHead()) {
 			sb.append("*");
 		}
-		sb.append(literalsToString(noGood));
+		sb.append(literalsToString(noGood.stream().boxed()));
 
 		return sb.toString();
 	}
