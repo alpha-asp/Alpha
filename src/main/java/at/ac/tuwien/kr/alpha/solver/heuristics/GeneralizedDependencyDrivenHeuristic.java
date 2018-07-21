@@ -77,8 +77,8 @@ public class GeneralizedDependencyDrivenHeuristic extends DependencyDrivenHeuris
 			}
 		}
 		for (Integer atom : others) {
-			atomsToBodies.put(atom, body);
-			bodyToLiterals.put(body, atom);
+			atomsToBodiesAtoms.put(atom, body);
+			bodyAtomToLiterals.put(body, atom);
 		}
 	}
 
