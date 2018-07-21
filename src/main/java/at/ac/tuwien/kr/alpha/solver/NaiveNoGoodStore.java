@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
-import static at.ac.tuwien.kr.alpha.common.NoGood.HEAD;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
 public class NaiveNoGoodStore implements NoGoodStore {
@@ -159,7 +158,7 @@ public class NaiveNoGoodStore implements NoGoodStore {
 			return null;
 		}
 
-		final int headLiteral = noGood.getPositiveLiteral(HEAD);
+		final int headLiteral = positiveLiteral(noGood.getHead());
 
 		if (assignment.getTruth(atomOf(headLiteral)) != MBT) {
 			return null;

@@ -39,7 +39,6 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
-import static at.ac.tuwien.kr.alpha.common.NoGood.HEAD;
 import static java.lang.Math.abs;
 
 /**
@@ -442,7 +441,7 @@ public class NaiveSolver extends AbstractSolver {
 			return false;
 		}
 
-		int headAtom = atomOf(noGood.getLiteral(HEAD));
+		int headAtom = atomOf(noGood.getHead());
 
 		// Check whether head is assigned MBT.
 		if (!mbtAssigned.contains(headAtom)) {

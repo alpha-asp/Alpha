@@ -165,7 +165,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		if (noGood.hasHead()) {
 			return assignStrongComplement(noGood, 0);
 		} else {
-			return assignWeakComplement(HEAD, noGood, 0);
+			return assignWeakComplement(0, noGood, 0);
 		}
 	}
 
@@ -195,8 +195,8 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		Map<Integer, Boolean> occurringAtomPolarity = new HashMap<>();
 
 		// Iterate noGood and record satisfying/unassigned/etc positions.
-		int headLiteral = noGood.getPositiveLiteral(HEAD);
-		final ThriceTruth headTruth = noGood.hasHead() ? assignment.getTruth(atomOf(headLiteral)) : null;
+		int headAtom = atomOf(noGood.getHead());
+		final ThriceTruth headTruth = noGood.hasHead() ? assignment.getTruth(headAtom) : null;
 		final boolean isHeadTrue = headTruth == TRUE;
 		for (int i = 0; i < noGood.size(); i++) {
 			final int literal = noGood.getLiteral(i);
@@ -230,7 +230,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 				// 1) the head of the nogood is true and the literal is assigned at a higher-or-equal decision level.
 				// 2) the literal is complementary assigned and thus satisfies the nogood, or
 				// 3) the literal is unassigned or assigned must-be-true.
-				if (isHeadTrue && strongDecisionLevel(atomOf(literal)) >= strongDecisionLevel(atomOf(headLiteral))
+				if (isHeadTrue && strongDecisionLevel(atomOf(literal)) >= strongDecisionLevel(headAtom)
 					|| isComplementaryAssigned(noGood.getLiteral(i), atomTruthValue)
 					|| strongDecisionLevel(atomOf(literal)) == Integer.MAX_VALUE) {
 					posPotentialAlphaWatch = i;
@@ -609,7 +609,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 			if (!noGood.isBinary()) {
 				throw oops("Received noGood is not binary.");
 			}
-			if (noGood.hasHead() && noGood.getLiteral(HEAD) != forLiteral) {
+			if (noGood.hasHead() && noGood.getHead() != forLiteral) {
 				return addHeadedNoGood(noGood);
 			} else {
 				return addOrdinaryNoGood(noGood);
