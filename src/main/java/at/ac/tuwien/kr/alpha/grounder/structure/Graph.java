@@ -9,9 +9,9 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class Graph<V> {
-	private final HashSet<V> vertices;
-	private final HashSet<AbstractMap.SimpleEntry<V, V>> edges;
-	private final LinkedHashMap<V, Integer> vertexToPosition;
+	private final Set<V> vertices;
+	private final Set<AbstractMap.SimpleEntry<V, V>> edges;
+	private final Map<V, Integer> vertexToPosition;
 	private int counter;
 	private boolean sealed;
 	private ArrayList<V> positionToVertex;

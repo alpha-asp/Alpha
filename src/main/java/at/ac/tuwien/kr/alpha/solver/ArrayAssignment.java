@@ -361,7 +361,7 @@ public class ArrayAssignment implements WritableAssignment, Checkable {
 		return assignment.get(atom);
 	}
 
-	Integer getSomeMBTAssignedAtom() {
+	int getSomeMBTAssignedAtom() {
 		for (Entry entry : assignment) {
 			if (entry != null && entry.getTruth() == MBT && atomTranslator.get(entry.atom) instanceof BasicAtom) {
 				return entry.atom;

@@ -68,7 +68,7 @@ public class PredicateDependencyGraph {
 					predicateDependencyGraph.addEdges(fromPredicate, predicatesInBody);
 				}
 			} else {
-				oops("Unknown rule head encountered.");
+				throw oops("Unknown rule head encountered.");
 			}
 		}
 		// Add facts as vertices.

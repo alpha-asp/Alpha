@@ -7,8 +7,6 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import java.util.Collections;
 import java.util.List;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
-
 /**
  * Copyright (c) 2016-2017, the Alpha Team.
  */
@@ -44,9 +42,6 @@ public class VariableTerm extends Term {
 
 	@Override
 	public Term substitute(Substitution substitution) {
-		if (substitution == null) {
-			throw oops("Substitution is null");
-		}
 		Term groundTerm = substitution.eval(this);
 		if (groundTerm == null) {
 			// If variable is not substituted, keep term as is.

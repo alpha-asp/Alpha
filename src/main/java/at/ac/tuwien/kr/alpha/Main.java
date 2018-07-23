@@ -273,7 +273,7 @@ public class Main {
 
 		if (!commandLine.hasOption(OPT_QUIET)) {
 			AtomicInteger counter = new AtomicInteger(0);
-			stream.forEach(as -> System.out.println("Answer set " + counter.incrementAndGet() + ":\n" + as.toString()));
+			stream.forEach(as -> System.out.println("Answer set " + counter.incrementAndGet() + ":" + System.lineSeparator() + as.toString()));
 			if (counter.get() == 0) {
 				System.out.println("UNSATISFIABLE");
 			} else {
