@@ -15,11 +15,9 @@ import java.util.Map;
 public class ProgramAnalysis {
 
 	private final Map<Predicate, HashSet<NonGroundRule>> predicateDefiningRules;
-	private final PredicateDependencyGraph predicateDependencyGraph;
 
 	public ProgramAnalysis(Program program) {
 		predicateDefiningRules = new HashMap<>();
-		predicateDependencyGraph = PredicateDependencyGraph.buildFromProgram(program);
 	}
 
 	public void recordDefiningRule(Predicate headPredicate, NonGroundRule rule) {
