@@ -32,7 +32,6 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -117,11 +116,7 @@ public class ComparisonAtom implements Atom, VariableNormalizableAtom {
 
 	@Override
 	public ComparisonAtom normalizeVariables(String prefix, int counterStartingValue) {
-		List<Term> renamedTerms = new ArrayList<>(terms.size());
-		Term.RenameCounter renameCounter = new Term.RenameCounter(counterStartingValue);
-		for (int i = 0; i < terms.size(); i++) {
-			renamedTerms.add(terms.get(i).normalizeVariables(prefix, renameCounter));
-		}
+		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
 		return new ComparisonAtom(renamedTerms.get(0), renamedTerms.get(1), operator);
 	}
 }

@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.common.terms;
 
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -75,5 +76,14 @@ public abstract class Term implements Comparable<Term> {
 			counter = startingValue;
 			renamedVariables = new HashMap<>();
 		}
+	}
+
+	public static List<Term> renameTerms(List<Term> terms, String prefix, int counterStartingValue) {
+		List<Term> renamedTerms = new ArrayList<>(terms.size());
+		Term.RenameCounter renameCounter = new Term.RenameCounter(counterStartingValue);
+		for (Term term : terms) {
+			renamedTerms.add(term.normalizeVariables(prefix, renameCounter));
+		}
+		return renamedTerms;
 	}
 }

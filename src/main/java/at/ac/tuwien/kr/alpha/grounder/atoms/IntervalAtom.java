@@ -34,7 +34,6 @@ import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -115,11 +114,7 @@ public class IntervalAtom implements Atom, VariableNormalizableAtom {
 
 	@Override
 	public IntervalAtom normalizeVariables(String prefix, int counterStartingValue) {
-		List<Term> renamedTerms = new ArrayList<>(terms.size());
-		Term.RenameCounter renameCounter = new Term.RenameCounter(counterStartingValue);
-		for (Term term : terms) {
-			renamedTerms.add(term.normalizeVariables(prefix, renameCounter));
-		}
+		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
 		return new IntervalAtom((IntervalTerm) renamedTerms.get(0), renamedTerms.get(1));
 	}
 }
