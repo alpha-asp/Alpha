@@ -89,8 +89,7 @@ public class AnalyzeUnjustified {
 
 		ReturnExplainUnjust ret = new ReturnExplainUnjust();
 
-		// Line 2: construct set of all 'rules' such that head unifies with p.
-		log("Line 2.");
+		// Construct set of all 'rules' such that head unifies with p.
 		List<RuleAndUnifier> rulesUnifyingWithP = rulesHeadUnifyingWith(p);
 		log("Rules unifying with {} are {}", p, rulesUnifyingWithP);
 		rulesLoop:
@@ -99,20 +98,15 @@ public class AnalyzeUnjustified {
 			List<Literal> bodyR = ruleUnifier.ruleBody;
 			Atom sigmaHr = ruleUnifier.originalHead.substitute(sigma);
 			log("Considering now: {}", ruleUnifier);
-			// Line 3 below.
-			log("Line 3.");
 			Set<Substitution> vN = new LinkedHashSet<>(x.getComplementSubstitutions());
 			for (Substitution sigmaN : vN) {
 				if (Unification.instantiate(p.substitute(sigmaN), sigmaHr) != null) {
-					log("Line 4.");
 					log("Unifier is excluded by: {}", sigmaN);
 					continue rulesLoop;
 				}
 			}
-			log("Line 5.");
 			Set<Substitution> vNp = new LinkedHashSet<>();
 			for (Substitution substitution : vN) {
-				//vNp.add(new Substitution(sigma).extendWith(substitution));
 				Substitution merged = Substitution.mergeIntoLeft(substitution, sigma);
 				// Ignore inconsistent merges.
 				if (merged == null) {
@@ -122,8 +116,6 @@ public class AnalyzeUnjustified {
 			}
 			log("Adapting N to N'. Original N is {}", vN);
 			log("Adapted N' is {}", vNp);
-			// Line 8.
-			log("Line 9.");
 			log("Searching for falsified negated literals in the body: {}", bodyR);
 			for (Literal lit : bodyR) {
 				if (!lit.isNegated()) {
@@ -148,8 +140,6 @@ public class AnalyzeUnjustified {
 						log("{} does not unify with {}", lg, lb);
 						continue;
 					}
-					// Line 9.
-					log("Line 10.");
 					log("Checking if {} is already covered.", lb);
 					boolean isCovered = false;
 					for (Substitution sigmaN : vN) {
@@ -160,8 +150,6 @@ public class AnalyzeUnjustified {
 						}
 					}
 					if (!isCovered) {
-						// Line 10.
-						log("Line 11.");
 						Substitution sigmacirc = new Substitution(sigma).extendWith(sigmagb);
 						vNp.add(sigmacirc);
 						log("Literal {} is not excluded and falsifies body literal {}", lg, lit);
@@ -171,8 +159,6 @@ public class AnalyzeUnjustified {
 				}
 
 			}
-			// Line 11.
-			log("Line 12.");
 			List<Literal> bodyPos = new ArrayList<>();
 			for (Literal literal : bodyR) {
 				if (!literal.isNegated()) {
@@ -192,22 +178,15 @@ public class AnalyzeUnjustified {
 		log("Begin UnjustCoverFixed()");
 		log("Finding unjustified body literals in: {} / {} excluded {}", vB, vY, vN);
 		Set<LitSet> ret = new LinkedHashSet<>();
-		// Line 1.
 		if (vB.isEmpty() || vY.isEmpty()) {
-			// Line 2.
-			log("Line 2.");
 			log("End unjustCover().");
 			padDepth -= 2;
 			return Collections.emptySet();
 		}
-		// Line 3.
-		log("Line 3.");
 		int chosenLiteralPos = 0;
 		Atom b = vB.get(chosenLiteralPos).getAtom();
 		log("Picked literal from body is: {}", b);
-		// Line 4.
 		for (Substitution sigmaY : vY) {
-			log("Line 4.");
 			Atom bSigmaY = b.substitute(sigmaY);
 			log("Treating substitution for: {}", bSigmaY);
 			Set<Substitution> vYp = new LinkedHashSet<>();
@@ -250,8 +229,6 @@ public class AnalyzeUnjustified {
 
 			log("Unjustified body literals: {}", vYp);
 
-			// Line 5.
-			log("Line 5.");
 			Set<Substitution> vYpUN = new LinkedHashSet<>();
 			vYpUN.addAll(vYp);
 			vYpUN.addAll(vN);
