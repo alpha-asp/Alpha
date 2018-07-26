@@ -96,11 +96,7 @@ public class BasicAtom implements Atom, VariableNormalizableAtom {
 
 	@Override
 	public BasicAtom normalizeVariables(String prefix, int counterStartingValue) {
-		List<Term> renamedTerms = new ArrayList<>(terms.size());
-		Term.RenameCounter renameCounter = new Term.RenameCounter(counterStartingValue);
-		for (int i = 0; i < terms.size(); i++) {
-			renamedTerms.add(terms.get(i).normalizeVariables(prefix, renameCounter));
-		}
+		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
 		return new BasicAtom(predicate, renamedTerms);
 	}
 
