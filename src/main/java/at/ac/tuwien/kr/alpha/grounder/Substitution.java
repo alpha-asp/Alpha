@@ -48,30 +48,21 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 public class Substitution {
 	private static final ParseTreeVisitor VISITOR = new ParseTreeVisitor(Collections.emptyMap(), false);
 
-	private TreeMap<VariableTerm, Term> substitution;
-	private final TreeMap<VariableTerm, List<VariableTerm>> rightHandVariableOccurrences;
+	protected TreeMap<VariableTerm, Term> substitution;
 
-	private Substitution(TreeMap<VariableTerm, Term> substitution, TreeMap<VariableTerm, List<VariableTerm>> rightHandVariableOccurrences) {
+	private Substitution(TreeMap<VariableTerm, Term> substitution) {
 		if (substitution == null) {
 			throw oops("Substitution is null.");
 		}
 		this.substitution = substitution;
-		this.rightHandVariableOccurrences = rightHandVariableOccurrences;
 	}
 
 	public Substitution() {
-		this(new TreeMap<>(), new TreeMap<>());
+		this(new TreeMap<>());
 	}
 
 	public Substitution(Substitution clone) {
-		this(new TreeMap<>(clone.substitution), new TreeMap<>(clone.rightHandVariableOccurrences));
-	}
-
-	public Substitution extendWith(Substitution extension) {
-		for (Map.Entry<VariableTerm, Term> extensionVariable : extension.substitution.entrySet()) {
-			this.put(extensionVariable.getKey(), extensionVariable.getValue());
-		}
-		return this;
+		this(new TreeMap<>(clone.substitution));
 	}
 	
 	static Substitution unify(Literal literal, Instance instance, Substitution substitution) {
@@ -157,33 +148,15 @@ public class Substitution {
 	}
 
 	public <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term groundTerm) {
-		// TODO: if groundTerm is not ground, we need to store this for right-hand side reverse-lookup
-		// TODO: For each variableTerm we must check whether it already occurs at the right hand side of some substitution here and update it.
 		if (!groundTerm.isGround()) {
-			for (VariableTerm rightHandVariable : groundTerm.getOccurringVariables()) {
-				rightHandVariableOccurrences.putIfAbsent(rightHandVariable, new ArrayList<>());
-				rightHandVariableOccurrences.get(rightHandVariable).add(variableTerm);
-			}
+			throw oops("Right-hand term is not ground.");
+		}
+		Term alreadyAssigned = substitution.get(variableTerm);
+		if (alreadyAssigned != null && alreadyAssigned != groundTerm) {
+			throw oops("Variable is already assigned to another term.");
 		}
 		// Note: We're destroying type information here.
-		Term ret = substitution.put(variableTerm, groundTerm);
-
-		// Check if the just-assigned variable occurs somewhere in the right-hand side already.
-		List<VariableTerm> rightHandOccurrences = rightHandVariableOccurrences.get(variableTerm);
-		if (rightHandOccurrences != null) {
-			// Replace all occurrences on the right-hand side with the just-assigned term.
-			for (VariableTerm rightHandOccurrence : rightHandOccurrences) {
-				// Substitute the right hand where this assigned variable occurs with the new value and store it.
-				Term previousRightHand = substitution.get(rightHandOccurrence);
-				if (previousRightHand == null) {
-					// Variable does not occur on the lef-hand side, skip.
-					continue;
-				}
-				substitution.put(rightHandOccurrence, previousRightHand.substitute(this));
-			}
-		}
-
-		return ret;
+		return substitution.put(variableTerm, groundTerm);
 	}
 
 	public boolean isEmpty() {
@@ -257,44 +230,5 @@ public class Substitution {
 	@Override
 	public int hashCode() {
 		return substitution != null ? substitution.hashCode() : 0;
-	}
-
-	/**
-	 * Merge substitution right into left as used in the AnalyzeUnjustified.
-	 * Left mappings are seen as equalities, i.e.,
-	 * if left has A -> B and right has A -> t then the result will have A -> t and B -> t.
-	 * If both substitutions are inconsistent, i.e., A -> t1 in left and A -> t2 in right, then null is returned.
-	 *
-	 * @param left
-	 * @param right
-	 * @return
-	 */
-	public static Substitution mergeIntoLeft(Substitution left, Substitution right) {
-		// Note: we assume both substitutions are free of chains, i.e., no A->B, B->C but A->C, B->C.
-		Substitution ret = new Substitution(left);
-		for (Map.Entry<VariableTerm, Term> mapping : right.substitution.entrySet()) {
-			VariableTerm variable = mapping.getKey();
-			Term term = mapping.getValue();
-			// If variable is unset, simply add.
-			if (!ret.isVariableSet(variable)) {
-				ret.put(variable, term);
-				continue;
-			}
-			// Variable is already set.
-			Term setTerm = ret.eval(variable);
-			if (setTerm instanceof VariableTerm) {
-				// Variable maps to another variable in left.
-				// Add a new mapping of the setTerm variable into our right-assigned term.
-				ret.put((VariableTerm) setTerm, term);
-				// Note: Substitution.put takes care of resolving the chain variable->setTerm->term.
-				continue;
-			}
-			// Check for inconsistency.
-			if (setTerm != term) {
-				return null;
-			}
-			// Now setTerm equals term, no action needed.
-		}
-		return ret;
 	}
 }

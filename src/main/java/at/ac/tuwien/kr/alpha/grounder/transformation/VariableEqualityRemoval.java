@@ -35,7 +35,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.grounder.Unifier;
 
 import java.util.*;
 
@@ -96,7 +96,7 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 		}
 
 		// Use substitution for actual replacement.
-		Substitution replacementSubstitution = new Substitution();
+		Unifier replacementSubstitution = new Unifier();
 		// For each set of equal variables, take the first variable and replace all others by it.
 		for (Map.Entry<VariableTerm, HashSet<VariableTerm>> variableEqualityEntry : variableToEqualVariables.entrySet()) {
 			VariableTerm variableToReplace = variableEqualityEntry.getKey();

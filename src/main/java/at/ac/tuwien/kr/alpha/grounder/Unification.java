@@ -92,7 +92,7 @@ public class Unification {
 		return false;
 	}
 
-	public static Substitution unifyAtoms(Atom left, Atom right) {
+	public static Unifier unifyAtoms(Atom left, Atom right) {
 		return unifyAtoms(left, right, false);
 	}
 
@@ -100,13 +100,13 @@ public class Unification {
 	 * Instantiates the general Atom to match the specific one and returns the corresponding substitution.
 	 * @param general the general Atom to instantiate.
 	 * @param specific the specific Atom.
-	 * @return a Substitution sigma such that specific == general.substitute(sigma), returns null if no such sigma exists.
+	 * @return a Unifier sigma such that specific == general.substitute(sigma), returns null if no such sigma exists.
 	 */
-	public static Substitution instantiate(Atom general, Atom specific) {
+	public static Unifier instantiate(Atom general, Atom specific) {
 		return unifyAtoms(specific, general, true);
 	}
 
-	private static Substitution unifyAtoms(Atom left, Atom right, boolean keepLeftAsIs) {
+	private static Unifier unifyAtoms(Atom left, Atom right, boolean keepLeftAsIs) {
 		Set<VariableTerm> leftOccurringVariables = left.getOccurringVariables();
 		Set<VariableTerm> rightOccurringVaribles = right.getOccurringVariables();
 		boolean leftSmaller = leftOccurringVariables.size() < rightOccurringVaribles.size();
@@ -117,7 +117,7 @@ public class Unification {
 				throw oops("Left and right atom share variables.");
 			}
 		}
-		Substitution mgu = new Substitution();
+		Unifier mgu = new Unifier();
 		if (!left.getPredicate().equals(right.getPredicate())) {
 			return null;
 		}
@@ -131,7 +131,7 @@ public class Unification {
 		return mgu;
 	}
 
-	private static boolean unifyTerms(Term left, Term right, Substitution currentSubstitution, boolean keepLeftAsIs) {
+	private static boolean unifyTerms(Term left, Term right, Unifier currentSubstitution, boolean keepLeftAsIs) {
 		final Term leftSubs = left.substitute(currentSubstitution);
 		final Term rightSubs = right.substitute(currentSubstitution);
 		if (leftSubs == rightSubs) {

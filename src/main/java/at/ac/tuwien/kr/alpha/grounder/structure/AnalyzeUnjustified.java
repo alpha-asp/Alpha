@@ -94,20 +94,20 @@ public class AnalyzeUnjustified {
 		log("Rules unifying with {} are {}", p, rulesUnifyingWithP);
 		rulesLoop:
 		for (RuleAndUnifier ruleUnifier : rulesUnifyingWithP) {
-			Substitution sigma = ruleUnifier.unifier;
+			Unifier sigma = ruleUnifier.unifier;
 			List<Literal> bodyR = ruleUnifier.ruleBody;
 			Atom sigmaHr = ruleUnifier.originalHead.substitute(sigma);
 			log("Considering now: {}", ruleUnifier);
-			Set<Substitution> vN = new LinkedHashSet<>(x.getComplementSubstitutions());
-			for (Substitution sigmaN : vN) {
+			Set<Unifier> vN = new LinkedHashSet<>(x.getComplementSubstitutions());
+			for (Unifier sigmaN : vN) {
 				if (Unification.instantiate(p.substitute(sigmaN), sigmaHr) != null) {
 					log("Unifier is excluded by: {}", sigmaN);
 					continue rulesLoop;
 				}
 			}
-			Set<Substitution> vNp = new LinkedHashSet<>();
-			for (Substitution substitution : vN) {
-				Substitution merged = Substitution.mergeIntoLeft(substitution, sigma);
+			Set<Unifier> vNp = new LinkedHashSet<>();
+			for (Unifier substitution : vN) {
+				Unifier merged = Unifier.mergeIntoLeft(substitution, sigma);
 				// Ignore inconsistent merges.
 				if (merged == null) {
 					continue;
@@ -135,14 +135,14 @@ public class AnalyzeUnjustified {
 						}
 					} // Note: in case the atom is not in the atomStore, it came from a fact and hence is true.
 					log("{} is TRUE or MBT.", lg);
-					Substitution sigmagb = Unification.unifyAtoms(lg, lb);
+					Unifier sigmagb = Unification.unifyAtoms(lg, lb);
 					if (sigmagb == null) {
 						log("{} does not unify with {}", lg, lb);
 						continue;
 					}
 					log("Checking if {} is already covered.", lb);
 					boolean isCovered = false;
-					for (Substitution sigmaN : vN) {
+					for (Unifier sigmaN : vN) {
 						if (Unification.instantiate(p.substitute(sigmaN), sigmaHr.substitute(sigmagb)) != null) {
 							log("{} is already covered by {}", lb, sigmaN);
 							isCovered = true;
@@ -150,7 +150,7 @@ public class AnalyzeUnjustified {
 						}
 					}
 					if (!isCovered) {
-						Substitution sigmacirc = new Substitution(sigma).extendWith(sigmagb);
+						Unifier sigmacirc = new Unifier(sigma).extendWith(sigmagb);
 						vNp.add(sigmacirc);
 						log("Literal {} is not excluded and falsifies body literal {}", lg, lit);
 						ret.vL.add(lg.toLiteral());
@@ -173,7 +173,7 @@ public class AnalyzeUnjustified {
 		return ret;
 	}
 
-	private Set<LitSet> unjustCover(List<Literal> vB, Set<Substitution> vY, Set<Substitution> vN, Assignment currentAssignment) {
+	private Set<LitSet> unjustCover(List<Literal> vB, Set<Unifier> vY, Set<Unifier> vN, Assignment currentAssignment) {
 		padDepth += 2;
 		log("Begin UnjustCoverFixed()");
 		log("Finding unjustified body literals in: {} / {} excluded {}", vB, vY, vN);
@@ -186,10 +186,10 @@ public class AnalyzeUnjustified {
 		int chosenLiteralPos = 0;
 		Atom b = vB.get(chosenLiteralPos).getAtom();
 		log("Picked literal from body is: {}", b);
-		for (Substitution sigmaY : vY) {
+		for (Unifier sigmaY : vY) {
 			Atom bSigmaY = b.substitute(sigmaY);
 			log("Treating substitution for: {}", bSigmaY);
-			Set<Substitution> vYp = new LinkedHashSet<>();
+			Set<Unifier> vYp = new LinkedHashSet<>();
 
 			log("Checking atoms over predicate: {}", b.getPredicate());
 			AssignedAtomsIterator assignedAtomsOverPredicate = getAssignedAtomsOverPredicate(b.getPredicate());
@@ -205,7 +205,7 @@ public class AnalyzeUnjustified {
 						continue;
 					}
 				} // Note: in case the atom is not in the atomStore, it came from a fact and hence is true.
-				Substitution sigma = Unification.instantiate(b, atom);
+				Unifier sigma = Unification.instantiate(b, atom);
 				if (sigma == null) {
 					log("Atom does not unify with picked body literal.");
 					continue;
@@ -216,7 +216,7 @@ public class AnalyzeUnjustified {
 					throw oops("Resulting atom is not ground.");
 				}
 				if (Unification.instantiate(bSigmaY, bSigma) != null) {
-					for (Substitution sigmaN : vN) {
+					for (Unifier sigmaN : vN) {
 						if (Unification.instantiate(b.substitute(sigmaN), bSigma) != null) {
 							log("Atom is excluded by: {}", sigmaN);
 							continue atomLoop;
@@ -229,7 +229,7 @@ public class AnalyzeUnjustified {
 
 			log("Unjustified body literals: {}", vYp);
 
-			Set<Substitution> vYpUN = new LinkedHashSet<>();
+			Set<Unifier> vYpUN = new LinkedHashSet<>();
 			vYpUN.addAll(vYp);
 			vYpUN.addAll(vN);
 			LitSet toJustify = new LitSet(bSigmaY, vYpUN);
@@ -336,7 +336,7 @@ public class AnalyzeUnjustified {
 				renamedBody = Collections.emptyList();
 			}
 			// Unify rule head with literal to justify.
-			Substitution unifier = Unification.unifyAtoms(p, headAtom);
+			Unifier unifier = Unification.unifyAtoms(p, headAtom);
 			// Note: maybe it is faster to first check unification and only rename the whole rule afterwards?
 			// Skip if unification failed.
 			if (unifier == null) {
@@ -363,10 +363,10 @@ public class AnalyzeUnjustified {
 
 	private static class RuleAndUnifier {
 		final List<Literal> ruleBody;
-		final Substitution unifier;
+		final Unifier unifier;
 		final Atom originalHead;
 
-		private RuleAndUnifier(List<Literal> ruleBody, Substitution unifier, Atom originalHead) {
+		private RuleAndUnifier(List<Literal> ruleBody, Unifier unifier, Atom originalHead) {
 			this.ruleBody = ruleBody;
 			this.unifier = unifier;
 			this.originalHead = originalHead;

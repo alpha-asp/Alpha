@@ -30,7 +30,7 @@ package at.ac.tuwien.kr.alpha.common;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.grounder.Unifier;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -84,7 +84,7 @@ public class Rule {
 		for (Literal literal : body) {
 			occurringVariables.addAll(literal.getOccurringVariables());
 		}
-		Substitution variableReplacement = new Substitution();
+		Unifier variableReplacement = new Unifier();
 		for (VariableTerm occurringVariable : occurringVariables) {
 			final String newVariableName = occurringVariable.toString() + newVariablePostfix;
 			variableReplacement.put(occurringVariable, VariableTerm.getInstance(newVariableName));

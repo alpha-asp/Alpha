@@ -1,34 +1,9 @@
-/**
- * Copyright (c) 2016-2018, the Alpha Team.
- * All rights reserved.
- * 
- * Additional changes made by Siemens.
- * 
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- * 
- * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 
- * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
@@ -44,28 +19,58 @@ import java.util.Arrays;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2018, the Alpha Team.
  */
-public class SubstitutionTest {
-	static final ProgramParser PARSER = new ProgramParser();
+public class UnifierTest extends SubstitutionTest {
 
-	static final ConstantTerm<?> A = ConstantTerm.getSymbolicInstance("a");
-	static final ConstantTerm<?> B = ConstantTerm.getSymbolicInstance("b");
-	static final ConstantTerm<?> C = ConstantTerm.getSymbolicInstance("c");
+	@Test
+	public void extendUnifier() {
+		VariableTerm varX = VariableTerm.getInstance("X");
+		VariableTerm varY = VariableTerm.getInstance("Y");
+		Unifier sub1 = new Unifier();
+		sub1.put(varX, varY);
+		Unifier sub2 = new Unifier();
+		sub2.put(varY, ConstantTerm.getInstance("a"));
 
-	static final VariableTerm X = VariableTerm.getInstance("X");
-	static final VariableTerm Y = VariableTerm.getInstance("Y");
+		sub1.extendWith(sub2);
+		BasicAtom atom1 = parseAtom("p(X)");
+
+		Atom atomSubstituted = atom1.substitute(sub1);
+		assertEquals(ConstantTerm.getInstance("a"), atomSubstituted.getTerms().get(0));
+	}
+
+	@Test
+	public void mergeUnifierIntoLeft() {
+		VariableTerm varX = VariableTerm.getInstance("X");
+		VariableTerm varY = VariableTerm.getInstance("Y");
+		VariableTerm varZ = VariableTerm.getInstance("Z");
+		Term constA = ConstantTerm.getInstance("a");
+		Unifier left = new Unifier();
+		left.put(varX, varY);
+		left.put(varZ, varY);
+		Unifier right = new Unifier();
+		right.put(varX, constA);
+		Unifier merged = Unifier.mergeIntoLeft(left, right);
+		assertEquals(constA, merged.eval(varY));
+		assertEquals(constA, merged.eval(varZ));
+	}
+
+	private BasicAtom parseAtom(String atom) {
+		ProgramParser programParser = new ProgramParser();
+		Program program = programParser.parse(atom + ".");
+		return (BasicAtom) program.getFacts().get(0);
+	}
 
 	@Test
 	public void unifyTermsSimpleBinding() throws Exception {
-		Substitution substitution = new Substitution();
+		Substitution substitution = new Unifier();
 		substitution.unifyTerms(Y, A);
 		assertEquals(A, substitution.eval(Y));
 	}
 
 	@Test
 	public void unifyTermsFunctionTermBinding() throws Exception {
-		Substitution substitution = new Substitution();
+		Substitution substitution = new Unifier();
 		substitution.put(Y, A);
 
 		FunctionTerm groundFunctionTerm = FunctionTerm.getInstance("f", B, C);
@@ -91,7 +96,7 @@ public class SubstitutionTest {
 	public void groundAndPrintRule() {
 		Rule rule = PARSER.parse("x :- p(X,Y), not q(X,Y).").getRules().get(0);
 		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
-		Substitution substitution = new Substitution();
+		Substitution substitution = new Unifier();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
 		String printedString = NaiveGrounder.groundAndPrintRule(nonGroundRule, substitution);
@@ -102,7 +107,7 @@ public class SubstitutionTest {
 		Predicate p = Predicate.getInstance("p", 2);
 		BasicAtom atom = new BasicAtom(p, Arrays.asList(X, Y));
 		Literal literal = new BasicLiteral(atom, !negated);
-		Substitution substitution = new Substitution();
+		Substitution substitution = new Unifier();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
 		literal = literal.substitute(substitution);
@@ -125,7 +130,7 @@ public class SubstitutionTest {
 	private void groundLiteralToString(boolean negated) {
 		Predicate p = Predicate.getInstance("p", 2);
 		BasicAtom atom = new BasicAtom(p, Arrays.asList(X, Y));
-		Substitution substitution = new Substitution();
+		Substitution substitution = new Unifier();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
 		String printedString = NaiveGrounder.groundLiteralToString(atom.toLiteral(!negated), substitution, true);
