@@ -245,15 +245,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			LOGGER.debug("Assignment is (TRUE part only):" + translate(assignment.getTrueAssignments()));
 		}
 		Set<Literal> reasonsForUnjustified = analyzingGrounder.justifyAtom(toJustify, assignment);
+		NoGood noGood = noGoodFromJustificationReasons(toJustify, reasonsForUnjustified);
 
-		// Turn the justification into a NoGood.
-		int[] reasons = new int[reasonsForUnjustified.size() + 1];
-		reasons[0] = toJustify;
-		int arrpos = 1;
-		for (Literal literal : reasonsForUnjustified) {
-			reasons[arrpos++] = (literal.isNegated() ? -1 : 1) * atomTranslator.get(literal.getAtom());
-		}
-		NoGood noGood = new NoGood(reasons);
+
 		int noGoodID = grounder.register(noGood);
 		Map<Integer, NoGood> obtained = new LinkedHashMap<>();
 		obtained.put(noGoodID, noGood);
@@ -264,6 +258,17 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			return false;
 		}
 		return true;
+	}
+
+	private NoGood noGoodFromJustificationReasons(Integer literalToJustify, Set<Literal> reasonsForUnjustified) {
+		// Turn the justification into a NoGood.
+		int[] reasons = new int[reasonsForUnjustified.size() + 1];
+		reasons[0] = literalToJustify;
+		int arrpos = 1;
+		for (Literal literal : reasonsForUnjustified) {
+			reasons[arrpos++] = (literal.isNegated() ? -1 : 1) * atomTranslator.get(literal.getAtom());
+		}
+		return new NoGood(reasons);
 	}
 
 	private boolean treatConflictAfterClosing(NoGood violatedNoGood) {
@@ -327,13 +332,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		for (Integer literalToJustify : toJustify) {
 			LOGGER.debug("Searching for justification(s) of " + toJustify + " / " + atomTranslator.atomToString(atomOf(literalToJustify)));
 			Set<Literal> reasonsForUnjustified = analyzingGrounder.justifyAtom(atomOf(literalToJustify), assignment);
-			int[] reasons = new int[reasonsForUnjustified.size() + 1];
-			reasons[0] = atomOf(literalToJustify);
-			int arrpos = 1;
-			for (Literal literal : reasonsForUnjustified) {
-				reasons[arrpos++] = (literal.isNegated() ? -1 : 1) * atomTranslator.get(literal.getAtom());
-			}
-			NoGood noGood = new NoGood(reasons);
+			NoGood noGood = noGoodFromJustificationReasons(atomOf(literalToJustify), reasonsForUnjustified);
 			int noGoodID = grounder.register(noGood);
 			obtained.put(noGoodID, noGood);
 			LOGGER.debug("Learned NoGood is: " + atomTranslator.noGoodToString(noGood));

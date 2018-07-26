@@ -44,7 +44,6 @@ import org.junit.Test;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 /**
  * Copyright (c) 2016-2018, the Alpha Team.
@@ -108,26 +107,8 @@ public class SubstitutionTest {
 		Substitution right = new Substitution();
 		right.put(varX, constA);
 		Substitution merged = Substitution.mergeIntoLeft(left, right);
-		assertEquals(merged.eval(varY), constA);
-		assertEquals(merged.eval(varZ), constA);
-	}
-
-	@Test
-	public void equalizingSubstitution() {
-		BasicAtom atom1 = parseAtom("p(X,Y)");
-		BasicAtom atom2 = parseAtom("p(A,B)");
-		assertNotEquals(null, Substitution.findEqualizingSubstitution(atom1, atom2));
-		assertNotEquals(null, Substitution.findEqualizingSubstitution(atom2, atom1));
-
-		BasicAtom atom3 = parseAtom("p(X,Y)");
-		BasicAtom atom4 = parseAtom("p(a,f(X))");
-		assertNotEquals(null, Substitution.findEqualizingSubstitution(atom3, atom4));
-		assertEquals(null, Substitution.findEqualizingSubstitution(atom4, atom3));
-
-		BasicAtom atom5 = parseAtom("p(X,X)");
-		BasicAtom atom6 = parseAtom("p(a,Y)");
-		assertEquals(null, Substitution.findEqualizingSubstitution(atom5, atom6));
-		assertEquals(null, Substitution.findEqualizingSubstitution(atom6, atom5));
+		assertEquals(constA, merged.eval(varY));
+		assertEquals(constA, merged.eval(varZ));
 	}
 
 	@Test

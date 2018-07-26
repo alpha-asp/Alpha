@@ -32,6 +32,4 @@ public interface ProgramAnalyzingGrounder extends Grounder {
 	 * @return the corresponding NonGroundRule.
 	 */
 	NonGroundRule getNonGroundRule(Integer ruleId);
-
-	// FIXME: put further stuff here that the solver may use (e.g. SCC analysis for early closing).
 }

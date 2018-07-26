@@ -79,7 +79,6 @@ public class LitSet {
 		StringBuilder sb = new StringBuilder("(" + atom + ",{");
 		for (Substitution complementSubstitution : complementSubstitutions) {
 			sb.append(atom.substitute(complementSubstitution));
-			//sb.append(complementSubstitution);
 			sb.append(", ");
 		}
 		sb.append("})");
