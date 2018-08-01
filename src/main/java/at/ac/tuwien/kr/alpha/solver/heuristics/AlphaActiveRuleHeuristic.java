@@ -52,7 +52,7 @@ public class AlphaActiveRuleHeuristic extends DependencyDrivenHeuristic {
 		if (choiceManager.isAtomChoice(atom)) {
 			activityCounters.compute(atom, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + 1);
 		} else {
-			for (int body : atomsToBodies.get(atom)) {
+			for (int body : atomsToBodiesAtoms.get(atom)) {
 				activityCounters.compute(body, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + 1);
 			}
 		}

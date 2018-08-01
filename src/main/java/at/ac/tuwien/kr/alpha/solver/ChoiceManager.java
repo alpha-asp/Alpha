@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -37,6 +37,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -52,10 +53,6 @@ public class ChoiceManager implements Checkable {
 	// Active choice points and all atoms that influence a choice point (enabler, disabler, choice atom itself).
 	private final Set<ChoicePoint> activeChoicePoints = new LinkedHashSet<>();
 	private final Map<Integer, ChoicePoint> influencers = new HashMap<>();
-
-	// Backtracking information.
-	private final Map<Integer, ArrayList<Integer>> modifiedInDecisionLevel = new HashMap<>();
-	private int highestDecisionLevel;
 
 	// The total number of modifications this ChoiceManager received (avoids re-computation in ChoicePoints).
 	private long modCount;
@@ -78,8 +75,6 @@ public class ChoiceManager implements Checkable {
 		this.store = store;
 		this.checksEnabled = checksEnabled;
 		this.assignment = assignment;
-		modifiedInDecisionLevel.put(0, new ArrayList<>());
-		highestDecisionLevel = 0;
 		modCount = 0;
 		this.choiceStack = new Stack<>();
 
@@ -88,13 +83,14 @@ public class ChoiceManager implements Checkable {
 		} else {
 			debugWatcher = null;
 		}
+		assignment.setCallback(this);
 	}
 
-	public NoGood computeEnumeration() {
+	NoGood computeEnumeration() {
 		int[] enumerationLiterals = new int[choiceStack.size()];
 		int enumerationPos = 0;
 		for (Choice e : choiceStack) {
-			enumerationLiterals[enumerationPos++] = e.getAtom() * (e.getValue() ? +1 : -1);
+			enumerationLiterals[enumerationPos++] = atomToLiteral(e.getAtom(), e.getValue());
 		}
 		return new NoGood(enumerationLiterals);
 	}
@@ -102,6 +98,13 @@ public class ChoiceManager implements Checkable {
 	@Override
 	public void setChecksEnabled(boolean checksEnabled) {
 		this.checksEnabled = checksEnabled;
+	}
+
+	public void callbackOnChanged(int atom) {
+		LOGGER.trace("Callback received on influencer atom: {}", atom);
+		modCount++;
+		ChoicePoint choicePoint = influencers.get(atom);
+		choicePoint.recomputeActive();
 	}
 
 	public int getBackjumps() {
@@ -137,35 +140,29 @@ public class ChoiceManager implements Checkable {
 		final int enabler;
 		final int disabler;
 		boolean isActive;
-		long lastModCount;
 
 		private ChoicePoint(Integer atom, Integer enabler, int disabler) {
 			this.atom = atom;
 			this.enabler = enabler;
 			this.disabler = disabler;
-			this.lastModCount = modCount;
 		}
 
 		private boolean isActiveChoicePoint() {
-			Assignment.Entry enablerEntry = assignment.get(enabler);
-			Assignment.Entry disablerEntry = assignment.get(disabler);
-			return  enablerEntry != null && enablerEntry.getTruth() == TRUE
-				&& (disablerEntry == null || !disablerEntry.getTruth().toBoolean());
+			ThriceTruth enablerTruth = assignment.getTruth(enabler);
+			ThriceTruth disablerTruth = assignment.getTruth(disabler);
+			return  enablerTruth == TRUE
+				&& (disablerTruth == null || !disablerTruth.toBoolean());
 		}
 
 		private boolean isNotChosen() {
-			Assignment.Entry entry = assignment.get(atom);
-			return entry == null || MBT.equals(entry.getTruth());
+			ThriceTruth atomTruth = assignment.getTruth(atom);
+			return atomTruth == null || atomTruth == MBT;
 		}
 
 		void recomputeActive() {
 			LOGGER.trace("Recomputing activity of atom {}.", atom);
-			if (lastModCount == modCount) {
-				return;
-			}
 			final boolean wasActive = isActive;
-			isActive = isNotChosen() & isActiveChoicePoint();
-			lastModCount = modCount;
+			isActive = isNotChosen() && isActiveChoicePoint();
 			if (isActive) {
 				activeChoicePoints.add(this);
 				LOGGER.debug("Activating choice point for atom {}", this.atom);
@@ -185,22 +182,6 @@ public class ChoiceManager implements Checkable {
 
 	public void updateAssignments() {
 		LOGGER.trace("Updating assignments of ChoiceManager.");
-
-		modCount++;
-		Iterator<Assignment.Entry> it = assignment.getNewAssignmentsForChoice();
-		int currentDecisionLevel = assignment.getDecisionLevel();
-		while (it.hasNext()) {
-			Assignment.Entry entry = it.next();
-			ChoicePoint choicePoint = influencers.get(entry.getAtom());
-			if (choicePoint != null) {
-				if (entry.getDecisionLevel() <= currentDecisionLevel) {
-					// Updates may contain already-backtracked re-assignments at lower decision level that nevertheless change choice points.
-					// Only record if this is no such assignment.
-					modifiedInDecisionLevel.get(entry.getDecisionLevel()).add(entry.getAtom());        // Note that the weak decision level is not used here since disablers become TRUE due to generated NoGoods while an enabler being MBT is ignored, also for the atom itself only TRUE/FALSE is relevant.
-				}
-				choicePoint.recomputeActive();
-			}
-		}
 		if (checksEnabled) {
 			checkActiveChoicePoints();
 		}
@@ -220,9 +201,6 @@ public class ChoiceManager implements Checkable {
 			debugWatcher.runWatcher();
 		}
 
-		highestDecisionLevel++;
-		modifiedInDecisionLevel.put(highestDecisionLevel, new ArrayList<>());
-
 		choiceStack.push(choice);
 	}
 
@@ -235,9 +213,14 @@ public class ChoiceManager implements Checkable {
 		LOGGER.debug("Backjumping to decision level {}.", target);
 
 		// Remove everything above the target level, but keep the target level unchanged.
-		while (assignment.getDecisionLevel() > target) {
-			backtrackFast();
+		int currentDecisionLevel = assignment.getDecisionLevel();
+		assignment.backjump(target);
+		while (currentDecisionLevel-- > target) {
+			final Choice choice = choiceStack.pop();
 			backtracksWithinBackjumps++;
+			backtracks++;
+			modCount++;
+			LOGGER.debug("Backjumping removed choice {}", choice);
 		}
 	}
 
@@ -286,12 +269,6 @@ public class ChoiceManager implements Checkable {
 		store.backtrack();
 		backtracks++;
 		modCount++;
-		ArrayList<Integer> changedAtoms = modifiedInDecisionLevel.get(highestDecisionLevel);
-		for (Integer atom : changedAtoms) {
-			ChoicePoint choicePoint = influencers.get(atom);
-			choicePoint.recomputeActive();
-		}
-		highestDecisionLevel--;
 	}
 
 	void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms) {
@@ -312,10 +289,14 @@ public class ChoiceManager implements Checkable {
 			if (enabler == null || disabler == null) {
 				throw oops("Incomplete choice point description found (no enabler or disabler)");
 			}
+			assignment.registerCallbackOnChange(atom);
+			assignment.registerCallbackOnChange(enabler);
+			assignment.registerCallbackOnChange(disabler);
 			ChoicePoint choicePoint = new ChoicePoint(atom, enabler, disabler);
 			influencers.put(atom, choicePoint);
 			influencers.put(enabler, choicePoint);
 			influencers.put(disabler, choicePoint);
+			choicePoint.recomputeActive();
 		}
 	}
 
@@ -342,12 +323,12 @@ public class ChoiceManager implements Checkable {
 	private void checkActiveChoicePoints() {
 		HashSet<ChoicePoint> actualActiveChoicePoints = new HashSet<>();
 		for (ChoicePoint choicePoint : influencers.values()) {
-			Assignment.Entry enablerEntry = assignment.get(choicePoint.enabler);
-			Assignment.Entry disablerEntry = assignment.get(choicePoint.disabler);
-			boolean isActive = enablerEntry != null && enablerEntry.getTruth() == TRUE
-				&& (disablerEntry == null || !disablerEntry.getTruth().toBoolean());
-			Assignment.Entry entry = assignment.get(choicePoint.atom);
-			boolean isNotChosen = entry == null || MBT.equals(entry.getTruth());
+			ThriceTruth enablerTruth = assignment.getTruth(choicePoint.enabler);
+			ThriceTruth disablerTruth = assignment.getTruth(choicePoint.disabler);
+			boolean isActive = enablerTruth == TRUE
+				&& (disablerTruth == null || !disablerTruth.toBoolean());
+			ThriceTruth atomTruth = assignment.getTruth(choicePoint.atom);
+			boolean isNotChosen = atomTruth == null || atomTruth == MBT;
 			if (isActive && isNotChosen) {
 				actualActiveChoicePoints.add(choicePoint);
 			}

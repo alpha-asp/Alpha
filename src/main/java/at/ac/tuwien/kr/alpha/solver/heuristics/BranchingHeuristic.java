@@ -30,6 +30,8 @@ import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
 
 import java.util.Collection;
 
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+
 /**
  * A heuristic that selects an atom to choose on.
  * 
@@ -37,7 +39,8 @@ import java.util.Collection;
  *
  */
 public interface BranchingHeuristic {
-	static final int DEFAULT_CHOICE_LITERAL = 0;
+	int DEFAULT_CHOICE_ATOM = 0;
+	int DEFAULT_CHOICE_LITERAL = atomToLiteral(DEFAULT_CHOICE_ATOM);
 
 	/**
 	 * Stores a newly violated {@link NoGood} and updates associated activity and sign counters.

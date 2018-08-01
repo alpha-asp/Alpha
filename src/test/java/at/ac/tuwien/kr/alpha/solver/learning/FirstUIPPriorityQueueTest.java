@@ -1,8 +1,8 @@
 package at.ac.tuwien.kr.alpha.solver.learning;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.solver.ArrayAssignment;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +17,7 @@ public class FirstUIPPriorityQueueTest {
 	private final WritableAssignment assignment;
 
 	public FirstUIPPriorityQueueTest() {
-		assignment = new ArrayAssignment();
+		assignment = new TrailAssignment();
 	}
 
 	@Before

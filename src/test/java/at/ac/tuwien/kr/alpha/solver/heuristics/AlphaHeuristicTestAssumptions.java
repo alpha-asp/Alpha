@@ -30,9 +30,9 @@ import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.solver.ArrayAssignment;
 import at.ac.tuwien.kr.alpha.solver.NaiveNoGoodStore;
 import at.ac.tuwien.kr.alpha.solver.TestableChoiceManager;
+import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,7 +69,7 @@ public class AlphaHeuristicTestAssumptions {
 				+ "h :- b1, b2, not b3, not b4.";
 		Program parsedProgram = new ProgramParser().parse(testProgram);
 		this.grounder = new NaiveGrounder(parsedProgram);
-		this.assignment = new ArrayAssignment();
+		this.assignment = new TrailAssignment();
 		this.choiceManager = new TestableChoiceManager(assignment, new NaiveNoGoodStore(assignment));
 	}
 
@@ -91,6 +91,7 @@ public class AlphaHeuristicTestAssumptions {
 		int other = 0;
 
 		Collection<NoGood> noGoods = getNoGoods();
+		assignment.growForMaxAtomId(grounder.getMaxAtomId());
 		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
 		for (NoGood noGood : noGoods) {
 			n++;
@@ -135,6 +136,7 @@ public class AlphaHeuristicTestAssumptions {
 
 	private void testIsAtomChoice(Predicate<? super Integer> isRuleBody) {
 		Collection<NoGood> noGoods = getNoGoods();
+		assignment.growForMaxAtomId(grounder.getMaxAtomId());
 		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
 		for (NoGood noGood : noGoods) {
 			for (Integer literal : noGood) {

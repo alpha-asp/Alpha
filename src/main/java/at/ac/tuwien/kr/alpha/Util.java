@@ -108,4 +108,9 @@ public class Util {
 	public static ReadableByteChannel streamToChannel(Stream<String> lines) throws IOException {
 		return Channels.newChannel(new ByteArrayInputStream(lines.collect(Collectors.joining(System.lineSeparator())).getBytes(StandardCharsets.UTF_8)));
 	}
+
+	public static int arrayGrowthSize(int oldSize) {
+		// Growth factor is 1.5.
+		return oldSize + (oldSize >> 1);
+	}
 }

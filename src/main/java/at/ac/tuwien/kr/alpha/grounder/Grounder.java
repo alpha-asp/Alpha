@@ -33,7 +33,11 @@ public interface Grounder extends AtomTranslator {
 	 */
 	Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms();
 
-	void updateAssignment(Iterator<Assignment.Entry> it);
+	/**
+	 * Updates the grounder with atoms assigned a positive truth value.
+	 * @param it an iterator over all newly assigned positive atoms.
+	 */
+	void updateAssignment(Iterator<Integer> it);
 
 	void forgetAssignment(int[] atomIds);
 
