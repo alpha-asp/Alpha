@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -127,7 +127,7 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 	}
 
 	/**
-	 * A shorthand for <code>Literals.atomOf(getLiteral(...))</code>
+	 * A shorthand for <code>Literals.positiveLiteral(getLiteral(...))</code>
 	 */
 	public int getPositiveLiteral(int index) {
 		return positiveLiteral(getLiteral(index));

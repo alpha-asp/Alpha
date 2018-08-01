@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -51,7 +51,14 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	private final AtomTranslator translator;
 	private ChoiceManager choiceManagerCallback;
 
+	/**
+	 * Contains for each known atom a value whose two least
+	 * significant bits encode the atom's truth value
+	 * (cf. {@link TrailAssignment#translateTruth(int)}
+	 * and whose remaining bits encode the atom's weak decision level. 
+	 */
 	private int[] values;
+	
 	private int[] strongDecisionLevels;
 	private ImplicationReasonProvider[] impliedBy;
 	private int[] propagationLevels;
