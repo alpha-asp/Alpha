@@ -10,7 +10,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.solver.ArrayAssignment;
+import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.junit.Test;
 
@@ -39,7 +39,7 @@ public class AnalyzeUnjustifiedTest {
 		AtomTranslator atomTranslator = new AtomStore();
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomTranslator);
 		grounder.getNoGoods(null);
-		ArrayAssignment assignment = new ArrayAssignment(atomTranslator);
+		TrailAssignment assignment = new TrailAssignment(atomTranslator);
 		int rId = atomTranslator.get(new BasicAtom(Predicate.getInstance("r", 0)));
 		int nrId = atomTranslator.get(new BasicAtom(Predicate.getInstance("nr", 0)));
 		assignment.growForMaxAtomId(atomTranslator.getMaxAtomId());
@@ -64,7 +64,7 @@ public class AnalyzeUnjustifiedTest {
 		AtomTranslator atomTranslator = new AtomStore();
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomTranslator);
 		grounder.getNoGoods(null);
-		ArrayAssignment assignment = new ArrayAssignment(atomTranslator);
+		TrailAssignment assignment = new TrailAssignment(atomTranslator);
 		Atom p1 = parser.parse("p(1).").getFacts().get(0);
 		Atom r2 = parser.parse("r(2).").getFacts().get(0);
 		Atom s12 = parser.parse("s(1,2).").getFacts().get(0);
@@ -101,7 +101,7 @@ public class AnalyzeUnjustifiedTest {
 		AtomTranslator atomTranslator = new AtomStore();
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomTranslator);
 		grounder.getNoGoods(null);
-		ArrayAssignment assignment = new ArrayAssignment(atomTranslator);
+		TrailAssignment assignment = new TrailAssignment(atomTranslator);
 		Atom qa = parser.parse("q(a).").getFacts().get(0);
 		Atom qb = parser.parse("q(b).").getFacts().get(0);
 		Atom qc = parser.parse("q(c).").getFacts().get(0);

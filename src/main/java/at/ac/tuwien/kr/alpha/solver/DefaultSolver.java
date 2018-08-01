@@ -49,6 +49,8 @@ import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToNegatedLiteral;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
@@ -275,13 +277,13 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 		ProgramAnalyzingGrounder analyzingGrounder = (ProgramAnalyzingGrounder) grounder;
 		// Justify one MBT assigned atom.
-		Integer toJustify = ((ArrayAssignment) assignment).getSomeMBTAssignedAtom();
+		Integer atomToJustify = ((TrailAssignment) assignment).getBasicAtomAssignedMBT();
 		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Searching for justification of " + toJustify + " / " + atomTranslator.atomToString(atomOf(toJustify)));
+			LOGGER.debug("Searching for justification of " + atomToJustify + " / " + atomTranslator.atomToString(atomToJustify));
 			LOGGER.debug("Assignment is (TRUE part only):" + translate(assignment.getTrueAssignments()));
 		}
-		Set<Literal> reasonsForUnjustified = analyzingGrounder.justifyAtom(toJustify, assignment);
-		NoGood noGood = noGoodFromJustificationReasons(toJustify, reasonsForUnjustified);
+		Set<Literal> reasonsForUnjustified = analyzingGrounder.justifyAtom(atomToJustify, assignment);
+		NoGood noGood = noGoodFromJustificationReasons(atomToJustify, reasonsForUnjustified);
 
 
 		int noGoodID = grounder.register(noGood);
@@ -296,13 +298,13 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		return true;
 	}
 
-	private NoGood noGoodFromJustificationReasons(Integer literalToJustify, Set<Literal> reasonsForUnjustified) {
+	private NoGood noGoodFromJustificationReasons(int atomToJustify, Set<Literal> reasonsForUnjustified) {
 		// Turn the justification into a NoGood.
 		int[] reasons = new int[reasonsForUnjustified.size() + 1];
-		reasons[0] = literalToJustify;
+		reasons[0] = atomToLiteral(atomToJustify);
 		int arrpos = 1;
 		for (Literal literal : reasonsForUnjustified) {
-			reasons[arrpos++] = (literal.isNegated() ? -1 : 1) * atomTranslator.get(literal.getAtom());
+			reasons[arrpos++] = atomToLiteral(atomTranslator.get(literal.getAtom()), !literal.isNegated());
 		}
 		return new NoGood(reasons);
 	}
@@ -359,7 +361,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				Assignment.Entry entry = assignment.get(groundAtomId);
 				// Check if atom was assigned to FALSE during the closing.
 				if (entry.getImpliedBy() == closingIndicator) {
-					ruleAtomReplacements.add(-groundAtomId);
+					ruleAtomReplacements.add(atomToNegatedLiteral(groundAtomId));
 				}
 			}
 			toJustifyIterator.remove();

@@ -30,7 +30,7 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +58,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	 * and whose remaining bits encode the atom's weak decision level. 
 	 */
 	private int[] values;
+	private int maxAtomId;
 	
 	private int[] strongDecisionLevels;
 	private ImplicationReasonProvider[] impliedBy;
@@ -73,6 +74,15 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	private int newAssignmentsPositionInTrail;
 	private int newAssignmentsIterator;
 	private int assignmentsForChoicePosition;
+
+	public int getBasicAtomAssignedMBT() {
+		for (int atom = 1; atom <= maxAtomId; atom++) {
+			if (getTruth(atom) == MBT && translator.get(atom) instanceof BasicAtom) {
+				return atom;
+			}
+		}
+		throw oops("No BasicAtom is assigned MBT.");
+	}
 
 	private static class OutOfOrderLiteral {
 		final int atom;
@@ -112,7 +122,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		assignmentsForChoicePosition = 0;
 	}
 
-	public TrailAssignment(Grounder translator) {
+	public TrailAssignment(AtomTranslator translator) {
 		this(translator, false);
 	}
 
@@ -138,6 +148,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		newAssignmentsIterator = 0;
 		newAssignmentsPositionInTrail = 0;
 		assignmentsForChoicePosition = 0;
+		maxAtomId = 0;
 	}
 
 	@Override
@@ -537,6 +548,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	@Override
 	public void growForMaxAtomId(int maxAtomId) {
+		this.maxAtomId = maxAtomId;
 		// Grow arrays only if needed.
 		if (values.length > maxAtomId) {
 			return;

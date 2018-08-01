@@ -95,7 +95,7 @@ public class AlphaHeuristicTestAssumptions {
 		int other = 0;
 
 		Collection<NoGood> noGoods = getNoGoods();
-		assignment.growForMaxAtomId(grounder.getMaxAtomId());
+		assignment.growForMaxAtomId(atomTranslator.getMaxAtomId());
 		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
 		for (NoGood noGood : noGoods) {
 			n++;
@@ -140,7 +140,7 @@ public class AlphaHeuristicTestAssumptions {
 
 	private void testIsAtomChoice(Predicate<? super Integer> isRuleBody) {
 		Collection<NoGood> noGoods = getNoGoods();
-		assignment.growForMaxAtomId(grounder.getMaxAtomId());
+		assignment.growForMaxAtomId(atomTranslator.getMaxAtomId());
 		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
 		for (NoGood noGood : noGoods) {
 			for (Integer literal : noGood) {

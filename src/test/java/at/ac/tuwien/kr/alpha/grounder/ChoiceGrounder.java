@@ -185,14 +185,4 @@ public class ChoiceGrounder implements Grounder {
 		}
 		return solverDerivedNoGoods.get(noGood);
 	}
-
-	@Override
-	public boolean isAtomChoicePoint(int atom) {
-		return atom == ATOM_BR1 || atom == ATOM_BR2;
-	}
-
-	@Override
-	public int getMaxAtomId() {
-		return fromOldLiterals(8);
-	}
 }
