@@ -38,6 +38,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -162,19 +163,19 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 	public int chooseLiteral() {
 		int atom = chooseAtom();
 		boolean sign = chooseSign(atom);
-		return sign ? atom : -atom;
+		return atomToLiteral(atom, sign);
 	}
 	
 	protected int chooseAtom() {
 		for (NoGood noGood : stackOfNoGoods) {
 			if (assignment.isUndefined(noGood)) {
 				int mostActiveAtom = getMostActiveChoosableAtom(noGood);
-				if (mostActiveAtom != DEFAULT_CHOICE_LITERAL) {
+				if (mostActiveAtom != DEFAULT_CHOICE_ATOM) {
 					return mostActiveAtom;
 				}
 			}
 		}
-		return DEFAULT_CHOICE_LITERAL;
+		return DEFAULT_CHOICE_ATOM;
 	}
 	
 	private boolean chooseSign(int atom) {
@@ -190,7 +191,7 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 		} else if (negativeCounter > positiveCounter) {
 			return true;
 		} else {
-			return rand.nextBoolean();
+			return atom == DEFAULT_CHOICE_ATOM || rand.nextBoolean();
 		}
 	}
 
@@ -250,7 +251,7 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 	 */
 	private int getMostActiveChoosableAtom(NoGood noGood) {
 		if (noGood != null) {
-			return getMostActiveChoosableAtom(noGood.stream().boxed());
+			return getMostActiveChoosableAtom(noGood.stream().boxed().map(Literals::atomOf));
 		} else {
 			return getMostActiveChoosableAtom(activityCounters.keySet().stream());
 		}
@@ -262,7 +263,7 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 			.filter(this::isUnassigned)
 			.filter(choiceManager::isActiveChoiceAtom)
 			.max(Comparator.comparingDouble(this::getActivity))
-			.orElse(DEFAULT_CHOICE_LITERAL);
+			.orElse(DEFAULT_CHOICE_ATOM);
 	}
 
 	private boolean isUnassigned(int atom) {

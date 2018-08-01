@@ -37,6 +37,8 @@ import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 
 import java.util.*;
 
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
@@ -67,16 +69,16 @@ public class NoGoodGenerator {
 	 * @return the NoGoods corresponding to the ground rule.
 	 */
 	List<NoGood> generateNoGoodsFromGroundSubstitution(final NonGroundRule nonGroundRule, final Substitution substitution) {
-		final List<Integer> pos = collectPos(nonGroundRule, substitution);
-		final List<Integer> neg = collectNeg(nonGroundRule, substitution);
+		final List<Integer> posLiterals = collectPosLiterals(nonGroundRule, substitution);
+		final List<Integer> negLiterals = collectNegLiterals(nonGroundRule, substitution);
 
-		if (pos == null || neg == null) {
+		if (posLiterals == null || negLiterals == null) {
 			return emptyList();
 		}
 
 		// A constraint is represented by exactly one nogood.
 		if (nonGroundRule.isConstraint()) {
-			return singletonList(NoGood.fromConstraint(pos, neg));
+			return singletonList(NoGood.fromConstraint(posLiterals, negLiterals));
 		}
 
 		// Prepare atom representing the rule body.
@@ -90,37 +92,37 @@ public class NoGoodGenerator {
 			return emptyList();
 		}
 
-		final int bodyId = atomTranslator.putIfAbsent(bodyAtom);
-		final int headId = atomTranslator.putIfAbsent(nonGroundRule.getHeadAtom().substitute(substitution));
+		final int bodyRepresentingLiteral = atomToLiteral(atomTranslator.putIfAbsent(bodyAtom));
+		final int headLiteral = atomToLiteral(atomTranslator.putIfAbsent(nonGroundRule.getHeadAtom().substitute(substitution)));
 
 		final List<NoGood> result = new ArrayList<>();
 
 		// Create a nogood for the head.
-		result.add(NoGood.headFirst(-headId, bodyId));
+		result.add(NoGood.headFirst(negateLiteral(headLiteral), bodyRepresentingLiteral));
 
-		final NoGood ruleBody = NoGood.fromBody(pos, neg, bodyId);
+		final NoGood ruleBody = NoGood.fromBody(posLiterals, negLiterals, bodyRepresentingLiteral);
 		result.add(ruleBody);
 
 		// Nogoods such that the atom representing the body is true iff the body is true.
 		for (int j = 1; j < ruleBody.size(); j++) {
-			result.add(new NoGood(bodyId, -ruleBody.getLiteral(j)));
+			result.add(new NoGood(bodyRepresentingLiteral, negateLiteral(ruleBody.getLiteral(j))));
 		}
 
 		// If the rule head is unique, add support.
 		if (uniqueGroundRulePerGroundHead.contains(nonGroundRule)) {
-			result.add(NoGood.support(headId, bodyId));
+			result.add(NoGood.support(headLiteral, bodyRepresentingLiteral));
 		}
 
 		// If the body of the rule contains negation, add choices.
-		if (!neg.isEmpty()) {
-			result.addAll(recorder.generate(pos, neg, bodyId));
+		if (!negLiterals.isEmpty()) {
+			result.addAll(recorder.generate(posLiterals, negLiterals, bodyRepresentingLiteral));
 		}
 
 		return result;
 	}
 
-	List<Integer> collectNeg(final NonGroundRule nonGroundRule, final Substitution substitution) {
-		final List<Integer> bodyAtomsNegative = new ArrayList<>();
+	List<Integer> collectNegLiterals(final NonGroundRule nonGroundRule, final Substitution substitution) {
+		final List<Integer> bodyLiteralsNegative = new ArrayList<>();
 		for (Atom atom : nonGroundRule.getBodyAtomsNegative()) {
 			Atom groundAtom = atom.substitute(substitution);
 			
@@ -136,13 +138,13 @@ public class NoGoodGenerator {
 				continue;
 			}
 
-			bodyAtomsNegative.add(atomTranslator.putIfAbsent(groundAtom));
+			bodyLiteralsNegative.add(atomToLiteral(atomTranslator.putIfAbsent(groundAtom)));
 		}
-		return bodyAtomsNegative;
+		return bodyLiteralsNegative;
 	}
 
-	private List<Integer> collectPos(final NonGroundRule nonGroundRule, final Substitution substitution) {
-		final List<Integer> bodyAtomsPositive = new ArrayList<>();
+	private List<Integer> collectPosLiterals(final NonGroundRule nonGroundRule, final Substitution substitution) {
+		final List<Integer> bodyLiteralsPositive = new ArrayList<>();
 		for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
 			if (atom.toLiteral() instanceof FixedInterpretationLiteral) {
 				// TODO: conversion of atom to literal is ugly. NonGroundRule could manage atoms instead of literals, cf. FIXME there
@@ -167,9 +169,9 @@ public class NoGoodGenerator {
 				return null;
 			}
 
-			bodyAtomsPositive.add(atomTranslator.putIfAbsent(groundAtom));
+			bodyLiteralsPositive.add(atomToLiteral(atomTranslator.putIfAbsent(groundAtom)));
 		}
-		return bodyAtomsPositive;
+		return bodyLiteralsPositive;
 	}
 
 	private boolean existsRuleWithPredicateInHead(final Predicate predicate) {

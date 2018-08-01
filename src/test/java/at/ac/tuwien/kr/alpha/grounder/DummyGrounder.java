@@ -8,10 +8,12 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
 import static at.ac.tuwien.kr.alpha.Util.entry;
+import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
 import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
@@ -33,10 +35,10 @@ public class DummyGrounder implements Grounder {
 	private static final int RULE_B = 13; // { -_br1, a, b }
 	private static final int RULE_H = 14; // { -c, _br1 }
 	private static final Map<Integer, NoGood> NOGOODS = Stream.of(
-		entry(FACT_A, headFirst(-1)),
-		entry(FACT_B, headFirst(-2)),
-		entry(RULE_B, headFirst(-3, 1, 2)),
-		entry(RULE_H, headFirst(-4, 3))
+		entry(FACT_A, headFirst(fromOldLiterals(-1))),
+		entry(FACT_B, headFirst(fromOldLiterals(-2))),
+		entry(RULE_B, headFirst(fromOldLiterals(-3, 1, 2))),
+		entry(RULE_H, headFirst(fromOldLiterals(-4, 3)))
 	).collect(entriesToMap());
 	private final AtomTranslator atomTranslator;
 	private final java.util.function.Predicate<Predicate> filter;
@@ -123,11 +125,9 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<Assignment.Entry> it) {
+	public void updateAssignment(Iterator<Integer> it) {
 		while (it.hasNext()) {
-			Assignment.Entry assignment = it.next();
-			Truth truthValue = assignment.getTruth();
-			currentTruthValues[assignment.getAtom()] = (byte)(truthValue.toBoolean() ? 1 : 0);
+			currentTruthValues[it.next()] = 1;
 		}
 	}
 

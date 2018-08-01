@@ -40,6 +40,8 @@ import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
 import static at.ac.tuwien.kr.alpha.Util.entry;
+import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
+import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 
@@ -74,14 +76,14 @@ public class ChoiceGrounder implements Grounder {
 	private static final int CHOICE_DIS_BR1 = 17; // { -_dis_br1,  bb}
 	private static final int CHOICE_DIS_BR2 = 18; // { -dis_br2, aa }
 	private static final Map<Integer, NoGood> NOGOODS = Stream.of(
-		entry(RULE_AA, NoGood.headFirst(-ATOM_AA, ATOM_BR1)),
-		entry(BRULE_AA, NoGood.headFirst(-ATOM_BR1, -ATOM_BB)),
-		entry(RULE_BB, NoGood.headFirst(-ATOM_BB, ATOM_BR2)),
-		entry(BRULE_BB, NoGood.headFirst(-ATOM_BR2, -ATOM_AA)),
-		entry(CHOICE_EN_BR1, NoGood.headFirst(-ATOM_EN_BR1)),
-		entry(CHOICE_EN_BR2, NoGood.headFirst(-ATOM_EN_BR2)),
-		entry(CHOICE_DIS_BR1, NoGood.headFirst(-ATOM_DIS_BR1, ATOM_BB)),
-		entry(CHOICE_DIS_BR2, NoGood.headFirst(-ATOM_DIS_BR2, ATOM_AA))
+		entry(RULE_AA, headFirst(fromOldLiterals(-ATOM_AA, ATOM_BR1))),
+		entry(BRULE_AA, headFirst(fromOldLiterals(-ATOM_BR1, -ATOM_BB))),
+		entry(RULE_BB, headFirst(fromOldLiterals(-ATOM_BB, ATOM_BR2))),
+		entry(BRULE_BB, headFirst(fromOldLiterals(-ATOM_BR2, -ATOM_AA))),
+		entry(CHOICE_EN_BR1, headFirst(fromOldLiterals(-ATOM_EN_BR1))),
+		entry(CHOICE_EN_BR2, headFirst(fromOldLiterals(-ATOM_EN_BR2))),
+		entry(CHOICE_DIS_BR1, headFirst(fromOldLiterals(-ATOM_DIS_BR1, ATOM_BB))),
+		entry(CHOICE_DIS_BR2, headFirst(fromOldLiterals(-ATOM_DIS_BR2, ATOM_AA)))
 	).collect(entriesToMap());
 	private static final Map<Integer, Integer> CHOICE_ENABLE = Stream.of(
 		entry(ATOM_BR1, ATOM_EN_BR1),
@@ -165,7 +167,7 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<Assignment.Entry> it) {
+	public void updateAssignment(Iterator<Integer> it) {
 		// This test grounder reports all NoGoods immediately, irrespective of any assignment.
 	}
 
@@ -182,5 +184,15 @@ public class ChoiceGrounder implements Grounder {
 			solverDerivedNoGoods.put(noGood, solverDerivedNoGoodIdCounter++);
 		}
 		return solverDerivedNoGoods.get(noGood);
+	}
+
+	@Override
+	public boolean isAtomChoicePoint(int atom) {
+		return atom == ATOM_BR1 || atom == ATOM_BR2;
+	}
+
+	@Override
+	public int getMaxAtomId() {
+		return fromOldLiterals(8);
 	}
 }

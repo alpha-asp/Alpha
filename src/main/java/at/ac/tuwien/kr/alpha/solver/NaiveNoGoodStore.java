@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
-import static at.ac.tuwien.kr.alpha.common.NoGood.HEAD;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
 public class NaiveNoGoodStore implements NoGoodStore {
@@ -96,6 +95,10 @@ public class NaiveNoGoodStore implements NoGoodStore {
 		assignment.backtrack();
 	}
 
+	@Override
+	public void growForMaxAtomId(int maxAtomId) {
+	}
+
 	/**
 	 * Infer an assignment from a nogood if it is weakly unit.
 	 *
@@ -155,9 +158,9 @@ public class NaiveNoGoodStore implements NoGoodStore {
 			return null;
 		}
 
-		final int head = noGood.getAtom(HEAD);
+		final int headAtom = atomOf(noGood.getHead());
 
-		if (assignment.getTruth(head) != MBT) {
+		if (assignment.getTruth(headAtom) != MBT) {
 			return null;
 		}
 
@@ -180,6 +183,6 @@ public class NaiveNoGoodStore implements NoGoodStore {
 
 		hasInferredAssignments = true;
 
-		return assignment.assign(head, TRUE, noGood);
+		return assignment.assign(headAtom, TRUE, noGood);
 	}
 }

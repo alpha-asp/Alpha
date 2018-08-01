@@ -40,11 +40,17 @@ public interface WritableAssignment extends Assignment {
 	void clear();
 
 	/**
+	 * Backtracks the most recent decision level.
+	 */
+	void backtrack();
+
+	/**
 	 * Backtracks to the indicated decision level. Every assignment on a higher decisionLevel is removed.
 	 * All assignments below (or equal to) decisionLevel are kept. Note that for atoms being TRUE this may require
 	 * setting the assigned value to MBT during backtracking.
+	 * @param decisionLevel the decision level to backjump to (this decision level is the highest that is kept).
 	 */
-	void backtrack();
+	void backjump(int decisionLevel);
 
 	/**
 	 * Assigns an atom some value on a lower decision level than the current one.
@@ -54,9 +60,9 @@ public interface WritableAssignment extends Assignment {
 	 * @param decisionLevel
 	 * @return
 	 */
-	ConflictCause assign(int atom, ThriceTruth value, NoGood impliedBy, int decisionLevel);
+	ConflictCause assign(int atom, ThriceTruth value, ImplicationReasonProvider impliedBy, int decisionLevel);
 
-	default ConflictCause assign(int atom, ThriceTruth value, NoGood impliedBy) {
+	default ConflictCause assign(int atom, ThriceTruth value, ImplicationReasonProvider impliedBy) {
 		return assign(atom, value, impliedBy, getDecisionLevel());
 	}
 
@@ -66,6 +72,10 @@ public interface WritableAssignment extends Assignment {
 
 	ConflictCause choose(int atom, ThriceTruth value);
 
+	void registerCallbackOnChange(int atom);
+
+	void setCallback(ChoiceManager choiceManager);
+
 	default ConflictCause choose(int atom, boolean value) {
 		return choose(atom, ThriceTruth.valueOf(value));
 	}
@@ -73,11 +83,11 @@ public interface WritableAssignment extends Assignment {
 	default int minimumConflictLevel(NoGood noGood) {
 		int minimumConflictLevel = -1;
 		for (Integer literal : noGood) {
-			Assignment.Entry entry = get(atomOf(literal));
-			if (entry == null || isPositive(literal) != entry.getTruth().toBoolean()) {
+			ThriceTruth atomTruth = getTruth(atomOf(literal));
+			if (atomTruth == null || isPositive(literal) != atomTruth.toBoolean()) {
 				return -1;
 			}
-			int literalDecisionLevel = entry.getPrevious() != null ? entry.getPrevious().getDecisionLevel() : entry.getDecisionLevel();
+			int literalDecisionLevel = getWeakDecisionLevel(atomOf(literal));
 			if (literalDecisionLevel > minimumConflictLevel) {
 				minimumConflictLevel = literalDecisionLevel;
 			}

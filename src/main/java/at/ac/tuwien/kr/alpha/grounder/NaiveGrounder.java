@@ -480,10 +480,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	@Override
-	public void updateAssignment(Iterator<Assignment.Entry> it) {
+	public void updateAssignment(Iterator<Integer> it) {
 		while (it.hasNext()) {
-			Assignment.Entry assignment = it.next();
-			workingMemory.addInstance(atomStore.get(assignment.getAtom()), assignment.getTruth().toBoolean());
+			workingMemory.addInstance(atomStore.get(it.next()), true);
 		}
 	}
 

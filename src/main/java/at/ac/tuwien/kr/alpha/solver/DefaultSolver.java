@@ -91,6 +91,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	@Override
 	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
 		boolean didChange = false;
+		long timeOnEntry = System.currentTimeMillis();
+		long timeLast = timeOnEntry;
+		int decisionsLast = 0;
 
 		// Initially, get NoGoods from grounder.
 		if (initialize) {
@@ -119,9 +122,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			// Backjump instead of backtrackSlow, enumerationNoGood will invert last choice.
 			choiceManager.backjump(backjumpLevel - 1);
 			LOGGER.debug("Adding enumeration nogood: {}", enumerationNoGood);
-			ConflictCause conflictCause = store.add(grounder.register(enumerationNoGood), enumerationNoGood);
-			if (conflictCause != null) {
-				throw oops("Adding enumeration NoGood causes conflicts after backjump");
+			if (!addAndBackjumpIfNecessary(grounder.register(enumerationNoGood), enumerationNoGood)) {
+				return false;
 			}
 		}
 
@@ -129,6 +131,16 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
+			long currentTime = System.currentTimeMillis();
+			int currentNumberOfChoices = getNumberOfChoices();
+			if (currentTime >= timeLast + 1000) {
+				LOGGER.info("Decisions in {}s: {}", (currentTime - timeLast) / 1000.0f, currentNumberOfChoices - decisionsLast);
+				timeLast = currentTime;
+				decisionsLast = currentNumberOfChoices;
+				float overallTime = (currentTime - timeOnEntry) / 1000.0f;
+				float decisionsPerSec = currentNumberOfChoices / overallTime;
+				LOGGER.info("Overall performance: {} decision in {}s or {} decisions per sec. Overall replayed assignments: {}.", currentNumberOfChoices, currentTime - timeOnEntry, decisionsPerSec, ((TrailAssignment)assignment).replayCounter);
+			}
 			ConflictCause conflictCause = store.propagate();
 			didChange |= store.didPropagate();
 			LOGGER.trace("Assignment after propagation is: {}", assignment);
@@ -154,7 +166,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				// Ask the grounder for new NoGoods, then propagate (again).
 				LOGGER.trace("Doing propagation step.");
 
-				grounder.updateAssignment(assignment.getNewAssignmentsIterator());
+				grounder.updateAssignment(assignment.getNewPositiveAssignmentsIterator());
 
 				Map<Integer, NoGood> obtained = grounder.getNoGoods(assignment);
 				didChange = !obtained.isEmpty();
@@ -164,6 +176,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				}
 			} else if (choose()) {
 				LOGGER.debug("Did choice.");
+				didChange = true;
 			} else if (close()) {
 				LOGGER.debug("Closed unassigned known atoms (assigning FALSE).");
 				afterAllAtomsAssigned = true;
@@ -182,6 +195,26 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				afterAllAtomsAssigned = false;
 			}
 		}
+	}
+
+	/**
+	 * Adds a noGood to the store and in case of out-of-order literals causing another conflict, triggers further backjumping.
+	 * @param noGoodId
+	 * @param noGood
+	 */
+	private boolean addAndBackjumpIfNecessary(int noGoodId, NoGood noGood) {
+		while (store.add(noGoodId, noGood) != null) {
+			LOGGER.debug("Adding noGood (again) caused conflict, computing real backjumping level now.");
+			int backjumpLevel = learner.computeConflictFreeBackjumpingLevel(noGood);
+			if (backjumpLevel < 0) {
+				return false;
+			}
+			choiceManager.backjump(backjumpLevel);
+			if (store.propagate() != null) {
+				throw  oops("Violated NoGood after backtracking.");
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -210,8 +243,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			choiceManager.backjump(analysisResult.backjumpLevel);
 
 			final NoGood learnedNoGood = analysisResult.learnedNoGood;
-			if (store.add(grounder.register(learnedNoGood), learnedNoGood) != null) {
-				throw oops("Newly learned NoGood is violated after backjumping");
+			int noGoodId = grounder.register(learnedNoGood);
+			if (!addAndBackjumpIfNecessary(noGoodId, learnedNoGood)) {
+				return false;
 			}
 			return true;
 		}
@@ -219,7 +253,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		choiceManager.backjump(analysisResult.backjumpLevel);
 
 		choiceManager.backtrackFast();
-		store.propagate();
+		if (store.propagate() != null) {
+			throw oops("Violated NoGood after backtracking.");
+		}
 		if (!store.didPropagate()) {
 			throw oops("Nothing to propagate after backtracking from conflict-causing choice");
 		}
@@ -353,6 +389,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private LinkedHashSet<Integer> unassignedAtoms;
 	private static NoGood closingIndicator = new NoGood(0);
 	private boolean close() {
+		// TODO: we may change this to ask the Assignment directly instead since it now also knows the highest atomId!
+		// TODO: in fact, the assignment may directly apply the closing.
 		unassignedAtoms = new LinkedHashSet<>();
 		unassignedAtoms.addAll(atomTranslator.getUnassignedAtoms(assignment));
 
@@ -375,6 +413,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private boolean backtrack() {
 		while (assignment.getDecisionLevel() != 0) {
 			final Assignment.Entry choice = choiceManager.backtrackSlow();
+			store.propagate();
 
 			if (choice == null) {
 				LOGGER.debug("Backtracking further, because last choice was already backtracked.");
@@ -386,7 +425,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 			// Chronological backtracking: choose inverse now.
 			// Choose FALSE if the previous choice was for TRUE and the atom was not already MBT at that time.
-			if (choiceValue && MBT.equals(assignment.getTruth(lastChoice))) {
+			ThriceTruth lastChoiceTruth = assignment.getTruth(lastChoice);
+			if (choiceValue && MBT.equals(lastChoiceTruth)) {
 				LOGGER.debug("Backtracking further, because last choice was MBT before choosing TRUE.");
 				continue;
 			}
@@ -401,9 +441,13 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				continue;
 			}
 
-			LOGGER.debug("Choosing inverse.");
-			choiceManager.choose(new Choice(lastChoice, !choiceValue, true));
-			break;
+			// Choose inverse if it is not yet already assigned TRUE or FALSE.
+			if (lastChoiceTruth == null || (lastChoiceTruth.isMBT() && !choiceValue)) {
+				LOGGER.debug("Choosing inverse.");
+				choiceManager.choose(new Choice(lastChoice, !choiceValue, true));
+				break;
+			}
+			// Continue backtracking.
 		}
 
 		return assignment.getDecisionLevel() != 0;
@@ -412,6 +456,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private boolean ingest(Map<Integer, NoGood> obtained) {
 		branchingHeuristic.newNoGoods(obtained.values());
 		assignment.growForMaxAtomId(atomTranslator.getMaxAtomId());
+		store.growForMaxAtomId(atomTranslator.getMaxAtomId());
 
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
 		Map.Entry<Integer, NoGood> entry;
@@ -458,8 +503,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		// If NoGood was learned, add it to the store.
 		// Note that the learned NoGood may cause further conflicts, since propagation on lower decision levels is lazy,
 		// hence backtracking once might not be enough to remove the real conflict cause.
-		if (store.add(noGoodEntry.getKey(), noGoodEntry.getValue()) != null) {
-			throw oops("Re-adding of former conflicting NoGood still causes conflicts");
+		if (!addAndBackjumpIfNecessary(noGoodEntry.getKey(), noGoodEntry.getValue())) {
+			return NoGood.UNSAT;
 		}
 
 		return conflictAnalysisResult.learnedNoGood;
