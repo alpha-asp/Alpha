@@ -423,7 +423,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	}
 
 	private int literalRepresentation(int atom, ThriceTruth value) {
-		return value.toBoolean() ? atomToLiteral(atom) : atomToNegatedLiteral(atom);
+		return atomToLiteral(atom, value.toBoolean());
 	}
 
 	private ThriceTruth translateTruth(int value) {
@@ -472,7 +472,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	}
 
 	private NoGood getImpliedBy(int atom) {
-		int assignedLiteral = getTruth(atom).toBoolean() ? atomToLiteral(atom) : atomToNegatedLiteral(atom);
+		int assignedLiteral = atomToLiteral(atom, getTruth(atom).toBoolean());
 		// Note that any atom was implied by a literal of opposite truth.
 		return impliedBy[atom] != null ? impliedBy[atom].getNoGood(negateLiteral(assignedLiteral)) : null;
 	}

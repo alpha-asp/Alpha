@@ -61,6 +61,10 @@ public final class Literals {
 		return literal ^ 0x1;
 	}
 
+	public static int atomToLiteral(int atom, boolean truth) {
+		return truth ? atomToLiteral(atom) : atomToNegatedLiteral(atom);
+	}
+
 	public static int atomToLiteral(int atom) {
 		return atom << 1;
 	}

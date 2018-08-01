@@ -195,7 +195,7 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 			return DEFAULT_CHOICE_LITERAL;
 		}
 		boolean sign = chooseSign(atom);
-		return sign ? atomToLiteral(atom) : atomToNegatedLiteral(atom);
+		return atomToLiteral(atom, sign);
 	}
 	
 	protected int chooseAtom() {

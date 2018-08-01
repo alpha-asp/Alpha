@@ -39,7 +39,6 @@ import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToNegatedLiteral;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -164,7 +163,7 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 	public int chooseLiteral() {
 		int atom = chooseAtom();
 		boolean sign = chooseSign(atom);
-		return sign ? atomToLiteral(atom) : atomToNegatedLiteral(atom);
+		return atomToLiteral(atom, sign);
 	}
 	
 	protected int chooseAtom() {

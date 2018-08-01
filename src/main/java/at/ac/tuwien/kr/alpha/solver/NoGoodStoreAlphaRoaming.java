@@ -556,7 +556,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		while (!assignmentsToProcess.isEmpty()) {
 			final int atom = assignmentsToProcess.peek();
 			final ThriceTruth currentTruth = assignment.getTruth(atom);
-			final int literal = currentTruth.toBoolean() ? atomToLiteral(atom) : atomToNegatedLiteral(atom);
+			final int literal = atomToLiteral(atom, currentTruth.toBoolean());
 			LOGGER.trace("Propagation processing atom: {}={}", atom, currentTruth);
 
 			// Propagate weakly, except if there is an earlier MBT, where propagation already took place.
@@ -759,7 +759,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 
 		private void checkAlphaWatchesInvariant(int atom, boolean truth) {
 			Assignment.Entry atomEntry = assignment.get(atom);
-			int atomLiteral = truth ? atomToLiteral(atom) : atomToNegatedLiteral(atom);
+			int atomLiteral = atomToLiteral(atom, truth);
 			boolean atomSatisfies = atomEntry != null && isPositive(atomLiteral) != atomEntry.getTruth().toBoolean();
 			int atomDecisionLevel = strongDecisionLevel(atom);
 			BinaryWatchList binaryWatchList = binaryWatches[atomLiteral];
@@ -795,7 +795,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 
 		private void checkOrdinaryWatchesInvariant(int atom, boolean truth) {
 			Assignment.Entry atomEntry = assignment.get(atom);
-			int atomLiteral = truth ? atomToLiteral(atom) : atomToNegatedLiteral(atom);
+			int atomLiteral = atomToLiteral(atom, truth);
 			boolean atomSatisfies = atomEntry != null && isPositive(atomLiteral) != atomEntry.getTruth().toBoolean();
 			int atomDecisionLevel = weakDecisionLevel(atomEntry);
 			int atomReplayLevel = weakReplayLevel(atom);
