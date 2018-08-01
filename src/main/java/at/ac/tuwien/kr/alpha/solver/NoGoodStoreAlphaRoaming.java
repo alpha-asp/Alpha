@@ -151,7 +151,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		if (noGood.isUnary()) {
 			return addUnary(noGood);
 		} else if (noGood.isBinary()) {
-			return addAndWatchBinaryImproved(noGood);
+			return addAndWatchBinary(noGood);
 		} else {
 			return addAndWatch(noGood);
 		}
@@ -331,7 +331,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		return null;
 	}
 
-	private ConflictCause addAndWatchBinaryImproved(final NoGood noGood) {
+	private ConflictCause addAndWatchBinary(final NoGood noGood) {
 		// Shorthands for viewing the nogood as { a, b }.
 		final int a = noGood.getLiteral(0);
 		final int b = noGood.getLiteral(1);
@@ -476,7 +476,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 		LOGGER.trace(sb.toString());
 	}
 
-	private ConflictCause propagateStronglyRefactor(int literal, int currentDecisionLevel) {
+	private ConflictCause propagateStrongly(int literal, int currentDecisionLevel) {
 
 		// Propagate binary watches.
 		ConflictCause conflictCause = binaryWatches[literal].propagateStrongly();
@@ -570,7 +570,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, Checkable {
 
 			// Propagate strongly only for TRUE/FALSE assignments.
 			if (currentTruth != MBT) {
-				ConflictCause conflictCause = propagateStronglyRefactor(literal, currentDecisionLevel);
+				ConflictCause conflictCause = propagateStrongly(literal, currentDecisionLevel);
 				if (conflictCause != null) {
 					LOGGER.trace("Halting propagation due to conflict. Current assignment: {}.", assignment);
 					return conflictCause;

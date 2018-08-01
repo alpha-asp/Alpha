@@ -46,18 +46,6 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 		this(literals, false);
 	}
 
-	public static int[] fromOldLiterals(int... literals) {
-		int[] newLiterals = new int[literals.length];
-		for (int i = 0; i < literals.length; i++) {
-			newLiterals[i] = literals[i] >= 0 ? atomToLiteral(literals[i]) : atomToNegatedLiteral(-literals[i]);
-		}
-		return newLiterals;
-	}
-
-	public static int fromOldLiterals(int literal) {
-			return literal >= 0 ? atomToLiteral(literal) : atomToNegatedLiteral(-literal);
-	}
-
 	private NoGood(int[] literals, boolean head) {
 		this.head = head;
 		if (head && !isNegated(literals[0])) {

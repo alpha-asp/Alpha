@@ -43,7 +43,7 @@ import static at.ac.tuwien.kr.alpha.solver.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
 /**
- * An implementation of the Assignment using ArrayList as underlying structure for storing assignment entries.
+ * An implementation of Assignment using a trail and arrays as underlying structures for storing assignments.
  */
 public class TrailAssignment implements WritableAssignment, Checkable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TrailAssignment.class);
@@ -227,7 +227,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	private void removeLastDecisionLevel() {
 		// Remove all atoms recorded in the highest decision level.
-		Integer start = trailIndicesOfDecisionLevels.get(getDecisionLevel());
+		int start = trailIndicesOfDecisionLevels.get(getDecisionLevel());
 		ListIterator<Integer> backtrackIterator = trail.listIterator(start);
 		while (backtrackIterator.hasNext()) {
 			Integer backtrackAtom = backtrackIterator.next();
@@ -270,8 +270,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			// Replay all still-valid literals and remove invalid ones.
 			LOGGER.trace("Replaying out-of-order literals.");
 			int k = 0; // counter for out-of-order literals to keep further.
-			for (int i = 0; i < outOfOrderLiterals.size(); i++) {
-				OutOfOrderLiteral outOfOrderLiteral = outOfOrderLiterals.get(i);
+			for (OutOfOrderLiteral outOfOrderLiteral : outOfOrderLiterals) {
 				if (outOfOrderLiteral.decisionLevel <= getDecisionLevel()) {
 					// Replay assignment at current decision level.
 					assign(outOfOrderLiteral.atom, outOfOrderLiteral.value, outOfOrderLiteral.impliedBy);
@@ -501,13 +500,15 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	}
 
 	private void runInternalChecks() {
-		// Ensure that truth values in assignment entries agree with those in values array.
+		// Ensure that incrementally updated values agree with actual values.
 		LOGGER.trace("Checking assignment.");
+		// Check that MBT counter is correct.
 		if (getMBTCount() != getMBTAssignedAtoms().size()) {
 			throw oops("MBT counter and amount of actually MBT-assigned atoms disagree");
 		} else {
 			LOGGER.trace("MBT count agrees with amount of MBT-assigned atoms.");
 		}
+		// Check that out of order literals are actually assigned.
 		for (OutOfOrderLiteral outOfOrderLiteral : outOfOrderLiterals) {
 			if (outOfOrderLiteral.decisionLevel <= getDecisionLevel()) {
 				ThriceTruth atomTruth = getTruth(outOfOrderLiteral.atom);

@@ -33,8 +33,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 public interface Assignment {
 	Entry get(int atom);
@@ -67,25 +65,6 @@ public interface Assignment {
 		return get(atom) != null;
 	}
 
-	default boolean contains(int literal) {
-		final Entry entry = get(atomOf(literal));
-		return entry != null && (isNegated(literal) ? FALSE : TRUE).equals(entry.getTruth());
-	}
-
-	/**
-	 * Determines if the given {@code noGood} is violated in the current assignment.
-	 * @param noGood
-	 * @return {@code true} iff all literals in {@code noGood} evaluate to true in the current assignment.
-	 */
-	default boolean isViolated(NoGood noGood) {
-		for (Integer literal : noGood) {
-			if (!contains(literal)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
 	/**
 	 * Determines if the given {@code noGood} is undefined in the current assignment.
 	 *
@@ -103,8 +82,7 @@ public interface Assignment {
 
 	/**
 	 * Returns an iterator over all new assignments. New assignments are only returned once.
-	 * getNewPositiveAssignmentsIterator and getNewAssignmentsIterator2 are independent of each other (i.e., each has its own backing collection).
-	 * @return
+	 * @return an iterator over all new assignments to TRUE or MBT.
 	 */
 	Iterator<Integer> getNewPositiveAssignmentsIterator();
 
@@ -163,13 +141,6 @@ public interface Assignment {
 			return hasPreviousMBT() ? getMBTDecisionLevel() : getDecisionLevel();
 		}
 
-		/**
-		 * Returns the strongly assigned decision level.
-		 * @return the decision level of this entry if it is TRUE/FALSE and -1 otherwise.
-		 */
-		default int getStrongDecisionLevel() {
-			return getTruth().isMBT() ? -1 : getDecisionLevel();
-		}
 	}
 
 	int getDecisionLevel();

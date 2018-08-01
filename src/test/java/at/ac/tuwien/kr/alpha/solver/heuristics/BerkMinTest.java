@@ -35,7 +35,7 @@ import java.util.Collections;
 import java.util.Random;
 import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.common.NoGood.fromOldLiterals;
+import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
 import static org.junit.Assert.assertEquals;
 
 /**

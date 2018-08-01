@@ -140,13 +140,11 @@ public class ChoiceManager implements Checkable {
 		final int enabler;
 		final int disabler;
 		boolean isActive;
-		long lastModCount;
 
 		private ChoicePoint(Integer atom, Integer enabler, int disabler) {
 			this.atom = atom;
 			this.enabler = enabler;
 			this.disabler = disabler;
-			this.lastModCount = modCount;
 		}
 
 		private boolean isActiveChoicePoint() {
@@ -164,8 +162,7 @@ public class ChoiceManager implements Checkable {
 		void recomputeActive() {
 			LOGGER.trace("Recomputing activity of atom {}.", atom);
 			final boolean wasActive = isActive;
-			isActive = isNotChosen() & isActiveChoicePoint();
-			lastModCount = modCount;
+			isActive = isNotChosen() && isActiveChoicePoint();
 			if (isActive) {
 				activeChoicePoints.add(this);
 				LOGGER.debug("Activating choice point for atom {}", this.atom);

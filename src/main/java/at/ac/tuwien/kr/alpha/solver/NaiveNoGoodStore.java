@@ -158,9 +158,9 @@ public class NaiveNoGoodStore implements NoGoodStore {
 			return null;
 		}
 
-		final int headLiteral = positiveLiteral(noGood.getHead());
+		final int headAtom = atomOf(noGood.getHead());
 
-		if (assignment.getTruth(atomOf(headLiteral)) != MBT) {
+		if (assignment.getTruth(headAtom) != MBT) {
 			return null;
 		}
 
@@ -183,6 +183,6 @@ public class NaiveNoGoodStore implements NoGoodStore {
 
 		hasInferredAssignments = true;
 
-		return assignment.assign(atomOf(headLiteral), TRUE, noGood);
+		return assignment.assign(headAtom, TRUE, noGood);
 	}
 }

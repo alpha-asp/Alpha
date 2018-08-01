@@ -6,10 +6,30 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static at.ac.tuwien.kr.alpha.common.NoGood.fromOldLiterals;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToNegatedLiteral;
 import static org.junit.Assert.*;
 
 public class NoGoodTest {
+	/**
+	 * Constructs an array of literals with the new representation (least-significant bit is polarity, other bits
+	 * are atom id) from an array of literals from the old representation (positive literal is atom id, negative
+	 * literal is negated atom id).
+	 * @param literals
+	 * @return
+	 */
+	public static int[] fromOldLiterals(int... literals) {
+		int[] newLiterals = new int[literals.length];
+		for (int i = 0; i < literals.length; i++) {
+			newLiterals[i] = literals[i] >= 0 ? atomToLiteral(literals[i]) : atomToNegatedLiteral(-literals[i]);
+		}
+		return newLiterals;
+	}
+
+	public static int fromOldLiterals(int literal) {
+			return literal >= 0 ? atomToLiteral(literal) : atomToNegatedLiteral(-literal);
+	}
+
 	@Test
 	public void iteration() throws Exception {
 		Iterator<Integer> i = new NoGood(1).iterator();
