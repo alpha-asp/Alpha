@@ -29,7 +29,7 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.AtomTranslator;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.apache.commons.lang3.tuple.Pair;
@@ -66,8 +66,8 @@ public class NaiveSolver extends AbstractSolver {
 	private ArrayList<ArrayList<Integer>> trueAssignedFromMbt = new ArrayList<>();
 	private List<Integer> unassignedAtoms;
 
-	NaiveSolver(AtomTranslator atomTranslator, Grounder grounder) {
-		super(atomTranslator, grounder);
+	NaiveSolver(AtomStore atomStore, Grounder grounder) {
+		super(atomStore, grounder);
 
 		this.choiceStack = new Stack<>();
 
@@ -123,7 +123,7 @@ public class NaiveSolver extends AbstractSolver {
 				if (LOGGER.isTraceEnabled()) {
 					LOGGER.trace("Currently MBT:");
 					for (Integer integer : mbtAssigned) {
-						LOGGER.trace(atomTranslator.atomToString(atomOf(integer)));
+						LOGGER.trace(atomStore.atomToString(atomOf(integer)));
 					}
 					LOGGER.trace("Choice stack: {}", choiceStack);
 				}

@@ -103,26 +103,26 @@ public class ChoiceGrounder implements Grounder {
 	private static Atom atomEnBR2 = ChoiceAtom.on(2);
 	private static Atom atomDisBR1 = ChoiceAtom.off(3);
 	private static Atom atomDisBR2 = ChoiceAtom.off(4);
-	private final AtomTranslator atomTranslator;
+	private final AtomStore atomStore;
 	private boolean returnedAllNogoods;
 
 	private final java.util.function.Predicate<Predicate> filter;
 
-	public ChoiceGrounder(AtomTranslator atomTranslator) {
-		this(atomTranslator, p -> true);
+	public ChoiceGrounder(AtomStore atomStore) {
+		this(atomStore, p -> true);
 	}
 
-	public ChoiceGrounder(AtomTranslator atomTranslator, java.util.function.Predicate<Predicate> filter) {
-		this.atomTranslator = atomTranslator;
+	public ChoiceGrounder(AtomStore atomStore, java.util.function.Predicate<Predicate> filter) {
+		this.atomStore = atomStore;
 		this.filter = filter;
-		Arrays.asList(atomAA, atomBB, rule1, rule2, atomEnBR1, atomEnBR2, atomDisBR1, atomDisBR2).forEach(atomTranslator::putIfAbsent);
+		Arrays.asList(atomAA, atomBB, rule1, rule2, atomEnBR1, atomEnBR2, atomDisBR1, atomDisBR2).forEach(atomStore::putIfAbsent);
 	}
 
 	@Override
 	public AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms) {
 		SortedSet<Predicate> trueAtomPredicates = new TreeSet<>();
 		for (int trueAtom : trueAtoms) {
-			Predicate atomPredicate = atomTranslator.get(trueAtom).getPredicate();
+			Predicate atomPredicate = atomStore.get(trueAtom).getPredicate();
 			if (!filter.test(atomPredicate)) {
 				continue;
 			}

@@ -634,13 +634,13 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void dummyGrounder() {
-		AtomStore atomStore = new AtomStore();
+		AtomStore atomStore = new AtomStoreImpl();
 		TestCase.assertEquals(DummyGrounder.EXPECTED, getInstance(atomStore, new DummyGrounder(atomStore)).collectSet());
 	}
 
 	@Test
 	public void choiceGrounder() {
-		AtomStore atomStore = new AtomStore();
+		AtomStore atomStore = new AtomStoreImpl();
 		TestCase.assertEquals(ChoiceGrounder.EXPECTED, getInstance(atomStore, new ChoiceGrounder(atomStore)).collectSet());
 	}
 }

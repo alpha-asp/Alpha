@@ -221,9 +221,9 @@ public class Main {
 			bailOut("Failed to parse program.", e);
 		}
 
-		final AtomTranslator atomTranslator = new AtomStore();
+		final AtomStore atomStore = new AtomStoreImpl();
 		final Grounder grounder = GrounderFactory.getInstance(
-			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), program, atomTranslator, filter
+			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), program, atomStore, filter
 		);
 
 		// NOTE: Using time as seed is fine as the internal heuristics
@@ -253,7 +253,7 @@ public class Main {
 		final String chosenSolver = commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER);
 		final String chosenStore = commandLine.getOptionValue(OPT_STORE, DEFAULT_STORE);
 		Solver solver = SolverFactory.getInstance(
-			chosenSolver, chosenStore, atomTranslator, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks, disableJustifications
+			chosenSolver, chosenStore, atomStore, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks, disableJustifications
 		);
 
 		computeAndConsumeAnswerSets(solver);

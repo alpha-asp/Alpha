@@ -25,8 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomTranslator;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -63,8 +63,8 @@ public class NoGoodGeneratorTest {
 				+ "nq(a,b) :- not q(a,b).");
 		
 		Rule rule = program.getRules().get(1);
-		AtomTranslator atomTranslator = new AtomStore();
-		Grounder grounder = GrounderFactory.getInstance("naive", program, atomTranslator);
+		AtomStore atomStore = new AtomStoreImpl();
+		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
 		NoGoodGenerator noGoodGenerator = ((NaiveGrounder)grounder).noGoodGenerator;
 		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
 		Substitution substitution = new Substitution();
@@ -72,7 +72,7 @@ public class NoGoodGeneratorTest {
 		substitution.unifyTerms(Y, B);
 		List<Integer> collectedNeg = noGoodGenerator.collectNegLiterals(nonGroundRule, substitution);
 		assertEquals(1, collectedNeg.size());
-		String negAtomString = atomTranslator.atomToString(atomOf(collectedNeg.get(0)));
+		String negAtomString = atomStore.atomToString(atomOf(collectedNeg.get(0)));
 		assertEquals("q(a, b)", negAtomString);
 	}
 

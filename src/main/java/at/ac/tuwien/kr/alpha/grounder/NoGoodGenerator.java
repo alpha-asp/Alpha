@@ -27,7 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.AtomTranslator;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
@@ -47,14 +47,14 @@ import static java.util.Collections.singletonList;
  * Copyright (c) 2017-2018, the Alpha Team.
  */
 public class NoGoodGenerator {
-	private final AtomTranslator atomTranslator;
+	private final AtomStore atomStore;
 	private final ChoiceRecorder recorder;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private final ProgramAnalysis programAnalysis;
 	private final Set<NonGroundRule> uniqueGroundRulePerGroundHead;
 
-	NoGoodGenerator(AtomTranslator atomTranslator, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, ProgramAnalysis programAnalysis, Set<NonGroundRule> uniqueGroundRulePerGroundHead) {
-		this.atomTranslator = atomTranslator;
+	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, ProgramAnalysis programAnalysis, Set<NonGroundRule> uniqueGroundRulePerGroundHead) {
+		this.atomStore = atomStore;
 		this.recorder = recorder;
 		this.factsFromProgram = factsFromProgram;
 		this.programAnalysis = programAnalysis;
@@ -86,14 +86,14 @@ public class NoGoodGenerator {
 
 		// Check uniqueness of ground rule by testing whether the
 		// body representing atom already has an id.
-		if (atomTranslator.contains(bodyAtom)) {
+		if (atomStore.contains(bodyAtom)) {
 			// The current ground instance already exists,
 			// therefore all nogoods have already been created.
 			return emptyList();
 		}
 
-		final int bodyRepresentingLiteral = atomToLiteral(atomTranslator.putIfAbsent(bodyAtom));
-		final int headLiteral = atomToLiteral(atomTranslator.putIfAbsent(nonGroundRule.getHeadAtom().substitute(substitution)));
+		final int bodyRepresentingLiteral = atomToLiteral(atomStore.putIfAbsent(bodyAtom));
+		final int headLiteral = atomToLiteral(atomStore.putIfAbsent(nonGroundRule.getHeadAtom().substitute(substitution)));
 
 		final List<NoGood> result = new ArrayList<>();
 
@@ -138,7 +138,7 @@ public class NoGoodGenerator {
 				continue;
 			}
 
-			bodyLiteralsNegative.add(atomToLiteral(atomTranslator.putIfAbsent(groundAtom)));
+			bodyLiteralsNegative.add(atomToLiteral(atomStore.putIfAbsent(groundAtom)));
 		}
 		return bodyLiteralsNegative;
 	}
@@ -169,7 +169,7 @@ public class NoGoodGenerator {
 				return null;
 			}
 
-			bodyLiteralsPositive.add(atomToLiteral(atomTranslator.putIfAbsent(groundAtom)));
+			bodyLiteralsPositive.add(atomToLiteral(atomStore.putIfAbsent(groundAtom)));
 		}
 		return bodyLiteralsPositive;
 	}

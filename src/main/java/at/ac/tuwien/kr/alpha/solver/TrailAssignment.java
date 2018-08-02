@@ -28,7 +28,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.AtomTranslator;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import org.slf4j.Logger;
@@ -48,7 +48,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 public class TrailAssignment implements WritableAssignment, Checkable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TrailAssignment.class);
 
-	private final AtomTranslator translator;
+	private final AtomStore atomStore;
 	private ChoiceManager choiceManagerCallback;
 
 	/**
@@ -77,7 +77,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	public int getBasicAtomAssignedMBT() {
 		for (int atom = 1; atom <= maxAtomId; atom++) {
-			if (getTruth(atom) == MBT && translator.get(atom) instanceof BasicAtom) {
+			if (getTruth(atom) == MBT && atomStore.get(atom) instanceof BasicAtom) {
 				return atom;
 			}
 		}
@@ -106,9 +106,9 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	private int mbtCount;
 	private boolean checksEnabled;
 
-	public TrailAssignment(AtomTranslator translator, boolean checksEnabled) {
+	public TrailAssignment(AtomStore atomStore, boolean checksEnabled) {
 		this.checksEnabled = checksEnabled;
-		this.translator = translator;
+		this.atomStore = atomStore;
 		this.values = new int[0];
 		this.strongDecisionLevels = new int[0];
 		this.impliedBy = new ImplicationReasonProvider[0];
@@ -122,8 +122,8 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		assignmentsForChoicePosition = 0;
 	}
 
-	public TrailAssignment(AtomTranslator translator) {
-		this(translator, false);
+	public TrailAssignment(AtomStore atomStore) {
+		this(atomStore, false);
 	}
 
 	public TrailAssignment() {
@@ -587,8 +587,8 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			isFirst = false;
 			sb.append(atomTruth);
 			sb.append("_");
-			if (translator != null) {
-				sb.append(translator.atomToString(i));
+			if (atomStore != null) {
+				sb.append(atomStore.atomToString(i));
 			} else {
 				sb.append(i);
 			}

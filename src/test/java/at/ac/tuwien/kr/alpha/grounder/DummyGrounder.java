@@ -39,7 +39,7 @@ public class DummyGrounder implements Grounder {
 		entry(RULE_B, headFirst(fromOldLiterals(-3, 1, 2))),
 		entry(RULE_H, headFirst(fromOldLiterals(-4, 3)))
 	).collect(entriesToMap());
-	private final AtomTranslator atomTranslator;
+	private final AtomStore atomStore;
 	private final java.util.function.Predicate<Predicate> filter;
 	private byte[] currentTruthValues = new byte[]{-2, -1, -1, -1, -1};
 	private static Atom atomAA = new BasicAtom(Predicate.getInstance("a", 0));
@@ -49,14 +49,14 @@ public class DummyGrounder implements Grounder {
 	private static Atom rule1 = new RuleAtom(NonGroundRule.constructNonGroundRule(ruleABC), new Substitution());
 	private Set<Integer> returnedNogoods = new HashSet<>();
 
-	public DummyGrounder(AtomTranslator atomTranslator) {
-		this(atomTranslator, p -> true);
+	public DummyGrounder(AtomStore atomStore) {
+		this(atomStore, p -> true);
 	}
 
-	public DummyGrounder(AtomTranslator atomTranslator, java.util.function.Predicate<Predicate> filter) {
-		this.atomTranslator = atomTranslator;
+	public DummyGrounder(AtomStore atomStore, java.util.function.Predicate<Predicate> filter) {
+		this.atomStore = atomStore;
 		this.filter = filter;
-		Arrays.asList(atomAA, atomBB, rule1, atomCC).forEach(atomTranslator::putIfAbsent);
+		Arrays.asList(atomAA, atomBB, rule1, atomCC).forEach(atomStore::putIfAbsent);
 	}
 
 	@Override
@@ -84,7 +84,7 @@ public class DummyGrounder implements Grounder {
 
 		SortedSet<Predicate> trueAtomPredicates = new TreeSet<>();
 		for (int trueAtom : trueAtoms) {
-			Predicate atomPredicate = atomTranslator.get(trueAtom).getPredicate();
+			Predicate atomPredicate = atomStore.get(trueAtom).getPredicate();
 			if (!filter.test(atomPredicate)) {
 				continue;
 			}

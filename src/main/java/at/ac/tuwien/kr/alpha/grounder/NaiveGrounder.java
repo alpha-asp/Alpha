@@ -60,7 +60,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
 
 	private final WorkingMemory workingMemory = new WorkingMemory();
-	private final AtomTranslator atomStore;
+	private final AtomStore atomStore;
 	private final NogoodRegistry registry = new NogoodRegistry();
 	final NoGoodGenerator noGoodGenerator;
 	private final ChoiceRecorder choiceRecorder;
@@ -77,13 +77,13 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private int maxAtomIdBeforeGroundingNewNoGoods = -1;
 	private boolean disableInstanceRemoval;
 
-	public NaiveGrounder(Program program, AtomTranslator atomTranslator, Bridge... bridges) {
-		this(program, atomTranslator, p -> true, bridges);
+	public NaiveGrounder(Program program, AtomStore atomStore, Bridge... bridges) {
+		this(program, atomStore, p -> true, bridges);
 	}
 
-	NaiveGrounder(Program program, AtomTranslator atomTranslator, java.util.function.Predicate<Predicate> filter, Bridge... bridges) {
+	NaiveGrounder(Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, Bridge... bridges) {
 		super(filter, bridges);
-		this.atomStore = atomTranslator;
+		this.atomStore = atomStore;
 
 		programAnalysis = new ProgramAnalysis(program);
 		analyzeUnjustified = new AnalyzeUnjustified(programAnalysis, atomStore, factsFromProgram);

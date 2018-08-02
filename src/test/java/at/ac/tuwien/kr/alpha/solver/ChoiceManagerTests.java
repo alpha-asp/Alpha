@@ -26,7 +26,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomTranslator;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
@@ -45,14 +45,14 @@ import static org.junit.Assert.assertTrue;
 public class ChoiceManagerTests extends AbstractSolverTests {
 	private Grounder grounder;
 	private ChoiceManager choiceManager;
-	private AtomTranslator atomTranslator;
+	private AtomStore atomStore;
 
 	@Before
 	public void setUp() throws IOException {
 		String testProgram = "h :- b1, b2, not b3, not b4.";
 		Program parsedProgram = new ProgramParser().parse(testProgram);
-		this.atomTranslator = new AtomStore();
-		this.grounder = new NaiveGrounder(parsedProgram, atomTranslator);
+		this.atomStore = new AtomStoreImpl();
+		this.grounder = new NaiveGrounder(parsedProgram, atomStore);
 		WritableAssignment assignment = new TrailAssignment();
 		NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment);
 		this.choiceManager = new ChoiceManager(assignment, store);
@@ -65,7 +65,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 		for (NoGood noGood : noGoods) {
 			for (Integer literal : noGood) {
 				int atom = atomOf(literal);
-				String atomToString = atomTranslator.atomToString(atom);
+				String atomToString = atomStore.atomToString(atom);
 				if (atomToString.startsWith(RuleAtom.PREDICATE.getName())) {
 					assertTrue("Atom not choice: " + atomToString, choiceManager.isAtomChoice(atom));
 				}

@@ -77,8 +77,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final boolean disableJustifications;
 	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
 
-	public DefaultSolver(AtomTranslator atomTranslator, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, Heuristic branchingHeuristic, boolean debugInternalChecks, boolean disableJustifications) {
-		super(atomTranslator, grounder);
+	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, Heuristic branchingHeuristic, boolean debugInternalChecks, boolean disableJustifications) {
+		super(atomStore, grounder);
 
 		this.assignment = assignment;
 		this.store = store;
@@ -279,8 +279,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		// Justify one MBT assigned atom.
 		Integer atomToJustify = ((TrailAssignment) assignment).getBasicAtomAssignedMBT();
 		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Searching for justification of " + atomToJustify + " / " + atomTranslator.atomToString(atomToJustify));
-			LOGGER.debug("Assignment is (TRUE part only):" + translate(assignment.getTrueAssignments()));
+			LOGGER.debug("Searching for justification of {} / {}", atomToJustify, atomStore.atomToString(atomToJustify));
+			LOGGER.debug("Assignment is (TRUE part only): {}", translate(assignment.getTrueAssignments()));
 		}
 		Set<Literal> reasonsForUnjustified = analyzingGrounder.justifyAtom(atomToJustify, assignment);
 		NoGood noGood = noGoodFromJustificationReasons(atomToJustify, reasonsForUnjustified);
@@ -289,7 +289,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		int noGoodID = grounder.register(noGood);
 		Map<Integer, NoGood> obtained = new LinkedHashMap<>();
 		obtained.put(noGoodID, noGood);
-		LOGGER.debug("Learned NoGood is: " + atomTranslator.noGoodToString(noGood));
+		LOGGER.debug("Learned NoGood is: {}", atomStore.noGoodToString(noGood));
 		// Add NoGood and trigger backjumping.
 		if (!ingest(obtained)) {
 			logStats();
@@ -304,7 +304,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		reasons[0] = atomToLiteral(atomToJustify);
 		int arrpos = 1;
 		for (Literal literal : reasonsForUnjustified) {
-			reasons[arrpos++] = atomToLiteral(atomTranslator.get(literal.getAtom()), !literal.isNegated());
+			reasons[arrpos++] = atomToLiteral(atomStore.get(literal.getAtom()), !literal.isNegated());
 		}
 		return new NoGood(reasons);
 	}
@@ -334,7 +334,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		ArrayList<Integer> ruleAtomReplacements = new ArrayList<>();
 		while (toJustifyIterator.hasNext()) {
 			Integer literal = toJustifyIterator.next();
-			Atom atom = atomTranslator.get(atomOf(literal));
+			Atom atom = atomStore.get(atomOf(literal));
 			if (atom instanceof BasicAtom) {
 				continue;
 			}
@@ -357,7 +357,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 					// Facts and ComparisonAtoms are always true, no justification needed.
 					continue;
 				}
-				int groundAtomId = atomTranslator.get(groundAtom);
+				int groundAtomId = atomStore.get(groundAtom);
 				Assignment.Entry entry = assignment.get(groundAtomId);
 				// Check if atom was assigned to FALSE during the closing.
 				if (entry.getImpliedBy() == closingIndicator) {
@@ -368,12 +368,12 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 		toJustify.addAll(ruleAtomReplacements);
 		for (Integer literalToJustify : toJustify) {
-			LOGGER.debug("Searching for justification(s) of " + toJustify + " / " + atomTranslator.atomToString(atomOf(literalToJustify)));
+			LOGGER.debug("Searching for justification(s) of {} / {}", toJustify, atomStore.atomToString(atomOf(literalToJustify)));
 			Set<Literal> reasonsForUnjustified = analyzingGrounder.justifyAtom(atomOf(literalToJustify), assignment);
 			NoGood noGood = noGoodFromJustificationReasons(atomOf(literalToJustify), reasonsForUnjustified);
 			int noGoodID = grounder.register(noGood);
 			obtained.put(noGoodID, noGood);
-			LOGGER.debug("Learned NoGood is: " + atomTranslator.noGoodToString(noGood));
+			LOGGER.debug("Learned NoGood is: {}", atomStore.noGoodToString(noGood));
 		}
 		// Backtrack to remove the violation.
 		if (!backtrack()) {
@@ -394,7 +394,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		// TODO: we may change this to ask the Assignment directly instead since it now also knows the highest atomId!
 		// TODO: in fact, the assignment may directly apply the closing.
 		unassignedAtoms = new LinkedHashSet<>();
-		unassignedAtoms.addAll(atomTranslator.getUnassignedAtoms(assignment));
+		unassignedAtoms.addAll(atomStore.getUnassignedAtoms(assignment));
 
 		if (unassignedAtoms.isEmpty()) {
 			return false;
@@ -457,8 +457,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	private boolean ingest(Map<Integer, NoGood> obtained) {
 		branchingHeuristic.newNoGoods(obtained.values());
-		assignment.growForMaxAtomId(atomTranslator.getMaxAtomId());
-		store.growForMaxAtomId(atomTranslator.getMaxAtomId());
+		assignment.growForMaxAtomId(atomStore.getMaxAtomId());
+		store.growForMaxAtomId(atomStore.getMaxAtomId());
 
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
 		Map.Entry<Integer, NoGood> entry;
@@ -524,7 +524,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			LOGGER.debug("No choices!");
 			return false;
 		} else if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Branching heuristic chose literal {}", atomTranslator.literalToString(literal));
+			LOGGER.debug("Branching heuristic chose literal {}", atomStore.literalToString(literal));
 		}
 
 		choiceManager.choose(new Choice(literal, false));

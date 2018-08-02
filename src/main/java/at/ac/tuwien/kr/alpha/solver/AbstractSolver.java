@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.AtomTranslator;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 
 import java.util.Spliterator;
@@ -13,10 +13,10 @@ import java.util.function.Consumer;
  */
 abstract class AbstractSolver implements Solver {
 	protected final Grounder grounder;
-	protected final AtomTranslator atomTranslator;
+	protected final AtomStore atomStore;
 
-	protected AbstractSolver(AtomTranslator atomTranslator, Grounder grounder) {
-		this.atomTranslator = atomTranslator;
+	protected AbstractSolver(AtomStore atomStore, Grounder grounder) {
+		this.atomStore = atomStore;
 		this.grounder = grounder;
 	}
 

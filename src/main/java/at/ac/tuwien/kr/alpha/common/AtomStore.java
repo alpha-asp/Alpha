@@ -1,137 +1,97 @@
-/**
- * Copyright (c) 2016-2017, the Alpha Team.
- * All rights reserved.
- * 
- * Additional changes made by Siemens.
- * 
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- * 
- * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 
- * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
-import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 
 /**
- * This class stores ground atoms and provides the translation from an (integer) atomId to a (structured) predicate instance.
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Translates atoms between integer (solver) and object (grounder) representation.
  */
-public class AtomStore implements AtomTranslator {
-	private List<Atom> atomIdsToInternalBasicAtoms = new ArrayList<>();
-	private Map<Atom, Integer> predicateInstancesToAtomIds = new HashMap<>();
-	private IntIdGenerator atomIdGenerator = new IntIdGenerator(1);
+public interface AtomStore {
 
-	private List<Integer> releasedAtomIds = new ArrayList<>();	// contains atomIds ready to be garbage collected if necessary.
+	/**
+	 * Returns true whenever the atom is a valid choice point (i.e., it represents a rule body).
+	 * @param atom
+	 * @return
+	 */
+	boolean isAtomChoicePoint(int atom);
 
-	public AtomStore() {
-		// Create atomId for falsum (currently not needed, but it gets atomId 0, which cannot represent a negated literal).
-		atomIdsToInternalBasicAtoms.add(null);
-	}
+	/**
+	 * Returns the highest atomId in use.
+	 * @return the highest atomId in use.
+	 */
+	int getMaxAtomId();
 
-	@Override
-	public int putIfAbsent(Atom groundAtom) {
-		if (!groundAtom.isGround()) {
-			throw new IllegalArgumentException("atom must be ground");
-		}
+	/**
+	 * Translates an atom represented as int into an Atom object.
+	 * @param atom the atom to translate.
+	 * @return the Atom object represented by the int.
+	 */
+	Atom get(int atom);
 
-		Integer id = predicateInstancesToAtomIds.get(groundAtom);
+	/**
+	 * Translates an atom represented as Atom object into an int.
+	 * @param atom the Atom object to translate.
+	 * @return the int representing the Atom object.
+	 */
+	int get(Atom atom);
 
-		if (id == null) {
-			id = atomIdGenerator.getNextId();
-			predicateInstancesToAtomIds.put(groundAtom, id);
-			atomIdsToInternalBasicAtoms.add(id, groundAtom);
-		}
+	/**
+	 * If the given ground atom is not already stored, associates it with a new integer (ID) and stores it, else
+	 * returns the current associated atom ID. Hence, multiple calls with the same parameter will return the same
+	 * value.
+	 * @param groundAtom the ground atom to look up in the store.
+	 * @return the integer ID of the ground atom, possibly newly assigned.
+	 */
+	int putIfAbsent(Atom groundAtom);
 
-		return id;
-	}
+	/**
+	 * Returns whether the given ground atom is known to the AtomStore.
+	 * @param groundAtom the ground atom to test.
+	 * @return true if the ground atom is already associated an integer ID.
+	 */
+	boolean contains(Atom groundAtom);
 
-	@Override
-	public boolean contains(Atom groundAtom) {
-		return predicateInstancesToAtomIds.containsKey(groundAtom);
-	}
+	/**
+	 * Returns a list of currently known but unassigned atoms.
+	 * @param assignment the current assignment.
+	 * @return a list of atoms not having assigned a truth value.
+	 */
+	List<Integer> getUnassignedAtoms(Assignment assignment);
 
-	public ListIterator<Atom> listIterator() {
-		return atomIdsToInternalBasicAtoms.listIterator();
+	String atomToString(int atom);
+
+	default String literalToString(int literal) {
+		return (isNegated(literal) ? "-" : "+") + "(" + atomToString(atomOf(literal)) + ")";
 	}
 
 	/**
-	 * Removes the given atom from the AtomStore.
-	 * @param atomId
+	 * Prints the NoGood such that literals are structured atoms instead of integers.
+	 * @param noGood the nogood to translate
+	 * @return the string representation of the NoGood.
 	 */
-	public void releaseAtomId(int atomId) {
-		releasedAtomIds.add(atomId);
-		// HINT: Additionally removing the terms used in the instance might be beneficial in some cases.
-	}
+	default <T extends NoGood> String noGoodToString(T noGood) {
+		StringBuilder sb = new StringBuilder();
 
-	public String printAtomIdTermMapping() {
-		StringBuilder ret = new StringBuilder();
-		for (Map.Entry<Atom, Integer> entry : predicateInstancesToAtomIds.entrySet()) {
-			ret.append(entry.getValue()).append(" <-> ").append(entry.getKey().toString()).append(System.lineSeparator());
+		if (noGood.hasHead()) {
+			sb.append("*");
 		}
-		return ret.toString();
-	}
+		sb.append("{");
 
-	@Override
-	public List<Integer> getUnassignedAtoms(Assignment assignment) {
-		List<Integer> unassignedAtoms = new ArrayList<>();
-		// Check all known atoms: assumption is that AtomStore assigned continuous values and 0 is no valid atomId.
-		for (int i = 1; i <= getMaxAtomId(); i++) {
-			if (!assignment.isAssigned(i)) {
-				unassignedAtoms.add(i);
+		for (Iterator<Integer> iterator = noGood.iterator(); iterator.hasNext();) {
+			sb.append(literalToString(iterator.next()));
+
+			if (iterator.hasNext()) {
+				sb.append(", ");
 			}
 		}
-		return unassignedAtoms;
-	}
 
-	@Override
-	public String atomToString(int atomId) {
-		return get(atomId).toString();
-	}
+		sb.append("}");
 
-	@Override
-	public boolean isAtomChoicePoint(int atom) {
-		return get(atom) instanceof RuleAtom;
-	}
-
-	@Override
-	public int getMaxAtomId() {
-		return atomIdsToInternalBasicAtoms.size() - 1;
-	}
-
-	@Override
-	public Atom get(int atom) {
-		try {
-			return atomIdsToInternalBasicAtoms.get(atom);
-		} catch (IndexOutOfBoundsException e) {
-			throw oops("Unknown atom ID encountered: " + atom, e);
-		}
-	}
-
-	@Override
-	public int get(Atom atom) {
-		return predicateInstancesToAtomIds.get(atom);
+		return sb.toString();
 	}
 }

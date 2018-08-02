@@ -20,12 +20,12 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 public class AnalyzeUnjustified {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AnalyzeUnjustified.class);
 	private final ProgramAnalysis programAnalysis;
-	private final AtomTranslator atomStore;
+	private final AtomStore atomStore;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private int renamingCounter;
 	private int padDepth;
 
-	public AnalyzeUnjustified(ProgramAnalysis programAnalysis, AtomTranslator atomStore, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram) {
+	public AnalyzeUnjustified(ProgramAnalysis programAnalysis, AtomStore atomStore, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram) {
 		this.programAnalysis = programAnalysis;
 		this.atomStore = atomStore;
 		this.factsFromProgram = factsFromProgram;
