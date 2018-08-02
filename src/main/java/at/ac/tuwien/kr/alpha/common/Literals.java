@@ -27,9 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import org.apache.commons.lang3.StringUtils;
-
 /**
  * Provides methods to convert atoms to literals and vice versa,
  * and to obtain and change information on the polarity of a literal.
@@ -78,15 +75,5 @@ public final class Literals {
 
 	public static int positiveLiteral(int literal) {
 		return literal & ~0x1;
-	}
-
-	/**
-	 * Joins the string representations of the given literals, using the separator ", "
-	 * 
-	 * @param literals
-	 * @return a string join of the given literals
-	 */
-	public static String toString(Iterable<Literal> literals) {
-		return StringUtils.join(literals, ", ");
 	}
 }

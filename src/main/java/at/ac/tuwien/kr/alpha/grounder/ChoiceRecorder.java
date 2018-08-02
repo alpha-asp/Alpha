@@ -108,7 +108,7 @@ public class ChoiceRecorder {
 		return noGoods;
 	}
 
-	public Collection<NoGood> generateHeuristicNoGoods(final List<Integer> pos, final List<Integer> neg, HeuristicAtom groundHeuristicAtom, final int heuristicAtomId, final int headId) {
+	public Collection<NoGood> generateHeuristicNoGoods(final List<Integer> posLiterals, final List<Integer> negLiterals, HeuristicAtom groundHeuristicAtom, final int heuristicAtomId, final int headId) {
 		// Obtain an ID for this new heuristic.
 		final int heuristicId = ID_GENERATOR.getNextId();
 		// Create HeuristicOn and HeuristicOff atoms.
@@ -117,8 +117,8 @@ public class ChoiceRecorder {
 		final int heuristicOffAtom = atomStore.add(HeuristicInfluencerAtom.off(heuristicId));
 		newHeuristicAtoms.getRight().put(heuristicAtomId, heuristicOffAtom);
 
-		final List<NoGood> noGoods = generateNeg(heuristicOffAtom, neg);
-		noGoods.add(generatePos(heuristicOnAtom, pos));
+		final List<NoGood> noGoods = generateNeg(heuristicOffAtom, negLiterals);
+		noGoods.add(generatePos(heuristicOnAtom, posLiterals));
 
 		newHeuristicValues.put(heuristicAtomId, HeuristicDirectiveValues.fromHeuristicAtom(groundHeuristicAtom, headId));
 
@@ -132,13 +132,13 @@ public class ChoiceRecorder {
 	}
 
 	private List<NoGood> generateNeg(final int atomOff, List<Integer> negLiterals)  {
-		final int choiceOffLiteral = atomToLiteral(atomOff);
+		final int negLiteralOff = negateLiteral(atomToLiteral(atomOff));
 
 		final List<NoGood> noGoods = new ArrayList<>(negLiterals.size() + 1);
 		for (Integer negLiteral : negLiterals) {
 			// Choice is off if any of the negative atoms is assigned true,
 			// hence we add one nogood for each such atom.
-			noGoods.add(NoGood.headFirst(negateLiteral(choiceOffLiteral), negLiteral));
+			noGoods.add(NoGood.headFirst(negLiteralOff, negLiteral));
 		}
 		return noGoods;
 	}
