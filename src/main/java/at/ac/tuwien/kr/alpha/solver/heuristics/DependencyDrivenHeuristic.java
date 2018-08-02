@@ -85,6 +85,7 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 
 	/**
 	 * Maps rule heads to atoms representing corresponding bodies.
+	 * TODO: somehow use at.ac.tuwien.kr.alpha.solver.ChoiceManager.headsToBodies instead
 	 */
 	protected final MultiValuedMap<Integer, Integer> headToBodies = new HashSetValuedHashMap<>();
 
