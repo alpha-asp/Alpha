@@ -72,6 +72,6 @@ public enum ThriceTruth implements Truth {
 	 * @return true iff first and second truth value are conflicting (i.e., not compatible).
 	 */
 	public static boolean isConflicting(ThriceTruth value1, ThriceTruth value2) {
-		return (FALSE.equals(value1) || FALSE.equals(value2)) && !value1.equals(value2);
+		return (FALSE == value1 || FALSE == value2) && value1 != value2;
 	}
 }

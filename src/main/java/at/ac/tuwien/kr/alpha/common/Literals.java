@@ -27,14 +27,16 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Collection;
-
-import static java.lang.Math.abs;
-
+/**
+ * Provides methods to convert atoms to literals and vice versa,
+ * and to obtain and change information on the polarity of a literal.
+ * A literal is represented by an integer whose least significant bit is
+ * 1 if the literal is negated and 0 otherwise, and whose other bits
+ * encode the atom.
+ */
 public final class Literals {
 	/**
 	 * Given a literal, returns the corresponding atom.
@@ -42,10 +44,7 @@ public final class Literals {
 	 * @return the corresponding atom.
 	 */
 	public static int atomOf(int literal) {
-		if (literal == 0) {
-			throw new IllegalArgumentException("Zero is not a literal (because it cannot be negated).");
-		}
-		return abs(literal);
+		return literal >> 1;
 	}
 	
 	public static int fromAtomAndSign(int atom, boolean sign) {
@@ -58,11 +57,31 @@ public final class Literals {
 	 * @return {@code true} iff the literal is negated, {@code false} otherwise.
 	 */
 	public static boolean isNegated(int literal) {
-		return literal < 0;
+		return (literal & 0x1) == 1;
 	}
 
 	public static boolean isPositive(int literal) {
-		return literal > 0;
+		return (literal & 0x1) == 0;
+	}
+
+	public static int negateLiteral(int literal) {
+		return literal ^ 0x1;
+	}
+
+	public static int atomToLiteral(int atom, boolean truth) {
+		return truth ? atomToLiteral(atom) : atomToNegatedLiteral(atom);
+	}
+
+	public static int atomToLiteral(int atom) {
+		return atom << 1;
+	}
+
+	public static int atomToNegatedLiteral(int atom) {
+		return negateLiteral(atomToLiteral(atom));
+	}
+
+	public static int positiveLiteral(int literal) {
+		return literal & ~0x1;
 	}
 
 	/**
@@ -73,17 +92,5 @@ public final class Literals {
 	 */
 	public static String toString(Iterable<Literal> literals) {
 		return StringUtils.join(literals, ", ");
-	}
-
-	/**
-	 * Removes both positive and negative occurences of {@code atoms} from a collection of {@code literals}
-	 * @param atoms
-	 * @param literals
-	 */
-	public static void removeAtomsFromLiterals(Collection<Atom> atoms, Collection<Literal> literals) {
-		for (Atom atom : atoms) {
-			literals.remove(atom.toLiteral(true));
-			literals.remove(atom.toLiteral(false));
-		}
 	}
 }

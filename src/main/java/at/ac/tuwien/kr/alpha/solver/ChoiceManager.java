@@ -44,6 +44,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
 
 /**
  * This class provides functionality for choice point management, detection of active choice points, etc.
@@ -58,10 +59,6 @@ public class ChoiceManager implements Checkable {
 	private final Stack<Choice> choiceStack;
 	private final DomainSpecificHeuristicsStore domainSpecificHeuristics;
 	private final Map<Integer, Set<Integer>> headsToBodies = new HashMap<>();
-
-	// Backtracking information.
-	private final Map<Integer, ArrayList<Integer>> modifiedInDecisionLevel = new HashMap<>();
-	private int highestDecisionLevel;
 
 	// The total number of modifications this ChoiceManager received (avoids re-computation in ChoicePoints).
 	private final AtomicLong modCount = new AtomicLong(0);
@@ -87,10 +84,8 @@ public class ChoiceManager implements Checkable {
 	public ChoiceManager(WritableAssignment assignment, NoGoodStore store, DomainSpecificHeuristicsStore domainSpecificHeuristicsStore) {
 		this.store = store;
 		this.assignment = assignment;
-		this.choicePointInfluenceManager = new ChoiceInfluenceManager(assignment, modCount, modifiedInDecisionLevel, checksEnabled);
-		this.heuristicInfluenceManager = new ChoiceInfluenceManager(assignment, modCount, modifiedInDecisionLevel, checksEnabled);
-		modifiedInDecisionLevel.put(0, new ArrayList<>());
-		highestDecisionLevel = 0;
+		this.choicePointInfluenceManager = new ChoiceInfluenceManager(assignment, modCount, checksEnabled);
+		this.heuristicInfluenceManager = new ChoiceInfluenceManager(assignment, modCount, checksEnabled);
 		this.choiceStack = new Stack<>();
 		if (domainSpecificHeuristicsStore != null) {
 			this.domainSpecificHeuristics = domainSpecificHeuristicsStore;
@@ -103,13 +98,14 @@ public class ChoiceManager implements Checkable {
 		} else {
 			debugWatcher = null;
 		}
+		assignment.setCallback(this);
 	}
 
-	public NoGood computeEnumeration() {
+	NoGood computeEnumeration() {
 		int[] enumerationLiterals = new int[choiceStack.size()];
 		int enumerationPos = 0;
 		for (Choice e : choiceStack) {
-			enumerationLiterals[enumerationPos++] = e.getAtom() * (e.getValue() ? +1 : -1);
+			enumerationLiterals[enumerationPos++] = atomToLiteral(e.getAtom(), e.getValue());
 		}
 		return new NoGood(enumerationLiterals);
 	}
@@ -117,6 +113,11 @@ public class ChoiceManager implements Checkable {
 	@Override
 	public void setChecksEnabled(boolean checksEnabled) {
 		this.checksEnabled = checksEnabled;
+	}
+
+	public void callbackOnChanged(int atom) {
+		choicePointInfluenceManager.callbackOnChanged(atom);
+		heuristicInfluenceManager.callbackOnChanged(atom);
 	}
 
 	public int getBackjumps() {
@@ -149,22 +150,9 @@ public class ChoiceManager implements Checkable {
 
 	public void updateAssignments() {
 		LOGGER.trace("Updating assignments of ChoiceManager.");
-
-		modCount.incrementAndGet();
-		Iterator<Assignment.Entry> it = assignment.getNewAssignmentsForChoice();
-		int currentDecisionLevel = assignment.getDecisionLevel();
-		while (it.hasNext()) {
-			Assignment.Entry entry = it.next();
-			updateAssignmentEntry(currentDecisionLevel, entry);
-		}
 		if (checksEnabled) {
 			choicePointInfluenceManager.checkActiveChoicePoints();
 		}
-	}
-
-	private void updateAssignmentEntry(int currentDecisionLevel, Assignment.Entry entry) {
-		choicePointInfluenceManager.updateAssignmentEntry(currentDecisionLevel, entry);
-		heuristicInfluenceManager.updateAssignmentEntry(currentDecisionLevel, entry);
 	}
 
 	public void choose(Choice choice) {
@@ -181,9 +169,6 @@ public class ChoiceManager implements Checkable {
 			debugWatcher.runWatcher();
 		}
 
-		highestDecisionLevel++;
-		modifiedInDecisionLevel.put(highestDecisionLevel, new ArrayList<>());
-
 		choiceStack.push(choice);
 	}
 
@@ -196,9 +181,14 @@ public class ChoiceManager implements Checkable {
 		LOGGER.debug("Backjumping to decision level {}.", target);
 
 		// Remove everything above the target level, but keep the target level unchanged.
-		while (assignment.getDecisionLevel() > target) {
-			backtrackFast();
+		int currentDecisionLevel = assignment.getDecisionLevel();
+		assignment.backjump(target);
+		while (currentDecisionLevel-- > target) {
+			final Choice choice = choiceStack.pop();
 			backtracksWithinBackjumps++;
+			backtracks++;
+			modCount.incrementAndGet();
+			LOGGER.debug("Backjumping removed choice {}", choice);
 		}
 	}
 
@@ -247,12 +237,6 @@ public class ChoiceManager implements Checkable {
 		store.backtrack();
 		backtracks++;
 		modCount.incrementAndGet();
-		ArrayList<Integer> changedAtoms = modifiedInDecisionLevel.get(highestDecisionLevel);
-		for (Integer atom : changedAtoms) {
-			choicePointInfluenceManager.recomputeActive(atom);
-			heuristicInfluenceManager.recomputeActive(atom);
-		}
-		highestDecisionLevel--;
 	}
 
 	void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms, Map<Integer, Set<Integer>> headsToBodies) {

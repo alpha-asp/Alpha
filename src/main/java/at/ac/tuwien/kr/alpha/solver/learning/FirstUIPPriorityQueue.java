@@ -21,7 +21,7 @@ public class FirstUIPPriorityQueue {
 
 	public FirstUIPPriorityQueue(int decisionLevel) {
 		this.decisionLevel = decisionLevel;
-		this.delegate = new PriorityQueue<>(Comparator.comparing(Assignment.Entry::getPropagationLevel).reversed());
+		this.delegate = new PriorityQueue<>(Comparator.comparing(Assignment.Entry::getPropagationLevelRespectingLowerMBT).reversed());
 		this.alreadyAdded = new HashSet<>();
 	}
 
@@ -32,11 +32,11 @@ public class FirstUIPPriorityQueue {
 	 * @param entry the entry to add.
 	 */
 	public void add(Assignment.Entry entry) {
-		if (entry.getDecisionLevel() != decisionLevel) {
+		if (entry.getWeakDecisionLevel() != decisionLevel) {
 			// Ignore assignments from lower decision levels.
 			return;
 		}
-		if (entry.getPropagationLevel() > lastPollPropagationLevel) {
+		if (entry.getPropagationLevelRespectingLowerMBT() > lastPollPropagationLevel) {
 			throw oops("Adding to 1UIP queue an entry with higher propagationLevel than returned by the last poll");
 		}
 		if (alreadyAdded.contains(entry)) {
@@ -56,7 +56,7 @@ public class FirstUIPPriorityQueue {
 		if (firstEntry == null) {
 			return null;
 		}
-		lastPollPropagationLevel = firstEntry.getPropagationLevel();
+		lastPollPropagationLevel = firstEntry.getPropagationLevelRespectingLowerMBT();
 		return firstEntry;
 	}
 

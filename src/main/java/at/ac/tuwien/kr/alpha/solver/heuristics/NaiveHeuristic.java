@@ -34,6 +34,8 @@ import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.Conflic
 import java.util.Collection;
 import java.util.Set;
 
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+
 /**
  * The default heuristic that had been used by {@link at.ac.tuwien.kr.alpha.solver.DefaultSolver} before {@link BerkMin} was implemented.
  *
@@ -64,7 +66,7 @@ public class NaiveHeuristic implements BranchingHeuristic {
 
 	@Override
 	public int chooseAtom() {
-		return choiceManager.getNextActiveChoiceAtom();
+		return atomToLiteral(choiceManager.getNextActiveChoiceAtom());
 	}
 
 	@Override

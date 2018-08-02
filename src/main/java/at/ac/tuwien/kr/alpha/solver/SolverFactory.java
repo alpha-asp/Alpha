@@ -35,7 +35,7 @@ import java.util.Random;
 public final class SolverFactory {
 	public static Solver getInstance(String name, String storeName, Grounder grounder, Random random, boolean respectDomSpecHeuristic,
 			Heuristic fallbackHeuristic, boolean debugInternalChecks) {
-		final ArrayAssignment assignment = new ArrayAssignment(grounder);
+		final TrailAssignment assignment = new TrailAssignment(grounder, debugInternalChecks);
 		assignment.setChecksEnabled(debugInternalChecks);
 
 		NoGoodStore store;

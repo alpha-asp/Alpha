@@ -43,9 +43,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
-import static at.ac.tuwien.kr.alpha.common.NoGood.HEAD;
+import static at.ac.tuwien.kr.alpha.common.Literals.*;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -64,7 +62,6 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	
 	public static final double DEFAULT_ACTIVITY = 0.0;
 	public static final int DEFAULT_SIGN_COUNTER = 0;
-	public static final int DEFAULT_CHOICE_ATOM = 0;
 
 	public static final int DEFAULT_DECAY_AGE = 10;
 	public static final double DEFAULT_DECAY_FACTOR = 0.25;
@@ -84,7 +81,7 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	/**
 	 * Maps body-representing atoms to rule heads.
 	 */
-	protected final Map<Integer, Integer> bodyToHead = new HashMap<>();
+	protected final Map<Integer, Integer> bodyAtomToHeadAtom = new HashMap<>();
 
 	/**
 	 * Maps rule heads to atoms representing corresponding bodies.
@@ -94,12 +91,12 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	/**
 	 * Maps body-representing atoms to literals occuring in the rule body.
 	 */
-	protected final MultiValuedMap<Integer, Integer> bodyToLiterals = new HashSetValuedHashMap<>();
+	protected final MultiValuedMap<Integer, Integer> bodyAtomToLiterals = new HashSetValuedHashMap<>();
 
 	/**
 	 * Maps atoms to atoms representing bodies of rules in which the former atoms occur (in the head or the body).
 	 */
-	protected final MultiValuedMap<Integer, Integer> atomsToBodies = new HashSetValuedHashMap<>();
+	protected final MultiValuedMap<Integer, Integer> atomsToBodiesAtoms = new HashSetValuedHashMap<>();
 
 	public DependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, BodyActivityType bodyActivityType) {
 		this.assignment = assignment;
@@ -107,7 +104,7 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 		this.decayAge = decayAge;
 		this.decayFactor = decayFactor;
 		this.rand = random;
-		this.bodyActivity = BodyActivityProviderFactory.getInstance(bodyActivityType, bodyToLiterals, activityCounters, DEFAULT_ACTIVITY);
+		this.bodyActivity = BodyActivityProviderFactory.getInstance(bodyActivityType, bodyAtomToLiterals, activityCounters, DEFAULT_ACTIVITY);
 	}
 
 	public DependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random, BodyActivityType bodyActivityType) {
@@ -200,7 +197,7 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	public int chooseLiteral(Set<Integer> admissibleChoices) {
 		int atom = chooseAtom(admissibleChoices);
 		boolean sign = chooseSign(atom);
-		return sign ? atom : -atom;
+		return atomToLiteral(atom, sign);
 	}
 	
 	@Override
@@ -211,7 +208,7 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 				return mostActiveAtom;
 			}
 
-			Collection<Integer> bodies = atomsToBodies.get(mostActiveAtom);
+			Collection<Integer> bodies = atomsToBodiesAtoms.get(mostActiveAtom);
 			Optional<Integer> mostActiveBody = getMostActiveBody(bodies.stream(), admissibleChoices);
 			if (mostActiveBody.isPresent()) {
 				return mostActiveBody.get();
@@ -249,7 +246,7 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	}
 
 	protected int getAtomForChooseSign(int atom) {
-		Integer head = bodyToHead.get(atom);
+		Integer head = bodyAtomToHeadAtom.get(atom);
 		if (head != null) {
 			atom = head; // head atom can give more relevant information than atom representing rule body
 		}
@@ -258,25 +255,25 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 
 	protected void recordAtomRelationships(NoGood noGood) {
 		if (isBodyNotHead(noGood, choiceManager::isAtomChoice)) {
-			int body = noGood.getAtom(1);
-			int head = noGood.getAtom(HEAD);
-			bodyToHead.put(body, head);
+			int body = atomOf(noGood.getLiteral(1));
+			int head = atomOf(noGood.getHead());
+			bodyAtomToHeadAtom.put(body, head);
 			headToBodies.put(head, body);
-			atomsToBodies.put(head, body);
+			atomsToBodiesAtoms.put(head, body);
 		} else if (isBodyElementsNotBody(noGood, choiceManager::isAtomChoice)) {
 			Set<Integer> literals = new HashSet<>();
-			int bodyAtom = noGood.getAtom(HEAD);
+			int bodyAtom = atomOf(noGood.getHead());
 			for (int i = 0; i < noGood.size(); i++) {
 				int literal = noGood.getLiteral(i);
 				literals.add(literal);
 				if (bodyAtom != 0) {
-					atomsToBodies.put(atomOf(literal), bodyAtom);
+					atomsToBodiesAtoms.put(atomOf(literal), bodyAtom);
 				} // else {
 					// TODO
 				// }
 			}
 			assert bodyAtom != 0;
-			bodyToLiterals.putAll(bodyAtom, literals);
+			bodyAtomToLiterals.putAll(bodyAtom, literals);
 		}
 	}
 
@@ -352,7 +349,7 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	 * @return {@code true} iff: the NoGood is binary, and it has a head, and its tail is an atom representing a rule body.
 	 */
 	public static boolean isBodyNotHead(NoGood noGood, Predicate<? super Integer> isRuleBody) {
-		return noGood.isBinary() && noGood.hasHead() && isRuleBody.test(noGood.getAtom(1));
+		return noGood.isBinary() && noGood.hasHead() && isRuleBody.test(atomOf(noGood.getLiteral(1)));
 	}
 
 	/**
@@ -362,7 +359,7 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	 * @return {@code true} iff: the NoGood contains at least two literals, and the head is a negative literal whose atom represents a rule body.
 	 */
 	public static boolean isBodyElementsNotBody(NoGood noGood, Predicate<? super Integer> isRuleBody) {
-		return noGood.size() > 1 && noGood.hasHead() && isNegated(noGood.getLiteral(HEAD)) && isRuleBody.test(noGood.getAtom(HEAD));
+		return noGood.size() > 1 && noGood.hasHead() && isNegated(noGood.getHead()) && isRuleBody.test(atomOf(noGood.getHead()));
 	}
 
 }

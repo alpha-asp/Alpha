@@ -67,6 +67,12 @@ public interface Grounder extends AtomTranslator {
 	Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms();
 
 	/**
+	 * Updates the grounder with atoms assigned a positive truth value.
+	 * @param it an iterator over all newly assigned positive atoms.
+	 */
+	void updateAssignment(Iterator<Integer> it);
+	
+	/**
 	 * Returns new heuristic atoms and their enablers and disablers.
 	 * Must be preceded by a call to {@link #getNoGoods(Assignment)}.
 	 * @see #getChoiceAtoms()
@@ -84,7 +90,6 @@ public interface Grounder extends AtomTranslator {
 	 */
 	Map<Integer, Set<Integer>> getHeadsToBodies();
 
-	void updateAssignment(Iterator<Assignment.Entry> it);
 
 	void forgetAssignment(int[] atomIds);
 

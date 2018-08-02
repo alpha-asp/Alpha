@@ -38,6 +38,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -172,7 +173,7 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 	public int chooseLiteral(Set<Integer> admissibleChoices) {
 		int atom = chooseAtom(admissibleChoices);
 		boolean sign = chooseSign(atom);
-		return sign ? atom : -atom;
+		return atomToLiteral(atom, sign);
 	}
 
 	@Override
@@ -201,7 +202,7 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 		} else if (negativeCounter > positiveCounter) {
 			return true;
 		} else {
-			return rand.nextBoolean();
+			return atom == DEFAULT_CHOICE_ATOM || rand.nextBoolean();
 		}
 	}
 
@@ -264,7 +265,7 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 	protected int getMostActiveChoosableAtom(NoGood noGood, Set<Integer> admissibleChoices) {
 		Stream<Integer> streamOfChoosableAtoms;
 		if (noGood != null) {
-			streamOfChoosableAtoms = noGood.stream().boxed();
+			streamOfChoosableAtoms = noGood.stream().boxed().map(Literals::atomOf);
 		} else {
 			streamOfChoosableAtoms = activityCounters.keySet().stream();
 		}
@@ -280,7 +281,7 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 				.filter(this::isUnassigned)
 				.filter(choiceManager::isActiveChoiceAtom)
 				.max(Comparator.comparingDouble(this::getActivity))
-				.orElse(DEFAULT_CHOICE_LITERAL);
+			.orElse(DEFAULT_CHOICE_ATOM);
 	}
 
 	protected boolean isUnassigned(int atom) {

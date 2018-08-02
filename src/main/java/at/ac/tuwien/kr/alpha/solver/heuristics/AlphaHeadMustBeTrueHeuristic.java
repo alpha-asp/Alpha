@@ -26,7 +26,6 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
@@ -69,7 +68,7 @@ public class AlphaHeadMustBeTrueHeuristic extends DependencyDrivenHeuristic {
 
 	private Optional<Integer> determineMostActiveBody(Set<Integer> admissibleChoices) {
 		Set<Integer> heads = headToBodies.keySet();
-		Stream<Integer> bodiesOfMbtHeads = heads.stream().map(Literals::atomOf).filter(a -> assignment.getTruth(a) == ThriceTruth.MBT).flatMap(h -> headToBodies.get(h).stream());
+		Stream<Integer> bodiesOfMbtHeads = heads.stream().filter(a -> assignment.getTruth(a) == ThriceTruth.MBT).flatMap(h -> headToBodies.get(h).stream());
 		Optional<Integer> mostActiveBody = getMostActiveBody(bodiesOfMbtHeads, admissibleChoices);
 		return mostActiveBody;
 	}

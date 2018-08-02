@@ -29,9 +29,9 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.solver.ArrayAssignment;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
+import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 import org.junit.Before;
@@ -49,7 +49,7 @@ import static org.junit.Assert.assertEquals;
 public class DomainSpecificHeuristicsTest {
 	
 	private static final String LS = System.lineSeparator();
-	private final WritableAssignment assignment = new ArrayAssignment();
+	private final WritableAssignment assignment = new TrailAssignment();
 	private final ProgramParser parser = new ProgramParser();
 	
 	@Before
