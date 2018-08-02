@@ -106,9 +106,12 @@ public class NoGoodGenerator {
 				return emptyList();
 			}
 	
-			final int bodyRepresentingLiteral = atomToLiteral(store.add(bodyAtom));
+			final int bodyRepresentingAtom = store.add(bodyAtom);
+			final int bodyRepresentingLiteral = atomToLiteral(bodyRepresentingAtom);
 			final int headLiteral = atomToLiteral(store.add(nonGroundRule.getHeadAtom().substitute(substitution)));
-	
+
+			choiceRecorder.addHeadToBody(headId, bodyRepresentingAtom);
+			
 			// Create a nogood for the head.
 			result.add(NoGood.headFirst(negateLiteral(headLiteral), bodyRepresentingLiteral));
 	

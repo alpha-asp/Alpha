@@ -54,7 +54,6 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
  */
 public class DomainSpecific implements BranchingHeuristic {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DomainSpecific.class);
-	static final int DEFAULT_CHOICE_ATOM = 0;
 
 	private final Assignment assignment;
 	private final ChoiceManager choiceManager;
@@ -134,7 +133,7 @@ public class DomainSpecific implements BranchingHeuristic {
 		// sign of literal chosen by fallback heuristic is ignored
 		int atom = fallbackHeuristic.chooseAtom(admissibleChoices);
 		if (atom != DEFAULT_CHOICE_ATOM) {
-			return Literals.fromAtomAndSign(atom, determineSignForFallbackAtom(atom, activeHeuristicsToBodies));
+			return Literals.atomToLiteral(atom, determineSignForFallbackAtom(atom, activeHeuristicsToBodies));
 		} else {
 			return chooseArbitraryLiteral(activeHeuristicsToBodies);
 		}
@@ -156,7 +155,7 @@ public class DomainSpecific implements BranchingHeuristic {
 	private int chooseArbitraryLiteral(Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies) {
 		LOGGER.debug("Fallback heuristic is clueless. Choosing arbitrary literal known to domain-specific heuristics");
 		Entry<HeuristicDirectiveValues, Set<Integer>> entry = activeHeuristicsToBodies.entrySet().iterator().next();
-		return Literals.fromAtomAndSign(entry.getValue().iterator().next(), entry.getKey().getSign());
+		return Literals.atomToLiteral(entry.getValue().iterator().next(), entry.getKey().getSign());
 	}
 
 	private int chooseAdmissibleBodyForHeuristic(Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies, Set<Integer> admissibleChoices) {
@@ -171,7 +170,7 @@ public class DomainSpecific implements BranchingHeuristic {
 		} else if (bodies.size() > 1) {
 			return askFallbackHeuristic(activeHeuristicsToBodies, bodies);
 		} else {
-			return Literals.fromAtomAndSign(bodies.iterator().next(), heuristic.getSign());
+			return Literals.atomToLiteral(bodies.iterator().next(), heuristic.getSign());
 		}
 	}
 

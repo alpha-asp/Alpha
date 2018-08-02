@@ -143,10 +143,6 @@ public class ChoiceRecorder {
 		return noGoods;
 	}
 
-
-
-
-
 	public void addHeadToBody(int headId, int bodyId) {
 		Set<Integer> existingBodies = newHeadsToBodies.get(headId);
 		if (existingBodies == null) {

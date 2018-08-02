@@ -173,7 +173,9 @@ public class ChoiceInfluenceManager implements Checkable {
 		LOGGER.trace("Callback received on influencer atom: {}", atom);
 		modCount.incrementAndGet();
 		ChoicePoint choicePoint = influencers.get(atom);
-		choicePoint.recomputeActive();
+		if (choicePoint != null) {
+			choicePoint.recomputeActive();
+		}
 	}
 
 	private class ChoicePoint {
