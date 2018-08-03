@@ -41,57 +41,6 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  */
 public class Unification {
 
-	public static Substitution isMoreGeneral(Atom specificAtom, Atom generalAtom) {
-		Substitution specialization = new Substitution();
-		if (specificAtom.getTerms().size() != generalAtom.getTerms().size()
-			|| !specificAtom.getPredicate().equals(generalAtom.getPredicate())) {
-			return null;
-		}
-		for (int i = 0; i < specificAtom.getTerms().size(); i++) {
-			final Term specificTerm = specificAtom.getTerms().get(i);
-			final Term generalTerm = generalAtom.getTerms().get(i);
-			if (!isMoreGeneral(specificTerm, generalTerm, specialization)) {
-				return null;
-			}
-		}
-		return specialization;
-	}
-
-	private static boolean isMoreGeneral(Term specificTerm, Term generalTerm, Substitution specialization) {
-		final Term generalSubstitutedTerm = generalTerm.substitute(specialization);
-		if (specificTerm == generalSubstitutedTerm) {
-			return true;
-		}
-		if (generalSubstitutedTerm instanceof VariableTerm) {
-			if (specialization.isVariableSet((VariableTerm) generalTerm)) {
-				// The variable in generalSubstitutedTerm is set and different from the specificTerm.
-				return false;
-			} else {
-				specialization.put((VariableTerm) generalSubstitutedTerm, specificTerm);
-				return true;
-			}
-		} else if (generalSubstitutedTerm instanceof FunctionTerm) {
-			if (!(specificTerm instanceof FunctionTerm)) {
-				return false;
-			}
-			final FunctionTerm generalFunction = (FunctionTerm) generalSubstitutedTerm;
-			final FunctionTerm specificFunction = (FunctionTerm) specificTerm;
-			if (!generalFunction.getSymbol().equals(specificFunction.getSymbol())
-				|| generalFunction.getTerms().size() != specificFunction.getTerms().size()) {
-				return false;
-			}
-			for (int i = 0; i < generalFunction.getTerms().size(); i++) {
-				final Term generalFunctionTerm = generalFunction.getTerms().get(i);
-				final Term specificFunctionTerm = specificFunction.getTerms().get(i);
-				if (!isMoreGeneral(specificFunctionTerm, generalFunctionTerm, specialization)) {
-					return false;
-				}
-			}
-			return true;
-		}
-		return false;
-	}
-
 	public static Unifier unifyAtoms(Atom left, Atom right) {
 		return unifyAtoms(left, right, false);
 	}
