@@ -33,7 +33,10 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.grounder.*;
+import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
+import at.ac.tuwien.kr.alpha.grounder.ProgramAnalyzingGrounder;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
@@ -48,10 +51,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToNegatedLiteral;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.common.Literals.*;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
 import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
@@ -277,7 +277,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 		ProgramAnalyzingGrounder analyzingGrounder = (ProgramAnalyzingGrounder) grounder;
 		// Justify one MBT assigned atom.
-		Integer atomToJustify = ((TrailAssignment) assignment).getBasicAtomAssignedMBT();
+		Integer atomToJustify = assignment.getBasicAtomAssignedMBT();
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Searching for justification of {} / {}", atomToJustify, atomStore.atomToString(atomToJustify));
 			LOGGER.debug("Assignment is (TRUE part only): {}", translate(assignment.getTrueAssignments()));
@@ -324,7 +324,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		LinkedHashSet<Integer> toJustify = new LinkedHashSet<>();
 		// Find those literals in violatedNoGood that were just assigned false.
 		for (Integer literal : violatedNoGood) {
-			if (unassignedAtoms.contains(atomOf(literal))) {
+			if (assignment.getImpliedBy(atomOf(literal)) == TrailAssignment.CLOSING_INDICATOR_NOGOOD) {
 				toJustify.add(literal);
 			}
 		}
@@ -360,7 +360,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				int groundAtomId = atomStore.get(groundAtom);
 				Assignment.Entry entry = assignment.get(groundAtomId);
 				// Check if atom was assigned to FALSE during the closing.
-				if (entry.getImpliedBy() == closingIndicator) {
+				if (entry.getImpliedBy() == TrailAssignment.CLOSING_INDICATOR_NOGOOD) {
 					ruleAtomReplacements.add(atomToNegatedLiteral(groundAtomId));
 				}
 			}
@@ -388,23 +388,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		return true;
 	}
 
-	private LinkedHashSet<Integer> unassignedAtoms;
-	private static NoGood closingIndicator = new NoGood(0);
 	private boolean close() {
-		// TODO: we may change this to ask the Assignment directly instead since it now also knows the highest atomId!
-		// TODO: in fact, the assignment may directly apply the closing.
-		unassignedAtoms = new LinkedHashSet<>();
-		unassignedAtoms.addAll(atomStore.getUnassignedAtoms(assignment));
-
-		if (unassignedAtoms.isEmpty()) {
-			return false;
-		}
-
-		for (Integer atom : unassignedAtoms) {
-			assignment.assign(atom, FALSE, closingIndicator);
-		}
-
-		return true;
+		return assignment.closeUnassignedAtoms();
 	}
 
 	/**
@@ -457,7 +442,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	private boolean ingest(Map<Integer, NoGood> obtained) {
 		branchingHeuristic.newNoGoods(obtained.values());
-		assignment.growForMaxAtomId(atomStore.getMaxAtomId());
+		assignment.growForMaxAtomId();
 		store.growForMaxAtomId(atomStore.getMaxAtomId());
 
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());

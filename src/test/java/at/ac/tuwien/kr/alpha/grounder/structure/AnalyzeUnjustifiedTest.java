@@ -42,7 +42,7 @@ public class AnalyzeUnjustifiedTest {
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		int rId = atomStore.get(new BasicAtom(Predicate.getInstance("r", 0)));
 		int nrId = atomStore.get(new BasicAtom(Predicate.getInstance("nr", 0)));
-		assignment.growForMaxAtomId(atomStore.getMaxAtomId());
+		assignment.growForMaxAtomId();
 		assignment.assign(rId, ThriceTruth.FALSE);
 		assignment.assign(nrId, ThriceTruth.TRUE);
 		BasicAtom p5 = new BasicAtom(Predicate.getInstance("p", 1), Collections.singletonList(ConstantTerm.getInstance(5)));
@@ -77,7 +77,7 @@ public class AnalyzeUnjustifiedTest {
 		int q11Id = atomStore.get(q11);
 		int q12Id = atomStore.get(q12);
 		int q13Id = atomStore.get(q13);
-		assignment.growForMaxAtomId(atomStore.getMaxAtomId());
+		assignment.growForMaxAtomId();
 		assignment.assign(p1Id, ThriceTruth.MBT);
 		assignment.assign(r2Id, ThriceTruth.TRUE);
 		assignment.assign(s12Id, ThriceTruth.TRUE);
@@ -113,7 +113,7 @@ public class AnalyzeUnjustifiedTest {
 		int qdId = atomStore.get(qd);
 		int qeId = atomStore.get(qe);
 
-		assignment.growForMaxAtomId(atomStore.getMaxAtomId());
+		assignment.growForMaxAtomId();
 		assignment.assign(qaId, ThriceTruth.FALSE);
 		assignment.assign(qbId, ThriceTruth.FALSE);
 		assignment.assign(qcId, ThriceTruth.FALSE);
@@ -132,7 +132,7 @@ public class AnalyzeUnjustifiedTest {
 		int nqdId = atomStore.get(nqd);
 		int nqeId = atomStore.get(nqe);
 
-		assignment.growForMaxAtomId(atomStore.getMaxAtomId());
+		assignment.growForMaxAtomId();
 		assignment.assign(nqaId, ThriceTruth.TRUE);
 		assignment.assign(nqbId, ThriceTruth.TRUE);
 		assignment.assign(nqcId, ThriceTruth.TRUE);

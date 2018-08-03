@@ -73,7 +73,7 @@ public class AlphaHeuristicTestAssumptions {
 		Program parsedProgram = new ProgramParser().parse(testProgram);
 		this.atomStore = new AtomStoreImpl();
 		this.grounder = new NaiveGrounder(parsedProgram, atomStore);
-		this.assignment = new TrailAssignment();
+		this.assignment = new TrailAssignment(atomStore);
 		this.choiceManager = new TestableChoiceManager(assignment, new NaiveNoGoodStore(assignment));
 	}
 
@@ -95,7 +95,7 @@ public class AlphaHeuristicTestAssumptions {
 		int other = 0;
 
 		Collection<NoGood> noGoods = getNoGoods();
-		assignment.growForMaxAtomId(atomStore.getMaxAtomId());
+		assignment.growForMaxAtomId();
 		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
 		for (NoGood noGood : noGoods) {
 			n++;
@@ -140,7 +140,7 @@ public class AlphaHeuristicTestAssumptions {
 
 	private void testIsAtomChoice(Predicate<? super Integer> isRuleBody) {
 		Collection<NoGood> noGoods = getNoGoods();
-		assignment.growForMaxAtomId(atomStore.getMaxAtomId());
+		assignment.growForMaxAtomId();
 		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
 		for (NoGood noGood : noGoods) {
 			for (Integer literal : noGood) {

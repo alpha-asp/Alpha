@@ -73,10 +73,6 @@ public class AtomStoreImpl implements AtomStore {
 		return predicateInstancesToAtomIds.containsKey(groundAtom);
 	}
 
-	public ListIterator<Atom> listIterator() {
-		return atomIdsToInternalBasicAtoms.listIterator();
-	}
-
 	/**
 	 * Removes the given atom from the AtomStoreImpl.
 	 * @param atomId
@@ -92,18 +88,6 @@ public class AtomStoreImpl implements AtomStore {
 			ret.append(entry.getValue()).append(" <-> ").append(entry.getKey().toString()).append(System.lineSeparator());
 		}
 		return ret.toString();
-	}
-
-	@Override
-	public List<Integer> getUnassignedAtoms(Assignment assignment) {
-		List<Integer> unassignedAtoms = new ArrayList<>();
-		// Check all known atoms: assumption is that AtomStoreImpl assigned continuous values and 0 is no valid atomId.
-		for (int i = 1; i <= getMaxAtomId(); i++) {
-			if (!assignment.isAssigned(i)) {
-				unassignedAtoms.add(i);
-			}
-		}
-		return unassignedAtoms;
 	}
 
 	@Override

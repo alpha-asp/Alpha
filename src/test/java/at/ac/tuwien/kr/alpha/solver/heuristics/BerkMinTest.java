@@ -25,6 +25,9 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.*;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
@@ -55,8 +58,10 @@ public class BerkMinTest {
 	
 	@Before
 	public void setUp() {
-		WritableAssignment assignment = new TrailAssignment();
-		assignment.growForMaxAtomId(fromOldLiterals(2));
+		AtomStore atomStore = new AtomStoreImpl();
+		AtomStoreTest.fillAtomStore(atomStore, fromOldLiterals(2));
+		WritableAssignment assignment = new TrailAssignment(atomStore);
+		assignment.growForMaxAtomId();
 		this.berkmin = new BerkMin(
 			assignment,
 			new PseudoChoiceManager(assignment, new NaiveNoGoodStore(assignment)),

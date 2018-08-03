@@ -3,7 +3,6 @@ package at.ac.tuwien.kr.alpha.common;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 
 import java.util.Iterator;
-import java.util.List;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
@@ -55,13 +54,6 @@ public interface AtomStore {
 	 * @return true if the ground atom is already associated an integer ID.
 	 */
 	boolean contains(Atom groundAtom);
-
-	/**
-	 * Returns a list of currently known but unassigned atoms.
-	 * @param assignment the current assignment.
-	 * @return a list of atoms not having assigned a truth value.
-	 */
-	List<Integer> getUnassignedAtoms(Assignment assignment);
 
 	String atomToString(int atom);
 

@@ -1,7 +1,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.*;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -16,18 +15,21 @@ import static org.junit.Assert.*;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class NaiveNoGoodStoreTest {
+	private final AtomStore atomStore;
 	private final TrailAssignment assignment;
 	private final NaiveNoGoodStore store;
 
 	public NaiveNoGoodStoreTest() {
-		assignment = new TrailAssignment(null);
+		atomStore = new AtomStoreImpl();
+		assignment = new TrailAssignment(atomStore);
 		store = new NaiveNoGoodStore(assignment);
 	}
 
 	@Before
 	public void setUp() {
 		store.clear();
-		assignment.growForMaxAtomId(200);
+		AtomStoreTest.fillAtomStore(atomStore, 200);
+		assignment.growForMaxAtomId();
 	}
 
 	@Test

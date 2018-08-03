@@ -53,7 +53,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 		Program parsedProgram = new ProgramParser().parse(testProgram);
 		this.atomStore = new AtomStoreImpl();
 		this.grounder = new NaiveGrounder(parsedProgram, atomStore);
-		WritableAssignment assignment = new TrailAssignment();
+		WritableAssignment assignment = new TrailAssignment(atomStore);
 		NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment);
 		this.choiceManager = new ChoiceManager(assignment, store);
 	}
