@@ -347,7 +347,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			// First, translate RuleAtom back to NonGroundRule + Substitution.
 			String ruleId = (String) ((ConstantTerm<?>)atom.getTerms().get(0)).getObject();
 			NonGroundRule nonGroundRule = analyzingGrounder.getNonGroundRule(Integer.parseInt(ruleId));
-			String substitution = (String) ((ConstantTerm)atom.getTerms().get(1)).getObject();
+			String substitution = (String) ((ConstantTerm<?>)atom.getTerms().get(1)).getObject();
 			Substitution groundingSubstitution = Substitution.fromString(substitution);
 			Rule rule = nonGroundRule.getRule();
 			// Find ground literals in the body that have been assigned false and justify those.

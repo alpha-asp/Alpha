@@ -36,12 +36,14 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.junit.Test;
 
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Copyright (c) 2016-2018, the Alpha Team.
@@ -130,5 +132,18 @@ public class SubstitutionTest {
 		substitution.unifyTerms(Y, B);
 		String printedString = NaiveGrounder.groundLiteralToString(atom.toLiteral(!negated), substitution, true);
 		assertEquals((negated ? "not " : "") + "p(a, b)", printedString);
+	}
+
+	@Test
+	public void substitutionFromString() {
+		Rule rule = PARSER.parse("x :- p(X,Y), not q(X,Y).").getRules().get(0);
+		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
+		Substitution substitution = new Substitution();
+		substitution.unifyTerms(X, A);
+		substitution.unifyTerms(Y, B);
+		RuleAtom ruleAtom = new RuleAtom(nonGroundRule, substitution);
+		String substitutionString = (String) ((ConstantTerm<?>) ruleAtom.getTerms().get(1)).getObject();
+		Substitution fromString = Substitution.fromString(substitutionString);
+		assertTrue(substitution.equals(fromString));
 	}
 }
