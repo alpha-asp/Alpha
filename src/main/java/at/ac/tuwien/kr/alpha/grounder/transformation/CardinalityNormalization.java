@@ -7,6 +7,7 @@ import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
@@ -144,7 +145,7 @@ public class CardinalityNormalization implements ProgramTransformation {
 
 			// Prepare aggregate parameters.
 			aggregateCount++;
-			Substitution aggregateSubstitution = new Substitution();
+			Substitution aggregateSubstitution = new Unifier();
 			if (globalVariables.isEmpty()) {
 				aggregateSubstitution.put(VariableTerm.getInstance("AGGREGATE_ID"), ConstantTerm.getInstance(aggregateCount));
 			} else {
@@ -162,7 +163,7 @@ public class CardinalityNormalization implements ProgramTransformation {
 				// Prepare element substitution.
 				List<Term> elementTerms = aggregateElement.getElementTerms();
 				FunctionTerm elementTuple = FunctionTerm.getInstance("element_tuple", elementTerms);
-				Substitution elementSubstitution = new Substitution(aggregateSubstitution);
+				Substitution elementSubstitution = new Unifier(aggregateSubstitution);
 				elementSubstitution.put(VariableTerm.getInstance("ELEMENT_TUPLE"), elementTuple);
 
 				// Create new rule for input.

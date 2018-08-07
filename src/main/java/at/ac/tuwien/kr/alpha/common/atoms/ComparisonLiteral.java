@@ -130,46 +130,30 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 		final boolean leftAssigning = assignable(left);
 		final boolean rightAssigning = assignable(right);
 		if (!leftAssigning && !rightAssigning) {
-			Term leftEvaluatedSubstitute = substituteAndEvaluate(terms.get(0), partialSubstitution);
-			Term rightEvaluatedSubstitute = substituteAndEvaluate(terms.get(1), partialSubstitution);
-			if (compare(leftEvaluatedSubstitute, rightEvaluatedSubstitute)) {
-				return Collections.singletonList(partialSubstitution);
-			} else {
-				return Collections.emptyList();
-			}
-		}
-		/* Version from aggregates:
-		// Treat case where this is just comparison with all variables bound by partialSubstitution.
-		final Term left = getAtom().getTerms().get(0).substitute(partialSubstitution);
-		final Term right = getAtom().getTerms().get(1).substitute(partialSubstitution);
-		final boolean leftAssigning = assignable(left);
-		final boolean rightAssigning = assignable(right);
-		if (!leftAssigning && !rightAssigning) {
 			// No assignment (variables are bound by partialSubstitution), thus evaluate comparison only.
-			Term leftSubstitute = left;
-			Term rightSubstitute = right;
+			Term leftEvaluatedSubstitute = left;
+			Term rightEvaluatedSubstitute = right;
 			// Evaluate arithmetics.
 			if (left instanceof ArithmeticTerm) {
 				Integer leftResult = ArithmeticTerm.evaluateGroundTerm(left);
 				if (leftResult == null) {
 					return Collections.emptyList();
 				}
-				leftSubstitute = ConstantTerm.getInstance(leftResult);
+				leftEvaluatedSubstitute = ConstantTerm.getInstance(leftResult);
 			}
 			if (right instanceof ArithmeticTerm) {
 				Integer rightResult = ArithmeticTerm.evaluateGroundTerm(right);
 				if (rightResult == null) {
 					return Collections.emptyList();
 				}
-				rightSubstitute = ConstantTerm.getInstance(rightResult);
+				rightEvaluatedSubstitute = ConstantTerm.getInstance(rightResult);
 			}
-			if (compare(leftSubstitute, rightSubstitute)) {
+			if (compare(leftEvaluatedSubstitute, rightEvaluatedSubstitute)) {
 				return Collections.singletonList(partialSubstitution);
 			} else {
 				return Collections.emptyList();
 			}
 		}
-		 */
 		// Treat case that this is X = t or t = X.
 		VariableTerm variable = null;
 		Term expression = null;
@@ -197,11 +181,6 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 		Substitution extendedSubstitution = new Substitution(partialSubstitution);
 		extendedSubstitution.put(variable, resultTerm);
 		return Collections.singletonList(extendedSubstitution);
-	}
-
-	private Term substituteAndEvaluate(Term term, Substitution partialSubstitution) {
-		Term substitute = term.substitute(partialSubstitution);
-		return substitute instanceof ArithmeticTerm ? ConstantTerm.getInstance(evaluateGroundTerm(substitute)) : substitute;
 	}
 
 	private boolean compare(Term x, Term y) {
