@@ -73,6 +73,39 @@ public class Util {
 		}
 		return union;
 	}
+	
+	/**
+	 * Finds any element belonging to the intersection of {@code set1} and {@code set2}
+	 * by iterating over the smaller of the two sets and repeatedly calling
+	 * {@link Set#contains(Object)} on the larger one.
+	 * @param set1
+	 * @param set2
+	 * @return
+	 * 	any element belonging to the intersection of {@code set1} and {@code set2},
+	 * 	or {@code null} if the intersection is empty
+	 */
+	public static <T> T getAnyElementOfIntersection(Set<? extends T> set1, Set<? extends T> set2) {
+		int size1 = set1.size();
+		int size2 = set2.size();
+		Set<? extends T> setInOuterLoop;
+		Set<? extends T> otherSet;
+		
+		if (size1 < size2) {
+			setInOuterLoop = set1;
+			otherSet = set2;
+		} else {
+			setInOuterLoop = set2;
+			otherSet = set1;
+		}
+		
+		for (T element : setInOuterLoop) {
+			if (otherSet.contains(element)) {
+				return element;
+			}
+		}
+		
+		return null;
+	}
 
 	public static <U extends T, T extends Comparable<T>> int compareSortedSets(SortedSet<U> a, SortedSet<U> b) {
 		if (a.size() != b.size()) {

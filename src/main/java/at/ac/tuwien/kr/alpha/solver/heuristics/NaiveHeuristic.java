@@ -34,6 +34,7 @@ import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.Conflic
 import java.util.Collection;
 import java.util.Set;
 
+import static at.ac.tuwien.kr.alpha.Util.getAnyElementOfIntersection;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
 
 /**
@@ -75,13 +76,8 @@ public class NaiveHeuristic implements BranchingHeuristic {
 			return chooseLiteral();
 		}
 
-		for (Integer atom : choiceManager.getAllActiveChoiceAtoms()) {
-			if (admissibleChoices.contains(atom)) {
-				return atom;
-			}
-		}
-		
-		return DEFAULT_CHOICE_ATOM;
+		Integer atom = getAnyElementOfIntersection(admissibleChoices, choiceManager.getAllActiveChoiceAtoms());
+		return atom != null ? atom : DEFAULT_CHOICE_ATOM;
 	}
 
 	@Override
