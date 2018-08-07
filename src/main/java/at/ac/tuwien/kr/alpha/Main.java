@@ -27,9 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
@@ -53,6 +52,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -80,6 +80,7 @@ public class Main {
 	private static final String OPT_QUIET = "quiet";
 	private static final String OPT_LITERATE = "literate";
 	private static final String OPT_STATS = "stats";
+	private static final String OPT_NO_JUSTIFICATION = "disableJustifications";
 
 	private static final String OPT_BRANCHING_HEURISTIC = "branchingHeuristic";
 	private static final String DEFAULT_GROUNDER = "naive";
@@ -165,9 +166,12 @@ public class Main {
 
 		Option literateOption = new Option("l", OPT_LITERATE, false, "enable literate programming mode");
 		options.addOption(literateOption);
-		
+
 		Option statsOption = new Option("st", OPT_STATS, false, "print statistics");
 		options.addOption(statsOption);
+
+		Option justificationOption = new Option(OPT_NO_JUSTIFICATION, "disable the search for justifications on must-be-true assigned atoms in the solver.");
+		options.addOption(justificationOption);
 
 		try {
 			commandLine = new DefaultParser().parse(options, args);
@@ -194,6 +198,7 @@ public class Main {
 			filter = p -> desiredPredicates.contains(p.getName());
 		}
 
+		final boolean disableJustifications = commandLine.hasOption(OPT_NO_JUSTIFICATION);
 		final boolean debugInternalChecks = commandLine.hasOption(OPT_DEBUG_INTERNAL_CHECKS);
 		final boolean literate = commandLine.hasOption(OPT_LITERATE);
 
@@ -216,8 +221,9 @@ public class Main {
 			bailOut("Failed to parse program.", e);
 		}
 
+		final AtomStore atomStore = new AtomStoreImpl();
 		final Grounder grounder = GrounderFactory.getInstance(
-			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), program, filter
+			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), program, atomStore, filter
 		);
 
 		// NOTE: Using time as seed is fine as the internal heuristics
@@ -247,7 +253,7 @@ public class Main {
 		final String chosenSolver = commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER);
 		final String chosenStore = commandLine.getOptionValue(OPT_STORE, DEFAULT_STORE);
 		Solver solver = SolverFactory.getInstance(
-			chosenSolver, chosenStore, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks
+			chosenSolver, chosenStore, atomStore, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks, disableJustifications
 		);
 
 		computeAndConsumeAnswerSets(solver);
@@ -266,7 +272,13 @@ public class Main {
 		}
 
 		if (!commandLine.hasOption(OPT_QUIET)) {
-			stream.forEach(System.out::println);
+			AtomicInteger counter = new AtomicInteger(0);
+			stream.forEach(as -> System.out.println("Answer set " + counter.incrementAndGet() + ":" + System.lineSeparator() + as.toString()));
+			if (counter.get() == 0) {
+				System.out.println("UNSATISFIABLE");
+			} else {
+				System.out.println("SATISFIABLE");
+			}
 		} else {
 			// Note: Even though we are not consuming the result, we will still compute answer sets.
 			stream.collect(Collectors.toList());

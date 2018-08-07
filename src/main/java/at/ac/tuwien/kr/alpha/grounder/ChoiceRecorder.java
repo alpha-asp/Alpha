@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -43,14 +44,14 @@ public class ChoiceRecorder {
 	}
 
 	private NoGood generatePos(final int choiceId, List<Integer> posLiterals, final int bodyRepresentingLiteral) {
-		final int choiceOnLiteral = atomToLiteral(atomStore.add(on(choiceId)));
+		final int choiceOnLiteral = atomToLiteral(atomStore.putIfAbsent(on(choiceId)));
 		newChoiceAtoms.getLeft().put(atomOf(bodyRepresentingLiteral), atomOf(choiceOnLiteral));
 
 		return NoGood.fromBody(posLiterals, emptyList(), choiceOnLiteral);
 	}
 
 	private List<NoGood> generateNeg(final int choiceId, List<Integer> negLiterals, final int bodyRepresentingLiteral)  {
-		final int choiceOffLiteral = atomToLiteral(atomStore.add(off(choiceId)));
+		final int choiceOffLiteral = atomToLiteral(atomStore.putIfAbsent(off(choiceId)));
 		newChoiceAtoms.getRight().put(atomOf(bodyRepresentingLiteral), atomOf(choiceOffLiteral));
 
 		final List<NoGood> noGoods = new ArrayList<>(negLiterals.size() + 1);

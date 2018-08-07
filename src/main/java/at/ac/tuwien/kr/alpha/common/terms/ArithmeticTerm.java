@@ -42,12 +42,20 @@ public class ArithmeticTerm extends Term {
 
 	@Override
 	public Term substitute(Substitution substitution) {
-		return new ArithmeticTerm(left.substitute(substitution), arithmeticOperator, right.substitute(substitution));
+		return getInstance(left.substitute(substitution), arithmeticOperator, right.substitute(substitution));
 	}
 
 	@Override
 	public Term renameVariables(String renamePrefix) {
-		return new ArithmeticTerm(left.renameVariables(renamePrefix), arithmeticOperator, right.renameVariables(renamePrefix));
+		return getInstance(left.renameVariables(renamePrefix), arithmeticOperator, right.renameVariables(renamePrefix));
+	}
+
+	@Override
+	public Term normalizeVariables(String renamePrefix, RenameCounter counter) {
+		Term normalizedLeft = left.normalizeVariables(renamePrefix, counter);
+		Term normalizedRight = right.normalizeVariables(renamePrefix, counter);
+		return ArithmeticTerm.getInstance(normalizedLeft, arithmeticOperator, normalizedRight);
+
 	}
 
 	public static Integer evaluateGroundTerm(Term term) {

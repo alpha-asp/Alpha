@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.common.atoms;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.List;
@@ -59,6 +60,13 @@ public interface Atom extends Comparable<Atom> {
 	default Set<VariableTerm> getNonBindingVariables() {
 		return toLiteral().getNonBindingVariables();
 	}
+	
+	/**
+	 * Set of all variables occurring in the Atom
+	 */
+	default Set<VariableTerm> getOccurringVariables() {
+		return toLiteral().getOccurringVariables();
+	}
 
 	/**
 	 * This method applies a substitution to a potentially non-substitute atom.
@@ -81,6 +89,15 @@ public interface Atom extends Comparable<Atom> {
 	 * @return
 	 */
 	Literal toLiteral(boolean positive);
+
+	default Atom renameVariables(String newVariablePrefix) {
+		Unifier renamingSubstitution = new Unifier();
+		int counter = 0;
+		for (VariableTerm variable : getOccurringVariables()) {
+			renamingSubstitution.put(variable, VariableTerm.getInstance(newVariablePrefix + counter++));
+		}
+		return this.substitute(renamingSubstitution);
+	}
 
 	@Override
 	default int compareTo(Atom o) {

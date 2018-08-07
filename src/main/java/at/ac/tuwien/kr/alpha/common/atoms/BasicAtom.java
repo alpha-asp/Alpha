@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
- * 
+ *
  * Additional changes made by Siemens.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -31,9 +31,7 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
@@ -41,7 +39,7 @@ import static at.ac.tuwien.kr.alpha.Util.join;
 /**
  * Copyright (c) 2016-2018, the Alpha Team.
  */
-public class BasicAtom implements Atom {
+public class BasicAtom implements Atom, VariableNormalizableAtom {
 	private final Predicate predicate;
 	private final List<Term> terms;
 	private final boolean ground;
@@ -95,7 +93,13 @@ public class BasicAtom implements Atom {
 			.map(t -> t.substitute(substitution))
 			.collect(Collectors.toList()));
 	}
-	
+
+	@Override
+	public BasicAtom normalizeVariables(String prefix, int counterStartingValue) {
+		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
+		return new BasicAtom(predicate, renamedTerms);
+	}
+
 	@Override
 	public BasicLiteral toLiteral(boolean positive) {
 		return new BasicLiteral(this, positive);

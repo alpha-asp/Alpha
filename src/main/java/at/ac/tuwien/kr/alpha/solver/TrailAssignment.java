@@ -28,9 +28,9 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.AtomTranslator;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,8 +47,9 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
  */
 public class TrailAssignment implements WritableAssignment, Checkable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TrailAssignment.class);
+	public static final NoGood CLOSING_INDICATOR_NOGOOD = new NoGood(0);
 
-	private final AtomTranslator translator;
+	private final AtomStore atomStore;
 	private ChoiceManager choiceManagerCallback;
 
 	/**
@@ -58,7 +59,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	 * and whose remaining bits encode the atom's weak decision level. 
 	 */
 	private int[] values;
-	
+
 	private int[] strongDecisionLevels;
 	private ImplicationReasonProvider[] impliedBy;
 	private int[] propagationLevels;
@@ -73,32 +74,13 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	private int newAssignmentsPositionInTrail;
 	private int newAssignmentsIterator;
 	private int assignmentsForChoicePosition;
-
-	private static class OutOfOrderLiteral {
-		final int atom;
-		final ThriceTruth value;
-		final int decisionLevel;
-		final ImplicationReasonProvider impliedBy;
-
-		private OutOfOrderLiteral(int atom, ThriceTruth value, int decisionLevel, ImplicationReasonProvider impliedBy) {
-			this.atom = atom;
-			this.decisionLevel = decisionLevel;
-			this.impliedBy = impliedBy;
-			this.value = value;
-		}
-
-		@Override
-		public String toString() {
-			return atom + "=" + value + "@" + decisionLevel + " implied by " + impliedBy;
-		}
-	}
-
 	private int mbtCount;
 	private boolean checksEnabled;
+	int replayCounter;
 
-	public TrailAssignment(AtomTranslator translator, boolean checksEnabled) {
+	public TrailAssignment(AtomStore atomStore, boolean checksEnabled) {
 		this.checksEnabled = checksEnabled;
-		this.translator = translator;
+		this.atomStore = atomStore;
 		this.values = new int[0];
 		this.strongDecisionLevels = new int[0];
 		this.impliedBy = new ImplicationReasonProvider[0];
@@ -112,12 +94,8 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		assignmentsForChoicePosition = 0;
 	}
 
-	public TrailAssignment(Grounder translator) {
-		this(translator, false);
-	}
-
-	public TrailAssignment() {
-		this(null, false);
+	public TrailAssignment(AtomStore atomStore) {
+		this(atomStore, false);
 	}
 
 	@Override
@@ -155,24 +133,14 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		return values[atom] != 0;
 	}
 
-	private class TrailPollable implements Pollable {
-
-		@Override
-		public int peek() {
-			return trail.get(nextPositionInTrail);
+	@Override
+	public int getBasicAtomAssignedMBT() {
+		for (int atom = 1; atom <= atomStore.getMaxAtomId(); atom++) {
+			if (getTruth(atom) == MBT && atomStore.get(atom) instanceof BasicAtom) {
+				return atom;
+			}
 		}
-
-		@Override
-		public int remove() {
-			Integer current = peek();
-			nextPositionInTrail++;
-			return current;
-		}
-
-		@Override
-		public boolean isEmpty() {
-			return nextPositionInTrail >= trail.size();
-		}
+		throw oops("No BasicAtom is assigned MBT.");
 	}
 
 	@Override
@@ -262,8 +230,6 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		currentPropagationLevel = trailCurrentIndex - trailPrevIndex; // Note: due to MBT->TRUE assignments this may be higher than the actual decision level, but never below.
 	}
 
-
-	int replayCounter;
 	private void replayOutOfOrderLiterals() {
 		// Replay out-of-order assigned literals.
 		if (highestDecisionLevelContainingOutOfOrderLiterals >= getDecisionLevel()) {
@@ -470,7 +436,8 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		return getTruth(atom) == FALSE ? getWeakDecisionLevel(atom) : strongDecisionLevels[atom];
 	}
 
-	private NoGood getImpliedBy(int atom) {
+	@Override
+	public NoGood getImpliedBy(int atom) {
 		int assignedLiteral = atomToLiteral(atom, getTruth(atom).toBoolean());
 		// Note that any atom was implied by a literal of opposite truth.
 		return impliedBy[atom] != null ? impliedBy[atom].getNoGood(negateLiteral(assignedLiteral)) : null;
@@ -536,7 +503,20 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	}
 
 	@Override
-	public void growForMaxAtomId(int maxAtomId) {
+	public boolean closeUnassignedAtoms() {
+		boolean didAssign = false;
+		for (int i = 1; i <= atomStore.getMaxAtomId(); i++) {
+			if (!isAssigned(i)) {
+				assign(i, FALSE, CLOSING_INDICATOR_NOGOOD);
+				didAssign = true;
+			}
+		}
+		return didAssign;
+	}
+
+	@Override
+	public void growForMaxAtomId() {
+		int maxAtomId = atomStore.getMaxAtomId();
 		// Grow arrays only if needed.
 		if (values.length > maxAtomId) {
 			return;
@@ -575,8 +555,8 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			isFirst = false;
 			sb.append(atomTruth);
 			sb.append("_");
-			if (translator != null) {
-				sb.append(translator.atomToString(i));
+			if (atomStore != null) {
+				sb.append(atomStore.atomToString(i));
 			} else {
 				sb.append(i);
 			}
@@ -619,6 +599,45 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		public Integer next() {
 			return trail.get(newAssignmentsIterator++);
 
+		}
+	}
+
+	private static class OutOfOrderLiteral {
+		final int atom;
+		final ThriceTruth value;
+		final int decisionLevel;
+		final ImplicationReasonProvider impliedBy;
+
+		private OutOfOrderLiteral(int atom, ThriceTruth value, int decisionLevel, ImplicationReasonProvider impliedBy) {
+			this.atom = atom;
+			this.decisionLevel = decisionLevel;
+			this.impliedBy = impliedBy;
+			this.value = value;
+		}
+
+		@Override
+		public String toString() {
+			return atom + "=" + value + "@" + decisionLevel + " implied by " + impliedBy;
+		}
+	}
+
+	private class TrailPollable implements Pollable {
+
+		@Override
+		public int peek() {
+			return trail.get(nextPositionInTrail);
+		}
+
+		@Override
+		public int remove() {
+			Integer current = peek();
+			nextPositionInTrail++;
+			return current;
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return nextPositionInTrail >= trail.size();
 		}
 	}
 

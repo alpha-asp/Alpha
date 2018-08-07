@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.VariableNormalizableAtom;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
@@ -50,7 +51,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  * with the Integer being inside the interval.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class IntervalAtom implements Atom {
+public class IntervalAtom implements Atom, VariableNormalizableAtom {
 	private static final Predicate PREDICATE = Predicate.getInstance("_interval", 2, true);
 
 	private final List<Term> terms;
@@ -109,5 +110,11 @@ public class IntervalAtom implements Atom {
 	@Override
 	public IntervalAtom substitute(Substitution substitution) {
 		return new IntervalAtom((IntervalTerm)terms.get(0).substitute(substitution), terms.get(1).substitute(substitution));
+	}
+
+	@Override
+	public IntervalAtom normalizeVariables(String prefix, int counterStartingValue) {
+		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
+		return new IntervalAtom((IntervalTerm) renamedTerms.get(0), renamedTerms.get(1));
 	}
 }

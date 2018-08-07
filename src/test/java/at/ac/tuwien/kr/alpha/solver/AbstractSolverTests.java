@@ -29,6 +29,8 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.AnswerSetsParser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
@@ -137,12 +139,13 @@ public abstract class AbstractSolverTests {
 	@Parameter(5)
 	public boolean checks;
 
-	protected Solver getInstance(Grounder grounder) {
-		return SolverFactory.getInstance(solverName, storeName, grounder, new Random(seed), heuristic, checks);
+	protected Solver getInstance(AtomStore atomStore, Grounder grounder) {
+		return SolverFactory.getInstance(solverName, storeName, atomStore, grounder, new Random(seed), heuristic, checks, false);
 	}
 
 	protected Solver getInstance(Program program) {
-		return getInstance(GrounderFactory.getInstance(grounderName, program));
+		AtomStore atomStore = new AtomStoreImpl();
+		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, program, atomStore));
 	}
 
 	protected Solver getInstance(String program) {
@@ -203,6 +206,18 @@ public abstract class AbstractSolverTests {
 	}
 
 	protected void assertAnswerSets(String program, Set<AnswerSet> answerSets) throws IOException {
-		assertEquals(answerSets, collectSet(program));
+		Set<AnswerSet> actualAnswerSets = emptySet();
+		try {
+			actualAnswerSets = collectSet(program);
+			assertEquals(answerSets, actualAnswerSets);
+		} catch (AssertionError e) {
+			Set<AnswerSet> expectedMinusActual = new LinkedHashSet<>(answerSets);
+			expectedMinusActual.removeAll(actualAnswerSets);
+			Set<AnswerSet> actualMinusExpected = new LinkedHashSet<>(actualAnswerSets);
+			actualMinusExpected.removeAll(answerSets);
+			String setDiffs = "Expected and computed answer sets do not agree, differences are:\nExpected \\ Actual:\n" + expectedMinusActual + "\nActual \\ Expected:\n" + actualMinusExpected;
+			throw new AssertionError(setDiffs + e.getMessage(), e);
+		}
+
 	}
 }

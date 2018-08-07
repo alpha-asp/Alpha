@@ -1,16 +1,16 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Copyright (c) 2018, the Alpha Team.
@@ -19,12 +19,15 @@ public class TrailAssignmentTest {
 	private final TrailAssignment assignment;
 
 	public TrailAssignmentTest() {
-		assignment = new TrailAssignment();
+		AtomStore atomStore = new AtomStoreImpl();
+		AtomStoreTest.fillAtomStore(atomStore, 20);
+		assignment = new TrailAssignment(atomStore);
 	}
 
 	@Before
 	public void setUp() {
 		assignment.clear();
+		assignment.growForMaxAtomId();
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -39,14 +42,12 @@ public class TrailAssignmentTest {
 
 	@Test
 	public void alreadyAssignedThrows() throws Exception {
-		assignment.growForMaxAtomId(1);
 		assertNull(assignment.assign(1, MBT));
 		assertNotNull(assignment.assign(1, FALSE));
 	}
 
 	@Test
 	public void initializeDecisionLevelState() throws Exception {
-		assignment.growForMaxAtomId(2);
 		assignment.assign(1, MBT);
 		assignment.choose(2, MBT);
 		assignment.choose(1, TRUE);
@@ -54,24 +55,21 @@ public class TrailAssignmentTest {
 
 	@Test
 	public void checkToString() {
-		assignment.growForMaxAtomId(20);
 		assignment.assign(1, FALSE);
-		assertEquals("[F_1@0]", assignment.toString());
+		assertEquals("[F_a(0)@0]", assignment.toString());
 
 		assignment.assign(2, TRUE);
-		assertEquals("[F_1@0, T_2@0]", assignment.toString());
+		assertEquals("[F_a(0)@0, T_a(1)@0]", assignment.toString());
 	}
 
 	@Test
 	public void reassignGracefully() {
-		assignment.growForMaxAtomId(1);
 		assignment.assign(1, FALSE);
 		assignment.assign(1, FALSE);
 	}
 
 	@Test
 	public void assignAndBacktrack() {
-		assignment.growForMaxAtomId(10);
 		assignment.assign(1, MBT);
 		assignment.assign(2, FALSE);
 		assignment.assign(3, TRUE);
@@ -118,7 +116,6 @@ public class TrailAssignmentTest {
 
 	@Test
 	public void assignmentsToProcess() throws Exception {
-		assignment.growForMaxAtomId(2);
 		assignment.assign(1, MBT);
 
 		Assignment.Pollable queue = assignment.getAssignmentsToProcess();
@@ -136,7 +133,6 @@ public class TrailAssignmentTest {
 
 	@Test
 	public void newAssignmentsIteratorAndBacktracking() throws Exception {
-		assignment.growForMaxAtomId(3);
 		Iterator<Integer> newAssignmentsIterator;
 
 		assignment.assign(1, MBT);
@@ -160,7 +156,6 @@ public class TrailAssignmentTest {
 
 	@Test
 	public void newAssignmentsIteratorLowerDecisionLevelAndBacktracking() throws Exception {
-		assignment.growForMaxAtomId(3);
 		Iterator<Integer> newAssignmentsIterator;
 
 		assignment.choose(1, MBT);
@@ -176,7 +171,6 @@ public class TrailAssignmentTest {
 
 	@Test
 	public void iteratorAndBacktracking() throws Exception {
-		assignment.growForMaxAtomId(3);
 		Assignment.Pollable assignmentsToProcess = assignment.getAssignmentsToProcess();
 
 		assignment.assign(1, MBT);
@@ -196,7 +190,6 @@ public class TrailAssignmentTest {
 
 	@Test
 	public void mbtCounterAssignMbtToFalseOnLowerDecisionLevel() {
-		assignment.growForMaxAtomId(4);
 		assertNull(assignment.choose(1, TRUE));
 		assertNull(assignment.choose(2, FALSE));
 

@@ -25,6 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
@@ -58,7 +60,8 @@ public class AlphaHeuristicTestAssumptions {
 	private Grounder grounder;
 	private WritableAssignment assignment;
 	private TestableChoiceManager choiceManager;
-	
+	private AtomStore atomStore;
+
 	@Before
 	public void setUp() throws IOException {
 		String testProgram = ""
@@ -68,14 +71,15 @@ public class AlphaHeuristicTestAssumptions {
 				+ "{b4}."
 				+ "h :- b1, b2, not b3, not b4.";
 		Program parsedProgram = new ProgramParser().parse(testProgram);
-		this.grounder = new NaiveGrounder(parsedProgram);
-		this.assignment = new TrailAssignment();
+		this.atomStore = new AtomStoreImpl();
+		this.grounder = new NaiveGrounder(parsedProgram, atomStore);
+		this.assignment = new TrailAssignment(atomStore);
 		this.choiceManager = new TestableChoiceManager(assignment, new NaiveNoGoodStore(assignment));
 	}
 
 	@Test
 	public void testNumbersOfNoGoods_GrounderIsAtomChoicePoint() {
-		testNumbersOfNoGoods(grounder::isAtomChoicePoint);
+		testNumbersOfNoGoods(atomStore::isAtomChoicePoint);
 	}
 
 	@Test
@@ -91,7 +95,7 @@ public class AlphaHeuristicTestAssumptions {
 		int other = 0;
 
 		Collection<NoGood> noGoods = getNoGoods();
-		assignment.growForMaxAtomId(grounder.getMaxAtomId());
+		assignment.growForMaxAtomId();
 		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
 		for (NoGood noGood : noGoods) {
 			n++;
@@ -113,7 +117,7 @@ public class AlphaHeuristicTestAssumptions {
 			}
 		}
 		
-		System.out.println(noGoods.stream().map(grounder::noGoodToString).collect(Collectors.joining(", ")));
+		System.out.println(noGoods.stream().map(atomStore::noGoodToString).collect(Collectors.joining(", ")));
 
 		assertEquals("Unexpected number of bodyNotHead nogoods", 5, bodyNotHead);
 		assertEquals("Unexpected number of bodyElementsNotBody nogoods", 5, bodyElementsNotBody);
@@ -126,7 +130,7 @@ public class AlphaHeuristicTestAssumptions {
 
 	@Test
 	public void testIsAtomChoice_GrounderIsAtomChoicePoint() {
-		testIsAtomChoice(grounder::isAtomChoicePoint);
+		testIsAtomChoice(atomStore::isAtomChoicePoint);
 	}
 
 	@Test
@@ -136,12 +140,12 @@ public class AlphaHeuristicTestAssumptions {
 
 	private void testIsAtomChoice(Predicate<? super Integer> isRuleBody) {
 		Collection<NoGood> noGoods = getNoGoods();
-		assignment.growForMaxAtomId(grounder.getMaxAtomId());
+		assignment.growForMaxAtomId();
 		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
 		for (NoGood noGood : noGoods) {
 			for (Integer literal : noGood) {
 				int atom = atomOf(literal);
-				String atomToString = grounder.atomToString(atom);
+				String atomToString = atomStore.atomToString(atom);
 				if (atomToString.startsWith("_R_")) {
 					assertTrue("Atom not choice: " + atomToString, isRuleBody.test(atom));
 				}

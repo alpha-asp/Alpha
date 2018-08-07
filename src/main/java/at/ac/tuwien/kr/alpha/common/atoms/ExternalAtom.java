@@ -93,6 +93,9 @@ public class ExternalAtom implements Atom {
 				.map(t -> t.substitute(substitution))
 				.collect(Collectors.toList()),
 			output
+				.stream()
+				.map(t -> t.substitute(substitution))
+				.collect(Collectors.toList())
 		);
 	}
 
@@ -104,11 +107,11 @@ public class ExternalAtom implements Atom {
 	@Override
 	public String toString() {
 		String result = "&" + predicate.getName();
-		if (!output.isEmpty()) {
-			result += join("[", output, "]");
-		}
 		if (!input.isEmpty()) {
-			result += join("(", input, ")");
+			result += join("[", input, "]");
+		}
+		if (!output.isEmpty()) {
+			result += join("(", output, ")");
 		}
 		return result;
 	}
