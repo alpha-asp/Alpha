@@ -1,27 +1,33 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 import static org.junit.Assert.*;
 
 /**
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2018, the Alpha Team.
  */
-public class ArrayAssignmentTest {
-	private final ArrayAssignment assignment;
+public class TrailAssignmentTest {
+	private final TrailAssignment assignment;
 
-	public ArrayAssignmentTest() {
-		assignment = new ArrayAssignment();
+	public TrailAssignmentTest() {
+		AtomStore atomStore = new AtomStoreImpl();
+		AtomStoreTest.fillAtomStore(atomStore, 20);
+		assignment = new TrailAssignment(atomStore);
 	}
 
 	@Before
 	public void setUp() {
 		assignment.clear();
+		assignment.growForMaxAtomId();
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -36,14 +42,12 @@ public class ArrayAssignmentTest {
 
 	@Test
 	public void alreadyAssignedThrows() throws Exception {
-		assignment.growForMaxAtomId(1);
 		assertNull(assignment.assign(1, MBT));
 		assertNotNull(assignment.assign(1, FALSE));
 	}
 
 	@Test
 	public void initializeDecisionLevelState() throws Exception {
-		assignment.growForMaxAtomId(2);
 		assignment.assign(1, MBT);
 		assignment.choose(2, MBT);
 		assignment.choose(1, TRUE);
@@ -51,24 +55,21 @@ public class ArrayAssignmentTest {
 
 	@Test
 	public void checkToString() {
-		assignment.growForMaxAtomId(20);
 		assignment.assign(1, FALSE);
-		assertEquals("[F_1@0]", assignment.toString());
+		assertEquals("[F_a(0)@0]", assignment.toString());
 
 		assignment.assign(2, TRUE);
-		assertEquals("[F_1@0, T_2@0]", assignment.toString());
+		assertEquals("[F_a(0)@0, T_a(1)@0]", assignment.toString());
 	}
 
 	@Test
 	public void reassignGracefully() {
-		assignment.growForMaxAtomId(1);
 		assignment.assign(1, FALSE);
 		assignment.assign(1, FALSE);
 	}
 
 	@Test
 	public void assignAndBacktrack() {
-		assignment.growForMaxAtomId(10);
 		assignment.assign(1, MBT);
 		assignment.assign(2, FALSE);
 		assignment.assign(3, TRUE);
@@ -114,51 +115,33 @@ public class ArrayAssignmentTest {
 	}
 
 	@Test
-	public void testContains() {
-		assignment.growForMaxAtomId(10);
-		assignment.assign(1, TRUE);
-		assertTrue(assignment.containsWeakComplement(+1));
-		assertFalse(assignment.containsWeakComplement(-1));
-
-		assignment.assign(2, FALSE);
-		assertTrue(assignment.containsWeakComplement(-2));
-		assertFalse(assignment.containsWeakComplement(+2));
-
-		assignment.assign(1, MBT);
-		assertTrue(assignment.containsWeakComplement(+1));
-		assertFalse(assignment.containsWeakComplement(-1));
-	}
-
-	@Test
 	public void assignmentsToProcess() throws Exception {
-		assignment.growForMaxAtomId(2);
 		assignment.assign(1, MBT);
 
-		Queue<? extends Assignment.Entry> queue = assignment.getAssignmentsToProcess();
-		assertEquals(1, queue.remove().getAtom());
+		Assignment.Pollable queue = assignment.getAssignmentsToProcess();
+		assertEquals(1, queue.remove());
 
 		assignment.choose(2, MBT);
 		assignment.choose(1, TRUE);
 
-		assertEquals(2, queue.remove().getAtom());
-		assertEquals(1, queue.element().getAtom());
+		assertEquals(2, queue.remove());
+		assertEquals(1, queue.peek());
 
 		queue = assignment.getAssignmentsToProcess();
-		assertEquals(1, queue.remove().getAtom());
+		assertEquals(1, queue.remove());
 	}
 
 	@Test
 	public void newAssignmentsIteratorAndBacktracking() throws Exception {
-		assignment.growForMaxAtomId(3);
-		Iterator<Assignment.Entry> newAssignmentsIterator;
+		Iterator<Integer> newAssignmentsIterator;
 
 		assignment.assign(1, MBT);
 		assignment.choose(2, MBT);
 
-		newAssignmentsIterator = assignment.getNewAssignmentsIterator();
+		newAssignmentsIterator = assignment.getNewPositiveAssignmentsIterator();
 
-		assertEquals(1, newAssignmentsIterator.next().getAtom());
-		assertEquals(2, newAssignmentsIterator.next().getAtom());
+		assertEquals(1, (int)newAssignmentsIterator.next());
+		assertEquals(2, (int)newAssignmentsIterator.next());
 		assertFalse(newAssignmentsIterator.hasNext());
 
 
@@ -166,50 +149,47 @@ public class ArrayAssignmentTest {
 		assignment.backtrack();
 		assignment.assign(3, FALSE);
 
-		newAssignmentsIterator = assignment.getNewAssignmentsIterator();
-		assertEquals(3, newAssignmentsIterator.next().getAtom());
+		newAssignmentsIterator = assignment.getNewPositiveAssignmentsIterator();
+		assertEquals(3, (int)newAssignmentsIterator.next());
 		assertFalse(newAssignmentsIterator.hasNext());
 	}
 
 	@Test
 	public void newAssignmentsIteratorLowerDecisionLevelAndBacktracking() throws Exception {
-		assignment.growForMaxAtomId(3);
-		Iterator<Assignment.Entry> newAssignmentsIterator;
+		Iterator<Integer> newAssignmentsIterator;
 
 		assignment.choose(1, MBT);
 		assignment.choose(2, MBT);
 		assignment.assign(3, MBT, null, 1);
 		assignment.backtrack();
 
-		newAssignmentsIterator = assignment.getNewAssignmentsIterator();
-		assertEquals(1, newAssignmentsIterator.next().getAtom());
-		assertEquals(3, newAssignmentsIterator.next().getAtom());
+		newAssignmentsIterator = assignment.getNewPositiveAssignmentsIterator();
+		assertEquals(1, (int)newAssignmentsIterator.next());
+		assertEquals(3, (int)newAssignmentsIterator.next());
 		assertFalse(newAssignmentsIterator.hasNext());
 	}
 
 	@Test
 	public void iteratorAndBacktracking() throws Exception {
-		assignment.growForMaxAtomId(3);
-		Queue<? extends Assignment.Entry> assignmentsToProcess = assignment.getAssignmentsToProcess();
+		Assignment.Pollable assignmentsToProcess = assignment.getAssignmentsToProcess();
 
 		assignment.assign(1, MBT);
-		assertEquals(1, assignmentsToProcess.remove().getAtom());
+		assertEquals(1, assignmentsToProcess.remove());
 
 		assignment.choose(2, MBT);
-		assertEquals(2, assignmentsToProcess.remove().getAtom());
+		assertEquals(2, assignmentsToProcess.remove());
 
 		assignment.choose(1, TRUE);
-		assertEquals(1, assignmentsToProcess.remove().getAtom());
+		assertEquals(1, assignmentsToProcess.remove());
 
 		assignment.backtrack();
 
 		assignment.assign(3, FALSE);
-		assertEquals(3, assignmentsToProcess.remove().getAtom());
+		assertEquals(3, assignmentsToProcess.remove());
 	}
 
 	@Test
 	public void mbtCounterAssignMbtToFalseOnLowerDecisionLevel() {
-		assignment.growForMaxAtomId(4);
 		assertNull(assignment.choose(1, TRUE));
 		assertNull(assignment.choose(2, FALSE));
 
@@ -225,5 +205,4 @@ public class ArrayAssignmentTest {
 
 		assertEquals(0, assignment.getMBTCount());
 	}
-
 }

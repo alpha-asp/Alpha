@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -33,9 +33,9 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.*;
 
-public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
+public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<NoGood> {
 	public static final int HEAD = 0;
 	public static final NoGood UNSAT = new NoGood();
 
@@ -48,6 +48,9 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 
 	private NoGood(int[] literals, boolean head) {
 		this.head = head;
+		if (head && !isNegated(literals[0])) {
+			throw oops("Head is not negative");
+		}
 
 		// HINT: this might decrease performance if NoGoods are mostly small.
 		Arrays.sort(literals, head ? 1 : 0, literals.length);
@@ -70,10 +73,6 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	}
 
 	public static NoGood headFirst(int... literals) {
-		if (literals[0] > 0) {
-			throw oops("Head is not negative");
-		}
-
 		return new NoGood(literals, true);
 	}
 
@@ -81,41 +80,34 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 		return headFirst(literal);
 	}
 
-	public static NoGood support(int headAtom, int ruleBodyAtom) {
-		return new NoGood(headAtom, -ruleBodyAtom);
+	public static NoGood support(int headLiteral, int bodyRepresentingLiteral) {
+		return new NoGood(headLiteral, negateLiteral(bodyRepresentingLiteral));
 	}
 
-	public static NoGood fromConstraint(List<Integer> pos, List<Integer> neg) {
-		return new NoGood(addPosNeg(new int[pos.size() + neg.size()], pos, neg, 0));
+	public static NoGood fromConstraint(List<Integer> posLiterals, List<Integer> negLiterals) {
+		return new NoGood(addPosNeg(new int[posLiterals.size() + negLiterals.size()], posLiterals, negLiterals, 0));
 	}
 
-	public static NoGood fromBody(List<Integer> pos, List<Integer> neg, int bodyAtom) {
-		int[] bodyLiterals = new int[pos.size() + neg.size() + 1];
-		bodyLiterals[0] = -bodyAtom;
-		return NoGood.headFirst(addPosNeg(bodyLiterals, pos, neg, 1));
+	public static NoGood fromBody(List<Integer> posLiterals, List<Integer> negLiterals, int bodyRepresentingLiteral) {
+		int[] bodyLiterals = new int[posLiterals.size() + negLiterals.size() + 1];
+		bodyLiterals[0] = negateLiteral(bodyRepresentingLiteral);
+		return NoGood.headFirst(addPosNeg(bodyLiterals, posLiterals, negLiterals, 1));
 	}
 
-	private static int[] addPosNeg(int[] literals, List<Integer> pos, List<Integer> neg, int offset) {
+	private static int[] addPosNeg(int[] literals, List<Integer> posLiterals, List<Integer> negLiterals, int offset) {
 		int i = offset;
-		for (Integer atomId : pos) {
-			literals[i++] = atomId;
+		for (Integer literal : posLiterals) {
+			literals[i++] = literal;
 		}
-		for (Integer atomId : neg) {
-			literals[i++] = -atomId;
+		for (Integer literal : negLiterals) {
+			literals[i++] = negateLiteral(literal);
 		}
 		return literals;
 	}
 
+	@Override
 	public int size() {
 		return literals.length;
-	}
-
-	public boolean isUnary() {
-		return literals.length == 1;
-	}
-
-	public boolean isBinary() {
-		return literals.length == 2;
 	}
 
 	public NoGood withoutHead() {
@@ -123,18 +115,25 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 	}
 
 	/**
-	 * A shorthand for <code>Literals.atomOf(getLiteral(...))</code>
+	 * A shorthand for <code>Literals.positiveLiteral(getLiteral(...))</code>
 	 */
-	public int getAtom(int index) {
-		return atomOf(getLiteral(index));
+	public int getPositiveLiteral(int index) {
+		return positiveLiteral(getLiteral(index));
 	}
 
+	@Override
 	public int getLiteral(int index) {
 		return literals[index];
 	}
 
+	@Override
 	public boolean hasHead() {
 		return head;
+	}
+
+	@Override
+	public int getHead() {
+		return getLiteral(HEAD);
 	}
 
 	@Override
@@ -220,12 +219,18 @@ public class NoGood implements Iterable<Integer>, Comparable<NoGood> {
 		sb.append("{ ");
 
 		for (int literal : literals) {
-			sb.append(literal);
+			sb.append(isPositive(literal) ? "+" : "-");
+			sb.append(atomOf(literal));
 			sb.append(" ");
 		}
 
 		sb.append("}");
 
 		return sb.toString();
+	}
+
+	@Override
+	public NoGood getNoGood(int impliedAtom) {
+		return this;
 	}
 }

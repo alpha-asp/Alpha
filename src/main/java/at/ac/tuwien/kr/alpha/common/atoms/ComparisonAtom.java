@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  * Represents a builtin atom according to the standard.
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public class ComparisonAtom implements Atom {
+public class ComparisonAtom implements Atom, VariableNormalizableAtom {
 	private final Predicate predicate;
 	final ComparisonOperator operator;
 	private final List<Term> terms;
@@ -112,5 +112,11 @@ public class ComparisonAtom implements Atom {
 	@Override
 	public int hashCode() {
 		return 31 * (31 * operator.hashCode() + terms.hashCode());
+	}
+
+	@Override
+	public ComparisonAtom normalizeVariables(String prefix, int counterStartingValue) {
+		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
+		return new ComparisonAtom(renamedTerms.get(0), renamedTerms.get(1), operator);
 	}
 }

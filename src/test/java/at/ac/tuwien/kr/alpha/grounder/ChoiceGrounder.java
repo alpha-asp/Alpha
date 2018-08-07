@@ -30,6 +30,8 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -38,6 +40,8 @@ import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
 import static at.ac.tuwien.kr.alpha.Util.entry;
+import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
+import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 
@@ -72,14 +76,14 @@ public class ChoiceGrounder implements Grounder {
 	private static final int CHOICE_DIS_BR1 = 17; // { -_dis_br1,  bb}
 	private static final int CHOICE_DIS_BR2 = 18; // { -dis_br2, aa }
 	private static final Map<Integer, NoGood> NOGOODS = Stream.of(
-		entry(RULE_AA, NoGood.headFirst(-ATOM_AA, ATOM_BR1)),
-		entry(BRULE_AA, NoGood.headFirst(-ATOM_BR1, -ATOM_BB)),
-		entry(RULE_BB, NoGood.headFirst(-ATOM_BB, ATOM_BR2)),
-		entry(BRULE_BB, NoGood.headFirst(-ATOM_BR2, -ATOM_AA)),
-		entry(CHOICE_EN_BR1, NoGood.headFirst(-ATOM_EN_BR1)),
-		entry(CHOICE_EN_BR2, NoGood.headFirst(-ATOM_EN_BR2)),
-		entry(CHOICE_DIS_BR1, NoGood.headFirst(-ATOM_DIS_BR1, ATOM_BB)),
-		entry(CHOICE_DIS_BR2, NoGood.headFirst(-ATOM_DIS_BR2, ATOM_AA))
+		entry(RULE_AA, headFirst(fromOldLiterals(-ATOM_AA, ATOM_BR1))),
+		entry(BRULE_AA, headFirst(fromOldLiterals(-ATOM_BR1, -ATOM_BB))),
+		entry(RULE_BB, headFirst(fromOldLiterals(-ATOM_BB, ATOM_BR2))),
+		entry(BRULE_BB, headFirst(fromOldLiterals(-ATOM_BR2, -ATOM_AA))),
+		entry(CHOICE_EN_BR1, headFirst(fromOldLiterals(-ATOM_EN_BR1))),
+		entry(CHOICE_EN_BR2, headFirst(fromOldLiterals(-ATOM_EN_BR2))),
+		entry(CHOICE_DIS_BR1, headFirst(fromOldLiterals(-ATOM_DIS_BR1, ATOM_BB))),
+		entry(CHOICE_DIS_BR2, headFirst(fromOldLiterals(-ATOM_DIS_BR2, ATOM_AA)))
 	).collect(entriesToMap());
 	private static final Map<Integer, Integer> CHOICE_ENABLE = Stream.of(
 		entry(ATOM_BR1, ATOM_EN_BR1),
@@ -89,37 +93,40 @@ public class ChoiceGrounder implements Grounder {
 		entry(ATOM_BR1, ATOM_DIS_BR1),
 		entry(ATOM_BR2, ATOM_DIS_BR2)
 	).collect(entriesToMap());
-	private static Map<Integer, String> atomIdToString = Stream.of(
-		entry(ATOM_AA, "aa"),
-		entry(ATOM_BB, "bb"),
-		entry(ATOM_BR1, "_br1"),
-		entry(ATOM_BR2, "_br2"),
-		entry(ATOM_EN_BR1, "_en_br1"),
-		entry(ATOM_EN_BR2, "_en_br2"),
-		entry(ATOM_DIS_BR1, "_dis_br1"),
-		entry(ATOM_DIS_BR2, "_dis_br2")
-	).collect(entriesToMap());
+	private static Atom atomAA = new BasicAtom(Predicate.getInstance("aa", 0));
+	private static Atom atomBB = new BasicAtom(Predicate.getInstance("bb", 0));
+	private static Rule ruleAA = new Rule(new DisjunctiveHead(Collections.singletonList(atomAA)), Collections.singletonList(new BasicAtom(Predicate.getInstance("bb", 0)).toLiteral(false)));
+	private static Rule ruleBB = new Rule(new DisjunctiveHead(Collections.singletonList(atomBB)), Collections.singletonList(new BasicAtom(Predicate.getInstance("aa", 0)).toLiteral(false)));
+	private static Atom rule1 = new RuleAtom(NonGroundRule.constructNonGroundRule(ruleAA), new Substitution());
+	private static Atom rule2 = new RuleAtom(NonGroundRule.constructNonGroundRule(ruleBB), new Substitution());
+	private static Atom atomEnBR1 = ChoiceAtom.on(1);
+	private static Atom atomEnBR2 = ChoiceAtom.on(2);
+	private static Atom atomDisBR1 = ChoiceAtom.off(3);
+	private static Atom atomDisBR2 = ChoiceAtom.off(4);
+	private final AtomStore atomStore;
 	private boolean returnedAllNogoods;
 
 	private final java.util.function.Predicate<Predicate> filter;
 
-	public ChoiceGrounder() {
-		this(p -> true);
+	public ChoiceGrounder(AtomStore atomStore) {
+		this(atomStore, p -> true);
 	}
 
-	public ChoiceGrounder(java.util.function.Predicate<Predicate> filter) {
+	public ChoiceGrounder(AtomStore atomStore, java.util.function.Predicate<Predicate> filter) {
+		this.atomStore = atomStore;
 		this.filter = filter;
+		Arrays.asList(atomAA, atomBB, rule1, rule2, atomEnBR1, atomEnBR2, atomDisBR1, atomDisBR2).forEach(atomStore::putIfAbsent);
 	}
 
 	@Override
 	public AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms) {
 		SortedSet<Predicate> trueAtomPredicates = new TreeSet<>();
 		for (int trueAtom : trueAtoms) {
-			Predicate atomPredicate = Predicate.getInstance(atomIdToString.get(trueAtom), 0);
+			Predicate atomPredicate = atomStore.get(trueAtom).getPredicate();
 			if (!filter.test(atomPredicate)) {
 				continue;
 			}
-			if (atomPredicate.getName().startsWith("_")) {
+			if (atomPredicate.isInternal()) {
 				continue;
 			}
 			trueAtomPredicates.add(atomPredicate);
@@ -160,29 +167,12 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<Assignment.Entry> it) {
+	public void updateAssignment(Iterator<Integer> it) {
 		// This test grounder reports all NoGoods immediately, irrespective of any assignment.
 	}
 
 	@Override
 	public void forgetAssignment(int[] atomIds) {
-	}
-
-	@Override
-	public String atomToString(int atomId) {
-		return Integer.toString(atomId);
-	}
-
-	@Override
-	public List<Integer> getUnassignedAtoms(Assignment assignment) {
-		List<Integer> unassigned = new ArrayList<>();
-		List<Integer> knownAtomIds = new ArrayList<>(atomIdToString.keySet());
-		for (Integer atomId : knownAtomIds) {
-			if (!assignment.isAssigned(atomId)) {
-				unassigned.add(atomId);
-			}
-		}
-		return unassigned;
 	}
 
 	private int solverDerivedNoGoodIdCounter = 20;
@@ -194,15 +184,5 @@ public class ChoiceGrounder implements Grounder {
 			solverDerivedNoGoods.put(noGood, solverDerivedNoGoodIdCounter++);
 		}
 		return solverDerivedNoGoods.get(noGood);
-	}
-
-	@Override
-	public boolean isAtomChoicePoint(int atom) {
-		return atom == ATOM_BR1 || atom == ATOM_BR2;
-	}
-
-	@Override
-	public int getMaxAtomId() {
-		return 8;
 	}
 }

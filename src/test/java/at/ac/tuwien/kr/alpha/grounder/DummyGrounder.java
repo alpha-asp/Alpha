@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -12,6 +13,7 @@ import java.util.stream.Stream;
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
 import static at.ac.tuwien.kr.alpha.Util.entry;
 import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
+import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 
@@ -32,27 +34,29 @@ public class DummyGrounder implements Grounder {
 	private static final int RULE_B = 13; // { -_br1, a, b }
 	private static final int RULE_H = 14; // { -c, _br1 }
 	private static final Map<Integer, NoGood> NOGOODS = Stream.of(
-		entry(FACT_A, headFirst(-1)),
-		entry(FACT_B, headFirst(-2)),
-		entry(RULE_B, headFirst(-3, 1, 2)),
-		entry(RULE_H, headFirst(-4, 3))
+		entry(FACT_A, headFirst(fromOldLiterals(-1))),
+		entry(FACT_B, headFirst(fromOldLiterals(-2))),
+		entry(RULE_B, headFirst(fromOldLiterals(-3, 1, 2))),
+		entry(RULE_H, headFirst(fromOldLiterals(-4, 3)))
 	).collect(entriesToMap());
-	private static Map<Integer, String> atomIdToString = Stream.of(
-		entry(1, "a"),
-		entry(2, "b"),
-		entry(3, "_br1"),
-		entry(4, "c")
-	).collect(entriesToMap());
+	private final AtomStore atomStore;
 	private final java.util.function.Predicate<Predicate> filter;
 	private byte[] currentTruthValues = new byte[]{-2, -1, -1, -1, -1};
+	private static Atom atomAA = new BasicAtom(Predicate.getInstance("a", 0));
+	private static Atom atomBB = new BasicAtom(Predicate.getInstance("b", 0));
+	private static Atom atomCC = new BasicAtom(Predicate.getInstance("c", 0));
+	private static Rule ruleABC = new Rule(new DisjunctiveHead(Collections.singletonList(atomCC)), Arrays.asList(atomAA.toLiteral(), atomBB.toLiteral()));
+	private static Atom rule1 = new RuleAtom(NonGroundRule.constructNonGroundRule(ruleABC), new Substitution());
 	private Set<Integer> returnedNogoods = new HashSet<>();
 
-	public DummyGrounder() {
-		this(p -> true);
+	public DummyGrounder(AtomStore atomStore) {
+		this(atomStore, p -> true);
 	}
 
-	public DummyGrounder(java.util.function.Predicate<Predicate> filter) {
+	public DummyGrounder(AtomStore atomStore, java.util.function.Predicate<Predicate> filter) {
+		this.atomStore = atomStore;
 		this.filter = filter;
+		Arrays.asList(atomAA, atomBB, rule1, atomCC).forEach(atomStore::putIfAbsent);
 	}
 
 	@Override
@@ -60,23 +64,6 @@ public class DummyGrounder implements Grounder {
 		for (int atomId : atomIds) {
 			currentTruthValues[atomId] = -1;
 		}
-	}
-
-	@Override
-	public String atomToString(int atomId) {
-		return Integer.toString(atomId);
-	}
-
-	@Override
-	public List<Integer> getUnassignedAtoms(Assignment assignment) {
-		List<Integer> unassigned = new ArrayList<>();
-		List<Integer> knownAtomIds = Arrays.asList(1, 2, 3, 4);
-		for (Integer atomId : knownAtomIds) {
-			if (!assignment.isAssigned(atomId)) {
-				unassigned.add(atomId);
-			}
-		}
-		return unassigned;
 	}
 
 	private int solverDerivedNoGoodIdCounter = 20;
@@ -91,28 +78,17 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
-	public boolean isAtomChoicePoint(int atom) {
-		// No choice points here.
-		return false;
-	}
-
-	@Override
-	public int getMaxAtomId() {
-		return 14;
-	}
-
-	@Override
 	public AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms) {
 		// Note: This grounder only deals with 0-ary predicates, i.e., every atom is a predicate and there is
 		// 	 only one predicate instance representing 0 terms.
 
 		SortedSet<Predicate> trueAtomPredicates = new TreeSet<>();
 		for (int trueAtom : trueAtoms) {
-			Predicate atomPredicate = Predicate.getInstance(atomIdToString.get(trueAtom), 0);
+			Predicate atomPredicate = atomStore.get(trueAtom).getPredicate();
 			if (!filter.test(atomPredicate)) {
 				continue;
 			}
-			if ("_br1".equals(atomPredicate.getName())) {
+			if (atomPredicate.isInternal()) {
 				continue;
 			}
 			trueAtomPredicates.add(atomPredicate);
@@ -148,11 +124,9 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<Assignment.Entry> it) {
+	public void updateAssignment(Iterator<Integer> it) {
 		while (it.hasNext()) {
-			Assignment.Entry assignment = it.next();
-			Truth truthValue = assignment.getTruth();
-			currentTruthValues[assignment.getAtom()] = (byte)(truthValue.toBoolean() ? 1 : 0);
+			currentTruthValues[it.next()] = 1;
 		}
 	}
 

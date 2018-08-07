@@ -27,21 +27,33 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.parser.ParseTreeVisitor;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
+
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 public class Substitution {
-	private TreeMap<VariableTerm, Term> substitution;
+	private static final ParseTreeVisitor VISITOR = new ParseTreeVisitor(Collections.emptyMap(), false);
+
+	protected TreeMap<VariableTerm, Term> substitution;
 
 	private Substitution(TreeMap<VariableTerm, Term> substitution) {
+		if (substitution == null) {
+			throw oops("Substitution is null.");
+		}
 		this.substitution = substitution;
 	}
 
@@ -64,7 +76,7 @@ public class Substitution {
 	 * @param substitution if the atom does not unify, this is left unchanged.
 	 * @return true if the atom and the instance unify. False otherwise
 	 */
-	static Substitution unify(Atom atom, Instance instance, Substitution substitution) {
+	public static Substitution unify(Atom atom, Instance instance, Substitution substitution) {
 		for (int i = 0; i < instance.terms.size(); i++) {
 			if (instance.terms.get(i) == atom.getTerms().get(i) ||
 				substitution.unifyTerms(atom.getTerms().get(i), instance.terms.get(i))) {
@@ -108,6 +120,9 @@ public class Substitution {
 			if (!(ftNonGround.getSymbol().equals(ftGround.getSymbol()))) {
 				return false;
 			}
+			if (ftNonGround.getTerms().size() != ftGround.getTerms().size()) {
+				return false;
+			}
 
 			// Iterate over all subterms of both function terms
 			for (int i = 0; i < ftNonGround.getTerms().size(); i++) {
@@ -133,12 +148,23 @@ public class Substitution {
 	}
 
 	public <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term groundTerm) {
+		if (!groundTerm.isGround()) {
+			throw oops("Right-hand term is not ground.");
+		}
+		Term alreadyAssigned = substitution.get(variableTerm);
+		if (alreadyAssigned != null && alreadyAssigned != groundTerm) {
+			throw oops("Variable is already assigned to another term.");
+		}
 		// Note: We're destroying type information here.
 		return substitution.put(variableTerm, groundTerm);
 	}
 
 	public boolean isEmpty() {
 		return substitution.isEmpty();
+	}
+
+	public boolean isVariableSet(VariableTerm variable) {
+		return substitution.get(variable) != null;
 	}
 
 	/**
@@ -148,11 +174,43 @@ public class Substitution {
 	 */
 	@Override
 	public String toString() {
-		final StringBuilder ret = new StringBuilder();
+		final StringBuilder ret = new StringBuilder("{");
+		boolean isFirst = true;
 		for (Map.Entry<VariableTerm, Term> e : substitution.entrySet()) {
-			ret.append(e.getKey()).append("->").append(e.getValue()).append(" ");
+			if (isFirst) {
+				isFirst = false;
+			} else {
+				ret.append(",");
+			}
+			ret.append(e.getKey()).append("->").append(e.getValue());
 		}
+		ret.append("}");
 		return ret.toString();
+	}
+
+	public static Substitution fromString(String substitution) {
+		String bare = substitution.substring(1, substitution.length() - 1);
+		String assignments[] = bare.split(",");
+		Substitution ret = new Substitution();
+		for (String assignment : assignments) {
+			String keyVal[] = assignment.split("->");
+			VariableTerm variable = VariableTerm.getInstance(keyVal[0]);
+			Term assignedTerm = parseTerm(keyVal[1]);
+			ret.put(variable, assignedTerm);
+		}
+		return ret;
+	}
+
+	private static Term parseTerm(String s) {
+		try {
+			final ASPCore2Parser parser = new ASPCore2Parser(new CommonTokenStream(new ASPCore2Lexer(CharStreams.fromString(s))));
+			return (Term)VISITOR.visit(parser.term());
+		} catch (RecognitionException | ParseCancellationException e) {
+			// If there were issues parsing the given string, we
+			// throw something that suggests that the input string
+			// is malformed.
+			throw new IllegalArgumentException("Could not parse term.", e);
+		}
 	}
 
 	@Override
@@ -172,71 +230,5 @@ public class Substitution {
 	@Override
 	public int hashCode() {
 		return substitution != null ? substitution.hashCode() : 0;
-	}
-
-	public static Substitution findEqualizingSubstitution(BasicAtom generalAtom, BasicAtom specificAtom) {
-		// Some hard examples:
-		// p(A,f(A)) with p(X,A) where variable occurs as subterm again and where some variable is shared!
-		// First, rename all variables in the specific
-		if (!generalAtom.getPredicate().equals(specificAtom.getPredicate())) {
-			return null;
-		}
-		Substitution specializingSubstitution = new Substitution();
-		String renamedVariablePrefix = "_Vrenamed_";	// Pick prefix guaranteed to not occur in generalAtom.
-		for (int i = 0; i < generalAtom.getPredicate().getArity(); i++) {
-			specializingSubstitution = specializeSubstitution(specializingSubstitution,
-				generalAtom.getTerms().get(i),
-				specificAtom.getTerms().get(i).renameVariables(renamedVariablePrefix));
-			if (specializingSubstitution == null) {
-				return null;
-			}
-		}
-		return specializingSubstitution;
-	}
-
-	private static Substitution specializeSubstitution(Substitution substitution, Term generalTerm, Term specificTerm) {
-		if (generalTerm == specificTerm) {
-			return substitution;
-		}
-		// If the general term is a variable, check its current substitution and see whether this matches the specific term.
-		if (generalTerm instanceof VariableTerm) {
-			Term substitutedGeneralTerm = substitution.eval((VariableTerm) generalTerm);
-			// If the variable is not bound already, bind it to the specific term.
-			if (substitutedGeneralTerm == null) {
-				substitution.put((VariableTerm) generalTerm, specificTerm);
-				return substitution;
-			}
-			// The variable is bound, check whether its result is exactly the specific term.
-			// Note: checking whether the bounded term is more general than the specific one would yield
-			//       wrong results, e.g.: p(X,X) and p(f(A),f(g(B))) are incomparable, but f(A) is more general than f(g(B)).
-			if (substitutedGeneralTerm != specificTerm) {
-				return null;
-			}
-		}
-		if (generalTerm instanceof FunctionTerm) {
-			// Check if both given terms are function terms.
-			if (!(specificTerm instanceof FunctionTerm)) {
-				return null;
-			}
-			// Check that they are the same function.
-			FunctionTerm fgeneralTerm = (FunctionTerm) generalTerm;
-			FunctionTerm fspecificTerm = (FunctionTerm) specificTerm;
-			if (fgeneralTerm.getSymbol() != fspecificTerm.getSymbol()
-				|| fgeneralTerm.getTerms().size() != fspecificTerm.getTerms().size()) {
-				return null;
-			}
-			// Check/specialize their subterms.
-			for (int i = 0; i < fgeneralTerm.getTerms().size(); i++) {
-				substitution = specializeSubstitution(substitution, fgeneralTerm, fspecificTerm);
-				if (substitution == null) {
-					return null;
-				}
-			}
-		}
-		if (generalTerm instanceof ConstantTerm) {
-			// Equality was already checked above, so terms are different.
-			return null;
-		}
-		throw new RuntimeException("Trying to specialize a term that is neither variable, constant, nor function. Should not happen");
 	}
 }

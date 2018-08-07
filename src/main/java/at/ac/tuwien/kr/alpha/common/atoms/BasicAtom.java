@@ -31,9 +31,7 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
@@ -41,7 +39,7 @@ import static at.ac.tuwien.kr.alpha.Util.join;
 /**
  * Copyright (c) 2016-2018, the Alpha Team.
  */
-public class BasicAtom implements Atom {
+public class BasicAtom implements Atom, VariableNormalizableAtom {
 	private final Predicate predicate;
 	private final List<Term> terms;
 	private final boolean ground;
@@ -94,6 +92,12 @@ public class BasicAtom implements Atom {
 		return new BasicAtom(predicate, terms.stream()
 			.map(t -> t.substitute(substitution))
 			.collect(Collectors.toList()));
+	}
+
+	@Override
+	public BasicAtom normalizeVariables(String prefix, int counterStartingValue) {
+		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
+		return new BasicAtom(predicate, renamedTerms);
 	}
 
 	@Override

@@ -51,6 +51,14 @@ public class ArithmeticTerm extends Term {
 		return getInstance(left.renameVariables(renamePrefix), arithmeticOperator, right.renameVariables(renamePrefix));
 	}
 
+	@Override
+	public Term normalizeVariables(String renamePrefix, RenameCounter counter) {
+		Term normalizedLeft = left.normalizeVariables(renamePrefix, counter);
+		Term normalizedRight = right.normalizeVariables(renamePrefix, counter);
+		return ArithmeticTerm.getInstance(normalizedLeft, arithmeticOperator, normalizedRight);
+
+	}
+
 	public static Integer evaluateGroundTerm(Term term) {
 		if (!term.isGround()) {
 			throw new RuntimeException("Cannot evaluate arithmetic term since it is not ground: " + term);

@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.apache.commons.lang3.tuple.Pair;
@@ -39,9 +40,6 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
-import static at.ac.tuwien.kr.alpha.common.NoGood.HEAD;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static java.lang.Math.abs;
 
 /**
@@ -68,8 +66,8 @@ public class NaiveSolver extends AbstractSolver {
 	private ArrayList<ArrayList<Integer>> trueAssignedFromMbt = new ArrayList<>();
 	private List<Integer> unassignedAtoms;
 
-	NaiveSolver(Grounder grounder) {
-		super(grounder);
+	NaiveSolver(AtomStore atomStore, Grounder grounder) {
+		super(atomStore, grounder);
 
 		this.choiceStack = new Stack<>();
 
@@ -125,7 +123,7 @@ public class NaiveSolver extends AbstractSolver {
 				if (LOGGER.isTraceEnabled()) {
 					LOGGER.trace("Currently MBT:");
 					for (Integer integer : mbtAssigned) {
-						LOGGER.trace(grounder.atomToString(integer));
+						LOGGER.trace(atomStore.atomToString(atomOf(integer)));
 					}
 					LOGGER.trace("Choice stack: {}", choiceStack);
 				}
@@ -281,9 +279,7 @@ public class NaiveSolver extends AbstractSolver {
 	}
 
 	private void updateGrounderAssignments() {
-		grounder.updateAssignment(newTruthAssignments.stream().map(
-			atom -> (Assignment.Entry) new Entry(atom, truthAssignments.get(atom) ? TRUE : FALSE)
-		).iterator());
+		grounder.updateAssignment(newTruthAssignments.stream().filter(atom -> truthAssignments.get(atom)).iterator());
 		newTruthAssignments.clear();
 	}
 
@@ -308,12 +304,37 @@ public class NaiveSolver extends AbstractSolver {
 		}
 
 		@Override
-		public NoGood getImpliedBy() {
+		public boolean hasPreviousMBT() {
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
-		public Entry getPrevious() {
+		public int getMBTDecisionLevel() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public int getMBTPropagationLevel() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public int getPropagationLevelRespectingLowerMBT() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public int getWeakDecisionLevel() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public NoGood getMBTImpliedBy() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public NoGood getImpliedBy() {
 			throw new UnsupportedOperationException();
 		}
 
@@ -324,11 +345,6 @@ public class NaiveSolver extends AbstractSolver {
 
 		@Override
 		public int getPropagationLevel() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean isReassignAtLowerDecisionLevel() {
 			throw new UnsupportedOperationException();
 		}
 
@@ -426,7 +442,7 @@ public class NaiveSolver extends AbstractSolver {
 			return false;
 		}
 
-		int headAtom = noGood.getAtom(HEAD);
+		int headAtom = atomOf(noGood.getHead());
 
 		// Check whether head is assigned MBT.
 		if (!mbtAssigned.contains(headAtom)) {

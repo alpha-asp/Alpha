@@ -29,9 +29,12 @@ package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -41,6 +44,29 @@ public interface Atom extends Comparable<Atom> {
 	List<Term> getTerms();
 
 	boolean isGround();
+
+	/**
+	 * Set of all variables occurring in the Atom that are potentially binding
+	 * @return
+	 */
+	default Set<VariableTerm> getBindingVariables() {
+		return toLiteral().getBindingVariables();
+	}
+
+	/**
+	 * Set of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
+	 * @return
+	 */
+	default Set<VariableTerm> getNonBindingVariables() {
+		return toLiteral().getNonBindingVariables();
+	}
+
+	/**
+	 * Set of all variables occurring in the Atom
+	 */
+	default Set<VariableTerm> getOccurringVariables() {
+		return toLiteral().getOccurringVariables();
+	}
 
 	/**
 	 * This method applies a substitution to a potentially non-substitute atom.
@@ -63,6 +89,15 @@ public interface Atom extends Comparable<Atom> {
 	 * @return
 	 */
 	Literal toLiteral(boolean positive);
+
+	default Atom renameVariables(String newVariablePrefix) {
+		Unifier renamingSubstitution = new Unifier();
+		int counter = 0;
+		for (VariableTerm variable : getOccurringVariables()) {
+			renamingSubstitution.put(variable, VariableTerm.getInstance(newVariablePrefix + counter++));
+		}
+		return this.substitute(renamingSubstitution);
+	}
 
 	@Override
 	default int compareTo(Atom o) {

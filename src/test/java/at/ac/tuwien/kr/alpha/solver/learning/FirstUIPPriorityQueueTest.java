@@ -1,8 +1,11 @@
 package at.ac.tuwien.kr.alpha.solver.learning;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.solver.ArrayAssignment;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,16 +17,19 @@ import static org.junit.Assert.assertTrue;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class FirstUIPPriorityQueueTest {
+	private final AtomStore atomStore;
 	private final WritableAssignment assignment;
 
 	public FirstUIPPriorityQueueTest() {
-		assignment = new ArrayAssignment();
+		atomStore = new AtomStoreImpl();
+		assignment = new TrailAssignment(atomStore);
 	}
 
 	@Before
 	public void setUp() {
 		assignment.clear();
-		assignment.growForMaxAtomId(4);
+		AtomStoreTest.fillAtomStore(atomStore, 4);
+		assignment.growForMaxAtomId();
 	}
 
 	@Test

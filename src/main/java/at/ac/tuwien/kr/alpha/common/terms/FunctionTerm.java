@@ -145,4 +145,13 @@ public class FunctionTerm extends Term {
 		}
 		return FunctionTerm.getInstance(symbol, renamedTerms);
 	}
+
+	@Override
+	public Term normalizeVariables(String renamePrefix, RenameCounter counter) {
+		List<Term> normalizedTerms = new ArrayList<>(terms.size());
+		for (Term term : terms) {
+			normalizedTerms.add(term.normalizeVariables(renamePrefix, counter));
+		}
+		return FunctionTerm.getInstance(symbol, normalizedTerms);
+	}
 }

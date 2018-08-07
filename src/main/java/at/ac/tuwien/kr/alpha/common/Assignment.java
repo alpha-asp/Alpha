@@ -1,15 +1,38 @@
+/**
+ * Copyright (c) 2016-2018, the Alpha Team.
+ * All rights reserved.
+ *
+ * Additional changes made by Siemens.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1) Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ * 2) Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 import java.util.Iterator;
-import java.util.Queue;
 import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
+import static at.ac.tuwien.kr.alpha.common.Literals.*;
 
 public interface Assignment {
 	Entry get(int atom);
@@ -24,33 +47,28 @@ public interface Assignment {
 		return entry == null ? null : entry.getTruth();
 	}
 
-	default boolean isAssigned(int atom) {
-		return get(atom) != null;
-	}
-
-	default boolean contains(int literal) {
-		final Entry entry = get(atomOf(literal));
-		return entry != null && (isNegated(literal) ? FALSE : TRUE).equals(entry.getTruth());
-	}
-
-	default boolean containsWeakComplement(int literal) {
-		final Entry entry = get(atomOf(literal));
-		return entry != null && isNegated(literal) == !entry.getTruth().toBoolean();
-	}
+	/**
+	 * Returns the weak decision level of the atom if it is assigned.
+	 * @param atom the atom.
+	 * @return the weak decision level of the atom if it is assigned; otherwise any value may be returned.
+	 */
+	int getWeakDecisionLevel(int atom);
 
 	/**
-	 * Determines if the given {@code noGood} is violated in the current assignment.
-	 * @param noGood
-	 * @return {@code true} iff all literals in {@code noGood} evaluate to true in the current assignment.
+	 * Returns the strong decision level of the atom.
+	 * @param atom the atom.
+	 * @return the strong decision level of the atom or -1.
 	 */
-	default boolean isViolated(NoGood noGood) {
-		for (Integer literal : noGood) {
-			if (!contains(literal)) {
-				return false;
-			}
-		}
-		return true;
-	}
+	int getStrongDecisionLevel(int atom);
+
+	boolean isAssigned(int atom);
+
+	/**
+	 * Returns the NoGood that implied the atom.
+	 * @param atom the atom.
+	 * @return the implying NoGood.
+	 */
+	NoGood getImpliedBy(int atom);
 
 	/**
 	 * Determines if the given {@code noGood} is undefined in the current assignment.
@@ -69,37 +87,55 @@ public interface Assignment {
 
 	/**
 	 * Returns an iterator over all new assignments. New assignments are only returned once.
-	 * getNewAssignmentsIterator and getNewAssignmentsIterator2 are independent of each other (i.e., each has its own backing collection).
-	 * @return
+	 * @return an iterator over all new assignments to TRUE or MBT.
 	 */
-	Iterator<Entry> getNewAssignmentsIterator();
+	Iterator<Integer> getNewPositiveAssignmentsIterator();
 
-	Queue<? extends Entry> getAssignmentsToProcess();
+	Pollable getAssignmentsToProcess();
 
 	/**
-	 * Returns an iterator over all new assignments and additionally all backtracked reassignments at lower decision level).
-	 * These assignments are only returned once.
-	 * @return
+	 * Returns the weak decision level of the atom considering also out-of-order assignments.
+	 * @param atom the atom.
+	 * @return the weakDecisionLevel of the atom if it is not an out-of-order assignment, otherwise the lowest
+	 * decision level at which it will be re-assigned.
 	 */
-	Iterator<Entry> getNewAssignmentsForChoice();
+	int getRealWeakDecisionLevel(int atom);
+
+	interface Pollable {
+		int peek();
+		int remove();
+		boolean isEmpty();
+	}
 
 	interface Entry {
 		ThriceTruth getTruth();
-		int getDecisionLevel();
-		Entry getPrevious();
-		NoGood getImpliedBy();
-
 		int getAtom();
-
+		int getDecisionLevel();
+		NoGood getImpliedBy();
 		int getPropagationLevel();
-		boolean isReassignAtLowerDecisionLevel();
+
+		boolean hasPreviousMBT();
+		int getMBTDecisionLevel();
+		int getMBTPropagationLevel();
+		NoGood getMBTImpliedBy();
+
+		default int getPropagationLevelRespectingLowerMBT() {
+			return hasPreviousMBT() ? getMBTPropagationLevel() : getPropagationLevel();
+		}
+
+		default NoGood getImpliedByRespectingLowerMBT() {
+			if (hasPreviousMBT()) {
+				return getMBTImpliedBy();
+			}
+			return getImpliedBy();
+		}
 
 		/**
 		 * Returns the literal corresponding to this assignment
 		 * @return atomId if this entry is TRUE/MBT and -atomId if entry is FALSE.
 		 */
 		default int getLiteral() {
-			return getTruth().toBoolean() ? getAtom() : -getAtom();
+			return atomToLiteral(getAtom(), getTruth().toBoolean());
 		}
 
 		/**
@@ -107,16 +143,9 @@ public interface Assignment {
 		 * @return the decision level of a previous MBT if it exists, otherwise the decision level of this entry.
 		 */
 		default int getWeakDecisionLevel() {
-			return getPrevious() != null ? getPrevious().getDecisionLevel() : getDecisionLevel();
+			return hasPreviousMBT() ? getMBTDecisionLevel() : getDecisionLevel();
 		}
 
-		/**
-		 * Returns the strongly assigned decision level.
-		 * @return the decision level of this entry if it is TRUE/FALSE and -1 otherwise.
-		 */
-		default int getStrongDecisionLevel() {
-			return getTruth().isMBT() ? -1 : getDecisionLevel();
-		}
 	}
 
 	int getDecisionLevel();
@@ -156,5 +185,20 @@ public interface Assignment {
 
 	void backtrack();
 
-	void growForMaxAtomId(int maxAtomId);
+	/**
+	 * Grows all internal data structures to accommodate for all atoms known.
+	 */
+	void growForMaxAtomId();
+
+	/**
+	 * Obtain a BasicAtom that is currently assigned MBT (but not TRUE).
+	 * @return some BasicAtom that is assigned MBT.
+	 */
+	int getBasicAtomAssignedMBT();
+
+	/**
+	 * Assigns all unassigned atoms to FALSE.
+	 * @return true if any atom was assigned.
+	 */
+	boolean closeUnassignedAtoms();
 }
