@@ -187,9 +187,6 @@ public class AnalyzeUnjustified {
 				chosenLiteralPos = i;
 				break;
 			}
-			if (i + 1 == vB.size()) {
-				throw oops("Remaining body contains no non-ComparisonLiteral");
-			}
 		}
 		Atom b = vB.get(chosenLiteralPos).getAtom();
 		log("Picked literal from body is: {}", b);
