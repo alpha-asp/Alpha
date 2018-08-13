@@ -25,6 +25,10 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.transformation.CardinalityNormalization;
 import at.ac.tuwien.kr.alpha.grounder.transformation.SumNormalization;
 import org.junit.Test;
@@ -35,7 +39,7 @@ import java.io.IOException;
  * Tests if correct answer sets for programs containing aggregates are computed.
  * Only aggregates known to by syntactically supported by {@link CardinalityNormalization} or {@link SumNormalization} are currently tested.
  */
-public class AggregatesTest extends AbstractSolverTests {
+public abstract class AggregatesTest extends AbstractSolverTests {
 
 	private static final String LS = System.lineSeparator();
 	
@@ -156,5 +160,13 @@ public class AggregatesTest extends AbstractSolverTests {
 		assertAnswerSetsWithBase(program, "box(1), box(2), item_size(1,1), item_size(2,2), in(1,1), in(1,2), in(2,2)",
 				"full(2)");
 	}
+	
+	@Override
+	protected Solver getInstance(Program program) {
+		AtomStore atomStore = new AtomStoreImpl();
+		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, program, atomStore, p->true, useCountingGridNormalization()));
+	}
+	
+	protected abstract boolean useCountingGridNormalization();
 
 }
