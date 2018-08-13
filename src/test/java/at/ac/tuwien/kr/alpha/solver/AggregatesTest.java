@@ -105,10 +105,9 @@ public class AggregatesTest extends AbstractSolverTests {
 		String program = "n(1..3)." + LS
 				+ "{x(N)} :- n(N)." + LS
 				+ "min(3)." + LS
-				+ "max(4)." + LS
 				+ "ok :- min(M), M <= #sum { N : n(N), x(N) }.";
 		System.out.println(program);
-		assertAnswerSetsWithBase(program, "n(1), n(2), n(3), min(3), max(4)",
+		assertAnswerSetsWithBase(program, "n(1), n(2), n(3), min(3)",
 				"", "x(1)", "x(2)", "x(3), ok", "x(1), x(2), ok", "x(1), x(3), ok",
 				"x(2), x(3), ok", "x(1), x(2), x(3), ok");
 	}
