@@ -79,21 +79,14 @@ public class CardinalityNormalization implements ProgramTransformation {
 		}
 		String usedCardinalityEncoding = useSortingCircuitEncoding ? cardinalitySortingCircuit : cardinalityCountingGrid;
 		Program cardinalityEncoding = PredicateInternalizer.makePredicatesInternal(new ProgramParser().parse(usedCardinalityEncoding));
-		for (Rule additionalRule : additionalRules) {
-			// Some rules might have an empty body, add them as facts.
-			if (additionalRule.getBody().isEmpty()) {
-				cardinalityEncoding.getFacts().add(((DisjunctiveHead)additionalRule.getHead()).disjunctiveAtoms.get(0));
-			} else {
-				cardinalityEncoding.getRules().add(additionalRule);
-			}
-		}
+		cardinalityEncoding.accumulate(additionalRules);
 
 		// Add enumeration rule that uses the special EnumerationAtom.
 		// The enumeration rule is: "sorting_network_input_number(A, I) :- sorting_network_input(A, X), sorting_network_index(A, X, I)."
 		Rule enumerationRule = PredicateInternalizer.makePredicatesInternal(parse("sorting_network_input_number(A, I) :- sorting_network_input(A, X).")).getRules().get(0);
 		EnumerationAtom enumerationAtom = new EnumerationAtom(parse("sorting_network_index(A, X, I).").getFacts().get(0).getTerms());
 		enumerationRule.getBody().add(enumerationAtom.toLiteral());
-		cardinalityEncoding.getRules().add(enumerationRule);
+		cardinalityEncoding.accumulate(enumerationRule);
 
 		// Add cardinality encoding to program.
 		inputProgram.accumulate(cardinalityEncoding);

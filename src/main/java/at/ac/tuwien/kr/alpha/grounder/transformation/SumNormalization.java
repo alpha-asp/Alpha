@@ -8,7 +8,7 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
@@ -67,14 +67,14 @@ public class SumNormalization implements ProgramTransformation {
 		Program summationEncoding = makePredicatesInternal(new ProgramParser().parse(summationSubprogram));
 		summationEncoding.accumulate(makePredicatesInternal(new Program(Collections.emptyList(),
 			additionalFacts, new InlineDirectives())));	// Add internalised type facts.
-		summationEncoding.getRules().addAll(additionalRules);
+		summationEncoding.accumulate(additionalRules);
 
 		// Add enumeration rule that uses the special EnumerationAtom.
 		// The enumeration rule is: "input_number_with_first(A, I, F) :- input_with_first(A, X, F), _index(A, X, I)."
 		Rule enumerationRule = makePredicatesInternal(parse("input_number_with_first(A, I, F) :- input_with_first(A, X, F).")).getRules().get(0);
 		EnumerationAtom enumerationAtom = new EnumerationAtom(parse("index(A, X, I).").getFacts().get(0).getTerms());
 		enumerationRule.getBody().add(enumerationAtom.toLiteral());
-		summationEncoding.getRules().add(enumerationRule);
+		summationEncoding.accumulate(enumerationRule);
 
 		// Add sum encoding to program.
 		inputProgram.accumulate(summationEncoding);
@@ -133,31 +133,31 @@ public class SumNormalization implements ProgramTransformation {
 
 			// Prepare aggregate parameters.
 			aggregateCount++;
-			Substitution aggregateSubstitution = new Substitution();
-			aggregateSubstitution.put(VariableTerm.getInstance("AGGREGATE_ID"), ConstantTerm.getInstance(aggregateCount));
-			aggregateSubstitution.put(VariableTerm.getInstance("LOWER_BOUND"), aggregateAtom.getLowerBoundTerm());
+			Unifier aggregateUnifier = new Unifier();
+			aggregateUnifier.put(VariableTerm.getInstance("AGGREGATE_ID"), ConstantTerm.getInstance(aggregateCount));
+			aggregateUnifier.put(VariableTerm.getInstance("LOWER_BOUND"), aggregateAtom.getLowerBoundTerm());
 
 			// Create new output atom for addition to rule body instead of the aggregate.
-			aggregateOutputAtoms.add(aggregateOutputAtom.substitute(aggregateSubstitution).toLiteral());
+			aggregateOutputAtoms.add(aggregateOutputAtom.substitute(aggregateUnifier).toLiteral());
 
 			// Create input to sorting network from aggregate elements.
 			for (AggregateAtom.AggregateElement aggregateElement : aggregateAtom.getAggregateElements()) {
 				// Prepare element substitution.
 				List<Term> elementTerms = aggregateElement.getElementTerms();
 				FunctionTerm elementTuple = FunctionTerm.getInstance("element_tuple", elementTerms);
-				Substitution elementSubstitution = new Substitution(aggregateSubstitution);
-				elementSubstitution.put(VariableTerm.getInstance("ELEMENT_TUPLE"), elementTuple);
-				elementSubstitution.put(VariableTerm.getInstance("FIRST_VARIABLE"), elementTuple.getTerms().get(0));
+				Unifier elementUnifier = new Unifier(aggregateUnifier);
+				elementUnifier.put(VariableTerm.getInstance("ELEMENT_TUPLE"), elementTuple);
+				elementUnifier.put(VariableTerm.getInstance("FIRST_VARIABLE"), elementTuple.getTerms().get(0));
 
 				// Create new rule for input.
-				BasicAtom inputHeadAtom = aggregateInputAtom.substitute(elementSubstitution);
+				BasicAtom inputHeadAtom = aggregateInputAtom.substitute(elementUnifier);
 				List<Literal> elementLiterals = new ArrayList<>(aggregateElement.getElementLiterals());
 				Rule inputRule = new Rule(new DisjunctiveHead(Collections.singletonList(inputHeadAtom)), elementLiterals);
 				additionalRules.add(inputRule);
 			}
 
 			// Create lower bound for the aggregate.
-			BasicAtom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateSubstitution);
+			BasicAtom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateUnifier);
 			// FIXME: we need a deep copy of the rule body here (as otherwise, e.g., interval atoms are shared and their later rewriting fails).
 			List<Literal> lowerBoundBody = rule.getBody();	// FIXME: this is only correct if no other aggregate occurs in the rule.
 			additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(lowerBoundHeadAtom)), lowerBoundBody));
