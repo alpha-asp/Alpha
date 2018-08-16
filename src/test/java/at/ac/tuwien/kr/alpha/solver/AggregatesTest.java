@@ -121,6 +121,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	 */
 	@Test
 	public void testAggregate_Sum_Computed() throws IOException {
+		ignoreTestForNaiveSolver();	// Do not run this test case with the naive solver.
 		String program = "n(1..3)." + LS
 				+ "{x(N)} :- n(N)." + LS
 				+ "potential_sum(0..6)." + LS
