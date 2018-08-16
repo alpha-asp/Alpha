@@ -30,24 +30,16 @@ public class AggregateAtom implements Atom {
 		this.upperBoundTerm = upperBoundTerm;
 		this.aggregatefunction = aggregatefunction;
 		this.aggregateElements = aggregateElements;
-		if (upperBoundOperator != null || lowerBoundOperator != ComparisonOperator.LE) {
+		if (upperBoundOperator != null || lowerBoundOperator != ComparisonOperator.LE || lowerBoundTerm == null) {
 			throw new UnsupportedOperationException("Aggregate construct not yet supported.");
 		}
-		// TODO: add defaults if some bound is not given!
 	}
 
 	@Override
 	public boolean isGround() {
 		for (AggregateElement aggregateElement : aggregateElements) {
-			for (Term elementTerm : aggregateElement.elementTerms) {
-				if (!elementTerm.isGround()) {
-					return false;
-				}
-			}
-			for (Literal elementLiteral : aggregateElement.elementLiterals) {
-				if (!elementLiteral.isGround()) {
-					return false;
-				}
+			if (!aggregateElement.isGround()) {
+				return false;
 			}
 		}
 		if (lowerBoundTerm != null && !lowerBoundTerm.isGround()
@@ -80,15 +72,7 @@ public class AggregateAtom implements Atom {
 	public List<VariableTerm> getAggregateVariables() {
 		List<VariableTerm> occurringVariables = new LinkedList<>();
 		for (AggregateElement aggregateElement : aggregateElements) {
-			for (Term term : aggregateElement.getElementTerms()) {
-				if (term instanceof VariableTerm) {
-					occurringVariables.add((VariableTerm) term);
-				}
-			}
-			for (Literal literal : aggregateElement.getElementLiterals()) {
-				occurringVariables.addAll(literal.getBindingVariables());
-				occurringVariables.addAll(literal.getNonBindingVariables());
-			}
+			occurringVariables.addAll(aggregateElement.getOccurringVariables());
 		}
 		return occurringVariables;
 	}
@@ -191,6 +175,34 @@ public class AggregateAtom implements Atom {
 
 		public List<Literal> getElementLiterals() {
 			return elementLiterals;
+		}
+
+		public boolean isGround() {
+			for (Term elementTerm : elementTerms) {
+				if (!elementTerm.isGround()) {
+					return false;
+				}
+			}
+			for (Literal elementLiteral : elementLiterals) {
+				if (!elementLiteral.isGround()) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		public List<VariableTerm> getOccurringVariables() {
+			List<VariableTerm> occurringVariables = new LinkedList<>();
+			for (Term term : elementTerms) {
+				if (term instanceof VariableTerm) {
+					occurringVariables.add((VariableTerm) term);
+				}
+			}
+			for (Literal literal : elementLiterals) {
+				occurringVariables.addAll(literal.getBindingVariables());
+				occurringVariables.addAll(literal.getNonBindingVariables());
+			}
+			return occurringVariables;
 		}
 
 		@Override
