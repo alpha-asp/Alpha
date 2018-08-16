@@ -13,10 +13,7 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.grounder.transformation.PredicateInternalizer.makePredicatesInternal;
 
@@ -37,7 +34,7 @@ public class SumNormalization implements ProgramTransformation {
 	@Override
 	public void transform(Program inputProgram) {
 		String summationSubprogram = "interesting_number(R, 1..I1) :- input_number_with_first(R, I, _), I1 = I - 1.\n" +
-			"prefix_subset_sum(R, 0, 0) :- aggregate_function(R, \"#sum\").\n" +
+			"prefix_subset_sum(R, 0, 0) :- input_number_with_first(R, _, _).\n" +
 			"prefix_subset_sum(R, I, S) :- prefix_subset_sum(R, I1, S), I1 = I - 1, interesting_number(R, I).\n" +
 			"prefix_subset_sum(R, I, SF) :- prefix_subset_sum(R, I1, S), I1 = I - 1, SF = S + F, input_number_with_first(R, I, F),  bound(R, K), SF < K.\n" +
 			"output(R, K) :- bound(R, K), K <= 0." +
@@ -50,15 +47,6 @@ public class SumNormalization implements ProgramTransformation {
 		int lastAggregateCount = aggregateCount;
 		for (Rule rule : inputProgram.getRules()) {
 			additionalRules.addAll(rewriteAggregates(rule));
-			// Add fact specifying type of aggregate, for example: "aggregate_function(aggregate(1), "#sum")."
-			// FIXME: this only works if there is at most one sum aggregate per original rule.
-			if (lastAggregateCount == aggregateCount) {
-				continue;
-			}
-			final BasicAtom aggregateTypeAtom = (BasicAtom) makePredicatesInternal(parse(
-				"aggregate_function(aggregate(" + ConstantTerm.getInstance(aggregateCount) + "), \"#sum\").")).getFacts().get(0);
-			additionalFacts.add(aggregateTypeAtom);
-			lastAggregateCount = aggregateCount;
 		}
 		// Leave program as-is if no aggregates occur.
 		if (additionalRules.isEmpty()) {
@@ -134,7 +122,15 @@ public class SumNormalization implements ProgramTransformation {
 			// Prepare aggregate parameters.
 			aggregateCount++;
 			Unifier aggregateUnifier = new Unifier();
-			aggregateUnifier.put(VariableTerm.getInstance("AGGREGATE_ID"), ConstantTerm.getInstance(aggregateCount));
+			Collection<Term> globalVariables = CardinalityNormalization.getGlobalVariables(rule, aggregateAtom);
+			if (globalVariables.isEmpty()) {
+				aggregateUnifier.put(VariableTerm.getInstance("AGGREGATE_ID"), ConstantTerm.getInstance(aggregateCount));
+			} else {
+				// In case some variables are not local to the aggregate, add them to the aggregate identifier
+				ArrayList<Term> globalVariableTermlist = new ArrayList<>(globalVariables);
+				globalVariables.add(ConstantTerm.getInstance(aggregateCount));
+				aggregateUnifier.put(VariableTerm.getInstance("AGGREGATE_ID"), FunctionTerm.getInstance("agg", globalVariableTermlist));
+			}
 			aggregateUnifier.put(VariableTerm.getInstance("LOWER_BOUND"), aggregateAtom.getLowerBoundTerm());
 
 			// Create new output atom for addition to rule body instead of the aggregate.
@@ -152,6 +148,11 @@ public class SumNormalization implements ProgramTransformation {
 				// Create new rule for input.
 				BasicAtom inputHeadAtom = aggregateInputAtom.substitute(elementUnifier);
 				List<Literal> elementLiterals = new ArrayList<>(aggregateElement.getElementLiterals());
+
+				// If there are global variables used inside the aggregate, add original rule body (minus the aggregate itself) to input rule.
+				if (!globalVariables.isEmpty()) {
+					elementLiterals.addAll(rule.getBody());
+				}
 				Rule inputRule = new Rule(new DisjunctiveHead(Collections.singletonList(inputHeadAtom)), elementLiterals);
 				additionalRules.add(inputRule);
 			}

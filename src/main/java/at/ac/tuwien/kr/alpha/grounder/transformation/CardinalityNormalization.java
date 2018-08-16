@@ -138,30 +138,16 @@ public class CardinalityNormalization implements ProgramTransformation {
 			// Remove aggregate from rule body.
 			iterator.remove();
 
-			// Hacky way to get all global variables: take rules take variables from rest of rule,
-			HashSet<VariableTerm> occurringVariables = new HashSet<>();
-			for (Literal element : rule.getBody()) {
-				if (element instanceof AggregateLiteral) {
-					continue;
-				}
-				occurringVariables.addAll(element.getBindingVariables());
-				occurringVariables.addAll(element.getNonBindingVariables());
-			}
-			LinkedHashSet<VariableTerm> globalVariables = new LinkedHashSet<>();
-			for (VariableTerm aggVariable : aggregateAtom.getAggregateVariables()) {
-				if (occurringVariables.contains(aggVariable)) {
-					globalVariables.add(aggVariable);
-				}
-			}
-
 			// Prepare aggregate parameters.
 			aggregateCount++;
 			Substitution aggregateSubstitution = new Unifier();
+			Collection<Term> globalVariables = getGlobalVariables(rule, aggregateAtom);
 			if (globalVariables.isEmpty()) {
 				aggregateSubstitution.put(VariableTerm.getInstance("AGGREGATE_ID"), ConstantTerm.getInstance(aggregateCount));
 			} else {
 				// In case some variables are not local to the aggregate, add them to the aggregate identifier
 				ArrayList<Term> globalVariableTermlist = new ArrayList<>(globalVariables);
+				globalVariables.add(ConstantTerm.getInstance(aggregateCount));
 				aggregateSubstitution.put(VariableTerm.getInstance("AGGREGATE_ID"), FunctionTerm.getInstance("agg", globalVariableTermlist));
 			}
 			aggregateSubstitution.put(VariableTerm.getInstance("LOWER_BOUND"), aggregateAtom.getLowerBoundTerm());
@@ -197,5 +183,24 @@ public class CardinalityNormalization implements ProgramTransformation {
 		}
 		rule.getBody().addAll(aggregateOutputAtoms);
 		return additionalRules;
+	}
+
+	static Collection<Term> getGlobalVariables(Rule rule, AggregateAtom aggregateAtom) {
+		// Hacky way to get all global variables: take all variables inside the aggregate that occur also in the rest of the rule.
+		HashSet<Term> occurringVariables = new HashSet<>();
+		for (Literal element : rule.getBody()) {
+			if (element instanceof AggregateLiteral) {
+				continue;
+			}
+			occurringVariables.addAll(element.getBindingVariables());
+			occurringVariables.addAll(element.getNonBindingVariables());
+		}
+		LinkedHashSet<Term> globalVariables = new LinkedHashSet<>();
+		for (Term aggVariable : aggregateAtom.getAggregateVariables()) {
+			if (occurringVariables.contains(aggVariable)) {
+				globalVariables.add(aggVariable);
+			}
+		}
+		return globalVariables;
 	}
 }
