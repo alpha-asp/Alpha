@@ -73,9 +73,10 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private int conflictsAfterClosing;
 	private final boolean disableJustifications;
 	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
-
+	
 	/**
 	 * 
+	 * @param atomStore
 	 * @param grounder
 	 * @param store
 	 * @param assignment
@@ -85,7 +86,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	 *          {@code false}, only {@code branchingHeuristic} is used.
 	 * @param branchingHeuristic
 	 *          see {@code respectDomSpecHeuristic}
-	 * @param debugInternalChecks
+	 * @param disableJustifications
 	 */
 	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, boolean respectDomSpecHeuristic,
 			Heuristic branchingHeuristic, boolean disableJustifications) {
