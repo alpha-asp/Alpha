@@ -48,15 +48,9 @@ public class AggregateLiteral extends Literal {
 
 	@Override
 	public Set<VariableTerm> getNonBindingVariables() {
-		// TODO: every local variable that also occurs globally in the rule is a nonBindingVariable.
-		// TODO: the element conditions must be locally safe
-		// TODO: need a notion of variable global in a rule.
-		// TODO: collect all occurring variables but only report the global ones
-		Set<VariableTerm> nonBindingVariables = new HashSet<>();
-		for (AggregateAtom.AggregateElement aggregateElement : getAtom().getAggregateElements()) {
-			nonBindingVariables = null; // TODO: remove.
-		}
-		return nonBindingVariables;
+		// Note: every local variable that also occurs globally in the rule is a nonBindingVariable, hence an
+		// aggregate literal alone cannot detect its non-binding (i.e. global) variables.
+		throw new UnsupportedOperationException();
 	}
 
 	private static VariableTerm boundBindingVariable(ComparisonOperator op, Term bound, boolean positive) {

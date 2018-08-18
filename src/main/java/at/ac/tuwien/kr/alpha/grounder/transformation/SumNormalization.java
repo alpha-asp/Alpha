@@ -10,7 +10,6 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
-import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
 import java.util.*;
@@ -42,9 +41,6 @@ public class SumNormalization implements ProgramTransformation {
 
 		// Connect/Rewrite every aggregate in each rule.
 		ArrayList<Rule> additionalRules = new ArrayList<>();
-		// FIXME: filter facts from additionalRules as they may occur also due to e.g., the bound being a constant and the aggregate occurring as the single body literal.
-		ArrayList<Atom> additionalFacts = new ArrayList<>();
-		int lastAggregateCount = aggregateCount;
 		for (Rule rule : inputProgram.getRules()) {
 			additionalRules.addAll(rewriteAggregates(rule));
 		}
@@ -53,8 +49,6 @@ public class SumNormalization implements ProgramTransformation {
 			return;
 		}
 		Program summationEncoding = makePredicatesInternal(new ProgramParser().parse(summationSubprogram));
-		summationEncoding.accumulate(makePredicatesInternal(new Program(Collections.emptyList(),
-			additionalFacts, new InlineDirectives())));	// Add internalised type facts.
 		summationEncoding.accumulate(additionalRules);
 
 		// Add enumeration rule that uses the special EnumerationAtom.
@@ -103,7 +97,7 @@ public class SumNormalization implements ProgramTransformation {
 			AggregateLiteral aggregateLiteral = (AggregateLiteral) bodyElement;
 			AggregateAtom aggregateAtom = aggregateLiteral.getAtom();
 
-			// FIXME: limited rewriting of lower-bounded cardinality/sum aggregates only.
+			// Check that aggregate is limited to what we currently can deal with.
 			if (aggregateLiteral.isNegated() || aggregateAtom.getUpperBoundOperator() != null
 				|| (aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.COUNT
 					&& aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.SUM)
@@ -159,8 +153,7 @@ public class SumNormalization implements ProgramTransformation {
 
 			// Create lower bound for the aggregate.
 			BasicAtom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateUnifier);
-			// FIXME: we need a deep copy of the rule body here (as otherwise, e.g., interval atoms are shared and their later rewriting fails).
-			List<Literal> lowerBoundBody = rule.getBody();	// FIXME: this is only correct if no other aggregate occurs in the rule.
+			List<Literal> lowerBoundBody = rule.getBody();	// Note: this is only correct if no other aggregate occurs in the rule.
 			additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(lowerBoundHeadAtom)), lowerBoundBody));
 
 		}

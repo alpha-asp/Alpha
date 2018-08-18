@@ -40,8 +40,8 @@ import java.util.List;
 import static at.ac.tuwien.kr.alpha.Util.join;
 
 public class ChoiceAtom implements Atom {
-	public static final Predicate ON = Predicate.getInstance("ChoiceOn", 1, true);
-	public static final Predicate OFF = Predicate.getInstance("ChoiceOff", 1, true);
+	public static final Predicate ON = Predicate.getInstance("ChoiceOn", 1, true, true);
+	public static final Predicate OFF = Predicate.getInstance("ChoiceOff", 1, true, true);
 
 	private final Predicate predicate;
 	private final List<Term> terms;

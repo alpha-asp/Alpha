@@ -13,9 +13,9 @@ import java.util.List;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
- * Represents ground-instance enumeration atom of form: enum(aggId, term, sequenceNo).
+ * Represents a ground-instance enumeration atom of form: enum(enumId, groundTerm, sequenceNo).
  * The semantics of this is: if enum(A,T1, N1) and enum(A,T2,N2) are both true and T1 != T2, then N1 != N2.
- * Furthermore, If enum(A,T1,N1) is true with N>0 then enum(A,T2,N1-1) is true for some T1 != T2
+ * Furthermore, If enum(A,T1,N1) is true with N1 > 0 then enum(A,T2,N1 - 1) is true for some T1 != T2
  * and both, T1 and T2, are ground instances the grounder encountered during the search so far.
  *
  * Copyright (c) 2017, the Alpha Team.
@@ -29,9 +29,6 @@ public class EnumerationAtom extends BasicAtom {
 		if (terms.size() != 3) {
 			throw new RuntimeException("EnumerationAtom must have arity three. Given terms are of wrong size: " + terms);
 		}
-		/*if (!(getTerms().get(0) instanceof ConstantTerm)) {
-			throw new RuntimeException("First parameter of EnumerationAtom must be a constant: " + clone);
-		}*/
 		if (!(getTerms().get(2) instanceof VariableTerm)) {
 			throw new RuntimeException("Third parameter of EnumerationAtom must be a variable: " + terms);
 		}

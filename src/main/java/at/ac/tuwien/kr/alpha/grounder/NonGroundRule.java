@@ -81,7 +81,7 @@ public class NonGroundRule {
 		final List<Atom> pos = new ArrayList<>(body.size() / 2);
 		final List<Atom> neg = new ArrayList<>(body.size() / 2);
 
-		for (Literal literal: body) {
+		for (Literal literal : body) {
 			(literal.isNegated() ? neg : pos).add(literal.getAtom());
 		}
 		Atom headAtom = null;
@@ -99,11 +99,7 @@ public class NonGroundRule {
 	}
 
 	public List<Literal> getBodyLiterals() {
-		ArrayList<Literal> ret = new ArrayList<>(rule.getBody().size());
-		for (Literal literal : rule.getBody()) {
-			ret.add(literal);
-		}
-		return ret;
+		return new ArrayList<>(rule.getBody());
 	}
 
 	/**

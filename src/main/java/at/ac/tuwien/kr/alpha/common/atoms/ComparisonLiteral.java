@@ -131,22 +131,13 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 		final boolean rightAssigning = assignable(right);
 		if (!leftAssigning && !rightAssigning) {
 			// No assignment (variables are bound by partialSubstitution), thus evaluate comparison only.
-			Term leftEvaluatedSubstitute = left;
-			Term rightEvaluatedSubstitute = right;
-			// Evaluate arithmetics.
-			if (left instanceof ArithmeticTerm) {
-				Integer leftResult = ArithmeticTerm.evaluateGroundTerm(left);
-				if (leftResult == null) {
-					return Collections.emptyList();
-				}
-				leftEvaluatedSubstitute = ConstantTerm.getInstance(leftResult);
+			Term leftEvaluatedSubstitute = evaluateTerm(left);
+			if (leftEvaluatedSubstitute == null) {
+				return Collections.emptyList();
 			}
-			if (right instanceof ArithmeticTerm) {
-				Integer rightResult = ArithmeticTerm.evaluateGroundTerm(right);
-				if (rightResult == null) {
-					return Collections.emptyList();
-				}
-				rightEvaluatedSubstitute = ConstantTerm.getInstance(rightResult);
+			Term rightEvaluatedSubstitute = evaluateTerm(right);
+			if (rightEvaluatedSubstitute == null) {
+				return Collections.emptyList();
 			}
 			if (compare(leftEvaluatedSubstitute, rightEvaluatedSubstitute)) {
 				return Collections.singletonList(partialSubstitution);
@@ -181,6 +172,18 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 		Substitution extendedSubstitution = new Substitution(partialSubstitution);
 		extendedSubstitution.put(variable, resultTerm);
 		return Collections.singletonList(extendedSubstitution);
+	}
+
+	private Term evaluateTerm(Term term) {
+		// Evaluate arithmetics.
+		if (term instanceof ArithmeticTerm) {
+			Integer result = ArithmeticTerm.evaluateGroundTerm(term);
+			if (result == null) {
+				return null;
+			}
+			return ConstantTerm.getInstance(result);
+		}
+		return term;
 	}
 
 	private boolean compare(Term x, Term y) {

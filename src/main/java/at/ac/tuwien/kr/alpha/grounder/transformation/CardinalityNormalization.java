@@ -122,7 +122,7 @@ public class CardinalityNormalization implements ProgramTransformation {
 			AggregateLiteral aggregateLiteral = (AggregateLiteral) bodyElement;
 			AggregateAtom aggregateAtom = aggregateLiteral.getAtom();
 
-			// FIXME: limited rewriting of lower-bounded cardinality/sum aggregates only.
+			// Check that aggregate is limited to what we currently can deal with.
 			if (aggregateLiteral.isNegated() || aggregateAtom.getUpperBoundOperator() != null
 				|| (aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.COUNT
 					&& aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.SUM)
@@ -177,7 +177,7 @@ public class CardinalityNormalization implements ProgramTransformation {
 
 			// Create lower bound for the aggregate.
 			BasicAtom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateSubstitution);
-			List<Literal> lowerBoundBody = rule.getBody();	// FIXME: this is only correct if no other aggregate occurs in the rule.
+			List<Literal> lowerBoundBody = rule.getBody();	// Note: this is only correct if no other aggregate occurs in the rule.
 			additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(lowerBoundHeadAtom)), lowerBoundBody));
 
 		}

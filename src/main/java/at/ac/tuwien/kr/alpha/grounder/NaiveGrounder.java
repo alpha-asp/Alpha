@@ -313,9 +313,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		for (IndexedInstanceStorage modifiedWorkingMemory : workingMemory.modified()) {
 			// Skip predicates solely used in the solver which do not occur in rules.
 			Predicate workingMemoryPredicate = modifiedWorkingMemory.getPredicate();
-			if (workingMemoryPredicate == RuleAtom.PREDICATE
-				|| workingMemoryPredicate == ChoiceAtom.ON
-				|| workingMemoryPredicate == ChoiceAtom.OFF) {
+			if (workingMemoryPredicate.isSolverInternal()) {
 				continue;
 			}
 
