@@ -32,6 +32,7 @@ import at.ac.tuwien.kr.alpha.common.Substitutable;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import org.apache.commons.collections4.SetUtils;
 
 import java.util.List;
 import java.util.Set;
@@ -66,6 +67,13 @@ public abstract class Literal implements Substitutable<Literal> {
 	public abstract Set<VariableTerm> getBindingVariables();
 	
 	public abstract Set<VariableTerm> getNonBindingVariables();
+	
+	/**
+	 * Union of {@link #getBindingVariables()} and {@link #getNonBindingVariables()}
+	 */
+	public Set<VariableTerm> getOccurringVariables() {
+		return SetUtils.union(getBindingVariables(), getNonBindingVariables());
+	}
 
 	/**
 	 * @see Atom#getPredicate()

@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2017-2018, the Alpha Team.
  * All rights reserved.
- * 
+ *
  * Additional changes made by Siemens.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -40,11 +40,11 @@ import java.util.stream.Collectors;
  * Represents a builtin atom according to the standard.
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public class ComparisonAtom implements Atom {
+public class ComparisonAtom implements Atom, VariableNormalizableAtom {
 	private final Predicate predicate;
 	final ComparisonOperator operator;
 	private final List<Term> terms;
-	
+
 	ComparisonAtom(List<Term> terms, ComparisonOperator operator) {
 		this.terms = terms;
 		this.operator = operator;
@@ -112,5 +112,11 @@ public class ComparisonAtom implements Atom {
 	@Override
 	public int hashCode() {
 		return 31 * (31 * operator.hashCode() + terms.hashCode());
+	}
+
+	@Override
+	public ComparisonAtom normalizeVariables(String prefix, int counterStartingValue) {
+		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
+		return new ComparisonAtom(renamedTerms.get(0), renamedTerms.get(1), operator);
 	}
 }

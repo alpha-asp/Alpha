@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 import java.util.*;
@@ -160,12 +161,35 @@ public class IndexedInstanceStorage {
 	 * @return
 	 */
 	public List<Instance> getInstancesMatchingAtPosition(Term term, int position) {
-		HashMap<Term, ArrayList<Instance>> indexForPosition = indices.get(position);
+		Map<Term, ArrayList<Instance>> indexForPosition = indices.get(position);
 		if (indexForPosition == null) {
 			throw new RuntimeException("IndexedInstanceStorage queried for position " + position + " which is not indexed.");
 		}
 		ArrayList<Instance> matchingInstances = indexForPosition.get(term);
 		return matchingInstances == null ? new ArrayList<>() : matchingInstances;
+	}
+
+
+	private int getFirstGroundTermPosition(Atom atom) {
+		for (int i = 0; i < atom.getTerms().size(); i++) {
+			Term testTerm = atom.getTerms().get(i);
+			if (testTerm.isGround()) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	public List<Instance> getInstancesFromPartiallyGroundAtom(Atom substitute) {
+		// For selection of the instances, find ground term on which to select.
+		int firstGroundTermPosition = getFirstGroundTermPosition(substitute);
+		// Select matching instances, select all if no ground term was found.
+		if (firstGroundTermPosition != -1) {
+			Term firstGroundTerm = substitute.getTerms().get(firstGroundTermPosition);
+			return getInstancesMatchingAtPosition(firstGroundTerm, firstGroundTermPosition);
+		} else {
+			return new ArrayList<>(getAllInstances());
+		}
 	}
 
 	public Set<Instance> getAllInstances() {

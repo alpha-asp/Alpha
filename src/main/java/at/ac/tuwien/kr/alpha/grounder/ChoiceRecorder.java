@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
@@ -125,20 +126,22 @@ public class ChoiceRecorder {
 		return noGoods;
 	}
 	
-	private NoGood generatePos(final int atomOn, List<Integer> posLiterals) {
-		final int literalOn = atomToLiteral(atomOn);
+	private NoGood generatePos(final int choiceId, List<Integer> posLiterals, final int bodyRepresentingLiteral) {
+		final int choiceOnLiteral = atomToLiteral(atomStore.putIfAbsent(on(choiceId)));
+		newChoiceAtoms.getLeft().put(atomOf(bodyRepresentingLiteral), atomOf(choiceOnLiteral));
 
-		return NoGood.fromBody(posLiterals, emptyList(), literalOn);
+		return NoGood.fromBody(posLiterals, emptyList(), choiceOnLiteral);
 	}
 
-	private List<NoGood> generateNeg(final int atomOff, List<Integer> negLiterals)  {
-		final int negLiteralOff = negateLiteral(atomToLiteral(atomOff));
+	private List<NoGood> generateNeg(final int choiceId, List<Integer> negLiterals, final int bodyRepresentingLiteral)  {
+		final int choiceOffLiteral = atomToLiteral(atomStore.putIfAbsent(off(choiceId)));
+		newChoiceAtoms.getRight().put(atomOf(bodyRepresentingLiteral), atomOf(choiceOffLiteral));
 
 		final List<NoGood> noGoods = new ArrayList<>(negLiterals.size() + 1);
 		for (Integer negLiteral : negLiterals) {
 			// Choice is off if any of the negative atoms is assigned true,
 			// hence we add one nogood for each such atom.
-			noGoods.add(NoGood.headFirst(negLiteralOff, negLiteral));
+			noGoods.add(NoGood.headFirst(negateLiteral(choiceOffLiteral), negLiteral));
 		}
 		return noGoods;
 	}

@@ -140,6 +140,11 @@ public class ConstantTerm<T extends Comparable<T>> extends Term {
 		return this;
 	}
 
+	@Override
+	public Term normalizeVariables(String renamePrefix, RenameCounter counter) {
+		return this;
+	}
+
 	public T getObject() {
 		return object;
 	}

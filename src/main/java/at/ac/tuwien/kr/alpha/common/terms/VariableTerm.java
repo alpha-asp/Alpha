@@ -120,4 +120,16 @@ public class VariableTerm extends Term {
 	public Term renameVariables(String renamePrefix) {
 		return VariableTerm.getInstance(renamePrefix + variableName);
 	}
+
+	@Override
+	public Term normalizeVariables(String renamePrefix, RenameCounter counter) {
+		VariableTerm renamedThis = counter.renamedVariables.get(this);
+		if (renamedThis != null) {
+			return renamedThis;
+		} else {
+			VariableTerm renamedVariable = VariableTerm.getInstance(renamePrefix + counter.counter++);
+			counter.renamedVariables.put(this, renamedVariable);
+			return renamedVariable;
+		}
+	}
 }

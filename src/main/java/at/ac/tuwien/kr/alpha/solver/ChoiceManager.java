@@ -332,7 +332,7 @@ public class ChoiceManager implements Checkable {
 					break;
 				}
 			}
-			if (contained) {
+			if (contained && toWatchFor.size() != 0) {
 				LOGGER.debug("Marker hit.");	// Set debug breakpoint here to halt when desired assignment occurs.
 			}
 		}

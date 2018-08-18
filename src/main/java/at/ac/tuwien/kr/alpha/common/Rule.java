@@ -27,9 +27,13 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.Unifier;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -63,6 +67,34 @@ public class Rule {
 
 	public List<Literal> getBody() {
 		return body;
+	}
+
+	/**
+	 * Returns a new Rule that is equal to this one except that all variables are renamed to have the newVariablePostfix appended.
+	 * @param newVariablePostfix
+	 * @return
+	 */
+	public Rule renameVariables(String newVariablePostfix) {
+		if (!head.isNormal()) {
+			throw oops("Trying to rename variables in not-normal rule.");
+		}
+		List<VariableTerm> occurringVariables = new ArrayList<>();
+		Atom headAtom = ((DisjunctiveHead)head).disjunctiveAtoms.get(0);
+		occurringVariables.addAll(headAtom.getOccurringVariables());
+		for (Literal literal : body) {
+			occurringVariables.addAll(literal.getOccurringVariables());
+		}
+		Unifier variableReplacement = new Unifier();
+		for (VariableTerm occurringVariable : occurringVariables) {
+			final String newVariableName = occurringVariable.toString() + newVariablePostfix;
+			variableReplacement.put(occurringVariable, VariableTerm.getInstance(newVariableName));
+		}
+		Atom renamedHeadAtom = headAtom.substitute(variableReplacement);
+		ArrayList<Literal> renamedBody = new ArrayList<>(body.size());
+		for (Literal literal : body) {
+			renamedBody.add((Literal) literal.substitute(variableReplacement));
+		}
+		return new Rule(new DisjunctiveHead(Collections.singletonList(renamedHeadAtom)), renamedBody);
 	}
 
 	/**

@@ -1,5 +1,8 @@
 package at.ac.tuwien.kr.alpha.solver.learning;
 
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.*;
 import org.junit.Ignore;
@@ -17,8 +20,10 @@ public class GroundConflictNoGoodLearnerTest {
 	private final NoGoodStore store;
 
 	public GroundConflictNoGoodLearnerTest() {
-		this.assignment = new TrailAssignment();
-		this.assignment.growForMaxAtomId(20);
+		AtomStore atomStore = new AtomStoreImpl();
+		AtomStoreTest.fillAtomStore(atomStore, 20);
+		this.assignment = new TrailAssignment(atomStore);
+		this.assignment.growForMaxAtomId();
 		this.store = new NoGoodStoreAlphaRoaming(assignment);
 		this.store.growForMaxAtomId(20);
 	}

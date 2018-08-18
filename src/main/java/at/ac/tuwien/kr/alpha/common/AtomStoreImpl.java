@@ -25,9 +25,11 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.grounder;
+package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
+import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 
 import java.util.*;
 
@@ -37,54 +39,22 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  * This class stores ground atoms and provides the translation from an (integer) atomId to a (structured) predicate instance.
  * Copyright (c) 2016-2017, the Alpha Team.
  */
-public class AtomStore {
+public class AtomStoreImpl implements AtomStore {
 	private List<Atom> atomIdsToInternalBasicAtoms = new ArrayList<>();
 	private Map<Atom, Integer> predicateInstancesToAtomIds = new HashMap<>();
 	private IntIdGenerator atomIdGenerator = new IntIdGenerator(1);
 
 	private List<Integer> releasedAtomIds = new ArrayList<>();	// contains atomIds ready to be garbage collected if necessary.
 
-	public AtomStore() {
+	public AtomStoreImpl() {
 		// Create atomId for falsum (currently not needed, but it gets atomId 0, which cannot represent a negated literal).
 		atomIdsToInternalBasicAtoms.add(null);
 	}
 
-	public int getHighestAtomId() {
-		return atomIdsToInternalBasicAtoms.size() - 1;
-	}
-
-	/**
-	 * Returns the AtomId associated with a given ground predicate instance (=ground atom).
-	 * 
-	 * @param groundAtom
-	 * @return the AtomId associated with a given ground predicate instance, or {@code null} if the groundAtom is not known.
-	 */
-	public Integer getAtomId(Atom groundAtom) {
-		return predicateInstancesToAtomIds.get(groundAtom);
-	}
-
-	/**
-	 * Returns the structured ground atom associated with the given atomId.
-	 * @param atomId
-	 * @return
-	 */
-	public Atom get(int atomId) {
-		try {
-			return atomIdsToInternalBasicAtoms.get(atomId);
-		} catch (IndexOutOfBoundsException e) {
-			throw oops("Unknown atom ID encountered: " + atomId, e);
-		}
-	}
-
-	/**
-	 * Creates a new atomId representing the given ground atom. Multiple calls with the same parameter result in
-	 * the same atomId (duplicates check).
-	 * @param groundAtom
-	 * @return
-	 */
-	public int add(Atom groundAtom) {
+	@Override
+	public int putIfAbsent(Atom groundAtom) {
 		if (!groundAtom.isGround()) {
-			throw new IllegalArgumentException("Atom is not ground: " + groundAtom);
+			throw new IllegalArgumentException("atom must be ground");
 		}
 
 		Integer id = predicateInstancesToAtomIds.get(groundAtom);
@@ -98,16 +68,13 @@ public class AtomStore {
 		return id;
 	}
 
+	@Override
 	public boolean contains(Atom groundAtom) {
 		return predicateInstancesToAtomIds.containsKey(groundAtom);
 	}
 
-	public ListIterator<Atom> listIterator() {
-		return atomIdsToInternalBasicAtoms.listIterator();
-	}
-
 	/**
-	 * Removes the given atom from the AtomStore.
+	 * Removes the given atom from the AtomStoreImpl.
 	 * @param atomId
 	 */
 	public void releaseAtomId(int atomId) {
@@ -121,5 +88,34 @@ public class AtomStore {
 			ret.append(entry.getValue()).append(" <-> ").append(entry.getKey().toString()).append(System.lineSeparator());
 		}
 		return ret.toString();
+	}
+
+	@Override
+	public String atomToString(int atomId) {
+		return get(atomId).toString();
+	}
+
+	@Override
+	public boolean isAtomChoicePoint(int atom) {
+		return get(atom) instanceof RuleAtom;
+	}
+
+	@Override
+	public int getMaxAtomId() {
+		return atomIdsToInternalBasicAtoms.size() - 1;
+	}
+
+	@Override
+	public Atom get(int atom) {
+		try {
+			return atomIdsToInternalBasicAtoms.get(atom);
+		} catch (IndexOutOfBoundsException e) {
+			throw oops("Unknown atom ID encountered: " + atom, e);
+		}
+	}
+
+	@Override
+	public int get(Atom atom) {
+		return predicateInstancesToAtomIds.get(atom);
 	}
 }

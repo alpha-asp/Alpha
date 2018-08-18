@@ -61,9 +61,14 @@ public interface Assignment {
 	 */
 	int getStrongDecisionLevel(int atom);
 
-	default boolean isAssigned(int atom) {
-		return get(atom) != null;
-	}
+	boolean isAssigned(int atom);
+
+	/**
+	 * Returns the NoGood that implied the atom.
+	 * @param atom the atom.
+	 * @return the implying NoGood.
+	 */
+	NoGood getImpliedBy(int atom);
 
 	/**
 	 * Determines if the given {@code noGood} is undefined in the current assignment.
@@ -214,5 +219,20 @@ public interface Assignment {
 
 	void backtrack();
 
-	void growForMaxAtomId(int maxAtomId);
+	/**
+	 * Grows all internal data structures to accommodate for all atoms known.
+	 */
+	void growForMaxAtomId();
+
+	/**
+	 * Obtain a BasicAtom that is currently assigned MBT (but not TRUE).
+	 * @return some BasicAtom that is assigned MBT.
+	 */
+	int getBasicAtomAssignedMBT();
+
+	/**
+	 * Assigns all unassigned atoms to FALSE.
+	 * @return true if any atom was assigned.
+	 */
+	boolean closeUnassignedAtoms();
 }

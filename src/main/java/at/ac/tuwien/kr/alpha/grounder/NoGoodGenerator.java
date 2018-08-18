@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
@@ -34,6 +35,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 
 import java.util.*;
 
@@ -47,18 +49,17 @@ import static java.util.Collections.singletonList;
  * Copyright (c) 2017-2018, the Alpha Team.
  */
 public class NoGoodGenerator {
-	private final AtomStore store;
+	private final AtomStore atomStore;
 	private final ChoiceRecorder choiceRecorder;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
-	private final Map<Predicate, HashSet<NonGroundRule>> ruleHeadsToDefiningRules;
+	private final ProgramAnalysis programAnalysis;
 	private final Set<NonGroundRule> uniqueGroundRulePerGroundHead;
 
-	NoGoodGenerator(AtomStore store, ChoiceRecorder choiceRecorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram,
-			Map<Predicate, HashSet<NonGroundRule>> ruleHeadsToDefiningRules, Set<NonGroundRule> uniqueGroundRulePerGroundHead) {
-		this.store = store;
-		this.choiceRecorder = choiceRecorder;
+	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, ProgramAnalysis programAnalysis, Set<NonGroundRule> uniqueGroundRulePerGroundHead) {
+		this.atomStore = atomStore;
+		this.recorder = recorder;
 		this.factsFromProgram = factsFromProgram;
-		this.ruleHeadsToDefiningRules = ruleHeadsToDefiningRules;
+		this.programAnalysis = programAnalysis;
 		this.uniqueGroundRulePerGroundHead = uniqueGroundRulePerGroundHead;
 	}
 
@@ -100,15 +101,14 @@ public class NoGoodGenerator {
 	
 			// Check uniqueness of ground rule by testing whether the
 			// body representing atom already has an id.
-			if (store.contains(bodyAtom)) {
+			if (atomStore.contains(bodyAtom)) {
 				// The current ground instance already exists,
 				// therefore all nogoods have already been created.
 				return emptyList();
 			}
 	
-			final int bodyRepresentingAtom = store.add(bodyAtom);
-			final int bodyRepresentingLiteral = atomToLiteral(bodyRepresentingAtom);
-			final int headLiteral = atomToLiteral(store.add(nonGroundRule.getHeadAtom().substitute(substitution)));
+			final int bodyRepresentingLiteral = atomToLiteral(atomStore.putIfAbsent(bodyAtom));
+			final int headLiteral = atomToLiteral(atomStore.putIfAbsent(nonGroundRule.getHeadAtom().substitute(substitution)));
 
 			choiceRecorder.addHeadToBody(headId, bodyRepresentingAtom);
 			
@@ -154,7 +154,7 @@ public class NoGoodGenerator {
 				continue;
 			}
 
-			bodyLiteralsNegative.add(atomToLiteral(store.add(groundAtom)));
+			bodyLiteralsNegative.add(atomToLiteral(atomStore.putIfAbsent(groundAtom)));
 		}
 		return bodyLiteralsNegative;
 	}
@@ -185,13 +185,13 @@ public class NoGoodGenerator {
 				return null;
 			}
 
-			bodyLiteralsPositive.add(atomToLiteral(store.add(groundAtom)));
+			bodyLiteralsPositive.add(atomToLiteral(atomStore.putIfAbsent(groundAtom)));
 		}
 		return bodyLiteralsPositive;
 	}
 
 	private boolean existsRuleWithPredicateInHead(final Predicate predicate) {
-		final HashSet<NonGroundRule> definingRules = ruleHeadsToDefiningRules.get(predicate);
+		final HashSet<NonGroundRule> definingRules = programAnalysis.getPredicateDefiningRules().get(predicate);
 		return definingRules != null && !definingRules.isEmpty();
 	}
 }

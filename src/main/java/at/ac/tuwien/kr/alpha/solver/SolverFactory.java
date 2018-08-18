@@ -27,14 +27,15 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 
 import java.util.Random;
 
 public final class SolverFactory {
-	public static Solver getInstance(String name, String storeName, Grounder grounder, Random random, boolean respectDomSpecHeuristic,
-			Heuristic fallbackHeuristic, boolean debugInternalChecks) {
+	public static Solver getInstance(String name, String storeName, AtomStore atomStore, Grounder grounder, Random random, boolean respectDomSpecHeuristic, Heuristic heuristic, boolean debugInternalChecks, boolean disableJustifications) {
+		final WritableAssignment assignment = new TrailAssignment(atomStore, debugInternalChecks);
 		final TrailAssignment assignment = new TrailAssignment(grounder, debugInternalChecks);
 		assignment.setChecksEnabled(debugInternalChecks);
 
@@ -53,9 +54,9 @@ public final class SolverFactory {
 
 		switch (name.toLowerCase()) {
 			case "naive" :
-				return new NaiveSolver(grounder);
+				return new NaiveSolver(atomStore, grounder);
 			case "default":
-				DefaultSolver solver = new DefaultSolver(grounder, store, assignment, random, respectDomSpecHeuristic, fallbackHeuristic);
+				return new DefaultSolver(atomStore, grounder, store, assignment, random, respectDomSpecHeuristic, heuristic, debugInternalChecks, disableJustifications);
 				solver.setChecksEnabled(debugInternalChecks);
 				return solver;
 		}

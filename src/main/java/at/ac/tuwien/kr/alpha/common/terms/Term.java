@@ -30,6 +30,8 @@ package at.ac.tuwien.kr.alpha.common.terms;
 import at.ac.tuwien.kr.alpha.common.Substitutable;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -93,4 +95,24 @@ public abstract class Term implements Comparable<Term>, Substitutable<Term> {
 	 * @return the term with all variables renamed.
 	 */
 	public abstract Term renameVariables(String renamePrefix);
+
+	public abstract Term normalizeVariables(String renamePrefix, RenameCounter counter);
+
+	public static class RenameCounter {
+		int counter;
+		final HashMap<VariableTerm, VariableTerm> renamedVariables;
+		public RenameCounter(int startingValue) {
+			counter = startingValue;
+			renamedVariables = new HashMap<>();
+		}
+	}
+
+	public static List<Term> renameTerms(List<Term> terms, String prefix, int counterStartingValue) {
+		List<Term> renamedTerms = new ArrayList<>(terms.size());
+		Term.RenameCounter renameCounter = new Term.RenameCounter(counterStartingValue);
+		for (Term term : terms) {
+			renamedTerms.add(term.normalizeVariables(prefix, renameCounter));
+		}
+		return renamedTerms;
+	}
 }
