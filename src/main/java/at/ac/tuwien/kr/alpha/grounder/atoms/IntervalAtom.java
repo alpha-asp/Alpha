@@ -111,10 +111,10 @@ public class IntervalAtom implements Atom, VariableNormalizableAtom {
 	public int hashCode() {
 		return terms.hashCode();
 	}
-	}
 
 	@Override
 	public IntervalAtom normalizeVariables(String prefix, int counterStartingValue) {
 		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
 		return new IntervalAtom((IntervalTerm) renamedTerms.get(0), renamedTerms.get(1));
+	}
 }

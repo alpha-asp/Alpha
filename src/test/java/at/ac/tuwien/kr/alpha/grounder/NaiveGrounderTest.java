@@ -26,9 +26,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
@@ -58,7 +56,8 @@ public class NaiveGrounderTest {
 				+ "{ b(N) } :- a(N)."
 				+ "#heuristic b(N) : a(N), not b(N). [N@2]");
 		
-		Grounder grounder = GrounderFactory.getInstance("naive", program);
+		AtomStore atomStore = new AtomStoreImpl();
+		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
 		NoGoodGenerator noGoodGenerator = ((NaiveGrounder)grounder).noGoodGenerator;
 		Rule rule = findHeuristicRule(program.getRules());
 		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
@@ -66,8 +65,8 @@ public class NaiveGrounderTest {
 		substitution.unifyTerms(N, ONE);
 		List<NoGood> generatedNoGoods = noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution);
 		assertEquals(2, generatedNoGoods.size());
-		assertEquals("*{-(HeuOff(\"0\")), +(b(1))}", grounder.noGoodToString(generatedNoGoods.get(0)));
-		assertEquals("*{-(HeuOn(\"0\")), +(a(1))}", grounder.noGoodToString(generatedNoGoods.get(1)));
+		assertEquals("*{-(HeuOff(\"0\")), +(b(1))}", atomStore.noGoodToString(generatedNoGoods.get(0)));
+		assertEquals("*{-(HeuOn(\"0\")), +(a(1))}", atomStore.noGoodToString(generatedNoGoods.get(1)));
 	}
 
 	private Rule findHeuristicRule(List<Rule> rules) {
@@ -77,10 +76,6 @@ public class NaiveGrounderTest {
 			}
 		}
 		return null;
-	}
-
-	private BasicAtom buildAtom(String predicateName, Term... terms) {
-		return new BasicAtom(Predicate.getInstance(predicateName, terms.length), terms);
 	}
 
 }

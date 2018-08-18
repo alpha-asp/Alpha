@@ -39,8 +39,7 @@ import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 
 import java.util.*;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.*;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
@@ -57,7 +56,7 @@ public class NoGoodGenerator {
 
 	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, ProgramAnalysis programAnalysis, Set<NonGroundRule> uniqueGroundRulePerGroundHead) {
 		this.atomStore = atomStore;
-		this.recorder = recorder;
+		this.choiceRecorder = recorder;
 		this.factsFromProgram = factsFromProgram;
 		this.programAnalysis = programAnalysis;
 		this.uniqueGroundRulePerGroundHead = uniqueGroundRulePerGroundHead;
@@ -89,11 +88,11 @@ public class NoGoodGenerator {
 		final List<NoGood> result = new ArrayList<>();
 
 		final Atom groundHeadAtom = nonGroundRule.getHeadAtom().substitute(substitution);
-		final int headId = store.add(groundHeadAtom);
+		final int headId = atomStore.putIfAbsent(groundHeadAtom);
 		
 		if (groundHeadAtom instanceof HeuristicAtom) {
 			BasicAtom groundHeuristicHead = ((HeuristicAtom)groundHeadAtom).getHead().toAtom();
-			final int heuristicHeadId = store.add(groundHeuristicHead);
+			final int heuristicHeadId = atomStore.putIfAbsent(groundHeuristicHead);
 			result.addAll(choiceRecorder.generateHeuristicNoGoods(posLiterals, negLiterals, (HeuristicAtom)groundHeadAtom, headId, heuristicHeadId));
 		} else {
 			// Prepare atom representing the rule body.
@@ -110,7 +109,7 @@ public class NoGoodGenerator {
 			final int bodyRepresentingLiteral = atomToLiteral(atomStore.putIfAbsent(bodyAtom));
 			final int headLiteral = atomToLiteral(atomStore.putIfAbsent(nonGroundRule.getHeadAtom().substitute(substitution)));
 
-			choiceRecorder.addHeadToBody(headId, bodyRepresentingAtom);
+			choiceRecorder.addHeadToBody(headId, atomOf(bodyRepresentingLiteral));
 			
 			// Create a nogood for the head.
 			result.add(NoGood.headFirst(negateLiteral(headLiteral), bodyRepresentingLiteral));

@@ -26,15 +26,14 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
-import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
-import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -49,12 +48,11 @@ import static org.junit.Assert.assertEquals;
 public class DomainSpecificHeuristicsTest {
 	
 	private static final String LS = System.lineSeparator();
-	private final WritableAssignment assignment = new TrailAssignment();
+	private final AtomStore atomStore;
 	private final ProgramParser parser = new ProgramParser();
 	
-	@Before
-	public void setUp() {
-		assignment.growForMaxAtomId(2);
+	public DomainSpecificHeuristicsTest() {
+		atomStore = new AtomStoreImpl();
 	}
 	
 	@Test
@@ -218,7 +216,7 @@ public class DomainSpecificHeuristicsTest {
 	}
 
 	private void solveAndAssertAnswerSets(Program program, String... expectedAnswerSets) {
-		Solver solver = SolverFactory.getInstance("default", "alpharoaming", GrounderFactory.getInstance("naive", program), new Random(), true, Heuristic.NAIVE, true);
+		Solver solver = SolverFactory.getInstance("default", "alpharoaming", atomStore, GrounderFactory.getInstance("naive", program, atomStore), new Random(), true, Heuristic.NAIVE, true, false);
 		assertEquals(Arrays.asList(expectedAnswerSets), solver.stream().map(AnswerSet::toString).collect(Collectors.toList()));
 	}
 }

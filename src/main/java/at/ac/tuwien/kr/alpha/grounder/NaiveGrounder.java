@@ -529,11 +529,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		throw new UnsupportedOperationException("Forgetting assignments is not implemented");
 	}
 
-	}
-
 	@Override
 	public AtomStore getAtomStore() {
 		return this.atomStore;
+	}
+
 	public void printCurrentlyKnownGroundRules() {
 		System.out.println("Printing known ground rules:");
 		for (Map.Entry<NonGroundRule, HashSet<Substitution>> ruleSubstitutionsEntry : knownGroundingSubstitutions.entrySet()) {

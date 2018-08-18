@@ -25,6 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.solver.*;
 import org.junit.Before;
@@ -42,15 +44,20 @@ import static org.junit.Assert.assertEquals;
  */
 public class DefaultDomainSpecificHeuristicsStoreTest {
 	private static final int INITIAL_GENERATED_ID = 100;
-	
-	private WritableAssignment assignment;
+
+	private final AtomStore atomStore;
+	private final WritableAssignment assignment;
 	private ChoiceManager choiceManager;
 	private DefaultDomainSpecificHeuristicsStore store = new DefaultDomainSpecificHeuristicsStore(null);
 	private AtomicInteger idGenerator = new AtomicInteger(INITIAL_GENERATED_ID);
+	
+	public DefaultDomainSpecificHeuristicsStoreTest() {
+		atomStore = new AtomStoreImpl();
+		assignment = new TrailAssignment(atomStore);
+	}
 
 	@Before
 	public void setUp() throws IOException {
-		this.assignment = new TrailAssignment();
 		this.choiceManager = new PseudoChoiceManager(assignment, new NaiveNoGoodStore(assignment));
 		this.store = new DefaultDomainSpecificHeuristicsStore(choiceManager);
 	}

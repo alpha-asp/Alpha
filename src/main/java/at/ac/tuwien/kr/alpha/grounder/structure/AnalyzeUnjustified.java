@@ -5,7 +5,10 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.grounder.*;
+import at.ac.tuwien.kr.alpha.grounder.Instance;
+import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
+import at.ac.tuwien.kr.alpha.grounder.Unification;
+import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -300,7 +303,8 @@ public class AnalyzeUnjustified {
 		List<RuleAndUnifier> rulesWithUnifier = new ArrayList<>();
 		Predicate predicate = p.getPredicate();
 		// Check if literal is built-in with a fixed interpretation.
-		if (p instanceof FixedInterpretationLiteral) {
+		if (p.toLiteral() instanceof FixedInterpretationLiteral) {
+			// TODO: can we determine if p is built-in with a fixed interpretation without converting it to a literal?
 			return Collections.emptyList();
 		}
 		ArrayList<FactOrNonGroundRule> definingRulesAndFacts = new ArrayList<>();

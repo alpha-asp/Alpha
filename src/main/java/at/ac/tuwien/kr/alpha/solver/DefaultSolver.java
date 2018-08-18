@@ -89,6 +89,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	 */
 	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, boolean respectDomSpecHeuristic,
 			Heuristic branchingHeuristic, boolean disableJustifications) {
+		super(atomStore, grounder);
 
 		this.assignment = assignment;
 		this.store = store;
@@ -166,7 +167,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				// Learn from conflict.
 				NoGood violatedNoGood = conflictCause.getViolatedNoGood();
 				if (LOGGER.isDebugEnabled()) {
-					LOGGER.debug("Violated nogood is: {}", grounder.noGoodToString(violatedNoGood));
+					LOGGER.debug("Violated nogood is: {}", atomStore.noGoodToString(violatedNoGood));
 					LOGGER.debug("Violating assignment is: {}", assignment);
 				}
 				branchingHeuristic.violatedNoGood(violatedNoGood);
@@ -488,7 +489,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	private NoGood fixContradiction(Map.Entry<Integer, NoGood> noGoodEntry, ConflictCause conflictCause) {
 		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Attempting to fix violation of {} caused by {}", grounder.noGoodToString(noGoodEntry.getValue()), conflictCause);
+			LOGGER.debug("Attempting to fix violation of {} caused by {}", atomStore.noGoodToString(noGoodEntry.getValue()), conflictCause);
 		}
 
 		if (conflictCause.getViolatedChoice() != null) {

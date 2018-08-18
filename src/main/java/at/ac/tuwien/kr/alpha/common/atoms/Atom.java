@@ -32,12 +32,11 @@ import at.ac.tuwien.kr.alpha.common.Substitutable;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.grounder.Unifier;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -70,13 +69,6 @@ public interface Atom extends Comparable<Atom>, Substitutable<Atom> {
 	 */
 	default Set<VariableTerm> getOccurringVariables() {
 		return toLiteral().getOccurringVariables();
-	}
-
-	/**
-	 * Collection of all variables occuring in the Atom
-	 */
-	default Set<VariableTerm> getOccurringVariables() {
-		return getTerms().stream().flatMap(t -> t.getOccurringVariables().stream()).collect(Collectors.toSet());
 	}
 
 	/**

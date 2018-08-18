@@ -98,9 +98,9 @@ public class ChoiceRecorder {
 		final int choiceId = ID_GENERATOR.getNextId();
 		final int bodyRepresentingAtom = atomOf(bodyRepresentingLiteral);
 		// Create ChoiceOn and ChoiceOff atoms.
-		final int choiceOnAtom = atomStore.add(on(choiceId));
+		final int choiceOnAtom = atomStore.putIfAbsent(on(choiceId));
 		newChoiceAtoms.getLeft().put(bodyRepresentingAtom, choiceOnAtom);
-		final int choiceOffAtom = atomStore.add(off(choiceId));
+		final int choiceOffAtom = atomStore.putIfAbsent(off(choiceId));
 		newChoiceAtoms.getRight().put(bodyRepresentingAtom, choiceOffAtom);
 
 		final List<NoGood> noGoods = generateNeg(choiceOffAtom, negLiterals);
@@ -113,9 +113,9 @@ public class ChoiceRecorder {
 		// Obtain an ID for this new heuristic.
 		final int heuristicId = ID_GENERATOR.getNextId();
 		// Create HeuristicOn and HeuristicOff atoms.
-		final int heuristicOnAtom = atomStore.add(HeuristicInfluencerAtom.on(heuristicId));
+		final int heuristicOnAtom = atomStore.putIfAbsent(HeuristicInfluencerAtom.on(heuristicId));
 		newHeuristicAtoms.getLeft().put(heuristicAtomId, heuristicOnAtom);
-		final int heuristicOffAtom = atomStore.add(HeuristicInfluencerAtom.off(heuristicId));
+		final int heuristicOffAtom = atomStore.putIfAbsent(HeuristicInfluencerAtom.off(heuristicId));
 		newHeuristicAtoms.getRight().put(heuristicAtomId, heuristicOffAtom);
 
 		final List<NoGood> noGoods = generateNeg(heuristicOffAtom, negLiterals);
@@ -126,22 +126,20 @@ public class ChoiceRecorder {
 		return noGoods;
 	}
 	
-	private NoGood generatePos(final int choiceId, List<Integer> posLiterals, final int bodyRepresentingLiteral) {
-		final int choiceOnLiteral = atomToLiteral(atomStore.putIfAbsent(on(choiceId)));
-		newChoiceAtoms.getLeft().put(atomOf(bodyRepresentingLiteral), atomOf(choiceOnLiteral));
+	private NoGood generatePos(final int atomOn, List<Integer> posLiterals) {
+		final int literalOn = atomToLiteral(atomOn);
 
-		return NoGood.fromBody(posLiterals, emptyList(), choiceOnLiteral);
+		return NoGood.fromBody(posLiterals, emptyList(), literalOn);
 	}
 
-	private List<NoGood> generateNeg(final int choiceId, List<Integer> negLiterals, final int bodyRepresentingLiteral)  {
-		final int choiceOffLiteral = atomToLiteral(atomStore.putIfAbsent(off(choiceId)));
-		newChoiceAtoms.getRight().put(atomOf(bodyRepresentingLiteral), atomOf(choiceOffLiteral));
+	private List<NoGood> generateNeg(final int atomOff, List<Integer> negLiterals)  {
+		final int negLiteralOff = negateLiteral(atomToLiteral(atomOff));
 
 		final List<NoGood> noGoods = new ArrayList<>(negLiterals.size() + 1);
 		for (Integer negLiteral : negLiterals) {
 			// Choice is off if any of the negative atoms is assigned true,
 			// hence we add one nogood for each such atom.
-			noGoods.add(NoGood.headFirst(negateLiteral(choiceOffLiteral), negLiteral));
+			noGoods.add(NoGood.headFirst(negLiteralOff, negLiteral));
 		}
 		return noGoods;
 	}

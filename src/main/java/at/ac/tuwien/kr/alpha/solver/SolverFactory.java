@@ -35,8 +35,7 @@ import java.util.Random;
 
 public final class SolverFactory {
 	public static Solver getInstance(String name, String storeName, AtomStore atomStore, Grounder grounder, Random random, boolean respectDomSpecHeuristic, Heuristic heuristic, boolean debugInternalChecks, boolean disableJustifications) {
-		final WritableAssignment assignment = new TrailAssignment(atomStore, debugInternalChecks);
-		final TrailAssignment assignment = new TrailAssignment(grounder, debugInternalChecks);
+		final TrailAssignment assignment = new TrailAssignment(atomStore, debugInternalChecks);
 		assignment.setChecksEnabled(debugInternalChecks);
 
 		NoGoodStore store;
@@ -56,7 +55,7 @@ public final class SolverFactory {
 			case "naive" :
 				return new NaiveSolver(atomStore, grounder);
 			case "default":
-				return new DefaultSolver(atomStore, grounder, store, assignment, random, respectDomSpecHeuristic, heuristic, debugInternalChecks, disableJustifications);
+				DefaultSolver solver = new DefaultSolver(atomStore, grounder, store, assignment, random, respectDomSpecHeuristic, heuristic, disableJustifications);
 				solver.setChecksEnabled(debugInternalChecks);
 				return solver;
 		}

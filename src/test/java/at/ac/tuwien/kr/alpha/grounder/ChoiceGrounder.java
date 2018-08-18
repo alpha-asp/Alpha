@@ -201,9 +201,9 @@ public class ChoiceGrounder implements Grounder {
 		}
 		return solverDerivedNoGoods.get(noGood);
 	}
-	}
 
 	@Override
 	public AtomStore getAtomStore() {
 		return null;
+	}
 }
