@@ -28,30 +28,35 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Alpha-internal representation of an ASP program, i.e., a set of ASP rules.
  * Copyright (c) 2017, the Alpha Team.
  */
 public class Program {
-	public static final Program EMPTY = new Program(Collections.emptyList(), Collections.emptyList());
+	public static final Program EMPTY = new Program(Collections.emptyList(), Collections.emptyList(), new InlineDirectives());
 
 	private final List<Rule> rules;
 	private final List<Atom> facts;
+	private final InlineDirectives inlineDirectives;
 
-	public Program(List<Rule> rules, List<Atom> facts) {
+	public Program(List<Rule> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
 		this.rules = rules;
 		this.facts = facts;
+		this.inlineDirectives = inlineDirectives;
 	}
 
 	public Program() {
-		this(new ArrayList<>(), new ArrayList<>());
+		this(new ArrayList<>(), new ArrayList<>(), new InlineDirectives());
 	}
 
 	public List<Rule> getRules() {
@@ -62,9 +67,32 @@ public class Program {
 		return facts;
 	}
 
+	public InlineDirectives getInlineDirectives() {
+		return inlineDirectives;
+	}
+
 	public void accumulate(Program program) {
 		rules.addAll(program.rules);
 		facts.addAll(program.facts);
+		inlineDirectives.accumulate(program.inlineDirectives);
+	}
+
+	public void accumulate(Rule rule) {
+		if (rule.getBody().isEmpty()) {
+			Head ruleHead = rule.getHead();
+			if (!ruleHead.isNormal() || !((DisjunctiveHead)ruleHead).disjunctiveAtoms.get(0).isGround()) {
+				throw oops("Accumulated rule with empty body must have a non-disjunctive and ground head. Rule is: " + rule);
+			}
+			facts.add(((DisjunctiveHead)ruleHead).disjunctiveAtoms.get(0));
+		} else {
+			rules.add(rule);
+		}
+	}
+
+	public void accumulate(Collection<Rule> rules) {
+		for (Rule rule : rules) {
+			accumulate(rule);
+		}
 	}
 
 	@Override

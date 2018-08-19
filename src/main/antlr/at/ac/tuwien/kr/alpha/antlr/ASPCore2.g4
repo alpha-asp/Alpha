@@ -18,11 +18,11 @@ statement : head DOT                     # statement_fact
           | CONS body DOT                # statement_constraint
           | head CONS body DOT           # statement_rule
           | WCONS body? DOT SQUARE_OPEN weight_at_level SQUARE_CLOSE # statement_weightConstraint
-          | gringo_sharp                 # statement_gringoSharp;   // syntax extension
+          | directive                    # statement_directive;   // NOT Core2 syntax.
 
 head : disjunction | choice;
 
-body : ( naf_literal | NAF? aggregate ) (COMMA body)?;
+body : ( naf_literal | aggregate ) (COMMA body)?;
 
 disjunction : classical_literal (OR disjunction)?;
 
@@ -32,7 +32,7 @@ choice_elements : choice_element (SEMICOLON choice_elements)?;
 
 choice_element : classical_literal (COLON naf_literals?)?;
 
-aggregate : (term binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (binop term)?;
+aggregate : NAF? (lt=term lop=binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (uop=binop ut=term)?;
 
 aggregate_elements : aggregate_element (SEMICOLON aggregate_elements)?;
 
@@ -61,17 +61,21 @@ term : ID                                   # term_const
      | VARIABLE                             # term_variable
      | ANONYMOUS_VARIABLE                   # term_anonymousVariable
      | PAREN_OPEN term PAREN_CLOSE          # term_parenthesisedTerm
-     | MINUS term                           # term_minusTerm
-     | term arithop term                    # term_binopTerm
-     | interval                             # term_interval; // syntax extension
-
-arithop : PLUS | MINUS | TIMES | DIV;
+     | interval                             # term_interval // Syntax extension.
+     | MINUS term                           # term_minusArithTerm
+     |<assoc=right> term POWER term         # term_powerArithTerm
+     | term (TIMES | DIV | MODULO) term     # term_timesdivmodArithTerm
+     | term (PLUS | MINUS) term             # term_plusminusArithTerm
+     | term BITXOR term                     # term_bitxorArithTerm
+     ;
 
 interval : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE); // NOT Core2 syntax, but widespread
 
 external_atom : MINUS? AMPERSAND ID (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?; // NOT Core2 syntax.
 
-gringo_sharp : SHARP ~(DOT)* DOT; // NOT Core2 syntax, but widespread, matching not perfect due to possible earlier dots
+directive : directive_enumeration;  // NOT Core2 syntax, allows solver specific directives. Further directives shall be added here.
+
+directive_enumeration : SHARP 'enumeration_predicate_is' ID DOT;  // NOT Core2 syntax, used for aggregate translation.
 
 basic_terms : basic_term (COMMA basic_terms)? ;
 

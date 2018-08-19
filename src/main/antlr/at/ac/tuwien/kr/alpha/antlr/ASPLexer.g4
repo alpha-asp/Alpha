@@ -14,6 +14,9 @@ PLUS : '+';
 MINUS : '-';
 TIMES : '*';
 DIV : '/';
+POWER : '**';
+MODULO : '\\';
+BITXOR : '^';
 AT : '@';
 SHARP : '#'; // NOT Core2 syntax but gringo
 AMPERSAND : '&';

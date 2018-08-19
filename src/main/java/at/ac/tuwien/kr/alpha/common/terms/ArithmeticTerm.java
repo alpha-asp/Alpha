@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.common.terms;
 
 import at.ac.tuwien.kr.alpha.common.Interner;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import com.google.common.math.IntMath;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -13,7 +14,7 @@ import java.util.List;
  */
 public class ArithmeticTerm extends Term {
 	private static final Interner<ArithmeticTerm> INTERNER = new Interner<>();
-	private final Term left;
+	protected final Term left;
 	private final ArithmeticOperator arithmeticOperator;
 	private final Term right;
 
@@ -121,7 +122,11 @@ public class ArithmeticTerm extends Term {
 		PLUS("+"),
 		MINUS("-"),
 		TIMES("*"),
-		DIV("/");
+		DIV("/"),
+		POWER("**"),
+		MODULO("\\"),
+		BITXOR("^");
+
 
 		private String asString;
 
@@ -144,10 +149,72 @@ public class ArithmeticTerm extends Term {
 					return left * right;
 				case DIV:
 					return left / right;
+				case POWER:
+					return IntMath.checkedPow(left, right);
+				case MODULO:
+					return left % right;
+				case BITXOR:
+					return left ^ right;
 				default:
 					throw new RuntimeException("Unknown arithmetic operator encountered.");
 
 			}
+		}
+	}
+
+	public static class MinusTerm extends ArithmeticTerm {
+
+		private MinusTerm(Term term) {
+			super(term, null, null);
+		}
+
+
+		public static MinusTerm getInstance(Term term) {
+			return (MinusTerm) INTERNER.intern(new MinusTerm(term));
+		}
+
+		@Override
+		public boolean isGround() {
+			return left.isGround();
+		}
+
+		@Override
+		public List<VariableTerm> getOccurringVariables() {
+			return left.getOccurringVariables();
+		}
+
+		@Override
+		public Term substitute(Substitution substitution) {
+			return getInstance(left.substitute(substitution));
+		}
+
+		@Override
+		public Term renameVariables(String renamePrefix) {
+			return getInstance(left.renameVariables(renamePrefix));
+		}
+
+		@Override
+		public String toString() {
+			return "-" + left;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+
+			MinusTerm that = (MinusTerm) o;
+
+			return left == that.left;
+		}
+
+		@Override
+		public int hashCode() {
+			return 31 * left.hashCode();
 		}
 	}
 }

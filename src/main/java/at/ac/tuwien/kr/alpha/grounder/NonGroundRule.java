@@ -98,6 +98,10 @@ public class NonGroundRule {
 		return ruleId;
 	}
 
+	public List<Literal> getBodyLiterals() {
+		return new ArrayList<>(rule.getBody());
+	}
+
 	/**
 	 *
 	 * @return a list of all ordinary predicates occurring in the rule (may contain duplicates, does not contain builtin atoms).
@@ -134,7 +138,7 @@ public class NonGroundRule {
 	public String toString() {
 		return join(
 			join(
-						(isConstraint() ? "" : headAtom + " ") + ":- ",
+				(isConstraint() ? "" : headAtom + " ") + ":- ",
 				bodyAtomsPositive,
 				bodyAtomsNegative.size() > 0 ? ", not " : ""
 			),

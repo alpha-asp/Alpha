@@ -34,6 +34,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
@@ -41,6 +42,7 @@ import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
+import at.ac.tuwien.kr.alpha.grounder.transformation.*;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -76,12 +78,13 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private LinkedHashSet<Atom> removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
 	private int maxAtomIdBeforeGroundingNewNoGoods = -1;
 	private boolean disableInstanceRemoval;
+	private boolean useCountingGridNormalization;
 
 	public NaiveGrounder(Program program, AtomStore atomStore, Bridge... bridges) {
-		this(program, atomStore, p -> true, bridges);
+		this(program, atomStore, p -> true, false, bridges);
 	}
 
-	NaiveGrounder(Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, Bridge... bridges) {
+	NaiveGrounder(Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, boolean useCountingGrid, Bridge... bridges) {
 		super(filter, bridges);
 		this.atomStore = atomStore;
 
@@ -89,6 +92,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		analyzeUnjustified = new AnalyzeUnjustified(programAnalysis, atomStore, factsFromProgram);
 
 		// Apply program transformations/rewritings.
+		useCountingGridNormalization = useCountingGrid;
 		applyProgramTransformations(program);
 		LOGGER.debug("Transformed input program is:\n" + program);
 
@@ -173,10 +177,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 
 			// Collect head and body variables.
-			HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.getBindingVariables());
+			HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.toLiteral().getBindingVariables());
 			HashSet<VariableTerm> occurringVariablesBody = new HashSet<>();
 			for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
-				occurringVariablesBody.addAll(atom.getBindingVariables());
+				occurringVariablesBody.addAll(atom.toLiteral().getBindingVariables());
 			}
 			occurringVariablesBody.removeAll(occurringVariablesHead);
 
@@ -191,10 +195,17 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private void applyProgramTransformations(Program program) {
 		// Transform choice rules.
 		new ChoiceHeadToNormal().transform(program);
+		// Transform cardinality aggregates.
+		new CardinalityNormalization(!useCountingGridNormalization).transform(program);
+		// Transform sum aggregates.
+		new SumNormalization().transform(program);
 		// Transform intervals.
 		new IntervalTermToIntervalAtom().transform(program);
 		// Remove variable equalities.
 		new VariableEqualityRemoval().transform(program);
+		// Transform enumeration atoms.
+		new EnumerationRewriting().transform(program);
+		EnumerationAtom.resetEnumerations();
 	}
 
 	/**
@@ -239,12 +250,16 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// Add true atoms from facts.
 		for (Map.Entry<Predicate, LinkedHashSet<Instance>> facts : factsFromProgram.entrySet()) {
 			Predicate factPredicate = facts.getKey();
-			// Skip predicates without any instances.
-			if (facts.getValue().isEmpty()) {
+			// Skip atoms over internal predicates.
+			if (factPredicate.isInternal()) {
 				continue;
 			}
 			// Skip filtered predicates.
 			if (!filter.test(factPredicate)) {
+				continue;
+			}
+			// Skip predicates without any instances.
+			if (facts.getValue().isEmpty()) {
 				continue;
 			}
 			knownPredicates.add(factPredicate);
@@ -296,7 +311,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		maxAtomIdBeforeGroundingNewNoGoods = atomStore.getMaxAtomId();
 		// Compute new ground rule (evaluate joins with newly changed atoms)
 		for (IndexedInstanceStorage modifiedWorkingMemory : workingMemory.modified()) {
-			if (modifiedWorkingMemory.getPredicate().isInternal()) {
+			// Skip predicates solely used in the solver which do not occur in rules.
+			Predicate workingMemoryPredicate = modifiedWorkingMemory.getPredicate();
+			if (workingMemoryPredicate.isSolverInternal()) {
 				continue;
 			}
 
@@ -382,6 +399,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				generatedSubstitutions.addAll(bindNextAtomInRule(groundingOrder, orderPosition + 1, substitution, currentAssignment));
 			}
 			return generatedSubstitutions;
+		}
+		if (currentAtom instanceof EnumerationAtom) {
+			// Get the enumeration value and add it to the current partialSubstitution.
+			((EnumerationAtom) currentAtom).addEnumerationToSubstitution(partialSubstitution);
+			return bindNextAtomInRule(groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
 		}
 
 		// check if partialVariableSubstitution already yields a ground atom

@@ -32,14 +32,11 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
 
@@ -48,7 +45,7 @@ import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
  * second is a term containing variable substitutions.
  */
 public class RuleAtom implements Atom {
-	public static final Predicate PREDICATE = Predicate.getInstance("_R_", 2, true);
+	public static final Predicate PREDICATE = Predicate.getInstance("_R_", 2, true, true);
 
 	private final List<ConstantTerm<String>> terms;
 
@@ -89,17 +86,6 @@ public class RuleAtom implements Atom {
 	@Override
 	public Literal toLiteral(boolean positive) {
 		throw new UnsupportedOperationException("RuleAtom cannot be literalized");
-	}
-
-	@Override
-	public Set<VariableTerm> getBindingVariables() {
-		// NOTE: Both terms are ConstantTerms, which have no variables by definition.
-		return Collections.emptySet();
-	}
-
-	@Override
-	public Set<VariableTerm> getNonBindingVariables() {
-		return Collections.emptySet();
 	}
 
 	@Override

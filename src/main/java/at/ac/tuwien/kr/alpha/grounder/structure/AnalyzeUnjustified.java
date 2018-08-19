@@ -1,10 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder.structure;
 
 import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.grounder.*;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.slf4j.Logger;
@@ -184,6 +181,13 @@ public class AnalyzeUnjustified {
 			return Collections.emptySet();
 		}
 		int chosenLiteralPos = 0;
+		// Find a body literal that is not a ComparisonLiteral, because these do not generate/have atoms assigned.
+		for (int i = 0; i < vB.size(); i++) {
+			if (!(vB.get(i) instanceof ComparisonLiteral)) {
+				chosenLiteralPos = i;
+				break;
+			}
+		}
 		Atom b = vB.get(chosenLiteralPos).getAtom();
 		log("Picked literal from body is: {}", b);
 		for (Unifier sigmaY : vY) {

@@ -60,7 +60,7 @@ public interface Atom extends Comparable<Atom> {
 	default Set<VariableTerm> getNonBindingVariables() {
 		return toLiteral().getNonBindingVariables();
 	}
-	
+
 	/**
 	 * Set of all variables occurring in the Atom
 	 */
@@ -75,14 +75,14 @@ public interface Atom extends Comparable<Atom> {
 	 * @return the atom resulting from the applying the substitution.
 	 */
 	Atom substitute(Substitution substitution);
-	
+
 	/**
 	 * Creates a non-negated literal containing this atom
 	 */
 	default Literal toLiteral() {
 		return toLiteral(true);
 	}
-	
+
 	/**
 	 * Creates a literal containing this atom which will be negated if {@code positive} is {@code false}
 	 * @param positive
