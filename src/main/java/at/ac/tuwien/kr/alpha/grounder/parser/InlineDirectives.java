@@ -44,6 +44,17 @@ public class InlineDirectives {
 
 	private final LinkedHashMap<DIRECTIVE, List<Directive>> directives = new LinkedHashMap<>();
 
+	public Directive getDirectiveValue(DIRECTIVE directive) {
+		List<Directive> values = directives.get(directive);
+		if (values == null) {
+			return null;
+		}
+		if (values.size() > 1) {
+			throw new RuntimeException("Inline directive multiply defined.");
+		}
+		return values.iterator().next();
+	}
+
 	public void addDirective(DIRECTIVE directive, Directive value) {
 		directives.putIfAbsent(directive, new ArrayList<>());
 		directives.get(directive).add(value);

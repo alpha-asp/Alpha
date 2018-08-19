@@ -1,9 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.Rule;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
@@ -25,12 +22,12 @@ public class EnumerationRewriting implements ProgramTransformation  {
 	@Override
 	public void transform(Program inputProgram) {
 		// Read enumeration predicate from directive.
-		String enumDirective = inputProgram.getInlineDirectives().getDirectiveValue(InlineDirectives.DIRECTIVE.enum_predicate_is);
+		EnumerationDirective enumDirective = (EnumerationDirective)inputProgram.getInlineDirectives().getDirectiveValue(InlineDirectives.DIRECTIVE.enum_predicate_is);
 		if (enumDirective == null) {
 			// Directive not set, nothing to rewrite.
 			return;
 		}
-		Predicate enumPredicate = Predicate.getInstance(enumDirective, 3);
+		Predicate enumPredicate = Predicate.getInstance(enumDirective.getValue(), 3);
 
 		// Rewrite all enumeration atoms occurring in facts.
 		Iterator<Atom> it = inputProgram.getFacts().iterator();

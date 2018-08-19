@@ -187,7 +187,7 @@ public class ParserTest {
 			"# enumeration_predicate_is mune." +
 			"r(X) :- p(X), mune(X)." +
 			"p(b,2).");
-		String directive = parsedProgram.getInlineDirectives().getDirectiveValue(InlineDirectives.DIRECTIVE.enum_predicate_is);
+		String directive = ((EnumerationDirective)parsedProgram.getInlineDirectives().getDirectiveValue(InlineDirectives.DIRECTIVE.enum_predicate_is)).getValue();
 		assertEquals("mune", directive);
 	}
 
