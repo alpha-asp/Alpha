@@ -53,6 +53,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	private final boolean acceptVariables;
 
 	private Program inputProgram;
+	private boolean isCurrentLiteralNegated;
 	private boolean currentlyInHeuristicDirective;
 	private InlineDirectives inlineDirectives;
 
@@ -200,6 +201,20 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
+	public Object visitStatement_weightConstraint(ASPCore2Parser.Statement_weightConstraintContext ctx) {
+		// WCONS body? DOT SQUARE_OPEN weight_at_level SQUARE_CLOSE
+		throw notSupported(ctx);
+	}
+
+	@Override
+	public Object visitStatement_directive(ASPCore2Parser.Statement_directiveContext ctx) {
+		// directive
+		visitDirective(ctx.directive());
+		// Parsed directives are globally stored, nothing to return here.
+		return null;
+	}
+
+	@Override
 	public Head visitDisjunction(ASPCore2Parser.DisjunctionContext ctx) {
 		// disjunction : classical_literal (OR disjunction)?;
 		if (ctx.disjunction() != null) {
@@ -273,8 +288,15 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
+	public Object visitDirective_enumeration(ASPCore2Parser.Directive_enumerationContext ctx) {
+		// directive_enumeration : SHARP 'enum_predicate_is' ID DOT;
+		inlineDirectives.addDirective(InlineDirectives.DIRECTIVE.enum_predicate_is, ctx.ID().getText());
+		return null;
+	}
+
+	@Override
 	public List<Literal> visitBody(ASPCore2Parser.BodyContext ctx) {
-		// body : ( naf_literal | NAF? aggregate ) (COMMA body)?;
+		// body : ( naf_literal | aggregate ) (COMMA body)?;
 		if (ctx == null) {
 			return emptyList();
 		}
@@ -284,11 +306,116 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			if (ctx.naf_literal() != null) {
 				literals.add(visitNaf_literal(ctx.naf_literal()));
 			} else {
-				throw notSupported(ctx.aggregate());
+				literals.add(visitAggregate(ctx.aggregate()));
 			}
 		} while ((ctx = ctx.body()) != null);
 
 		return literals;
+	}
+
+	@Override
+	public AggregateLiteral visitAggregate(ASPCore2Parser.AggregateContext ctx) {
+		// aggregate : NAF? (lt=term lop=binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (uop=binop ut=term)?;
+		boolean isPositive = ctx.NAF() == null;
+		Term lt = null;
+		ComparisonOperator lop = null;
+		Term ut = null;
+		ComparisonOperator uop = null;
+		if (ctx.lt != null) {
+			lt = (Term) visit(ctx.lt);
+			lop = visitBinop(ctx.lop);
+		}
+		if (ctx.ut != null) {
+			ut = (Term) visit(ctx.ut);
+			uop = visitBinop(ctx.uop);
+		}
+		AggregateAtom.AGGREGATEFUNCTION aggregateFunction = visitAggregate_function(ctx.aggregate_function());
+		List<AggregateAtom.AggregateElement> aggregateElements = visitAggregate_elements(ctx.aggregate_elements());
+		return new AggregateAtom(lop, lt, uop, ut, aggregateFunction, aggregateElements).toLiteral(isPositive);
+	}
+
+	@Override
+	public List<AggregateAtom.AggregateElement> visitAggregate_elements(ASPCore2Parser.Aggregate_elementsContext ctx) {
+		// aggregate_elements : aggregate_element (SEMICOLON aggregate_elements)?;
+		final List<AggregateAtom.AggregateElement> aggregateElements = new ArrayList<>();
+		do {
+			aggregateElements.add(visitAggregate_element(ctx.aggregate_element()));
+		} while ((ctx = ctx.aggregate_elements()) != null);
+
+		return aggregateElements;
+	}
+
+	@Override
+	public AggregateAtom.AggregateElement visitAggregate_element(ASPCore2Parser.Aggregate_elementContext ctx) {
+		// aggregate_element : basic_terms? (COLON naf_literals?)?;
+		List<Term> basicTerms = ctx.basic_terms() != null ? visitBasic_terms(ctx.basic_terms()) : null;
+		if (ctx.naf_literals() != null) {
+			return new AggregateAtom.AggregateElement(basicTerms, visitNaf_literals(ctx.naf_literals()));
+		}
+		return new AggregateAtom.AggregateElement(basicTerms, Collections.emptyList());
+	}
+
+	@Override
+	public List<Term> visitBasic_terms(ASPCore2Parser.Basic_termsContext ctx) {
+		// basic_terms : basic_term (COMMA basic_terms)? ;
+		List<Term> termList = new ArrayList<>();
+		do {
+			termList.add(visitBasic_term(ctx.basic_term()));
+		} while ((ctx = ctx.basic_terms()) != null);
+		return termList;
+	}
+
+	@Override
+	public Term visitBasic_term(ASPCore2Parser.Basic_termContext ctx) {
+		// basic_term : ground_term | variable_term;
+		if (ctx.ground_term() != null) {
+			return visitGround_term(ctx.ground_term());
+		} else {
+			return visitVariable_term(ctx.variable_term());
+		}
+	}
+
+	@Override
+	public Term visitGround_term(ASPCore2Parser.Ground_termContext ctx) {
+		// ground_term : ID | QUOTED_STRING | MINUS? NUMBER;
+		if (ctx.ID() != null) {
+			return ConstantTerm.getSymbolicInstance(ctx.ID().getText());
+		} else if (ctx.QUOTED_STRING() != null) {
+			String quotedString = ctx.QUOTED_STRING().getText();
+			return ConstantTerm.getInstance(quotedString.substring(1, quotedString.length() - 1));
+		} else {
+			int multiplier = 1;
+			if (ctx.MINUS() != null) {
+				multiplier = -1;
+			}
+			return ConstantTerm.getInstance(multiplier * Integer.parseInt(ctx.NUMBER().getText()));
+		}
+	}
+
+	@Override
+	public Term visitVariable_term(ASPCore2Parser.Variable_termContext ctx) {
+		// variable_term : VARIABLE | ANONYMOUS_VARIABLE;
+		if (ctx.VARIABLE() != null) {
+			return VariableTerm.getInstance(ctx.VARIABLE().getText());
+		} else {
+			return VariableTerm.getAnonymousInstance();
+		}
+	}
+
+	@Override
+	public AggregateAtom.AGGREGATEFUNCTION visitAggregate_function(ASPCore2Parser.Aggregate_functionContext ctx) {
+		// aggregate_function : AGGREGATE_COUNT | AGGREGATE_MAX | AGGREGATE_MIN | AGGREGATE_SUM;
+		if (ctx.AGGREGATE_COUNT() != null) {
+			return AggregateAtom.AGGREGATEFUNCTION.COUNT;
+		} else if (ctx.AGGREGATE_MAX() != null) {
+			return AggregateAtom.AGGREGATEFUNCTION.MAX;
+		} else if (ctx.AGGREGATE_MIN() != null) {
+			return AggregateAtom.AGGREGATEFUNCTION.MIN;
+		} else if (ctx.AGGREGATE_SUM() != null) {
+			return AggregateAtom.AGGREGATEFUNCTION.SUM;
+		} else {
+			throw notSupported(ctx);
+		}
 	}
 
 	@Override
@@ -451,12 +578,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		);
 	}
 
-	@Override
-	public Object visitStatement_weightConstraint(ASPCore2Parser.Statement_weightConstraintContext ctx) {
-		throw notSupported(ctx);
-	}
 	
-	@Override
 	public Object visitDirective_heuristic(Directive_heuristicContext ctx) {
 		// SHARP 'heuristic' classical_literal (COLON body)? DOT weight_annotation?
 		currentlyInHeuristicDirective = true;
@@ -464,11 +586,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		inputProgram.getInlineDirectives().addDirective(DIRECTIVE.heuristic, new HeuristicDirective(visitClassical_literal(ctx.classical_literal()), visitBody(ctx.body()), visitWeight_annotation(ctx.weight_annotation()), positive));
 		currentlyInHeuristicDirective = false;
 		return null;
-	}
-
-	@Override
-	public Object visitTerm_minusTerm(ASPCore2Parser.Term_minusTermContext ctx) {
-		throw notSupported(ctx);
 	}
 
 	public IntervalTerm visitTerm_interval(ASPCore2Parser.Term_intervalContext ctx) {
@@ -482,24 +599,37 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public ArithmeticTerm visitTerm_binopTerm(ASPCore2Parser.Term_binopTermContext ctx) {
-		// term arithop term
-		return ArithmeticTerm.getInstance((Term)visit(ctx.term(0)), visitArithop(ctx.arithop()), (Term)visit(ctx.term(1)));
+	public Object visitTerm_minusArithTerm(ASPCore2Parser.Term_minusArithTermContext ctx) {
+		// | MINUS term
+		return ArithmeticTerm.MinusTerm.getInstance((Term)visit(ctx.term()));
 	}
 
 	@Override
-	public ArithmeticTerm.ArithmeticOperator visitArithop(ASPCore2Parser.ArithopContext ctx) {
-		// arithop : PLUS | MINUS | TIMES | DIV;
-		if (ctx.PLUS() != null) {
-			return ArithmeticTerm.ArithmeticOperator.PLUS;
-		} else if (ctx.MINUS() != null) {
-			return ArithmeticTerm.ArithmeticOperator.MINUS;
-		} else if (ctx.TIMES() != null) {
-			return ArithmeticTerm.ArithmeticOperator.TIMES;
-		} else if (ctx.DIV() != null) {
-			return ArithmeticTerm.ArithmeticOperator.DIV;
-		} else {
-			throw notSupported(ctx);
-		}
+	public Object visitTerm_timesdivmodArithTerm(ASPCore2Parser.Term_timesdivmodArithTermContext ctx) {
+		// | term (TIMES | DIV | MODULO) term
+		ArithmeticTerm.ArithmeticOperator op = ctx.TIMES() != null ? ArithmeticTerm.ArithmeticOperator.TIMES
+			: ctx.DIV() != null ? ArithmeticTerm.ArithmeticOperator.DIV
+			: ArithmeticTerm.ArithmeticOperator.MODULO;
+		return ArithmeticTerm.getInstance((Term)visit(ctx.term(0)), op, (Term)visit(ctx.term(1)));
+	}
+
+	@Override
+	public Object visitTerm_plusminusArithTerm(ASPCore2Parser.Term_plusminusArithTermContext ctx) {
+		// | term (PLUS | MINUS) term
+		ArithmeticTerm.ArithmeticOperator op = ctx.PLUS() != null ? ArithmeticTerm.ArithmeticOperator.PLUS : ArithmeticTerm.ArithmeticOperator.MINUS;
+		return ArithmeticTerm.getInstance((Term)visit(ctx.term(0)), op, (Term)visit(ctx.term(1)));
+	}
+
+	@Override
+	public Object visitTerm_powerArithTerm(ASPCore2Parser.Term_powerArithTermContext ctx) {
+		// |<assoc=right> term POWER term
+		ArithmeticTerm.ArithmeticOperator op = ArithmeticTerm.ArithmeticOperator.POWER;
+		return ArithmeticTerm.getInstance((Term)visit(ctx.term(0)), op, (Term)visit(ctx.term(1)));
+	}
+
+	@Override
+	public Object visitTerm_bitxorArithTerm(ASPCore2Parser.Term_bitxorArithTermContext ctx) {
+		// | term BITXOR term
+		return ArithmeticTerm.getInstance((Term)visit(ctx.term(0)), ArithmeticTerm.ArithmeticOperator.BITXOR, (Term)visit(ctx.term(1)));
 	}
 }

@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
- * 
+ *
  * Additional changes made by Siemens.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -29,12 +29,12 @@ package at.ac.tuwien.kr.alpha.antlr;
 
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.common.terms.*;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.HeuristicDirectiveToRule;
 import org.antlr.v4.runtime.CharStreams;
@@ -44,6 +44,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -85,8 +87,8 @@ public class ParserTest {
 	@Test
 	public void parseSmallProgram() throws IOException {
 		Program parsedProgram = parser.parse(
-				"a :- b, not d." + System.lineSeparator() + 
-				"c(X) :- p(X,a,_), q(Xaa,xaa)." + System.lineSeparator() + 
+				"a :- b, not d." + System.lineSeparator() +
+				"c(X) :- p(X,a,_), q(Xaa,xaa)." + System.lineSeparator() +
 				":- f(Y).");
 
 		assertEquals("Program contains three rules.", 3, parsedProgram.getRules().size());
@@ -115,7 +117,7 @@ public class ParserTest {
 		Program parsedProgram = parser.parse("fact(2..5). p(X) :- q(a, 3 .. X).");
 		IntervalTerm factInterval = (IntervalTerm) parsedProgram.getFacts().get(0).getTerms().get(0);
 		assertTrue(factInterval.equals(IntervalTerm.getInstance(ConstantTerm.getInstance(2), ConstantTerm.getInstance(5))));
-		IntervalTerm bodyInterval = (IntervalTerm) parsedProgram.getRules().get(0).getBody().get(0).getTerms().get(1);
+		IntervalTerm bodyInterval = (IntervalTerm) ((Literal)parsedProgram.getRules().get(0).getBody().get(0)).getTerms().get(1);
 		assertTrue(bodyInterval.equals(IntervalTerm.getInstance(ConstantTerm.getInstance(3), VariableTerm.getInstance("X"))));
 	}
 
@@ -179,6 +181,31 @@ public class ParserTest {
 		parser.parse("p(X,Y) :- q(X), r(Y) p(a). q(b).");
 	}
 
+	@Test
+	public void parseEnumerationDirective() throws IOException {
+		Program parsedProgram = parser.parse("p(a,1)." +
+			"# enumeration_predicate_is mune." +
+			"r(X) :- p(X), mune(X)." +
+			"p(b,2).");
+		String directive = parsedProgram.getInlineDirectives().getDirectiveValue(InlineDirectives.DIRECTIVE.enum_predicate_is);
+		assertEquals("mune", directive);
+	}
+
+	@Test
+	public void cardinalityAggregate() throws IOException {
+		Program parsedProgram = parser.parse("num(K) :-  K <= #count {X,Y,Z : p(X,Y,Z) }, dom(K).");
+		Literal bodyElement = parsedProgram.getRules().get(0).getBody().get(0);
+		assertTrue(bodyElement instanceof AggregateLiteral);
+		AggregateLiteral parsedAggregate = (AggregateLiteral) bodyElement;
+		VariableTerm x = VariableTerm.getInstance("X");
+		VariableTerm y = VariableTerm.getInstance("Y");
+		VariableTerm z = VariableTerm.getInstance("Z");
+		List<Term> basicTerms = Arrays.asList(x, y, z);
+		AggregateAtom.AggregateElement aggregateElement = new AggregateAtom.AggregateElement(basicTerms, Collections.singletonList(new BasicAtom(Predicate.getInstance("p", 3), x, y, z).toLiteral()));
+		AggregateAtom expectedAggregate = new AggregateAtom(ComparisonOperator.LE, VariableTerm.getInstance("K"), null, null, AggregateAtom.AGGREGATEFUNCTION.COUNT, Collections.singletonList(aggregateElement));
+		assertEquals(expectedAggregate, parsedAggregate.getAtom());
+	}
+	
 	@Test
 	public void parseProgramWithHeuristicDirective_W() {
 		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "

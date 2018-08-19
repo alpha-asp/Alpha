@@ -31,10 +31,12 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Alpha-internal representation of an ASP program, i.e., a set of ASP rules.
@@ -73,6 +75,24 @@ public class Program {
 		rules.addAll(program.rules);
 		facts.addAll(program.facts);
 		inlineDirectives.accumulate(program.inlineDirectives);
+	}
+
+	public void accumulate(Rule rule) {
+		if (rule.getBody().isEmpty()) {
+			Head ruleHead = rule.getHead();
+			if (!ruleHead.isNormal() || !((DisjunctiveHead)ruleHead).disjunctiveAtoms.get(0).isGround()) {
+				throw oops("Accumulated rule with empty body must have a non-disjunctive and ground head. Rule is: " + rule);
+			}
+			facts.add(((DisjunctiveHead)ruleHead).disjunctiveAtoms.get(0));
+		} else {
+			rules.add(rule);
+		}
+	}
+
+	public void accumulate(Collection<Rule> rules) {
+		for (Rule rule : rules) {
+			accumulate(rule);
+		}
 	}
 
 	@Override

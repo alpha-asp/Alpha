@@ -324,6 +324,9 @@ public class ChoiceManager implements Checkable {
 		ArrayList<String> toWatchFor = new ArrayList<>();
 
 		private void runWatcher() {
+			if (toWatchFor.size() == 0) {
+				return;
+			}
 			String current = choiceStack.stream().map(Choice::toString).collect(Collectors.joining(", "));
 			boolean contained = true;
 			for (String s : toWatchFor) {

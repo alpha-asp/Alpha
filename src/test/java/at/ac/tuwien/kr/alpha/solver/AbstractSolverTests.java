@@ -69,6 +69,14 @@ public abstract class AbstractSolverTests {
 		root.setLevel(Level.DEBUG);
 	}
 
+	/**
+	 * Calling this method in a tests leads to the test being ignored for the naive solver.
+	 * Note: use this sparingly and only on tests that require too much run time with the naive solver.
+	 */
+	void ignoreTestForNaiveSolver() {
+		org.junit.Assume.assumeFalse(solverName.equals("naive"));
+	}
+
 	private static String[] getProperty(String subKey, String def) {
 		return System.getProperty("test." + subKey, def).split(",");
 	}

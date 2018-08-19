@@ -153,8 +153,8 @@ public class Rule {
 		if (!isConstraint() && !((DisjunctiveHead) head).isGround()) {
 			return false;
 		}
-		for (Literal literal : body) {
-			if (!literal.isGround()) {
+		for (Literal bodyElement : body) {
+			if (!bodyElement.isGround()) {
 				return false;
 			}
 		}

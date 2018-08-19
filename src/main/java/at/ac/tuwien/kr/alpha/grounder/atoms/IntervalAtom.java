@@ -84,8 +84,8 @@ public class IntervalAtom implements Atom, VariableNormalizableAtom {
 	}
 
 	@Override
-	public IntervalAtom substitute(Substitution substitution) {
-		return new IntervalAtom((IntervalTerm)terms.get(0).substitute(substitution), terms.get(1).substitute(substitution));
+	public IntervalLiteral toLiteral() {
+		return toLiteral(true);
 	}
 
 	@Override
@@ -110,6 +110,11 @@ public class IntervalAtom implements Atom, VariableNormalizableAtom {
 	@Override
 	public int hashCode() {
 		return terms.hashCode();
+	}
+
+	@Override
+	public IntervalAtom substitute(Substitution substitution) {
+		return new IntervalAtom((IntervalTerm)terms.get(0).substitute(substitution), terms.get(1).substitute(substitution));
 	}
 
 	@Override

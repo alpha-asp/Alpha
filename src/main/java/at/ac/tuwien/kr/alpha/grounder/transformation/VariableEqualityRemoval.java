@@ -56,16 +56,17 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 		HashMap<VariableTerm, HashSet<VariableTerm>> variableToEqualVariables = new HashMap<>();
 		//HashSet<Variable> equalVariables = new LinkedHashSet<>();
 		HashSet<Literal> equalitiesToRemove = new HashSet<>();
-		for (Literal literal : rule.getBody()) {
-			if (!(literal instanceof ComparisonLiteral)) {
+		for (Literal bodyElement : rule.getBody()) {
+			if (!(bodyElement instanceof ComparisonLiteral)) {
 				continue;
 			}
-			if (!((ComparisonLiteral) literal).isNormalizedEquality()) {
+			ComparisonLiteral comparisonLiteral = (ComparisonLiteral) bodyElement;
+			if (!comparisonLiteral.isNormalizedEquality()) {
 				continue;
 			}
-			if (literal.getTerms().get(0) instanceof VariableTerm && literal.getTerms().get(1) instanceof VariableTerm) {
-				VariableTerm leftVariable = (VariableTerm) literal.getTerms().get(0);
-				VariableTerm rightVariable = (VariableTerm) literal.getTerms().get(1);
+			if (comparisonLiteral.getTerms().get(0) instanceof VariableTerm && comparisonLiteral.getTerms().get(1) instanceof VariableTerm) {
+				VariableTerm leftVariable = (VariableTerm) comparisonLiteral.getTerms().get(0);
+				VariableTerm rightVariable = (VariableTerm) comparisonLiteral.getTerms().get(1);
 				HashSet<VariableTerm> leftEqualVariables = variableToEqualVariables.get(leftVariable);
 				HashSet<VariableTerm> rightEqualVariables = variableToEqualVariables.get(rightVariable);
 				if (leftEqualVariables == null && rightEqualVariables == null) {
@@ -87,7 +88,7 @@ public class VariableEqualityRemoval implements ProgramTransformation {
 						variableToEqualVariables.put(rightEqualVariable, leftEqualVariables);
 					}
 				}
-				equalitiesToRemove.add(literal);
+				equalitiesToRemove.add(comparisonLiteral);
 			}
 		}
 		if (variableToEqualVariables.isEmpty()) {

@@ -1,8 +1,6 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2018 Siemens AG
  * All rights reserved.
- * 
- * Additional changes made by Siemens.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,47 +23,16 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.grounder.parser;
-
-import at.ac.tuwien.kr.alpha.common.Directive;
-
-import java.util.*;
+package at.ac.tuwien.kr.alpha.solver;
 
 /**
- * Stores directives appearing in the ASP program. Each directive starts with # and ends with .
- * Copyright (c) 2017, the Alpha Team.
+ * Executes {@link AggregatesTest} with {@code normalizationCountingGrid=false}.
  */
-public class InlineDirectives {
+public class AggregatesCardinalitySortingCircuitTest extends AggregatesTest {
 
-	public enum DIRECTIVE {
-		enum_predicate_is,
-		heuristic,
+	@Override
+	protected boolean useCountingGridNormalization() {
+		return false;
 	}
 
-	private final LinkedHashMap<DIRECTIVE, List<Directive>> directives = new LinkedHashMap<>();
-
-	public void addDirective(DIRECTIVE directive, Directive value) {
-		directives.putIfAbsent(directive, new ArrayList<>());
-		directives.get(directive).add(value);
-	}
-
-	public void accumulate(InlineDirectives other) {
-		for (Map.Entry<DIRECTIVE, List<Directive>> directiveEntry : other.directives.entrySet()) {
-			for (Directive directiveValue : directiveEntry.getValue()) {
-				addDirective(directiveEntry.getKey(), directiveValue);
-			}
-		}
-	}
-
-	public boolean isEmpty() {
-		return directives.isEmpty();
-	}
-	
-	public Collection<Directive> getDirectives() {
-		List<Directive> flatList = new ArrayList<>();
-		for (List<Directive> list : directives.values()) {
-			flatList.addAll(list);
-		}
-		return flatList;
-	}
 }

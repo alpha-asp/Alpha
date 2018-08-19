@@ -81,6 +81,7 @@ public class Main {
 	private static final String OPT_LITERATE = "literate";
 	private static final String OPT_STATS = "stats";
 	private static final String OPT_NO_JUSTIFICATION = "disableJustifications";
+	private static final String OPT_NORMALIZATION_GRID = "normalizationCountingGrid";
 
 	private static final String OPT_IGNORE_DOMSPEC_HEURISTIC = "ignoreDomSpecHeuristic";
 	private static final String OPT_BRANCHING_HEURISTIC = "branchingHeuristic";
@@ -177,6 +178,9 @@ public class Main {
 		Option justificationOption = new Option(OPT_NO_JUSTIFICATION, "disable the search for justifications on must-be-true assigned atoms in the solver.");
 		options.addOption(justificationOption);
 
+		Option normalizationCountingGrid = new Option(OPT_NORMALIZATION_GRID, "ues counting grid normalization instead of sorting circuit for #count.");
+		options.addOption(normalizationCountingGrid);
+
 		try {
 			commandLine = new DefaultParser().parse(options, args);
 		} catch (ParseException e) {
@@ -203,6 +207,7 @@ public class Main {
 		}
 
 		final boolean disableJustifications = commandLine.hasOption(OPT_NO_JUSTIFICATION);
+		final boolean normalizationUseGrid = commandLine.hasOption(OPT_NORMALIZATION_GRID);
 		final boolean debugInternalChecks = commandLine.hasOption(OPT_DEBUG_INTERNAL_CHECKS);
 		final boolean literate = commandLine.hasOption(OPT_LITERATE);
 
@@ -227,7 +232,7 @@ public class Main {
 
 		final AtomStore atomStore = new AtomStoreImpl();
 		final Grounder grounder = GrounderFactory.getInstance(
-			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), program, atomStore, filter
+			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), program, atomStore, filter, normalizationUseGrid
 		);
 
 		// NOTE: Using time as seed is fine as the internal heuristics
