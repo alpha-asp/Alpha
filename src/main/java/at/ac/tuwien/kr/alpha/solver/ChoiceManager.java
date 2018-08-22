@@ -33,7 +33,6 @@ import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DefaultDomainSpecificHeuristicsStore;
 import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DomainSpecificHeuristicsStore;
 import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.EmptyDomainSpecificHeuristicsStore;
-import com.google.common.collect.Sets;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -276,12 +275,12 @@ public class ChoiceManager implements Checkable {
 		return choicePointInfluenceManager.isActive(atom);
 	}
 
-	public int getNextActiveChoiceAtom() {
-		return choicePointInfluenceManager.getNextActiveAtomOrDefault(DEFAULT_CHOICE_ATOM);
+	public boolean isActiveHeuristicAtom(int atom) {
+		return heuristicInfluenceManager.isActive(atom);
 	}
 
-	public Set<Integer> getAllActiveChoiceAtoms() {
-		return choicePointInfluenceManager.getAllActiveInfluencedAtoms();
+	public int getNextActiveChoiceAtom() {
+		return choicePointInfluenceManager.getNextActiveAtomOrDefault(DEFAULT_CHOICE_ATOM);
 	}
 
 	public boolean isAtomChoice(int atom) {
@@ -302,7 +301,13 @@ public class ChoiceManager implements Checkable {
 		if (bodies == null) {
 			return Collections.emptySet();
 		}
-		return Sets.intersection(bodies, getAllActiveChoiceAtoms());
+		Set<Integer> activeBodies = new HashSet<>();
+		for (Integer body : bodies) {
+			if (isActiveChoiceAtom(body)) {
+				activeBodies.add(body);
+			}
+		}
+		return activeBodies;
 	}
 	
 	public static ChoiceManager withoutDomainSpecificHeuristics(WritableAssignment assignment, NoGoodStore store) {
