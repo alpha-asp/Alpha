@@ -6,11 +6,11 @@
  * modification, are permitted provided that the following conditions are met:
  * 
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ * list of conditions and the following disclaimer.
  * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -32,19 +32,16 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DomainSpecificHeuristicsStore;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
-import org.apache.commons.collections4.SetUtils;
+import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.Util.union;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
@@ -84,7 +81,7 @@ public class DomainSpecific implements BranchingHeuristic {
 	public void newNoGoods(Collection<NoGood> newNoGoods) {
 		fallbackHeuristic.newNoGoods(newNoGoods);
 	}
-	
+
 	@Override
 	public int chooseAtom(Set<Integer> admissibleChoices) {
 		return atomOf(chooseLiteral(admissibleChoices));
@@ -96,14 +93,15 @@ public class DomainSpecific implements BranchingHeuristic {
 		Collection<Set<Integer>> heuristicsOrderedByDecreasingPriority = choiceManager.getDomainSpecificHeuristics()
 				.getHeuristicsOrderedByDecreasingPriority();
 		for (Set<Integer> potentialHeuristics : heuristicsOrderedByDecreasingPriority) {
-			Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies = computeActiveHeuristicsToBodies(activeHeuristics, potentialHeuristics);
-			if (activeHeuristicsToBodies.size() > 1) {
-				Set<Integer> admissibleActiveChoices = union(activeHeuristicsToBodies.values());
+			ActiveHeuristicsToBodies activeHeuristicsToBodies = computeActiveHeuristicsToBodies(
+					Sets.intersection(activeHeuristics, potentialHeuristics));
+			if (activeHeuristicsToBodies.isSeveralValues()) {
+				Set<Integer> admissibleActiveChoices = activeHeuristicsToBodies.getBodiesForActiveHeuristics();
 				if (admissibleChoices != null) {
-					admissibleActiveChoices.retainAll(admissibleChoices);
+					admissibleActiveChoices = Sets.intersection(admissibleActiveChoices, admissibleChoices);
 				}
 				return askFallbackHeuristic(activeHeuristicsToBodies, admissibleActiveChoices);
-			} else if (activeHeuristicsToBodies.size() == 1) {
+			} else if (!activeHeuristicsToBodies.isEmpty()) {
 				return chooseAdmissibleBodyForHeuristic(activeHeuristicsToBodies, admissibleChoices);
 			}
 			// else: continue to set of heuristic values with lower priority
@@ -113,35 +111,29 @@ public class DomainSpecific implements BranchingHeuristic {
 		return DEFAULT_CHOICE_LITERAL;
 	}
 
-	private Map<HeuristicDirectiveValues, Set<Integer>> computeActiveHeuristicsToBodies(Set<Integer> activeHeuristics, Set<Integer> potentialHeuristics) {
-		Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies = new HashMap<>();
-		potentialHeuristics = SetUtils.intersection(potentialHeuristics, activeHeuristics);
+	private ActiveHeuristicsToBodies computeActiveHeuristicsToBodies(Set<Integer> potentialHeuristics) {
+		ActiveHeuristicsToBodies activeHeuristicsToBodies = new ActiveHeuristicsToBodies();
+		DomainSpecificHeuristicsStore domainSpecificHeuristics = choiceManager.getDomainSpecificHeuristics();
 		for (int h : potentialHeuristics) {
-			HeuristicDirectiveValues values = choiceManager.getDomainSpecificHeuristics().getValues(h);
-			int headAtomId = values.getHeadAtomId();
-			if (isUnassignedOrMBT(headAtomId)) {
-				Set<Integer> activeChoiceAtomsDerivingHead = choiceManager.getActiveChoiceAtomsDerivingHead(headAtomId);
-				if (!activeChoiceAtomsDerivingHead.isEmpty()) {
-					activeHeuristicsToBodies.put(values, activeChoiceAtomsDerivingHead);
-				}
-			}
+			HeuristicDirectiveValues values = domainSpecificHeuristics.getValues(h);
+			activeHeuristicsToBodies.add(values);
 		}
 		return activeHeuristicsToBodies;
 	}
 
-	private int askFallbackHeuristic(Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies, Set<Integer> admissibleChoices) {
+	private int askFallbackHeuristic(ActiveHeuristicsToBodies activeHeuristicsToBodies, Set<Integer> admissibleChoices) {
 		// sign of literal chosen by fallback heuristic is ignored
 		int atom = fallbackHeuristic.chooseAtom(admissibleChoices);
 		if (atom != DEFAULT_CHOICE_ATOM) {
 			return Literals.atomToLiteral(atom, determineSignForFallbackAtom(atom, activeHeuristicsToBodies));
 		} else {
-			return chooseArbitraryLiteral(activeHeuristicsToBodies);
+			return chooseArbitraryLiteral(activeHeuristicsToBodies.getActiveHeuristicsToBodies());
 		}
 	}
 
-	private Boolean determineSignForFallbackAtom(int atom, Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies) {
+	private Boolean determineSignForFallbackAtom(int atom, ActiveHeuristicsToBodies activeHeuristicsToBodies) {
 		Boolean sign = null;
-		for (Entry<HeuristicDirectiveValues, Set<Integer>> entry : activeHeuristicsToBodies.entrySet()) {
+		for (Entry<HeuristicDirectiveValues, Set<Integer>> entry : activeHeuristicsToBodies.getActiveHeuristicsToBodies().entrySet()) {
 			if (entry.getValue().contains(atom)) {
 				sign = entry.getKey().getSign();
 			}
@@ -158,10 +150,9 @@ public class DomainSpecific implements BranchingHeuristic {
 		return Literals.atomToLiteral(entry.getValue().iterator().next(), entry.getKey().getSign());
 	}
 
-	private int chooseAdmissibleBodyForHeuristic(Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies, Set<Integer> admissibleChoices) {
-		Entry<HeuristicDirectiveValues, Set<Integer>> activeHeadToBodies = activeHeuristicsToBodies.entrySet().iterator().next();
-		HeuristicDirectiveValues heuristic = activeHeadToBodies.getKey();
-		Set<Integer> bodies = activeHeadToBodies.getValue();
+	private int chooseAdmissibleBodyForHeuristic(ActiveHeuristicsToBodies activeHeuristicsToBodies, Set<Integer> admissibleChoices) {
+		HeuristicDirectiveValues heuristic = activeHeuristicsToBodies.getHeuristicDirectiveValues();
+		Set<Integer> bodies = activeHeuristicsToBodies.getBodiesForActiveHeuristics();
 		if (admissibleChoices != null) {
 			bodies.retainAll(admissibleChoices);
 		}
@@ -177,5 +168,81 @@ public class DomainSpecific implements BranchingHeuristic {
 	protected boolean isUnassignedOrMBT(int atom) {
 		ThriceTruth truth = assignment.getTruth(atom);
 		return truth != FALSE && truth != TRUE; // do not use assignment.isAssigned(atom) because we may also choose MBTs
+	}
+
+	class ActiveHeuristicsToBodies {
+		private Set<Integer> bodiesForActiveHeuristics = new HashSet<>();
+		private HeuristicDirectiveValues heuristicDirectiveValues;
+		private boolean severalValues;
+		private Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies = new HashMap<>();
+
+		public void add(HeuristicDirectiveValues newValues) {
+			if (!severalValues) {
+				if (heuristicDirectiveValues == null) {
+					heuristicDirectiveValues = newValues;
+				} else if (!heuristicDirectiveValues.equals(newValues)) {
+					switchToSeveralValues();
+				}
+			}
+			addBodies(newValues);
+			if (isEmpty()) {
+				heuristicDirectiveValues = null;
+				severalValues = false;
+			}
+		}
+
+		public boolean isEmpty() {
+			return bodiesForActiveHeuristics.isEmpty();
+		}
+
+		private void switchToSeveralValues() {
+			severalValues = true;
+			addBodiesToMap(heuristicDirectiveValues, bodiesForActiveHeuristics);
+			heuristicDirectiveValues = null;
+		}
+
+		private void addBodies(HeuristicDirectiveValues newValues) {
+			int headAtomId = newValues.getHeadAtomId();
+			if (isUnassignedOrMBT(headAtomId)) {
+				Set<Integer> activeChoiceAtomsDerivingHead = choiceManager.getActiveChoiceAtomsDerivingHead(headAtomId);
+				addBodiesToSet(activeChoiceAtomsDerivingHead);
+				addBodiesToMap(newValues, activeChoiceAtomsDerivingHead);
+			}
+		}
+
+		private void addBodiesToSet(Set<Integer> bodies) {
+			bodiesForActiveHeuristics.addAll(bodies);
+			if (!severalValues) {
+				activeHeuristicsToBodies.put(heuristicDirectiveValues, bodiesForActiveHeuristics);
+			}
+		}
+
+		private void addBodiesToMap(HeuristicDirectiveValues values, Set<Integer> bodies) {
+			if (bodies.isEmpty()) {
+				return;
+			}
+			Set<Integer> existingBodies = activeHeuristicsToBodies.get(values);
+			if (existingBodies == null) {
+				existingBodies = new HashSet<>();
+				activeHeuristicsToBodies.put(values, existingBodies);
+			}
+			existingBodies.addAll(bodies);
+		}
+
+		public Set<Integer> getBodiesForActiveHeuristics() {
+			return bodiesForActiveHeuristics;
+		}
+
+		public HeuristicDirectiveValues getHeuristicDirectiveValues() {
+			return heuristicDirectiveValues;
+		}
+
+		public boolean isSeveralValues() {
+			return severalValues;
+		}
+		
+		public Map<HeuristicDirectiveValues, Set<Integer>> getActiveHeuristicsToBodies() {
+			return activeHeuristicsToBodies;
+		}
 	}
 }

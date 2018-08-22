@@ -27,8 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import com.google.common.collect.Sets;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
@@ -64,14 +62,6 @@ public class Util {
 			joiner.add(element.toString());
 		}
 		return joiner.toString();
-	}
-	
-	public static <T> Set<T> union(Iterable<Set<T>> sets) {
-		Set<T> union = Collections.emptySet();
-		for (Set<T> set : sets) {
-			union = Sets.union(union, set);
-		}
-		return union;
 	}
 	
 	/**
