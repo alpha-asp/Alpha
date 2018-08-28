@@ -71,9 +71,11 @@ and pick up `build/libs/alpha-bundled.jar`.
 
 ### Research Papers on Alpha
 
+ * [Exploiting Justifications for Lazy Grounding of Answer Set Programs](https://doi.org/10.24963/ijcai.2018/240)
+ * [Lazy Grounding for Dynamic Configuration: Efficient Large-Scale (Re)Configuration of Cyber-Physical Systems with ASP](https://doi.org/10.1007/s13218-018-0536-x)
  * [Blending Lazy-Grounding and CDNL Search for Answer-Set Solving](https://doi.org/10.1007/978-3-319-61660-5_17) ([preprint](http://www.kr.tuwien.ac.at/research/systems/alpha/blending_lazy_grounding.pdf))
  * [Introducing Heuristics for Lazy-Grounding ASP Solving](https://sites.google.com/site/paoasp2017/Taupe-et-al.pdf)
- * [Lazy-Grounding for Answer Set Programs with External Source Access](https://www.ijcai.org/proceedings/2017/0141.pdf)
+ * [Lazy-Grounding for Answer Set Programs with External Source Access](https://doi.org/10.24963/ijcai.2017/141)
  * [Techniques for Efficient Lazy-Grounding ASP Solving](https://www.uni-wuerzburg.de/fileadmin/10030100/Publications/TR_Declare17.pdf#page=131)
 
 ## Similar Work
