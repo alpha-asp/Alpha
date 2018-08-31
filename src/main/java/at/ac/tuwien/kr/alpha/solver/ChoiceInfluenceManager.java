@@ -206,16 +206,14 @@ public class ChoiceInfluenceManager implements Checkable {
 			LOGGER.trace("Recomputing activity of atom {}.", atom);
 			final boolean wasActive = isActive;
 			isActive = isNotChosen() && isActiveChoicePoint();
-			if (isActive) {
+			if (isActive && !wasActive) {
 				activeChoicePoints.add(this);
 				activeChoicePointsAtoms.add(atom);
 				LOGGER.debug("Activating choice point for atom {}", this.atom);
-			} else {
-				if (wasActive) {
-					activeChoicePoints.remove(this);
-					activeChoicePointsAtoms.remove(atom);
-					LOGGER.debug("Deactivating choice point for atom {}", this.atom);
-				}
+			} else if (wasActive && !isActive) {
+				activeChoicePoints.remove(this);
+				activeChoicePointsAtoms.remove(atom);
+				LOGGER.debug("Deactivating choice point for atom {}", this.atom);
 			}
 			checksNecessary = checksEnabled;
 		}
