@@ -141,7 +141,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				decisionsLast = currentNumberOfChoices;
 				float overallTime = (currentTime - timeOnEntry) / 1000.0f;
 				float decisionsPerSec = currentNumberOfChoices / overallTime;
-				LOGGER.info("Overall performance: {} decision in {}s or {} decisions per sec. Overall replayed assignments: {}.", currentNumberOfChoices, currentTime - timeOnEntry, decisionsPerSec, ((TrailAssignment)assignment).replayCounter);
+				LOGGER.info("Overall performance: {} decisions in {}s or {} decisions per sec. Overall replayed assignments: {}.", currentNumberOfChoices, overallTime, decisionsPerSec, ((TrailAssignment)assignment).replayCounter);
 			}
 			ConflictCause conflictCause = store.propagate();
 			didChange |= store.didPropagate();
