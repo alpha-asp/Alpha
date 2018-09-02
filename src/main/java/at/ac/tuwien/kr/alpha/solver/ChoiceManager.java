@@ -163,14 +163,12 @@ public class ChoiceManager implements Checkable {
 			LOGGER.trace("Recomputing activity of atom {}.", atom);
 			final boolean wasActive = isActive;
 			isActive = isNotChosen() && isActiveChoicePoint();
-			if (isActive) {
+			if (isActive && !wasActive) {
 				activeChoicePoints.add(this);
 				LOGGER.debug("Activating choice point for atom {}", this.atom);
-			} else {
-				if (wasActive) {
-					activeChoicePoints.remove(this);
-					LOGGER.debug("Deactivating choice point for atom {}", this.atom);
-				}
+			} else if (wasActive && !isActive) {
+				activeChoicePoints.remove(this);
+				LOGGER.debug("Deactivating choice point for atom {}", this.atom);
 			}
 		}
 
