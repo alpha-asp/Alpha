@@ -6,11 +6,11 @@
  * modification, are permitted provided that the following conditions are met:
  * 
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ * list of conditions and the following disclaimer.
  * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -29,13 +29,13 @@ import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.solver.*;
+import at.ac.tuwien.kr.alpha.solver.ChoiceInfluenceManager.ActivityListener;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
@@ -47,10 +47,10 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 
 	private final AtomStore atomStore;
 	private final WritableAssignment assignment;
-	private ChoiceManager choiceManager;
-	private DefaultDomainSpecificHeuristicsStore store = new DefaultDomainSpecificHeuristicsStore(null);
+	private PseudoChoiceManager choiceManager;
+	private DefaultDomainSpecificHeuristicsStore store;
 	private AtomicInteger idGenerator = new AtomicInteger(INITIAL_GENERATED_ID);
-	
+
 	public DefaultDomainSpecificHeuristicsStoreTest() {
 		atomStore = new AtomStoreImpl();
 		assignment = new TrailAssignment(atomStore);
@@ -58,31 +58,32 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 
 	@Before
 	public void setUp() throws IOException {
-		this.choiceManager = new PseudoChoiceManager(assignment, new NaiveNoGoodStore(assignment));
-		this.store = new DefaultDomainSpecificHeuristicsStore(choiceManager);
+		this.store = new DefaultDomainSpecificHeuristicsStore(assignment);
+		this.choiceManager = new PseudoChoiceManager(assignment, new NaiveNoGoodStore(assignment), store);
 	}
 
-	
 	@Test
 	public void testInsert_1_atom() {
 		int id = idGenerator.getAndIncrement();
-		store.addInfo(id, info(1, 1, 1));
-		Collection<Set<Integer>> orderedList = store.getHeuristicsOrderedByDecreasingPriority();
-		assertEquals(1, orderedList.size());
-		Iterator<Set<Integer>> iterator = orderedList.iterator();
-		assertEquals(set(id), nextSetOfChoicePoints(iterator));
+		HeuristicDirectiveValues info1 = info(1, 1, 1);
+		store.addInfo(id, info1);
+		choiceManager.makeAtomsActive(id);
+		List<HeuristicDirectiveValues> orderedList = listHeuristicsOrderedByDecreasingPriority();
+		assertEquals(Arrays.asList(info1), orderedList);
 	}
 
 	@Test
 	public void testInsert_2_atoms_sameWeight_sameLevel() {
 		int id1 = idGenerator.getAndIncrement();
 		int id2 = idGenerator.getAndIncrement();
-		store.addInfo(id1, info(1, 2, 3));
-		store.addInfo(id2, info(2, 2, 3));
-		Collection<Set<Integer>> orderedList = store.getHeuristicsOrderedByDecreasingPriority();
-		assertEquals(1, orderedList.size());
-		Iterator<Set<Integer>> iterator = orderedList.iterator();
-		assertEquals(set(id1, id2), nextSetOfChoicePoints(iterator));
+		HeuristicDirectiveValues info1 = info(1, 2, 3);
+		HeuristicDirectiveValues info2 = info(2, 2, 3);
+		store.addInfo(id1, info1);
+		store.addInfo(id2, info2);
+		choiceManager.makeAtomsActive(id1, id2);
+		List<HeuristicDirectiveValues> orderedList = listHeuristicsOrderedByDecreasingPriority();
+		assertEquals(2, orderedList.size());
+		assertEquals(new HashSet<>(Arrays.asList(info1, info2)), new HashSet<>(orderedList));
 	}
 
 	@Test
@@ -90,15 +91,15 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 		int id1 = idGenerator.getAndIncrement();
 		int id2 = idGenerator.getAndIncrement();
 		int id3 = idGenerator.getAndIncrement();
-		store.addInfo(id1, info(1, 2, 3));
-		store.addInfo(id2, info(2, 2, 1));
-		store.addInfo(id3, info(3, 2, 2));
-		Collection<Set<Integer>> orderedList = store.getHeuristicsOrderedByDecreasingPriority();
-		assertEquals(3, orderedList.size());
-		Iterator<Set<Integer>> iterator = orderedList.iterator();
-		assertEquals(set(id1), nextSetOfChoicePoints(iterator));
-		assertEquals(set(id3), nextSetOfChoicePoints(iterator));
-		assertEquals(set(id2), nextSetOfChoicePoints(iterator));
+		HeuristicDirectiveValues info1 = info(1, 2, 3);
+		HeuristicDirectiveValues info2 = info(2, 2, 1);
+		HeuristicDirectiveValues info3 = info(3, 2, 2);
+		store.addInfo(id1, info1);
+		store.addInfo(id2, info2);
+		store.addInfo(id3, info3);
+		choiceManager.makeAtomsActive(id1, id2, id3);
+		List<HeuristicDirectiveValues> orderedList = listHeuristicsOrderedByDecreasingPriority();
+		assertEquals(Arrays.asList(info1, info3, info2), orderedList);
 	}
 
 	@Test
@@ -106,44 +107,61 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 		int id1 = idGenerator.getAndIncrement();
 		int id2 = idGenerator.getAndIncrement();
 		int id3 = idGenerator.getAndIncrement();
-		store.addInfo(id1, info(1, 4, 1));
-		store.addInfo(id2, info(2, 2, 1));
-		store.addInfo(id3, info(3, 3, 1));
-		Collection<Set<Integer>> orderedList = store.getHeuristicsOrderedByDecreasingPriority();
-		assertEquals(3, orderedList.size());
-		Iterator<Set<Integer>> iterator = orderedList.iterator();
-		assertEquals(set(id1), nextSetOfChoicePoints(iterator));
-		assertEquals(set(id3), nextSetOfChoicePoints(iterator));
-		assertEquals(set(id2), nextSetOfChoicePoints(iterator));
+		HeuristicDirectiveValues info1 = info(1, 4, 1);
+		HeuristicDirectiveValues info2 = info(2, 2, 1);
+		HeuristicDirectiveValues info3 = info(3, 3, 1);
+		store.addInfo(id1, info1);
+		store.addInfo(id2, info2);
+		store.addInfo(id3, info3);
+		choiceManager.makeAtomsActive(id1, id2, id3);
+		List<HeuristicDirectiveValues> orderedList = listHeuristicsOrderedByDecreasingPriority();
+		assertEquals(Arrays.asList(info1, info3, info2), orderedList);
 	}
 
 	private HeuristicDirectiveValues info(int atom, int weight, int level) {
 		return new HeuristicDirectiveValues(atom, weight, level, true);
 	}
 
-	@SafeVarargs
-	private static final <T> Set<T> set(T... elements) {
-		return Arrays.stream(elements).collect(Collectors.toSet());
-	}
-
-	private Set<Integer> nextSetOfChoicePoints(Iterator<Set<Integer>> iterator) {
-		return iterator.next().stream().collect(Collectors.toSet());
+	private List<HeuristicDirectiveValues> listHeuristicsOrderedByDecreasingPriority() {
+		List<HeuristicDirectiveValues> list = new LinkedList<>();
+		HeuristicDirectiveValues currentValues;
+		while ((currentValues = store.poll()) != null) {
+			list.add(currentValues);
+		}
+		return list;
 	}
 
 	private class PseudoChoiceManager extends ChoiceManager {
 
-		public PseudoChoiceManager(WritableAssignment assignment, NoGoodStore store) {
-			super(assignment, store);
+		private Collection<ActivityListener> activityListeners;
+
+		public PseudoChoiceManager(WritableAssignment assignment, NoGoodStore store, DomainSpecificHeuristicsStore domainSpecificHeuristicsStore) {
+			super(assignment, store, domainSpecificHeuristicsStore);
 		}
-		
+
 		@Override
-		public Set<Integer> getAllActiveHeuristicAtoms() {
-			Set<Integer> generatedIDs = new HashSet<>();
-			int maxID = idGenerator.get();
-			for (int i = INITIAL_GENERATED_ID; i <= maxID; i++) {
-				generatedIDs.add(i);
+		public void addHeuristicActivityListener(ActivityListener activityListener) {
+			super.addHeuristicActivityListener(activityListener);
+			if (activityListeners == null) {
+				activityListeners = new LinkedList<>();
 			}
-			return generatedIDs;
+			this.activityListeners.add(activityListener);
+		}
+
+		public void makeAtomsActive(int... atoms) {
+			for (int atom : atoms) {
+				activityListeners.forEach(al -> al.callbackOnChanged(atom, true));
+			}
+		}
+
+		@Override
+		public boolean isActiveChoiceAtom(int atom) {
+			return true;
+		}
+
+		@Override
+		public boolean isActiveHeuristicAtom(int atom) {
+			return true;
 		}
 	}
 

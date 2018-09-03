@@ -30,6 +30,8 @@ import at.ac.tuwien.kr.alpha.common.WeightAtLevel;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 
+import java.util.Comparator;
+
 /**
  * Holds values defined by a {@link HeuristicDirective} to steer domain-specific heuristic choice for a single ground heuristic directive.
  *
@@ -98,6 +100,32 @@ public class HeuristicDirectiveValues {
 	public static HeuristicDirectiveValues fromHeuristicAtom(HeuristicAtom groundHeuristicAtom, int headAtomId) {
 		WeightAtLevel weightAtLevel = groundHeuristicAtom.getWeightAtLevel();
 		return new HeuristicDirectiveValues(headAtomId, ((ConstantTerm<Integer>)weightAtLevel.getWeight()).getObject(), ((ConstantTerm<Integer>)weightAtLevel.getLevel()).getObject(), ((ConstantTerm<Boolean>)groundHeuristicAtom.getSign()).getObject());
+	}
+	
+	public static class PriorityComparator implements Comparator<HeuristicDirectiveValues> {
+		
+		/**
+		 * TODO: to make this general, we would need to know the maximum weight
+		 */
+		public static final int LEVEL_FACTOR = 1000000;
+		public static final int WEIGHT_FACTOR = 1000;
+		public static final int ATOM_FACTOR = 2;
+
+		@Override
+		public int compare(HeuristicDirectiveValues v1, HeuristicDirectiveValues v2) {
+			int difference = LEVEL_FACTOR * (v1.level - v2.level);
+			if (difference == 0) {
+				difference = WEIGHT_FACTOR * (v1.weight - v2.weight);
+			}
+			if (difference == 0) {
+				difference = ATOM_FACTOR * (v1.headAtomId - v2.headAtomId);
+			}
+			if (difference == 0) {
+				difference = (v1.sign ? 1 : 0) - (v2.sign ? 1 : 0);
+			}
+			return difference;
+		}
+		
 	}
 
 }

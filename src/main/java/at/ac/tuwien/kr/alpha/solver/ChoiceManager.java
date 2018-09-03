@@ -77,10 +77,10 @@ public class ChoiceManager implements Checkable {
 	private int backjumps;
 
 	public ChoiceManager(WritableAssignment assignment, NoGoodStore store) {
-		this(assignment, store, new EmptyDomainSpecificHeuristicsStore());
+		this(assignment, store, null);
 	}
 
-	public ChoiceManager(WritableAssignment assignment, NoGoodStore store, DomainSpecificHeuristicsStore domainSpecificHeuristicsStore) {
+	protected ChoiceManager(WritableAssignment assignment, NoGoodStore store, DomainSpecificHeuristicsStore domainSpecificHeuristicsStore) {
 		this.store = store;
 		this.assignment = assignment;
 		this.choicePointInfluenceManager = new ChoiceInfluenceManager(assignment, modCount, checksEnabled);
@@ -89,8 +89,9 @@ public class ChoiceManager implements Checkable {
 		if (domainSpecificHeuristicsStore != null) {
 			this.domainSpecificHeuristics = domainSpecificHeuristicsStore;
 		} else {
-			this.domainSpecificHeuristics = new DefaultDomainSpecificHeuristicsStore(this);
+			this.domainSpecificHeuristics = new DefaultDomainSpecificHeuristicsStore(assignment);
 		}
+		this.domainSpecificHeuristics.setChoiceManager(this);
 
 		if (checksEnabled) {
 			debugWatcher = new DebugWatcher();
@@ -112,6 +113,9 @@ public class ChoiceManager implements Checkable {
 	@Override
 	public void setChecksEnabled(boolean checksEnabled) {
 		this.checksEnabled = checksEnabled;
+		this.choicePointInfluenceManager.setChecksEnabled(checksEnabled);
+		this.heuristicInfluenceManager.setChecksEnabled(checksEnabled);
+		this.domainSpecificHeuristics.setChecksEnabled(checksEnabled);
 	}
 
 	public void callbackOnChanged(int atom) {
@@ -244,8 +248,8 @@ public class ChoiceManager implements Checkable {
 	}
 
 	void addHeuristicInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> heuristicAtoms, Map<Integer, HeuristicDirectiveValues> heuristicValues) {
-		heuristicInfluenceManager.addInformation(heuristicAtoms);
 		addInformation(heuristicValues);
+		heuristicInfluenceManager.addInformation(heuristicAtoms);
 	}
 	
 	private void addInformation(Map<Integer, HeuristicDirectiveValues> heuristicValues) {
@@ -286,9 +290,13 @@ public class ChoiceManager implements Checkable {
 	public boolean isAtomChoice(int atom) {
 		return choicePointInfluenceManager.isAtomInfluenced(atom);
 	}
-
-	public Set<Integer> getAllActiveHeuristicAtoms() {
-		return heuristicInfluenceManager.getAllActiveInfluencedAtoms();
+	
+	public void addChoicePointActivityListener(ChoiceInfluenceManager.ActivityListener activityListener) {
+		choicePointInfluenceManager.addActivityListener(activityListener);
+	}
+	
+	public void addHeuristicActivityListener(ChoiceInfluenceManager.ActivityListener activityListener) {
+		heuristicInfluenceManager.addActivityListener(activityListener);
 	}
 
 	/**
@@ -315,7 +323,7 @@ public class ChoiceManager implements Checkable {
 	}
 	
 	public static ChoiceManager withDomainSpecificHeuristics(WritableAssignment assignment, NoGoodStore store) {
-		return new ChoiceManager(assignment, store, null);
+		return new ChoiceManager(assignment, store);
 	}
 
 	/**

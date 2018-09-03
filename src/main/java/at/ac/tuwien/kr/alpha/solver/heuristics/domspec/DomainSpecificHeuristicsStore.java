@@ -26,27 +26,45 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
+import at.ac.tuwien.kr.alpha.solver.Checkable;
+import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 
 import java.util.Collection;
-import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * Stores information on heuristic directives obtained from the grounder
  */
-public interface DomainSpecificHeuristicsStore {
+public interface DomainSpecificHeuristicsStore extends Checkable {
 	
 	void addInfo(int heuristicId, HeuristicDirectiveValues values);
-
-	/**
-	 * Returns sets of rule atoms, each of which contains only rule atoms of the same priority. The collection contains rule atoms in decreasing order of priority,
-	 * e.g. the first set contains all rule atoms of the highest level and the highest weight, the second contains all of the highest level and the
-	 * second-to-highest weight, etc.
-	 */
-	Collection<Set<Integer>> getHeuristicsOrderedByDecreasingPriority();
 	
-	Stream<Set<Integer>> streamHeuristicsOrderedByDecreasingPriority();
+	/**
+	 * Retrieves and removes the element with the highest priority
+	 * @return
+	 */
+	HeuristicDirectiveValues poll();
+	
+	/**
+	 * Retrieves, but does not remove, the element with the highest priority
+	 * @return
+	 */
+	HeuristicDirectiveValues peek();
+	
+	/**
+	 * Inserts elements again that have been {@link #poll()}ed before.
+	 * 
+	 * <b>ATTENTION:</b>
+	 * Only use for values that have been inserted through {@link #addInfo(int, HeuristicDirectiveValues)} before!
+	 * 
+	 * TODO: potential improvement: manage ALL conditions for the activity of heuristics in the implementation
+	 * of this interface, s.t. an element retrieved by {@link #poll()} never has to be discarded
+	 * 
+	 * @param values
+	 */
+	void offer(Collection<HeuristicDirectiveValues> values);
 	
 	HeuristicDirectiveValues getValues(int heuristicId);
+	
+	void setChoiceManager(ChoiceManager choiceManager);
 
 }

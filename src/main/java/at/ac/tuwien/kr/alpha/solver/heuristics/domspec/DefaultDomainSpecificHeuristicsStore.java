@@ -6,11 +6,11 @@
  * modification, are permitted provided that the following conditions are met:
  * 
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ * list of conditions and the following disclaimer.
  * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -25,12 +25,15 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
+import at.ac.tuwien.kr.alpha.solver.ChoiceInfluenceManager;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Map.Entry;
+
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Stores a mapping between heuristic IDs and their corresponding domain-specific heuristic values.
@@ -38,13 +41,6 @@ import java.util.stream.Stream;
  * The mapping is stored in the form of a hierarchical map.
  */
 public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuristicsStore {
-	
-	/**
-	 * A switch that indicates whether priorities shall be computed on demand just for heuristics currently active.
-	 * If {@code true}, the internal map of levels and weights to heuristics will be re-computed for currently active heuristics every time {@link #streamHeuristicsOrderedByDecreasingPriority()} is called;
-	 * if {@code false}, it will be extended each time {@link #addInfo(int, HeuristicDirectiveValues)} is called.
-	 */
-	private static final boolean COMPUTE_PRIORITIES_ON_DEMAND = true;
 
 	/**
 	 * A mapping from levels to a mapping from weights to sets of heuristic IDs
@@ -56,23 +52,27 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 
 	private final Map<Integer, HeuristicDirectiveValues> mapHeuristicToHeuristicValue = new HashMap<>();
 
+	private PriorityQueue<HeuristicDirectiveValues> prioritisedHeuristics = new PriorityQueue<>(new HeuristicDirectiveValues.PriorityComparator().reversed());
+
+	private Assignment assignment;
 	private ChoiceManager choiceManager;
-	
-	public DefaultDomainSpecificHeuristicsStore(ChoiceManager choiceManager) {
+	private boolean checksEnabled;
+
+	public DefaultDomainSpecificHeuristicsStore(Assignment assignment) {
 		super();
-		this.choiceManager = choiceManager;
+		this.assignment = assignment;
 	}
 
 	@Override
 	public void addInfo(int heuristicId, HeuristicDirectiveValues values) {
-		if (!COMPUTE_PRIORITIES_ON_DEMAND) {
+		if (checksEnabled) {
 			storePriorityInfo(heuristicId, values);
 		}
-		
+
 		mapHeuristicToHeuristicValue.put(heuristicId, values);
 	}
 
-	void storePriorityInfo(int heuristicId, HeuristicDirectiveValues values) {
+	private void storePriorityInfo(int heuristicId, HeuristicDirectiveValues values) {
 		int level = values.getLevel();
 		int weight = values.getWeight();
 
@@ -80,7 +80,7 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 		valuesForWeightLevel.add(heuristicId);
 	}
 
-	SortedMap<Integer, Set<Integer>> getStoreForLevel(int level) {
+	private SortedMap<Integer, Set<Integer>> getStoreForLevel(int level) {
 		SortedMap<Integer, Set<Integer>> mapWeightValues = mapLevelWeightHeuristics.get(level);
 		if (mapWeightValues == null) {
 			mapWeightValues = new TreeMap<>(Comparator.reverseOrder());
@@ -89,7 +89,7 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 		return mapWeightValues;
 	}
 
-	Set<Integer> getStoreForWeightLevel(int weight, SortedMap<Integer, Set<Integer>> mapWeightValues) {
+	private Set<Integer> getStoreForWeightLevel(int weight, SortedMap<Integer, Set<Integer>> mapWeightValues) {
 		Set<Integer> valuesForWeightLevel = mapWeightValues.get(weight);
 		if (valuesForWeightLevel == null) {
 			valuesForWeightLevel = new HashSet<>();
@@ -99,39 +99,86 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 	}
 
 	@Override
-	public Collection<Set<Integer>> getHeuristicsOrderedByDecreasingPriority() {
-		Stream<Set<Integer>> flatMap = streamHeuristicsOrderedByDecreasingPriority();
-		// do not return flatMap directly because of Java bug
-		// cf. https://stackoverflow.com/questions/29229373/why-filter-after-flatmap-is-not-completely-lazy-in-java-streams
-		return flatMap.collect(Collectors.toList());
+	public HeuristicDirectiveValues poll() {
+		return prioritisedHeuristics.poll();
 	}
 
-	/**
-	 * Note: we have already tried to use this method instead of getHeuristicsOrderedByDecreasingPriority
-	 * in at.ac.tuwien.kr.alpha.solver.heuristics.DomainSpecific.chooseLiteral(Set<Integer>),
-	 * but it did not yield performance benefits
-	 */
 	@Override
-	public Stream<Set<Integer>> streamHeuristicsOrderedByDecreasingPriority() {
-		if (COMPUTE_PRIORITIES_ON_DEMAND) {
-			updatePriorityInfos();
-		}
-		return mapLevelWeightHeuristics.values().stream().flatMap(m -> m.values().stream());
+	public HeuristicDirectiveValues peek() {
+		return prioritisedHeuristics.peek();
 	}
-	
-	private void updatePriorityInfos() {
-		mapLevelWeightHeuristics.clear();
-		for (Integer activeHeuristic : choiceManager.getAllActiveHeuristicAtoms()) {
-			HeuristicDirectiveValues values = mapHeuristicToHeuristicValue.get(activeHeuristic);
-			if (values != null) {
-				storePriorityInfo(activeHeuristic, values);
+
+	@Override
+	public void offer(Collection<HeuristicDirectiveValues> collectionOfValues) {
+		for (HeuristicDirectiveValues values : collectionOfValues) {
+			prioritisedHeuristics.offer(values);
+		}
+	}
+
+	private void checkPrioritisedHeuristics() {
+		for (Entry<Integer, SortedMap<Integer, Set<Integer>>> levelWeightEntry : mapLevelWeightHeuristics.entrySet()) {
+			int level = levelWeightEntry.getKey();
+			for (Entry<Integer, Set<Integer>> weightHeuristicsEntry : levelWeightEntry.getValue().entrySet()) {
+				int weight = weightHeuristicsEntry.getKey();
+				for (int heuristicId : weightHeuristicsEntry.getValue()) {
+					HeuristicDirectiveValues values = mapHeuristicToHeuristicValue.get(heuristicId);
+					if (values.getLevel() != level) {
+						throw oops("Unexpected level in " + values + " (expected " + level + ")");
+					}
+					if (values.getWeight() != weight) {
+						throw oops("Unexpected weight in " + values + " (expected " + weight + ")");
+					}
+					if (choiceManager.isActiveHeuristicAtom(heuristicId)) {
+						if (!prioritisedHeuristics.contains(values)) {
+							throw oops("Heap of prioritised heuristics does not contain " + values);
+						}
+					} else {
+						if (prioritisedHeuristics.contains(values)) {
+							throw oops("Heap of prioritised heuristics contains " + values);
+						}
+					}
+				}
 			}
 		}
 	}
-	
+
 	@Override
 	public HeuristicDirectiveValues getValues(int heuristicId) {
 		return mapHeuristicToHeuristicValue.get(heuristicId);
+	}
+
+	@Override
+	public void setChecksEnabled(boolean checksEnabled) {
+		this.checksEnabled = false;
+		// TODO: internal checks do not work currently because, to increase efficiency,
+		// values whose head will be set are not offered back by at.ac.tuwien.kr.alpha.solver.heuristics.DomainSpecific.chooseLiteral(Set<Integer>)
+	}
+
+	@Override
+	public void setChoiceManager(ChoiceManager choiceManager) {
+		this.choiceManager = choiceManager;
+		if (choiceManager != null) {
+			this.choiceManager.addHeuristicActivityListener(new HeuristicActivityListener());
+		}
+	}
+
+	private class HeuristicActivityListener implements ChoiceInfluenceManager.ActivityListener {
+
+		@Override
+		public void callbackOnChanged(int atom, boolean active) {
+			HeuristicDirectiveValues values = mapHeuristicToHeuristicValue.get(atom);
+			if (active) {
+				// TODO: check if it is possible and useful to test for the following condition:
+				// if (assignment.isUnassignedOrMBT(values.getHeadAtomId())) {
+				prioritisedHeuristics.add(values);
+				// }
+			} else {
+				prioritisedHeuristics.remove(values);
+			}
+			if (checksEnabled) {
+				checkPrioritisedHeuristics();
+			}
+		}
 	}
 
 }

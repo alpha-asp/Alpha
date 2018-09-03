@@ -50,6 +50,7 @@ public class ChoiceInfluenceManager implements Checkable {
 	private final Set<ChoicePoint> activeChoicePoints = new LinkedHashSet<>();
 	private final Set<Integer> activeChoicePointsAtoms = new LinkedHashSet<>();
 	private final Map<Integer, ChoicePoint> influencers = new HashMap<>();
+	private final Collection<ActivityListener> activityListeners = new LinkedList<>();
 
 	private final WritableAssignment assignment;
 	private final AtomicLong modCount;
@@ -177,6 +178,10 @@ public class ChoiceInfluenceManager implements Checkable {
 			choicePoint.recomputeActive();
 		}
 	}
+	
+	public void addActivityListener(ActivityListener listener) {
+		this.activityListeners.add(listener);
+	}
 
 	private class ChoicePoint {
 		final Integer atom;
@@ -206,14 +211,20 @@ public class ChoiceInfluenceManager implements Checkable {
 			LOGGER.trace("Recomputing activity of atom {}.", atom);
 			final boolean wasActive = isActive;
 			isActive = isNotChosen() && isActiveChoicePoint();
+			boolean changed = false;
 			if (isActive && !wasActive) {
 				activeChoicePoints.add(this);
 				activeChoicePointsAtoms.add(atom);
+				changed = true;
 				LOGGER.debug("Activating choice point for atom {}", this.atom);
 			} else if (wasActive && !isActive) {
 				activeChoicePoints.remove(this);
 				activeChoicePointsAtoms.remove(atom);
+				changed = true;
 				LOGGER.debug("Deactivating choice point for atom {}", this.atom);
+			}
+			if (changed) {
+				activityListeners.forEach(al -> al.callbackOnChanged(atom, isActive));
 			}
 			checksNecessary = checksEnabled;
 		}
@@ -222,6 +233,10 @@ public class ChoiceInfluenceManager implements Checkable {
 		public String toString() {
 			return String.valueOf(atom);
 		}
+	}
+	
+	public static interface ActivityListener {
+		void callbackOnChanged(int atom, boolean active);
 	}
 
 }
