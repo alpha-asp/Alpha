@@ -64,10 +64,9 @@ public class ChoiceInfluenceManager implements Checkable {
 	 * @param modifiedInDecisionLevel 
 	 * 
 	 */
-	public ChoiceInfluenceManager(WritableAssignment assignment, AtomicLong modCount, boolean checksEnabled) {
+	public ChoiceInfluenceManager(WritableAssignment assignment, AtomicLong modCount) {
 		this.assignment = assignment;
 		this.modCount = modCount;
-		this.checksEnabled = checksEnabled;
 	}
 
 	void addInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms) {

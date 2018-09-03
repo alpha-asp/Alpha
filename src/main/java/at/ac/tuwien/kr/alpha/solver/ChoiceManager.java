@@ -69,7 +69,7 @@ public class ChoiceManager implements Checkable {
 	private final NoGoodStore store;
 
 	private boolean checksEnabled;
-	private final DebugWatcher debugWatcher;
+	private DebugWatcher debugWatcher;
 
 	private int choices;
 	private int backtracks;
@@ -83,8 +83,8 @@ public class ChoiceManager implements Checkable {
 	protected ChoiceManager(WritableAssignment assignment, NoGoodStore store, DomainSpecificHeuristicsStore domainSpecificHeuristicsStore) {
 		this.store = store;
 		this.assignment = assignment;
-		this.choicePointInfluenceManager = new ChoiceInfluenceManager(assignment, modCount, checksEnabled);
-		this.heuristicInfluenceManager = new ChoiceInfluenceManager(assignment, modCount, checksEnabled);
+		this.choicePointInfluenceManager = new ChoiceInfluenceManager(assignment, modCount);
+		this.heuristicInfluenceManager = new ChoiceInfluenceManager(assignment, modCount);
 		this.choiceStack = new Stack<>();
 		if (domainSpecificHeuristicsStore != null) {
 			this.domainSpecificHeuristics = domainSpecificHeuristicsStore;
@@ -92,12 +92,6 @@ public class ChoiceManager implements Checkable {
 			this.domainSpecificHeuristics = new DefaultDomainSpecificHeuristicsStore(assignment);
 		}
 		this.domainSpecificHeuristics.setChoiceManager(this);
-
-		if (checksEnabled) {
-			debugWatcher = new DebugWatcher();
-		} else {
-			debugWatcher = null;
-		}
 		assignment.setCallback(this);
 	}
 
@@ -116,6 +110,12 @@ public class ChoiceManager implements Checkable {
 		this.choicePointInfluenceManager.setChecksEnabled(checksEnabled);
 		this.heuristicInfluenceManager.setChecksEnabled(checksEnabled);
 		this.domainSpecificHeuristics.setChecksEnabled(checksEnabled);
+		
+		if (checksEnabled) {
+			debugWatcher = new DebugWatcher();
+		} else {
+			debugWatcher = null;
+		}
 	}
 
 	public void callbackOnChanged(int atom) {
