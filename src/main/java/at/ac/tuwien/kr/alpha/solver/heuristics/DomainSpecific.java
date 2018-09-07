@@ -124,8 +124,9 @@ public class DomainSpecific implements BranchingHeuristic {
 		}
 		LOGGER.debug("{} HeuristicDirectiveValues discarded because head already assigned", discardedBecauseHeadAssigned);
 		LOGGER.debug("{} HeuristicDirectiveValues discarded because no active body found", discardedBecauseNoBody);
-		heuristicsStore.offer(discardedValues);
-		LOGGER.debug("Gave {} values back to heuristics store", discardedValues.size());
+		// TODO: currently, we just discard values that are currently not applicable and rely on them being added again after backtracking. can we really do this?
+		// heuristicsStore.offer(discardedValues);
+		// LOGGER.debug("Gave {} values back to heuristics store", discardedValues.size());
 
 		return chosenLiteral;
 	}
