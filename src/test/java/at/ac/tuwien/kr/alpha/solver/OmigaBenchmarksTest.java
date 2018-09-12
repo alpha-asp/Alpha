@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2018 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -75,7 +75,6 @@ public class OmigaBenchmarksTest extends AbstractSolverTests {
 	}
 
 	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
 	public void testReach_1() throws IOException {
 		test("reach", "reach-1.txt");
 	}

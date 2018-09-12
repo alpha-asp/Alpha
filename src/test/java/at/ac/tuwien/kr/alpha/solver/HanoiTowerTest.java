@@ -48,26 +48,29 @@ import static org.junit.Assert.assertTrue;
  * Tests {@link AbstractSolver} using some hanoi tower test cases (see https://en.wikipedia.org/wiki/Tower_of_Hanoi).
  *
  */
-@Ignore("disabled to save resources during CI")
 public class HanoiTowerTest extends AbstractSolverTests {
 	private final ProgramParser parser = new ProgramParser();
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testInstance1() throws IOException {
 		testHanoiTower(1);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testInstance2() throws IOException {
 		testHanoiTower(2);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testInstance3() throws IOException {
 		testHanoiTower(3);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testInstance4() throws IOException {
 		testHanoiTower(4);
 	}
@@ -87,7 +90,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		Solver solver = getInstance(parsedProgram);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		assertTrue(answerSet.isPresent());
-		//System.out.println(answerSet.get());
+		System.out.println(answerSet.get());
 		checkGoal(parsedProgram, answerSet.get());
 	}
 
