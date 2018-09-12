@@ -67,4 +67,9 @@ public class NaiveHeuristic implements BranchingHeuristic {
 	public int chooseLiteral() {
 		return atomToLiteral(choiceManager.getNextActiveChoiceAtom());
 	}
+	
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName();
+	}
 }

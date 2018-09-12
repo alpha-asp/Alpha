@@ -48,6 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -547,6 +548,14 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private void logStats() {
-		LOGGER.debug(getStatisticsString());
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug(getStatisticsString());
+			if (branchingHeuristic instanceof ChainedBranchingHeuristics) {
+				LOGGER.debug("Decisions made by each heuristic:");
+				for (Entry<BranchingHeuristic, Integer> heuristicToDecisionCounter : ((ChainedBranchingHeuristics)branchingHeuristic).getNumberOfDecisions().entrySet()) {
+					LOGGER.debug(heuristicToDecisionCounter.getKey() + ": " + heuristicToDecisionCounter.getValue());
+				}
+			}
+		}
 	}
 }

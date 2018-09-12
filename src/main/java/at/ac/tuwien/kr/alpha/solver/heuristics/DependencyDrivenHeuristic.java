@@ -350,5 +350,10 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	public static boolean isBodyElementsNotBody(NoGood noGood, Predicate<? super Integer> isRuleBody) {
 		return noGood.size() > 1 && noGood.hasHead() && isNegated(noGood.getHead()) && isRuleBody.test(atomOf(noGood.getHead()));
 	}
+	
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName();
+	}
 
 }

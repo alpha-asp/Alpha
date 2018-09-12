@@ -270,4 +270,9 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 		ThriceTruth truth = assignment.getTruth(atom);
 		return truth != FALSE && truth != TRUE; // do not use assignment.isAssigned(atom) because we may also choose MBTs
 	}
+	
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName();
+	}
 }
