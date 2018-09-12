@@ -73,6 +73,7 @@ cabinetSize(C,1) :- cabinet(C), cabinetSmall(C).
 cabinetSize(C,2) :- cabinet(C), cabinetHigh(C).
 roomTOcabinetSize(R,C,S) :- roomTOcabinet(R,C), cabinetSize(C,S).
 %:- 5 <= #sum { S,C : roomTOcabinetSize(R,C,S), cabinetDomain(C) }, room(R).
+:- roomTOcabinetSize(R,C1,S1), roomTOcabinetSize(R,C2,S2), roomTOcabinetSize(R,C3,S3),                             C1<C2, C2<C3,        S1+S2+S3    > 4, room(R).
 :- roomTOcabinetSize(R,C1,S1), roomTOcabinetSize(R,C2,S2), roomTOcabinetSize(R,C3,S3), roomTOcabinetSize(R,C4,S4), C1<C2, C2<C3, C3<C4, S1+S2+S3+S4 > 4, room(R).
 
 % TRANSFORMATION RULES
@@ -164,7 +165,13 @@ personTOcabinet(P,C) :- personTOthing(P,T), cabinetTOthing(C,T).
 personTOroom(P,R)    :- roomTOcabinet(R,C), personTOcabinet(P,C).
 otherPersonTOcabinet(P,C) :- personTOcabinet(P2,C), person(P), P!=P2.
 otherPersonTOroom(P,R)    :- roomTOcabinet(R,C), personTOcabinet(P2,C), person(P), P!=P2.
-% first fill cabinets with things:
+% first try to reuse legacy config:
+#heuristic reuse(cabinetTOthing(C,T)) : legacyConfig(cabinetTOthing(C,T)). [1@3]
+#heuristic reuse(roomTOcabinet(R,C))  : legacyConfig(roomTOcabinet(R,C)). [1@3]
+#heuristic reuse(personTOroom(P,R))  : legacyConfig(personTOroom(P,R)). [1@3]
+#heuristic reuse(cabinet(C))  : legacyConfig(cabinet(C)). [1@3]
+#heuristic reuse(room(R))  : legacyConfig(room(R)). [1@3]
+% then fill cabinets with things:
 #heuristic cabinetTOthing(C,T) : cabinetDomain(C), not fullCabinet(C), thing(T),   not assignedThing(T),   personTOthing(P,T),   not otherPersonTOcabinet(P,C), maxCabinet(MC), W=MC-C+10. [W@2]
 % then fill rooms with cabinets:
 #heuristic roomTOcabinet(R,C)  : roomDomain(R),    not fullRoom(R),    cabinet(C), not assignedCabinet(C), personTOcabinet(P,C), not otherPersonTOroom(P,R),    maxRoom(MR),    W=MR-R+10. [W@1]

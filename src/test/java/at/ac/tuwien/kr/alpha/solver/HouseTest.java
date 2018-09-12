@@ -74,10 +74,26 @@ public class HouseTest extends AbstractSolverTests {
 	public void testHouse_emptyconfig_p15t075() throws IOException {
 		testHouse("emptyconfig_p15t075");
 	}
+	
+	@Test
+	public void testHouse_longthings_2_p02t030c3() throws IOException {
+		testHouse("longthings_2_p02t030c3");
+	}
+	
+	@Test
+	@Ignore("ignore to save resources during CI")
+	public void testHouse_longthings_newroom_p02t024c3() throws IOException {
+		testHouse("longthings_newroom_p02t024c3");
+	}
+	
+	@Test
+	public void testHouse_switchthingsize_r02t035() throws IOException {
+		testHouse("switchthingsize_r02t035");
+	}
 
 	private void testHouse(String instanceId) throws IOException {
 		Program parsedProgram = parser
-				.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "House", "house_alpha_2018-08-22b.asp")));
+				.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "House", "house_alpha_2018-09-10b.asp")));
 		parsedProgram
 				.accumulate(parser.parse(CharStreams
 						.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "House", "instances", instanceId + ".edb"))));
