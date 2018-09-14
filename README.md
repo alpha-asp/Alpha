@@ -1,5 +1,6 @@
 # Alpha
 
+[![Latest DOI](https://zenodo.org/badge/62882005.svg)](https://zenodo.org/badge/latestdoi/62882005)
 [![Travis-CI Build Status](https://travis-ci.com/alpha-asp/Alpha.svg?branch=master)](https://travis-ci.com/alpha-asp/Alpha)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/alpha-asp/alpha?svg=true&branch=master)](https://ci.appveyor.com/project/lorenzleutgeb/alpha)
 [![codecov](https://codecov.io/gh/alpha-asp/Alpha/branch/master/graph/badge.svg)](https://codecov.io/gh/alpha-asp/Alpha)
