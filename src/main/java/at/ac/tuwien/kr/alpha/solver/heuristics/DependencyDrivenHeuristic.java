@@ -154,10 +154,11 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 		for (NoGood noGood : analysisResult.noGoodsResponsibleForConflict) {
 			for (Integer literal : noGood) {
 				incrementActivityCounter(literal);
-				incrementSignCounter(literal);
 			}
 		}
-		// TODO: incrementSignCounter also for learnedNoGood?!
+		for (Integer literal : analysisResult.learnedNoGood) {
+			incrementSignCounter(literal);
+		}
 		decayAllIfTimeHasCome();
 	}
 
@@ -222,8 +223,8 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 			return true;
 		}
 
-		int positiveCounter = signCounters.getOrDefault(+atom, DEFAULT_SIGN_COUNTER);
-		int negativeCounter = signCounters.getOrDefault(-atom, DEFAULT_SIGN_COUNTER);
+		int positiveCounter = signCounters.getOrDefault(atomToLiteral(atom, true),  DEFAULT_SIGN_COUNTER);
+		int negativeCounter = signCounters.getOrDefault(atomToLiteral(atom, false), DEFAULT_SIGN_COUNTER);
 
 		if (positiveCounter > negativeCounter) {
 			return false;
