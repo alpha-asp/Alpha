@@ -83,7 +83,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 		this.assignment = assignment;
 		this.store = store;
-		this.choiceManager = new ChoiceManager(assignment, store, debugInternalChecks);
+		this.choiceManager = new ChoiceManager(assignment, store);
 		this.learner = new GroundConflictNoGoodLearner(assignment);
 		this.branchingHeuristic = ChainedBranchingHeuristics.chainOf(
 				BranchingHeuristicFactory.getInstance(branchingHeuristic, grounder, assignment, choiceManager, random),
@@ -499,7 +499,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private boolean choose() {
-		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
+		choiceManager.addChoiceInformation(grounder.getChoiceAtoms(), grounder.getHeadsToBodies());
 		choiceManager.updateAssignments();
 
 		// Hint: for custom heuristics, evaluate them here and pick a value if the heuristics suggests one.

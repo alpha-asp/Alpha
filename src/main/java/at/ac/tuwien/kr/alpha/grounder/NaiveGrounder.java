@@ -39,9 +39,6 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
-import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
-import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
-import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
 import at.ac.tuwien.kr.alpha.grounder.transformation.*;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.apache.commons.lang3.tuple.Pair;
@@ -132,8 +129,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			knownNonGroundRules.put(nonGroundRule.getRuleId(), nonGroundRule);
 
 			// Record defining rules for each predicate.
-			if (nonGroundRule.getHeadAtom() != null) {
-				Predicate headPredicate = nonGroundRule.getHeadAtom().getPredicate();
+			Atom headAtom = nonGroundRule.getHeadAtom();
+			if (headAtom != null) {
+				Predicate headPredicate = headAtom.getPredicate();
 				programAnalysis.recordDefiningRule(headPredicate, nonGroundRule);
 			}
 
@@ -293,9 +291,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			// Generate NoGoods for all rules that have a fixed grounding.
 			Literal[] groundingOrder = nonGroundRule.groundingOrder.getFixedGroundingOrder();
 			List<Substitution> substitutions = bindNextAtomInRule(groundingOrder, 0, new Substitution(), null);
-			for (Substitution substitution : substitutions) {
-				registry.register(noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution), groundNogoods);
-			}
+			groundAndRegister(nonGroundRule, substitutions, groundNogoods);
 		}
 
 		fixedRules = null;
@@ -346,9 +342,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 						currentAssignment
 					);
 
-					for (Substitution substitution : substitutions) {
-						registry.register(noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution), newNoGoods);
-					}
+					groundAndRegister(nonGroundRule, substitutions, newNoGoods);
 				}
 			}
 
@@ -371,6 +365,23 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			LOGGER.debug("{}", choiceRecorder);
 		}
 		return newNoGoods;
+	}
+
+	/**
+	 * Grounds the given {@code nonGroundRule} by applying the given {@code substitutions} and registers the nogoods generated during that process.
+	 * 
+	 * @param nonGroundRule
+	 *          the rule to be grounded
+	 * @param substitutions
+	 *          the substitutions to be applied
+	 * @param newNoGoods
+	 *          a set of nogoods to which newly generated nogoods will be added
+	 */
+	private void groundAndRegister(final NonGroundRule nonGroundRule, final List<Substitution> substitutions, final Map<Integer, NoGood> newNoGoods) {
+		for (Substitution substitution : substitutions) {
+			List<NoGood> generatedNoGoods = noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution);
+			registry.register(generatedNoGoods, newNoGoods);
+		}
 	}
 
 	@Override
@@ -412,10 +423,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		if (substitute.isGround()) {
 			// Substituted atom is ground, in case it is positive, only ground if it also holds true
 			if (currentLiteral.isNegated()) {
-				// Atom occurs negated in the rule, continue grounding
+				// Atom occurs negated in the rule: continue grounding
 				return bindNextAtomInRule(groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
 			}
-
+			
 			if (!workingMemory.get(currentAtom.getPredicate(), true).containsInstance(new Instance(substitute.getTerms()))) {
 				// Generate no variable substitution.
 				return emptyList();
@@ -498,7 +509,12 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	@Override
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
-		return choiceRecorder.getAndReset();
+		return choiceRecorder.getAndResetChoices();
+	}
+	
+	@Override
+	public Map<Integer, Set<Integer>> getHeadsToBodies() {
+		return choiceRecorder.getAndResetHeadsToBodies();
 	}
 
 	@Override
@@ -511,6 +527,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	@Override
 	public void forgetAssignment(int[] atomIds) {
 		throw new UnsupportedOperationException("Forgetting assignments is not implemented");
+	}
+
+	@Override
+	public AtomStore getAtomStore() {
+		return this.atomStore;
 	}
 
 	public void printCurrentlyKnownGroundRules() {

@@ -34,33 +34,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 /**
  * This class provides functionality for choice point management, detection of active choice points, etc.
  * Copyright (c) 2017, the Alpha Team.
  */
 public class ChoiceManager implements Checkable {
+
+	public static final int DEFAULT_CHOICE_ATOM = 0;
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(ChoiceManager.class);
 	private final WritableAssignment assignment;
 	private final Stack<Choice> choiceStack;
-
-	// Active choice points and all atoms that influence a choice point (enabler, disabler, choice atom itself).
-	private final Set<ChoicePoint> activeChoicePoints = new LinkedHashSet<>();
-	private final Map<Integer, ChoicePoint> influencers = new HashMap<>();
+	private final Map<Integer, Set<Integer>> headsToBodies = new HashMap<>();
 
 	// The total number of modifications this ChoiceManager received (avoids re-computation in ChoicePoints).
-	private long modCount;
+	private final AtomicLong modCount = new AtomicLong(0);
+
+	// An "influence manager" managing active choice points and heuristics.
+	private final ChoiceInfluenceManager choicePointInfluenceManager;
 
 	private final NoGoodStore store;
 
 	private boolean checksEnabled;
-	private final DebugWatcher debugWatcher;
+	private DebugWatcher debugWatcher;
 
 	private int choices;
 	private int backtracks;
@@ -68,21 +71,10 @@ public class ChoiceManager implements Checkable {
 	private int backjumps;
 
 	public ChoiceManager(WritableAssignment assignment, NoGoodStore store) {
-		this(assignment, store, false);
-	}
-
-	public ChoiceManager(WritableAssignment assignment, NoGoodStore store, boolean checksEnabled) {
 		this.store = store;
-		this.checksEnabled = checksEnabled;
 		this.assignment = assignment;
-		modCount = 0;
+		this.choicePointInfluenceManager = new ChoiceInfluenceManager(assignment, modCount);
 		this.choiceStack = new Stack<>();
-
-		if (checksEnabled) {
-			debugWatcher = new DebugWatcher();
-		} else {
-			debugWatcher = null;
-		}
 		assignment.setCallback(this);
 	}
 
@@ -98,13 +90,17 @@ public class ChoiceManager implements Checkable {
 	@Override
 	public void setChecksEnabled(boolean checksEnabled) {
 		this.checksEnabled = checksEnabled;
+		this.choicePointInfluenceManager.setChecksEnabled(checksEnabled);
+		
+		if (checksEnabled) {
+			debugWatcher = new DebugWatcher();
+		} else {
+			debugWatcher = null;
+		}
 	}
 
 	public void callbackOnChanged(int atom) {
-		LOGGER.trace("Callback received on influencer atom: {}", atom);
-		modCount++;
-		ChoicePoint choicePoint = influencers.get(atom);
-		choicePoint.recomputeActive();
+		choicePointInfluenceManager.callbackOnChanged(atom);
 	}
 
 	public int getBackjumps() {
@@ -135,53 +131,10 @@ public class ChoiceManager implements Checkable {
 		return choices;
 	}
 
-	private class ChoicePoint {
-		final Integer atom;
-		final int enabler;
-		final int disabler;
-		boolean isActive;
-
-		private ChoicePoint(Integer atom, Integer enabler, int disabler) {
-			this.atom = atom;
-			this.enabler = enabler;
-			this.disabler = disabler;
-		}
-
-		private boolean isActiveChoicePoint() {
-			ThriceTruth enablerTruth = assignment.getTruth(enabler);
-			ThriceTruth disablerTruth = assignment.getTruth(disabler);
-			return  enablerTruth == TRUE
-				&& (disablerTruth == null || !disablerTruth.toBoolean());
-		}
-
-		private boolean isNotChosen() {
-			ThriceTruth atomTruth = assignment.getTruth(atom);
-			return atomTruth == null || atomTruth == MBT;
-		}
-
-		void recomputeActive() {
-			LOGGER.trace("Recomputing activity of atom {}.", atom);
-			final boolean wasActive = isActive;
-			isActive = isNotChosen() && isActiveChoicePoint();
-			if (isActive && !wasActive) {
-				activeChoicePoints.add(this);
-				LOGGER.debug("Activating choice point for atom {}", this.atom);
-			} else if (wasActive && !isActive) {
-				activeChoicePoints.remove(this);
-				LOGGER.debug("Deactivating choice point for atom {}", this.atom);
-			}
-		}
-
-		@Override
-		public String toString() {
-			return String.valueOf(atom);
-		}
-	}
-
 	public void updateAssignments() {
 		LOGGER.trace("Updating assignments of ChoiceManager.");
 		if (checksEnabled) {
-			checkActiveChoicePoints();
+			choicePointInfluenceManager.checkActiveChoicePoints();
 		}
 	}
 
@@ -217,7 +170,7 @@ public class ChoiceManager implements Checkable {
 			final Choice choice = choiceStack.pop();
 			backtracksWithinBackjumps++;
 			backtracks++;
-			modCount++;
+			modCount.incrementAndGet();
 			LOGGER.debug("Backjumping removed choice {}", choice);
 		}
 	}
@@ -266,75 +219,60 @@ public class ChoiceManager implements Checkable {
 	private void backtrack() {
 		store.backtrack();
 		backtracks++;
-		modCount++;
+		modCount.incrementAndGet();
 	}
 
-	void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms) {
-		// Assumption: we get all enabler/disabler pairs in one call.
-		Map<Integer, Integer> enablers = choiceAtoms.getLeft();
-		Map<Integer, Integer> disablers = choiceAtoms.getRight();
-		for (Map.Entry<Integer, Integer> atomToEnabler : enablers.entrySet()) {
-			// Construct and record ChoicePoint.
-			Integer atom = atomToEnabler.getKey();
-			if (atom == null) {
-				throw oops("Incomplete choice point description found (no atom)");
+	void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms, Map<Integer, Set<Integer>> headsToBodies) {
+		choicePointInfluenceManager.addInformation(choiceAtoms);
+		addHeadsToBodies(headsToBodies);
+	}
+
+	private void addHeadsToBodies(Map<Integer, Set<Integer>> headsToBodies) {
+		for (Entry<Integer, Set<Integer>> entry : headsToBodies.entrySet()) {
+			Integer head = entry.getKey();
+			Set<Integer> newBodies = entry.getValue();
+			Set<Integer> existingBodies = this.headsToBodies.get(head);
+			if (existingBodies == null) {
+				existingBodies = new HashSet<>();
+				this.headsToBodies.put(head, existingBodies);
 			}
-			if (influencers.get(atom) != null) {
-				throw oops("Received choice information repeatedly");
-			}
-			Integer enabler = atomToEnabler.getValue();
-			Integer disabler = disablers.get(atom);
-			if (enabler == null || disabler == null) {
-				throw oops("Incomplete choice point description found (no enabler or disabler)");
-			}
-			assignment.registerCallbackOnChange(atom);
-			assignment.registerCallbackOnChange(enabler);
-			assignment.registerCallbackOnChange(disabler);
-			ChoicePoint choicePoint = new ChoicePoint(atom, enabler, disabler);
-			influencers.put(atom, choicePoint);
-			influencers.put(enabler, choicePoint);
-			influencers.put(disabler, choicePoint);
-			choicePoint.recomputeActive();
+			existingBodies.addAll(newBodies);
 		}
 	}
 
 	public boolean isActiveChoiceAtom(int atom) {
-		if (checksEnabled) {
-			checkActiveChoicePoints();
-		}
-		ChoicePoint choicePoint = influencers.get(atom);
-		return choicePoint != null && choicePoint.isActive && choicePoint.atom == atom;
+		return choicePointInfluenceManager.isActive(atom);
 	}
 
 	public int getNextActiveChoiceAtom() {
-		if (checksEnabled) {
-			checkActiveChoicePoints();
-		}
-		return activeChoicePoints.size() > 0 ? activeChoicePoints.iterator().next().atom : 0;
+		return choicePointInfluenceManager.getNextActiveAtomOrDefault(DEFAULT_CHOICE_ATOM);
 	}
 
 	public boolean isAtomChoice(int atom) {
-		ChoicePoint choicePoint = influencers.get(atom);
-		return choicePoint != null && choicePoint.atom == atom;
+		return choicePointInfluenceManager.isAtomInfluenced(atom);
+	}
+	
+	public void addChoicePointActivityListener(ChoiceInfluenceManager.ActivityListener activityListener) {
+		choicePointInfluenceManager.addActivityListener(activityListener);
 	}
 
-	private void checkActiveChoicePoints() {
-		HashSet<ChoicePoint> actualActiveChoicePoints = new HashSet<>();
-		for (ChoicePoint choicePoint : influencers.values()) {
-			ThriceTruth enablerTruth = assignment.getTruth(choicePoint.enabler);
-			ThriceTruth disablerTruth = assignment.getTruth(choicePoint.disabler);
-			boolean isActive = enablerTruth == TRUE
-				&& (disablerTruth == null || !disablerTruth.toBoolean());
-			ThriceTruth atomTruth = assignment.getTruth(choicePoint.atom);
-			boolean isNotChosen = atomTruth == null || atomTruth == MBT;
-			if (isActive && isNotChosen) {
-				actualActiveChoicePoints.add(choicePoint);
+	/**
+	 * Gets the active choice atoms representing bodies of rules that can derive the given head atom.
+	 * @param headAtomId
+	 * @return a subset of {@link #getAllActiveChoiceAtoms()} that can derive {@code headAtomId}.
+	 */
+	public Set<Integer> getActiveChoiceAtomsDerivingHead(int headAtomId) {
+		Set<Integer> bodies = headsToBodies.get(headAtomId);
+		if (bodies == null) {
+			return Collections.emptySet();
+		}
+		Set<Integer> activeBodies = new HashSet<>();
+		for (Integer body : bodies) {
+			if (isActiveChoiceAtom(body)) {
+				activeBodies.add(body);
 			}
 		}
-		if (!actualActiveChoicePoints.equals(activeChoicePoints)) {
-			throw oops("ChoiceManger internal checker detected wrong activeChoicePoints");
-		}
-		LOGGER.trace("Checking internal choice manger: all ok.");
+		return activeBodies;
 	}
 
 	/**

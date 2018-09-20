@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2018 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@ package at.ac.tuwien.kr.alpha.solver;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This class is only here to make {@link ChoiceManager#addChoiceInformation(Pair)} public so that unit tests can access it.
@@ -42,8 +43,8 @@ public class TestableChoiceManager extends ChoiceManager {
 	}
 
 	@Override
-	public void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms) {
-		super.addChoiceInformation(choiceAtoms);
+	public void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms, Map<Integer, Set<Integer>> headsToBodies) {
+		super.addChoiceInformation(choiceAtoms, headsToBodies);
 	}
 
 }

@@ -25,8 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
@@ -96,7 +96,7 @@ public class AlphaHeuristicTestAssumptions {
 
 		Collection<NoGood> noGoods = getNoGoods();
 		assignment.growForMaxAtomId();
-		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
+		choiceManager.addChoiceInformation(grounder.getChoiceAtoms(), grounder.getHeadsToBodies());
 		for (NoGood noGood : noGoods) {
 			n++;
 			boolean knownType = false;
@@ -141,7 +141,7 @@ public class AlphaHeuristicTestAssumptions {
 	private void testIsAtomChoice(Predicate<? super Integer> isRuleBody) {
 		Collection<NoGood> noGoods = getNoGoods();
 		assignment.growForMaxAtomId();
-		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
+		choiceManager.addChoiceInformation(grounder.getChoiceAtoms(), grounder.getHeadsToBodies());
 		for (NoGood noGood : noGoods) {
 			for (Integer literal : noGood) {
 				int atom = atomOf(literal);

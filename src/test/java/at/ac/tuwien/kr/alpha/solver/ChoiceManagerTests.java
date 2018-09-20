@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2018 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -61,7 +61,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 	@Test
 	public void testIsAtomChoice() {
 		Collection<NoGood> noGoods = getNoGoods();
-		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
+		choiceManager.addChoiceInformation(grounder.getChoiceAtoms(), grounder.getHeadsToBodies());
 		for (NoGood noGood : noGoods) {
 			for (Integer literal : noGood) {
 				int atom = atomOf(literal);
