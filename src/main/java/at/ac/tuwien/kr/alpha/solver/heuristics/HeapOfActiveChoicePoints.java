@@ -26,6 +26,7 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.solver.ChoiceInfluenceManager;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
@@ -56,6 +57,7 @@ public class HeapOfActiveChoicePoints extends HeapOfActiveAtoms {
 	public HeapOfActiveChoicePoints(int decayAge, double decayFactor, ChoiceManager choiceManager) {
 		super(decayAge, decayFactor);
 		this.choiceManager = choiceManager;
+		this.choiceManager.addChoicePointActivityListener(new HeuristicActivityListener());
 	}
 	
 	@Override
@@ -112,6 +114,22 @@ public class HeapOfActiveChoicePoints extends HeapOfActiveAtoms {
 	@Override
 	public String toString() {
 		return heap.toString();
+	}
+
+	private class HeuristicActivityListener implements ChoiceInfluenceManager.ActivityListener {
+
+		@Override
+		public void callbackOnChanged(int atom, boolean active) {
+			if (active && choiceManager.isActiveChoiceAtom(atom)) {
+				Double activity = activityCounters.get(atom);
+				if (activity != null) {
+					/* if activity is null, probably the atom is still being buffered
+					   by DependencyDrivenVSIDSHeuristic and will get an initial activity
+					   when the buffer is ingested */
+					addToHeap(atom, activity);
+				}
+			}
+		}
 	}
 
 }

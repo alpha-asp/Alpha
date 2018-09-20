@@ -127,8 +127,12 @@ public class HeapOfActiveAtoms {
 	 */
 	public void incrementActivity(int atom) {
 		double newActivity = activityCounters.compute(atom, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + currentActivityIncrement);
-		heap.add(new AtomActivity(atom, newActivity));
+		addToHeap(atom, newActivity);
 		LOGGER.trace("Activity of atom {} increased to {}", atom, newActivity);
+	}
+
+	protected void addToHeap(int atom, double activity) {
+		heap.add(new AtomActivity(atom, activity));
 	}
 
 	private static class AtomActivity {
