@@ -98,8 +98,8 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 	/**
 	 * Returns a mapping from individual heuristics to number of decisions made by them.
 	 */
-	public Map<BranchingHeuristic,Integer> getNumberOfDecisions() {
-		Map<BranchingHeuristic,Integer> map = new HashMap<>();
+	public Map<BranchingHeuristic, Integer> getNumberOfDecisions() {
+		Map<BranchingHeuristic, Integer> map = new HashMap<>();
 		for (int i = 0; i < chain.size(); i++) {
 			map.put(chain.get(i), decisionCounters[i]);
 		}
