@@ -58,7 +58,7 @@ public class HouseTest extends AbstractSolverTests {
 		ignoreTestForNaiveSolver();
 	}
 
-	@Test
+	@Test(timeout = 60000)
 	public void testHouse_emptyconfig_p05t025() throws IOException {
 		testHouse("emptyconfig_p05t025");
 	}
@@ -76,6 +76,7 @@ public class HouseTest extends AbstractSolverTests {
 	}
 	
 	@Test
+	@Ignore("ignore to save resources during CI")
 	public void testHouse_longthings_2_p02t030c3() throws IOException {
 		testHouse("longthings_2_p02t030c3");
 	}
@@ -87,6 +88,7 @@ public class HouseTest extends AbstractSolverTests {
 	}
 	
 	@Test
+	@Ignore("ignore to save resources during CI")
 	public void testHouse_switchthingsize_r02t035() throws IOException {
 		testHouse("switchthingsize_r02t035");
 	}

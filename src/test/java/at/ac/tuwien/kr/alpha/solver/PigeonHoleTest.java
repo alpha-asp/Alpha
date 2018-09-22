@@ -42,40 +42,40 @@ import static org.junit.Assert.assertEquals;
  *
  */
 public class PigeonHoleTest extends AbstractSolverTests {
-	@Test(timeout = 1000)
+	@Test(timeout = 10000)
 	public void test2Pigeons2Holes() throws IOException {
 		testPigeonsHoles(2, 2);
 	}
 
-	@Test(timeout = 1000)
+	@Test(timeout = 10000)
 	public void test3Pigeons2Holes() throws IOException {
 		testPigeonsHoles(3, 2);
 	}
 
-	@Test(timeout = 1000)
+	@Test(timeout = 10000)
 	public void test2Pigeons3Holes() throws IOException {
 		testPigeonsHoles(2, 3);
 	}
 
-	@Test(timeout = 1000)
+	@Test(timeout = 10000)
 	@Ignore("disabled to save resources during CI")
 	public void test3Pigeons3Holes() throws IOException {
 		testPigeonsHoles(3, 3);
 	}
 
-	@Test(timeout = 1000)
+	@Test(timeout = 10000)
 	@Ignore("disabled to save resources during CI")
 	public void test4Pigeons3Holes() throws IOException {
 		testPigeonsHoles(4, 3);
 	}
 
-	@Test(timeout = 1000)
+	@Test(timeout = 10000)
 	@Ignore("disabled to save resources during CI")
 	public void test3Pigeons4Holes() throws IOException {
 		testPigeonsHoles(3, 4);
 	}
 
-	@Test(timeout = 1000)
+	@Test(timeout = 10000)
 	@Ignore("disabled to save resources during CI")
 	public void test4Pigeons4Holes() throws IOException {
 		testPigeonsHoles(4, 4);
