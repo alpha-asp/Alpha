@@ -49,7 +49,7 @@ public class HeapOfActiveAtoms {
 	public static final double DEFAULT_ACTIVITY = 0.0;
 
 	protected final Map<Integer, Double> activityCounters = new HashMap<>();
-	protected final PriorityQueue<AtomActivity> heap = new PriorityQueue<>(new AtomActivityComparator().reversed());
+	protected final PriorityQueue<Integer> heap = new PriorityQueue<>(new AtomActivityComparator().reversed());
 
 	private int decayAge;
 	private double decayFactor;
@@ -118,8 +118,7 @@ public class HeapOfActiveAtoms {
 	 * @return
 	 */
 	public Integer getMostActiveAtom() {
-		AtomActivity polled = heap.poll();
-		return polled != null ? polled.atom : null;
+		return heap.poll();
 	}
 
 	/**
@@ -127,35 +126,15 @@ public class HeapOfActiveAtoms {
 	 */
 	public void incrementActivity(int atom) {
 		double newActivity = activityCounters.compute(atom, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + currentActivityIncrement);
-		addToHeap(atom, newActivity);
+		heap.add(atom);
 		LOGGER.trace("Activity of atom {} increased to {}", atom, newActivity);
 	}
 
-	protected void addToHeap(int atom, double activity) {
-		heap.add(new AtomActivity(atom, activity));
-	}
-
-	private static class AtomActivity {
-		int atom;
-		double activity;
-
-		private AtomActivity(int atom, double activity) {
-			super();
-			this.atom = atom;
-			this.activity = activity;
-		}
+	private class AtomActivityComparator implements Comparator<Integer> {
 
 		@Override
-		public String toString() {
-			return atom + ":" + activity;
-		}
-	}
-
-	private static class AtomActivityComparator implements Comparator<AtomActivity> {
-
-		@Override
-		public int compare(AtomActivity aa1, AtomActivity aa2) {
-			return Double.compare(aa1.activity, aa2.activity);
+		public int compare(Integer a1, Integer a2) {
+			return Double.compare(activityCounters.get(a1), activityCounters.get(a2));
 		}
 
 	}

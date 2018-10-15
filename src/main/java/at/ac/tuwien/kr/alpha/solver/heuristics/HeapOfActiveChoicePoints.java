@@ -126,7 +126,7 @@ public class HeapOfActiveChoicePoints extends HeapOfActiveAtoms {
 					/* if activity is null, probably the atom is still being buffered
 					   by DependencyDrivenVSIDSHeuristic and will get an initial activity
 					   when the buffer is ingested */
-					addToHeap(atom, activity);
+					heap.add(atom);
 				}
 			}
 		}
