@@ -53,6 +53,7 @@ public class ChoiceManager implements Checkable {
 	private final WritableAssignment assignment;
 	private final Stack<Choice> choiceStack;
 	private final Map<Integer, Set<Integer>> headsToBodies = new HashMap<>();
+	private final Map<Integer, Integer> bodiesToHeads = new HashMap<>();
 
 	// The total number of modifications this ChoiceManager received (avoids re-computation in ChoicePoints).
 	private final AtomicLong modCount = new AtomicLong(0);
@@ -231,12 +232,23 @@ public class ChoiceManager implements Checkable {
 		for (Entry<Integer, Set<Integer>> entry : headsToBodies.entrySet()) {
 			Integer head = entry.getKey();
 			Set<Integer> newBodies = entry.getValue();
-			Set<Integer> existingBodies = this.headsToBodies.get(head);
-			if (existingBodies == null) {
-				existingBodies = new HashSet<>();
-				this.headsToBodies.put(head, existingBodies);
-			}
-			existingBodies.addAll(newBodies);
+			addHeadsToBodies(head, newBodies);
+			addBodiesToHeads(head, newBodies);
+		}
+	}
+
+	private void addHeadsToBodies(Integer head, Set<Integer> bodies) {
+		Set<Integer> existingBodies = this.headsToBodies.get(head);
+		if (existingBodies == null) {
+			existingBodies = new HashSet<>();
+			this.headsToBodies.put(head, existingBodies);
+		}
+		existingBodies.addAll(bodies);
+	}
+
+	private void addBodiesToHeads(Integer head, Set<Integer> bodies) {
+		for (Integer body : bodies) {
+			bodiesToHeads.put(body, head);
 		}
 	}
 
@@ -273,6 +285,10 @@ public class ChoiceManager implements Checkable {
 			}
 		}
 		return activeBodies;
+	}
+	
+	public Integer getHeadDerivedByChoiceAtom(int choiceAtomId) {
+		return bodiesToHeads.get(choiceAtomId);
 	}
 
 	/**

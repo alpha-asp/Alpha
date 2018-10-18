@@ -82,11 +82,6 @@ public class DependencyDrivenVSIDSHeuristic implements ActivityBasedBranchingHeu
 	private int nChoicesRand;
 
 	/**
-	 * Maps body-representing atoms to rule heads.
-	 */
-	protected final Map<Integer, Integer> bodyAtomToHeadAtom = new HashMap<>();
-
-	/**
 	 * Maps rule heads to atoms representing corresponding bodies.
 	 */
 	protected final MultiValuedMap<Integer, Integer> headToBodies = new HashSetValuedHashMap<>();
@@ -198,7 +193,7 @@ public class DependencyDrivenVSIDSHeuristic implements ActivityBasedBranchingHeu
 
 	protected int getAtomForChooseSign(int atom) {
 		// TODO: bodyAtomToHeadAtom is not used at the moment
-		Integer head = bodyAtomToHeadAtom.get(atom);
+		Integer head = choiceManager.getHeadDerivedByChoiceAtom(atom);
 		if (head != null) {
 			atom = head; // head atom can give more relevant information than atom representing rule body
 		}
