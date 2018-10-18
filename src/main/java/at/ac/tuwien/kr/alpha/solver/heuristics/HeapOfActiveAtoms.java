@@ -47,14 +47,17 @@ public class HeapOfActiveAtoms {
 	protected static final Logger LOGGER = LoggerFactory.getLogger(HeapOfActiveAtoms.class);
 
 	public static final double DEFAULT_ACTIVITY = 0.0;
+	public static final double DEFAULT_INCREMENT_FACTOR = 1.0;
+	private static final double NORMALIZATION_THRESHOLD = 1E100;
 
-	protected final Map<Integer, Double> activityCounters = new HashMap<>();
+	protected final Map<Integer, Double> activityScores = new HashMap<>();
 	protected final PriorityQueue<Integer> heap = new PriorityQueue<>(new AtomActivityComparator().reversed());
 
-	private int decayAge;
+	private int decayFrequency;
 	private double decayFactor;
 	private int stepsSinceLastDecay;
 	private double currentActivityIncrement = 1.0;
+	private double incrementFactor = DEFAULT_INCREMENT_FACTOR; // TODO: make configurable
 
 	/**
 	 * @param decayFactor
@@ -62,79 +65,104 @@ public class HeapOfActiveAtoms {
 	 * 
 	 */
 	public HeapOfActiveAtoms(int decayAge, double decayFactor) {
-		this.decayAge = decayAge;
+		this.decayFrequency = decayAge;
 		this.decayFactor = decayFactor;
 	}
 
-	/**
-	 * Gets the number of steps after which all counters are decayed (i.e. multiplied by {@link #getDecayFactor()}.
-	 */
-	public int getDecayAge() {
-		return decayAge;
+	public double getActivity(int literal) {
+		return activityScores.getOrDefault(atomOf(literal), DEFAULT_ACTIVITY);
 	}
 
 	/**
-	 * Sets the number of steps after which all counters are decayed (i.e. multiplied by {@link #getDecayFactor()}.
+	 * Gets the number of steps after which activity scores are decayed.
 	 */
-	public void setDecayAge(int decayAge) {
-		this.decayAge = decayAge;
+	public int getDecayFrequency() {
+		return decayFrequency;
 	}
 
 	/**
-	 * Gets the factor by which all counters are multiplied to decay after {@link #getDecayAge()}.
+	 * @see #getDecayFrequency()
+	 */
+	public void setDecayFrequency(int decayAge) {
+		this.decayFrequency = decayAge;
+	}
+
+	/**
+	 * Gets the factor by which the activity increment is multiplied every {@link #getDecayFrequency()} steps.
 	 */
 	public double getDecayFactor() {
 		return decayFactor;
 	}
 
-	public double getActivity(int literal) {
-		return activityCounters.getOrDefault(atomOf(literal), DEFAULT_ACTIVITY);
-	}
-
 	/**
-	 * Sets the factor by which all counters are multiplied to decay after {@link #getDecayAge()}.
+	 * @see #getDecayFactor()
 	 */
 	public void setDecayFactor(double decayFactor) {
 		this.decayFactor = decayFactor;
 	}
 
 	/**
-	 * TODO: docs
+	 * Updates the current activity increment by multiplying it with the decay factor, if time for decay has come.
+	 * 
+	 * Time for decay has come if the number of conflicts since the last decay has reached the decay frequency.
+	 * 
 	 * TODO: actually this does not decay but increase activity for future atoms (maybe rename?)
 	 * TODO: really public?
 	 */
 	public void decayIfTimeHasCome() {
 		stepsSinceLastDecay++;
-		if (stepsSinceLastDecay >= decayAge) {
-			currentActivityIncrement /= decayFactor; // TODO: is this correct?
+		if (stepsSinceLastDecay >= decayFrequency) {
+			currentActivityIncrement *= decayFactor;
 			stepsSinceLastDecay = 0;
 		}
-		// TODO: "reset" if values get too high
 	}
 
 	/**
-	 * TODO: docs
-	 * 
-	 * @return
+	 * Returns the atom with the highest activity score and removes it from the heap.
 	 */
 	public Integer getMostActiveAtom() {
 		return heap.poll();
 	}
 
 	/**
-	 * TODO: docs
+	 * Increments the activity of the given atom
+	 * 
+	 * by adding to it the current activity increment times the increment factor.
+	 * If the new value exceeds a certain threshold, all activity scores are normalized.
 	 */
 	public void incrementActivity(int atom) {
-		double newActivity = activityCounters.compute(atom, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + currentActivityIncrement);
-		heap.add(atom);
+		// newActivity := oldActivity + (currentActivityIncrement * incrementFactor)
+		double newActivity = activityScores.compute(atom, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + (currentActivityIncrement * incrementFactor));
 		LOGGER.trace("Activity of atom {} increased to {}", atom, newActivity);
+		
+		if (newActivity > NORMALIZATION_THRESHOLD) {
+			normalizeActivityScores();
+		} else {
+			heap.add(atom); // ignores the fact that atom may already be in the heap for performance reasons (may be revised in future)
+		}
+	}
+
+	/**
+	 * Makes all activity scores smaller if they get too high.
+	 * 
+	 * Avoids <a href="https://en.wikipedia.org/wiki/Denormal_number">denormal numbers</a> similarly as done in clasp.
+	 */
+	private void normalizeActivityScores() {
+		LOGGER.debug("Normalizing activity scores");
+		final double min = Double.MIN_VALUE * NORMALIZATION_THRESHOLD;
+		currentActivityIncrement /= NORMALIZATION_THRESHOLD;
+		for (Integer atom : activityScores.keySet()) {
+			activityScores.compute(atom, (k, v) -> ((v + min) / NORMALIZATION_THRESHOLD));
+		}
+		heap.clear();
+		heap.addAll(activityScores.keySet());
 	}
 
 	private class AtomActivityComparator implements Comparator<Integer> {
 
 		@Override
 		public int compare(Integer a1, Integer a2) {
-			return Double.compare(activityCounters.get(a1), activityCounters.get(a2));
+			return Double.compare(activityScores.get(a1), activityScores.get(a2));
 		}
 
 	}

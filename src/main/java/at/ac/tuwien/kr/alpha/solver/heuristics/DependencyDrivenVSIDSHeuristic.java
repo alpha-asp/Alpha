@@ -48,10 +48,16 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
  * The basic idea of {@link DependencyDrivenVSIDSHeuristic} is therefore to find <i>dependent</i> atoms that can
  * enrich the information available for a choice point. Intuitively, all atoms occurring in the head or the
  * body of a rule depend on a choice point representing the body of this rule.
+ * <p/>
  * In contrast to {@link GeneralizedDependencyDrivenHeuristic}, this heuristic is based on ideas from VSIDS instead of BerkMin.
- * In contrast to standard VSIDS, activities are not decayed with age, but the activity assigned to new atoms
- * is steadily increased (such that the activity of older atoms does not have to be changed later).
- * 
+ * This implementation is inspired by the VSIDS implementation in <a href="https://github.com/potassco/clasp">clasp</a>.
+ * Therefore, for example, decay is not realized by decreasing activity scores with age, but by
+ * steadily increasing the increment added to the score of active atoms
+ * (such that the activity score of older atoms does not have to be changed later).
+ * <p/>
+ * The implementation is simplified in some ways, e.g. it is not possible to specify a frequency in which the activity
+ * increment is updated (which corresponds to decay), but it is updated after every conflict.
+ * <p/>
  * Copyright (c) 2018 Siemens AG
  */
 public class DependencyDrivenVSIDSHeuristic implements ActivityBasedBranchingHeuristic {
@@ -59,8 +65,8 @@ public class DependencyDrivenVSIDSHeuristic implements ActivityBasedBranchingHeu
 
 	public static final int DEFAULT_SIGN_COUNTER = 0;
 
-	public static final int DEFAULT_DECAY_AGE = 10;
-	public static final double DEFAULT_DECAY_FACTOR = 1 / 1.92;
+	public static final int DEFAULT_DECAY_FREQUENCY = 1;
+	public static final double DEFAULT_DECAY_FACTOR = 1 / 0.92;
 
 	protected final Assignment assignment;
 	protected final ChoiceManager choiceManager;
@@ -93,7 +99,7 @@ public class DependencyDrivenVSIDSHeuristic implements ActivityBasedBranchingHeu
 	}
 
 	public DependencyDrivenVSIDSHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
-		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random);
+		this(assignment, choiceManager, DEFAULT_DECAY_FREQUENCY, DEFAULT_DECAY_FACTOR, random);
 	}
 
 	@Override
@@ -102,13 +108,15 @@ public class DependencyDrivenVSIDSHeuristic implements ActivityBasedBranchingHeu
 
 	@Override
 	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
-		for (NoGood noGood : analysisResult.noGoodsResponsibleForConflict) {
-			for (Integer literal : noGood) {
-				heapOfActiveChoicePoints.incrementActivity(atomOf(literal));
-			}
-		}
+		// TODO: under which conditions shall activities of literals in noGoodsResponsibleForConflict be incremented?
+		//		for (NoGood noGood : analysisResult.noGoodsResponsibleForConflict) {
+		//			for (Integer literal : noGood) {
+		//				heapOfActiveChoicePoints.incrementActivity(atomOf(literal));
+		//			}
+		//		}
 		for (Integer literal : analysisResult.learnedNoGood) {
 			incrementSignCounter(literal);
+			heapOfActiveChoicePoints.incrementActivity(atomOf(literal));
 		}
 		heapOfActiveChoicePoints.decayIfTimeHasCome();
 	}
@@ -126,9 +134,10 @@ public class DependencyDrivenVSIDSHeuristic implements ActivityBasedBranchingHeu
 	private void ingestBufferedNoGoods() {
 		for (NoGood newNoGood : bufferedNoGoods) {
 			heapOfActiveChoicePoints.initActity(newNoGood);
-			for (Integer literal : newNoGood) {
-				incrementSignCounter(literal);
-			}
+			// TODO: increment sign counters only for learnt nogoods or also for static ones?
+			// for (Integer literal : newNoGood) {
+			// incrementSignCounter(literal);
+			// }
 		}
 		bufferedNoGoods.clear();
 	}
@@ -169,6 +178,7 @@ public class DependencyDrivenVSIDSHeuristic implements ActivityBasedBranchingHeu
 			return true;
 		}
 
+		// TODO: make one sign counter out of two (maintain only balance as in clasp)
 		int positiveCounter = signCounters.getOrDefault(atomToLiteral(atom, true),  DEFAULT_SIGN_COUNTER);
 		int negativeCounter = signCounters.getOrDefault(atomToLiteral(atom, false), DEFAULT_SIGN_COUNTER);
 
@@ -180,12 +190,9 @@ public class DependencyDrivenVSIDSHeuristic implements ActivityBasedBranchingHeu
 		if (positiveCounter > negativeCounter) {
 			nChoicesFalse++;
 			return false;
-		} else if (negativeCounter > positiveCounter) {
+		} else {
 			nChoicesTrue++;
 			return true;
-		} else {
-			nChoicesRand++;
-			return rand.nextBoolean();
 		}
 	}
 

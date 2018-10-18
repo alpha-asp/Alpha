@@ -121,7 +121,7 @@ public class HeapOfActiveChoicePoints extends HeapOfActiveAtoms {
 		@Override
 		public void callbackOnChanged(int atom, boolean active) {
 			if (active && choiceManager.isActiveChoiceAtom(atom)) {
-				Double activity = activityCounters.get(atom);
+				Double activity = activityScores.get(atom);
 				if (activity != null) {
 					/* if activity is null, probably the atom is still being buffered
 					   by DependencyDrivenVSIDSHeuristic and will get an initial activity
