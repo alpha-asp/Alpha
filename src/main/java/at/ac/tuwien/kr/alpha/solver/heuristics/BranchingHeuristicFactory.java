@@ -54,6 +54,7 @@ public final class BranchingHeuristicFactory {
 		GDD_PYRO,
 		ALPHA_ACTIVE_RULE,
 		ALPHA_HEAD_MBT,
+		VSIDS,
 		GDD_VSIDS;
 
 		/**
@@ -100,8 +101,10 @@ public final class BranchingHeuristicFactory {
 			return new AlphaActiveRuleHeuristic(assignment, choiceManager, random);
 		case ALPHA_HEAD_MBT:
 			return new AlphaHeadMustBeTrueHeuristic(assignment, choiceManager, random);
+		case VSIDS:
+			return new VSIDS(assignment, choiceManager, random);
 		case GDD_VSIDS:
-			return new DependencyDrivenVSIDSHeuristic(assignment, choiceManager, random);
+			return new DependencyDrivenVSIDS(assignment, choiceManager, random);
 		}
 		throw new IllegalArgumentException("Unknown branching heuristic requested.");
 	}

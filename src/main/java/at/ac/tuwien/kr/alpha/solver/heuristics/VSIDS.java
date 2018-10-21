@@ -42,14 +42,6 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
 
 /**
- * The BerkMin variants {@link BerkMin} and {@link BerkMinLiteral} suffer from the fact that choice points
- * comprise only a small portion of all the literals occurring in nogoods and therefore do not influence
- * activity and sign counters as much as other atoms.
- * The basic idea of {@link DependencyDrivenVSIDSHeuristic} is therefore to find <i>dependent</i> atoms that can
- * enrich the information available for a choice point. Intuitively, all atoms occurring in the head or the
- * body of a rule depend on a choice point representing the body of this rule.
- * <p/>
- * In contrast to {@link GeneralizedDependencyDrivenHeuristic}, this heuristic is based on ideas from VSIDS instead of BerkMin.
  * This implementation is inspired by the VSIDS implementation in <a href="https://github.com/potassco/clasp">clasp</a>.
  * Therefore, for example, decay is not realized by decreasing activity scores with age, but by
  * steadily increasing the increment added to the score of active atoms
@@ -58,10 +50,15 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
  * The implementation is simplified in some ways, e.g. it is not possible to specify a frequency in which the activity
  * increment is updated (which corresponds to decay), but it is updated after every conflict.
  * <p/>
+ * Reference for VSIDS:
+ * Moskewicz, Matthew W.; Madigan, Conor F.; Zhao, Ying; Zhang, Lintao; Malik, Sharad (2001):
+ * Chaff: engineering an efficient SAT solver.
+ * In: Proceedings of the 38th Design Automation Conference. IEEE, pp. 530–535.
+ * <p/>
  * Copyright (c) 2018 Siemens AG
  */
-public class DependencyDrivenVSIDSHeuristic implements ActivityBasedBranchingHeuristic {
-	protected static final Logger LOGGER = LoggerFactory.getLogger(DependencyDrivenVSIDSHeuristic.class);
+public class VSIDS implements ActivityBasedBranchingHeuristic {
+	protected static final Logger LOGGER = LoggerFactory.getLogger(VSIDS.class);
 
 	public static final int DEFAULT_SIGN_COUNTER = 0;
 
@@ -72,7 +69,7 @@ public class DependencyDrivenVSIDSHeuristic implements ActivityBasedBranchingHeu
 	protected final ChoiceManager choiceManager;
 	protected final Random rand;
 
-	protected final HeapOfActiveChoicePoints heapOfActiveChoicePoints;
+	protected final HeapOfActiveAtoms heapOfActiveAtoms;
 	protected final Map<Integer, Integer> signCounters = new HashMap<>();
 
 	private final Collection<NoGood> bufferedNoGoods = new ArrayList<>();
@@ -85,15 +82,19 @@ public class DependencyDrivenVSIDSHeuristic implements ActivityBasedBranchingHeu
 	 * Maps rule heads to atoms representing corresponding bodies.
 	 */
 	protected final MultiValuedMap<Integer, Integer> headToBodies = new HashSetValuedHashMap<>();
-
-	public DependencyDrivenVSIDSHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
+	
+	protected VSIDS(Assignment assignment, ChoiceManager choiceManager, HeapOfActiveAtoms heapOfActiveAtoms, Random random) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
-		this.heapOfActiveChoicePoints = new HeapOfActiveChoicePoints(decayAge, decayFactor, choiceManager);
+		this.heapOfActiveAtoms = heapOfActiveAtoms;
 		this.rand = random;
 	}
 
-	public DependencyDrivenVSIDSHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
+	public VSIDS(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
+		this(assignment, choiceManager, new HeapOfActiveAtoms(decayAge, decayFactor), random);
+	}
+
+	public VSIDS(Assignment assignment, ChoiceManager choiceManager, Random random) {
 		this(assignment, choiceManager, DEFAULT_DECAY_FREQUENCY, DEFAULT_DECAY_FACTOR, random);
 	}
 
@@ -111,9 +112,9 @@ public class DependencyDrivenVSIDSHeuristic implements ActivityBasedBranchingHeu
 		//		}
 		for (Integer literal : analysisResult.learnedNoGood) {
 			incrementSignCounter(literal);
-			heapOfActiveChoicePoints.incrementActivity(atomOf(literal));
+			heapOfActiveAtoms.incrementActivity(atomOf(literal));
 		}
-		heapOfActiveChoicePoints.decayIfTimeHasCome();
+		heapOfActiveAtoms.decayIfTimeHasCome();
 	}
 
 	@Override
@@ -128,7 +129,7 @@ public class DependencyDrivenVSIDSHeuristic implements ActivityBasedBranchingHeu
 
 	private void ingestBufferedNoGoods() {
 		for (NoGood newNoGood : bufferedNoGoods) {
-			heapOfActiveChoicePoints.initActity(newNoGood);
+			heapOfActiveAtoms.initActity(newNoGood);
 			// TODO: increment sign counters only for learnt nogoods or also for static ones?
 			// for (Integer literal : newNoGood) {
 			// incrementSignCounter(literal);
@@ -138,7 +139,7 @@ public class DependencyDrivenVSIDSHeuristic implements ActivityBasedBranchingHeu
 	}
 
 	/**
-	 * {@link DependencyDrivenVSIDSHeuristic} manages a stack of nogoods in the fashion of {@link BerkMin}
+	 * {@link VSIDS} manages a stack of nogoods in the fashion of {@link BerkMin}
 	 * and starts by looking at the most active atom <code>a</code> in the nogood currently at the top of the stack.
 	 * If <code>a</code> is an active choice point (i.e. representing the body of an applicable rule), it is immediately chosen;
 	 * else the most active choice point dependent on <code>a</code> is.
@@ -158,7 +159,7 @@ public class DependencyDrivenVSIDSHeuristic implements ActivityBasedBranchingHeu
 	protected int chooseAtom() {
 		ingestBufferedNoGoods();
 		Integer mostActiveAtom;
-		while ((mostActiveAtom = heapOfActiveChoicePoints.getMostActiveAtom()) != null) {
+		while ((mostActiveAtom = heapOfActiveAtoms.getMostActiveAtom()) != null) {
 			if (choiceManager.isActiveChoiceAtom(mostActiveAtom)) {
 				return mostActiveAtom;
 			}
@@ -192,11 +193,6 @@ public class DependencyDrivenVSIDSHeuristic implements ActivityBasedBranchingHeu
 	}
 
 	protected int getAtomForChooseSign(int atom) {
-		// TODO: bodyAtomToHeadAtom is not used at the moment
-		Integer head = choiceManager.getHeadDerivedByChoiceAtom(atom);
-		if (head != null) {
-			atom = head; // head atom can give more relevant information than atom representing rule body
-		}
 		return atom;
 	}
 
@@ -206,7 +202,7 @@ public class DependencyDrivenVSIDSHeuristic implements ActivityBasedBranchingHeu
 
 	@Override
 	public double getActivity(int literal) {
-		return heapOfActiveChoicePoints.getActivity(literal);
+		return heapOfActiveAtoms.getActivity(literal);
 	}
 
 	@Override

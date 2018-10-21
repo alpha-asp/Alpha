@@ -99,16 +99,11 @@ public class HeapOfActiveChoicePoints extends HeapOfActiveAtoms {
 		}
 	}
 
-	/**
-	 * TODO: Computes and stores initial activity values for the atoms occurring in the given nogood.
-	 * TODO: replace by MOMs, for example
-	 * @param newNoGood
-	 */
+	@Override
 	public void initActity(NoGood newNoGood) {
+		// TODO: do this only for static nogoods (?)
 		recordAtomRelationships(newNoGood);
-		for (Integer literal : newNoGood) {
-			incrementActivity(atomOf(literal));
-		}
+		super.initActity(newNoGood);
 	}
 	
 	@Override

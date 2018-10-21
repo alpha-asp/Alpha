@@ -25,6 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.NoGood;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,6 +119,18 @@ public class HeapOfActiveAtoms {
 	}
 
 	/**
+	 * TODO: Computes and stores initial activity values for the atoms occurring in the given nogood.
+	 * TODO: replace by MOMs, for example
+	 * @param newNoGood
+	 */
+	public void initActity(NoGood newNoGood) {
+		// TODO: do this only for static nogoods (?)
+		for (Integer literal : newNoGood) {
+			incrementActivity(atomOf(literal));
+		}
+	}
+
+	/**
 	 * Returns the atom with the highest activity score and removes it from the heap.
 	 */
 	public Integer getMostActiveAtom() {
@@ -152,7 +165,7 @@ public class HeapOfActiveAtoms {
 		final double min = Double.MIN_VALUE * NORMALIZATION_THRESHOLD;
 		currentActivityIncrement /= NORMALIZATION_THRESHOLD;
 		for (Integer atom : activityScores.keySet()) {
-			activityScores.compute(atom, (k, v) -> ((v + min) / NORMALIZATION_THRESHOLD));
+			activityScores.compute(atom, (k, v) -> (v + min) / NORMALIZATION_THRESHOLD);
 		}
 		heap.clear();
 		heap.addAll(activityScores.keySet());
