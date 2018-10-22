@@ -52,7 +52,7 @@ public class DependencyDrivenVSIDS extends VSIDS {
 	}
 
 	public DependencyDrivenVSIDS(Assignment assignment, ChoiceManager choiceManager, Random random) {
-		super(assignment, choiceManager, random);
+		this(assignment, choiceManager, DEFAULT_DECAY_FREQUENCY, DEFAULT_DECAY_FACTOR, random);
 	}
 	
 	/*
