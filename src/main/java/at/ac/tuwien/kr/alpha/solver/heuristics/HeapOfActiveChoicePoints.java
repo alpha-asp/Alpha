@@ -30,6 +30,7 @@ import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -95,10 +96,12 @@ public class HeapOfActiveChoicePoints extends HeapOfActiveAtoms {
 	}
 
 	@Override
-	public void initActity(NoGood newNoGood) {
+	public void initActity(Collection<NoGood> newNoGoods) {
 		// TODO: do this only for static nogoods (?)
-		recordAtomRelationships(newNoGood);
-		super.initActity(newNoGood);
+		for (NoGood newNoGood : newNoGoods) {
+			recordAtomRelationships(newNoGood);
+		}
+		super.initActity(newNoGoods);
 	}
 	
 	@Override

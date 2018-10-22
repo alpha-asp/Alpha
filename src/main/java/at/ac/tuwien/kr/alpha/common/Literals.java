@@ -27,6 +27,10 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Provides methods to convert atoms to literals and vice versa,
  * and to obtain and change information on the polarity of a literal.
@@ -42,6 +46,32 @@ public final class Literals {
 	 */
 	public static int atomOf(int literal) {
 		return literal >> 1;
+	}
+	
+	/**
+	 * Given a collection of literals, returns the set of corresponding atoms. 
+	 * @param literals the literals to translate.
+	 * @return a set containing all corresponding atoms.
+	 */
+	public static Set<Integer> getAtoms(Iterable<Integer> literals) {
+		Set<Integer> atoms = new HashSet<>();
+		for (Integer literal : literals) {
+			atoms.add(atomOf(literal));
+		}
+		return atoms;
+	}
+	
+	/**
+	 * Given a collection of collections of literals, returns the set of corresponding atoms. 
+	 * @param collectionsOfLiterals the collection of collections of literals to translate.
+	 * @return a set containing all corresponding atoms.
+	 */
+	public static Set<Integer> getAtoms(Collection<? extends Iterable<Integer>> collectionsOfLiterals) {
+		Set<Integer> atoms = new HashSet<>();
+		for (Iterable<Integer> literals : collectionsOfLiterals) {
+			atoms.addAll(getAtoms(literals));
+		}
+		return atoms;
 	}
 
 	/**

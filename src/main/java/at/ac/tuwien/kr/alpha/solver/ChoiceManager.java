@@ -62,6 +62,7 @@ public class ChoiceManager implements Checkable {
 	private final ChoiceInfluenceManager choicePointInfluenceManager;
 
 	private final NoGoodStore store;
+	private final BinaryNoGoodPropagationEstimation bnpEstimation;
 
 	private boolean checksEnabled;
 	private DebugWatcher debugWatcher;
@@ -77,6 +78,9 @@ public class ChoiceManager implements Checkable {
 		this.choicePointInfluenceManager = new ChoiceInfluenceManager(assignment, modCount);
 		this.choiceStack = new Stack<>();
 		assignment.setCallback(this);
+		this.bnpEstimation = store instanceof NoGoodStorePrivilegingBinaryNoGoods
+				? new BinaryNoGoodPropagationEstimation(assignment, (NoGoodStorePrivilegingBinaryNoGoods) store)
+				: null;
 	}
 
 	NoGood computeEnumeration() {
@@ -289,6 +293,10 @@ public class ChoiceManager implements Checkable {
 	
 	public Integer getHeadDerivedByChoiceAtom(int choiceAtomId) {
 		return bodiesToHeads.get(choiceAtomId);
+	}
+
+	public BinaryNoGoodPropagationEstimation getBinaryNoGoodPropagationEstimation() {
+		return bnpEstimation;
 	}
 
 	/**

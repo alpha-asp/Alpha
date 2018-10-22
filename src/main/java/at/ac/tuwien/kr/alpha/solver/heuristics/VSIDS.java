@@ -128,13 +128,11 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 	}
 
 	private void ingestBufferedNoGoods() {
-		for (NoGood newNoGood : bufferedNoGoods) {
-			heapOfActiveAtoms.initActity(newNoGood);
-			// TODO: increment sign counters only for learnt nogoods or also for static ones?
-			// for (Integer literal : newNoGood) {
-			// incrementSignCounter(literal);
-			// }
-		}
+		heapOfActiveAtoms.initActity(bufferedNoGoods);
+		// TODO: increment sign counters only for learnt nogoods or also for static ones?
+		// for (Integer literal : newNoGood) {
+		// incrementSignCounter(literal);
+		// }
 		bufferedNoGoods.clear();
 	}
 

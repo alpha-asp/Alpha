@@ -25,18 +25,19 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.ChoiceInfluenceManager;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.PriorityQueue;
+import java.util.*;
+import java.util.Map.Entry;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static java.lang.Math.max;
 
 /**
  * Manages a heap of atoms that are assigned an activity, such that the most active atom
@@ -62,6 +63,8 @@ public class HeapOfActiveAtoms {
 	private int stepsSinceLastDecay;
 	private double currentActivityIncrement = 1.0;
 	private double incrementFactor = DEFAULT_INCREMENT_FACTOR; // TODO: make configurable
+	
+	private final MOMs moms;
 
 	/**
 	 * @param decayFactor
@@ -73,6 +76,8 @@ public class HeapOfActiveAtoms {
 		this.decayFactor = decayFactor;
 		this.choiceManager = choiceManager;
 		this.choiceManager.addChoicePointActivityListener(new ChoicePointActivityListener());
+		BinaryNoGoodPropagationEstimation bnpEstimation = choiceManager.getBinaryNoGoodPropagationEstimation();
+		this.moms = bnpEstimation == null ? null : new MOMs(bnpEstimation);
 	}
 
 	public double getActivity(int literal) {
@@ -124,14 +129,45 @@ public class HeapOfActiveAtoms {
 	}
 
 	/**
-	 * TODO: Computes and stores initial activity values for the atoms occurring in the given nogood.
-	 * TODO: replace by MOMs, for example
-	 * @param newNoGood
+	 * Computes and stores initial activity values for the atoms occurring in the given nogoods.
 	 */
-	public void initActity(NoGood newNoGood) {
+	public void initActity(Collection<NoGood> newNoGoods) {
 		// TODO: do this only for static nogoods (?)
-		for (Integer literal : newNoGood) {
-			incrementActivity(atomOf(literal));
+		if (moms != null) {
+			initActivityMOMs(newNoGoods);
+		} else {
+			initActivityNaive(newNoGoods);
+		}
+	}
+
+	private void initActivityMOMs(Collection<NoGood> newNoGoods) {
+		LOGGER.debug("Initializing activity scores with MOMs");
+		Map<Integer, Double> newActivityScores = new HashMap<>();
+		double maxScore = 0.0;
+		Set<Integer> atoms = Literals.getAtoms(newNoGoods); // TODO: might be inefficient
+		for (Integer atom : atoms) {
+			// TODO: make this more performant by converting activityScores to an array and only respecting new atoms outside the former array bounds
+			if (!activityScores.containsKey(atom)) { // TODO: && unassigned (?)
+				double score = moms.getScore(atom);
+				if (score != 0.0) {
+					maxScore = max(score, maxScore);
+					newActivityScores.put(atom, score);
+				}
+			}
+		}
+		for (Entry<Integer, Double> newAtomActivity : newActivityScores.entrySet()) {
+			Integer atom = newAtomActivity.getKey();
+			double normalizedScore = newAtomActivity.getValue() / maxScore;
+			incrementActivity(atom, normalizedScore);
+		}
+	}
+
+	private void initActivityNaive(Collection<NoGood> newNoGoods) {
+		LOGGER.debug("Initializing activity scores naively");
+		for (NoGood newNoGood : newNoGoods) {
+			for (Integer literal : newNoGood) {
+				incrementActivity(atomOf(literal));
+			}
 		}
 	}
 
@@ -149,8 +185,12 @@ public class HeapOfActiveAtoms {
 	 * If the new value exceeds a certain threshold, all activity scores are normalized.
 	 */
 	public void incrementActivity(int atom) {
-		// newActivity := oldActivity + (currentActivityIncrement * incrementFactor)
-		double newActivity = activityScores.compute(atom, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + (currentActivityIncrement * incrementFactor));
+		incrementActivity(atom, currentActivityIncrement);
+	}
+	
+	private void incrementActivity(int atom, double increment) {
+		// newActivity := oldActivity + (increment * incrementFactor)
+		double newActivity = activityScores.compute(atom, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + (increment * incrementFactor));
 		LOGGER.trace("Activity of atom {} increased to {}", atom, newActivity);
 		
 		if (newActivity > NORMALIZATION_THRESHOLD) {
