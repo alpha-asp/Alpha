@@ -82,6 +82,10 @@ public class ChoiceManager implements Checkable {
 				? new BinaryNoGoodPropagationEstimation(assignment, (NoGoodStorePrivilegingBinaryNoGoods) store)
 				: null;
 	}
+	
+	public WritableAssignment getAssignment() {
+		return assignment;
+	}
 
 	NoGood computeEnumeration() {
 		int[] enumerationLiterals = new int[choiceStack.size()];

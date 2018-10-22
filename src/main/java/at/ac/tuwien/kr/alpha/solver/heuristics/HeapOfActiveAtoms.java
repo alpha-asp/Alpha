@@ -147,7 +147,7 @@ public class HeapOfActiveAtoms {
 		Set<Integer> atoms = Literals.getAtoms(newNoGoods); // TODO: might be inefficient
 		for (Integer atom : atoms) {
 			// TODO: make this more performant by converting activityScores to an array and only respecting new atoms outside the former array bounds
-			if (!activityScores.containsKey(atom)) { // TODO: && unassigned (?)
+			if (!activityScores.containsKey(atom) && !choiceManager.getAssignment().isAssigned(atom)) {
 				double score = moms.getScore(atom);
 				if (score != 0.0) {
 					maxScore = max(score, maxScore);
