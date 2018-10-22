@@ -26,6 +26,8 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.solver.ChoiceInfluenceManager;
+import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +56,7 @@ public class HeapOfActiveAtoms {
 	protected final Map<Integer, Double> activityScores = new HashMap<>();
 	protected final PriorityQueue<Integer> heap = new PriorityQueue<>(new AtomActivityComparator().reversed());
 
+	protected ChoiceManager choiceManager;
 	private int decayFrequency;
 	private double decayFactor;
 	private int stepsSinceLastDecay;
@@ -65,9 +68,11 @@ public class HeapOfActiveAtoms {
 	 * @param decayAge
 	 * 
 	 */
-	public HeapOfActiveAtoms(int decayAge, double decayFactor) {
+	public HeapOfActiveAtoms(int decayAge, double decayFactor, ChoiceManager choiceManager) {
 		this.decayFrequency = decayAge;
 		this.decayFactor = decayFactor;
+		this.choiceManager = choiceManager;
+		this.choiceManager.addChoicePointActivityListener(new ChoicePointActivityListener());
 	}
 
 	public double getActivity(int literal) {
@@ -178,6 +183,22 @@ public class HeapOfActiveAtoms {
 			return Double.compare(activityScores.get(a1), activityScores.get(a2));
 		}
 
+	}
+
+	private class ChoicePointActivityListener implements ChoiceInfluenceManager.ActivityListener {
+
+		@Override
+		public void callbackOnChanged(int atom, boolean active) {
+			if (active && choiceManager.isActiveChoiceAtom(atom)) {
+				Double activity = activityScores.get(atom);
+				if (activity != null) {
+					/* if activity is null, probably the atom is still being buffered
+					   by DependencyDrivenVSIDSHeuristic and will get an initial activity
+					   when the buffer is ingested */
+					heap.add(atom);
+				}
+			}
+		}
 	}
 
 }

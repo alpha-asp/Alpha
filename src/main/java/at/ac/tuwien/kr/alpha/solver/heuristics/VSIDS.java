@@ -91,7 +91,7 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 	}
 
 	public VSIDS(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
-		this(assignment, choiceManager, new HeapOfActiveAtoms(decayAge, decayFactor), random);
+		this(assignment, choiceManager, new HeapOfActiveAtoms(decayAge, decayFactor, choiceManager), random);
 	}
 
 	public VSIDS(Assignment assignment, ChoiceManager choiceManager, Random random) {
