@@ -332,9 +332,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStorePrivilegingBinaryNoGo
 		return null;
 	}
 
-	private ConflictCause addAndWatchBinary(final NoGood noGood) {
-		hasBinaryNoGoods = true;
-		
+	private ConflictCause addAndWatchBinary(final NoGood noGood) {		
 		// Shorthands for viewing the nogood as { a, b }.
 		final int a = noGood.getLiteral(0);
 		final int b = noGood.getLiteral(1);
@@ -362,6 +360,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStorePrivilegingBinaryNoGo
 		if (conflictCause != null) {
 			return conflictCause;
 		}
+		hasBinaryNoGoods = true;
 		return binaryWatches[b].add(noGood);
 	}
 	
