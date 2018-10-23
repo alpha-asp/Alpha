@@ -57,12 +57,12 @@ public class HeapOfActiveChoicePoints extends HeapOfActiveAtoms {
 	}
 	
 	@Override
-	public void incrementActivity(int atom) {
+	public void incrementActivity(int atom, double increment) {
 		if (choiceManager.isAtomChoice(atom)) {
-			super.incrementActivity(atom);
+			super.incrementActivity(atom, increment);
 		} else {
 			for (Integer dependentBody : atomsToChoicePoints.get(atom)) {
-				super.incrementActivity(dependentBody);
+				super.incrementActivity(dependentBody, increment);
 			}
 		}
 	}

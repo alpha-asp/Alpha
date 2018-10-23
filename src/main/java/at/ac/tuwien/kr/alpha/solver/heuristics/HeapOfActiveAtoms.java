@@ -188,7 +188,7 @@ public class HeapOfActiveAtoms {
 		incrementActivity(atom, currentActivityIncrement);
 	}
 	
-	private void incrementActivity(int atom, double increment) {
+	protected void incrementActivity(int atom, double increment) {
 		// newActivity := oldActivity + (increment * incrementFactor)
 		double newActivity = activityScores.compute(atom, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + (increment * incrementFactor));
 		LOGGER.trace("Activity of atom {} increased to {}", atom, newActivity);
