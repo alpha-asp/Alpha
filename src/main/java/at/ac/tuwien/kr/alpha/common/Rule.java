@@ -147,7 +147,7 @@ public class Rule {
 	}
 
 	public boolean isGround() {
-		if (!head.isNormal()) {
+		if (head != null && !head.isNormal()) {
 			throw oops("Called isGround on non-normal rule");
 		}
 		if (!isConstraint() && !((DisjunctiveHead)head).isGround()) {
