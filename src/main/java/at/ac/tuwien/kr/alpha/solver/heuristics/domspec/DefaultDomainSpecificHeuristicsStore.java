@@ -25,8 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 
-import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues.PriorityComparator;
 import at.ac.tuwien.kr.alpha.solver.ChoiceInfluenceManager;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 
@@ -52,16 +52,10 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 
 	private final Map<Integer, HeuristicDirectiveValues> mapHeuristicToHeuristicValue = new HashMap<>();
 
-	private PriorityQueue<HeuristicDirectiveValues> prioritisedHeuristics = new PriorityQueue<>(new HeuristicDirectiveValues.PriorityComparator().reversed());
+	private PriorityQueue<Integer> prioritisedHeuristics = new PriorityQueue<>(new HeuristicPriorityComparator().reversed());
 
-	private Assignment assignment;
 	private ChoiceManager choiceManager;
 	private boolean checksEnabled;
-
-	public DefaultDomainSpecificHeuristicsStore(Assignment assignment) {
-		super();
-		this.assignment = assignment;
-	}
 
 	@Override
 	public void addInfo(int heuristicId, HeuristicDirectiveValues values) {
@@ -100,19 +94,14 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 
 	@Override
 	public HeuristicDirectiveValues poll() {
-		return prioritisedHeuristics.poll();
+		Integer heuristicId = prioritisedHeuristics.poll();
+		return heuristicId == null ? null : mapHeuristicToHeuristicValue.get(heuristicId);
 	}
 
 	@Override
 	public HeuristicDirectiveValues peek() {
-		return prioritisedHeuristics.peek();
-	}
-
-	@Override
-	public void offer(Collection<HeuristicDirectiveValues> collectionOfValues) {
-		for (HeuristicDirectiveValues values : collectionOfValues) {
-			prioritisedHeuristics.offer(values);
-		}
+		Integer heuristicId = prioritisedHeuristics.peek();
+		return heuristicId == null ? null : mapHeuristicToHeuristicValue.get(heuristicId);
 	}
 
 	private void checkPrioritisedHeuristics() {
@@ -129,11 +118,11 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 						throw oops("Unexpected weight in " + values + " (expected " + weight + ")");
 					}
 					if (choiceManager.isActiveHeuristicAtom(heuristicId)) {
-						if (!prioritisedHeuristics.contains(values)) {
+						if (!prioritisedHeuristics.contains(heuristicId)) {
 							throw oops("Heap of prioritised heuristics does not contain " + values);
 						}
 					} else {
-						if (prioritisedHeuristics.contains(values)) {
+						if (prioritisedHeuristics.contains(heuristicId)) {
 							throw oops("Heap of prioritised heuristics contains " + values);
 						}
 					}
@@ -166,19 +155,29 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 
 		@Override
 		public void callbackOnChanged(int atom, boolean active) {
-			HeuristicDirectiveValues values = mapHeuristicToHeuristicValue.get(atom);
 			if (active) {
 				// TODO: check if it is possible and useful to test for the following condition:
 				// if (assignment.isUnassignedOrMBT(values.getHeadAtomId())) {
-				prioritisedHeuristics.add(values);
+				prioritisedHeuristics.add(atom);
 				// }
 			} else {
-				prioritisedHeuristics.remove(values);
+				prioritisedHeuristics.remove(atom);
 			}
 			if (checksEnabled) {
 				checkPrioritisedHeuristics();
 			}
 		}
+	}
+	
+	private class HeuristicPriorityComparator implements Comparator<Integer> {
+		
+		private final PriorityComparator priorityComparator = new PriorityComparator();
+
+		@Override
+		public int compare(Integer heu1, Integer heu2) {
+			return priorityComparator.compare(mapHeuristicToHeuristicValue.get(heu1), mapHeuristicToHeuristicValue.get(heu2));
+		}
+
 	}
 
 }

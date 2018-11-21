@@ -58,7 +58,7 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 
 	@Before
 	public void setUp() throws IOException {
-		this.store = new DefaultDomainSpecificHeuristicsStore(assignment);
+		this.store = new DefaultDomainSpecificHeuristicsStore();
 		this.choiceManager = new PseudoChoiceManager(assignment, new NaiveNoGoodStore(assignment), store);
 	}
 

@@ -29,8 +29,6 @@ import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.solver.Checkable;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 
-import java.util.Collection;
-
 /**
  * Stores information on heuristic directives obtained from the grounder
  */
@@ -49,19 +47,6 @@ public interface DomainSpecificHeuristicsStore extends Checkable {
 	 * @return
 	 */
 	HeuristicDirectiveValues peek();
-	
-	/**
-	 * Inserts elements again that have been {@link #poll()}ed before.
-	 * 
-	 * <b>ATTENTION:</b>
-	 * Only use for values that have been inserted through {@link #addInfo(int, HeuristicDirectiveValues)} before!
-	 * 
-	 * TODO: potential improvement: manage ALL conditions for the activity of heuristics in the implementation
-	 * of this interface, s.t. an element retrieved by {@link #poll()} never has to be discarded
-	 * 
-	 * @param values
-	 */
-	void offer(Collection<HeuristicDirectiveValues> values);
 	
 	HeuristicDirectiveValues getValues(int heuristicId);
 	

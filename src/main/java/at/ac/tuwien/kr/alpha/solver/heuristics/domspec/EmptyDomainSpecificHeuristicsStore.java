@@ -28,8 +28,6 @@ package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 
-import java.util.Collection;
-
 /**
  * Does nothing (to be used instead of {@link DefaultDomainSpecificHeuristicsStore} in case the domain-specific heuristics are not used)
  */
@@ -47,10 +45,6 @@ public class EmptyDomainSpecificHeuristicsStore implements DomainSpecificHeurist
 	@Override
 	public HeuristicDirectiveValues peek() {
 		return null;
-	}
-
-	@Override
-	public void offer(Collection<HeuristicDirectiveValues> values) {
 	}
 	
 	@Override

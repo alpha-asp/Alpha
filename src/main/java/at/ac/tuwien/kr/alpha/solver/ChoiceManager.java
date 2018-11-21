@@ -89,7 +89,7 @@ public class ChoiceManager implements Checkable {
 		if (domainSpecificHeuristicsStore != null) {
 			this.domainSpecificHeuristics = domainSpecificHeuristicsStore;
 		} else {
-			this.domainSpecificHeuristics = new DefaultDomainSpecificHeuristicsStore(assignment);
+			this.domainSpecificHeuristics = new DefaultDomainSpecificHeuristicsStore();
 		}
 		this.domainSpecificHeuristics.setChoiceManager(this);
 		assignment.setCallback(this);
