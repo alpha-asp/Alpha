@@ -98,7 +98,7 @@ public class HouseTest extends AbstractSolverTests {
 				.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "House", "house_alpha_2018-09-10b.asp")));
 		parsedProgram
 				.accumulate(parser.parse(CharStreams
-						.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "House", "instances", instanceId + ".edb"))));
+						.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "House", "instances_alpha", instanceId + ".edb"))));
 
 		Solver solver = getInstance(parsedProgram);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
