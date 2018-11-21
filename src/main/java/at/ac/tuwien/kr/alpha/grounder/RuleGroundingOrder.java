@@ -56,7 +56,7 @@ public class RuleGroundingOrder {
 	private final NonGroundRule nonGroundRule;
 	private HashMap<Literal, Literal[]> groundingOrder;
 	private HashMap<Literal, Float> literalSelectivity;
-	private LinkedList<Literal> startingLiterals;
+	private List<Literal> startingLiterals;
 
 	private final boolean fixedGroundingInstantiation;
 	private Literal[] fixedGroundingOrder;
@@ -83,6 +83,13 @@ public class RuleGroundingOrder {
 	private boolean computeStartingLiterals() {
 		LinkedHashSet<Literal> fixedStartingLiterals = new LinkedHashSet<>();
 		LinkedHashSet<Literal> ordinaryStartingLiterals = new LinkedHashSet<>();
+		
+		// If the rule is ground, every body literal is a starting literal and the ground instantiation is fixed.
+		if (nonGroundRule.getRule().isGround()) {
+			startingLiterals = new LinkedList<>(nonGroundRule.getBodyLiterals());
+			return true;
+		}
+		
 		// Check each literal in the rule body whether it is eligible.
 		for (Literal literal : nonGroundRule.getBodyLiterals()) {
 			// Only literals that need no variables already bound can start grounding.
