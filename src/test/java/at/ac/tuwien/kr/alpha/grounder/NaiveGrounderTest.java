@@ -31,6 +31,7 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collection;
@@ -46,12 +47,17 @@ import static org.junit.Assert.assertTrue;
 public class NaiveGrounderTest {
 	private static final ProgramParser PARSER = new ProgramParser();
 	
+	@Before
+	public void resetRuleIdGenerator() {
+		NonGroundRule.ID_GENERATOR.resetGenerator();
+	}
+	
 	/**
 	 * Asserts that a ground rule whose positive body is not satisfied by the empty assignment
 	 * is grounded immediately.
 	 */
 	@Test
-	public void groundRulesAlreadyGround() {
+	public void groundRuleAlreadyGround() {
 		Program program = PARSER.parse("a :- not b. "
 				+ "b :- not a. "
 				+ "c :- b.");
@@ -63,6 +69,27 @@ public class NaiveGrounderTest {
 		expectContains(strNoGoods, "*{-(a), +(_R_(\"0\",\"{}\"))}");
 		expectContains(strNoGoods, "*{-(b), +(_R_(\"1\",\"{}\"))}");
 		expectContains(strNoGoods, "*{-(c), +(_R_(\"2\",\"{}\"))}");
+	}
+	
+	/**
+	 * Asserts that a ground rule whose positive non-unary body is not satisfied by the empty assignment
+	 * is grounded immediately.
+	 */
+	@Test
+	public void groundRuleWithLongerBodyAlreadyGround() {
+		Program program = PARSER.parse("a :- not b. "
+				+ "b :- not a. "
+				+ "c :- b. "
+				+ "d :- b, c. ");
+		
+		AtomStore atomStore = new AtomStoreImpl();
+		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
+		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
+		Set<String> strNoGoods = noGoods.values().stream().map(atomStore::noGoodToString).collect(Collectors.toSet());
+		expectContains(strNoGoods, "*{-(a), +(_R_(\"0\",\"{}\"))}");
+		expectContains(strNoGoods, "*{-(b), +(_R_(\"1\",\"{}\"))}");
+		expectContains(strNoGoods, "*{-(c), +(_R_(\"2\",\"{}\"))}");
+		expectContains(strNoGoods, "*{-(d), +(_R_(\"3\",\"{}\"))}");
 	}
 	
 	/**
@@ -79,7 +106,6 @@ public class NaiveGrounderTest {
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		Set<String> strNoGoods = noGoods.values().stream().map(atomStore::noGoodToString).collect(Collectors.toSet());
-		System.out.println(strNoGoods);
 		expectContains(strNoGoods, "*{-(a), +(_R_(\"0\",\"{}\"))}");
 		expectContains(strNoGoods, "*{-(b), +(_R_(\"1\",\"{}\"))}");
 		expectContains(strNoGoods, "{+(b)}");
