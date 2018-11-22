@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -153,7 +153,7 @@ public abstract class AbstractSolverTests {
 
 	protected Solver getInstance(Program program) {
 		AtomStore atomStore = new AtomStoreImpl();
-		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, program, atomStore));
+		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, program, atomStore, true));
 	}
 
 	protected Solver getInstance(String program) {

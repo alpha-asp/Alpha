@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017 Siemens AG
+ * Copyright (c) 2016-2018 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -176,7 +176,7 @@ public class BerkMinTest {
 	
 	@Test
 	public void learnNoGood() {
-		NoGood learnedNoGood = new NoGood(fromOldLiterals(1, 2));
+		NoGood learnedNoGood = NoGood.learnt(fromOldLiterals(1, 2));
 		int backjumpLevel = 1;
 		boolean clearLastChoiceAfterBackjump = true;
 		Set<NoGood> noGoodsResponsibleForConflict = Collections.emptySet();

@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.NoGood.Type;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
@@ -48,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
@@ -76,6 +78,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private int maxAtomIdBeforeGroundingNewNoGoods = -1;
 	private boolean disableInstanceRemoval;
 	private boolean useCountingGridNormalization;
+	private boolean debugInternalChecks;
 	
 	/**
 	 * If this configuration parameter is {@code true} (which it is by default),
@@ -85,11 +88,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 */
 	private boolean stopBindingAtNonTruePositiveBody = true;
 
-	public NaiveGrounder(Program program, AtomStore atomStore, Bridge... bridges) {
-		this(program, atomStore, p -> true, false, bridges);
+	public NaiveGrounder(Program program, AtomStore atomStore, boolean debugInternalChecks, Bridge... bridges) {
+		this(program, atomStore, p -> true, false, debugInternalChecks, bridges);
 	}
 
-	NaiveGrounder(Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, boolean useCountingGrid, Bridge... bridges) {
+	NaiveGrounder(Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, boolean useCountingGrid, boolean debugInternalChecks, Bridge... bridges) {
 		super(filter, bridges);
 		this.atomStore = atomStore;
 
@@ -106,6 +109,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		final Set<NonGroundRule> uniqueGroundRulePerGroundHead = getRulesWithUniqueHead();
 		choiceRecorder = new ChoiceRecorder(atomStore);
 		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, programAnalysis, uniqueGroundRulePerGroundHead);
+		
+		this.debugInternalChecks = debugInternalChecks;
 	}
 
 	private void initializeFactsAndRules(Program program) {
@@ -372,6 +377,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 			LOGGER.debug("{}", choiceRecorder);
 		}
+		
+		if (debugInternalChecks) {
+			checkTypesOfNoGoods(newNoGoods.values());
+		}
+		
 		return newNoGoods;
 	}
 
@@ -609,6 +619,24 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	@Override
 	public Set<Literal> justifyAtom(int atomToJustify, Assignment currentAssignment) {
 		return analyzeUnjustified.analyze(atomToJustify, currentAssignment);
+	}
+
+	/**
+	 * Checks that every nogood not marked as {@link NoGood.Type#INTERNAL} contains only
+	 * atoms which are not {@link Predicate#isSolverInternal()} (except {@link RuleAtom}s, which are allowed).
+	 * @param newNoGoods
+	 */
+	private void checkTypesOfNoGoods(Collection<NoGood> newNoGoods) {
+		for (NoGood noGood : newNoGoods) {
+			if (noGood.getType() != Type.INTERNAL) {
+				for (int literal : noGood) {
+					Atom atom = atomStore.get(atomOf(literal));
+					if (atom.getPredicate().isSolverInternal() && !(atom instanceof RuleAtom)) {
+						throw oops("NoGood containing atom of internal predicate " + atom + " is " + noGood.getType() + " instead of INTERNAL");
+					}
+				}
+			}
+		}
 	}
 
 	private static class FirstBindingAtom {

@@ -27,8 +27,11 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
@@ -228,7 +231,7 @@ public class Main {
 
 		final AtomStore atomStore = new AtomStoreImpl();
 		final Grounder grounder = GrounderFactory.getInstance(
-			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), program, atomStore, filter, normalizationUseGrid
+			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), program, atomStore, filter, normalizationUseGrid, debugInternalChecks
 		);
 
 		// NOTE: Using time as seed is fine as the internal heuristics

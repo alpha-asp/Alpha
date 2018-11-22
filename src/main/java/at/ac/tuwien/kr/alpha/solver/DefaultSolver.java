@@ -307,7 +307,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		for (Literal literal : reasonsForUnjustified) {
 			reasons[arrpos++] = atomToLiteral(atomStore.get(literal.getAtom()), !literal.isNegated());
 		}
-		return new NoGood(reasons);
+		return NoGood.learnt(reasons);
 	}
 
 	private boolean treatConflictAfterClosing(NoGood violatedNoGood) {

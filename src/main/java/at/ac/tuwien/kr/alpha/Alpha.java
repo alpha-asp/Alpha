@@ -220,7 +220,7 @@ public class Alpha {
 
 	public Stream<AnswerSet> solve() {
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore);
+		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, debug);
 		Solver solver = SolverFactory.getInstance(solverName, storeName, atomStore, grounder, new Random(seed), BranchingHeuristicFactory.Heuristic.NAIVE, debug, false);
 		return solver.stream();
 	}

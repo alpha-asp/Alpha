@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -154,7 +154,7 @@ public class GroundConflictNoGoodLearner {
 				return new ConflictAnalysisResult(null, atomAssignmentEntry.getWeakDecisionLevel(), true, noGoodsResponsible);
 			}
 			// Case a) take other implying NoGood into account.
-			currentResolutionNoGood = new NoGood(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, otherContributingNoGood, atomAssignmentEntry.getAtom(), atomAssignmentEntry.getWeakDecisionLevel(), atomAssignmentEntry.getPropagationLevelRespectingLowerMBT()));
+			currentResolutionNoGood = NoGood.learnt(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, otherContributingNoGood, atomAssignmentEntry.getAtom(), atomAssignmentEntry.getWeakDecisionLevel(), atomAssignmentEntry.getPropagationLevelRespectingLowerMBT()));
 			noGoodsResponsible.add(otherContributingNoGood);
 
 			// TODO: create/edit ResolutionSequence
@@ -204,7 +204,7 @@ public class GroundConflictNoGoodLearner {
 			}
 			// TODO: add entry in ResolutionSequence.
 
-			currentResolutionNoGood = new NoGood(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, impliedByNoGood, currentLiteralAssignment.getAtom(), decisionLevel, propagationLevel));
+			currentResolutionNoGood = NoGood.learnt(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, impliedByNoGood, currentLiteralAssignment.getAtom(), decisionLevel, propagationLevel));
 			noGoodsResponsible.add(impliedByNoGood);
 		}
 	}

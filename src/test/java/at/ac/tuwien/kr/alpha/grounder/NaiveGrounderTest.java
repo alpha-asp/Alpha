@@ -63,7 +63,7 @@ public class NaiveGrounderTest {
 				+ "c :- b.");
 		
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
+		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		Set<String> strNoGoods = noGoods.values().stream().map(atomStore::noGoodToString).collect(Collectors.toSet());
 		expectContains(strNoGoods, "*{-(a), +(_R_(\"0\",\"{}\"))}");
@@ -83,7 +83,7 @@ public class NaiveGrounderTest {
 				+ "d :- b, c. ");
 		
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
+		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		Set<String> strNoGoods = noGoods.values().stream().map(atomStore::noGoodToString).collect(Collectors.toSet());
 		expectContains(strNoGoods, "*{-(a), +(_R_(\"0\",\"{}\"))}");
@@ -103,7 +103,7 @@ public class NaiveGrounderTest {
 				+ ":- b.");
 		
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
+		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		Set<String> strNoGoods = noGoods.values().stream().map(atomStore::noGoodToString).collect(Collectors.toSet());
 		expectContains(strNoGoods, "*{-(a), +(_R_(\"0\",\"{}\"))}");

@@ -89,7 +89,7 @@ public class ChoiceRecorder {
 	private NoGood generatePos(final int atomOn, List<Integer> posLiterals) {
 		final int literalOn = atomToLiteral(atomOn);
 
-		return NoGood.fromBody(posLiterals, emptyList(), literalOn);
+		return NoGood.fromBodyInternal(posLiterals, emptyList(), literalOn);
 	}
 
 	private List<NoGood> generateNeg(final int atomOff, List<Integer> negLiterals)  {
@@ -99,7 +99,7 @@ public class ChoiceRecorder {
 		for (Integer negLiteral : negLiterals) {
 			// Choice is off if any of the negative atoms is assigned true,
 			// hence we add one nogood for each such atom.
-			noGoods.add(NoGood.headFirst(negLiteralOff, negLiteral));
+			noGoods.add(NoGood.headFirstInternal(negLiteralOff, negLiteral));
 		}
 		return noGoods;
 	}
