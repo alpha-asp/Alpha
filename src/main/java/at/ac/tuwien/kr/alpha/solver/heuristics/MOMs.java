@@ -37,6 +37,13 @@ import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 public class MOMs {
 	
 	private BinaryNoGoodPropagationEstimation bnpEstimation;
+	
+	/**
+	 * Configuration parameter to switch estimation of binary nogood propagation
+	 * on or off. If {@code true}, BNP estimation will be preferred, otherwise
+	 * only binary watches will be counted.
+	 */
+	private boolean preferBNPEstimation = false;
 
 	public MOMs(BinaryNoGoodPropagationEstimation bnpEstimation) {
 		super();
@@ -50,12 +57,13 @@ public class MOMs {
 	public double getScore(Integer atom) {
 		int s1;
 		int s2;
-		if (bnpEstimation.hasBinaryNoGoods()) {
+		if (preferBNPEstimation && bnpEstimation.hasBinaryNoGoods()) {
 			s1 = bnpEstimation.estimate(atom, ThriceTruth.TRUE) - 1;
 			s2 = bnpEstimation.estimate(atom, ThriceTruth.FALSE) - 1;
 		} else {
-			throw new UnsupportedOperationException();
-			// TODO: fall back to counting watches
+			// fall back to counting watches:
+			s1 = bnpEstimation.getNumberOfBinaryWatches(atom, true);
+			s2 = bnpEstimation.getNumberOfBinaryWatches(atom, false);
 		}
 		return ((s1 * s2) << 10) + s1 + s2;
 	}

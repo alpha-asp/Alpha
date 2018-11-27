@@ -25,6 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.common.Literals;
+
 /**
  * Offers methods to estimate the effect of propagating binary nogoods.
  */
@@ -62,6 +64,10 @@ public class BinaryNoGoodPropagationEstimation {
 		int assignedNewly = assignment.getNumberOfAssignedAtoms() - assignedBefore;
 		assignment.backtrack();
 		return assignedNewly;
+	}
+	
+	public int getNumberOfBinaryWatches(int atom, boolean truth) {
+		return store.getNumberOfBinaryWatches(Literals.atomToLiteral(atom, truth));
 	}
 
 }

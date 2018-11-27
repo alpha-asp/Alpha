@@ -38,4 +38,6 @@ public interface NoGoodStorePrivilegingBinaryNoGoods extends NoGoodStore {
 
 	ConflictCause propagateOnlyBinaryNoGoods();
 	
+	int getNumberOfBinaryWatches(int literal);
+	
 }

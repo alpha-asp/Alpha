@@ -708,6 +708,10 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStorePrivilegingBinaryNoGo
 			}
 			return null;
 		}
+		
+		public int size() {
+			return noGoodsWithHeadSize + noGoodsWithoutHeadSize;
+		}
 
 		@Override
 		public String toString() {
@@ -721,6 +725,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStorePrivilegingBinaryNoGo
 
 	private void clearAlphaWatchList(int literal) {
 		watchesAlpha[literal] = new ArrayList<>();
+	}
+	
+	@Override
+	public int getNumberOfBinaryWatches(int literal) {
+		return binaryWatches[literal].size();
 	}
 
 	public void runInternalChecks() {
