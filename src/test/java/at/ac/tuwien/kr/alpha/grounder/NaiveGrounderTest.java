@@ -25,32 +25,25 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
-import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests {@link NaiveGrounder}
  */
 public class NaiveGrounderTest {
 	private static final ProgramParser PARSER = new ProgramParser();
-	
-	@Before
-	public void resetRuleIdGenerator() {
-		NonGroundRule.ID_GENERATOR.resetGenerator();
-	}
 	
 	/**
 	 * Asserts that a ground rule whose positive body is not satisfied by the empty assignment
@@ -65,12 +58,12 @@ public class NaiveGrounderTest {
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
-		Set<String> strNoGoods = noGoods.values().stream().map(atomStore::noGoodToString).collect(Collectors.toSet());
-		expectContains(strNoGoods, "*{-(a), +(_R_(\"0\",\"{}\"))}");
-		expectContains(strNoGoods, "*{-(b), +(_R_(\"1\",\"{}\"))}");
-		expectContains(strNoGoods, "*{-(c), +(_R_(\"2\",\"{}\"))}");
+		int litCNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("c", 0))), false);
+		int litB = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))));
+		assertExistsNoGoodContaining(noGoods.values(), litCNeg);
+		assertExistsNoGoodContaining(noGoods.values(), litB);
 	}
-	
+
 	/**
 	 * Asserts that a ground rule whose positive non-unary body is not satisfied by the empty assignment
 	 * is grounded immediately.
@@ -85,11 +78,14 @@ public class NaiveGrounderTest {
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
-		Set<String> strNoGoods = noGoods.values().stream().map(atomStore::noGoodToString).collect(Collectors.toSet());
-		expectContains(strNoGoods, "*{-(a), +(_R_(\"0\",\"{}\"))}");
-		expectContains(strNoGoods, "*{-(b), +(_R_(\"1\",\"{}\"))}");
-		expectContains(strNoGoods, "*{-(c), +(_R_(\"2\",\"{}\"))}");
-		expectContains(strNoGoods, "*{-(d), +(_R_(\"3\",\"{}\"))}");
+		int litANeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("a", 0))), false);
+		int litBNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))), false);
+		int litCNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("c", 0))), false);
+		int litDNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("d", 0))), false);
+		assertExistsNoGoodContaining(noGoods.values(), litANeg);
+		assertExistsNoGoodContaining(noGoods.values(), litBNeg);
+		assertExistsNoGoodContaining(noGoods.values(), litCNeg);
+		assertExistsNoGoodContaining(noGoods.values(), litDNeg);
 	}
 	
 	/**
@@ -105,14 +101,19 @@ public class NaiveGrounderTest {
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
-		Set<String> strNoGoods = noGoods.values().stream().map(atomStore::noGoodToString).collect(Collectors.toSet());
-		expectContains(strNoGoods, "*{-(a), +(_R_(\"0\",\"{}\"))}");
-		expectContains(strNoGoods, "*{-(b), +(_R_(\"1\",\"{}\"))}");
-		expectContains(strNoGoods, "{+(b)}");
+		int litB = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))));
+		assertTrue(noGoods.containsValue(NoGood.fromConstraint(Arrays.asList(litB), Collections.emptyList())));
 	}
-
-	private void expectContains(Collection<String> strings, String string) {
-		assertTrue("Collection of strings does not contain \"" + string + "\"", strings.contains(string));
+	
+	private void assertExistsNoGoodContaining(Collection<NoGood> noGoods, int literal) {
+		for (NoGood noGood : noGoods) {
+			for (int literalInNoGood : noGood) {
+				if (literalInNoGood == literal) {
+					return;
+				}
+			}
+		}
+		fail("No NoGood exists that contains literal " + literal);
 	}
 
 }

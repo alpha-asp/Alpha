@@ -45,7 +45,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  * Copyright (c) 2017-2018, the Alpha Team.
  */
 public class NonGroundRule {
-	static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
+	private static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
 
 	private final int ruleId;
 	private final Rule rule;
