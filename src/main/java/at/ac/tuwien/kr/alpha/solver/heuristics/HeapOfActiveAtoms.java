@@ -27,6 +27,7 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.NoGood.Type;
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.ChoiceInfluenceManager;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
@@ -35,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static java.lang.Math.max;
@@ -132,19 +134,23 @@ public class HeapOfActiveAtoms {
 	 * Computes and stores initial activity values for the atoms occurring in the given nogoods.
 	 */
 	public void initActity(Collection<NoGood> newNoGoods) {
-		// TODO: do this only for static nogoods (?)
+		Collection<NoGood> filteredNoGoods = newNoGoods.stream().filter(ng -> ng.getType() != Type.LEARNT && ng.getType() != Type.INTERNAL).collect(Collectors.toSet());
 		if (moms != null) {
-			initActivityMOMs(newNoGoods);
+			initActivityMOMs(filteredNoGoods);
 		} else {
-			initActivityNaive(newNoGoods);
+			initActivityNaive(filteredNoGoods);
 		}
 	}
 
 	private void initActivityMOMs(Collection<NoGood> newNoGoods) {
+		Set<Integer> atoms = Literals.getAtoms(newNoGoods); // TODO: might be inefficient
+		initActivityMOMs(atoms);
+	}
+
+	private void initActivityMOMs(Set<Integer> atoms) {
 		LOGGER.debug("Initializing activity scores with MOMs");
 		Map<Integer, Double> newActivityScores = new HashMap<>();
 		double maxScore = 0.0;
-		Set<Integer> atoms = Literals.getAtoms(newNoGoods); // TODO: might be inefficient
 		for (Integer atom : atoms) {
 			// TODO: make this more performant by converting activityScores to an array and only respecting new atoms outside the former array bounds
 			if (!activityScores.containsKey(atom) && !choiceManager.getAssignment().isAssigned(atom)) {
