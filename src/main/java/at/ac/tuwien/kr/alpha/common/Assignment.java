@@ -190,7 +190,15 @@ public interface Assignment {
 	 */
 	void growForMaxAtomId();
 	
+	/**
+	 * @return the total number of assigned atoms
+	 */
 	int getNumberOfAssignedAtoms();
+	
+	/**
+	 * @return the number of atoms assigned on the given decision level or a higher one
+	 */
+	int getNumberOfAtomsAssignedFromDecisionLevel(int decisionLevel);
 
 	/**
 	 * Obtain a BasicAtom that is currently assigned MBT (but not TRUE).

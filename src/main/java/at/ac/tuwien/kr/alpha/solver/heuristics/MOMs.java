@@ -43,7 +43,7 @@ public class MOMs {
 	 * on or off. If {@code true}, BNP estimation will be preferred, otherwise
 	 * only binary watches will be counted.
 	 */
-	private boolean preferBNPEstimation = false;
+	private boolean preferBNPEstimation = true;
 
 	public MOMs(BinaryNoGoodPropagationEstimation bnpEstimation) {
 		super();

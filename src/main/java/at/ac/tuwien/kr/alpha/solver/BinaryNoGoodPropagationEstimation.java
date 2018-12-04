@@ -58,10 +58,10 @@ public class BinaryNoGoodPropagationEstimation {
 	 * @return
 	 */
 	public int estimate(int atom, ThriceTruth value) {
-		int assignedBefore = assignment.getNumberOfAssignedAtoms();
 		assignment.choose(atom, value);
+		int decisionLevelAfterChoice = assignment.getDecisionLevel();
 		store.propagateOnlyBinaryNoGoods();
-		int assignedNewly = assignment.getNumberOfAssignedAtoms() - assignedBefore;
+		int assignedNewly = assignment.getNumberOfAtomsAssignedFromDecisionLevel(decisionLevelAfterChoice);
 		assignment.backtrack();
 		return assignedNewly;
 	}
