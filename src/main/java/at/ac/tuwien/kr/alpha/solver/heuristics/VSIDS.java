@@ -83,19 +83,20 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 	 */
 	protected final MultiValuedMap<Integer, Integer> headToBodies = new HashSetValuedHashMap<>();
 	
-	protected VSIDS(Assignment assignment, ChoiceManager choiceManager, HeapOfActiveAtoms heapOfActiveAtoms, Random random) {
+	protected VSIDS(Assignment assignment, ChoiceManager choiceManager, HeapOfActiveAtoms heapOfActiveAtoms, Random random, MOMs.Strategy momsStrategy) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
 		this.heapOfActiveAtoms = heapOfActiveAtoms;
+		this.heapOfActiveAtoms.setMOMsStrategy(momsStrategy);
 		this.rand = random;
 	}
 
-	public VSIDS(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
-		this(assignment, choiceManager, new HeapOfActiveAtoms(decayAge, decayFactor, choiceManager), random);
+	public VSIDS(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, MOMs.Strategy momsStrategy) {
+		this(assignment, choiceManager, new HeapOfActiveAtoms(decayAge, decayFactor, choiceManager), random, momsStrategy);
 	}
 
-	public VSIDS(Assignment assignment, ChoiceManager choiceManager, Random random) {
-		this(assignment, choiceManager, DEFAULT_DECAY_FREQUENCY, DEFAULT_DECAY_FACTOR, random);
+	public VSIDS(Assignment assignment, ChoiceManager choiceManager, Random random, MOMs.Strategy momsStrategy) {
+		this(assignment, choiceManager, DEFAULT_DECAY_FREQUENCY, DEFAULT_DECAY_FACTOR, random, momsStrategy);
 	}
 
 	@Override

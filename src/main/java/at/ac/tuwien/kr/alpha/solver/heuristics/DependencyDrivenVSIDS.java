@@ -47,12 +47,12 @@ import java.util.Random;
  */
 public class DependencyDrivenVSIDS extends VSIDS {
 
-	public DependencyDrivenVSIDS(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
-		super(assignment, choiceManager, new HeapOfActiveChoicePoints(decayAge, decayFactor, choiceManager), random);
+	public DependencyDrivenVSIDS(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, MOMs.Strategy momsStrategy) {
+		super(assignment, choiceManager, new HeapOfActiveChoicePoints(decayAge, decayFactor, choiceManager), random, momsStrategy);
 	}
 
-	public DependencyDrivenVSIDS(Assignment assignment, ChoiceManager choiceManager, Random random) {
-		this(assignment, choiceManager, DEFAULT_DECAY_FREQUENCY, DEFAULT_DECAY_FACTOR, random);
+	public DependencyDrivenVSIDS(Assignment assignment, ChoiceManager choiceManager, Random random, MOMs.Strategy momsStrategy) {
+		this(assignment, choiceManager, DEFAULT_DECAY_FREQUENCY, DEFAULT_DECAY_FACTOR, random, momsStrategy);
 	}
 	
 	/*

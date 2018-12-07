@@ -65,8 +65,8 @@ public final class BranchingHeuristicFactory {
 		}
 	}
 
-	public static BranchingHeuristic getInstance(Heuristic name, Grounder grounder, WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
-		switch (name) {
+	public static BranchingHeuristic getInstance(HeuristicsConfiguration heuristicsConfiguration, Grounder grounder, WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
+		switch (heuristicsConfiguration.getHeuristic()) {
 		case NAIVE:
 			return new NaiveHeuristic(choiceManager);
 		case BERKMIN:
@@ -102,9 +102,9 @@ public final class BranchingHeuristicFactory {
 		case ALPHA_HEAD_MBT:
 			return new AlphaHeadMustBeTrueHeuristic(assignment, choiceManager, random);
 		case VSIDS:
-			return new VSIDS(assignment, choiceManager, random);
+			return new VSIDS(assignment, choiceManager, random, heuristicsConfiguration.getMomsStrategy());
 		case GDD_VSIDS:
-			return new DependencyDrivenVSIDS(assignment, choiceManager, random);
+			return new DependencyDrivenVSIDS(assignment, choiceManager, random, heuristicsConfiguration.getMomsStrategy());
 		}
 		throw new IllegalArgumentException("Unknown branching heuristic requested.");
 	}

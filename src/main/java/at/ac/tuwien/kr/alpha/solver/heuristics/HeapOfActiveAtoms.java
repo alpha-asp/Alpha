@@ -31,6 +31,7 @@ import at.ac.tuwien.kr.alpha.common.NoGood.Type;
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.ChoiceInfluenceManager;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.solver.heuristics.MOMs.Strategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -244,6 +245,12 @@ public class HeapOfActiveAtoms {
 					heap.add(atom);
 				}
 			}
+		}
+	}
+
+	public void setMOMsStrategy(Strategy momsStrategy) {
+		if (moms != null) {
+			moms.setStrategy(momsStrategy);
 		}
 	}
 

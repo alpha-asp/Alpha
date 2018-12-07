@@ -42,6 +42,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.reflections.Reflections;
@@ -221,7 +222,8 @@ public class Alpha {
 	public Stream<AnswerSet> solve() {
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, debug);
-		Solver solver = SolverFactory.getInstance(solverName, storeName, atomStore, grounder, new Random(seed), BranchingHeuristicFactory.Heuristic.NAIVE, debug, false);
+		HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(BranchingHeuristicFactory.Heuristic.NAIVE).build();
+		Solver solver = SolverFactory.getInstance(solverName, storeName, atomStore, grounder, new Random(seed), heuristicsConfiguration, debug, false);
 		return solver.stream();
 	}
 }

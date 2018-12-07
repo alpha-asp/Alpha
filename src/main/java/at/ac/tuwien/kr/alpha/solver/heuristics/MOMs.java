@@ -28,22 +28,24 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * The well-known MOMs (Maximum Occurrences in clauses of Minimum size) heuristic
  * used to initialize atom scores.
- * This implementation is inspired by the MOMs implementation in <a href="https://github.com/potassco/clasp">clasp</a>.
+ * This implementation is inspired by the MOMs implementation in <a href="https://github.com/potassco/clasp">clasp</a>
+ * but differs from it in several ways, e.g.:
+ * <ul>
+ * 	<li>The default strategy is {@link Strategy#CountBinaryWatches}, not {@link Strategy#BinaryNoGoodPropagation}.</li>
+ * 	<li>{@link Strategy#BinaryNoGoodPropagation} does not do only one iteration of propagation, but exhaustive propagation.</li>
+ * </ul>
  *
  */
 public class MOMs {
 	
 	private BinaryNoGoodPropagationEstimation bnpEstimation;
-	
-	/**
-	 * Configuration parameter to switch estimation of binary nogood propagation
-	 * on or off. If {@code true}, BNP estimation will be preferred, otherwise
-	 * only binary watches will be counted.
-	 */
-	private boolean preferBNPEstimation = true;
+	private Strategy strategy;
 
 	public MOMs(BinaryNoGoodPropagationEstimation bnpEstimation) {
 		super();
@@ -57,15 +59,48 @@ public class MOMs {
 	public double getScore(Integer atom) {
 		int s1;
 		int s2;
-		if (preferBNPEstimation && bnpEstimation.hasBinaryNoGoods()) {
-			s1 = bnpEstimation.estimate(atom, ThriceTruth.TRUE) - 1;
-			s2 = bnpEstimation.estimate(atom, ThriceTruth.FALSE) - 1;
-		} else {
-			// fall back to counting watches:
+		
+		switch (strategy) {
+		case BinaryNoGoodPropagation:
+			if (bnpEstimation.hasBinaryNoGoods()) {
+				s1 = bnpEstimation.estimate(atom, ThriceTruth.TRUE) - 1;
+				s2 = bnpEstimation.estimate(atom, ThriceTruth.FALSE) - 1;
+				break;
+			}
+		case CountBinaryWatches:
+		default:
 			s1 = bnpEstimation.getNumberOfBinaryWatches(atom, true);
 			s2 = bnpEstimation.getNumberOfBinaryWatches(atom, false);
 		}
+		
 		return ((s1 * s2) << 10) + s1 + s2;
+	}
+
+	public void setStrategy(Strategy strategy) {
+		this.strategy = strategy;
+	}
+	
+	/**
+	 * The strategy to be used by {@link MOMs} to estimate the amount of influence of a literal.
+	 */
+	public enum Strategy {
+		/**
+		 * Counts binary watches involving the literal under consideration
+		 */
+		CountBinaryWatches,
+		
+		/**
+		 * Assigns true to the literal under consideration, then does propagation only on binary nogoods
+		 * and counts how many other atoms are assigned during this process, then backtracks
+		 */
+		BinaryNoGoodPropagation;
+
+		/**
+		 * @return a comma-separated list of names of known heuristics
+		 */
+		public static String listAllowedValues() {
+			return Arrays.stream(values()).map(Strategy::toString).collect(Collectors.joining(", "));
+		}
 	}
 
 }
