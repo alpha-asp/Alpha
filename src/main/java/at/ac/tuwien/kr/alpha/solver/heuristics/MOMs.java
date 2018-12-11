@@ -44,8 +44,10 @@ import java.util.stream.Collectors;
  */
 public class MOMs {
 	
+	private static final Strategy DEFAULT_STRATEGY = Strategy.CountBinaryWatches;
+	
 	private BinaryNoGoodPropagationEstimation bnpEstimation;
-	private Strategy strategy;
+	private Strategy strategy = DEFAULT_STRATEGY;
 
 	public MOMs(BinaryNoGoodPropagationEstimation bnpEstimation) {
 		super();
@@ -77,7 +79,7 @@ public class MOMs {
 	}
 
 	public void setStrategy(Strategy strategy) {
-		this.strategy = strategy;
+		this.strategy = strategy != null ? strategy : DEFAULT_STRATEGY;
 	}
 	
 	/**
