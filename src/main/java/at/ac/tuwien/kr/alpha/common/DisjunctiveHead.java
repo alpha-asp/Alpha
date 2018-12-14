@@ -39,4 +39,9 @@ public class DisjunctiveHead extends Head {
 		}
 		return true;
 	}
+
+	@Override
+	public List<Atom> getAtoms() {
+		return this.disjunctiveAtoms;
+	}
 }

@@ -1,12 +1,13 @@
 package at.ac.tuwien.kr.alpha.common;
 
+import static at.ac.tuwien.kr.alpha.Util.join;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-
-import java.util.List;
-
-import static at.ac.tuwien.kr.alpha.Util.join;
 
 /**
  * Represents the head of a choice rule.
@@ -61,12 +62,25 @@ public class ChoiceHead extends Head {
 		return upperBound;
 	}
 
-	public ChoiceHead(List<ChoiceElement> choiceElements, Term lowerBound, ComparisonOperator lowerOp, Term upperBound, ComparisonOperator upperOp) {
+	public ChoiceHead(List<ChoiceElement> choiceElements, Term lowerBound, ComparisonOperator lowerOp, Term upperBound,
+			ComparisonOperator upperOp) {
 		this.choiceElements = choiceElements;
 		this.lowerBound = lowerBound;
 		this.lowerOp = lowerOp;
 		this.upperBound = upperBound;
 		this.upperOp = upperOp;
+	}
+
+	/**
+	 * TODO added this quick and dirty for dependency graph creation. However, could
+	 * we use the atoms as keys for a map with condition literals (or also simply
+	 * choice elements) as values? If that were the case, instead of creating new
+	 * lists, we could return the key set of that map here.
+	 */
+	public List<Atom> getAtoms() {
+		List<Atom> retVal = new ArrayList<>();
+		this.choiceElements.forEach((ce) -> retVal.add(ce.choiceAtom));
+		return retVal;
 	}
 
 	@Override
