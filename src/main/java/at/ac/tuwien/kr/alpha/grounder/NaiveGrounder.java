@@ -159,6 +159,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				registerLiteralAtWorkingMemory(literal, nonGroundRule);
 			}
 		}
+		DependencyGraph dg = DependencyGraph.buildDependencyGraph(this.factsFromProgram, this.knownNonGroundRules);
 	}
 
 	private Set<NonGroundRule> getRulesWithUniqueHead() {
