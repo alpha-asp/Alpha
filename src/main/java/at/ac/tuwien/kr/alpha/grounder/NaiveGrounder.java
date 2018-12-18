@@ -27,7 +27,36 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import static at.ac.tuwien.kr.alpha.Util.oops;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
+import at.ac.tuwien.kr.alpha.common.DependencyGraph;
+import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
@@ -39,17 +68,14 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
-import at.ac.tuwien.kr.alpha.grounder.transformation.*;
+import at.ac.tuwien.kr.alpha.grounder.transformation.CardinalityNormalization;
+import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
+import at.ac.tuwien.kr.alpha.grounder.transformation.EnumerationRewriting;
+import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
+import at.ac.tuwien.kr.alpha.grounder.transformation.SumNormalization;
+import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
+import at.ac.tuwien.kr.alpha.io.DependencyGraphWriter;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
-import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.*;
-
-import static at.ac.tuwien.kr.alpha.Util.oops;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 
 /**
  * A semi-naive grounder.
@@ -160,6 +186,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 		}
 		DependencyGraph dg = DependencyGraph.buildDependencyGraph(this.factsFromProgram, this.knownNonGroundRules);
+		try {
+			new DependencyGraphWriter().writeAsDotfile(dg, "/home/michael/myFirstDepGraph.dot");
+		} catch(Exception ex) {
+			LOGGER.error("Something went wrong writing a dependency graph", ex);
+		}
 	}
 
 	private Set<NonGroundRule> getRulesWithUniqueHead() {

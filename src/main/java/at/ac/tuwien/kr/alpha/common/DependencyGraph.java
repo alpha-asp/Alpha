@@ -20,10 +20,12 @@ public class DependencyGraph {
 	private static final String FACT_NODE_FORMAT = "F%d";
 	private static final String RULE_NODE_FORMAT = "R%d";
 
-	// TODO type for node, include a label - not sure, a node is actually a string
+	// TODO proper getters
 	public class Edge {
-		public final String target;
+
+		public final Node target;
 		public final boolean sign;
+		public final String label;
 
 		/**
 		 * Creates a new edge of a dependency graph. Read as "target depends on source"
@@ -34,9 +36,10 @@ public class DependencyGraph {
 		 * @param target
 		 * @param sign
 		 */
-		public Edge(String target, boolean sign) {
+		public Edge(Node target, boolean sign, String label) {
 			this.target = target;
 			this.sign = sign;
+			this.label = label;
 		}
 
 		@Override
@@ -51,8 +54,31 @@ public class DependencyGraph {
 
 	}
 
-	private Map<Predicate, Map<Instance, String>> factsToNodes = new HashMap<>();
-	private Map<Predicate, List<String>> ruleHeadsToNodes = new HashMap<>();
+	// TODO proper getters
+	public class Node {
+
+		public final String id;
+		public final String label;
+
+		public Node(String id, String label) {
+			this.id = id;
+			this.label = label;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			return this.id.equals(o);
+		}
+
+		@Override
+		public int hashCode() {
+			return this.id.hashCode();
+		}
+
+	}
+
+	private Map<Predicate, Map<Instance, Node>> factsToNodes = new HashMap<>();
+	private Map<Predicate, List<Node>> ruleHeadsToNodes = new HashMap<>();
 
 	private int nodeIdCounter = -1;
 
@@ -61,7 +87,7 @@ public class DependencyGraph {
 	 * value as List<Edge> rather than Map<Integer,Boolean> as one node may have
 	 * positive and negative edges to another.
 	 */
-	private Map<String, List<Edge>> nodes = new HashMap<>();
+	private Map<Node, List<Edge>> nodes = new HashMap<>();
 
 	/**
 	 * Adds a new node to this DependencyGraph. Must only be called with node IDs
@@ -73,29 +99,34 @@ public class DependencyGraph {
 	 * @throws IllegalArgumentException in case a node with the given id already
 	 *                                  exists in the graph
 	 */
-	private void addNode(String nodeId, List<Edge> edges) {
-		if (this.nodes.containsKey(nodeId)) {
+	private Node addNode(String nodeId, String nodeLabel, List<Edge> edges) {
+		Node n = new Node(nodeId, nodeLabel);
+		if (this.nodes.containsKey(n)) {
 			throw new IllegalArgumentException("Node map already contains node id " + nodeId + "as a key!");
 		}
-		this.nodes.put(nodeId, edges);
+		this.nodes.put(n, edges);
+		return n;
 	}
 
-	private void addEdge(String nodeIdFrom, Edge e) {
-		if (!this.nodes.containsKey(nodeIdFrom)) {
-			throw new IllegalArgumentException("Node with id " + nodeIdFrom + " doesn't exist!");
+	private void addEdge(Node nodeFrom, Edge e) {
+		if (!this.nodes.containsKey(nodeFrom)) {
+			throw new IllegalArgumentException("Node with id " + nodeFrom.id + " doesn't exist!");
 		}
-		this.nodes.get(nodeIdFrom).add(e);
+		this.nodes.get(nodeFrom).add(e);
 	}
 
-	private void addDependencies(String dependentNodeId, Predicate bodyPredicate, boolean isNegative) {
+	// TODO rather than just a predicate, pass the "real thing" here
+	private void addDependencies(Node dependentNode, Predicate bodyPredicate, boolean isNegative) {
 		if (this.ruleHeadsToNodes.containsKey(bodyPredicate)) {
-			for (String dependencyNodeId : this.ruleHeadsToNodes.get(bodyPredicate)) {
-				this.addEdge(dependencyNodeId, new Edge(dependentNodeId, !isNegative));
+			for (Node dependencyNode : this.ruleHeadsToNodes.get(bodyPredicate)) {
+				this.addEdge(dependencyNode,
+						new Edge(dependentNode, !isNegative, isNegative ? "-" : "+" + " " + bodyPredicate.toString()));
 			}
 		} else {
 			if (this.factsToNodes.containsKey(bodyPredicate)) {
-				for (Map.Entry<Instance, String> entry : this.factsToNodes.get(bodyPredicate).entrySet()) {
-					this.addEdge(entry.getValue(), new Edge(dependentNodeId, !isNegative));
+				for (Map.Entry<Instance, Node> entry : this.factsToNodes.get(bodyPredicate).entrySet()) {
+					this.addEdge(entry.getValue(), new Edge(dependentNode, !isNegative,
+							isNegative ? "-" : "+" + " " + bodyPredicate.toString()));
 				}
 			} else {
 				// create new node for body predicate, i.e. assume there will be a rule head.
@@ -103,58 +134,76 @@ public class DependencyGraph {
 				// true
 				String dependencyNodeId = String.format(DependencyGraph.RULE_NODE_FORMAT, this.nextNodeId());
 				List<Edge> edges = new ArrayList<>();
-				edges.add(new Edge(dependentNodeId, !isNegative));
-				this.addNode(dependencyNodeId, edges);
+				edges.add(
+						new Edge(dependentNode, !isNegative, isNegative ? "-" : "+" + " " + bodyPredicate.toString()));
+				this.addNode(dependencyNodeId, bodyPredicate.toString(), edges);
 			}
 		}
 	}
-	
+
+	// TODO we need to handle builtin atoms since those don't depend on rules within
+	// the program
 	public static DependencyGraph buildDependencyGraph(Map<Predicate, LinkedHashSet<Instance>> factsFromProgram,
 			Map<Integer, NonGroundRule> nonGroundRules) {
 		DependencyGraph retVal = new DependencyGraph();
-		Map<Instance, String> tmp = null;
+		Map<Instance, Node> tmp = null;
 		int i = 0;
 		String tmpNodeId = null;
+		String tmpNodeLabel = null;
+		Node tmpNode;
+		// TODO maybe we should'nt make one graph node of every fact instance (hierarchical??)
 		for (Map.Entry<Predicate, LinkedHashSet<Instance>> entry : factsFromProgram.entrySet()) {
+			tmp = new HashMap<>();
 			for (Instance inst : entry.getValue()) {
 				LOGGER.debug("Predicate instance from facts: {} {}", entry.getKey().toString(), inst.toString());
 				tmpNodeId = String.format(DependencyGraph.FACT_NODE_FORMAT, retVal.nextNodeId());
-				retVal.addNode(tmpNodeId, new ArrayList<>());
-				tmp = new HashMap<>();
-				tmp.put(inst, tmpNodeId);
-				retVal.factsToNodes.put(entry.getKey(), tmp);
+				tmpNodeLabel = entry.getKey().getName() + inst.toString();
+				tmpNode = retVal.addNode(tmpNodeId, tmpNodeLabel, new ArrayList<>());
+				tmp.put(inst, tmpNode);
 				i++;
 			}
+			retVal.factsToNodes.put(entry.getKey(), tmp);
 		}
 		NonGroundRule tmpRule = null;
 		Predicate tmpBodyPredicate = null;
+		List<Node> tmpRuleHeadNodes = null;
 		for (Map.Entry<Integer, NonGroundRule> ruleEntry : nonGroundRules.entrySet()) {
 			LOGGER.debug("NonGroundRule id = {}: {}", ruleEntry.getKey().toString(), ruleEntry.getValue().toString());
 			// TODO process rule head, check if dependants exist and add those edges
-			tmpNodeId = String.format(DependencyGraph.RULE_NODE_FORMAT, retVal.nextNodeId());
-			retVal.addNode(tmpNodeId, new ArrayList<>());
 			tmpRule = ruleEntry.getValue();
+			tmpNodeId = String.format(DependencyGraph.RULE_NODE_FORMAT, retVal.nextNodeId());
+			tmpNodeLabel = tmpRule.getHeadAtom().toString();
+			tmpNode = retVal.addNode(tmpNodeId, tmpNodeLabel, new ArrayList<>());
+			if(!retVal.ruleHeadsToNodes.containsKey(tmpRule.getHeadAtom().getPredicate())) {
+				tmpRuleHeadNodes = new ArrayList<>();
+				tmpRuleHeadNodes.add(tmpNode);
+				retVal.ruleHeadsToNodes.put(tmpRule.getHeadAtom().getPredicate(), tmpRuleHeadNodes);
+			}else {
+				retVal.ruleHeadsToNodes.get(tmpRule.getHeadAtom().getPredicate()).add(tmpNode);
+			}
 			for (Literal lit : tmpRule.getBodyLiterals()) {
 				tmpBodyPredicate = lit.getPredicate();
-				retVal.addDependencies(tmpNodeId, tmpBodyPredicate, lit.isNegated());
+				if (!tmpBodyPredicate.isInternal()) {
+					retVal.addDependencies(tmpNode, tmpBodyPredicate, lit.isNegated());
+				}
 			}
 		}
-		return null;
+		return retVal;
 	}
 
 	private int nextNodeId() {
 		return ++this.nodeIdCounter;
 	}
 
-	public Map<Predicate, Map<Instance, String>> getFactsToNodes() {
+	public Map<Predicate, Map<Instance, Node>> getFactsToNodes() {
 		return this.factsToNodes;
 	}
 
-	public Map<Predicate, List<String>> getRuleHeadsToNodes() {
+	public Map<Predicate, List<Node>> getRuleHeadsToNodes() {
 		return this.ruleHeadsToNodes;
 	}
 
-	public Map<String, List<Edge>> getNodes() {
+	public Map<Node, List<Edge>> getNodes() {
 		return this.nodes;
 	}
 
