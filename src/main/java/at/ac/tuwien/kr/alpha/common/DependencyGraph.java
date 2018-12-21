@@ -165,11 +165,11 @@ public class DependencyGraph {
 			Map<Integer, NonGroundRule> nonGroundRules) {
 		DependencyGraph retVal = new DependencyGraph();
 		Map<Instance, Node> tmp = null;
-		int i = 0;
 		String tmpNodeId = null;
 		String tmpNodeLabel = null;
 		Node tmpNode;
-		// TODO maybe we should'nt make one graph node of every fact instance (hierarchical??)
+		// TODO maybe we should'nt make one graph node of every fact instance
+		// (hierarchical??)
 		for (Map.Entry<Predicate, LinkedHashSet<Instance>> entry : factsFromProgram.entrySet()) {
 			tmp = new HashMap<>();
 			for (Instance inst : entry.getValue()) {
@@ -178,7 +178,6 @@ public class DependencyGraph {
 				tmpNodeLabel = entry.getKey().getName() + inst.toString();
 				tmpNode = retVal.addNode(tmpNodeId, tmpNodeLabel, new ArrayList<>());
 				tmp.put(inst, tmpNode);
-				i++;
 			}
 			retVal.factsToNodes.put(entry.getKey(), tmp);
 		}
@@ -192,11 +191,11 @@ public class DependencyGraph {
 			tmpNodeId = String.format(DependencyGraph.RULE_NODE_FORMAT, retVal.nextNodeId());
 			tmpNodeLabel = tmpRule.getHeadAtom().toString();
 			tmpNode = retVal.addNode(tmpNodeId, tmpNodeLabel, new ArrayList<>());
-			if(!retVal.ruleHeadsToNodes.containsKey(tmpRule.getHeadAtom().getPredicate())) {
+			if (!retVal.ruleHeadsToNodes.containsKey(tmpRule.getHeadAtom().getPredicate())) {
 				tmpRuleHeadNodes = new ArrayList<>();
 				tmpRuleHeadNodes.add(tmpNode);
 				retVal.ruleHeadsToNodes.put(tmpRule.getHeadAtom().getPredicate(), tmpRuleHeadNodes);
-			}else {
+			} else {
 				retVal.ruleHeadsToNodes.get(tmpRule.getHeadAtom().getPredicate()).add(tmpNode);
 			}
 			for (Literal lit : tmpRule.getBodyLiterals()) {
