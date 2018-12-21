@@ -77,6 +77,7 @@ public class ChoiceHead extends Head {
 	 * choice elements) as values? If that were the case, instead of creating new
 	 * lists, we could return the key set of that map here.
 	 */
+	@Override
 	public List<Atom> getAtoms() {
 		List<Atom> retVal = new ArrayList<>();
 		this.choiceElements.forEach((ce) -> retVal.add(ce.choiceAtom));

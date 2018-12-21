@@ -20,12 +20,11 @@ public class DependencyGraph {
 	private static final String FACT_NODE_FORMAT = "F%d";
 	private static final String RULE_NODE_FORMAT = "R%d";
 
-	// TODO proper getters
 	public class Edge {
 
-		public final Node target;
-		public final boolean sign;
-		public final String label;
+		private final Node target;
+		private final boolean sign;
+		private final String label;
 
 		/**
 		 * Creates a new edge of a dependency graph. Read as "target depends on source"
@@ -52,13 +51,24 @@ public class DependencyGraph {
 			return ("" + this.target + Boolean.toString(this.sign)).hashCode();
 		}
 
+		public Node getTarget() {
+			return this.target;
+		}
+
+		public boolean getSign() {
+			return this.sign;
+		}
+
+		public String getLabel() {
+			return this.label;
+		}
+
 	}
 
-	// TODO proper getters
 	public class Node {
 
-		public final String id;
-		public final String label;
+		private final String id;
+		private final String label;
 
 		public Node(String id, String label) {
 			this.id = id;
@@ -73,6 +83,14 @@ public class DependencyGraph {
 		@Override
 		public int hashCode() {
 			return this.id.hashCode();
+		}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public String getLabel() {
+			return this.label;
 		}
 
 	}

@@ -30,7 +30,8 @@ public class DependencyGraphWriter {
 		int nodeCnt = 0;
 		Map<Node, Integer> nodesToNumbers = new HashMap<>();
 		for (Map.Entry<Node, List<Edge>> entry : graphDataEntries) {
-			ps.printf(DependencyGraphWriter.DEFAULT_NODE_FORMAT, nodeCnt, entry.getKey().id + " " + entry.getKey().label);
+			ps.printf(DependencyGraphWriter.DEFAULT_NODE_FORMAT, nodeCnt,
+					entry.getKey().getId() + " " + entry.getKey().getLabel());
 			nodesToNumbers.put(entry.getKey(), nodeCnt);
 			nodeCnt++;
 		}
@@ -41,8 +42,9 @@ public class DependencyGraphWriter {
 		for (Map.Entry<Node, List<Edge>> entry : graphDataEntries) {
 			fromNodeNum = nodesToNumbers.get(entry.getKey());
 			for (Edge edge : entry.getValue()) {
-				toNodeNum = nodesToNumbers.get(edge.target);
-				ps.printf(DependencyGraphWriter.DEFAULT_EDGE_FORMAT, fromNodeNum, toNodeNum, edge.sign ? "+" : "-");
+				toNodeNum = nodesToNumbers.get(edge.getTarget());
+				ps.printf(DependencyGraphWriter.DEFAULT_EDGE_FORMAT, fromNodeNum, toNodeNum,
+						edge.getSign() ? "+" : "-");
 			}
 		}
 

@@ -12,6 +12,7 @@ public interface AnswerSet extends Comparable<AnswerSet> {
 
 	boolean isEmpty();
 
+	@Override
 	default int compareTo(AnswerSet other) {
 		final SortedSet<Predicate> predicates = this.getPredicates();
 		int result = Util.compareSortedSets(predicates, other.getPredicates());
