@@ -62,7 +62,7 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 
 	public static final int DEFAULT_SIGN_COUNTER = 0;
 
-	public static final int DEFAULT_DECAY_FREQUENCY = 1;
+	public static final int DEFAULT_DECAY_PERIOD = 1;
 	public static final double DEFAULT_DECAY_FACTOR = 1 / 0.92;
 
 	protected final Assignment assignment;
@@ -91,12 +91,12 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 		this.rand = random;
 	}
 
-	public VSIDS(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, MOMs.Strategy momsStrategy) {
-		this(assignment, choiceManager, new HeapOfActiveAtoms(decayAge, decayFactor, choiceManager), random, momsStrategy);
+	public VSIDS(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, Random random, MOMs.Strategy momsStrategy) {
+		this(assignment, choiceManager, new HeapOfActiveAtoms(decayPeriod, decayFactor, choiceManager), random, momsStrategy);
 	}
 
 	public VSIDS(Assignment assignment, ChoiceManager choiceManager, Random random, MOMs.Strategy momsStrategy) {
-		this(assignment, choiceManager, DEFAULT_DECAY_FREQUENCY, DEFAULT_DECAY_FACTOR, random, momsStrategy);
+		this(assignment, choiceManager, DEFAULT_DECAY_PERIOD, DEFAULT_DECAY_FACTOR, random, momsStrategy);
 	}
 
 	@Override

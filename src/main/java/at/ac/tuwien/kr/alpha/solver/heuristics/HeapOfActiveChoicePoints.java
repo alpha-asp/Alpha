@@ -52,8 +52,8 @@ public class HeapOfActiveChoicePoints extends HeapOfActiveAtoms {
 	 */
 	protected final MultiValuedMap<Integer, Integer> atomsToChoicePoints = new HashSetValuedHashMap<>();
 	
-	public HeapOfActiveChoicePoints(int decayAge, double decayFactor, ChoiceManager choiceManager) {
-		super(decayAge, decayFactor, choiceManager);
+	public HeapOfActiveChoicePoints(int decayPeriod, double decayFactor, ChoiceManager choiceManager) {
+		super(decayPeriod, decayFactor, choiceManager);
 	}
 	
 	@Override

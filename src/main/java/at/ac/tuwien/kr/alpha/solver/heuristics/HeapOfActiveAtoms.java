@@ -61,7 +61,7 @@ public class HeapOfActiveAtoms {
 	protected final PriorityQueue<Integer> heap = new PriorityQueue<>(new AtomActivityComparator().reversed());
 
 	protected ChoiceManager choiceManager;
-	private int decayFrequency;
+	private int decayPeriod;
 	private double decayFactor;
 	private int stepsSinceLastDecay;
 	private double currentActivityIncrement = 1.0;
@@ -69,13 +69,8 @@ public class HeapOfActiveAtoms {
 	
 	private final MOMs moms;
 
-	/**
-	 * @param decayFactor
-	 * @param decayAge
-	 * 
-	 */
-	public HeapOfActiveAtoms(int decayAge, double decayFactor, ChoiceManager choiceManager) {
-		this.decayFrequency = decayAge;
+	public HeapOfActiveAtoms(int decayPeriod, double decayFactor, ChoiceManager choiceManager) {
+		this.decayPeriod = decayPeriod;
 		this.decayFactor = decayFactor;
 		this.choiceManager = choiceManager;
 		this.choiceManager.addChoicePointActivityListener(new ChoicePointActivityListener());
@@ -90,19 +85,19 @@ public class HeapOfActiveAtoms {
 	/**
 	 * Gets the number of steps after which activity scores are decayed.
 	 */
-	public int getDecayFrequency() {
-		return decayFrequency;
+	public int getDecayPeriod() {
+		return decayPeriod;
 	}
 
 	/**
-	 * @see #getDecayFrequency()
+	 * @see #getDecayPeriod()
 	 */
-	public void setDecayFrequency(int decayAge) {
-		this.decayFrequency = decayAge;
+	public void setDecayPeriod(int decayPeriod) {
+		this.decayPeriod = decayPeriod;
 	}
 
 	/**
-	 * Gets the factor by which the activity increment is multiplied every {@link #getDecayFrequency()} steps.
+	 * Gets the factor by which the activity increment is multiplied every {@link #getDecayPeriod()} steps.
 	 */
 	public double getDecayFactor() {
 		return decayFactor;
@@ -118,14 +113,14 @@ public class HeapOfActiveAtoms {
 	/**
 	 * Updates the current activity increment by multiplying it with the decay factor, if time for decay has come.
 	 * 
-	 * Time for decay has come if the number of conflicts since the last decay has reached the decay frequency.
+	 * Time for decay has come if the number of conflicts since the last decay has reached the decay period.
 	 * 
 	 * TODO: actually this does not decay but increase activity for future atoms (maybe rename?)
 	 * TODO: really public?
 	 */
 	public void decayIfTimeHasCome() {
 		stepsSinceLastDecay++;
-		if (stepsSinceLastDecay >= decayFrequency) {
+		if (stepsSinceLastDecay >= decayPeriod) {
 			currentActivityIncrement *= decayFactor;
 			stepsSinceLastDecay = 0;
 		}

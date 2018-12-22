@@ -133,8 +133,8 @@ public class BerkMinTest {
 	}
 	
 	@Test
-	public void reachDecayAgeOnce() {
-		berkmin.setDecayAge(3);
+	public void reachDecayPeriodOnce() {
+		berkmin.setDecayPeriod(3);
 		berkmin.setDecayFactor(1.0 / 3);
 		NoGood violatedNoGood = new NoGood(fromOldLiterals(1, 2));
 		berkmin.violatedNoGood(violatedNoGood);
@@ -152,8 +152,8 @@ public class BerkMinTest {
 	}
 	
 	@Test
-	public void reachDecayAgeTwice() {
-		berkmin.setDecayAge(2);
+	public void reachDecayPeriodTwice() {
+		berkmin.setDecayPeriod(2);
 		berkmin.setDecayFactor(0.75);
 		NoGood violatedNoGood = new NoGood(fromOldLiterals(1, 2));
 		berkmin.violatedNoGood(violatedNoGood);

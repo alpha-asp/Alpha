@@ -74,7 +74,7 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	protected final Map<Integer, Double> activityCounters = new HashMap<>();
 	protected final Map<Integer, Integer> signCounters = new HashMap<>();
 	protected final Deque<NoGood> stackOfNoGoods = new ArrayDeque<>();
-	private int decayAge;
+	private int decayPeriod;
 	private double decayFactor;
 	private int stepsSinceLastDecay;
 
@@ -98,10 +98,10 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	 */
 	protected final MultiValuedMap<Integer, Integer> atomsToBodiesAtoms = new HashSetValuedHashMap<>();
 
-	public DependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, BodyActivityType bodyActivityType) {
+	public DependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, Random random, BodyActivityType bodyActivityType) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
-		this.decayAge = decayAge;
+		this.decayPeriod = decayPeriod;
 		this.decayFactor = decayFactor;
 		this.rand = random;
 		this.bodyActivity = BodyActivityProviderFactory.getInstance(bodyActivityType, bodyAtomToLiterals, activityCounters, DEFAULT_ACTIVITY);
@@ -118,26 +118,26 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	/**
 	 * Gets the number of steps after which all counters are decayed (i.e. multiplied by {@link #getDecayFactor()}.
 	 */
-	public int getDecayAge() {
-		return decayAge;
+	public int getDecayPeriod() {
+		return decayPeriod;
 	}
 
 	/**
 	 * Sets the number of steps after which all counters are decayed (i.e. multiplied by {@link #getDecayFactor()}.
 	 */
-	public void setDecayAge(int decayAge) {
-		this.decayAge = decayAge;
+	public void setDecayPeriod(int decayPeriod) {
+		this.decayPeriod = decayPeriod;
 	}
 
 	/**
-	 * Gets the factor by which all counters are multiplied to decay after {@link #getDecayAge()}.
+	 * Gets the factor by which all counters are multiplied to decay after {@link #getDecayPeriod()}.
 	 */
 	public double getDecayFactor() {
 		return decayFactor;
 	}
 
 	/**
-	 * Sets the factor by which all counters are multiplied to decay after {@link #getDecayAge()}.
+	 * Sets the factor by which all counters are multiplied to decay after {@link #getDecayPeriod()}.
 	 */
 	public void setDecayFactor(double decayFactor) {
 		this.decayFactor = decayFactor;
@@ -294,7 +294,7 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 
 	private void decayAllIfTimeHasCome() {
 		stepsSinceLastDecay++;
-		if (stepsSinceLastDecay >= decayAge) {
+		if (stepsSinceLastDecay >= decayPeriod) {
 			// Decay all:
 			activityCounters.replaceAll((k, v) -> v * decayFactor);
 			stepsSinceLastDecay = 0;
