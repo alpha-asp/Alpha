@@ -166,7 +166,19 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 		return DEFAULT_CHOICE_ATOM;
 	}
 
-	protected boolean chooseSign(int atom) {
+	/**
+	 * Chooses a sign (truth value) to assign to the given atom.
+	 * 
+	 * To make this decision, sign counters are maintained that reflect how often an atom
+	 * occurs positively or negatively in learnt nogoods..
+	 * If the sign balance for the given atom is positive, {@code true} will be chosen.
+	 * If it is negative, {@code false} will be chosen.
+	 * If the sign balance is zero, the default sign is selected, which is {@code false}
+	 * iff the atom represents a rule body (which is currently always the case for atoms chosen in Alpha).
+	 * @param atom the chosen atom
+	 * @return the truth value to assign to the given atom
+	 */
+	 protected boolean chooseSign(int atom) {
 		atom = getAtomForChooseSign(atom);
 
 		if (assignment.getTruth(atom) == ThriceTruth.MBT) {
@@ -183,11 +195,11 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 		}
 
 		if (positiveCounter > negativeCounter) {
-			nChoicesFalse++;
-			return false;
-		} else {
 			nChoicesTrue++;
 			return true;
+		} else {
+			nChoicesFalse++;
+			return false;
 		}
 	}
 
