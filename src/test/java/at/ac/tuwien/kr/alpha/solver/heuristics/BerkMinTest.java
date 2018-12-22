@@ -29,7 +29,9 @@ import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.*;
+import at.ac.tuwien.kr.alpha.solver.NaiveNoGoodStore;
+import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 import org.junit.Before;
 import org.junit.Test;
@@ -187,22 +189,5 @@ public class BerkMinTest {
 
 	private static ConflictAnalysisResult pseudo(NoGood noGood) {
 		return new ConflictAnalysisResult(null, 0, false, Collections.singleton(noGood));
-	}
-
-	private static class PseudoChoiceManager extends ChoiceManager {
-
-		public PseudoChoiceManager(WritableAssignment assignment, NoGoodStore store) {
-			super(assignment, store);
-		}
-
-		@Override
-		public boolean isAtomChoice(int atom) {
-			return true;
-		}
-
-		@Override
-		public boolean isActiveChoiceAtom(int atom) {
-			return true;
-		}
 	}
 }
