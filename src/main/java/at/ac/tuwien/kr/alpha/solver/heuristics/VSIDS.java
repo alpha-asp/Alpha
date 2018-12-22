@@ -82,7 +82,7 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 	 * Maps rule heads to atoms representing corresponding bodies.
 	 */
 	protected final MultiValuedMap<Integer, Integer> headToBodies = new HashSetValuedHashMap<>();
-	
+
 	protected VSIDS(Assignment assignment, ChoiceManager choiceManager, HeapOfActiveAtoms heapOfActiveAtoms, Random random, MOMs.Strategy momsStrategy) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
@@ -105,13 +105,10 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 
 	@Override
 	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
-		// TODO: under which conditions shall activities of literals in noGoodsResponsibleForConflict be incremented?
-		//		for (NoGood noGood : analysisResult.noGoodsResponsibleForConflict) {
-		//			for (Integer literal : noGood) {
-		//				heapOfActiveChoicePoints.incrementActivity(atomOf(literal));
-		//			}
-		//		}
-		for (Integer literal : analysisResult.learnedNoGood) {
+		for (int resolutionAtom : analysisResult.resolutionAtoms) {
+			heapOfActiveAtoms.incrementActivity(resolutionAtom);
+		}
+		for (int literal : analysisResult.learnedNoGood) {
 			incrementSignCounter(literal);
 			heapOfActiveAtoms.incrementActivity(atomOf(literal));
 		}
@@ -130,10 +127,6 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 
 	private void ingestBufferedNoGoods() {
 		heapOfActiveAtoms.initActity(bufferedNoGoods);
-		// TODO: increment sign counters only for learnt nogoods or also for static ones?
-		// for (Integer literal : newNoGood) {
-		// incrementSignCounter(literal);
-		// }
 		bufferedNoGoods.clear();
 	}
 
@@ -170,31 +163,30 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 	 * Chooses a sign (truth value) to assign to the given atom.
 	 * 
 	 * To make this decision, sign counters are maintained that reflect how often an atom
-	 * occurs positively or negatively in learnt nogoods..
+	 * occurs positively or negatively in learnt nogoods.
 	 * If the sign balance for the given atom is positive, {@code true} will be chosen.
 	 * If it is negative, {@code false} will be chosen.
 	 * If the sign balance is zero, the default sign is selected, which is {@code false}
 	 * iff the atom represents a rule body (which is currently always the case for atoms chosen in Alpha).
-	 * @param atom the chosen atom
+	 * 
+	 * @param atom
+	 *          the chosen atom
 	 * @return the truth value to assign to the given atom
 	 */
-	 protected boolean chooseSign(int atom) {
+	protected boolean chooseSign(int atom) {
 		atom = getAtomForChooseSign(atom);
 
 		if (assignment.getTruth(atom) == ThriceTruth.MBT) {
 			return true;
 		}
 
-		// TODO: make one sign counter out of two (maintain only balance as in clasp)
-		int positiveCounter = signCounters.getOrDefault(atomToLiteral(atom, true),  DEFAULT_SIGN_COUNTER);
-		int negativeCounter = signCounters.getOrDefault(atomToLiteral(atom, false), DEFAULT_SIGN_COUNTER);
-
+		int signBalance = getSignBalance(atom);		
 		if (LOGGER.isDebugEnabled() && (nChoicesFalse + nChoicesTrue + nChoicesRand) % 100 == 0) {
 			LOGGER.debug("chooseSign stats: f={}, t={}, r={}", nChoicesFalse, nChoicesTrue, nChoicesRand);
-			LOGGER.debug("chooseSign stats: positiveCounter={}, negativeCounter={}", positiveCounter, negativeCounter);
+			LOGGER.debug("chooseSign stats: signBalance={}", signBalance);
 		}
 
-		if (positiveCounter > negativeCounter) {
+		if (signBalance > 0) {
 			nChoicesTrue++;
 			return true;
 		} else {
@@ -214,6 +206,17 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 	@Override
 	public double getActivity(int literal) {
 		return heapOfActiveAtoms.getActivity(literal);
+	}
+	
+	/**
+	 * Returns the sign balance for the given atom in learnt nogoods.
+	 * @param atom
+	 * @return the number of times the given atom occurrs positively more often than negatively (which may be negative)
+	 */
+	public int getSignBalance(int atom) {
+		int positiveCounter = signCounters.getOrDefault(atomToLiteral(atom, true), DEFAULT_SIGN_COUNTER);
+		int negativeCounter = signCounters.getOrDefault(atomToLiteral(atom, false), DEFAULT_SIGN_COUNTER);
+		return positiveCounter - negativeCounter;
 	}
 
 	@Override
