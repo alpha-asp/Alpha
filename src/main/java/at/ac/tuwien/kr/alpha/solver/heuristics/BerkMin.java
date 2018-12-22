@@ -117,14 +117,12 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 	@Override
 	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
 		pushToStack(analysisResult.learnedNoGood);
-		for (NoGood noGood : analysisResult.noGoodsResponsibleForConflict) {
-			if (LOGGER.isTraceEnabled()) {
-				LOGGER.trace("NoGood responsible with {} choice points", numChoicePoints(noGood));
-			}
-			for (Integer literal : noGood) {
-				incrementActivityCounter(literal);
-				incrementSignCounter(literal);
-			}
+		for (int resolutionAtom : analysisResult.resolutionAtoms) {
+			incrementActivityCounter(atomToLiteral(resolutionAtom, true));
+			incrementActivityCounter(atomToLiteral(resolutionAtom, false));
+		}
+		for (int literal : analysisResult.learnedNoGood) {
+			incrementActivityCounter(literal);
 		}
 		decayAllIfTimeHasCome();
 	}

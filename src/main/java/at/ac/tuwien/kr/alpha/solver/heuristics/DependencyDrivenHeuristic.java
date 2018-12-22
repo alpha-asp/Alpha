@@ -151,10 +151,9 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	@Override
 	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
 		pushToStack(analysisResult.learnedNoGood);
-		for (NoGood noGood : analysisResult.noGoodsResponsibleForConflict) {
-			for (Integer literal : noGood) {
-				incrementActivityCounter(literal);
-			}
+		for (int resolutionAtom : analysisResult.resolutionAtoms) {
+			incrementActivityCounter(atomToLiteral(resolutionAtom, true));
+			incrementActivityCounter(atomToLiteral(resolutionAtom, false));
 		}
 		for (Integer literal : analysisResult.learnedNoGood) {
 			incrementSignCounter(literal);
