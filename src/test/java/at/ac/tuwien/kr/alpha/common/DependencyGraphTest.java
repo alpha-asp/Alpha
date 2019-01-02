@@ -19,7 +19,7 @@ public class DependencyGraphTest {
 		InputStream is = DependencyGraphTest.class.getResourceAsStream("/map_austria.asp");
 		Program p = new ProgramParser().parse(CharStreams.fromStream(is));
 		ProgramAnalysis pa = new ProgramAnalysis(p);
-		DependencyGraph dg = DependencyGraph.buildDependencyGraph(pa.getProgramFacts(), pa.getNonGroundRules());
+		DependencyGraph dg = DependencyGraph.buildDependencyGraph(pa.getNonGroundRules());
 		DependencyGraphWriter dgw = new DependencyGraphWriter();
 		dgw.writeAsDotfile(dg, "/tmp/map_austria.asp.dg.dot");
 	}

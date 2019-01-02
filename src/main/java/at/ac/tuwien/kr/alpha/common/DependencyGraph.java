@@ -69,7 +69,8 @@ public class DependencyGraph {
 
 	public class Node {
 
-		private Predicate predicate;
+		private final Predicate predicate;
+		private final Map<Integer, NonGroundRule> producingRules = new HashMap<>();
 		private final String label;
 
 		public Node(Predicate predicate, String label) {
@@ -98,6 +99,10 @@ public class DependencyGraph {
 			return this.predicate;
 		}
 
+		public Map<Integer, NonGroundRule> getProducingRules() {
+			return this.producingRules;
+		}
+
 	}
 
 	/**
@@ -109,8 +114,7 @@ public class DependencyGraph {
 
 	// TODO we need to handle builtin atoms since those don't depend on rules within
 	// the program
-	public static DependencyGraph buildDependencyGraph(Map<Predicate, LinkedHashSet<Instance>> factsFromProgram,
-			Map<Integer, NonGroundRule> nonGroundRules) {
+	public static DependencyGraph buildDependencyGraph(Map<Integer, NonGroundRule> nonGroundRules) {
 		DependencyGraph retVal = new DependencyGraph();
 		NonGroundRule tmpRule;
 		Atom tmpHead;
@@ -120,27 +124,27 @@ public class DependencyGraph {
 		Edge tmpEdge;
 		for (Map.Entry<Integer, NonGroundRule> entry : nonGroundRules.entrySet()) {
 			tmpRule = entry.getValue();
-			LOGGER.debug("Processing rule: {}", tmpRule);
+			LOGGER.trace("Processing rule: {}", tmpRule);
 			tmpHead = tmpRule.getHeadAtom();
 			tmpHeadNode = retVal.new Node(tmpHead.getPredicate(), tmpHead.getPredicate().toString());
 			if (!retVal.nodes.containsKey(tmpHeadNode)) {
-				LOGGER.debug("Creating new node for predicate {}", tmpHeadNode.predicate);
+				LOGGER.trace("Creating new node for predicate {}", tmpHeadNode.predicate);
 				retVal.nodes.put(tmpHeadNode, new ArrayList<>());
 			}
 			for (Literal l : entry.getValue().getBodyLiterals()) {
-				LOGGER.debug("Processing rule body literal: {}", l);
+				LOGGER.trace("Processing rule body literal: {}", l);
 				tmpBodyNode = retVal.new Node(l.getPredicate(), l.getPredicate().toString());
 				if (!retVal.nodes.containsKey(tmpBodyNode)) {
-					LOGGER.debug("Creating new node for predicate {}", tmpBodyNode.predicate);
+					LOGGER.trace("Creating new node for predicate {}", tmpBodyNode.predicate);
 					tmpDependants = new ArrayList<>();
 					retVal.nodes.put(tmpBodyNode, tmpDependants);
 				} else {
-					LOGGER.debug("Node for predicate {} already exists", tmpBodyNode.predicate);
+					LOGGER.trace("Node for predicate {} already exists", tmpBodyNode.predicate);
 					tmpDependants = retVal.nodes.get(tmpBodyNode);
 				}
 				tmpEdge = retVal.new Edge(tmpHeadNode, !l.isNegated(), l.isNegated() ? "-" : "+");
 				if (!tmpDependants.contains(tmpEdge)) {
-					LOGGER.debug("Adding dependency: {} -> {} ({})", tmpBodyNode.predicate, tmpHeadNode.predicate,
+					LOGGER.trace("Adding dependency: {} -> {} ({})", tmpBodyNode.predicate, tmpHeadNode.predicate,
 							tmpEdge.sign ? "+" : "-");
 					tmpDependants.add(tmpEdge);
 				}
