@@ -30,8 +30,7 @@ public class DependencyGraphWriter {
 		int nodeCnt = 0;
 		Map<Node, Integer> nodesToNumbers = new HashMap<>();
 		for (Map.Entry<Node, List<Edge>> entry : graphDataEntries) {
-			ps.printf(DependencyGraphWriter.DEFAULT_NODE_FORMAT, nodeCnt,
-					entry.getKey().getId() + " " + entry.getKey().getLabel());
+			ps.printf(DependencyGraphWriter.DEFAULT_NODE_FORMAT, nodeCnt, entry.getKey().getLabel());
 			nodesToNumbers.put(entry.getKey(), nodeCnt);
 			nodeCnt++;
 		}

@@ -19,6 +19,7 @@ public class DisjunctiveHead extends Head {
 		}
 	}
 
+	@Override
 	public boolean isNormal() {
 		return disjunctiveAtoms != null && disjunctiveAtoms.size() <= 1;
 	}
