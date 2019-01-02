@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -52,6 +52,7 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 	}
 	
 	private NoGood(Type type, int[] literals, boolean head) {
+		this.type = type;
 		this.head = head;
 		if (head && !isNegated(literals[0])) {
 			throw oops("Head is not negative");
@@ -70,7 +71,6 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 
 		// copy-shrink array if needed.
 		this.literals = shift <= 0 ? literals : Arrays.copyOf(literals, literals.length - shift);
-		this.type = type;
 	}
 
 	protected NoGood(NoGood noGood) {
