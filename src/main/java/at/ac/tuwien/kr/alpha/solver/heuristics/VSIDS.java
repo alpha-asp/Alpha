@@ -166,7 +166,7 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 	 * occurs positively or negatively in learnt nogoods.
 	 * If the sign balance for the given atom is positive, {@code true} will be chosen.
 	 * If it is negative, {@code false} will be chosen.
-	 * If the sign balance is zero, the default sign is selected, which is {@code false}
+	 * If the sign balance is zero, the default sign is selected, which is {@code true}
 	 * iff the atom represents a rule body (which is currently always the case for atoms chosen in Alpha).
 	 * 
 	 * @param atom
@@ -186,7 +186,7 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 			LOGGER.debug("chooseSign stats: signBalance={}", signBalance);
 		}
 
-		if (signBalance > 0) {
+		if (signBalance >= 0) {
 			nChoicesTrue++;
 			return true;
 		} else {
