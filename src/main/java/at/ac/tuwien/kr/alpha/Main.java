@@ -68,8 +68,8 @@ public class Main {
 	private static final ProgramParser PARSER = new ProgramParser();
 
 	private static final String OPT_INPUT = "input";
-	private static final String OPT_HELP  = "help";
-	private static final String OPT_NUM_AS  = "numAS";
+	private static final String OPT_HELP = "help";
+	private static final String OPT_NUM_AS = "numAS";
 	private static final String OPT_GROUNDER = "grounder";
 	private static final String OPT_SOLVER = "solver";
 	private static final String OPT_FILTER = "filter";
@@ -227,16 +227,15 @@ public class Main {
 		}
 
 		final AtomStore atomStore = new AtomStoreImpl();
-		final Grounder grounder = GrounderFactory.getInstance(
-			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), program, atomStore, filter, normalizationUseGrid
-		);
+		final Grounder grounder = GrounderFactory.getInstance(commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), program, atomStore, filter,
+				normalizationUseGrid);
 
 		// NOTE: Using time as seed is fine as the internal heuristics
 		// do not need to be cryptographically securely randomized.
 		long seed = commandLine.hasOption(OPT_DETERMINISTIC) ? 0 : System.nanoTime();
 
 		try {
-			Number s = (Number)commandLine.getParsedOptionValue(OPT_SEED);
+			Number s = (Number) commandLine.getParsedOptionValue(OPT_SEED);
 			if (s != null) {
 				seed = s.longValue();
 			}
@@ -257,9 +256,8 @@ public class Main {
 
 		final String chosenSolver = commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER);
 		final String chosenStore = commandLine.getOptionValue(OPT_STORE, DEFAULT_STORE);
-		Solver solver = SolverFactory.getInstance(
-			chosenSolver, chosenStore, atomStore, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks, disableJustifications
-		);
+		Solver solver = SolverFactory.getInstance(chosenSolver, chosenStore, atomStore, grounder, new Random(seed), parsedChosenBranchingHeuristic,
+				debugInternalChecks, disableJustifications);
 
 		computeAndConsumeAnswerSets(solver);
 	}
@@ -285,7 +283,8 @@ public class Main {
 				System.out.println("SATISFIABLE");
 			}
 		} else {
-			// Note: Even though we are not consuming the result, we will still compute answer sets.
+			// Note: Even though we are not consuming the result, we will still compute
+			// answer sets.
 			stream.collect(Collectors.toList());
 		}
 		printStatisticsIfEnabled(solver);
@@ -314,7 +313,8 @@ public class Main {
 
 	private static void exitWithHelp(Options options, int exitCode) {
 		HelpFormatter formatter = new HelpFormatter();
-		// TODO(lorenzleutgeb): This is quite optimistic. How do we know that the program
+		// TODO(lorenzleutgeb): This is quite optimistic. How do we know that the
+		// program
 		// really was invoked as "java -jar ..."?
 		formatter.printHelp("java -jar alpha-bundled.jar" + System.lineSeparator() + "java -jar alpha.jar", options);
 		System.exit(exitCode);
@@ -333,12 +333,7 @@ public class Main {
 			if (!literate) {
 				stream = CharStreams.fromFileName(fileName);
 			} else {
-				stream = CharStreams.fromChannel(
-					streamToChannel(literate(lines(Paths.get(fileName)))),
-					4096,
-					CodingErrorAction.REPLACE,
-					fileName
-				);
+				stream = CharStreams.fromChannel(streamToChannel(literate(lines(Paths.get(fileName)))), 4096, CodingErrorAction.REPLACE, fileName);
 			}
 			result.accumulate(PARSER.parse(stream));
 		}
