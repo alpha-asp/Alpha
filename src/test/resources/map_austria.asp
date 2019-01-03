@@ -41,3 +41,13 @@ path_cost(FROM, TO, 1) :- road(FROM, TO), FROM != TO.
 % should give non-direct paths, kills Alpha currently...
 %path_cost(FROM, TO, COST) :- path_cost(FROM, VIA, TMPCOST), road(VIA, TO), COST = TMPCOST + 1, FROM != TO, FROM != VIA, VIA != TO.
 
+% *** integrity-checking constraints ***
+
+% a city doesn't have a road leading to itself
+:- road(A, A), city(A).
+
+% ... the same goes for waterways
+:- waterway(A, A), city(A).
+
+constr_1 :- reachable_from(wien, eisenstadt).
+

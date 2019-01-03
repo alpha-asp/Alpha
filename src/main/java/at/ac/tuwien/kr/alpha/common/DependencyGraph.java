@@ -16,6 +16,8 @@ public class DependencyGraph {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DependencyGraph.class);
 
+	private static final String CONSTRAINT_PREDICATE_FORMAT = "[constr_%d]";
+
 	public class Edge {
 
 		private final Node target;
@@ -65,14 +67,32 @@ public class DependencyGraph {
 
 	}
 
+	/**
+	 * A node in the dependency graph. One references exactly one predicate. This
+	 * means that all rule heads deriving the same predicate will be condensed into
+	 * the same graph node. In some cases this results in more "conservative"
+	 * results in stratification analysis, where some rules will not be evaluated
+	 * up-front, although that would be possible.
+	 * 
+	 * Note that constraints are represented by one dummy predicate (named
+	 * "constr_{num}"). Each constraint node has a negative edge to itself to
+	 * express the notation of a constraint ":- a, b." as "x :- a, b, not x.".
+	 *
+	 */
 	public class Node {
 
 		private final Predicate predicate;
 		private final String label;
+		private final boolean isConstraint;
 
-		public Node(Predicate predicate, String label) {
+		public Node(Predicate predicate, String label, boolean isConstraint) {
 			this.predicate = predicate;
 			this.label = label;
+			this.isConstraint = isConstraint;
+		}
+
+		public Node(Predicate predicate, String label) {
+			this(predicate, label, false);
 		}
 
 		@Override
@@ -96,6 +116,10 @@ public class DependencyGraph {
 			return this.predicate;
 		}
 
+		public boolean isConstraint() {
+			return this.isConstraint;
+		}
+
 	}
 
 	/**
@@ -105,50 +129,80 @@ public class DependencyGraph {
 	 */
 	private Map<Node, List<Edge>> nodes = new HashMap<>();
 
-	// TODO we need to handle builtin atoms since those don't depend on rules within
-	// the program
+	private int constraintNumber = 0;
+
 	public static DependencyGraph buildDependencyGraph(Map<Integer, NonGroundRule> nonGroundRules) {
 		DependencyGraph retVal = new DependencyGraph();
 		NonGroundRule tmpRule;
-		Atom tmpHead;
 		Node tmpHeadNode;
-		Node tmpBodyNode;
-		List<Edge> tmpDependants;
-		Edge tmpEdge;
 		for (Map.Entry<Integer, NonGroundRule> entry : nonGroundRules.entrySet()) {
 			tmpRule = entry.getValue();
-			LOGGER.trace("Processing rule: {}", tmpRule);
-			tmpHead = tmpRule.getHeadAtom();
-			tmpHeadNode = retVal.new Node(tmpHead.getPredicate(), tmpHead.getPredicate().toString());
-			if (!retVal.nodes.containsKey(tmpHeadNode)) {
-				LOGGER.trace("Creating new node for predicate {}", tmpHeadNode.predicate);
-				retVal.nodes.put(tmpHeadNode, new ArrayList<>());
-			}
+			LOGGER.debug("Processing rule: {}", tmpRule);
+			tmpHeadNode = retVal.handleRuleHead(tmpRule);
 			for (Literal l : entry.getValue().getBodyLiterals()) {
 				LOGGER.trace("Processing rule body literal: {}", l);
-				// we wanna ignore builtin atoms..
 				if (l.getAtom().isBuiltin()) {
 					LOGGER.trace("Ignoring builtin atom in literal {}", l);
 					continue;
 				}
-				tmpBodyNode = retVal.new Node(l.getPredicate(), l.getPredicate().toString());
-				if (!retVal.nodes.containsKey(tmpBodyNode)) {
-					LOGGER.trace("Creating new node for predicate {}", tmpBodyNode.predicate);
-					tmpDependants = new ArrayList<>();
-					retVal.nodes.put(tmpBodyNode, tmpDependants);
-				} else {
-					LOGGER.trace("Node for predicate {} already exists", tmpBodyNode.predicate);
-					tmpDependants = retVal.nodes.get(tmpBodyNode);
-				}
-				tmpEdge = retVal.new Edge(tmpHeadNode, !l.isNegated(), l.isNegated() ? "-" : "+");
-				if (!tmpDependants.contains(tmpEdge)) {
-					LOGGER.trace("Adding dependency: {} -> {} ({})", tmpBodyNode.predicate, tmpHeadNode.predicate,
-							tmpEdge.sign ? "+" : "-");
-					tmpDependants.add(tmpEdge);
-				}
+				retVal.handleRuleBodyLiteral(tmpHeadNode, l);
 			}
 		}
 		return retVal;
+	}
+
+	private Node handleRuleHead(NonGroundRule rule) {
+		LOGGER.trace("Processing head of rule: {}", rule);
+		Node retVal;
+		if (rule.isConstraint()) {
+			Predicate p = this.generateConstraintDummyPredicate();
+			retVal = new Node(p, p.toString(), true);
+			List<Edge> dependencies = new ArrayList<>();
+			dependencies.add(new Edge(retVal, false, "-"));
+			if (this.nodes.containsKey(retVal)) {
+				throw new IllegalStateException(
+						"Dependency graph already contains node for constraint " + p.toString() + "!");
+			}
+			this.nodes.put(retVal, dependencies);
+		} else {
+			Atom head = rule.getHeadAtom();
+			retVal = new Node(head.getPredicate(), head.getPredicate().toString());
+			if (!this.nodes.containsKey(retVal)) {
+				LOGGER.trace("Creating new node for predicate {}", retVal.predicate);
+				this.nodes.put(retVal, new ArrayList<>());
+			}
+		}
+		return retVal;
+	}
+
+	private void handleRuleBodyLiteral(Node headNode, Literal lit) {
+		List<Edge> dependants;
+		Edge tmpEdge;
+		Node bodyNode = new Node(lit.getPredicate(), lit.getPredicate().toString());
+		if (!this.nodes.containsKey(bodyNode)) {
+			LOGGER.trace("Creating new node for predicate {}", bodyNode.predicate);
+			dependants = new ArrayList<>();
+			this.nodes.put(bodyNode, dependants);
+		} else {
+			LOGGER.trace("Node for predicate {} already exists", bodyNode.predicate);
+			dependants = this.nodes.get(bodyNode);
+		}
+		tmpEdge = new Edge(headNode, !lit.isNegated(), lit.isNegated() ? "-" : "+");
+		if (!dependants.contains(tmpEdge)) {
+			LOGGER.trace("Adding dependency: {} -> {} ({})", bodyNode.predicate, headNode.predicate,
+					tmpEdge.sign ? "+" : "-");
+			dependants.add(tmpEdge);
+		}
+	}
+
+	private Predicate generateConstraintDummyPredicate() {
+		Predicate retVal = Predicate.getInstance(
+				String.format(DependencyGraph.CONSTRAINT_PREDICATE_FORMAT, this.nextConstraintNumber()), 0);
+		return retVal;
+	}
+
+	private int nextConstraintNumber() {
+		return ++this.constraintNumber;
 	}
 
 	public Map<Node, List<Edge>> getNodes() {
