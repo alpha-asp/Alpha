@@ -2,7 +2,6 @@ package at.ac.tuwien.kr.alpha.common;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -11,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.grounder.Instance;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 
 public class DependencyGraph {
@@ -70,7 +68,6 @@ public class DependencyGraph {
 	public class Node {
 
 		private final Predicate predicate;
-		private final Map<Integer, NonGroundRule> producingRules = new HashMap<>();
 		private final String label;
 
 		public Node(Predicate predicate, String label) {
@@ -97,10 +94,6 @@ public class DependencyGraph {
 
 		public Predicate getPredicate() {
 			return this.predicate;
-		}
-
-		public Map<Integer, NonGroundRule> getProducingRules() {
-			return this.producingRules;
 		}
 
 	}
@@ -133,6 +126,11 @@ public class DependencyGraph {
 			}
 			for (Literal l : entry.getValue().getBodyLiterals()) {
 				LOGGER.trace("Processing rule body literal: {}", l);
+				// we wanna ignore builtin atoms..
+				if (l.getAtom().isBuiltin()) {
+					LOGGER.trace("Ignoring builtin atom in literal {}", l);
+					continue;
+				}
 				tmpBodyNode = retVal.new Node(l.getPredicate(), l.getPredicate().toString());
 				if (!retVal.nodes.containsKey(tmpBodyNode)) {
 					LOGGER.trace("Creating new node for predicate {}", tmpBodyNode.predicate);
