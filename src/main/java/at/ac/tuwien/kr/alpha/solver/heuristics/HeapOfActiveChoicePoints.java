@@ -96,12 +96,10 @@ public class HeapOfActiveChoicePoints extends HeapOfActiveAtoms {
 	}
 
 	@Override
-	public void initActity(Collection<NoGood> newNoGoods) {
-		// TODO: do this only for static nogoods (?)
+	public void analyzeNewNoGoods(Collection<NoGood> newNoGoods) {
 		for (NoGood newNoGood : newNoGoods) {
 			recordAtomRelationships(newNoGood);
 		}
-		super.initActity(newNoGoods);
 	}
 	
 	@Override

@@ -128,7 +128,7 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 	}
 
 	private void ingestBufferedNoGoods() {
-		heapOfActiveAtoms.initActity(bufferedNoGoods);
+		heapOfActiveAtoms.newNoGoods(bufferedNoGoods);
 		bufferedNoGoods.clear();
 	}
 

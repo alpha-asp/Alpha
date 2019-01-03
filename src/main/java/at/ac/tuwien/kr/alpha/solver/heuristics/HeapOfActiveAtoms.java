@@ -122,17 +122,35 @@ public class HeapOfActiveAtoms {
 			stepsSinceLastDecay = 0;
 		}
 	}
+	
+	/**
+	 * Stores newly grounded {@link NoGood}s and updates associated activity counters.
+	 */
+	public void newNoGoods(Collection<NoGood> newNoGoods) {
+		Collection<NoGood> filteredNoGoods = filterNoGoodsRelevantForActivityInitialization(newNoGoods);
+		analyzeNewNoGoods(filteredNoGoods);
+		initActivity(filteredNoGoods);
+	}
+	
+	/**
+	 * May be implemented in subclasses to add specific analysis of nogoods.
+	 */
+	protected void analyzeNewNoGoods(Collection<NoGood> newNoGoods) {
+	}
 
 	/**
 	 * Computes and stores initial activity values for the atoms occurring in the given nogoods.
 	 */
-	public void initActity(Collection<NoGood> newNoGoods) {
-		Collection<NoGood> filteredNoGoods = newNoGoods.stream().filter(ng -> ng.getType() != Type.LEARNT && ng.getType() != Type.INTERNAL).collect(Collectors.toSet());
+	protected void initActivity(Collection<NoGood> newNoGoods) {
 		if (moms != null) {
-			initActivityMOMs(filteredNoGoods);
+			initActivityMOMs(newNoGoods);
 		} else {
-			initActivityNaive(filteredNoGoods);
+			initActivityNaive(newNoGoods);
 		}
+	}
+
+	protected Set<NoGood> filterNoGoodsRelevantForActivityInitialization(Collection<NoGood> newNoGoods) {
+		return newNoGoods.stream().filter(ng -> ng.getType() != Type.LEARNT && ng.getType() != Type.INTERNAL).collect(Collectors.toSet());
 	}
 
 	private void initActivityMOMs(Collection<NoGood> newNoGoods) {

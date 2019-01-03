@@ -49,7 +49,7 @@ public class HeuristicTestUtils {
 			setOfNoGoods.add(noGood);
 			noGoodStore.add(noGoodId++, noGood);
 		}
-		heapOfActiveAtoms.initActity(setOfNoGoods);
+		heapOfActiveAtoms.newNoGoods(setOfNoGoods);
 	}
 
 }
