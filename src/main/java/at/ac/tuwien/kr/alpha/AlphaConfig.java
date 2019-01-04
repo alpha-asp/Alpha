@@ -4,6 +4,10 @@ import java.io.InputStream;
 
 public class AlphaConfig {
 
+	public static final String DEFAULT_GROUNDER_NAME = "naive";
+	public static final String DEFAULT_SOLVER_NAME = "default";
+	public static final String DEFAULT_NOGOOD_STORE_NAME = "alphaRoaming";
+
 	private int numAnswerSets;
 	private InputStream input;
 	private String grounderName;

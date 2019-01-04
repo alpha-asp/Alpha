@@ -7,8 +7,8 @@ public class CommandLineParserTest {
 
 	@Test
 	public void smokeTest() throws ParseException {
-		CommandLineParser parser = new CommandLineParser();
-		parser.parseCommandLine(new String[] { "-i", "somefile", "-n", "13", "-g", "naive" });
+		CommandLineParser parser = new CommandLineParser("java-jar Alpha-bundled.jar", (msg) -> System.out.println(msg));
+		parser.parseCommandLine(new String[] { "-i", "somefile", "-n", "13", "-g", "naive", "-h"});
 	}
 
 }
