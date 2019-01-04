@@ -2,8 +2,11 @@ package at.ac.tuwien.kr.alpha;
 
 import java.io.FileInputStream;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
 public class CommandLineParser {
 
@@ -59,7 +62,9 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NORMALIZATION_GRID);
 	}
 	
-	public AlphaConfig parseCommandLine(String[] args) {
+	public AlphaConfig parseCommandLine(String[] args) throws ParseException {
+		CommandLine commandLine = new DefaultParser().parse(CommandLineParser.CLI_OPTS, args);
+		
 		AlphaConfig retVal = new AlphaConfig();
 		return retVal;
 	}
