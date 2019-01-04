@@ -1,14 +1,20 @@
 package at.ac.tuwien.kr.alpha;
 
 import java.io.FileInputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CommandLineParser {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(CommandLineParser.class);
 
 	private static final Option OPT_NUM_ANSWER_SETS = Option.builder("n").longOpt("numAS").hasArg(true).argName("number").type(Integer.class)
 			.desc("the number of answer sets to compute").build();
@@ -40,32 +46,141 @@ public class CommandLineParser {
 			.desc("use counting grid normalization instead of sorting circuit for #count").build();
 
 	private static final Options CLI_OPTS = new Options();
+	private static final Map<String, IOptionHandler> OPT_HANDLERS = new HashMap<>();
 
 	static {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NUM_ANSWER_SETS);
+		CommandLineParser.OPT_HANDLERS.put(CommandLineParser.OPT_NUM_ANSWER_SETS.getOpt(), CommandLineParser::handleNumAnswerSets);
+
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_HELP);
+		CommandLineParser.OPT_HANDLERS.put(CommandLineParser.OPT_HELP.getOpt(), CommandLineParser::handleHelp);
+
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_INPUT);
+		CommandLineParser.OPT_HANDLERS.put(CommandLineParser.OPT_INPUT.getOpt(), CommandLineParser::handleInput);
+
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER);
+		CommandLineParser.OPT_HANDLERS.put(CommandLineParser.OPT_GROUNDER.getOpt(), CommandLineParser::handleGrounder);
+
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SOLVER);
+		CommandLineParser.OPT_HANDLERS.put(CommandLineParser.OPT_SOLVER.getOpt(), CommandLineParser::handleSolver);
+
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NOGOOD_STORE);
+		CommandLineParser.OPT_HANDLERS.put(CommandLineParser.OPT_NOGOOD_STORE.getOpt(), CommandLineParser::handleNogoodStore);
+
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_FILTER);
+		CommandLineParser.OPT_HANDLERS.put(CommandLineParser.OPT_FILTER.getOpt(), CommandLineParser::handleFilters);
+
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_ASPSTRING);
+		CommandLineParser.OPT_HANDLERS.put(CommandLineParser.OPT_ASPSTRING.getOpt(), CommandLineParser::handleAspString);
+
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SORT);
+		CommandLineParser.OPT_HANDLERS.put(CommandLineParser.OPT_SORT.getOpt(), CommandLineParser::handleSort);
+
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_DETERMINISTIC);
+		CommandLineParser.OPT_HANDLERS.put(CommandLineParser.OPT_DETERMINISTIC.getOpt(), CommandLineParser::handleDeterministic);
+
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SEED);
+		CommandLineParser.OPT_HANDLERS.put(CommandLineParser.OPT_SEED.getOpt(), CommandLineParser::handleSeed);
+
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_DEBUG_INTERNAL_CHECKS);
+		CommandLineParser.OPT_HANDLERS.put(CommandLineParser.OPT_DEBUG_INTERNAL_CHECKS.getOpt(), CommandLineParser::handleInternalChecks);
+
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_BRANCHING_HEURISTIC);
+		CommandLineParser.OPT_HANDLERS.put(CommandLineParser.OPT_BRANCHING_HEURISTIC.getOpt(), CommandLineParser::handleBranchingHeuristic);
+
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_QUIET);
+		CommandLineParser.OPT_HANDLERS.put(CommandLineParser.OPT_QUIET.getOpt(), CommandLineParser::handleQuiet);
+
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_LITERATE);
+		CommandLineParser.OPT_HANDLERS.put(CommandLineParser.OPT_LITERATE.getOpt(), CommandLineParser::handleLiterate);
+
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_STATS);
+		CommandLineParser.OPT_HANDLERS.put(CommandLineParser.OPT_STATS.getOpt(), CommandLineParser::handleStats);
+
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_JUSTIFICATION);
+		CommandLineParser.OPT_HANDLERS.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), CommandLineParser::handleNoJustification);
+
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NORMALIZATION_GRID);
+		CommandLineParser.OPT_HANDLERS.put(CommandLineParser.OPT_NORMALIZATION_GRID.getOpt(), CommandLineParser::handleNormalizationGrid);
 	}
-	
+
 	public AlphaConfig parseCommandLine(String[] args) throws ParseException {
 		CommandLine commandLine = new DefaultParser().parse(CommandLineParser.CLI_OPTS, args);
-		
+
 		AlphaConfig retVal = new AlphaConfig();
 		return retVal;
 	}
+
+	private static void handleNumAnswerSets(Option opt, AlphaConfig cfg) {
+		
+	}
+
+	private static void handleHelp(Option opt, AlphaConfig cfg) {
+		
+	}
+
+	private static void handleInput(Option opt, AlphaConfig cfg) {
+
+	}
+
+	private static void handleGrounder(Option opt, AlphaConfig cfg) {
+
+	}
+
+	private static void handleSolver(Option opt, AlphaConfig cfg) {
+
+	}
+
+	private static void handleNogoodStore(Option opt, AlphaConfig cfg) {
+
+	}
+
+	private static void handleFilters(Option opt, AlphaConfig cfg) {
+
+	}
+
+	private static void handleAspString(Option opt, AlphaConfig cfg) {
+
+	}
+
+	private static void handleSort(Option opt, AlphaConfig cfg) {
+
+	}
+
+	private static void handleDeterministic(Option opt, AlphaConfig cfg) {
+
+	}
+
+	private static void handleSeed(Option opt, AlphaConfig cfg) {
+
+	}
+
+	private static void handleInternalChecks(Option opt, AlphaConfig cfg) {
+
+	}
+
+	private static void handleBranchingHeuristic(Option opt, AlphaConfig cfg) {
+
+	}
+
+	private static void handleQuiet(Option opt, AlphaConfig cfg) {
+
+	}
+
+	private static void handleLiterate(Option opt, AlphaConfig cfg) {
+
+	}
+
+	private static void handleStats(Option opt, AlphaConfig cfg) {
+
+	}
+
+	private static void handleNoJustification(Option opt, AlphaConfig cfg) {
+
+	}
+
+	private static void handleNormalizationGrid(Option opt, AlphaConfig cfg) {
+
+	}
+
 }
