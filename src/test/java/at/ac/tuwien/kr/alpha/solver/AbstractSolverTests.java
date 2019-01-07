@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -36,6 +36,7 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.antlr.v4.runtime.CharStream;
@@ -148,12 +149,13 @@ public abstract class AbstractSolverTests {
 	public boolean checks;
 
 	protected Solver getInstance(AtomStore atomStore, Grounder grounder) {
-		return SolverFactory.getInstance(solverName, storeName, atomStore, grounder, new Random(seed), heuristic, checks, false);
+		HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(heuristic).build();
+		return SolverFactory.getInstance(solverName, storeName, atomStore, grounder, new Random(seed), heuristicsConfiguration, checks, false);
 	}
 
 	protected Solver getInstance(Program program) {
 		AtomStore atomStore = new AtomStoreImpl();
-		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, program, atomStore));
+		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, program, atomStore, true));
 	}
 
 	protected Solver getInstance(String program) {

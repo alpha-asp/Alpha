@@ -1,19 +1,17 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2018 Siemens AG
  * All rights reserved.
- *
- * Additional changes made by Siemens.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *
+ * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -27,35 +25,19 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
+/**
+ * A variant of {@link NoGoodStore} that treats binary nogoods in a special way
+ * and offers special methods dealing with binary nogoods.
+ */
+public interface NoGoodStorePrivilegingBinaryNoGoods extends NoGoodStore {
 
-import java.util.Random;
+	/**
+	 * @return {@code true} iff this store contains binary nogoods
+	 */
+	boolean hasBinaryNoGoods();
 
-public final class SolverFactory {
-	public static Solver getInstance(String name, String storeName, AtomStore atomStore, Grounder grounder, Random random, HeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, boolean disableJustifications) {
-		final WritableAssignment assignment = new TrailAssignment(atomStore, debugInternalChecks);
-
-		NoGoodStore store;
-
-		switch (storeName.toLowerCase()) {
-			case "naive":
-				store = new NaiveNoGoodStore(assignment);
-				break;
-			case "alpharoaming":
-				store = new NoGoodStoreAlphaRoaming(assignment, debugInternalChecks);
-				break;
-			default:
-				throw new IllegalArgumentException("Unknown store requested.");
-		}
-
-		switch (name.toLowerCase()) {
-			case "naive" :
-				return new NaiveSolver(atomStore, grounder);
-			case "default":
-				return new DefaultSolver(atomStore, grounder, store, assignment, random, heuristicsConfiguration, debugInternalChecks, disableJustifications);
-		}
-		throw new IllegalArgumentException("Unknown solver requested.");
-	}
+	ConflictCause propagateOnlyBinaryNoGoods();
+	
+	int getNumberOfBinaryWatches(int literal);
+	
 }

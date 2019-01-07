@@ -1,8 +1,6 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2018 Siemens AG
  * All rights reserved.
- * 
- * Additional changes made by Siemens.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -27,49 +25,27 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
-
-import java.util.Collection;
-
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import at.ac.tuwien.kr.alpha.solver.NoGoodStore;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 
 /**
- * The default heuristic that had been used by {@link at.ac.tuwien.kr.alpha.solver.DefaultSolver} before {@link BerkMin} was implemented.
+ * A {@link ChoiceManager} for testing purposes that regards all atoms as active choice atoms.
  *
  */
-public class NaiveHeuristic implements BranchingHeuristic {
+class PseudoChoiceManager extends ChoiceManager {
 
-	private final ChoiceManager choiceManager;
-
-	public NaiveHeuristic(ChoiceManager choiceManager) {
-		this.choiceManager = choiceManager;
+	public PseudoChoiceManager(WritableAssignment assignment, NoGoodStore store) {
+		super(assignment, store);
 	}
 
 	@Override
-	public void violatedNoGood(NoGood violatedNoGood) {
+	public boolean isAtomChoice(int atom) {
+		return true;
 	}
 
 	@Override
-	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
-	}
-
-	@Override
-	public void newNoGood(NoGood newNoGood) {
-	}
-
-	@Override
-	public void newNoGoods(Collection<NoGood> newNoGoods) {
-	}
-
-	@Override
-	public int chooseLiteral() {
-		return atomToLiteral(choiceManager.getNextActiveChoiceAtom());
-	}
-	
-	@Override
-	public String toString() {
-		return this.getClass().getSimpleName();
+	public boolean isActiveChoiceAtom(int atom) {
+		return true;
 	}
 }

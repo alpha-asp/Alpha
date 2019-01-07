@@ -1,6 +1,9 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -204,5 +207,20 @@ public class TrailAssignmentTest {
 		assignment.backtrack();
 
 		assertEquals(0, assignment.getMBTCount());
+	}
+
+	@Test
+	public void numberOfAssignedAtoms() throws Exception {
+		assignment.assign(1, MBT);
+		assertEquals(1, assignment.getNumberOfAssignedAtoms());
+		assignment.assign(2, FALSE);
+		assertEquals(2, assignment.getNumberOfAssignedAtoms());
+		assignment.assign(3, MBT);
+		assignment.assign(3, TRUE);
+		assertEquals(3, assignment.getNumberOfAssignedAtoms());
+		assignment.choose(1, TRUE);
+		assertEquals(3, assignment.getNumberOfAssignedAtoms());
+		assertEquals(3, assignment.getNumberOfAtomsAssignedFromDecisionLevel(0));
+		assertEquals(1, assignment.getNumberOfAtomsAssignedFromDecisionLevel(1));
 	}
 }

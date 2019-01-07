@@ -27,8 +27,11 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
@@ -36,6 +39,9 @@ import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.SolverMaintainingStatistics;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
+import at.ac.tuwien.kr.alpha.solver.heuristics.MOMs;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.RecognitionException;
@@ -84,12 +90,16 @@ public class Main {
 	private static final String OPT_NORMALIZATION_GRID = "normalizationCountingGrid";
 
 	private static final String OPT_BRANCHING_HEURISTIC = "branchingHeuristic";
+	private static final String DEFAULT_BRANCHING_HEURISTIC = Heuristic.NAIVE.name();
+	
+	private static final String OPT_MOMS_STRATEGY = "momsStrategy";
+	private static final String DEFAULT_MOMS_STRATEGY = MOMs.Strategy.CountBinaryWatches.name();
+	
 	private static final String DEFAULT_GROUNDER = "naive";
 	private static final String DEFAULT_SOLVER = "default";
 	private static final String DEFAULT_STORE = "alphaRoaming";
 	private static final String OPT_SEED = "seed";
 	private static final String OPT_DEBUG_INTERNAL_CHECKS = "DebugEnableInternalChecks";
-	private static final String DEFAULT_BRANCHING_HEURISTIC = Heuristic.NAIVE.name();
 
 	private static final java.util.function.Predicate<Predicate> DEFAULT_FILTER = p -> true;
 
@@ -161,6 +171,11 @@ public class Main {
 		branchingHeuristicOption.setArgs(1);
 		branchingHeuristicOption.setArgName("heuristic");
 		options.addOption(branchingHeuristicOption);
+		
+		Option momsStrategyOption = new Option("ms", OPT_MOMS_STRATEGY, false, "strategy for mom's heuristic (CountBinaryWatches or BinaryNoGoodPropagation)");
+		momsStrategyOption.setArgs(1);
+		momsStrategyOption.setArgName("strategy");
+		options.addOption(momsStrategyOption);
 
 		Option quietOption = new Option("q", OPT_QUIET, false, "do not print answer sets");
 		options.addOption(quietOption);
@@ -228,7 +243,7 @@ public class Main {
 
 		final AtomStore atomStore = new AtomStoreImpl();
 		final Grounder grounder = GrounderFactory.getInstance(
-			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), program, atomStore, filter, normalizationUseGrid
+			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), program, atomStore, filter, normalizationUseGrid, debugInternalChecks
 		);
 
 		// NOTE: Using time as seed is fine as the internal heuristics
@@ -246,19 +261,26 @@ public class Main {
 
 		LOGGER.info("Seed for pseudorandomization is {}.", seed);
 
+		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
+		
 		final String chosenBranchingHeuristic = commandLine.getOptionValue(OPT_BRANCHING_HEURISTIC, DEFAULT_BRANCHING_HEURISTIC);
-
-		Heuristic parsedChosenBranchingHeuristic = null;
 		try {
-			parsedChosenBranchingHeuristic = Heuristic.valueOf(chosenBranchingHeuristic.replace("-", "_").toUpperCase());
+			heuristicsConfigurationBuilder.setHeuristic(Heuristic.valueOf(chosenBranchingHeuristic.replace("-", "_").toUpperCase()));
 		} catch (IllegalArgumentException e) {
 			bailOut("Unknown branching heuristic: {}. Please try one of the following: {}.", chosenBranchingHeuristic, Heuristic.listAllowedValues());
+		}
+		
+		final String chosenMomsStrategy = commandLine.getOptionValue(OPT_MOMS_STRATEGY, DEFAULT_MOMS_STRATEGY);
+		try {
+			heuristicsConfigurationBuilder.setMomsStrategy(MOMs.Strategy.valueOf(chosenMomsStrategy));
+		} catch (IllegalArgumentException e) {
+			bailOut("Unknown mom's strategy: {}. Please try one of the following: {}.", chosenMomsStrategy, MOMs.Strategy.listAllowedValues());
 		}
 
 		final String chosenSolver = commandLine.getOptionValue(OPT_SOLVER, DEFAULT_SOLVER);
 		final String chosenStore = commandLine.getOptionValue(OPT_STORE, DEFAULT_STORE);
 		Solver solver = SolverFactory.getInstance(
-			chosenSolver, chosenStore, atomStore, grounder, new Random(seed), parsedChosenBranchingHeuristic, debugInternalChecks, disableJustifications
+			chosenSolver, chosenStore, atomStore, grounder, new Random(seed), heuristicsConfigurationBuilder.build(), debugInternalChecks, disableJustifications
 		);
 
 		computeAndConsumeAnswerSets(solver);
