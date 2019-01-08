@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -296,7 +296,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 		for (NonGroundRule nonGroundRule : fixedRules) {
 			// Generate NoGoods for all rules that have a fixed grounding.
-			Literal[] groundingOrder = nonGroundRule.groundingOrder.getFixedGroundingOrder();
+			RuleGroundingOrder groundingOrder = nonGroundRule.groundingOrder.getFixedGroundingOrder();
 			List<Substitution> substitutions = bindNextAtomInRule(nonGroundRule, groundingOrder, 0, new Substitution(), null);
 			for (Substitution substitution : substitutions) {
 				registry.register(noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution), groundNogoods);
@@ -384,16 +384,19 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return registry.register(noGood);
 	}
 
-	private List<Substitution> bindNextAtomInRule(NonGroundRule rule, Literal[] groundingOrder, int orderPosition, Substitution partialSubstitution, Assignment currentAssignment) {
+	private List<Substitution> bindNextAtomInRule(NonGroundRule rule, RuleGroundingOrder groundingOrder, int orderPosition, Substitution partialSubstitution, Assignment currentAssignment) {
 		boolean laxGrounderHeuristic = true; // TODO
-		// note: groundingOrder can contain positive and negative literals
-		// note: groundingOrder does not contain starting literal
 		
-		if (orderPosition == groundingOrder.length) {
+		Literal[] literals = groundingOrder.getOtherLiterals(); // can contain positive and negative literals
+		if (orderPosition == literals.length) {
 			return singletonList(partialSubstitution);
 		}
+		
+		if (orderPosition >= groundingOrder.getPositionFromWhichAllVarsAreBound()) {
+			// TODO: now all vars are bound and we have to decide whether to continue binding or to terminate
+		}
 
-		Literal currentLiteral = groundingOrder[orderPosition];
+		Literal currentLiteral = literals[orderPosition];
 		Atom currentAtom = currentLiteral.getAtom();
 		if (currentLiteral instanceof FixedInterpretationLiteral) {
 			// Generate all substitutions for the builtin/external/interval atom.
