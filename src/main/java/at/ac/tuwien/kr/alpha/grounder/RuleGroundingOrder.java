@@ -1,19 +1,17 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2019 Siemens AG
  * All rights reserved.
- *
- * Additional changes made by Siemens.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *
+ * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -27,188 +25,48 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-
-import java.util.*;
 
 /**
- * Provides the grounder with information on the order to ground the literals in the body of a rule.
- * Grounding starts with some starting literal (i.e., one that does not require any variables to be bound already) and
- * then may join this with any other literal that requires no other variables to be bound other than those already bound
- * by the first literal. This class is prepared to take join-selectivities into account for finding a good grounding
- * order.
- *
- * Since the grounder must yield all ground instantiations of rules whose positive body is true in the current assignment,
- * a starting literals is a positive BasicAtom and the grounder can wait until after some instance in the working memory
- * of the corresponding predicate arrives and only then start grounding.
- *
- * There is also the case that a rule has no ordinary positive literals (i.e., no positive BasicAtom) but is still safe.
- * Such a rule has no starting literal but those rules have a fixed number of ground instantiations and they can be
- * computed similar to facts at the beginning of the computation.
- *
- * Note that rules with self-joins (rules with p(X,Y), p(A,B) in their body) make it necessary that every positive
- * literal (whose interpretation is not fixed) is a starting literal, at least for the current grounding procedure.
- * Copyright (c) 2017, the Alpha Team.
+ * A grounding order computed by {@link RuleGroundingOrders} for a specific {@link NonGroundRule} and a specific starting literal.
  */
 public class RuleGroundingOrder {
-	private final NonGroundRule nonGroundRule;
-	private HashMap<Literal, Literal[]> groundingOrder;
-	private HashMap<Literal, Float> literalSelectivity;
-	private List<Literal> startingLiterals;
-
-	private final boolean fixedGroundingInstantiation;
-	private Literal[] fixedGroundingOrder;
-
-	RuleGroundingOrder(NonGroundRule nonGroundRule) {
-		this.nonGroundRule = nonGroundRule;
-		this.literalSelectivity = new HashMap<>();
-		resetLiteralSelectivity();
-		this.groundingOrder = new HashMap<>();
-		this.fixedGroundingInstantiation = computeStartingLiterals();
-	}
-
-	private void resetLiteralSelectivity() {
-		// Set selectivity of all literals to 1.0f.
-		for (Literal literal : nonGroundRule.getBodyLiterals()) {
-			literalSelectivity.put(literal, 1.0f);
-		}
+	
+	private Literal startingLiteral;
+	private Literal[] otherLiterals;
+	private int positionLastVarBound;
+	
+	/**
+	 * @param startingLiteral
+	 * @param otherLiterals
+	 * @param positionLastVarBound
+	 */
+	RuleGroundingOrder(Literal startingLiteral, Literal[] otherLiterals, int positionLastVarBound) {
+		super();
+		this.startingLiteral = startingLiteral;
+		this.otherLiterals = otherLiterals;
+		this.positionLastVarBound = positionLastVarBound;
 	}
 
 	/**
-	 * Computes starting literals and indicates whether there is a fixed ground instantiation for this rule.
-	 * @return true iff the rule has a fixed ground instantiation.
+	 * @return the startingLiteral
 	 */
-	private boolean computeStartingLiterals() {
-		LinkedHashSet<Literal> fixedStartingLiterals = new LinkedHashSet<>();
-		LinkedHashSet<Literal> ordinaryStartingLiterals = new LinkedHashSet<>();
-		
-		// If the rule is ground, every body literal is a starting literal and the ground instantiation is fixed.
-		if (nonGroundRule.getRule().isGround()) {
-			startingLiterals = new LinkedList<>(nonGroundRule.getBodyLiterals());
-			return true;
-		}
-		
-		// Check each literal in the rule body whether it is eligible.
-		for (Literal literal : nonGroundRule.getBodyLiterals()) {
-			// Only literals that need no variables already bound can start grounding.
-			if (literal.getNonBindingVariables().size() != 0) {
-				continue;
-			}
-
-			if (literal.getAtom() instanceof BasicAtom && !literal.isNegated()) {
-				// Positive BasicAtom is the main/ordinary case.
-				ordinaryStartingLiterals.add(literal);
-			} else {
-				// If literal is no positive BasicAtom but requires no bound variables,
-				// it can be the starting literal for some (fixed) instantiation.
-				fixedStartingLiterals.add(literal);
-			}
-		}
-		// If there are no positive BasicAtoms, the rule only contains fixed ground
-		// instantiation literals and those are starting for the one-time grounding.
-		if (!ordinaryStartingLiterals.isEmpty()) {
-			startingLiterals = new LinkedList<>(ordinaryStartingLiterals);
-			return false;
-		} else if (!fixedStartingLiterals.isEmpty()) {
-			startingLiterals = new LinkedList<>(fixedStartingLiterals);
-			return true;
-		} else {
-			throw new RuntimeException("Unsafe rule encountered: " + nonGroundRule.getRule());
-		}
-	}
-
-	Collection<Literal> getStartingLiterals() {
-		return Collections.unmodifiableList(startingLiterals);
-	}
-
-	public void updateLiteralSelectivity(Literal literal, int numGivenTuples, int numObtainedTuples) {
-		// TODO: add old selectivity (with a decay factor) and new selectivity.
-	}
-
-	Literal[] orderStartingFrom(Literal startingLiteral) {
-		return groundingOrder.get(startingLiteral);
-	}
-
-
-	Literal[] getFixedGroundingOrder() {
-		return fixedGroundingOrder;
+	public Literal getStartingLiteral() {
+		return startingLiteral;
 	}
 
 	/**
-	 * States whether the rule is without positive ordinary atoms, as for example in: p(Y) :- X = 1..3, not q(X), Y = X + 2, &ext[X,Y]().
-	 * @return true if the rule has a (limited number of) fixed grounding instantiation(s).
+	 * @return the otherLiterals
 	 */
-	boolean fixedInstantiation() {
-		return fixedGroundingInstantiation;
+	public Literal[] getOtherLiterals() {
+		return otherLiterals;
 	}
 
-	void computeGroundingOrders() {
-		if (fixedGroundingInstantiation) {
-			// Fixed grounding is only evaluated once and not depending on a starting variable, just use the first.
-			computeGroundingOrder(startingLiterals.get(0));
-			return;
-		}
-		// Compute grounding orders for all positive BasicAtoms.
-		for (Literal literal : startingLiterals) {
-			computeGroundingOrder(literal);
-		}
+	/**
+	 * @return the position in {@link #getOtherLiterals()} from which on all variables are bound
+	 */
+	public int getPositionFromWhichAllVarsAreBound() {
+		return positionLastVarBound + 1;
 	}
 
-	private void computeGroundingOrder(Literal startingLiteral) {
-		List<Literal> bodyLiterals = nonGroundRule.getBodyLiterals();
-		HashSet<VariableTerm> boundVariables = new HashSet<>();
-		boundVariables.addAll(startingLiteral.getBindingVariables());
-		LinkedHashSet<Literal> remainingLiterals = new LinkedHashSet<>(bodyLiterals);
-		remainingLiterals.remove(startingLiteral);
-		ArrayList<Literal> literalsOrder;
-		if (fixedGroundingInstantiation) {
-			literalsOrder = new ArrayList<>(bodyLiterals.size());
-			literalsOrder.add(startingLiteral);
-		} else {
-			literalsOrder = new ArrayList<>(bodyLiterals.size() - 1);
-		}
-		while (!remainingLiterals.isEmpty()) {
-			Literal nextGroundingLiteral = selectNextGroundingLiteral(remainingLiterals, boundVariables);
-			if (nextGroundingLiteral == null) {
-				throw new RuntimeException("Could not find a grounding order for rule " + nonGroundRule + " with starting literal: " + startingLiteral + ". Rule is not safe.");
-			}
-			remainingLiterals.remove(nextGroundingLiteral);
-			boundVariables.addAll(nextGroundingLiteral.getBindingVariables());
-			literalsOrder.add(nextGroundingLiteral);
-		}
-		if (fixedGroundingInstantiation) {
-			fixedGroundingOrder = literalsOrder.toArray(new Literal[0]);
-		}
-		groundingOrder.put(startingLiteral, literalsOrder.toArray(new Literal[0]));
-	}
-
-	private Literal selectNextGroundingLiteral(LinkedHashSet<Literal> remainingLiterals, Set<VariableTerm> boundVariables) {
-		Float bestSelectivity = Float.MAX_VALUE;
-		Literal bestLiteral = null;
-		boolean bestLiteralSharesVariables = false;
-		// Find the best literal whose nonbinding variables are already bound and whose selectivity is highest.
-		// To avoid cross products, select those first that have some of their variables already bound.
-		for (Literal literal : remainingLiterals) {
-			if (!boundVariables.containsAll(literal.getNonBindingVariables())) {
-				// Only consider literals whose nonbinding variables are already bound.
-				continue;
-			}
-			Float selectivity = literalSelectivity.get(literal);
-			boolean sharesVariables = sharesVariables(boundVariables, literal.getBindingVariables(), literal.getNonBindingVariables());
-			if (bestLiteral == null
-				|| sharesVariables && selectivity < bestSelectivity
-				|| sharesVariables && !bestLiteralSharesVariables) {
-				bestLiteral = literal;
-				bestSelectivity = selectivity;
-				bestLiteralSharesVariables = sharesVariables;
-			}
-		}
-		return bestLiteral;
-	}
-
-	private boolean sharesVariables(Collection<VariableTerm> set1, Collection<VariableTerm> set2part1, Collection<VariableTerm> set2part2) {
-		return !Collections.disjoint(set1, set2part1) || !Collections.disjoint(set1, set2part2);
-	}
 }

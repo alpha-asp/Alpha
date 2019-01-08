@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -55,7 +55,7 @@ import static java.util.Collections.singletonList;
 
 /**
  * A semi-naive grounder.
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  */
 public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGrounder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
@@ -72,6 +72,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final Map<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
 	private final Map<NonGroundRule, HashSet<Substitution>> knownGroundingSubstitutions = new HashMap<>();
 	private final Map<Integer, NonGroundRule> knownNonGroundRules = new HashMap<>();
+	
+	private final Set<Predicate> predicatesDefinedOnlyByFacts = new HashSet<>();
 
 	private ArrayList<NonGroundRule> fixedRules = new ArrayList<>();
 	private LinkedHashSet<Atom> removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
@@ -117,6 +119,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// initialize all facts
 		for (Atom fact : program.getFacts()) {
 			final Predicate predicate = fact.getPredicate();
+			predicatesDefinedOnlyByFacts.add(predicate);
 
 			// Record predicate
 			workingMemory.initialize(predicate);
@@ -146,6 +149,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			if (headAtom != null) {
 				Predicate headPredicate = headAtom.getPredicate();
 				programAnalysis.recordDefiningRule(headPredicate, nonGroundRule);
+				predicatesDefinedOnlyByFacts.remove(headPredicate);
 			}
 
 			// Create working memories for all predicates occurring in the rule
@@ -302,7 +306,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 		for (NonGroundRule nonGroundRule : fixedRules) {
 			// Generate NoGoods for all rules that have a fixed grounding.
-			Literal[] groundingOrder = nonGroundRule.groundingOrder.getFixedGroundingOrder();
+			RuleGroundingOrder groundingOrder = nonGroundRule.groundingOrder.getFixedGroundingOrder();
 			List<Substitution> substitutions = bindNextAtomInRule(nonGroundRule, groundingOrder, 0, new Substitution(), null);
 			groundAndRegister(nonGroundRule, substitutions, groundNogoods);
 		}
@@ -408,12 +412,19 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return registry.register(noGood);
 	}
 
-	private List<Substitution> bindNextAtomInRule(NonGroundRule rule, Literal[] groundingOrder, int orderPosition, Substitution partialSubstitution, Assignment currentAssignment) {
-		if (orderPosition == groundingOrder.length) {
+	private List<Substitution> bindNextAtomInRule(NonGroundRule rule, RuleGroundingOrder groundingOrder, int orderPosition, Substitution partialSubstitution, Assignment currentAssignment) {
+		boolean laxGrounderHeuristic = true; // TODO
+		
+		Literal[] literals = groundingOrder.getOtherLiterals(); // can contain positive and negative literals
+		if (orderPosition == literals.length) {
 			return singletonList(partialSubstitution);
 		}
+		
+		if (orderPosition >= groundingOrder.getPositionFromWhichAllVarsAreBound()) {
+			// TODO: now all vars are bound and we have to decide whether to continue binding or to terminate
+		}
 
-		Literal currentLiteral = groundingOrder[orderPosition];
+		Literal currentLiteral = literals[orderPosition];
 		Atom currentAtom = currentLiteral.getAtom();
 		if (currentLiteral instanceof FixedInterpretationLiteral) {
 			// Generate all substitutions for the builtin/external/interval atom.
@@ -445,10 +456,15 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				// Atom occurs negated in the rule: continue grounding
 				return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
 			}
-			
-			if (stopBindingAtNonTruePositiveBody && !rule.getRule().isGround() && !workingMemory.get(currentAtom.getPredicate(), true).containsInstance(new Instance(substitute.getTerms()))) {
-				// Generate no variable substitution.
-				return emptyList();
+
+			if (stopBindingAtNonTruePositiveBody && !rule.getRule().isGround()
+					&& !workingMemory.get(currentAtom.getPredicate(), true).containsInstance(new Instance(substitute.getTerms()))) {
+				if (laxGrounderHeuristic) {
+					LOGGER.debug("Not aborting binding of rule " + rule + " because lax grounder heuristic is active");
+				} else {
+					// Generate no variable substitution.
+					return emptyList();
+				}
 			}
 
 			// Check if atom is also assigned true.
@@ -459,19 +475,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 
 			// Atom is not a fact already.
-			final int atomId = atomStore.putIfAbsent(substitute);
-
-			if (currentAssignment != null) {
-				final ThriceTruth truth = currentAssignment.getTruth(atomId);
-
-				if (atomId > maxAtomIdBeforeGroundingNewNoGoods || truth == null || !truth.toBoolean()) {
-					// Atom currently does not hold, skip further grounding.
-					// TODO: investigate grounding heuristics for use here, i.e., ground anyways to avoid re-grounding in the future.
-					if (!disableInstanceRemoval) {
-						removeAfterObtainingNewNoGoods.add(substitute);
-						return emptyList();
-					}
-				}
+			if (storeAtomAndTerminateIfAtomDoesNotHold(currentAssignment, laxGrounderHeuristic, substitute)) {
+				return emptyList();
 			}
 		}
 
@@ -492,6 +497,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		} else {
 			instances = storage.getInstancesFromPartiallyGroundAtom(substitute);
 		}
+		
+		//TODO: this is still a hack
+		if (instances.isEmpty() && laxGrounderHeuristic && substitute.isGround()) {
+			instances = singletonList(new Instance(substitute.getTerms()));
+		}
 
 		ArrayList<Substitution> generatedSubstitutions = new ArrayList<>();
 		for (Instance instance : instances) {
@@ -509,18 +519,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 
 			if (factsFromProgram.get(substitutedAtom.getPredicate()) == null || !factsFromProgram.get(substitutedAtom.getPredicate()).contains(new Instance(substitutedAtom.getTerms()))) {
-				int atomId = atomStore.putIfAbsent(substitutedAtom);
-
-				if (currentAssignment != null) {
-					ThriceTruth truth = currentAssignment.getTruth(atomId);
-					if (atomId > maxAtomIdBeforeGroundingNewNoGoods || truth == null || !truth.toBoolean()) {
-						// Atom currently does not hold, skip further grounding.
-						// TODO: investigate grounding heuristics for use here, i.e., ground anyways to avoid re-grounding in the future.
-						if (!disableInstanceRemoval) {
-							removeAfterObtainingNewNoGoods.add(substitutedAtom);
-							continue;
-						}
-					}
+				if (storeAtomAndTerminateIfAtomDoesNotHold(currentAssignment, laxGrounderHeuristic, substitutedAtom)) {
+					continue;
 				}
 			}
 			List<Substitution> boundSubstitutions = bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, unified, currentAssignment);
@@ -528,6 +528,30 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 
 		return generatedSubstitutions;
+	}
+
+	private boolean storeAtomAndTerminateIfAtomDoesNotHold(Assignment currentAssignment, boolean laxGrounderHeuristic, final Atom substitute) {
+		final int atomId = atomStore.putIfAbsent(substitute);
+
+		if (currentAssignment != null) {
+			try {
+				final ThriceTruth truth = currentAssignment.getTruth(atomId);
+
+				if (atomId > maxAtomIdBeforeGroundingNewNoGoods || truth == null || !truth.toBoolean()) {
+					// Atom currently does not hold, skip further grounding.
+					// TODO: investigate grounding heuristics for use here, i.e., ground anyways to avoid re-grounding in the future.
+					if (!disableInstanceRemoval && !laxGrounderHeuristic) {
+						// we terminate binding if positive body literal is already assigned false, even in lax grounder heuristic
+						removeAfterObtainingNewNoGoods.add(substitute);
+						// TODO: terminate here if atom (i.e. positive body literal) is already assigned false
+						return true;
+					}
+				}
+			} catch (ArrayIndexOutOfBoundsException e) {
+				// TODO: is this a bug? if atom is new, assignment does not know it yet
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -610,6 +634,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	@Override
 	public Set<Literal> justifyAtom(int atomToJustify, Assignment currentAssignment) {
 		return analyzeUnjustified.analyze(atomToJustify, currentAssignment);
+	}
+	
+	public Set<Predicate> getPredicatesDefinedOnlyByFacts() {
+		return Collections.unmodifiableSet(predicatesDefinedOnlyByFacts);
 	}
 
 	/**
