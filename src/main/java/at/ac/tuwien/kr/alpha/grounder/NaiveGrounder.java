@@ -37,6 +37,7 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
+import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 import at.ac.tuwien.kr.alpha.grounder.transformation.*;
@@ -78,6 +79,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private int maxAtomIdBeforeGroundingNewNoGoods = -1;
 	private boolean disableInstanceRemoval;
 	private boolean useCountingGridNormalization;
+	
+	private GrounderHeuristicsConfiguration heuristicsConfiguration = new GrounderHeuristicsConfiguration();	// TODO: make configurable from CLI
 	
 	/**
 	 * If this configuration parameter is {@code true} (which it is by default),
@@ -398,6 +401,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		
 		if (orderPosition >= groundingOrder.getPositionFromWhichAllVarsAreBound()) {
 			// TODO: now all vars are bound and we have to decide whether to continue binding or to terminate
+			// TODO: use parameters in heuristicsConfiguration to make this decision (maybe split literals into positive and negative to make it easier?)
 		}
 
 		Literal currentLiteral = literals[orderPosition];
