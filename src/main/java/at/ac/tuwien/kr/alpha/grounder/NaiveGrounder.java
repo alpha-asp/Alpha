@@ -395,10 +395,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			return singletonList(partialSubstitution);
 		}
 		
-		if (orderPosition >= groundingOrder.getPositionFromWhichAllVarsAreBound()) {
+//		if (orderPosition >= groundingOrder.getPositionFromWhichAllVarsAreBound()) {
 			// TODO: now all vars are bound and we have to decide whether to continue binding or to terminate
 			// TODO: use parameters in heuristicsConfiguration to make this decision (maybe split literals into positive and negative to make it easier?)
-		}
+//		}
 
 		Literal currentLiteral = literals[orderPosition];
 		Atom currentAtom = currentLiteral.getAtom();

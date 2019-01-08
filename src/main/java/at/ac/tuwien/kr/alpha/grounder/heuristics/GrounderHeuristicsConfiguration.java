@@ -49,11 +49,13 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
  */
 public class GrounderHeuristicsConfiguration {
 	
-	private int toleranceConstraints = 0;
-	private int toleranceRules = 0;
+	private int toleranceConstraints;
+	private int toleranceRules;
 	
 	public GrounderHeuristicsConfiguration() {
 		super();
+		this.toleranceConstraints = 0;
+		this.toleranceRules = 0;
 	}
 	
 	/**
