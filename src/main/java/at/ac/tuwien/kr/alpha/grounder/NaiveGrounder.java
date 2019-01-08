@@ -53,7 +53,7 @@ import static java.util.Collections.singletonList;
 
 /**
  * A semi-naive grounder.
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  */
 public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGrounder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
@@ -70,6 +70,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final Map<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
 	private final Map<NonGroundRule, HashSet<Substitution>> knownGroundingSubstitutions = new HashMap<>();
 	private final Map<Integer, NonGroundRule> knownNonGroundRules = new HashMap<>();
+	
+	private final Set<Predicate> predicatesDefinedOnlyByFacts = new HashSet<>();
 
 	private ArrayList<NonGroundRule> fixedRules = new ArrayList<>();
 	private LinkedHashSet<Atom> removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
@@ -112,6 +114,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// initialize all facts
 		for (Atom fact : program.getFacts()) {
 			final Predicate predicate = fact.getPredicate();
+			predicatesDefinedOnlyByFacts.add(predicate);
 
 			// Record predicate
 			workingMemory.initialize(predicate);
@@ -140,6 +143,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			if (nonGroundRule.getHeadAtom() != null) {
 				Predicate headPredicate = nonGroundRule.getHeadAtom().getPredicate();
 				programAnalysis.recordDefiningRule(headPredicate, nonGroundRule);
+				predicatesDefinedOnlyByFacts.remove(headPredicate);
 			}
 
 			// Create working memories for all predicates occurring in the rule
@@ -596,6 +600,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	@Override
 	public Set<Literal> justifyAtom(int atomToJustify, Assignment currentAssignment) {
 		return analyzeUnjustified.analyze(atomToJustify, currentAssignment);
+	}
+	
+	public Set<Predicate> getPredicatesDefinedOnlyByFacts() {
+		return Collections.unmodifiableSet(predicatesDefinedOnlyByFacts);
 	}
 
 	private static class FirstBindingAtom {
