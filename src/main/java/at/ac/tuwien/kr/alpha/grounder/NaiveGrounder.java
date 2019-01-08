@@ -71,8 +71,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final Map<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
 	private final Map<NonGroundRule, HashSet<Substitution>> knownGroundingSubstitutions = new HashMap<>();
 	private final Map<Integer, NonGroundRule> knownNonGroundRules = new HashMap<>();
-	
-	private final Set<Predicate> predicatesDefinedOnlyByFacts = new HashSet<>();
 
 	private ArrayList<NonGroundRule> fixedRules = new ArrayList<>();
 	private LinkedHashSet<Atom> removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
@@ -117,7 +115,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// initialize all facts
 		for (Atom fact : program.getFacts()) {
 			final Predicate predicate = fact.getPredicate();
-			predicatesDefinedOnlyByFacts.add(predicate);
 
 			// Record predicate
 			workingMemory.initialize(predicate);
@@ -146,7 +143,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			if (nonGroundRule.getHeadAtom() != null) {
 				Predicate headPredicate = nonGroundRule.getHeadAtom().getPredicate();
 				programAnalysis.recordDefiningRule(headPredicate, nonGroundRule);
-				predicatesDefinedOnlyByFacts.remove(headPredicate);
 			}
 
 			// Create working memories for all predicates occurring in the rule
@@ -459,7 +455,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				return emptyList();
 			}
 		}
-
+		
 		// substituted atom contains variables
 		if (currentLiteral.isNegated()) {
 			throw oops("Current atom should be positive at this point but is not");
@@ -478,8 +474,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			instances = storage.getInstancesFromPartiallyGroundAtom(substitute);
 		}
 		
-		//TODO: this is still a hack
 		if (instances.isEmpty() && laxGrounderHeuristic && substitute.isGround()) {
+			// note: this is necessary in the case that the current atom has just been grounded and is not known by the working memory yet
+			// we do not add the atom to the working memory so as not to trigger additional grounding
+			// (but maybe the working memory will be redesigned in the future)
 			instances = singletonList(new Instance(substitute.getTerms()));
 		}
 
@@ -514,10 +512,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		final int atomId = atomStore.putIfAbsent(substitute);
 
 		if (currentAssignment != null) {
-			try {
+			if (atomId <= maxAtomIdBeforeGroundingNewNoGoods) {
+				// atom has not just been grounded
 				final ThriceTruth truth = currentAssignment.getTruth(atomId);
 
-				if (atomId > maxAtomIdBeforeGroundingNewNoGoods || truth == null || !truth.toBoolean()) {
+				if (truth == null || !truth.toBoolean()) {
 					// Atom currently does not hold, skip further grounding.
 					// TODO: investigate grounding heuristics for use here, i.e., ground anyways to avoid re-grounding in the future.
 					if (!disableInstanceRemoval && !laxGrounderHeuristic) {
@@ -527,8 +526,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 						return true;
 					}
 				}
-			} catch (ArrayIndexOutOfBoundsException e) {
-				// TODO: is this a bug? if atom is new, assignment does not know it yet
 			}
 		}
 		return false;
@@ -604,10 +601,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	@Override
 	public Set<Literal> justifyAtom(int atomToJustify, Assignment currentAssignment) {
 		return analyzeUnjustified.analyze(atomToJustify, currentAssignment);
-	}
-	
-	public Set<Predicate> getPredicatesDefinedOnlyByFacts() {
-		return Collections.unmodifiableSet(predicatesDefinedOnlyByFacts);
 	}
 
 	private static class FirstBindingAtom {

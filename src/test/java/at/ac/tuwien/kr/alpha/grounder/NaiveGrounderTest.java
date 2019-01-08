@@ -31,9 +31,13 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests {@link NaiveGrounder}
@@ -99,21 +103,6 @@ public class NaiveGrounderTest {
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		int litB = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))));
 		assertTrue(noGoods.containsValue(NoGood.fromConstraint(Arrays.asList(litB), Collections.emptyList())));
-	}
-	
-	@Test
-	public void testPredicatesDefinedOnlyByFacts() {
-		Program program = PARSER.parse("a(1). b(2). c(3). "
-				+ "d(X) :- c(X). " 
-				+ "c(X) :- b(X). ");
-		
-		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore);
-		Set<Predicate> predicatesDefinedOnlyByFacts = grounder.getPredicatesDefinedOnlyByFacts();
-		Set<Predicate> expected = new HashSet<>();
-		expected.add(Predicate.getInstance("a", 1));
-		expected.add(Predicate.getInstance("b", 1));
-		assertEquals(expected, predicatesDefinedOnlyByFacts);
 	}
 	
 	private void assertExistsNoGoodContaining(Collection<NoGood> noGoods, int literal) {
