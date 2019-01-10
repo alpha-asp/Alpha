@@ -1,37 +1,38 @@
-package at.ac.tuwien.kr.alpha;
+package at.ac.tuwien.kr.alpha.config;
 
-import java.io.InputStream;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 
 public class AlphaConfig {
 
+	// Note: Defining constants for default values here rather than just
+	// initializing from those values in order to have the values accessible in
+	// contexts where no AlphaConfig instance exists (e.g. argument parsing from
+	// command line)
 	public static final String DEFAULT_GROUNDER_NAME = "naive";
 	public static final String DEFAULT_SOLVER_NAME = "default";
 	public static final String DEFAULT_NOGOOD_STORE_NAME = "alphaRoaming";
+	public static final String DEFAULT_BRANCHING_HEURISTIC_NAME = Heuristic.NAIVE.name();
+	public static final long DEFAULT_SEED = System.nanoTime();
+	public static final boolean DEFAULT_DETERMINISTIC = false;
+	public static final boolean DEFAULT_PRINT_STATS = false;
+	public static final boolean DEFAULT_QUIET = false;
+	public static final boolean DEFAULT_DISABLE_JUSTIFICATION_SEARCH = false;
+	public static final boolean DEFAULT_DEBUG_INTERNAL_CHECKS = false;
+	public static final boolean DEFAULT_USE_NORMALIZATION_GRID = false;
+	public static final boolean DEFAULT_SORT_ANSWER_SETS = false;
 
-	private int numAnswerSets;
-	private InputStream input;
-	private String grounderName;
-	private String solverName;
-	private String nogoodStoreName;
-	private String[] filters;
-	private boolean sortAnswerSets;
-	private boolean deterministic;
-	private int seed;
-	private boolean debugInternalChecks;
-	private String branchingHeuristicName;
-	private boolean quiet;
-	private boolean literate;
-	private boolean printStats;
-	private boolean disableJustificationSearch;
-	private boolean useNormalizationGrid;
-
-	public int getNumAnswerSets() {
-		return this.numAnswerSets;
-	}
-
-	public void setNumAnswerSets(int numAnswerSets) {
-		this.numAnswerSets = numAnswerSets;
-	}
+	private String grounderName = AlphaConfig.DEFAULT_GROUNDER_NAME;
+	private String solverName = AlphaConfig.DEFAULT_SOLVER_NAME;
+	private String nogoodStoreName = AlphaConfig.DEFAULT_NOGOOD_STORE_NAME;
+	private boolean deterministic = AlphaConfig.DEFAULT_DETERMINISTIC;
+	private long seed = AlphaConfig.DEFAULT_SEED;
+	private boolean debugInternalChecks = AlphaConfig.DEFAULT_DEBUG_INTERNAL_CHECKS;
+	private String branchingHeuristicName = AlphaConfig.DEFAULT_BRANCHING_HEURISTIC_NAME;
+	private boolean quiet = AlphaConfig.DEFAULT_QUIET;
+	private boolean printStats = AlphaConfig.DEFAULT_PRINT_STATS;
+	private boolean disableJustificationSearch = AlphaConfig.DEFAULT_DISABLE_JUSTIFICATION_SEARCH;
+	private boolean useNormalizationGrid = AlphaConfig.DEFAULT_USE_NORMALIZATION_GRID;
+	private boolean sortAnswerSets = AlphaConfig.DEFAULT_SORT_ANSWER_SETS;
 
 	public String getGrounderName() {
 		return this.grounderName;
@@ -57,22 +58,6 @@ public class AlphaConfig {
 		this.nogoodStoreName = nogoodStoreName;
 	}
 
-	public String[] getFilters() {
-		return this.filters;
-	}
-
-	public void setFilters(String[] filters) {
-		this.filters = filters;
-	}
-
-	public boolean isSortAnswerSets() {
-		return this.sortAnswerSets;
-	}
-
-	public void setSortAnswerSets(boolean sortAnswerSets) {
-		this.sortAnswerSets = sortAnswerSets;
-	}
-
 	public boolean isDeterministic() {
 		return this.deterministic;
 	}
@@ -81,11 +66,11 @@ public class AlphaConfig {
 		this.deterministic = deterministic;
 	}
 
-	public int getSeed() {
+	public long getSeed() {
 		return this.seed;
 	}
 
-	public void setSeed(int seed) {
+	public void setSeed(long seed) {
 		this.seed = seed;
 	}
 
@@ -113,14 +98,6 @@ public class AlphaConfig {
 		this.quiet = quiet;
 	}
 
-	public boolean isLiterate() {
-		return this.literate;
-	}
-
-	public void setLiterate(boolean literate) {
-		this.literate = literate;
-	}
-
 	public boolean isPrintStats() {
 		return this.printStats;
 	}
@@ -145,12 +122,12 @@ public class AlphaConfig {
 		this.useNormalizationGrid = useNormalizationGrid;
 	}
 
-	public InputStream getInput() {
-		return this.input;
+	public boolean isSortAnswerSets() {
+		return this.sortAnswerSets;
 	}
 
-	public void setInput(InputStream input) {
-		this.input = input;
+	public void setSortAnswerSets(boolean sortAnswerSets) {
+		this.sortAnswerSets = sortAnswerSets;
 	}
 
 }

@@ -129,7 +129,12 @@ public class DependencyGraph {
 	 */
 	private Map<Node, List<Edge>> nodes = new HashMap<>();
 
-	private int constraintNumber = 0;
+	private int constraintNumber;
+	
+	public DependencyGraph() {
+		// doing this since checkstyle doesn't let me initialize it directly to 0
+		this.constraintNumber = 0;
+	}
 
 	public static DependencyGraph buildDependencyGraph(Map<Integer, NonGroundRule> nonGroundRules) {
 		DependencyGraph retVal = new DependencyGraph();
