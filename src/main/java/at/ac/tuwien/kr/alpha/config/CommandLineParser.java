@@ -129,7 +129,7 @@ public class CommandLineParser {
 		this.abortAction = abortAction;
 
 		// help is handled separately, therefore dummy handler
-		this.globalOptionHandlers.put(CommandLineParser.OPT_HELP.getOpt(), (o, c) -> {});
+		this.globalOptionHandlers.put(CommandLineParser.OPT_HELP.getOpt(), (o, c) -> { });
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER.getOpt(), this::handleGrounder);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_SOLVER.getOpt(), this::handleSolver);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NOGOOD_STORE.getOpt(), this::handleNogoodStore);
@@ -181,6 +181,18 @@ public class CommandLineParser {
 		return retVal;
 	}
 
+	public String getUsageMessage() {
+		HelpFormatter formatter = new HelpFormatter();
+		// Unfortunately, commons-cli does not offer a method of simply rendering a help
+		// message into a string, therefore the ByteArrayOutputStream..
+		ByteArrayOutputStream helpBuffer = new ByteArrayOutputStream();
+		PrintWriter pw = new PrintWriter(helpBuffer);
+		formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, this.cmdSyntax, "", CommandLineParser.CLI_OPTS, HelpFormatter.DEFAULT_LEFT_PAD,
+				HelpFormatter.DEFAULT_DESC_PAD, "");
+		pw.flush();
+		return helpBuffer.toString();
+	}
+	
 	private void validate(CommandLine commandLine) throws ParseException {
 		if (!commandLine.hasOption(CommandLineParser.OPT_INPUT.getOpt()) && !commandLine.hasOption(CommandLineParser.OPT_ASPSTRING.getOpt())) {
 			throw new ParseException("Missing input source - need to specifiy either a file (" + CommandLineParser.OPT_INPUT.getOpt() + ") or a string ("
@@ -200,15 +212,7 @@ public class CommandLineParser {
 	}
 
 	private void handleHelp() {
-		HelpFormatter formatter = new HelpFormatter();
-		// Unfortunately, commons-cli does not offer a method of simply rendering a help
-		// message into a string, therefore the ByteArrayOutputStream..
-		ByteArrayOutputStream helpBuffer = new ByteArrayOutputStream();
-		PrintWriter pw = new PrintWriter(helpBuffer);
-		formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, this.cmdSyntax, "", CommandLineParser.CLI_OPTS, HelpFormatter.DEFAULT_LEFT_PAD,
-				HelpFormatter.DEFAULT_DESC_PAD, "");
-		pw.flush();
-		this.abortAction.accept(helpBuffer.toString());
+		this.abortAction.accept(this.getUsageMessage());
 	}
 
 	private void handleInput(Option opt, InputConfig cfg) {

@@ -97,7 +97,16 @@ public class Alpha {
 		return parser.parse(aspString);
 	}
 
-	public Stream<AnswerSet> solve(Program program) {
+	/**
+	 * Prepares a solver (and accompanying grounder) instance pre-loaded with the
+	 * given program. Use this if the solver is needed after reading answer sets
+	 * (e.g. for obtaining statistics)
+	 * 
+	 * @param program the program to solve
+	 * @return a solver (and accompanying grounder) instance pre-loaded with the
+	 *         given program
+	 */
+	public Solver prepareSolverFor(Program program) {
 		String grounderName = this.config.getGrounderName();
 		String solverName = this.config.getSolverName();
 		String nogoodStoreName = this.config.getNogoodStoreName();
@@ -110,7 +119,12 @@ public class Alpha {
 		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore);
 		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed), branchingHeuristic, doDebugChecks,
 				disableJustificationSearch);
-		return solver.stream();
+		return solver;
+	}
+
+	public Stream<AnswerSet> solve(Program program) {
+		Stream<AnswerSet> retVal = this.prepareSolverFor(program).stream();
+		return this.config.isSortAnswerSets() ? retVal.sorted() : retVal;
 	}
 
 	public AlphaConfig getConfig() {
