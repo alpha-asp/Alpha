@@ -1,7 +1,8 @@
 package at.ac.tuwien.kr.alpha.io;
 
-import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +21,11 @@ public class DependencyGraphWriter {
 	private static final String DEFAULT_EDGE_FORMAT = "n%d -> n%d [xlabel=\"%s\" labeldistance=0.1]\n";
 
 	public void writeAsDotfile(DependencyGraph graph, String path) throws IOException {
-		PrintStream ps = new PrintStream(new File(path));
+		this.writeAsDot(graph, new FileOutputStream(path));
+	}
+
+	public void writeAsDot(DependencyGraph graph, OutputStream out) throws IOException {
+		PrintStream ps = new PrintStream(out);
 		Map<Node, List<Edge>> graphData = graph.getNodes();
 
 		this.startGraph(ps);
@@ -42,8 +47,7 @@ public class DependencyGraphWriter {
 			fromNodeNum = nodesToNumbers.get(entry.getKey());
 			for (Edge edge : entry.getValue()) {
 				toNodeNum = nodesToNumbers.get(edge.getTarget());
-				ps.printf(DependencyGraphWriter.DEFAULT_EDGE_FORMAT, fromNodeNum, toNodeNum,
-						edge.getSign() ? "+" : "-");
+				ps.printf(DependencyGraphWriter.DEFAULT_EDGE_FORMAT, fromNodeNum, toNodeNum, edge.getSign() ? "+" : "-");
 			}
 		}
 

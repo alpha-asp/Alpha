@@ -2,6 +2,8 @@ package at.ac.tuwien.kr.alpha.config;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,6 +42,10 @@ public class CommandLineParser {
 			.desc("provide the asp program as a string").build();
 	private static final Option OPT_LITERATE = Option.builder("l").longOpt("literate")
 			.desc("enable literate programming mode (default: " + InputConfig.DEFAULT_LITERATE + ")").build();
+	private static final Option OPT_DEPGRAPH = Option.builder("DG").longOpt("dependency-graph")
+			.desc("Create a dependency graph for the given program and write it to " + InputConfig.DEFAULT_DEPGRAPH_PATH + " (default: "
+					+ InputConfig.DEFAULT_WRITE_DEPENDENCY_GRAPH)
+			.build();
 
 	// general system-wide config
 	private static final Option OPT_GROUNDER = Option.builder("g").longOpt("grounder").hasArg(true).argName("grounder")
@@ -89,6 +95,7 @@ public class CommandLineParser {
 		// below
 		// inputSourceMutexGroup.setRequired(true);
 		CommandLineParser.CLI_OPTS.addOptionGroup(inputSourceMutexGroup);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_DEPGRAPH);
 
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SOLVER);
@@ -148,6 +155,7 @@ public class CommandLineParser {
 		this.inputOptionHandlers.put(CommandLineParser.OPT_FILTER.getOpt(), this::handleFilters);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_ASPSTRING.getOpt(), this::handleAspString);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_LITERATE.getOpt(), this::handleLiterate);
+		this.inputOptionHandlers.put(CommandLineParser.OPT_DEPGRAPH.getOpt(), this::handleWriteDependencyGraph);
 	}
 
 	public AlphaContext parseCommandLine(String[] args) throws ParseException {
@@ -192,7 +200,7 @@ public class CommandLineParser {
 		pw.flush();
 		return helpBuffer.toString();
 	}
-	
+
 	private void validate(CommandLine commandLine) throws ParseException {
 		if (!commandLine.hasOption(CommandLineParser.OPT_INPUT.getOpt()) && !commandLine.hasOption(CommandLineParser.OPT_ASPSTRING.getOpt())) {
 			throw new ParseException("Missing input source - need to specifiy either a file (" + CommandLineParser.OPT_INPUT.getOpt() + ") or a string ("
@@ -291,6 +299,15 @@ public class CommandLineParser {
 
 	private void handleNormalizationGrid(Option opt, AlphaConfig cfg) {
 		cfg.setUseNormalizationGrid(true);
+	}
+
+	private void handleWriteDependencyGraph(Option opt, InputConfig cfg) throws ParseException {
+		cfg.setWriteDependencyGraph(true);
+		try {
+			cfg.setDepGraphTarget(new FileOutputStream(InputConfig.DEFAULT_DEPGRAPH_PATH));
+		} catch (FileNotFoundException ex) {
+			throw new ParseException("Invalid dependency graph target: Cannot access " + InputConfig.DEFAULT_DEPGRAPH_PATH);
+		}
 	}
 
 }

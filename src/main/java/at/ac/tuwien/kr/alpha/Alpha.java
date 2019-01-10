@@ -48,7 +48,16 @@ import at.ac.tuwien.kr.alpha.config.AlphaConfig;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
+import at.ac.tuwien.kr.alpha.grounder.transformation.CardinalityNormalization;
+import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
+import at.ac.tuwien.kr.alpha.grounder.transformation.EnumerationRewriting;
+import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
+import at.ac.tuwien.kr.alpha.grounder.transformation.SumNormalization;
+import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
+import at.ac.tuwien.kr.alpha.io.DependencyGraphWriter;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
@@ -66,14 +75,42 @@ public class Alpha {
 	}
 
 	public Program readProgram(InputConfig cfg) throws IOException {
+		Program retVal = null;
 		switch (cfg.getSource()) {
 			case FILE:
-				return this.readProgramFiles(cfg.isLiterate(), cfg.getPredicateMethods(), cfg.getFiles());
+				retVal = this.readProgramFiles(cfg.isLiterate(), cfg.getPredicateMethods(), cfg.getFiles());
+				break;
 			case STRING:
-				return this.readProgramString(cfg.getAspString(), cfg.getPredicateMethods());
+				retVal = this.readProgramString(cfg.getAspString(), cfg.getPredicateMethods());
+				break;
 			default:
 				throw new IllegalArgumentException("Unsupported input source: " + cfg.getSource());
 		}
+		retVal = this.doProgramTransformations(retVal);
+		// FIXME ProgramAnalysis is again created in grounder, should generally do this
+		// in Alpha and pass into grounder
+		if (cfg.isWriteDependencyGraph()) {
+			ProgramAnalysis analysis = new ProgramAnalysis(retVal);
+			new DependencyGraphWriter().writeAsDot(analysis.getDependencyGraph(), cfg.getDepGraphTarget());
+		}
+		return retVal;
+	}
+
+	private Program doProgramTransformations(Program program) {
+		// Transform choice rules.
+		new ChoiceHeadToNormal().transform(program);
+		// Transform cardinality aggregates.
+		new CardinalityNormalization(!this.config.isUseNormalizationGrid()).transform(program);
+		// Transform sum aggregates.
+		new SumNormalization().transform(program);
+		// Transform intervals.
+		new IntervalTermToIntervalAtom().transform(program);
+		// Remove variable equalities.
+		new VariableEqualityRemoval().transform(program);
+		// Transform enumeration atoms.
+		new EnumerationRewriting().transform(program);
+		EnumerationAtom.resetEnumerations();
+		return program;
 	}
 
 	public Program readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException {
@@ -117,6 +154,7 @@ public class Alpha {
 
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore);
+
 		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed), branchingHeuristic, doDebugChecks,
 				disableJustificationSearch);
 		return solver;
