@@ -62,7 +62,7 @@ public class GrounderHeuristicsConfiguration {
 	 * @param toleranceConstraints
 	 * @param toleranceRules
 	 */
-	public GrounderHeuristicsConfiguration(int toleranceConstraints, int toleranceRules) {
+	private GrounderHeuristicsConfiguration(int toleranceConstraints, int toleranceRules) {
 		super();
 		this.toleranceConstraints = toleranceConstraints;
 		this.toleranceRules = toleranceRules;
@@ -80,6 +80,34 @@ public class GrounderHeuristicsConfiguration {
 	 */
 	public int getToleranceRules() {
 		return toleranceRules;
+	}
+
+	/**
+	 * @param ruleIsConstraint {@code true} iff the parameter for constraints shall be returned
+	 * @return {@link #getToleranceConstraints()} if {@code ruleIsConstraint}, otherwise {@link #getToleranceRules()}
+	 */
+	public int getTolerance(boolean ruleIsConstraint) {
+		return ruleIsConstraint ? getToleranceConstraints() : getToleranceRules();
+	}
+
+	/**
+	 * @param ruleIsConstraint {@code true} iff the parameter for constraints shall be returned
+	 * @return {@code true} iff the tolerance is not 0
+	 */
+	public boolean isLax(boolean ruleIsConstraint) {
+		return getTolerance(ruleIsConstraint) != 0;
+	}
+	
+	public static GrounderHeuristicsConfiguration strict() {
+		return new GrounderHeuristicsConfiguration(0, 0);
+	}
+	
+	public static GrounderHeuristicsConfiguration lax(int toleranceConstraints, int toleranceRules) {
+		return new GrounderHeuristicsConfiguration(toleranceConstraints, toleranceRules);
+	}
+	
+	public static GrounderHeuristicsConfiguration lax() {
+		return new GrounderHeuristicsConfiguration(-1, -1);
 	}
 
 }
