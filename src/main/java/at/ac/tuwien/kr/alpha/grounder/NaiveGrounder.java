@@ -41,7 +41,6 @@ import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration
 import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 import at.ac.tuwien.kr.alpha.grounder.transformation.*;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +73,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	private ArrayList<NonGroundRule> fixedRules = new ArrayList<>();
 	private LinkedHashSet<Atom> removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
-	private int maxAtomIdBeforeGroundingNewNoGoods = -1;
 	private boolean disableInstanceRemoval;
 	private boolean useCountingGridNormalization;
 	
@@ -316,7 +314,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// In first call, prepare facts and ground rules.
 		final Map<Integer, NoGood> newNoGoods = fixedRules != null ? bootstrap() : new LinkedHashMap<>();
 
-		maxAtomIdBeforeGroundingNewNoGoods = atomStore.getMaxAtomId();
 		// Compute new ground rule (evaluate joins with newly changed atoms)
 		for (IndexedInstanceStorage modifiedWorkingMemory : workingMemory.modified()) {
 			// Skip predicates solely used in the solver which do not occur in rules.
@@ -512,19 +509,14 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		final int atomId = atomStore.putIfAbsent(substitute);
 
 		if (currentAssignment != null) {
-			if (atomId <= maxAtomIdBeforeGroundingNewNoGoods) {
-				// atom has not just been grounded
-				final ThriceTruth truth = currentAssignment.getTruth(atomId);
-
-				if (truth == null || !truth.toBoolean()) {
-					// Atom currently does not hold, skip further grounding.
-					// TODO: investigate grounding heuristics for use here, i.e., ground anyways to avoid re-grounding in the future.
-					if (!disableInstanceRemoval && !laxGrounderHeuristic) {
-						// we terminate binding if positive body literal is already assigned false, even in lax grounder heuristic
-						removeAfterObtainingNewNoGoods.add(substitute);
-						// TODO: terminate here if atom (i.e. positive body literal) is already assigned false
-						return true;
-					}
+			if (!currentAssignment.isAssigned(atomId) || !currentAssignment.getTruth(atomId).toBoolean()) {
+				// Atom currently does not hold, skip further grounding.
+				// TODO: investigate grounding heuristics for use here, i.e., ground anyways to avoid re-grounding in the future.
+				if (!disableInstanceRemoval && !laxGrounderHeuristic) {
+					// we terminate binding if positive body literal is already assigned false, even in lax grounder heuristic
+					removeAfterObtainingNewNoGoods.add(substitute);
+					// TODO: terminate here if atom (i.e. positive body literal) is already assigned false
+					return true;
 				}
 			}
 		}
