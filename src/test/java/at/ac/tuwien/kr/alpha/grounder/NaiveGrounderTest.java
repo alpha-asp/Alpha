@@ -29,6 +29,7 @@ import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +39,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-import static at.ac.tuwien.kr.alpha.TestUtil.literal;
+import static at.ac.tuwien.kr.alpha.TestUtil.*;
 import static org.junit.Assert.*;
 
 /**
@@ -46,12 +47,12 @@ import static org.junit.Assert.*;
  */
 public class NaiveGrounderTest {
 	private static final ProgramParser PARSER = new ProgramParser();
-	
+
 	@Before
 	public void resetRuleIdGenerator() {
 		NonGroundRule.ID_GENERATOR.resetGenerator();
 	}
-	
+
 	/**
 	 * Asserts that a ground rule whose positive body is not satisfied by the empty assignment
 	 * is grounded immediately.
@@ -61,7 +62,7 @@ public class NaiveGrounderTest {
 		Program program = PARSER.parse("a :- not b. "
 				+ "b :- not a. "
 				+ "c :- b.");
-		
+
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
@@ -81,7 +82,7 @@ public class NaiveGrounderTest {
 				+ "b :- not a. "
 				+ "c :- b. "
 				+ "d :- b, c. ");
-		
+
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
@@ -94,7 +95,7 @@ public class NaiveGrounderTest {
 		assertExistsNoGoodContaining(noGoods.values(), litCNeg);
 		assertExistsNoGoodContaining(noGoods.values(), litDNeg);
 	}
-	
+
 	/**
 	 * Asserts that a ground constraint whose positive body is not satisfied by the empty assignment
 	 * is grounded immediately.
@@ -104,44 +105,94 @@ public class NaiveGrounderTest {
 		Program program = PARSER.parse("a :- not b. "
 				+ "b :- not a. "
 				+ ":- b.");
-		
+
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		int litB = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))));
 		assertTrue(noGoods.containsValue(NoGood.fromConstraint(Arrays.asList(litB), Collections.emptyList())));
 	}
-	
-	@Test(expected=UnsupportedOperationException.class)
+
+	@Test(expected = UnsupportedOperationException.class)
 	public void avoidDeadEndsWithLaxGrounderHeuristic() {
-		RuleGroundingOrder groundingOrderP1 = new RuleGroundingOrder(literal("p1", "X"), new Literal[] {literal("p2", "X"), literal("q2", "Y"), literal("q1", "Y")}, -1);
-		RuleGroundingOrder groundingOrderQ1 = new RuleGroundingOrder(literal("q1", "Y"), new Literal[] {literal("q2", "Y"), literal("p2", "X"), literal("p1", "X")}, -1);
+		RuleGroundingOrder groundingOrderP1 = new RuleGroundingOrder(literal("p1", "X"),
+				new Literal[] {literal("p2", "X"), literal("q2", "Y"), literal("q1", "Y")}, -1);
+		RuleGroundingOrder groundingOrderQ1 = new RuleGroundingOrder(literal("q1", "Y"),
+				new Literal[] {literal("q2", "Y"), literal("p2", "X"), literal("p1", "X")}, -1);
 		testDeadEnd(groundingOrderP1, groundingOrderQ1, false);
 	}
-	
+
 	@Test
 	public void noDeadEndWithLaxGrounderHeuristic() {
-		RuleGroundingOrder groundingOrderP1 = new RuleGroundingOrder(literal("p1", "X"), new Literal[] {literal("p2", "X"), literal("q1", "Y"), literal("q2", "Y")}, -1);
-		RuleGroundingOrder groundingOrderQ1 = new RuleGroundingOrder(literal("q1", "Y"), new Literal[] {literal("q2", "Y"), literal("p1", "X"), literal("p2", "X")}, -1);
+		RuleGroundingOrder groundingOrderP1 = new RuleGroundingOrder(literal("p1", "X"),
+				new Literal[] {literal("p2", "X"), literal("q1", "Y"), literal("q2", "Y")}, -1);
+		RuleGroundingOrder groundingOrderQ1 = new RuleGroundingOrder(literal("q1", "Y"),
+				new Literal[] {literal("q2", "Y"), literal("p1", "X"), literal("p2", "X")}, -1);
 		testDeadEnd(groundingOrderP1, groundingOrderQ1, true);
 	}
-	
+
 	private void testDeadEnd(RuleGroundingOrder groundingOrderP1, RuleGroundingOrder groundingOrderQ1, boolean expectNoGoods) {
 		Program program = PARSER.parse("p1(1). q1(1). "
 				+ "x :- p1(X), p2(X), q1(Y), q2(Y). "
-				+ "p2(X) :- something(X). "	// this is to trick the grounder into believing that p2 and q2 might become true
+				+ "p2(X) :- something(X). " // this is to trick the grounder into believing that p2 and q2 might become true
 				+ "q2(X) :- something(X). ");
-		
+
 		AtomStore atomStore = new AtomStoreImpl();
 		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore);
-		
+
 		NonGroundRule nonGroundRule = grounder.getNonGroundRule(0);
 		nonGroundRule.groundingOrder.groundingOrders.put(literal("p1", "X"), groundingOrderP1);
 		nonGroundRule.groundingOrder.groundingOrders.put(literal("q1", "Y"), groundingOrderQ1);
-		
+
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(currentAssignment);
-		System.out.println(noGoods);
+		printNoGoods(atomStore, noGoods.values());
+		assertEquals(expectNoGoods, !noGoods.isEmpty());
+	}
+
+	@Test
+	public void testGroundingOfRuleSwitchedOffByFalsePositiveBody() {
+		Program program = PARSER.parse("a(1). "
+				+ "c(X) :- a(X), b(X). "
+				+ "b(X) :- something(X). "); // this is to trick the grounder into believing that b might become true
+		testIfGrounderGroundsRule(program, ThriceTruth.FALSE, false);
+	}
+
+	@Test
+	public void testGroundingOfRuleNotSwitchedOffByTruePositiveBody() {
+		Program program = PARSER.parse("a(1). "
+				+ "c(X) :- a(X), b(X). "
+				+ "b(X) :- something(X). "); // this is to trick the grounder into believing that b might become true
+		testIfGrounderGroundsRule(program, ThriceTruth.TRUE, true);
+	}
+
+	@Test
+	public void testGroundingOfRuleSwitchedOffByTrueNegativeBody() {
+		Program program = PARSER.parse("a(1). "
+				+ "c(X) :- a(X), not b(X). "
+				+ "b(X) :- something(X). "); // this is to trick the grounder into believing that b might become true
+		testIfGrounderGroundsRule(program, ThriceTruth.TRUE, false);
+	}
+
+	@Test
+	public void testGroundingOfRuleNotSwitchedOffByFalseNegativeBody() {
+		Program program = PARSER.parse("a(1). "
+				+ "c(X) :- a(X), not b(X). "
+				+ "b(X) :- something(X). "); // this is to trick the grounder into believing that b might become true
+		testIfGrounderGroundsRule(program, ThriceTruth.FALSE, true);
+	}
+
+	private void testIfGrounderGroundsRule(Program program, ThriceTruth bTruth, boolean expectNoGoods) {
+		AtomStore atomStore = new AtomStoreImpl();
+		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
+		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore);
+
+		int b = atomStore.putIfAbsent(atom("b", 1));
+		currentAssignment.growForMaxAtomId();
+		currentAssignment.assign(b, bTruth);
+
+		Map<Integer, NoGood> noGoods = grounder.getNoGoods(currentAssignment);
+		printNoGoods(atomStore, noGoods.values());
 		assertEquals(expectNoGoods, !noGoods.isEmpty());
 	}
 

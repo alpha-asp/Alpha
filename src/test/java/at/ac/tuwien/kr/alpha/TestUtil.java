@@ -25,7 +25,10 @@
  */
 package at.ac.tuwien.kr.alpha;
 
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -33,13 +36,20 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 /**
  * Provides utility methods for test cases
  *
  */
 public class TestUtil {
-
+	
 	public static Literal literal(String predicateName, String... termStrings) {
+		return atom(predicateName, termStrings).toLiteral();
+	}
+
+	public static Atom atom(String predicateName, String... termStrings) {
 		Term[] terms = new Term[termStrings.length];
 		for (int i = 0; i < termStrings.length; i++) {
 			String termString = termStrings[i];
@@ -49,7 +59,23 @@ public class TestUtil {
 				terms[i] = ConstantTerm.getInstance(termString);
 			}
 		}
-		return new BasicAtom(Predicate.getInstance(predicateName, terms.length), terms).toLiteral();
+		return new BasicAtom(Predicate.getInstance(predicateName, terms.length), terms);
+	}
+	
+	public static Literal literal(String predicateName, int... termInts) {
+		return atom(predicateName, termInts).toLiteral();
+	}
+
+	public static Atom atom(String predicateName, int... termInts) {
+		Term[] terms = new Term[termInts.length];
+		for (int i = 0; i < termInts.length; i++) {
+			terms[i] = ConstantTerm.getInstance(termInts[i]);
+		}
+		return new BasicAtom(Predicate.getInstance(predicateName, terms.length), terms);
+	}
+	
+	public static void printNoGoods(AtomStore atomStore, Collection<NoGood> noGoods) {
+		System.out.println(noGoods.stream().map(atomStore::noGoodToString).collect(Collectors.toSet()));
 	}
 
 }
