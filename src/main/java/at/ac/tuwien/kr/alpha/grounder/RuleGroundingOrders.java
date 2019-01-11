@@ -53,7 +53,7 @@ import java.util.*;
  */
 public class RuleGroundingOrders {
 	private final NonGroundRule nonGroundRule;
-	private HashMap<Literal, RuleGroundingOrder> groundingOrders;
+	HashMap<Literal, RuleGroundingOrder> groundingOrders;
 	private HashMap<Literal, Float> literalSelectivity;
 	private List<Literal> startingLiterals;
 

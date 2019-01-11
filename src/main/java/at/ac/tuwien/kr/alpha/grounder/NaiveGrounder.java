@@ -384,7 +384,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return registry.register(noGood);
 	}
 
-	private List<Substitution> bindNextAtomInRule(NonGroundRule rule, RuleGroundingOrder groundingOrder, int orderPosition, Substitution partialSubstitution, Assignment currentAssignment) {
+	List<Substitution> bindNextAtomInRule(NonGroundRule rule, RuleGroundingOrder groundingOrder, int orderPosition, Substitution partialSubstitution, Assignment currentAssignment) {
 		boolean laxGrounderHeuristic = true; // TODO
 		
 		Literal[] literals = groundingOrder.getOtherLiterals(); // can contain positive and negative literals
@@ -477,6 +477,15 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			// (but maybe the working memory will be redesigned in the future)
 			instances = singletonList(new Instance(substitute.getTerms()));
 		}
+		
+		if (laxGrounderHeuristic && instances.isEmpty()) {
+			// we have reached a point where we have to terminate binding,
+			// but it might be possible that a different grounding order would allow us to continue binding
+			// under the presence of a lax grounder heuristic
+			if (laxGrounderHeuristicCouldPotentiallyContinue(substitute, partialSubstitution, groundingOrder, orderPosition)) {
+				throw new UnsupportedOperationException("Lax grounder heuristic does not support escaping unfortunate grounding orders yet. Grounding order: " + groundingOrder);
+			}
+		}
 
 		ArrayList<Substitution> generatedSubstitutions = new ArrayList<>();
 		for (Instance instance : instances) {
@@ -516,6 +525,28 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 					// we terminate binding if positive body literal is already assigned false, even in lax grounder heuristic
 					removeAfterObtainingNewNoGoods.add(substitute);
 					// TODO: terminate here if atom (i.e. positive body literal) is already assigned false
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private boolean laxGrounderHeuristicCouldPotentiallyContinue(Atom substitute, Substitution partialSubstitution, RuleGroundingOrder groundingOrder,
+			int orderPosition) {
+		final Set<VariableTerm> remainingVariables = new HashSet<>();
+		for (VariableTerm var : substitute.getBindingVariables()) {
+			if (!partialSubstitution.isVariableSet(var)) {
+				remainingVariables.add(var);
+			}
+		}
+		if (remainingVariables.isEmpty()) {
+			return false;
+		}
+		Literal[] remainingLiterals = Arrays.copyOfRange(groundingOrder.getOtherLiterals(), orderPosition + 1, groundingOrder.getOtherLiterals().length);
+		for (Literal literal : remainingLiterals) {
+			for (VariableTerm var : literal.getBindingVariables()) {
+				if (remainingVariables.contains(var)) {
 					return true;
 				}
 			}

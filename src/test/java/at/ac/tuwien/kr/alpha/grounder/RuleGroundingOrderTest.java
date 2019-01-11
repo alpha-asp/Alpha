@@ -27,19 +27,16 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
 import org.junit.Test;
 
 import java.io.IOException;
 
+import static at.ac.tuwien.kr.alpha.TestUtil.literal;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -114,9 +111,9 @@ public class RuleGroundingOrderTest {
 	public void testPositionFromWhichAllVarsAreBound_joinedNonGround() {
 		Program program = parser.parse("a(X) :- b(X), c(X,Y), d(X,Z), not e(X).");
 		RuleGroundingOrders rgo0 = computeGroundingOrdersForRule(program, 0);
-		assertTrue(2 <= rgo0.orderStartingFrom(lit("b", "X")).getPositionFromWhichAllVarsAreBound());
-		assertTrue(1 <= rgo0.orderStartingFrom(lit("c", "X", "Y")).getPositionFromWhichAllVarsAreBound());
-		assertTrue(1 <= rgo0.orderStartingFrom(lit("d", "X", "Z")).getPositionFromWhichAllVarsAreBound());
+		assertTrue(2 <= rgo0.orderStartingFrom(literal("b", "X")).getPositionFromWhichAllVarsAreBound());
+		assertTrue(1 <= rgo0.orderStartingFrom(literal("c", "X", "Y")).getPositionFromWhichAllVarsAreBound());
+		assertTrue(1 <= rgo0.orderStartingFrom(literal("d", "X", "Z")).getPositionFromWhichAllVarsAreBound());
 	}
 
 	private RuleGroundingOrders computeGroundingOrdersForRule(Program program, int ruleIndex) {
@@ -125,14 +122,6 @@ public class RuleGroundingOrderTest {
 		RuleGroundingOrders rgo = new RuleGroundingOrders(nonGroundRule);
 		rgo.computeGroundingOrders();
 		return rgo;
-	}
-
-	private Literal lit(String predicateName, String... variableNames) {
-		Term[] terms = new Term[variableNames.length];
-		for (int i = 0; i < variableNames.length; i++) {
-			terms[i] = VariableTerm.getInstance(variableNames[i]);
-		}
-		return new BasicAtom(Predicate.getInstance(predicateName, terms.length), terms).toLiteral();
 	}
 
 }

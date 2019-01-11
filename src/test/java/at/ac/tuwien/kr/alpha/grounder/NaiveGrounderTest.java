@@ -27,8 +27,10 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -36,14 +38,19 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static at.ac.tuwien.kr.alpha.TestUtil.literal;
+import static org.junit.Assert.*;
 
 /**
  * Tests {@link NaiveGrounder}
  */
 public class NaiveGrounderTest {
 	private static final ProgramParser PARSER = new ProgramParser();
+	
+	@Before
+	public void resetRuleIdGenerator() {
+		NonGroundRule.ID_GENERATOR.resetGenerator();
+	}
 	
 	/**
 	 * Asserts that a ground rule whose positive body is not satisfied by the empty assignment
@@ -105,6 +112,39 @@ public class NaiveGrounderTest {
 		assertTrue(noGoods.containsValue(NoGood.fromConstraint(Arrays.asList(litB), Collections.emptyList())));
 	}
 	
+	@Test(expected=UnsupportedOperationException.class)
+	public void avoidDeadEndsWithLaxGrounderHeuristic() {
+		RuleGroundingOrder groundingOrderP1 = new RuleGroundingOrder(literal("p1", "X"), new Literal[] {literal("p2", "X"), literal("q2", "Y"), literal("q1", "Y")}, -1);
+		RuleGroundingOrder groundingOrderQ1 = new RuleGroundingOrder(literal("q1", "Y"), new Literal[] {literal("q2", "Y"), literal("p2", "X"), literal("p1", "X")}, -1);
+		testDeadEnd(groundingOrderP1, groundingOrderQ1, false);
+	}
+	
+	@Test
+	public void noDeadEndWithLaxGrounderHeuristic() {
+		RuleGroundingOrder groundingOrderP1 = new RuleGroundingOrder(literal("p1", "X"), new Literal[] {literal("p2", "X"), literal("q1", "Y"), literal("q2", "Y")}, -1);
+		RuleGroundingOrder groundingOrderQ1 = new RuleGroundingOrder(literal("q1", "Y"), new Literal[] {literal("q2", "Y"), literal("p1", "X"), literal("p2", "X")}, -1);
+		testDeadEnd(groundingOrderP1, groundingOrderQ1, true);
+	}
+	
+	private void testDeadEnd(RuleGroundingOrder groundingOrderP1, RuleGroundingOrder groundingOrderQ1, boolean expectNoGoods) {
+		Program program = PARSER.parse("p1(1). q1(1). "
+				+ "x :- p1(X), p2(X), q1(Y), q2(Y). "
+				+ "p2(X) :- something(X). "	// this is to trick the grounder into believing that p2 and q2 might become true
+				+ "q2(X) :- something(X). ");
+		
+		AtomStore atomStore = new AtomStoreImpl();
+		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore);
+		
+		NonGroundRule nonGroundRule = grounder.getNonGroundRule(0);
+		nonGroundRule.groundingOrder.groundingOrders.put(literal("p1", "X"), groundingOrderP1);
+		nonGroundRule.groundingOrder.groundingOrders.put(literal("q1", "Y"), groundingOrderQ1);
+		
+		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
+		Map<Integer, NoGood> noGoods = grounder.getNoGoods(currentAssignment);
+		System.out.println(noGoods);
+		assertEquals(expectNoGoods, !noGoods.isEmpty());
+	}
+
 	private void assertExistsNoGoodContaining(Collection<NoGood> noGoods, int literal) {
 		for (NoGood noGood : noGoods) {
 			for (int literalInNoGood : noGood) {
