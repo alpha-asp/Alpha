@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.io;
+package at.ac.tuwien.kr.alpha.common.depgraph.io;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.common.DependencyGraph;
-import at.ac.tuwien.kr.alpha.common.DependencyGraph.Edge;
-import at.ac.tuwien.kr.alpha.common.DependencyGraph.Node;
+import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
+import at.ac.tuwien.kr.alpha.common.depgraph.Edge;
+import at.ac.tuwien.kr.alpha.common.depgraph.Node;
 
 public class DependencyGraphWriter {
 

@@ -8,11 +8,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-import at.ac.tuwien.kr.alpha.common.DependencyGraph;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
 import at.ac.tuwien.kr.alpha.grounder.FactIntervalEvaluator;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
