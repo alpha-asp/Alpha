@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -130,7 +130,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	@Override
 	public boolean isAssigned(int atom) {
-		return values[atom] != 0;
+		return values.length > atom && values[atom] != 0;
 	}
 
 	@Override

@@ -68,5 +68,26 @@ public class RuleGroundingOrder {
 	public int getPositionFromWhichAllVarsAreBound() {
 		return positionLastVarBound + 1;
 	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(startingLiteral);
+		sb.append(" : ");
+		for (int i = 0; i < otherLiterals.length; i++) {
+			if (i == positionLastVarBound + 1) {
+				sb.append("| ");
+			}
+			sb.append(otherLiterals[i]);
+			if (i < otherLiterals.length - 1) {
+				sb.append(", ");
+			}
+		}
+		
+		return sb.toString();
+	}
 
 }
