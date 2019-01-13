@@ -91,7 +91,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 */
 	private boolean stopBindingAtNonTruePositiveBody = true;
 
-	public NaiveGrounder(Program program, AtomStore atomStore, Bridge... bridges) {
+	public NaiveGrounder(Program program, AtomStore atomStore, boolean debugInternalChecks, Bridge... bridges) {
 		this(program, atomStore, new GrounderHeuristicsConfiguration(), debugInternalChecks, bridges);
 	}
 
@@ -99,7 +99,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		this(program, atomStore, p -> true, heuristicsConfiguration, false, debugInternalChecks, bridges);
 	}
 
-	NaiveGrounder(Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean useCountingGrid, Bridge... bridges) {
+	NaiveGrounder(Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean useCountingGrid, boolean debugInternalChecks, Bridge... bridges) {
 		super(filter, bridges);
 		this.atomStore = atomStore;
 		this.heuristicsConfiguration = heuristicsConfiguration;
