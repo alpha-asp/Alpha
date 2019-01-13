@@ -585,6 +585,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return false;
 	}
 
+	/**
+	 * TODO: this is just a temporary workaround
+	 * @param currentAssignment 
+	 */
 	private boolean laxGrounderHeuristicCouldPotentiallyContinue(Atom substitute, Substitution partialSubstitution, RuleGroundingOrder groundingOrder,
 			int orderPosition) {
 		final Set<VariableTerm> remainingVariables = new HashSet<>();
@@ -598,8 +602,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 		Literal[] remainingLiterals = Arrays.copyOfRange(groundingOrder.getOtherLiterals(), orderPosition + 1, groundingOrder.getOtherLiterals().length);
 		for (Literal literal : remainingLiterals) {
+			if (literal.isNegated()) {
+				continue;
+			}
 			for (VariableTerm var : literal.getBindingVariables()) {
-				if (remainingVariables.contains(var)) {
+				if (remainingVariables.contains(var) && remainingVariables.size() > 1) {
 					return true;
 				}
 			}
