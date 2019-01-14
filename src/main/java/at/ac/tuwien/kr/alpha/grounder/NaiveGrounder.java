@@ -520,9 +520,14 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			// we have reached a point where we have to terminate binding,
 			// but it might be possible that a different grounding order would allow us to continue binding
 			// under the presence of a lax grounder heuristic
-			if (laxGrounderHeuristicCouldPotentiallyContinue(substitute, partialSubstitution, groundingOrder, orderPosition)) {
-				throw new UnsupportedOperationException("Lax grounder heuristic does not support escaping unfortunate grounding orders yet. Grounding order: " + groundingOrder);
+//			if (laxGrounderHeuristicCouldPotentiallyContinue(substitute, partialSubstitution, groundingOrder, orderPosition)) {
+//				throw new UnsupportedOperationException("Lax grounder heuristic does not support escaping unfortunate grounding orders yet. Grounding order: " + groundingOrder);
+//			}
+			//if (orderPosition >= groundingOrder.getPushedBackFrom()) { // TODO: could this miss potentially successful bindings?
+			if (groundingOrder.getPushedBackFrom() <= 0) {
+				return emptyList();
 			}
+			return bindNextAtomInRule(rule, groundingOrder.pushBack(orderPosition), orderPosition, remainingTolerance, partialSubstitution, currentAssignment);
 		}
 
 		ArrayList<Substitution> generatedSubstitutions = new ArrayList<>();

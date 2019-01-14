@@ -35,6 +35,7 @@ public class RuleGroundingOrder {
 	private Literal startingLiteral;
 	private Literal[] otherLiterals;
 	private int positionLastVarBound;
+	private int pushedBackFrom = -1;
 	
 	/**
 	 * @param startingLiteral
@@ -69,6 +70,13 @@ public class RuleGroundingOrder {
 		return positionLastVarBound + 1;
 	}
 	
+	/**
+	 * @return the pushedBackFrom
+	 */
+	public int getPushedBackFrom() {
+		return pushedBackFrom;
+	}
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -88,6 +96,26 @@ public class RuleGroundingOrder {
 		}
 		
 		return sb.toString();
+	}
+
+	/**
+	 * @param orderPosition
+	 * @return
+	 */
+	public RuleGroundingOrder pushBack(int orderPosition) {
+		// TODO: this ignores positionLastVarBound for now (because it is not used anyway)
+		Literal[] reorderedOtherLiterals = new Literal[otherLiterals.length];
+		int i = 0;
+		for (; i < orderPosition; i++) {
+			reorderedOtherLiterals[i] = otherLiterals[i];
+		}
+		for (; i < otherLiterals.length - 1; i++) {
+			reorderedOtherLiterals[i] = otherLiterals[i + 1];
+		}
+		reorderedOtherLiterals[i] = otherLiterals[orderPosition];
+		RuleGroundingOrder reorderedGroundingOrder = new RuleGroundingOrder(startingLiteral, reorderedOtherLiterals, positionLastVarBound);
+		reorderedGroundingOrder.pushedBackFrom = (this.pushedBackFrom >= 0 ? this.pushedBackFrom : otherLiterals.length) - 1;
+		return reorderedGroundingOrder;
 	}
 
 }
