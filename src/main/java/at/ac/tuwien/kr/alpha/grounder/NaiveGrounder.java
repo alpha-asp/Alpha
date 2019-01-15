@@ -458,10 +458,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		if (substitute.isGround()) {
 			// Substituted atom is ground, in case it is positive, only ground if it also holds true
 			if (currentLiteral.isNegated()) {
-				if (isAlreadyAssignedTrue(substitute, currentAssignment)) {
-					// TODO: not grounding rules that are not applicable can lead to the problem that they are not even added when they are relevant later, at least under presence of aggregates
-					return emptyList();
-				}
 				// Atom occurs negated in the rule: continue grounding
 				return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, remainingTolerance, partialSubstitution, currentAssignment);
 			}
@@ -555,14 +551,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 
 		return generatedSubstitutions;
-	}
-
-	private boolean isAlreadyAssignedTrue(Atom atom, Assignment currentAssignment) {
-		if (currentAssignment != null && atom.isGround() && atomStore.contains(atom)) {
-			int atomId = atomStore.get(atom);
-			return currentAssignment.isAssigned(atomId) && currentAssignment.getTruth(atomId).toBoolean();
-		}
-		return false;
 	}
 
 	private boolean storeAtomAndTerminateIfAtomDoesNotHold(final Atom substitute, Assignment currentAssignment, AtomicInteger remainingTolerance, boolean laxGrounderHeuristic) {

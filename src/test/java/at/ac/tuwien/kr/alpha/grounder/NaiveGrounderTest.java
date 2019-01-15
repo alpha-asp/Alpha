@@ -33,6 +33,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -173,6 +174,7 @@ public class NaiveGrounderTest {
 	}
 
 	@Test
+	@Ignore("Currently, rule grounding is not switched off by a true negative body atom")
 	public void testGroundingOfRuleSwitchedOffByTrueNegativeBody() {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), not b(X). "
