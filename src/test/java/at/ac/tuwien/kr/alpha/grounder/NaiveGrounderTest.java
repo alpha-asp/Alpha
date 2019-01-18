@@ -27,7 +27,6 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
@@ -124,18 +123,18 @@ public class NaiveGrounderTest {
 	@Ignore("Currently, NaiveGrounder tries to escape this situation instead of throwing an exception")
 	public void avoidDeadEndsWithLaxGrounderHeuristic() {
 		RuleGroundingOrder groundingOrderP1 = new RuleGroundingOrder(literal("p1", "X"),
-				new Literal[] {literal("p2", "X"), literal("q2", "Y"), literal("q1", "Y")}, -1);
+				Arrays.asList(literal("p2", "X"), literal("q2", "Y"), literal("q1", "Y")), -1);
 		RuleGroundingOrder groundingOrderQ1 = new RuleGroundingOrder(literal("q1", "Y"),
-				new Literal[] {literal("q2", "Y"), literal("p2", "X"), literal("p1", "X")}, -1);
+				Arrays.asList(literal("q2", "Y"), literal("p2", "X"), literal("p1", "X")), -1);
 		testDeadEnd(groundingOrderP1, groundingOrderQ1, false);
 	}
 
 	@Test
 	public void noDeadEndWithLaxGrounderHeuristic() {
 		RuleGroundingOrder groundingOrderP1 = new RuleGroundingOrder(literal("p1", "X"),
-				new Literal[] {literal("p2", "X"), literal("q1", "Y"), literal("q2", "Y")}, -1);
+				Arrays.asList(literal("p2", "X"), literal("q1", "Y"), literal("q2", "Y")), -1);
 		RuleGroundingOrder groundingOrderQ1 = new RuleGroundingOrder(literal("q1", "Y"),
-				new Literal[] {literal("q2", "Y"), literal("p1", "X"), literal("p2", "X")}, -1);
+				Arrays.asList(literal("q2", "Y"), literal("p1", "X"), literal("p2", "X")), -1);
 		testDeadEnd(groundingOrderP1, groundingOrderQ1, true);
 	}
 

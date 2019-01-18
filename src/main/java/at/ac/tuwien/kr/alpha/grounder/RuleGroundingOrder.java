@@ -27,26 +27,30 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A grounding order computed by {@link RuleGroundingOrders} for a specific {@link NonGroundRule} and a specific starting literal.
  */
 public class RuleGroundingOrder {
 	
 	private Literal startingLiteral;
-	private Literal[] otherLiterals;
+	private List<Literal> otherLiterals;
 	private int positionLastVarBound;
-	private int pushedBackFrom = -1;
+	private int stopBindingAtOrderPosition;
 	
-	/**
-	 * @param startingLiteral
-	 * @param otherLiterals
-	 * @param positionLastVarBound
-	 */
-	RuleGroundingOrder(Literal startingLiteral, Literal[] otherLiterals, int positionLastVarBound) {
+	RuleGroundingOrder(Literal startingLiteral, List<Literal> otherLiterals, int positionLastVarBound) {
 		super();
 		this.startingLiteral = startingLiteral;
 		this.otherLiterals = otherLiterals;
 		this.positionLastVarBound = positionLastVarBound;
+		this.stopBindingAtOrderPosition = otherLiterals.size();
+	}
+	
+	private RuleGroundingOrder(RuleGroundingOrder otherRuleGroundingOrder) {
+		this(otherRuleGroundingOrder.startingLiteral, new ArrayList<>(otherRuleGroundingOrder.otherLiterals), otherRuleGroundingOrder.positionLastVarBound);
+		this.stopBindingAtOrderPosition = otherRuleGroundingOrder.stopBindingAtOrderPosition;
 	}
 
 	/**
@@ -55,12 +59,22 @@ public class RuleGroundingOrder {
 	public Literal getStartingLiteral() {
 		return startingLiteral;
 	}
-
+	
 	/**
-	 * @return the otherLiterals
+	 * Returns the literal at the given position in the grounding order,
+	 * except it is already known that this literal is not able to yield new bindings.
+	 * 
+	 * A literal cannot yield new bindings if it has been copied to the end of the grounding order
+	 * when no bindings could be found, and no bindings for other literals could be found in the meantime.
+	 * 
+	 * @param orderPosition zero-based index into list of literals except the starting literal
+	 * @return the literal at the given position, or {@code null} if it is already known that this literal is not able to yield new bindings
 	 */
-	public Literal[] getOtherLiterals() {
-		return otherLiterals;
+	public Literal getLiteralAtOrderPosition(int orderPosition) {
+		if (orderPosition >= stopBindingAtOrderPosition) {
+			return null;
+		}
+		return otherLiterals.get(orderPosition);
 	}
 
 	/**
@@ -68,13 +82,6 @@ public class RuleGroundingOrder {
 	 */
 	public int getPositionFromWhichAllVarsAreBound() {
 		return positionLastVarBound + 1;
-	}
-	
-	/**
-	 * @return the pushedBackFrom
-	 */
-	public int getPushedBackFrom() {
-		return pushedBackFrom;
 	}
 	
 	/* (non-Javadoc)
@@ -85,12 +92,12 @@ public class RuleGroundingOrder {
 		StringBuilder sb = new StringBuilder();
 		sb.append(startingLiteral);
 		sb.append(" : ");
-		for (int i = 0; i < otherLiterals.length; i++) {
+		for (int i = 0; i < otherLiterals.size(); i++) {
 			if (i == positionLastVarBound + 1) {
 				sb.append("| ");
 			}
-			sb.append(otherLiterals[i]);
-			if (i < otherLiterals.length - 1) {
+			sb.append(otherLiterals.get(i));
+			if (i < otherLiterals.size() - 1) {
 				sb.append(", ");
 			}
 		}
@@ -103,19 +110,16 @@ public class RuleGroundingOrder {
 	 * @return
 	 */
 	public RuleGroundingOrder pushBack(int orderPosition) {
-		// TODO: this ignores positionLastVarBound for now (because it is not used anyway)
-		Literal[] reorderedOtherLiterals = new Literal[otherLiterals.length];
-		int i = 0;
-		for (; i < orderPosition; i++) {
-			reorderedOtherLiterals[i] = otherLiterals[i];
+		if (orderPosition >= stopBindingAtOrderPosition - 1) {
+			return null;
 		}
-		for (; i < otherLiterals.length - 1; i++) {
-			reorderedOtherLiterals[i] = otherLiterals[i + 1];
-		}
-		reorderedOtherLiterals[i] = otherLiterals[orderPosition];
-		RuleGroundingOrder reorderedGroundingOrder = new RuleGroundingOrder(startingLiteral, reorderedOtherLiterals, positionLastVarBound);
-		reorderedGroundingOrder.pushedBackFrom = (this.pushedBackFrom >= 0 ? this.pushedBackFrom : otherLiterals.length) - 1;
+		RuleGroundingOrder reorderedGroundingOrder = new RuleGroundingOrder(this);
+		reorderedGroundingOrder.otherLiterals.add(otherLiterals.get(orderPosition));
 		return reorderedGroundingOrder;
+	}
+	
+	public void considerUntilCurrentEnd() {
+		this.stopBindingAtOrderPosition = this.otherLiterals.size();
 	}
 
 }

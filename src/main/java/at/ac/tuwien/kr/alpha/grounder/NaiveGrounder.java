@@ -374,7 +374,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		workingMemory.reset();
 		for (Atom removeAtom : removeAfterObtainingNewNoGoods) {
 			final IndexedInstanceStorage storage = this.workingMemory.get(removeAtom, true);
-			storage.removeInstance(new Instance(removeAtom.getTerms()));
+			Instance instance = new Instance(removeAtom.getTerms());
+			if (storage.containsInstance(instance)) {
+				// lax grounder heuristics may attempt to remove instances that are not yet in the working memory
+				storage.removeInstance(instance);
+			}
 		}
 
 		removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
@@ -421,35 +425,47 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return bindNextAtomInRule(rule, groundingOrder, orderPosition, new AtomicInteger(remainingTolerance), partialSubstitution, currentAssignment);
 	}
 	
+	private List<Substitution> advanceAndBindNextAtomInRule(NonGroundRule rule, RuleGroundingOrder groundingOrder, int orderPosition, AtomicInteger remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment) {
+		groundingOrder.considerUntilCurrentEnd();
+		return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, remainingTolerance, partialSubstitution, currentAssignment);
+	}
+	
+	private List<Substitution> pushBackAndBindNextAtomInRule(NonGroundRule rule, RuleGroundingOrder groundingOrder, int orderPosition, AtomicInteger remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment) {
+		RuleGroundingOrder modifiedGroundingOrder = groundingOrder.pushBack(orderPosition);
+		if (modifiedGroundingOrder == null) {
+			return emptyList();
+		}
+		return bindNextAtomInRule(rule, modifiedGroundingOrder, orderPosition + 1, remainingTolerance, partialSubstitution, currentAssignment);
+	}
+	
 	private List<Substitution> bindNextAtomInRule(NonGroundRule rule, RuleGroundingOrder groundingOrder, int orderPosition, AtomicInteger remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment) {
 		boolean laxGrounderHeuristic = heuristicsConfiguration.isLax(rule.isConstraint());
 		
-		Literal[] literals = groundingOrder.getOtherLiterals(); // can contain positive and negative literals
-		if (orderPosition == literals.length) {
+		Literal currentLiteral = groundingOrder.getLiteralAtOrderPosition(orderPosition);
+		if (currentLiteral == null) {
 			return singletonList(partialSubstitution);
 		}
-
-		Literal currentLiteral = literals[orderPosition];
+		
 		Atom currentAtom = currentLiteral.getAtom();
 		if (currentLiteral instanceof FixedInterpretationLiteral) {
 			// Generate all substitutions for the builtin/external/interval atom.
 			final List<Substitution> substitutions = ((FixedInterpretationLiteral)currentLiteral.substitute(partialSubstitution)).getSubstitutions(partialSubstitution);
-
+			
 			if (substitutions.isEmpty()) {
-				return emptyList();
+				return pushBackAndBindNextAtomInRule(rule, groundingOrder, orderPosition, remainingTolerance, partialSubstitution, currentAssignment);
 			}
-
+			
 			final List<Substitution> generatedSubstitutions = new ArrayList<>();
 			for (Substitution substitution : substitutions) {
 				// Continue grounding with each of the generated values.
-				generatedSubstitutions.addAll(bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, new AtomicInteger(remainingTolerance.get()), substitution, currentAssignment));
+				generatedSubstitutions.addAll(advanceAndBindNextAtomInRule(rule, groundingOrder, orderPosition, new AtomicInteger(remainingTolerance.get()), substitution, currentAssignment));
 			}
 			return generatedSubstitutions;
 		}
 		if (currentAtom instanceof EnumerationAtom) {
 			// Get the enumeration value and add it to the current partialSubstitution.
 			((EnumerationAtom) currentAtom).addEnumerationToSubstitution(partialSubstitution);
-			return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, remainingTolerance, partialSubstitution, currentAssignment);
+			return advanceAndBindNextAtomInRule(rule, groundingOrder, orderPosition, remainingTolerance, partialSubstitution, currentAssignment);
 		}
 
 		// check if partialVariableSubstitution already yields a ground atom
@@ -459,7 +475,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			// Substituted atom is ground, in case it is positive, only ground if it also holds true
 			if (currentLiteral.isNegated()) {
 				// Atom occurs negated in the rule: continue grounding
-				return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, remainingTolerance, partialSubstitution, currentAssignment);
+				return advanceAndBindNextAtomInRule(rule, groundingOrder, orderPosition, remainingTolerance, partialSubstitution, currentAssignment);
 			}
 
 			if (stopBindingAtNonTruePositiveBody && !rule.getRule().isGround()
@@ -476,7 +492,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			final LinkedHashSet<Instance> instances = factsFromProgram.get(substitute.getPredicate());
 			if (!(instances == null || !instances.contains(new Instance(substitute.getTerms())))) {
 				// Ground literal holds, continue finding a variable substitution.
-				return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, remainingTolerance, partialSubstitution, currentAssignment);
+				return advanceAndBindNextAtomInRule(rule, groundingOrder, orderPosition, remainingTolerance, partialSubstitution, currentAssignment);
 			}
 
 			// Atom is not a fact already.
@@ -488,7 +504,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		
 		// substituted atom contains variables
 		if (currentLiteral.isNegated()) {
-			throw oops("Current atom should be positive at this point but is not");
+			if (laxGrounderHeuristic) {
+				return pushBackAndBindNextAtomInRule(rule, groundingOrder, orderPosition, remainingTolerance, partialSubstitution, currentAssignment);
+			} else {
+				throw oops("Current atom should be positive at this point but is not");
+			}
 		}
 
 		IndexedInstanceStorage storage = workingMemory.get(currentAtom.getPredicate(), true);
@@ -516,14 +536,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			// we have reached a point where we have to terminate binding,
 			// but it might be possible that a different grounding order would allow us to continue binding
 			// under the presence of a lax grounder heuristic
-//			if (laxGrounderHeuristicCouldPotentiallyContinue(substitute, partialSubstitution, groundingOrder, orderPosition)) {
-//				throw new UnsupportedOperationException("Lax grounder heuristic does not support escaping unfortunate grounding orders yet. Grounding order: " + groundingOrder);
-//			}
-			//if (orderPosition >= groundingOrder.getPushedBackFrom()) { // TODO: could this miss potentially successful bindings?
-			if (groundingOrder.getPushedBackFrom() <= 0) {
-				return emptyList();
-			}
-			return bindNextAtomInRule(rule, groundingOrder.pushBack(orderPosition), orderPosition, remainingTolerance, partialSubstitution, currentAssignment);
+			return pushBackAndBindNextAtomInRule(rule, groundingOrder, orderPosition, remainingTolerance, partialSubstitution, currentAssignment);
 		}
 
 		ArrayList<Substitution> generatedSubstitutions = new ArrayList<>();
@@ -546,7 +559,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 					continue;
 				}
 			}
-			List<Substitution> boundSubstitutions = bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, remainingTolerance, unified, currentAssignment);
+			List<Substitution> boundSubstitutions = advanceAndBindNextAtomInRule(rule, groundingOrder, orderPosition, remainingTolerance, unified, currentAssignment);
 			generatedSubstitutions.addAll(boundSubstitutions);
 		}
 
@@ -560,10 +573,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			ThriceTruth truth = currentAssignment.isAssigned(atomId) ? currentAssignment.getTruth(atomId) : null;
 			if (truth == null || !truth.toBoolean()) {
 				// Atom currently does not hold
-				if (!disableInstanceRemoval && !laxGrounderHeuristic) {
-					// TODO: make more beautiful and general, without laxGrounderHeuristic
+				if (!disableInstanceRemoval) {
 					removeAfterObtainingNewNoGoods.add(substitute);
-					return true;
 				}
 				if (truth == null && remainingTolerance.decrementAndGet() < 0) {
 					// terminate if more positive atoms are unsatisfied as tolerated by the heuristic
@@ -571,35 +582,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				}
 				if (truth != null && !truth.toBoolean()) {
 					// terminate if positive body atom is assigned false
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * TODO: this is just a temporary workaround
-	 * @param currentAssignment 
-	 */
-	private boolean laxGrounderHeuristicCouldPotentiallyContinue(Atom substitute, Substitution partialSubstitution, RuleGroundingOrder groundingOrder,
-			int orderPosition) {
-		final Set<VariableTerm> remainingVariables = new HashSet<>();
-		for (VariableTerm var : substitute.getBindingVariables()) {
-			if (!partialSubstitution.isVariableSet(var)) {
-				remainingVariables.add(var);
-			}
-		}
-		if (remainingVariables.isEmpty()) {
-			return false;
-		}
-		Literal[] remainingLiterals = Arrays.copyOfRange(groundingOrder.getOtherLiterals(), orderPosition + 1, groundingOrder.getOtherLiterals().length);
-		for (Literal literal : remainingLiterals) {
-			if (literal.isNegated()) {
-				continue;
-			}
-			for (VariableTerm var : literal.getBindingVariables()) {
-				if (remainingVariables.contains(var) && remainingVariables.size() > 1) {
 					return true;
 				}
 			}
