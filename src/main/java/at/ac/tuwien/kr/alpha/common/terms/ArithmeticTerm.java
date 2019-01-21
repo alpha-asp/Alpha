@@ -192,6 +192,12 @@ public class ArithmeticTerm extends Term {
 		public Term renameVariables(String renamePrefix) {
 			return getInstance(left.renameVariables(renamePrefix));
 		}
+		
+		@Override
+		public Term normalizeVariables(String renamePrefix, RenameCounter counter) {
+			Term normalizedLeft = left.normalizeVariables(renamePrefix, counter);
+			return MinusTerm.getInstance(normalizedLeft);
+		}
 
 		@Override
 		public String toString() {
