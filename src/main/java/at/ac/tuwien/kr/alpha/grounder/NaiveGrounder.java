@@ -462,7 +462,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			final List<Substitution> substitutions = ((FixedInterpretationLiteral)currentLiteral.substitute(partialSubstitution)).getSubstitutions(partialSubstitution);
 			
 			if (substitutions.isEmpty()) {
-				return pushBackAndBindNextAtomInRule(rule, groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
+				// if FixedInterpretationLiteral cannot be satisfied now, it will never be
+				return BindingResult.empty();
 			}
 			
 			final BindingResult bindingResult = new BindingResult();
