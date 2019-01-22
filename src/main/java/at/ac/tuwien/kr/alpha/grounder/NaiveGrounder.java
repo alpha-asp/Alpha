@@ -421,8 +421,15 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	List<Substitution> bindNextAtomInRule(NonGroundRule rule, RuleGroundingOrder groundingOrder, int orderPosition, Substitution partialSubstitution, Assignment currentAssignment) {
 		int tolerance = heuristicsConfiguration.getTolerance(rule.isConstraint());
-		int remainingTolerance = tolerance >= 0 ? tolerance : Integer.MAX_VALUE;
-		return bindNextAtomInRule(rule, groundingOrder, orderPosition, new AtomicInteger(remainingTolerance), partialSubstitution, currentAssignment);
+		if (tolerance < 0) {
+			tolerance = Integer.MAX_VALUE;
+		}
+		AtomicInteger remainingTolerance = new AtomicInteger(tolerance);
+		List<Substitution> generatedSubstitutions = bindNextAtomInRule(rule, groundingOrder, orderPosition, remainingTolerance, partialSubstitution, currentAssignment);
+		if (remainingTolerance.get() < tolerance && !generatedSubstitutions.isEmpty()) {
+			LOGGER.info("Grounded rule in which " + (tolerance - remainingTolerance.get()) + " positive atoms are still unassigned: " + rule);
+		}
+		return generatedSubstitutions;
 	}
 	
 	private List<Substitution> advanceAndBindNextAtomInRule(NonGroundRule rule, RuleGroundingOrder groundingOrder, int orderPosition, AtomicInteger remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment) {
