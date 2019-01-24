@@ -48,6 +48,11 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
  *
  */
 public class GrounderHeuristicsConfiguration {
+
+	public static final String STRICT_STRING = "strict";
+	public static final int STRICT_INT = 0;
+	public static final String LAX_STRING = "lax";
+	public static final int LAX_INT = -1;
 	
 	private int toleranceConstraints;
 	private int toleranceRules;
@@ -95,19 +100,38 @@ public class GrounderHeuristicsConfiguration {
 	 * @return {@code true} iff the tolerance is not 0
 	 */
 	public boolean isLax(boolean ruleIsConstraint) {
-		return getTolerance(ruleIsConstraint) != 0;
+		return getTolerance(ruleIsConstraint) != STRICT_INT;
 	}
 	
 	public static GrounderHeuristicsConfiguration strict() {
-		return new GrounderHeuristicsConfiguration(0, 0);
-	}
-	
-	public static GrounderHeuristicsConfiguration lax(int toleranceConstraints, int toleranceRules) {
-		return new GrounderHeuristicsConfiguration(toleranceConstraints, toleranceRules);
+		return new GrounderHeuristicsConfiguration(STRICT_INT, STRICT_INT);
 	}
 	
 	public static GrounderHeuristicsConfiguration lax() {
-		return new GrounderHeuristicsConfiguration(-1, -1);
+		return new GrounderHeuristicsConfiguration(LAX_INT, LAX_INT);
+	}
+	
+	public static GrounderHeuristicsConfiguration getInstance(int toleranceConstraints, int toleranceRules) {
+		return new GrounderHeuristicsConfiguration(toleranceConstraints, toleranceRules);
+	}
+
+	public static GrounderHeuristicsConfiguration getInstance(String toleranceConstraints, String toleranceRules) {
+		return getInstance(parseTolerance(toleranceConstraints), parseTolerance(toleranceRules));
+	}
+
+	private static int parseTolerance(String tolerance) {
+		if (STRICT_STRING.equalsIgnoreCase(tolerance)) {
+			return STRICT_INT;
+		} else if (LAX_STRING.equalsIgnoreCase(tolerance)) {
+			return LAX_INT;
+		} else {
+			return Integer.parseInt(tolerance);
+		}
+	}
+	
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + "(toleranceConstraints=" + toleranceConstraints + ",toleranceRules=" + toleranceRules + ")";
 	}
 
 }

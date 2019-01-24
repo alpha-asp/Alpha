@@ -247,7 +247,7 @@ public class NaiveGrounderTest {
 	private void testLaxGrounderHeuristicTolerance(Program program, int tolerance, int nTrueBs, boolean expectNoGoods) {
 		AtomStore atomStore = new AtomStoreImpl();
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
-		GrounderHeuristicsConfiguration heuristicConfiguration = GrounderHeuristicsConfiguration.lax(tolerance, tolerance);
+		GrounderHeuristicsConfiguration heuristicConfiguration = GrounderHeuristicsConfiguration.getInstance(tolerance, tolerance);
 		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, heuristicConfiguration, true);
 
 		for (int i = 1; i <= nTrueBs; i++) {

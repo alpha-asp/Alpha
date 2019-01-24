@@ -95,6 +95,11 @@ public class Main {
 	
 	private static final String OPT_MOMS_STRATEGY = "momsStrategy";
 	private static final String DEFAULT_MOMS_STRATEGY = MOMs.Strategy.CountBinaryWatches.name();
+
+	private static final String OPT_GROUNDER_TOLERANCE_CONSTRAINTS = "grounderToleranceConstraints";
+	private static final String DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS = GrounderHeuristicsConfiguration.STRICT_STRING;
+	private static final String OPT_GROUNDER_TOLERANCE_RULES = "grounderToleranceRules";
+	private static final String DEFAULT_GROUNDER_TOLERANCE_RULES = GrounderHeuristicsConfiguration.STRICT_STRING;
 	
 	private static final String DEFAULT_GROUNDER = "naive";
 	private static final String DEFAULT_SOLVER = "default";
@@ -178,6 +183,16 @@ public class Main {
 		momsStrategyOption.setArgName("strategy");
 		options.addOption(momsStrategyOption);
 
+		Option grounderToleranceConstraintsOption = new Option("gtc", OPT_GROUNDER_TOLERANCE_CONSTRAINTS, true, "grounder tolerance for constraints");
+		grounderToleranceConstraintsOption.setArgs(1);
+		grounderToleranceConstraintsOption.setArgName("tolerance");
+		options.addOption(grounderToleranceConstraintsOption);
+		
+		Option grounderToleranceRulesOption = new Option("gtr", OPT_GROUNDER_TOLERANCE_RULES, true, "grounder tolerance for rules");
+		grounderToleranceRulesOption.setArgs(1);
+		grounderToleranceRulesOption.setArgName("tolerance");
+		options.addOption(grounderToleranceRulesOption);
+
 		Option quietOption = new Option("q", OPT_QUIET, false, "do not print answer sets");
 		options.addOption(quietOption);
 
@@ -243,8 +258,12 @@ public class Main {
 		}
 
 		final AtomStore atomStore = new AtomStoreImpl();
+		final String optGrounder = commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER);
+		final String optGrounderToleranceConstraints = commandLine.getOptionValue(OPT_GROUNDER_TOLERANCE_CONSTRAINTS, DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS);
+		final String optGrounderToleranceRules = commandLine.getOptionValue(OPT_GROUNDER_TOLERANCE_RULES, DEFAULT_GROUNDER_TOLERANCE_RULES);
+		final GrounderHeuristicsConfiguration grounderHeuristicConfiguration = GrounderHeuristicsConfiguration.getInstance(optGrounderToleranceConstraints, optGrounderToleranceRules);
 		final Grounder grounder = GrounderFactory.getInstance(
-			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), program, atomStore, filter, new GrounderHeuristicsConfiguration(), normalizationUseGrid, debugInternalChecks
+			optGrounder, program, atomStore, filter, grounderHeuristicConfiguration, normalizationUseGrid, debugInternalChecks
 		);
 
 		// NOTE: Using time as seed is fine as the internal heuristics

@@ -102,6 +102,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		super(filter, bridges);
 		this.atomStore = atomStore;
 		this.heuristicsConfiguration = heuristicsConfiguration;
+		LOGGER.debug("Grounder configuration: " + heuristicsConfiguration);
 
 		programAnalysis = new ProgramAnalysis(program);
 		analyzeUnjustified = new AnalyzeUnjustified(programAnalysis, atomStore, factsFromProgram);
