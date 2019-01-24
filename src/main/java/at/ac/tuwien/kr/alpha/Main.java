@@ -226,7 +226,7 @@ public class Main {
 			bailOut("Failed to parse program.", e);
 		}
 
-		final AtomStore atomStore = new AtomStoreImpl();
+		final AtomStore atomStore = new AtomStoreImpl(debugInternalChecks);
 		final Grounder grounder = GrounderFactory.getInstance(
 			commandLine.getOptionValue(OPT_GROUNDER, DEFAULT_GROUNDER), program, atomStore, filter, normalizationUseGrid
 		);

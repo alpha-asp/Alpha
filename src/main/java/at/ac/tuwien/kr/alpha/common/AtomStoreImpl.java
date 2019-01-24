@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -28,33 +28,64 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * This class stores ground atoms and provides the translation from an (integer) atomId to a (structured) predicate instance.
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  */
 public class AtomStoreImpl implements AtomStore {
 	private List<Atom> atomIdsToInternalBasicAtoms = new ArrayList<>();
 	private Map<Atom, Integer> predicateInstancesToAtomIds = new HashMap<>();
 	private IntIdGenerator atomIdGenerator = new IntIdGenerator(1);
+	private boolean debugInternalChecks;
 
 	private List<Integer> releasedAtomIds = new ArrayList<>();	// contains atomIds ready to be garbage collected if necessary.
-
-	public AtomStoreImpl() {
+	
+	public AtomStoreImpl(boolean debugInternalChecks) {
+		this.debugInternalChecks = debugInternalChecks;
 		// Create atomId for falsum (currently not needed, but it gets atomId 0, which cannot represent a negated literal).
 		atomIdsToInternalBasicAtoms.add(null);
+	}
+	
+	@Override
+	public int evaluateArithmeticTermsAndPutIfAbsent(Atom groundAtom) {
+		evaluateArithmeticTerms(groundAtom.getTerms());
+		return putIfAbsent(groundAtom);
+	}
+
+	private void evaluateArithmeticTerms(List<Term> terms) {
+		for (int i = 0; i < terms.size(); i++) {
+			Term term = terms.get(i);
+			if (term instanceof ArithmeticTerm) {
+				terms.set(i, ConstantTerm.getInstance(ArithmeticTerm.evaluateGroundTerm((ArithmeticTerm)term)));
+			}
+			if (term instanceof FunctionTerm) {
+				evaluateArithmeticTerms(((FunctionTerm)term).getTerms());
+			}
+		}
 	}
 
 	@Override
 	public int putIfAbsent(Atom groundAtom) {
 		if (!groundAtom.isGround()) {
 			throw new IllegalArgumentException("atom must be ground");
+		}
+		
+		if (debugInternalChecks) {
+			checkNoArithmeticTerms(groundAtom.getTerms());
 		}
 
 		Integer id = predicateInstancesToAtomIds.get(groundAtom);
@@ -66,6 +97,17 @@ public class AtomStoreImpl implements AtomStore {
 		}
 
 		return id;
+	}
+
+	private void checkNoArithmeticTerms(List<Term> terms) {
+		for (Term term : terms) {
+			if (term instanceof ArithmeticTerm) {
+				throw new IllegalArgumentException("ArithmeticTerm has not been evaluated: " + term);
+			}
+			if (term instanceof FunctionTerm) {
+				checkNoArithmeticTerms(((FunctionTerm)term).getTerms());
+			}
+		}
 	}
 
 	@Override

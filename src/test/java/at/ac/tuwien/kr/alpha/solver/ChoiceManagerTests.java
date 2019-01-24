@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 	public void setUp() throws IOException {
 		String testProgram = "h :- b1, b2, not b3, not b4.";
 		Program parsedProgram = new ProgramParser().parse(testProgram);
-		this.atomStore = new AtomStoreImpl();
+		this.atomStore = new AtomStoreImpl(true);
 		this.grounder = new NaiveGrounder(parsedProgram, atomStore);
 		WritableAssignment assignment = new TrailAssignment(atomStore);
 		NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment);

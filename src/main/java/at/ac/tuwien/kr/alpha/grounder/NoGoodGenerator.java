@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -45,7 +45,7 @@ import static java.util.Collections.singletonList;
 
 /**
  * Class to generate ground NoGoods out of non-ground rules and grounding substitutions.
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  */
 public class NoGoodGenerator {
 	private final AtomStore atomStore;
@@ -94,7 +94,7 @@ public class NoGoodGenerator {
 		}
 
 		final int bodyRepresentingLiteral = atomToLiteral(atomStore.putIfAbsent(bodyAtom));
-		final int headLiteral = atomToLiteral(atomStore.putIfAbsent(nonGroundRule.getHeadAtom().substitute(substitution)));
+		final int headLiteral = atomToLiteral(atomStore.evaluateArithmeticTermsAndPutIfAbsent(nonGroundRule.getHeadAtom().substitute(substitution)));
 
 		final List<NoGood> result = new ArrayList<>();
 
@@ -139,7 +139,7 @@ public class NoGoodGenerator {
 				continue;
 			}
 
-			bodyLiteralsNegative.add(atomToLiteral(atomStore.putIfAbsent(groundAtom)));
+			bodyLiteralsNegative.add(atomToLiteral(atomStore.evaluateArithmeticTermsAndPutIfAbsent(groundAtom)));
 		}
 		return bodyLiteralsNegative;
 	}
@@ -174,7 +174,7 @@ public class NoGoodGenerator {
 				return null;
 			}
 
-			bodyLiteralsPositive.add(atomToLiteral(atomStore.putIfAbsent(groundAtom)));
+			bodyLiteralsPositive.add(atomToLiteral(atomStore.evaluateArithmeticTermsAndPutIfAbsent(groundAtom)));
 		}
 		return bodyLiteralsPositive;
 	}

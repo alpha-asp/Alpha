@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018 Siemens AG
+ * Copyright (c) 2017-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -71,7 +71,7 @@ public class AlphaHeuristicTestAssumptions {
 				+ "{b4}."
 				+ "h :- b1, b2, not b3, not b4.";
 		Program parsedProgram = new ProgramParser().parse(testProgram);
-		this.atomStore = new AtomStoreImpl();
+		this.atomStore = new AtomStoreImpl(true);
 		this.grounder = new NaiveGrounder(parsedProgram, atomStore);
 		this.assignment = new TrailAssignment(atomStore);
 		this.choiceManager = new TestableChoiceManager(assignment, new NaiveNoGoodStore(assignment));

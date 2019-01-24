@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -219,7 +219,7 @@ public class Alpha {
 	}
 
 	public Stream<AnswerSet> solve() {
-		AtomStore atomStore = new AtomStoreImpl();
+		AtomStore atomStore = new AtomStoreImpl(debug);
 		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore);
 		Solver solver = SolverFactory.getInstance(solverName, storeName, atomStore, grounder, new Random(seed), BranchingHeuristicFactory.Heuristic.NAIVE, debug, false);
 		return solver.stream();

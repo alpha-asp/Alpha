@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,7 @@ public class NoGoodGeneratorTest {
 				+ "nq(a,b) :- not q(a,b).");
 		
 		Rule rule = program.getRules().get(1);
-		AtomStore atomStore = new AtomStoreImpl();
+		AtomStore atomStore = new AtomStoreImpl(true);
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
 		NoGoodGenerator noGoodGenerator = ((NaiveGrounder)grounder).noGoodGenerator;
 		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);

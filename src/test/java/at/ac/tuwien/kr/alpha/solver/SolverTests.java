@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -726,13 +726,13 @@ public class SolverTests extends AbstractSolverTests {
 
 	@Test
 	public void dummyGrounder() {
-		AtomStore atomStore = new AtomStoreImpl();
+		AtomStore atomStore = new AtomStoreImpl(true);
 		TestCase.assertEquals(DummyGrounder.EXPECTED, getInstance(atomStore, new DummyGrounder(atomStore)).collectSet());
 	}
 
 	@Test
 	public void choiceGrounder() {
-		AtomStore atomStore = new AtomStoreImpl();
+		AtomStore atomStore = new AtomStoreImpl(true);
 		TestCase.assertEquals(ChoiceGrounder.EXPECTED, getInstance(atomStore, new ChoiceGrounder(atomStore)).collectSet());
 	}
 }

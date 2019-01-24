@@ -55,7 +55,7 @@ public class NaiveGrounderTest {
 				+ "b :- not a. "
 				+ "c :- b.");
 		
-		AtomStore atomStore = new AtomStoreImpl();
+		AtomStore atomStore = new AtomStoreImpl(true);
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		int litCNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("c", 0))), false);
@@ -75,7 +75,7 @@ public class NaiveGrounderTest {
 				+ "c :- b. "
 				+ "d :- b, c. ");
 		
-		AtomStore atomStore = new AtomStoreImpl();
+		AtomStore atomStore = new AtomStoreImpl(true);
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		int litANeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("a", 0))), false);
@@ -98,7 +98,7 @@ public class NaiveGrounderTest {
 				+ "b :- not a. "
 				+ ":- b.");
 		
-		AtomStore atomStore = new AtomStoreImpl();
+		AtomStore atomStore = new AtomStoreImpl(true);
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		int litB = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))));
