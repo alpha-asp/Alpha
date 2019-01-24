@@ -37,7 +37,7 @@ import java.util.List;
 
 /**
  * This class represents an arithmetic expression occurring as a term.
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  */
 public class ArithmeticTerm extends Term {
 	private static final Interner<ArithmeticTerm> INTERNER = new Interner<>();
@@ -220,6 +220,12 @@ public class ArithmeticTerm extends Term {
 		@Override
 		public Term renameVariables(String renamePrefix) {
 			return getInstance(left.renameVariables(renamePrefix));
+		}
+		
+		@Override
+		public Term normalizeVariables(String renamePrefix, RenameCounter counter) {
+			Term normalizedLeft = left.normalizeVariables(renamePrefix, counter);
+			return MinusTerm.getInstance(normalizedLeft);
 		}
 
 		@Override
