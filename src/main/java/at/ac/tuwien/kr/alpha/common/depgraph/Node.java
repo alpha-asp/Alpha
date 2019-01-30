@@ -18,6 +18,10 @@ public class Node {
 
 	public static class NodeInfo {
 
+		private Node dfsPredecessor;
+		private int dfsDiscoveryTime;
+		private int dfsFinishTime;
+
 		public NodeInfo() {
 
 		}
@@ -27,8 +31,30 @@ public class Node {
 			this.dfsFinishTime = original.dfsFinishTime;
 		}
 
-		private int dfsDiscoveryTime;
-		private int dfsFinishTime;
+		public int getDfsDiscoveryTime() {
+			return this.dfsDiscoveryTime;
+		}
+
+		public void setDfsDiscoveryTime(int dfsDiscoveryTime) {
+			this.dfsDiscoveryTime = dfsDiscoveryTime;
+		}
+
+		public int getDfsFinishTime() {
+			return this.dfsFinishTime;
+		}
+
+		public void setDfsFinishTime(int dfsFinishTime) {
+			this.dfsFinishTime = dfsFinishTime;
+		}
+
+		public Node getDfsPredecessor() {
+			return this.dfsPredecessor;
+		}
+
+		public void setDfsPredecessor(Node dfsPredecessor) {
+			this.dfsPredecessor = dfsPredecessor;
+		}
+
 	}
 
 	private final Predicate predicate;
@@ -83,6 +109,10 @@ public class Node {
 
 	public boolean isConstraint() {
 		return this.isConstraint;
+	}
+
+	public NodeInfo getNodeInfo() {
+		return this.nodeInfo;
 	}
 
 }

@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.common.depgraph;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -124,12 +125,48 @@ public class DependencyGraph {
 		return retVal;
 	}
 
+	private void performDfs() {
+		HashSet<Node> discovered = new HashSet<>();
+		HashSet<Node> finished = new HashSet<>();
+		int dfsTime = 0;
+		for (Node n : this.nodes.keySet()) {
+			if (!(discovered.contains(n) || finished.contains(n))) {
+				dfsTime = this.dfsVisit(dfsTime, n, discovered, finished);
+			}
+
+		}
+	}
+
+	private int dfsVisit(int dfsTime, Node currNode, HashSet<Node> discovered, HashSet<Node> finished) {
+		int retVal = dfsTime;
+		retVal++;
+		currNode.getNodeInfo().setDfsDiscoveryTime(retVal);
+		discovered.add(currNode);
+		Node tmpNeighbor;
+		for (Edge e : this.nodes.get(currNode)) {
+			// progress to adjacent nodes
+			tmpNeighbor = e.getTarget();
+			if (!(discovered.contains(tmpNeighbor) || finished.contains(tmpNeighbor))) {
+				tmpNeighbor.getNodeInfo().setDfsPredecessor(currNode);
+				retVal = this.dfsVisit(retVal, tmpNeighbor, discovered, finished);
+			}
+		}
+		retVal++;
+		currNode.getNodeInfo().setDfsFinishTime(retVal);
+		finished.add(currNode);
+		return retVal;
+	}
+
 	private int nextConstraintNumber() {
 		return ++this.constraintNumber;
 	}
 
 	public Map<Node, List<Edge>> getNodes() {
 		return this.nodes;
+	}
+
+	public Map<Node, List<Edge>> getTransposedNodes() {
+		return this.transposedNodes;
 	}
 
 }

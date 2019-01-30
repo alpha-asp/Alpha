@@ -24,10 +24,21 @@ import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 
+/**
+ * Parses given argument lists (as passed when Alpha is called from command line) into <code>AlphaConfig</code>s and <code>InputConfig</code>s.
+ *
+ */
 public class CommandLineParser {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CommandLineParser.class);
 
+	/*
+	 * Whenever a new command line option is added, perform the following steps:
+	 * 1. Add it as a constant option below.
+	 * 2. Add the constant option into the Options "CLI_OPTS" in the static initializer
+	 * 3. Add a handler method for it and add the respective map entry in the constructor with
+	 *    a method reference to the handler.
+	 */
 	// "special", i.e. non-configuration options
 	private static final Option OPT_HELP = Option.builder("h").longOpt("help").hasArg(false).desc("shows this help").build();
 
@@ -79,6 +90,9 @@ public class CommandLineParser {
 	private static final Options CLI_OPTS = new Options();
 
 	static {
+		/*
+		 * Below code adds all options defined above to CLI_OPTS - needed for parsing
+		 */
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_HELP);
 
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NUM_ANSWER_SETS);

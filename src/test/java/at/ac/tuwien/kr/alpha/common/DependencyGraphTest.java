@@ -32,7 +32,6 @@ public class DependencyGraphTest {
 	public void edgesEqualTest() {
 		Predicate testPredicate;
 		testPredicate = new Predicate("test", 2, false, false);
-		DependencyGraph dg = new DependencyGraph();
 		Edge e1 = new Edge(new Node(testPredicate, testPredicate.toString()), true, null);
 		Edge e2 = new Edge(new Node(testPredicate, testPredicate.toString()), true, null);
 		Assert.assertEquals(e1, e2);
