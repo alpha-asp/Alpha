@@ -10,6 +10,7 @@ public final class DependencyGraphUtils {
 
 	}
 
+	// TODO return the depth-first forest here
 	public static void performDfs(Map<Node, List<Edge>> nodes) {
 		HashSet<Node> discovered = new HashSet<>();
 		HashSet<Node> finished = new HashSet<>();

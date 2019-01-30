@@ -2,7 +2,6 @@ package at.ac.tuwien.kr.alpha.common.depgraph;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -124,6 +123,14 @@ public class DependencyGraph {
 		Predicate retVal = Predicate.getInstance(String.format(DependencyGraph.CONSTRAINT_PREDICATE_FORMAT, this.nextConstraintNumber()), 0);
 		return retVal;
 	}
+	
+	// TODO think up return type for SCCs
+	private void findStronglyConnectedComponents() {
+		DependencyGraphUtils.performDfs(this.nodes);
+		// TODO sort transposedNodes decreasing by DFS finish times of nodes
+		DependencyGraphUtils.performDfs(this.transposedNodes);
+	}
+	
 
 	private int nextConstraintNumber() {
 		return ++this.constraintNumber;
