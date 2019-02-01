@@ -183,7 +183,7 @@ public class AnalyzeUnjustifiedTest {
 			":- not p(5).";
 		Program parsedProgram = parser.parse(program);
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore, true);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		int rId = atomStore.get(new BasicAtom(Predicate.getInstance("r", 0)));
