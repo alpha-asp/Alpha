@@ -100,9 +100,9 @@ public class ArithmeticTerm extends Term {
 
 	private static Integer evaluateGroundTermHelper(Term term) {
 		if (term instanceof ConstantTerm
-			&& ((ConstantTerm) term).getObject() instanceof Integer) {
+			&& ((ConstantTerm<?>) term).getObject() instanceof Integer) {
 			// Extract integer from the constant.
-			return (Integer) ((ConstantTerm) term).getObject();
+			return (Integer) ((ConstantTerm<?>) term).getObject();
 		} else if (term instanceof ArithmeticTerm) {
 			return ((ArithmeticTerm) term).evaluateExpression();
 		} else {
@@ -115,7 +115,7 @@ public class ArithmeticTerm extends Term {
 		Integer leftInt = evaluateGroundTermHelper(left);
 		Integer rightInt = evaluateGroundTermHelper(right);
 		if (leftInt == null || rightInt == null) {
-			return  null;
+			return null;
 		}
 		return arithmeticOperator.eval(leftInt, rightInt);
 	}
