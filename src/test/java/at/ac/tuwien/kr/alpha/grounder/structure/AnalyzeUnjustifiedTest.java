@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, the Alpha Team.
+ * Copyright (c) 2018-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -46,9 +46,10 @@ import java.util.Collections;
 import java.util.Set;
 
 import static junit.framework.TestCase.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 
 /**
- * Copyright (c) 2018, the Alpha Team.
+ * Copyright (c) 2018-2019, the Alpha Team.
  */
 public class AnalyzeUnjustifiedTest {
 
@@ -171,4 +172,32 @@ public class AnalyzeUnjustifiedTest {
 		assertFalse(reasons.isEmpty());
 	}
 
+	@Test
+	public void justifyNegatedFactsRemovedFromReasons() {
+		String program = "forbidden(2,9). forbidden(1,9)." +
+			"p(X) :- q(X)." +
+			"q(X) :- p(X)." +
+			"q(5) :- r." +
+			"r :- not nr, not forbidden(2,9), not forbidden(1,9)." +
+			"nr :- not r." +
+			":- not p(5).";
+		Program parsedProgram = parser.parse(program);
+		AtomStore atomStore = new AtomStoreImpl();
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore);
+		grounder.getNoGoods(null);
+		TrailAssignment assignment = new TrailAssignment(atomStore);
+		int rId = atomStore.get(new BasicAtom(Predicate.getInstance("r", 0)));
+		int nrId = atomStore.get(new BasicAtom(Predicate.getInstance("nr", 0)));
+		assignment.growForMaxAtomId();
+		assignment.assign(rId, ThriceTruth.FALSE);
+		assignment.assign(nrId, ThriceTruth.TRUE);
+		BasicAtom p5 = new BasicAtom(Predicate.getInstance("p", 1), Collections.singletonList(ConstantTerm.getInstance(5)));
+		assignment.assign(atomStore.get(p5), ThriceTruth.MBT);
+		Set<Literal> reasons = grounder.justifyAtom(atomStore.get(p5), assignment);
+		assertFalse(reasons.isEmpty());
+		for (Literal literal : reasons) {
+			// Check that facts are not present in justification.
+			assertNotEquals(literal.getPredicate(), Predicate.getInstance("forbidden", 2));
+		}
+	}
 }

@@ -51,7 +51,12 @@ public class ArithmeticTerm extends Term {
 		this.right = right;
 	}
 
-	public static ArithmeticTerm getInstance(Term left, ArithmeticOperator arithmeticOperator, Term right) {
+	public static Term getInstance(Term left, ArithmeticOperator arithmeticOperator, Term right) {
+		// Evaluate ground arithmetic terms immediately and return result.
+		if (left.isGround() && right.isGround()) {
+			Integer result = new ArithmeticTerm(left, arithmeticOperator, right).evaluateExpression();
+			return ConstantTerm.getInstance(result);
+		}
 		return INTERNER.intern(new ArithmeticTerm(left, arithmeticOperator, right));
 	}
 
@@ -97,9 +102,9 @@ public class ArithmeticTerm extends Term {
 
 	private static Integer evaluateGroundTermHelper(Term term) {
 		if (term instanceof ConstantTerm
-			&& ((ConstantTerm) term).getObject() instanceof Integer) {
+			&& ((ConstantTerm<?>) term).getObject() instanceof Integer) {
 			// Extract integer from the constant.
-			return (Integer) ((ConstantTerm) term).getObject();
+			return (Integer) ((ConstantTerm<?>) term).getObject();
 		} else if (term instanceof ArithmeticTerm) {
 			return ((ArithmeticTerm) term).evaluateExpression();
 		} else {
@@ -108,11 +113,11 @@ public class ArithmeticTerm extends Term {
 		}
 	}
 
-	private Integer evaluateExpression() {
+	Integer evaluateExpression() {
 		Integer leftInt = evaluateGroundTermHelper(left);
 		Integer rightInt = evaluateGroundTermHelper(right);
 		if (leftInt == null || rightInt == null) {
-			return  null;
+			return null;
 		}
 		return arithmeticOperator.eval(leftInt, rightInt);
 	}
@@ -198,8 +203,18 @@ public class ArithmeticTerm extends Term {
 		}
 
 
-		public static MinusTerm getInstance(Term term) {
-			return (MinusTerm) INTERNER.intern(new MinusTerm(term));
+		public static Term getInstance(Term term) {
+			// Evaluate ground arithmetic terms immediately and return result.
+			if (term.isGround()) {
+				Integer result = evaluateGroundTermHelper(term) * -1;
+				return ConstantTerm.getInstance(result);
+			}
+			return INTERNER.intern(new MinusTerm(term));
+		}
+
+		@Override
+		Integer evaluateExpression() {
+			return evaluateGroundTermHelper(left) * -1;
 		}
 
 		@Override
