@@ -62,7 +62,6 @@ import at.ac.tuwien.kr.alpha.common.fixedinterpretations.MethodPredicateInterpre
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.config.AlphaConfig;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
-import at.ac.tuwien.kr.alpha.config.InputConfig.InputSource;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
 public class AlphaTest {
@@ -432,7 +431,6 @@ public class AlphaTest {
 
 		final Path path = Paths.get("src", "test", "resources", "PreviouslyProblematic").resolve("3col-20-38.txt");
 		InputConfig inputCfg = new InputConfig();
-		inputCfg.setSource(InputSource.FILE);
 		List<String> files = new ArrayList<>();
 		files.add(path.toString());
 		inputCfg.setFiles(files);
@@ -451,7 +449,6 @@ public class AlphaTest {
 		cfg.setSeed(seed);
 		final Alpha system = new Alpha(cfg);
 		InputConfig inputCfg = new InputConfig();
-		inputCfg.setSource(InputSource.FILE);
 		List<String> files = new ArrayList<>();
 		files.add(base.resolve(program).toString());
 		inputCfg.setFiles(files);

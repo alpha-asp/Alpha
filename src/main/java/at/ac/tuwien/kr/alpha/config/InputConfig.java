@@ -17,12 +17,7 @@ public class InputConfig {
 	public static final boolean DEFAULT_WRITE_DEPENDENCY_GRAPH = false;
 	public static final String DEFAULT_DEPGRAPH_PATH = "dep-graph.dot";
 
-	public enum InputSource {
-		STRING, FILE;
-	}
-
-	private InputSource source;
-	private String aspString;
+	private List<String> aspStrings = new ArrayList<>();
 	private List<String> files = new ArrayList<>();
 	private boolean literate = InputConfig.DEFAULT_LITERATE;
 	private int numAnswerSets = InputConfig.DEFAULT_NUM_ANSWER_SETS;
@@ -33,25 +28,16 @@ public class InputConfig {
 
 	public static InputConfig forString(String str) {
 		InputConfig retVal = new InputConfig();
-		retVal.setSource(InputSource.STRING);
-		retVal.setAspString(str);
+		retVal.aspStrings.add(str);
 		return retVal;
 	}
-
-	public InputSource getSource() {
-		return this.source;
+	
+	public List<String> getAspStrings() {
+		return this.aspStrings;
 	}
 
-	public void setSource(InputSource source) {
-		this.source = source;
-	}
-
-	public String getAspString() {
-		return this.aspString;
-	}
-
-	public void setAspString(String aspString) {
-		this.aspString = aspString;
+	public void setAspStrings(List<String> aspStrings) {
+		this.aspStrings = aspStrings;
 	}
 
 	public boolean isLiterate() {

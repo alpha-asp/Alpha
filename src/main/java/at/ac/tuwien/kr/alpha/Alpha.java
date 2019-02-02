@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
+import org.apache.commons.lang3.StringUtils;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -75,16 +76,13 @@ public class Alpha {
 	}
 
 	public Program readProgram(InputConfig cfg) throws IOException {
-		Program retVal = null;
-		switch (cfg.getSource()) {
-			case FILE:
-				retVal = this.readProgramFiles(cfg.isLiterate(), cfg.getPredicateMethods(), cfg.getFiles());
-				break;
-			case STRING:
-				retVal = this.readProgramString(cfg.getAspString(), cfg.getPredicateMethods());
-				break;
-			default:
-				throw new IllegalArgumentException("Unsupported input source: " + cfg.getSource());
+		// TODO we wanna get input from files and strings BOTH
+		Program retVal = new Program();
+		if (!cfg.getFiles().isEmpty()) {
+			retVal.accumulate(this.readProgramFiles(cfg.isLiterate(), cfg.getPredicateMethods(), cfg.getFiles()));
+		}
+		if (!cfg.getAspStrings().isEmpty()) {
+			retVal.accumulate(this.readProgramString(StringUtils.join(cfg.getAspStrings(), "\n"), cfg.getPredicateMethods()));
 		}
 		retVal = this.doProgramTransformations(retVal);
 		// FIXME ProgramAnalysis is again created in grounder, should generally do this

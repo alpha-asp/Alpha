@@ -16,16 +16,17 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 
 /**
- * Parses given argument lists (as passed when Alpha is called from command line) into <code>AlphaConfig</code>s and <code>InputConfig</code>s.
+ * Parses given argument lists (as passed when Alpha is called from command
+ * line) into <code>AlphaConfig</code>s and <code>InputConfig</code>s.
  *
  */
 public class CommandLineParser {
@@ -33,11 +34,11 @@ public class CommandLineParser {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CommandLineParser.class);
 
 	/*
-	 * Whenever a new command line option is added, perform the following steps:
-	 * 1. Add it as a constant option below.
-	 * 2. Add the constant option into the Options "CLI_OPTS" in the static initializer
-	 * 3. Add a handler method for it and add the respective map entry in the constructor with
-	 *    a method reference to the handler.
+	 * Whenever a new command line option is added, perform the following steps: 1.
+	 * Add it as a constant option below. 2. Add the constant option into the
+	 * Options "CLI_OPTS" in the static initializer 3. Add a handler method for it
+	 * and add the respective map entry in the constructor with a method reference
+	 * to the handler.
 	 */
 	// "special", i.e. non-configuration options
 	private static final Option OPT_HELP = Option.builder("h").longOpt("help").hasArg(false).desc("shows this help").build();
@@ -98,17 +99,8 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NUM_ANSWER_SETS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_FILTER);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_LITERATE);
-		OptionGroup inputSourceMutexGroup = new OptionGroup();
-		inputSourceMutexGroup.addOption(CommandLineParser.OPT_INPUT);
-		inputSourceMutexGroup.addOption(CommandLineParser.OPT_ASPSTRING);
-		// below line is commented out because commons-cli cannot handle arbitrary-depth
-		// option groups
-		// -> causes problems since calling "java -jar Alpha.jar -h" would cause an
-		// error with below line
-		// commented in -> check if an input source is specified is done "manually"
-		// below
-		// inputSourceMutexGroup.setRequired(true);
-		CommandLineParser.CLI_OPTS.addOptionGroup(inputSourceMutexGroup);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_INPUT);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_ASPSTRING);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_DEPGRAPH);
 
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER);
@@ -150,7 +142,7 @@ public class CommandLineParser {
 		this.abortAction = abortAction;
 
 		// help is handled separately, therefore dummy handler
-		this.globalOptionHandlers.put(CommandLineParser.OPT_HELP.getOpt(), (o, c) -> { });
+		this.globalOptionHandlers.put(CommandLineParser.OPT_HELP.getOpt(), (o, c) -> {});
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER.getOpt(), this::handleGrounder);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_SOLVER.getOpt(), this::handleSolver);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NOGOOD_STORE.getOpt(), this::handleNogoodStore);
@@ -164,6 +156,8 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), this::handleNoJustification);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NORMALIZATION_GRID.getOpt(), this::handleNormalizationGrid);
 
+		// TODO we should be able to take input from files and additional strings at
+		// the same time
 		this.inputOptionHandlers.put(CommandLineParser.OPT_NUM_ANSWER_SETS.getOpt(), this::handleNumAnswerSets);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_INPUT.getOpt(), this::handleInput);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_FILTER.getOpt(), this::handleFilters);
@@ -174,6 +168,9 @@ public class CommandLineParser {
 
 	public AlphaContext parseCommandLine(String[] args) throws ParseException {
 		CommandLine commandLine = new DefaultParser().parse(CommandLineParser.CLI_OPTS, args);
+		if (commandLine.getArgs().length > 0) {
+			throw new ParseException("Positional arguments { " + StringUtils.join(args, ' ') + " } are invalid!");
+		}
 		AlphaContext retVal = new AlphaContext();
 		AlphaConfig sysConf = new AlphaConfig();
 		InputConfig inputConf = new InputConfig();
@@ -240,7 +237,6 @@ public class CommandLineParser {
 	private void handleInput(Option opt, InputConfig cfg) {
 		String optVal = opt.getValue().trim();
 		cfg.getFiles().add(optVal);
-		cfg.setSource(InputConfig.InputSource.FILE);
 	}
 
 	private void handleGrounder(Option opt, AlphaConfig cfg) {
@@ -262,8 +258,8 @@ public class CommandLineParser {
 	}
 
 	private void handleAspString(Option opt, InputConfig cfg) {
-		cfg.setAspString(opt.getValue());
-		cfg.setSource(InputConfig.InputSource.STRING);
+		String optVal = opt.getValue().trim();
+		cfg.getAspStrings().add(optVal);
 	}
 
 	private void handleSort(Option opt, AlphaConfig cfg) {

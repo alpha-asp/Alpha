@@ -8,7 +8,6 @@ import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.config.AlphaContext;
 import at.ac.tuwien.kr.alpha.config.CommandLineParser;
-import at.ac.tuwien.kr.alpha.config.InputConfig.InputSource;
 
 public class CommandLineParserTest {
 
@@ -22,42 +21,46 @@ public class CommandLineParserTest {
 	public void help() throws ParseException {
 		StringBuilder bld = new StringBuilder();
 		CommandLineParser parser = new CommandLineParser("java-jar Alpha-bundled.jar", (msg) -> bld.append(msg));
-		parser.parseCommandLine(new String[] {"-h"});
+		parser.parseCommandLine(new String[] { "-h" });
 		Assert.assertTrue(!(bld.toString().isEmpty()));
 	}
 
 	@Test
 	public void basicUsageWithFile() throws ParseException {
-		CommandLineParser parser = new CommandLineParser("java-jar Alpha-bundled.jar", (msg) -> { });
-		AlphaContext ctx = parser.parseCommandLine(new String[] {"-i", "someFile.asp", "-i", "someOtherFile.asp"});
-		Assert.assertEquals(InputSource.FILE, ctx.getInputConfig().getSource());
-		Assert.assertEquals(Arrays.asList(new String[] {"someFile.asp", "someOtherFile.asp"}), ctx.getInputConfig().getFiles());
+		CommandLineParser parser = new CommandLineParser("java-jar Alpha-bundled.jar", (msg) -> {});
+		AlphaContext ctx = parser.parseCommandLine(new String[] { "-i", "someFile.asp", "-i", "someOtherFile.asp" });
+		Assert.assertEquals(Arrays.asList(new String[] { "someFile.asp", "someOtherFile.asp" }), ctx.getInputConfig().getFiles());
 	}
 
 	@Test
 	public void basicUsageWithString() throws ParseException {
-		CommandLineParser parser = new CommandLineParser("java-jar Alpha-bundled.jar", (msg) -> { });
-		AlphaContext ctx = parser.parseCommandLine(new String[] {"-str", "b :- a."});
-		Assert.assertEquals(InputSource.STRING, ctx.getInputConfig().getSource());
-		Assert.assertEquals("b :- a.", ctx.getInputConfig().getAspString());
+		CommandLineParser parser = new CommandLineParser("java-jar Alpha-bundled.jar", (msg) -> {});
+		AlphaContext ctx = parser.parseCommandLine(new String[] { "-str", "b :- a.", "-str", "c :- a, b." });
+		Assert.assertEquals(Arrays.asList(new String[] { "b :- a.", "c :- a, b." }), ctx.getInputConfig().getAspStrings());
 	}
 
 	@Test(expected = ParseException.class)
 	public void invalidUsageNoInput() throws ParseException {
-		CommandLineParser parser = new CommandLineParser("java-jar Alpha-bundled.jar", (msg) -> { });
+		CommandLineParser parser = new CommandLineParser("java-jar Alpha-bundled.jar", (msg) -> {});
 		parser.parseCommandLine(new String[] {});
 	}
 
+	@Test
+	public void moreThanOneInputSource() throws ParseException {
+		CommandLineParser parser = new CommandLineParser("java-jar Alpha-bundled.jar", (msg) -> {});
+		parser.parseCommandLine(new String[] { "-i", "a.b", "-i", "b.c", "-str", "aString." });
+	}
+
 	@Test(expected = ParseException.class)
-	public void invalidUsageMoreThanOneInputSource() throws ParseException {
-		CommandLineParser parser = new CommandLineParser("java-jar Alpha-bundled.jar", (msg) -> { });
-		parser.parseCommandLine(new String[] {"-i", "a.b", "-i", "b.c", "-str", "aString."});
+	public void invalidUsageMissingInputFlag() throws ParseException {
+		CommandLineParser parser = new CommandLineParser("java-jar Alpha-bundled.jar", (msg) -> {});
+		parser.parseCommandLine(new String[] { "-i", "a.b", "b.c" });
 	}
 
 	@Test
 	public void numAnswerSets() throws ParseException {
-		CommandLineParser parser = new CommandLineParser("java-jar Alpha-bundled.jar", (msg) -> { });
-		AlphaContext ctx = parser.parseCommandLine(new String[] {"-str", "aString.", "-n", "00435"});
+		CommandLineParser parser = new CommandLineParser("java-jar Alpha-bundled.jar", (msg) -> {});
+		AlphaContext ctx = parser.parseCommandLine(new String[] { "-str", "aString.", "-n", "00435" });
 		Assert.assertEquals(435, ctx.getInputConfig().getNumAnswerSets());
 	}
 
