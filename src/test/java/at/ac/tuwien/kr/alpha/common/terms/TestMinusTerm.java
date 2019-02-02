@@ -41,14 +41,14 @@ public class TestMinusTerm {
 
 	@Test
 	public void testNormalizeVariablesNoVariable() {
-		MinusTerm m2 = MinusTerm.getInstance(ConstantTerm.getInstance(2));
+		Term m2 = MinusTerm.getInstance(ConstantTerm.getInstance(2));
 		assertEquals(m2, m2.normalizeVariables(renamePrefix, counter));
 	}
 
 	@Test
 	public void testNormalizeVariablesWithVariable() {
-		MinusTerm mX = MinusTerm.getInstance(VariableTerm.getInstance("X"));
-		MinusTerm expected = MinusTerm.getInstance(VariableTerm.getInstance(renamePrefix + 0));
+		Term mX = MinusTerm.getInstance(VariableTerm.getInstance("X"));
+		Term expected = MinusTerm.getInstance(VariableTerm.getInstance(renamePrefix + 0));
 		assertEquals(expected, mX.normalizeVariables(renamePrefix, counter));
 	}
 
