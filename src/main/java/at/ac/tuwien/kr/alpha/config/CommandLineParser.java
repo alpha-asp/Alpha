@@ -142,7 +142,7 @@ public class CommandLineParser {
 		this.abortAction = abortAction;
 
 		// help is handled separately, therefore dummy handler
-		this.globalOptionHandlers.put(CommandLineParser.OPT_HELP.getOpt(), (o, c) -> {});
+		this.globalOptionHandlers.put(CommandLineParser.OPT_HELP.getOpt(), (o, c) -> { });
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER.getOpt(), this::handleGrounder);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_SOLVER.getOpt(), this::handleSolver);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NOGOOD_STORE.getOpt(), this::handleNogoodStore);
@@ -215,7 +215,7 @@ public class CommandLineParser {
 	private void validate(CommandLine commandLine) throws ParseException {
 		if (!commandLine.hasOption(CommandLineParser.OPT_INPUT.getOpt()) && !commandLine.hasOption(CommandLineParser.OPT_ASPSTRING.getOpt())) {
 			throw new ParseException("Missing input source - need to specifiy either a file (" + CommandLineParser.OPT_INPUT.getOpt() + ") or a string ("
-					+ CommandLineParser.OPT_ASPSTRING.getOpt() + ")!");
+					+ CommandLineParser.OPT_ASPSTRING.getOpt() + " - or both)!");
 		}
 	}
 

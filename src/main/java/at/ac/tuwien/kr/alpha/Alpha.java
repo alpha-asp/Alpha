@@ -76,7 +76,6 @@ public class Alpha {
 	}
 
 	public Program readProgram(InputConfig cfg) throws IOException {
-		// TODO we wanna get input from files and strings BOTH
 		Program retVal = new Program();
 		if (!cfg.getFiles().isEmpty()) {
 			retVal.accumulate(this.readProgramFiles(cfg.isLiterate(), cfg.getPredicateMethods(), cfg.getFiles()));

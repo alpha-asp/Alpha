@@ -78,6 +78,7 @@ import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
  * A semi-naive grounder. Copyright (c) 2016-2018, the Alpha Team.
  */
 public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGrounder {
+	
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
 
 	private final WorkingMemory workingMemory = new WorkingMemory();
