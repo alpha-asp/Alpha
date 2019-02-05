@@ -88,7 +88,7 @@ public class Alpha {
 		// in Alpha and pass into grounder
 		if (cfg.isWriteDependencyGraph()) {
 			ProgramAnalysis analysis = new ProgramAnalysis(retVal);
-			new DependencyGraphWriter().writeAsDot(analysis.getDependencyGraph(), cfg.getDepGraphTarget());
+			new DependencyGraphWriter().writeAsDot(analysis.getDependencyGraph(), cfg.getDepGraphTarget(), this.config.isDebugInternalChecks());
 		}
 		return retVal;
 	}

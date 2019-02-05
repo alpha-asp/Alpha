@@ -57,6 +57,8 @@ public class DependencyGraph {
 			}
 		}
 		retVal.buildTransposedStructure();
+		// TODO actually do strongly connected components here
+		DependencyGraphUtils.performDfs(retVal.nodes);
 		return retVal;
 	}
 

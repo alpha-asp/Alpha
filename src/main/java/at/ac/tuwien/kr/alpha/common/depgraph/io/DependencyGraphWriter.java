@@ -8,23 +8,31 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
 import at.ac.tuwien.kr.alpha.common.depgraph.Edge;
 import at.ac.tuwien.kr.alpha.common.depgraph.Node;
+import at.ac.tuwien.kr.alpha.common.depgraph.Node.NodeInfo;
 
 public class DependencyGraphWriter {
 
 	private static final String DEFAULT_GRAPH_HEADING = "digraph dependencyGraph";
 
 	private static final String DEFAULT_NODE_FORMAT = "n%d [label = \"%s\"]\n";
+	private static final String DFS_ANNOTATED_NODE_FORMAT = "n%d[label = \"%s\n[dfs.pre=%s,dfs.td=%d,dfs.tf=%d]\"]\n";
 	private static final String DEFAULT_EDGE_FORMAT = "n%d -> n%d [xlabel=\"%s\" labeldistance=0.1]\n";
 
-	public void writeAsDotfile(DependencyGraph graph, String path) throws IOException {
-		this.writeAsDot(graph, new FileOutputStream(path));
+	public void writeAsDotfile(DependencyGraph graph, String path, boolean includeDfsMetadata) throws IOException {
+		this.writeAsDot(graph, new FileOutputStream(path), includeDfsMetadata);
 	}
 
-	public void writeAsDot(DependencyGraph graph, OutputStream out) throws IOException {
+	public void writeAsDot(DependencyGraph graph, OutputStream out, boolean includeDfsMetadata) throws IOException {
+		BiFunction<Node, Integer, String> nodeFormatter = includeDfsMetadata ? this::buildDfsAnnotatedNodeString : this::buildNodeString;
+		this.writeAsDot(graph, out, nodeFormatter);
+	}
+
+	private void writeAsDot(DependencyGraph graph, OutputStream out, BiFunction<Node, Integer, String> nodeFormatter) throws IOException {
 		PrintStream ps = new PrintStream(out);
 		Map<Node, List<Edge>> graphData = graph.getNodes();
 
@@ -35,7 +43,7 @@ public class DependencyGraphWriter {
 		int nodeCnt = 0;
 		Map<Node, Integer> nodesToNumbers = new HashMap<>();
 		for (Map.Entry<Node, List<Edge>> entry : graphDataEntries) {
-			ps.printf(DependencyGraphWriter.DEFAULT_NODE_FORMAT, nodeCnt, entry.getKey().getLabel());
+			ps.print(nodeFormatter.apply(entry.getKey(), nodeCnt));
 			nodesToNumbers.put(entry.getKey(), nodeCnt);
 			nodeCnt++;
 		}
@@ -64,6 +72,17 @@ public class DependencyGraphWriter {
 
 	private void finishGraph(PrintStream ps) {
 		ps.println("}");
+	}
+
+	private String buildNodeString(Node n, int nodeNum) {
+		return String.format(DependencyGraphWriter.DEFAULT_NODE_FORMAT, nodeNum, n.getLabel());
+	}
+
+	private String buildDfsAnnotatedNodeString(Node n, int nodeNum) {
+		NodeInfo info = n.getNodeInfo();
+		Node dfsPre = info.getDfsPredecessor();
+		return String.format(DependencyGraphWriter.DFS_ANNOTATED_NODE_FORMAT, nodeNum, n.getLabel(), (dfsPre != null ? dfsPre.getLabel() : "NA"),
+				info.getDfsDiscoveryTime(), info.getDfsFinishTime());
 	}
 
 }
