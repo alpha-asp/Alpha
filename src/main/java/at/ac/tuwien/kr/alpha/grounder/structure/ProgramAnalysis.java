@@ -12,7 +12,6 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
 import at.ac.tuwien.kr.alpha.grounder.FactIntervalEvaluator;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
@@ -25,12 +24,10 @@ public class ProgramAnalysis {
 	private final Map<Predicate, HashSet<NonGroundRule>> predicateDefiningRules = new HashMap<>();
 	private final Map<Predicate, LinkedHashSet<Instance>> programFacts = new LinkedHashMap<>();
 	private final Map<Integer, NonGroundRule> nonGroundRules = new HashMap<>();
-	private final DependencyGraph dependencyGraph;
 
 	public ProgramAnalysis(Program program) {
 		this.initializeFacts(program);
 		this.initializeRules(program);
-		this.dependencyGraph = DependencyGraph.buildDependencyGraph(this.nonGroundRules);
 	}
 
 	private void initializeFacts(Program program) {
@@ -75,7 +72,4 @@ public class ProgramAnalysis {
 		return this.nonGroundRules;
 	}
 
-	public DependencyGraph getDependencyGraph() {
-		return this.dependencyGraph;
-	}
 }

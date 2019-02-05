@@ -44,21 +44,12 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.depgraph.io.DependencyGraphWriter;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.config.AlphaConfig;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
-import at.ac.tuwien.kr.alpha.grounder.transformation.CardinalityNormalization;
-import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
-import at.ac.tuwien.kr.alpha.grounder.transformation.EnumerationRewriting;
-import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
-import at.ac.tuwien.kr.alpha.grounder.transformation.SumNormalization;
-import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
@@ -83,31 +74,7 @@ public class Alpha {
 		if (!cfg.getAspStrings().isEmpty()) {
 			retVal.accumulate(this.readProgramString(StringUtils.join(cfg.getAspStrings(), "\n"), cfg.getPredicateMethods()));
 		}
-		retVal = this.doProgramTransformations(retVal);
-		// FIXME ProgramAnalysis is again created in grounder, should generally do this
-		// in Alpha and pass into grounder
-		if (cfg.isWriteDependencyGraph()) {
-			ProgramAnalysis analysis = new ProgramAnalysis(retVal);
-			new DependencyGraphWriter().writeAsDot(analysis.getDependencyGraph(), cfg.getDepGraphTarget());
-		}
 		return retVal;
-	}
-
-	private Program doProgramTransformations(Program program) {
-		// Transform choice rules.
-		new ChoiceHeadToNormal().transform(program);
-		// Transform cardinality aggregates.
-		new CardinalityNormalization(!this.config.isUseNormalizationGrid()).transform(program);
-		// Transform sum aggregates.
-		new SumNormalization().transform(program);
-		// Transform intervals.
-		new IntervalTermToIntervalAtom().transform(program);
-		// Remove variable equalities.
-		new VariableEqualityRemoval().transform(program);
-		// Transform enumeration atoms.
-		new EnumerationRewriting().transform(program);
-		EnumerationAtom.resetEnumerations();
-		return program;
 	}
 
 	public Program readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException {
