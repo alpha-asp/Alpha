@@ -84,9 +84,10 @@ public class Alpha {
 			retVal.accumulate(this.readProgramString(StringUtils.join(cfg.getAspStrings(), "\n"), cfg.getPredicateMethods()));
 		}
 		retVal = this.doProgramTransformations(retVal);
-		// FIXME ProgramAnalysis is again created in grounder, should generally do this
-		// in Alpha and pass into grounder
 		if (cfg.isWriteDependencyGraph()) {
+			// FIXME ProgramAnalysis is again created in grounder, should generally do this
+			// in Alpha and pass into grounder (not too critical, only done here in case
+			// user requests dot output for dependency graph)
 			ProgramAnalysis analysis = new ProgramAnalysis(retVal);
 			new DependencyGraphWriter().writeAsDot(analysis.getDependencyGraph(), cfg.getDepGraphTarget(), this.config.isDebugInternalChecks());
 		}

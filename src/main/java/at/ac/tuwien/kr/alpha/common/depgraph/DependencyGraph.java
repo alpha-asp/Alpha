@@ -1,9 +1,11 @@
 package at.ac.tuwien.kr.alpha.common.depgraph;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +21,8 @@ public class DependencyGraph {
 
 	private static final String CONSTRAINT_PREDICATE_FORMAT = "[constr_%d]";
 
+	private static final Comparator<Node> NODE_COMP_DESC = (n1, n2) -> n2.getNodeInfo().getDfsFinishTime() - n1.getNodeInfo().getDfsFinishTime();
+
 	/**
 	 * Maps Rule IDs (toplevel key) to outgoing edges of that node NOTE: Doing the
 	 * value as List<Edge> rather than Map<Integer,Boolean> as one node may have
@@ -28,9 +32,11 @@ public class DependencyGraph {
 
 	/**
 	 * The transposed graph structure, i.e. the same set of nodes, but all edges
-	 * reversed - needed for analysis of strongly connected components.
+	 * reversed - needed for analysis of strongly connected components. Note that
+	 * this map must order it's keys by descending dfsFinishTime in order for the
+	 * strongly connected component algorithm to work
 	 */
-	private Map<Node, List<Edge>> transposedNodes;
+	private TreeMap<Node, List<Edge>> transposedNodes;
 
 	private int constraintNumber;
 
@@ -56,9 +62,7 @@ public class DependencyGraph {
 				retVal.handleRuleBodyLiteral(tmpHeadNode, l);
 			}
 		}
-		retVal.buildTransposedStructure();
-		// TODO actually do strongly connected components here
-		DependencyGraphUtils.performDfs(retVal.nodes);
+		retVal.findStronglyConnectedComponents();
 		return retVal;
 	}
 
@@ -109,7 +113,7 @@ public class DependencyGraph {
 	 * <code>DependencyGraph</code>
 	 */
 	private void buildTransposedStructure() {
-		Map<Node, List<Edge>> transposed = new HashMap<>();
+		TreeMap<Node, List<Edge>> transposed = new TreeMap<>(DependencyGraph.NODE_COMP_DESC);
 		for (Map.Entry<Node, List<Edge>> entry : this.nodes.entrySet()) {
 			for (Edge e : entry.getValue()) {
 				if (!transposed.containsKey(e.getTarget())) {
@@ -125,14 +129,13 @@ public class DependencyGraph {
 		Predicate retVal = Predicate.getInstance(String.format(DependencyGraph.CONSTRAINT_PREDICATE_FORMAT, this.nextConstraintNumber()), 0);
 		return retVal;
 	}
-	
+
 	// TODO think up return type for SCCs
 	private void findStronglyConnectedComponents() {
 		DependencyGraphUtils.performDfs(this.nodes);
-		// TODO sort transposedNodes decreasing by DFS finish times of nodes
-		DependencyGraphUtils.performDfs(this.transposedNodes);
+		this.buildTransposedStructure();
+//		DependencyGraphUtils.performDfs(this.transposedNodes);
 	}
-	
 
 	private int nextConstraintNumber() {
 		return ++this.constraintNumber;

@@ -23,22 +23,28 @@ public class DependencyGraphWriter {
 	private static final String DFS_ANNOTATED_NODE_FORMAT = "n%d[label = \"%s\n[dfs.pre=%s,dfs.td=%d,dfs.tf=%d]\"]\n";
 	private static final String DEFAULT_EDGE_FORMAT = "n%d -> n%d [xlabel=\"%s\" labeldistance=0.1]\n";
 
-	public void writeAsDotfile(DependencyGraph graph, String path, boolean includeDfsMetadata) throws IOException {
-		this.writeAsDot(graph, new FileOutputStream(path), includeDfsMetadata);
+	public void writeAsDotfile(DependencyGraph graph, String path, boolean includeSccMetadata) throws IOException {
+		this.writeAsDot(graph, new FileOutputStream(path), includeSccMetadata);
+		if (includeSccMetadata) {
+			// FIXME not clean, but currently only used from unit tests
+			this.writeAsDot(graph.getTransposedNodes(), new FileOutputStream(path + ".transpose"), includeSccMetadata);
+		}
 	}
 
-	public void writeAsDot(DependencyGraph graph, OutputStream out, boolean includeDfsMetadata) throws IOException {
-		BiFunction<Node, Integer, String> nodeFormatter = includeDfsMetadata ? this::buildDfsAnnotatedNodeString : this::buildNodeString;
+	public void writeAsDot(DependencyGraph graph, OutputStream out, boolean includeSccMetadata) throws IOException {
+		this.writeAsDot(graph.getNodes(), out, includeSccMetadata);
+	}
+
+	public void writeAsDot(Map<Node, List<Edge>> graph, OutputStream out, boolean includeSccMetadata) throws IOException {
+		BiFunction<Node, Integer, String> nodeFormatter = includeSccMetadata ? this::buildDfsAnnotatedNodeString : this::buildNodeString;
 		this.writeAsDot(graph, out, nodeFormatter);
 	}
 
-	private void writeAsDot(DependencyGraph graph, OutputStream out, BiFunction<Node, Integer, String> nodeFormatter) throws IOException {
+	private void writeAsDot(Map<Node, List<Edge>> graph, OutputStream out, BiFunction<Node, Integer, String> nodeFormatter) throws IOException {
 		PrintStream ps = new PrintStream(out);
-		Map<Node, List<Edge>> graphData = graph.getNodes();
-
 		this.startGraph(ps);
 
-		Set<Map.Entry<Node, List<Edge>>> graphDataEntries = graphData.entrySet();
+		Set<Map.Entry<Node, List<Edge>>> graphDataEntries = graph.entrySet();
 		// first write all nodes
 		int nodeCnt = 0;
 		Map<Node, Integer> nodesToNumbers = new HashMap<>();
@@ -81,7 +87,7 @@ public class DependencyGraphWriter {
 	private String buildDfsAnnotatedNodeString(Node n, int nodeNum) {
 		NodeInfo info = n.getNodeInfo();
 		Node dfsPre = info.getDfsPredecessor();
-		return String.format(DependencyGraphWriter.DFS_ANNOTATED_NODE_FORMAT, nodeNum, n.getLabel(), (dfsPre != null ? dfsPre.getLabel() : "NA"),
+		return String.format(DependencyGraphWriter.DFS_ANNOTATED_NODE_FORMAT, nodeNum, n.getLabel(), dfsPre != null ? dfsPre.getLabel() : "NA",
 				info.getDfsDiscoveryTime(), info.getDfsFinishTime());
 	}
 

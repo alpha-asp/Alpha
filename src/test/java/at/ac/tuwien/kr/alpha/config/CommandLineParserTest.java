@@ -62,7 +62,7 @@ public class CommandLineParserTest {
 	}
 	
 	@Test(expected = ParseException.class)
-	public void noInputGiven() throws ParseException{
+	public void noInputGiven() throws ParseException {
 		CommandLineParser parser = new CommandLineParser("java -jar Alpha--bundled.jar", (msg) -> { });
 		parser.parseCommandLine(new String[] {});
 	}
