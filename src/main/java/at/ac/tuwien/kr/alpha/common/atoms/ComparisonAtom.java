@@ -119,4 +119,9 @@ public class ComparisonAtom implements Atom, VariableNormalizableAtom {
 		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
 		return new ComparisonAtom(renamedTerms.get(0), renamedTerms.get(1), operator);
 	}
+	
+	@Override
+	public boolean isBuiltin() {
+		return true;
+	}
 }

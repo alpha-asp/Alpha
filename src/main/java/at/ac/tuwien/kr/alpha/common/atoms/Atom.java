@@ -41,12 +41,14 @@ import java.util.Set;
  */
 public interface Atom extends Comparable<Atom> {
 	Predicate getPredicate();
+
 	List<Term> getTerms();
 
 	boolean isGround();
 
 	/**
 	 * Set of all variables occurring in the Atom that are potentially binding
+	 * 
 	 * @return
 	 */
 	default Set<VariableTerm> getBindingVariables() {
@@ -54,7 +56,9 @@ public interface Atom extends Comparable<Atom> {
 	}
 
 	/**
-	 * Set of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
+	 * Set of all variables occurring in the Atom that are never binding, not even
+	 * in positive atoms, e.g., variables in intervals or built-in atoms.
+	 * 
 	 * @return
 	 */
 	default Set<VariableTerm> getNonBindingVariables() {
@@ -69,8 +73,9 @@ public interface Atom extends Comparable<Atom> {
 	}
 
 	/**
-	 * This method applies a substitution to a potentially non-substitute atom.
-	 * The resulting atom may be non-substitute.
+	 * This method applies a substitution to a potentially non-substitute atom. The
+	 * resulting atom may be non-substitute.
+	 * 
 	 * @param substitution the variable substitution to apply.
 	 * @return the atom resulting from the applying the substitution.
 	 */
@@ -84,7 +89,9 @@ public interface Atom extends Comparable<Atom> {
 	}
 
 	/**
-	 * Creates a literal containing this atom which will be negated if {@code positive} is {@code false}
+	 * Creates a literal containing this atom which will be negated if
+	 * {@code positive} is {@code false}
+	 * 
 	 * @param positive
 	 * @return
 	 */
@@ -126,5 +133,15 @@ public interface Atom extends Comparable<Atom> {
 		}
 
 		return 0;
+	}
+
+	/**
+	 * Returns whether this Atom is a builtin-atom according to the ASP standard.
+	 * This covers the atoms currently defined by <code>ComparisonAtom</code>.
+	 * 
+	 * @return true if this Atom is a comparison atom, false otherwise.
+	 */
+	default boolean isBuiltin() {
+		return false;
 	}
 }

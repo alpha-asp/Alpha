@@ -19,6 +19,7 @@ public class DisjunctiveHead extends Head {
 		}
 	}
 
+	@Override
 	public boolean isNormal() {
 		return disjunctiveAtoms != null && disjunctiveAtoms.size() <= 1;
 	}
@@ -38,5 +39,10 @@ public class DisjunctiveHead extends Head {
 			}
 		}
 		return true;
+	}
+
+	@Override
+	public List<Atom> getAtoms() {
+		return this.disjunctiveAtoms;
 	}
 }
