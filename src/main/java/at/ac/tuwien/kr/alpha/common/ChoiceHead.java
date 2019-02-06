@@ -2,7 +2,6 @@ package at.ac.tuwien.kr.alpha.common;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
