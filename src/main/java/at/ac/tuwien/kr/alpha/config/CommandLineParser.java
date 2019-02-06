@@ -23,8 +23,7 @@ import org.slf4j.LoggerFactory;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 
 /**
- * Parses given argument lists (as passed when Alpha is called from command
- * line) into <code>AlphaConfig</code>s and <code>InputConfig</code>s.
+ * Parses given argument lists (as passed when Alpha is called from command line) into <code>AlphaConfig</code>s and <code>InputConfig</code>s.
  *
  */
 public class CommandLineParser {
@@ -32,10 +31,8 @@ public class CommandLineParser {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CommandLineParser.class);
 
 	/*
-	 * Whenever a new command line option is added, perform the following steps: 1.
-	 * Add it as a constant option below. 2. Add the constant option into the
-	 * Options "CLI_OPTS" in the static initializer 3. Add a handler method for it
-	 * and add the respective map entry in the constructor with a method reference
+	 * Whenever a new command line option is added, perform the following steps: 1. Add it as a constant option below. 2. Add the constant option into the
+	 * Options "CLI_OPTS" in the static initializer 3. Add a handler method for it and add the respective map entry in the constructor with a method reference
 	 * to the handler.
 	 */
 	// "special", i.e. non-configuration options
@@ -110,30 +107,30 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NORMALIZATION_GRID);
 	}
 
+	/*
+	 * Below maps map commandline options to handler methods. If a new option is added, the appropriate put into the map must be added in the constructor
+	 */
 	private final Map<String, IOptionHandler<AlphaConfig>> globalOptionHandlers = new HashMap<>();
 	private final Map<String, IOptionHandler<InputConfig>> inputOptionHandlers = new HashMap<>();
 	private Consumer<String> abortAction;
 	private String cmdSyntax;
 
 	/**
-	 * Creates a new <code>CommandLineParser</code>. The abortAction described below
-	 * is passed into the constructor externally in order to avoid strongly coupling
-	 * this class to any other part of the application. Especially an abortAction -
-	 * which likely will include some call like System.exit({state}) - should not be
-	 * specified by utility classes themselves, but rather by the application's main
-	 * class.
+	 * Creates a new <code>CommandLineParser</code>. The abortAction described below is passed into the constructor externally in order to avoid strongly
+	 * coupling this class to any other part of the application. Especially an abortAction - which likely will include some call like System.exit({state}) -
+	 * should not be specified by utility classes themselves, but rather by the application's main class.
 	 * 
-	 * @param cmdLineSyntax a string describing the basic call syntax for the
-	 *                      application binary, e.g. "java -jar somejar.jar"
-	 * @param abortAction   a <code>Consumer<String></code> that is called when
-	 *                      option parsing is aborted, as is the case when the
-	 *                      "help" option is encountered. It expects a string
-	 *                      parameter, which is a message accompanying the abort
+	 * @param cmdLineSyntax a string describing the basic call syntax for the application binary, e.g. "java -jar somejar.jar"
+	 * @param abortAction   a <code>Consumer<String></code> that is called when option parsing is aborted, as is the case when the "help" option is encountered.
+	 *                      It expects a string parameter, which is a message accompanying the abort
 	 */
 	public CommandLineParser(String cmdLineSyntax, Consumer<String> abortAction) {
 		this.cmdSyntax = cmdLineSyntax;
 		this.abortAction = abortAction;
 
+		/*
+		 * below put invocations are used to "register" the handler methods for each commandline option
+		 */
 		// help is handled separately, therefore dummy handler
 		this.globalOptionHandlers.put(CommandLineParser.OPT_HELP.getOpt(), (o, c) -> { });
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER.getOpt(), this::handleGrounder);
@@ -149,8 +146,6 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), this::handleNoJustification);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NORMALIZATION_GRID.getOpt(), this::handleNormalizationGrid);
 
-		// TODO we should be able to take input from files and additional strings at
-		// the same time
 		this.inputOptionHandlers.put(CommandLineParser.OPT_NUM_ANSWER_SETS.getOpt(), this::handleNumAnswerSets);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_INPUT.getOpt(), this::handleInput);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_FILTER.getOpt(), this::handleFilters);
