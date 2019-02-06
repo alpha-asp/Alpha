@@ -37,8 +37,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Represents a builtin atom according to the standard.
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Represents a builtin atom according to the standard. Copyright (c) 2017-2018, the Alpha Team.
  */
 public class ComparisonAtom implements Atom, VariableNormalizableAtom {
 	private final Predicate predicate;
@@ -119,9 +118,5 @@ public class ComparisonAtom implements Atom, VariableNormalizableAtom {
 		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
 		return new ComparisonAtom(renamedTerms.get(0), renamedTerms.get(1), operator);
 	}
-	
-	@Override
-	public boolean isBuiltin() {
-		return true;
-	}
+
 }
