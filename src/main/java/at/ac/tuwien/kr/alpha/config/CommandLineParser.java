@@ -52,31 +52,31 @@ public class CommandLineParser {
 
 	// general system-wide config
 	private static final Option OPT_GROUNDER = Option.builder("g").longOpt("grounder").hasArg(true).argName("grounder")
-			.desc("the grounder implementation to use (default: " + AlphaConfig.DEFAULT_GROUNDER_NAME + ")").build();
+			.desc("the grounder implementation to use (default: " + SystemConfig.DEFAULT_GROUNDER_NAME + ")").build();
 	private static final Option OPT_SOLVER = Option.builder("s").longOpt("solver").hasArg(true).argName("solver")
-			.desc("the solver implementation to use (default: " + AlphaConfig.DEFAULT_SOLVER_NAME + ")").build();
+			.desc("the solver implementation to use (default: " + SystemConfig.DEFAULT_SOLVER_NAME + ")").build();
 	private static final Option OPT_NOGOOD_STORE = Option.builder("r").longOpt("store").hasArg(true).argName("store")
-			.desc("the nogood store to use (default: " + AlphaConfig.DEFAULT_NOGOOD_STORE_NAME + ")").build();
+			.desc("the nogood store to use (default: " + SystemConfig.DEFAULT_NOGOOD_STORE_NAME + ")").build();
 	private static final Option OPT_SORT = Option.builder("sort").longOpt("sort").hasArg(false)
-			.desc("sort answer sets (default: " + AlphaConfig.DEFAULT_SORT_ANSWER_SETS + ")").build();
+			.desc("sort answer sets (default: " + SystemConfig.DEFAULT_SORT_ANSWER_SETS + ")").build();
 	private static final Option OPT_DETERMINISTIC = Option.builder("d").longOpt("deterministic").hasArg(false)
-			.desc("disables randomness (default: " + AlphaConfig.DEFAULT_DETERMINISTIC + ")").build();
+			.desc("disables randomness (default: " + SystemConfig.DEFAULT_DETERMINISTIC + ")").build();
 	private static final Option OPT_SEED = Option.builder("e").longOpt("seed").hasArg(true).argName("seed").type(Integer.class)
 			.desc("set seed (default: System.nanoTime())").build();
 	private static final Option OPT_DEBUG_INTERNAL_CHECKS = Option.builder("dbg").longOpt("DebugEnableInternalChecks")
-			.desc("run additional (time-consuming) safety checks (default: " + AlphaConfig.DEFAULT_DEBUG_INTERNAL_CHECKS + ")").build();
+			.desc("run additional (time-consuming) safety checks (default: " + SystemConfig.DEFAULT_DEBUG_INTERNAL_CHECKS + ")").build();
 	private static final Option OPT_BRANCHING_HEURISTIC = Option.builder("b").longOpt("branchingHeuristic").hasArg(true).argName("heuristic")
-			.desc("the branching heuristic to use (default: " + AlphaConfig.DEFAULT_BRANCHING_HEURISTIC_NAME + ")").build();
-	private static final Option OPT_QUIET = Option.builder("q").longOpt("quiet").desc("do not print answer sets (default: " + AlphaConfig.DEFAULT_QUIET)
+			.desc("the branching heuristic to use (default: " + SystemConfig.DEFAULT_BRANCHING_HEURISTIC_NAME + ")").build();
+	private static final Option OPT_QUIET = Option.builder("q").longOpt("quiet").desc("do not print answer sets (default: " + SystemConfig.DEFAULT_QUIET)
 			.build();
-	private static final Option OPT_STATS = Option.builder("st").longOpt("stats").desc("print statistics (default: " + AlphaConfig.DEFAULT_PRINT_STATS + ")")
+	private static final Option OPT_STATS = Option.builder("st").longOpt("stats").desc("print statistics (default: " + SystemConfig.DEFAULT_PRINT_STATS + ")")
 			.build();
 	private static final Option OPT_NO_JUSTIFICATION = Option.builder("dj").longOpt("disableJustifications")
 			.desc("disable the search for justifications on must-be-true assigned atoms in the solver (default: "
-					+ AlphaConfig.DEFAULT_DISABLE_JUSTIFICATION_SEARCH + ")")
+					+ SystemConfig.DEFAULT_DISABLE_JUSTIFICATION_SEARCH + ")")
 			.build();
 	private static final Option OPT_NORMALIZATION_GRID = Option.builder("ng").longOpt("normalizationCountingGrid")
-			.desc("use counting grid normalization instead of sorting circuit for #count (default: " + AlphaConfig.DEFAULT_USE_NORMALIZATION_GRID + ")")
+			.desc("use counting grid normalization instead of sorting circuit for #count (default: " + SystemConfig.DEFAULT_USE_NORMALIZATION_GRID + ")")
 			.build();
 
 	private static final Options CLI_OPTS = new Options();
@@ -110,8 +110,8 @@ public class CommandLineParser {
 	/*
 	 * Below maps map commandline options to handler methods. If a new option is added, the appropriate put into the map must be added in the constructor
 	 */
-	private final Map<String, IOptionHandler<AlphaConfig>> globalOptionHandlers = new HashMap<>();
-	private final Map<String, IOptionHandler<InputConfig>> inputOptionHandlers = new HashMap<>();
+	private final Map<String, CliOptionHandler<SystemConfig>> globalOptionHandlers = new HashMap<>();
+	private final Map<String, CliOptionHandler<InputConfig>> inputOptionHandlers = new HashMap<>();
 	private Consumer<String> abortAction;
 	private String cmdSyntax;
 
@@ -153,16 +153,16 @@ public class CommandLineParser {
 		this.inputOptionHandlers.put(CommandLineParser.OPT_LITERATE.getOpt(), this::handleLiterate);
 	}
 
-	public AlphaContext parseCommandLine(String[] args) throws ParseException {
+	public AlphaConfig parseCommandLine(String[] args) throws ParseException {
 		CommandLine commandLine = new DefaultParser().parse(CommandLineParser.CLI_OPTS, args);
 		if (commandLine.getArgs().length > 0) {
 			throw new ParseException("Positional arguments { " + StringUtils.join(args, ' ') + " } are invalid!");
 		}
-		AlphaContext retVal = new AlphaContext();
-		AlphaConfig sysConf = new AlphaConfig();
+		AlphaConfig retVal = new AlphaConfig();
+		SystemConfig sysConf = new SystemConfig();
 		InputConfig inputConf = new InputConfig();
-		IOptionHandler<AlphaConfig> globalOptionHandler;
-		IOptionHandler<InputConfig> inputOptionHandler;
+		CliOptionHandler<SystemConfig> globalOptionHandler;
+		CliOptionHandler<InputConfig> inputOptionHandler;
 		if (commandLine.hasOption(CommandLineParser.OPT_HELP.getOpt())) {
 			LOGGER.debug("Found help option!");
 			this.handleHelp();
@@ -226,16 +226,16 @@ public class CommandLineParser {
 		cfg.getFiles().add(optVal);
 	}
 
-	private void handleGrounder(Option opt, AlphaConfig cfg) {
-		cfg.setGrounderName(opt.getValue(AlphaConfig.DEFAULT_GROUNDER_NAME));
+	private void handleGrounder(Option opt, SystemConfig cfg) {
+		cfg.setGrounderName(opt.getValue(SystemConfig.DEFAULT_GROUNDER_NAME));
 	}
 
-	private void handleSolver(Option opt, AlphaConfig cfg) {
-		cfg.setSolverName(opt.getValue(AlphaConfig.DEFAULT_SOLVER_NAME));
+	private void handleSolver(Option opt, SystemConfig cfg) {
+		cfg.setSolverName(opt.getValue(SystemConfig.DEFAULT_SOLVER_NAME));
 	}
 
-	private void handleNogoodStore(Option opt, AlphaConfig cfg) {
-		cfg.setNogoodStoreName(opt.getValue(AlphaConfig.DEFAULT_NOGOOD_STORE_NAME));
+	private void handleNogoodStore(Option opt, SystemConfig cfg) {
+		cfg.setNogoodStoreName(opt.getValue(SystemConfig.DEFAULT_NOGOOD_STORE_NAME));
 	}
 
 	private void handleFilters(Option opt, InputConfig cfg) {
@@ -249,16 +249,16 @@ public class CommandLineParser {
 		cfg.getAspStrings().add(optVal);
 	}
 
-	private void handleSort(Option opt, AlphaConfig cfg) {
+	private void handleSort(Option opt, SystemConfig cfg) {
 		cfg.setSortAnswerSets(true);
 	}
 
-	private void handleDeterministic(Option opt, AlphaConfig cfg) {
+	private void handleDeterministic(Option opt, SystemConfig cfg) {
 		cfg.setDeterministic(true);
 		cfg.setSeed(0);
 	}
 
-	private void handleSeed(Option opt, AlphaConfig cfg) {
+	private void handleSeed(Option opt, SystemConfig cfg) {
 		cfg.setDeterministic(false);
 		String optVal = opt.getValue();
 		long seed;
@@ -266,19 +266,19 @@ public class CommandLineParser {
 			seed = Long.valueOf(optVal);
 			cfg.setSeed(seed);
 		} else {
-			cfg.setSeed(AlphaConfig.DEFAULT_SEED);
+			cfg.setSeed(SystemConfig.DEFAULT_SEED);
 		}
 	}
 
-	private void handleInternalChecks(Option opt, AlphaConfig cfg) {
+	private void handleInternalChecks(Option opt, SystemConfig cfg) {
 		cfg.setDebugInternalChecks(true);
 	}
 
-	private void handleBranchingHeuristic(Option opt, AlphaConfig cfg) {
-		cfg.setBranchingHeuristicName(opt.getValue(AlphaConfig.DEFAULT_BRANCHING_HEURISTIC_NAME));
+	private void handleBranchingHeuristic(Option opt, SystemConfig cfg) {
+		cfg.setBranchingHeuristicName(opt.getValue(SystemConfig.DEFAULT_BRANCHING_HEURISTIC_NAME));
 	}
 
-	private void handleQuiet(Option opt, AlphaConfig cfg) {
+	private void handleQuiet(Option opt, SystemConfig cfg) {
 		cfg.setQuiet(true);
 	}
 
@@ -286,15 +286,15 @@ public class CommandLineParser {
 		cfg.setLiterate(true);
 	}
 
-	private void handleStats(Option opt, AlphaConfig cfg) {
+	private void handleStats(Option opt, SystemConfig cfg) {
 		cfg.setPrintStats(true);
 	}
 
-	private void handleNoJustification(Option opt, AlphaConfig cfg) {
+	private void handleNoJustification(Option opt, SystemConfig cfg) {
 		cfg.setDisableJustificationSearch(true);
 	}
 
-	private void handleNormalizationGrid(Option opt, AlphaConfig cfg) {
+	private void handleNormalizationGrid(Option opt, SystemConfig cfg) {
 		cfg.setUseNormalizationGrid(true);
 	}
 

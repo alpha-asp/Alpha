@@ -45,7 +45,7 @@ import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.config.AlphaConfig;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
@@ -57,9 +57,9 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heurist
 
 public class Alpha {
 
-	private AlphaConfig config = new AlphaConfig(); // config is initialized with default values
+	private SystemConfig config = new SystemConfig(); // config is initialized with default values
 
-	public Alpha(AlphaConfig cfg) {
+	public Alpha(SystemConfig cfg) {
 		this.config = cfg;
 	}
 
@@ -129,11 +129,11 @@ public class Alpha {
 		return this.config.isSortAnswerSets() ? retVal.sorted() : retVal;
 	}
 
-	public AlphaConfig getConfig() {
+	public SystemConfig getConfig() {
 		return this.config;
 	}
 
-	public void setConfig(AlphaConfig config) {
+	public void setConfig(SystemConfig config) {
 		this.config = config;
 	}
 
