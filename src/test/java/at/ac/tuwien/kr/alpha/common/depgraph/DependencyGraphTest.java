@@ -20,6 +20,7 @@ import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 
 public class DependencyGraphTest {
 
+	@SuppressWarnings("unused")
 	private static String generateRandomProgram(int numRules, int numPredicates, int maxRuleBodyLiterals) {
 		String[] predicates = new String[numPredicates];
 		for (int i = 0; i < predicates.length; i++) {
@@ -88,22 +89,6 @@ public class DependencyGraphTest {
 		Edge e1 = new Edge(new Node(testPredicate, testPredicate.toString()), true, null);
 		Edge e2 = new Edge(new Node(testPredicate, testPredicate.toString()), true, null);
 		Assert.assertEquals(e1, e2);
-	}
-
-	@Test
-	@Ignore("Not compatible with current implementation, sorting of finished nodes is done externally")
-	public void randomProgramDfsFinishOrderingTest() {
-		Alpha system = new Alpha();
-		Program prog = system.readProgramString(DependencyGraphTest.generateRandomProgram(10, 5, 3), null);
-		ProgramAnalysis analysis = new ProgramAnalysis(prog);
-		DependencyGraph dg = analysis.getDependencyGraph();
-		List<Node> finishedNodes = DependencyGraphUtils.performDfs(dg.getNodes().keySet(), dg.getNodes()).getFinishedNodes();
-		Assert.assertEquals(dg.getNodes().size(), finishedNodes.size());
-		int finishLastNode = Integer.MAX_VALUE;
-		for (Node n : finishedNodes) {
-			Assert.assertTrue(n.getNodeInfo().getDfsFinishTime() < finishLastNode);
-			finishLastNode = n.getNodeInfo().getDfsFinishTime();
-		}
 	}
 
 	@Test
@@ -197,7 +182,7 @@ public class DependencyGraphTest {
 	}
 
 	@Test
-	public void stronglyConnectedComponentSimpleTest() {
+	public void stronglyConnectedComponentsSimpleTest() {
 		StringBuilder bld = new StringBuilder();
 		bld.append("b :- a.").append("\n");
 		bld.append("a :- b.").append("\n");
@@ -223,6 +208,77 @@ public class DependencyGraphTest {
 		componentAll.add(b);
 		Assert.assertEquals(true, DependencyGraphUtils.areStronglyConnected(componentAll, dg));
 		Assert.assertEquals(true, DependencyGraphUtils.isStronglyConnectedComponent(componentAll, dg));
+	}
+
+	@Test
+	public void stronglyConnectedComponentsMultipleComponentsTest() {
+		StringBuilder bld = new StringBuilder();
+		bld.append("f0.\n").append("f1.\n").append("f2.\n").append("f3.\n");
+		bld.append("a :- f0, f1, not b.").append("\n");
+		bld.append("b :- f0, f1, not a.").append("\n");
+		bld.append("c :- f2, f3, not d.").append("\n");
+		bld.append("d :- f2, f3, not c.").append("\n");
+		bld.append("x :- a, c, y.").append("\n");
+		bld.append("y :- b, d, x.").append("\n");
+		bld.append("z :- x, y, z.").append("\n");
+		Alpha system = new Alpha();
+		Program prog = system.readProgramString(bld.toString(), null);
+		ProgramAnalysis pa = new ProgramAnalysis(prog);
+		DependencyGraph dg = pa.getDependencyGraph();
+
+		Node f0 = new Node(Predicate.getInstance("f0", 0));
+		Node f1 = new Node(Predicate.getInstance("f1", 0));
+		Node f2 = new Node(Predicate.getInstance("f2", 0));
+		Node f3 = new Node(Predicate.getInstance("f3", 0));
+		Node a = new Node(Predicate.getInstance("a", 0));
+		Node b = new Node(Predicate.getInstance("b", 0));
+		Node c = new Node(Predicate.getInstance("c", 0));
+		Node d = new Node(Predicate.getInstance("d", 0));
+		Node x = new Node(Predicate.getInstance("x", 0));
+		Node y = new Node(Predicate.getInstance("y", 0));
+		Node z = new Node(Predicate.getInstance("z", 0));
+
+		Map<Integer, List<Node>> stronglyConnectedComponents = dg.getStronglyConnectedComponents();
+		Assert.assertEquals(8, stronglyConnectedComponents.size());
+
+		for (List<Node> scc : stronglyConnectedComponents.values()) {
+			Assert.assertEquals(true, DependencyGraphUtils.isStronglyConnectedComponent(scc, dg));
+		}
+
+		List<Node> c1 = new ArrayList<>();
+		c1.add(a);
+		c1.add(b);
+		Assert.assertEquals(true, DependencyGraphUtils.isStronglyConnectedComponent(c1, dg));
+
+		List<Node> c2 = new ArrayList<>();
+		c2.add(c);
+		c2.add(d);
+		Assert.assertEquals(true, DependencyGraphUtils.isStronglyConnectedComponent(c2, dg));
+
+		List<Node> c3 = new ArrayList<>();
+		c3.add(x);
+		c3.add(y);
+		Assert.assertEquals(true, DependencyGraphUtils.isStronglyConnectedComponent(c3, dg));
+
+		List<Node> c4 = new ArrayList<>();
+		c4.add(z);
+		Assert.assertEquals(true, DependencyGraphUtils.isStronglyConnectedComponent(c4, dg));
+
+		List<Node> c5 = new ArrayList<>();
+		c5.add(f0);
+		Assert.assertEquals(true, DependencyGraphUtils.isStronglyConnectedComponent(c5, dg));
+
+		List<Node> c6 = new ArrayList<>();
+		c6.add(f1);
+		Assert.assertEquals(true, DependencyGraphUtils.isStronglyConnectedComponent(c6, dg));
+
+		List<Node> c7 = new ArrayList<>();
+		c7.add(f2);
+		Assert.assertEquals(true, DependencyGraphUtils.isStronglyConnectedComponent(c7, dg));
+
+		List<Node> c8 = new ArrayList<>();
+		c8.add(f3);
+		Assert.assertEquals(true, DependencyGraphUtils.isStronglyConnectedComponent(c8, dg));
 	}
 
 }
