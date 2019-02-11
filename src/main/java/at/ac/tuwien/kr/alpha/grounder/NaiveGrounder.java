@@ -29,13 +29,11 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.NoGood.Type;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalLiteral;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
@@ -148,6 +146,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			// Record the rule for later use
 			NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
 			knownNonGroundRules.put(nonGroundRule.getRuleId(), nonGroundRule);
+			LOGGER.debug("NonGroundRule #" + nonGroundRule.getRuleId() + ": " + nonGroundRule);
 
 			// Record defining rules for each predicate.
 			Atom headAtom = nonGroundRule.getHeadAtom();
@@ -419,6 +418,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return registry.register(noGood);
 	}
 
+	/**
+	 * TODO: always called with orderPosition = 0 --> remove parameter
+	 */
 	BindingResult bindNextAtomInRule(NonGroundRule rule, RuleGroundingOrder groundingOrder, int orderPosition, Substitution partialSubstitution, Assignment currentAssignment) {
 		int tolerance = heuristicsConfiguration.getTolerance(rule.isConstraint());
 		if (tolerance < 0) {
@@ -435,7 +437,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 		return bindingResult;
 	}
-	
+
 	private BindingResult advanceAndBindNextAtomInRule(NonGroundRule rule, RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment) {
 		groundingOrder.considerUntilCurrentEnd();
 		return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
@@ -460,7 +462,16 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		Atom currentAtom = currentLiteral.getAtom();
 		if (currentLiteral instanceof FixedInterpretationLiteral) {
 			// Generate all substitutions for the builtin/external/interval atom.
-			final List<Substitution> substitutions = ((FixedInterpretationLiteral)currentLiteral.substitute(partialSubstitution)).getSubstitutions(partialSubstitution);
+			FixedInterpretationLiteral substitutedLiteral = (FixedInterpretationLiteral)currentLiteral.substitute(partialSubstitution);
+			// TODO: this has to be improved before merging into master:
+			if (!substitutedLiteral.isGround() &&
+					!(substitutedLiteral instanceof ComparisonLiteral && ((ComparisonLiteral)substitutedLiteral).isLeftOrRightAssigning()) &&
+					!(substitutedLiteral instanceof IntervalLiteral && substitutedLiteral.getTerms().get(0).isGround()) &&
+					!(substitutedLiteral instanceof ExternalLiteral)
+					) {
+				return pushBackAndBindNextAtomInRule(rule, groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
+			}
+			final List<Substitution> substitutions = substitutedLiteral.getSubstitutions(partialSubstitution);
 			
 			if (substitutions.isEmpty()) {
 				// if FixedInterpretationLiteral cannot be satisfied now, it will never be
