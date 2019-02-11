@@ -5,7 +5,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.depgraph.Node.NodeInfo;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 
 public class DependencyGraph {
@@ -21,22 +22,17 @@ public class DependencyGraph {
 
 	private static final String CONSTRAINT_PREDICATE_FORMAT = "[constr_%d]";
 
-	private static final Comparator<Node> NODE_COMP_DESC = (n1, n2) -> n2.getNodeInfo().getDfsFinishTime() - n1.getNodeInfo().getDfsFinishTime();
-
 	/**
-	 * Maps Rule IDs (toplevel key) to outgoing edges of that node NOTE: Doing the
-	 * value as List<Edge> rather than Map<Integer,Boolean> as one node may have
+	 * Maps Rule IDs (toplevel key) to outgoing edges of that node NOTE: Doing the value as List<Edge> rather than Map<Integer,Boolean> as one node may have
 	 * positive and negative edges to another.
 	 */
 	private Map<Node, List<Edge>> nodes = new HashMap<>();
 
 	/**
-	 * The transposed graph structure, i.e. the same set of nodes, but all edges
-	 * reversed - needed for analysis of strongly connected components. Note that
-	 * this map must order it's keys by descending dfsFinishTime in order for the
-	 * strongly connected component algorithm to work
+	 * The transposed graph structure, i.e. the same set of nodes, but all edges reversed - needed for analysis of strongly connected components. Note that this
+	 * map must order it's keys by descending dfsFinishTime in order for the strongly connected component algorithm to work
 	 */
-	private TreeMap<Node, List<Edge>> transposedNodes;
+	private Map<Node, List<Edge>> transposedNodes;
 
 	private int constraintNumber;
 
@@ -109,17 +105,29 @@ public class DependencyGraph {
 	}
 
 	/**
-	 * (Re)-Writes the <code>transposedNodes</code> of this
-	 * <code>DependencyGraph</code>
+	 * (Re)-Writes the <code>transposedNodes</code> of this <code>DependencyGraph</code>
 	 */
 	private void buildTransposedStructure() {
-		TreeMap<Node, List<Edge>> transposed = new TreeMap<>(DependencyGraph.NODE_COMP_DESC);
+		// TreeMap<Node, List<Edge>> transposed = new TreeMap<>(DependencyGraph.NODE_COMP_DESC);
+		Map<Node, List<Edge>> transposed = new HashMap<>();
+		Node tmpNodeCopy;
+		Node srcNode;
+		Node targetNode;
 		for (Map.Entry<Node, List<Edge>> entry : this.nodes.entrySet()) {
+			srcNode = entry.getKey();
+			if (!transposed.containsKey(srcNode)) {
+				// we don't wanna copy node info here, successive DFS runs shouldn't get messed up
+				tmpNodeCopy = new Node(srcNode.getPredicate(), srcNode.getLabel(), srcNode.isConstraint(), new NodeInfo());
+				transposed.put(tmpNodeCopy, new ArrayList<>());
+			}
 			for (Edge e : entry.getValue()) {
+				targetNode = e.getTarget();
 				if (!transposed.containsKey(e.getTarget())) {
-					transposed.put(new Node(e.getTarget()), new ArrayList<>());
+					// we don't wanna copy node info here, successive DFS runs shouldn't get messed up
+					tmpNodeCopy = new Node(targetNode.getPredicate(), targetNode.getLabel(), targetNode.isConstraint(), new NodeInfo());
+					transposed.put(new Node(tmpNodeCopy), new ArrayList<>());
 				}
-				transposed.get(e.getTarget()).add(new Edge(entry.getKey(), e.getSign(), e.getLabel()));
+				transposed.get(targetNode).add(new Edge(entry.getKey(), e.getSign(), e.getLabel()));
 			}
 		}
 		this.transposedNodes = transposed;
@@ -132,7 +140,7 @@ public class DependencyGraph {
 
 	// TODO think up return type for SCCs
 	private void findStronglyConnectedComponents() {
-		DependencyGraphUtils.performDfs(this.nodes);
+		TreeSet<Node> finishedNodes = DependencyGraphUtils.performDfs(this.nodes);
 		this.buildTransposedStructure();
 //		DependencyGraphUtils.performDfs(this.transposedNodes);
 	}
