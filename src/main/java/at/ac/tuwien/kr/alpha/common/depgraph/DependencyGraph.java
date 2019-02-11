@@ -1,11 +1,11 @@
 package at.ac.tuwien.kr.alpha.common.depgraph;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +20,8 @@ public class DependencyGraph {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DependencyGraph.class);
 
+	private static final Comparator<Node> NODE_COMP_DESC = (n1, n2) -> n2.getNodeInfo().getDfsFinishTime() - n1.getNodeInfo().getDfsFinishTime();
+
 	private static final String CONSTRAINT_PREDICATE_FORMAT = "[constr_%d]";
 
 	/**
@@ -29,10 +31,11 @@ public class DependencyGraph {
 	private Map<Node, List<Edge>> nodes = new HashMap<>();
 
 	/**
-	 * The transposed graph structure, i.e. the same set of nodes, but all edges reversed - needed for analysis of strongly connected components. Note that this
-	 * map must order it's keys by descending dfsFinishTime in order for the strongly connected component algorithm to work
+	 * The transposed graph structure, i.e. the same set of nodes, but all edges reversed - needed for analysis of strongly connected components.
 	 */
 	private Map<Node, List<Edge>> transposedNodes;
+
+	private Map<Integer, List<Node>> stronglyConnectedComponents;
 
 	private int constraintNumber;
 
@@ -105,10 +108,9 @@ public class DependencyGraph {
 	}
 
 	/**
-	 * (Re)-Writes the <code>transposedNodes</code> of this <code>DependencyGraph</code>
+	 * (Re-)Writes the <code>transposedNodes</code> of this <code>DependencyGraph</code>
 	 */
 	private void buildTransposedStructure() {
-		// TreeMap<Node, List<Edge>> transposed = new TreeMap<>(DependencyGraph.NODE_COMP_DESC);
 		Map<Node, List<Edge>> transposed = new HashMap<>();
 		Node tmpNodeCopy;
 		Node srcNode;
@@ -138,11 +140,37 @@ public class DependencyGraph {
 		return retVal;
 	}
 
-	// TODO think up return type for SCCs
+	// TODO maybe move this to DependencyGraphUtils
 	private void findStronglyConnectedComponents() {
-		TreeSet<Node> finishedNodes = DependencyGraphUtils.performDfs(this.nodes);
+		DfsResult intermediateResult = DependencyGraphUtils.performDfs(this.nodes.keySet(), this.nodes);
 		this.buildTransposedStructure();
-//		DependencyGraphUtils.performDfs(this.transposedNodes);
+		// TODO use radix sort here, otherwise we lose performance
+		// SCC is supposed to be O(n) w. n = V + E, need a linear sorting alg.,
+		// otherwise we degenerate to O(n*log(n))
+		List<Node> finishedNodes = intermediateResult.getFinishedNodes();
+		Collections.sort(finishedNodes, DependencyGraph.NODE_COMP_DESC);
+		DfsResult finalResult = DependencyGraphUtils.performDfs(finishedNodes, this.transposedNodes);
+		int componentCnt = 0;
+		Map<Integer, List<Node>> componentMap = new HashMap<>();
+		List<Node> tmpComponentMembers;
+		for (Node componentRoot : finalResult.getDepthFirstForest().get(null)) {
+			tmpComponentMembers = new ArrayList<>();
+			this.addComponentMembers(componentRoot, finalResult.getDepthFirstForest(), tmpComponentMembers);
+			componentMap.put(componentCnt, tmpComponentMembers);
+			componentCnt++;
+		}
+		this.stronglyConnectedComponents = componentMap;
+	}
+
+	private void addComponentMembers(Node depthFirstTreeNode, Map<Node, List<Node>> depthFirstForest, List<Node> componentMembers) {
+		componentMembers.add(depthFirstTreeNode);
+		List<Node> children;
+		if ((children = depthFirstForest.get(depthFirstTreeNode)) == null) {
+			return;
+		}
+		for (Node n : children) {
+			this.addComponentMembers(n, depthFirstForest, componentMembers);
+		}
 	}
 
 	private int nextConstraintNumber() {
@@ -155,6 +183,10 @@ public class DependencyGraph {
 
 	public Map<Node, List<Edge>> getTransposedNodes() {
 		return this.transposedNodes;
+	}
+
+	public Map<Integer, List<Node>> getStronglyConnectedComponents() {
+		return this.stronglyConnectedComponents;
 	}
 
 }
