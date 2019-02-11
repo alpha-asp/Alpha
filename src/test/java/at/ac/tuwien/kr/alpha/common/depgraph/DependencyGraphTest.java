@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.common.depgraph;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -46,8 +47,7 @@ public class DependencyGraphTest {
 	}
 
 	@Test
-	// @Ignore("Not a real test, rather a playground for local testing while
-	// changing stuff")
+	@Ignore("Not a real test, rather a playground for local testing while changing stuff")
 	public void dependencyGraphSmokeTest() throws IOException {
 		InputStream is = DependencyGraphTest.class.getResourceAsStream("/map_austria.asp");
 		Program p = new ProgramParser().parse(CharStreams.fromStream(is));
@@ -104,6 +104,125 @@ public class DependencyGraphTest {
 			Assert.assertTrue(n.getNodeInfo().getDfsFinishTime() < finishLastNode);
 			finishLastNode = n.getNodeInfo().getDfsFinishTime();
 		}
+	}
+
+	@Test
+	public void reachabilityCheckSimpleTest() {
+		Alpha system = new Alpha();
+		Program prog = system.readProgramString("b :- a.", null);
+		ProgramAnalysis pa = new ProgramAnalysis(prog);
+		DependencyGraph dg = pa.getDependencyGraph();
+		Node a = new Node(Predicate.getInstance("a", 0));
+		Node b = new Node(Predicate.getInstance("b", 0));
+		Node c = new Node(Predicate.getInstance("c", 0));
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(a, a, dg));
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(b, a, dg));
+		Assert.assertEquals(false, DependencyGraphUtils.isReachableFrom(a, b, dg));
+		Assert.assertEquals(false, DependencyGraphUtils.isReachableFrom(c, a, dg));
+		Assert.assertEquals(false, DependencyGraphUtils.isReachableFrom(c, b, dg));
+	}
+
+	@Test
+	public void reachabilityCheckWithHopsTest() {
+		StringBuilder bld = new StringBuilder();
+		bld.append("b :- a.").append("\n");
+		bld.append("c :- b.").append("\n");
+		bld.append("d :- c.").append("\n");
+		Alpha system = new Alpha();
+		Program prog = system.readProgramString(bld.toString(), null);
+		ProgramAnalysis pa = new ProgramAnalysis(prog);
+		DependencyGraph dg = pa.getDependencyGraph();
+		Node a = new Node(Predicate.getInstance("a", 0));
+		Node b = new Node(Predicate.getInstance("b", 0));
+		Node c = new Node(Predicate.getInstance("c", 0));
+		Node d = new Node(Predicate.getInstance("d", 0));
+
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(d, a, dg));
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(c, a, dg));
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(b, a, dg));
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(a, a, dg));
+
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(d, b, dg));
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(c, b, dg));
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(b, b, dg));
+
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(d, c, dg));
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(c, c, dg));
+
+		Assert.assertEquals(false, DependencyGraphUtils.isReachableFrom(a, d, dg));
+		Assert.assertEquals(false, DependencyGraphUtils.isReachableFrom(a, c, dg));
+		Assert.assertEquals(false, DependencyGraphUtils.isReachableFrom(a, b, dg));
+	}
+
+	@Test
+	public void reachabilityWithCyclesTest() {
+		StringBuilder bld = new StringBuilder();
+		bld.append("b :- a, f1.").append("\n");
+		bld.append("c :- b.").append("\n");
+		bld.append("d :- c.").append("\n");
+		bld.append("a :- d.").append("\n");
+		bld.append("x :- d, f1.");
+		Alpha system = new Alpha();
+		Program prog = system.readProgramString(bld.toString(), null);
+		ProgramAnalysis pa = new ProgramAnalysis(prog);
+		DependencyGraph dg = pa.getDependencyGraph();
+		Node a = new Node(Predicate.getInstance("a", 0));
+		Node b = new Node(Predicate.getInstance("b", 0));
+		Node c = new Node(Predicate.getInstance("c", 0));
+		Node d = new Node(Predicate.getInstance("d", 0));
+		Node f1 = new Node(Predicate.getInstance("f1", 0));
+		Node x = new Node(Predicate.getInstance("x", 0));
+		Node notInGraph = new Node(Predicate.getInstance("notInGraph", 0));
+
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(d, a, dg));
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(c, a, dg));
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(b, a, dg));
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(a, a, dg));
+
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(d, b, dg));
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(c, b, dg));
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(b, b, dg));
+
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(d, c, dg));
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(c, c, dg));
+
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(a, d, dg));
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(a, c, dg));
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(a, b, dg));
+
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(x, f1, dg));
+		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(c, f1, dg));
+
+		Assert.assertEquals(false, DependencyGraphUtils.isReachableFrom(notInGraph, a, dg));
+	}
+
+	@Test
+	public void stronglyConnectedComponentSimpleTest() {
+		StringBuilder bld = new StringBuilder();
+		bld.append("b :- a.").append("\n");
+		bld.append("a :- b.").append("\n");
+		Alpha system = new Alpha();
+		Program prog = system.readProgramString(bld.toString(), null);
+		ProgramAnalysis pa = new ProgramAnalysis(prog);
+		DependencyGraph dg = pa.getDependencyGraph();
+		Node a = new Node(Predicate.getInstance("a", 0));
+		Node b = new Node(Predicate.getInstance("b", 0));
+
+		List<Node> componentA = new ArrayList<>();
+		componentA.add(a);
+		Assert.assertEquals(true, DependencyGraphUtils.areStronglyConnected(componentA, dg));
+		Assert.assertEquals(false, DependencyGraphUtils.isStronglyConnectedComponent(componentA, dg));
+
+		List<Node> componentB = new ArrayList<>();
+		componentB.add(b);
+		Assert.assertEquals(true, DependencyGraphUtils.areStronglyConnected(componentB, dg));
+		Assert.assertEquals(false, DependencyGraphUtils.isStronglyConnectedComponent(componentB, dg));
+
+		List<Node> componentAll = new ArrayList<>();
+		componentAll.add(a);
+		componentAll.add(b);
+		Assert.assertEquals(true, DependencyGraphUtils.areStronglyConnected(componentAll, dg));
+		Assert.assertEquals(true, DependencyGraphUtils.isStronglyConnectedComponent(componentAll, dg));
 	}
 
 }

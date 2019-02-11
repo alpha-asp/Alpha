@@ -76,6 +76,10 @@ public class Node {
 	public Node(Predicate predicate, String label) {
 		this(predicate, label, false);
 	}
+	
+	public Node(Predicate predicate) {
+		this(predicate, predicate.toString());
+	}
 
 	/**
 	 * Copy-constructor - constructs a new node as a deep-copy of the passed node

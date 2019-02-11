@@ -9,19 +9,13 @@ public class Edge {
 		TREE, BACK, FORWARD, CROSS;
 	}
 
-	public class Info {
-		private EdgeType type;
-	}
-
 	private final Node target;
 	private final boolean sign;
 	private final String label;
 
 	/**
-	 * Creates a new edge of a dependency graph. Read as "target depends on source"
-	 * Sign indicates if the dependency is positive or negative (target node depends
-	 * on default negated atom). NOTE: Working assumption is to treat strong
-	 * negation as a positive dependency
+	 * Creates a new edge of a dependency graph. Read as "target depends on source" Sign indicates if the dependency is positive or negative (target node
+	 * depends on default negated atom). NOTE: Working assumption is to treat strong negation as a positive dependency
 	 * 
 	 * @param target
 	 * @param sign
