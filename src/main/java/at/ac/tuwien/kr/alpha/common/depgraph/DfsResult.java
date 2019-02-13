@@ -1,18 +1,19 @@
 package at.ac.tuwien.kr.alpha.common.depgraph;
 
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 
 public class DfsResult {
 
-	private List<Node> finishedNodes;
+	private Deque<Node> finishedNodes;
 	private Map<Node, List<Node>> depthFirstForest;
 
-	public List<Node> getFinishedNodes() {
+	public Deque<Node> getFinishedNodes() {
 		return this.finishedNodes;
 	}
 
-	public void setFinishedNodes(List<Node> finishedNodes) {
+	public void setFinishedNodes(Deque<Node> finishedNodes) {
 		this.finishedNodes = finishedNodes;
 	}
 

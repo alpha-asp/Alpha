@@ -1,8 +1,7 @@
 package at.ac.tuwien.kr.alpha.common.depgraph;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,8 +18,6 @@ import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 public class DependencyGraph {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DependencyGraph.class);
-
-	private static final Comparator<Node> NODE_COMP_DESC = (n1, n2) -> n2.getNodeInfo().getDfsFinishTime() - n1.getNodeInfo().getDfsFinishTime();
 
 	private static final String CONSTRAINT_PREDICATE_FORMAT = "[constr_%d]";
 
@@ -141,15 +138,12 @@ public class DependencyGraph {
 	}
 
 	// TODO maybe move this to DependencyGraphUtils
+	// SCC algorithm as described in "Introduction to Algortihms" (Kosajaru-Algorithm)
 	private void findStronglyConnectedComponents() {
-		DfsResult intermediateResult = DependencyGraphUtils.performDfs(this.nodes.keySet(), this.nodes);
+		DfsResult intermediateResult = DependencyGraphUtils.performDfs(this.nodes.keySet().iterator(), this.nodes);
 		this.buildTransposedStructure();
-		// TODO use radix sort here, otherwise we lose performance
-		// SCC is supposed to be O(n) w. n = V + E, need a linear sorting alg.,
-		// otherwise we degenerate to O(n*log(n))
-		List<Node> finishedNodes = intermediateResult.getFinishedNodes();
-		Collections.sort(finishedNodes, DependencyGraph.NODE_COMP_DESC);
-		DfsResult finalResult = DependencyGraphUtils.performDfs(finishedNodes, this.transposedNodes);
+		Deque<Node> finishedNodes = intermediateResult.getFinishedNodes();
+		DfsResult finalResult = DependencyGraphUtils.performDfs(finishedNodes.descendingIterator(), this.transposedNodes);
 		int componentCnt = 0;
 		Map<Integer, List<Node>> componentMap = new HashMap<>();
 		List<Node> tmpComponentMembers;

@@ -20,15 +20,11 @@ public class DependencyGraphWriter {
 	private static final String DEFAULT_GRAPH_HEADING = "digraph dependencyGraph";
 
 	private static final String DEFAULT_NODE_FORMAT = "n%d [label = \"%s\"]\n";
-	private static final String DFS_ANNOTATED_NODE_FORMAT = "n%d[label = \"%s\n[dfs.pre=%s,dfs.td=%d,dfs.tf=%d]\"]\n";
+	private static final String SCC_ANNOTATED_NODE_FORMAT = "n%d[label = \"%s\n[dfs.pre=%s,dfs.td=%d,dfs.tf=%d]\"]\n";
 	private static final String DEFAULT_EDGE_FORMAT = "n%d -> n%d [xlabel=\"%s\" labeldistance=0.1]\n";
 
 	public void writeAsDotfile(DependencyGraph graph, String path, boolean includeSccMetadata) throws IOException {
 		this.writeAsDot(graph, new FileOutputStream(path), includeSccMetadata);
-		if (includeSccMetadata) {
-			// FIXME not clean, but currently only used from unit tests
-			this.writeAsDot(graph.getTransposedNodes(), new FileOutputStream(path + ".transpose"), includeSccMetadata);
-		}
 	}
 
 	public void writeAsDot(DependencyGraph graph, OutputStream out, boolean includeSccMetadata) throws IOException {
@@ -36,7 +32,7 @@ public class DependencyGraphWriter {
 	}
 
 	public void writeAsDot(Map<Node, List<Edge>> graph, OutputStream out, boolean includeSccMetadata) throws IOException {
-		BiFunction<Node, Integer, String> nodeFormatter = includeSccMetadata ? this::buildDfsAnnotatedNodeString : this::buildNodeString;
+		BiFunction<Node, Integer, String> nodeFormatter = includeSccMetadata ? this::buildSccAnnotatedNodeString : this::buildNodeString;
 		this.writeAsDot(graph, out, nodeFormatter);
 	}
 
@@ -84,10 +80,10 @@ public class DependencyGraphWriter {
 		return String.format(DependencyGraphWriter.DEFAULT_NODE_FORMAT, nodeNum, n.getLabel());
 	}
 
-	private String buildDfsAnnotatedNodeString(Node n, int nodeNum) {
+	private String buildSccAnnotatedNodeString(Node n, int nodeNum) {
 		NodeInfo info = n.getNodeInfo();
 		Node dfsPre = info.getDfsPredecessor();
-		return String.format(DependencyGraphWriter.DFS_ANNOTATED_NODE_FORMAT, nodeNum, n.getLabel(), dfsPre != null ? dfsPre.getLabel() : "NA",
+		return String.format(DependencyGraphWriter.SCC_ANNOTATED_NODE_FORMAT, nodeNum, n.getLabel(), dfsPre != null ? dfsPre.getLabel() : "NA",
 				info.getDfsDiscoveryTime(), info.getDfsFinishTime());
 	}
 
