@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.Alpha;
@@ -76,8 +77,8 @@ public class DependencyGraphTest {
 			Assert.assertEquals(refNode, dg.getNodesByPredicate().get(refNode.getPredicate()));
 			Assert.assertEquals(true, refNode == dg.getNodesByPredicate().get(refNode.getPredicate()));
 		}
-		for(Entry<Integer, List<Node>> componentEntry : dg.getStronglyConnectedComponents().entrySet()) {
-			for(Node refNode : componentEntry.getValue()) {
+		for (Entry<Integer, List<Node>> componentEntry : dg.getStronglyConnectedComponents().entrySet()) {
+			for (Node refNode : componentEntry.getValue()) {
 				Assert.assertEquals(refNode, dg.getNodesByPredicate().get(refNode.getPredicate()));
 				Assert.assertEquals(true, refNode == dg.getNodesByPredicate().get(refNode.getPredicate()));
 			}
