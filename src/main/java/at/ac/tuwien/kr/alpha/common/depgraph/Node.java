@@ -3,15 +3,12 @@ package at.ac.tuwien.kr.alpha.common.depgraph;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 
 /**
- * A node in a dependency graph. One node references exactly one predicate. This
- * means that all rule heads deriving the same predicate will be condensed into
- * the same graph node. In some cases this results in more "conservative"
- * results in stratification analysis, where some rules will not be evaluated
- * up-front, although that would be possible.
+ * A node in a dependency graph. One node references exactly one predicate. This means that all rule heads deriving the same predicate will be condensed into
+ * the same graph node. In some cases this results in more "conservative" results in stratification analysis, where some rules will not be evaluated up-front,
+ * although that would be possible.
  * 
- * Note that constraints are represented by one dummy predicate (named
- * "constr_{num}"). Each constraint node has a negative edge to itself to
- * express the notation of a constraint ":- a, b." as "x :- a, b, not x.".
+ * Note that constraints are represented by one dummy predicate (named "constr_{num}"). Each constraint node has a negative edge to itself to express the
+ * notation of a constraint ":- a, b." as "x :- a, b, not x.".
  *
  */
 public class Node {
@@ -21,6 +18,7 @@ public class Node {
 		private Node dfsPredecessor;
 		private int dfsDiscoveryTime;
 		private int dfsFinishTime;
+		private int componentId;
 
 		public NodeInfo() {
 
@@ -55,6 +53,14 @@ public class Node {
 			this.dfsPredecessor = dfsPredecessor;
 		}
 
+		public int getComponentId() {
+			return this.componentId;
+		}
+
+		public void setComponentId(int componentId) {
+			this.componentId = componentId;
+		}
+
 	}
 
 	private final Predicate predicate;
@@ -76,7 +82,7 @@ public class Node {
 	public Node(Predicate predicate, String label) {
 		this(predicate, label, false);
 	}
-	
+
 	public Node(Predicate predicate) {
 		this(predicate, predicate.toString());
 	}

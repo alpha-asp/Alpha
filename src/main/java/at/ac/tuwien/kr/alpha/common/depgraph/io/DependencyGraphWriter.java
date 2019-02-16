@@ -13,14 +13,13 @@ import java.util.function.BiFunction;
 import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
 import at.ac.tuwien.kr.alpha.common.depgraph.Edge;
 import at.ac.tuwien.kr.alpha.common.depgraph.Node;
-import at.ac.tuwien.kr.alpha.common.depgraph.Node.NodeInfo;
 
 public class DependencyGraphWriter {
 
 	private static final String DEFAULT_GRAPH_HEADING = "digraph dependencyGraph";
 
 	private static final String DEFAULT_NODE_FORMAT = "n%d [label = \"%s\"]\n";
-	private static final String SCC_ANNOTATED_NODE_FORMAT = "n%d[label = \"%s\n[dfs.pre=%s,dfs.td=%d,dfs.tf=%d]\"]\n";
+	private static final String SCC_ANNOTATED_NODE_FORMAT = "n%d[label = \"%s\n[componentId=%d]\"]\n";
 	private static final String DEFAULT_EDGE_FORMAT = "n%d -> n%d [xlabel=\"%s\" labeldistance=0.1]\n";
 
 	public void writeAsDotfile(DependencyGraph graph, String path, boolean includeSccMetadata) throws IOException {
@@ -81,10 +80,7 @@ public class DependencyGraphWriter {
 	}
 
 	private String buildSccAnnotatedNodeString(Node n, int nodeNum) {
-		NodeInfo info = n.getNodeInfo();
-		Node dfsPre = info.getDfsPredecessor();
-		return String.format(DependencyGraphWriter.SCC_ANNOTATED_NODE_FORMAT, nodeNum, n.getLabel(), dfsPre != null ? dfsPre.getLabel() : "NA",
-				info.getDfsDiscoveryTime(), info.getDfsFinishTime());
+		return String.format(DependencyGraphWriter.SCC_ANNOTATED_NODE_FORMAT, nodeNum, n.getLabel(), n.getNodeInfo().getComponentId());
 	}
 
 }

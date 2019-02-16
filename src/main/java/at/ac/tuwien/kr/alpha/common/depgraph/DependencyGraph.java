@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.depgraph.Node.NodeInfo;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 
 public class DependencyGraph {
@@ -22,10 +21,12 @@ public class DependencyGraph {
 	private static final String CONSTRAINT_PREDICATE_FORMAT = "[constr_%d]";
 
 	/**
-	 * Maps Rule IDs (toplevel key) to outgoing edges of that node NOTE: Doing the value as List<Edge> rather than Map<Integer,Boolean> as one node may have
-	 * positive and negative edges to another.
+	 * Maps nodes to outgoing edges of that node NOTE: Doing the value as List<Edge> rather than Map<Integer,Boolean> as one node may have positive and negative
+	 * edges to another.
 	 */
 	private Map<Node, List<Edge>> nodes = new HashMap<>();
+
+	private Map<Predicate, Node> nodesByPredicate = new HashMap<>();
 
 	/**
 	 * The transposed graph structure, i.e. the same set of nodes, but all edges reversed - needed for analysis of strongly connected components.
@@ -62,24 +63,33 @@ public class DependencyGraph {
 		return retVal;
 	}
 
+	public Node getNodeForPredicate(Predicate p) {
+		return this.nodesByPredicate.get(p);
+	}
+
 	private Node handleRuleHead(NonGroundRule rule) {
 		LOGGER.trace("Processing head of rule: {}", rule);
 		Node retVal;
+		Predicate pred;
 		if (rule.isConstraint()) {
-			Predicate p = this.generateConstraintDummyPredicate();
-			retVal = new Node(p, p.toString(), true);
+			pred = this.generateConstraintDummyPredicate();
+			retVal = new Node(pred, pred.toString(), true);
 			List<Edge> dependencies = new ArrayList<>();
 			dependencies.add(new Edge(retVal, false, "-"));
 			if (this.nodes.containsKey(retVal)) {
-				throw new IllegalStateException("Dependency graph already contains node for constraint " + p.toString() + "!");
+				throw new IllegalStateException("Dependency graph already contains node for constraint " + pred.toString() + "!");
 			}
 			this.nodes.put(retVal, dependencies);
+			this.nodesByPredicate.put(pred, retVal);
 		} else {
 			Atom head = rule.getHeadAtom();
-			retVal = new Node(head.getPredicate(), head.getPredicate().toString());
-			if (!this.nodes.containsKey(retVal)) {
-				LOGGER.trace("Creating new node for predicate {}", retVal.getPredicate());
+			pred = head.getPredicate();
+			retVal = new Node(pred, pred.toString());
+			if (!this.nodesByPredicate.containsKey(pred)) {
 				this.nodes.put(retVal, new ArrayList<>());
+				this.nodesByPredicate.put(pred, retVal);
+			} else {
+				retVal = this.getNodeForPredicate(pred);
 			}
 		}
 		return retVal;
@@ -88,13 +98,17 @@ public class DependencyGraph {
 	private void handleRuleBodyLiteral(Node headNode, Literal lit) {
 		List<Edge> dependants;
 		Edge tmpEdge;
-		Node bodyNode = new Node(lit.getPredicate(), lit.getPredicate().toString());
-		if (!this.nodes.containsKey(bodyNode)) {
-			LOGGER.trace("Creating new node for predicate {}", bodyNode.getPredicate());
+		Node bodyNode;
+		Predicate p = lit.getPredicate();
+		if (!this.nodesByPredicate.containsKey(p)) {
+			LOGGER.trace("Creating new node for predicate {}", p);
 			dependants = new ArrayList<>();
+			bodyNode = new Node(p);
+			this.nodesByPredicate.put(p, bodyNode);
 			this.nodes.put(bodyNode, dependants);
 		} else {
-			LOGGER.trace("Node for predicate {} already exists", bodyNode.getPredicate());
+			LOGGER.trace("Node for predicate {} already exists", p);
+			bodyNode = this.getNodeForPredicate(p);
 			dependants = this.nodes.get(bodyNode);
 		}
 		tmpEdge = new Edge(headNode, !lit.isNegated(), lit.isNegated() ? "-" : "+");
@@ -102,6 +116,7 @@ public class DependencyGraph {
 			LOGGER.trace("Adding dependency: {} -> {} ({})", bodyNode.getPredicate(), headNode.getPredicate(), tmpEdge.getSign() ? "+" : "-");
 			dependants.add(tmpEdge);
 		}
+		this.nodesByPredicate.put(lit.getPredicate(), bodyNode);
 	}
 
 	/**
@@ -109,22 +124,17 @@ public class DependencyGraph {
 	 */
 	private void buildTransposedStructure() {
 		Map<Node, List<Edge>> transposed = new HashMap<>();
-		Node tmpNodeCopy;
 		Node srcNode;
 		Node targetNode;
 		for (Map.Entry<Node, List<Edge>> entry : this.nodes.entrySet()) {
 			srcNode = entry.getKey();
 			if (!transposed.containsKey(srcNode)) {
-				// we don't wanna copy node info here, successive DFS runs shouldn't get messed up
-				tmpNodeCopy = new Node(srcNode.getPredicate(), srcNode.getLabel(), srcNode.isConstraint(), new NodeInfo());
-				transposed.put(tmpNodeCopy, new ArrayList<>());
+				transposed.put(srcNode, new ArrayList<>());
 			}
 			for (Edge e : entry.getValue()) {
 				targetNode = e.getTarget();
 				if (!transposed.containsKey(e.getTarget())) {
-					// we don't wanna copy node info here, successive DFS runs shouldn't get messed up
-					tmpNodeCopy = new Node(targetNode.getPredicate(), targetNode.getLabel(), targetNode.isConstraint(), new NodeInfo());
-					transposed.put(new Node(tmpNodeCopy), new ArrayList<>());
+					transposed.put(targetNode, new ArrayList<>());
 				}
 				transposed.get(targetNode).add(new Edge(entry.getKey(), e.getSign(), e.getLabel()));
 			}
@@ -138,7 +148,7 @@ public class DependencyGraph {
 	}
 
 	// TODO maybe move this to DependencyGraphUtils
-	// SCC algorithm as described in "Introduction to Algortihms" (Kosajaru-Algorithm)
+	// SCC algorithm as described in "Introduction to Algorithms" (Kosajaru-Algorithm)
 	private void findStronglyConnectedComponents() {
 		DfsResult intermediateResult = DependencyGraphUtils.performDfs(this.nodes.keySet().iterator(), this.nodes);
 		this.buildTransposedStructure();
@@ -149,21 +159,22 @@ public class DependencyGraph {
 		List<Node> tmpComponentMembers;
 		for (Node componentRoot : finalResult.getDepthFirstForest().get(null)) {
 			tmpComponentMembers = new ArrayList<>();
-			this.addComponentMembers(componentRoot, finalResult.getDepthFirstForest(), tmpComponentMembers);
+			this.addComponentMembers(componentRoot, finalResult.getDepthFirstForest(), tmpComponentMembers, componentCnt);
 			componentMap.put(componentCnt, tmpComponentMembers);
 			componentCnt++;
 		}
 		this.stronglyConnectedComponents = componentMap;
 	}
 
-	private void addComponentMembers(Node depthFirstTreeNode, Map<Node, List<Node>> depthFirstForest, List<Node> componentMembers) {
+	private void addComponentMembers(Node depthFirstTreeNode, Map<Node, List<Node>> depthFirstForest, List<Node> componentMembers, int componentId) {
+		depthFirstTreeNode.getNodeInfo().setComponentId(componentId);
 		componentMembers.add(depthFirstTreeNode);
 		List<Node> children;
 		if ((children = depthFirstForest.get(depthFirstTreeNode)) == null) {
 			return;
 		}
 		for (Node n : children) {
-			this.addComponentMembers(n, depthFirstForest, componentMembers);
+			this.addComponentMembers(n, depthFirstForest, componentMembers, componentId);
 		}
 	}
 
@@ -181,6 +192,10 @@ public class DependencyGraph {
 
 	public Map<Integer, List<Node>> getStronglyConnectedComponents() {
 		return this.stronglyConnectedComponents;
+	}
+
+	public Map<Predicate, Node> getNodesByPredicate() {
+		return this.nodesByPredicate;
 	}
 
 }
