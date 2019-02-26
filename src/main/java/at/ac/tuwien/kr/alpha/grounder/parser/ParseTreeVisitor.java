@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -46,7 +46,7 @@ import java.util.*;
 import static java.util.Collections.emptyList;
 
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  */
 public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	private final Map<String, PredicateInterpretation> externals;
@@ -585,6 +585,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		BasicAtom head = visitClassical_literal(ctx.classical_literal());
 		temporarilyAllowClassicalNegation = false; // currently, classical negation is only allowed in the head of heuristic directives
 		List<Literal> body = visitBody(ctx.body());
+		if (body.isEmpty()) {
+			throw notSupported(ctx);
+		}
 		WeightAtLevel annotation = visitWeight_annotation(ctx.weight_annotation());
 		inputProgram.getInlineDirectives().addDirective(DIRECTIVE.heuristic, new HeuristicDirective(head, body, annotation, positive));
 		return null;

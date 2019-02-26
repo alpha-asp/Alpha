@@ -34,6 +34,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -66,6 +67,17 @@ public class DomainSpecificHeuristicsTest {
 	}
 	
 	@Test
+	@Ignore("Empty heuristic conditions are not yet supported")
+	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_SameLevel_EmptyCondition() {
+		Program program = parser.parse(
+				"a :- not b." + LS +
+				"b :- not a." + LS +
+				"#heuristic a. [2@1]" + LS +
+				"#heuristic b. [1@1]");
+		solveAndAssertAnswerSets(program, "{ a }", "{ b }");
+	}
+	
+	@Test
 	public void testSimpleGroundHeuristicProgram_HeuristicDirective_TwoDirectivesForSameHead() {
 		Program program = parser.parse(
 				"a :- not b." + LS +
@@ -84,6 +96,17 @@ public class DomainSpecificHeuristicsTest {
 				"b(N) :- n(N), not a(N)." + LS +
 				"#heuristic a(N) : n(N), not b(N). [2@1]" + LS +
 				"#heuristic b(N) : n(N), not a(N). [1@1]");
+		solveAndAssertAnswerSets(program, "{ a(1), n(1) }", "{ b(1), n(1) }");
+	}
+	
+	@Test
+	public void testSimpleNonGroundHeuristicProgram_HeuristicDirective_AB_OnlyFactsInCondition() {
+		Program program = parser.parse(
+				"n(1)." + LS +
+				"a(N) :- n(N), not b(N)." + LS +
+				"b(N) :- n(N), not a(N)." + LS +
+				"#heuristic a(N) : n(N). [2@1]" + LS +
+				"#heuristic b(N) : n(N). [1@1]");
 		solveAndAssertAnswerSets(program, "{ a(1), n(1) }", "{ b(1), n(1) }");
 	}
 	

@@ -266,6 +266,16 @@ public class ParserTest {
 		parser.parse("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
 				+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T), -holds(F,Tp1), Tp1=T+1, LTp1mT=LT+1-T. [LTp1mT@1]");
 	}
+	
+	/**
+	 * Empty heuristic conditions are not yet supported.
+	 */
+	@Test(expected = UnsupportedOperationException.class)
+	public void testEmptyCondition() {
+		parser.parse("a(1)."
+				+ "{ b(N) } :- a(N)."
+				+ "#heuristic b(1). [1@2]");
+		}
 
 	@Test(expected = RuntimeException.class)
 	@Ignore("Currently, Rule#isSafe does nothing")
