@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -54,7 +54,7 @@ public class AtomStoreImpl implements AtomStore {
 	@Override
 	public int putIfAbsent(Atom groundAtom) {
 		if (!groundAtom.isGround()) {
-			throw new IllegalArgumentException("atom must be ground");
+			throw new IllegalArgumentException("Atom must be ground: " + groundAtom);
 		}
 
 		Integer id = predicateInstancesToAtomIds.get(groundAtom);

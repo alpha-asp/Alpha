@@ -26,16 +26,18 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
+import java.util.*;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * Tests {@link NaiveGrounder}
@@ -48,6 +50,77 @@ public class NaiveGrounderTest {
 	@Before
 	public void resetIdGenerator() {
 		ChoiceRecorder.ID_GENERATOR.resetGenerator();
+	}
+	
+	/**
+	 * Asserts that a ground rule whose positive body is not satisfied by the empty assignment
+	 * is grounded immediately.
+	 */
+	@Test
+	public void groundRuleAlreadyGround() {
+		Program program = PARSER.parse("a :- not b. "
+				+ "b :- not a. "
+				+ "c :- b.");
+		
+		AtomStore atomStore = new AtomStoreImpl();
+		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
+		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
+		int litCNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("c", 0))), false);
+		int litB = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))));
+		assertExistsNoGoodContaining(noGoods.values(), litCNeg);
+		assertExistsNoGoodContaining(noGoods.values(), litB);
+	}
+
+	/**
+	 * Asserts that a ground rule whose positive non-unary body is not satisfied by the empty assignment
+	 * is grounded immediately.
+	 */
+	@Test
+	public void groundRuleWithLongerBodyAlreadyGround() {
+		Program program = PARSER.parse("a :- not b. "
+				+ "b :- not a. "
+				+ "c :- b. "
+				+ "d :- b, c. ");
+		
+		AtomStore atomStore = new AtomStoreImpl();
+		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
+		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
+		int litANeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("a", 0))), false);
+		int litBNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))), false);
+		int litCNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("c", 0))), false);
+		int litDNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("d", 0))), false);
+		assertExistsNoGoodContaining(noGoods.values(), litANeg);
+		assertExistsNoGoodContaining(noGoods.values(), litBNeg);
+		assertExistsNoGoodContaining(noGoods.values(), litCNeg);
+		assertExistsNoGoodContaining(noGoods.values(), litDNeg);
+	}
+	
+	/**
+	 * Asserts that a ground constraint whose positive body is not satisfied by the empty assignment
+	 * is grounded immediately.
+	 */
+	@Test
+	public void groundConstraintAlreadyGround() {
+		Program program = PARSER.parse("a :- not b. "
+				+ "b :- not a. "
+				+ ":- b.");
+		
+		AtomStore atomStore = new AtomStoreImpl();
+		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
+		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
+		int litB = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))));
+		assertTrue(noGoods.containsValue(NoGood.fromConstraint(Arrays.asList(litB), Collections.emptyList())));
+	}
+	
+	private void assertExistsNoGoodContaining(Collection<NoGood> noGoods, int literal) {
+		for (NoGood noGood : noGoods) {
+			for (int literalInNoGood : noGood) {
+				if (literalInNoGood == literal) {
+					return;
+				}
+			}
+		}
+		fail("No NoGood exists that contains literal " + literal);
 	}
 
 	@Test

@@ -59,7 +59,7 @@ public class BerkMinTest {
 	@Before
 	public void setUp() {
 		AtomStore atomStore = new AtomStoreImpl();
-		AtomStoreTest.fillAtomStore(atomStore, fromOldLiterals(2));
+		AtomStoreTest.fillAtomStore(atomStore, 2);
 		WritableAssignment assignment = new TrailAssignment(atomStore);
 		assignment.growForMaxAtomId();
 		this.berkmin = new BerkMin(
