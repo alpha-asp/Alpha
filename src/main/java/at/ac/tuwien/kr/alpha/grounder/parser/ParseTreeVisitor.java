@@ -53,8 +53,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	private final boolean acceptVariables;
 
 	private Program inputProgram;
-	private boolean isCurrentLiteralNegated;
-	private boolean currentlyInHeuristicDirective;
+	private boolean temporarilyAllowClassicalNegation;
 	private InlineDirectives inlineDirectives;
 
 	public ParseTreeVisitor(Map<String, PredicateInterpretation> externals) {
@@ -485,7 +484,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public BasicAtom visitClassical_literal(ASPCore2Parser.Classical_literalContext ctx) {
 		// classical_literal : MINUS? ID (PAREN_OPEN terms PAREN_CLOSE)?;
-		if (ctx.MINUS() != null && !currentlyInHeuristicDirective) {
+		if (ctx.MINUS() != null && !temporarilyAllowClassicalNegation) {
 			throw notSupported(ctx);
 		}
 
@@ -581,10 +580,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	
 	public Object visitDirective_heuristic(Directive_heuristicContext ctx) {
 		// SHARP 'heuristic' classical_literal (COLON body)? DOT weight_annotation?
-		currentlyInHeuristicDirective = true;
 		boolean positive = ctx.classical_literal().MINUS() == null;
-		inputProgram.getInlineDirectives().addDirective(DIRECTIVE.heuristic, new HeuristicDirective(visitClassical_literal(ctx.classical_literal()), visitBody(ctx.body()), visitWeight_annotation(ctx.weight_annotation()), positive));
-		currentlyInHeuristicDirective = false;
+		temporarilyAllowClassicalNegation = true;
+		BasicAtom head = visitClassical_literal(ctx.classical_literal());
+		temporarilyAllowClassicalNegation = false; // currently, classical negation is only allowed in the head of heuristic directives
+		List<Literal> body = visitBody(ctx.body());
+		WeightAtLevel annotation = visitWeight_annotation(ctx.weight_annotation());
+		inputProgram.getInlineDirectives().addDirective(DIRECTIVE.heuristic, new HeuristicDirective(head, body, annotation, positive));
 		return null;
 	}
 

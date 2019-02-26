@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -52,7 +52,7 @@ import java.util.stream.Stream;
 import static org.junit.Assert.*;
 
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  */
 public class ParserTest {
 	private final ProgramParser parser = new ProgramParser();
@@ -256,6 +256,15 @@ public class ParserTest {
 		WeightAtLevel weightAtLevel = directive.getWeightAtLevel();
 		assertEquals("LTp1mT", weightAtLevel.getWeight().toString());
 		assertEquals("1", weightAtLevel.getLevel().toString());
+	}
+
+	/**
+	 * Classical negation in heuristic conditions is not yet supported.
+	 */
+	@Test(expected = UnsupportedOperationException.class)
+	public void parseProgramWithClassicalNegationInHeuristicCondition() {
+		parser.parse("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
+				+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T), -holds(F,Tp1), Tp1=T+1, LTp1mT=LT+1-T. [LTp1mT@1]");
 	}
 
 	@Test(expected = RuntimeException.class)
