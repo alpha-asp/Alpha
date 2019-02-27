@@ -11,6 +11,7 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
  * notation of a constraint ":- a, b." as "x :- a, b, not x.".
  *
  */
+// TODO ensure immutability
 public class Node {
 
 	public static class NodeInfo {

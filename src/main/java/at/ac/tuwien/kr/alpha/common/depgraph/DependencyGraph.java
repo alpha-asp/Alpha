@@ -14,6 +14,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 
+// TODO ensure immutability
 public class DependencyGraph {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DependencyGraph.class);

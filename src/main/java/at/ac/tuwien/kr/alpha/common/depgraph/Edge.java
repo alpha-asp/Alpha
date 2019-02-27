@@ -3,11 +3,8 @@ package at.ac.tuwien.kr.alpha.common.depgraph;
 /**
  * An edge in a dependency graph.
  */
+// TODO ensure immutability
 public class Edge {
-
-	public enum EdgeType {
-		TREE, BACK, FORWARD, CROSS;
-	}
 
 	private final Node target;
 	private final boolean sign;
