@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,7 @@ package at.ac.tuwien.kr.alpha.common.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
 import at.ac.tuwien.kr.alpha.common.WeightAtLevel;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 
@@ -39,12 +40,14 @@ import java.util.Comparator;
 public class HeuristicDirectiveValues {
 
 	private int headAtomId;
+	private BasicAtom groundHeadAtom;
 	private int weight;
 	private int level;
 	private boolean sign;
 
-	public HeuristicDirectiveValues(int headAtomId, int weight, int level, boolean sign) {
+	public HeuristicDirectiveValues(int headAtomId, BasicAtom groundHeadAtom, int weight, int level, boolean sign) {
 		this.headAtomId = headAtomId;
+		this.groundHeadAtom = groundHeadAtom;
 		this.weight = weight;
 		this.level = level;
 		this.sign = sign;
@@ -52,6 +55,10 @@ public class HeuristicDirectiveValues {
 
 	public int getHeadAtomId() {
 		return headAtomId;
+	}
+	
+	public BasicAtom getGroundHeadAtom() {
+		return groundHeadAtom;
 	}
 
 	public int getWeight() {
@@ -99,7 +106,8 @@ public class HeuristicDirectiveValues {
 	@SuppressWarnings("unchecked")
 	public static HeuristicDirectiveValues fromHeuristicAtom(HeuristicAtom groundHeuristicAtom, int headAtomId) {
 		WeightAtLevel weightAtLevel = groundHeuristicAtom.getWeightAtLevel();
-		return new HeuristicDirectiveValues(headAtomId, ((ConstantTerm<Integer>)weightAtLevel.getWeight()).getObject(), ((ConstantTerm<Integer>)weightAtLevel.getLevel()).getObject(), ((ConstantTerm<Boolean>)groundHeuristicAtom.getSign()).getObject());
+		BasicAtom groundHeuristicHead = ((HeuristicAtom)groundHeuristicAtom).getHead().toAtom();
+		return new HeuristicDirectiveValues(headAtomId, groundHeuristicHead, ((ConstantTerm<Integer>)weightAtLevel.getWeight()).getObject(), ((ConstantTerm<Integer>)weightAtLevel.getLevel()).getObject(), ((ConstantTerm<Boolean>)groundHeuristicAtom.getSign()).getObject());
 	}
 	
 	public static class PriorityComparator implements Comparator<HeuristicDirectiveValues> {

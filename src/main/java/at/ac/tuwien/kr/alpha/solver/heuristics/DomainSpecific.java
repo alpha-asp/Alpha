@@ -1,16 +1,16 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 
  * 1) Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ *    list of conditions and the following disclaimer.
  * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -115,6 +115,7 @@ public class DomainSpecific implements BranchingHeuristic {
 					chosenLiteral = body.get();
 					break;
 				} else {
+					LOGGER.warn("Ground heuristic directive with head {} not applicable because no active rule can derive it.", currentValues.getGroundHeadAtom());
 					discardedBecauseNoBody++;
 				}
 			} else {
