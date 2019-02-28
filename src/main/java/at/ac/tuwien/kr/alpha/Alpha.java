@@ -72,7 +72,7 @@ public class Alpha {
 			retVal.accumulate(this.readProgramFiles(cfg.isLiterate(), cfg.getPredicateMethods(), cfg.getFiles()));
 		}
 		if (!cfg.getAspStrings().isEmpty()) {
-			retVal.accumulate(this.readProgramString(StringUtils.join(cfg.getAspStrings(), "\n"), cfg.getPredicateMethods()));
+			retVal.accumulate(this.readProgramString(StringUtils.join(cfg.getAspStrings(), System.lineSeparator()), cfg.getPredicateMethods()));
 		}
 		return retVal;
 	}
@@ -99,13 +99,11 @@ public class Alpha {
 	}
 
 	/**
-	 * Prepares a solver (and accompanying grounder) instance pre-loaded with the
-	 * given program. Use this if the solver is needed after reading answer sets
+	 * Prepares a solver (and accompanying grounder) instance pre-loaded with the given program. Use this if the solver is needed after reading answer sets
 	 * (e.g. for obtaining statistics)
 	 * 
 	 * @param program the program to solve
-	 * @return a solver (and accompanying grounder) instance pre-loaded with the
-	 *         given program
+	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
 	 */
 	public Solver prepareSolverFor(Program program) {
 		String grounderName = this.config.getGrounderName();

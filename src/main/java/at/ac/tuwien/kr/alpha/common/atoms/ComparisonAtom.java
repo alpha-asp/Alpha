@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Represents a builtin atom according to the standard. Copyright (c) 2017-2018, the Alpha Team.
+ * Represents a builtin atom according to the standard.
  */
 public class ComparisonAtom implements Atom, VariableNormalizableAtom {
 	private final Predicate predicate;
