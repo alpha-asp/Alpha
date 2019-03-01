@@ -27,21 +27,18 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import static at.ac.tuwien.kr.alpha.Main.main;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 
-import static at.ac.tuwien.kr.alpha.Main.getRequestedNumberOfAnswerSets;
-import static at.ac.tuwien.kr.alpha.Main.main;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public class MainTest {
@@ -49,20 +46,20 @@ public class MainTest {
 
 	@Parameters
 	public static Iterable<? extends String[][]> data() {
-		return Arrays.asList(new String[][][] {
-			{{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "20", "-str", INPUT}},
-			{{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "0", "-str", INPUT}},
-			{{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "1", "-str", INPUT}},
-			{{"-g", "naive", "-s", "default", "-r", "naive", "-e", "1119654162577372", "--numAS", "1", "-str", INPUT}}
-		});
+		return Arrays.asList(
+				new String[][][] {{{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-e", "1119654162577372", "-n", "20", "-str", INPUT }},
+						{{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "0", "-str", INPUT }},
+						{{"-DebugEnableInternalChecks", "-g", "naive", "-s", "default", "-n", "1", "-str", INPUT }},
+						{{"-g", "naive", "-s", "default", "-r", "naive", "-e", "1119654162577372", "--numAS", "1", "-str", INPUT }}});
 	}
 
 	@Parameter
 	public String[] argv;
 
 	/**
-	 * Temporarily redirects System.err and System.out while running the solver from the main entry point with the given parameters.
-	 * Warning: this test is fragile and may require adaptions if printing is changed anywhere in Alpha.
+	 * Temporarily redirects System.err and System.out while running the solver from
+	 * the main entry point with the given parameters. Warning: this test is fragile
+	 * and may require adaptions if printing is changed anywhere in Alpha.
 	 */
 	@Test
 	public void test() {
@@ -74,18 +71,11 @@ public class MainTest {
 		assertTrue(newOut.toString().contains("{ b, p(a) }"));
 	}
 
-	@Test
-	public void testGetRequestedNumberOfAnswerSets() {
-		main(argv);
-		assertEquals(expectedRequestedNumberOfAnswerSets(), getRequestedNumberOfAnswerSets());
-	}
+// Made obsolete by refactoring - now covered by CommandLineParserTest#numAnswerSets
+//	@Test
+//	public void testGetRequestedNumberOfAnswerSets() {
+//		main(argv);
+//		assertEquals(expectedRequestedNumberOfAnswerSets(), getRequestedNumberOfAnswerSets());
+//	}
 
-	private int expectedRequestedNumberOfAnswerSets() {
-		for (int i = 0; i < argv.length - 1; i++) {
-			if (StringUtils.equals(argv[i], "-n") || StringUtils.equals(argv[i], "--numAS")) {
-				return Integer.parseInt(argv[i + 1]);
-			}
-		}
-		return 0;
-	}
 }
