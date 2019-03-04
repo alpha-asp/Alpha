@@ -77,9 +77,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final boolean disableJustifications;
 	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
 
-	private Long timeFirstEntry = null;
-	private Long timeLastPerformanceLog = null;
-	int numberOfChoicesLastPerformanceLog = 0;
+	private Long timeFirstEntry;
+	private Long timeLastPerformanceLog;
+	int numberOfChoicesLastPerformanceLog;
 
 	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, Heuristic branchingHeuristic, boolean debugInternalChecks, boolean disableJustifications) {
 		super(atomStore, grounder);
