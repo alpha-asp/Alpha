@@ -50,11 +50,9 @@ public class PerformanceLog {
 		this.msBetweenOutputs = msBetweenOutputs;
 	}
 
-	public void initializeIfNotInitialized() {
-		if (timeFirstEntry == null) {
-			timeFirstEntry = System.currentTimeMillis();
-			timeLastPerformanceLog = timeFirstEntry;
-		}
+	public void initialize() {
+		timeFirstEntry = System.currentTimeMillis();
+		timeLastPerformanceLog = timeFirstEntry;
 	}
 
 	/**

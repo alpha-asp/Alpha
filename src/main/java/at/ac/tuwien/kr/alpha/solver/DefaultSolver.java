@@ -96,10 +96,10 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	@Override
 	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
 		boolean didChange = false;
-		performanceLog.initializeIfNotInitialized();
 
 		// Initially, get NoGoods from grounder.
 		if (initialize) {
+			performanceLog.initialize();
 			Map<Integer, NoGood> obtained = grounder.getNoGoods(assignment);
 			didChange = !obtained.isEmpty();
 			if (!ingest(obtained)) {
