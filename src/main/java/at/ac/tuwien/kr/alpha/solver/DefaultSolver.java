@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -58,7 +58,7 @@ import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.
 
 /**
  * The new default solver employed in Alpha.
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  */
 public class DefaultSolver extends AbstractSolver implements SolverMaintainingStatistics {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolver.class);
@@ -77,6 +77,10 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final boolean disableJustifications;
 	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
 
+	private Long timeFirstEntry = null;
+	private Long timeLastPerformanceLog = null;
+	int numberOfChoicesLastPerformanceLog = 0;
+
 	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, Heuristic branchingHeuristic, boolean debugInternalChecks, boolean disableJustifications) {
 		super(atomStore, grounder);
 
@@ -93,9 +97,10 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	@Override
 	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
 		boolean didChange = false;
-		long timeOnEntry = System.currentTimeMillis();
-		long timeLast = timeOnEntry;
-		int decisionsLast = 0;
+		if (timeFirstEntry == null) {
+			timeFirstEntry = System.currentTimeMillis();
+			timeLastPerformanceLog = timeFirstEntry;
+		}
 
 		// Initially, get NoGoods from grounder.
 		if (initialize) {
@@ -135,11 +140,11 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		while (true) {
 			long currentTime = System.currentTimeMillis();
 			int currentNumberOfChoices = getNumberOfChoices();
-			if (currentTime >= timeLast + 1000) {
-				LOGGER.info("Decisions in {}s: {}", (currentTime - timeLast) / 1000.0f, currentNumberOfChoices - decisionsLast);
-				timeLast = currentTime;
-				decisionsLast = currentNumberOfChoices;
-				float overallTime = (currentTime - timeOnEntry) / 1000.0f;
+			if (currentTime >= timeLastPerformanceLog + 1000) {
+				LOGGER.info("Decisions in {}s: {}", (currentTime - timeLastPerformanceLog) / 1000.0f, currentNumberOfChoices - numberOfChoicesLastPerformanceLog);
+				timeLastPerformanceLog = currentTime;
+				numberOfChoicesLastPerformanceLog = currentNumberOfChoices;
+				float overallTime = (currentTime - timeFirstEntry) / 1000.0f;
 				float decisionsPerSec = currentNumberOfChoices / overallTime;
 				LOGGER.info("Overall performance: {} decisions in {}s or {} decisions per sec. Overall replayed assignments: {}.", currentNumberOfChoices, overallTime, decisionsPerSec, ((TrailAssignment)assignment).replayCounter);
 			}
