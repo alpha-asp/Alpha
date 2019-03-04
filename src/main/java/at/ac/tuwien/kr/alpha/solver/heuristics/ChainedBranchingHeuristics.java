@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -25,8 +25,11 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -38,6 +41,8 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  * A "chained" list of branching heuristics in which the entry at position n+1 is used as a fallback if the entry at position n cannot make a decision. 
  */
 public class ChainedBranchingHeuristics implements BranchingHeuristic {
+	private static final Logger LOGGER = LoggerFactory.getLogger(ChainedBranchingHeuristics.class);
+	
 	
 	private List<BranchingHeuristic> chain = new LinkedList<>();
 	
@@ -67,17 +72,19 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 		for (BranchingHeuristic element : chain) {
 			int chosenAtom = element.chooseAtom();
 			if (chosenAtom != DEFAULT_CHOICE_ATOM) {
+				logChosenAtom(element, chosenAtom);
 				return chosenAtom;
 			}
 		}
 		return DEFAULT_CHOICE_ATOM;
 	}
-	
+
 	@Override
 	public int chooseAtom(Set<Integer> admissibleChoices) {
 		for (BranchingHeuristic element : chain) {
 			int chosenAtom = element.chooseAtom(admissibleChoices);
 			if (chosenAtom != DEFAULT_CHOICE_ATOM) {
+				logChosenAtom(element, chosenAtom);
 				return chosenAtom;
 			}
 		}
@@ -89,6 +96,7 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 		for (BranchingHeuristic element : chain) {
 			int chosenLiteral = element.chooseLiteral();
 			if (chosenLiteral != DEFAULT_CHOICE_LITERAL) {
+				logChosenLiteral(element, chosenLiteral);
 				return chosenLiteral;
 			}
 		}
@@ -100,6 +108,7 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 		for (BranchingHeuristic element : chain) {
 			int chosenLiteral = element.chooseLiteral(admissibleChoices);
 			if (chosenLiteral != DEFAULT_CHOICE_LITERAL) {
+				logChosenLiteral(element, chosenLiteral);
 				return chosenLiteral;
 			}
 		}
@@ -119,6 +128,18 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 			chain.add(element);
 		}
 		return chain;
+	}
+	
+	private void logChosenAtom(BranchingHeuristic heuristic, int chosenAtom) {
+		logChoice(heuristic, "atom", String.valueOf(chosenAtom));
+	}
+	
+	private void logChosenLiteral(BranchingHeuristic heuristic, int chosenLiteral) {
+		logChoice(heuristic, "literal", Literals.literalToString(chosenLiteral));
+	}
+	
+	private void logChoice(BranchingHeuristic heuristic, String type, String choice) {
+		LOGGER.debug("{} chose {} {}", heuristic, type, choice);
 	}
 
 }

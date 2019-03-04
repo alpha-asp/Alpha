@@ -144,6 +144,11 @@ public class DomainSpecific implements BranchingHeuristic {
 		}
 		return Optional.ofNullable(Literals.atomToLiteral(atom, values.getSign()));
 	}
+	
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName();
+	}
 
 	class ActiveHeuristicsToBodies {
 		private Set<Integer> bodiesForActiveHeuristics = new HashSet<>();

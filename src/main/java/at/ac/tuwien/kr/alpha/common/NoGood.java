@@ -219,8 +219,7 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 		sb.append("{ ");
 
 		for (int literal : literals) {
-			sb.append(isPositive(literal) ? "+" : "-");
-			sb.append(atomOf(literal));
+			sb.append(Literals.literalToString(literal));
 			sb.append(" ");
 		}
 
