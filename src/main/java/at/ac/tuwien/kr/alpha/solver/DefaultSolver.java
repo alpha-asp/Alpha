@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -55,7 +55,7 @@ import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.
 
 /**
  * The new default solver employed in Alpha.
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  */
 public class DefaultSolver extends AbstractSolver implements SolverMaintainingStatistics {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolver.class);
@@ -552,6 +552,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 					LOGGER.info(heuristicToDecisionCounter.getKey() + ": " + heuristicToDecisionCounter.getValue());
 				}
 			}
+			NoGoodCounter noGoodCounter = store.getNoGoodCounter();
+			LOGGER.info("Number of NoGoods by type: " + noGoodCounter.getStatsByType());
+			LOGGER.info("Number of NoGoods by cardinality: " + noGoodCounter.getStatsByCardinality());
 		}
 	}
 }

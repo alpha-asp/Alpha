@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -68,7 +68,8 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStorePrivilegingBinaryNoGo
 
 	private boolean checksEnabled;
 	private boolean didPropagate;
-	private boolean hasBinaryNoGoods;
+	
+	private final NoGoodCounter counter = new NoGoodCounter();
 
 	public NoGoodStoreAlphaRoaming(WritableAssignment assignment, boolean checksEnabled) {
 		this.assignment = assignment;
@@ -126,6 +127,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStorePrivilegingBinaryNoGo
 		}
 		this.maxAtomId = maxAtomId;
 	}
+	
+	@Override
+	public NoGoodCounter getNoGoodCounter() {
+		return counter;
+	}
 
 	private ArrayList<WatchedNoGood> watches(int literal) {
 		return watches[literal];
@@ -148,6 +154,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStorePrivilegingBinaryNoGo
 	@Override
 	public ConflictCause add(int id, NoGood noGood) {
 		LOGGER.trace("Adding {}", noGood);
+		counter.count(noGood);
 
 		if (noGood.isUnary()) {
 			return addUnary(noGood);
@@ -360,13 +367,12 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStorePrivilegingBinaryNoGo
 		if (conflictCause != null) {
 			return conflictCause;
 		}
-		hasBinaryNoGoods = true;
 		return binaryWatches[b].add(noGood);
 	}
 	
 	@Override
 	public boolean hasBinaryNoGoods() {
-		return hasBinaryNoGoods;
+		return counter.hasBinaryNoGoods();
 	}
 
 	private ConflictCause assignWeakComplement(final int literalIndex, final NoGoodInterface impliedBy, int decisionLevel) {
