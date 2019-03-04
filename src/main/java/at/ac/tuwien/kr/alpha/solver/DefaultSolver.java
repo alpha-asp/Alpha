@@ -77,9 +77,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final boolean disableJustifications;
 	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
 
-	private Long timeFirstEntry;
-	private Long timeLastPerformanceLog;
-	int numberOfChoicesLastPerformanceLog;
+	private final PerformanceLog performanceLog;
 
 	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, Heuristic branchingHeuristic, boolean debugInternalChecks, boolean disableJustifications) {
 		super(atomStore, grounder);
@@ -92,15 +90,13 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				BranchingHeuristicFactory.getInstance(branchingHeuristic, grounder, assignment, choiceManager, random),
 				new NaiveHeuristic(choiceManager));
 		this.disableJustifications = disableJustifications;
+		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000l);
 	}
 
 	@Override
 	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
 		boolean didChange = false;
-		if (timeFirstEntry == null) {
-			timeFirstEntry = System.currentTimeMillis();
-			timeLastPerformanceLog = timeFirstEntry;
-		}
+		performanceLog.initializeIfNotInitialized();
 
 		// Initially, get NoGoods from grounder.
 		if (initialize) {
@@ -138,16 +134,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
-			long currentTime = System.currentTimeMillis();
-			int currentNumberOfChoices = getNumberOfChoices();
-			if (currentTime >= timeLastPerformanceLog + 1000) {
-				LOGGER.info("Decisions in {}s: {}", (currentTime - timeLastPerformanceLog) / 1000.0f, currentNumberOfChoices - numberOfChoicesLastPerformanceLog);
-				timeLastPerformanceLog = currentTime;
-				numberOfChoicesLastPerformanceLog = currentNumberOfChoices;
-				float overallTime = (currentTime - timeFirstEntry) / 1000.0f;
-				float decisionsPerSec = currentNumberOfChoices / overallTime;
-				LOGGER.info("Overall performance: {} decisions in {}s or {} decisions per sec. Overall replayed assignments: {}.", currentNumberOfChoices, overallTime, decisionsPerSec, ((TrailAssignment)assignment).replayCounter);
-			}
+			performanceLog.infoIfTimeForOutput(LOGGER);
 			ConflictCause conflictCause = store.propagate();
 			didChange |= store.didPropagate();
 			LOGGER.trace("Assignment after propagation is: {}", assignment);
