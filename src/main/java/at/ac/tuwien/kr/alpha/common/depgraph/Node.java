@@ -110,6 +110,11 @@ public class Node {
 		return this.predicate.hashCode();
 	}
 
+	@Override
+	public String toString() {
+		return "Node{" + this.predicate.toString() + "}";
+	}
+
 	public String getLabel() {
 		return this.label;
 	}

@@ -85,6 +85,7 @@ public class ComponentGraph {
 		if (canStratify) {
 			strata.putIfAbsent(maxDepStratum, new ArrayList<>());
 			strata.get(maxDepStratum).add(comp);
+			comp.stratum = maxDepStratum;
 		}
 		if (canStratify || comp.isUnstratifyable()) {
 			// set up dependent compomponents for next step
@@ -113,7 +114,15 @@ public class ComponentGraph {
 		}
 	}
 
-	private class SCComponent {
+	public Map<Integer, SCComponent> getComponents() {
+		return this.components;
+	}
+
+	public List<SCComponent> getEntryPoints() {
+		return this.entryPoints;
+	}
+
+	public class SCComponent {
 		@SuppressWarnings("unused")
 		private int id;
 		private List<Node> nodes = new ArrayList<>();
@@ -157,14 +166,21 @@ public class ComponentGraph {
 
 		public Set<SCComponent> getDependents() {
 			Set<SCComponent> retVal = new HashSet<>();
-			for (Node n : this.inboundEdges.keySet()) {
-				retVal.add(ComponentGraph.this.components.get(n.getNodeInfo().getComponentId()));
+			for (List<Edge> edgeList : this.outboundEdges.values()) {
+				for (Edge e : edgeList) {
+					retVal.add(ComponentGraph.this.components.get(e.getTarget().getNodeInfo().getComponentId()));
+				}
 			}
 			return retVal;
 		}
 
 		public boolean isUnstratifyable() {
 			return this.unstratifyable;
+		}
+
+		@Override
+		public String toString() {
+			return "SCComponent{" + StringUtils.join(this.nodes, ",") + "}";
 		}
 	}
 

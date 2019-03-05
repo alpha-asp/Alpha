@@ -37,6 +37,11 @@ public class Edge {
 		return ("" + this.target.getPredicate().toString() + Boolean.toString(this.sign)).hashCode();
 	}
 
+	@Override
+	public String toString() {
+		return "(" + (this.sign ? "+" : "-") + ") ---> " + this.target.toString();
+	}
+	
 	public Node getTarget() {
 		return this.target;
 	}

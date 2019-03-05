@@ -51,7 +51,7 @@ public class DependencyGraphTest {
 	@Test
 	@Ignore("Not a real test, rather a playground for local testing while changing stuff")
 	public void dependencyGraphSmokeTest() throws IOException {
-		InputStream is = DependencyGraphTest.class.getResourceAsStream("/components-test.asp");
+		InputStream is = DependencyGraphTest.class.getResourceAsStream("/partial-eval/components-test.asp");
 		Program p = new ProgramParser().parse(CharStreams.fromStream(is));
 		ProgramAnalysis pa = new ProgramAnalysis(p);
 		DependencyGraph dg = DependencyGraph.buildDependencyGraph(pa.getNonGroundRules());
@@ -66,7 +66,7 @@ public class DependencyGraphTest {
 	 */
 	@Test
 	public void noNodesCopiedTest() throws IOException {
-		Program prog = new ProgramParser().parse(CharStreams.fromStream(DependencyGraphTest.class.getResourceAsStream("/components-test.asp")));
+		Program prog = new ProgramParser().parse(CharStreams.fromStream(DependencyGraphTest.class.getResourceAsStream("/partial-eval/components-test.asp")));
 		ProgramAnalysis pa = new ProgramAnalysis(prog);
 		DependencyGraph dg = pa.getDependencyGraph();
 		for (Node refNode : dg.getNodes().keySet()) {
@@ -242,7 +242,7 @@ public class DependencyGraphTest {
 
 	@Test
 	public void stronglyConnectedComponentsMultipleComponentsTest() throws IOException {
-		Program prog = new ProgramParser().parse(CharStreams.fromStream(DependencyGraphTest.class.getResourceAsStream("/components-test.asp")));
+		Program prog = new ProgramParser().parse(CharStreams.fromStream(DependencyGraphTest.class.getResourceAsStream("/partial-eval/components-test.asp")));
 		ProgramAnalysis pa = new ProgramAnalysis(prog);
 		DependencyGraph dg = pa.getDependencyGraph();
 
