@@ -90,7 +90,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				BranchingHeuristicFactory.getInstance(branchingHeuristic, grounder, assignment, choiceManager, random),
 				new NaiveHeuristic(choiceManager));
 		this.disableJustifications = disableJustifications;
-		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000l);
+		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
 	}
 
 	@Override
