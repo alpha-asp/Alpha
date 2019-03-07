@@ -49,29 +49,31 @@ public class ComponentGraph {
 	public Map<Integer, List<SCComponent>> calculateStratification() {
 		Map<Integer, List<SCComponent>> retVal = new HashMap<>();
 		LOGGER.debug("Initial call to stratify with entry points!");
-		this.stratify(this.entryPoints, 0, retVal);
+		this.stratify(this.entryPoints, retVal);
 		return retVal;
 	}
 
-	private void stratify(List<SCComponent> currComponents, int currStratum, Map<Integer, List<SCComponent>> strata) {
+	private void stratify(List<SCComponent> currComponents, Map<Integer, List<SCComponent>> strata) {
 		List<SCComponent> nextComps = new ArrayList<>();
 		LOGGER.debug("Starting stratify run - currComponents = {}", StringUtils.join(currComponents, ","));
 		for (SCComponent comp : currComponents) {
-			nextComps.addAll(this.stratifyComponent(comp, currStratum, strata));
+			nextComps.addAll(this.stratifyComponent(comp, strata));
 		}
 		if (!nextComps.isEmpty()) {
-			this.stratify(nextComps, currStratum, strata);
+			this.stratify(nextComps, strata);
 		} else {
 			LOGGER.debug("Stratification finished - no more components to work off!");
 		}
 	}
 
-	private Set<SCComponent> stratifyComponent(SCComponent comp, int currStratum, Map<Integer, List<SCComponent>> strata) {
+	private Set<SCComponent> stratifyComponent(SCComponent comp, Map<Integer, List<SCComponent>> strata) {
 		Set<SCComponent> retVal = new HashSet<>();
-		Set<SCComponent> dependencies = comp.getDependencies();
-		int maxDepStratum = currStratum;
+		Map<SCComponent, Boolean> dependencies = comp.getDependencies();
+		int maxDepStratum = 0;
 		boolean canStratify = true;
-		for (SCComponent dep : dependencies) {
+		SCComponent dep = null;
+		for (Entry<SCComponent, Boolean> depEntry : dependencies.entrySet()) {
+			dep = depEntry.getKey();
 			if (dep.stratum == -1) {
 				// NOT breaking out of loop here, need to make sure unstratifyability is propagated
 				canStratify = false;
@@ -80,6 +82,9 @@ public class ComponentGraph {
 				}
 			} else {
 				maxDepStratum = (dep.stratum > maxDepStratum) ? dep.stratum : maxDepStratum;
+				if (depEntry.getValue().equals(false)) {
+					maxDepStratum++;
+				}
 			}
 		}
 		if (canStratify) {
@@ -123,6 +128,7 @@ public class ComponentGraph {
 	}
 
 	public class SCComponent {
+		
 		@SuppressWarnings("unused")
 		private int id;
 		private List<Node> nodes = new ArrayList<>();
@@ -152,14 +158,27 @@ public class ComponentGraph {
 			this.inboundEdges.get(src).add(edge);
 		}
 
-		public boolean hasNegativeCycle() {
-			return this.hasNegativeCycle;
-		}
-
-		public Set<SCComponent> getDependencies() {
-			Set<SCComponent> retVal = new HashSet<>();
-			for (Node n : this.inboundEdges.keySet()) {
-				retVal.add(ComponentGraph.this.components.get(n.getNodeInfo().getComponentId()));
+		public Map<SCComponent, Boolean> getDependencies() {
+			Map<SCComponent, Boolean> retVal = new HashMap<>();
+			int depComponentId;
+			SCComponent dep;
+			boolean isPositiveDep = true;
+			for (Entry<Node, List<Edge>> entry : this.inboundEdges.entrySet()) {
+				depComponentId = entry.getKey().getNodeInfo().getComponentId();
+				dep = ComponentGraph.this.components.get(depComponentId);
+				isPositiveDep = true;
+				for (Edge e : entry.getValue()) {
+					if (!e.getSign()) {
+						isPositiveDep = false;
+					}
+				}
+				if (retVal.containsKey(dep)) {
+					if (!isPositiveDep) {
+						retVal.put(dep, false);
+					}
+				} else {
+					retVal.put(dep, isPositiveDep);
+				}
 			}
 			return retVal;
 		}
@@ -174,14 +193,27 @@ public class ComponentGraph {
 			return retVal;
 		}
 
-		public boolean isUnstratifyable() {
-			return this.unstratifyable;
-		}
-
 		@Override
 		public String toString() {
 			return "SCComponent{" + StringUtils.join(this.nodes, ",") + "}";
 		}
+
+		public boolean isUnstratifyable() {
+			return this.unstratifyable;
+		}
+
+		public boolean hasNegativeCycle() {
+			return this.hasNegativeCycle;
+		}
+
+		public List<Node> getNodes() {
+			return this.nodes;
+		}
+
+		public void setNodes(List<Node> nodes) {
+			this.nodes = nodes;
+		}
+
 	}
 
 }
