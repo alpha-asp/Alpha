@@ -3,11 +3,16 @@ package at.ac.tuwien.kr.alpha.common.depgraph;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -16,6 +21,8 @@ import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph.SCComponent;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 
 public class ComponentGraphTest {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(ComponentGraphTest.class);
 
 	private static void assertNodesMatchStratumNodes(List<SCComponent> stratum, Node... nodes) {
 		ComponentGraphTest.assertNodesMatchStratumNodes(stratum, Arrays.asList(nodes));
@@ -42,6 +49,14 @@ public class ComponentGraphTest {
 			}
 			Assert.assertTrue(n.toString() + " contained in stratum and not in node list, but should be!", isContained);
 		}
+	}
+
+	private static List<Node> extractNodesFromStratum(List<SCComponent> stratum) {
+		List<Node> retVal = new ArrayList<>();
+		for (SCComponent comp : stratum) {
+			retVal.addAll(comp.getNodes());
+		}
+		return retVal;
 	}
 
 	@Test
@@ -157,14 +172,94 @@ public class ComponentGraphTest {
 		Node e = dg.getNodeForPredicate(Predicate.getInstance("e", 0));
 		Node f = dg.getNodeForPredicate(Predicate.getInstance("f", 0));
 		Node h = dg.getNodeForPredicate(Predicate.getInstance("h", 0));
-		
+
 		Assert.assertEquals(2, strata.size());
-		
+
 		List<SCComponent> stratum0 = strata.get(0);
 		assertNodesMatchStratumNodes(stratum0, a, b, c, d, e);
-		
+
 		List<SCComponent> stratum1 = strata.get(1);
 		assertNodesMatchStratumNodes(stratum1, h, f);
+	}
+
+	@Test
+	public void stratifyAvoidDuplicatesTest() {
+		Alpha system = new Alpha();
+		StringBuilder bld = new StringBuilder();
+		bld.append("b :- a.");
+		bld.append("c :- b.");
+		bld.append("d :- c.");
+		bld.append("e :- d.");
+		bld.append("f :- not e.");
+		bld.append("g :- d, j, not f.");
+		bld.append("h :- not c.");
+		bld.append("i :- h, not j.");
+		bld.append("j :- h, not i.");
+		bld.append("k :- g, not l.");
+		bld.append("l :- g, not k.");
+		bld.append("m :- not k, not l.");
+		bld.append("n :- m, not i, not j.");
+		bld.append("p :- not m, not n.");
+		Program prog = system.readProgramString(bld.toString(), null);
+
+		ProgramAnalysis pa = new ProgramAnalysis(prog);
+		DependencyGraph dg = DependencyGraph.buildDependencyGraph(pa.getNonGroundRules());
+		ComponentGraph cg = ComponentGraph.fromDependencyGraph(dg);
+		Map<Integer, List<SCComponent>> strata = cg.calculateStratification();
+
+		Node a = dg.getNodeForPredicate(Predicate.getInstance("a", 0));
+		Node b = dg.getNodeForPredicate(Predicate.getInstance("b", 0));
+		Node c = dg.getNodeForPredicate(Predicate.getInstance("c", 0));
+		Node d = dg.getNodeForPredicate(Predicate.getInstance("d", 0));
+		Node e = dg.getNodeForPredicate(Predicate.getInstance("e", 0));
+		Node f = dg.getNodeForPredicate(Predicate.getInstance("f", 0));
+		Node h = dg.getNodeForPredicate(Predicate.getInstance("h", 0));
+
+		Assert.assertEquals(2, strata.size());
+
+		Set<Node> stratum0ExpectedNodes = new HashSet<>();
+		stratum0ExpectedNodes.add(a);
+		stratum0ExpectedNodes.add(b);
+		stratum0ExpectedNodes.add(c);
+		stratum0ExpectedNodes.add(d);
+		stratum0ExpectedNodes.add(e);
+		List<Node> stratum0ActualNodes = extractNodesFromStratum(strata.get(0));
+		Assert.assertEquals(stratum0ExpectedNodes.size(), stratum0ActualNodes.size());
+
+		Set<Node> stratum1ExpectedNodes = new HashSet<>();
+		stratum1ExpectedNodes.add(f);
+		stratum1ExpectedNodes.add(h);
+		List<Node> stratum1ActualNodes = extractNodesFromStratum(strata.get(1));
+		Assert.assertEquals(stratum1ExpectedNodes.size(), stratum1ActualNodes.size());
+	}
+
+	@Test
+	public void avoidDuplicatesTest1() {
+		Alpha system = new Alpha();
+		StringBuilder bld = new StringBuilder();
+		bld.append("b :- a.");
+		bld.append("c :- b.");
+		bld.append("c :- a.");
+		Program prog = system.readProgramString(bld.toString(), null);
+
+		ProgramAnalysis pa = new ProgramAnalysis(prog);
+		DependencyGraph dg = DependencyGraph.buildDependencyGraph(pa.getNonGroundRules());
+		ComponentGraph cg = ComponentGraph.fromDependencyGraph(dg);
+		Map<Integer, List<SCComponent>> strata = cg.calculateStratification();
+
+		Node a = dg.getNodeForPredicate(Predicate.getInstance("a", 0));
+		Node b = dg.getNodeForPredicate(Predicate.getInstance("b", 0));
+		Node c = dg.getNodeForPredicate(Predicate.getInstance("c", 0));
+
+		Assert.assertEquals(1, strata.size());
+		Set<Node> stratum0ExpectedNodes = new HashSet<>();
+		stratum0ExpectedNodes.add(a);
+		stratum0ExpectedNodes.add(b);
+		stratum0ExpectedNodes.add(c);
+		List<Node> stratum0ActualNodes = extractNodesFromStratum(strata.get(0));
+		LOGGER.debug("Expected nodes: " + StringUtils.join(stratum0ExpectedNodes, ","));
+		LOGGER.debug("Actual nodes: " + StringUtils.join(stratum0ActualNodes, ","));
+		Assert.assertEquals(stratum0ExpectedNodes.size(), stratum0ActualNodes.size());
 	}
 
 }

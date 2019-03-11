@@ -76,6 +76,10 @@ public class ComponentGraph {
 			// no need to check dependencies if we aren't stratifyable
 			comp.unstratifyable = true;
 			canStratify = false;
+		} else if (comp.stratum != -1) {
+			// component already has a stratum, i.e. we reached it via a different path first.
+			// no need to do anything further
+			canStratify = false;
 		} else {
 			for (Entry<SCComponent, Boolean> depEntry : dependencies.entrySet()) {
 				dep = depEntry.getKey();
