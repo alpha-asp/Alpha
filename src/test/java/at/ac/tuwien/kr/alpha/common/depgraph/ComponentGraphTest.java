@@ -106,11 +106,65 @@ public class ComponentGraphTest {
 	}
 
 	@Test
-	public void stratifyWithPositiveCycleTest() {
+	public void stratifyWithPositiveCycleTest() throws IOException {
 		Alpha system = new Alpha();
 		StringBuilder bld = new StringBuilder();
 		bld.append("ancestor_of(X, Y) :- parent_of(X, Y).");
 		bld.append("ancestor_of(X, Z) :- parent_of(X, Y), ancestor_of(Y, Z).");
+		Program prog = system.readProgramString(bld.toString(), null);
+		ProgramAnalysis pa = new ProgramAnalysis(prog);
+		DependencyGraph dg = DependencyGraph.buildDependencyGraph(pa.getNonGroundRules());
+		ComponentGraph cg = ComponentGraph.fromDependencyGraph(dg);
+		Map<Integer, List<SCComponent>> strata = cg.calculateStratification();
+
+		Node ancestorOf = dg.getNodeForPredicate(Predicate.getInstance("ancestor_of", 2));
+		Node parentOf = dg.getNodeForPredicate(Predicate.getInstance("parent_of", 2));
+
+		Assert.assertEquals(1, strata.size());
+		List<SCComponent> stratum0 = strata.get(0);
+		assertNodesMatchStratumNodes(stratum0, ancestorOf, parentOf);
+	}
+
+	@Test
+	public void stratifyLargeGraphTest() {
+		Alpha system = new Alpha();
+		StringBuilder bld = new StringBuilder();
+		bld.append("b :- a.");
+		bld.append("c :- b.");
+		bld.append("d :- c.");
+		bld.append("e :- d.");
+		bld.append("f :- not e.");
+		bld.append("g :- d, j, not f.");
+		bld.append("h :- not c.");
+		bld.append("i :- h, not j.");
+		bld.append("j :- h, not i.");
+		bld.append("k :- g, not l.");
+		bld.append("l :- g, not k.");
+		bld.append("m :- not k, not l.");
+		bld.append("n :- m, not i, not j.");
+		bld.append("p :- not m, not n.");
+		Program prog = system.readProgramString(bld.toString(), null);
+
+		ProgramAnalysis pa = new ProgramAnalysis(prog);
+		DependencyGraph dg = DependencyGraph.buildDependencyGraph(pa.getNonGroundRules());
+		ComponentGraph cg = ComponentGraph.fromDependencyGraph(dg);
+		Map<Integer, List<SCComponent>> strata = cg.calculateStratification();
+
+		Node a = dg.getNodeForPredicate(Predicate.getInstance("a", 0));
+		Node b = dg.getNodeForPredicate(Predicate.getInstance("b", 0));
+		Node c = dg.getNodeForPredicate(Predicate.getInstance("c", 0));
+		Node d = dg.getNodeForPredicate(Predicate.getInstance("d", 0));
+		Node e = dg.getNodeForPredicate(Predicate.getInstance("e", 0));
+		Node f = dg.getNodeForPredicate(Predicate.getInstance("f", 0));
+		Node h = dg.getNodeForPredicate(Predicate.getInstance("h", 0));
+		
+		Assert.assertEquals(2, strata.size());
+		
+		List<SCComponent> stratum0 = strata.get(0);
+		assertNodesMatchStratumNodes(stratum0, a, b, c, d, e);
+		
+		List<SCComponent> stratum1 = strata.get(1);
+		assertNodesMatchStratumNodes(stratum1, h, f);
 	}
 
 }

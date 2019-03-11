@@ -72,18 +72,24 @@ public class ComponentGraph {
 		int maxDepStratum = 0;
 		boolean canStratify = true;
 		SCComponent dep = null;
-		for (Entry<SCComponent, Boolean> depEntry : dependencies.entrySet()) {
-			dep = depEntry.getKey();
-			if (dep.stratum == -1) {
-				// NOT breaking out of loop here, need to make sure unstratifyability is propagated
-				canStratify = false;
-				if (dep.isUnstratifyable()) {
-					comp.unstratifyable = true;
-				}
-			} else {
-				maxDepStratum = (dep.stratum > maxDepStratum) ? dep.stratum : maxDepStratum;
-				if (depEntry.getValue().equals(false)) {
-					maxDepStratum++;
+		if (comp.hasNegativeCycle()) {
+			// no need to check dependencies if we aren't stratifyable
+			comp.unstratifyable = true;
+			canStratify = false;
+		} else {
+			for (Entry<SCComponent, Boolean> depEntry : dependencies.entrySet()) {
+				dep = depEntry.getKey();
+				if (dep.stratum == -1) {
+					// NOT breaking out of loop here, need to make sure unstratifyability is propagated
+					canStratify = false;
+					if (dep.isUnstratifyable()) {
+						comp.unstratifyable = true;
+					}
+				} else {
+					maxDepStratum = (dep.stratum > maxDepStratum) ? dep.stratum : maxDepStratum;
+					if (depEntry.getValue().equals(false)) {
+						maxDepStratum++;
+					}
 				}
 			}
 		}
@@ -128,7 +134,7 @@ public class ComponentGraph {
 	}
 
 	public class SCComponent {
-		
+
 		@SuppressWarnings("unused")
 		private int id;
 		private List<Node> nodes = new ArrayList<>();
