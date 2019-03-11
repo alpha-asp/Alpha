@@ -31,7 +31,7 @@ public class InputConfig {
 		retVal.aspStrings.add(str);
 		return retVal;
 	}
-	
+
 	public List<String> getAspStrings() {
 		return this.aspStrings;
 	}

@@ -25,14 +25,14 @@ public class CommandLineParserTest {
 	@Test
 	public void basicUsageWithFile() throws ParseException {
 		CommandLineParser parser = new CommandLineParser("java-jar Alpha-bundled.jar", (msg) -> { });
-		AlphaContext ctx = parser.parseCommandLine(new String[] {"-i", "someFile.asp", "-i", "someOtherFile.asp"});
+		AlphaConfig ctx = parser.parseCommandLine(new String[] {"-i", "someFile.asp", "-i", "someOtherFile.asp"});
 		Assert.assertEquals(Arrays.asList(new String[] {"someFile.asp", "someOtherFile.asp"}), ctx.getInputConfig().getFiles());
 	}
 
 	@Test
 	public void basicUsageWithString() throws ParseException {
 		CommandLineParser parser = new CommandLineParser("java-jar Alpha-bundled.jar", (msg) -> { });
-		AlphaContext ctx = parser.parseCommandLine(new String[] {"-str", "b :- a.", "-str", "c :- a, b."});
+		AlphaConfig ctx = parser.parseCommandLine(new String[] {"-str", "b :- a.", "-str", "c :- a, b."});
 		Assert.assertEquals(Arrays.asList(new String[] {"b :- a.", "c :- a, b."}), ctx.getInputConfig().getAspStrings());
 	}
 
@@ -57,7 +57,7 @@ public class CommandLineParserTest {
 	@Test
 	public void numAnswerSets() throws ParseException {
 		CommandLineParser parser = new CommandLineParser("java-jar Alpha-bundled.jar", (msg) -> { });
-		AlphaContext ctx = parser.parseCommandLine(new String[] {"-str", "aString.", "-n", "00435"});
+		AlphaConfig ctx = parser.parseCommandLine(new String[] {"-str", "aString.", "-n", "00435"});
 		Assert.assertEquals(435, ctx.getInputConfig().getNumAnswerSets());
 	}
 	

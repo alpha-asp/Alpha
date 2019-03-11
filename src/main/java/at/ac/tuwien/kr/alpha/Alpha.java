@@ -46,7 +46,7 @@ import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.depgraph.io.DependencyGraphWriter;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.config.AlphaConfig;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
@@ -66,9 +66,9 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heurist
 
 public class Alpha {
 
-	private AlphaConfig config = new AlphaConfig(); // config is initialized with default values
+	private SystemConfig config = new SystemConfig(); // config is initialized with default values
 
-	public Alpha(AlphaConfig cfg) {
+	public Alpha(SystemConfig cfg) {
 		this.config = cfg;
 	}
 
@@ -133,13 +133,11 @@ public class Alpha {
 	}
 
 	/**
-	 * Prepares a solver (and accompanying grounder) instance pre-loaded with the
-	 * given program. Use this if the solver is needed after reading answer sets
+	 * Prepares a solver (and accompanying grounder) instance pre-loaded with the given program. Use this if the solver is needed after reading answer sets
 	 * (e.g. for obtaining statistics)
 	 * 
 	 * @param program the program to solve
-	 * @return a solver (and accompanying grounder) instance pre-loaded with the
-	 *         given program
+	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
 	 */
 	public Solver prepareSolverFor(Program program) {
 		String grounderName = this.config.getGrounderName();
@@ -163,11 +161,11 @@ public class Alpha {
 		return this.config.isSortAnswerSets() ? retVal.sorted() : retVal;
 	}
 
-	public AlphaConfig getConfig() {
+	public SystemConfig getConfig() {
 		return this.config;
 	}
 
-	public void setConfig(AlphaConfig config) {
+	public void setConfig(SystemConfig config) {
 		this.config = config;
 	}
 

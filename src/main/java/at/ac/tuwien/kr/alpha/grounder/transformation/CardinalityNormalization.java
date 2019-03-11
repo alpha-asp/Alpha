@@ -147,7 +147,7 @@ public class CardinalityNormalization implements ProgramTransformation {
 			} else {
 				// In case some variables are not local to the aggregate, add them to the aggregate identifier
 				ArrayList<Term> globalVariableTermlist = new ArrayList<>(globalVariables);
-				globalVariables.add(ConstantTerm.getInstance(aggregateCount));
+				globalVariableTermlist.add(ConstantTerm.getInstance(aggregateCount));
 				aggregateSubstitution.put(VariableTerm.getInstance("AGGREGATE_ID"), FunctionTerm.getInstance("agg", globalVariableTermlist));
 			}
 			aggregateSubstitution.put(VariableTerm.getInstance("LOWER_BOUND"), aggregateAtom.getLowerBoundTerm());

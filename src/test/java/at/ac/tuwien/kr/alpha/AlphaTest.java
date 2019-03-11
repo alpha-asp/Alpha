@@ -60,7 +60,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.external.ExternalAtoms;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.MethodPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.config.AlphaConfig;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
@@ -421,7 +421,7 @@ public class AlphaTest {
 		 * -DebugEnableInternalChecks -q -g naive -s default -sort -n 400 -i
 		 * 3col-20-38.txt
 		 */
-		AlphaConfig cfg = new AlphaConfig();
+		SystemConfig cfg = new SystemConfig();
 		cfg.setGrounderName("naive");
 		cfg.setSolverName("default");
 		cfg.setNogoodStoreName("alpharoaming");
@@ -441,7 +441,7 @@ public class AlphaTest {
 
 	private void problematicRun(String program, long seed, int limit) throws IOException {
 		final Path base = Paths.get("src", "test", "resources", "PreviouslyProblematic");
-		AlphaConfig cfg = new AlphaConfig();
+		SystemConfig cfg = new SystemConfig();
 		cfg.setGrounderName("naive");
 		cfg.setSolverName("default");
 		cfg.setNogoodStoreName("alpharoaming");
