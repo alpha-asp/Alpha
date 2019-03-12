@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -110,13 +110,14 @@ public class Alpha {
 		String nogoodStoreName = this.config.getNogoodStoreName();
 		long seed = this.config.getSeed();
 		Heuristic branchingHeuristic = BranchingHeuristicFactory.Heuristic.valueOf(this.config.getBranchingHeuristicName());
+		boolean respectDomspecHeuristics = !this.config.isIgnoreDomspecHeuristics();
 		boolean doDebugChecks = this.config.isDebugInternalChecks();
 		boolean disableJustificationSearch = this.config.isDisableJustificationSearch();
 
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore);
 
-		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed), true, branchingHeuristic, doDebugChecks,
+		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed), respectDomspecHeuristics, branchingHeuristic, doDebugChecks,
 				disableJustificationSearch);
 		return solver;
 	}
