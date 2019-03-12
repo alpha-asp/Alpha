@@ -39,6 +39,7 @@ public class BasicAnswerSet implements AnswerSet {
 		return predicates.isEmpty();
 	}
 
+	@Override
 	public String toString() {
 		if (predicates.isEmpty()) {
 			return "{}";

@@ -1,12 +1,12 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 import java.util.List;
 
-import static at.ac.tuwien.kr.alpha.Util.join;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 /**
  * Represents the head of a choice rule.

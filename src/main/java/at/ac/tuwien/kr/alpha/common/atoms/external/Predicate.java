@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha;
+package at.ac.tuwien.kr.alpha.common.atoms.external;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

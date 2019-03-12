@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.external.ExternalAtoms;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
 import java.util.ArrayList;
@@ -80,10 +81,10 @@ public class Program {
 	public void accumulate(Rule rule) {
 		if (rule.getBody().isEmpty()) {
 			Head ruleHead = rule.getHead();
-			if (!ruleHead.isNormal() || !((DisjunctiveHead)ruleHead).disjunctiveAtoms.get(0).isGround()) {
+			if (!ruleHead.isNormal() || !((DisjunctiveHead) ruleHead).disjunctiveAtoms.get(0).isGround()) {
 				throw oops("Accumulated rule with empty body must have a non-disjunctive and ground head. Rule is: " + rule);
 			}
-			facts.add(((DisjunctiveHead)ruleHead).disjunctiveAtoms.get(0));
+			facts.add(((DisjunctiveHead) ruleHead).disjunctiveAtoms.get(0));
 		} else {
 			rules.add(rule);
 		}
@@ -98,33 +99,23 @@ public class Program {
 	@Override
 	public String toString() {
 		final String ls = System.lineSeparator();
-		String result = join(
-			"",
-			facts,
-			"." + ls,
-			"." + ls
-		);
+		String result = join("", facts, "." + ls, "." + ls);
 
 		if (rules.isEmpty()) {
 			return result;
 		}
-
-		result = join(
-			result,
-			rules,
-			ls,
-			ls
-		);
+		
+		result = join(result, rules, ls, ls);
 		
 		if (inlineDirectives.isEmpty()) {
 			return result;
 		}
 		
-		return join(
-			result,
-			inlineDirectives.getDirectives(),
-			ls,
-			ls
-		);
+		return join(result, inlineDirectives.getDirectives(), ls, ls);
+	}
+	
+	public <T extends Comparable<T>> Program withExternalFacts(Collection<T> factBeans) {
+		ExternalAtoms.addExternalFactsToProgram(this, factBeans);
+		return this;
 	}
 }

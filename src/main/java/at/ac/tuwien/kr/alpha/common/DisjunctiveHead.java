@@ -51,6 +51,7 @@ public class DisjunctiveHead extends Head {
 		this(Arrays.asList(singletonHead));
 	}
 
+	@Override
 	public boolean isNormal() {
 		return disjunctiveAtoms != null && disjunctiveAtoms.size() <= 1;
 	}
@@ -71,4 +72,5 @@ public class DisjunctiveHead extends Head {
 		}
 		return true;
 	}
+
 }
