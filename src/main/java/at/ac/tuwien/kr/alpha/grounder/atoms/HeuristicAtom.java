@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -110,6 +110,29 @@ public class HeuristicAtom implements Atom {
 	@Override
 	public String toString() {
 		return Util.join(PREDICATE.getName() + "(", this.getTerms(), ")");
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		HeuristicAtom that = (HeuristicAtom) o;
+
+		return weightAtLevel.equals(that.weightAtLevel) && sign.equals(that.sign) && head.equals(that.head);
+	}
+	
+	@Override
+	public int hashCode() {
+		int result = head != null ? head.hashCode() : 0;
+		result = 31 * result + (weightAtLevel != null ? weightAtLevel.hashCode() : 0);
+		result = 31 * result + (sign != null ? sign.hashCode() : 0);
+		result = 31 * result + (ground ? 1 : 0);
+		return result;
 	}
 
 	public static HeuristicAtom fromHeuristicDirective(HeuristicDirective heuristicDirective) {

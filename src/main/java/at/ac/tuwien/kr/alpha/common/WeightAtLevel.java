@@ -71,5 +71,27 @@ public class WeightAtLevel implements Substitutable<WeightAtLevel> {
 		}
 		return sb.toString();
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		WeightAtLevel that = (WeightAtLevel) o;
+
+		if (weight != that.weight) {
+			return false;
+		}
+		return level.equals(that.level);
+	}
+	
+	@Override
+	public int hashCode() {
+		return 31 * weight.hashCode() + level.hashCode();
+	}
 
 }

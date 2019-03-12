@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -92,5 +92,24 @@ public class ChoiceAtom implements Atom {
 	@Override
 	public String toString() {
 		return join(predicate.getName() + "(", terms, ")");
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		ChoiceAtom that = (ChoiceAtom) o;
+
+		return predicate.equals(that.predicate) && terms.equals(that.terms);
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 * predicate.hashCode() + terms.hashCode();
 	}
 }
