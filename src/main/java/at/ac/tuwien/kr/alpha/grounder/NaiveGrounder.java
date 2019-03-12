@@ -609,7 +609,19 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	@Override
 	public Set<Literal> justifyAtom(int atomToJustify, Assignment currentAssignment) {
-		return analyzeUnjustified.analyze(atomToJustify, currentAssignment);
+		Set<Literal> literals = analyzeUnjustified.analyze(atomToJustify, currentAssignment);
+		// Remove facts from justification before handing it over to the solver.
+		for (Iterator<Literal> iterator = literals.iterator(); iterator.hasNext();) {
+			Literal literal = iterator.next();
+			if (literal.isNegated()) {
+				continue;
+			}
+			LinkedHashSet<Instance> factsOverPredicate = factsFromProgram.get(literal.getPredicate());
+			if (factsOverPredicate != null && factsOverPredicate.contains(new Instance(literal.getAtom().getTerms()))) {
+				iterator.remove();
+			}
+		}
+		return literals;
 	}
 
 	/**

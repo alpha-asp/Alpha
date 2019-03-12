@@ -1,3 +1,30 @@
+/**
+ * Copyright (c) 2017-2019, the Alpha Team.
+ * All rights reserved.
+ * 
+ * Additional changes made by Siemens.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1) Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 
+ * 2) Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package at.ac.tuwien.kr.alpha.common.terms;
 
 import at.ac.tuwien.kr.alpha.common.Interner;
@@ -10,7 +37,7 @@ import java.util.List;
 
 /**
  * This class represents an arithmetic expression occurring as a term.
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  */
 public class ArithmeticTerm extends Term {
 	private static final Interner<ArithmeticTerm> INTERNER = new Interner<>();
@@ -24,7 +51,12 @@ public class ArithmeticTerm extends Term {
 		this.right = right;
 	}
 
-	public static ArithmeticTerm getInstance(Term left, ArithmeticOperator arithmeticOperator, Term right) {
+	public static Term getInstance(Term left, ArithmeticOperator arithmeticOperator, Term right) {
+		// Evaluate ground arithmetic terms immediately and return result.
+		if (left.isGround() && right.isGround()) {
+			Integer result = new ArithmeticTerm(left, arithmeticOperator, right).evaluateExpression();
+			return ConstantTerm.getInstance(result);
+		}
 		return INTERNER.intern(new ArithmeticTerm(left, arithmeticOperator, right));
 	}
 
@@ -68,9 +100,9 @@ public class ArithmeticTerm extends Term {
 
 	private static Integer evaluateGroundTermHelper(Term term) {
 		if (term instanceof ConstantTerm
-			&& ((ConstantTerm) term).getObject() instanceof Integer) {
+			&& ((ConstantTerm<?>) term).getObject() instanceof Integer) {
 			// Extract integer from the constant.
-			return (Integer) ((ConstantTerm) term).getObject();
+			return (Integer) ((ConstantTerm<?>) term).getObject();
 		} else if (term instanceof ArithmeticTerm) {
 			return ((ArithmeticTerm) term).evaluateExpression();
 		} else {
@@ -79,11 +111,11 @@ public class ArithmeticTerm extends Term {
 		}
 	}
 
-	private Integer evaluateExpression() {
+	Integer evaluateExpression() {
 		Integer leftInt = evaluateGroundTermHelper(left);
 		Integer rightInt = evaluateGroundTermHelper(right);
 		if (leftInt == null || rightInt == null) {
-			return  null;
+			return null;
 		}
 		return arithmeticOperator.eval(leftInt, rightInt);
 	}
@@ -169,8 +201,18 @@ public class ArithmeticTerm extends Term {
 		}
 
 
-		public static MinusTerm getInstance(Term term) {
-			return (MinusTerm) INTERNER.intern(new MinusTerm(term));
+		public static Term getInstance(Term term) {
+			// Evaluate ground arithmetic terms immediately and return result.
+			if (term.isGround()) {
+				Integer result = evaluateGroundTermHelper(term) * -1;
+				return ConstantTerm.getInstance(result);
+			}
+			return INTERNER.intern(new MinusTerm(term));
+		}
+
+		@Override
+		Integer evaluateExpression() {
+			return evaluateGroundTermHelper(left) * -1;
 		}
 
 		@Override
@@ -191,6 +233,12 @@ public class ArithmeticTerm extends Term {
 		@Override
 		public Term renameVariables(String renamePrefix) {
 			return getInstance(left.renameVariables(renamePrefix));
+		}
+		
+		@Override
+		public Term normalizeVariables(String renamePrefix, RenameCounter counter) {
+			Term normalizedLeft = left.normalizeVariables(renamePrefix, counter);
+			return MinusTerm.getInstance(normalizedLeft);
 		}
 
 		@Override

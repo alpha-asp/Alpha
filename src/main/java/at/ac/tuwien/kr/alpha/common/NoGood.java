@@ -172,10 +172,12 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 		return new Iterator<Integer>() {
 			private int i;
 
+			@Override
 			public boolean hasNext() {
 				return literals.length > i;
 			}
 
+			@Override
 			public Integer next() {
 				return literals[i++];
 			}
