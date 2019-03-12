@@ -504,7 +504,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			if (stopBindingAtNonTruePositiveBody && !rule.getRule().isGround()
 					&& !workingMemory.get(currentAtom.getPredicate(), true).containsInstance(new Instance(substitute.getTerms()))) {
 				if (laxGrounderHeuristic) {
-					LOGGER.debug("Not aborting binding of rule " + rule + " because lax grounder heuristic is active");
+					if (LOGGER.isDebugEnabled()) {
+						LOGGER.debug("Not aborting binding of rule " + rule + " because lax grounder heuristic is active");
+					}
 				} else {
 					// Generate no variable substitution.
 					return BindingResult.empty();
