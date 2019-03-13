@@ -3,7 +3,7 @@ package at.ac.tuwien.kr.alpha.grounder.transformation;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.rule.impl.Rule;
+import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -71,8 +71,8 @@ public class CardinalityNormalization implements ProgramTransformation {
 			"sorting_network_log2(Ip2, I) :- Ip2 = 2 ** I, I = 0..30.\n";
 
 		// Connect/Rewrite every aggregate in each rule.
-		ArrayList<Rule> additionalRules = new ArrayList<>();
-		for (Rule rule : inputProgram.getRules()) {
+		ArrayList<BasicRule> additionalRules = new ArrayList<>();
+		for (BasicRule rule : inputProgram.getRules()) {
 			additionalRules.addAll(rewriteAggregates(rule));
 		}
 		// Leave program as-is if no aggregates occur.
@@ -85,7 +85,7 @@ public class CardinalityNormalization implements ProgramTransformation {
 
 		// Add enumeration rule that uses the special EnumerationAtom.
 		// The enumeration rule is: "sorting_network_input_number(A, I) :- sorting_network_input(A, X), sorting_network_index(A, X, I)."
-		Rule enumerationRule = PredicateInternalizer.makePredicatesInternal(parse("sorting_network_input_number(A, I) :- sorting_network_input(A, X).")).getRules().get(0);
+		BasicRule enumerationRule = PredicateInternalizer.makePredicatesInternal(parse("sorting_network_input_number(A, I) :- sorting_network_input(A, X).")).getRules().get(0);
 		EnumerationAtom enumerationAtom = new EnumerationAtom(parse("sorting_network_index(A, X, I).").getFacts().get(0).getTerms());
 		enumerationRule.getBody().add(enumerationAtom.toLiteral());
 		cardinalityEncoding.accumulate(enumerationRule);
@@ -94,7 +94,7 @@ public class CardinalityNormalization implements ProgramTransformation {
 		inputProgram.accumulate(cardinalityEncoding);
 	}
 
-	private List<Rule> rewriteAggregates(Rule rule) {
+	private List<BasicRule> rewriteAggregates(BasicRule rule) {
 
 		// Example rewriting/connection:
 		// num(K) :-  K <= #count {X,Y,Z : p(X,Y,Z) }, dom(K).
@@ -113,7 +113,7 @@ public class CardinalityNormalization implements ProgramTransformation {
 
 		ArrayList<Literal> aggregateOutputAtoms = new ArrayList<>();
 		int aggregatesInRule = 0;	// Only needed for limited rewriting.
-		ArrayList<Rule> additionalRules = new ArrayList<>();
+		ArrayList<BasicRule> additionalRules = new ArrayList<>();
 
 		for (Iterator<Literal> iterator = rule.getBody().iterator(); iterator.hasNext();) {
 			Literal bodyElement = iterator.next();
@@ -173,21 +173,21 @@ public class CardinalityNormalization implements ProgramTransformation {
 				if (!globalVariables.isEmpty()) {
 					elementLiterals.addAll(rule.getBody());
 				}
-				Rule inputRule = new Rule(new DisjunctiveHead(Collections.singletonList(inputHeadAtom)), elementLiterals);
+				BasicRule inputRule = new BasicRule(new DisjunctiveHead(Collections.singletonList(inputHeadAtom)), elementLiterals);
 				additionalRules.add(inputRule);
 			}
 
 			// Create lower bound for the aggregate.
 			BasicAtom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateSubstitution);
 			List<Literal> lowerBoundBody = rule.getBody();	// Note: this is only correct if no other aggregate occurs in the rule.
-			additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(lowerBoundHeadAtom)), lowerBoundBody));
+			additionalRules.add(new BasicRule(new DisjunctiveHead(Collections.singletonList(lowerBoundHeadAtom)), lowerBoundBody));
 
 		}
 		rule.getBody().addAll(aggregateOutputAtoms);
 		return additionalRules;
 	}
 
-	static Collection<Term> getGlobalVariables(Rule rule, AggregateAtom aggregateAtom) {
+	static Collection<Term> getGlobalVariables(BasicRule rule, AggregateAtom aggregateAtom) {
 		// Hacky way to get all global variables: take all variables inside the aggregate that occur also in the rest of the rule.
 		HashSet<Term> occurringVariables = new HashSet<>();
 		for (Literal element : rule.getBody()) {

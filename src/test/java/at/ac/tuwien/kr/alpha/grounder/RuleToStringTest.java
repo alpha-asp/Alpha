@@ -27,7 +27,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
-import at.ac.tuwien.kr.alpha.common.rule.impl.Rule;
+import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.junit.Test;
 
@@ -36,7 +36,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Tests {@link Rule#toString()} and {@link NormalRule#toString()}.
+ * Tests {@link BasicRule#toString()} and {@link NormalRule#toString()}.
  */
 public class RuleToStringTest {
 	private final ProgramParser parser = new ProgramParser();
@@ -82,18 +82,18 @@ public class RuleToStringTest {
 	}
 
 	private void parseSingleRuleAndCheckToString(String rule) {
-		Rule parsedRule = parseSingleRule(rule);
+		BasicRule parsedRule = parseSingleRule(rule);
 		assertEquals(rule, parsedRule.toString());
 	}
 
 	private void constructNonGroundRuleAndCheckToString(String textualRule) {
-		NormalRule nonGroundRule = NormalRule.constructNonGroundRule(parseSingleRule(textualRule));
+		NormalRule nonGroundRule = NormalRule.fromBasicRule(parseSingleRule(textualRule));
 		assertEquals(textualRule, nonGroundRule.toString());
 	}
 
-	private Rule parseSingleRule(String rule) {
+	private BasicRule parseSingleRule(String rule) {
 		Program program = parser.parse(rule);
-		List<Rule> rules = program.getRules();
+		List<BasicRule> rules = program.getRules();
 		assertEquals("Number of rules", 1, rules.size());
 		return rules.get(0);
 	}

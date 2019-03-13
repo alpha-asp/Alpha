@@ -12,8 +12,8 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
+import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
-import at.ac.tuwien.kr.alpha.common.rule.impl.Rule;
 import at.ac.tuwien.kr.alpha.grounder.FactIntervalEvaluator;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
 
@@ -47,8 +47,9 @@ public class ProgramAnalysis {
 	private Map<Integer, NormalRule> initializeRules(Program program) {
 		Map<Integer, NormalRule> retVal = new HashMap<>();
 		NormalRule tmpRule;
-		for (Rule rule : program.getRules()) {
-			tmpRule = NormalRule.constructNonGroundRule(rule);
+		for (BasicRule rule : program.getRules()) {
+			// FIXME change below line when we use a NormalProgram here, then we need no copies of rules at this point!
+			tmpRule = NormalRule.fromBasicRule(rule);
 			this.nonGroundRules.put(tmpRule.getRuleId(), tmpRule);
 			if (tmpRule.getHeadAtom() != null) {
 				// rule is not a constraint, register the predicate it defines

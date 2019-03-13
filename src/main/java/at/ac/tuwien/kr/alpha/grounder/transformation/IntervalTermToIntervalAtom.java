@@ -31,7 +31,7 @@ import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.rule.impl.Rule;
+import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -54,7 +54,7 @@ public class IntervalTermToIntervalAtom implements ProgramTransformation {
 	 * Rewrites intervals into a new variable and special IntervalAtom.
 	 * @return true if some interval occurs in the rule.
 	 */
-	private static boolean rewriteIntervalSpecifications(Rule rule) {
+	private static boolean rewriteIntervalSpecifications(BasicRule rule) {
 		// Collect all intervals and replace them with variables.
 		Map<VariableTerm, IntervalTerm> intervalReplacements = new HashMap<>();
 		for (Literal literal : rule.getBody()) {
@@ -122,7 +122,7 @@ public class IntervalTermToIntervalAtom implements ProgramTransformation {
 
 	@Override
 	public void transform(Program inputProgram) {
-		for (Rule rule : inputProgram.getRules()) {
+		for (BasicRule rule : inputProgram.getRules()) {
 			rewriteIntervalSpecifications(rule);
 		}
 	}

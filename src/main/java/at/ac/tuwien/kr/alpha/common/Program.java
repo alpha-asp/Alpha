@@ -31,7 +31,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.external.ExternalAtoms;
 import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.rule.impl.Rule;
+import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
 import java.util.ArrayList;
@@ -49,11 +49,11 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 public class Program {
 	public static final Program EMPTY = new Program(Collections.emptyList(), Collections.emptyList(), new InlineDirectives());
 
-	private final List<Rule> rules;
+	private final List<BasicRule> rules;
 	private final List<Atom> facts;
 	private final InlineDirectives inlineDirectives;
 
-	public Program(List<Rule> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
+	public Program(List<BasicRule> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
 		this.rules = rules;
 		this.facts = facts;
 		this.inlineDirectives = inlineDirectives;
@@ -63,7 +63,7 @@ public class Program {
 		this(new ArrayList<>(), new ArrayList<>(), new InlineDirectives());
 	}
 
-	public List<Rule> getRules() {
+	public List<BasicRule> getRules() {
 		return rules;
 	}
 
@@ -81,7 +81,7 @@ public class Program {
 		inlineDirectives.accumulate(program.inlineDirectives);
 	}
 
-	public void accumulate(Rule rule) {
+	public void accumulate(BasicRule rule) {
 		if (rule.getBody().isEmpty()) {
 			Head ruleHead = rule.getHead();
 			if (!ruleHead.isNormal() || !((DisjunctiveHead) ruleHead).disjunctiveAtoms.get(0).isGround()) {
@@ -93,8 +93,8 @@ public class Program {
 		}
 	}
 
-	public void accumulate(Collection<Rule> rules) {
-		for (Rule rule : rules) {
+	public void accumulate(Collection<BasicRule> rules) {
+		for (BasicRule rule : rules) {
 			accumulate(rule);
 		}
 	}

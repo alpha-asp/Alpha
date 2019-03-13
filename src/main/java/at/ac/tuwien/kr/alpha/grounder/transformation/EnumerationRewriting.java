@@ -7,7 +7,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.rule.impl.Rule;
+import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
@@ -46,7 +46,7 @@ public class EnumerationRewriting implements ProgramTransformation  {
 		inputProgram.getFacts().addAll(rewrittenFacts);
 
 		// Rewrite all enumeration atoms in rules.
-		for (Rule rule : inputProgram.getRules()) {
+		for (BasicRule rule : inputProgram.getRules()) {
 			if (rule.getHead() != null && !rule.getHead().isNormal()) {
 				throw oops("Encountered rule whose head is not normal: " + rule);
 			}

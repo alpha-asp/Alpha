@@ -51,7 +51,7 @@ public class DependencyGraph {
 			tmpRule = entry.getValue();
 			LOGGER.debug("Processing rule: {}", tmpRule);
 			tmpHeadNode = retVal.handleRuleHead(tmpRule);
-			for (Literal l : entry.getValue().getBodyLiterals()) {
+			for (Literal l : entry.getValue().getBody()) {
 				LOGGER.trace("Processing rule body literal: {}", l);
 				if (l.getAtom().isBuiltin()) {
 					LOGGER.trace("Ignoring builtin atom in literal {}", l);

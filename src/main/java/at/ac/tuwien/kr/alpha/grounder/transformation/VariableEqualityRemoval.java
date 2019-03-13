@@ -32,7 +32,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.rule.impl.Rule;
+import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
@@ -46,12 +46,12 @@ import java.util.*;
 public class VariableEqualityRemoval implements ProgramTransformation {
 	@Override
 	public void transform(Program inputProgram) {
-		for (Rule rule : inputProgram.getRules()) {
+		for (BasicRule rule : inputProgram.getRules()) {
 			findAndReplaceVariableEquality(rule);
 		}
 	}
 
-	private void findAndReplaceVariableEquality(Rule rule) {
+	private void findAndReplaceVariableEquality(BasicRule rule) {
 		// Collect all equal variables.
 		HashMap<VariableTerm, HashSet<VariableTerm>> variableToEqualVariables = new HashMap<>();
 		//HashSet<Variable> equalVariables = new LinkedHashSet<>();

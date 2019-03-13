@@ -432,7 +432,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
 			}
 
-			if (stopBindingAtNonTruePositiveBody && !rule.getRule().isGround()
+			if (stopBindingAtNonTruePositiveBody && !rule.isGround()
 					&& !workingMemory.get(currentAtom.getPredicate(), true).containsInstance(new Instance(substitute.getTerms()))) {
 				// Generate no variable substitution.
 				return emptyList();

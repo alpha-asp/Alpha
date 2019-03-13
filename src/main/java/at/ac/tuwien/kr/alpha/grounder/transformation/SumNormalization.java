@@ -3,7 +3,7 @@ package at.ac.tuwien.kr.alpha.grounder.transformation;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.rule.impl.Rule;
+import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -40,8 +40,8 @@ public class SumNormalization implements ProgramTransformation {
 			"output(R, K) :- prefix_subset_sum(R, I1, S), I1 = I - 1, input_number_with_first(R, I, F), bound(R, K), K <= S + F.";
 
 		// Connect/Rewrite every aggregate in each rule.
-		ArrayList<Rule> additionalRules = new ArrayList<>();
-		for (Rule rule : inputProgram.getRules()) {
+		ArrayList<BasicRule> additionalRules = new ArrayList<>();
+		for (BasicRule rule : inputProgram.getRules()) {
 			additionalRules.addAll(rewriteAggregates(rule));
 		}
 		// Leave program as-is if no aggregates occur.
@@ -53,7 +53,7 @@ public class SumNormalization implements ProgramTransformation {
 
 		// Add enumeration rule that uses the special EnumerationAtom.
 		// The enumeration rule is: "input_number_with_first(A, I, F) :- input_with_first(A, X, F), _index(A, X, I)."
-		Rule enumerationRule = makePredicatesInternal(parse("input_number_with_first(A, I, F) :- input_with_first(A, X, F).")).getRules().get(0);
+		BasicRule enumerationRule = makePredicatesInternal(parse("input_number_with_first(A, I, F) :- input_with_first(A, X, F).")).getRules().get(0);
 		EnumerationAtom enumerationAtom = new EnumerationAtom(parse("index(A, X, I).").getFacts().get(0).getTerms());
 		enumerationRule.getBody().add(enumerationAtom.toLiteral());
 		summationEncoding.accumulate(enumerationRule);
@@ -62,7 +62,7 @@ public class SumNormalization implements ProgramTransformation {
 		inputProgram.accumulate(summationEncoding);
 	}
 
-	private List<Rule> rewriteAggregates(Rule rule) {
+	private List<BasicRule> rewriteAggregates(BasicRule rule) {
 
 		// Example rewriting/connection:
 		// x :- 6 <= #sum {3,a:a; 4,b:b; 5,c:c}.
@@ -86,7 +86,7 @@ public class SumNormalization implements ProgramTransformation {
 
 		ArrayList<Literal> aggregateOutputAtoms = new ArrayList<>();
 		int aggregatesInRule = 0;	// Only needed for limited rewriting.
-		ArrayList<Rule> additionalRules = new ArrayList<>();
+		ArrayList<BasicRule> additionalRules = new ArrayList<>();
 
 		for (Iterator<Literal> iterator = rule.getBody().iterator(); iterator.hasNext();) {
 			Literal bodyElement = iterator.next();
@@ -147,14 +147,14 @@ public class SumNormalization implements ProgramTransformation {
 				if (!globalVariables.isEmpty()) {
 					elementLiterals.addAll(rule.getBody());
 				}
-				Rule inputRule = new Rule(new DisjunctiveHead(Collections.singletonList(inputHeadAtom)), elementLiterals);
+				BasicRule inputRule = new BasicRule(new DisjunctiveHead(Collections.singletonList(inputHeadAtom)), elementLiterals);
 				additionalRules.add(inputRule);
 			}
 
 			// Create lower bound for the aggregate.
 			BasicAtom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateUnifier);
 			List<Literal> lowerBoundBody = rule.getBody();	// Note: this is only correct if no other aggregate occurs in the rule.
-			additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(lowerBoundHeadAtom)), lowerBoundBody));
+			additionalRules.add(new BasicRule(new DisjunctiveHead(Collections.singletonList(lowerBoundHeadAtom)), lowerBoundBody));
 
 		}
 		rule.getBody().addAll(aggregateOutputAtoms);

@@ -7,7 +7,6 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.head.Head;
-import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
 
 /**
  * An abstract representation of a rule with a specific type of @{link Head} (type parameter H)
@@ -41,6 +40,7 @@ public class AbstractRule<H extends Head> {
 	 */
 	private boolean isSafe() {
 		// TODO: do the real check.
+		// Just a thought: Do we actually need this here? seems only relevant for NormalRule
 		return true;
 		/*
 		 * Set<VariableTerm> positiveVariables = new HashSet<>(); Set<VariableTerm> builtinVariables = new HashSet<>();
@@ -57,22 +57,6 @@ public class AbstractRule<H extends Head> {
 		 * // Check that all variables of the head occur in the positive body. List<VariableTerm> headVariables = head.getOccurringVariables();
 		 * headVariables.removeAll(positiveVariables); return headVariables.isEmpty();
 		 */
-	}
-
-	// TODO this goes into NormalRule!
-	public boolean isGround() {
-		if (this.head != null && !this.head.isNormal()) {
-			throw Util.oops("Called isGround on non-normal rule");
-		}
-		if (!isConstraint() && !((DisjunctiveHead) head).isGround()) {
-			return false;
-		}
-		for (Literal bodyElement : body) {
-			if (!bodyElement.isGround()) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	public boolean isConstraint() {

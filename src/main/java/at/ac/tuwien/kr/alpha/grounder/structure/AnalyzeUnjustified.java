@@ -1,18 +1,34 @@
 package at.ac.tuwien.kr.alpha.grounder.structure;
 
-import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.common.atoms.*;
-import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
-import at.ac.tuwien.kr.alpha.common.rule.impl.Rule;
-import at.ac.tuwien.kr.alpha.grounder.*;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-
-import static at.ac.tuwien.kr.alpha.Util.oops;
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
+import at.ac.tuwien.kr.alpha.grounder.Instance;
+import at.ac.tuwien.kr.alpha.grounder.Unification;
+import at.ac.tuwien.kr.alpha.grounder.Unifier;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 /**
  * Copyright (c) 2018, the Alpha Team.
@@ -331,12 +347,12 @@ public class AnalyzeUnjustified {
 			Atom headAtom;
 			if (isNonGroundRule) {
 				// First rename all variables in the rule.
-				Rule rule = factOrNonGroundRule.nonGroundRule.getRule().renameVariables("_" + renamingCounter++);
+				NormalRule rule = factOrNonGroundRule.nonGroundRule.renameVariables("_" + renamingCounter++);
 				renamedBody = rule.getBody();
 				if (!rule.getHead().isNormal()) {
 					throw oops("NonGroundRule has no normal head.");
 				}
-				headAtom = ((DisjunctiveHead) rule.getHead()).disjunctiveAtoms.get(0);
+				headAtom = rule.getHeadAtom();
 			} else {
 				// Create atom and empty rule body out of instance.
 				headAtom = new BasicAtom(p.getPredicate(), factOrNonGroundRule.factInstance.terms);

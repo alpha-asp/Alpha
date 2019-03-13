@@ -7,7 +7,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.rule.impl.Rule;
+import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,14 +26,14 @@ public class PredicateInternalizer {
 			internalizedProgram.getFacts().add(makePredicateInternal(atom));
 
 		}
-		for (Rule rule : program.getRules()) {
+		for (BasicRule rule : program.getRules()) {
 			internalizedProgram.getRules().add(makePredicateInternal(rule));
 		}
 		internalizedProgram.getInlineDirectives().accumulate(program.getInlineDirectives());
 		return internalizedProgram;
 	}
 
-	private static Rule makePredicateInternal(Rule rule) {
+	private static BasicRule makePredicateInternal(BasicRule rule) {
 		Head newHead = null;
 		if (rule.getHead() != null) {
 			if (!rule.getHead().isNormal()) {
@@ -52,7 +52,7 @@ public class PredicateInternalizer {
 				newBody.add(bodyElement);
 			}
 		}
-		return new Rule(newHead, newBody);
+		return new BasicRule(newHead, newBody);
 	}
 
 	private static Atom makePredicateInternal(Atom atom) {

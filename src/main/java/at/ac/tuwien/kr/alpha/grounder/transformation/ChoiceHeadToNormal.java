@@ -34,7 +34,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.ChoiceHead;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.rule.impl.Rule;
+import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -52,11 +52,11 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 
 	@Override
 	public void transform(Program inputProgram) {
-		List<Rule> additionalRules = new ArrayList<>();
+		List<BasicRule> additionalRules = new ArrayList<>();
 
-		Iterator<Rule> ruleIterator = inputProgram.getRules().iterator();
+		Iterator<BasicRule> ruleIterator = inputProgram.getRules().iterator();
 		while (ruleIterator.hasNext()) {
-			Rule rule = ruleIterator.next();
+			BasicRule rule = ruleIterator.next();
 
 			Head ruleHead = rule.getHead();
 			if (!(ruleHead instanceof ChoiceHead)) {
@@ -97,11 +97,11 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 				// Construct two guessing rules.
 				List<Literal> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithNegHead.add(new BasicAtom(head.getPredicate(), head.getTerms()).toLiteral(false));
-				additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(negHead)), guessingRuleBodyWithNegHead));
+				additionalRules.add(new BasicRule(new DisjunctiveHead(Collections.singletonList(negHead)), guessingRuleBodyWithNegHead));
 
 				List<Literal> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithHead.add(new BasicAtom(negPredicate, headTerms).toLiteral(false));
-				additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(head)), guessingRuleBodyWithHead));
+				additionalRules.add(new BasicRule(new DisjunctiveHead(Collections.singletonList(head)), guessingRuleBodyWithHead));
 
 				// TODO: when cardinality constraints are possible, process the boundaries by adding a constraint with a cardinality check.
 			}

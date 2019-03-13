@@ -36,7 +36,7 @@ import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation
 import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.ChoiceHead;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.rule.impl.Rule;
+import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.*;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -178,7 +178,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			inputProgram.getFacts().add(((DisjunctiveHead)head).disjunctiveAtoms.get(0));
 		} else {
 			// Treat facts with choice or disjunction in the head like a rule.
-			inputProgram.getRules().add(new Rule(head, emptyList()));
+			inputProgram.getRules().add(new BasicRule(head, emptyList()));
 		}
 		return null;
 	}
@@ -186,14 +186,14 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Object visitStatement_constraint(ASPCore2Parser.Statement_constraintContext ctx) {
 		// CONS body DOT
-		inputProgram.getRules().add(new Rule(null, visitBody(ctx.body())));
+		inputProgram.getRules().add(new BasicRule(null, visitBody(ctx.body())));
 		return null;
 	}
 
 	@Override
 	public Object visitStatement_rule(ASPCore2Parser.Statement_ruleContext ctx) {
 		// head CONS body DOT
-		inputProgram.getRules().add(new Rule(visitHead(ctx.head()), visitBody(ctx.body())));
+		inputProgram.getRules().add(new BasicRule(visitHead(ctx.head()), visitBody(ctx.body())));
 		return null;
 	}
 
