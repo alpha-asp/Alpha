@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -43,7 +43,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
 
 /**
  * This class provides functionality for choice point management, detection of active choice points, etc.
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  */
 public class ChoiceManager implements Checkable {
 
@@ -148,7 +148,6 @@ public class ChoiceManager implements Checkable {
 	}
 
 	public void choose(Choice choice) {
-		LOGGER.debug("Choice {} is {}@{}", choices, choice, assignment.getDecisionLevel());
 		if (!choice.isBacktracked()) {
 			choices++;
 		}
@@ -156,6 +155,7 @@ public class ChoiceManager implements Checkable {
 		if (assignment.choose(choice.getAtom(), choice.getValue()) != null) {
 			throw oops("Picked choice is incompatible with current assignment");
 		}
+		LOGGER.debug("Choice {} is {}@{}", choices, choice, assignment.getDecisionLevel());
 
 		if (debugWatcher != null) {
 			debugWatcher.runWatcher();

@@ -122,8 +122,6 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 
 	@Override
 	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
-		List<Term> terms = getTerms();
-
 		// Treat case where this is just comparison with all variables bound by partialSubstitution.
 		final Term left = getAtom().getTerms().get(0).substitute(partialSubstitution);
 		final Term right = getAtom().getTerms().get(1).substitute(partialSubstitution);

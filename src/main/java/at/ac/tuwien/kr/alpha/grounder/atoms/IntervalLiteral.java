@@ -51,7 +51,7 @@ public class IntervalLiteral extends FixedInterpretationLiteral {
 	
 	@Override
 	public IntervalAtom getAtom() {
-		return (IntervalAtom)atom;
+		return (IntervalAtom) atom;
 	}
 
 	@Override
