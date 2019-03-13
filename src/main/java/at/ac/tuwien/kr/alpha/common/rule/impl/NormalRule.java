@@ -25,13 +25,14 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.grounder;
+package at.ac.tuwien.kr.alpha.common.rule.impl;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.rule.impl.Rule;
+import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
+import at.ac.tuwien.kr.alpha.grounder.RuleGroundingOrder;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,7 +45,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  * Represents a non-ground rule or a constraint for the semi-naive grounder.
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public class NonGroundRule {
+public class NormalRule {
 	private static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
 
 	private final int ruleId;
@@ -54,9 +55,9 @@ public class NonGroundRule {
 	private final List<Atom> bodyAtomsNegative;
 	private final Atom headAtom;
 
-	final RuleGroundingOrder groundingOrder;
+	private final RuleGroundingOrder groundingOrder;
 
-	private NonGroundRule(Rule rule, int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
+	private NormalRule(Rule rule, int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
 		this.ruleId = ruleId;
 		this.rule = rule;
 
@@ -76,7 +77,7 @@ public class NonGroundRule {
 	}
 
 	// FIXME: NonGroundRule should extend Rule and then its constructor directly be used.
-	public static NonGroundRule constructNonGroundRule(Rule rule) {
+	public static NormalRule constructNonGroundRule(Rule rule) {
 		List<Literal> body = rule.getBody();
 		final List<Atom> pos = new ArrayList<>(body.size() / 2);
 		final List<Atom> neg = new ArrayList<>(body.size() / 2);
@@ -91,7 +92,7 @@ public class NonGroundRule {
 			}
 			headAtom = ((DisjunctiveHead)rule.getHead()).disjunctiveAtoms.get(0);
 		}
-		return new NonGroundRule(rule, ID_GENERATOR.getNextId(), pos, neg, headAtom);
+		return new NormalRule(rule, ID_GENERATOR.getNextId(), pos, neg, headAtom);
 	}
 
 	public int getRuleId() {
@@ -162,5 +163,9 @@ public class NonGroundRule {
 
 	public Atom getHeadAtom() {
 		return headAtom;
+	}
+
+	public RuleGroundingOrder getGroundingOrder() {
+		return this.groundingOrder;
 	}
 }

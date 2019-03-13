@@ -32,6 +32,7 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
@@ -52,9 +53,9 @@ public class NoGoodGenerator {
 	private final ChoiceRecorder recorder;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private final ProgramAnalysis programAnalysis;
-	private final Set<NonGroundRule> uniqueGroundRulePerGroundHead;
+	private final Set<NormalRule> uniqueGroundRulePerGroundHead;
 
-	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, ProgramAnalysis programAnalysis, Set<NonGroundRule> uniqueGroundRulePerGroundHead) {
+	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, ProgramAnalysis programAnalysis, Set<NormalRule> uniqueGroundRulePerGroundHead) {
 		this.atomStore = atomStore;
 		this.recorder = recorder;
 		this.factsFromProgram = factsFromProgram;
@@ -69,7 +70,7 @@ public class NoGoodGenerator {
 	 *                     Assumption: atoms with fixed interpretation evaluate to true under the substitution.
 	 * @return the NoGoods corresponding to the ground rule.
 	 */
-	List<NoGood> generateNoGoodsFromGroundSubstitution(final NonGroundRule nonGroundRule, final Substitution substitution) {
+	List<NoGood> generateNoGoodsFromGroundSubstitution(final NormalRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> posLiterals = collectPosLiterals(nonGroundRule, substitution);
 		final List<Integer> negLiterals = collectNegLiterals(nonGroundRule, substitution);
 
@@ -122,7 +123,7 @@ public class NoGoodGenerator {
 		return result;
 	}
 
-	List<Integer> collectNegLiterals(final NonGroundRule nonGroundRule, final Substitution substitution) {
+	List<Integer> collectNegLiterals(final NormalRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> bodyLiteralsNegative = new ArrayList<>();
 		for (Atom atom : nonGroundRule.getBodyAtomsNegative()) {
 			Atom groundAtom = atom.substitute(substitution);
@@ -144,7 +145,7 @@ public class NoGoodGenerator {
 		return bodyLiteralsNegative;
 	}
 
-	private List<Integer> collectPosLiterals(final NonGroundRule nonGroundRule, final Substitution substitution) {
+	private List<Integer> collectPosLiterals(final NormalRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> bodyLiteralsPositive = new ArrayList<>();
 		for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
 			if (atom.toLiteral() instanceof FixedInterpretationLiteral) {
@@ -180,7 +181,7 @@ public class NoGoodGenerator {
 	}
 
 	private boolean existsRuleWithPredicateInHead(final Predicate predicate) {
-		final HashSet<NonGroundRule> definingRules = programAnalysis.getPredicateDefiningRules().get(predicate);
+		final HashSet<NormalRule> definingRules = programAnalysis.getPredicateDefiningRules().get(predicate);
 		return definingRules != null && !definingRules.isEmpty();
 	}
 }

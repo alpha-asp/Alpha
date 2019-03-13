@@ -31,6 +31,7 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
 import at.ac.tuwien.kr.alpha.common.rule.impl.Rule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
@@ -92,7 +93,7 @@ public class SubstitutionTest {
 	@Test
 	public void groundAndPrintRule() {
 		Rule rule = PARSER.parse("x :- p(X,Y), not q(X,Y).").getRules().get(0);
-		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
+		NormalRule nonGroundRule = NormalRule.constructNonGroundRule(rule);
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
@@ -137,7 +138,7 @@ public class SubstitutionTest {
 	@Test
 	public void substitutionFromString() {
 		Rule rule = PARSER.parse("x :- p(X,Y), not q(X,Y).").getRules().get(0);
-		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
+		NormalRule nonGroundRule = NormalRule.constructNonGroundRule(rule);
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);

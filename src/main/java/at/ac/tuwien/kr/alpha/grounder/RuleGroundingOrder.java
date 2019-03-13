@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
 import java.util.*;
@@ -53,7 +54,7 @@ import java.util.*;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class RuleGroundingOrder {
-	private final NonGroundRule nonGroundRule;
+	private final NormalRule nonGroundRule;
 	private HashMap<Literal, Literal[]> groundingOrder;
 	private HashMap<Literal, Float> literalSelectivity;
 	private List<Literal> startingLiterals;
@@ -61,7 +62,7 @@ public class RuleGroundingOrder {
 	private final boolean fixedGroundingInstantiation;
 	private Literal[] fixedGroundingOrder;
 
-	RuleGroundingOrder(NonGroundRule nonGroundRule) {
+	public RuleGroundingOrder(NormalRule nonGroundRule) {
 		this.nonGroundRule = nonGroundRule;
 		this.literalSelectivity = new HashMap<>();
 		resetLiteralSelectivity();
@@ -119,7 +120,7 @@ public class RuleGroundingOrder {
 		}
 	}
 
-	Collection<Literal> getStartingLiterals() {
+	public Collection<Literal> getStartingLiterals() {
 		return Collections.unmodifiableList(startingLiterals);
 	}
 
@@ -127,12 +128,12 @@ public class RuleGroundingOrder {
 		// TODO: add old selectivity (with a decay factor) and new selectivity.
 	}
 
-	Literal[] orderStartingFrom(Literal startingLiteral) {
+	public Literal[] orderStartingFrom(Literal startingLiteral) {
 		return groundingOrder.get(startingLiteral);
 	}
 
 
-	Literal[] getFixedGroundingOrder() {
+	public Literal[] getFixedGroundingOrder() {
 		return fixedGroundingOrder;
 	}
 
@@ -140,11 +141,11 @@ public class RuleGroundingOrder {
 	 * States whether the rule is without positive ordinary atoms, as for example in: p(Y) :- X = 1..3, not q(X), Y = X + 2, &ext[X,Y]().
 	 * @return true if the rule has a (limited number of) fixed grounding instantiation(s).
 	 */
-	boolean fixedInstantiation() {
+	public boolean fixedInstantiation() {
 		return fixedGroundingInstantiation;
 	}
 
-	void computeGroundingOrders() {
+	public void computeGroundingOrders() {
 		if (fixedGroundingInstantiation) {
 			// Fixed grounding is only evaluated once and not depending on a starting variable, just use the first.
 			computeGroundingOrder(startingLiterals.get(0));

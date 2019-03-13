@@ -26,6 +26,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
 import at.ac.tuwien.kr.alpha.common.rule.impl.Rule;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.junit.Test;
@@ -35,7 +36,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Tests {@link Rule#toString()} and {@link NonGroundRule#toString()}.
+ * Tests {@link Rule#toString()} and {@link NormalRule#toString()}.
  */
 public class RuleToStringTest {
 	private final ProgramParser parser = new ProgramParser();
@@ -86,7 +87,7 @@ public class RuleToStringTest {
 	}
 
 	private void constructNonGroundRuleAndCheckToString(String textualRule) {
-		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(parseSingleRule(textualRule));
+		NormalRule nonGroundRule = NormalRule.constructNonGroundRule(parseSingleRule(textualRule));
 		assertEquals(textualRule, nonGroundRule.toString());
 	}
 

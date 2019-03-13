@@ -12,19 +12,19 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
+import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
 import at.ac.tuwien.kr.alpha.common.rule.impl.Rule;
 import at.ac.tuwien.kr.alpha.grounder.FactIntervalEvaluator;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
-import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 
 /**
  * Copyright (c) 2017-2019, the Alpha Team.
  */
 public class ProgramAnalysis {
 
-	private final Map<Predicate, HashSet<NonGroundRule>> predicateDefiningRules = new HashMap<>();
+	private final Map<Predicate, HashSet<NormalRule>> predicateDefiningRules = new HashMap<>();
 	private final Map<Predicate, LinkedHashSet<Instance>> programFacts = new LinkedHashMap<>();
-	private final Map<Integer, NonGroundRule> nonGroundRules = new HashMap<>();
+	private final Map<Integer, NormalRule> nonGroundRules = new HashMap<>();
 	private final DependencyGraph dependencyGraph;
 
 	public ProgramAnalysis(Program program) {
@@ -44,11 +44,11 @@ public class ProgramAnalysis {
 		}
 	}
 
-	private Map<Integer, NonGroundRule> initializeRules(Program program) {
-		Map<Integer, NonGroundRule> retVal = new HashMap<>();
-		NonGroundRule tmpRule;
+	private Map<Integer, NormalRule> initializeRules(Program program) {
+		Map<Integer, NormalRule> retVal = new HashMap<>();
+		NormalRule tmpRule;
 		for (Rule rule : program.getRules()) {
-			tmpRule = NonGroundRule.constructNonGroundRule(rule);
+			tmpRule = NormalRule.constructNonGroundRule(rule);
 			this.nonGroundRules.put(tmpRule.getRuleId(), tmpRule);
 			if (tmpRule.getHeadAtom() != null) {
 				// rule is not a constraint, register the predicate it defines
@@ -58,12 +58,12 @@ public class ProgramAnalysis {
 		return retVal;
 	}
 
-	public void recordDefiningRule(Predicate headPredicate, NonGroundRule rule) {
+	public void recordDefiningRule(Predicate headPredicate, NormalRule rule) {
 		this.predicateDefiningRules.putIfAbsent(headPredicate, new HashSet<>());
 		this.predicateDefiningRules.get(headPredicate).add(rule);
 	}
 
-	public Map<Predicate, HashSet<NonGroundRule>> getPredicateDefiningRules() {
+	public Map<Predicate, HashSet<NormalRule>> getPredicateDefiningRules() {
 		return Collections.unmodifiableMap(this.predicateDefiningRules);
 	}
 
@@ -71,7 +71,7 @@ public class ProgramAnalysis {
 		return this.programFacts;
 	}
 
-	public Map<Integer, NonGroundRule> getNonGroundRules() {
+	public Map<Integer, NormalRule> getNonGroundRules() {
 		return this.nonGroundRules;
 	}
 

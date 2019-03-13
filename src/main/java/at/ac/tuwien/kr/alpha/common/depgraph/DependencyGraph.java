@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
+import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
 
 // TODO ensure immutability
 public class DependencyGraph {
@@ -43,11 +43,11 @@ public class DependencyGraph {
 		this.constraintNumber = 0;
 	}
 
-	public static DependencyGraph buildDependencyGraph(Map<Integer, NonGroundRule> nonGroundRules) {
+	public static DependencyGraph buildDependencyGraph(Map<Integer, NormalRule> nonGroundRules) {
 		DependencyGraph retVal = new DependencyGraph();
-		NonGroundRule tmpRule;
+		NormalRule tmpRule;
 		Node tmpHeadNode;
-		for (Map.Entry<Integer, NonGroundRule> entry : nonGroundRules.entrySet()) {
+		for (Map.Entry<Integer, NormalRule> entry : nonGroundRules.entrySet()) {
 			tmpRule = entry.getValue();
 			LOGGER.debug("Processing rule: {}", tmpRule);
 			tmpHeadNode = retVal.handleRuleHead(tmpRule);
@@ -68,7 +68,7 @@ public class DependencyGraph {
 		return this.nodesByPredicate.get(p);
 	}
 
-	private Node handleRuleHead(NonGroundRule rule) {
+	private Node handleRuleHead(NormalRule rule) {
 		LOGGER.trace("Processing head of rule: {}", rule);
 		Node retVal;
 		Predicate pred;

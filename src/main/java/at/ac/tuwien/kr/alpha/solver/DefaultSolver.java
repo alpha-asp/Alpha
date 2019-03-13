@@ -32,10 +32,10 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
 import at.ac.tuwien.kr.alpha.common.rule.impl.Rule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 import at.ac.tuwien.kr.alpha.grounder.ProgramAnalyzingGrounder;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
@@ -339,7 +339,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			// For RuleAtoms in toJustify the corresponding ground body contains BasicAtoms that have been assigned FALSE in the closing.
 			// First, translate RuleAtom back to NonGroundRule + Substitution.
 			String ruleId = (String) ((ConstantTerm<?>)atom.getTerms().get(0)).getObject();
-			NonGroundRule nonGroundRule = analyzingGrounder.getNonGroundRule(Integer.parseInt(ruleId));
+			NormalRule nonGroundRule = analyzingGrounder.getNonGroundRule(Integer.parseInt(ruleId));
 			String substitution = (String) ((ConstantTerm<?>)atom.getTerms().get(1)).getObject();
 			Substitution groundingSubstitution = Substitution.fromString(substitution);
 			Rule rule = nonGroundRule.getRule();

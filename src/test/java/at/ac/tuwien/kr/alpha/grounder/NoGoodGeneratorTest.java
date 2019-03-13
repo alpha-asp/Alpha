@@ -28,6 +28,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
 import at.ac.tuwien.kr.alpha.common.rule.impl.Rule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -52,7 +53,7 @@ public class NoGoodGeneratorTest {
 	private static final VariableTerm Y = VariableTerm.getInstance("Y");
 	
 	/**
-	 * Calls {@link NoGoodGenerator#collectNegLiterals(NonGroundRule, Substitution)},
+	 * Calls {@link NoGoodGenerator#collectNegLiterals(NormalRule, Substitution)},
 	 * which puts the atom occuring negatively in a rule into the atom store.
 	 * It is then checked whether the atom in the atom store is positive.
 	 */
@@ -66,7 +67,7 @@ public class NoGoodGeneratorTest {
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
 		NoGoodGenerator noGoodGenerator = ((NaiveGrounder)grounder).noGoodGenerator;
-		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
+		NormalRule nonGroundRule = NormalRule.constructNonGroundRule(rule);
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);

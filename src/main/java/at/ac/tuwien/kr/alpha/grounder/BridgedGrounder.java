@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 
 import java.util.HashSet;
@@ -21,8 +22,8 @@ public abstract class BridgedGrounder extends AbstractGrounder {
 		this.bridges = bridges;
 	}
 
-	protected Set<NonGroundRule> collectExternalRules(Assignment assignment, AtomStore atomStore, IntIdGenerator intIdGenerator) {
-		Set<NonGroundRule> collectedRules = new HashSet<>();
+	protected Set<NormalRule> collectExternalRules(Assignment assignment, AtomStore atomStore, IntIdGenerator intIdGenerator) {
+		Set<NormalRule> collectedRules = new HashSet<>();
 
 		for (Bridge bridge : bridges) {
 			collectedRules.addAll(bridge.getRules(assignment, atomStore, intIdGenerator));

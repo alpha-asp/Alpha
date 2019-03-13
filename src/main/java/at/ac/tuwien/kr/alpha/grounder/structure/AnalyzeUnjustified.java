@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha.grounder.structure;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
 import at.ac.tuwien.kr.alpha.common.rule.impl.Rule;
 import at.ac.tuwien.kr.alpha.grounder.*;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
@@ -318,9 +319,9 @@ public class AnalyzeUnjustified {
 			}
 		}
 
-		HashSet<NonGroundRule> rulesDefiningPredicate = programAnalysis.getPredicateDefiningRules().get(predicate);
+		HashSet<NormalRule> rulesDefiningPredicate = programAnalysis.getPredicateDefiningRules().get(predicate);
 		if (rulesDefiningPredicate != null) {
-			for (NonGroundRule nonGroundRule : rulesDefiningPredicate) {
+			for (NormalRule nonGroundRule : rulesDefiningPredicate) {
 				definingRulesAndFacts.add(new FactOrNonGroundRule(nonGroundRule));
 			}
 		}
@@ -386,14 +387,14 @@ public class AnalyzeUnjustified {
 
 	private static class FactOrNonGroundRule {
 		final Instance factInstance;
-		final NonGroundRule nonGroundRule;
+		final NormalRule nonGroundRule;
 
 		private FactOrNonGroundRule(Instance factInstance) {
 			this.factInstance = factInstance;
 			this.nonGroundRule = null;
 		}
 
-		private FactOrNonGroundRule(NonGroundRule nonGroundRule) {
+		private FactOrNonGroundRule(NormalRule nonGroundRule) {
 			this.nonGroundRule = nonGroundRule;
 			this.factInstance = null;
 		}
