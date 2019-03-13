@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 
-public class ExternalAtom implements Atom {
+public class ExternalAtom extends Atom {
 	private final List<Term> input;
 	private final List<Term> output;
 
@@ -64,11 +64,11 @@ public class ExternalAtom implements Atom {
 	public PredicateInterpretation getInterpretation() {
 		return interpretation;
 	}
-	
+
 	List<Term> getInput() {
 		return Collections.unmodifiableList(input);
 	}
-	
+
 	List<Term> getOutput() {
 		return Collections.unmodifiableList(output);
 	}
@@ -85,18 +85,8 @@ public class ExternalAtom implements Atom {
 
 	@Override
 	public ExternalAtom substitute(Substitution substitution) {
-		return new ExternalAtom(
-			predicate,
-			interpretation,
-			input
-				.stream()
-				.map(t -> t.substitute(substitution))
-				.collect(Collectors.toList()),
-			output
-				.stream()
-				.map(t -> t.substitute(substitution))
-				.collect(Collectors.toList())
-		);
+		return new ExternalAtom(predicate, interpretation, input.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList()),
+				output.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList()));
 	}
 
 	@Override

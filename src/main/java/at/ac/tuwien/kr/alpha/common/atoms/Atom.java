@@ -27,31 +27,32 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
+import java.util.List;
+import java.util.Set;
+
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
-
-import java.util.List;
-import java.util.Set;
+import at.ac.tuwien.kr.alpha.grounder.Unifier;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
-public interface Atom extends Comparable<Atom> {
-	Predicate getPredicate();
+public abstract class Atom implements Comparable<Atom> {
 
-	List<Term> getTerms();
+	public abstract Predicate getPredicate();
 
-	boolean isGround();
+	public abstract List<Term> getTerms();
+
+	public abstract boolean isGround();
 
 	/**
 	 * Set of all variables occurring in the Atom that are potentially binding
 	 * 
 	 * @return
 	 */
-	default Set<VariableTerm> getBindingVariables() {
+	public Set<VariableTerm> getBindingVariables() {
 		return toLiteral().getBindingVariables();
 	}
 
@@ -60,14 +61,14 @@ public interface Atom extends Comparable<Atom> {
 	 * 
 	 * @return
 	 */
-	default Set<VariableTerm> getNonBindingVariables() {
+	public Set<VariableTerm> getNonBindingVariables() {
 		return toLiteral().getNonBindingVariables();
 	}
 
 	/**
 	 * Set of all variables occurring in the Atom
 	 */
-	default Set<VariableTerm> getOccurringVariables() {
+	public Set<VariableTerm> getOccurringVariables() {
 		return toLiteral().getOccurringVariables();
 	}
 
@@ -77,12 +78,12 @@ public interface Atom extends Comparable<Atom> {
 	 * @param substitution the variable substitution to apply.
 	 * @return the atom resulting from the applying the substitution.
 	 */
-	Atom substitute(Substitution substitution);
+	public abstract Atom substitute(Substitution substitution);
 
 	/**
 	 * Creates a non-negated literal containing this atom
 	 */
-	default Literal toLiteral() {
+	public Literal toLiteral() {
 		return toLiteral(true);
 	}
 
@@ -92,9 +93,9 @@ public interface Atom extends Comparable<Atom> {
 	 * @param positive
 	 * @return
 	 */
-	Literal toLiteral(boolean positive);
+	public abstract Literal toLiteral(boolean positive);
 
-	default Atom renameVariables(String newVariablePrefix) {
+	public Atom renameVariables(String newVariablePrefix) {
 		Unifier renamingSubstitution = new Unifier();
 		int counter = 0;
 		for (VariableTerm variable : getOccurringVariables()) {
@@ -104,7 +105,7 @@ public interface Atom extends Comparable<Atom> {
 	}
 
 	@Override
-	default int compareTo(Atom o) {
+	public int compareTo(Atom o) {
 		if (o == null) {
 			return 1;
 		}
@@ -137,7 +138,7 @@ public interface Atom extends Comparable<Atom> {
 	 * 
 	 * @return true if this Atom is a comparison atom, false otherwise.
 	 */
-	default boolean isBuiltin() {
+	public boolean isBuiltin() {
 		return false;
 	}
 

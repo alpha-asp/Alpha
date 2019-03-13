@@ -30,6 +30,7 @@ public class AnalyzeUnjustified {
 	}
 
 	private Map<Predicate, List<Atom>> assignedAtoms;
+
 	public Set<Literal> analyze(int atomToJustify, Assignment currentAssignment) {
 		padDepth = 0;
 		Atom atom = atomStore.get(atomToJustify);
@@ -40,7 +41,8 @@ public class AnalyzeUnjustified {
 		// Potential solutions:
 		// If atom instanceof RuleAtom and atom is MBT, then the corresponding rule body has a BasicAtom that is MBT.
 		// If atom instanceof ChoiceAtom and atom is MBT, then the corresponding rule body has a BasicAtom that is MBT.
-		// If atom instanceof RuleAtom and atom is FALSE, then this comes from a violated constraint in the end and the corresponding rule body can be taken as the single rule deriving the RuleAtom.
+		// If atom instanceof RuleAtom and atom is FALSE, then this comes from a violated constraint in the end and the corresponding rule body can be taken as
+		// the single rule deriving the RuleAtom.
 		assignedAtoms = new LinkedHashMap<>();
 		for (int i = 1; i <= atomStore.getMaxAtomId(); i++) {
 			Assignment.Entry entry = currentAssignment.get(i);
@@ -89,8 +91,7 @@ public class AnalyzeUnjustified {
 		// Construct set of all 'rules' such that head unifies with p.
 		List<RuleAndUnifier> rulesUnifyingWithP = rulesHeadUnifyingWith(p);
 		log("Rules unifying with {} are {}", p, rulesUnifyingWithP);
-		rulesLoop:
-		for (RuleAndUnifier ruleUnifier : rulesUnifyingWithP) {
+		rulesLoop: for (RuleAndUnifier ruleUnifier : rulesUnifyingWithP) {
 			Unifier sigma = ruleUnifier.unifier;
 			List<Literal> bodyR = ruleUnifier.ruleBody;
 			Atom sigmaHr = ruleUnifier.originalHead.substitute(sigma);
@@ -197,8 +198,7 @@ public class AnalyzeUnjustified {
 
 			log("Checking atoms over predicate: {}", b.getPredicate());
 			AssignedAtomsIterator assignedAtomsOverPredicate = getAssignedAtomsOverPredicate(b.getPredicate());
-			atomLoop:
-			while (assignedAtomsOverPredicate.hasNext()) {
+			atomLoop: while (assignedAtomsOverPredicate.hasNext()) {
 				Atom atom = assignedAtomsOverPredicate.next();
 				// Check that atom is justified/true.
 				log("Checking atom: {}", atom);
@@ -298,13 +298,13 @@ public class AnalyzeUnjustified {
 		}
 	}
 
-
 	private List<RuleAndUnifier> rulesHeadUnifyingWith(Atom p) {
 
 		List<RuleAndUnifier> rulesWithUnifier = new ArrayList<>();
 		Predicate predicate = p.getPredicate();
 		// Check if literal is built-in with a fixed interpretation.
-		if (p instanceof FixedInterpretationLiteral) {
+		// if (p instanceof FixedInterpretationLiteral) {
+		if (p.isBuiltin()) {
 			return Collections.emptyList();
 		}
 		ArrayList<FactOrNonGroundRule> definingRulesAndFacts = new ArrayList<>();

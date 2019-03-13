@@ -39,13 +39,14 @@ import static at.ac.tuwien.kr.alpha.Util.join;
 /**
  * Copyright (c) 2016-2018, the Alpha Team.
  */
-public class BasicAtom implements Atom, VariableNormalizableAtom {
+public class BasicAtom extends Atom implements VariableNormalizableAtom {
 	private final Predicate predicate;
 	private final List<Term> terms;
 	private final boolean ground;
 
 	/**
 	 * Creates a positive BasicAtom over predicate and terms.
+	 * 
 	 * @param predicate
 	 * @param terms
 	 */
@@ -89,9 +90,7 @@ public class BasicAtom implements Atom, VariableNormalizableAtom {
 
 	@Override
 	public BasicAtom substitute(Substitution substitution) {
-		return new BasicAtom(predicate, terms.stream()
-			.map(t -> t.substitute(substitution))
-			.collect(Collectors.toList()));
+		return new BasicAtom(predicate, terms.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList()));
 	}
 
 	@Override

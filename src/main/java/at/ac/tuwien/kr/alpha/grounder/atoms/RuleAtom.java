@@ -41,10 +41,9 @@ import java.util.List;
 import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
 
 /**
- * Atoms corresponding to rule bodies use this predicate, first term is rule number,
- * second is a term containing variable substitutions.
+ * Atoms corresponding to rule bodies use this predicate, first term is rule number, second is a term containing variable substitutions.
  */
-public class RuleAtom implements Atom {
+public class RuleAtom extends Atom {
 	public static final Predicate PREDICATE = Predicate.getInstance("_R_", 2, true, true);
 
 	private final List<ConstantTerm<String>> terms;
@@ -58,10 +57,7 @@ public class RuleAtom implements Atom {
 	}
 
 	public RuleAtom(NonGroundRule nonGroundRule, Substitution substitution) {
-		this(Arrays.asList(
-			getInstance(Integer.toString(nonGroundRule.getRuleId())),
-			getInstance(substitution.toString())
-		));
+		this(Arrays.asList(getInstance(Integer.toString(nonGroundRule.getRuleId())), getInstance(substitution.toString())));
 	}
 
 	@Override
@@ -71,10 +67,7 @@ public class RuleAtom implements Atom {
 
 	@Override
 	public List<Term> getTerms() {
-		return Arrays.asList(
-			terms.get(0),
-			terms.get(1)
-		);
+		return Arrays.asList(terms.get(0), terms.get(1));
 	}
 
 	@Override
@@ -82,7 +75,7 @@ public class RuleAtom implements Atom {
 		// NOTE: Both terms are ConstantTerms, which are ground by definition.
 		return true;
 	}
-	
+
 	@Override
 	public Literal toLiteral(boolean positive) {
 		throw new UnsupportedOperationException("RuleAtom cannot be literalized");

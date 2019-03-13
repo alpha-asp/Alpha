@@ -51,7 +51,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  * with the Integer being inside the interval.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class IntervalAtom implements Atom, VariableNormalizableAtom {
+public class IntervalAtom extends Atom implements VariableNormalizableAtom {
 	private static final Predicate PREDICATE = Predicate.getInstance("_interval", 2, true);
 
 	private final List<Term> terms;
