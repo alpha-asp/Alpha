@@ -100,6 +100,14 @@ public class CommandLineParser {
 	private static final Option OPT_NORMALIZATION_GRID = Option.builder("ng").longOpt("normalizationCountingGrid")
 			.desc("use counting grid normalization instead of sorting circuit for #count (default: " + SystemConfig.DEFAULT_USE_NORMALIZATION_GRID + ")")
 			.build();
+	private static final Option OPT_GROUNDER_TOLERANCE_CONSTRAINTS = Option.builder("gtc").longOpt("grounderToleranceConstraints")
+			.desc("grounder tolerance for constraints (default: " + SystemConfig.DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS + ")")
+			.hasArg().argName("tolerance")
+			.build();
+	private static final Option OPT_GROUNDER_TOLERANCE_RULES = Option.builder("gtr").longOpt("grounderToleranceRules")
+			.desc("grounder tolerance for rules (default: " + SystemConfig.DEFAULT_GROUNDER_TOLERANCE_RULES + ")")
+			.hasArg().argName("tolerance")
+			.build();
 
 	private static final Options CLI_OPTS = new Options();
 
@@ -128,6 +136,8 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_STATS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_JUSTIFICATION);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NORMALIZATION_GRID);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES);
 	}
 
 	/*
@@ -169,6 +179,8 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_STATS.getOpt(), this::handleStats);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), this::handleNoJustification);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NORMALIZATION_GRID.getOpt(), this::handleNormalizationGrid);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS.getOpt(), this::handleGrounderToleranceConstraints);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES.getOpt(), this::handleGrounderToleranceRules);
 
 		this.inputOptionHandlers.put(CommandLineParser.OPT_NUM_ANSWER_SETS.getOpt(), this::handleNumAnswerSets);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_INPUT.getOpt(), this::handleInput);
@@ -334,6 +346,16 @@ public class CommandLineParser {
 
 	private void handleNormalizationGrid(Option opt, SystemConfig cfg) {
 		cfg.setUseNormalizationGrid(true);
+	}
+	
+	private void handleGrounderToleranceConstraints(Option opt, SystemConfig cfg) {
+		String grounderToleranceConstraints = opt.getValue(SystemConfig.DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS);
+		cfg.setGrounderToleranceConstraints(grounderToleranceConstraints);
+	}
+	
+	private void handleGrounderToleranceRules(Option opt, SystemConfig cfg) {
+		String grounderToleranceRules = opt.getValue(SystemConfig.DEFAULT_GROUNDER_TOLERANCE_RULES);
+		cfg.setGrounderToleranceRules(grounderToleranceRules);
 	}
 
 }

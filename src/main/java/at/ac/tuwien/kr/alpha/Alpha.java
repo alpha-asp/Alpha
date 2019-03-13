@@ -36,6 +36,7 @@ import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
@@ -115,9 +116,12 @@ public class Alpha {
 		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
 		heuristicsConfigurationBuilder.setHeuristic(this.config.getBranchingHeuristic());
 		heuristicsConfigurationBuilder.setMomsStrategy(this.config.getMomsStrategy());
+		
+		GrounderHeuristicsConfiguration grounderHeuristicConfiguration = GrounderHeuristicsConfiguration
+				.getInstance(this.config.getGrounderToleranceConstraints(), this.config.getGrounderToleranceRules());
 
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, doDebugChecks);
+		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, grounderHeuristicConfiguration, doDebugChecks);
 
 		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed),
 				heuristicsConfigurationBuilder.build(), doDebugChecks, disableJustificationSearch);

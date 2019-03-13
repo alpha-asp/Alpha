@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.config;
 
+import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 import at.ac.tuwien.kr.alpha.solver.heuristics.MOMs;
 
@@ -49,6 +50,8 @@ public class SystemConfig {
 	public static final boolean DEFAULT_DEBUG_INTERNAL_CHECKS = false;
 	public static final boolean DEFAULT_USE_NORMALIZATION_GRID = false;
 	public static final boolean DEFAULT_SORT_ANSWER_SETS = false;
+	public static final String DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS = GrounderHeuristicsConfiguration.STRICT_STRING;
+	public static final String DEFAULT_GROUNDER_TOLERANCE_RULES = GrounderHeuristicsConfiguration.STRICT_STRING;
 
 	private String grounderName = SystemConfig.DEFAULT_GROUNDER_NAME;
 	private String solverName = SystemConfig.DEFAULT_SOLVER_NAME;
@@ -63,6 +66,8 @@ public class SystemConfig {
 	private boolean disableJustificationSearch = SystemConfig.DEFAULT_DISABLE_JUSTIFICATION_SEARCH;
 	private boolean useNormalizationGrid = SystemConfig.DEFAULT_USE_NORMALIZATION_GRID;
 	private boolean sortAnswerSets = SystemConfig.DEFAULT_SORT_ANSWER_SETS;
+	private String grounderToleranceConstraints = DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS;
+	private String grounderToleranceRules = DEFAULT_GROUNDER_TOLERANCE_RULES;
 
 	public String getGrounderName() {
 		return this.grounderName;
@@ -174,6 +179,22 @@ public class SystemConfig {
 
 	public void setSortAnswerSets(boolean sortAnswerSets) {
 		this.sortAnswerSets = sortAnswerSets;
+	}
+
+	public String getGrounderToleranceConstraints() {
+		return grounderToleranceConstraints;
+	}
+
+	public void setGrounderToleranceConstraints(String grounderToleranceConstraints) {
+		this.grounderToleranceConstraints = grounderToleranceConstraints;
+	}
+
+	public String getGrounderToleranceRules() {
+		return grounderToleranceRules;
+	}
+
+	public void setGrounderToleranceRules(String grounderToleranceRules) {
+		this.grounderToleranceRules = grounderToleranceRules;
 	}
 
 }
