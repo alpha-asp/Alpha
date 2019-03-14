@@ -575,9 +575,15 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private void logFirstChoices(int n) {
-		LOGGER.info("First {} choices (without those removed during backtracking): {}", n,
-				choiceManager.getChoiceStack().stream().limit(n)
-				.map(Choice::toSignedInteger).map(String::valueOf).collect(Collectors.joining(", ")));
+		List<Integer> choicesSignedAtoms = choiceManager.getChoiceStack().stream().limit(n)
+				.map(Choice::toSignedInteger).collect(Collectors.toList());
+		LOGGER.info("First {} choices (without those removed during backtracking): {}", n, choicesSignedAtoms);
+		List<String> choicesGroundAtoms = new ArrayList<>(choicesSignedAtoms.size());
+		for (int signedAtom : choicesSignedAtoms) {
+			int literal = signedAtomToLiteral(signedAtom);
+			choicesGroundAtoms.add(atomStore.literalToString(literal));
+		}
+		LOGGER.info("First {} choices (without those removed during backtracking): {}", n, choicesGroundAtoms);
 	}
 
 	public void setChecksEnabled(boolean checksEnabled) {
