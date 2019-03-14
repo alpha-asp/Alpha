@@ -318,6 +318,15 @@ public class ChoiceManager implements Checkable {
 		return activeBodies;
 	}
 	
+	/**
+	 * Returns an unmodifiable view on the current choice stack which does not contain choices that have been removed during backtracking. 
+	 * 
+	 * @return an unmodifiable view on the current choice stack
+	 */
+	public List<Choice> getChoiceStack() {
+		return Collections.unmodifiableList(choiceStack);
+	}
+	
 	public static ChoiceManager withoutDomainSpecificHeuristics(WritableAssignment assignment, NoGoodStore store) {
 		return new ChoiceManager(assignment, store, new EmptyDomainSpecificHeuristicsStore());
 	}

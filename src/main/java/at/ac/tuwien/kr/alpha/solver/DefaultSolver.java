@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
@@ -569,7 +570,14 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private void logStats() {
-		LOGGER.debug(getStatisticsString());
+		LOGGER.info(getStatisticsString());
+		logFirstChoices(1000);
+	}
+
+	private void logFirstChoices(int n) {
+		LOGGER.info("First {} choices (without those removed during backtracking): {}", n,
+				choiceManager.getChoiceStack().stream().limit(n)
+				.map(Choice::toSignedInteger).map(String::valueOf).collect(Collectors.joining(", ")));
 	}
 
 	public void setChecksEnabled(boolean checksEnabled) {
