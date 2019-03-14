@@ -16,8 +16,8 @@ import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph.SCComponent;
+import at.ac.tuwien.kr.alpha.common.program.Program;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 
 public class ComponentGraphTest {

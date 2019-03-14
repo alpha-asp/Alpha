@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
+import at.ac.tuwien.kr.alpha.common.program.Program;
 import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;

@@ -14,8 +14,8 @@ import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.depgraph.io.DependencyGraphWriter;
+import at.ac.tuwien.kr.alpha.common.program.Program;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 

@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.grounder.transformation;
 
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
+import at.ac.tuwien.kr.alpha.common.program.Program;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;

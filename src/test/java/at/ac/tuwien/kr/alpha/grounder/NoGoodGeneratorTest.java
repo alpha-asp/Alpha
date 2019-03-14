@@ -26,8 +26,8 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.program.Program;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
 import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;

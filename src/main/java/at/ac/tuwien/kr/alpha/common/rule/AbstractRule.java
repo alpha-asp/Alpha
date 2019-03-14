@@ -13,7 +13,7 @@ import at.ac.tuwien.kr.alpha.common.rule.head.Head;
  * 
  * @param <H> the type of head for this rule Copyright (c) 2019, the Alpha Team.
  */
-public class AbstractRule<H extends Head> {
+public abstract class AbstractRule<H extends Head> {
 
 	private final H head;
 	private final List<Literal> body;

@@ -25,7 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.common;
+package at.ac.tuwien.kr.alpha.common.program;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.external.ExternalAtoms;
@@ -47,6 +47,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class Program {
+	
 	public static final Program EMPTY = new Program(Collections.emptyList(), Collections.emptyList(), new InlineDirectives());
 
 	private final List<BasicRule> rules;
