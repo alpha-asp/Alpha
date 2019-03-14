@@ -72,6 +72,9 @@ public class ReplayHeuristic implements BranchingHeuristic {
 
 	@Override
 	public int chooseLiteral(Set<Integer> admissibleChoices) {
+		if (!choicesIterator.hasNext()) {
+			return DEFAULT_CHOICE_LITERAL;
+		}
 		int replayChoiceSignedAtom = choicesIterator.next();
 		int replayChoiceAtom = Math.abs(replayChoiceSignedAtom);
 		int replayChoiceLiteral = Literals.atomToLiteral(replayChoiceAtom, replayChoiceSignedAtom > 0);
