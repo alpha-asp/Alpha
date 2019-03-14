@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -55,7 +55,8 @@ public final class BranchingHeuristicFactory {
 		ALPHA_ACTIVE_RULE,
 		ALPHA_HEAD_MBT,
 		VSIDS,
-		GDD_VSIDS;
+		GDD_VSIDS,
+		REPLAY;
 
 		/**
 		 * @return a comma-separated list of names of known heuristics
@@ -105,6 +106,8 @@ public final class BranchingHeuristicFactory {
 			return new VSIDS(assignment, choiceManager, random, heuristicsConfiguration.getMomsStrategy());
 		case GDD_VSIDS:
 			return new DependencyDrivenVSIDS(assignment, choiceManager, random, heuristicsConfiguration.getMomsStrategy());
+		case REPLAY:
+			return new ReplayHeuristic(heuristicsConfiguration.getReplayChoices(), choiceManager);
 		}
 		throw new IllegalArgumentException("Unknown branching heuristic requested.");
 	}

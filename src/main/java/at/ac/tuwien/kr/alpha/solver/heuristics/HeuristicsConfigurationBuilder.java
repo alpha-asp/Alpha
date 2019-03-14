@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,8 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 
+import java.util.List;
+
 /**
  * Builder for {@link HeuristicsConfiguration} objects
  */
@@ -34,6 +36,7 @@ public class HeuristicsConfigurationBuilder {
 	
 	private Heuristic heuristic;
 	private MOMs.Strategy momsStrategy;
+	private List<Integer> replayChoices;
 
 	/**
 	 * @param heuristic the heuristic to set
@@ -51,8 +54,16 @@ public class HeuristicsConfigurationBuilder {
 		return this;
 	}
 
+	/**
+	 * @param replayChoices the replayChoices to set
+	 */
+	public HeuristicsConfigurationBuilder setReplayChoices(List<Integer> replayChoices) {
+		this.replayChoices = replayChoices;
+		return this;
+	}
+
 	public HeuristicsConfiguration build() {
-		return new HeuristicsConfiguration(heuristic, momsStrategy);
+		return new HeuristicsConfiguration(heuristic, momsStrategy, replayChoices);
 	}
 	
 }
