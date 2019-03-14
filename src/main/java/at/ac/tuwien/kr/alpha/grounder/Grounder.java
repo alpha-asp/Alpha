@@ -2,11 +2,14 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 public interface Grounder {
 	/**
@@ -37,6 +40,11 @@ public interface Grounder {
 	 */
 	void updateAssignment(Iterator<Integer> it);
 
+	/**
+	 * Returns a set of new mappings from head atoms to {@link RuleAtom}s deriving it.
+	 */
+	Map<Integer, Set<Integer>> getHeadsToBodies();
+
 	void forgetAssignment(int[] atomIds);
 
 	/**
@@ -45,4 +53,6 @@ public interface Grounder {
 	 * @return
 	 */
 	int register(NoGood noGood);
+
+	AtomStore getAtomStore();
 }

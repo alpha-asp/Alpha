@@ -38,16 +38,13 @@ import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 import at.ac.tuwien.kr.alpha.grounder.ProgramAnalyzingGrounder;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
-import at.ac.tuwien.kr.alpha.solver.heuristics.ChainedBranchingHeuristics;
-import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.*;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -78,16 +75,16 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
 
 	private final PerformanceLog performanceLog;
-
-	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, Heuristic branchingHeuristic, boolean debugInternalChecks, boolean disableJustifications) {
+	
+	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, HeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, boolean disableJustifications) {
 		super(atomStore, grounder);
 
 		this.assignment = assignment;
 		this.store = store;
-		this.choiceManager = new ChoiceManager(assignment, store, debugInternalChecks);
+		this.choiceManager = new ChoiceManager(assignment, store);
 		this.learner = new GroundConflictNoGoodLearner(assignment);
 		this.branchingHeuristic = ChainedBranchingHeuristics.chainOf(
-				BranchingHeuristicFactory.getInstance(branchingHeuristic, grounder, assignment, choiceManager, random),
+				BranchingHeuristicFactory.getInstance(heuristicsConfiguration, grounder, assignment, choiceManager, random),
 				new NaiveHeuristic(choiceManager));
 		this.disableJustifications = disableJustifications;
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
@@ -298,7 +295,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		for (Literal literal : reasonsForUnjustified) {
 			reasons[arrpos++] = atomToLiteral(atomStore.get(literal.getAtom()), !literal.isNegated());
 		}
-		return new NoGood(reasons);
+		return NoGood.learnt(reasons);
 	}
 
 	private boolean treatConflictAfterClosing(NoGood violatedNoGood) {
@@ -490,7 +487,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private boolean choose() {
-		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
+		choiceManager.addChoiceInformation(grounder.getChoiceAtoms(), grounder.getHeadsToBodies());
 		choiceManager.updateAssignments();
 
 		// Hint: for custom heuristics, evaluate them here and pick a value if the heuristics suggests one.
@@ -539,6 +536,14 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private void logStats() {
-		LOGGER.debug(getStatisticsString());
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info(getStatisticsString());
+			if (branchingHeuristic instanceof ChainedBranchingHeuristics) {
+				LOGGER.info("Decisions made by each heuristic:");
+				for (Entry<BranchingHeuristic, Integer> heuristicToDecisionCounter : ((ChainedBranchingHeuristics)branchingHeuristic).getNumberOfDecisions().entrySet()) {
+					LOGGER.info(heuristicToDecisionCounter.getKey() + ": " + heuristicToDecisionCounter.getValue());
+				}
+			}
+		}
 	}
 }

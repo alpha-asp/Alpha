@@ -165,7 +165,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	@Override
 	protected Solver getInstance(Program program) {
 		AtomStore atomStore = new AtomStoreImpl();
-		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, program, atomStore, p->true, useCountingGridNormalization()));
+		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, program, atomStore, p->true, useCountingGridNormalization(), true));
 	}
 	
 	protected abstract boolean useCountingGridNormalization();

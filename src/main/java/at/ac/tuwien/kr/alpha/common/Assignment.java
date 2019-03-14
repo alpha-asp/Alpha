@@ -189,6 +189,16 @@ public interface Assignment {
 	 * Grows all internal data structures to accommodate for all atoms known.
 	 */
 	void growForMaxAtomId();
+	
+	/**
+	 * @return the total number of assigned atoms
+	 */
+	int getNumberOfAssignedAtoms();
+	
+	/**
+	 * @return the number of atoms assigned on the given decision level or a higher one
+	 */
+	int getNumberOfAtomsAssignedFromDecisionLevel(int decisionLevel);
 
 	/**
 	 * Obtain a BasicAtom that is currently assigned MBT (but not TRUE).
