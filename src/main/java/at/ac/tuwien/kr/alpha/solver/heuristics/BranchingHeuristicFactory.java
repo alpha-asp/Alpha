@@ -69,7 +69,7 @@ public final class BranchingHeuristicFactory {
 	public static BranchingHeuristic getInstance(HeuristicsConfiguration heuristicsConfiguration, Grounder grounder, WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
 		BranchingHeuristic heuristicWithoutReplay = getInstanceWithoutReplay(heuristicsConfiguration, grounder, assignment, choiceManager, random);
 		List<Integer> replayChoices = heuristicsConfiguration.getReplayChoices();
-		if (replayChoices != null && !replayChoices.isEmpty() ) {
+		if (replayChoices != null && !replayChoices.isEmpty()) {
 			return ChainedBranchingHeuristics.chainOf(
 					new ReplayHeuristic(replayChoices, choiceManager),
 					heuristicWithoutReplay);
