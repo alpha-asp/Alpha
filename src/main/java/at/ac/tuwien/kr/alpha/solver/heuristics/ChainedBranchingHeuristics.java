@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -89,6 +89,10 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 			throw oops("Cycle detected in chain of branching heuristics");
 		}
 		chain.add(element);
+	}
+
+	public BranchingHeuristic getLastElement() {
+		return chain.get(chain.size() - 1);
 	}
 	
 	public static ChainedBranchingHeuristics chainOf(BranchingHeuristic... branchingHeuristics) {

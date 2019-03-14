@@ -90,7 +90,7 @@ public class CommandLineParser {
 			.desc("strategy for mom's heuristic (CountBinaryWatches or BinaryNoGoodPropagation, default: " + SystemConfig.DEFAULT_MOMS_STRATEGY.name() + ")")
 			.build();
 	private static final Option OPT_REPLAY_CHOICES = Option.builder("rc").longOpt("replayChoices").hasArg().argName("choices")
-			.desc("list of signed atoms to be chosen (only applicable if " + OPT_BRANCHING_HEURISTIC.getOpt() + "=" + Heuristic.REPLAY.name() + ")")
+			.desc("list of choices (signed atom IDs) to be replayed")
 			.build();
 	private static final Option OPT_QUIET = Option.builder("q").longOpt("quiet").desc("do not print answer sets (default: " + SystemConfig.DEFAULT_QUIET)
 			.build();
