@@ -3,17 +3,14 @@ version: "{branch} {build}"
 build:
   verbosity: detailed
 
-install:
-  - choco install gradle --version 5.3
-
 before_build:
   - ps: Get-Command java
 
 build_script:
-  - gradle assemble --no-daemon
+  - gradlew assemble --no-daemon
 
 test_script:
-  - gradle check --no-daemon
+  - gradlew check --no-daemon
 
 after_test:
   - ps: |
@@ -22,7 +19,7 @@ after_test:
         Foreach-Object {
             $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $_))
         }
-  - gradle bundledJar --no-daemon
+  - gradlew bundledJar --no-daemon
   - mv build/libs/alpha-bundled.jar alpha.jar
 
 artifacts:

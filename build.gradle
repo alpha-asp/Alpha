@@ -110,3 +110,9 @@ test {
 		exceptionFormat = 'full'
 	}
 }
+
+wrapper {
+	gradleVersion = '5.3'
+	distributionType = 'ALL'
+}
+
