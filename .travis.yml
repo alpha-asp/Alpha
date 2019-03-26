@@ -5,14 +5,28 @@ sudo: true
 
 language: java
 
+# We test against Java releases:
+#  - greater than 7
+#  AND
+#    - with LTS and in "Premier Support" phase
+#    OR
+#    - not succeeded by any other release
+# https://www.oracle.com/technetwork/java/java-se-support-roadmap.html
 # https://docs.travis-ci.com/user/languages/java#Testing-Against-Multiple-JDKs
 jdk:
+  # LTS and in "Premier Support" as of 2019-03 (until 2022-03)
   - openjdk8
   - oraclejdk8
-  - oraclejdk9
+  # LTS and in "Premier Support" as of 2019-03 (until 2023-09)
+  - openjdk11
+  - oraclejdk11
+  # Not succeeded as of 2019-03. Scheduled to be succeeded by
+  # Java 13 in 2019-09, see http://openjdk.java.net/projects/jdk/13/spec/
+  - openjdk12
+  - oraclejdk12
 
 env:
-  - GRADLE_VERSION=4.4
+  - GRADLE_VERSION=5.3
 
 # As of 2016-06 Travis CI is running an outdated
 # version of Gradle, so this workaround fetches
