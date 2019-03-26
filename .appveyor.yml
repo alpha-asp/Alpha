@@ -4,7 +4,7 @@ build:
   verbosity: detailed
 
 install:
-  - choco install gradle --version 4.2.1
+  - choco install gradle --version 5.3
 
 before_build:
   - ps: Get-Command java

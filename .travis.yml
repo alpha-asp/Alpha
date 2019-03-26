@@ -12,7 +12,7 @@ jdk:
   - oraclejdk9
 
 env:
-  - GRADLE_VERSION=4.4
+  - GRADLE_VERSION=5.3
 
 # As of 2016-06 Travis CI is running an outdated
 # version of Gradle, so this workaround fetches
