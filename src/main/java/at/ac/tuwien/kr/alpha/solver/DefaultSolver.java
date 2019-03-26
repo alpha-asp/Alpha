@@ -115,7 +115,11 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		if (branchingHeuristic instanceof NaiveHeuristic) {
 			return branchingHeuristic;
 		}
-		if (branchingHeuristic instanceof ChainedBranchingHeuristics && ((ChainedBranchingHeuristics)branchingHeuristic).getLastElement() instanceof NaiveHeuristic) {
+		if (branchingHeuristic instanceof ChainedBranchingHeuristics) {
+			ChainedBranchingHeuristics chainedBranchingHeuristics = (ChainedBranchingHeuristics) branchingHeuristic;
+			if (!(chainedBranchingHeuristics.getLastElement() instanceof NaiveHeuristic)) {
+				chainedBranchingHeuristics.add(new NaiveHeuristic(choiceManager));
+			}
 			return branchingHeuristic;
 		}
 		return ChainedBranchingHeuristics.chainOf(branchingHeuristic, new NaiveHeuristic(choiceManager));
