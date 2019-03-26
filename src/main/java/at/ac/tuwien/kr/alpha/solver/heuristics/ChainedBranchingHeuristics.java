@@ -121,6 +121,10 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 		}
 		chain.add(element);
 	}
+
+	public BranchingHeuristic getLastElement() {
+		return chain.get(chain.size() - 1);
+	}
 	
 	public static ChainedBranchingHeuristics chainOf(BranchingHeuristic... branchingHeuristics) {
 		ChainedBranchingHeuristics chain = new ChainedBranchingHeuristics();

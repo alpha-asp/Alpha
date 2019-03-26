@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018 Siemens AG
+ * Copyright (c) 2017-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -66,7 +66,7 @@ public final class BranchingHeuristicFactory {
 			Random random) {
 		BranchingHeuristic fallbackHeuristic = getInstance(name, assignment, choiceManager, random);
 		if (respectDomSpecHeuristic) {
-			return new DomainSpecific(assignment, choiceManager, fallbackHeuristic);
+			return ChainedBranchingHeuristics.chainOf(new DomainSpecific(assignment, choiceManager, fallbackHeuristic), fallbackHeuristic);
 		} else {
 			return fallbackHeuristic;
 		}

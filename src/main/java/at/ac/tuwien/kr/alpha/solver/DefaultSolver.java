@@ -105,11 +105,20 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 
 		this.learner = new GroundConflictNoGoodLearner(assignment);
-		this.branchingHeuristic = ChainedBranchingHeuristics.chainOf(
-				BranchingHeuristicFactory.getInstance(respectDomSpecHeuristic, branchingHeuristic, assignment, choiceManager, random),
-				new NaiveHeuristic(choiceManager));
+		this.branchingHeuristic = chainFallbackHeuristic(respectDomSpecHeuristic, assignment, random, branchingHeuristic);
 		this.disableJustifications = disableJustifications;
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
+	}
+
+	private BranchingHeuristic chainFallbackHeuristic(boolean respectDomSpecHeuristic, WritableAssignment assignment, Random random, Heuristic heuristic) {
+		BranchingHeuristic branchingHeuristic = BranchingHeuristicFactory.getInstance(respectDomSpecHeuristic, heuristic, assignment, choiceManager, random);
+		if (branchingHeuristic instanceof NaiveHeuristic) {
+			return branchingHeuristic;
+		}
+		if (branchingHeuristic instanceof ChainedBranchingHeuristics && ((ChainedBranchingHeuristics)branchingHeuristic).getLastElement() instanceof NaiveHeuristic) {
+			return branchingHeuristic;
+		}
+		return ChainedBranchingHeuristics.chainOf(branchingHeuristic, new NaiveHeuristic(choiceManager));
 	}
 
 	@Override
