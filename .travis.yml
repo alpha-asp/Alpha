@@ -23,10 +23,8 @@ jdk:
   # Not succeeded as of 2019-03. Scheduled to be succeeded by
   # Java 13 in 2019-09, see http://openjdk.java.net/projects/jdk/13/spec/
   - openjdk12
-  - oraclejdk12
-
-env:
-  - GRADLE_VERSION=5.3
+  # No Oracle JDK >11, see
+  # https://blogs.oracle.com/java-platform-group/oracle-jdk-releases-for-java-11-and-later
 
 # As of 2016-06 Travis CI is running an outdated
 # version of Gradle, so this workaround fetches
@@ -43,13 +41,8 @@ before_install:
   - export GRADLE_OPTS="-Xmx1g -Xss8m"
   - echo 'org.gradle.jvmargs=-Xmx1g' >> $HOME/.gradle/gradle.properties
 
-  # Actually download Gradle, unpack it and make it visible in $PATH.
-  - wget -q -O gradle.zip https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip
-  - unzip -q gradle.zip
-  - export PATH=$PWD/gradle-$GRADLE_VERSION/bin:$PATH
-
 after_success:
-  - gradle jacocoTestReport coveralls
+  - ./gradlew jacocoTestReport coveralls
   - bash <(curl -s https://codecov.io/bash)
 
 # Do not send notifications via e-mail, this gets
