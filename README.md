@@ -23,7 +23,7 @@ possibilities to interface with the ecosystem built around the Java Virtual Mach
 
 ## Getting Started
 
-Download a current version of `alpha.jar` from [Releases](https://github.com/AntoniusW/Alpha/releases).
+Download a current version of `alpha.jar` from [Releases](https://github.com/alpha-asp/Alpha/releases).
 
 Running Alpha is as simple as running any other JAR:
 
@@ -46,7 +46,7 @@ Note that in this example the path to the input file is relative to the root of 
 Alpha uses the [Gradle build automation system](https://gradle.org). Executing
 
 ```bash
-$ gradle build
+$ ./gradlew build
 ```
 
 will automatically fetch all dependencies (declared in [`build.gradle`](build.gradle)) and compile the project.
@@ -58,7 +58,7 @@ and Windows.
 If you want to generate a JAR file to be run standalone, execute
 
 ```bash
-$ gradle bundledJar
+$ ./gradlew bundledJar
 ```
 
 and pick up `build/libs/alpha-bundled.jar`.
