@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -239,7 +239,8 @@ public class DomainSpecificHeuristicsTest {
 	}
 
 	private void solveAndAssertAnswerSets(Program program, String... expectedAnswerSets) {
-		Solver solver = SolverFactory.getInstance("default", "alpharoaming", atomStore, GrounderFactory.getInstance("naive", program, atomStore), new Random(), true, Heuristic.NAIVE, true, false);
+		HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(Heuristic.NAIVE).build();
+		Solver solver = SolverFactory.getInstance("default", "alpharoaming", atomStore, GrounderFactory.getInstance("naive", program, atomStore), new Random(), heuristicsConfiguration, true, false);
 		assertEquals(Arrays.asList(expectedAnswerSets), solver.stream().map(AnswerSet::toString).collect(Collectors.toList()));
 	}
 }

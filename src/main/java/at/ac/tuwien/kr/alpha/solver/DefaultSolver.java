@@ -39,7 +39,6 @@ import at.ac.tuwien.kr.alpha.grounder.ProgramAnalyzingGrounder;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.solver.heuristics.*;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,27 +90,26 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	 *          see {@code respectDomSpecHeuristic}
 	 * @param disableJustifications
 	 */
-	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, boolean respectDomSpecHeuristic,
-			Heuristic branchingHeuristic, boolean disableJustifications) {
+	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, HeuristicsConfiguration heuristicsConfiguration, boolean disableJustifications) {
 		super(atomStore, grounder);
 
 		this.assignment = assignment;
 		this.store = store;
 
-		if (respectDomSpecHeuristic) {
+		if (heuristicsConfiguration.isRespectDomspecHeuristics()) {
 			this.choiceManager = ChoiceManager.withDomainSpecificHeuristics(assignment, store);
 		} else {
 			this.choiceManager = ChoiceManager.withoutDomainSpecificHeuristics(assignment, store);
 		}
 
 		this.learner = new GroundConflictNoGoodLearner(assignment);
-		this.branchingHeuristic = chainFallbackHeuristic(respectDomSpecHeuristic, assignment, random, branchingHeuristic);
+		this.branchingHeuristic = chainFallbackHeuristic(heuristicsConfiguration, assignment, random);
 		this.disableJustifications = disableJustifications;
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
 	}
 
-	private BranchingHeuristic chainFallbackHeuristic(boolean respectDomSpecHeuristic, WritableAssignment assignment, Random random, Heuristic heuristic) {
-		BranchingHeuristic branchingHeuristic = BranchingHeuristicFactory.getInstance(respectDomSpecHeuristic, heuristic, assignment, choiceManager, random);
+	private BranchingHeuristic chainFallbackHeuristic(HeuristicsConfiguration heuristicsConfiguration, WritableAssignment assignment, Random random) {
+		BranchingHeuristic branchingHeuristic = BranchingHeuristicFactory.getInstance(heuristicsConfiguration, assignment, choiceManager, random);
 		if (branchingHeuristic instanceof NaiveHeuristic) {
 			return branchingHeuristic;
 		}

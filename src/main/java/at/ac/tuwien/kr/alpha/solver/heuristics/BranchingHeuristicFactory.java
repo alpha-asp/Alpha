@@ -62,18 +62,18 @@ public final class BranchingHeuristicFactory {
 		}
 	}
 
-	public static BranchingHeuristic getInstance(boolean respectDomSpecHeuristic, Heuristic name, WritableAssignment assignment, ChoiceManager choiceManager,
+	public static BranchingHeuristic getInstance(HeuristicsConfiguration heuristicsConfiguration, WritableAssignment assignment, ChoiceManager choiceManager,
 			Random random) {
-		BranchingHeuristic fallbackHeuristic = getInstance(name, assignment, choiceManager, random);
-		if (respectDomSpecHeuristic) {
+		BranchingHeuristic fallbackHeuristic = getInstanceWithoutDomspec(heuristicsConfiguration, assignment, choiceManager, random);
+		if (heuristicsConfiguration.isRespectDomspecHeuristics()) {
 			return ChainedBranchingHeuristics.chainOf(new DomainSpecific(assignment, choiceManager, fallbackHeuristic), fallbackHeuristic);
 		} else {
 			return fallbackHeuristic;
 		}
 	}
 
-	public static BranchingHeuristic getInstance(Heuristic name, WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
-		switch (name) {
+	public static BranchingHeuristic getInstanceWithoutDomspec(HeuristicsConfiguration heuristicsConfiguration, WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
+		switch (heuristicsConfiguration.getHeuristic()) {
 		case NAIVE:
 			return new NaiveHeuristic(choiceManager);
 		case BERKMIN:

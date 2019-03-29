@@ -40,7 +40,8 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.apache.commons.lang3.StringUtils;
@@ -109,15 +110,17 @@ public class Alpha {
 		String solverName = this.config.getSolverName();
 		String nogoodStoreName = this.config.getNogoodStoreName();
 		long seed = this.config.getSeed();
-		Heuristic branchingHeuristic = BranchingHeuristicFactory.Heuristic.valueOf(this.config.getBranchingHeuristicName());
-		boolean respectDomspecHeuristics = !this.config.isIgnoreDomspecHeuristics();
 		boolean doDebugChecks = this.config.isDebugInternalChecks();
 		boolean disableJustificationSearch = this.config.isDisableJustificationSearch();
+
+		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
+		heuristicsConfigurationBuilder.setHeuristic(BranchingHeuristicFactory.Heuristic.valueOf(this.config.getBranchingHeuristicName()));
+		heuristicsConfigurationBuilder.setRespectDomspecHeuristics(!this.config.isIgnoreDomspecHeuristics());
 
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore);
 
-		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed), respectDomspecHeuristics, branchingHeuristic, doDebugChecks,
+		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed), heuristicsConfigurationBuilder.build(), doDebugChecks,
 				disableJustificationSearch);
 		return solver;
 	}
