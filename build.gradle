@@ -99,9 +99,9 @@ jacocoTestReport {
 	//       AntlrTasks above). It does not make sense to include them in our coverage
 	//       report.
 	afterEvaluate {
-		classDirectories = files(classDirectories.files.collect {
+		getClassDirectories().setFrom(files(classDirectories.files.collect {
 			fileTree(dir: it, exclude: "at/ac/tuwien/kr/alpha/antlr/**")
-		})
+		}))
 	}
 }
 
@@ -110,3 +110,9 @@ test {
 		exceptionFormat = 'full'
 	}
 }
+
+wrapper {
+	gradleVersion = '5.3'
+	distributionType = 'ALL'
+}
+

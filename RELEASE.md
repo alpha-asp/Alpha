@@ -14,7 +14,7 @@ $ git checkout $rev
 ```
 
 Now is the time to make sure the revision you are about to release actually works fine. Run tests, try it out
-manually, maybe go paranoid and `gradle clean` everything and try again. Only continue if you are happy with
+manually, maybe go paranoid and `./gradlew clean` everything and try again. Only continue if you are happy with
 the revision you are about to release, and avoid list minute fixes.
 
 Next, give `$rev` a name, by tagging it. The naming convention for tags is
@@ -47,14 +47,14 @@ as JAR files and two scripts to run Alpha on Unix-like and Windows respectively.
 To generate `alpha.jar`:
 
 ```bash
-$ gradle bundledJar
+$ ./gradlew bundledJar
 $ cp build/libs/alpha-bundled.jar alpha.jar
 ```
 
 To generate `alpha.zip`:
 
 ```bash
-$ gradle distZip
+$ ./gradlew distZip
 $ cp build/distributions/alpha.zip alpha.zip
 ```
 
