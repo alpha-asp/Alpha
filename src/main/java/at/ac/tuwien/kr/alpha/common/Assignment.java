@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -191,14 +191,9 @@ public interface Assignment {
 	void growForMaxAtomId();
 	
 	/**
-	 * @return the total number of assigned atoms
+	 * @return the number of atoms assigned since the last decision
 	 */
-	int getNumberOfAssignedAtoms();
-	
-	/**
-	 * @return the number of atoms assigned on the given decision level or a higher one
-	 */
-	int getNumberOfAtomsAssignedFromDecisionLevel(int decisionLevel);
+	int getNumberOfAtomsAssignedSinceLastDecision();
 
 	/**
 	 * Obtain a BasicAtom that is currently assigned MBT (but not TRUE).

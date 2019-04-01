@@ -25,7 +25,6 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.NoGood.Type;
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
@@ -66,6 +65,13 @@ public class HeapOfActiveAtoms {
 	private int stepsSinceLastDecay;
 	private double currentActivityIncrement = 1.0;
 	private double incrementFactor = DEFAULT_INCREMENT_FACTOR; // TODO: make configurable
+
+	/**
+	 * The maximum score of an atom encountered so far. It is stored in a member variable s.t. normalization done
+	 * by {@link #initActivityMOMs(Collection)} will be less affected by score changes in between different calls
+	 * of the method.
+	 */
+	private double maxScore;
 	
 	private final MOMs moms;
 
@@ -154,24 +160,29 @@ public class HeapOfActiveAtoms {
 	}
 
 	private void initActivityMOMs(Collection<NoGood> newNoGoods) {
-		Set<Integer> atoms = Literals.getAtoms(newNoGoods); // TODO: might be inefficient
-		initActivityMOMs(atoms);
-	}
-
-	private void initActivityMOMs(Set<Integer> atoms) {
 		LOGGER.debug("Initializing activity scores with MOMs");
 		Map<Integer, Double> newActivityScores = new HashMap<>();
-		double maxScore = 0.0;
-		for (Integer atom : atoms) {
-			// TODO: make this more performant by converting activityScores to an array and only respecting new atoms outside the former array bounds
-			if (!activityScores.containsKey(atom) && !choiceManager.getAssignment().isAssigned(atom)) {
-				double score = moms.getScore(atom);
-				if (score != 0.0) {
-					maxScore = max(score, maxScore);
-					newActivityScores.put(atom, score);
+		for (NoGood noGood : newNoGoods) {
+			for (int literal : noGood) {
+				int atom = atomOf(literal);
+				// TODO: make this more performant by converting activityScores to an array and only respecting new atoms outside the former array bounds
+				if (!activityScores.containsKey(atom) && !choiceManager.getAssignment().isAssigned(atom)) {
+					double score = moms.getScore(atom);
+					if (score != 0.0) {
+						maxScore = max(score, maxScore);
+						newActivityScores.put(atom, score);
+					}
 				}
 			}
 		}
+		normalizeNewActivityScores(newActivityScores);
+	}
+
+	/**
+	 * Scales new activity scores to the interval [0,1] after initialization.
+	 * @param newActivityScores
+	 */
+	private void normalizeNewActivityScores(Map<Integer, Double> newActivityScores) {
 		for (Entry<Integer, Double> newAtomActivity : newActivityScores.entrySet()) {
 			Integer atom = newAtomActivity.getKey();
 			double normalizedScore = newAtomActivity.getValue() / maxScore;
