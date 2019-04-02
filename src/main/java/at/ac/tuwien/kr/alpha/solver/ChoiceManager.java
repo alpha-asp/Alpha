@@ -104,6 +104,10 @@ public class ChoiceManager implements Checkable {
 		}
 	}
 
+	public boolean isChecksEnabled() {
+		return checksEnabled;
+	}
+
 	public void callbackOnChanged(int atom) {
 		choicePointInfluenceManager.callbackOnChanged(atom);
 	}

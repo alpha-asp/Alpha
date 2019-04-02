@@ -221,9 +221,9 @@ public class HeapOfActiveAtoms {
 		
 		if (newActivity > NORMALIZATION_THRESHOLD) {
 			normalizeActivityScores();
-		} else {
-			heap.add(atom); // ignores the fact that atom may already be in the heap for performance reasons (may be revised in future)
 		}
+
+		heap.add(atom); // ignores the fact that atom may already be in the heap for performance reasons (may be revised in future)
 	}
 
 	/**
@@ -238,8 +238,6 @@ public class HeapOfActiveAtoms {
 		for (Integer atom : activityScores.keySet()) {
 			activityScores.compute(atom, (k, v) -> (v + min) / NORMALIZATION_THRESHOLD);
 		}
-		heap.clear();
-		heap.addAll(activityScores.keySet());
 	}
 
 	private class AtomActivityComparator implements Comparator<Integer> {
