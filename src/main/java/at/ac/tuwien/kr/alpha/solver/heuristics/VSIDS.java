@@ -36,10 +36,13 @@ import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Random;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
+import static at.ac.tuwien.kr.alpha.common.Literals.*;
 
 /**
  * This implementation is inspired by the VSIDS implementation in <a href="https://github.com/potassco/clasp">clasp</a>.
@@ -58,8 +61,6 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
 public class VSIDS implements ActivityBasedBranchingHeuristic {
 	protected static final Logger LOGGER = LoggerFactory.getLogger(VSIDS.class);
 
-	public static final int DEFAULT_SIGN_COUNTER = 0;
-
 	public static final int DEFAULT_DECAY_PERIOD = 1;
 	public static final double DEFAULT_DECAY_FACTOR = 1 / 0.92;
 
@@ -68,7 +69,7 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 	protected final Random rand;
 
 	protected final HeapOfActiveAtoms heapOfActiveAtoms;
-	protected final Map<Integer, Integer> signCounters = new HashMap<>();
+	protected int[] signBalances = new int[0];
 
 	private final Collection<NoGood> bufferedNoGoods = new ArrayList<>();
 
@@ -180,7 +181,7 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 			return true;
 		}
 
-		int signBalance = getSignBalance(atom);		
+		int signBalance = getSignBalance(atom);
 		if (LOGGER.isDebugEnabled() && (nChoicesFalse + nChoicesTrue + nChoicesRand) % 100 == 0) {
 			LOGGER.debug("chooseSign stats: f={}, t={}, r={}", nChoicesFalse, nChoicesTrue, nChoicesRand);
 			LOGGER.debug("chooseSign stats: signBalance={}", signBalance);
@@ -204,24 +205,38 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 		return atom;
 	}
 
-	protected void incrementSignCounter(Integer literal) {
-		signCounters.compute(literal, (k, v) -> (v == null ? DEFAULT_SIGN_COUNTER : v) + 1);
+	protected void incrementSignCounter(int literal) {
+		int atom = atomOf(literal);
+		boolean sign = isPositive(literal);
+		growForMaxAtomId(atom);
+		signBalances[atom] += sign ? 1 : -1;
+	}
+
+	private void growForMaxAtomId(int atomId) {
+		// Grow arrays only if needed.
+		if (signBalances.length > atomId) {
+			return;
+		}
+		// Grow, except if bigger array is required due to atomId.
+		int newCapacity = arrayGrowthSize(signBalances.length);
+		if (newCapacity < atomId + 1) {
+			newCapacity = atomId + 1;
+		}
+		signBalances = Arrays.copyOf(signBalances, newCapacity);
 	}
 
 	@Override
 	public double getActivity(int literal) {
 		return heapOfActiveAtoms.getActivity(literal);
 	}
-	
+
 	/**
 	 * Returns the sign balance for the given atom in learnt nogoods.
 	 * @param atom
 	 * @return the number of times the given atom occurrs positively more often than negatively (which may be negative)
 	 */
-	public int getSignBalance(int atom) {
-		int positiveCounter = signCounters.getOrDefault(atomToLiteral(atom, true), DEFAULT_SIGN_COUNTER);
-		int negativeCounter = signCounters.getOrDefault(atomToLiteral(atom, false), DEFAULT_SIGN_COUNTER);
-		return positiveCounter - negativeCounter;
+	int getSignBalance(int atom) {
+		return signBalances.length > atom ? signBalances[atom] : 0;
 	}
 
 	@Override
