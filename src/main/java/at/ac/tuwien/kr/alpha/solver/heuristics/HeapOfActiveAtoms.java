@@ -53,7 +53,6 @@ public class HeapOfActiveAtoms {
 	protected static final Logger LOGGER = LoggerFactory.getLogger(HeapOfActiveAtoms.class);
 
 	public static final double DEFAULT_ACTIVITY = 0.0;
-	public static final double DEFAULT_INCREMENT_FACTOR = 1.0;
 	private static final double NORMALIZATION_THRESHOLD = 1E100;
 
 	protected final Map<Integer, Double> activityScores = new HashMap<>();
@@ -64,7 +63,6 @@ public class HeapOfActiveAtoms {
 	private double decayFactor;
 	private int stepsSinceLastDecay;
 	private double currentActivityIncrement = 1.0;
-	private double incrementFactor = DEFAULT_INCREMENT_FACTOR; // TODO: make configurable
 
 	/**
 	 * The maximum score of an atom encountered so far. It is stored in a member variable s.t. normalization done
@@ -217,8 +215,8 @@ public class HeapOfActiveAtoms {
 	}
 	
 	protected void incrementActivity(int atom, double increment) {
-		// newActivity := oldActivity + (increment * incrementFactor)
-		double newActivity = activityScores.compute(atom, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + (increment * incrementFactor));
+		// newActivity := oldActivity + increment
+		double newActivity = activityScores.compute(atom, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + increment);
 		LOGGER.trace("Activity of atom {} increased to {}", atom, newActivity);
 		
 		if (newActivity > NORMALIZATION_THRESHOLD) {
