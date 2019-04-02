@@ -74,8 +74,8 @@ public class ChoiceManager implements Checkable {
 		this.choicePointInfluenceManager = new ChoiceInfluenceManager(assignment);
 		this.choiceStack = new Stack<>();
 		assignment.setCallback(this);
-		this.bnpEstimation = store instanceof NoGoodStorePrivilegingBinaryNoGoods
-				? new BinaryNoGoodPropagationEstimation(assignment, (NoGoodStorePrivilegingBinaryNoGoods) store)
+		this.bnpEstimation = store instanceof BinaryNoGoodPropagationEstimation
+				? (BinaryNoGoodPropagationEstimation)store
 				: null;
 	}
 	

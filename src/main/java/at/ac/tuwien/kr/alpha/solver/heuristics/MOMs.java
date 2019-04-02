@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -65,8 +65,8 @@ public class MOMs {
 		switch (strategy) {
 		case BinaryNoGoodPropagation:
 			if (bnpEstimation.hasBinaryNoGoods()) {
-				s1 = bnpEstimation.estimate(atom, ThriceTruth.TRUE) - 1;
-				s2 = bnpEstimation.estimate(atom, ThriceTruth.FALSE) - 1;
+				s1 = bnpEstimation.estimateEffectsOfBinaryNoGoodPropagation(atom, ThriceTruth.TRUE) - 1;
+				s2 = bnpEstimation.estimateEffectsOfBinaryNoGoodPropagation(atom, ThriceTruth.FALSE) - 1;
 				break;
 			}
 		case CountBinaryWatches:

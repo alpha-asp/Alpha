@@ -25,25 +25,12 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.Literals;
-
 /**
  * Offers methods to estimate the effect of propagating binary nogoods.
  */
-public class BinaryNoGoodPropagationEstimation {
+public interface BinaryNoGoodPropagationEstimation {
 	
-	private final WritableAssignment assignment;
-	private final NoGoodStorePrivilegingBinaryNoGoods store;
-	
-	public BinaryNoGoodPropagationEstimation(WritableAssignment assignment, NoGoodStorePrivilegingBinaryNoGoods store) {
-		super();
-		this.assignment = assignment;
-		this.store = store;
-	}
-	
-	public boolean hasBinaryNoGoods() {
-		return store.hasBinaryNoGoods();
-	}
+	boolean hasBinaryNoGoods();
 
 	/**
 	 * Computes the number of direct consequences of propagating binary nogoods after
@@ -57,16 +44,8 @@ public class BinaryNoGoodPropagationEstimation {
 	 * @param value
 	 * @return
 	 */
-	public int estimate(int atom, ThriceTruth value) {
-		assignment.choose(atom, value);
-		store.propagateOnlyBinaryNoGoods();
-		int assignedNewly = assignment.getNumberOfAtomsAssignedSinceLastDecision();
-		assignment.backtrack();
-		return assignedNewly;
-	}
+	int estimateEffectsOfBinaryNoGoodPropagation(int atom, ThriceTruth value);
 	
-	public int getNumberOfBinaryWatches(int atom, boolean truth) {
-		return store.getNumberOfBinaryWatches(Literals.atomToLiteral(atom, truth));
-	}
+	int getNumberOfBinaryWatches(int atom, boolean truth);
 
 }

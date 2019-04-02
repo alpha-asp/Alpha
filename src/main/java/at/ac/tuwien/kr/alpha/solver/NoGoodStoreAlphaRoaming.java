@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.NoGoodInterface;
 import org.slf4j.Logger;
@@ -54,7 +55,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
  *  point to unassigned literals. Observe that for an assignment to TRUE the (potentially lower) decision level of MBT
  *  is taken.
  */
-public class NoGoodStoreAlphaRoaming implements NoGoodStorePrivilegingBinaryNoGoods, Checkable {
+public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropagationEstimation, Checkable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NoGoodStoreAlphaRoaming.class);
 	private static final int UNASSIGNED = Integer.MAX_VALUE;
 
@@ -558,8 +559,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStorePrivilegingBinaryNoGo
 	public ConflictCause propagate() {
 		return propagate(false);
 	}
-	
-	@Override
+
 	public ConflictCause propagateOnlyBinaryNoGoods() {
 		return propagate(true);
 	}
@@ -726,10 +726,23 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStorePrivilegingBinaryNoGo
 	private void clearAlphaWatchList(int literal) {
 		watchesAlpha[literal] = new ArrayList<>();
 	}
-	
-	@Override
+
 	public int getNumberOfBinaryWatches(int literal) {
 		return binaryWatches[literal].size();
+	}
+
+	@Override
+	public int getNumberOfBinaryWatches(int atom, boolean truth) {
+		return getNumberOfBinaryWatches(Literals.atomToLiteral(atom, truth));
+	}
+
+	@Override
+	public int estimateEffectsOfBinaryNoGoodPropagation(int atom, ThriceTruth value) {
+		assignment.choose(atom, value);
+		propagateOnlyBinaryNoGoods();
+		int assignedNewly = assignment.getNumberOfAtomsAssignedSinceLastDecision();
+		assignment.backtrack();
+		return assignedNewly;
 	}
 
 	public void runInternalChecks() {
