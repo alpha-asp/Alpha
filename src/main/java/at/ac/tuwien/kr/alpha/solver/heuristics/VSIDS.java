@@ -54,8 +54,6 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
  * Moskewicz, Matthew W.; Madigan, Conor F.; Zhao, Ying; Zhang, Lintao; Malik, Sharad (2001):
  * Chaff: engineering an efficient SAT solver.
  * In: Proceedings of the 38th Design Automation Conference. IEEE, pp. 530–535.
- * <p/>
- * Copyright (c) 2018 Siemens AG
  */
 public class VSIDS implements ActivityBasedBranchingHeuristic {
 	protected static final Logger LOGGER = LoggerFactory.getLogger(VSIDS.class);
@@ -197,6 +195,11 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 		}
 	}
 
+	/**
+	 * This method just returns {@code atom} by default but can be overridden in subclasses.
+	 * @param atom the atom chosen by VSIDS
+	 * @return the atom to base the choice of sign upon
+	 */
 	protected int getAtomForChooseSign(int atom) {
 		return atom;
 	}

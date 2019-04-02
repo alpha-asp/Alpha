@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -42,8 +42,6 @@ import java.util.Random;
  * <p/>
  * In contrast to {@link DependencyDrivenHeuristic} and {@link GeneralizedDependencyDrivenHeuristic},
  * this heuristic is based on ideas from VSIDS instead of BerkMin.
- * <p/>
- * Copyright (c) 2018 Siemens AG
  */
 public class DependencyDrivenVSIDS extends VSIDS {
 
@@ -55,9 +53,8 @@ public class DependencyDrivenVSIDS extends VSIDS {
 		this(assignment, choiceManager, DEFAULT_DECAY_PERIOD, DEFAULT_DECAY_FACTOR, random, momsStrategy);
 	}
 	
-	/*
+	/**
 	 * Returns the head derived by the rule corresponding to the given choice point,
-	 * 
 	 * since the head atom may give more relevant information than the atom representing rule body.
 	 */
 	@Override
