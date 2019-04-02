@@ -79,7 +79,7 @@ public class HeapOfActiveAtoms {
 		this.decayPeriod = decayPeriod;
 		this.decayFactor = decayFactor;
 		this.choiceManager = choiceManager;
-		this.choiceManager.addChoicePointActivityListener(new ChoicePointActivityListener());
+		this.choiceManager.setChoicePointActivityListener(new ChoicePointActivityListener());
 		BinaryNoGoodPropagationEstimation bnpEstimation = choiceManager.getBinaryNoGoodPropagationEstimation();
 		this.moms = bnpEstimation == null ? null : new MOMs(bnpEstimation);
 	}
@@ -175,14 +175,14 @@ public class HeapOfActiveAtoms {
 				}
 			}
 		}
-		normalizeNewActivityScores(newActivityScores);
+		normalizeAndStoreNewActivityScores(newActivityScores);
 	}
 
 	/**
 	 * Scales new activity scores to the interval [0,1] after initialization.
 	 * @param newActivityScores
 	 */
-	private void normalizeNewActivityScores(Map<Integer, Double> newActivityScores) {
+	private void normalizeAndStoreNewActivityScores(Map<Integer, Double> newActivityScores) {
 		for (Entry<Integer, Double> newAtomActivity : newActivityScores.entrySet()) {
 			Integer atom = newAtomActivity.getKey();
 			double normalizedScore = newAtomActivity.getValue() / maxScore;

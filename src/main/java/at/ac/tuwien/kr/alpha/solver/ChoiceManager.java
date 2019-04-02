@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -55,9 +54,6 @@ public class ChoiceManager implements Checkable {
 	private final Map<Integer, Set<Integer>> headsToBodies = new HashMap<>();
 	private final Map<Integer, Integer> bodiesToHeads = new HashMap<>();
 
-	// The total number of modifications this ChoiceManager received (avoids re-computation in ChoicePoints).
-	private final AtomicLong modCount = new AtomicLong(0);
-
 	// An "influence manager" managing active choice points and heuristics.
 	private final ChoiceInfluenceManager choicePointInfluenceManager;
 
@@ -75,7 +71,7 @@ public class ChoiceManager implements Checkable {
 	public ChoiceManager(WritableAssignment assignment, NoGoodStore store) {
 		this.store = store;
 		this.assignment = assignment;
-		this.choicePointInfluenceManager = new ChoiceInfluenceManager(assignment, modCount);
+		this.choicePointInfluenceManager = new ChoiceInfluenceManager(assignment);
 		this.choiceStack = new Stack<>();
 		assignment.setCallback(this);
 		this.bnpEstimation = store instanceof NoGoodStorePrivilegingBinaryNoGoods
@@ -179,7 +175,6 @@ public class ChoiceManager implements Checkable {
 			final Choice choice = choiceStack.pop();
 			backtracksWithinBackjumps++;
 			backtracks++;
-			modCount.incrementAndGet();
 			LOGGER.debug("Backjumping removed choice {}", choice);
 		}
 	}
@@ -228,7 +223,6 @@ public class ChoiceManager implements Checkable {
 	private void backtrack() {
 		store.backtrack();
 		backtracks++;
-		modCount.incrementAndGet();
 	}
 
 	void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms, Map<Integer, Set<Integer>> headsToBodies) {
@@ -272,27 +266,8 @@ public class ChoiceManager implements Checkable {
 		return choicePointInfluenceManager.isAtomInfluenced(atom);
 	}
 	
-	public void addChoicePointActivityListener(ChoiceInfluenceManager.ActivityListener activityListener) {
-		choicePointInfluenceManager.addActivityListener(activityListener);
-	}
-
-	/**
-	 * Gets the active choice atoms representing bodies of rules that can derive the given head atom.
-	 * @param headAtomId
-	 * @return a subset of {@link #getAllActiveChoiceAtoms()} that can derive {@code headAtomId}.
-	 */
-	public Set<Integer> getActiveChoiceAtomsDerivingHead(int headAtomId) {
-		Set<Integer> bodies = headsToBodies.get(headAtomId);
-		if (bodies == null) {
-			return Collections.emptySet();
-		}
-		Set<Integer> activeBodies = new HashSet<>();
-		for (Integer body : bodies) {
-			if (isActiveChoiceAtom(body)) {
-				activeBodies.add(body);
-			}
-		}
-		return activeBodies;
+	public void setChoicePointActivityListener(ChoiceInfluenceManager.ActivityListener activityListener) {
+		choicePointInfluenceManager.setActivityListener(activityListener);
 	}
 	
 	public Integer getHeadDerivedByChoiceAtom(int choiceAtomId) {

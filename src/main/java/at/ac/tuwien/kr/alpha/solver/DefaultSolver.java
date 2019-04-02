@@ -536,12 +536,12 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private void logStats() {
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info(getStatisticsString());
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug(getStatisticsString());
 			if (branchingHeuristic instanceof ChainedBranchingHeuristics) {
-				LOGGER.info("Decisions made by each heuristic:");
+				LOGGER.debug("Decisions made by each heuristic:");
 				for (Entry<BranchingHeuristic, Integer> heuristicToDecisionCounter : ((ChainedBranchingHeuristics)branchingHeuristic).getNumberOfDecisions().entrySet()) {
-					LOGGER.info(heuristicToDecisionCounter.getKey() + ": " + heuristicToDecisionCounter.getValue());
+					LOGGER.debug(heuristicToDecisionCounter.getKey() + ": " + heuristicToDecisionCounter.getValue());
 				}
 			}
 		}

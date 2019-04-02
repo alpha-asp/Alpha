@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -47,7 +47,6 @@ import static java.util.Collections.singleton;
 
 /**
  * Represents a small ASP program with choices {@code { aa :- not bb.  bb :- not aa. }}.
- * Copyright (c) 2016, the Alpha Team.
  */
 public class ChoiceGrounder implements Grounder {
 	public static final Set<AnswerSet> EXPECTED = new HashSet<>(asList(
@@ -189,10 +188,5 @@ public class ChoiceGrounder implements Grounder {
 			solverDerivedNoGoods.put(noGood, solverDerivedNoGoodIdCounter++);
 		}
 		return solverDerivedNoGoods.get(noGood);
-	}
-
-	@Override
-	public AtomStore getAtomStore() {
-		return null;
 	}
 }
