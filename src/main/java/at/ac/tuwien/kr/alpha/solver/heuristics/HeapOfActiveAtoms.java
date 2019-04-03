@@ -52,10 +52,9 @@ import static java.lang.Math.max;
 public class HeapOfActiveAtoms {
 	protected static final Logger LOGGER = LoggerFactory.getLogger(HeapOfActiveAtoms.class);
 
-	public static final double DEFAULT_ACTIVITY = 0.0;
 	private static final double NORMALIZATION_THRESHOLD = 1E100;
 
-	protected final Map<Integer, Double> activityScores = new HashMap<>();
+	protected double[] activityScores = new double[0];
 	protected final PriorityQueue<Integer> heap = new PriorityQueue<>(new AtomActivityComparator().reversed());
 
 	protected ChoiceManager choiceManager;
@@ -83,7 +82,7 @@ public class HeapOfActiveAtoms {
 	}
 
 	public double getActivity(int literal) {
-		return activityScores.getOrDefault(atomOf(literal), DEFAULT_ACTIVITY);
+		return activityScores[atomOf(literal)];
 	}
 
 	/**
@@ -159,21 +158,29 @@ public class HeapOfActiveAtoms {
 
 	private void initActivityMOMs(Collection<NoGood> newNoGoods) {
 		LOGGER.debug("Initializing activity scores with MOMs");
+		int maxAtomId = 0;
 		Map<Integer, Double> newActivityScores = new HashMap<>();
 		for (NoGood noGood : newNoGoods) {
 			for (int literal : noGood) {
 				int atom = atomOf(literal);
-				// TODO: make this more performant by converting activityScores to an array and only respecting new atoms outside the former array bounds
-				if (!activityScores.containsKey(atom) && !choiceManager.getAssignment().isAssigned(atom)) {
+				if (atom >= activityScores.length && !newActivityScores.containsKey(atom)) {
 					double score = moms.getScore(atom);
 					if (score != 0.0) {
 						maxScore = max(score, maxScore);
 						newActivityScores.put(atom, score);
+						maxAtomId = max(atom, maxAtomId);
 					}
 				}
 			}
 		}
+		growForMaxAtomId(maxAtomId);
 		normalizeAndStoreNewActivityScores(newActivityScores);
+	}
+
+	private void growForMaxAtomId(int maxAtomId) {
+		if (maxAtomId >= activityScores.length) {
+			activityScores = Arrays.copyOf(activityScores, maxAtomId + 1);
+		}
 	}
 
 	/**
@@ -216,7 +223,7 @@ public class HeapOfActiveAtoms {
 	
 	protected void incrementActivity(int atom, double increment) {
 		// newActivity := oldActivity + increment
-		double newActivity = activityScores.compute(atom, (k, v) -> (v == null ? DEFAULT_ACTIVITY : v) + increment);
+		double newActivity = activityScores[atom] = activityScores[atom] + increment;
 		LOGGER.trace("Activity of atom {} increased to {}", atom, newActivity);
 		
 		if (newActivity > NORMALIZATION_THRESHOLD) {
@@ -235,8 +242,8 @@ public class HeapOfActiveAtoms {
 		LOGGER.debug("Normalizing activity scores");
 		final double min = Double.MIN_VALUE * NORMALIZATION_THRESHOLD;
 		currentActivityIncrement /= NORMALIZATION_THRESHOLD;
-		for (Integer atom : activityScores.keySet()) {
-			activityScores.compute(atom, (k, v) -> (v + min) / NORMALIZATION_THRESHOLD);
+		for (int atom = 1; atom < activityScores.length; atom++) {
+			activityScores[atom] = (activityScores[atom] + min) / NORMALIZATION_THRESHOLD;
 		}
 	}
 
@@ -244,7 +251,7 @@ public class HeapOfActiveAtoms {
 
 		@Override
 		public int compare(Integer a1, Integer a2) {
-			return Double.compare(activityScores.get(a1), activityScores.get(a2));
+			return Double.compare(activityScores[a1], activityScores[a2]);
 		}
 
 	}
@@ -254,9 +261,8 @@ public class HeapOfActiveAtoms {
 		@Override
 		public void callbackOnChanged(int atom, boolean active) {
 			if (active && choiceManager.isActiveChoiceAtom(atom)) {
-				Double activity = activityScores.get(atom);
-				if (activity != null) {
-					/* if activity is null, probably the atom is still being buffered
+				if (atom < activityScores.length) {
+					/* if atom has no activity score, probably the atom is still being buffered
 					   by DependencyDrivenVSIDSHeuristic and will get an initial activity
 					   when the buffer is ingested */
 					heap.add(atom);
