@@ -104,6 +104,7 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 
 	@Override
 	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
+		ingestBufferedNoGoods();	//analysisResult may contain new atoms whose activity must be initialized
 		for (int resolutionAtom : analysisResult.resolutionAtoms) {
 			heapOfActiveAtoms.incrementActivity(resolutionAtom);
 		}
