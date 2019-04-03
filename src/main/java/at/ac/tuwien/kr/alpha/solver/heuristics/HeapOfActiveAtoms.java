@@ -34,12 +34,13 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.MOMs.Strategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
+import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static java.lang.Math.max;
 
 /**
  * Manages a heap of atoms that are assigned an activity, such that the most active atom
@@ -54,6 +55,7 @@ public class HeapOfActiveAtoms {
 
 	private static final double NORMALIZATION_THRESHOLD = 1E100;
 
+	private boolean[] initializedActivityScores = new boolean[0];
 	protected double[] activityScores = new double[0];
 	protected final PriorityQueue<Integer> heap = new PriorityQueue<>(new AtomActivityComparator().reversed());
 
@@ -123,79 +125,72 @@ public class HeapOfActiveAtoms {
 	 * Stores newly grounded {@link NoGood}s and updates associated activity counters.
 	 */
 	public void newNoGoods(Collection<NoGood> newNoGoods) {
-		Collection<NoGood> filteredNoGoods = filterNoGoodsRelevantForActivityInitialization(newNoGoods);
-		analyzeNewNoGoods(filteredNoGoods);
-		initActivity(filteredNoGoods);
+		for (NoGood newNoGood : newNoGoods) {
+			Type type = newNoGood.getType();
+			if (type != Type.LEARNT && type != Type.INTERNAL) {
+				analyzeNewNoGood(newNoGood);
+				initActivity(newNoGood);
+			}
+		}
 	}
 	
 	/**
 	 * May be implemented in subclasses to add specific analysis of nogoods.
 	 */
-	protected void analyzeNewNoGoods(Collection<NoGood> newNoGoods) {
+	protected void analyzeNewNoGood(NoGood newNoGood) {
 	}
 
 	/**
-	 * Computes and stores initial activity values for the atoms occurring in the given nogoods.
+	 * Computes and stores initial activity values for the atoms occurring in the given nogood.
 	 */
-	protected void initActivity(Collection<NoGood> newNoGoods) {
+	protected void initActivity(NoGood newNoGood) {
 		if (moms != null) {
-			initActivityMOMs(newNoGoods);
+			initActivityMOMs(newNoGood);
 		} else {
-			initActivityNaive(newNoGoods);
-		}
-	}
-
-	protected Set<NoGood> filterNoGoodsRelevantForActivityInitialization(Collection<NoGood> newNoGoods) {
-		return newNoGoods.stream().filter(ng -> ng.getType() != Type.LEARNT && ng.getType() != Type.INTERNAL).collect(Collectors.toSet());
-	}
-
-	private void initActivityMOMs(Collection<NoGood> newNoGoods) {
-		LOGGER.debug("Initializing activity scores with MOMs");
-		int maxAtomId = 0;
-		Map<Integer, Double> newActivityScores = new HashMap<>();
-		for (NoGood noGood : newNoGoods) {
-			for (int literal : noGood) {
-				int atom = atomOf(literal);
-				if (atom >= activityScores.length && !newActivityScores.containsKey(atom)) {
-					double score = moms.getScore(atom);
-					if (score > 0.0) {
-						newActivityScores.put(atom, score);
-						maxAtomId = max(atom, maxAtomId);
-					}
-				}
-			}
-		}
-		growForMaxAtomId(maxAtomId);
-		normalizeAndStoreNewActivityScores(newActivityScores);
-	}
-
-	private void growForMaxAtomId(int maxAtomId) {
-		if (maxAtomId >= activityScores.length) {
-			activityScores = Arrays.copyOf(activityScores, maxAtomId + 1);
+			initActivityNaive(newNoGood);
 		}
 	}
 
 	/**
-	 * Scales new activity scores to the interval [0,1] after initialization.
+	 * Uses {@link MOMs} to initialize activity scores, which are then scaled to the interval [0,1].
 	 * This is done by computing 1 - 1/log(s+1.01) for original score s.
 	 * This guarantees a normalized score between 0 and 1 and retains relative order.
 	 * 1.01 is added to avoid computing the logarithm of a number between 0 and 1 (input scores have to be greater or equal to 0!)
-	 * @param newActivityScores
+	 * @param newNoGood a new nogood, the atoms occurring in which will be initialized
 	 */
-	private void normalizeAndStoreNewActivityScores(Map<Integer, Double> newActivityScores) {
-		for (Entry<Integer, Double> newAtomActivity : newActivityScores.entrySet()) {
-			Integer atom = newAtomActivity.getKey();
-			double normalizedScore = 1 - 1 / (Math.log(newAtomActivity.getValue() + 1.01));
-			incrementActivity(atom, normalizedScore);
+	private void initActivityMOMs(NoGood newNoGood) {
+		LOGGER.debug("Initializing activity scores with MOMs");
+		for (int literal : newNoGood) {
+			int atom = atomOf(literal);
+			growForMaxAtomId(atom);
+			if (!initializedActivityScores[atom]) {
+				double score = moms.getScore(atom);
+				if (score > 0.0) {
+					activityScores[atom] = 1 - 1 / (Math.log(score + 1.01));
+				}
+			}
 		}
 	}
 
-	private void initActivityNaive(Collection<NoGood> newNoGoods) {
+	private void growForMaxAtomId(int maxAtomId) {
+		// Grow arrays only if needed.
+		if (activityScores.length > maxAtomId) {
+			return;
+		}
+		// Grow by default growth factor, except if bigger array is required due to maxAtomId.
+		int newCapacity = arrayGrowthSize(activityScores.length);
+		if (newCapacity < maxAtomId + 1) {
+			newCapacity = maxAtomId + 1;
+		}
+
+		activityScores = Arrays.copyOf(activityScores, newCapacity);
+		initializedActivityScores = Arrays.copyOf(initializedActivityScores, newCapacity);
+	}
+
+	private void initActivityNaive(NoGood newNoGood) {
 		LOGGER.debug("Initializing activity scores naively");
-		for (NoGood newNoGood : newNoGoods) {
-			for (Integer literal : newNoGood) {
-				incrementActivity(atomOf(literal));
-			}
+		for (Integer literal : newNoGood) {
+			incrementActivity(atomOf(literal));
 		}
 	}
 
