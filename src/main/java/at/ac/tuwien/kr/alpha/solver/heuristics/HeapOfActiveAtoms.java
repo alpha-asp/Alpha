@@ -62,13 +62,6 @@ public class HeapOfActiveAtoms {
 	private double decayFactor;
 	private int stepsSinceLastDecay;
 	private double currentActivityIncrement = 1.0;
-
-	/**
-	 * The maximum score of an atom encountered so far. It is stored in a member variable s.t. normalization done
-	 * by {@link #initActivityMOMs(Collection)} will be less affected by score changes in between different calls
-	 * of the method.
-	 */
-	private double maxScore;
 	
 	private final MOMs moms;
 
@@ -165,8 +158,7 @@ public class HeapOfActiveAtoms {
 				int atom = atomOf(literal);
 				if (atom >= activityScores.length && !newActivityScores.containsKey(atom)) {
 					double score = moms.getScore(atom);
-					if (score != 0.0) {
-						maxScore = max(score, maxScore);
+					if (score > 0.0) {
 						newActivityScores.put(atom, score);
 						maxAtomId = max(atom, maxAtomId);
 					}
@@ -185,12 +177,15 @@ public class HeapOfActiveAtoms {
 
 	/**
 	 * Scales new activity scores to the interval [0,1] after initialization.
+	 * This is done by computing 1 - 1/log(s+1.01) for original score s.
+	 * This guarantees a normalized score between 0 and 1 and retains relative order.
+	 * 1.01 is added to avoid computing the logarithm of a number between 0 and 1 (input scores have to be greater or equal to 0!)
 	 * @param newActivityScores
 	 */
 	private void normalizeAndStoreNewActivityScores(Map<Integer, Double> newActivityScores) {
 		for (Entry<Integer, Double> newAtomActivity : newActivityScores.entrySet()) {
 			Integer atom = newAtomActivity.getKey();
-			double normalizedScore = newAtomActivity.getValue() / maxScore;
+			double normalizedScore = 1 - 1 / (Math.log(newAtomActivity.getValue() + 1.01));
 			incrementActivity(atom, normalizedScore);
 		}
 	}

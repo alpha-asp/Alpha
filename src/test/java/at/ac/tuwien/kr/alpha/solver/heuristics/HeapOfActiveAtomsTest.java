@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests {@link HeapOfActiveAtoms}, including initial heuristic scores computed by {@link MOMs}.
@@ -70,9 +71,8 @@ public class HeapOfActiveAtomsTest {
 		double activity1 = heapOfActiveAtoms.getActivity(lit1);
 		double activity2 = heapOfActiveAtoms.getActivity(lit2);
 		double activity3 = heapOfActiveAtoms.getActivity(lit3);
-		assertEquals(1d, activity1, DOUBLE_COMPARISON_EPSILON);
-		assertEquals(1d, activity2, DOUBLE_COMPARISON_EPSILON);
-		assertEquals(1d, activity3, DOUBLE_COMPARISON_EPSILON);
+		assertEquals(activity1, activity2, DOUBLE_COMPARISON_EPSILON);
+		assertEquals(activity2, activity3, DOUBLE_COMPARISON_EPSILON);
 	}
 
 	@Test
@@ -88,9 +88,12 @@ public class HeapOfActiveAtomsTest {
 		double activity1 = heapOfActiveAtoms.getActivity(lit1);
 		double activity2 = heapOfActiveAtoms.getActivity(lit2);
 		double activity3 = heapOfActiveAtoms.getActivity(lit3);
-		assertEquals(0.25d, activity1, DOUBLE_COMPARISON_EPSILON);
-		assertEquals(1d, activity2, DOUBLE_COMPARISON_EPSILON);
-		assertEquals(0.25d, activity3, DOUBLE_COMPARISON_EPSILON);
+		assertLessThan(activity1, activity2);
+		assertLessThan(activity3, activity2);
+	}
+
+	private static void assertLessThan(double d1, double d2) {
+		assertTrue(d1 < d2 + DOUBLE_COMPARISON_EPSILON);
 	}
 
 }
