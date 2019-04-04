@@ -162,11 +162,10 @@ public class HeapOfActiveAtoms {
 		LOGGER.debug("Initializing activity scores with MOMs");
 		for (int literal : newNoGood) {
 			int atom = atomOf(literal);
-			growForMaxAtomId(atom);
-			if (!initializedActivityScores[atom]) {
+			if (atom >= initializedActivityScores.length || !initializedActivityScores[atom]) {
 				double score = moms.getScore(atom);
 				if (score > 0.0) {
-					activityScores[atom] = 1 - 1 / (Math.log(score + 1.01));
+					incrementActivity(atom, 1 - 1 / (Math.log(score + 1.01)));
 				}
 			}
 		}
@@ -212,6 +211,7 @@ public class HeapOfActiveAtoms {
 	}
 	
 	protected void incrementActivity(int atom, double increment) {
+		growForMaxAtomId(atom);
 		// newActivity := oldActivity + increment
 		double newActivity = activityScores[atom] = activityScores[atom] + increment;
 		LOGGER.trace("Activity of atom {} increased to {}", atom, newActivity);
