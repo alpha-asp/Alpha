@@ -62,6 +62,11 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 	protected static final Logger LOGGER = LoggerFactory.getLogger(VSIDS.class);
 
 	public static final int DEFAULT_DECAY_PERIOD = 1;
+
+	/**
+	 * The default factor by which VSID's activity increment will be multiplied when the decay period has expired.
+	 * The value is taken from clasp's tweety configuration which clasp uses by default.
+	 */
 	public static final double DEFAULT_DECAY_FACTOR = 1 / 0.92;
 
 	protected final Assignment assignment;

@@ -110,7 +110,7 @@ public class VSIDSTest {
 	/**
 	 * First, calls {@link #testConflict()}.
 	 * Then, simulates a second conflict, learning { -1, 4 } with resolved atoms { 2 }.
-	 * Due to decay, scores of atoms { 1, 4, 2 } must increase by the increased activity delta of 1 / 0.92.
+	 * Due to decay, scores of atoms { 1, 4, 2 } must increase by the increased activity delta of {@link VSIDS#DEFAULT_DECAY_FACTOR}.
 	 * 
 	 */
 	@Test
@@ -126,10 +126,10 @@ public class VSIDSTest {
 		Collection<Integer> resolutionAtoms = Arrays.asList(2);
 		ConflictAnalysisResult analysisResult = new ConflictAnalysisResult(learnedNoGood, 1, true, resolutionAtoms);
 		vsids.analyzedConflict(analysisResult);
-		assertEquals(activity1 + 1 / 0.92, vsids.getActivity(lit1), DOUBLE_COMPARISON_EPSILON);
-		assertEquals(activity2 + 1 / 0.92, vsids.getActivity(lit2), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(activity1 + VSIDS.DEFAULT_DECAY_FACTOR, vsids.getActivity(lit1), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(activity2 + VSIDS.DEFAULT_DECAY_FACTOR, vsids.getActivity(lit2), DOUBLE_COMPARISON_EPSILON);
 		assertEquals(activity3, vsids.getActivity(lit3), DOUBLE_COMPARISON_EPSILON);
-		assertEquals(activity4 + 1 / 0.92, vsids.getActivity(lit4), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(activity4 + VSIDS.DEFAULT_DECAY_FACTOR, vsids.getActivity(lit4), DOUBLE_COMPARISON_EPSILON);
 
 		assertEquals(-1, vsids.getSignBalance(1));
 		assertEquals(1, vsids.getSignBalance(2));
