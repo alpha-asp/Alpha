@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -90,7 +90,7 @@ public abstract class AbstractSolverTests {
 		String[] solvers = getProperty("solvers", ci ? "default,naive" : "default");
 		String[] grounders = getProperty("grounders", "naive");
 		String[] stores = getProperty("stores", ci ? "alpharoaming,naive" : "alpharoaming");
-		String[] heuristics = getProperty("heuristics", ci ? "ALL" : "NAIVE");
+		String[] heuristics = getProperty("heuristics", ci ? "ALL" : "NAIVE,VSIDS");
 
 		// "ALL" is a magic value that will be expanded to contain all heuristics.
 		if ("ALL".equals(heuristics[0])) {
