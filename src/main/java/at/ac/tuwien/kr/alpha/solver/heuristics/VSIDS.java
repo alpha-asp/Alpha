@@ -39,7 +39,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Random;
 
 import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
@@ -71,7 +70,6 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 
 	protected final Assignment assignment;
 	protected final ChoiceManager choiceManager;
-	protected final Random rand;
 
 	protected final HeapOfActiveAtoms heapOfActiveAtoms;
 	protected int[] signBalances = new int[0];
@@ -87,20 +85,19 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 	 */
 	protected final MultiValuedMap<Integer, Integer> headToBodies = new HashSetValuedHashMap<>();
 
-	protected VSIDS(Assignment assignment, ChoiceManager choiceManager, HeapOfActiveAtoms heapOfActiveAtoms, Random random, MOMs.Strategy momsStrategy) {
+	protected VSIDS(Assignment assignment, ChoiceManager choiceManager, HeapOfActiveAtoms heapOfActiveAtoms, MOMs.Strategy momsStrategy) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
 		this.heapOfActiveAtoms = heapOfActiveAtoms;
 		this.heapOfActiveAtoms.setMOMsStrategy(momsStrategy);
-		this.rand = random;
 	}
 
-	public VSIDS(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, Random random, MOMs.Strategy momsStrategy) {
-		this(assignment, choiceManager, new HeapOfActiveAtoms(decayPeriod, decayFactor, choiceManager), random, momsStrategy);
+	public VSIDS(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, MOMs.Strategy momsStrategy) {
+		this(assignment, choiceManager, new HeapOfActiveAtoms(decayPeriod, decayFactor, choiceManager),  momsStrategy);
 	}
 
-	public VSIDS(Assignment assignment, ChoiceManager choiceManager, Random random, MOMs.Strategy momsStrategy) {
-		this(assignment, choiceManager, DEFAULT_DECAY_PERIOD, DEFAULT_DECAY_FACTOR, random, momsStrategy);
+	public VSIDS(Assignment assignment, ChoiceManager choiceManager, MOMs.Strategy momsStrategy) {
+		this(assignment, choiceManager, DEFAULT_DECAY_PERIOD, DEFAULT_DECAY_FACTOR,  momsStrategy);
 	}
 
 	@Override

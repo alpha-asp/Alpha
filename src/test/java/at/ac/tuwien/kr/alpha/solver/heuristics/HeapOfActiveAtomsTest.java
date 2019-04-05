@@ -36,8 +36,6 @@ import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Random;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -60,7 +58,7 @@ public class HeapOfActiveAtomsTest {
 		assignment = new TrailAssignment(atomStore);
 		noGoodStore = new NoGoodStoreAlphaRoaming(assignment);
 		ChoiceManager choiceManager = new PseudoChoiceManager(assignment, noGoodStore);
-		this.vsids = new VSIDS(assignment, choiceManager, new Random(), MOMs.DEFAULT_STRATEGY);
+		this.vsids = new VSIDS(assignment, choiceManager, MOMs.DEFAULT_STRATEGY);
 	}
 
 	@Test

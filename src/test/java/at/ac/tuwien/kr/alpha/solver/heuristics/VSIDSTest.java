@@ -35,7 +35,6 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -75,7 +74,6 @@ public class VSIDSTest {
 		this.vsids = new VSIDS(
 				assignment,
 				new PseudoChoiceManager(assignment, noGoodStore),
-				new Random(),
 				null);
 	}
 
