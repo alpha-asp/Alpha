@@ -39,7 +39,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
-import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
 /**
@@ -171,17 +170,7 @@ public class HeapOfActiveAtoms {
 		}
 	}
 
-	private void growForMaxAtomId(int maxAtomId) {
-		// Grow arrays only if needed.
-		if (activityScores.length > maxAtomId) {
-			return;
-		}
-		// Grow by default growth factor, except if bigger array is required due to maxAtomId.
-		int newCapacity = arrayGrowthSize(activityScores.length);
-		if (newCapacity < maxAtomId + 1) {
-			newCapacity = maxAtomId + 1;
-		}
-
+	void growToCapacity(int newCapacity) {
 		activityScores = Arrays.copyOf(activityScores, newCapacity);
 		initializedActivityScores = Arrays.copyOf(initializedActivityScores, newCapacity);
 	}
@@ -211,7 +200,6 @@ public class HeapOfActiveAtoms {
 	}
 	
 	protected void incrementActivity(int atom, double increment) {
-		growForMaxAtomId(atom);
 		// newActivity := oldActivity + increment
 		double newActivity = activityScores[atom] = activityScores[atom] + increment;
 		LOGGER.trace("Activity of atom {} increased to {}", atom, newActivity);

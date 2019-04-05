@@ -218,17 +218,18 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 		signBalances[atom] += sign ? 1 : -1;
 	}
 
-	private void growForMaxAtomId(int atomId) {
+	public void growForMaxAtomId(int maxAtomId) {
 		// Grow arrays only if needed.
-		if (signBalances.length > atomId) {
+		if (signBalances.length > maxAtomId) {
 			return;
 		}
-		// Grow, except if bigger array is required due to atomId.
+		// Grow to default size, except if bigger array is required due to maxAtomId.
 		int newCapacity = arrayGrowthSize(signBalances.length);
-		if (newCapacity < atomId + 1) {
-			newCapacity = atomId + 1;
+		if (newCapacity < maxAtomId + 1) {
+			newCapacity = maxAtomId + 1;
 		}
 		signBalances = Arrays.copyOf(signBalances, newCapacity);
+		heapOfActiveAtoms.growToCapacity(newCapacity);
 	}
 
 	@Override

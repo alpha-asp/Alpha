@@ -87,7 +87,7 @@ public class VSIDSTest {
 	 */
 	@Test
 	public void testConflict() {
-		HeuristicTestUtils.addNoGoods(atomStore, assignment, noGoodStore, vsids.heapOfActiveAtoms, new NoGood(lit1Neg, lit2Neg), new NoGood(lit3Neg, lit4Neg));
+		HeuristicTestUtils.addNoGoods(atomStore, assignment, noGoodStore, vsids, new NoGood(lit1Neg, lit2Neg), new NoGood(lit3Neg, lit4Neg));
 		vsids.chooseLiteral(); // to make VSIDS ingest buffered nogoods
 		assertEquals(vsids.getActivity(lit1), vsids.getActivity(lit2), DOUBLE_COMPARISON_EPSILON);
 		assertEquals(vsids.getActivity(lit2), vsids.getActivity(lit3), DOUBLE_COMPARISON_EPSILON);

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -83,7 +83,14 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 		}
 		return DEFAULT_CHOICE_LITERAL;
 	}
-	
+
+	@Override
+	public void growForMaxAtomId(int maxAtomId) {
+		for (BranchingHeuristic element : chain) {
+			element.growForMaxAtomId(maxAtomId);
+		}
+	}
+
 	public void add(BranchingHeuristic element) {
 		if (chain.contains(element)) {
 			throw oops("Cycle detected in chain of branching heuristics");
