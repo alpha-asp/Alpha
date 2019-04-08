@@ -25,27 +25,54 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * Offers methods to estimate the effect of propagating binary nogoods.
  */
 public interface BinaryNoGoodPropagationEstimation {
-	
-	boolean hasBinaryNoGoods();
 
 	/**
-	 * Computes the number of direct consequences of propagating binary nogoods after
-	 * assigning {@code value} to {@code atom}.
-	 * 
-	 * In other words, assigns {@code value} to {@code atom}, propagates only binary nogoods,
-	 * backtracks, and returns the number of atoms that have been assigned additionally during
-	 * this process.
-	 * 
-	 * @param atom
-	 * @param value
-	 * @return
+	 * Uses {@code strategy} to estimate the number of direct consequences of propagating binary nogoods after assigning
+	 * {@code truth} to {@code atom}.
+	 *
+	 * If {@code strategy} is {@link Strategy#BinaryNoGoodPropagation}, {@code truth} is assigned to {@code atom},
+	 * only binary nogoods are propagated, a backtrack is executed, and the number of atoms that have been assigned
+	 * additionally during this process is returned.
+	 *
+	 * If {@code strategy} is {@link Strategy#CountBinaryWatches}, on the other hand, the number of binary watches on
+	 * the literal given by {@code atom} and {@code truth} is returned.
+	 *
+	 * @param atom the atom to estimate effects for
+	 * @param truth gives, together with {@code atom}, a literal to estimate effects for
+	 * @param strategy the strategy to use for estimation. If {@link Strategy#BinaryNoGoodPropagation} is given but
+	 *                 no binary nogoods exist, {@link Strategy#CountBinaryWatches} will be used instead.
+	 * @return an estimate on the effects of propagating binary nogoods after assigning {@code truth} to {@code atom}.
 	 */
-	int estimateEffectsOfBinaryNoGoodPropagation(int atom, ThriceTruth value);
-	
-	int getNumberOfBinaryWatches(int atom, boolean truth);
+	int estimate(int atom, boolean truth, Strategy strategy);
+
+	/**
+	 * Strategies to estimate the amount of influence of a literal.
+	 */
+	public enum Strategy {
+		/**
+		 * Counts binary watches involving the literal under consideration
+		 */
+		CountBinaryWatches,
+
+		/**
+		 * Assigns true to the literal under consideration, then does propagation only on binary nogoods
+		 * and counts how many other atoms are assigned during this process, then backtracks
+		 */
+		BinaryNoGoodPropagation;
+
+		/**
+		 * @return a comma-separated list of names of known heuristics
+		 */
+		public static String listAllowedValues() {
+			return Arrays.stream(values()).map(Strategy::toString).collect(Collectors.joining(", "));
+		}
+	}
 
 }

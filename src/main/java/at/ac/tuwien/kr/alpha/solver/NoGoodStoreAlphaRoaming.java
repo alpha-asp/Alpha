@@ -364,11 +364,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		hasBinaryNoGoods = true;
 		return binaryWatches[b].add(noGood);
 	}
-	
-	@Override
-	public boolean hasBinaryNoGoods() {
-		return hasBinaryNoGoods;
-	}
 
 	private ConflictCause assignWeakComplement(final int literalIndex, final NoGoodInterface impliedBy, int decisionLevel) {
 		final int literal = impliedBy.getLiteral(literalIndex);
@@ -732,13 +727,24 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	}
 
 	@Override
-	public int getNumberOfBinaryWatches(int atom, boolean truth) {
+	public int estimate(int atom, boolean truth, Strategy strategy) {
+		switch (strategy) {
+			case BinaryNoGoodPropagation:
+				if (hasBinaryNoGoods) {
+					return estimateEffectsOfBinaryNoGoodPropagation(atom, truth) - 1;
+				}
+			case CountBinaryWatches:
+			default:
+				return getNumberOfBinaryWatches(atom, truth);
+		}
+	}
+
+	private int getNumberOfBinaryWatches(int atom, boolean truth) {
 		return getNumberOfBinaryWatches(Literals.atomToLiteral(atom, truth));
 	}
 
-	@Override
-	public int estimateEffectsOfBinaryNoGoodPropagation(int atom, ThriceTruth value) {
-		assignment.choose(atom, value);
+	private int estimateEffectsOfBinaryNoGoodPropagation(int atom, boolean truth) {
+		assignment.choose(atom, truth);
 		propagateOnlyBinaryNoGoods();
 		int assignedNewly = assignment.getNumberOfAtomsAssignedSinceLastDecision();
 		assignment.backtrack();

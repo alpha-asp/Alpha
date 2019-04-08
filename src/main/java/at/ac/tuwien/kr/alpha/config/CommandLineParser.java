@@ -28,8 +28,8 @@
 package at.ac.tuwien.kr.alpha.config;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
-import at.ac.tuwien.kr.alpha.solver.heuristics.MOMs;
 import org.apache.commons.cli.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -312,7 +312,7 @@ public class CommandLineParser {
 		try {
 			cfg.setMomsStrategyName(momsStrategyName);
 		} catch (IllegalArgumentException e) {
-			throw new ParseException("Unknown mom's strategy: " + momsStrategyName + ". Please try one of the following: " + MOMs.Strategy.listAllowedValues());
+			throw new ParseException("Unknown mom's strategy: " + momsStrategyName + ". Please try one of the following: " + BinaryNoGoodPropagationEstimation.Strategy.listAllowedValues());
 		}
 	}
 

@@ -25,8 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation.Strategy;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
-import at.ac.tuwien.kr.alpha.solver.heuristics.MOMs.Strategy;
 
 /**
  * Configuration class holding parameters for {@link BranchingHeuristic}s.
@@ -34,7 +34,7 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.MOMs.Strategy;
 public class HeuristicsConfiguration {
 	
 	private Heuristic heuristic;
-	private MOMs.Strategy momsStrategy;
+	private Strategy momsStrategy;
 	
 	/**
 	 * @param heuristic
@@ -63,14 +63,14 @@ public class HeuristicsConfiguration {
 	/**
 	 * @return the momsStrategy
 	 */
-	public MOMs.Strategy getMomsStrategy() {
+	public Strategy getMomsStrategy() {
 		return momsStrategy;
 	}
 
 	/**
 	 * @param momsStrategy the momsStrategy to set
 	 */
-	public void setMomsStrategy(MOMs.Strategy momsStrategy) {
+	public void setMomsStrategy(Strategy momsStrategy) {
 		this.momsStrategy = momsStrategy;
 	}
 	
