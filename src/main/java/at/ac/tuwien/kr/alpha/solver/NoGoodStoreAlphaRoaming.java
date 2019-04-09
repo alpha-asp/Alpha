@@ -722,10 +722,6 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		watchesAlpha[literal] = new ArrayList<>();
 	}
 
-	public int getNumberOfBinaryWatches(int literal) {
-		return binaryWatches[literal].size();
-	}
-
 	@Override
 	public int estimate(int atom, boolean truth, Strategy strategy) {
 		switch (strategy) {
@@ -740,7 +736,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	}
 
 	private int getNumberOfBinaryWatches(int atom, boolean truth) {
-		return getNumberOfBinaryWatches(Literals.atomToLiteral(atom, truth));
+		return binaryWatches[Literals.atomToLiteral(atom, truth)].size();
 	}
 
 	private int estimateEffectsOfBinaryNoGoodPropagation(int atom, boolean truth) {
