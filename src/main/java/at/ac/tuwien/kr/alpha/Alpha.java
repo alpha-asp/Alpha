@@ -36,6 +36,7 @@ import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
@@ -115,7 +116,7 @@ public class Alpha {
 
 		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
 		heuristicsConfigurationBuilder.setHeuristic(BranchingHeuristicFactory.Heuristic.valueOf(this.config.getBranchingHeuristicName()));
-		heuristicsConfigurationBuilder.setRespectDomspecHeuristics(!this.config.isIgnoreDomspecHeuristics());
+		heuristicsConfigurationBuilder.setRespectDomspecHeuristics(!this.config.isIgnoreDomspecHeuristics() && program.getInlineDirectives().hasDirectives(InlineDirectives.DIRECTIVE.heuristic));
 		HeuristicsConfiguration heuristicsConfiguration = heuristicsConfigurationBuilder.build();
 
 		AtomStore atomStore = new AtomStoreImpl();

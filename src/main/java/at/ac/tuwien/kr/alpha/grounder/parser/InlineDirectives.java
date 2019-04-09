@@ -91,4 +91,9 @@ public class InlineDirectives {
 	public Collection<Directive> getDirectives(DIRECTIVE type) {
 		return directives.get(type);
 	}
+
+	public boolean hasDirectives(DIRECTIVE type) {
+		Collection<Directive> directives = getDirectives(type);
+		return directives != null && !directives.isEmpty();
+	}
 }
