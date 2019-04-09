@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018 Siemens AG
+ * Copyright (c) 2017-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -25,8 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
@@ -52,11 +52,10 @@ import static org.junit.Assert.assertTrue;
  * Tests assumptions made by {@link DependencyDrivenHeuristic} and other domain-independent heuristics.
  * Even if these test cases do not test {@link DependencyDrivenHeuristic} directly,
  * it will break if these test cases break.
- * 
- * Copyright (c) 2017-2018 Siemens AG
  *
  */
 public class AlphaHeuristicTestAssumptions {
+	private final HeuristicsConfiguration heuristicsConfiguration = new HeuristicsConfigurationBuilder().build();
 	private Grounder grounder;
 	private WritableAssignment assignment;
 	private TestableChoiceManager choiceManager;
@@ -72,7 +71,7 @@ public class AlphaHeuristicTestAssumptions {
 				+ "h :- b1, b2, not b3, not b4.";
 		Program parsedProgram = new ProgramParser().parse(testProgram);
 		this.atomStore = new AtomStoreImpl();
-		this.grounder = new NaiveGrounder(parsedProgram, atomStore);
+		this.grounder = new NaiveGrounder(parsedProgram, atomStore, heuristicsConfiguration);
 		this.assignment = new TrailAssignment(atomStore);
 		this.choiceManager = new TestableChoiceManager(assignment, new NaiveNoGoodStore(assignment));
 	}

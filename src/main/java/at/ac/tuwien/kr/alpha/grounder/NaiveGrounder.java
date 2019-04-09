@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -40,6 +40,7 @@ import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 import at.ac.tuwien.kr.alpha.grounder.transformation.*;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,11 +85,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 */
 	private boolean stopBindingAtNonTruePositiveBody = true;
 
-	public NaiveGrounder(Program program, AtomStore atomStore, Bridge... bridges) {
-		this(program, atomStore, p -> true, false, bridges);
+	public NaiveGrounder(Program program, AtomStore atomStore, HeuristicsConfiguration heuristicsConfiguration, Bridge... bridges) {
+		this(program, atomStore, heuristicsConfiguration, p -> true, false, bridges);
 	}
 
-	NaiveGrounder(Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, boolean useCountingGrid, Bridge... bridges) {
+	NaiveGrounder(Program program, AtomStore atomStore, HeuristicsConfiguration heuristicsConfiguration, java.util.function.Predicate<Predicate> filter, boolean useCountingGrid, Bridge... bridges) {
 		super(filter, bridges);
 		this.atomStore = atomStore;
 
@@ -97,7 +98,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 		// Apply program transformations/rewritings.
 		useCountingGridNormalization = useCountingGrid;
-		applyProgramTransformations(program);
+		applyProgramTransformations(program, heuristicsConfiguration);
 		LOGGER.debug("Transformed input program is:\n" + program);
 
 		initializeFactsAndRules(program);
@@ -200,11 +201,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return uniqueGroundRulePerGroundHead;
 	}
 
-	private void applyProgramTransformations(Program program) {
+	private void applyProgramTransformations(Program program, HeuristicsConfiguration heuristicsConfiguration) {
 		// Transform choice rules.
 		new ChoiceHeadToNormal().transform(program);
 		// Transform heuristic directives.
-		new HeuristicDirectiveToRule().transform(program);
+		new HeuristicDirectiveToRule(heuristicsConfiguration).transform(program);
 		// Transform cardinality aggregates.
 		new CardinalityNormalization(!useCountingGridNormalization).transform(program);
 		// Transform sum aggregates.

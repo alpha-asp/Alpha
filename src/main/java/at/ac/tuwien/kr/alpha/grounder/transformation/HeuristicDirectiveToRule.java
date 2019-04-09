@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -27,23 +27,40 @@ package at.ac.tuwien.kr.alpha.grounder.transformation;
 
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 
+import java.util.Collection;
 import java.util.Iterator;
 
 /**
- * Converts all {@link HeuristicDirective}s to {@link Rule}s.
+ * Converts all {@link HeuristicDirective}s to {@link Rule}s if
+ * {@link HeuristicsConfiguration#isRespectDomspecHeuristics()} is {@code true},
+ * otherwise removes all heuristic directives.
  */
 public class HeuristicDirectiveToRule implements ProgramTransformation {
 
+	private final HeuristicsConfiguration heuristicsConfiguration;
+
+	public HeuristicDirectiveToRule(HeuristicsConfiguration heuristicsConfiguration) {
+		this.heuristicsConfiguration = heuristicsConfiguration;
+	}
+
 	@Override
 	public void transform(Program inputProgram) {
-		Iterator<Directive> directivesIterator = inputProgram.getInlineDirectives().getDirectives().iterator();
-		while (directivesIterator.hasNext()) {
-			Directive directive = directivesIterator.next();
-			if (directive instanceof HeuristicDirective) {
-				transformAndAddToProgram((HeuristicDirective)directive, inputProgram);
+		Collection<Directive> heuristicDirectives = inputProgram.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
+		if (heuristicDirectives == null) {
+			return;
+		}
+		if (heuristicsConfiguration.isRespectDomspecHeuristics()) {
+			Iterator<Directive> directivesIterator = heuristicDirectives.iterator();
+			while (directivesIterator.hasNext()) {
+				Directive directive = directivesIterator.next();
+				transformAndAddToProgram((HeuristicDirective) directive, inputProgram);
 				directivesIterator.remove();
 			}
+		} else {
+			heuristicDirectives.clear();
 		}
 	}
 

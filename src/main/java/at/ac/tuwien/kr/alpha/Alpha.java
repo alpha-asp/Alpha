@@ -116,11 +116,12 @@ public class Alpha {
 		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
 		heuristicsConfigurationBuilder.setHeuristic(BranchingHeuristicFactory.Heuristic.valueOf(this.config.getBranchingHeuristicName()));
 		heuristicsConfigurationBuilder.setRespectDomspecHeuristics(!this.config.isIgnoreDomspecHeuristics());
+		HeuristicsConfiguration heuristicsConfiguration = heuristicsConfigurationBuilder.build();
 
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore);
+		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, heuristicsConfiguration);
 
-		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed), heuristicsConfigurationBuilder.build(), doDebugChecks,
+		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed), heuristicsConfiguration, doDebugChecks,
 				disableJustificationSearch);
 		return solver;
 	}

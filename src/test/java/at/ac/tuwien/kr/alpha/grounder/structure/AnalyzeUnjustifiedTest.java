@@ -39,6 +39,8 @@ import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -54,6 +56,7 @@ import static org.junit.Assert.assertNotEquals;
 public class AnalyzeUnjustifiedTest {
 
 	private final ProgramParser parser = new ProgramParser();
+	private final HeuristicsConfiguration heuristicsConfiguration = new HeuristicsConfigurationBuilder().build();
 
 	@Test
 	public void justifySimpleRules() {
@@ -65,7 +68,7 @@ public class AnalyzeUnjustifiedTest {
 			":- not p(5).";
 		Program parsedProgram = parser.parse(program);
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore, heuristicsConfiguration);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		int rId = atomStore.get(new BasicAtom(Predicate.getInstance("r", 0)));
@@ -90,7 +93,7 @@ public class AnalyzeUnjustifiedTest {
 			":- not p(1).";
 		Program parsedProgram = parser.parse(program);
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore, heuristicsConfiguration);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		Atom p1 = parser.parse("p(1).").getFacts().get(0);
@@ -127,7 +130,7 @@ public class AnalyzeUnjustifiedTest {
 			":- not p(c).";
 		Program parsedProgram = parser.parse(program);
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore, heuristicsConfiguration);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		Atom qa = parser.parse("q(a).").getFacts().get(0);
@@ -183,7 +186,7 @@ public class AnalyzeUnjustifiedTest {
 			":- not p(5).";
 		Program parsedProgram = parser.parse(program);
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore, heuristicsConfiguration);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		int rId = atomStore.get(new BasicAtom(Predicate.getInstance("r", 0)));

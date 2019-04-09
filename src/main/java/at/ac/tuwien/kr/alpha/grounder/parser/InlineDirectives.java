@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -71,12 +71,24 @@ public class InlineDirectives {
 	public boolean isEmpty() {
 		return directives.isEmpty();
 	}
-	
+
+	/**
+	 * @return a new collection of all directives, changes to which will <b>not</b> be reflected in the program
+	 */
 	public Collection<Directive> getDirectives() {
 		List<Directive> flatList = new ArrayList<>();
 		for (List<Directive> list : directives.values()) {
 			flatList.addAll(list);
 		}
 		return flatList;
+	}
+
+	/**
+	 * @param type
+	 * @return a collection of directives of the given type, changes to which <b>will</b> be reflected in the program;
+	 * 			or {@code null} if no directives of the given type exist.
+	 */
+	public Collection<Directive> getDirectives(DIRECTIVE type) {
+		return directives.get(type);
 	}
 }

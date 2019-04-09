@@ -51,6 +51,7 @@ public class DomainSpecificHeuristicsTest {
 	private static final String LS = System.lineSeparator();
 	private final AtomStore atomStore;
 	private final ProgramParser parser = new ProgramParser();
+	private final HeuristicsConfiguration heuristicsConfiguration = new HeuristicsConfigurationBuilder().setRespectDomspecHeuristics(true).build();
 	
 	public DomainSpecificHeuristicsTest() {
 		atomStore = new AtomStoreImpl();
@@ -240,7 +241,7 @@ public class DomainSpecificHeuristicsTest {
 
 	private void solveAndAssertAnswerSets(Program program, String... expectedAnswerSets) {
 		HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(Heuristic.NAIVE).build();
-		Solver solver = SolverFactory.getInstance("default", "alpharoaming", atomStore, GrounderFactory.getInstance("naive", program, atomStore), new Random(), heuristicsConfiguration, true, false);
+		Solver solver = SolverFactory.getInstance("default", "alpharoaming", atomStore, GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration), new Random(), heuristicsConfiguration, true, false);
 		assertEquals(Arrays.asList(expectedAnswerSets), solver.stream().map(AnswerSet::toString).collect(Collectors.toList()));
 	}
 }

@@ -37,6 +37,8 @@ import at.ac.tuwien.kr.alpha.common.terms.*;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.HeuristicDirectiveToRule;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
 import org.antlr.v4.runtime.CharStreams;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -56,6 +58,7 @@ import static org.junit.Assert.*;
  */
 public class ParserTest {
 	private final ProgramParser parser = new ProgramParser();
+	private final HeuristicsConfiguration heuristicsConfiguration = new HeuristicsConfigurationBuilder().setRespectDomspecHeuristics(true).build();
 	
 	@Before
 	public void setUp() {
@@ -300,6 +303,6 @@ public class ParserTest {
 	
 	private void parseProgramAndTransformHeuristicDirectives(String input) {
 		Program program = parser.parse(input);
-		new HeuristicDirectiveToRule().transform(program); // without transforming it to a rule, the safety of a heuristic directive is not checked currently
+		new HeuristicDirectiveToRule(heuristicsConfiguration).transform(program); // without transforming it to a rule, the safety of a heuristic directive is not checked currently
 	}
 }
