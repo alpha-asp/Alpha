@@ -38,8 +38,7 @@ import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 
 import java.util.*;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.*;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
@@ -49,14 +48,14 @@ import static java.util.Collections.singletonList;
  */
 public class NoGoodGenerator {
 	private final AtomStore atomStore;
-	private final ChoiceRecorder recorder;
+	private final ChoiceRecorder choiceRecorder;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private final ProgramAnalysis programAnalysis;
 	private final Set<NonGroundRule> uniqueGroundRulePerGroundHead;
 
 	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, ProgramAnalysis programAnalysis, Set<NonGroundRule> uniqueGroundRulePerGroundHead) {
 		this.atomStore = atomStore;
-		this.recorder = recorder;
+		this.choiceRecorder = recorder;
 		this.factsFromProgram = factsFromProgram;
 		this.programAnalysis = programAnalysis;
 		this.uniqueGroundRulePerGroundHead = uniqueGroundRulePerGroundHead;
@@ -64,10 +63,13 @@ public class NoGoodGenerator {
 
 	/**
 	 * Generates all NoGoods resulting from a non-ground rule and a variable substitution.
-	 * @param nonGroundRule the non-ground rule.
-	 * @param substitution the grounding substitution, i.e., applying substitution to nonGroundRule results in a ground rule.
-	 *                     Assumption: atoms with fixed interpretation evaluate to true under the substitution.
-	 * @return the NoGoods corresponding to the ground rule.
+	 * 
+	 * @param nonGroundRule
+	 *          the non-ground rule.
+	 * @param substitution
+	 *          the grounding substitution, i.e., applying substitution to nonGroundRule results in a ground rule.
+	 *          Assumption: atoms with fixed interpretation evaluate to true under the substitution.
+	 * @return a list of the NoGoods corresponding to the ground rule.
 	 */
 	List<NoGood> generateNoGoodsFromGroundSubstitution(final NonGroundRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> posLiterals = collectPosLiterals(nonGroundRule, substitution);
@@ -82,8 +84,13 @@ public class NoGoodGenerator {
 			return singletonList(NoGood.fromConstraint(posLiterals, negLiterals));
 		}
 
+		final List<NoGood> result = new ArrayList<>();
+
+		final Atom groundHeadAtom = nonGroundRule.getHeadAtom().substitute(substitution);
+		final int headId = atomStore.putIfAbsent(groundHeadAtom);
+		
 		// Prepare atom representing the rule body.
-		final Atom bodyAtom = new RuleAtom(nonGroundRule, substitution);
+		final RuleAtom bodyAtom = new RuleAtom(nonGroundRule, substitution);
 
 		// Check uniqueness of ground rule by testing whether the
 		// body representing atom already has an id.
@@ -96,8 +103,8 @@ public class NoGoodGenerator {
 		final int bodyRepresentingLiteral = atomToLiteral(atomStore.putIfAbsent(bodyAtom));
 		final int headLiteral = atomToLiteral(atomStore.putIfAbsent(nonGroundRule.getHeadAtom().substitute(substitution)));
 
-		final List<NoGood> result = new ArrayList<>();
-
+		choiceRecorder.addHeadToBody(headId, atomOf(bodyRepresentingLiteral));
+		
 		// Create a nogood for the head.
 		result.add(NoGood.headFirst(negateLiteral(headLiteral), bodyRepresentingLiteral));
 
@@ -116,7 +123,7 @@ public class NoGoodGenerator {
 
 		// If the body of the rule contains negation, add choices.
 		if (!negLiterals.isEmpty()) {
-			result.addAll(recorder.generate(posLiterals, negLiterals, bodyRepresentingLiteral));
+			result.addAll(choiceRecorder.generateChoiceNoGoods(posLiterals, negLiterals, bodyRepresentingLiteral));
 		}
 
 		return result;

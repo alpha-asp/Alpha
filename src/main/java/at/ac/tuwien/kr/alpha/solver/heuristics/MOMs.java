@@ -1,8 +1,6 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
- * 
- * Additional changes made by Siemens.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -27,49 +25,44 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
-
-import java.util.Collection;
-
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation.Strategy;
 
 /**
- * The default heuristic that had been used by {@link at.ac.tuwien.kr.alpha.solver.DefaultSolver} before {@link BerkMin} was implemented.
+ * The well-known MOMs (Maximum Occurrences in clauses of Minimum size) heuristic
+ * used to initialize atom scores.
+ * This implementation is inspired by the MOMs implementation in <a href="https://github.com/potassco/clasp">clasp</a>
+ * but differs from it in several ways, e.g.:
+ * <ul>
+ * 	<li>The default strategy is {@link Strategy#CountBinaryWatches}, not {@link Strategy#BinaryNoGoodPropagation}.</li>
+ * 	<li>{@link Strategy#BinaryNoGoodPropagation} does not do only one iteration of propagation, but exhaustive propagation.</li>
+ * </ul>
  *
  */
-public class NaiveHeuristic implements BranchingHeuristic {
-
-	private final ChoiceManager choiceManager;
-
-	public NaiveHeuristic(ChoiceManager choiceManager) {
-		this.choiceManager = choiceManager;
-	}
-
-	@Override
-	public void violatedNoGood(NoGood violatedNoGood) {
-	}
-
-	@Override
-	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
-	}
-
-	@Override
-	public void newNoGood(NoGood newNoGood) {
-	}
-
-	@Override
-	public void newNoGoods(Collection<NoGood> newNoGoods) {
-	}
-
-	@Override
-	public int chooseLiteral() {
-		return atomToLiteral(choiceManager.getNextActiveChoiceAtom());
-	}
+public class MOMs {
 	
-	@Override
-	public String toString() {
-		return this.getClass().getSimpleName();
+	static final Strategy DEFAULT_STRATEGY = Strategy.CountBinaryWatches;
+	
+	private BinaryNoGoodPropagationEstimation bnpEstimation;
+	private Strategy strategy = DEFAULT_STRATEGY;
+
+	public MOMs(BinaryNoGoodPropagationEstimation bnpEstimation) {
+		super();
+		this.bnpEstimation = bnpEstimation;
 	}
+
+	/**
+	 * @param atom
+	 * @return
+	 */
+	public double getScore(Integer atom) {
+		int s1 = bnpEstimation.estimate(atom, true, strategy);
+		int s2 = bnpEstimation.estimate(atom, false, strategy);
+		return ((s1 * s2) << 10) + s1 + s2;
+	}
+
+	public void setStrategy(Strategy strategy) {
+		this.strategy = strategy != null ? strategy : DEFAULT_STRATEGY;
+	}
+
 }

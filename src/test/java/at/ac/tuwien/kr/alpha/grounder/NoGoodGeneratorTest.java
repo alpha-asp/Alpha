@@ -25,8 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -64,7 +64,7 @@ public class NoGoodGeneratorTest {
 		
 		Rule rule = program.getRules().get(1);
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
+		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
 		NoGoodGenerator noGoodGenerator = ((NaiveGrounder)grounder).noGoodGenerator;
 		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
 		Substitution substitution = new Substitution();

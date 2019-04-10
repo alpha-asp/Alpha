@@ -38,8 +38,8 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
  */
 public class AlphaActiveRuleHeuristic extends DependencyDrivenHeuristic {
 
-	public AlphaActiveRuleHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
-		super(assignment, choiceManager, decayAge, decayFactor, random, BodyActivityType.DEFAULT);
+	public AlphaActiveRuleHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, Random random) {
+		super(assignment, choiceManager, decayPeriod, decayFactor, random, BodyActivityType.DEFAULT);
 	}
 
 	public AlphaActiveRuleHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {

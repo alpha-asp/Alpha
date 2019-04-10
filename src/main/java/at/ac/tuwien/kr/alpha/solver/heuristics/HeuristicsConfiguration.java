@@ -1,8 +1,6 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2018 Siemens AG
  * All rights reserved.
- * 
- * Additional changes made by Siemens.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -27,49 +25,57 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
-
-import java.util.Collection;
-
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation.Strategy;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 
 /**
- * The default heuristic that had been used by {@link at.ac.tuwien.kr.alpha.solver.DefaultSolver} before {@link BerkMin} was implemented.
- *
+ * Configuration class holding parameters for {@link BranchingHeuristic}s.
  */
-public class NaiveHeuristic implements BranchingHeuristic {
-
-	private final ChoiceManager choiceManager;
-
-	public NaiveHeuristic(ChoiceManager choiceManager) {
-		this.choiceManager = choiceManager;
+public class HeuristicsConfiguration {
+	
+	private Heuristic heuristic;
+	private Strategy momsStrategy;
+	
+	/**
+	 * @param heuristic
+	 * @param momsStrategy
+	 */
+	public HeuristicsConfiguration(Heuristic heuristic, Strategy momsStrategy) {
+		super();
+		this.heuristic = heuristic;
+		this.momsStrategy = momsStrategy;
 	}
 
-	@Override
-	public void violatedNoGood(NoGood violatedNoGood) {
+	/**
+	 * @return the heuristic
+	 */
+	public Heuristic getHeuristic() {
+		return heuristic;
 	}
 
-	@Override
-	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
+	/**
+	 * @param heuristic the heuristic to set
+	 */
+	public void setHeuristic(Heuristic heuristic) {
+		this.heuristic = heuristic;
 	}
 
-	@Override
-	public void newNoGood(NoGood newNoGood) {
+	/**
+	 * @return the momsStrategy
+	 */
+	public Strategy getMomsStrategy() {
+		return momsStrategy;
 	}
 
-	@Override
-	public void newNoGoods(Collection<NoGood> newNoGoods) {
-	}
-
-	@Override
-	public int chooseLiteral() {
-		return atomToLiteral(choiceManager.getNextActiveChoiceAtom());
+	/**
+	 * @param momsStrategy the momsStrategy to set
+	 */
+	public void setMomsStrategy(Strategy momsStrategy) {
+		this.momsStrategy = momsStrategy;
 	}
 	
-	@Override
-	public String toString() {
-		return this.getClass().getSimpleName();
+	public static HeuristicsConfigurationBuilder builder() {
+		return new HeuristicsConfigurationBuilder();
 	}
+
 }
