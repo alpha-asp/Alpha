@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -53,7 +53,9 @@ public final class BranchingHeuristicFactory {
 		GDD_MIN,
 		GDD_PYRO,
 		ALPHA_ACTIVE_RULE,
-		ALPHA_HEAD_MBT;
+		ALPHA_HEAD_MBT,
+		VSIDS,
+		GDD_VSIDS;
 
 		/**
 		 * @return a comma-separated list of names of known heuristics
@@ -63,8 +65,8 @@ public final class BranchingHeuristicFactory {
 		}
 	}
 
-	public static BranchingHeuristic getInstance(Heuristic name, Grounder grounder, WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
-		switch (name) {
+	public static BranchingHeuristic getInstance(HeuristicsConfiguration heuristicsConfiguration, Grounder grounder, WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
+		switch (heuristicsConfiguration.getHeuristic()) {
 		case NAIVE:
 			return new NaiveHeuristic(choiceManager);
 		case BERKMIN:
@@ -99,6 +101,10 @@ public final class BranchingHeuristicFactory {
 			return new AlphaActiveRuleHeuristic(assignment, choiceManager, random);
 		case ALPHA_HEAD_MBT:
 			return new AlphaHeadMustBeTrueHeuristic(assignment, choiceManager, random);
+		case VSIDS:
+			return new VSIDS(assignment, choiceManager, heuristicsConfiguration.getMomsStrategy());
+		case GDD_VSIDS:
+			return new DependencyDrivenVSIDS(assignment, choiceManager, random, heuristicsConfiguration.getMomsStrategy());
 		}
 		throw new IllegalArgumentException("Unknown branching heuristic requested.");
 	}

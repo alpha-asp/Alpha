@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -28,8 +28,10 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
@@ -39,6 +41,14 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 public class ChainedBranchingHeuristics implements BranchingHeuristic {
 	
 	private List<BranchingHeuristic> chain = new LinkedList<>();
+	private int[] decisionCounters;
+	
+	private ChainedBranchingHeuristics(BranchingHeuristic... branchingHeuristics) {
+		for (BranchingHeuristic element : branchingHeuristics) {
+			add(element);
+		}
+		this.decisionCounters = new int[chain.size()];
+	}
 	
 	@Override
 	public void violatedNoGood(NoGood violatedNoGood) {
@@ -63,15 +73,24 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 	
 	@Override
 	public int chooseLiteral() {
-		for (BranchingHeuristic element : chain) {
+		for (int i = 0; i < chain.size(); i++) {
+			BranchingHeuristic element = chain.get(i);
 			int chosenLiteral = element.chooseLiteral();
 			if (chosenLiteral != DEFAULT_CHOICE_LITERAL) {
+				decisionCounters[i]++;
 				return chosenLiteral;
 			}
 		}
 		return DEFAULT_CHOICE_LITERAL;
 	}
-	
+
+	@Override
+	public void growForMaxAtomId(int maxAtomId) {
+		for (BranchingHeuristic element : chain) {
+			element.growForMaxAtomId(maxAtomId);
+		}
+	}
+
 	public void add(BranchingHeuristic element) {
 		if (chain.contains(element)) {
 			throw oops("Cycle detected in chain of branching heuristics");
@@ -80,11 +99,23 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 	}
 	
 	public static ChainedBranchingHeuristics chainOf(BranchingHeuristic... branchingHeuristics) {
-		ChainedBranchingHeuristics chain = new ChainedBranchingHeuristics();
-		for (BranchingHeuristic element : branchingHeuristics) {
-			chain.add(element);
+		return new ChainedBranchingHeuristics(branchingHeuristics);
+	}
+
+	/**
+	 * Returns a mapping from individual heuristics to number of decisions made by them.
+	 */
+	public Map<BranchingHeuristic, Integer> getNumberOfDecisions() {
+		Map<BranchingHeuristic, Integer> map = new HashMap<>();
+		for (int i = 0; i < chain.size(); i++) {
+			map.put(chain.get(i), decisionCounters[i]);
 		}
-		return chain;
+		return map;
+	}
+	
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + chain;
 	}
 
 }

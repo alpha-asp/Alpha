@@ -3,17 +3,14 @@ version: "{branch} {build}"
 build:
   verbosity: detailed
 
-install:
-  - choco install gradle --version 4.2.1
-
 before_build:
   - ps: Get-Command java
 
 build_script:
-  - gradle assemble --no-daemon
+  - gradlew build --scan --stacktrace
 
 test_script:
-  - gradle check --no-daemon
+  - gradlew check
 
 after_test:
   - ps: |
@@ -22,7 +19,7 @@ after_test:
         Foreach-Object {
             $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $_))
         }
-  - gradle bundledJar --no-daemon
+  - gradlew bundledJar
   - mv build/libs/alpha-bundled.jar alpha.jar
 
 artifacts:

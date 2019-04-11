@@ -70,7 +70,7 @@ public class AnalyzeUnjustifiedTest {
 		InputProgram parsedProgram = parser.parse(program);
 		InternalProgram pa = system.performProgramPreprocessing(parsedProgram);
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore);
+		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore, true);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		int rId = atomStore.get(new BasicAtom(Predicate.getInstance("r", 0)));
@@ -97,7 +97,7 @@ public class AnalyzeUnjustifiedTest {
 		InputProgram parsedProgram = parser.parse(program);
 		InternalProgram pa = system.performProgramPreprocessing(parsedProgram);
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore);
+		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore, true);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		Atom p1 = parser.parse("p(1).").getFacts().get(0);
@@ -136,7 +136,7 @@ public class AnalyzeUnjustifiedTest {
 		InputProgram parsedProgram = parser.parse(program);
 		InternalProgram pa = system.performProgramPreprocessing(parsedProgram);
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore);
+		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore, true);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		Atom qa = parser.parse("q(a).").getFacts().get(0);
@@ -194,7 +194,7 @@ public class AnalyzeUnjustifiedTest {
 		InputProgram parsedProgram = parser.parse(program);
 		InternalProgram pa = system.performProgramPreprocessing(parsedProgram);
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore);
+		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore, true);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		int rId = atomStore.get(new BasicAtom(Predicate.getInstance("r", 0)));

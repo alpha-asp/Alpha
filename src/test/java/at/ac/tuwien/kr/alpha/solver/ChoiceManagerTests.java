@@ -57,7 +57,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 		InputProgram parsedProgram = new ProgramParser().parse(testProgram);
 		InternalProgram pa = system.performProgramPreprocessing(parsedProgram);
 		this.atomStore = new AtomStoreImpl();
-		this.grounder = new NaiveGrounder(pa, atomStore);
+		this.grounder = new NaiveGrounder(pa, atomStore, true);
 		WritableAssignment assignment = new TrailAssignment(atomStore);
 		NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment);
 		this.choiceManager = new ChoiceManager(assignment, store);
@@ -66,7 +66,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 	@Test
 	public void testIsAtomChoice() {
 		Collection<NoGood> noGoods = getNoGoods();
-		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
+		choiceManager.addChoiceInformation(grounder.getChoiceAtoms(), grounder.getHeadsToBodies());
 		for (NoGood noGood : noGoods) {
 			for (Integer literal : noGood) {
 				int atom = atomOf(literal);

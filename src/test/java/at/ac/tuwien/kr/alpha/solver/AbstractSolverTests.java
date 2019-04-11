@@ -57,6 +57,7 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
@@ -97,7 +98,7 @@ public abstract class AbstractSolverTests {
 		String[] solvers = getProperty("solvers", ci ? "default,naive" : "default");
 		String[] grounders = getProperty("grounders", "naive");
 		String[] stores = getProperty("stores", ci ? "alpharoaming,naive" : "alpharoaming");
-		String[] heuristics = getProperty("heuristics", ci ? "ALL" : "NAIVE");
+		String[] heuristics = getProperty("heuristics", ci ? "ALL" : "NAIVE,VSIDS");
 
 		// "ALL" is a magic value that will be expanded to contain all heuristics.
 		if ("ALL".equals(heuristics[0])) {
@@ -156,13 +157,14 @@ public abstract class AbstractSolverTests {
 	public boolean checks;
 
 	protected Solver getInstance(AtomStore atomStore, Grounder grounder) {
-		return SolverFactory.getInstance(solverName, storeName, atomStore, grounder, new Random(seed), heuristic, checks, false);
+		HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(heuristic).build();
+		return SolverFactory.getInstance(solverName, storeName, atomStore, grounder, new Random(seed), heuristicsConfiguration, checks, false);
 	}
 
 	protected Solver getInstance(InputProgram program) {
 		Alpha system = new Alpha(); // note that this might be a performance hit, we might wanna adapt how solvers are obtained here
 		AtomStore atomStore = new AtomStoreImpl();
-		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, system.performProgramPreprocessing(program), atomStore));
+		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, system.performProgramPreprocessing(program), atomStore, true));
 	}
 
 	protected Solver getInstance(String program) {
