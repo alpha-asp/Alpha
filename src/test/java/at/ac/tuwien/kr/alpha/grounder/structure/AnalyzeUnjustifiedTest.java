@@ -27,26 +27,29 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.structure;
 
+import static junit.framework.TestCase.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
+
+import org.junit.Test;
+
+import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.program.Program;
+import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
-import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Set;
-
-import static junit.framework.TestCase.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 
 /**
  * Copyright (c) 2018-2019, the Alpha Team.
@@ -57,15 +60,17 @@ public class AnalyzeUnjustifiedTest {
 
 	@Test
 	public void justifySimpleRules() {
+		Alpha system = new Alpha();
 		String program = "p(X) :- q(X)." +
 			"q(X) :- p(X)." +
 			"q(5) :- r." +
 			"r :- not nr." +
 			"nr :- not r." +
 			":- not p(5).";
-		Program parsedProgram = parser.parse(program);
+		InputProgram parsedProgram = parser.parse(program);
+		InternalProgram pa = system.performProgramPreprocessing(parsedProgram);
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore);
+		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		int rId = atomStore.get(new BasicAtom(Predicate.getInstance("r", 0)));
@@ -81,6 +86,7 @@ public class AnalyzeUnjustifiedTest {
 
 	@Test
 	public void justifyLargerRules() {
+		Alpha system = new Alpha();
 		String program = "p(X) :- q(X,Y), r(Y), not s(X,Y)." +
 			"{ q(1,X)} :- dom(X)." +
 			"dom(1..3)." +
@@ -88,9 +94,10 @@ public class AnalyzeUnjustifiedTest {
 			"{r(2)}." +
 			"{s(1,2)}." +
 			":- not p(1).";
-		Program parsedProgram = parser.parse(program);
+		InputProgram parsedProgram = parser.parse(program);
+		InternalProgram pa = system.performProgramPreprocessing(parsedProgram);
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore);
+		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		Atom p1 = parser.parse("p(1).").getFacts().get(0);
@@ -119,15 +126,17 @@ public class AnalyzeUnjustifiedTest {
 
 	@Test
 	public void justifyMultipleReasons() {
+		Alpha system = new Alpha();
 		String program = "n(a). n(b). n(c). n(d). n(e)." +
 			"s(a,b). s(b,c). s(c,d). s(d,e)." +
 			"{ q(X) } :- n(X)." +
 			"p(X) :- q(X)." +
 			"p(X) :- p(Y), s(Y,X)." +
 			":- not p(c).";
-		Program parsedProgram = parser.parse(program);
+		InputProgram parsedProgram = parser.parse(program);
+		InternalProgram pa = system.performProgramPreprocessing(parsedProgram);
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore);
+		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		Atom qa = parser.parse("q(a).").getFacts().get(0);
@@ -174,6 +183,7 @@ public class AnalyzeUnjustifiedTest {
 
 	@Test
 	public void justifyNegatedFactsRemovedFromReasons() {
+		Alpha system = new Alpha();
 		String program = "forbidden(2,9). forbidden(1,9)." +
 			"p(X) :- q(X)." +
 			"q(X) :- p(X)." +
@@ -181,9 +191,10 @@ public class AnalyzeUnjustifiedTest {
 			"r :- not nr, not forbidden(2,9), not forbidden(1,9)." +
 			"nr :- not r." +
 			":- not p(5).";
-		Program parsedProgram = parser.parse(program);
+		InputProgram parsedProgram = parser.parse(program);
+		InternalProgram pa = system.performProgramPreprocessing(parsedProgram);
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore);
+		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		int rId = atomStore.get(new BasicAtom(Predicate.getInstance("r", 0)));

@@ -10,7 +10,7 @@ import java.util.List;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class ConstantTerm<T extends Comparable<T>> extends Term {
-	private static final Interner<ConstantTerm> INTERNER = new Interner<>();
+	private static final Interner<ConstantTerm<?>> INTERNER = new Interner<>();
 
 	private final T object;
 	private final boolean symbolic;
@@ -67,7 +67,7 @@ public class ConstantTerm<T extends Comparable<T>> extends Term {
 			return false;
 		}
 
-		ConstantTerm that = (ConstantTerm) o;
+		ConstantTerm<?> that = (ConstantTerm<?>) o;
 
 		return object.equals(that.object);
 	}
@@ -103,7 +103,7 @@ public class ConstantTerm<T extends Comparable<T>> extends Term {
 			return super.compareTo(o);
 		}
 
-		ConstantTerm other = (ConstantTerm) o;
+		ConstantTerm<?> other = (ConstantTerm<?>) o;
 
 		// We will perform an unchecked cast.
 		// Because of type erasure, we cannot know the exact type

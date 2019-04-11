@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.common.rule;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -73,7 +74,7 @@ public abstract class AbstractRule<H extends Head> {
 	}
 
 	public List<Literal> getBody() {
-		return this.body;
+		return Collections.unmodifiableList(this.body);
 	}
 
 }

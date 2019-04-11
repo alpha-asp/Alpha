@@ -25,36 +25,43 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.grounder.transformation;
+package at.ac.tuwien.kr.alpha.grounder.transformation.impl;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Map;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.program.Program;
+import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
-
-import java.util.*;
+import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 
 /**
- * Removes variable equalities from rules by replacing one variable with the other.
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Removes variable equalities from rules by replacing one variable with the other. Copyright (c) 2017-2018, the Alpha Team.
  */
-public class VariableEqualityRemoval implements ProgramTransformation {
+public class VariableEqualityRemoval extends ProgramTransformation<InputProgram, InputProgram> {
+
 	@Override
-	public void transform(Program inputProgram) {
+	public InputProgram apply(InputProgram inputProgram) {
 		for (BasicRule rule : inputProgram.getRules()) {
 			findAndReplaceVariableEquality(rule);
 		}
+		return inputProgram;
 	}
 
 	private void findAndReplaceVariableEquality(BasicRule rule) {
 		// Collect all equal variables.
 		HashMap<VariableTerm, HashSet<VariableTerm>> variableToEqualVariables = new HashMap<>();
-		//HashSet<Variable> equalVariables = new LinkedHashSet<>();
+		// HashSet<Variable> equalVariables = new LinkedHashSet<>();
 		HashSet<Literal> equalitiesToRemove = new HashSet<>();
 		for (Literal bodyElement : rule.getBody()) {
 			if (!(bodyElement instanceof ComparisonLiteral)) {

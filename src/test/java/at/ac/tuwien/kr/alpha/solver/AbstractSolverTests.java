@@ -27,17 +27,18 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.AnswerSetsParser;
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.program.Program;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
+import static java.util.Collections.emptySet;
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Random;
+import java.util.Set;
+import java.util.StringJoiner;
+
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.junit.runner.RunWith;
@@ -46,11 +47,18 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.*;
-
-import static java.util.Collections.emptySet;
-import static org.junit.Assert.assertEquals;
+import at.ac.tuwien.kr.alpha.Alpha;
+import at.ac.tuwien.kr.alpha.AnswerSetsParser;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
+import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 
 @RunWith(Parameterized.class)
 public abstract class AbstractSolverTests {
@@ -151,9 +159,10 @@ public abstract class AbstractSolverTests {
 		return SolverFactory.getInstance(solverName, storeName, atomStore, grounder, new Random(seed), heuristic, checks, false);
 	}
 
-	protected Solver getInstance(Program program) {
+	protected Solver getInstance(InputProgram program) {
+		Alpha system = new Alpha(); // note that this might be a performance hit, we might wanna adapt how solvers are obtained here
 		AtomStore atomStore = new AtomStoreImpl();
-		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, program, atomStore));
+		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, system.performProgramPreprocessing(program), atomStore));
 	}
 
 	protected Solver getInstance(String program) {
@@ -172,7 +181,7 @@ public abstract class AbstractSolverTests {
 		return getInstance(program).collectSet();
 	}
 
-	protected Set<AnswerSet> collectSet(Program program) {
+	protected Set<AnswerSet> collectSet(InputProgram program) {
 		return getInstance(program).collectSet();
 	}
 

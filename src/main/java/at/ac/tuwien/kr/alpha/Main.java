@@ -39,7 +39,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.program.Program;
+import at.ac.tuwien.kr.alpha.common.depgraph.io.DependencyGraphWriter;
+import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
 import at.ac.tuwien.kr.alpha.config.AlphaConfig;
 import at.ac.tuwien.kr.alpha.config.CommandLineParser;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
@@ -57,19 +59,19 @@ public class Main {
 
 	public static void main(String[] args) {
 		CommandLineParser commandLineParser = new CommandLineParser(Main.ALPHA_CALL_SYNTAX, (msg) -> Main.exitWithMessage(msg, 0));
-		AlphaConfig ctx = null;
+		AlphaConfig cfg = null;
 		try {
-			ctx = commandLineParser.parseCommandLine(args);
+			cfg = commandLineParser.parseCommandLine(args);
 		} catch (ParseException ex) {
 			System.err.println("Invalid usage: " + ex.getMessage());
 			Main.exitWithMessage(commandLineParser.getUsageMessage(), 1);
 		}
 
-		Alpha alpha = new Alpha(ctx.getAlphaConfig());
+		Alpha alpha = new Alpha(cfg.getSystemConfig());
 
-		Program program = null;
+		InputProgram program = null;
 		try {
-			program = alpha.readProgram(ctx.getInputConfig());
+			program = alpha.readProgram(cfg.getInputConfig());
 		} catch (RecognitionException e) {
 			// In case a recognition exception occurred, parseVisit will
 			// already have printed an error message, so we just exit
@@ -81,10 +83,19 @@ public class Main {
 			Main.bailOut("Failed to parse program.", e);
 		}
 
-		Main.computeAndConsumeAnswerSets(alpha, ctx.getInputConfig(), program);
+		InternalProgram preprocessedProgram = alpha.performProgramPreprocessing(program);
+		if (cfg.getInputConfig().isWriteDependencyGraph()) {
+			try {
+				new DependencyGraphWriter().writeAsDot(preprocessedProgram.getDependencyGraph(), cfg.getInputConfig().getDepGraphTarget(),
+						cfg.getSystemConfig().isDebugInternalChecks());
+			} catch (IOException ex) {
+				Main.bailOut("Failed to write dependency graph!", ex);
+			}
+		}
+		Main.computeAndConsumeAnswerSets(alpha, cfg.getInputConfig(), preprocessedProgram);
 	}
 
-	private static void computeAndConsumeAnswerSets(Alpha alpha, InputConfig inputCfg, Program program) {
+	private static void computeAndConsumeAnswerSets(Alpha alpha, InputConfig inputCfg, InternalProgram program) {
 		Solver solver = alpha.prepareSolverFor(program);
 		Stream<AnswerSet> stream = solver.stream();
 		if (alpha.getConfig().isSortAnswerSets()) {

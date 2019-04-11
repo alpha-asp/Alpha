@@ -25,19 +25,23 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+
+import org.junit.Ignore;
+import org.junit.Test;
+
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.program.Program;
+import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.*;
 
 public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 	@Test(timeout = 1000)
@@ -82,17 +86,17 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 	}
 
 	private void testThreeColouring(int nVertices, int nEdges) throws IOException {
-		Program program = new ProgramParser().parse(
+		InputProgram tmpPrg = new ProgramParser().parse(
 				"blue(N) :- v(N), not red(N), not green(N)." +
 				"red(N) :- v(N), not blue(N), not green(N)." +
 				"green(N) :- v(N), not red(N), not blue(N)." +
 				":- e(N1,N2), blue(N1), blue(N2)." +
 				":- e(N1,N2), red(N1), red(N2)." +
 				":- e(N1,N2), green(N1), green(N2).");
-
-		program.getFacts().addAll(createVertices(nVertices));
-		program.getFacts().addAll(createEdges(nVertices, nEdges));
-
+		InputProgram.Builder prgBuilder = InputProgram.builder(tmpPrg);
+		prgBuilder.addFacts(createVertices(nVertices));
+		prgBuilder.addFacts(createEdges(nVertices, nEdges));
+		InputProgram program = prgBuilder.build();
 		maybeShuffle(program);
 
 		Optional<AnswerSet> answerSet = getInstance(program).stream().findAny();
@@ -101,26 +105,27 @@ public class ThreeColouringRandomGraphTest extends AbstractSolverTests {
 		// TODO: check correctness of answer set
 	}
 
-	private void maybeShuffle(Program program) {
+	private void maybeShuffle(InputProgram program) {
 
 		// TODO: switch on if different rule orderings in the encoding are desired (e.g. for benchmarking purposes)
+		// FIXME since InputProgram is immutable this needs to be reworked a bit if used
 		// Collections.reverse(program.getRules());
 		// Collections.shuffle(program.getRules());
 		// Collections.reverse(program.getFacts());
 		// Collections.shuffle(program.getFacts());
 	}
 
-	private Collection<Atom> createVertices(int n) {
-		Collection<Atom> facts = new ArrayList<>(n);
+	private List<Atom> createVertices(int n) {
+		List<Atom> facts = new ArrayList<>(n);
 		for (int i = 0; i < n; i++) {
 			facts.add(fact("v", i));
 		}
 		return facts;
 	}
 
-	private Collection<Atom> createEdges(int vertices, int edges) {
+	private List<Atom> createEdges(int vertices, int edges) {
 		Random rand = new Random(0);
-		Collection<Atom> facts = new LinkedHashSet<>(edges);
+		List<Atom> facts = new ArrayList<>(edges);
 		for (int i = 0; i < edges; i++) {
 			int v1 = 0;
 			int v2 = 0;

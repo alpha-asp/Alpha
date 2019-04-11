@@ -5,7 +5,8 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.program.Program;
+import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
+import at.ac.tuwien.kr.alpha.common.rule.impl.InternalRule;
 import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
 import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -58,11 +59,12 @@ public class UnifierTest extends SubstitutionTest {
 
 	private BasicAtom parseAtom(String atom) {
 		ProgramParser programParser = new ProgramParser();
-		Program program = programParser.parse(atom + ".");
+		InputProgram program = programParser.parse(atom + ".");
 		return (BasicAtom) program.getFacts().get(0);
 	}
 
 	@Test
+	@Override
 	public void unifyTermsSimpleBinding() throws Exception {
 		Substitution substitution = new Unifier();
 		substitution.unifyTerms(Y, A);
@@ -70,6 +72,7 @@ public class UnifierTest extends SubstitutionTest {
 	}
 
 	@Test
+	@Override
 	public void unifyTermsFunctionTermBinding() throws Exception {
 		Substitution substitution = new Unifier();
 		substitution.put(Y, A);
@@ -84,19 +87,22 @@ public class UnifierTest extends SubstitutionTest {
 	}
 
 	@Test
+	@Override
 	public void substitutePositiveBasicAtom() {
 		substituteBasicAtomLiteral(false);
 	}
 
 	@Test
+	@Override
 	public void substituteNegativeBasicAtom() {
 		substituteBasicAtomLiteral(true);
 	}
 
 	@Test
+	@Override
 	public void groundAndPrintRule() {
 		BasicRule rule = PARSER.parse("x :- p(X,Y), not q(X,Y).").getRules().get(0);
-		NormalRule nonGroundRule = NormalRule.fromBasicRule(rule);
+		InternalRule nonGroundRule = InternalRule.fromNormalRule(NormalRule.fromBasicRule(rule));
 		Substitution substitution = new Unifier();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
@@ -119,11 +125,13 @@ public class UnifierTest extends SubstitutionTest {
 	}
 
 	@Test
+	@Override
 	public void groundLiteralToString_PositiveBasicAtom() {
 		groundLiteralToString(false);
 	}
 
 	@Test
+	@Override
 	public void groundLiteralToString_NegativeBasicAtom() {
 		groundLiteralToString(true);
 	}

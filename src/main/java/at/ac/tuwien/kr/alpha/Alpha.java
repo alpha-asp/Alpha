@@ -30,10 +30,12 @@ package at.ac.tuwien.kr.alpha;
 import java.io.IOException;
 import java.nio.charset.CodingErrorAction;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.CharStream;
@@ -43,22 +45,16 @@ import org.apache.commons.lang3.StringUtils;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.depgraph.io.DependencyGraphWriter;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.common.program.Program;
-import at.ac.tuwien.kr.alpha.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.NormalProgram;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
-import at.ac.tuwien.kr.alpha.grounder.transformation.CardinalityNormalization;
-import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
-import at.ac.tuwien.kr.alpha.grounder.transformation.EnumerationRewriting;
-import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
-import at.ac.tuwien.kr.alpha.grounder.transformation.SumNormalization;
-import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
+import at.ac.tuwien.kr.alpha.grounder.transformation.impl.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
@@ -75,59 +71,53 @@ public class Alpha {
 	public Alpha() {
 	}
 
-	public Program readProgram(InputConfig cfg) throws IOException {
-		Program retVal = new Program();
+	public InputProgram readProgram(InputConfig cfg) throws IOException {
+		InputProgram.Builder prgBuilder = InputProgram.builder();
+		InputProgram tmpProg;
 		if (!cfg.getFiles().isEmpty()) {
-			retVal.accumulate(this.readProgramFiles(cfg.isLiterate(), cfg.getPredicateMethods(), cfg.getFiles()));
+			tmpProg = this.readProgramFiles(cfg.isLiterate(), cfg.getPredicateMethods(), cfg.getFiles());
+			prgBuilder.addFacts(tmpProg.getFacts());
+			prgBuilder.addRules(tmpProg.getRules());
+			prgBuilder.addInlineDirectives(tmpProg.getInlineDirectives());
 		}
 		if (!cfg.getAspStrings().isEmpty()) {
-			retVal.accumulate(this.readProgramString(StringUtils.join(cfg.getAspStrings(), "\n"), cfg.getPredicateMethods()));
+			tmpProg = this.readProgramString(StringUtils.join(cfg.getAspStrings(), "\n"), cfg.getPredicateMethods());
+			prgBuilder.addFacts(tmpProg.getFacts());
+			prgBuilder.addRules(tmpProg.getRules());
+			prgBuilder.addInlineDirectives(tmpProg.getInlineDirectives());
 		}
-		retVal = this.doProgramTransformations(retVal);
-		if (cfg.isWriteDependencyGraph()) {
-			// FIXME ProgramAnalysis is again created in grounder, should generally do this
-			// in Alpha and pass into grounder (not too critical, only done here in case
-			// user requests dot output for dependency graph)
-			ProgramAnalysis analysis = new ProgramAnalysis(retVal);
-			new DependencyGraphWriter().writeAsDot(analysis.getDependencyGraph(), cfg.getDepGraphTarget(), this.config.isDebugInternalChecks());
-		}
-		return retVal;
+		return prgBuilder.build();
 	}
 
-	private Program doProgramTransformations(Program program) {
-		// Transform choice rules.
-		new ChoiceHeadToNormal().transform(program);
-		// Transform cardinality aggregates.
-		new CardinalityNormalization(!this.config.isUseNormalizationGrid()).transform(program);
-		// Transform sum aggregates.
-		new SumNormalization().transform(program);
-		// Transform intervals.
-		new IntervalTermToIntervalAtom().transform(program);
-		// Remove variable equalities.
-		new VariableEqualityRemoval().transform(program);
-		// Transform enumeration atoms.
-		new EnumerationRewriting().transform(program);
-		EnumerationAtom.resetEnumerations();
-		return program;
+	public InternalProgram performProgramPreprocessing(InputProgram program) {
+		NormalProgram normalProg = new NormalizeProgramTransformation(this.config.isUseNormalizationGrid()).apply(program);
+		return InternalProgram.fromNormalProgram(normalProg);
 	}
 
-	public Program readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException {
+	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException {
+		return this.readProgramFiles(literate, externals, paths.stream().map(Paths::get).collect(Collectors.toList()).toArray(new Path[] {}));
+	}
+
+	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
 		ProgramParser parser = new ProgramParser(externals);
-		Program retVal = new Program();
-		for (String fileName : paths) {
+		InputProgram.Builder prgBuilder = InputProgram.builder();
+		InputProgram tmpProg;
+		for (Path path : paths) {
 			CharStream stream;
 			if (!literate) {
-				stream = CharStreams.fromFileName(fileName);
+				stream = CharStreams.fromPath(path);
 			} else {
-				stream = CharStreams.fromChannel(Util.streamToChannel(Util.literate(Files.lines(Paths.get(fileName)))), 4096, CodingErrorAction.REPLACE,
-						fileName);
+				stream = CharStreams.fromChannel(Util.streamToChannel(Util.literate(Files.lines(path))), 4096, CodingErrorAction.REPLACE, path.toString());
 			}
-			retVal.accumulate(parser.parse(stream));
+			tmpProg = parser.parse(stream);
+			prgBuilder.addFacts(tmpProg.getFacts());
+			prgBuilder.addRules(tmpProg.getRules());
+			prgBuilder.addInlineDirectives(tmpProg.getInlineDirectives());
 		}
-		return retVal;
+		return prgBuilder.build();
 	}
 
-	public Program readProgramString(String aspString, Map<String, PredicateInterpretation> externals) {
+	public InputProgram readProgramString(String aspString, Map<String, PredicateInterpretation> externals) {
 		ProgramParser parser = new ProgramParser(externals);
 		return parser.parse(aspString);
 	}
@@ -139,7 +129,7 @@ public class Alpha {
 	 * @param program the program to solve
 	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
 	 */
-	public Solver prepareSolverFor(Program program) {
+	public Solver prepareSolverFor(InternalProgram program) {
 		String grounderName = this.config.getGrounderName();
 		String solverName = this.config.getSolverName();
 		String nogoodStoreName = this.config.getNogoodStoreName();
@@ -156,9 +146,51 @@ public class Alpha {
 		return solver;
 	}
 
-	public Stream<AnswerSet> solve(Program program) {
+	/**
+	 * Convenience method - overloaded version of prepareSolverFor(AnalyzedNormalProgram) for cases where details of the program analysis are not of interest
+	 * 
+	 * @param program a NormalProgram to solve
+	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
+	 */
+	public Solver prepareSolverFor(NormalProgram program) {
+		return this.prepareSolverFor(InternalProgram.fromNormalProgram(program));
+	}
+
+	/**
+	 * Convenience method - overloaded version of prepareSolverFor(AnalyzedNormalProgram) for cases where details of the program analysis and program
+	 * normalization are not of interest
+	 * 
+	 * @param program a NormalProgram to solve
+	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
+	 */
+	public Solver prepareSolverFor(InputProgram program) {
+		return this.prepareSolverFor(this.performProgramPreprocessing(program));
+	}
+
+	/**
+	 * Solves the given program
+	 * 
+	 * @param program an AnalyzedNormalProgram to solve
+	 * @return a Stream of answer sets representing stable models of the given program
+	 */
+	public Stream<AnswerSet> solve(InternalProgram program) {
 		Stream<AnswerSet> retVal = this.prepareSolverFor(program).stream();
 		return this.config.isSortAnswerSets() ? retVal.sorted() : retVal;
+	}
+
+	/**
+	 * Convenience method - overloaded version of solve(AnalyzedNormalProgram) for cases where details of the program analysis aren't of interest
+	 */
+	public Stream<AnswerSet> solve(NormalProgram program) {
+		return this.solve(InternalProgram.fromNormalProgram(program));
+	}
+
+	/**
+	 * Convenience method - overloaded version of solve(AnalyzedNormalProgram) for cases where details of the program analysis and normalization aren't of
+	 * interest
+	 */
+	public Stream<AnswerSet> solve(InputProgram program) {
+		return this.solve(this.performProgramPreprocessing(program));
 	}
 
 	public SystemConfig getConfig() {

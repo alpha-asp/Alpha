@@ -25,53 +25,56 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.grounder.transformation;
-
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.program.Program;
-import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
+package at.ac.tuwien.kr.alpha.grounder.transformation.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.program.impl.NormalProgram;
+import at.ac.tuwien.kr.alpha.common.rule.head.impl.NormalHead;
+import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
+import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
+
 /**
- * Rewrites all interval terms in a rule into a new variable and an IntervalAtom.
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Rewrites all interval terms in a rule into a new variable and an IntervalAtom. Copyright (c) 2017-2018, the Alpha Team.
  */
-public class IntervalTermToIntervalAtom implements ProgramTransformation {
+public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProgram, NormalProgram> {
 	private static final String INTERVAL_VARIABLE_PREFIX = "_Interval";
 
 	/**
 	 * Rewrites intervals into a new variable and special IntervalAtom.
+	 * 
 	 * @return true if some interval occurs in the rule.
 	 */
-	private static boolean rewriteIntervalSpecifications(BasicRule rule) {
+	// FIXME actually Atoms should be immutable - in that case below method(s) need further changes
+	private static NormalRule rewriteIntervalSpecifications(NormalRule rule) {
 		// Collect all intervals and replace them with variables.
 		Map<VariableTerm, IntervalTerm> intervalReplacements = new HashMap<>();
-		for (Literal literal : rule.getBody()) {
+
+		List<Literal> rewrittenBody = new ArrayList<>(rule.getBody());
+		NormalHead rewrittenHead = rule.isConstraint() ? null : new NormalHead(rule.getHeadAtom());
+
+		for (Literal literal : rewrittenBody) {
 			rewriteAtom(literal.getAtom(), intervalReplacements);
 		}
-		if (rule.getHead() != null) {
-			if (!rule.getHead().isNormal()) {
-				throw new RuntimeException("Cannot rewrite intervals in rules whose head contains a disjunction or choice. Given rule is: " + rule);
-			}
-			rewriteAtom(((DisjunctiveHead)rule.getHead()).disjunctiveAtoms.get(0), intervalReplacements);
+		if (rewrittenHead != null) {
+			rewriteAtom(rule.getHeadAtom(), intervalReplacements);
 		}
 
 		// Add new IntervalAtoms representing the interval specifications.
 		for (Map.Entry<VariableTerm, IntervalTerm> interval : intervalReplacements.entrySet()) {
-			rule.getBody().add(new IntervalAtom(interval.getValue(), interval.getKey()).toLiteral());
+			rewrittenBody.add(new IntervalAtom(interval.getValue(), interval.getKey()).toLiteral());
 		}
-		return !intervalReplacements.isEmpty();
+		return new NormalRule(rewrittenHead, rewrittenBody);
 	}
 
 	/**
@@ -121,9 +124,11 @@ public class IntervalTermToIntervalAtom implements ProgramTransformation {
 	}
 
 	@Override
-	public void transform(Program inputProgram) {
-		for (BasicRule rule : inputProgram.getRules()) {
-			rewriteIntervalSpecifications(rule);
+	public NormalProgram apply(NormalProgram inputProgram) {
+		List<NormalRule> rewrittenRules = new ArrayList<>();
+		for (NormalRule rule : inputProgram.getRules()) {
+			rewrittenRules.add(rewriteIntervalSpecifications(rule));
 		}
+		return new NormalProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
 	}
 }

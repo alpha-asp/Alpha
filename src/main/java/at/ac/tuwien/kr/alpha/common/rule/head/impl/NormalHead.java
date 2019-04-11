@@ -25,4 +25,9 @@ public class NormalHead extends Head {
 		return this.atom;
 	}
 
+	@Override
+	public String toString() {
+		return this.atom.toString();
+	}
+
 }

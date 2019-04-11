@@ -25,20 +25,27 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.program.Program;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
-import org.junit.Test;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.Test;
+
+import at.ac.tuwien.kr.alpha.Alpha;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.Literals;
+import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 
 /**
  * Tests {@link NaiveGrounder}
@@ -52,12 +59,14 @@ public class NaiveGrounderTest {
 	 */
 	@Test
 	public void groundRuleAlreadyGround() {
-		Program program = PARSER.parse("a :- not b. "
+		Alpha system = new Alpha();
+		InputProgram program = PARSER.parse("a :- not b. "
 				+ "b :- not a. "
 				+ "c :- b.");
+		InternalProgram prog = system.performProgramPreprocessing(program);
 		
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
+		Grounder grounder = GrounderFactory.getInstance("naive", prog, atomStore);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		int litCNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("c", 0))), false);
 		int litB = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))));
@@ -71,13 +80,15 @@ public class NaiveGrounderTest {
 	 */
 	@Test
 	public void groundRuleWithLongerBodyAlreadyGround() {
-		Program program = PARSER.parse("a :- not b. "
+		Alpha system = new Alpha();
+		InputProgram program = PARSER.parse("a :- not b. "
 				+ "b :- not a. "
 				+ "c :- b. "
 				+ "d :- b, c. ");
+		InternalProgram prog = system.performProgramPreprocessing(program);
 		
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
+		Grounder grounder = GrounderFactory.getInstance("naive", prog, atomStore);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		int litANeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("a", 0))), false);
 		int litBNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))), false);
@@ -95,12 +106,14 @@ public class NaiveGrounderTest {
 	 */
 	@Test
 	public void groundConstraintAlreadyGround() {
-		Program program = PARSER.parse("a :- not b. "
+		Alpha system = new Alpha();
+		InputProgram program = PARSER.parse("a :- not b. "
 				+ "b :- not a. "
 				+ ":- b.");
+		InternalProgram prog = system.performProgramPreprocessing(program);
 		
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
+		Grounder grounder = GrounderFactory.getInstance("naive", prog, atomStore);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		int litB = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))));
 		assertTrue(noGoods.containsValue(NoGood.fromConstraint(Arrays.asList(litB), Collections.emptyList())));

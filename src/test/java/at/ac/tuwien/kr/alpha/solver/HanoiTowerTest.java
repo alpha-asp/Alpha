@@ -25,24 +25,24 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.program.Program;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.antlr.v4.runtime.CharStreams;
-import org.junit.Ignore;
-import org.junit.Test;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.SortedSet;
 
-import static org.junit.Assert.assertTrue;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import at.ac.tuwien.kr.alpha.Alpha;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 /**
  * Tests {@link AbstractSolver} using some hanoi tower test cases (see https://en.wikipedia.org/wiki/Tower_of_Hanoi).
@@ -50,7 +50,6 @@ import static org.junit.Assert.assertTrue;
  */
 @Ignore("disabled to save resources during CI")
 public class HanoiTowerTest extends AbstractSolverTests {
-	private final ProgramParser parser = new ProgramParser();
 
 	@Test(timeout = 10000)
 	public void testInstance1() throws IOException {
@@ -82,20 +81,21 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	}
 
 	private void testHanoiTower(String instance) throws IOException {
-		Program parsedProgram = parser.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp")));
-		parsedProgram.accumulate(parser.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "HanoiTower_instances", instance + ".asp"))));
-		Solver solver = getInstance(parsedProgram);
+		Alpha system = new Alpha();
+		InputProgram prog = system.readProgramFiles(false, null, Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp"),
+				Paths.get("src", "test", "resources", "HanoiTower_instances", instance + ".asp"));
+		Solver solver = getInstance(prog);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		assertTrue(answerSet.isPresent());
-		//System.out.println(answerSet.get());
-		checkGoal(parsedProgram, answerSet.get());
+		// System.out.println(answerSet.get());
+		checkGoal(prog, answerSet.get());
 	}
 
 	/**
-	 * Conducts a very simple, non-comprehensive goal check (i.e. it may classify answer sets as correct that are actually wrong) by checking if for every goal/3
-	 * fact in the input there is a corresponding on/3 atom in the output.
+	 * Conducts a very simple, non-comprehensive goal check (i.e. it may classify answer sets as correct that are actually wrong) by checking if for every
+	 * goal/3 fact in the input there is a corresponding on/3 atom in the output.
 	 */
-	private void checkGoal(Program parsedProgram, AnswerSet answerSet) {
+	private void checkGoal(InputProgram parsedProgram, AnswerSet answerSet) {
 		Predicate ongoal = Predicate.getInstance("ongoal", 2);
 		Predicate on = Predicate.getInstance("on", 3);
 		int steps = getSteps(parsedProgram);
@@ -111,7 +111,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		}
 	}
 
-	private int getSteps(Program parsedProgram) {
+	private int getSteps(InputProgram parsedProgram) {
 		Predicate steps = Predicate.getInstance("steps", 1);
 		for (Atom atom : parsedProgram.getFacts()) {
 			if (atom.getPredicate().getName().equals(steps.getName()) && atom.getPredicate().getArity() == steps.getArity()) {

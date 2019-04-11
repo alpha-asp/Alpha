@@ -25,22 +25,25 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.program.Program;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
-import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.junit.Before;
-import org.junit.Test;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Collection;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
+
+import at.ac.tuwien.kr.alpha.Alpha;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
+import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
+import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
 public class ChoiceManagerTests extends AbstractSolverTests {
 	private Grounder grounder;
@@ -49,10 +52,12 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 
 	@Before
 	public void setUp() throws IOException {
+		Alpha system = new Alpha();
 		String testProgram = "h :- b1, b2, not b3, not b4.";
-		Program parsedProgram = new ProgramParser().parse(testProgram);
+		InputProgram parsedProgram = new ProgramParser().parse(testProgram);
+		InternalProgram pa = system.performProgramPreprocessing(parsedProgram);
 		this.atomStore = new AtomStoreImpl();
-		this.grounder = new NaiveGrounder(parsedProgram, atomStore);
+		this.grounder = new NaiveGrounder(pa, atomStore);
 		WritableAssignment assignment = new TrailAssignment(atomStore);
 		NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment);
 		this.choiceManager = new ChoiceManager(assignment, store);

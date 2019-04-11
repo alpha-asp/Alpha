@@ -15,12 +15,13 @@ import org.junit.Test;
 import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.depgraph.io.DependencyGraphWriter;
-import at.ac.tuwien.kr.alpha.common.program.Program;
+import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 
 public class DependencyGraphTest {
 
+	// Currently not used anywhere, but keep as it might come in handy
 	@SuppressWarnings("unused")
 	private static String generateRandomProgram(int numRules, int numPredicates, int maxRuleBodyLiterals) {
 		String[] predicates = new String[numPredicates];
@@ -51,10 +52,11 @@ public class DependencyGraphTest {
 	@Test
 	@Ignore("Not a real test, rather a playground for local testing while changing stuff")
 	public void dependencyGraphSmokeTest() throws IOException {
+		Alpha system = new Alpha();
 		InputStream is = DependencyGraphTest.class.getResourceAsStream("/partial-eval/components-test.asp");
-		Program p = new ProgramParser().parse(CharStreams.fromStream(is));
-		ProgramAnalysis pa = new ProgramAnalysis(p);
-		DependencyGraph dg = DependencyGraph.buildDependencyGraph(pa.getNonGroundRules());
+		InputProgram p = new ProgramParser().parse(CharStreams.fromStream(is));
+		InternalProgram prog = system.performProgramPreprocessing(p);
+		DependencyGraph dg = prog.getDependencyGraph();
 		DependencyGraphWriter dgw = new DependencyGraphWriter();
 		dgw.writeAsDotfile(dg, "/tmp/components-test.asp.dg.dot", true);
 	}
@@ -66,9 +68,11 @@ public class DependencyGraphTest {
 	 */
 	@Test
 	public void noNodesCopiedTest() throws IOException {
-		Program prog = new ProgramParser().parse(CharStreams.fromStream(DependencyGraphTest.class.getResourceAsStream("/partial-eval/components-test.asp")));
-		ProgramAnalysis pa = new ProgramAnalysis(prog);
-		DependencyGraph dg = pa.getDependencyGraph();
+		Alpha system = new Alpha();
+		InputProgram prog = new ProgramParser()
+				.parse(CharStreams.fromStream(DependencyGraphTest.class.getResourceAsStream("/partial-eval/components-test.asp")));
+		InternalProgram internalProg = system.performProgramPreprocessing(prog);
+		DependencyGraph dg = internalProg.getDependencyGraph();
 		for (Node refNode : dg.getNodes().keySet()) {
 			Assert.assertEquals(refNode, dg.getNodesByPredicate().get(refNode.getPredicate()));
 			Assert.assertEquals(true, refNode == dg.getNodesByPredicate().get(refNode.getPredicate()));
@@ -96,9 +100,8 @@ public class DependencyGraphTest {
 	@Test
 	public void dependencyGraphTransposeSimpleTest() {
 		Alpha system = new Alpha();
-		Program prog = system.readProgramString("b :- a.", null);
-		ProgramAnalysis analysis = new ProgramAnalysis(prog);
-		DependencyGraph dg = analysis.getDependencyGraph();
+		InternalProgram prog = system.performProgramPreprocessing(system.readProgramString("b :- a.", null));
+		DependencyGraph dg = prog.getDependencyGraph();
 		Map<Node, List<Edge>> dgNodes = dg.getNodes();
 		Map<Node, List<Edge>> dgTransposed = dg.getTransposedNodes();
 
@@ -121,20 +124,19 @@ public class DependencyGraphTest {
 	@Test
 	public void reachabilityCheckSimpleTest() {
 		Alpha system = new Alpha();
-		Program prog = system.readProgramString("b :- a.", null);
-		ProgramAnalysis pa = new ProgramAnalysis(prog);
-		DependencyGraph dg = pa.getDependencyGraph();
+		InternalProgram prog = system.performProgramPreprocessing(system.readProgramString("b :- a.", null));
+		DependencyGraph dg = prog.getDependencyGraph();
 
 		Node a = dg.getNodeForPredicate(Predicate.getInstance("a", 0));
 		Node b = dg.getNodeForPredicate(Predicate.getInstance("b", 0));
 
-		Node nonExistant = new Node(Predicate.getInstance("notHere", 0));
+		Node nonExistent = new Node(Predicate.getInstance("notHere", 0));
 
 		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(a, a, dg));
 		Assert.assertEquals(true, DependencyGraphUtils.isReachableFrom(b, a, dg));
 		Assert.assertEquals(false, DependencyGraphUtils.isReachableFrom(a, b, dg));
-		Assert.assertEquals(false, DependencyGraphUtils.isReachableFrom(nonExistant, a, dg));
-		Assert.assertEquals(false, DependencyGraphUtils.isReachableFrom(nonExistant, b, dg));
+		Assert.assertEquals(false, DependencyGraphUtils.isReachableFrom(nonExistent, a, dg));
+		Assert.assertEquals(false, DependencyGraphUtils.isReachableFrom(nonExistent, b, dg));
 	}
 
 	@Test
@@ -144,9 +146,8 @@ public class DependencyGraphTest {
 		bld.append("c :- b.").append("\n");
 		bld.append("d :- c.").append("\n");
 		Alpha system = new Alpha();
-		Program prog = system.readProgramString(bld.toString(), null);
-		ProgramAnalysis pa = new ProgramAnalysis(prog);
-		DependencyGraph dg = pa.getDependencyGraph();
+		InternalProgram prog = system.performProgramPreprocessing(system.readProgramString(bld.toString(), null));
+		DependencyGraph dg = prog.getDependencyGraph();
 		Node a = dg.getNodeForPredicate(Predicate.getInstance("a", 0));
 		Node b = dg.getNodeForPredicate(Predicate.getInstance("b", 0));
 		Node c = dg.getNodeForPredicate(Predicate.getInstance("c", 0));
@@ -178,9 +179,8 @@ public class DependencyGraphTest {
 		bld.append("a :- d.").append("\n");
 		bld.append("x :- d, f1.");
 		Alpha system = new Alpha();
-		Program prog = system.readProgramString(bld.toString(), null);
-		ProgramAnalysis pa = new ProgramAnalysis(prog);
-		DependencyGraph dg = pa.getDependencyGraph();
+		InternalProgram prog = system.performProgramPreprocessing(system.readProgramString(bld.toString(), null));
+		DependencyGraph dg = prog.getDependencyGraph();
 		Node a = dg.getNodeForPredicate(Predicate.getInstance("a", 0));
 		Node b = dg.getNodeForPredicate(Predicate.getInstance("b", 0));
 		Node c = dg.getNodeForPredicate(Predicate.getInstance("c", 0));
@@ -217,9 +217,8 @@ public class DependencyGraphTest {
 		bld.append("b :- a.").append("\n");
 		bld.append("a :- b.").append("\n");
 		Alpha system = new Alpha();
-		Program prog = system.readProgramString(bld.toString(), null);
-		ProgramAnalysis pa = new ProgramAnalysis(prog);
-		DependencyGraph dg = pa.getDependencyGraph();
+		InternalProgram prog = system.performProgramPreprocessing(system.readProgramString(bld.toString(), null));
+		DependencyGraph dg = prog.getDependencyGraph();
 		Node a = dg.getNodeForPredicate(Predicate.getInstance("a", 0));
 		Node b = dg.getNodeForPredicate(Predicate.getInstance("b", 0));
 
@@ -242,9 +241,11 @@ public class DependencyGraphTest {
 
 	@Test
 	public void stronglyConnectedComponentsMultipleComponentsTest() throws IOException {
-		Program prog = new ProgramParser().parse(CharStreams.fromStream(DependencyGraphTest.class.getResourceAsStream("/partial-eval/components-test.asp")));
-		ProgramAnalysis pa = new ProgramAnalysis(prog);
-		DependencyGraph dg = pa.getDependencyGraph();
+		Alpha system = new Alpha();
+		InputProgram prog = new ProgramParser()
+				.parse(CharStreams.fromStream(DependencyGraphTest.class.getResourceAsStream("/partial-eval/components-test.asp")));
+		InternalProgram internal = system.performProgramPreprocessing(prog);
+		DependencyGraph dg = internal.getDependencyGraph();
 
 		Node f0 = dg.getNodeForPredicate(Predicate.getInstance("f0", 0));
 		Node f1 = dg.getNodeForPredicate(Predicate.getInstance("f1", 0));

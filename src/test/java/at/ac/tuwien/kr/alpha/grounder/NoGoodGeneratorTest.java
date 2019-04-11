@@ -25,20 +25,22 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.program.Program;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
-import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.junit.Test;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+
+import at.ac.tuwien.kr.alpha.Alpha;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.rule.impl.InternalRule;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
 /**
  * Tests {@link NoGoodGenerator}
@@ -53,25 +55,26 @@ public class NoGoodGeneratorTest {
 	private static final VariableTerm Y = VariableTerm.getInstance("Y");
 	
 	/**
-	 * Calls {@link NoGoodGenerator#collectNegLiterals(NormalRule, Substitution)},
+	 * Calls {@link NoGoodGenerator#collectNegLiterals(InternalRule, Substitution)},
 	 * which puts the atom occuring negatively in a rule into the atom store.
 	 * It is then checked whether the atom in the atom store is positive.
 	 */
 	@Test
 	public void collectNeg_ContainsOnlyPositiveLiterals() {
-		Program program = PARSER.parse("p(a,b). "
+		Alpha system = new Alpha();
+		InputProgram input = PARSER.parse("p(a,b). "
 				+ "q(a,b) :- not nq(a,b). "
 				+ "nq(a,b) :- not q(a,b).");
+		InternalProgram program = system.performProgramPreprocessing(input);	
 		
-		BasicRule rule = program.getRules().get(1);
+		InternalRule rule = program.getRules().get(1);
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore);
 		NoGoodGenerator noGoodGenerator = ((NaiveGrounder)grounder).noGoodGenerator;
-		NormalRule nonGroundRule = NormalRule.fromBasicRule(rule);
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
-		List<Integer> collectedNeg = noGoodGenerator.collectNegLiterals(nonGroundRule, substitution);
+		List<Integer> collectedNeg = noGoodGenerator.collectNegLiterals(rule, substitution);
 		assertEquals(1, collectedNeg.size());
 		String negAtomString = atomStore.atomToString(atomOf(collectedNeg.get(0)));
 		assertEquals("q(a, b)", negAtomString);

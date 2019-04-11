@@ -27,24 +27,35 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import static java.util.Collections.singleton;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+
+import org.junit.Test;
+
+import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.AnswerSetsParser;
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.program.Program;
+import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import junit.framework.TestCase;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.*;
-
-import static java.util.Collections.singleton;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class SolverTests extends AbstractSolverTests {
 	private static class Thingy implements Comparable<Thingy> {
@@ -65,7 +76,7 @@ public class SolverTests extends AbstractSolverTests {
 
 		final Atom fact = new BasicAtom(Predicate.getInstance("foo", 1), ConstantTerm.getInstance(thingy));
 
-		final Program program = new Program(
+		final InputProgram program = new InputProgram(
 			Collections.emptyList(),
 			Collections.singletonList(fact),
 			new InlineDirectives()
@@ -684,6 +695,30 @@ public class SolverTests extends AbstractSolverTests {
 		SortedSet<Atom> positions2 = answerSet.getPredicateInstances(Predicate.getInstance("unique_position2", 2));
 		assertEnumerationPositions(positions2, 4);
 	}
+	
+//	@Test
+//	public void instanceEnumerationMultipleIdentifiers_new() {
+//		String prgString = "# enumeration_predicate_is enum." +
+//				"dom(a). dom(b). dom(c). dom(d)." +
+//				"p(X) :- dom(X)." +
+//				"unique_position1(Term,Pos) :- p(Term), enum(id,Term,Pos)." +
+//				"unique_position2(Term,Pos) :- p(Term), enum(otherid,Term,Pos)." +
+//				"wrong_double_occurrence :- unique_position(T1,P), unique_position(T2,P), T1 != T2." +
+//				"wrong_double_occurrence :- unique_position2(T1,P), unique_position(T2,P), T1 != T2.";
+//		Alpha system = new Alpha();
+//		InputProgram program = system.readProgramString(prgString, null);
+//		AnalyzedNormalProgram analyzedProgram = system.performProgramPreprocessing(program);
+//		Set<AnswerSet> answerSets = system.prepareSolverFor(analyzedProgram).collectSet();
+//		// Since enumeration depends on evaluation, we do not know which unique_position is actually assigned.
+//		// Check manually that there is one answer set, wrong_double_occurrence has not been derived, and enum yielded a unique position for each term.
+//		assertEquals(1, answerSets.size());
+//		AnswerSet answerSet = answerSets.iterator().next();
+//		assertPropositionalPredicateFalse(answerSet, Predicate.getInstance("wrong_double_occurrence", 0));
+//		SortedSet<Atom> positions = answerSet.getPredicateInstances(Predicate.getInstance("unique_position1", 2));
+//		assertEnumerationPositions(positions, 4);
+//		SortedSet<Atom> positions2 = answerSet.getPredicateInstances(Predicate.getInstance("unique_position2", 2));
+//		assertEnumerationPositions(positions2, 4);
+//	}
 
 	private void assertPropositionalPredicateFalse(AnswerSet answerSet, Predicate predicate) {
 		assertEquals(null, answerSet.getPredicateInstances(predicate));
@@ -724,7 +759,6 @@ public class SolverTests extends AbstractSolverTests {
 		);
 	}
 
-
 	@Test
 	public void dummyGrounder() {
 		AtomStore atomStore = new AtomStoreImpl();
@@ -736,4 +770,13 @@ public class SolverTests extends AbstractSolverTests {
 		AtomStore atomStore = new AtomStoreImpl();
 		TestCase.assertEquals(ChoiceGrounder.EXPECTED, getInstance(atomStore, new ChoiceGrounder(atomStore)).collectSet());
 	}
+	
+	@Test
+	public void equalityRemovalSmokeTest() {
+		Alpha system = new Alpha();
+		InputProgram inputPrg = system.readProgramString("a. b :- 5 <= #sum { 2 : a; 3 }.", null);
+		InternalProgram transformed = system.performProgramPreprocessing(inputPrg);
+		System.out.println(transformed);
+	}
+	
 }

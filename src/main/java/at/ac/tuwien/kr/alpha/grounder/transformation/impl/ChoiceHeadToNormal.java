@@ -25,13 +25,18 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.grounder.transformation;
+package at.ac.tuwien.kr.alpha.grounder.transformation.impl;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.program.Program;
+import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.ChoiceHead;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
@@ -39,23 +44,21 @@ import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 
 /**
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public class ChoiceHeadToNormal implements ProgramTransformation {
+public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, InputProgram> {
 	private final static String PREDICATE_NEGATION_PREFIX = "_n";
 
 	@Override
-	public void transform(Program inputProgram) {
+	public InputProgram apply(InputProgram inputProgram) {
+		InputProgram.Builder programBuilder = InputProgram.builder();
 		List<BasicRule> additionalRules = new ArrayList<>();
 
-		Iterator<BasicRule> ruleIterator = inputProgram.getRules().iterator();
+		List<BasicRule> srcRules = new ArrayList<>(inputProgram.getRules());
+		Iterator<BasicRule> ruleIterator = srcRules.iterator();
 		while (ruleIterator.hasNext()) {
 			BasicRule rule = ruleIterator.next();
 
@@ -92,7 +95,8 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 
 				Predicate negPredicate = Predicate.getInstance(PREDICATE_NEGATION_PREFIX + headPredicate.getName(), headPredicate.getArity() + 1, true);
 				List<Term> headTerms = new ArrayList<>(head.getTerms());
-				headTerms.add(0, ConstantTerm.getInstance("1"));	// FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for classical negative atoms.
+				headTerms.add(0, ConstantTerm.getInstance("1")); // FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for
+																	// classical negative atoms.
 				Atom negHead = new BasicAtom(negPredicate, headTerms);
 
 				// Construct two guessing rules.
@@ -107,7 +111,9 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 				// TODO: when cardinality constraints are possible, process the boundaries by adding a constraint with a cardinality check.
 			}
 		}
-		inputProgram.getRules().addAll(additionalRules);
+		// inputProgram.getRules().addAll(additionalRules);
+		return programBuilder.addRules(srcRules).addRules(additionalRules).addFacts(inputProgram.getFacts())
+				.addInlineDirectives(inputProgram.getInlineDirectives()).build();
 	}
 
 	private static boolean containsIntervalTerms(Atom atom) {

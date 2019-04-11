@@ -29,7 +29,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
+import at.ac.tuwien.kr.alpha.common.rule.impl.InternalRule;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
 import java.util.*;
@@ -49,7 +49,7 @@ import java.util.*;
  * is a starting literal, at least for the current grounding procedure. Copyright (c) 2017, the Alpha Team.
  */
 public class RuleGroundingOrder {
-	private final NormalRule nonGroundRule;
+	private final InternalRule nonGroundRule;
 	private HashMap<Literal, Literal[]> groundingOrder;
 	private HashMap<Literal, Float> literalSelectivity;
 	private List<Literal> startingLiterals;
@@ -57,7 +57,7 @@ public class RuleGroundingOrder {
 	private final boolean fixedGroundingInstantiation;
 	private Literal[] fixedGroundingOrder;
 
-	public RuleGroundingOrder(NormalRule nonGroundRule) {
+	public RuleGroundingOrder(InternalRule nonGroundRule) {
 		this.nonGroundRule = nonGroundRule;
 		this.literalSelectivity = new HashMap<>();
 		resetLiteralSelectivity();

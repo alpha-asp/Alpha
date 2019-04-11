@@ -8,5 +8,8 @@ package at.ac.tuwien.kr.alpha.common.rule.head;
 public abstract class Head {
 
 	public abstract boolean isNormal();
+	
+	@Override
+	public abstract String toString();
 
 }

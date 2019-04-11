@@ -3,7 +3,6 @@ package at.ac.tuwien.kr.alpha.common.atoms.external;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,9 +23,7 @@ import at.ac.tuwien.kr.alpha.common.fixedinterpretations.MethodPredicateInterpre
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.SuppliedPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.UnaryPredicateInterpretation;
-import at.ac.tuwien.kr.alpha.common.program.Program;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
 public final class ExternalAtoms {
 
@@ -87,39 +84,15 @@ public final class ExternalAtoms {
 		return new SuppliedPredicateInterpretation(supplier);
 	}
 
-	/**
-	 * Adds facts generated from a collection of <code>Comparable</code>s to a given
-	 * program.
-	 * 
-	 * @param instances
-	 * @param name
-	 */
-	public static <T extends Comparable<T>> Program addExternalFactsToProgram(Program program, Collection<T> instances, String name) {
-		if (instances.isEmpty()) {
-			return program;
+	public static <T extends Comparable<T>> List<Atom> asFacts(Class<T> clazz, Collection<T> extFacts) {
+		// use Class<T> as parameter here, taking simple name from first element might not give desired result if it's a subtype
+		List<Atom> retVal = new ArrayList<>();
+		String javaName = clazz.getSimpleName();
+		String name = javaName.substring(0, 1).toLowerCase() + javaName.substring(1); // camel-cased, but starting with lower case letter
+		for (T instance : extFacts) {
+			retVal.add(new BasicAtom(at.ac.tuwien.kr.alpha.common.Predicate.getInstance(name, 1), ConstantTerm.getInstance(instance)));
 		}
-
-		final List<Atom> atoms = new ArrayList<>();
-
-		for (T instance : instances) {
-			atoms.add(new BasicAtom(at.ac.tuwien.kr.alpha.common.Predicate.getInstance(name, 1), ConstantTerm.getInstance(instance)));
-		}
-
-		final Program acc = new Program(Collections.emptyList(), atoms, new InlineDirectives());
-
-		program.accumulate(acc);
-		return program;
-	}
-
-	public static <T extends Comparable<T>> Program addExternalFactsToProgram(Program program, Collection<T> c) {
-		if (c.isEmpty()) {
-			return program;
-		}
-
-		T first = c.iterator().next();
-
-		String simpleName = first.getClass().getSimpleName();
-		return addExternalFactsToProgram(program, c, simpleName.substring(0, 1).toLowerCase() + simpleName.substring(1));
+		return retVal;
 	}
 
 }

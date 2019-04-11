@@ -1,6 +1,6 @@
-package at.ac.tuwien.kr.alpha.common.program.impl;
+package at.ac.tuwien.kr.alpha.common.program;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.Util;
@@ -21,31 +21,25 @@ public abstract class AbstractProgram<R extends AbstractRule<? extends Head>> {
 		this.inlineDirectives = inlineDirectives;
 	}
 
-	public AbstractProgram() {
-		this(new ArrayList<>(), new ArrayList<>(), new InlineDirectives());
-	}
-
 	public List<R> getRules() {
-		return this.rules;
+		return Collections.unmodifiableList(this.rules);
 	}
 
 	public List<Atom> getFacts() {
-		return this.facts;
+		return Collections.unmodifiableList(this.facts);
 	}
 
 	public InlineDirectives getInlineDirectives() {
 		return this.inlineDirectives;
 	}
-	
+
 	@Override
 	public String toString() {
 		final String ls = System.lineSeparator();
 		final String result = Util.join("", this.facts, "." + ls, "." + ls);
-
 		if (this.rules.isEmpty()) {
 			return result;
 		}
-
 		return Util.join(result, this.rules, ls, ls);
 	}
 

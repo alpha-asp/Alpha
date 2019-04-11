@@ -27,20 +27,9 @@
  */
 package at.ac.tuwien.kr.alpha.antlr;
 
-import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.program.Program;
-import at.ac.tuwien.kr.alpha.common.rule.head.impl.ChoiceHead;
-import at.ac.tuwien.kr.alpha.common.terms.*;
-import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.antlr.v4.runtime.CharStreams;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
@@ -49,7 +38,25 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import org.antlr.v4.runtime.CharStreams;
+import org.junit.Test;
+
+import at.ac.tuwien.kr.alpha.Util;
+import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
+import at.ac.tuwien.kr.alpha.common.rule.head.impl.ChoiceHead;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -59,7 +66,7 @@ public class ParserTest {
 
 	@Test
 	public void parseFact() throws IOException {
-		Program parsedProgram = parser.parse("p(a,b).");
+		InputProgram parsedProgram = parser.parse("p(a,b).");
 
 		assertEquals("Program contains one fact.", 1, parsedProgram.getFacts().size());
 		assertEquals("Predicate name of fact is p.", "p", parsedProgram.getFacts().get(0).getPredicate().getName());
@@ -70,7 +77,7 @@ public class ParserTest {
 
 	@Test
 	public void parseFactWithFunctionTerms() throws IOException {
-		Program parsedProgram = parser.parse("p(f(a),g(h(Y))).");
+		InputProgram parsedProgram = parser.parse("p(f(a),g(h(Y))).");
 
 		assertEquals("Program contains one fact.", 1, parsedProgram.getFacts().size());
 		assertEquals("Predicate name of fact is p.", "p", parsedProgram.getFacts().get(0).getPredicate().getName());
@@ -81,7 +88,7 @@ public class ParserTest {
 
 	@Test
 	public void parseSmallProgram() throws IOException {
-		Program parsedProgram = parser.parse(
+		InputProgram parsedProgram = parser.parse(
 				"a :- b, not d." + System.lineSeparator() +
 				"c(X) :- p(X,a,_), q(Xaa,xaa)." + System.lineSeparator() +
 				":- f(Y).");
@@ -96,7 +103,7 @@ public class ParserTest {
 
 	@Test
 	public void parseBuiltinAtom() throws IOException {
-		Program parsedProgram = parser.parse("a :- p(X), X != Y, q(Y).");
+		InputProgram parsedProgram = parser.parse("a :- p(X), X != Y, q(Y).");
 		assertEquals(1, parsedProgram.getRules().size());
 		assertEquals(3, parsedProgram.getRules().get(0).getBody().size());
 	}
@@ -109,7 +116,7 @@ public class ParserTest {
 
 	@Test
 	public void parseInterval() throws IOException {
-		Program parsedProgram = parser.parse("fact(2..5). p(X) :- q(a, 3 .. X).");
+		InputProgram parsedProgram = parser.parse("fact(2..5). p(X) :- q(a, 3 .. X).");
 		IntervalTerm factInterval = (IntervalTerm) parsedProgram.getFacts().get(0).getTerms().get(0);
 		assertTrue(factInterval.equals(IntervalTerm.getInstance(ConstantTerm.getInstance(2), ConstantTerm.getInstance(5))));
 		IntervalTerm bodyInterval = (IntervalTerm) ((Literal)parsedProgram.getRules().get(0).getBody().get(0)).getTerms().get(1);
@@ -118,9 +125,8 @@ public class ParserTest {
 
 	@Test
 	public void parseChoiceRule() throws IOException {
-		Program parsedProgram = parser.parse("dom(1). dom(2). { a ; b } :- dom(X).");
+		InputProgram parsedProgram = parser.parse("dom(1). dom(2). { a ; b } :- dom(X).");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
-		BasicAtom atomA = new BasicAtom(Predicate.getInstance("a", 0));
 		assertEquals(2, choiceHead.getChoiceElements().size());
 		assertTrue(choiceHead.getChoiceElements().get(0).choiceAtom.toString().equals("a"));
 		assertTrue(choiceHead.getChoiceElements().get(1).choiceAtom.toString().equals("b"));
@@ -130,9 +136,8 @@ public class ParserTest {
 
 	@Test
 	public void parseChoiceRuleBounded() throws IOException {
-		Program parsedProgram = parser.parse("dom(1). dom(2). 1 < { a: p(v,w), not r; b } <= 13 :- dom(X). foo.");
+		InputProgram parsedProgram = parser.parse("dom(1). dom(2). 1 < { a: p(v,w), not r; b } <= 13 :- dom(X). foo.");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
-		BasicAtom atomA = new BasicAtom(Predicate.getInstance("a", 0));
 		assertEquals(2, choiceHead.getChoiceElements().size());
 		assertTrue(choiceHead.getChoiceElements().get(0).choiceAtom.toString().equals("a"));
 		assertTrue(choiceHead.getChoiceElements().get(1).choiceAtom.toString().equals("b"));
@@ -178,7 +183,7 @@ public class ParserTest {
 
 	@Test
 	public void parseEnumerationDirective() throws IOException {
-		Program parsedProgram = parser.parse("p(a,1)." +
+		InputProgram parsedProgram = parser.parse("p(a,1)." +
 			"# enumeration_predicate_is mune." +
 			"r(X) :- p(X), mune(X)." +
 			"p(b,2).");
@@ -188,7 +193,7 @@ public class ParserTest {
 
 	@Test
 	public void cardinalityAggregate() throws IOException {
-		Program parsedProgram = parser.parse("num(K) :-  K <= #count {X,Y,Z : p(X,Y,Z) }, dom(K).");
+		InputProgram parsedProgram = parser.parse("num(K) :-  K <= #count {X,Y,Z : p(X,Y,Z) }, dom(K).");
 		Literal bodyElement = parsedProgram.getRules().get(0).getBody().get(0);
 		assertTrue(bodyElement instanceof AggregateLiteral);
 		AggregateLiteral parsedAggregate = (AggregateLiteral) bodyElement;

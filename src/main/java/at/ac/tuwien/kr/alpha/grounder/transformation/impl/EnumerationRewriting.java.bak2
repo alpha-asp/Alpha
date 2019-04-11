@@ -1,34 +1,36 @@
-package at.ac.tuwien.kr.alpha.grounder.transformation;
+package at.ac.tuwien.kr.alpha.grounder.transformation.impl;
+
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
+import java.util.Iterator;
+import java.util.LinkedList;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.program.Program;
+import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
-
-import java.util.Iterator;
-import java.util.LinkedList;
-
-import static at.ac.tuwien.kr.alpha.Util.oops;
+import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 
 /**
  * Rewrites the ordinary atom whose name is given in the input program by the enumeration directive #enum_atom_is into
  * the special EnumerationAtom.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class EnumerationRewriting implements ProgramTransformation  {
+public class EnumerationRewriting extends ProgramTransformation<InputProgram, InputProgram>  {
+	
 	@Override
-	public void transform(Program inputProgram) {
+	public InputProgram apply(InputProgram inputProgram) {
 		// Read enumeration predicate from directive.
 		String enumDirective = inputProgram.getInlineDirectives().getDirectiveValue(InlineDirectives.DIRECTIVE.enum_predicate_is);
 		if (enumDirective == null) {
 			// Directive not set, nothing to rewrite.
-			return;
+			return inputProgram;
 		}
 		Predicate enumPredicate = Predicate.getInstance(enumDirective, 3);
 
@@ -69,5 +71,6 @@ public class EnumerationRewriting implements ProgramTransformation  {
 			}
 			rule.getBody().addAll(rewrittenLiterals);
 		}
+		return inputProgram;
 	}
 }

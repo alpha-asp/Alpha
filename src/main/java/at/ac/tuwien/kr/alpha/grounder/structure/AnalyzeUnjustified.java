@@ -24,7 +24,8 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
+import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.rule.impl.InternalRule;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
 import at.ac.tuwien.kr.alpha.grounder.Unification;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
@@ -35,13 +36,13 @@ import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
  */
 public class AnalyzeUnjustified {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AnalyzeUnjustified.class);
-	private final ProgramAnalysis programAnalysis;
+	private final InternalProgram programAnalysis;
 	private final AtomStore atomStore;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private int renamingCounter;
 	private int padDepth;
 
-	public AnalyzeUnjustified(ProgramAnalysis programAnalysis, AtomStore atomStore, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram) {
+	public AnalyzeUnjustified(InternalProgram programAnalysis, AtomStore atomStore, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram) {
 		this.programAnalysis = programAnalysis;
 		this.atomStore = atomStore;
 		this.factsFromProgram = factsFromProgram;
@@ -335,9 +336,9 @@ public class AnalyzeUnjustified {
 			}
 		}
 
-		HashSet<NormalRule> rulesDefiningPredicate = programAnalysis.getPredicateDefiningRules().get(predicate);
+		HashSet<InternalRule> rulesDefiningPredicate = programAnalysis.getPredicateDefiningRules().get(predicate);
 		if (rulesDefiningPredicate != null) {
-			for (NormalRule nonGroundRule : rulesDefiningPredicate) {
+			for (InternalRule nonGroundRule : rulesDefiningPredicate) {
 				definingRulesAndFacts.add(new FactOrNonGroundRule(nonGroundRule));
 			}
 		}
@@ -347,7 +348,7 @@ public class AnalyzeUnjustified {
 			Atom headAtom;
 			if (isNonGroundRule) {
 				// First rename all variables in the rule.
-				NormalRule rule = factOrNonGroundRule.nonGroundRule.renameVariables("_" + renamingCounter++);
+				InternalRule rule = factOrNonGroundRule.nonGroundRule.renameVariables("_" + renamingCounter++);
 				renamedBody = rule.getBody();
 				if (!rule.getHead().isNormal()) {
 					throw oops("NonGroundRule has no normal head.");
@@ -403,14 +404,14 @@ public class AnalyzeUnjustified {
 
 	private static class FactOrNonGroundRule {
 		final Instance factInstance;
-		final NormalRule nonGroundRule;
+		final InternalRule nonGroundRule;
 
 		private FactOrNonGroundRule(Instance factInstance) {
 			this.factInstance = factInstance;
 			this.nonGroundRule = null;
 		}
 
-		private FactOrNonGroundRule(NormalRule nonGroundRule) {
+		private FactOrNonGroundRule(InternalRule nonGroundRule) {
 			this.nonGroundRule = nonGroundRule;
 			this.factInstance = null;
 		}

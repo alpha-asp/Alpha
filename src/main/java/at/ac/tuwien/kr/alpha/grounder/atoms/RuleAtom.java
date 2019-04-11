@@ -30,7 +30,7 @@ package at.ac.tuwien.kr.alpha.grounder.atoms;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
+import at.ac.tuwien.kr.alpha.common.rule.impl.InternalRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
@@ -57,7 +57,7 @@ public class RuleAtom implements Atom {
 		this.terms = terms;
 	}
 
-	public RuleAtom(NormalRule nonGroundRule, Substitution substitution) {
+	public RuleAtom(InternalRule nonGroundRule, Substitution substitution) {
 		this(Arrays.asList(
 			getInstance(Integer.toString(nonGroundRule.getRuleId())),
 			getInstance(substitution.toString())

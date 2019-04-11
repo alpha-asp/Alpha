@@ -209,7 +209,7 @@ public class CommandLineParser {
 				}
 			}
 		}
-		retVal.setAlphaConfig(sysConf);
+		retVal.setSystemConfig(sysConf);
 		retVal.setInputConfig(inputConf);
 		return retVal;
 	}

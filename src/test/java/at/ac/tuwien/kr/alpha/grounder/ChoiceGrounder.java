@@ -27,26 +27,42 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
-import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
-import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
-import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
+import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
+import static at.ac.tuwien.kr.alpha.Util.entry;
+import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
+import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.stream.Stream;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.*;
-import java.util.stream.Stream;
-
-import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
-import static at.ac.tuwien.kr.alpha.Util.entry;
-import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
-import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
-import static java.util.Arrays.asList;
-import static java.util.Collections.singleton;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
+import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
+import at.ac.tuwien.kr.alpha.common.rule.impl.InternalRule;
+import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
+import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 
 /**
  * Represents a small ASP program with choices {@code { aa :- not bb.  bb :- not aa. }}.
@@ -100,8 +116,8 @@ public class ChoiceGrounder implements Grounder {
 	private static Atom atomBB = new BasicAtom(Predicate.getInstance("bb", 0));
 	private static BasicRule ruleAA = new BasicRule(new DisjunctiveHead(Collections.singletonList(atomAA)), Collections.singletonList(new BasicAtom(Predicate.getInstance("bb", 0)).toLiteral(false)));
 	private static BasicRule ruleBB = new BasicRule(new DisjunctiveHead(Collections.singletonList(atomBB)), Collections.singletonList(new BasicAtom(Predicate.getInstance("aa", 0)).toLiteral(false)));
-	private static Atom rule1 = new RuleAtom(NormalRule.fromBasicRule(ruleAA), new Substitution());
-	private static Atom rule2 = new RuleAtom(NormalRule.fromBasicRule(ruleBB), new Substitution());
+	private static Atom rule1 = new RuleAtom(InternalRule.fromNormalRule(NormalRule.fromBasicRule(ruleAA)), new Substitution());
+	private static Atom rule2 = new RuleAtom(InternalRule.fromNormalRule(NormalRule.fromBasicRule(ruleBB)), new Substitution());
 	private static Atom atomEnBR1 = ChoiceAtom.on(1);
 	private static Atom atomEnBR2 = ChoiceAtom.on(2);
 	private static Atom atomDisBR1 = ChoiceAtom.off(3);

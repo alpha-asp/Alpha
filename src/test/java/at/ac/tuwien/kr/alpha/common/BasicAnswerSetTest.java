@@ -27,8 +27,8 @@ public class BasicAnswerSetTest {
 		Predicate p = Predicate.getInstance("p", 1);
 		SortedSet<Predicate> qAndP = new TreeSet<>(asList(q, p));
 
-		ConstantTerm bar = getInstance("bar");
-		ConstantTerm baz = getInstance("baz");
+		ConstantTerm<?> bar = getInstance("bar");
+		ConstantTerm<?> baz = getInstance("baz");
 
 		Map<Predicate, SortedSet<Atom>> inst1 = new HashMap<>();
 		inst1.put(a, new TreeSet<>(singleton(new BasicAtom(a))));
