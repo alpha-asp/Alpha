@@ -44,6 +44,14 @@ public interface Atom extends Comparable<Atom> {
 
 	List<Term> getTerms();
 
+	/**
+	 * Creates a new Atom that represents this Atom, but has the given term list instead.
+	 * 
+	 * @param terms the terms to set
+	 * @return a new Atom with the given terms set
+	 */
+	Atom setTerms(List<Term> terms);
+	
 	boolean isGround();
 
 	/**

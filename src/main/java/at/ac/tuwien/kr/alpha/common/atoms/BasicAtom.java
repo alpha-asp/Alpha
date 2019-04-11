@@ -155,4 +155,10 @@ public class BasicAtom implements Atom, VariableNormalizableAtom {
 	public int hashCode() {
 		return 31 * predicate.hashCode() + terms.hashCode();
 	}
+
+	@Override
+	public Atom setTerms(List<Term> terms) {
+		return new BasicAtom(this.predicate, terms);
+	}
+	
 }

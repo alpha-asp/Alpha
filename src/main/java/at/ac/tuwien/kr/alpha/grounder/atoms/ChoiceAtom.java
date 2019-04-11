@@ -93,4 +93,12 @@ public class ChoiceAtom implements Atom {
 	public String toString() {
 		return join(predicate.getName() + "(", terms, ")");
 	}
+
+	@Override
+	public Atom setTerms(List<Term> terms) {
+		if (terms.size() != 1) {
+			throw new UnsupportedOperationException("ChoiceAtom only supports one term!");
+		}
+		return new ChoiceAtom(this.predicate, terms.get(0));
+	}
 }

@@ -124,4 +124,9 @@ public class ComparisonAtom implements Atom, VariableNormalizableAtom {
 		return true;
 	}
 
+	@Override
+	public Atom setTerms(List<Term> terms) {
+		return new ComparisonAtom(terms, this.operator);
+	}
+
 }

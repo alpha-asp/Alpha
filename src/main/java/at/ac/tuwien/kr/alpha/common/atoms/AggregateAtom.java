@@ -87,6 +87,11 @@ public class AggregateAtom implements Atom {
 	}
 
 	@Override
+	public Atom setTerms(List<Term> terms) {
+		throw new UnsupportedOperationException("Editing term list is not supported for aggregate atoms!");
+	}
+	
+	@Override
 	public Predicate getPredicate() {
 		throw oops("Aggregate atom cannot report predicate.");
 	}
@@ -260,4 +265,5 @@ public class AggregateAtom implements Atom {
 			return join("", elementTerms, " : ") + join("", elementLiterals, "");
 		}
 	}
+	
 }

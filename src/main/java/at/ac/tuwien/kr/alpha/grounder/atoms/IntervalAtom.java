@@ -43,13 +43,10 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 /**
  * Helper for treating IntervalTerms in rules.
  *
- * Each IntervalTerm is replaced by a variable and this special IntervalAtom
- * is added to the rule body for generating all bindings of the variable.
+ * Each IntervalTerm is replaced by a variable and this special IntervalAtom is added to the rule body for generating all bindings of the variable.
  *
- * The first term of this atom is an IntervalTerm while the second term is any Term (if it is a VariableTerm, this will
- * bind to all elements of the interval, otherwise it is a simple check whether the Term is a ConstantTerm<Integer>
- * with the Integer being inside the interval.
- * Copyright (c) 2017, the Alpha Team.
+ * The first term of this atom is an IntervalTerm while the second term is any Term (if it is a VariableTerm, this will bind to all elements of the interval,
+ * otherwise it is a simple check whether the Term is a ConstantTerm<Integer> with the Integer being inside the interval. Copyright (c) 2017, the Alpha Team.
  */
 public class IntervalAtom implements Atom, VariableNormalizableAtom {
 	private static final Predicate PREDICATE = Predicate.getInstance("_interval", 2, true);
@@ -74,7 +71,7 @@ public class IntervalAtom implements Atom, VariableNormalizableAtom {
 	public boolean isGround() {
 		return false;
 	}
-	
+
 	@Override
 	public IntervalLiteral toLiteral(boolean positive) {
 		if (!positive) {
@@ -114,12 +111,17 @@ public class IntervalAtom implements Atom, VariableNormalizableAtom {
 
 	@Override
 	public IntervalAtom substitute(Substitution substitution) {
-		return new IntervalAtom((IntervalTerm)terms.get(0).substitute(substitution), terms.get(1).substitute(substitution));
+		return new IntervalAtom((IntervalTerm) terms.get(0).substitute(substitution), terms.get(1).substitute(substitution));
 	}
 
 	@Override
 	public IntervalAtom normalizeVariables(String prefix, int counterStartingValue) {
 		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
 		return new IntervalAtom((IntervalTerm) renamedTerms.get(0), renamedTerms.get(1));
+	}
+
+	@Override
+	public Atom setTerms(List<Term> terms) {
+		throw new UnsupportedOperationException("IntervalAtoms do not support setting ofd terms!");
 	}
 }

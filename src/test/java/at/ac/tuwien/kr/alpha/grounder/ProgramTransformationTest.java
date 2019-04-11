@@ -14,8 +14,10 @@ import org.slf4j.LoggerFactory;
 import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.common.program.AbstractProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.NormalProgram;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.grounder.transformation.impl.ChoiceHeadToNormal;
+import at.ac.tuwien.kr.alpha.grounder.transformation.impl.IntervalTermToIntervalAtom;
 
 public class ProgramTransformationTest {
 
@@ -26,6 +28,7 @@ public class ProgramTransformationTest {
 	private Alpha alpha = new Alpha();
 
 	private ChoiceHeadToNormal choiceToNormal = new ChoiceHeadToNormal();
+	private IntervalTermToIntervalAtom intervalRewriting = new IntervalTermToIntervalAtom();
 
 	private static String readTestResource(String resource) throws IOException {
 		InputStream is = ProgramTransformationTest.class.getResourceAsStream(TESTFILES_PATH + resource);
@@ -50,9 +53,9 @@ public class ProgramTransformationTest {
 			O transformedProg = transform.apply(transformInput);
 			Assert.assertEquals("Transformation result doesn't match expected result", expectedResult, transformedProg.toString());
 			Assert.assertEquals("Transformation modified source program (breaks immutability!)", beforeTransformProg, transformInput.toString());
-		} catch (Throwable t) {
-			LOGGER.error("Exception in test, nested throwable: " + t.getMessage(), t);
-			Assert.fail();
+		} catch (Exception ex) {
+			LOGGER.error("Exception in test, nested exception: " + ex.getMessage(), ex);
+			throw new RuntimeException(ex);
 		}
 	}
 
@@ -60,8 +63,10 @@ public class ProgramTransformationTest {
 	public void choiceHeadToNormalSimpleTest() {
 		this.genericTransformationTest(this.choiceToNormal, Function.identity(), "choice-to-normal.1");
 	}
-	
 
-	
+	@Test
+	public void intervalTermToIntervalAtomSimpleTest() {
+		this.genericTransformationTest(this.intervalRewriting, NormalProgram::fromInputProgram, "interval.1");
+	}
 
 }

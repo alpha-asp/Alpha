@@ -55,19 +55,18 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 	 * 
 	 * @return true if some interval occurs in the rule.
 	 */
-	// FIXME actually Atoms should be immutable - in that case below method(s) need further changes
 	private static NormalRule rewriteIntervalSpecifications(NormalRule rule) {
 		// Collect all intervals and replace them with variables.
 		Map<VariableTerm, IntervalTerm> intervalReplacements = new HashMap<>();
 
-		List<Literal> rewrittenBody = new ArrayList<>(rule.getBody());
+		List<Literal> rewrittenBody = new ArrayList<>();
 		NormalHead rewrittenHead = rule.isConstraint() ? null : new NormalHead(rule.getHeadAtom());
 
-		for (Literal literal : rewrittenBody) {
-			rewriteAtom(literal.getAtom(), intervalReplacements);
+		for (Literal literal : rule.getBody()) {
+			rewrittenBody.add(rewriteLiteral(literal, intervalReplacements));
 		}
 		if (rewrittenHead != null) {
-			rewriteAtom(rule.getHeadAtom(), intervalReplacements);
+			rewrittenHead = new NormalHead(rewriteLiteral(rule.getHeadAtom().toLiteral(), intervalReplacements).getAtom());
 		}
 
 		// Add new IntervalAtoms representing the interval specifications.
@@ -80,21 +79,30 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 	/**
 	 * Replaces every IntervalTerm by a new variable and returns a mapping of the replaced VariableTerm -> IntervalTerm.
 	 */
-	private static void rewriteAtom(Atom atom, Map<VariableTerm, IntervalTerm> intervalReplacement) {
-		List<Term> termList = atom.getTerms();
+	private static Literal rewriteLiteral(Literal lit, Map<VariableTerm, IntervalTerm> intervalReplacement) {
+		Atom atom = lit.getAtom();
+		List<Term> termList = new ArrayList<>(atom.getTerms());
+		boolean didChange = false;
 		for (int i = 0; i < termList.size(); i++) {
 			Term term = termList.get(i);
 			if (term instanceof IntervalTerm) {
 				VariableTerm replacementVariable = VariableTerm.getInstance(INTERVAL_VARIABLE_PREFIX + intervalReplacement.size());
 				intervalReplacement.put(replacementVariable, (IntervalTerm) term);
 				termList.set(i, replacementVariable);
+				didChange = true;
 			}
 			if (term instanceof FunctionTerm) {
 				// Rewrite function terms recursively.
 				FunctionTerm rewrittenFunctionTerm = rewriteFunctionTerm((FunctionTerm) term, intervalReplacement);
 				termList.set(i, rewrittenFunctionTerm);
+				didChange = true;
 			}
 		}
+		if (didChange) {
+			Atom rewrittenAtom = atom.setTerms(termList);
+			return lit.isNegated() ? rewrittenAtom.toLiteral().negate() : rewrittenAtom.toLiteral();
+		}
+		return lit;
 	}
 
 	private static FunctionTerm rewriteFunctionTerm(FunctionTerm functionTerm, Map<VariableTerm, IntervalTerm> intervalReplacement) {
