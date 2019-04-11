@@ -40,7 +40,6 @@ import java.util.SortedSet;
 
 import org.junit.Test;
 
-import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.AnswerSetsParser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
@@ -50,7 +49,6 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
-import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
@@ -770,13 +768,5 @@ public class SolverTests extends AbstractSolverTests {
 		AtomStore atomStore = new AtomStoreImpl();
 		TestCase.assertEquals(ChoiceGrounder.EXPECTED, getInstance(atomStore, new ChoiceGrounder(atomStore)).collectSet());
 	}
-	
-	@Test
-	public void equalityRemovalSmokeTest() {
-		Alpha system = new Alpha();
-		InputProgram inputPrg = system.readProgramString("a. b :- 5 <= #sum { 2 : a; 3 }.", null);
-		InternalProgram transformed = system.performProgramPreprocessing(inputPrg);
-		System.out.println(transformed);
-	}
-	
+
 }

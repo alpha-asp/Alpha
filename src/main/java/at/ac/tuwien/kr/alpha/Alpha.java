@@ -122,6 +122,10 @@ public class Alpha {
 		return parser.parse(aspString);
 	}
 
+	public InputProgram readProgramString(String aspString) {
+		return this.readProgramString(aspString, null);
+	}
+
 	/**
 	 * Prepares a solver (and accompanying grounder) instance pre-loaded with the given program. Use this if the solver is needed after reading answer sets
 	 * (e.g. for obtaining statistics)
