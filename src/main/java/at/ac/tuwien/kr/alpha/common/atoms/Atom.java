@@ -37,7 +37,7 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016 - 2019, the Alpha Team.
  */
 public abstract class Atom implements Comparable<Atom> {
 
