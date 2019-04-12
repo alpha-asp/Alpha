@@ -11,7 +11,10 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+/**
+ * 
+ * Copyright (c) 2019, the Alpha Team.
+ */
 public class ComponentGraph {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ComponentGraph.class);

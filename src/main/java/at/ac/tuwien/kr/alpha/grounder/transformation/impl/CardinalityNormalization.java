@@ -26,7 +26,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 
 /**
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  */
 public class CardinalityNormalization extends ProgramTransformation<InputProgram, InputProgram> {
 

@@ -48,7 +48,7 @@ import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 
 /**
- * Removes variable equalities from rules by replacing one variable with the other. Copyright (c) 2017-2018, the Alpha Team.
+ * Removes variable equalities from rules by replacing one variable with the other. Copyright (c) 2017-2019, the Alpha Team.
  */
 public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram, NormalProgram> {
 

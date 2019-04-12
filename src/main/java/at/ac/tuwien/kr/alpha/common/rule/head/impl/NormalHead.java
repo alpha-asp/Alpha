@@ -3,6 +3,9 @@ package at.ac.tuwien.kr.alpha.common.rule.head.impl;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 
+/**
+ * Copyright (c) 2019, the Alpha Team.
+ */
 public class NormalHead extends Head {
 
 	private final Atom atom;

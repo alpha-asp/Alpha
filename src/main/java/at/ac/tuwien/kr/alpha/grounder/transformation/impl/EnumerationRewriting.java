@@ -21,7 +21,7 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 
 /**
  * Rewrites the ordinary atom whose name is given in the input program by the enumeration directive #enum_atom_is into the special EnumerationAtom. Copyright
- * (c) 2017, the Alpha Team.
+ * (c) 2017-2019, the Alpha Team.
  */
 public class EnumerationRewriting extends ProgramTransformation<InputProgram, InputProgram> {
 

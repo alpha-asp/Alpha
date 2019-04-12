@@ -14,6 +14,9 @@ import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
 import at.ac.tuwien.kr.alpha.common.depgraph.Edge;
 import at.ac.tuwien.kr.alpha.common.depgraph.Node;
 
+/**
+ * Copyright (c) 2019, the Alpha Team.
+ */
 public class DependencyGraphWriter {
 
 	private static final String DEFAULT_GRAPH_HEADING = "digraph dependencyGraph";

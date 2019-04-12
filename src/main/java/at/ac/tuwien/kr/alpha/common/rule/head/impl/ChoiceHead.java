@@ -12,6 +12,8 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 /**
  * Represents the head of a choice rule.
+ * 
+ * Copyright (c) 2017-2019, the Alpha Team.
  */
 public class ChoiceHead extends Head {
 	private final List<ChoiceElement> choiceElements;

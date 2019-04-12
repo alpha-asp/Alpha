@@ -10,6 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * 
+ * Copyright (c) 2019, the Alpha Team.
+ */
 // TODO internalize into DependencyGraph - most stuff here depends on the dependency graph
 public final class DependencyGraphUtils {
 

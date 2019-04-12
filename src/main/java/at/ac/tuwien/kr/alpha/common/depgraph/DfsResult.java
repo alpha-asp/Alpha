@@ -4,6 +4,10 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 
+ * Copyright (c) 2019, the Alpha Team.
+ */
 public class DfsResult {
 
 	private Deque<Node> finishedNodes;

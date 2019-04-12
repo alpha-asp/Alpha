@@ -14,6 +14,10 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.impl.InternalRule;
 
+/**
+ * 
+ * Copyright (c) 2019, the Alpha Team.
+ */
 // TODO ensure immutability
 public class DependencyGraph {
 

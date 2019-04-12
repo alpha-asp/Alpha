@@ -26,7 +26,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 
 /**
- * Rewrites #sum aggregates into normal rules. Note: Currently only in a restricted form. Copyright (c) 2018, the Alpha Team.
+ * Rewrites #sum aggregates into normal rules. Note: Currently only in a restricted form. Copyright (c) 2018-2019, the Alpha Team.
  */
 public class SumNormalization extends ProgramTransformation<InputProgram, InputProgram> {
 

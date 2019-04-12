@@ -2,6 +2,8 @@ package at.ac.tuwien.kr.alpha.common.depgraph;
 
 /**
  * An edge in a dependency graph.
+ * 
+ * Copyright (c) 2019, the Alpha Team.
  */
 // TODO ensure immutability
 public class Edge {

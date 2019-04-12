@@ -25,6 +25,11 @@ import at.ac.tuwien.kr.alpha.common.fixedinterpretations.SuppliedPredicateInterp
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.UnaryPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 
+/**
+ * Utility class providing functions to work with external atoms
+ * 
+ * Copyright (c) 2017-2019, the Alpha Team.
+ */
 public final class ExternalAtoms {
 
 	// private constructor since this is a utility class

@@ -45,7 +45,7 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 
 /**
- * Rewrites all interval terms in a rule into a new variable and an IntervalAtom. Copyright (c) 2017-2018, the Alpha Team.
+ * Rewrites all interval terms in a rule into a new variable and an IntervalAtom. Copyright (c) 2017-2019, the Alpha Team.
  */
 public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProgram, NormalProgram> {
 	private static final String INTERVAL_VARIABLE_PREFIX = "_Interval";

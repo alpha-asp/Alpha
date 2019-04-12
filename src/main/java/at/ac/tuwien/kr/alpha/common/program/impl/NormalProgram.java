@@ -9,6 +9,11 @@ import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
+/**
+ * A program that only contains NormalRules
+ * 
+ * Copyright (c) 2019, the Alpha Team.
+ */
 public class NormalProgram extends AbstractProgram<NormalRule> {
 
 	public NormalProgram(List<NormalRule> rules, List<Atom> facts, InlineDirectives inlineDirectives) {

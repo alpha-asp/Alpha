@@ -9,7 +9,8 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
  * 
  * Note that constraints are represented by one dummy predicate (named "constr_{num}"). Each constraint node has a negative edge to itself to express the
  * notation of a constraint ":- a, b." as "x :- a, b, not x.".
- *
+ * 
+ * Copyright (c) 2017-2019, the Alpha Team.
  */
 // TODO ensure immutability
 public class Node {
