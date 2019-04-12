@@ -285,9 +285,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			// Generate NoGoods for all rules that have a fixed grounding.
 			Literal[] groundingOrder = nonGroundRule.getGroundingOrder().getFixedGroundingOrder();
 			List<Substitution> substitutions = bindNextAtomInRule(nonGroundRule, groundingOrder, 0, new Substitution(), null);
-			for (Substitution substitution : substitutions) {
-				registry.register(noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution), groundNogoods);
-			}
+			groundAndRegister(nonGroundRule, substitutions, groundNogoods);
 		}
 
 		fixedRules = null;

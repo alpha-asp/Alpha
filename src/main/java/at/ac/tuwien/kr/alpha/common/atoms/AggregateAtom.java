@@ -40,7 +40,7 @@ import java.util.List;
 import static at.ac.tuwien.kr.alpha.Util.join;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
-public class AggregateAtom implements Atom {
+public class AggregateAtom extends Atom {
 
 	private final ComparisonOperator lowerBoundOperator;
 	private final Term lowerBoundTerm;

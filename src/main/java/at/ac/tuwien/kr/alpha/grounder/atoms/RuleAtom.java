@@ -41,9 +41,10 @@ import java.util.List;
 import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
 
 /**
- * Atoms corresponding to rule bodies use this predicate, first term is rule number, second is a term containing variable substitutions.
+ * Atoms corresponding to rule bodies use this predicate, first term is rule number,
+ * second is a term containing variable substitutions.
  */
-public class RuleAtom implements Atom {
+public class RuleAtom extends Atom {
 	public static final Predicate PREDICATE = Predicate.getInstance("_R_", 2, true, true);
 
 	private final List<ConstantTerm<String>> terms;
@@ -75,7 +76,7 @@ public class RuleAtom implements Atom {
 		// NOTE: Both terms are ConstantTerms, which are ground by definition.
 		return true;
 	}
-
+	
 	@Override
 	public Literal toLiteral(boolean positive) {
 		throw new UnsupportedOperationException("RuleAtom cannot be literalized");

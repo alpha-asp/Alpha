@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 /**
  * Represents a builtin atom according to the standard.
  */
-public class ComparisonAtom implements Atom, VariableNormalizableAtom {
+public class ComparisonAtom extends Atom implements VariableNormalizableAtom {
 	private final Predicate predicate;
 	final ComparisonOperator operator;
 	private final List<Term> terms;

@@ -39,7 +39,7 @@ import java.util.List;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 
-public class ChoiceAtom implements Atom {
+public class ChoiceAtom extends Atom {
 	public static final Predicate ON = Predicate.getInstance("ChoiceOn", 1, true, true);
 	public static final Predicate OFF = Predicate.getInstance("ChoiceOff", 1, true, true);
 
