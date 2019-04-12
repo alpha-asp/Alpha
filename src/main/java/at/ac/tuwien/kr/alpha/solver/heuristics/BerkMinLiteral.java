@@ -47,13 +47,13 @@ public class BerkMinLiteral extends BerkMin {
 	private static final int DEFAULT_QUEUE_SIZE = 32;
 	private final int queueSize;
 
-	BerkMinLiteral(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, int queueSize) {
-		super(assignment, choiceManager, decayAge, decayFactor, random);
+	BerkMinLiteral(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, Random random, int queueSize) {
+		super(assignment, choiceManager, decayPeriod, decayFactor, random);
 		this.queueSize = queueSize;
 	}
 
 	BerkMinLiteral(Assignment assignment, ChoiceManager choiceManager, Random random) {
-		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random, DEFAULT_QUEUE_SIZE);
+		this(assignment, choiceManager, DEFAULT_DECAY_PERIOD, DEFAULT_DECAY_FACTOR, random, DEFAULT_QUEUE_SIZE);
 	}
 
 	@Override

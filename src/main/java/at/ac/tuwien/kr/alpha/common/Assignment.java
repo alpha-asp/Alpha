@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -189,6 +189,11 @@ public interface Assignment {
 	 * Grows all internal data structures to accommodate for all atoms known.
 	 */
 	void growForMaxAtomId();
+	
+	/**
+	 * @return the number of atoms assigned since the last decision
+	 */
+	int getNumberOfAtomsAssignedSinceLastDecision();
 
 	/**
 	 * Obtain a BasicAtom that is currently assigned MBT (but not TRUE).

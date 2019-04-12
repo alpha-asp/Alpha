@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -40,14 +40,13 @@ import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
 import static at.ac.tuwien.kr.alpha.Util.entry;
-import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
 import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
+import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 
 /**
  * Represents a small ASP program with choices {@code { aa :- not bb.  bb :- not aa. }}.
- * Copyright (c) 2016, the Alpha Team.
  */
 public class ChoiceGrounder implements Grounder {
 	public static final Set<AnswerSet> EXPECTED = new HashSet<>(asList(
@@ -164,6 +163,11 @@ public class ChoiceGrounder implements Grounder {
 		} else {
 			return new ImmutablePair<>(new HashMap<>(), new HashMap<>());
 		}
+	}
+	
+	@Override
+	public Map<Integer, Set<Integer>> getHeadsToBodies() {
+		return Collections.emptyMap();
 	}
 
 	@Override

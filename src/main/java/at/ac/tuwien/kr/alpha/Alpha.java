@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -27,27 +27,14 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import java.io.IOException;
-import java.nio.charset.CodingErrorAction;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.stream.Stream;
-
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.apache.commons.lang3.StringUtils;
-
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.depgraph.io.DependencyGraphWriter;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
@@ -61,8 +48,20 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.SumNormalization;
 import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.IOException;
+import java.nio.charset.CodingErrorAction;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.stream.Stream;
 
 public class Alpha {
 
@@ -144,15 +143,18 @@ public class Alpha {
 		String solverName = this.config.getSolverName();
 		String nogoodStoreName = this.config.getNogoodStoreName();
 		long seed = this.config.getSeed();
-		Heuristic branchingHeuristic = BranchingHeuristicFactory.Heuristic.valueOf(this.config.getBranchingHeuristicName());
 		boolean doDebugChecks = this.config.isDebugInternalChecks();
 		boolean disableJustificationSearch = this.config.isDisableJustificationSearch();
+		
+		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
+		heuristicsConfigurationBuilder.setHeuristic(this.config.getBranchingHeuristic());
+		heuristicsConfigurationBuilder.setMomsStrategy(this.config.getMomsStrategy());
 
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore);
+		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, doDebugChecks);
 
-		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed), branchingHeuristic, doDebugChecks,
-				disableJustificationSearch);
+		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed),
+				heuristicsConfigurationBuilder.build(), doDebugChecks, disableJustificationSearch);
 		return solver;
 	}
 
