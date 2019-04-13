@@ -165,6 +165,7 @@ public class HeapOfActiveAtoms {
 				if (score > 0.0) {
 					incrementActivity(atom, 1 - 1 / (Math.log(score + 1.01)));
 				}
+				initializedActivityScores[atom] = true;
 			}
 		}
 	}
@@ -177,7 +178,9 @@ public class HeapOfActiveAtoms {
 	private void initActivityNaive(NoGood newNoGood) {
 		LOGGER.debug("Initializing activity scores naively");
 		for (Integer literal : newNoGood) {
-			incrementActivity(atomOf(literal));
+			int atom = atomOf(literal);
+			incrementActivity(atom);
+			initializedActivityScores[atom] = true;
 		}
 	}
 
