@@ -241,7 +241,7 @@ public class DomainSpecificHeuristicsTest {
 
 	private void solveAndAssertAnswerSets(Program program, String... expectedAnswerSets) {
 		HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(Heuristic.NAIVE).build();
-		Solver solver = SolverFactory.getInstance("default", "alpharoaming", atomStore, GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration), new Random(), heuristicsConfiguration, true, false);
+		Solver solver = SolverFactory.getInstance("default", "alpharoaming", atomStore, GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true), new Random(), heuristicsConfiguration, true, false);
 		assertEquals(Arrays.asList(expectedAnswerSets), solver.stream().map(AnswerSet::toString).collect(Collectors.toList()));
 	}
 }

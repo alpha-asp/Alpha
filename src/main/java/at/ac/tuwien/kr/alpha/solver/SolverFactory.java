@@ -55,7 +55,7 @@ public final class SolverFactory {
 			case "naive" :
 				return new NaiveSolver(atomStore, grounder);
 			case "default":
-				DefaultSolver solver = new DefaultSolver(atomStore, grounder, store, assignment, random, heuristicsConfiguration, disableJustifications);
+				DefaultSolver solver = new DefaultSolver(atomStore, grounder, store, assignment, random, heuristicsConfiguration, debugInternalChecks, disableJustifications);
 				solver.setChecksEnabled(debugInternalChecks);
 				return solver;
 		}

@@ -81,8 +81,8 @@ public class ChoiceManager implements Checkable {
 	protected ChoiceManager(WritableAssignment assignment, NoGoodStore store, DomainSpecificHeuristicsStore domainSpecificHeuristicsStore) {
 		this.store = store;
 		this.assignment = assignment;
-		this.choicePointInfluenceManager = new ChoiceInfluenceManager(assignment, modCount);
-		this.heuristicInfluenceManager = new ChoiceInfluenceManager(assignment, modCount);
+		this.choicePointInfluenceManager = new ChoiceInfluenceManager(assignment);
+		this.heuristicInfluenceManager = new ChoiceInfluenceManager(assignment);
 		this.choiceStack = new Stack<>();
 		if (domainSpecificHeuristicsStore != null) {
 			this.domainSpecificHeuristics = domainSpecificHeuristicsStore;
@@ -313,6 +313,10 @@ public class ChoiceManager implements Checkable {
 		choicePointInfluenceManager.setActivityListener(activityListener);
 	}
 
+	public void setHeuristicActivityListener(ChoiceInfluenceManager.ActivityListener activityListener) {
+		heuristicInfluenceManager.setActivityListener(activityListener);
+	}
+
 	public Integer getHeadDerivedByChoiceAtom(int choiceAtomId) {
 		return bodiesToHeads.get(choiceAtomId);
 	}
@@ -320,7 +324,7 @@ public class ChoiceManager implements Checkable {
 	/**
 	 * Gets the active choice atoms representing bodies of rules that can derive the given head atom.
 	 * @param headAtomId
-	 * @return a subset of {@link #getAllActiveChoiceAtoms()} that can derive {@code headAtomId}.
+	 * @return a subset of all active choice atoms that can derive {@code headAtomId}.
 	 */
 	public Set<Integer> getActiveChoiceAtomsDerivingHead(int headAtomId) {
 		Set<Integer> bodies = headsToBodies.get(headAtomId);

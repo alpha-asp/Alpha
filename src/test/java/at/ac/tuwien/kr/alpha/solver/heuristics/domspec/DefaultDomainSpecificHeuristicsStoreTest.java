@@ -28,8 +28,8 @@ package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
-import at.ac.tuwien.kr.alpha.solver.*;
 import at.ac.tuwien.kr.alpha.solver.ChoiceInfluenceManager.ActivityListener;
+import at.ac.tuwien.kr.alpha.solver.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -140,8 +140,8 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 		}
 
 		@Override
-		public void addHeuristicActivityListener(ActivityListener activityListener) {
-			super.addHeuristicActivityListener(activityListener);
+		public void setHeuristicActivityListener(ActivityListener activityListener) {
+			super.setHeuristicActivityListener(activityListener);
 			if (activityListeners == null) {
 				activityListeners = new LinkedList<>();
 			}

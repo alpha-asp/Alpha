@@ -147,7 +147,7 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 	public void setChoiceManager(ChoiceManager choiceManager) {
 		this.choiceManager = choiceManager;
 		if (choiceManager != null) {
-			this.choiceManager.addHeuristicActivityListener(new HeuristicActivityListener());
+			this.choiceManager.setHeuristicActivityListener(new HeuristicActivityListener());
 		}
 	}
 
