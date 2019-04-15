@@ -41,6 +41,12 @@ before_install:
   - export GRADLE_OPTS="-Xmx1g -Xss8m"
   - echo 'org.gradle.jvmargs=-Xmx1g' >> $HOME/.gradle/gradle.properties
 
+install:
+  - true
+
+script:
+  - ./gradlew build --scan --stacktrace
+
 after_success:
   - ./gradlew jacocoTestReport coveralls
   - bash <(curl -s https://codecov.io/bash)
@@ -54,10 +60,12 @@ notifications:
 # before_cache and after_cache to leverage caching
 # of dependencies according to Travis CI docs, see
 # https://docs.travis-ci.com/user/languages/java#Caching
+# Also according to Gradle docs, see
+# https://guides.gradle.org/executing-gradle-builds-on-travisci/#enable_caching_of_downloaded_artifacts
 before_cache:
   - rm -fv  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fvr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-    - $HOME/.gradle/caches/$GRADLE_VERSION/
-    - $HOME/.gradle/caches/modules-2/
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
