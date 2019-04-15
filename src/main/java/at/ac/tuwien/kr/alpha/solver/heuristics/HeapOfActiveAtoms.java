@@ -160,7 +160,7 @@ public class HeapOfActiveAtoms {
 		LOGGER.debug("Initializing activity scores with MOMs");
 		for (int literal : newNoGood) {
 			int atom = atomOf(literal);
-			if (atom >= initializedActivityScores.length || !initializedActivityScores[atom]) {
+			if (!initializedActivityScores[atom]) {
 				double score = moms.getScore(atom);
 				if (score > 0.0) {
 					incrementActivity(atom, 1 - 1 / (Math.log(score + 1.01)));
