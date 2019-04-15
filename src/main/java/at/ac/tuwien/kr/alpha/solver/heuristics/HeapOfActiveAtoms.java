@@ -52,6 +52,7 @@ public class HeapOfActiveAtoms {
 	protected static final Logger LOGGER = LoggerFactory.getLogger(HeapOfActiveAtoms.class);
 
 	private static final double NORMALIZATION_THRESHOLD = 1E100;
+	private static final double INCREMENT_TO_AVOID_DENORMALS = Double.MIN_VALUE * NORMALIZATION_THRESHOLD;
 	private static final double SCORE_EPSILON = 1E-100;
 
 	private boolean[] incrementedActivityScores = new boolean[0];
@@ -63,6 +64,7 @@ public class HeapOfActiveAtoms {
 	private double decayFactor;
 	private int stepsSinceLastDecay;
 	private double currentActivityIncrement = 1.0;
+	private int numberOfNormalizations;
 	
 	private final MOMs moms;
 
@@ -166,6 +168,9 @@ public class HeapOfActiveAtoms {
 				if (score > 0.0) {
 					double newActivity = 1 - 1 / (Math.log(score + 1.01));
 					if (newActivity - activityScores[atom] > SCORE_EPSILON) {	// avoid computation overhead if score does not increase
+						if (numberOfNormalizations > 0) {
+							newActivity = normalizeNewActivityScore(newActivity);
+						}
 						setActivity(atom, newActivity);
 					}
 				}
@@ -228,11 +233,18 @@ public class HeapOfActiveAtoms {
 	 */
 	private void normalizeActivityScores() {
 		LOGGER.debug("Normalizing activity scores");
-		final double min = Double.MIN_VALUE * NORMALIZATION_THRESHOLD;
+		numberOfNormalizations++;
 		currentActivityIncrement /= NORMALIZATION_THRESHOLD;
 		for (int atom = 1; atom < activityScores.length; atom++) {
-			activityScores[atom] = (activityScores[atom] + min) / NORMALIZATION_THRESHOLD;
+			activityScores[atom] = (activityScores[atom] + INCREMENT_TO_AVOID_DENORMALS) / NORMALIZATION_THRESHOLD;
 		}
+	}
+
+	private double normalizeNewActivityScore(double newActivity) {
+		for (int i = 0; i < numberOfNormalizations; i++) {
+			newActivity = (newActivity + INCREMENT_TO_AVOID_DENORMALS) / NORMALIZATION_THRESHOLD;
+		}
+		return newActivity;
 	}
 
 	private class AtomActivityComparator implements Comparator<Integer> {
