@@ -37,7 +37,6 @@ import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.antlr.v4.runtime.CharStream;
@@ -57,7 +56,6 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public abstract class AbstractSolverTests {
 	private final ProgramParser parser = new ProgramParser();
-	private final HeuristicsConfiguration heuristicsConfiguration = new HeuristicsConfigurationBuilder().setRespectDomspecHeuristics(true).build();
 
 	/**
 	 * Sets the logging level to TRACE. Useful for debugging; call at beginning of test case.
@@ -122,7 +120,7 @@ public abstract class AbstractSolverTests {
 				for (String store : stores) {
 					for (String heuristic : heuristics) {
 						factories.add(new Object[]{
-							solver, grounder, store, BranchingHeuristicFactory.Heuristic.valueOf(heuristic), seed, checks
+							solver, grounder, store, HeuristicsConfiguration.builder().setHeuristic(BranchingHeuristicFactory.Heuristic.valueOf(heuristic)).build(), seed, checks
 						});
 					}
 				}
@@ -142,7 +140,7 @@ public abstract class AbstractSolverTests {
 	public String storeName;
 
 	@Parameter(3)
-	public BranchingHeuristicFactory.Heuristic heuristic;
+	public HeuristicsConfiguration heuristicsConfiguration;
 
 	@Parameter(4)
 	public long seed;
@@ -151,7 +149,6 @@ public abstract class AbstractSolverTests {
 	public boolean checks;
 
 	protected Solver getInstance(AtomStore atomStore, Grounder grounder) {
-		HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(heuristic).build();
 		return SolverFactory.getInstance(solverName, storeName, atomStore, grounder, new Random(seed), heuristicsConfiguration, checks, false);
 	}
 
