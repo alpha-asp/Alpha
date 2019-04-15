@@ -78,7 +78,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private boolean useCountingGridNormalization;
 	private boolean debugInternalChecks;
 	
-	private GrounderHeuristicsConfiguration heuristicsConfiguration;	// TODO: make configurable from CLI
+	private GrounderHeuristicsConfiguration heuristicsConfiguration;
 	
 	/**
 	 * If this configuration parameter is {@code true} (which it is by default),
