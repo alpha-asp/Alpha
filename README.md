@@ -23,7 +23,7 @@ possibilities to interface with the ecosystem built around the Java Virtual Mach
 
 ## Getting Started
 
-Download a current version of `alpha.jar` from [Releases](https://github.com/AntoniusW/Alpha/releases).
+Download a current version of `alpha.jar` from [Releases](https://github.com/alpha-asp/Alpha/releases).
 
 Running Alpha is as simple as running any other JAR:
 
@@ -46,7 +46,7 @@ Note that in this example the path to the input file is relative to the root of 
 Alpha uses the [Gradle build automation system](https://gradle.org). Executing
 
 ```bash
-$ gradle build
+$ ./gradlew build
 ```
 
 will automatically fetch all dependencies (declared in [`build.gradle`](build.gradle)) and compile the project.
@@ -58,7 +58,7 @@ and Windows.
 If you want to generate a JAR file to be run standalone, execute
 
 ```bash
-$ gradle bundledJar
+$ ./gradlew bundledJar
 ```
 
 and pick up `build/libs/alpha-bundled.jar`.
@@ -72,12 +72,18 @@ and pick up `build/libs/alpha-bundled.jar`.
 
 ### Research Papers on Alpha
 
+Peer-reviewed publications part of journals, conferences and workshops:
+
  * [Exploiting Justifications for Lazy Grounding of Answer Set Programs](https://doi.org/10.24963/ijcai.2018/240)
  * [Lazy Grounding for Dynamic Configuration: Efficient Large-Scale (Re)Configuration of Cyber-Physical Systems with ASP](https://doi.org/10.1007/s13218-018-0536-x)
  * [Blending Lazy-Grounding and CDNL Search for Answer-Set Solving](https://doi.org/10.1007/978-3-319-61660-5_17) ([preprint](http://www.kr.tuwien.ac.at/research/systems/alpha/blending_lazy_grounding.pdf))
  * [Introducing Heuristics for Lazy-Grounding ASP Solving](https://sites.google.com/site/paoasp2017/Taupe-et-al.pdf)
  * [Lazy-Grounding for Answer Set Programs with External Source Access](https://doi.org/10.24963/ijcai.2017/141)
  * [Techniques for Efficient Lazy-Grounding ASP Solving](https://doi.org/10.1007/978-3-030-00801-7_9) ([technical report](https://www.uni-wuerzburg.de/fileadmin/10030100/Publications/TR_Declare17.pdf#page=131))
+
+Others (e.g. non-peer-reviewed publications, less formal articles, newsletters):
+
+ * [The Alpha Solver for Lazy-Grounding Answer-Set Programming](https://www.cs.nmsu.edu/ALP/2019/04/the-alpha-solver-for-lazy-grounding-answer-set-programming/)
 
 ## Similar Work
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests {@link HeapOfActiveAtoms}, including initial heuristic scores computed by {@link MOMs}.
@@ -48,7 +49,7 @@ public class HeapOfActiveAtomsTest {
 
 	private AtomStore atomStore;
 	private WritableAssignment assignment;
-	private HeapOfActiveAtoms heapOfActiveAtoms;
+	private VSIDS vsids;
 	private NoGoodStoreAlphaRoaming noGoodStore;
 
 	@Before
@@ -57,7 +58,7 @@ public class HeapOfActiveAtomsTest {
 		assignment = new TrailAssignment(atomStore);
 		noGoodStore = new NoGoodStoreAlphaRoaming(assignment);
 		ChoiceManager choiceManager = new PseudoChoiceManager(assignment, noGoodStore);
-		this.heapOfActiveAtoms = new HeapOfActiveAtoms(1, 1, choiceManager);
+		this.vsids = new VSIDS(assignment, choiceManager, MOMs.DEFAULT_STRATEGY);
 	}
 
 	@Test
@@ -65,14 +66,13 @@ public class HeapOfActiveAtomsTest {
 		int lit1 = Literals.atomToLiteral(1);
 		int lit2 = Literals.atomToLiteral(2);
 		int lit3 = Literals.atomToLiteral(3);
-		HeuristicTestUtils.addNoGoods(atomStore, assignment, noGoodStore, heapOfActiveAtoms, new NoGood(lit1, lit2), new NoGood(lit2, lit3),
+		HeuristicTestUtils.addNoGoods(atomStore, assignment, noGoodStore, vsids, new NoGood(lit1, lit2), new NoGood(lit2, lit3),
 				new NoGood(lit1, lit3));
-		double activity1 = heapOfActiveAtoms.getActivity(lit1);
-		double activity2 = heapOfActiveAtoms.getActivity(lit2);
-		double activity3 = heapOfActiveAtoms.getActivity(lit3);
-		assertEquals(1d, activity1, DOUBLE_COMPARISON_EPSILON);
-		assertEquals(1d, activity2, DOUBLE_COMPARISON_EPSILON);
-		assertEquals(1d, activity3, DOUBLE_COMPARISON_EPSILON);
+		double activity1 = vsids.heapOfActiveAtoms.getActivity(lit1);
+		double activity2 = vsids.heapOfActiveAtoms.getActivity(lit2);
+		double activity3 = vsids.heapOfActiveAtoms.getActivity(lit3);
+		assertEquals(activity1, activity2, DOUBLE_COMPARISON_EPSILON);
+		assertEquals(activity2, activity3, DOUBLE_COMPARISON_EPSILON);
 	}
 
 	@Test
@@ -83,14 +83,17 @@ public class HeapOfActiveAtomsTest {
 		int lit1Neg = Literals.atomToLiteral(1, false);
 		int lit2Neg = Literals.atomToLiteral(2, false);
 		int lit3Neg = Literals.atomToLiteral(3, false);
-		HeuristicTestUtils.addNoGoods(atomStore, assignment, noGoodStore, heapOfActiveAtoms, new NoGood(lit1, lit2Neg), new NoGood(lit1Neg, lit2),
+		HeuristicTestUtils.addNoGoods(atomStore, assignment, noGoodStore, vsids, new NoGood(lit1, lit2Neg), new NoGood(lit1Neg, lit2),
 				new NoGood(lit2, lit3Neg), new NoGood(lit2Neg, lit3));
-		double activity1 = heapOfActiveAtoms.getActivity(lit1);
-		double activity2 = heapOfActiveAtoms.getActivity(lit2);
-		double activity3 = heapOfActiveAtoms.getActivity(lit3);
-		assertEquals(0.25d, activity1, DOUBLE_COMPARISON_EPSILON);
-		assertEquals(1d, activity2, DOUBLE_COMPARISON_EPSILON);
-		assertEquals(0.25d, activity3, DOUBLE_COMPARISON_EPSILON);
+		double activity1 = vsids.heapOfActiveAtoms.getActivity(lit1);
+		double activity2 = vsids.heapOfActiveAtoms.getActivity(lit2);
+		double activity3 = vsids.heapOfActiveAtoms.getActivity(lit3);
+		assertLessThan(activity1, activity2);
+		assertLessThan(activity3, activity2);
+	}
+
+	private static void assertLessThan(double d1, double d2) {
+		assertTrue(d1 < d2 + DOUBLE_COMPARISON_EPSILON);
 	}
 
 }

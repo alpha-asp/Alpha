@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -41,7 +41,7 @@ import static at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom.on;
 import static java.util.Collections.emptyList;
 
 public class ChoiceRecorder {
-	static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
+	private static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
 
 	private final AtomStore atomStore;
 	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newChoiceAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());

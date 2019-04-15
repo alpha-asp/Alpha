@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,10 +30,10 @@ import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
 /**
@@ -51,11 +51,11 @@ public class HeapOfActiveChoicePoints extends HeapOfActiveAtoms {
 	 * (in the head or the body).
 	 */
 	protected final MultiValuedMap<Integer, Integer> atomsToChoicePoints = new HashSetValuedHashMap<>();
-	
+
 	public HeapOfActiveChoicePoints(int decayPeriod, double decayFactor, ChoiceManager choiceManager) {
 		super(decayPeriod, decayFactor, choiceManager);
 	}
-	
+
 	@Override
 	public void incrementActivity(int atom, double increment) {
 		if (choiceManager.isAtomChoice(atom)) {
@@ -66,22 +66,24 @@ public class HeapOfActiveChoicePoints extends HeapOfActiveAtoms {
 			}
 		}
 	}
-	
+
 	/**
 	 * Records the dependency relationships between atoms occurring in the given nogood.
-	 * TODO: resolve duplication between this method and {@link GeneralizedDependencyDrivenHeuristic#recordAtomRelationships(NoGood)}
 	 * @param noGood
 	 */
 	private void recordAtomRelationships(NoGood noGood) {
 		final int none = -1;
 		int body = none;
 		Set<Integer> others = new HashSet<>();
-		
+
 		for (int literal : noGood) {
 			int atom = atomOf(literal);
 			if (body == none && choiceManager.isAtomChoice(atom)) {
 				body = atom;
 			} else {
+				if (choiceManager.isChecksEnabled() && choiceManager.isAtomChoice(atom)) {
+					throw oops("More than one choice point in a nogood: " + body + ", " + atom);
+				}
 				others.add(atom);
 			}
 		}
@@ -96,10 +98,8 @@ public class HeapOfActiveChoicePoints extends HeapOfActiveAtoms {
 	}
 
 	@Override
-	public void analyzeNewNoGoods(Collection<NoGood> newNoGoods) {
-		for (NoGood newNoGood : newNoGoods) {
-			recordAtomRelationships(newNoGood);
-		}
+	public void analyzeNewNoGood(NoGood newNoGood) {
+		recordAtomRelationships(newNoGood);
 	}
 	
 	@Override

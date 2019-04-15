@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -25,49 +25,54 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.Literals;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * Offers methods to estimate the effect of propagating binary nogoods.
  */
-public class BinaryNoGoodPropagationEstimation {
-	
-	private final WritableAssignment assignment;
-	private final NoGoodStorePrivilegingBinaryNoGoods store;
-	
-	public BinaryNoGoodPropagationEstimation(WritableAssignment assignment, NoGoodStorePrivilegingBinaryNoGoods store) {
-		super();
-		this.assignment = assignment;
-		this.store = store;
-	}
-	
-	public boolean hasBinaryNoGoods() {
-		return store.hasBinaryNoGoods();
-	}
+public interface BinaryNoGoodPropagationEstimation {
 
 	/**
-	 * Computes the number of direct consequences of propagating binary nogoods after
-	 * assigning {@code value} to {@code atom}.
-	 * 
-	 * In other words, assigns {@code value} to {@code atom}, propagates only binary nogoods,
-	 * backtracks, and returns the number of atoms that have been assigned additionally during
-	 * this process.
-	 * 
-	 * @param atom
-	 * @param value
-	 * @return
+	 * Uses {@code strategy} to estimate the number of direct consequences of propagating binary nogoods after assigning
+	 * {@code truth} to {@code atom}.
+	 *
+	 * If {@code strategy} is {@link Strategy#BinaryNoGoodPropagation}, {@code truth} is assigned to {@code atom},
+	 * only binary nogoods are propagated, a backtrack is executed, and the number of atoms that have been assigned
+	 * additionally during this process is returned.
+	 *
+	 * If {@code strategy} is {@link Strategy#CountBinaryWatches}, on the other hand, the number of binary watches on
+	 * the literal given by {@code atom} and {@code truth} is returned.
+	 *
+	 * @param atom the atom to estimate effects for
+	 * @param truth gives, together with {@code atom}, a literal to estimate effects for
+	 * @param strategy the strategy to use for estimation. If {@link Strategy#BinaryNoGoodPropagation} is given but
+	 *                 no binary nogoods exist, {@link Strategy#CountBinaryWatches} will be used instead.
+	 * @return an estimate on the effects of propagating binary nogoods after assigning {@code truth} to {@code atom}.
 	 */
-	public int estimate(int atom, ThriceTruth value) {
-		assignment.choose(atom, value);
-		int decisionLevelAfterChoice = assignment.getDecisionLevel();
-		store.propagateOnlyBinaryNoGoods();
-		int assignedNewly = assignment.getNumberOfAtomsAssignedFromDecisionLevel(decisionLevelAfterChoice);
-		assignment.backtrack();
-		return assignedNewly;
-	}
-	
-	public int getNumberOfBinaryWatches(int atom, boolean truth) {
-		return store.getNumberOfBinaryWatches(Literals.atomToLiteral(atom, truth));
+	int estimate(int atom, boolean truth, Strategy strategy);
+
+	/**
+	 * Strategies to estimate the amount of influence of a literal.
+	 */
+	public enum Strategy {
+		/**
+		 * Counts binary watches involving the literal under consideration
+		 */
+		CountBinaryWatches,
+
+		/**
+		 * Assigns true to the literal under consideration, then does propagation only on binary nogoods
+		 * and counts how many other atoms are assigned during this process, then backtracks
+		 */
+		BinaryNoGoodPropagation;
+
+		/**
+		 * @return a comma-separated list of names of known heuristics
+		 */
+		public static String listAllowedValues() {
+			return Arrays.stream(values()).map(Strategy::toString).collect(Collectors.joining(", "));
+		}
 	}
 
 }

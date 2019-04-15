@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -26,10 +26,7 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
-
-import java.util.Arrays;
-import java.util.stream.Collectors;
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation.Strategy;
 
 /**
  * The well-known MOMs (Maximum Occurrences in clauses of Minimum size) heuristic
@@ -44,7 +41,7 @@ import java.util.stream.Collectors;
  */
 public class MOMs {
 	
-	private static final Strategy DEFAULT_STRATEGY = Strategy.CountBinaryWatches;
+	static final Strategy DEFAULT_STRATEGY = Strategy.CountBinaryWatches;
 	
 	private BinaryNoGoodPropagationEstimation bnpEstimation;
 	private Strategy strategy = DEFAULT_STRATEGY;
@@ -59,50 +56,13 @@ public class MOMs {
 	 * @return
 	 */
 	public double getScore(Integer atom) {
-		int s1;
-		int s2;
-		
-		switch (strategy) {
-		case BinaryNoGoodPropagation:
-			if (bnpEstimation.hasBinaryNoGoods()) {
-				s1 = bnpEstimation.estimate(atom, ThriceTruth.TRUE) - 1;
-				s2 = bnpEstimation.estimate(atom, ThriceTruth.FALSE) - 1;
-				break;
-			}
-		case CountBinaryWatches:
-		default:
-			s1 = bnpEstimation.getNumberOfBinaryWatches(atom, true);
-			s2 = bnpEstimation.getNumberOfBinaryWatches(atom, false);
-		}
-		
+		int s1 = bnpEstimation.estimate(atom, true, strategy);
+		int s2 = bnpEstimation.estimate(atom, false, strategy);
 		return ((s1 * s2) << 10) + s1 + s2;
 	}
 
 	public void setStrategy(Strategy strategy) {
 		this.strategy = strategy != null ? strategy : DEFAULT_STRATEGY;
-	}
-	
-	/**
-	 * The strategy to be used by {@link MOMs} to estimate the amount of influence of a literal.
-	 */
-	public enum Strategy {
-		/**
-		 * Counts binary watches involving the literal under consideration
-		 */
-		CountBinaryWatches,
-		
-		/**
-		 * Assigns true to the literal under consideration, then does propagation only on binary nogoods
-		 * and counts how many other atoms are assigned during this process, then backtracks
-		 */
-		BinaryNoGoodPropagation;
-
-		/**
-		 * @return a comma-separated list of names of known heuristics
-		 */
-		public static String listAllowedValues() {
-			return Arrays.stream(values()).map(Strategy::toString).collect(Collectors.joining(", "));
-		}
 	}
 
 }

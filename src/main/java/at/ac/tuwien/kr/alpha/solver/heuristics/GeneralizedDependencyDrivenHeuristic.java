@@ -66,6 +66,7 @@ public class GeneralizedDependencyDrivenHeuristic extends DependencyDrivenHeuris
 
 	@Override
 	protected void recordAtomRelationships(NoGood noGood) {
+		// TODO: use HeapOfActiveChoicePoints.recordAtomRelationships, which does similar things
 		int body = DEFAULT_CHOICE_ATOM;
 		Set<Integer> others = new HashSet<>();
 		for (int literal : noGood) {

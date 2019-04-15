@@ -114,7 +114,7 @@ public final class BranchingHeuristicFactory {
 		case ALPHA_HEAD_MBT:
 			return new AlphaHeadMustBeTrueHeuristic(assignment, choiceManager, random);
 		case VSIDS:
-			return new VSIDS(assignment, choiceManager, random, heuristicsConfiguration.getMomsStrategy());
+			return new VSIDS(assignment, choiceManager, heuristicsConfiguration.getMomsStrategy());
 		case GDD_VSIDS:
 			return new DependencyDrivenVSIDS(assignment, choiceManager, random, heuristicsConfiguration.getMomsStrategy());
 		}

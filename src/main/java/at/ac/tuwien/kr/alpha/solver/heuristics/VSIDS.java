@@ -27,6 +27,7 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProvider;
@@ -36,10 +37,12 @@ import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
+import static at.ac.tuwien.kr.alpha.common.Literals.*;
 
 /**
  * This implementation is inspired by the VSIDS implementation in <a href="https://github.com/potassco/clasp">clasp</a>.
@@ -54,23 +57,23 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
  * Moskewicz, Matthew W.; Madigan, Conor F.; Zhao, Ying; Zhang, Lintao; Malik, Sharad (2001):
  * Chaff: engineering an efficient SAT solver.
  * In: Proceedings of the 38th Design Automation Conference. IEEE, pp. 530–535.
- * <p/>
- * Copyright (c) 2018 Siemens AG
  */
 public class VSIDS implements ActivityBasedBranchingHeuristic {
 	protected static final Logger LOGGER = LoggerFactory.getLogger(VSIDS.class);
 
-	public static final int DEFAULT_SIGN_COUNTER = 0;
-
 	public static final int DEFAULT_DECAY_PERIOD = 1;
+
+	/**
+	 * The default factor by which VSID's activity increment will be multiplied when the decay period has expired.
+	 * The value is taken from clasp's tweety configuration which clasp uses by default.
+	 */
 	public static final double DEFAULT_DECAY_FACTOR = 1 / 0.92;
 
 	protected final Assignment assignment;
 	protected final ChoiceManager choiceManager;
-	protected final Random rand;
 
 	protected final HeapOfActiveAtoms heapOfActiveAtoms;
-	protected final Map<Integer, Integer> signCounters = new HashMap<>();
+	protected int[] signBalances = new int[0];
 
 	private final Collection<NoGood> bufferedNoGoods = new ArrayList<>();
 
@@ -83,20 +86,19 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 	 */
 	protected final MultiValuedMap<Integer, Integer> headToBodies = new HashSetValuedHashMap<>();
 
-	protected VSIDS(Assignment assignment, ChoiceManager choiceManager, HeapOfActiveAtoms heapOfActiveAtoms, Random random, MOMs.Strategy momsStrategy) {
+	protected VSIDS(Assignment assignment, ChoiceManager choiceManager, HeapOfActiveAtoms heapOfActiveAtoms, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
 		this.heapOfActiveAtoms = heapOfActiveAtoms;
 		this.heapOfActiveAtoms.setMOMsStrategy(momsStrategy);
-		this.rand = random;
 	}
 
-	public VSIDS(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, Random random, MOMs.Strategy momsStrategy) {
-		this(assignment, choiceManager, new HeapOfActiveAtoms(decayPeriod, decayFactor, choiceManager), random, momsStrategy);
+	public VSIDS(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
+		this(assignment, choiceManager, new HeapOfActiveAtoms(decayPeriod, decayFactor, choiceManager),  momsStrategy);
 	}
 
-	public VSIDS(Assignment assignment, ChoiceManager choiceManager, Random random, MOMs.Strategy momsStrategy) {
-		this(assignment, choiceManager, DEFAULT_DECAY_PERIOD, DEFAULT_DECAY_FACTOR, random, momsStrategy);
+	public VSIDS(Assignment assignment, ChoiceManager choiceManager, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
+		this(assignment, choiceManager, DEFAULT_DECAY_PERIOD, DEFAULT_DECAY_FACTOR,  momsStrategy);
 	}
 
 	@Override
@@ -105,6 +107,7 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 
 	@Override
 	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
+		ingestBufferedNoGoods();	//analysisResult may contain new atoms whose activity must be initialized
 		for (int resolutionAtom : analysisResult.resolutionAtoms) {
 			heapOfActiveAtoms.incrementActivity(resolutionAtom);
 		}
@@ -182,7 +185,7 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 			return true;
 		}
 
-		int signBalance = getSignBalance(atom);		
+		int signBalance = getSignBalance(atom);
 		if (LOGGER.isDebugEnabled() && (nChoicesFalse + nChoicesTrue + nChoicesRand) % 100 == 0) {
 			LOGGER.debug("chooseSign stats: f={}, t={}, r={}", nChoicesFalse, nChoicesTrue, nChoicesRand);
 			LOGGER.debug("chooseSign stats: signBalance={}", signBalance);
@@ -197,28 +200,48 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 		}
 	}
 
+	/**
+	 * This method just returns {@code atom} by default but can be overridden in subclasses.
+	 * @param atom the atom chosen by VSIDS
+	 * @return the atom to base the choice of sign upon
+	 */
 	protected int getAtomForChooseSign(int atom) {
 		return atom;
 	}
 
-	protected void incrementSignCounter(Integer literal) {
-		signCounters.compute(literal, (k, v) -> (v == null ? DEFAULT_SIGN_COUNTER : v) + 1);
+	protected void incrementSignCounter(int literal) {
+		int atom = atomOf(literal);
+		boolean sign = isPositive(literal);
+		growForMaxAtomId(atom);
+		signBalances[atom] += sign ? 1 : -1;
+	}
+
+	public void growForMaxAtomId(int maxAtomId) {
+		// Grow arrays only if needed.
+		if (signBalances.length > maxAtomId) {
+			return;
+		}
+		// Grow to default size, except if bigger array is required due to maxAtomId.
+		int newCapacity = arrayGrowthSize(signBalances.length);
+		if (newCapacity < maxAtomId + 1) {
+			newCapacity = maxAtomId + 1;
+		}
+		signBalances = Arrays.copyOf(signBalances, newCapacity);
+		heapOfActiveAtoms.growToCapacity(newCapacity);
 	}
 
 	@Override
 	public double getActivity(int literal) {
 		return heapOfActiveAtoms.getActivity(literal);
 	}
-	
+
 	/**
 	 * Returns the sign balance for the given atom in learnt nogoods.
 	 * @param atom
 	 * @return the number of times the given atom occurrs positively more often than negatively (which may be negative)
 	 */
-	public int getSignBalance(int atom) {
-		int positiveCounter = signCounters.getOrDefault(atomToLiteral(atom, true), DEFAULT_SIGN_COUNTER);
-		int negativeCounter = signCounters.getOrDefault(atomToLiteral(atom, false), DEFAULT_SIGN_COUNTER);
-		return positiveCounter - negativeCounter;
+	int getSignBalance(int atom) {
+		return signBalances.length > atom ? signBalances[atom] : 0;
 	}
 
 	@Override
