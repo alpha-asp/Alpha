@@ -52,8 +52,9 @@ public class HeapOfActiveAtoms {
 	protected static final Logger LOGGER = LoggerFactory.getLogger(HeapOfActiveAtoms.class);
 
 	private static final double NORMALIZATION_THRESHOLD = 1E100;
+	private static final double SCORE_EPSILON = 1E-100;
 
-	private boolean[] initializedActivityScores = new boolean[0];
+	private boolean[] incrementedActivityScores = new boolean[0];
 	protected double[] activityScores = new double[0];
 	protected final PriorityQueue<Integer> heap = new PriorityQueue<>(new AtomActivityComparator().reversed());
 
@@ -160,19 +161,21 @@ public class HeapOfActiveAtoms {
 		LOGGER.debug("Initializing activity scores with MOMs");
 		for (int literal : newNoGood) {
 			int atom = atomOf(literal);
-			if (!initializedActivityScores[atom]) {
+			if (!incrementedActivityScores[atom]) { // update initial value as long as not incremented yet by VSIDS
 				double score = moms.getScore(atom);
 				if (score > 0.0) {
-					incrementActivity(atom, 1 - 1 / (Math.log(score + 1.01)));
+					double newActivity = 1 - 1 / (Math.log(score + 1.01));
+					if (newActivity - activityScores[atom] > SCORE_EPSILON) {	// avoid computation overhead if score does not increase
+						setActivity(atom, newActivity);
+					}
 				}
-				initializedActivityScores[atom] = true;
 			}
 		}
 	}
 
 	void growToCapacity(int newCapacity) {
 		activityScores = Arrays.copyOf(activityScores, newCapacity);
-		initializedActivityScores = Arrays.copyOf(initializedActivityScores, newCapacity);
+		incrementedActivityScores = Arrays.copyOf(incrementedActivityScores, newCapacity);
 	}
 
 	private void initActivityNaive(NoGood newNoGood) {
@@ -180,7 +183,6 @@ public class HeapOfActiveAtoms {
 		for (Integer literal : newNoGood) {
 			int atom = atomOf(literal);
 			incrementActivity(atom);
-			initializedActivityScores[atom] = true;
 		}
 	}
 
@@ -203,9 +205,15 @@ public class HeapOfActiveAtoms {
 	
 	protected void incrementActivity(int atom, double increment) {
 		// newActivity := oldActivity + increment
-		double newActivity = activityScores[atom] = activityScores[atom] + increment;
-		LOGGER.trace("Activity of atom {} increased to {}", atom, newActivity);
-		
+		double newActivity = activityScores[atom] + increment;
+		setActivity(atom, newActivity);
+		incrementedActivityScores[atom] = true;
+	}
+
+	private void setActivity(int atom, double newActivity) {
+		activityScores[atom] = newActivity;
+		LOGGER.trace("Activity of atom {} set to {}", atom, newActivity);
+
 		if (newActivity > NORMALIZATION_THRESHOLD) {
 			normalizeActivityScores();
 		}
