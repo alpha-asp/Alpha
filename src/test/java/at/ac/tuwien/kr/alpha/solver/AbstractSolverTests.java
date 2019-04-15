@@ -92,7 +92,7 @@ public abstract class AbstractSolverTests {
 		String[] solvers = getProperty("solvers", ci ? "default,naive" : "default");
 		String[] grounders = getProperty("grounders", "naive");
 		String[] stores = getProperty("stores", ci ? "alpharoaming,naive" : "alpharoaming");
-		String[] heuristics = getProperty("heuristics", ci ? "ALL" : "NAIVE");
+		String[] heuristics = getProperty("heuristics", ci ? "ALL" : "NAIVE,VSIDS");
 
 		// "ALL" is a magic value that will be expanded to contain all heuristics.
 		if ("ALL".equals(heuristics[0])) {
@@ -157,7 +157,7 @@ public abstract class AbstractSolverTests {
 
 	protected Solver getInstance(Program program) {
 		AtomStore atomStore = new AtomStoreImpl();
-		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, program, atomStore, heuristicsConfiguration));
+		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, program, atomStore, heuristicsConfiguration, true));
 	}
 
 	protected Solver getInstance(String program) {

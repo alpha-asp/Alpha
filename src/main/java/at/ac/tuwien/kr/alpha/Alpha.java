@@ -115,12 +115,13 @@ public class Alpha {
 		boolean disableJustificationSearch = this.config.isDisableJustificationSearch();
 
 		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
-		heuristicsConfigurationBuilder.setHeuristic(BranchingHeuristicFactory.Heuristic.valueOf(this.config.getBranchingHeuristicName()));
+		heuristicsConfigurationBuilder.setHeuristic(this.config.getBranchingHeuristic());
+		heuristicsConfigurationBuilder.setMomsStrategy(this.config.getMomsStrategy());
 		heuristicsConfigurationBuilder.setRespectDomspecHeuristics(!this.config.isIgnoreDomspecHeuristics() && program.getInlineDirectives().hasDirectives(InlineDirectives.DIRECTIVE.heuristic));
 		HeuristicsConfiguration heuristicsConfiguration = heuristicsConfigurationBuilder.build();
 
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, heuristicsConfiguration);
+		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, heuristicsConfiguration, doDebugChecks);
 
 		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed), heuristicsConfiguration, doDebugChecks,
 				disableJustificationSearch);

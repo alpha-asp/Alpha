@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
- * 
+ *
  * Additional changes made by Siemens.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -44,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -73,24 +74,10 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private int conflictsAfterClosing;
 	private final boolean disableJustifications;
 	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
-	
+
 	private final PerformanceLog performanceLog;
-	
-	/**
-	 * 
-	 * @param atomStore
-	 * @param grounder
-	 * @param store
-	 * @param assignment
-	 * @param random
-	 * @param respectDomSpecHeuristic
-	 *          if {@code true}, {@link DomainSpecific} heuristics are used which use {@code branchingHeuristic} as fallback if unable to make a decision; if
-	 *          {@code false}, only {@code branchingHeuristic} is used.
-	 * @param branchingHeuristic
-	 *          see {@code respectDomSpecHeuristic}
-	 * @param disableJustifications
-	 */
-	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, HeuristicsConfiguration heuristicsConfiguration, boolean disableJustifications) {
+
+	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, HeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, boolean disableJustifications) {
 		super(atomStore, grounder);
 
 		this.assignment = assignment;
@@ -103,7 +90,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 
 		this.learner = new GroundConflictNoGoodLearner(assignment);
-		this.branchingHeuristic = chainFallbackHeuristic(heuristicsConfiguration, assignment, random);
+		this.branchingHeuristic = ChainedBranchingHeuristics.chainOf(
+				BranchingHeuristicFactory.getInstance(heuristicsConfiguration, grounder, assignment, choiceManager, random),
+				new NaiveHeuristic(choiceManager));
 		this.disableJustifications = disableJustifications;
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
 	}
@@ -331,7 +320,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		for (Literal literal : reasonsForUnjustified) {
 			reasons[arrpos++] = atomToLiteral(atomStore.get(literal.getAtom()), !literal.isNegated());
 		}
-		return new NoGood(reasons);
+		return NoGood.learnt(reasons);
 	}
 
 	private boolean treatConflictAfterClosing(NoGood violatedNoGood) {
@@ -466,9 +455,11 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private boolean ingest(Map<Integer, NoGood> obtained) {
-		branchingHeuristic.newNoGoods(obtained.values());
 		assignment.growForMaxAtomId();
-		store.growForMaxAtomId(atomStore.getMaxAtomId());
+		int maxAtomId = atomStore.getMaxAtomId();
+		store.growForMaxAtomId(maxAtomId);
+		branchingHeuristic.growForMaxAtomId(maxAtomId);
+		branchingHeuristic.newNoGoods(obtained.values());
 
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
 		Map.Entry<Integer, NoGood> entry;
@@ -581,13 +572,21 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private void logStats() {
-		LOGGER.info(getStatisticsString());
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug(getStatisticsString());
+			if (branchingHeuristic instanceof ChainedBranchingHeuristics) {
+				LOGGER.debug("Decisions made by each heuristic:");
+				for (Entry<BranchingHeuristic, Integer> heuristicToDecisionCounter : ((ChainedBranchingHeuristics)branchingHeuristic).getNumberOfDecisions().entrySet()) {
+					LOGGER.debug(heuristicToDecisionCounter.getKey() + ": " + heuristicToDecisionCounter.getValue());
+				}
+			}
+		}
 		logFirstChoices(1000);
 	}
 
 	private void logFirstChoices(int n) {
 		List<Integer> choicesSignedAtoms = choiceManager.getChoiceStack().stream().limit(n)
-				.map(Choice::toSignedInteger).collect(Collectors.toList());
+			.map(Choice::toSignedInteger).collect(Collectors.toList());
 		LOGGER.info("First {} choices (without those removed during backtracking): {}", n, choicesSignedAtoms);
 		List<String> choicesGroundAtoms = new ArrayList<>(choicesSignedAtoms.size());
 		for (int signedAtom : choicesSignedAtoms) {

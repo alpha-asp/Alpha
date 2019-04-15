@@ -45,7 +45,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 
 	private static final String LS = System.lineSeparator();
 	private final HeuristicsConfiguration heuristicsConfiguration = new HeuristicsConfigurationBuilder().build();
-	
+
 	@Test
 	public void testAggregate_Count_Ground_Positive() throws IOException {
 		String program = "a." + LS
@@ -168,7 +168,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	@Override
 	protected Solver getInstance(Program program) {
 		AtomStore atomStore = new AtomStoreImpl();
-		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, program, atomStore, heuristicsConfiguration, p->true, useCountingGridNormalization()));
+		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, program, atomStore, heuristicsConfiguration, p->true, useCountingGridNormalization(), true));
 	}
 	
 	protected abstract boolean useCountingGridNormalization();

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017, the Alpha Team.
+ * Copyright (c) 2016-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -34,8 +34,8 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
@@ -76,16 +76,16 @@ public class GroundConflictNoGoodLearner {
 		public final NoGood learnedNoGood;
 		public final int backjumpLevel;
 		public final boolean clearLastChoiceAfterBackjump;
-		public final Set<NoGood> noGoodsResponsibleForConflict;
+		public final Collection<Integer> resolutionAtoms;
 
 		private ConflictAnalysisResult() {
 			learnedNoGood = null;
 			backjumpLevel = -1;
 			clearLastChoiceAfterBackjump = false;
-			noGoodsResponsibleForConflict = null;
+			resolutionAtoms = null;
 		}
 
-		public ConflictAnalysisResult(NoGood learnedNoGood, int backjumpLevel, boolean clearLastChoiceAfterBackjump, Set<NoGood> noGoodsResponsibleForConflict) {
+		public ConflictAnalysisResult(NoGood learnedNoGood, int backjumpLevel, boolean clearLastChoiceAfterBackjump, Collection<Integer> resolutionAtoms) {
 			if (backjumpLevel < 0) {
 				throw oops("Backjumping level is smaller than 0");
 			}
@@ -93,7 +93,7 @@ public class GroundConflictNoGoodLearner {
 			this.learnedNoGood = learnedNoGood;
 			this.backjumpLevel = backjumpLevel;
 			this.clearLastChoiceAfterBackjump = clearLastChoiceAfterBackjump;
-			this.noGoodsResponsibleForConflict = noGoodsResponsibleForConflict;
+			this.resolutionAtoms = resolutionAtoms;
 		}
 
 		@Override
@@ -115,8 +115,7 @@ public class GroundConflictNoGoodLearner {
 		return analyzeConflictingNoGoodRepetition(violatedNoGood, new LinkedHashSet<>());
 	}
 
-	private ConflictAnalysisResult analyzeConflictingNoGoodRepetition(NoGood violatedNoGood, Set<NoGood> noGoodsResponsible) {
-		noGoodsResponsible.add(violatedNoGood);
+	private ConflictAnalysisResult analyzeConflictingNoGoodRepetition(NoGood violatedNoGood, Collection<Integer> resolutionAtoms) {
 		NoGood currentResolutionNoGood = violatedNoGood.withoutHead();	// Clone violated NoGood and remove potential head.
 		// Find decision level where conflict occurs (i.e., highest decision level of violatedNoGood).
 		int conflictDecisionLevel = -1;
@@ -151,12 +150,13 @@ public class GroundConflictNoGoodLearner {
 			NoGood otherContributingNoGood = atomAssignmentEntry.getImpliedByRespectingLowerMBT();
 			if (otherContributingNoGood == null) {
 				// Case b), the other assignment is a decision.
-				return new ConflictAnalysisResult(null, atomAssignmentEntry.getWeakDecisionLevel(), true, noGoodsResponsible);
+				return new ConflictAnalysisResult(null, atomAssignmentEntry.getWeakDecisionLevel(), true, resolutionAtoms);
 			}
 			// Case a) take other implying NoGood into account.
-			currentResolutionNoGood = new NoGood(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, otherContributingNoGood, atomAssignmentEntry.getAtom(), atomAssignmentEntry.getWeakDecisionLevel(), atomAssignmentEntry.getPropagationLevelRespectingLowerMBT()));
-			noGoodsResponsible.add(otherContributingNoGood);
-
+			int resolutionAtom = atomAssignmentEntry.getAtom();
+			resolutionAtoms.add(resolutionAtom);
+			currentResolutionNoGood = NoGood.learnt(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, otherContributingNoGood, resolutionAtom, atomAssignmentEntry.getWeakDecisionLevel(), atomAssignmentEntry.getPropagationLevelRespectingLowerMBT()));
+			
 			// TODO: create/edit ResolutionSequence
 		}
 
@@ -166,19 +166,19 @@ public class GroundConflictNoGoodLearner {
 				// Only one remaining literals to process, we reached 1UIP.
 				int backjumpingDecisionLevel = computeBackjumpingDecisionLevel(currentResolutionNoGood);
 				if (backjumpingDecisionLevel < 0) {
-					return repeatAnalysisIfNotAssigning(currentResolutionNoGood, noGoodsResponsible);
+					return repeatAnalysisIfNotAssigning(currentResolutionNoGood, resolutionAtoms);
 				}
-				return new ConflictAnalysisResult(currentResolutionNoGood, backjumpingDecisionLevel, false, noGoodsResponsible);
+				return new ConflictAnalysisResult(currentResolutionNoGood, backjumpingDecisionLevel, false, resolutionAtoms);
 			} else if (firstUIPPriorityQueue.size() < 1) {
 				// This can happen if some NoGood implied a literal at a higher decision level and later the implying literals become (re-)assigned at lower decision levels.
 				// Lowering the decision level may be possible but requires further analysis.
 				// For the moment, just report the learned NoGood.
-				return repeatAnalysisIfNotAssigning(currentResolutionNoGood, noGoodsResponsible);
+				return repeatAnalysisIfNotAssigning(currentResolutionNoGood, resolutionAtoms);
 				//return new ConflictAnalysisResult(currentResolutionNoGood, computeBackjumpingDecisionLevel(currentResolutionNoGood), false, noGoodsResponsible);
 			} else if (currentResolutionNoGood.size() > 32) {
 				// Break if resolved NoGood becomes too large.
 				// Remove all current-dl elements from the resolution NoGood and add the last choice, then backjump like usual.
-				return new ConflictAnalysisResult(null, conflictDecisionLevel, true, noGoodsResponsible);	// Flag unsatisfiable abused here.
+				return new ConflictAnalysisResult(null, conflictDecisionLevel, true, resolutionAtoms);	// Flag unsatisfiable abused here.
 				/*if (getAssignmentEntryRespectingLowerMBT(lastGuessedAtom).getDecisionLevel() <= conflictDecisionLevel) {
 					// If lastGuessedAtom is not unassigned after backjump, use repeatAnalysisIfNotAssigning.
 					return repeatAnalysisIfNotAssigning(replaceAllFromConflictDecisionLevelWithGuess(currentResolutionNoGood, conflictDecisionLevel, lastGuessedAtom), noGoodsResponsible, lastGuessedAtom);
@@ -204,8 +204,9 @@ public class GroundConflictNoGoodLearner {
 			}
 			// TODO: add entry in ResolutionSequence.
 
-			currentResolutionNoGood = new NoGood(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, impliedByNoGood, currentLiteralAssignment.getAtom(), decisionLevel, propagationLevel));
-			noGoodsResponsible.add(impliedByNoGood);
+			int resolutionAtom = currentLiteralAssignment.getAtom();
+			resolutionAtoms.add(resolutionAtom);
+			currentResolutionNoGood = NoGood.learnt(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, impliedByNoGood, resolutionAtom, decisionLevel, propagationLevel));
 		}
 	}
 
@@ -220,14 +221,14 @@ public class GroundConflictNoGoodLearner {
 		return literalEntry;
 	}
 
-	private ConflictAnalysisResult repeatAnalysisIfNotAssigning(NoGood learnedNoGood, Set<NoGood> noGoodsResponsibleForConflict) {
+	private ConflictAnalysisResult repeatAnalysisIfNotAssigning(NoGood learnedNoGood, Collection<Integer> resolutionAtoms) {
 		int backjumpingDecisionLevel = computeBackjumpingDecisionLevel(learnedNoGood);
 		if (backjumpingDecisionLevel < 0) {
 			// The learned NoGood is not yet assigning, repeat the learning on the now-highest decision level.
 			// This can only be the case if a literal got assigned at a lower decision level, otherwise the learnedNoGood is always assigning.
-			return analyzeConflictingNoGoodRepetition(learnedNoGood, noGoodsResponsibleForConflict);
+			return analyzeConflictingNoGoodRepetition(learnedNoGood, resolutionAtoms);
 		}
-		return new ConflictAnalysisResult(learnedNoGood, backjumpingDecisionLevel, false, noGoodsResponsibleForConflict);
+		return new ConflictAnalysisResult(learnedNoGood, backjumpingDecisionLevel, false, resolutionAtoms);
 	}
 
 	/**

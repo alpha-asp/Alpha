@@ -54,7 +54,7 @@ public class NoGoodGeneratorTest {
 	private static final VariableTerm Y = VariableTerm.getInstance("Y");
 
 	private final HeuristicsConfiguration heuristicsConfiguration = new HeuristicsConfigurationBuilder().build();
-	
+
 	/**
 	 * Calls {@link NoGoodGenerator#collectNegLiterals(NonGroundRule, Substitution)},
 	 * which puts the atom occuring negatively in a rule into the atom store.
@@ -68,7 +68,7 @@ public class NoGoodGeneratorTest {
 		
 		Rule rule = program.getRules().get(1);
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration);
+		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true);
 		NoGoodGenerator noGoodGenerator = ((NaiveGrounder)grounder).noGoodGenerator;
 		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
 		Substitution substitution = new Substitution();

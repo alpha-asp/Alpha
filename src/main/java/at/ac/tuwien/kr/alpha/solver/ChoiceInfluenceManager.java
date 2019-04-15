@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -32,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
@@ -50,23 +49,18 @@ public class ChoiceInfluenceManager implements Checkable {
 	private final Set<ChoicePoint> activeChoicePoints = new LinkedHashSet<>();
 	private final Set<Integer> activeChoicePointsAtoms = new LinkedHashSet<>();
 	private final Map<Integer, ChoicePoint> influencers = new HashMap<>();
-	private final Collection<ActivityListener> activityListeners = new LinkedList<>();
+	private ActivityListener activityListener;
 
 	private final WritableAssignment assignment;
-	private final AtomicLong modCount;
 
 	private boolean checksEnabled;
-	private boolean checksNecessary; 
 
 	/**
-	 * @param assignment 
-	 * @param modCount 
-	 * @param modifiedInDecisionLevel 
-	 * 
+	 * @param assignment
+	 *
 	 */
-	public ChoiceInfluenceManager(WritableAssignment assignment, AtomicLong modCount) {
+	public ChoiceInfluenceManager(WritableAssignment assignment) {
 		this.assignment = assignment;
-		this.modCount = modCount;
 	}
 
 	void addInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms) {
@@ -78,7 +72,7 @@ public class ChoiceInfluenceManager implements Checkable {
 		}
 	}
 
-	void addInformation(Map.Entry<Integer, Integer> atomToEnabler, Map<Integer, Integer> disablers) {
+	private void addInformation(Map.Entry<Integer, Integer> atomToEnabler, Map<Integer, Integer> disablers) {
 		// Construct and record ChoicePoint.
 		Integer atom = atomToEnabler.getKey();
 		if (atom == null) {
@@ -101,20 +95,8 @@ public class ChoiceInfluenceManager implements Checkable {
 		influencers.put(disabler, choicePoint);
 		choicePoint.recomputeActive();
 	}
-	
-	void recomputeActive(int atom) {
-		ChoicePoint choicePoint = influencers.get(atom);
-		if (choicePoint != null) {
-			choicePoint.recomputeActive();
-		}
-	}
 
 	void checkActiveChoicePoints() {
-		if (!checksNecessary) {
-			return;
-		}
-		checksNecessary = false;
-		
 		HashSet<ChoicePoint> actualActiveChoicePoints = new HashSet<>();
 		for (ChoicePoint choicePoint : influencers.values()) {
 			if (checkActiveChoicePoint(choicePoint)) {
@@ -137,14 +119,7 @@ public class ChoiceInfluenceManager implements Checkable {
 		return isActive && isNotChosen;
 	}
 
-	public Set<Integer> getAllActiveInfluencedAtoms() {
-		if (checksEnabled) {
-			checkActiveChoicePoints();
-		}
-		return Collections.unmodifiableSet(activeChoicePointsAtoms);
-	}
-
-	public boolean isActive(int atom) {
+	boolean isActive(int atom) {
 		if (checksEnabled) {
 			checkActiveChoicePoints();
 		}
@@ -152,14 +127,14 @@ public class ChoiceInfluenceManager implements Checkable {
 		return choicePoint != null && choicePoint.isActive && choicePoint.atom == atom;
 	}
 
-	public int getNextActiveAtomOrDefault(int defaultAtom) {
+	int getNextActiveAtomOrDefault(int defaultAtom) {
 		if (checksEnabled) {
 			checkActiveChoicePoints();
 		}
 		return activeChoicePointsAtoms.size() > 0 ? activeChoicePointsAtoms.iterator().next() : defaultAtom;
 	}
 
-	public boolean isAtomInfluenced(int atom) {
+	boolean isAtomInfluenced(int atom) {
 		ChoicePoint choicePoint = influencers.get(atom);
 		return choicePoint != null && choicePoint.atom == atom;
 	}
@@ -169,17 +144,16 @@ public class ChoiceInfluenceManager implements Checkable {
 		this.checksEnabled = checksEnabled;
 	}
 
-	public void callbackOnChanged(int atom) {
+	void callbackOnChanged(int atom) {
 		LOGGER.trace("Callback received on influencer atom: {}", atom);
-		modCount.incrementAndGet();
 		ChoicePoint choicePoint = influencers.get(atom);
 		if (choicePoint != null) {
 			choicePoint.recomputeActive();
 		}
 	}
 	
-	public void addActivityListener(ActivityListener listener) {
-		this.activityListeners.add(listener);
+	void setActivityListener(ActivityListener listener) {
+		this.activityListener = listener;
 	}
 
 	private class ChoicePoint {
@@ -222,10 +196,9 @@ public class ChoiceInfluenceManager implements Checkable {
 				changed = true;
 				LOGGER.debug("Deactivating choice point for atom {}", this.atom);
 			}
-			if (changed) {
-				activityListeners.forEach(al -> al.callbackOnChanged(atom, isActive));
+			if (changed && activityListener != null) {
+				activityListener.callbackOnChanged(atom, isActive);
 			}
-			checksNecessary = checksEnabled;
 		}
 
 		@Override

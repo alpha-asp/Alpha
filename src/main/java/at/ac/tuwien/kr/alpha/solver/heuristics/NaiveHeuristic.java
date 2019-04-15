@@ -74,7 +74,7 @@ public class NaiveHeuristic implements BranchingHeuristic {
 		if (admissibleChoices == null) {
 			return chooseLiteral();
 		}
-		
+
 		for (int choice : admissibleChoices) {
 			if (choiceManager.isActiveChoiceAtom(choice)) {
 				return choice;
@@ -91,5 +91,10 @@ public class NaiveHeuristic implements BranchingHeuristic {
 	@Override
 	public int chooseLiteral(Set<Integer> admissibleChoices) {
 		return chooseAtom(admissibleChoices);
+	}
+
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName();
 	}
 }

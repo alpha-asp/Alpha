@@ -31,8 +31,10 @@ import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.Conflic
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -42,10 +44,18 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  */
 public class ChainedBranchingHeuristics implements BranchingHeuristic {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ChainedBranchingHeuristics.class);
-	
-	
+
+
 	private List<BranchingHeuristic> chain = new LinkedList<>();
-	
+	private int[] decisionCounters;
+
+	private ChainedBranchingHeuristics(BranchingHeuristic... branchingHeuristics) {
+		for (BranchingHeuristic element : branchingHeuristics) {
+			add(element);
+		}
+		this.decisionCounters = new int[chain.size()];
+	}
+
 	@Override
 	public void violatedNoGood(NoGood violatedNoGood) {
 		for (BranchingHeuristic element : chain) {
@@ -81,40 +91,53 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 
 	@Override
 	public int chooseAtom(Set<Integer> admissibleChoices) {
-		for (BranchingHeuristic element : chain) {
+		for (int i = 0; i < chain.size(); i++) {
+			BranchingHeuristic element = chain.get(i);
 			int chosenAtom = element.chooseAtom(admissibleChoices);
 			if (chosenAtom != DEFAULT_CHOICE_ATOM) {
 				logChosenAtom(element, chosenAtom);
+				decisionCounters[i]++;
 				return chosenAtom;
 			}
 		}
 		return DEFAULT_CHOICE_ATOM;
 	}
-	
+
 	@Override
 	public int chooseLiteral() {
-		for (BranchingHeuristic element : chain) {
+		for (int i = 0; i < chain.size(); i++) {
+			BranchingHeuristic element = chain.get(i);
 			int chosenLiteral = element.chooseLiteral();
 			if (chosenLiteral != DEFAULT_CHOICE_LITERAL) {
 				logChosenLiteral(element, chosenLiteral);
+				decisionCounters[i]++;
 				return chosenLiteral;
 			}
 		}
 		return DEFAULT_CHOICE_LITERAL;
 	}
-	
+
 	@Override
 	public int chooseLiteral(Set<Integer> admissibleChoices) {
-		for (BranchingHeuristic element : chain) {
+		for (int i = 0; i < chain.size(); i++) {
+			BranchingHeuristic element = chain.get(i);
 			int chosenLiteral = element.chooseLiteral(admissibleChoices);
 			if (chosenLiteral != DEFAULT_CHOICE_LITERAL) {
 				logChosenLiteral(element, chosenLiteral);
+				decisionCounters[i]++;
 				return chosenLiteral;
 			}
 		}
 		return DEFAULT_CHOICE_LITERAL;
 	}
-	
+
+	@Override
+	public void growForMaxAtomId(int maxAtomId) {
+		for (BranchingHeuristic element : chain) {
+			element.growForMaxAtomId(maxAtomId);
+		}
+	}
+
 	public void add(BranchingHeuristic element) {
 		if (chain.contains(element)) {
 			throw oops("Cycle detected in chain of branching heuristics");
@@ -125,23 +148,35 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 	public BranchingHeuristic getLastElement() {
 		return chain.get(chain.size() - 1);
 	}
-	
+
 	public static ChainedBranchingHeuristics chainOf(BranchingHeuristic... branchingHeuristics) {
-		ChainedBranchingHeuristics chain = new ChainedBranchingHeuristics();
-		for (BranchingHeuristic element : branchingHeuristics) {
-			chain.add(element);
-		}
-		return chain;
+		return new ChainedBranchingHeuristics(branchingHeuristics);
 	}
-	
+
+	/**
+	 * Returns a mapping from individual heuristics to number of decisions made by them.
+	 */
+	public Map<BranchingHeuristic, Integer> getNumberOfDecisions() {
+		Map<BranchingHeuristic, Integer> map = new HashMap<>();
+		for (int i = 0; i < chain.size(); i++) {
+			map.put(chain.get(i), decisionCounters[i]);
+		}
+		return map;
+	}
+
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + chain;
+	}
+
 	private void logChosenAtom(BranchingHeuristic heuristic, int chosenAtom) {
 		logChoice(heuristic, "atom", String.valueOf(chosenAtom));
 	}
-	
+
 	private void logChosenLiteral(BranchingHeuristic heuristic, int chosenLiteral) {
 		logChoice(heuristic, "literal", Literals.literalToString(chosenLiteral));
 	}
-	
+
 	private void logChoice(BranchingHeuristic heuristic, String type, String choice) {
 		LOGGER.debug("{} chose {} {}", heuristic, type, choice);
 	}

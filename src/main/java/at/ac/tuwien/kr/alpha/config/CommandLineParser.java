@@ -28,6 +28,8 @@
 package at.ac.tuwien.kr.alpha.config;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 import org.apache.commons.cli.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -83,7 +85,10 @@ public class CommandLineParser {
 	private static final Option OPT_DEBUG_INTERNAL_CHECKS = Option.builder("dbg").longOpt("DebugEnableInternalChecks")
 			.desc("run additional (time-consuming) safety checks (default: " + SystemConfig.DEFAULT_DEBUG_INTERNAL_CHECKS + ")").build();
 	private static final Option OPT_BRANCHING_HEURISTIC = Option.builder("b").longOpt("branchingHeuristic").hasArg(true).argName("heuristic")
-			.desc("the branching heuristic to use (default: " + SystemConfig.DEFAULT_BRANCHING_HEURISTIC_NAME + ")").build();
+			.desc("the branching heuristic to use (default: " + SystemConfig.DEFAULT_BRANCHING_HEURISTIC.name() + ")").build();
+	private static final Option OPT_MOMS_STRATEGY = Option.builder("ms").longOpt("momsStrategy").hasArg(true).argName("strategy")
+			.desc("strategy for mom's heuristic (CountBinaryWatches or BinaryNoGoodPropagation, default: " + SystemConfig.DEFAULT_MOMS_STRATEGY.name() + ")")
+			.build();
 	private static final Option OPT_QUIET = Option.builder("q").longOpt("quiet").desc("do not print answer sets (default: " + SystemConfig.DEFAULT_QUIET)
 			.build();
 	private static final Option OPT_STATS = Option.builder("st").longOpt("stats").desc("print statistics (default: " + SystemConfig.DEFAULT_PRINT_STATS + ")")
@@ -121,6 +126,7 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SEED);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_DEBUG_INTERNAL_CHECKS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_BRANCHING_HEURISTIC);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_MOMS_STRATEGY);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_QUIET);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_STATS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_JUSTIFICATION);
@@ -162,6 +168,7 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_SEED.getOpt(), this::handleSeed);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_DEBUG_INTERNAL_CHECKS.getOpt(), this::handleInternalChecks);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_BRANCHING_HEURISTIC.getOpt(), this::handleBranchingHeuristic);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_MOMS_STRATEGY.getOpt(), this::handleMomsStrategy);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_QUIET.getOpt(), this::handleQuiet);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_STATS.getOpt(), this::handleStats);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), this::handleNoJustification);
@@ -296,8 +303,22 @@ public class CommandLineParser {
 		cfg.setDebugInternalChecks(true);
 	}
 
-	private void handleBranchingHeuristic(Option opt, SystemConfig cfg) {
-		cfg.setBranchingHeuristicName(opt.getValue(SystemConfig.DEFAULT_BRANCHING_HEURISTIC_NAME));
+	private void handleBranchingHeuristic(Option opt, SystemConfig cfg) throws ParseException {
+		String branchingHeuristicName = opt.getValue(SystemConfig.DEFAULT_BRANCHING_HEURISTIC.name());
+		try {
+			cfg.setBranchingHeuristicName(branchingHeuristicName);
+		} catch (IllegalArgumentException e) {
+			throw new ParseException("Unknown branching heuristic: " + branchingHeuristicName + ". Please try one of the following: " + Heuristic.listAllowedValues());
+		}
+	}
+
+	private void handleMomsStrategy(Option opt, SystemConfig cfg) throws ParseException {
+		String momsStrategyName = opt.getValue(SystemConfig.DEFAULT_MOMS_STRATEGY.name());
+		try {
+			cfg.setMomsStrategyName(momsStrategyName);
+		} catch (IllegalArgumentException e) {
+			throw new ParseException("Unknown mom's strategy: " + momsStrategyName + ". Please try one of the following: " + BinaryNoGoodPropagationEstimation.Strategy.listAllowedValues());
+		}
 	}
 
 	private void handleQuiet(Option opt, SystemConfig cfg) {
@@ -319,7 +340,7 @@ public class CommandLineParser {
 	private void handleNormalizationGrid(Option opt, SystemConfig cfg) {
 		cfg.setUseNormalizationGrid(true);
 	}
-	
+
 	private void handleIgnoreDomspecHeuristic(Option opt, SystemConfig cfg) {
 		cfg.setIgnoreDomspecHeuristics(true);
 	}

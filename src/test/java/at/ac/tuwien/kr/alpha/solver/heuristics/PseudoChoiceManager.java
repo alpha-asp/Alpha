@@ -1,17 +1,17 @@
 /**
- * Copyright (c) 2018-2019 Siemens AG
+ * Copyright (c) 2018 Siemens AG
  * All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *
+ * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,40 +25,27 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.solver.NoGoodStore;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 
 /**
- * Builder for {@link HeuristicsConfiguration} objects
+ * A {@link ChoiceManager} for testing purposes that regards all atoms as active choice atoms.
+ *
  */
-public class HeuristicsConfigurationBuilder {
+class PseudoChoiceManager extends ChoiceManager {
 
-	private Heuristic heuristic;
-	private boolean respectDomspecHeuristics = true;
-	private BinaryNoGoodPropagationEstimation.Strategy momsStrategy;
-
-	/**
-	 * @param heuristic the heuristic to set
-	 */
-	public HeuristicsConfigurationBuilder setHeuristic(Heuristic heuristic) {
-		this.heuristic = heuristic;
-		return this;
+	public PseudoChoiceManager(WritableAssignment assignment, NoGoodStore store) {
+		super(assignment, store);
 	}
 
-	public HeuristicsConfigurationBuilder setRespectDomspecHeuristics(boolean respectDomspecHeuristics) {
-		this.respectDomspecHeuristics = respectDomspecHeuristics;
-		return this;
+	@Override
+	public boolean isAtomChoice(int atom) {
+		return true;
 	}
 
-	/**
-	 * @param momsStrategy the momsStrategy to set
-	 */
-	public HeuristicsConfigurationBuilder setMomsStrategy(BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
-		this.momsStrategy = momsStrategy;
-		return this;
-	}
-
-	public HeuristicsConfiguration build() {
-		return new HeuristicsConfiguration(heuristic, respectDomspecHeuristics, momsStrategy);
+	@Override
+	public boolean isActiveChoiceAtom(int atom) {
+		return true;
 	}
 }

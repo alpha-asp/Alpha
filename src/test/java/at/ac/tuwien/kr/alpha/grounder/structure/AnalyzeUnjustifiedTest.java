@@ -68,7 +68,7 @@ public class AnalyzeUnjustifiedTest {
 			":- not p(5).";
 		Program parsedProgram = parser.parse(program);
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore, heuristicsConfiguration);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore, heuristicsConfiguration, true);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		int rId = atomStore.get(new BasicAtom(Predicate.getInstance("r", 0)));
@@ -93,7 +93,7 @@ public class AnalyzeUnjustifiedTest {
 			":- not p(1).";
 		Program parsedProgram = parser.parse(program);
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore, heuristicsConfiguration);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore, heuristicsConfiguration, true);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		Atom p1 = parser.parse("p(1).").getFacts().get(0);
@@ -130,7 +130,7 @@ public class AnalyzeUnjustifiedTest {
 			":- not p(c).";
 		Program parsedProgram = parser.parse(program);
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore, heuristicsConfiguration);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore, heuristicsConfiguration, true);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		Atom qa = parser.parse("q(a).").getFacts().get(0);
@@ -186,7 +186,7 @@ public class AnalyzeUnjustifiedTest {
 			":- not p(5).";
 		Program parsedProgram = parser.parse(program);
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore, heuristicsConfiguration);
+		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore, heuristicsConfiguration, true);
 		grounder.getNoGoods(null);
 		TrailAssignment assignment = new TrailAssignment(atomStore);
 		int rId = atomStore.get(new BasicAtom(Predicate.getInstance("r", 0)));

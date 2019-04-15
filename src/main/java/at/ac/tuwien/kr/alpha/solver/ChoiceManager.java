@@ -39,7 +39,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -58,15 +57,14 @@ public class ChoiceManager implements Checkable {
 	private final Stack<Choice> choiceStack;
 	private final DomainSpecificHeuristicsStore domainSpecificHeuristics;
 	private final Map<Integer, Set<Integer>> headsToBodies = new HashMap<>();
-
-	// The total number of modifications this ChoiceManager received (avoids re-computation in ChoicePoints).
-	private final AtomicLong modCount = new AtomicLong(0);
+	private final Map<Integer, Integer> bodiesToHeads = new HashMap<>();
 
 	// Two "influence managers" managing active choice points and heuristics.
 	private final ChoiceInfluenceManager choicePointInfluenceManager;
 	private final ChoiceInfluenceManager heuristicInfluenceManager;
 
 	private final NoGoodStore store;
+	private final BinaryNoGoodPropagationEstimation bnpEstimation;
 
 	private boolean checksEnabled;
 	private DebugWatcher debugWatcher;
@@ -93,6 +91,13 @@ public class ChoiceManager implements Checkable {
 		}
 		this.domainSpecificHeuristics.setChoiceManager(this);
 		assignment.setCallback(this);
+		this.bnpEstimation = store instanceof BinaryNoGoodPropagationEstimation
+				? (BinaryNoGoodPropagationEstimation)store
+				: null;
+	}
+
+	public WritableAssignment getAssignment() {
+		return assignment;
 	}
 
 	NoGood computeEnumeration() {
@@ -110,12 +115,16 @@ public class ChoiceManager implements Checkable {
 		this.choicePointInfluenceManager.setChecksEnabled(checksEnabled);
 		this.heuristicInfluenceManager.setChecksEnabled(checksEnabled);
 		this.domainSpecificHeuristics.setChecksEnabled(checksEnabled);
-		
+
 		if (checksEnabled) {
 			debugWatcher = new DebugWatcher();
 		} else {
 			debugWatcher = null;
 		}
+	}
+
+	public boolean isChecksEnabled() {
+		return checksEnabled;
 	}
 
 	public void callbackOnChanged(int atom) {
@@ -190,7 +199,6 @@ public class ChoiceManager implements Checkable {
 			final Choice choice = choiceStack.pop();
 			backtracksWithinBackjumps++;
 			backtracks++;
-			modCount.incrementAndGet();
 			LOGGER.debug("Backjumping removed choice {}", choice);
 		}
 	}
@@ -239,7 +247,6 @@ public class ChoiceManager implements Checkable {
 	private void backtrack() {
 		store.backtrack();
 		backtracks++;
-		modCount.incrementAndGet();
 	}
 
 	void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms, Map<Integer, Set<Integer>> headsToBodies) {
@@ -251,7 +258,7 @@ public class ChoiceManager implements Checkable {
 		addInformation(heuristicValues);
 		heuristicInfluenceManager.addInformation(heuristicAtoms);
 	}
-	
+
 	private void addInformation(Map<Integer, HeuristicDirectiveValues> heuristicValues) {
 		for (Entry<Integer, HeuristicDirectiveValues> entry : heuristicValues.entrySet()) {
 			domainSpecificHeuristics.addInfo(entry.getKey(), entry.getValue());
@@ -262,15 +269,26 @@ public class ChoiceManager implements Checkable {
 		for (Entry<Integer, Set<Integer>> entry : headsToBodies.entrySet()) {
 			Integer head = entry.getKey();
 			Set<Integer> newBodies = entry.getValue();
-			Set<Integer> existingBodies = this.headsToBodies.get(head);
-			if (existingBodies == null) {
-				existingBodies = new HashSet<>();
-				this.headsToBodies.put(head, existingBodies);
-			}
-			existingBodies.addAll(newBodies);
+			addHeadsToBodies(head, newBodies);
+			addBodiesToHeads(head, newBodies);
 		}
 	}
-	
+
+	private void addHeadsToBodies(Integer head, Set<Integer> bodies) {
+		Set<Integer> existingBodies = this.headsToBodies.get(head);
+		if (existingBodies == null) {
+			existingBodies = new HashSet<>();
+			this.headsToBodies.put(head, existingBodies);
+		}
+		existingBodies.addAll(bodies);
+	}
+
+	private void addBodiesToHeads(Integer head, Set<Integer> bodies) {
+		for (Integer body : bodies) {
+			bodiesToHeads.put(body, head);
+		}
+	}
+
 	public DomainSpecificHeuristicsStore getDomainSpecificHeuristics() {
 		return domainSpecificHeuristics;
 	}
@@ -290,13 +308,13 @@ public class ChoiceManager implements Checkable {
 	public boolean isAtomChoice(int atom) {
 		return choicePointInfluenceManager.isAtomInfluenced(atom);
 	}
-	
-	public void addChoicePointActivityListener(ChoiceInfluenceManager.ActivityListener activityListener) {
-		choicePointInfluenceManager.addActivityListener(activityListener);
+
+	public void setChoicePointActivityListener(ChoiceInfluenceManager.ActivityListener activityListener) {
+		choicePointInfluenceManager.setActivityListener(activityListener);
 	}
-	
-	public void addHeuristicActivityListener(ChoiceInfluenceManager.ActivityListener activityListener) {
-		heuristicInfluenceManager.addActivityListener(activityListener);
+
+	public Integer getHeadDerivedByChoiceAtom(int choiceAtomId) {
+		return bodiesToHeads.get(choiceAtomId);
 	}
 
 	/**
@@ -317,20 +335,24 @@ public class ChoiceManager implements Checkable {
 		}
 		return activeBodies;
 	}
-	
+
 	/**
-	 * Returns an unmodifiable view on the current choice stack which does not contain choices that have been removed during backtracking. 
-	 * 
+	 * Returns an unmodifiable view on the current choice stack which does not contain choices that have been removed during backtracking.
+	 *
 	 * @return an unmodifiable view on the current choice stack
 	 */
 	public List<Choice> getChoiceStack() {
 		return Collections.unmodifiableList(choiceStack);
 	}
-	
+
+	public BinaryNoGoodPropagationEstimation getBinaryNoGoodPropagationEstimation() {
+		return bnpEstimation;
+	}
+
 	public static ChoiceManager withoutDomainSpecificHeuristics(WritableAssignment assignment, NoGoodStore store) {
 		return new ChoiceManager(assignment, store, new EmptyDomainSpecificHeuristicsStore());
 	}
-	
+
 	public static ChoiceManager withDomainSpecificHeuristics(WritableAssignment assignment, NoGoodStore store) {
 		return new ChoiceManager(assignment, store);
 	}

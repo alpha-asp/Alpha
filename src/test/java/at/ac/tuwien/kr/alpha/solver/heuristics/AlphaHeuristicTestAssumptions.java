@@ -71,7 +71,7 @@ public class AlphaHeuristicTestAssumptions {
 				+ "h :- b1, b2, not b3, not b4.";
 		Program parsedProgram = new ProgramParser().parse(testProgram);
 		this.atomStore = new AtomStoreImpl();
-		this.grounder = new NaiveGrounder(parsedProgram, atomStore, heuristicsConfiguration);
+		this.grounder = new NaiveGrounder(parsedProgram, atomStore, heuristicsConfiguration, true);
 		this.assignment = new TrailAssignment(atomStore);
 		this.choiceManager = new TestableChoiceManager(assignment, new NaiveNoGoodStore(assignment));
 	}

@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.config;
 
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 
 public class SystemConfig {
@@ -38,7 +39,8 @@ public class SystemConfig {
 	public static final String DEFAULT_GROUNDER_NAME = "naive";
 	public static final String DEFAULT_SOLVER_NAME = "default";
 	public static final String DEFAULT_NOGOOD_STORE_NAME = "alphaRoaming";
-	public static final String DEFAULT_BRANCHING_HEURISTIC_NAME = Heuristic.NAIVE.name();
+	public static final Heuristic DEFAULT_BRANCHING_HEURISTIC = Heuristic.NAIVE;
+	public static final BinaryNoGoodPropagationEstimation.Strategy DEFAULT_MOMS_STRATEGY = BinaryNoGoodPropagationEstimation.Strategy.CountBinaryWatches;
 	public static final long DEFAULT_SEED = System.nanoTime();
 	public static final boolean DEFAULT_DETERMINISTIC = false;
 	public static final boolean DEFAULT_PRINT_STATS = false;
@@ -55,7 +57,8 @@ public class SystemConfig {
 	private boolean deterministic = SystemConfig.DEFAULT_DETERMINISTIC;
 	private long seed = SystemConfig.DEFAULT_SEED;
 	private boolean debugInternalChecks = SystemConfig.DEFAULT_DEBUG_INTERNAL_CHECKS;
-	private String branchingHeuristicName = SystemConfig.DEFAULT_BRANCHING_HEURISTIC_NAME;
+	private Heuristic branchingHeuristic = SystemConfig.DEFAULT_BRANCHING_HEURISTIC;
+	private BinaryNoGoodPropagationEstimation.Strategy momsStrategy = SystemConfig.DEFAULT_MOMS_STRATEGY;
 	private boolean quiet = SystemConfig.DEFAULT_QUIET;
 	private boolean printStats = SystemConfig.DEFAULT_PRINT_STATS;
 	private boolean disableJustificationSearch = SystemConfig.DEFAULT_DISABLE_JUSTIFICATION_SEARCH;
@@ -111,12 +114,28 @@ public class SystemConfig {
 		this.debugInternalChecks = debugInternalChecks;
 	}
 
-	public String getBranchingHeuristicName() {
-		return this.branchingHeuristicName;
+	public Heuristic getBranchingHeuristic() {
+		return this.branchingHeuristic;
+	}
+
+	public void setBranchingHeuristic(Heuristic branchingHeuristic) {
+		this.branchingHeuristic = branchingHeuristic;
 	}
 
 	public void setBranchingHeuristicName(String branchingHeuristicName) {
-		this.branchingHeuristicName = branchingHeuristicName;
+		this.branchingHeuristic = Heuristic.valueOf(branchingHeuristicName.replace("-", "_").toUpperCase());
+	}
+
+	public BinaryNoGoodPropagationEstimation.Strategy getMomsStrategy() {
+		return momsStrategy;
+	}
+
+	public void setMomsStrategy(BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
+		this.momsStrategy = momsStrategy;
+	}
+	
+	public void setMomsStrategyName(String momsStrategyName) {
+		this.momsStrategy = BinaryNoGoodPropagationEstimation.Strategy.valueOf(momsStrategyName);
 	}
 
 	public boolean isQuiet() {

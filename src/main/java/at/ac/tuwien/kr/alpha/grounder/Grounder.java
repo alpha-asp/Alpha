@@ -1,19 +1,19 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
- * 
+ *
  * Additional changes made by Siemens.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -42,7 +42,7 @@ import java.util.Set;
 public interface Grounder {
 	/**
 	 * Translates an answer-set represented by true atom IDs into its logical representation.
-	 * 
+	 *
 	 * @param trueAtoms
 	 * @return
 	 */
@@ -50,7 +50,7 @@ public interface Grounder {
 
 	/**
 	 * Applies lazy grounding and returns all newly derived (fully ground) NoGoods.
-	 * 
+	 *
 	 * @return a mapping of nogood IDs to NoGoods.
 	 */
 	Map<Integer, NoGood> getNoGoods(Assignment assignment);
@@ -58,7 +58,7 @@ public interface Grounder {
 	/**
 	 * Returns new choice points and their enablers and disablers.
 	 * Must be preceded by a call to {@link #getNoGoods(Assignment)}.
-	 * 
+	 *
 	 * @return a pair (choiceOn, choiceOff) of two maps from atomIds to atomIds,
 	 *         choiceOn maps atoms (choice points) to their enabling atoms
 	 *         and choiceOff maps atoms (choice points) to their disabling atoms.
@@ -70,7 +70,7 @@ public interface Grounder {
 	 * @param it an iterator over all newly assigned positive atoms.
 	 */
 	void updateAssignment(Iterator<Integer> it);
-	
+
 	/**
 	 * Returns new heuristic atoms and their enablers and disablers.
 	 * Must be preceded by a call to {@link #getNoGoods(Assignment)}.
@@ -94,7 +94,7 @@ public interface Grounder {
 
 	/**
 	 * Registers the given NoGood and returns the identifier of it.
-	 * 
+	 *
 	 * @param noGood
 	 * @return
 	 */

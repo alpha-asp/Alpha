@@ -55,7 +55,7 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 	static final double DEFAULT_ACTIVITY = 0.0;
 	static final int DEFAULT_SIGN_COUNTER = 0;
 
-	static final int DEFAULT_DECAY_AGE = 10;
+	static final int DEFAULT_DECAY_PERIOD = 10;
 	static final double DEFAULT_DECAY_FACTOR = 0.25;
 
 	final Assignment assignment;
@@ -74,45 +74,45 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 	}
 
 	private Deque<NoGood> stackOfNoGoods = new ArrayDeque<>();
-	private int decayAge;
+	private int decayPeriod;
 	private double decayFactor;
 	private int stepsSinceLastDecay;
 
-	BerkMin(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random) {
+	BerkMin(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, Random random) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
-		this.decayAge = decayAge;
+		this.decayPeriod = decayPeriod;
 		this.decayFactor = decayFactor;
 		this.rand = random;
 	}
 
 	BerkMin(Assignment assignment, ChoiceManager choiceManager, Random random) {
-		this(assignment, choiceManager, DEFAULT_DECAY_AGE, DEFAULT_DECAY_FACTOR, random);
+		this(assignment, choiceManager, DEFAULT_DECAY_PERIOD, DEFAULT_DECAY_FACTOR, random);
 	}
 
 	/**
 	 * Gets the number of steps after which all counters are decayed (i.e. multiplied by {@link #getDecayFactor()}.
 	 */
-	public int getDecayAge() {
-		return decayAge;
+	public int getDecayPeriod() {
+		return decayPeriod;
 	}
 
 	/**
 	 * Sets the number of steps after which all counters are decayed (i.e. multiplied by {@link #getDecayFactor()}.
 	 */
-	public void setDecayAge(int decayAge) {
-		this.decayAge = decayAge;
+	public void setDecayPeriod(int decayPeriod) {
+		this.decayPeriod = decayPeriod;
 	}
 
 	/**
-	 * Gets the factor by which all counters are multiplied to decay after {@link #getDecayAge()}.
+	 * Gets the factor by which all counters are multiplied to decay after {@link #getDecayPeriod()}.
 	 */
 	public double getDecayFactor() {
 		return decayFactor;
 	}
 
 	/**
-	 * Sets the factor by which all counters are multiplied to decay after {@link #getDecayAge()}.
+	 * Sets the factor by which all counters are multiplied to decay after {@link #getDecayPeriod()}.
 	 */
 	public void setDecayFactor(double decayFactor) {
 		this.decayFactor = decayFactor;
@@ -126,14 +126,12 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 	@Override
 	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
 		pushToStack(analysisResult.learnedNoGood);
-		for (NoGood noGood : analysisResult.noGoodsResponsibleForConflict) {
-			if (LOGGER.isTraceEnabled()) {
-				LOGGER.trace("NoGood responsible with {} choice points", numChoicePoints(noGood));
-			}
-			for (Integer literal : noGood) {
-				incrementActivityCounter(literal);
-				incrementSignCounter(literal);
-			}
+		for (int resolutionAtom : analysisResult.resolutionAtoms) {
+			incrementActivityCounter(atomToLiteral(resolutionAtom, true));
+			incrementActivityCounter(atomToLiteral(resolutionAtom, false));
+		}
+		for (int literal : analysisResult.learnedNoGood) {
+			incrementActivityCounter(literal);
 		}
 		decayAllIfTimeHasCome();
 	}
@@ -235,7 +233,7 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 
 	private void decayAllIfTimeHasCome() {
 		stepsSinceLastDecay++;
-		if (stepsSinceLastDecay >= decayAge) {
+		if (stepsSinceLastDecay >= decayPeriod) {
 			// Decay all:
 			activityCounters.replaceAll((k, v) -> v * decayFactor);
 			stepsSinceLastDecay = 0;
@@ -287,5 +285,10 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 	protected boolean isUnassigned(int atom) {
 		ThriceTruth truth = assignment.getTruth(atom);
 		return truth != FALSE && truth != TRUE; // do not use assignment.isAssigned(atom) because we may also choose MBTs
+	}
+	
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName();
 	}
 }
