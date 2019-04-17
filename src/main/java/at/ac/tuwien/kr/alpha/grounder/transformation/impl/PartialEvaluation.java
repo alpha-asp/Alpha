@@ -30,7 +30,7 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 		// first, we calculate a component graph and stratification
 		ComponentGraph componentGraph = ComponentGraph.fromDependencyGraph(inputProgram.getDependencyGraph());
 		StratificationAnalysis stratification = componentGraph.calculateStratification();
-		Map<Predicate, Set<InternalRule>> predicateDefiningRules = inputProgram.getPredicateDefiningRules();
+		Map<Predicate, HashSet<InternalRule>> predicateDefiningRules = inputProgram.getPredicateDefiningRules();
 		// set up list of atoms which are known to be true - we expand on this one
 		Map<Predicate, Set<Instance>> knownFacts = new LinkedHashMap<>(inputProgram.getFactsByPredicate());
 		List<SCComponent> componentHandlingList = stratification.getComponentHandlingOrder();
@@ -40,10 +40,8 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 		return null;
 	}
 
-	private void evaluateComponent(SCComponent comp, Map<Predicate, Set<Instance>> factStore, Map<Predicate, Set<InternalRule>> predicateDefiningRules) {
-		Set<InternalRule> rulesToEvluate = comp.getNodes().stream()
-				.map(Node::getPredicate)
-				.map((p) -> predicateDefiningRules.getOrDefault(p, new HashSet<>()))
+	private void evaluateComponent(SCComponent comp, Map<Predicate, Set<Instance>> factStore, Map<Predicate, HashSet<InternalRule>> predicateDefiningRules) {
+		Set<InternalRule> rulesToEvluate = comp.getNodes().stream().map(Node::getPredicate).map((p) -> predicateDefiningRules.getOrDefault(p, new HashSet<>()))
 				.reduce(PartialEvaluation::mergeIfNotNull).orElse(new HashSet<>());
 	}
 
@@ -51,7 +49,7 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 		RuleGroundingOrder groundingOrder = rule.getGroundingOrder();
 	}
 
-	private static <T> Set<T> mergeIfNotNull(Set<T> a, Set<T> b) {
+	private static <T> HashSet<T> mergeIfNotNull(HashSet<T> a, HashSet<T> b) {
 		a.addAll(b);
 		return a;
 	}

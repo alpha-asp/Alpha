@@ -64,7 +64,7 @@ public class ComponentGraphTest {
 		InternalProgram prog = system.performProgramPreprocessing(system.readProgramString("a :- b.", null));
 		DependencyGraph dg = prog.getDependencyGraph();
 		ComponentGraph cg = ComponentGraph.fromDependencyGraph(dg);
-		Map<Integer, List<SCComponent>> strata = cg.calculateStratification();
+		Map<Integer, List<SCComponent>> strata = cg.calculateStratification().getStrata();
 
 		Assert.assertEquals(1, strata.size());
 	}
@@ -78,7 +78,7 @@ public class ComponentGraphTest {
 		InternalProgram prog = system.performProgramPreprocessing(system.readProgramString(bld.toString(), null));
 		DependencyGraph dg = prog.getDependencyGraph();
 		ComponentGraph cg = ComponentGraph.fromDependencyGraph(dg);
-		Map<Integer, List<SCComponent>> strata = cg.calculateStratification();
+		Map<Integer, List<SCComponent>> strata = cg.calculateStratification().getStrata();
 
 		Assert.assertEquals(1, strata.size());
 		List<SCComponent> stratum0 = strata.get(0);
@@ -96,7 +96,7 @@ public class ComponentGraphTest {
 		InternalProgram prog = system.performProgramPreprocessing(system.readProgramString(bld.toString(), null));
 		DependencyGraph dg = prog.getDependencyGraph();
 		ComponentGraph cg = ComponentGraph.fromDependencyGraph(dg);
-		Map<Integer, List<SCComponent>> strata = cg.calculateStratification();
+		Map<Integer, List<SCComponent>> strata = cg.calculateStratification().getStrata();
 
 		Node a = dg.getNodeForPredicate(Predicate.getInstance("a", 0));
 		Node b = dg.getNodeForPredicate(Predicate.getInstance("b", 0));
@@ -125,7 +125,7 @@ public class ComponentGraphTest {
 		InternalProgram prog = system.performProgramPreprocessing(system.readProgramString(bld.toString(), null));
 		DependencyGraph dg = prog.getDependencyGraph();
 		ComponentGraph cg = ComponentGraph.fromDependencyGraph(dg);
-		Map<Integer, List<SCComponent>> strata = cg.calculateStratification();
+		Map<Integer, List<SCComponent>> strata = cg.calculateStratification().getStrata();
 
 		Node ancestorOf = dg.getNodeForPredicate(Predicate.getInstance("ancestor_of", 2));
 		Node parentOf = dg.getNodeForPredicate(Predicate.getInstance("parent_of", 2));
@@ -157,7 +157,7 @@ public class ComponentGraphTest {
 
 		DependencyGraph dg = prog.getDependencyGraph();
 		ComponentGraph cg = ComponentGraph.fromDependencyGraph(dg);
-		Map<Integer, List<SCComponent>> strata = cg.calculateStratification();
+		Map<Integer, List<SCComponent>> strata = cg.calculateStratification().getStrata();
 
 		Node a = dg.getNodeForPredicate(Predicate.getInstance("a", 0));
 		Node b = dg.getNodeForPredicate(Predicate.getInstance("b", 0));
@@ -198,7 +198,7 @@ public class ComponentGraphTest {
 
 		DependencyGraph dg = prog.getDependencyGraph();
 		ComponentGraph cg = ComponentGraph.fromDependencyGraph(dg);
-		Map<Integer, List<SCComponent>> strata = cg.calculateStratification();
+		Map<Integer, List<SCComponent>> strata = cg.calculateStratification().getStrata();
 
 		Node a = dg.getNodeForPredicate(Predicate.getInstance("a", 0));
 		Node b = dg.getNodeForPredicate(Predicate.getInstance("b", 0));
@@ -237,7 +237,7 @@ public class ComponentGraphTest {
 
 		DependencyGraph dg = prog.getDependencyGraph();
 		ComponentGraph cg = ComponentGraph.fromDependencyGraph(dg);
-		Map<Integer, List<SCComponent>> strata = cg.calculateStratification();
+		Map<Integer, List<SCComponent>> strata = cg.calculateStratification().getStrata();
 
 		Node a = dg.getNodeForPredicate(Predicate.getInstance("a", 0));
 		Node b = dg.getNodeForPredicate(Predicate.getInstance("b", 0));
