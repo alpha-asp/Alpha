@@ -11,6 +11,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 /**
  * 
  * Copyright (c) 2019, the Alpha Team.
@@ -49,27 +50,30 @@ public class ComponentGraph {
 		return retVal;
 	}
 
-	public Map<Integer, List<SCComponent>> calculateStratification() {
-		Map<Integer, List<SCComponent>> retVal = new HashMap<>();
+	public StratificationAnalysis calculateStratification() {
+		StratificationAnalysis retVal = new StratificationAnalysis();
+		List<SCComponent> handlingOrder = new ArrayList<>();
+		Map<Integer, List<SCComponent>> strata = new HashMap<>();
 		LOGGER.debug("Initial call to stratify with entry points!");
-		this.stratify(this.entryPoints, retVal);
+		this.stratify(this.entryPoints, strata, handlingOrder);
+		retVal.setStrata(strata);
 		return retVal;
 	}
 
-	private void stratify(List<SCComponent> currComponents, Map<Integer, List<SCComponent>> strata) {
+	private void stratify(List<SCComponent> currComponents, Map<Integer, List<SCComponent>> strata, List<SCComponent> handlingOrder) {
 		List<SCComponent> nextComps = new ArrayList<>();
 		LOGGER.debug("Starting stratify run - currComponents = {}", StringUtils.join(currComponents, ","));
 		for (SCComponent comp : currComponents) {
-			nextComps.addAll(this.stratifyComponent(comp, strata));
+			nextComps.addAll(this.stratifyComponent(comp, strata, handlingOrder));
 		}
 		if (!nextComps.isEmpty()) {
-			this.stratify(nextComps, strata);
+			this.stratify(nextComps, strata, handlingOrder);
 		} else {
 			LOGGER.debug("Stratification finished - no more components to work off!");
 		}
 	}
 
-	private Set<SCComponent> stratifyComponent(SCComponent comp, Map<Integer, List<SCComponent>> strata) {
+	private Set<SCComponent> stratifyComponent(SCComponent comp, Map<Integer, List<SCComponent>> strata, List<SCComponent> handlingOrder) {
 		Set<SCComponent> retVal = new HashSet<>();
 		Map<SCComponent, Boolean> dependencies = comp.getDependencies();
 		int maxDepStratum = 0;
@@ -104,6 +108,7 @@ public class ComponentGraph {
 			strata.putIfAbsent(maxDepStratum, new ArrayList<>());
 			strata.get(maxDepStratum).add(comp);
 			comp.stratum = maxDepStratum;
+			handlingOrder.add(comp);
 		}
 		if (canStratify || comp.isUnstratifyable()) {
 			// set up dependent compomponents for next step
