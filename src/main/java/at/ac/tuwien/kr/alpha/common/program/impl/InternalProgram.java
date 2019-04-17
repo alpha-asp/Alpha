@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
@@ -85,7 +86,7 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 		this.predicateDefiningRules.get(headPredicate).add(rule);
 	}
 
-	public Map<Predicate, HashSet<InternalRule>> getPredicateDefiningRules() {
+	public Map<Predicate, Set<InternalRule>> getPredicateDefiningRules() {
 		return Collections.unmodifiableMap(this.predicateDefiningRules);
 	}
 
