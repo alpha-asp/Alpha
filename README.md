@@ -63,6 +63,13 @@ $ ./gradlew bundledJar
 
 and pick up `build/libs/alpha-bundled.jar`.
 
+### A Note on IDEs
+
+We have contributors using [IntelliJ IDEA](https://www.jetbrains.com/idea/) as well as [Eclipse IDE](https://www.eclipse.org/).
+However, we decided to not check in files related to project configuration. For both tools, standard features to "import"
+the project based on its Gradle build configuration are available, and they will infer sane defaults. If you
+run into trouble feel free to file an issue.
+
 ## Suggested Reading
 
  * [Answer Set Programming: A Primer](http://www.kr.tuwien.ac.at/staff/tkren/pub/2009/rw2009-asp.pdf)

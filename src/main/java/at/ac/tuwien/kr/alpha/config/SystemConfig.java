@@ -39,7 +39,7 @@ public class SystemConfig {
 	public static final String DEFAULT_GROUNDER_NAME = "naive";
 	public static final String DEFAULT_SOLVER_NAME = "default";
 	public static final String DEFAULT_NOGOOD_STORE_NAME = "alphaRoaming";
-	public static final Heuristic DEFAULT_BRANCHING_HEURISTIC = Heuristic.NAIVE;
+	public static final Heuristic DEFAULT_BRANCHING_HEURISTIC = Heuristic.VSIDS;
 	public static final BinaryNoGoodPropagationEstimation.Strategy DEFAULT_MOMS_STRATEGY = BinaryNoGoodPropagationEstimation.Strategy.CountBinaryWatches;
 	public static final long DEFAULT_SEED = System.nanoTime();
 	public static final boolean DEFAULT_DETERMINISTIC = false;
