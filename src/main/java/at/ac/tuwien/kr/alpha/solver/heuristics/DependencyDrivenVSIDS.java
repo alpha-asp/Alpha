@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -26,6 +26,7 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 
 import java.util.Random;
@@ -42,22 +43,19 @@ import java.util.Random;
  * <p/>
  * In contrast to {@link DependencyDrivenHeuristic} and {@link GeneralizedDependencyDrivenHeuristic},
  * this heuristic is based on ideas from VSIDS instead of BerkMin.
- * <p/>
- * Copyright (c) 2018 Siemens AG
  */
 public class DependencyDrivenVSIDS extends VSIDS {
 
-	public DependencyDrivenVSIDS(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, Random random, MOMs.Strategy momsStrategy) {
-		super(assignment, choiceManager, new HeapOfActiveChoicePoints(decayPeriod, decayFactor, choiceManager), random, momsStrategy);
+	public DependencyDrivenVSIDS(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, Random random, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
+		super(assignment, choiceManager, new HeapOfActiveChoicePoints(decayPeriod, decayFactor, choiceManager), momsStrategy);
 	}
 
-	public DependencyDrivenVSIDS(Assignment assignment, ChoiceManager choiceManager, Random random, MOMs.Strategy momsStrategy) {
+	public DependencyDrivenVSIDS(Assignment assignment, ChoiceManager choiceManager, Random random, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
 		this(assignment, choiceManager, DEFAULT_DECAY_PERIOD, DEFAULT_DECAY_FACTOR, random, momsStrategy);
 	}
 	
-	/*
+	/**
 	 * Returns the head derived by the rule corresponding to the given choice point,
-	 * 
 	 * since the head atom may give more relevant information than the atom representing rule body.
 	 */
 	@Override

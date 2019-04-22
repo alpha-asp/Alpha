@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -102,7 +102,7 @@ public final class BranchingHeuristicFactory {
 		case ALPHA_HEAD_MBT:
 			return new AlphaHeadMustBeTrueHeuristic(assignment, choiceManager, random);
 		case VSIDS:
-			return new VSIDS(assignment, choiceManager, random, heuristicsConfiguration.getMomsStrategy());
+			return new VSIDS(assignment, choiceManager, heuristicsConfiguration.getMomsStrategy());
 		case GDD_VSIDS:
 			return new DependencyDrivenVSIDS(assignment, choiceManager, random, heuristicsConfiguration.getMomsStrategy());
 		}

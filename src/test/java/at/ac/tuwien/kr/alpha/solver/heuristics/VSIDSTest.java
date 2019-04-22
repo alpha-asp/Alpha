@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -35,9 +35,9 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests {@link VSIDS}.
@@ -74,7 +74,6 @@ public class VSIDSTest {
 		this.vsids = new VSIDS(
 				assignment,
 				new PseudoChoiceManager(assignment, noGoodStore),
-				new Random(),
 				null);
 	}
 
@@ -86,21 +85,19 @@ public class VSIDSTest {
 	 */
 	@Test
 	public void testConflict() {
-		HeuristicTestUtils.addNoGoods(atomStore, assignment, noGoodStore, vsids.heapOfActiveAtoms, new NoGood(lit1Neg, lit2Neg), new NoGood(lit3Neg, lit4Neg));
+		HeuristicTestUtils.addNoGoods(atomStore, assignment, noGoodStore, vsids, new NoGood(lit1Neg, lit2Neg), new NoGood(lit3Neg, lit4Neg));
 		vsids.chooseLiteral(); // to make VSIDS ingest buffered nogoods
-		assertEquals(1.0, vsids.getActivity(lit1), DOUBLE_COMPARISON_EPSILON);
-		assertEquals(1.0, vsids.getActivity(lit2), DOUBLE_COMPARISON_EPSILON);
-		assertEquals(1.0, vsids.getActivity(lit3), DOUBLE_COMPARISON_EPSILON);
-		assertEquals(1.0, vsids.getActivity(lit4), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(vsids.getActivity(lit1), vsids.getActivity(lit2), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(vsids.getActivity(lit2), vsids.getActivity(lit3), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(vsids.getActivity(lit3), vsids.getActivity(lit4), DOUBLE_COMPARISON_EPSILON);
 
 		NoGood learnedNoGood = new NoGood(lit2, lit3);
 		Collection<Integer> resolutionAtoms = Arrays.asList(1);
 		ConflictAnalysisResult analysisResult = new ConflictAnalysisResult(learnedNoGood, 1, true, resolutionAtoms);
 		vsids.analyzedConflict(analysisResult);
-		assertEquals(2.0, vsids.getActivity(lit1), DOUBLE_COMPARISON_EPSILON);
-		assertEquals(2.0, vsids.getActivity(lit2), DOUBLE_COMPARISON_EPSILON);
-		assertEquals(2.0, vsids.getActivity(lit3), DOUBLE_COMPARISON_EPSILON);
-		assertEquals(1.0, vsids.getActivity(lit4), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(vsids.getActivity(lit1), vsids.getActivity(lit2), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(vsids.getActivity(lit2), vsids.getActivity(lit3), DOUBLE_COMPARISON_EPSILON);
+		assertLessThan(vsids.getActivity(lit4), vsids.getActivity(lit3));
 
 		assertEquals(0, vsids.getSignBalance(1));
 		assertEquals(1, vsids.getSignBalance(2));
@@ -111,25 +108,34 @@ public class VSIDSTest {
 	/**
 	 * First, calls {@link #testConflict()}.
 	 * Then, simulates a second conflict, learning { -1, 4 } with resolved atoms { 2 }.
-	 * Due to decay, scores of atoms { 1, 4, 2 } must increase by the increased activity delta of 1 / 0.92.
+	 * Due to decay, scores of atoms { 1, 4, 2 } must increase by the increased activity delta of {@link VSIDS#DEFAULT_DECAY_FACTOR}.
 	 * 
 	 */
 	@Test
 	public void testTwoConflicts() {
 		testConflict();
 
+		double activity1 = vsids.getActivity(lit1);
+		double activity2 = vsids.getActivity(lit2);
+		double activity3 = vsids.getActivity(lit3);
+		double activity4 = vsids.getActivity(lit4);
+
 		NoGood learnedNoGood = new NoGood(lit1Neg, lit4);
 		Collection<Integer> resolutionAtoms = Arrays.asList(2);
 		ConflictAnalysisResult analysisResult = new ConflictAnalysisResult(learnedNoGood, 1, true, resolutionAtoms);
 		vsids.analyzedConflict(analysisResult);
-		assertEquals(2.0 + 1 / 0.92, vsids.getActivity(lit1), DOUBLE_COMPARISON_EPSILON);
-		assertEquals(2.0 + 1 / 0.92, vsids.getActivity(lit2), DOUBLE_COMPARISON_EPSILON);
-		assertEquals(2.0, vsids.getActivity(lit3), DOUBLE_COMPARISON_EPSILON);
-		assertEquals(1.0 + 1 / 0.92, vsids.getActivity(lit4), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(activity1 + VSIDS.DEFAULT_DECAY_FACTOR, vsids.getActivity(lit1), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(activity2 + VSIDS.DEFAULT_DECAY_FACTOR, vsids.getActivity(lit2), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(activity3, vsids.getActivity(lit3), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(activity4 + VSIDS.DEFAULT_DECAY_FACTOR, vsids.getActivity(lit4), DOUBLE_COMPARISON_EPSILON);
 
 		assertEquals(-1, vsids.getSignBalance(1));
 		assertEquals(1, vsids.getSignBalance(2));
 		assertEquals(1, vsids.getSignBalance(3));
 		assertEquals(1, vsids.getSignBalance(4));
+	}
+
+	private static void assertLessThan(double d1, double d2) {
+		assertTrue(d1 < d2 + DOUBLE_COMPARISON_EPSILON);
 	}
 }

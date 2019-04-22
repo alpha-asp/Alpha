@@ -534,8 +534,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		propagationLevels = Arrays.copyOf(propagationLevels, newCapacity);
 		callbackUponChange = Arrays.copyOf(callbackUponChange, newCapacity);
 	}
-	
-	@Override
+
 	public int getNumberOfAssignedAtoms() {
 		int n = 0;
 		for (int value : values) {
@@ -544,13 +543,12 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			}
 		}
 		return n;
-		//TODO: compare performance of this code to that of getNumberOfAtomsAssignedFromDecisionLevel(0);
 	}
 	
 	@Override
-	public int getNumberOfAtomsAssignedFromDecisionLevel(int decisionLevel) {
+	public int getNumberOfAtomsAssignedSinceLastDecision() {
 		Set<Integer> newlyAssignedAtoms = new HashSet<>();
-		int trailIndex = trailIndicesOfDecisionLevels.get(decisionLevel);
+		int trailIndex = trailIndicesOfDecisionLevels.get(getDecisionLevel());
 		for (; trailIndex < trail.size(); trailIndex++) {
 			newlyAssignedAtoms.add(trail.get(trailIndex));
 		}

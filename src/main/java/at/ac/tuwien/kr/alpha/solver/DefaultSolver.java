@@ -430,9 +430,11 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private boolean ingest(Map<Integer, NoGood> obtained) {
-		branchingHeuristic.newNoGoods(obtained.values());
 		assignment.growForMaxAtomId();
-		store.growForMaxAtomId(atomStore.getMaxAtomId());
+		int maxAtomId = atomStore.getMaxAtomId();
+		store.growForMaxAtomId(maxAtomId);
+		branchingHeuristic.growForMaxAtomId(maxAtomId);
+		branchingHeuristic.newNoGoods(obtained.values());
 
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
 		Map.Entry<Integer, NoGood> entry;
@@ -536,12 +538,12 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private void logStats() {
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info(getStatisticsString());
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug(getStatisticsString());
 			if (branchingHeuristic instanceof ChainedBranchingHeuristics) {
-				LOGGER.info("Decisions made by each heuristic:");
+				LOGGER.debug("Decisions made by each heuristic:");
 				for (Entry<BranchingHeuristic, Integer> heuristicToDecisionCounter : ((ChainedBranchingHeuristics)branchingHeuristic).getNumberOfDecisions().entrySet()) {
-					LOGGER.info(heuristicToDecisionCounter.getKey() + ": " + heuristicToDecisionCounter.getValue());
+					LOGGER.debug(heuristicToDecisionCounter.getKey() + ": " + heuristicToDecisionCounter.getValue());
 				}
 			}
 			NoGoodCounter noGoodCounter = store.getNoGoodCounter();

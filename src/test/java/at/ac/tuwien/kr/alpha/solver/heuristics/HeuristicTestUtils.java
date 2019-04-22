@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -38,18 +38,19 @@ import java.util.HashSet;
 
 public class HeuristicTestUtils {
 
-	static void addNoGoods(AtomStore atomStore, WritableAssignment assignment, NoGoodStoreAlphaRoaming noGoodStore, HeapOfActiveAtoms heapOfActiveAtoms, NoGood... noGoods) {
+	static void addNoGoods(AtomStore atomStore, WritableAssignment assignment, NoGoodStoreAlphaRoaming noGoodStore, VSIDS vsids, NoGood... noGoods) {
 		int numberOfAtoms = Arrays.stream(noGoods).flatMapToInt(NoGood::stream).map(Literals::atomOf).max().getAsInt();
 		AtomStoreTest.fillAtomStore(atomStore, numberOfAtoms);
 		assignment.growForMaxAtomId();
 		noGoodStore.growForMaxAtomId(numberOfAtoms);
+		vsids.growForMaxAtomId(numberOfAtoms);
 		Collection<NoGood> setOfNoGoods = new HashSet<>();
 		int noGoodId = 1;
 		for (NoGood noGood : noGoods) {
 			setOfNoGoods.add(noGood);
 			noGoodStore.add(noGoodId++, noGood);
 		}
-		heapOfActiveAtoms.newNoGoods(setOfNoGoods);
+		vsids.heapOfActiveAtoms.newNoGoods(setOfNoGoods);
 	}
 
 }
