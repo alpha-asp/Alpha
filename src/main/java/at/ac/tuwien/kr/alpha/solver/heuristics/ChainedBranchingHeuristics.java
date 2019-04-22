@@ -31,11 +31,7 @@ import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.Conflic
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
@@ -157,7 +153,7 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 	 * Returns a mapping from individual heuristics to number of decisions made by them.
 	 */
 	public Map<BranchingHeuristic, Integer> getNumberOfDecisions() {
-		Map<BranchingHeuristic, Integer> map = new HashMap<>();
+		Map<BranchingHeuristic, Integer> map = new LinkedHashMap<>();
 		for (int i = 0; i < chain.size(); i++) {
 			map.put(chain.get(i), decisionCounters[i]);
 		}
