@@ -102,26 +102,33 @@ public class DomainSpecific implements BranchingHeuristic {
 		// }
 
 		// TODO: admissibleChoices
-		Set<HeuristicDirectiveValues> discardedValues = new HashSet<>();
+		// Set<HeuristicDirectiveValues> discardedValues = new HashSet<>();
 		DomainSpecificHeuristicsStore heuristicsStore = choiceManager.getDomainSpecificHeuristics();
-		HeuristicDirectiveValues currentValues;
 		int chosenLiteral = DEFAULT_CHOICE_LITERAL;
 		int discardedBecauseHeadAssigned = 0;
 		int discardedBecauseNoBody = 0;
-		while ((currentValues = heuristicsStore.poll()) != null) {
-			if (assignment.isUnassignedOrMBT(currentValues.getHeadAtomId())) {
-				Optional<Integer> body = chooseLiteralForValues(currentValues);
-				if (body.isPresent()) {
-					chosenLiteral = body.get();
-					break;
+		List<Integer> topIDs;
+		poll: while (!(topIDs = heuristicsStore.pollIDsWithHighestPriority()).isEmpty()) {
+			LOGGER.debug("Number of top IDs: " + topIDs.size());
+			Collections.shuffle(topIDs); // TODO: use specific Random instance
+			samePriority: for (int i = 0; i < topIDs.size(); i++) {
+				int heuristicId = topIDs.get(i);
+				HeuristicDirectiveValues values = heuristicsStore.getValues(heuristicId);
+				if (assignment.isUnassignedOrMBT(values.getHeadAtomId())) {
+					Optional<Integer> body = chooseLiteralForValues(values);
+					if (body.isPresent()) {
+						chosenLiteral = body.get();
+						reinsertUnusedHeuristicValues(heuristicsStore, topIDs, i);
+						break poll;
+					} else {
+						LOGGER.warn("Ground heuristic directive with head {} not applicable because no active rule can derive it.", values.getGroundHeadAtom());
+						discardedBecauseNoBody++;
+					}
 				} else {
-					LOGGER.warn("Ground heuristic directive with head {} not applicable because no active rule can derive it.", currentValues.getGroundHeadAtom());
-					discardedBecauseNoBody++;
+					discardedBecauseHeadAssigned++;
 				}
-			} else {
-				discardedBecauseHeadAssigned++;
+				// discardedValues.add(v);
 			}
-			discardedValues.add(currentValues);
 		}
 		LOGGER.debug("{} HeuristicDirectiveValues discarded because head already assigned", discardedBecauseHeadAssigned);
 		LOGGER.debug("{} HeuristicDirectiveValues discarded because no active body found", discardedBecauseNoBody);
@@ -143,6 +150,12 @@ public class DomainSpecific implements BranchingHeuristic {
 			atom = fallbackHeuristic.chooseAtom(activeChoiceAtomsDerivingHead); // TODO: intersection with admissible (?)
 		}
 		return Optional.ofNullable(Literals.atomToLiteral(atom, values.getSign()));
+	}
+
+	private void reinsertUnusedHeuristicValues(DomainSpecificHeuristicsStore heuristicsStore, List<Integer> topIDs, int i) {
+		if (i < topIDs.size() - 1) {
+			heuristicsStore.offer(topIDs.subList(i + 1, topIDs.size()));
+		}
 	}
 	
 	@Override

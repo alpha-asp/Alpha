@@ -29,6 +29,9 @@ import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.solver.Checkable;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * Stores information on heuristic directives obtained from the grounder
  */
@@ -41,6 +44,19 @@ public interface DomainSpecificHeuristicsStore extends Checkable {
 	 * @return
 	 */
 	HeuristicDirectiveValues poll();
+
+	/**
+	 * Returns the IDs of all values that have the same priority as the value on top of the stack. Values can be obtained by {@link #getValues(int)}
+	 * TODO: is a List for efficiency reasons, could this also be a Collection?
+	 * @return
+	 */
+	List<Integer> pollIDsWithHighestPriority();
+
+	/**
+	 * Inserts the given heuristic IDs back into the store
+	 * @param heuristicIDs
+	 */
+	void offer(Collection<Integer> heuristicIDs);
 	
 	/**
 	 * Retrieves, but does not remove, the element with the highest priority
