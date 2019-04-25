@@ -38,6 +38,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
 import static at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom.off;
 import static at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom.on;
@@ -110,19 +111,22 @@ public class ChoiceRecorder {
 		return noGoods;
 	}
 
-	public Collection<NoGood> generateHeuristicNoGoods(final List<Integer> posLiterals, final List<Integer> negLiterals, HeuristicAtom groundHeuristicAtom, final int heuristicAtomId, final int headId) {
+	public Collection<NoGood> generateHeuristicNoGoods(final List<Integer> posLiterals, final List<Integer> negLiterals, HeuristicAtom groundHeuristicAtom, final int bodyRepresentingLiteral, final int headId) {
 		// Obtain an ID for this new heuristic.
 		final int heuristicId = ID_GENERATOR.getNextId();
+		final int bodyRepresentingAtom = atomOf(bodyRepresentingLiteral);
 		// Create HeuristicOn and HeuristicOff atoms.
 		final int heuristicOnAtom = atomStore.putIfAbsent(HeuristicInfluencerAtom.on(heuristicId));
-		newHeuristicAtoms.getLeft().put(heuristicAtomId, heuristicOnAtom);
+		newHeuristicAtoms.getLeft().put(bodyRepresentingAtom, heuristicOnAtom);
 		final int heuristicOffAtom = atomStore.putIfAbsent(HeuristicInfluencerAtom.off(heuristicId));
-		newHeuristicAtoms.getRight().put(heuristicAtomId, heuristicOffAtom);
+		newHeuristicAtoms.getRight().put(bodyRepresentingAtom, heuristicOffAtom);
 
 		final List<NoGood> noGoods = generateNeg(heuristicOffAtom, negLiterals);
 		noGoods.add(generatePos(heuristicOnAtom, posLiterals));
 
-		newHeuristicValues.put(heuristicAtomId, HeuristicDirectiveValues.fromHeuristicAtom(groundHeuristicAtom, headId));
+		if (newHeuristicValues.put(bodyRepresentingAtom, HeuristicDirectiveValues.fromHeuristicAtom(groundHeuristicAtom, headId)) != null) {
+			throw oops("Same heuristic body-representing atom used for two heuristic directives");
+		}
 
 		return noGoods;
 	}

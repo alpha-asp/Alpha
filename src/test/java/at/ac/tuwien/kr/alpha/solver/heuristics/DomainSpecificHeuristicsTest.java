@@ -239,6 +239,16 @@ public class DomainSpecificHeuristicsTest {
 		solveAndAssertAnswerSets(program, "{ a, n(2) }", "{ b, n(2) }");
 	}
 
+	@Test
+	public void testTwoHeuristicsWithSameHeadAndPriority() {
+		Program program = parser.parse(
+				"a :- not b." + LS +
+				"b :- not a." + LS +
+				"#heuristic a : not b. [2@1]" + LS +
+				"#heuristic a : not a. [2@1]");
+		solveAndAssertAnswerSets(program, "{ a }", "{ b }");
+	}
+
 	private void solveAndAssertAnswerSets(Program program, String... expectedAnswerSets) {
 		HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(Heuristic.NAIVE).build();
 		Solver solver = SolverFactory.getInstance("default", "alpharoaming", atomStore, GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true), new Random(), heuristicsConfiguration, true, false);

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -91,23 +91,24 @@ public class NoGoodGenerator {
 		final Atom groundHeadAtom = nonGroundRule.getHeadAtom().substitute(substitution);
 		final int headId = atomStore.putIfAbsent(groundHeadAtom);
 
+		// Prepare atom representing the rule body.
+		final RuleAtom bodyAtom = new RuleAtom(nonGroundRule, substitution);
+
+		// Check uniqueness of ground rule by testing whether the
+		// body representing atom already has an id.
+		if (atomStore.contains(bodyAtom)) {
+			// The current ground instance already exists,
+			// therefore all nogoods have already been created.
+			return emptyList();
+		}
+
+		final int bodyRepresentingLiteral = atomToLiteral(atomStore.putIfAbsent(bodyAtom));
+
 		if (groundHeadAtom instanceof HeuristicAtom) {
 			BasicAtom groundHeuristicHead = ((HeuristicAtom)groundHeadAtom).getHead().toAtom();
 			final int heuristicHeadId = atomStore.putIfAbsent(groundHeuristicHead);
-			result.addAll(choiceRecorder.generateHeuristicNoGoods(posLiterals, negLiterals, (HeuristicAtom)groundHeadAtom, headId, heuristicHeadId));
+			result.addAll(choiceRecorder.generateHeuristicNoGoods(posLiterals, negLiterals, (HeuristicAtom)groundHeadAtom, bodyRepresentingLiteral, heuristicHeadId));
 		} else {
-			// Prepare atom representing the rule body.
-			final RuleAtom bodyAtom = new RuleAtom(nonGroundRule, substitution);
-
-			// Check uniqueness of ground rule by testing whether the
-			// body representing atom already has an id.
-			if (atomStore.contains(bodyAtom)) {
-				// The current ground instance already exists,
-				// therefore all nogoods have already been created.
-				return emptyList();
-			}
-
-			final int bodyRepresentingLiteral = atomToLiteral(atomStore.putIfAbsent(bodyAtom));
 			final int headLiteral = atomToLiteral(atomStore.putIfAbsent(nonGroundRule.getHeadAtom().substitute(substitution)));
 
 			choiceRecorder.addHeadToBody(headId, atomOf(bodyRepresentingLiteral));
