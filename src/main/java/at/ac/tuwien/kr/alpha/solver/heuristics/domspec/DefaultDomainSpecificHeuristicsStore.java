@@ -99,34 +99,6 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 	}
 
 	@Override
-	public List<Integer> pollIDsWithHighestPriority() {
-		List<Integer> collectedIDs = new ArrayList<>();
-		Integer currentID = prioritisedHeuristics.poll();
-		if (currentID != null) {
-			HeuristicDirectiveValues currentValues = mapHeuristicToHeuristicValue.get(currentID);
-			int weight = currentValues.getWeight();
-			int level = currentValues.getLevel();
-			do {
-				collectedIDs.add(currentID);
-				currentID = prioritisedHeuristics.poll();
-				if (currentID == null) {
-					break;
-				}
-				currentValues = mapHeuristicToHeuristicValue.get(currentID);
-			} while (currentValues != null && currentValues.getWeight() == weight && currentValues.getLevel() == level);
-			if (currentID != null) {
-				prioritisedHeuristics.add(currentID);
-			}
-		}
-		return collectedIDs;
-	}
-
-	@Override
-	public void offer(Collection<Integer> heuristicIDs) {
-		prioritisedHeuristics.addAll(heuristicIDs);
-	}
-
-	@Override
 	public HeuristicDirectiveValues peek() {
 		Integer heuristicId = prioritisedHeuristics.peek();
 		return heuristicId == null ? null : mapHeuristicToHeuristicValue.get(heuristicId);
