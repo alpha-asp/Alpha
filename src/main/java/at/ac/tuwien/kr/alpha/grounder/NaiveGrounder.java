@@ -79,14 +79,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private boolean debugInternalChecks;
 	
 	private GrounderHeuristicsConfiguration heuristicsConfiguration;
-	
-	/**
-	 * If this configuration parameter is {@code true} (which it is by default),
-	 * the grounder stops grounding a rule if it contains a positive body atom which is not
-	 * yet true, except if the whole rule is already ground. Is currently used only internally,
-	 * but might be used for grounder heuristics and also set from the outside in the future.
-	 */
-	private boolean stopBindingAtNonTruePositiveBody = true;
 
 	public NaiveGrounder(Program program, AtomStore atomStore, boolean debugInternalChecks, Bridge... bridges) {
 		this(program, atomStore, new GrounderHeuristicsConfiguration(), debugInternalChecks, bridges);
@@ -497,12 +489,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				return advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
 			}
 
-			if (stopBindingAtNonTruePositiveBody && !groundingOrder.isGround()
+			if (!groundingOrder.isGround() && remainingTolerance <= 0
 					&& !workingMemory.get(currentAtom.getPredicate(), true).containsInstance(new Instance(substitute.getTerms()))) {
-				if (!laxGrounderHeuristic) {
-					// Generate no variable substitution.
-					return BindingResult.empty();
-				}
+				// Generate no variable substitution.
+				return BindingResult.empty();
 			}
 
 			// Check if atom is also assigned true.
