@@ -75,16 +75,16 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private ArrayList<NonGroundRule> fixedRules = new ArrayList<>();
 	private LinkedHashSet<Atom> removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
 	private boolean disableInstanceRemoval;
-	private boolean useCountingGridNormalization;
-	private boolean debugInternalChecks;
+	private final boolean useCountingGridNormalization;
+	private final boolean debugInternalChecks;
 	
-	private GrounderHeuristicsConfiguration heuristicsConfiguration;
+	private final GrounderHeuristicsConfiguration heuristicsConfiguration;
 
 	public NaiveGrounder(Program program, AtomStore atomStore, boolean debugInternalChecks, Bridge... bridges) {
 		this(program, atomStore, new GrounderHeuristicsConfiguration(), debugInternalChecks, bridges);
 	}
 
-	public NaiveGrounder(Program program, AtomStore atomStore, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, Bridge... bridges) {
+	private NaiveGrounder(Program program, AtomStore atomStore, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, Bridge... bridges) {
 		this(program, atomStore, p -> true, heuristicsConfiguration, false, debugInternalChecks, bridges);
 	}
 
@@ -409,7 +409,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return registry.register(noGood);
 	}
 
-	BindingResult bindNextAtomInRule(NonGroundRule rule, RuleGroundingOrder groundingOrder, Substitution partialSubstitution, Assignment currentAssignment) {
+	private BindingResult bindNextAtomInRule(NonGroundRule rule, RuleGroundingOrder groundingOrder, Substitution partialSubstitution, Assignment currentAssignment) {
 		int tolerance = heuristicsConfiguration.getTolerance(rule.isConstraint());
 		if (tolerance < 0) {
 			tolerance = Integer.MAX_VALUE;
@@ -587,10 +587,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 					// terminate if more positive atoms are unsatisfied as tolerated by the heuristic
 					return true;
 				}
-				if (truth != null && !truth.toBoolean()) {
-					// terminate if positive body atom is assigned false
-					return true;
-				}
+				// terminate if positive body atom is assigned false
+				return truth != null && !truth.toBoolean();
 			}
 		}
 		return false;
@@ -616,17 +614,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	@Override
 	public void forgetAssignment(int[] atomIds) {
 		throw new UnsupportedOperationException("Forgetting assignments is not implemented");
-	}
-
-	public void printCurrentlyKnownGroundRules() {
-		System.out.println("Printing known ground rules:");
-		for (Map.Entry<NonGroundRule, HashSet<Substitution>> ruleSubstitutionsEntry : knownGroundingSubstitutions.entrySet()) {
-			NonGroundRule nonGroundRule = ruleSubstitutionsEntry.getKey();
-			HashSet<Substitution> substitutions = ruleSubstitutionsEntry.getValue();
-			for (Substitution substitution : substitutions) {
-				System.out.println(groundAndPrintRule(nonGroundRule, substitution));
-			}
-		}
 	}
 
 	public static String groundAndPrintRule(NonGroundRule rule, Substitution substitution) {
@@ -704,8 +691,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	private static class FirstBindingAtom {
-		NonGroundRule rule;
-		Literal startingLiteral;
+		final NonGroundRule rule;
+		final Literal startingLiteral;
 
 		FirstBindingAtom(NonGroundRule rule, Literal startingLiteral) {
 			this.rule = rule;
@@ -714,15 +701,15 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 	
 	private static class BindingResult {
-		List<Substitution> generatedSubstitutions = new ArrayList<>();
-		List<Integer> numbersOfUnassignedPositiveBodyAtoms = new ArrayList<>();
+		final List<Substitution> generatedSubstitutions = new ArrayList<>();
+		final List<Integer> numbersOfUnassignedPositiveBodyAtoms = new ArrayList<>();
 		
 		void add(Substitution generatedSubstitution, int numberOfUnassignedPositiveBodyAtoms) {
 			this.generatedSubstitutions.add(generatedSubstitution);
 			this.numbersOfUnassignedPositiveBodyAtoms.add(numberOfUnassignedPositiveBodyAtoms);
 		}
 
-		public void add(BindingResult otherBindingResult) {
+		void add(BindingResult otherBindingResult) {
 			this.generatedSubstitutions.addAll(otherBindingResult.generatedSubstitutions);
 			this.numbersOfUnassignedPositiveBodyAtoms.addAll(otherBindingResult.numbersOfUnassignedPositiveBodyAtoms);
 		}
