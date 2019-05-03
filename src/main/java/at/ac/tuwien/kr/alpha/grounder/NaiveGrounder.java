@@ -479,9 +479,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			return advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
 		}
 
+		Collection<Instance> instances = null;
+
 		// check if partialVariableSubstitution already yields a ground atom
 		final Atom substitute = currentAtom.substitute(partialSubstitution);
-
 		if (substitute.isGround()) {
 			// Substituted atom is ground, in case it is positive, only ground if it also holds true
 			if (currentLiteral.isNegated()) {
@@ -496,17 +497,14 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 
 			// Check if atom is also assigned true.
-			final LinkedHashSet<Instance> instances = factsFromProgram.get(substitute.getPredicate());
-			if (instances != null && instances.contains(new Instance(substitute.getTerms()))) {
+			final LinkedHashSet<Instance> factInstances = factsFromProgram.get(substitute.getPredicate());
+			if (factInstances != null && factInstances.contains(new Instance(substitute.getTerms()))) {
 				// Ground literal holds, continue finding a variable substitution.
 				return advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
 			}
 
 			// Atom is not a fact already.
-			if (storeAtomAndTerminateIfAtomDoesNotHold(substitute, currentAssignment, new AtomicInteger(remainingTolerance))) {
-				// TODO: this has to be refactored -- remainingTolerance is not modified here because the same method calls happens again further below
-				return BindingResult.empty();
-			}
+			instances = singletonList(new Instance(substitute.getTerms()));
 		}
 		
 		// substituted atom contains variables
@@ -518,25 +516,14 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 		}
 
-		IndexedInstanceStorage storage = workingMemory.get(currentAtom.getPredicate(), true);
-		Collection<Instance> instances;
-		if (partialSubstitution.isEmpty()) {
-			if (currentLiteral.isGround()) {
-				instances = singletonList(new Instance(currentLiteral.getTerms()));
-			} else {
+		if (instances == null) {
+			IndexedInstanceStorage storage = workingMemory.get(currentAtom.getPredicate(), true);
+			if (partialSubstitution.isEmpty()) {
 				// No variables are bound, but first atom in the body became recently true, consider all instances now.
 				instances = storage.getAllInstances();
+			} else {
+				instances = storage.getInstancesFromPartiallyGroundAtom(substitute);
 			}
-		} else {
-			instances = storage.getInstancesFromPartiallyGroundAtom(substitute);
-		}
-		
-		if (instances.isEmpty() && laxGrounderHeuristic && substitute.isGround()) {
-			// note: this is necessary in the case that the current atom has just been grounded and is not known by the working memory yet
-			// we do not add the atom to the working memory so as not to trigger additional grounding
-			// (but maybe the working memory will be redesigned in the future)
-			// TODO: this is a bit badly designed -- if substitute is already ground, we add the instance here just that the for loop below has an element to iterate, thereby doing some unnecessary work
-			instances = singletonList(new Instance(substitute.getTerms()));
 		}
 		
 		if (laxGrounderHeuristic && instances.isEmpty()) {
