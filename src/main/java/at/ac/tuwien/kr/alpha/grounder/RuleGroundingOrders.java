@@ -185,9 +185,9 @@ public class RuleGroundingOrders {
 			position++;
 		}
 		if (fixedGroundingInstantiation) {
-			fixedGroundingOrder = new RuleGroundingOrder(null, literalsOrder, positionLastVarBound);
+			fixedGroundingOrder = new RuleGroundingOrder(null, literalsOrder, positionLastVarBound, nonGroundRule.getRule().isGround());
 		}
-		groundingOrders.put(startingLiteral, new RuleGroundingOrder(startingLiteral, literalsOrder, positionLastVarBound));
+		groundingOrders.put(startingLiteral, new RuleGroundingOrder(startingLiteral, literalsOrder, positionLastVarBound, nonGroundRule.getRule().isGround()));
 	}
 
 	private Literal selectNextGroundingLiteral(LinkedHashSet<Literal> remainingLiterals, Set<VariableTerm> boundVariables) {

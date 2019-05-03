@@ -123,18 +123,18 @@ public class NaiveGrounderTest {
 	@Ignore("Currently, NaiveGrounder tries to escape this situation instead of throwing an exception")
 	public void avoidDeadEndsWithLaxGrounderHeuristic() {
 		RuleGroundingOrder groundingOrderP1 = new RuleGroundingOrder(literal("p1", "X"),
-				Arrays.asList(literal("p2", "X"), literal("q2", "Y"), literal("q1", "Y")), -1);
+				Arrays.asList(literal("p2", "X"), literal("q2", "Y"), literal("q1", "Y")), -1, false);
 		RuleGroundingOrder groundingOrderQ1 = new RuleGroundingOrder(literal("q1", "Y"),
-				Arrays.asList(literal("q2", "Y"), literal("p2", "X"), literal("p1", "X")), -1);
+				Arrays.asList(literal("q2", "Y"), literal("p2", "X"), literal("p1", "X")), -1, false);
 		testDeadEnd(groundingOrderP1, groundingOrderQ1, false);
 	}
 
 	@Test
 	public void noDeadEndWithLaxGrounderHeuristic() {
 		RuleGroundingOrder groundingOrderP1 = new RuleGroundingOrder(literal("p1", "X"),
-				Arrays.asList(literal("p2", "X"), literal("q1", "Y"), literal("q2", "Y")), -1);
+				Arrays.asList(literal("p2", "X"), literal("q1", "Y"), literal("q2", "Y")), -1, false);
 		RuleGroundingOrder groundingOrderQ1 = new RuleGroundingOrder(literal("q1", "Y"),
-				Arrays.asList(literal("q2", "Y"), literal("p1", "X"), literal("p2", "X")), -1);
+				Arrays.asList(literal("q2", "Y"), literal("p1", "X"), literal("p2", "X")), -1, false);
 		testDeadEnd(groundingOrderP1, groundingOrderQ1, true);
 	}
 

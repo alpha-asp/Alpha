@@ -34,22 +34,24 @@ import java.util.List;
  * A grounding order computed by {@link RuleGroundingOrders} for a specific {@link NonGroundRule} and a specific starting literal.
  */
 public class RuleGroundingOrder {
-	
+
 	private Literal startingLiteral;
 	private List<Literal> otherLiterals;
 	private int positionLastVarBound;
 	private int stopBindingAtOrderPosition;
+	private final boolean ground;
 	
-	RuleGroundingOrder(Literal startingLiteral, List<Literal> otherLiterals, int positionLastVarBound) {
+	RuleGroundingOrder(Literal startingLiteral, List<Literal> otherLiterals, int positionLastVarBound, boolean isGround) {
 		super();
 		this.startingLiteral = startingLiteral;
 		this.otherLiterals = otherLiterals;
 		this.positionLastVarBound = positionLastVarBound;
 		this.stopBindingAtOrderPosition = otherLiterals.size();
+		this.ground = isGround;
 	}
 	
 	private RuleGroundingOrder(RuleGroundingOrder otherRuleGroundingOrder) {
-		this(otherRuleGroundingOrder.startingLiteral, new ArrayList<>(otherRuleGroundingOrder.otherLiterals), otherRuleGroundingOrder.positionLastVarBound);
+		this(otherRuleGroundingOrder.startingLiteral, new ArrayList<>(otherRuleGroundingOrder.otherLiterals), otherRuleGroundingOrder.positionLastVarBound, otherRuleGroundingOrder.ground);
 		this.stopBindingAtOrderPosition = otherRuleGroundingOrder.stopBindingAtOrderPosition;
 	}
 
@@ -83,7 +85,11 @@ public class RuleGroundingOrder {
 	public int getPositionFromWhichAllVarsAreBound() {
 		return positionLastVarBound + 1;
 	}
-	
+
+	public boolean isGround() {
+		return ground;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
