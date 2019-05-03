@@ -517,13 +517,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 
 		if (instances == null) {
-			IndexedInstanceStorage storage = workingMemory.get(currentAtom.getPredicate(), true);
-			if (partialSubstitution.isEmpty()) {
-				// No variables are bound, but first atom in the body became recently true, consider all instances now.
-				instances = storage.getAllInstances();
-			} else {
-				instances = storage.getInstancesFromPartiallyGroundAtom(substitute);
-			}
+			instances = getInstancesForSubstitute(substitute, partialSubstitution);
 		}
 		
 		if (laxGrounderHeuristic && instances.isEmpty()) {
@@ -533,6 +527,22 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			return pushBackAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
 		}
 
+		return createBindings(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment, instances, substitute);
+	}
+
+	private Collection<Instance> getInstancesForSubstitute(Atom substitute, Substitution partialSubstitution) {
+		Collection<Instance> instances;
+		IndexedInstanceStorage storage = workingMemory.get(substitute.getPredicate(), true);
+		if (partialSubstitution.isEmpty()) {
+			// No variables are bound, but first atom in the body became recently true, consider all instances now.
+			instances = storage.getAllInstances();
+		} else {
+			instances = storage.getInstancesFromPartiallyGroundAtom(substitute);
+		}
+		return instances;
+	}
+
+	private BindingResult createBindings(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment, Collection<Instance> instances, Atom substitute) {
 		BindingResult bindingResult = new BindingResult();
 		for (Instance instance : instances) {
 			// Check each instance if it matches with the atom.
