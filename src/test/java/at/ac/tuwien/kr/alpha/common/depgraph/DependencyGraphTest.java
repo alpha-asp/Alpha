@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.junit.Assert;
@@ -59,63 +58,12 @@ public class DependencyGraphTest {
 		dgw.writeAsDotfile(dg, "/tmp/components-test.asp.dg.dot", true);
 	}
 
-	/**
-	 * make sure that all internal data structures in dependency graph use the same node instances and no useless copies are created
-	 * 
-	 * @throws IOException
-	 */
-	@Test
-	public void noNodesCopiedTest() throws IOException {
-		Program prog = new ProgramParser().parse(CharStreams.fromStream(DependencyGraphTest.class.getResourceAsStream("/partial-eval/components-test.asp")));
-		ProgramAnalysis pa = new ProgramAnalysis(prog);
-		DependencyGraph dg = pa.getDependencyGraph();
-		for (Node refNode : dg.getNodes().keySet()) {
-			Assert.assertEquals(refNode, dg.getNodesByPredicate().get(refNode.getPredicate()));
-			Assert.assertEquals(true, refNode == dg.getNodesByPredicate().get(refNode.getPredicate()));
-		}
-		for (Node refNode : dg.getTransposedNodes().keySet()) {
-			Assert.assertEquals(refNode, dg.getNodesByPredicate().get(refNode.getPredicate()));
-			Assert.assertEquals(true, refNode == dg.getNodesByPredicate().get(refNode.getPredicate()));
-		}
-		for (Entry<Integer, List<Node>> componentEntry : dg.getStronglyConnectedComponents().entrySet()) {
-			for (Node refNode : componentEntry.getValue()) {
-				Assert.assertEquals(refNode, dg.getNodesByPredicate().get(refNode.getPredicate()));
-				Assert.assertEquals(true, refNode == dg.getNodesByPredicate().get(refNode.getPredicate()));
-			}
-		}
-	}
-
 	@Test
 	public void edgesEqualTest() {
 		Predicate testPredicate = Predicate.getInstance("test", 2, false, false);
 		Edge e1 = new Edge(new Node(testPredicate, testPredicate.toString()), true, null);
 		Edge e2 = new Edge(new Node(testPredicate, testPredicate.toString()), true, null);
 		Assert.assertEquals(e1, e2);
-	}
-
-	@Test
-	public void dependencyGraphTransposeSimpleTest() {
-		Alpha system = new Alpha();
-		Program prog = system.readProgramString("b :- a.", null);
-		ProgramAnalysis analysis = new ProgramAnalysis(prog);
-		DependencyGraph dg = analysis.getDependencyGraph();
-		Map<Node, List<Edge>> dgNodes = dg.getNodes();
-		Map<Node, List<Edge>> dgTransposed = dg.getTransposedNodes();
-
-		// first check structure of dependency graph
-		Assert.assertEquals(2, dgNodes.size());
-		Assert.assertTrue(dgNodes.containsKey(new Node(Predicate.getInstance("b", 0), "")));
-		Assert.assertTrue(dgNodes.containsKey(new Node(Predicate.getInstance("a", 0), "")));
-		List<Edge> aEdgeList = dgNodes.get(new Node(Predicate.getInstance("a", 0), ""));
-		Assert.assertEquals(1, aEdgeList.size());
-		Edge aToB = aEdgeList.get(0);
-		Assert.assertEquals(Predicate.getInstance("b", 0), aToB.getTarget().getPredicate());
-		Assert.assertEquals(0, dgNodes.get(new Node(Predicate.getInstance("b", 0), "")).size());
-
-		// now check the transposed structure
-		Assert.assertEquals(2, dgTransposed.size());
-		Assert.assertTrue(dgTransposed.containsKey(new Node(Predicate.getInstance("b", 0), "")));
-		Assert.assertTrue(dgTransposed.containsKey(new Node(Predicate.getInstance("a", 0), "")));
 	}
 
 	@Test
@@ -258,7 +206,8 @@ public class DependencyGraphTest {
 		Node y = dg.getNodeForPredicate(Predicate.getInstance("y", 0));
 		Node z = dg.getNodeForPredicate(Predicate.getInstance("z", 0));
 
-		Map<Integer, List<Node>> stronglyConnectedComponents = dg.getStronglyConnectedComponents();
+		StronglyConnectedComponentsHelper componentHelper = new StronglyConnectedComponentsHelper();
+		Map<Integer, List<Node>> stronglyConnectedComponents = componentHelper.findStronglyConnectedComponents(dg);
 		Assert.assertEquals(8, stronglyConnectedComponents.size());
 
 		for (Map.Entry<Integer, List<Node>> sccEntry : stronglyConnectedComponents.entrySet()) {

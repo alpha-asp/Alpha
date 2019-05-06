@@ -24,6 +24,9 @@ public class ComponentGraphTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ComponentGraphTest.class);
 
+	private StronglyConnectedComponentsHelper componentHelper = new StronglyConnectedComponentsHelper();
+	private StratificationHelper stratificationHelper =  new StratificationHelper();
+	
 	private static void assertNodesMatchStratumNodes(List<SCComponent> stratum, Node... nodes) {
 		ComponentGraphTest.assertNodesMatchStratumNodes(stratum, Arrays.asList(nodes));
 	}
@@ -60,13 +63,13 @@ public class ComponentGraphTest {
 	}
 
 	@Test
-	public void stratifyOneRuleTest() throws IOException {
+	public void stratifyOneRuleTest() throws IOException {	
 		Alpha system = new Alpha();
 		Program prog = system.readProgramString("a :- b.", null);
 		ProgramAnalysis pa = new ProgramAnalysis(prog);
 		DependencyGraph dg = pa.getDependencyGraph();
-		ComponentGraph cg = ComponentGraph.fromDependencyGraph(dg);
-		Map<Integer, List<SCComponent>> strata = cg.calculateStratification();
+		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, this.componentHelper.findStronglyConnectedComponents(dg));
+		Map<Integer, List<SCComponent>> strata = this.stratificationHelper.calculateStratification(cg);
 
 		Assert.assertEquals(1, strata.size());
 	}
@@ -80,8 +83,8 @@ public class ComponentGraphTest {
 		Program prog = system.readProgramString(bld.toString(), null);
 		ProgramAnalysis pa = new ProgramAnalysis(prog);
 		DependencyGraph dg = pa.getDependencyGraph();
-		ComponentGraph cg = ComponentGraph.fromDependencyGraph(dg);
-		Map<Integer, List<SCComponent>> strata = cg.calculateStratification();
+		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, this.componentHelper.findStronglyConnectedComponents(dg));
+		Map<Integer, List<SCComponent>> strata = this.stratificationHelper.calculateStratification(cg);
 
 		Assert.assertEquals(1, strata.size());
 		List<SCComponent> stratum0 = strata.get(0);
@@ -99,8 +102,8 @@ public class ComponentGraphTest {
 		Program prog = system.readProgramString(bld.toString(), null);
 		ProgramAnalysis pa = new ProgramAnalysis(prog);
 		DependencyGraph dg = pa.getDependencyGraph();
-		ComponentGraph cg = ComponentGraph.fromDependencyGraph(dg);
-		Map<Integer, List<SCComponent>> strata = cg.calculateStratification();
+		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, this.componentHelper.findStronglyConnectedComponents(dg));
+		Map<Integer, List<SCComponent>> strata = this.stratificationHelper.calculateStratification(cg);
 
 		Node a = dg.getNodeForPredicate(Predicate.getInstance("a", 0));
 		Node b = dg.getNodeForPredicate(Predicate.getInstance("b", 0));
@@ -129,8 +132,8 @@ public class ComponentGraphTest {
 		Program prog = system.readProgramString(bld.toString(), null);
 		ProgramAnalysis pa = new ProgramAnalysis(prog);
 		DependencyGraph dg = DependencyGraph.buildDependencyGraph(pa.getNonGroundRules());
-		ComponentGraph cg = ComponentGraph.fromDependencyGraph(dg);
-		Map<Integer, List<SCComponent>> strata = cg.calculateStratification();
+		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, this.componentHelper.findStronglyConnectedComponents(dg));
+		Map<Integer, List<SCComponent>> strata = this.stratificationHelper.calculateStratification(cg);
 
 		Node ancestorOf = dg.getNodeForPredicate(Predicate.getInstance("ancestor_of", 2));
 		Node parentOf = dg.getNodeForPredicate(Predicate.getInstance("parent_of", 2));
@@ -162,8 +165,8 @@ public class ComponentGraphTest {
 
 		ProgramAnalysis pa = new ProgramAnalysis(prog);
 		DependencyGraph dg = DependencyGraph.buildDependencyGraph(pa.getNonGroundRules());
-		ComponentGraph cg = ComponentGraph.fromDependencyGraph(dg);
-		Map<Integer, List<SCComponent>> strata = cg.calculateStratification();
+		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, this.componentHelper.findStronglyConnectedComponents(dg));
+		Map<Integer, List<SCComponent>> strata = this.stratificationHelper.calculateStratification(cg);
 
 		Node a = dg.getNodeForPredicate(Predicate.getInstance("a", 0));
 		Node b = dg.getNodeForPredicate(Predicate.getInstance("b", 0));
@@ -204,8 +207,8 @@ public class ComponentGraphTest {
 
 		ProgramAnalysis pa = new ProgramAnalysis(prog);
 		DependencyGraph dg = DependencyGraph.buildDependencyGraph(pa.getNonGroundRules());
-		ComponentGraph cg = ComponentGraph.fromDependencyGraph(dg);
-		Map<Integer, List<SCComponent>> strata = cg.calculateStratification();
+		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, this.componentHelper.findStronglyConnectedComponents(dg));
+		Map<Integer, List<SCComponent>> strata = this.stratificationHelper.calculateStratification(cg);
 
 		Node a = dg.getNodeForPredicate(Predicate.getInstance("a", 0));
 		Node b = dg.getNodeForPredicate(Predicate.getInstance("b", 0));
@@ -244,8 +247,8 @@ public class ComponentGraphTest {
 
 		ProgramAnalysis pa = new ProgramAnalysis(prog);
 		DependencyGraph dg = DependencyGraph.buildDependencyGraph(pa.getNonGroundRules());
-		ComponentGraph cg = ComponentGraph.fromDependencyGraph(dg);
-		Map<Integer, List<SCComponent>> strata = cg.calculateStratification();
+		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, this.componentHelper.findStronglyConnectedComponents(dg));
+		Map<Integer, List<SCComponent>> strata = this.stratificationHelper.calculateStratification(cg);
 
 		Node a = dg.getNodeForPredicate(Predicate.getInstance("a", 0));
 		Node b = dg.getNodeForPredicate(Predicate.getInstance("b", 0));
