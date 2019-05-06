@@ -85,7 +85,7 @@ public class Main {
 	}
 
 	private static void computeAndConsumeAnswerSets(Alpha alpha, InputConfig inputCfg, Program program) {
-		Solver solver = alpha.prepareSolverFor(program);
+		Solver solver = alpha.prepareSolverFor(program, inputCfg.getFilter());
 		Stream<AnswerSet> stream = solver.stream();
 		if (alpha.getConfig().isSortAnswerSets()) {
 			stream = stream.sorted();

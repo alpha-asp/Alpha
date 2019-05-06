@@ -60,8 +60,8 @@ import at.ac.tuwien.kr.alpha.common.atoms.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.external.ExternalAtoms;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.MethodPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
 public class AlphaTest {
@@ -373,14 +373,27 @@ public class AlphaTest {
 	}
 
 	/**
+	 * Verifies that filters are handled correctly (regression test case introduced when fixing issue #189)
+	 */
+	@Test
+	public void filterTest() {
+		String progstr = "a. b. c. d :- c. e(a, b) :- d.";
+		Alpha system = new Alpha();
+		Program prog = system.readProgramString(progstr, null);
+		Set<AnswerSet> actual = system.solve(prog, (p) -> p.equals(Predicate.getInstance("a", 0)) || p.equals(Predicate.getInstance("e", 2)))
+				.collect(Collectors.toSet());
+		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").predicate("e").symbolicInstance("a", "b").build()));
+		assertEquals(expected, actual);
+	}
+
+	/**
 	 * Runs a test that formerly caused some sort of exception.
 	 */
 	@Test
 	public void problematicRun_3col_1119654162577372() throws IOException {
 		/*
-		 * NOTE: This was constructed from the following commandline invocation:
-		 * -DebugEnableInternalChecks -q -g naive -s default -e 1119654162577372 -n 200
-		 * -i 3col-20-38.txt
+		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s default -e 1119654162577372 -n 200 -i
+		 * 3col-20-38.txt
 		 */
 		problematicRun("3col-20-38.txt", 1119654162577372L, 200);
 	}
@@ -391,9 +404,8 @@ public class AlphaTest {
 	@Test
 	public void problematicRun_3col_1119718541727902() throws IOException {
 		/*
-		 * NOTE: This was constructed from the following commandline invocation:
-		 * -DebugEnableInternalChecks -q -g naive -s default -e 1119718541727902 -n 200
-		 * -i 3col-20-38.txt
+		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s default -e 1119718541727902 -n 200 -i
+		 * 3col-20-38.txt
 		 */
 		problematicRun("3col-20-38.txt", 1119718541727902L, 200);
 	}
@@ -404,8 +416,7 @@ public class AlphaTest {
 	@Test
 	public void problematicRun_vehicle_97598271567626() throws IOException {
 		/*
-		 * NOTE: This was constructed from the following commandline invocation:
-		 * -DebugEnableInternalChecks -q -g naive -s default -e 97598271567626 -n 2 -i
+		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s default -e 97598271567626 -n 2 -i
 		 * vehicle_normal_small.asp
 		 */
 		problematicRun("vehicle_normal_small.asp", 1119718541727902L, 2);
@@ -417,8 +428,7 @@ public class AlphaTest {
 	@Test
 	public void problematicRun_3col_1119718541727902_sorted_400() throws IOException {
 		/*
-		 * NOTE: This was constructed from the following commandline invocation:
-		 * -DebugEnableInternalChecks -q -g naive -s default -sort -n 400 -i
+		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s default -sort -n 400 -i
 		 * 3col-20-38.txt
 		 */
 		SystemConfig cfg = new SystemConfig();

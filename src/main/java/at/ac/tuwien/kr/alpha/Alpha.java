@@ -27,9 +27,23 @@
  */
 package at.ac.tuwien.kr.alpha;
 
+import java.io.IOException;
+import java.nio.charset.CodingErrorAction;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.stream.Stream;
+
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.apache.commons.lang3.StringUtils;
+
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
@@ -41,18 +55,6 @@ import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.IOException;
-import java.nio.charset.CodingErrorAction;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.stream.Stream;
 
 public class Alpha {
 
@@ -102,31 +104,40 @@ public class Alpha {
 	 * (e.g. for obtaining statistics)
 	 * 
 	 * @param program the program to solve
+	 * @param filter  a (java util) predicate that filters (asp-)predicates which should be contained in the answer set stream from the solver
 	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
 	 */
-	public Solver prepareSolverFor(Program program) {
+	public Solver prepareSolverFor(Program program, java.util.function.Predicate<Predicate> filter) {
 		String grounderName = this.config.getGrounderName();
 		String solverName = this.config.getSolverName();
 		String nogoodStoreName = this.config.getNogoodStoreName();
 		long seed = this.config.getSeed();
 		boolean doDebugChecks = this.config.isDebugInternalChecks();
 		boolean disableJustificationSearch = this.config.isDisableJustificationSearch();
-		
+
 		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
 		heuristicsConfigurationBuilder.setHeuristic(this.config.getBranchingHeuristic());
 		heuristicsConfigurationBuilder.setMomsStrategy(this.config.getMomsStrategy());
 
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, doDebugChecks);
+		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, doDebugChecks);
 
-		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed),
-				heuristicsConfigurationBuilder.build(), doDebugChecks, disableJustificationSearch);
+		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed), heuristicsConfigurationBuilder.build(),
+				doDebugChecks, disableJustificationSearch);
 		return solver;
 	}
 
-	public Stream<AnswerSet> solve(Program program) {
-		Stream<AnswerSet> retVal = this.prepareSolverFor(program).stream();
+	public Solver prepareSolverFor(Program program) {
+		return this.prepareSolverFor(program, InputConfig.DEFAULT_FILTER);
+	}
+
+	public Stream<AnswerSet> solve(Program program, java.util.function.Predicate<Predicate> filter) {
+		Stream<AnswerSet> retVal = this.prepareSolverFor(program, filter).stream();
 		return this.config.isSortAnswerSets() ? retVal.sorted() : retVal;
+	}
+	
+	public Stream<AnswerSet> solve(Program program) {
+		return this.solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
 	public SystemConfig getConfig() {
