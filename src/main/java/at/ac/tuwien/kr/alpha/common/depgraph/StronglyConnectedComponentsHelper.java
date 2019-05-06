@@ -9,32 +9,39 @@ import java.util.Map;
 public class StronglyConnectedComponentsHelper {
 
 	private DepthFirstSearchHelper dfsHelper = new DepthFirstSearchHelper();
+	
+	private Map<Node, Integer> nodesByComponentId;
+	
+	private void reset() {
+		this.nodesByComponentId = new HashMap<>();
+	}
 
-	public Map<Integer, List<Node>> findStronglyConnectedComponents(DependencyGraph dg) {
+	public SCCResult findStronglyConnectedComponents(DependencyGraph dg) {
+		this.reset();
 		DfsResult intermediateResult = this.dfsHelper.performDfs(dg.getNodes());
 		Map<Node, List<Edge>> transposedNodes = this.transposeGraph(dg.getNodes());
 		Deque<Node> finishedNodes = intermediateResult.getFinishedNodes();
 		DfsResult finalResult = this.dfsHelper.performDfs(finishedNodes.descendingIterator(), transposedNodes);
 		Map<Integer, List<Node>> componentMap = this.extractComponents(finalResult);
-		return componentMap;
+		return new SCCResult(componentMap, this.nodesByComponentId);
 	}
 
 	private Map<Integer, List<Node>> extractComponents(DfsResult dfsResult) {
 		int componentCnt = 0;
-		Map<Integer, List<Node>> retVal = new HashMap<>();
+		Map<Integer, List<Node>> componentMap = new HashMap<>();
 		List<Node> tmpComponentMembers;
 		for (Node componentRoot : dfsResult.getDepthFirstForest().get(null)) {
 			tmpComponentMembers = new ArrayList<>();
 			this.addComponentMembers(componentRoot, dfsResult.getDepthFirstForest(), tmpComponentMembers, componentCnt);
-			retVal.put(componentCnt, tmpComponentMembers);
+			componentMap.put(componentCnt, tmpComponentMembers);
 			componentCnt++;
 		}
-		return retVal;
+		return componentMap;
 	}
 
 	private void addComponentMembers(Node depthFirstTreeNode, Map<Node, List<Node>> depthFirstForest, List<Node> componentMembers, int componentId) {
-		depthFirstTreeNode.getNodeInfo().setComponentId(componentId);
 		componentMembers.add(depthFirstTreeNode);
+		this.nodesByComponentId.put(depthFirstTreeNode, componentId);
 		List<Node> children;
 		if ((children = depthFirstForest.get(depthFirstTreeNode)) == null) {
 			return;
@@ -65,6 +72,26 @@ public class StronglyConnectedComponentsHelper {
 			}
 		}
 		return transposed;
+	}
+
+	public static class SCCResult {
+
+		private final Map<Integer, List<Node>> stronglyConnectedComponents;
+		private final Map<Node, Integer> nodesByComponentId;
+
+		private SCCResult(Map<Integer, List<Node>> components, Map<Node, Integer> nodesByComponentId) {
+			this.stronglyConnectedComponents = components;
+			this.nodesByComponentId = nodesByComponentId;
+		}
+
+		public Map<Integer, List<Node>> getStronglyConnectedComponents() {
+			return this.stronglyConnectedComponents;
+		}
+
+		public Map<Node, Integer> getNodesByComponentId() {
+			return this.nodesByComponentId;
+		}
+
 	}
 
 }

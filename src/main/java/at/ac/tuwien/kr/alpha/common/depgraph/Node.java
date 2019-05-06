@@ -14,71 +14,16 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 // TODO ensure immutability
 public class Node {
 
-	public static class NodeInfo {
-
-		private Node dfsPredecessor;
-		private int dfsDiscoveryTime;
-		private int dfsFinishTime;
-		private int componentId;
-
-		public NodeInfo() {
-
-		}
-
-		public NodeInfo(NodeInfo original) {
-			this.dfsDiscoveryTime = original.dfsDiscoveryTime;
-			this.dfsFinishTime = original.dfsFinishTime;
-		}
-
-		public int getDfsDiscoveryTime() {
-			return this.dfsDiscoveryTime;
-		}
-
-		public void setDfsDiscoveryTime(int dfsDiscoveryTime) {
-			this.dfsDiscoveryTime = dfsDiscoveryTime;
-		}
-
-		public int getDfsFinishTime() {
-			return this.dfsFinishTime;
-		}
-
-		public void setDfsFinishTime(int dfsFinishTime) {
-			this.dfsFinishTime = dfsFinishTime;
-		}
-
-		public Node getDfsPredecessor() {
-			return this.dfsPredecessor;
-		}
-
-		public void setDfsPredecessor(Node dfsPredecessor) {
-			this.dfsPredecessor = dfsPredecessor;
-		}
-
-		public int getComponentId() {
-			return this.componentId;
-		}
-
-		public void setComponentId(int componentId) {
-			this.componentId = componentId;
-		}
-
-	}
-
 	private final Predicate predicate;
 	private final String label;
 	private final boolean isConstraint;
-	private final NodeInfo nodeInfo;
 
-	public Node(Predicate predicate, String label, boolean isConstraint, NodeInfo info) {
+	public Node(Predicate predicate, String label, boolean isConstraint) {
 		this.predicate = predicate;
 		this.label = label;
 		this.isConstraint = isConstraint;
-		this.nodeInfo = info;
 	}
 
-	public Node(Predicate predicate, String label, boolean isConstraint) {
-		this(predicate, label, isConstraint, new NodeInfo());
-	}
 
 	public Node(Predicate predicate, String label) {
 		this(predicate, label, false);
@@ -94,7 +39,7 @@ public class Node {
 	 * @param original the node to copy
 	 */
 	public Node(Node original) {
-		this(original.predicate, original.label, original.isConstraint, new NodeInfo(original.nodeInfo));
+		this(original.predicate, original.label, original.isConstraint);
 	}
 
 	@Override
@@ -125,10 +70,6 @@ public class Node {
 
 	public boolean isConstraint() {
 		return this.isConstraint;
-	}
-
-	public NodeInfo getNodeInfo() {
-		return this.nodeInfo;
 	}
 
 }

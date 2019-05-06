@@ -11,19 +11,20 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-// TODO make final?
-public class ComponentGraph {
+import at.ac.tuwien.kr.alpha.common.depgraph.StronglyConnectedComponentsHelper.SCCResult;
+
+public final class ComponentGraph {
 
 	private final Map<Integer, SCComponent> components;
 	private final List<SCComponent> entryPoints;
 
-	public ComponentGraph(Map<Integer, SCComponent> components, List<SCComponent> entryPoints) {
+	private ComponentGraph(Map<Integer, SCComponent> components, List<SCComponent> entryPoints) {
 		this.components = components;
 		this.entryPoints = entryPoints;
 	}
 
-	public static ComponentGraph buildComponentGraph(DependencyGraph dg, Map<Integer, List<Node>> componentMap) {
-		return new ComponentGraph.Builder(dg, componentMap).build();
+	public static ComponentGraph buildComponentGraph(DependencyGraph dg, SCCResult sccResult) {
+		return new ComponentGraph.Builder(dg, sccResult).build();
 	}
 
 	public Map<Integer, SCComponent> getComponents() {
@@ -100,12 +101,14 @@ public class ComponentGraph {
 
 		private DependencyGraph depGraph;
 		private Map<Integer, List<Node>> componentMap;
+		private Map<Node, Integer> nodesByComponentId;
 		private Map<Integer, SCComponent.Builder> componentBuilders = new HashMap<>();
 		private Map<Integer, SCComponent> components = new HashMap<>();
 
-		private Builder(DependencyGraph dg, Map<Integer, List<Node>> componentMap) {
+		private Builder(DependencyGraph dg, SCCResult sccResult) {
 			this.depGraph = dg;
-			this.componentMap = componentMap;
+			this.componentMap = sccResult.getStronglyConnectedComponents();
+			this.nodesByComponentId = sccResult.getNodesByComponentId();
 		}
 
 		private ComponentGraph build() {
@@ -132,7 +135,7 @@ public class ComponentGraph {
 		}
 
 		private void registerEdge(int srcComponentId, Edge edge) {
-			int destComponentId = edge.getTarget().getNodeInfo().getComponentId();
+			int destComponentId = this.nodesByComponentId.get(edge.getTarget());
 			if (srcComponentId == destComponentId) {
 				if (!edge.getSign()) {
 					this.componentBuilders.get(srcComponentId).hasNegativeCycle = true;

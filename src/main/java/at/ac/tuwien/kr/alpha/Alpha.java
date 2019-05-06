@@ -89,7 +89,7 @@ public class Alpha {
 			// in Alpha and pass into grounder (not too critical, only done here in case
 			// user requests dot output for dependency graph)
 			ProgramAnalysis analysis = new ProgramAnalysis(retVal);
-			new DependencyGraphWriter().writeAsDot(analysis.getDependencyGraph(), cfg.getDepGraphTarget(), this.config.isDebugInternalChecks());
+			new DependencyGraphWriter().writeAsDot(analysis.getDependencyGraph(), cfg.getDepGraphTarget());
 		}
 		return retVal;
 	}

@@ -15,14 +15,12 @@ public class DepthFirstSearchHelper {
 	private Set<Node> discoveredNodes;
 	private Deque<Node> finishedNodes;
 	private Map<Node, List<Node>> depthFirstForest;
-	private int currDfsTime;
 
 	private void reset() {
 		this.discoveredNodes = new HashSet<>();
 		this.finishedNodes = new LinkedList<>();
 		this.depthFirstForest = new HashMap<>();
 		this.depthFirstForest.put(null, new ArrayList<>());
-		this.currDfsTime = 0;
 	}
 
 	public DfsResult performDfs(Map<Node, List<Edge>> nodes) {
@@ -56,15 +54,12 @@ public class DepthFirstSearchHelper {
 	}
 
 	private void dfsVisit(Node currNode, Map<Node, List<Edge>> nodes) {
-		this.currDfsTime++;
-		currNode.getNodeInfo().setDfsDiscoveryTime(this.currDfsTime);
 		this.discoveredNodes.add(currNode);
 		Node tmpNeighbor;
 		for (Edge e : nodes.get(currNode)) {
 			// progress to adjacent nodes
 			tmpNeighbor = e.getTarget();
 			if (!(this.discoveredNodes.contains(tmpNeighbor) || this.finishedNodes.contains(tmpNeighbor))) {
-				tmpNeighbor.getNodeInfo().setDfsPredecessor(currNode);
 				if (!this.depthFirstForest.containsKey(currNode)) {
 					this.depthFirstForest.put(currNode, new ArrayList<>());
 				}
@@ -72,8 +67,6 @@ public class DepthFirstSearchHelper {
 				this.dfsVisit(tmpNeighbor, nodes);
 			}
 		}
-		this.currDfsTime++;
-		currNode.getNodeInfo().setDfsFinishTime(this.currDfsTime);
 		this.finishedNodes.add(currNode);
 	}
 

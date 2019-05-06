@@ -14,6 +14,7 @@ import org.junit.Test;
 import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.depgraph.StronglyConnectedComponentsHelper.SCCResult;
 import at.ac.tuwien.kr.alpha.common.depgraph.io.DependencyGraphWriter;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
@@ -55,7 +56,7 @@ public class DependencyGraphTest {
 		ProgramAnalysis pa = new ProgramAnalysis(p);
 		DependencyGraph dg = DependencyGraph.buildDependencyGraph(pa.getNonGroundRules());
 		DependencyGraphWriter dgw = new DependencyGraphWriter();
-		dgw.writeAsDotfile(dg, "/tmp/components-test.asp.dg.dot", true);
+		dgw.writeAsDotfile(dg, "/tmp/components-test.asp.dg.dot");
 	}
 
 	@Test
@@ -207,13 +208,15 @@ public class DependencyGraphTest {
 		Node z = dg.getNodeForPredicate(Predicate.getInstance("z", 0));
 
 		StronglyConnectedComponentsHelper componentHelper = new StronglyConnectedComponentsHelper();
-		Map<Integer, List<Node>> stronglyConnectedComponents = componentHelper.findStronglyConnectedComponents(dg);
+		SCCResult sccResult = componentHelper.findStronglyConnectedComponents(dg);
+		Map<Node, Integer> nodesByComponent = sccResult.getNodesByComponentId();
+		Map<Integer, List<Node>> stronglyConnectedComponents = sccResult.getStronglyConnectedComponents();
 		Assert.assertEquals(8, stronglyConnectedComponents.size());
 
 		for (Map.Entry<Integer, List<Node>> sccEntry : stronglyConnectedComponents.entrySet()) {
 			Assert.assertEquals(true, DependencyGraphUtils.isStronglyConnectedComponent(sccEntry.getValue(), dg));
 			for (Node node : sccEntry.getValue()) {
-				Assert.assertEquals(sccEntry.getKey().intValue(), node.getNodeInfo().getComponentId());
+				Assert.assertEquals(sccEntry.getKey(), nodesByComponent.get(node));
 			}
 		}
 
@@ -221,19 +224,19 @@ public class DependencyGraphTest {
 		c1.add(a);
 		c1.add(b);
 		Assert.assertEquals(true, DependencyGraphUtils.isStronglyConnectedComponent(c1, dg));
-		Assert.assertEquals(true, a.getNodeInfo().getComponentId() == b.getNodeInfo().getComponentId());
+		Assert.assertEquals(nodesByComponent.get(a), nodesByComponent.get(b));
 
 		List<Node> c2 = new ArrayList<>();
 		c2.add(c);
 		c2.add(d);
 		Assert.assertEquals(true, DependencyGraphUtils.isStronglyConnectedComponent(c2, dg));
-		Assert.assertEquals(true, c.getNodeInfo().getComponentId() == d.getNodeInfo().getComponentId());
+		Assert.assertEquals(nodesByComponent.get(c), nodesByComponent.get(d));
 
 		List<Node> c3 = new ArrayList<>();
 		c3.add(x);
 		c3.add(y);
 		Assert.assertEquals(true, DependencyGraphUtils.isStronglyConnectedComponent(c3, dg));
-		Assert.assertEquals(true, x.getNodeInfo().getComponentId() == y.getNodeInfo().getComponentId());
+		Assert.assertEquals(nodesByComponent.get(x), nodesByComponent.get(y));
 
 		List<Node> c4 = new ArrayList<>();
 		c4.add(z);

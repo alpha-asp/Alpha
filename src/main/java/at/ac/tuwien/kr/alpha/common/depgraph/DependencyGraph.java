@@ -21,8 +21,7 @@ import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
  * 
  * Copyright (c) 2019, the Alpha Team.
  */
-// TODO make final?
-public class DependencyGraph {
+public final class DependencyGraph {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DependencyGraph.class);
 
@@ -34,7 +33,7 @@ public class DependencyGraph {
 
 	private final Map<Predicate, Node> nodesByPredicate;
 
-	public DependencyGraph(Map<Node, List<Edge>> nodes, Map<Predicate, Node> nodesByPredicate) {
+	private DependencyGraph(Map<Node, List<Edge>> nodes, Map<Predicate, Node> nodesByPredicate) {
 		this.nodes = nodes;
 		this.nodesByPredicate = nodesByPredicate;
 	}

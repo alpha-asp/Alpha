@@ -3,7 +3,6 @@ package at.ac.tuwien.kr.alpha.common.depgraph;
 /**
  * An edge in a dependency graph.
  */
-// TODO ensure immutability
 public class Edge {
 
 	private final Node target;
