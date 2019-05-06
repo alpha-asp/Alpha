@@ -14,27 +14,24 @@ import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
 import at.ac.tuwien.kr.alpha.common.depgraph.Edge;
 import at.ac.tuwien.kr.alpha.common.depgraph.Node;
 
-/**
- * Copyright (c) 2019, the Alpha Team.
- */
+// TODO handle component graph separately
 public class DependencyGraphWriter {
 
 	private static final String DEFAULT_GRAPH_HEADING = "digraph dependencyGraph";
 
 	private static final String DEFAULT_NODE_FORMAT = "n%d [label = \"%s\"]\n";
-	private static final String SCC_ANNOTATED_NODE_FORMAT = "n%d[label = \"%s\n[componentId=%d]\"]\n";
 	private static final String DEFAULT_EDGE_FORMAT = "n%d -> n%d [xlabel=\"%s\" labeldistance=0.1]\n";
 
-	public void writeAsDotfile(DependencyGraph graph, String path, boolean includeSccMetadata) throws IOException {
-		this.writeAsDot(graph, new FileOutputStream(path), includeSccMetadata);
+	public void writeAsDotfile(DependencyGraph graph, String path) throws IOException {
+		this.writeAsDot(graph, new FileOutputStream(path));
 	}
 
-	public void writeAsDot(DependencyGraph graph, OutputStream out, boolean includeSccMetadata) throws IOException {
-		this.writeAsDot(graph.getNodes(), out, includeSccMetadata);
+	public void writeAsDot(DependencyGraph graph, OutputStream out) throws IOException {
+		this.writeAsDot(graph.getNodes(), out);
 	}
 
-	public void writeAsDot(Map<Node, List<Edge>> graph, OutputStream out, boolean includeSccMetadata) throws IOException {
-		BiFunction<Node, Integer, String> nodeFormatter = includeSccMetadata ? this::buildSccAnnotatedNodeString : this::buildNodeString;
+	public void writeAsDot(Map<Node, List<Edge>> graph, OutputStream out) throws IOException {
+		BiFunction<Node, Integer, String> nodeFormatter = this::buildNodeString;
 		this.writeAsDot(graph, out, nodeFormatter);
 	}
 
@@ -80,10 +77,6 @@ public class DependencyGraphWriter {
 
 	private String buildNodeString(Node n, int nodeNum) {
 		return String.format(DependencyGraphWriter.DEFAULT_NODE_FORMAT, nodeNum, n.getLabel());
-	}
-
-	private String buildSccAnnotatedNodeString(Node n, int nodeNum) {
-		return String.format(DependencyGraphWriter.SCC_ANNOTATED_NODE_FORMAT, nodeNum, n.getLabel(), n.getNodeInfo().getComponentId());
 	}
 
 }

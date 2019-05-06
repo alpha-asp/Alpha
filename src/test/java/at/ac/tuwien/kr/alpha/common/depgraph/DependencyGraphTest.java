@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.junit.Assert;
@@ -14,6 +13,7 @@ import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.depgraph.StronglyConnectedComponentsHelper.SCCResult;
 import at.ac.tuwien.kr.alpha.common.depgraph.io.DependencyGraphWriter;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
@@ -58,35 +58,7 @@ public class DependencyGraphTest {
 		InternalProgram prog = system.performProgramPreprocessing(p);
 		DependencyGraph dg = prog.getDependencyGraph();
 		DependencyGraphWriter dgw = new DependencyGraphWriter();
-		dgw.writeAsDotfile(dg, "/tmp/components-test.asp.dg.dot", true);
-	}
-
-	/**
-	 * make sure that all internal data structures in dependency graph use the same node instances and no useless copies are created
-	 * 
-	 * @throws IOException
-	 */
-	@Test
-	public void noNodesCopiedTest() throws IOException {
-		Alpha system = new Alpha();
-		InputProgram prog = new ProgramParser()
-				.parse(CharStreams.fromStream(DependencyGraphTest.class.getResourceAsStream("/partial-eval/components-test.asp")));
-		InternalProgram internalProg = system.performProgramPreprocessing(prog);
-		DependencyGraph dg = internalProg.getDependencyGraph();
-		for (Node refNode : dg.getNodes().keySet()) {
-			Assert.assertEquals(refNode, dg.getNodesByPredicate().get(refNode.getPredicate()));
-			Assert.assertEquals(true, refNode == dg.getNodesByPredicate().get(refNode.getPredicate()));
-		}
-		for (Node refNode : dg.getTransposedNodes().keySet()) {
-			Assert.assertEquals(refNode, dg.getNodesByPredicate().get(refNode.getPredicate()));
-			Assert.assertEquals(true, refNode == dg.getNodesByPredicate().get(refNode.getPredicate()));
-		}
-		for (Entry<Integer, List<Node>> componentEntry : dg.getStronglyConnectedComponents().entrySet()) {
-			for (Node refNode : componentEntry.getValue()) {
-				Assert.assertEquals(refNode, dg.getNodesByPredicate().get(refNode.getPredicate()));
-				Assert.assertEquals(true, refNode == dg.getNodesByPredicate().get(refNode.getPredicate()));
-			}
-		}
+		dgw.writeAsDotfile(dg, "/tmp/components-test.asp.dg.dot");
 	}
 
 	@Test
@@ -97,29 +69,6 @@ public class DependencyGraphTest {
 		Assert.assertEquals(e1, e2);
 	}
 
-	@Test
-	public void dependencyGraphTransposeSimpleTest() {
-		Alpha system = new Alpha();
-		InternalProgram prog = system.performProgramPreprocessing(system.readProgramString("b :- a.", null));
-		DependencyGraph dg = prog.getDependencyGraph();
-		Map<Node, List<Edge>> dgNodes = dg.getNodes();
-		Map<Node, List<Edge>> dgTransposed = dg.getTransposedNodes();
-
-		// first check structure of dependency graph
-		Assert.assertEquals(2, dgNodes.size());
-		Assert.assertTrue(dgNodes.containsKey(new Node(Predicate.getInstance("b", 0), "")));
-		Assert.assertTrue(dgNodes.containsKey(new Node(Predicate.getInstance("a", 0), "")));
-		List<Edge> aEdgeList = dgNodes.get(new Node(Predicate.getInstance("a", 0), ""));
-		Assert.assertEquals(1, aEdgeList.size());
-		Edge aToB = aEdgeList.get(0);
-		Assert.assertEquals(Predicate.getInstance("b", 0), aToB.getTarget().getPredicate());
-		Assert.assertEquals(0, dgNodes.get(new Node(Predicate.getInstance("b", 0), "")).size());
-
-		// now check the transposed structure
-		Assert.assertEquals(2, dgTransposed.size());
-		Assert.assertTrue(dgTransposed.containsKey(new Node(Predicate.getInstance("b", 0), "")));
-		Assert.assertTrue(dgTransposed.containsKey(new Node(Predicate.getInstance("a", 0), "")));
-	}
 
 	@Test
 	public void reachabilityCheckSimpleTest() {
@@ -259,13 +208,16 @@ public class DependencyGraphTest {
 		Node y = dg.getNodeForPredicate(Predicate.getInstance("y", 0));
 		Node z = dg.getNodeForPredicate(Predicate.getInstance("z", 0));
 
-		Map<Integer, List<Node>> stronglyConnectedComponents = dg.getStronglyConnectedComponents();
+		StronglyConnectedComponentsHelper componentHelper = new StronglyConnectedComponentsHelper();
+		SCCResult sccResult = componentHelper.findStronglyConnectedComponents(dg);
+		Map<Node, Integer> nodesByComponent = sccResult.getNodesByComponentId();
+		Map<Integer, List<Node>> stronglyConnectedComponents = sccResult.getStronglyConnectedComponents();
 		Assert.assertEquals(8, stronglyConnectedComponents.size());
 
 		for (Map.Entry<Integer, List<Node>> sccEntry : stronglyConnectedComponents.entrySet()) {
 			Assert.assertEquals(true, DependencyGraphUtils.isStronglyConnectedComponent(sccEntry.getValue(), dg));
 			for (Node node : sccEntry.getValue()) {
-				Assert.assertEquals(sccEntry.getKey().intValue(), node.getNodeInfo().getComponentId());
+				Assert.assertEquals(sccEntry.getKey(), nodesByComponent.get(node));
 			}
 		}
 
@@ -273,19 +225,19 @@ public class DependencyGraphTest {
 		c1.add(a);
 		c1.add(b);
 		Assert.assertEquals(true, DependencyGraphUtils.isStronglyConnectedComponent(c1, dg));
-		Assert.assertEquals(true, a.getNodeInfo().getComponentId() == b.getNodeInfo().getComponentId());
+		Assert.assertEquals(nodesByComponent.get(a), nodesByComponent.get(b));
 
 		List<Node> c2 = new ArrayList<>();
 		c2.add(c);
 		c2.add(d);
 		Assert.assertEquals(true, DependencyGraphUtils.isStronglyConnectedComponent(c2, dg));
-		Assert.assertEquals(true, c.getNodeInfo().getComponentId() == d.getNodeInfo().getComponentId());
+		Assert.assertEquals(nodesByComponent.get(c), nodesByComponent.get(d));
 
 		List<Node> c3 = new ArrayList<>();
 		c3.add(x);
 		c3.add(y);
 		Assert.assertEquals(true, DependencyGraphUtils.isStronglyConnectedComponent(c3, dg));
-		Assert.assertEquals(true, x.getNodeInfo().getComponentId() == y.getNodeInfo().getComponentId());
+		Assert.assertEquals(nodesByComponent.get(x), nodesByComponent.get(y));
 
 		List<Node> c4 = new ArrayList<>();
 		c4.add(z);

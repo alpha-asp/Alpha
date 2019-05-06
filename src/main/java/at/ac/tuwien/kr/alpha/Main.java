@@ -86,8 +86,7 @@ public class Main {
 		InternalProgram preprocessedProgram = alpha.performProgramPreprocessing(program);
 		if (cfg.getInputConfig().isWriteDependencyGraph()) {
 			try {
-				new DependencyGraphWriter().writeAsDot(preprocessedProgram.getDependencyGraph(), cfg.getInputConfig().getDepGraphTarget(),
-						cfg.getSystemConfig().isDebugInternalChecks());
+				new DependencyGraphWriter().writeAsDot(preprocessedProgram.getDependencyGraph(), cfg.getInputConfig().getDepGraphTarget());
 			} catch (IOException ex) {
 				Main.bailOut("Failed to write dependency graph!", ex);
 			}

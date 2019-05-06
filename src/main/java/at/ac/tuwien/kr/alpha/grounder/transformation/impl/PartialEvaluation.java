@@ -11,6 +11,9 @@ import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph;
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph.SCComponent;
 import at.ac.tuwien.kr.alpha.common.depgraph.Node;
 import at.ac.tuwien.kr.alpha.common.depgraph.StratificationAnalysis;
+import at.ac.tuwien.kr.alpha.common.depgraph.StratificationHelper;
+import at.ac.tuwien.kr.alpha.common.depgraph.StronglyConnectedComponentsHelper;
+import at.ac.tuwien.kr.alpha.common.depgraph.StronglyConnectedComponentsHelper.SCCResult;
 import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.impl.InternalRule;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
@@ -27,17 +30,22 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 // TODO ideally return "PartiallyEvaluatedProgram" here, grounder can use working memories created here rather than re-initialize everything
 public class PartialEvaluation extends ProgramTransformation<InternalProgram, InternalProgram> {
 
+	private StronglyConnectedComponentsHelper sccHelper = new StronglyConnectedComponentsHelper();
+	private StratificationHelper stratificationHelper = new StratificationHelper();
+
 	private WorkingMemory workingMemory = new WorkingMemory();
-	
+
 	@Override
 	public InternalProgram apply(InternalProgram inputProgram) {
 		// first, we calculate a component graph and stratification
-		ComponentGraph componentGraph = ComponentGraph.fromDependencyGraph(inputProgram.getDependencyGraph());
-		StratificationAnalysis stratification = componentGraph.calculateStratification();
+		SCCResult sccResult = this.sccHelper.findStronglyConnectedComponents(inputProgram.getDependencyGraph());
+		ComponentGraph componentGraph = ComponentGraph.buildComponentGraph(inputProgram.getDependencyGraph(), sccResult);
+		Map<Integer, List<SCComponent>> strat = this.stratificationHelper.calculateStratification(componentGraph);
+		StratificationAnalysis stratification = null; // TODO
 		Map<Predicate, HashSet<InternalRule>> predicateDefiningRules = inputProgram.getPredicateDefiningRules();
 		// set up list of atoms which are known to be true - we expand on this one
 		Map<Predicate, Set<Instance>> knownFacts = new LinkedHashMap<>(inputProgram.getFactsByPredicate());
-		for(Map.Entry<Predicate, Set<Instance>> entry : knownFacts.entrySet()) {
+		for (Map.Entry<Predicate, Set<Instance>> entry : knownFacts.entrySet()) {
 			this.workingMemory.initialize(entry.getKey());
 			this.workingMemory.addInstances(entry.getKey(), true, entry.getValue());
 		}
@@ -54,23 +62,23 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 		boolean factsAdded;
 		// delta = cumulated facts;
 		// do while delta changes
-		// 		for each atom : delta:
-		// 			check if is starting literal from rule grounding order
-		// 			if(rule.canFire) { delta.add(ruleHead); cumulFacts.add(ruleHead) }
-		//			// for canFire copy/modify bindNextAtomInRule from grounder
-		// 		re-init delta from found substitutions
-		
+		// for each atom : delta:
+		// check if is starting literal from rule grounding order
+		// if(rule.canFire) { delta.add(ruleHead); cumulFacts.add(ruleHead) }
+		// // for canFire copy/modify bindNextAtomInRule from grounder
+		// re-init delta from found substitutions
+
 		// potential changes f. bindNextAt...:
-		// 		- check positive atoms really in facts (not in master, but not just call it, grounder my be more optimistic)
-		//		- check negative body for absence! (doesn't occur in positive facts, works because program is stratified)	
+		// - check positive atoms really in facts (not in master, but not just call it, grounder my be more optimistic)
+		// - check negative body for absence! (doesn't occur in positive facts, works because program is stratified)
 		do {
-			
+
 			factsAdded = false;
 			for (InternalRule r : rulesToEvluate) {
 				factsAdded |= this.evaluateRule(r);
 			}
 		} while (factsAdded); // if size stays the same we got a fixed point
-		
+
 	}
 
 	private boolean evaluateRule(InternalRule rule) {

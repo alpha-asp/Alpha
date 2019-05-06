@@ -5,7 +5,6 @@ package at.ac.tuwien.kr.alpha.common.depgraph;
  * 
  * Copyright (c) 2019, the Alpha Team.
  */
-// TODO ensure immutability
 public class Edge {
 
 	private final Node target;
