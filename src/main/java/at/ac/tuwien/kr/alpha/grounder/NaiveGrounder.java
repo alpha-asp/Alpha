@@ -496,14 +496,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				return BindingResult.empty();
 			}
 
-			// Check if atom is also assigned true.
-			final LinkedHashSet<Instance> factInstances = factsFromProgram.get(substitute.getPredicate());
-			if (factInstances != null && factInstances.contains(new Instance(substitute.getTerms()))) {
-				// Ground literal holds, continue finding a variable substitution.
-				return advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
-			}
-
-			// Atom is not a fact already.
 			instances = singletonList(new Instance(substitute.getTerms()));
 		}
 		
