@@ -235,13 +235,21 @@ public class NaiveGrounderTest {
 				+ "b(X) :- something(X).");
 		testLaxGrounderHeuristicTolerance(program, 2, 0, true);
 	}
-	
+
 	@Test
 	public void testLaxGrounderHeuristicTolerance_2_reject() {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X), b(X+1), b(X+2). "
 				+ "b(X) :- something(X).");
 		testLaxGrounderHeuristicTolerance(program, 2, 0, false);
+	}
+
+	@Test
+	public void testLaxGrounderHeuristicTolerance_2_accept_multiple_facts_of_same_variable() {
+		Program program = PARSER.parse("a(1). b(1). "
+				+ "c(X) :- a(X), b(X), b(X+1), b(X+2). "
+				+ "b(X) :- something(X).");
+		testLaxGrounderHeuristicTolerance(program, 2, 0, true);
 	}
 
 	private void testLaxGrounderHeuristicTolerance(Program program, int tolerance, int nTrueBs, boolean expectNoGoods) {
