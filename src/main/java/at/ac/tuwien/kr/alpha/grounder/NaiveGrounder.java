@@ -41,8 +41,6 @@ import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 import at.ac.tuwien.kr.alpha.grounder.transformation.*;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,10 +77,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private boolean disableInstanceRemoval;
 	private final boolean useCountingGridNormalization;
 	private final boolean debugInternalChecks;
-
+	
 	private final GrounderHeuristicsConfiguration heuristicsConfiguration;
-
-	private final Multimap<Integer, Substitution> processedSubstitutions = HashMultimap.create();
 
 	public NaiveGrounder(Program program, AtomStore atomStore, boolean debugInternalChecks, Bridge... bridges) {
 		this(program, atomStore, new GrounderHeuristicsConfiguration(), debugInternalChecks, bridges);
@@ -111,7 +107,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		final Set<NonGroundRule> uniqueGroundRulePerGroundHead = getRulesWithUniqueHead();
 		choiceRecorder = new ChoiceRecorder(atomStore);
 		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, programAnalysis, uniqueGroundRulePerGroundHead);
-
+		
 		this.debugInternalChecks = debugInternalChecks;
 	}
 
@@ -383,17 +379,17 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 			LOGGER.debug("{}", choiceRecorder);
 		}
-
+		
 		if (debugInternalChecks) {
 			checkTypesOfNoGoods(newNoGoods.values());
 		}
-
+		
 		return newNoGoods;
 	}
 
 	/**
 	 * Grounds the given {@code nonGroundRule} by applying the given {@code substitutions} and registers the nogoods generated during that process.
-	 *
+	 * 
 	 * @param nonGroundRule
 	 *          the rule to be grounded
 	 * @param substitutions
@@ -418,10 +414,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		if (tolerance < 0) {
 			tolerance = Integer.MAX_VALUE;
 		}
-		BindingResult bindingResult = bindNextAtomInRule(rule, groundingOrder, 0, tolerance, tolerance, partialSubstitution, currentAssignment);
-		if (bindingResult.size() > 0) {
-			storeProcessedSubstitutions(rule, bindingResult.generatedSubstitutions);
-		}
+		BindingResult bindingResult = bindNextAtomInRule(groundingOrder, 0, tolerance, tolerance, partialSubstitution, currentAssignment);
 		if (LOGGER.isDebugEnabled()) {
 			for (int i = 0; i < bindingResult.size(); i++) {
 				Integer numberOfUnassignedPositiveBodyAtoms = bindingResult.numbersOfUnassignedPositiveBodyAtoms.get(i);
@@ -433,41 +426,27 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return bindingResult;
 	}
 
-	private void storeProcessedSubstitutions(NonGroundRule rule, Collection<Substitution> generatedSubstitutions) {
-		if (rule.isConstraint()) {
-			processedSubstitutions.putAll(rule.getRuleId(), generatedSubstitutions);
-		}
-	}
-
-	private boolean substitutionAlreadyProcessed(NonGroundRule rule, Substitution partialSubstitution) {
-		return rule.isConstraint() && processedSubstitutions.containsEntry(rule.getRuleId(), partialSubstitution);
-	}
-
-	private BindingResult advanceAndBindNextAtomInRule(NonGroundRule rule, RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment) {
-		if (rule.isConstraint() && substitutionAlreadyProcessed(rule, partialSubstitution)) {
-			return BindingResult.empty();
-		}
-
+	private BindingResult advanceAndBindNextAtomInRule(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment) {
 		groundingOrder.considerUntilCurrentEnd();
-		return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
+		return bindNextAtomInRule(groundingOrder, orderPosition + 1, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
 	}
-
-	private BindingResult pushBackAndBindNextAtomInRule(NonGroundRule rule, RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment) {
+	
+	private BindingResult pushBackAndBindNextAtomInRule(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment) {
 		RuleGroundingOrder modifiedGroundingOrder = groundingOrder.pushBack(orderPosition);
 		if (modifiedGroundingOrder == null) {
 			return BindingResult.empty();
 		}
-		return bindNextAtomInRule(rule, modifiedGroundingOrder, orderPosition + 1, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
+		return bindNextAtomInRule(modifiedGroundingOrder, orderPosition + 1, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
 	}
 	
-	private BindingResult bindNextAtomInRule(NonGroundRule rule, RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment) {
+	private BindingResult bindNextAtomInRule(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment) {
 		boolean laxGrounderHeuristic = originalTolerance > 0;
 		
 		Literal currentLiteral = groundingOrder.getLiteralAtOrderPosition(orderPosition);
 		if (currentLiteral == null) {
 			return BindingResult.singleton(partialSubstitution, originalTolerance - remainingTolerance);
 		}
-
+		
 		Atom currentAtom = currentLiteral.getAtom();
 		if (currentLiteral instanceof FixedInterpretationLiteral) {
 			// Generate all substitutions for the builtin/external/interval atom.
@@ -478,26 +457,26 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 					!(substitutedLiteral instanceof IntervalLiteral && substitutedLiteral.getTerms().get(0).isGround()) &&
 					!(substitutedLiteral instanceof ExternalLiteral)
 					) {
-				return pushBackAndBindNextAtomInRule(rule, groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
+				return pushBackAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
 			}
 			final List<Substitution> substitutions = substitutedLiteral.getSubstitutions(partialSubstitution);
-
+			
 			if (substitutions.isEmpty()) {
 				// if FixedInterpretationLiteral cannot be satisfied now, it will never be
 				return BindingResult.empty();
 			}
-
+			
 			final BindingResult bindingResult = new BindingResult();
 			for (Substitution substitution : substitutions) {
 				// Continue grounding with each of the generated values.
-				bindingResult.add(advanceAndBindNextAtomInRule(rule, groundingOrder, orderPosition, originalTolerance, remainingTolerance, substitution, currentAssignment));
+				bindingResult.add(advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, substitution, currentAssignment));
 			}
 			return bindingResult;
 		}
 		if (currentAtom instanceof EnumerationAtom) {
 			// Get the enumeration value and add it to the current partialSubstitution.
 			((EnumerationAtom) currentAtom).addEnumerationToSubstitution(partialSubstitution);
-			return advanceAndBindNextAtomInRule(rule, groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
+			return advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
 		}
 
 		Collection<Instance> instances = null;
@@ -508,7 +487,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			// Substituted atom is ground, in case it is positive, only ground if it also holds true
 			if (currentLiteral.isNegated()) {
 				// Atom occurs negated in the rule: continue grounding
-				return advanceAndBindNextAtomInRule(rule, groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
+				return advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
 			}
 
 			if (!groundingOrder.isGround() && remainingTolerance <= 0
@@ -519,11 +498,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 			instances = singletonList(new Instance(substitute.getTerms()));
 		}
-
+		
 		// substituted atom contains variables
 		if (currentLiteral.isNegated()) {
 			if (laxGrounderHeuristic) {
-				return pushBackAndBindNextAtomInRule(rule, groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
+				return pushBackAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
 			} else {
 				throw oops("Current atom should be positive at this point but is not");
 			}
@@ -532,15 +511,15 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		if (instances == null) {
 			instances = getInstancesForSubstitute(substitute, partialSubstitution);
 		}
-
+		
 		if (laxGrounderHeuristic && instances.isEmpty()) {
 			// we have reached a point where we have to terminate binding,
 			// but it might be possible that a different grounding order would allow us to continue binding
 			// under the presence of a lax grounder heuristic
-			return pushBackAndBindNextAtomInRule(rule, groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
+			return pushBackAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
 		}
 
-		return createBindings(rule, groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment, instances, substitute);
+		return createBindings(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment, instances, substitute);
 	}
 
 	private Collection<Instance> getInstancesForSubstitute(Atom substitute, Substitution partialSubstitution) {
@@ -555,7 +534,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return instances;
 	}
 
-	private BindingResult createBindings(NonGroundRule rule, RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment, Collection<Instance> instances, Atom substitute) {
+	private BindingResult createBindings(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment, Collection<Instance> instances, Atom substitute) {
 		BindingResult bindingResult = new BindingResult();
 		for (Instance instance : instances) {
 			// Check each instance if it matches with the atom.
@@ -577,7 +556,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 					continue;
 				}
 			}
-			bindingResult.add(advanceAndBindNextAtomInRule(rule, groundingOrder, orderPosition, originalTolerance, atomicRemainingTolerance.get(), unified, currentAssignment));
+			bindingResult.add(advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, atomicRemainingTolerance.get(), unified, currentAssignment));
 		}
 
 		return bindingResult;
@@ -608,7 +587,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
 		return choiceRecorder.getAndResetChoices();
 	}
-
+	
 	@Override
 	public Map<Integer, Set<Integer>> getHeadsToBodies() {
 		return choiceRecorder.getAndResetHeadsToBodies();
@@ -709,7 +688,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			this.startingLiteral = startingLiteral;
 		}
 	}
-
+	
 	private static class BindingResult {
 		final List<Substitution> generatedSubstitutions = new ArrayList<>();
 		final List<Integer> numbersOfUnassignedPositiveBodyAtoms = new ArrayList<>();
@@ -727,16 +706,16 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		int size() {
 			return generatedSubstitutions.size();
 		}
-
+		
 		static BindingResult empty() {
 			return new BindingResult();
 		}
-
+		
 		static BindingResult singleton(Substitution generatedSubstitution, int numberOfUnassignedPositiveBodyAtoms) {
 			BindingResult bindingResult = new BindingResult();
 			bindingResult.add(generatedSubstitution, numberOfUnassignedPositiveBodyAtoms);
 			return bindingResult;
 		}
-
+		
 	}
 }
