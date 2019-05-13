@@ -1,18 +1,12 @@
+% in this version, unused cost rules are removed
+
 % INITIAL PROBLEM
 cabinetDomain(C) :- cabinetDomainNew(C).
 roomDomain(R) :- roomDomainNew(R).
 
-% definition of lower and upper numbers of cabinets and rooms possible in a configuration
-% L <= {cabinet(C) : cabinetDomain(C)} <= U :- cabinetLower(L), cabinetUpper(U).
+% guessing of cabinets and rooms in a configuration
 { cabinet(C) } :- cabinetDomain(C).
-:- not atLeastLCabinets.
-atLeastLCabinets :- cabinetLower(L), L <= #count { C : cabinet(C), cabinetDomain(C) }.
-:- cabinetUpper(U), U1 <= #count { C : cabinet(C), cabinetDomain(C) }, U1 = U + 1.
-% L <= {room(R) : roomDomain(R)} <= U :- roomLower(L), roomUpper(U).
 { room(R) } :- roomDomain(R).
-:- not atLeastLRooms.
-atLeastLRooms :- roomLower(L), L <= #count { R : room(R), roomDomain(R) }.
-:- roomUpper(U),    U1 <= #count { R : room(R), roomDomain(R) }, U1 = U + 1.
 
 % ordering of used cabinets and rooms
 room(R1) :- roomDomainNew(R1), roomDomainNew(R2), room(R2), R1 < R2.
@@ -28,7 +22,7 @@ thingHasCabinet(T) :- cabinetTOthing(C,T).
 
 % association roomTOcabinet
 % 1 <= {roomTOcabinet(R,C) : roomDomain(R)} <= 1 :- cabinet(C).
-{ roomTOcabinet(R,C) } :- roomDomain(R), cabinet(C).
+{ roomTOcabinet(R,C) } :- roomDomain(R), cabinet(C), not n_roomTOcabinet(R,C).
 cabinetHasRoom(C) :- roomTOcabinet(R,C).
 :- cabinet(C), not cabinetHasRoom(C).
 :- cabinet(C), roomDomain(R1), roomTOcabinet(R1,C), roomDomain(R2), roomTOcabinet(R2,C), R1 < R2.
@@ -37,6 +31,7 @@ cabinetHasRoom(C) :- roomTOcabinet(R,C).
 % association personTOroom
 % a room belongs to a person, who stores things in cabinets in that room
 personTOroom(P,R) :- personTOthing(P,T), cabinetTOthing(C,T), roomTOcabinet(R,C).
+legacyConfig(personTOroom(P,R)) :- legacyConfig(personTOthing(P,T)), legacyConfig(cabinetTOthing(C,T)), legacyConfig(roomTOcabinet(R,C)).
 
 % things of one person cannot be placed in a cabinet together with things of another person
 :- cabinetTOthing(C,T1), cabinetTOthing(C,T2),
@@ -56,6 +51,7 @@ cabinet(C) :- roomTOcabinet(R,C).
 % there are 2 types of things which are disjoint
 thing(T) :- thingLong(T).
 thing(T) :- thingShort(T).
+thingShort(T) :- thing(T), not thingLong(T).
 :- thingLong(T), thingShort(T).
 
 % long things have to be packed in high cabinets
@@ -72,9 +68,7 @@ cabinetHigh(C) :- thingLong(T), cabinetTOthing(C,T).
 cabinetSize(C,1) :- cabinet(C), cabinetSmall(C).
 cabinetSize(C,2) :- cabinet(C), cabinetHigh(C).
 roomTOcabinetSize(R,C,S) :- roomTOcabinet(R,C), cabinetSize(C,S).
-%:- 5 <= #sum { S,C : roomTOcabinetSize(R,C,S), cabinetDomain(C) }, room(R).
-:- roomTOcabinetSize(R,C1,S1), roomTOcabinetSize(R,C2,S2), roomTOcabinetSize(R,C3,S3),                             C1<C2, C2<C3,        S1+S2+S3    > 4, room(R).
-:- roomTOcabinetSize(R,C1,S1), roomTOcabinetSize(R,C2,S2), roomTOcabinetSize(R,C3,S3), roomTOcabinetSize(R,C4,S4), C1<C2, C2<C3, C3<C4, S1+S2+S3+S4 > 4, room(R).
+:- 5 <= #sum { S,C : roomTOcabinetSize(R,C,S), cabinetDomain(C) }, room(R).
 
 % TRANSFORMATION RULES
 person(P) :- legacyConfig(person(P)).
@@ -120,61 +114,29 @@ room(R) :- reuse(room(R)).
 :- cabinet(C), delete(cabinet(C)).
 :- room(R), delete(room(R)).
 
-% create actions:
-create(cabinetHigh(C)) :- cabinetHigh(C), cabinetDomainNew(C).
-create(cabinetSmall(C)) :- cabinetSmall(C), cabinetDomainNew(C).
-create(room(R)) :- room(R), roomDomainNew(R).
-create(cabinetTOthing(C,T)) :- cabinetTOthing(C,T), not legacyConfig(cabinetTOthing(C,T)).
-create(roomTOcabinet(R,C)) :- roomTOcabinet(R,C), not legacyConfig(roomTOcabinet(R,C)).
-create(personTOroom(P,R)) :- personTOroom(P,R), not legacyConfig(personTOroom(P,R)).
-
-% COSTS
-% Creation costs
-cost(create(cabinetHigh(C)),W) :- create(cabinetHigh(C)), cabinetHighCost(W).
-cost(create(cabinetSmall(C)),W) :- create(cabinetSmall(C)), cabinetSmallCost(W).
-cost(create(room(R)),W):- create(room(R)), roomCost(W).
-cost(create(cabinetTOthing(C,T)), W) :- create(cabinetTOthing(C,T)), cabinetTOthingCost(W).
-cost(create(roomTOcabinet(R,C)), W) :- create(roomTOcabinet(R,C)), roomTOcabinetCost(W).
-cost(create(personTOroom(P,R)), W) :- create(personTOroom(P,R)), personTOroomCost(W).
-
-% Reusage costs
-cost(reuse(cabinetTOthing(C,T)), W) :- reuse(cabinetTOthing(C,T)), reuseCabinetTOthingCost(W).
-cost(reuse(roomTOcabinet(R,C)), W) :- reuse(roomTOcabinet(R,C)), reuseRoomTOcabinetCost(W).
-cost(reuse(personTOroom(P,R)), W) :- reuse(personTOroom(P,R)), reusePersonTOroomCost(W).
-cost(reuse(cabinet(C)), W) :- reuse(cabinet(C)), cabinetHigh(C), reuseCabinetAsHighCost(W).
-cost(reuse(cabinet(C)), W) :- reuse(cabinet(C)), cabinetSmall(C), reuseCabinetAsSmallCost(W).
-cost(reuse(room(R)), W) :- reuse(room(R)), reuseRoomCost(W).
-
-% Removal costs
-cost(delete(cabinetTOthing(C,T)), W) :- delete(cabinetTOthing(C,T)), removeCabinetTOthingCost(W).
-cost(delete(roomTOcabinet(R,C)), W) :- delete(roomTOcabinet(R,C)), removeRoomTOcabinetCost(W).
-cost(delete(personTOroom(P,R)), W) :- delete(personTOroom(P,R)), removePersonTOroomCost(W).
-cost(delete(cabinet(C)), W) :- delete(cabinet(C)), removeCabinetCost(W).
-cost(delete(room(R)), W) :- delete(room(R)), removeRoomCost(W).
-
 % CONSTRUCTIVE HEURISTICS
-maxCabinet(C) :- cabinetDomainNew(C), Cp1 = C + 1, not cabinetDomainNew(Cp1).	% TODO: more elegance
-maxRoom(R)    :-    roomDomainNew(R), Rp1 = R + 1, not    roomDomainNew(Rp1).	% TODO: more elegance
-fullCabinet(C) :- cabinet(C), cabinetTOthing(C,T1), cabinetTOthing(C,T2), cabinetTOthing(C,T3), cabinetTOthing(C,T4), cabinetTOthing(C,T5), T1<T2, T2<T3, T3<T4, T4<T5.
-fullRoom(R) :- room(R), roomTOcabinet(R,C1), roomTOcabinet(R,C2), roomTOcabinet(R,C3), roomTOcabinet(R,C4), C1<C2, C2<C3, C3<C4.
-% fullRoom(R) :- room(R), 5 <= #sum { S,C : roomTOcabinetSize(R,C,S), cabinetDomain(C) }.
-fullRoom(R) :- room(R), roomTOcabinetSize(R,C1,S1), roomTOcabinetSize(R,C2,S2), roomTOcabinetSize(R,C3,S3), roomTOcabinetSize(R,C4,S4), C1<C2, C2<C3, C3<C4, S1+S2+S3+S4 > 4.
+maxCabinet(C) :- cabinetDomainNew(C), not cabinetDomainNew(C+1).
+maxRoom(R)    :-    roomDomainNew(R), not    roomDomainNew(R+1).
+fullCabinet(C) :- 5 <= #count { T : cabinetTOthing(C,T), thing(T) }, cabinet(C).
+fullRoom(R) :- room(R), 4 <= #sum { S,C : roomTOcabinetSize(R,C,S), cabinetDomain(C) }.
 assignedThing(T) :- cabinetTOthing(_,T).
 assignedCabinet(C) :- roomTOcabinet(_,C).
 personTOcabinet(P,C) :- personTOthing(P,T), cabinetTOthing(C,T).
 personTOroom(P,R)    :- roomTOcabinet(R,C), personTOcabinet(P,C).
 otherPersonTOcabinet(P,C) :- personTOcabinet(P2,C), person(P), P!=P2.
 otherPersonTOroom(P,R)    :- roomTOcabinet(R,C), personTOcabinet(P2,C), person(P), P!=P2.
-% first try to reuse legacy config:
-#heuristic reuse(cabinetTOthing(C,T)) : legacyConfig(cabinetTOthing(C,T)). [1@3]
-#heuristic reuse(roomTOcabinet(R,C))  : legacyConfig(roomTOcabinet(R,C)). [1@3]
-#heuristic reuse(personTOroom(P,R))  : legacyConfig(personTOroom(P,R)). [1@3]
-#heuristic reuse(cabinet(C))  : legacyConfig(cabinet(C)). [1@3]
-#heuristic reuse(room(R))  : legacyConfig(room(R)). [1@3]
-% then fill cabinets with things:
-#heuristic cabinetTOthing(C,T) : cabinetDomain(C), not fullCabinet(C), thing(T),   not assignedThing(T),   personTOthing(P,T),   not otherPersonTOcabinet(P,C), maxCabinet(MC), W=MC-C+10. [W@2]
+% first try to reuse legacy config (assigning long things before short things):
+#heuristic reuse(cabinet(C))  : legacyConfig(cabinet(C)). [6@4]
+#heuristic reuse(room(R))     : legacyConfig(room(R)). [5@4]
+#heuristic reuse(cabinetTOthing(C,T)) : legacyConfig(cabinetTOthing(C,T)),     thingLong(T). [4@4]
+#heuristic reuse(cabinetTOthing(C,T)) : legacyConfig(cabinetTOthing(C,T)), not thingLong(T). [3@4]
+#heuristic reuse(roomTOcabinet(R,C))  : legacyConfig(roomTOcabinet(R,C)). [2@4]
+#heuristic reuse(personTOroom(P,R))  : legacyConfig(personTOroom(P,R)). [1@4]
+% then fill cabinets with things (assigning long things before short things):
+#heuristic cabinetTOthing(C,T) : cabinetDomain(C), not fullCabinet(C), not assignedThing(T), personTOthing(P,T), not otherPersonTOcabinet(P,C), maxCabinet(MC), W=MC-C+10,     thingLong(T). [W@3]
+#heuristic cabinetTOthing(C,T) : cabinetDomain(C), not fullCabinet(C), not assignedThing(T), personTOthing(P,T), not otherPersonTOcabinet(P,C), maxCabinet(MC), W=MC-C+10, not thingLong(T). [W@2]
 % then fill rooms with cabinets:
-#heuristic roomTOcabinet(R,C)  : roomDomain(R),    not fullRoom(R),    cabinet(C), not assignedCabinet(C), personTOcabinet(P,C), not otherPersonTOroom(P,R),    maxRoom(MR),    W=MR-R+10. [W@1]
+#heuristic roomTOcabinet(R,C)  : roomDomain(R), not fullRoom(R), cabinet(C), not assignedCabinet(C), personTOcabinet(P,C), not otherPersonTOroom(P,R), maxRoom(MR), W=MR-R+10. [W@1]
 % when all things and cabinets are assigned, close remaining choices:
 #heuristic -cabinet(C) : not cabinet(C), cabinetDomain(C). [5]
 #heuristic -room(R) : not room(R), roomDomain(R). [5]

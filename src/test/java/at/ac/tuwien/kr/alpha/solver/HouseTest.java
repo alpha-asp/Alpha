@@ -95,7 +95,7 @@ public class HouseTest extends AbstractSolverTests {
 
 	private void testHouse(String instanceId) throws IOException {
 		Program parsedProgram = parser
-				.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "House", "house_alpha_2018-09-10b.asp")));
+				.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "House", "house_alpha_2019-05-09.asp")));
 		parsedProgram
 				.accumulate(parser.parse(CharStreams
 						.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "House", "instances_alpha", instanceId + ".edb"))));
