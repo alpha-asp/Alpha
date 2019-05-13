@@ -580,20 +580,20 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 					LOGGER.debug(heuristicToDecisionCounter.getKey() + ": " + heuristicToDecisionCounter.getValue());
 				}
 			}
+			logFirstChoices(1000);
 		}
-		logFirstChoices(1000);
 	}
 
 	private void logFirstChoices(int n) {
 		List<Integer> choicesSignedAtoms = choiceManager.getChoiceStack().stream().limit(n)
 			.map(Choice::toSignedInteger).collect(Collectors.toList());
-		LOGGER.info("First {} choices (without those removed during backtracking): {}", n, choicesSignedAtoms);
+		LOGGER.debug("First {} choices (without those removed during backtracking): {}", n, choicesSignedAtoms);
 		List<String> choicesGroundAtoms = new ArrayList<>(choicesSignedAtoms.size());
 		for (int signedAtom : choicesSignedAtoms) {
 			int literal = signedAtomToLiteral(signedAtom);
 			choicesGroundAtoms.add(atomStore.literalToString(literal));
 		}
-		LOGGER.info("First {} choices (without those removed during backtracking): {}", n, choicesGroundAtoms);
+		LOGGER.debug("First {} choices (without those removed during backtracking): {}", n, choicesGroundAtoms);
 	}
 
 	public void setChecksEnabled(boolean checksEnabled) {
