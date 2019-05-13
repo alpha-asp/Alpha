@@ -197,6 +197,9 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	@Override
 	public int chooseLiteral(Set<Integer> admissibleChoices) {
 		int atom = chooseAtom(admissibleChoices);
+		if (atom == DEFAULT_CHOICE_ATOM) {
+			return DEFAULT_CHOICE_LITERAL;
+		}
 		boolean sign = chooseSign(atom);
 		return atomToLiteral(atom, sign);
 	}
