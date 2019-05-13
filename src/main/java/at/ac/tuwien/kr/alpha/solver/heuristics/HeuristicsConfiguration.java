@@ -86,4 +86,8 @@ public class HeuristicsConfiguration {
 		return new HeuristicsConfigurationBuilder();
 	}
 
+	@Override
+	public String toString() {
+		return heuristic.toString() + ", respectDomspecHeuristics=" + respectDomspecHeuristics + ", momsStrategy=" + momsStrategy;
+	}
 }
