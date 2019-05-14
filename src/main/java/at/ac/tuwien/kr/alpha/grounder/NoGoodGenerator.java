@@ -73,7 +73,7 @@ public class NoGoodGenerator {
 	 *          Assumption: atoms with fixed interpretation evaluate to true under the substitution.
 	 * @return a list of the NoGoods corresponding to the ground rule.
 	 */
-	List<NoGood> generateNoGoodsFromGroundSubstitution(final NonGroundRule nonGroundRule, final Substitution substitution) {
+	Collection<NoGood> generateNoGoodsFromGroundSubstitution(final NonGroundRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> posLiterals = collectPosLiterals(nonGroundRule, substitution);
 		final List<Integer> negLiterals = collectNegLiterals(nonGroundRule, substitution);
 
@@ -86,10 +86,7 @@ public class NoGoodGenerator {
 			return singletonList(NoGood.fromConstraint(posLiterals, negLiterals));
 		}
 
-		final List<NoGood> result = new ArrayList<>();
-
 		final Atom groundHeadAtom = nonGroundRule.getHeadAtom().substitute(substitution);
-		final int headId = atomStore.putIfAbsent(groundHeadAtom);
 
 		// Prepare atom representing the rule body.
 		final RuleAtom bodyAtom = new RuleAtom(nonGroundRule, substitution);
@@ -105,36 +102,45 @@ public class NoGoodGenerator {
 		final int bodyRepresentingLiteral = atomToLiteral(atomStore.putIfAbsent(bodyAtom));
 
 		if (groundHeadAtom instanceof HeuristicAtom) {
-			BasicAtom groundHeuristicHead = ((HeuristicAtom)groundHeadAtom).getHead().toAtom();
-			final int heuristicHeadId = atomStore.putIfAbsent(groundHeuristicHead);
-			result.addAll(choiceRecorder.generateHeuristicNoGoods(posLiterals, negLiterals, (HeuristicAtom)groundHeadAtom, bodyRepresentingLiteral, heuristicHeadId));
+			return generateNoGoodsForHeuristicRule(posLiterals, negLiterals, (HeuristicAtom) groundHeadAtom, bodyRepresentingLiteral);
 		} else {
-			final int headLiteral = atomToLiteral(atomStore.putIfAbsent(nonGroundRule.getHeadAtom().substitute(substitution)));
+			return generateNoGoodsForNonConstraintNonHeuristicRule(nonGroundRule, posLiterals, negLiterals, groundHeadAtom, bodyRepresentingLiteral);
+		}
+	}
 
-			choiceRecorder.addHeadToBody(headId, atomOf(bodyRepresentingLiteral));
+	private Collection<NoGood> generateNoGoodsForHeuristicRule(List<Integer> posLiterals, List<Integer> negLiterals, HeuristicAtom groundHeadAtom, int bodyRepresentingLiteral) {
+		BasicAtom groundHeuristicHead = groundHeadAtom.getHead().toAtom();
+		final int heuristicHeadId = atomStore.putIfAbsent(groundHeuristicHead);
+		return choiceRecorder.generateHeuristicNoGoods(posLiterals, negLiterals, groundHeadAtom, bodyRepresentingLiteral, heuristicHeadId);
+	}
 
-			// Create a nogood for the head.
-			result.add(NoGood.headFirst(negateLiteral(headLiteral), bodyRepresentingLiteral));
+	private Collection<NoGood> generateNoGoodsForNonConstraintNonHeuristicRule(NonGroundRule nonGroundRule, List<Integer> posLiterals, List<Integer> negLiterals, Atom groundHeadAtom, int bodyRepresentingLiteral) {
+		final List<NoGood> result = new ArrayList<>();
+		final int headId = atomStore.putIfAbsent(groundHeadAtom);
+		final int headLiteral = atomToLiteral(headId);
 
-			final NoGood ruleBody = NoGood.fromBody(posLiterals, negLiterals, bodyRepresentingLiteral);
-			result.add(ruleBody);
+		choiceRecorder.addHeadToBody(headId, atomOf(bodyRepresentingLiteral));
 
-			// Nogoods such that the atom representing the body is true iff the body is true.
-			for (int j = 1; j < ruleBody.size(); j++) {
-				result.add(new NoGood(bodyRepresentingLiteral, negateLiteral(ruleBody.getLiteral(j))));
-			}
+		// Create a nogood for the head.
+		result.add(NoGood.headFirst(negateLiteral(headLiteral), bodyRepresentingLiteral));
 
-			// If the rule head is unique, add support.
-			if (uniqueGroundRulePerGroundHead.contains(nonGroundRule)) {
-				result.add(NoGood.support(headLiteral, bodyRepresentingLiteral));
-			}
+		final NoGood ruleBody = NoGood.fromBody(posLiterals, negLiterals, bodyRepresentingLiteral);
+		result.add(ruleBody);
 
-			// If the body of the rule contains negation, add choices.
-			if (!negLiterals.isEmpty()) {
-				result.addAll(choiceRecorder.generateChoiceNoGoods(posLiterals, negLiterals, bodyRepresentingLiteral));
-			}
+		// Nogoods such that the atom representing the body is true iff the body is true.
+		for (int j = 1; j < ruleBody.size(); j++) {
+			result.add(new NoGood(bodyRepresentingLiteral, negateLiteral(ruleBody.getLiteral(j))));
 		}
 
+		// If the rule head is unique, add support.
+		if (uniqueGroundRulePerGroundHead.contains(nonGroundRule)) {
+			result.add(NoGood.support(headLiteral, bodyRepresentingLiteral));
+		}
+
+		// If the body of the rule contains negation, add choices.
+		if (!negLiterals.isEmpty()) {
+			result.addAll(choiceRecorder.generateChoiceNoGoods(posLiterals, negLiterals, bodyRepresentingLiteral));
+		}
 		return result;
 	}
 
