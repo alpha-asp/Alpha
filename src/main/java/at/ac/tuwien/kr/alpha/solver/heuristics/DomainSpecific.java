@@ -83,27 +83,11 @@ public class DomainSpecific implements BranchingHeuristic {
 
 	@Override
 	public int chooseLiteral(Set<Integer> admissibleChoices) {
-		// Set<Integer> activeHeuristics = choiceManager.getAllActiveHeuristicAtoms();
-		// Collection<Set<Integer>> heuristicsOrderedByDecreasingPriority = choiceManager.getDomainSpecificHeuristics()
-		// .getHeuristicsOrderedByDecreasingPriority();
-		// for (Set<Integer> potentialHeuristics : heuristicsOrderedByDecreasingPriority) {
-		// ActiveHeuristicsToBodies activeHeuristicsToBodies = computeActiveHeuristicsToBodies(
-		// Sets.intersection(activeHeuristics, potentialHeuristics));
-		// if (activeHeuristicsToBodies.isSeveralValues()) {
-		// Set<Integer> admissibleActiveChoices = activeHeuristicsToBodies.getBodiesForActiveHeuristics();
-		// if (admissibleChoices != null) {
-		// admissibleActiveChoices = Sets.intersection(admissibleActiveChoices, admissibleChoices);
-		// }
-		// return askFallbackHeuristic(activeHeuristicsToBodies, admissibleActiveChoices);
-		// } else if (!activeHeuristicsToBodies.isEmpty()) {
-		// return chooseAdmissibleBodyForHeuristic(activeHeuristicsToBodies, admissibleChoices);
-		// }
-		// // else: continue to set of heuristic values with lower priority
-		// }
-
-		// TODO: admissibleChoices
-		Set<HeuristicDirectiveValues> discardedValues = new HashSet<>();
 		DomainSpecificHeuristicsStore heuristicsStore = choiceManager.getDomainSpecificHeuristics();
+		if (admissibleChoices != null) {
+			throw new UnsupportedOperationException("DomainSpecific does not support restricting guesses to admissible choices.");
+		}
+
 		HeuristicDirectiveValues currentValues;
 		int chosenLiteral = DEFAULT_CHOICE_LITERAL;
 		int discardedBecauseHeadAssigned = 0;
@@ -121,13 +105,9 @@ public class DomainSpecific implements BranchingHeuristic {
 			} else {
 				discardedBecauseHeadAssigned++;
 			}
-			discardedValues.add(currentValues);
 		}
 		LOGGER.debug("{} HeuristicDirectiveValues discarded because head already assigned", discardedBecauseHeadAssigned);
 		LOGGER.debug("{} HeuristicDirectiveValues discarded because no active body found", discardedBecauseNoBody);
-		// TODO: currently, we just discard values that are currently not applicable and rely on them being added again after backtracking. can we really do this?
-		// heuristicsStore.offer(discardedValues);
-		// LOGGER.debug("Gave {} values back to heuristics store", discardedValues.size());
 
 		return chosenLiteral;
 	}
@@ -140,9 +120,9 @@ public class DomainSpecific implements BranchingHeuristic {
 		} else if (activeChoiceAtomsDerivingHead.size() == 1) {
 			atom = activeChoiceAtomsDerivingHead.iterator().next();
 		} else {
-			atom = fallbackHeuristic.chooseAtom(activeChoiceAtomsDerivingHead); // TODO: intersection with admissible (?)
+			atom = fallbackHeuristic.chooseAtom(activeChoiceAtomsDerivingHead);
 		}
-		return Optional.ofNullable(Literals.atomToLiteral(atom, values.getSign()));
+		return Optional.of(Literals.atomToLiteral(atom, values.getSign()));
 	}
 	
 	@Override
@@ -151,10 +131,10 @@ public class DomainSpecific implements BranchingHeuristic {
 	}
 
 	class ActiveHeuristicsToBodies {
-		private Set<Integer> bodiesForActiveHeuristics = new HashSet<>();
+		private final Set<Integer> bodiesForActiveHeuristics = new HashSet<>();
 		private HeuristicDirectiveValues heuristicDirectiveValues;
 		private boolean severalValues;
-		private Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies = new HashMap<>();
+		private final Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies = new HashMap<>();
 
 		public void add(HeuristicDirectiveValues newValues) {
 			if (!severalValues) {
@@ -171,7 +151,7 @@ public class DomainSpecific implements BranchingHeuristic {
 			}
 		}
 
-		public boolean isEmpty() {
+		boolean isEmpty() {
 			return bodiesForActiveHeuristics.isEmpty();
 		}
 
@@ -201,11 +181,7 @@ public class DomainSpecific implements BranchingHeuristic {
 			if (bodies.isEmpty()) {
 				return;
 			}
-			Set<Integer> existingBodies = activeHeuristicsToBodies.get(values);
-			if (existingBodies == null) {
-				existingBodies = new HashSet<>();
-				activeHeuristicsToBodies.put(values, existingBodies);
-			}
+			Set<Integer> existingBodies = activeHeuristicsToBodies.computeIfAbsent(values, k -> new HashSet<>());
 			existingBodies.addAll(bodies);
 		}
 
