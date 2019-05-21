@@ -77,7 +77,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private boolean disableInstanceRemoval;
 	private final boolean useCountingGridNormalization;
 	private final boolean debugInternalChecks;
-	
+
 	private final GrounderHeuristicsConfiguration heuristicsConfiguration;
 
 	public NaiveGrounder(Program program, AtomStore atomStore, boolean debugInternalChecks, Bridge... bridges) {
@@ -107,7 +107,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		final Set<NonGroundRule> uniqueGroundRulePerGroundHead = getRulesWithUniqueHead();
 		choiceRecorder = new ChoiceRecorder(atomStore);
 		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, programAnalysis, uniqueGroundRulePerGroundHead);
-		
+
 		this.debugInternalChecks = debugInternalChecks;
 	}
 
@@ -379,17 +379,17 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 			LOGGER.debug("{}", choiceRecorder);
 		}
-		
+
 		if (debugInternalChecks) {
 			checkTypesOfNoGoods(newNoGoods.values());
 		}
-		
+
 		return newNoGoods;
 	}
 
 	/**
 	 * Grounds the given {@code nonGroundRule} by applying the given {@code substitutions} and registers the nogoods generated during that process.
-	 * 
+	 *
 	 * @param nonGroundRule
 	 *          the rule to be grounded
 	 * @param substitutions
@@ -430,7 +430,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		groundingOrder.considerUntilCurrentEnd();
 		return bindNextAtomInRule(groundingOrder, orderPosition + 1, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
 	}
-	
+
 	private BindingResult pushBackAndBindNextAtomInRule(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment) {
 		RuleGroundingOrder modifiedGroundingOrder = groundingOrder.pushBack(orderPosition);
 		if (modifiedGroundingOrder == null) {
@@ -446,7 +446,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		if (currentLiteral == null) {
 			return BindingResult.singleton(partialSubstitution, originalTolerance - remainingTolerance);
 		}
-		
+
 		Atom currentAtom = currentLiteral.getAtom();
 		if (currentLiteral instanceof FixedInterpretationLiteral) {
 			// Generate all substitutions for the builtin/external/interval atom.
@@ -460,12 +460,12 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				return pushBackAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
 			}
 			final List<Substitution> substitutions = substitutedLiteral.getSubstitutions(partialSubstitution);
-			
+
 			if (substitutions.isEmpty()) {
 				// if FixedInterpretationLiteral cannot be satisfied now, it will never be
 				return BindingResult.empty();
 			}
-			
+
 			final BindingResult bindingResult = new BindingResult();
 			for (Substitution substitution : substitutions) {
 				// Continue grounding with each of the generated values.
@@ -498,7 +498,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 			instances = singletonList(new Instance(substitute.getTerms()));
 		}
-		
+
 		// substituted atom contains variables
 		if (currentLiteral.isNegated()) {
 			if (laxGrounderHeuristic) {
@@ -511,7 +511,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		if (instances == null) {
 			instances = getInstancesForSubstitute(substitute, partialSubstitution);
 		}
-		
+
 		if (laxGrounderHeuristic && instances.isEmpty()) {
 			// we have reached a point where we have to terminate binding,
 			// but it might be possible that a different grounding order would allow us to continue binding
@@ -563,13 +563,23 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	private boolean storeAtomAndTerminateIfAtomDoesNotHold(final Atom substitute, Assignment currentAssignment, AtomicInteger remainingTolerance) {
-		final int atomId = atomStore.putIfAbsent(substitute);
-
-		if (currentAssignment != null) {
+		if (currentAssignment != null) { // if we are not in bootstrapping
+			final int atomId = atomStore.putIfAbsent(substitute);
 			ThriceTruth truth = currentAssignment.isAssigned(atomId) ? currentAssignment.getTruth(atomId) : null;
-			if (truth == null || !truth.toBoolean()) {
-				// Atom currently does not hold
-				if (!disableInstanceRemoval) {
+
+			if (disableInstanceRemoval) {
+				final Instance instance = new Instance(substitute.getTerms());
+				boolean isInWorkingMemory = workingMemory.get(substitute, true).containsInstance(instance);
+				if (isInWorkingMemory) {
+					return false;
+				}
+				if (truth != null && !truth.toBoolean() || remainingTolerance.decrementAndGet() < 0) {
+					// terminate if more positive atoms are unsatisfied as tolerated by the heuristic
+					return true;
+				}
+			} else {
+				if (truth == null || !truth.toBoolean()) {
+					// Atom currently does not hold
 					removeAfterObtainingNewNoGoods.add(substitute);
 				}
 				if (truth == null && remainingTolerance.decrementAndGet() < 0) {
@@ -587,7 +597,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
 		return choiceRecorder.getAndResetChoices();
 	}
-	
+
 	@Override
 	public Map<Integer, Set<Integer>> getHeadsToBodies() {
 		return choiceRecorder.getAndResetHeadsToBodies();
@@ -688,7 +698,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			this.startingLiteral = startingLiteral;
 		}
 	}
-	
+
 	private static class BindingResult {
 		final List<Substitution> generatedSubstitutions = new ArrayList<>();
 		final List<Integer> numbersOfUnassignedPositiveBodyAtoms = new ArrayList<>();
@@ -706,16 +716,16 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		int size() {
 			return generatedSubstitutions.size();
 		}
-		
+
 		static BindingResult empty() {
 			return new BindingResult();
 		}
-		
+
 		static BindingResult singleton(Substitution generatedSubstitution, int numberOfUnassignedPositiveBodyAtoms) {
 			BindingResult bindingResult = new BindingResult();
 			bindingResult.add(generatedSubstitution, numberOfUnassignedPositiveBodyAtoms);
 			return bindingResult;
 		}
-		
+
 	}
 }
