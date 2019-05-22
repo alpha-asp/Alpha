@@ -2,8 +2,10 @@ package at.ac.tuwien.kr.alpha.config;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
@@ -18,7 +20,7 @@ public class InputConfig {
 	private List<String> files = new ArrayList<>();
 	private boolean literate = InputConfig.DEFAULT_LITERATE;
 	private int numAnswerSets = InputConfig.DEFAULT_NUM_ANSWER_SETS;
-	private java.util.function.Predicate<Predicate> filter = InputConfig.DEFAULT_FILTER;
+	private Set<String> desiredPredicates = new HashSet<>();
 	private Map<String, PredicateInterpretation> predicateMethods = new HashMap<>();
 
 	public static InputConfig forString(String str) {
@@ -52,11 +54,7 @@ public class InputConfig {
 	}
 
 	public java.util.function.Predicate<Predicate> getFilter() {
-		return this.filter;
-	}
-
-	public void setFilter(java.util.function.Predicate<Predicate> filter) {
-		this.filter = filter;
+		return this.desiredPredicates.isEmpty() ? InputConfig.DEFAULT_FILTER : p -> this.desiredPredicates.contains(p.getName());
 	}
 
 	public Map<String, PredicateInterpretation> getPredicateMethods() {
@@ -77,6 +75,14 @@ public class InputConfig {
 
 	public void setFiles(List<String> files) {
 		this.files = files;
+	}
+
+	public Set<String> getDesiredPredicates() {
+		return this.desiredPredicates;
+	}
+
+	public void setDesiredPredicates(Set<String> desiredPredicates) {
+		this.desiredPredicates = desiredPredicates;
 	}
 
 }

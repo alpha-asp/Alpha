@@ -145,7 +145,7 @@ public class NaiveGrounderTest {
 				+ "q2(X) :- something(X). ");
 
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, GrounderHeuristicsConfiguration.lax(), true);
+		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, p -> true, GrounderHeuristicsConfiguration.lax(), true);
 
 		NonGroundRule nonGroundRule = grounder.getNonGroundRule(0);
 		nonGroundRule.groundingOrder.groundingOrders.put(literal("p1", "X"), groundingOrderP1);
@@ -193,7 +193,7 @@ public class NaiveGrounderTest {
 	private void testIfGrounderGroundsRule(Program program, ThriceTruth bTruth, boolean expectNoGoods) {
 		AtomStore atomStore = new AtomStoreImpl();
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
-		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, GrounderHeuristicsConfiguration.lax(), true);
+		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, p -> true, GrounderHeuristicsConfiguration.lax(), true);
 
 		int b = atomStore.putIfAbsent(atom("b", 1));
 		currentAssignment.growForMaxAtomId();
@@ -256,7 +256,7 @@ public class NaiveGrounderTest {
 		AtomStore atomStore = new AtomStoreImpl();
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
 		GrounderHeuristicsConfiguration heuristicConfiguration = GrounderHeuristicsConfiguration.getInstance(tolerance, tolerance);
-		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, heuristicConfiguration, true);
+		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, p -> true, heuristicConfiguration, true);
 
 		for (int i = 1; i <= nTrueBs; i++) {
 			int b = atomStore.putIfAbsent(atom("b", i));

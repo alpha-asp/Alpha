@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 
@@ -42,11 +43,11 @@ public final class GrounderFactory {
 		throw new IllegalArgumentException("Unknown grounder requested.");
 	}
 
-	public static Grounder getInstance(String name, Program program, AtomStore atomStore, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks) {
-		return getInstance(name, program, atomStore, p -> true, heuristicsConfiguration, false, debugInternalChecks);
+	public static Grounder getInstance(String name, Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks) {
+		return getInstance(name, program, atomStore, filter, heuristicsConfiguration, false, debugInternalChecks);
 	}
 
 	public static Grounder getInstance(String name, Program program, AtomStore atomStore, boolean debugInternalChecks) {
-		return getInstance(name, program, atomStore, p -> true, new GrounderHeuristicsConfiguration(), false, debugInternalChecks);
+		return getInstance(name, program, atomStore, InputConfig.DEFAULT_FILTER, new GrounderHeuristicsConfiguration(), false, debugInternalChecks);
 	}
 }

@@ -70,6 +70,19 @@ public class MainTest {
 		System.setOut(sysOut);
 		assertTrue(newOut.toString().contains("{ b, p(a) }"));
 	}
+	
+	@Test
+	public void filterTest() {
+		PrintStream sysOut = System.out;
+		ByteArrayOutputStream newOut = new ByteArrayOutputStream();
+		System.setOut(new PrintStream(newOut));
+		String[] args = Arrays.copyOf(argv, argv.length + 2);
+		args[args.length - 2] = "-f";
+		args[args.length - 1] = "b";
+		main(args);
+		System.setOut(sysOut);
+		assertTrue(newOut.toString().contains("{ b }"));
+	}
 
 // Made obsolete by refactoring - now covered by CommandLineParserTest#numAnswerSets
 //	@Test
