@@ -45,7 +45,7 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 			if (r.getBody().isEmpty()) {
 				if (!r.getHead().isGround()) {
 					throw new IllegalArgumentException(
-							"InteralProgram does not support non-ground rules with empty bodies! (Head = " + r.getHead().toString() + ")");
+							"InternalProgram does not support non-ground rules with empty bodies! (Head = " + r.getHead().toString() + ")");
 				} else {
 					facts.add(r.getHeadAtom());
 				}
@@ -80,7 +80,7 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 		return retVal;
 	}
 
-	public void recordDefiningRule(Predicate headPredicate, InternalRule rule) {
+	private void recordDefiningRule(Predicate headPredicate, InternalRule rule) {
 		this.predicateDefiningRules.putIfAbsent(headPredicate, new HashSet<>());
 		this.predicateDefiningRules.get(headPredicate).add(rule);
 	}

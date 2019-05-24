@@ -65,7 +65,7 @@ public class Substitution {
 		this(new TreeMap<>(clone.substitution));
 	}
 	
-	static Substitution unify(Literal literal, Instance instance, Substitution substitution) {
+	public static Substitution unify(Literal literal, Instance instance, Substitution substitution) {
 		return unify(literal.getAtom(), instance, substitution);
 	}
 

@@ -141,6 +141,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		workingMemory.initialize(ChoiceAtom.OFF);
 		workingMemory.initialize(ChoiceAtom.ON);
 
+		// TODO ignore solved rules here
 		// Initialize rules and constraints in working memory
 		for (InternalRule nonGroundRule : this.programAnalysis.getRulesById().values()) {
 			// Create working memories for all predicates occurring in the rule

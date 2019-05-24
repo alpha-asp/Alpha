@@ -27,15 +27,16 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 
 public class WorkingMemory {
 	protected HashMap<Predicate, ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage>> workingMemory = new HashMap<>();
@@ -109,4 +110,5 @@ public class WorkingMemory {
 	public Set<IndexedInstanceStorage> modified() {
 		return modifiedWorkingMemories;
 	}
+
 }
