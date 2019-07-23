@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018 Siemens AG
+ * Copyright (c) 2017-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -25,6 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.junit.Test;
 
@@ -45,5 +46,19 @@ public class ProgramTest {
 					"q(X) :- p(X)." + System.lineSeparator() +
 					"#heuristic q(X) : p(X). [X@2]" + System.lineSeparator(),
 				parsedProgram.toString());
+	}
+
+	@Test
+	public void testHeuristicDefaultWeight() {
+		Program parsedProgram = new ProgramParser().parse(
+				"#heuristic q(X) : p(X).");
+		assertEquals(ConstantTerm.getInstance(0), ((HeuristicDirective)parsedProgram.getInlineDirectives().getDirectives().iterator().next()).getWeightAtLevel().getWeight());
+	}
+
+	@Test
+	public void testHeuristicDefaultLevel() {
+		Program parsedProgram = new ProgramParser().parse(
+				"#heuristic q(X) : p(X).");
+		assertEquals(ConstantTerm.getInstance(0), ((HeuristicDirective)parsedProgram.getInlineDirectives().getDirectives().iterator().next()).getWeightAtLevel().getLevel());
 	}
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -35,8 +35,8 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
  */
 public class WeightAtLevel implements Substitutable<WeightAtLevel> {
 	
-	public static final int DEFAULT_WEIGHT = 1;
-	public static final int DEFAULT_LEVEL = 1;
+	public static final int DEFAULT_WEIGHT = 0;
+	public static final int DEFAULT_LEVEL = 0;
 	public static final Term DEFAULT_WEIGHT_TERM = ConstantTerm.getInstance(DEFAULT_WEIGHT);
 	public static final Term DEFAULT_LEVEL_TERM = ConstantTerm.getInstance(DEFAULT_LEVEL);
 

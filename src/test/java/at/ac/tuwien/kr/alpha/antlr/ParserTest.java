@@ -219,7 +219,7 @@ public class ParserTest {
 		assertEquals("[p(X, a, _1), q(Xaa, xaa)]", directive.getBody().toString());
 		WeightAtLevel weightAtLevel = directive.getWeightAtLevel();
 		assertEquals("X", weightAtLevel.getWeight().toString());
-		assertEquals("1", weightAtLevel.getLevel().toString());
+		assertEquals("0", weightAtLevel.getLevel().toString());
 	}
 
 	@Test
