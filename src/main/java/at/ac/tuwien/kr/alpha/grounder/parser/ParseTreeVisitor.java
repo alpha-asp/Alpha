@@ -464,6 +464,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public WeightAtLevel visitWeight_annotation(Weight_annotationContext ctx) {
 		// SQUARE_OPEN weight_at_level SQUARE_CLOSE
+		if (ctx == null) {
+			return new WeightAtLevel(null, null);
+		}
 		return visitWeight_at_level(ctx.weight_at_level());
 	}
 	
