@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
@@ -40,7 +41,8 @@ import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 
 import java.util.*;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
@@ -99,27 +101,36 @@ public class NoGoodGenerator {
 			return emptyList();
 		}
 
-		final int bodyRepresentingLiteral = atomToLiteral(atomStore.putIfAbsent(bodyAtom));
+		final int bodyRepresentingAtom = atomStore.putIfAbsent(bodyAtom);
 
 		if (groundHeadAtom instanceof HeuristicAtom) {
-			return generateNoGoodsForHeuristicRule(posLiterals, negLiterals, (HeuristicAtom) groundHeadAtom, bodyRepresentingLiteral);
+			return generateNoGoodsForHeuristicRule(posLiterals, negLiterals, (HeuristicAtom) groundHeadAtom, bodyRepresentingAtom);
 		} else {
-			return generateNoGoodsForNonConstraintNonHeuristicRule(nonGroundRule, posLiterals, negLiterals, groundHeadAtom, bodyRepresentingLiteral);
+			return generateNoGoodsForNonConstraintNonHeuristicRule(nonGroundRule, posLiterals, negLiterals, groundHeadAtom, bodyRepresentingAtom);
 		}
 	}
 
-	private Collection<NoGood> generateNoGoodsForHeuristicRule(List<Integer> posLiterals, List<Integer> negLiterals, HeuristicAtom groundHeadAtom, int bodyRepresentingLiteral) {
+	private Collection<NoGood> generateNoGoodsForHeuristicRule(List<Integer> posLiterals, List<Integer> negLiterals, HeuristicAtom groundHeadAtom, int bodyRepresentingAtom) {
 		BasicAtom groundHeuristicHead = groundHeadAtom.getHead().toAtom();
 		final int heuristicHeadId = atomStore.putIfAbsent(groundHeuristicHead);
-		return choiceRecorder.generateHeuristicNoGoods(posLiterals, negLiterals, groundHeadAtom, bodyRepresentingLiteral, heuristicHeadId);
+
+		final List<NoGood> result = new ArrayList<>();
+		result.addAll(choiceRecorder.generateHeuristicNoGoods(posLiterals, negLiterals, groundHeadAtom, bodyRepresentingAtom, heuristicHeadId));
+
+		// if the head of the heuristic directive is assigned, the body of the heuristic rule shall also be assigned s.t. it is not applicable anymore:
+		result.add(NoGood.headFirst(atomToLiteral(bodyRepresentingAtom, false), atomToLiteral(heuristicHeadId, true)));
+		result.add(NoGood.headFirst(atomToLiteral(bodyRepresentingAtom, false), atomToLiteral(heuristicHeadId, false)));
+
+		return result;
 	}
 
-	private Collection<NoGood> generateNoGoodsForNonConstraintNonHeuristicRule(NonGroundRule nonGroundRule, List<Integer> posLiterals, List<Integer> negLiterals, Atom groundHeadAtom, int bodyRepresentingLiteral) {
+	private Collection<NoGood> generateNoGoodsForNonConstraintNonHeuristicRule(NonGroundRule nonGroundRule, List<Integer> posLiterals, List<Integer> negLiterals, Atom groundHeadAtom, int bodyRepresentingAtom) {
 		final List<NoGood> result = new ArrayList<>();
 		final int headId = atomStore.putIfAbsent(groundHeadAtom);
 		final int headLiteral = atomToLiteral(headId);
+		final int bodyRepresentingLiteral = Literals.atomToLiteral(bodyRepresentingAtom);
 
-		choiceRecorder.addHeadToBody(headId, atomOf(bodyRepresentingLiteral));
+		choiceRecorder.addHeadToBody(headId, bodyRepresentingAtom);
 
 		// Create a nogood for the head.
 		result.add(NoGood.headFirst(negateLiteral(headLiteral), bodyRepresentingLiteral));
@@ -139,7 +150,7 @@ public class NoGoodGenerator {
 
 		// If the body of the rule contains negation, add choices.
 		if (!negLiterals.isEmpty()) {
-			result.addAll(choiceRecorder.generateChoiceNoGoods(posLiterals, negLiterals, bodyRepresentingLiteral));
+			result.addAll(choiceRecorder.generateChoiceNoGoods(posLiterals, negLiterals, bodyRepresentingAtom));
 		}
 		return result;
 	}

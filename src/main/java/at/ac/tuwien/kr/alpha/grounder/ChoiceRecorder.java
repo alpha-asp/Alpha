@@ -39,7 +39,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
 import static at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom.off;
 import static at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom.on;
 import static java.util.Collections.emptyList;
@@ -95,10 +96,9 @@ public class ChoiceRecorder {
 	}
 
 
-	public List<NoGood> generateChoiceNoGoods(final List<Integer> posLiterals, final List<Integer> negLiterals, final int bodyRepresentingLiteral) {
+	public List<NoGood> generateChoiceNoGoods(final List<Integer> posLiterals, final List<Integer> negLiterals, final int bodyRepresentingAtom) {
 		// Obtain an ID for this new choice.
 		final int choiceId = ID_GENERATOR.getNextId();
-		final int bodyRepresentingAtom = atomOf(bodyRepresentingLiteral);
 		// Create ChoiceOn and ChoiceOff atoms.
 		final int choiceOnAtom = atomStore.putIfAbsent(on(choiceId));
 		newChoiceAtoms.getLeft().put(bodyRepresentingAtom, choiceOnAtom);
@@ -111,10 +111,9 @@ public class ChoiceRecorder {
 		return noGoods;
 	}
 
-	public Collection<NoGood> generateHeuristicNoGoods(final List<Integer> posLiterals, final List<Integer> negLiterals, HeuristicAtom groundHeuristicAtom, final int bodyRepresentingLiteral, final int headId) {
+	public Collection<NoGood> generateHeuristicNoGoods(final List<Integer> posLiterals, final List<Integer> negLiterals, HeuristicAtom groundHeuristicAtom, final int bodyRepresentingAtom, final int headId) {
 		// Obtain an ID for this new heuristic.
 		final int heuristicId = ID_GENERATOR.getNextId();
-		final int bodyRepresentingAtom = atomOf(bodyRepresentingLiteral);
 		// Create HeuristicOn and HeuristicOff atoms.
 		final int heuristicOnAtom = atomStore.putIfAbsent(HeuristicInfluencerAtom.on(heuristicId));
 		newHeuristicAtoms.getLeft().put(bodyRepresentingAtom, heuristicOnAtom);
