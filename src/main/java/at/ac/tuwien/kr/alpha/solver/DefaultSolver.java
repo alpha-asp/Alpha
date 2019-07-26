@@ -90,9 +90,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 
 		this.learner = new GroundConflictNoGoodLearner(assignment);
-		this.branchingHeuristic = ChainedBranchingHeuristics.chainOf(
-				BranchingHeuristicFactory.getInstance(heuristicsConfiguration, assignment, choiceManager, random),
-				new NaiveHeuristic(choiceManager));
+		this.branchingHeuristic = chainFallbackHeuristic(heuristicsConfiguration, assignment, random);
 		this.disableJustifications = disableJustifications;
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
 	}
