@@ -31,6 +31,7 @@ import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.solver.DefaultSolver;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
@@ -38,10 +39,12 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the {@link DomainSpecific} heuristics.
@@ -247,6 +250,59 @@ public class DomainSpecificHeuristicsTest {
 				"#heuristic a : not b. [2@1]" + LS +
 				"#heuristic a : not a. [2@1]");
 		solveAndAssertAnswerSets(program, "{ a }", "{ b }");
+	}
+
+	/**
+	 * Uses a modified (smaller) PUP encoding and instance to test for an issue with domain-specific heuristics
+	 * that led to heuristics not being applicable after backjumping.
+	 */
+	@Test
+	public void testHeuristicApplicableAfterBackjump() {
+		Program program = parser.parse(
+			"comUnit(1)." + LS +
+				"comUnit(2)." + LS +
+				"maxUnit(2)." + LS +
+				"assign(1, z, 1)." + LS +
+				"order(4, s, 4)." + LS +
+				"order(3, s, 4)." + LS +
+				"order(2, z, 3)." + LS +
+				"order(2, s, 2)." + LS +
+				"order(1, s, 2)." + LS +
+				"order(1, z, 1)." + LS +
+				"maxElem(6)." + LS +
+				"maxOrder(4)." + LS +
+				"elem(z,Z) :- order(Z,z,_)." + LS +
+				"elem(s,S) :- order(S,s,_)." + LS +
+				"  assign(U,T,X) :- elem(T,X), comUnit(U), not n_assign(U,T,X)." + LS +
+				"n_assign(U,T,X) :- elem(T,X), comUnit(U), not   assign(U,T,X)." + LS +
+				"h_assign_1(U1,T,X,W) :- order(X,T,O), assign(U,T1,Y), order(Y,T1,Om1), Om1=O-1, maxOrder(M), maxUnit(MU), comUnit(U1), U1<=U, maxElem(ME), W=10*MU*(M-O)+2*(ME-X)+U1." + LS +
+				"#heuristic assign(U,T,X) : h_assign_1(U,T,X,W). [W]" + LS +
+				"h_assign_2(Up1,T,X,W) :- order(X,T,O), assign(U,T1,Y), order(Y,T1,Om1), Om1=O-1, maxOrder(M), maxUnit(MU), comUnit(Up1), Up1=U+1, maxElem(ME), W=10*MU*(M-O)+2*(ME-X)." + LS +
+				"#heuristic assign(U,T,X) : h_assign_2(U,T,X,W). [W]" + LS +
+				":- assign(U,T,X1), assign(U,T,X2), assign(U,T,X3), X1<X2, X2<X3." + LS +
+				":- assign(U1,T,X), assign(U2,T,X), U1<U2." + LS +
+				"atLeastOneUnit(T,X):- assign(_,T,X)." + LS +
+				":- elem(T,X), not atLeastOneUnit(T,X)." + LS +
+				"partnerunits(U,P) :- assign(U,z,Z), assign(P,s,D), zone2sensor(Z,D), U!=P." + LS +
+				"partnerunits(U,P) :- partnerunits(P,U)." + LS +
+				":- partnerunits(U,P1), partnerunits(U,P2), partnerunits(U,P3), P1<P2, P2<P3."
+		);
+
+		HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(Heuristic.NAIVE).build();
+		Solver solver = SolverFactory.getInstance("default", "alpharoaming", atomStore, GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true), new Random(), heuristicsConfiguration, true, false);
+		solver.stream().limit(1).collect(Collectors.toList()).get(0);
+		DefaultSolver defaultSolver = (DefaultSolver) solver;
+		assertTrue("No backjumps done", defaultSolver.getNumberOfBackjumps() > 0);
+		Map<String, Integer> numberOfChoicesPerBranchingHeuristic = defaultSolver.getNumberOfChoicesPerBranchingHeuristic();
+		assertTrue("No numbers of choices per branching heuristic", !numberOfChoicesPerBranchingHeuristic.isEmpty());
+		for (Map.Entry<String, Integer> entry : numberOfChoicesPerBranchingHeuristic.entrySet()) {
+			if (entry.getKey().equals("DomainSpecific")) {
+				assertTrue("No choices done by DomainSpecific", entry.getValue() > 0);
+			} else {
+				assertEquals("Choices done by " + entry.getKey(), Integer.valueOf(0), entry.getValue());
+			}
+		}
+
 	}
 
 	private void solveAndAssertAnswerSets(Program program, String... expectedAnswerSets) {
