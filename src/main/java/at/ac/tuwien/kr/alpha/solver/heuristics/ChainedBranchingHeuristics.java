@@ -157,7 +157,7 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 		for (int i = 0; i < chain.size(); i++) {
 			map.put(chain.get(i), decisionCounters[i]);
 		}
-		return map;
+		return Collections.unmodifiableMap(map);
 	}
 
 	@Override

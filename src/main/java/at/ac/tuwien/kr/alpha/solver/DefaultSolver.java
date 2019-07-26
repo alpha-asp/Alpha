@@ -547,6 +547,17 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	@Override
+	public Map<String, Integer> getNumberOfChoicesPerBranchingHeuristic() {
+		Map<String, Integer> mapHeuristicNameToNumberOfDecisions = new LinkedHashMap<>();
+		for (Entry<BranchingHeuristic, Integer> entry : ((ChainedBranchingHeuristics) branchingHeuristic).getNumberOfDecisions().entrySet()) {
+			if (mapHeuristicNameToNumberOfDecisions.put(entry.getKey().toString(), entry.getValue()) != null) {
+				throw new IllegalStateException("Multiple heuristics with the same name: " + entry.getKey().toString());
+			}
+		}
+		return Collections.unmodifiableMap(mapHeuristicNameToNumberOfDecisions);
+	}
+
+	@Override
 	public int getNumberOfBacktracks() {
 		return choiceManager.getBacktracks();
 	}
