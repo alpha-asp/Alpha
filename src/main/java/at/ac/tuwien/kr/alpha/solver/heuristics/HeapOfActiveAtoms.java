@@ -160,7 +160,7 @@ public class HeapOfActiveAtoms {
 	 * @param newNoGood a new nogood, the atoms occurring in which will be initialized
 	 */
 	private void initActivityMOMs(NoGood newNoGood) {
-		LOGGER.debug("Initializing activity scores with MOMs");
+		LOGGER.trace("Initializing activity scores with MOMs for nogood: " + newNoGood);
 		for (int literal : newNoGood) {
 			int atom = atomOf(literal);
 			if (!incrementedActivityScores[atom]) { // update initial value as long as not incremented yet by VSIDS
