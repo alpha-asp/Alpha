@@ -78,9 +78,13 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 		this.head = noGood.head;
 		this.type = noGood.type;
 	}
-	
+
 	public static NoGood learnt(int... literals) {
 		return new NoGood(Type.LEARNT, literals);
+	}
+
+	public static NoGood internal(int... literals) {
+		return new NoGood(Type.INTERNAL, literals);
 	}
 
 	public static NoGood headFirst(int... literals) {

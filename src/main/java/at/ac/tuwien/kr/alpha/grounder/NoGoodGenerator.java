@@ -34,6 +34,7 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
@@ -118,8 +119,9 @@ public class NoGoodGenerator {
 		result.addAll(choiceRecorder.generateHeuristicNoGoods(posLiterals, negLiterals, groundHeadAtom, bodyRepresentingAtom, heuristicHeadId));
 
 		// if the head of the heuristic directive is assigned, the body of the heuristic rule shall also be assigned s.t. it is not applicable anymore:
-		result.add(NoGood.headFirst(atomToLiteral(bodyRepresentingAtom, false), atomToLiteral(heuristicHeadId, true)));
-		result.add(NoGood.headFirst(atomToLiteral(bodyRepresentingAtom, false), atomToLiteral(heuristicHeadId, false)));
+		boolean heuristicSign = ((ConstantTerm<Boolean>)groundHeadAtom.getSign()).getObject();
+		result.add(NoGood.headFirstInternal(atomToLiteral(bodyRepresentingAtom, false), atomToLiteral(heuristicHeadId, heuristicSign)));
+		result.add(NoGood.internal(atomToLiteral(bodyRepresentingAtom,  true), atomToLiteral(heuristicHeadId, !heuristicSign)));
 
 		return result;
 	}
