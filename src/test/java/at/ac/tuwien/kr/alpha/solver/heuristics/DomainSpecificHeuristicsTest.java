@@ -298,6 +298,9 @@ public class DomainSpecificHeuristicsTest {
 		for (Map.Entry<String, Integer> entry : numberOfChoicesPerBranchingHeuristic.entrySet()) {
 			if (entry.getKey().equals("DomainSpecific")) {
 				assertTrue("No choices done by DomainSpecific", entry.getValue() > 0);
+			} else if (entry.getKey().equals("NaiveHeuristic")) {
+				// default heuristic has to decide two choice points that are not covered by the domain-specific one
+				assertEquals("Unexpected number of choices done by Naive", Integer.valueOf(2), entry.getValue());
 			} else {
 				assertEquals("Choices done by " + entry.getKey(), Integer.valueOf(0), entry.getValue());
 			}
