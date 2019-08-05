@@ -140,7 +140,7 @@ public class NaiveGrounderTest {
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(N, ONE);
 		List<NoGood> generatedNoGoods = new ArrayList<>(noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution));
-		assertEquals(4, generatedNoGoods.size());
+		assertEquals(2, generatedNoGoods.size());
 		assertEquals("*{-(HeuOff(\"0\")), +(b(1))}", atomStore.noGoodToString(generatedNoGoods.get(0)));
 		assertEquals("*{-(HeuOn(\"0\")), +(a(1))}", atomStore.noGoodToString(generatedNoGoods.get(1)));
 	}

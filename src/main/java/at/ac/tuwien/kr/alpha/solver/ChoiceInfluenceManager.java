@@ -27,6 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +50,7 @@ public class ChoiceInfluenceManager implements Checkable {
 	// Active choice points and all atoms that influence a choice point (enabler, disabler, choice atom itself).
 	private final Set<ChoicePoint> activeChoicePoints = new LinkedHashSet<>();
 	private final Set<Integer> activeChoicePointsAtoms = new LinkedHashSet<>();
-	private final Map<Integer, ChoicePoint> influencers = new HashMap<>();
+	private final MultiValuedMap<Integer, ChoicePoint> influencers = new HashSetValuedHashMap<>(); // multi-valued because if the influence manager is used for heuristics, one head can influence several heuristics
 	private ActivityListener activityListener;
 
 	private final WritableAssignment assignment;
@@ -78,7 +80,7 @@ public class ChoiceInfluenceManager implements Checkable {
 		if (atom == null) {
 			throw oops("Incomplete choice point description found (no atom)");
 		}
-		if (influencers.get(atom) != null) {
+		if (!influencers.get(atom).isEmpty()) {
 			throw oops("Received choice information repeatedly");
 		}
 		Integer enabler = atomToEnabler.getValue();
@@ -94,6 +96,12 @@ public class ChoiceInfluenceManager implements Checkable {
 		influencers.put(enabler, choicePoint);
 		influencers.put(disabler, choicePoint);
 		choicePoint.recomputeActive();
+	}
+
+	void addAdditionalInfluencer(int influencer, int atom) {
+		ChoicePoint choicePoint = influencers.get(atom).iterator().next();
+		assignment.registerCallbackOnChange(influencer);
+		influencers.put(influencer, choicePoint);
 	}
 
 	void checkActiveChoicePoints() {
@@ -123,7 +131,11 @@ public class ChoiceInfluenceManager implements Checkable {
 		if (checksEnabled) {
 			checkActiveChoicePoints();
 		}
-		ChoicePoint choicePoint = influencers.get(atom);
+		Collection<ChoicePoint> choicePoints = influencers.get(atom);
+		if (choicePoints.size() != 1) {
+			return false;
+		}
+		ChoicePoint choicePoint = choicePoints.iterator().next();
 		return choicePoint != null && choicePoint.isActive && choicePoint.atom == atom;
 	}
 
@@ -135,7 +147,11 @@ public class ChoiceInfluenceManager implements Checkable {
 	}
 
 	boolean isAtomInfluenced(int atom) {
-		ChoicePoint choicePoint = influencers.get(atom);
+		Collection<ChoicePoint> choicePoints = influencers.get(atom);
+		if (choicePoints.size() != 1) {
+			return false;
+		}
+		ChoicePoint choicePoint = choicePoints.iterator().next();
 		return choicePoint != null && choicePoint.atom == atom;
 	}
 
@@ -146,8 +162,7 @@ public class ChoiceInfluenceManager implements Checkable {
 
 	void callbackOnChanged(int atom) {
 		LOGGER.trace("Callback received on influencer atom: {}", atom);
-		ChoicePoint choicePoint = influencers.get(atom);
-		if (choicePoint != null) {
+		for (ChoicePoint choicePoint : influencers.get(atom)) {
 			choicePoint.recomputeActive();
 		}
 	}
@@ -196,7 +211,7 @@ public class ChoiceInfluenceManager implements Checkable {
 				changed = true;
 				LOGGER.debug("Deactivating choice point for atom {}", this.atom);
 			}
-			if (changed && activityListener != null) {
+			if (/*changed && */activityListener != null) { // if we only notify if changed, domain-specific heuristics will not be notified during backtracking in the current implementation
 				activityListener.callbackOnChanged(atom, isActive);
 			}
 		}
