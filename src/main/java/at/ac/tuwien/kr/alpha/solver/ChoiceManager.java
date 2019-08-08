@@ -257,10 +257,6 @@ public class ChoiceManager implements Checkable {
 	void addHeuristicInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> heuristicAtoms, Map<Integer, HeuristicDirectiveValues> heuristicValues) {
 		addInformation(heuristicValues);
 		heuristicInfluenceManager.addInformation(heuristicAtoms);
-		for (Entry<Integer, HeuristicDirectiveValues> entry : heuristicValues.entrySet()) {
-			heuristicInfluenceManager.addAdditionalInfluencer(entry.getValue().getHeadAtomId(), entry.getKey());
-		}
-
 	}
 
 	private void addInformation(Map<Integer, HeuristicDirectiveValues> heuristicValues) {
