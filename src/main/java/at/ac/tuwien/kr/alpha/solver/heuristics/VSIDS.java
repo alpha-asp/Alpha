@@ -158,7 +158,7 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 	public int chooseAtom(Set<Integer> admissibleChoices) {
 		if (admissibleChoices != null) {
 			throw new UnsupportedOperationException("Choosing from a set of admissible choices is not yet implemented by VSIDS.");
-			// TODO: idea: build new PriorityQueue, taking comparator from existing HeapOfActiveAtoms, then pick top element (is this the most performant way)?
+			// TODO: idea: build new PriorityQueue, taking comparator from existing HeapOfActiveAtoms, then pick top element (is this the most performant way)? (cf. issue #181)
 		}
 		ingestBufferedNoGoods();
 		Integer mostActiveAtom;
