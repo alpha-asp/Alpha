@@ -27,18 +27,18 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import static at.ac.tuwien.kr.alpha.Main.main;
-import static org.junit.Assert.assertTrue;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.Arrays;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.Arrays;
+
+import static at.ac.tuwien.kr.alpha.Main.main;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class MainTest {
@@ -69,6 +69,19 @@ public class MainTest {
 		main(argv);
 		System.setOut(sysOut);
 		assertTrue(newOut.toString().contains("{ b, p(a) }"));
+	}
+	
+	@Test
+	public void filterTest() {
+		PrintStream sysOut = System.out;
+		ByteArrayOutputStream newOut = new ByteArrayOutputStream();
+		System.setOut(new PrintStream(newOut));
+		String[] args = Arrays.copyOf(argv, argv.length + 2);
+		args[args.length - 2] = "-f";
+		args[args.length - 1] = "b";
+		main(args);
+		System.setOut(sysOut);
+		assertTrue(newOut.toString().contains("{ b }"));
 	}
 
 // Made obsolete by refactoring - now covered by CommandLineParserTest#numAnswerSets

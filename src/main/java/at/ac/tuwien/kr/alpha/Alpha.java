@@ -27,10 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
@@ -103,9 +100,10 @@ public class Alpha {
 	 * (e.g. for obtaining statistics)
 	 * 
 	 * @param program the program to solve
+	 * @param filter  a (java util) predicate that filters (asp-)predicates which should be contained in the answer set stream from the solver
 	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
 	 */
-	public Solver prepareSolverFor(Program program) {
+	public Solver prepareSolverFor(Program program, java.util.function.Predicate<Predicate> filter) {
 		String grounderName = this.config.getGrounderName();
 		String solverName = this.config.getSolverName();
 		String nogoodStoreName = this.config.getNogoodStoreName();
@@ -120,16 +118,24 @@ public class Alpha {
 		HeuristicsConfiguration heuristicsConfiguration = heuristicsConfigurationBuilder.build();
 
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, heuristicsConfiguration, doDebugChecks);
+		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, heuristicsConfiguration, filter, doDebugChecks);
 
 		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed), heuristicsConfiguration, doDebugChecks,
 				disableJustificationSearch);
 		return solver;
 	}
 
-	public Stream<AnswerSet> solve(Program program) {
-		Stream<AnswerSet> retVal = this.prepareSolverFor(program).stream();
+	public Solver prepareSolverFor(Program program) {
+		return this.prepareSolverFor(program, InputConfig.DEFAULT_FILTER);
+	}
+
+	public Stream<AnswerSet> solve(Program program, java.util.function.Predicate<Predicate> filter) {
+		Stream<AnswerSet> retVal = this.prepareSolverFor(program, filter).stream();
 		return this.config.isSortAnswerSets() ? retVal.sorted() : retVal;
+	}
+
+	public Stream<AnswerSet> solve(Program program) {
+		return this.solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
 	public SystemConfig getConfig() {

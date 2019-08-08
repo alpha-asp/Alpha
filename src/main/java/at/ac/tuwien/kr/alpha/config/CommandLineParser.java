@@ -27,7 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.config;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 import org.apache.commons.cli.*;
@@ -38,7 +37,8 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -268,9 +268,8 @@ public class CommandLineParser {
 	}
 
 	private void handleFilters(Option opt, InputConfig cfg) {
-		Set<String> desiredPredicates = new HashSet<>(Arrays.asList(opt.getValues()));
-		java.util.function.Predicate<Predicate> filter = p -> desiredPredicates.contains(p.getName());
-		cfg.setFilter(filter);
+		String pred = opt.getValue().trim();
+		cfg.getDesiredPredicates().add(pred);
 	}
 
 	private void handleAspString(Option opt, InputConfig cfg) {
