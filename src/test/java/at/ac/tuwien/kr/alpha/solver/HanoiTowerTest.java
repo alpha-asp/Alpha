@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -105,9 +105,9 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		SortedSet<Atom> onInstancesInAnswerSet = answerSet.getPredicateInstances(on);
 		for (Atom atom : parsedProgram.getFacts()) {
 			if (atom.getPredicate().getName().equals(ongoal.getName()) && atom.getPredicate().getArity() == ongoal.getArity()) {
-				Term expectedTop = ConstantTerm.getInstance(atom.getTerms().get(0).toString());
-				Term expectedBottom = ConstantTerm.getInstance(atom.getTerms().get(1).toString());
-				Term expectedSteps = ConstantTerm.getInstance(String.valueOf(steps));
+				Term expectedTop = atom.getTerms().get(0);
+				Term expectedBottom = atom.getTerms().get(1);
+				Term expectedSteps = ConstantTerm.getInstance(steps);
 				Atom expectedAtom = new BasicAtom(on, expectedSteps, expectedBottom, expectedTop);
 				assertTrue("Answer set does not contain " + expectedAtom, onInstancesInAnswerSet.contains(expectedAtom));
 			}
