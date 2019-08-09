@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -533,6 +533,26 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		impliedBy = Arrays.copyOf(impliedBy, newCapacity);
 		propagationLevels = Arrays.copyOf(propagationLevels, newCapacity);
 		callbackUponChange = Arrays.copyOf(callbackUponChange, newCapacity);
+	}
+
+	public int getNumberOfAssignedAtoms() {
+		int n = 0;
+		for (int value : values) {
+			if (translateTruth(value) != null) {
+				n++;
+			}
+		}
+		return n;
+	}
+	
+	@Override
+	public int getNumberOfAtomsAssignedSinceLastDecision() {
+		Set<Integer> newlyAssignedAtoms = new HashSet<>();
+		int trailIndex = trailIndicesOfDecisionLevels.get(getDecisionLevel());
+		for (; trailIndex < trail.size(); trailIndex++) {
+			newlyAssignedAtoms.add(trail.get(trailIndex));
+		}
+		return newlyAssignedAtoms.size();
 	}
 
 	@Override

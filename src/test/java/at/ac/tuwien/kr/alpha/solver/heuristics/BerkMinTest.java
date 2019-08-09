@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2017 Siemens AG
+ * Copyright (c) 2016-2018 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -29,14 +29,16 @@ import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.*;
+import at.ac.tuwien.kr.alpha.solver.NaiveNoGoodStore;
+import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Random;
-import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
 import static org.junit.Assert.assertEquals;
@@ -52,14 +54,14 @@ public class BerkMinTest {
 	/**
 	 * The tolerable epsilon for double comparisons
 	 */
-	private static final double EPSILON = 0.000001;
+	private static final double DOUBLE_COMPARISON_EPSILON = 0.000001;
 	
 	private BerkMin berkmin;
 	
 	@Before
 	public void setUp() {
 		AtomStore atomStore = new AtomStoreImpl();
-		AtomStoreTest.fillAtomStore(atomStore, fromOldLiterals(2));
+		AtomStoreTest.fillAtomStore(atomStore, 2);
 		WritableAssignment assignment = new TrailAssignment(atomStore);
 		assignment.growForMaxAtomId();
 		this.berkmin = new BerkMin(
@@ -74,8 +76,8 @@ public class BerkMinTest {
 		NoGood violatedNoGood = new NoGood(fromOldLiterals(1, 2));
 		berkmin.violatedNoGood(violatedNoGood);
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
-		assertEquals(1, berkmin.getActivity(fromOldLiterals(1)), EPSILON);
-		assertEquals(1, berkmin.getActivity(fromOldLiterals(2)), EPSILON);
+		assertEquals(1, berkmin.getActivity(fromOldLiterals(1)), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(1, berkmin.getActivity(fromOldLiterals(2)), DOUBLE_COMPARISON_EPSILON);
 	}
 	
 	@Test
@@ -83,8 +85,8 @@ public class BerkMinTest {
 		NoGood violatedNoGood = new NoGood(fromOldLiterals(-1, -2));
 		berkmin.violatedNoGood(violatedNoGood);
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
-		assertEquals(1, berkmin.getActivity(fromOldLiterals(-1)), EPSILON);
-		assertEquals(1, berkmin.getActivity(fromOldLiterals(-2)), EPSILON);
+		assertEquals(1, berkmin.getActivity(fromOldLiterals(-1)), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(1, berkmin.getActivity(fromOldLiterals(-2)), DOUBLE_COMPARISON_EPSILON);
 	}
 	
 	@Test
@@ -94,8 +96,8 @@ public class BerkMinTest {
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
 		berkmin.violatedNoGood(violatedNoGood);
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
-		assertEquals(2, berkmin.getActivity(fromOldLiterals(1)), EPSILON);
-		assertEquals(2, berkmin.getActivity(fromOldLiterals(2)), EPSILON);
+		assertEquals(2, berkmin.getActivity(fromOldLiterals(1)), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(2, berkmin.getActivity(fromOldLiterals(2)), DOUBLE_COMPARISON_EPSILON);
 	}
 	
 	@Test
@@ -105,8 +107,8 @@ public class BerkMinTest {
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
 		berkmin.violatedNoGood(violatedNoGood);
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
-		assertEquals(2, berkmin.getActivity(fromOldLiterals(-1)), EPSILON);
-		assertEquals(2, berkmin.getActivity(fromOldLiterals(-2)), EPSILON);
+		assertEquals(2, berkmin.getActivity(fromOldLiterals(-1)), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(2, berkmin.getActivity(fromOldLiterals(-2)), DOUBLE_COMPARISON_EPSILON);
 	}
 	
 	@Test
@@ -116,8 +118,8 @@ public class BerkMinTest {
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
 		berkmin.violatedNoGood(violatedNoGood);
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
-		assertEquals(2, berkmin.getActivity(fromOldLiterals(1)), EPSILON);
-		assertEquals(2, berkmin.getActivity(fromOldLiterals(-2)), EPSILON);
+		assertEquals(2, berkmin.getActivity(fromOldLiterals(1)), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(2, berkmin.getActivity(fromOldLiterals(-2)), DOUBLE_COMPARISON_EPSILON);
 	}
 	
 	@Test
@@ -128,81 +130,64 @@ public class BerkMinTest {
 		violatedNoGood = new NoGood(fromOldLiterals(-1, -2));
 		berkmin.violatedNoGood(violatedNoGood);
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
-		assertEquals(2, berkmin.getActivity(fromOldLiterals(1)), EPSILON);
-		assertEquals(2, berkmin.getActivity(fromOldLiterals(2)), EPSILON);
+		assertEquals(2, berkmin.getActivity(fromOldLiterals(1)), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(2, berkmin.getActivity(fromOldLiterals(2)), DOUBLE_COMPARISON_EPSILON);
 	}
 	
 	@Test
-	public void reachDecayAgeOnce() {
-		berkmin.setDecayAge(3);
+	public void reachDecayPeriodOnce() {
+		berkmin.setDecayPeriod(3);
 		berkmin.setDecayFactor(1.0 / 3);
 		NoGood violatedNoGood = new NoGood(fromOldLiterals(1, 2));
 		berkmin.violatedNoGood(violatedNoGood);
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
-		assertEquals(1, berkmin.getActivity(fromOldLiterals(1)), EPSILON);
-		assertEquals(1, berkmin.getActivity(fromOldLiterals(2)), EPSILON);
+		assertEquals(1, berkmin.getActivity(fromOldLiterals(1)), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(1, berkmin.getActivity(fromOldLiterals(2)), DOUBLE_COMPARISON_EPSILON);
 		berkmin.violatedNoGood(violatedNoGood);
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
-		assertEquals(2, berkmin.getActivity(fromOldLiterals(1)), EPSILON);
-		assertEquals(2, berkmin.getActivity(fromOldLiterals(2)), EPSILON);
+		assertEquals(2, berkmin.getActivity(fromOldLiterals(1)), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(2, berkmin.getActivity(fromOldLiterals(2)), DOUBLE_COMPARISON_EPSILON);
 		berkmin.violatedNoGood(violatedNoGood);
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
-		assertEquals(1, berkmin.getActivity(fromOldLiterals(1)), EPSILON);
-		assertEquals(1, berkmin.getActivity(fromOldLiterals(2)), EPSILON);
+		assertEquals(1, berkmin.getActivity(fromOldLiterals(1)), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(1, berkmin.getActivity(fromOldLiterals(2)), DOUBLE_COMPARISON_EPSILON);
 	}
 	
 	@Test
-	public void reachDecayAgeTwice() {
-		berkmin.setDecayAge(2);
+	public void reachDecayPeriodTwice() {
+		berkmin.setDecayPeriod(2);
 		berkmin.setDecayFactor(0.75);
 		NoGood violatedNoGood = new NoGood(fromOldLiterals(1, 2));
 		berkmin.violatedNoGood(violatedNoGood);
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
-		assertEquals(1, berkmin.getActivity(fromOldLiterals(1)), EPSILON);
-		assertEquals(1, berkmin.getActivity(fromOldLiterals(2)), EPSILON);
+		assertEquals(1, berkmin.getActivity(fromOldLiterals(1)), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(1, berkmin.getActivity(fromOldLiterals(2)), DOUBLE_COMPARISON_EPSILON);
 		berkmin.violatedNoGood(violatedNoGood);
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
-		assertEquals(1.5, berkmin.getActivity(fromOldLiterals(1)), EPSILON);
-		assertEquals(1.5, berkmin.getActivity(fromOldLiterals(2)), EPSILON);
+		assertEquals(1.5, berkmin.getActivity(fromOldLiterals(1)), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(1.5, berkmin.getActivity(fromOldLiterals(2)), DOUBLE_COMPARISON_EPSILON);
 		berkmin.violatedNoGood(violatedNoGood);
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
-		assertEquals(2.5, berkmin.getActivity(fromOldLiterals(1)), EPSILON);
-		assertEquals(2.5, berkmin.getActivity(fromOldLiterals(2)), EPSILON);
+		assertEquals(2.5, berkmin.getActivity(fromOldLiterals(1)), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(2.5, berkmin.getActivity(fromOldLiterals(2)), DOUBLE_COMPARISON_EPSILON);
 		berkmin.violatedNoGood(violatedNoGood);
 		berkmin.analyzedConflict(pseudo(violatedNoGood));
-		assertEquals(2.625, berkmin.getActivity(fromOldLiterals(1)), EPSILON);
-		assertEquals(2.625, berkmin.getActivity(fromOldLiterals(2)), EPSILON);
+		assertEquals(2.625, berkmin.getActivity(fromOldLiterals(1)), DOUBLE_COMPARISON_EPSILON);
+		assertEquals(2.625, berkmin.getActivity(fromOldLiterals(2)), DOUBLE_COMPARISON_EPSILON);
 	}
 	
 	@Test
 	public void learnNoGood() {
-		NoGood learnedNoGood = new NoGood(fromOldLiterals(1, 2));
+		NoGood learnedNoGood = NoGood.learnt(fromOldLiterals(1, 2));
 		int backjumpLevel = 1;
 		boolean clearLastChoiceAfterBackjump = true;
-		Set<NoGood> noGoodsResponsibleForConflict = Collections.emptySet();
+		Collection<Integer> resolutionAtoms = Collections.emptySet();
 		berkmin.analyzedConflict(new ConflictAnalysisResult(learnedNoGood, backjumpLevel, clearLastChoiceAfterBackjump,
-				noGoodsResponsibleForConflict));
+				resolutionAtoms));
 		assertEquals(learnedNoGood, berkmin.getCurrentTopClause());
 	}
 
 	private static ConflictAnalysisResult pseudo(NoGood noGood) {
-		return new ConflictAnalysisResult(null, 0, false, Collections.singleton(noGood));
-	}
-
-	private static class PseudoChoiceManager extends ChoiceManager {
-
-		public PseudoChoiceManager(WritableAssignment assignment, NoGoodStore store) {
-			super(assignment, store);
-		}
-
-		@Override
-		public boolean isAtomChoice(int atom) {
-			return true;
-		}
-
-		@Override
-		public boolean isActiveChoiceAtom(int atom) {
-			return true;
-		}
+		return new ConflictAnalysisResult(noGood, 0, false, Collections.emptySet());
 	}
 }

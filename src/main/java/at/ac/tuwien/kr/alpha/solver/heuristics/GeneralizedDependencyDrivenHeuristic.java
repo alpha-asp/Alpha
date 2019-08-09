@@ -52,8 +52,8 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
  */
 public class GeneralizedDependencyDrivenHeuristic extends DependencyDrivenHeuristic {
 
-	public GeneralizedDependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayAge, double decayFactor, Random random, BodyActivityType bodyActivityType) {
-		super(assignment, choiceManager, decayAge, decayFactor, random, bodyActivityType);
+	public GeneralizedDependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, Random random, BodyActivityType bodyActivityType) {
+		super(assignment, choiceManager, decayPeriod, decayFactor, random, bodyActivityType);
 	}
 
 	public GeneralizedDependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random, BodyActivityType bodyActivityType) {
@@ -66,6 +66,7 @@ public class GeneralizedDependencyDrivenHeuristic extends DependencyDrivenHeuris
 
 	@Override
 	protected void recordAtomRelationships(NoGood noGood) {
+		// TODO: use HeapOfActiveChoicePoints.recordAtomRelationships, which does similar things
 		int body = DEFAULT_CHOICE_ATOM;
 		Set<Integer> others = new HashSet<>();
 		for (int literal : noGood) {

@@ -6,8 +6,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import static at.ac.tuwien.kr.alpha.common.NoGood.fact;
-import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
 import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
+import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 import static org.junit.Assert.*;
 
@@ -22,7 +22,7 @@ public class NoGoodStoreAlphaRoamingTest {
 
 	public NoGoodStoreAlphaRoamingTest() {
 		atomStore = new AtomStoreImpl();
-		AtomStoreTest.fillAtomStore(atomStore, fromOldLiterals(200));
+		AtomStoreTest.fillAtomStore(atomStore, 200);
 		assignment = new TrailAssignment(atomStore);
 		assignment.growForMaxAtomId();
 		store = new NoGoodStoreAlphaRoaming(assignment);

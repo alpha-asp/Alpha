@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -38,16 +38,13 @@ import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 import at.ac.tuwien.kr.alpha.grounder.ProgramAnalyzingGrounder;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
-import at.ac.tuwien.kr.alpha.solver.heuristics.ChainedBranchingHeuristics;
-import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.*;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -58,7 +55,7 @@ import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.
 
 /**
  * The new default solver employed in Alpha.
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  */
 public class DefaultSolver extends AbstractSolver implements SolverMaintainingStatistics {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolver.class);
@@ -77,28 +74,29 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final boolean disableJustifications;
 	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
 
-	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, Heuristic branchingHeuristic, boolean debugInternalChecks, boolean disableJustifications) {
+	private final PerformanceLog performanceLog;
+	
+	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, HeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, boolean disableJustifications) {
 		super(atomStore, grounder);
 
 		this.assignment = assignment;
 		this.store = store;
-		this.choiceManager = new ChoiceManager(assignment, store, debugInternalChecks);
+		this.choiceManager = new ChoiceManager(assignment, store);
 		this.learner = new GroundConflictNoGoodLearner(assignment);
 		this.branchingHeuristic = ChainedBranchingHeuristics.chainOf(
-				BranchingHeuristicFactory.getInstance(branchingHeuristic, grounder, assignment, choiceManager, random),
+				BranchingHeuristicFactory.getInstance(heuristicsConfiguration, grounder, assignment, choiceManager, random),
 				new NaiveHeuristic(choiceManager));
 		this.disableJustifications = disableJustifications;
+		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
 	}
 
 	@Override
 	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
 		boolean didChange = false;
-		long timeOnEntry = System.currentTimeMillis();
-		long timeLast = timeOnEntry;
-		int decisionsLast = 0;
 
 		// Initially, get NoGoods from grounder.
 		if (initialize) {
+			performanceLog.initialize();
 			Map<Integer, NoGood> obtained = grounder.getNoGoods(assignment);
 			didChange = !obtained.isEmpty();
 			if (!ingest(obtained)) {
@@ -133,16 +131,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 		// Try all assignments until grounder reports no more NoGoods and all of them are satisfied
 		while (true) {
-			long currentTime = System.currentTimeMillis();
-			int currentNumberOfChoices = getNumberOfChoices();
-			if (currentTime >= timeLast + 1000) {
-				LOGGER.info("Decisions in {}s: {}", (currentTime - timeLast) / 1000.0f, currentNumberOfChoices - decisionsLast);
-				timeLast = currentTime;
-				decisionsLast = currentNumberOfChoices;
-				float overallTime = (currentTime - timeOnEntry) / 1000.0f;
-				float decisionsPerSec = currentNumberOfChoices / overallTime;
-				LOGGER.info("Overall performance: {} decisions in {}s or {} decisions per sec. Overall replayed assignments: {}.", currentNumberOfChoices, overallTime, decisionsPerSec, ((TrailAssignment)assignment).replayCounter);
-			}
+			performanceLog.infoIfTimeForOutput(LOGGER);
 			ConflictCause conflictCause = store.propagate();
 			didChange |= store.didPropagate();
 			LOGGER.trace("Assignment after propagation is: {}", assignment);
@@ -306,7 +295,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		for (Literal literal : reasonsForUnjustified) {
 			reasons[arrpos++] = atomToLiteral(atomStore.get(literal.getAtom()), !literal.isNegated());
 		}
-		return new NoGood(reasons);
+		return NoGood.learnt(reasons);
 	}
 
 	private boolean treatConflictAfterClosing(NoGood violatedNoGood) {
@@ -441,9 +430,11 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private boolean ingest(Map<Integer, NoGood> obtained) {
-		branchingHeuristic.newNoGoods(obtained.values());
 		assignment.growForMaxAtomId();
-		store.growForMaxAtomId(atomStore.getMaxAtomId());
+		int maxAtomId = atomStore.getMaxAtomId();
+		store.growForMaxAtomId(maxAtomId);
+		branchingHeuristic.growForMaxAtomId(maxAtomId);
+		branchingHeuristic.newNoGoods(obtained.values());
 
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
 		Map.Entry<Integer, NoGood> entry;
@@ -498,7 +489,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private boolean choose() {
-		choiceManager.addChoiceInformation(grounder.getChoiceAtoms());
+		choiceManager.addChoiceInformation(grounder.getChoiceAtoms(), grounder.getHeadsToBodies());
 		choiceManager.updateAssignments();
 
 		// Hint: for custom heuristics, evaluate them here and pick a value if the heuristics suggests one.
@@ -547,6 +538,14 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private void logStats() {
-		LOGGER.debug(getStatisticsString());
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug(getStatisticsString());
+			if (branchingHeuristic instanceof ChainedBranchingHeuristics) {
+				LOGGER.debug("Decisions made by each heuristic:");
+				for (Entry<BranchingHeuristic, Integer> heuristicToDecisionCounter : ((ChainedBranchingHeuristics)branchingHeuristic).getNumberOfDecisions().entrySet()) {
+					LOGGER.debug(heuristicToDecisionCounter.getKey() + ": " + heuristicToDecisionCounter.getValue());
+				}
+			}
+		}
 	}
 }

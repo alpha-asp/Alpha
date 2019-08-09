@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -41,12 +41,18 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 
 	protected final int[] literals;
 	private final boolean head;
+	private final Type type;
 
 	public NoGood(int... literals) {
-		this(literals, false);
+		this(Type.STATIC, literals, false);
 	}
-
-	private NoGood(int[] literals, boolean head) {
+	
+	public NoGood(Type type, int... literals) {
+		this(type, literals, false);
+	}
+	
+	private NoGood(Type type, int[] literals, boolean head) {
+		this.type = type;
 		this.head = head;
 		if (head && !isNegated(literals[0])) {
 			throw oops("Head is not negative");
@@ -70,10 +76,23 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 	protected NoGood(NoGood noGood) {
 		this.literals = noGood.literals.clone();
 		this.head = noGood.head;
+		this.type = noGood.type;
+	}
+	
+	public static NoGood learnt(int... literals) {
+		return new NoGood(Type.LEARNT, literals);
 	}
 
 	public static NoGood headFirst(int... literals) {
-		return new NoGood(literals, true);
+		return headFirst(Type.STATIC, literals);
+	}
+
+	public static NoGood headFirstInternal(int... literals) {
+		return headFirst(Type.INTERNAL, literals);
+	}
+	
+	public static NoGood headFirst(Type type, int... literals) {
+		return new NoGood(type, literals, true);
 	}
 
 	public static NoGood fact(int literal) {
@@ -81,17 +100,25 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 	}
 
 	public static NoGood support(int headLiteral, int bodyRepresentingLiteral) {
-		return new NoGood(headLiteral, negateLiteral(bodyRepresentingLiteral));
+		return new NoGood(Type.SUPPORT, headLiteral, negateLiteral(bodyRepresentingLiteral));
 	}
 
 	public static NoGood fromConstraint(List<Integer> posLiterals, List<Integer> negLiterals) {
 		return new NoGood(addPosNeg(new int[posLiterals.size() + negLiterals.size()], posLiterals, negLiterals, 0));
 	}
-
+	
 	public static NoGood fromBody(List<Integer> posLiterals, List<Integer> negLiterals, int bodyRepresentingLiteral) {
+		return fromBody(Type.STATIC, posLiterals, negLiterals, bodyRepresentingLiteral);
+	}
+	
+	public static NoGood fromBodyInternal(List<Integer> posLiterals, List<Integer> negLiterals, int bodyRepresentingLiteral) {
+		return fromBody(Type.INTERNAL, posLiterals, negLiterals, bodyRepresentingLiteral);
+	}
+
+	public static NoGood fromBody(Type type, List<Integer> posLiterals, List<Integer> negLiterals, int bodyRepresentingLiteral) {
 		int[] bodyLiterals = new int[posLiterals.size() + negLiterals.size() + 1];
 		bodyLiterals[0] = negateLiteral(bodyRepresentingLiteral);
-		return NoGood.headFirst(addPosNeg(bodyLiterals, posLiterals, negLiterals, 1));
+		return NoGood.headFirst(type, addPosNeg(bodyLiterals, posLiterals, negLiterals, 1));
 	}
 
 	private static int[] addPosNeg(int[] literals, List<Integer> posLiterals, List<Integer> negLiterals, int offset) {
@@ -111,7 +138,7 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 	}
 
 	public NoGood withoutHead() {
-		return new NoGood(literals.clone());
+		return new NoGood(type, literals.clone());
 	}
 
 	/**
@@ -135,16 +162,22 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 	public int getHead() {
 		return getLiteral(HEAD);
 	}
+	
+	public Type getType() {
+		return type;
+	}
 
 	@Override
 	public Iterator<Integer> iterator() {
 		return new Iterator<Integer>() {
 			private int i;
 
+			@Override
 			public boolean hasNext() {
 				return literals.length > i;
 			}
 
+			@Override
 			public Integer next() {
 				return literals[i++];
 			}
@@ -232,5 +265,30 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 	@Override
 	public NoGood getNoGood(int impliedAtom) {
 		return this;
+	}
+	
+	/**
+	 * The possible nogood types
+	 */
+	public enum Type {
+		/**
+		 * Unremovable nogood from the input program
+		 */
+		STATIC,
+		
+		/**
+		 * Removable support nogood from the input program
+		 */
+		SUPPORT,
+		
+		/**
+		 * Removable nogood learnt from a conflict
+		 */
+		LEARNT,
+		
+		/**
+		 * Nogood containing solver-internal atoms
+		 */
+		INTERNAL,
 	}
 }
