@@ -77,7 +77,7 @@ public final class BranchingHeuristicFactory {
 		return heuristicWithoutReplay;
 	}
 	
-	public static BranchingHeuristic getInstanceWithoutReplay(HeuristicsConfiguration heuristicsConfiguration, Grounder grounder, WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
+	private static BranchingHeuristic getInstanceWithoutReplay(HeuristicsConfiguration heuristicsConfiguration, Grounder grounder, WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
 		switch (heuristicsConfiguration.getHeuristic()) {
 		case NAIVE:
 			return new NaiveHeuristic(choiceManager);
