@@ -36,6 +36,8 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.antlr.v4.runtime.CharStreams;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -49,6 +51,9 @@ import static org.junit.Assert.assertTrue;
  *
  */
 public class HanoiTowerTest extends AbstractSolverTests {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(HanoiTowerTest.class);
+
 	private final ProgramParser parser = new ProgramParser();
 
 	@Test(timeout = 10000)
@@ -85,6 +90,10 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	}
 
 	private void testHanoiTower(String instance) throws IOException {
+		if ("naive".equals(solverName)) {
+			LOGGER.warn(this.getClass().getSimpleName() + " disabled for naive solver to save resources during CI");
+			return;
+		}
 		Program parsedProgram = parser.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp")));
 		parsedProgram.accumulate(parser.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "HanoiTower_instances", instance + ".asp"))));
 		Solver solver = getInstance(parsedProgram);
