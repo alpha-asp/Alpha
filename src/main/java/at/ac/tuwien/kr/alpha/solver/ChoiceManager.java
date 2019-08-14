@@ -50,7 +50,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
  */
 public class ChoiceManager implements Checkable {
 
-	public static final int DEFAULT_CHOICE_ATOM = 0;
+	private static final int DEFAULT_CHOICE_ATOM = 0;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ChoiceManager.class);
 	private final WritableAssignment assignment;
@@ -223,7 +223,7 @@ public class ChoiceManager implements Checkable {
 	 * their plans.
 	 *
 	 * @return the assignment entry of the choice being backtracked, or {@code null} if the choice cannot be
-	 *         backtracked any futher (it already is a backtracking choice)
+	 *         backtracked any further (it already is a backtracking choice)
 	 */
 	public Assignment.Entry backtrackSlow() {
 		final Choice choice = choiceStack.pop();
@@ -274,11 +274,7 @@ public class ChoiceManager implements Checkable {
 	}
 
 	private void addHeadsToBodies(Integer head, Set<Integer> bodies) {
-		Set<Integer> existingBodies = this.headsToBodies.get(head);
-		if (existingBodies == null) {
-			existingBodies = new HashSet<>();
-			this.headsToBodies.put(head, existingBodies);
-		}
+		Set<Integer> existingBodies = this.headsToBodies.computeIfAbsent(head, k -> new HashSet<>());
 		existingBodies.addAll(bodies);
 	}
 
@@ -318,7 +314,7 @@ public class ChoiceManager implements Checkable {
 
 	/**
 	 * Gets the active choice atoms representing bodies of rules that can derive the given head atom.
-	 * @param headAtomId
+	 * @param headAtomId internal ID of head atom
 	 * @return a subset of all active choice atoms that can derive {@code headAtomId}.
 	 */
 	public Set<Integer> getActiveChoiceAtomsDerivingHead(int headAtomId) {
