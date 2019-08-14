@@ -27,10 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.Literals;
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
@@ -86,7 +83,7 @@ public class NoGoodGenerator {
 
 		// A constraint is represented by exactly one nogood.
 		if (nonGroundRule.isConstraint()) {
-			return singletonList(NoGood.fromConstraint(posLiterals, negLiterals));
+			return singletonList(NoGoodCreator.fromConstraint(posLiterals, negLiterals));
 		}
 
 		final Atom groundHeadAtom = nonGroundRule.getHeadAtom().substitute(substitution);
@@ -121,8 +118,8 @@ public class NoGoodGenerator {
 		// if the head of the heuristic directive is assigned, the body of the heuristic rule shall also be assigned s.t. it is not applicable anymore:
 		@SuppressWarnings("unchecked")
 		boolean heuristicSign = ((ConstantTerm<Boolean>)groundHeadAtom.getSign()).getObject();
-		result.add(NoGood.headFirstInternal(atomToLiteral(bodyRepresentingAtom, false), atomToLiteral(heuristicHeadId, heuristicSign)));
-		result.add(NoGood.internal(atomToLiteral(bodyRepresentingAtom,  true), atomToLiteral(heuristicHeadId, !heuristicSign)));
+		result.add(NoGoodCreator.headFirstInternal(atomToLiteral(bodyRepresentingAtom, false), atomToLiteral(heuristicHeadId, heuristicSign)));
+		result.add(NoGoodCreator.internal(atomToLiteral(bodyRepresentingAtom,  true), atomToLiteral(heuristicHeadId, !heuristicSign)));
 
 		return result;
 	}
@@ -136,9 +133,9 @@ public class NoGoodGenerator {
 		choiceRecorder.addHeadToBody(headId, bodyRepresentingAtom);
 
 		// Create a nogood for the head.
-		result.add(NoGood.headFirst(negateLiteral(headLiteral), bodyRepresentingLiteral));
+		result.add(NoGoodCreator.headFirst(negateLiteral(headLiteral), bodyRepresentingLiteral));
 
-		final NoGood ruleBody = NoGood.fromBody(posLiterals, negLiterals, bodyRepresentingLiteral);
+		final NoGood ruleBody = NoGoodCreator.fromBody(posLiterals, negLiterals, bodyRepresentingLiteral);
 		result.add(ruleBody);
 
 		// Nogoods such that the atom representing the body is true iff the body is true.
@@ -148,7 +145,7 @@ public class NoGoodGenerator {
 
 		// If the rule head is unique, add support.
 		if (uniqueGroundRulePerGroundHead.contains(nonGroundRule)) {
-			result.add(NoGood.support(headLiteral, bodyRepresentingLiteral));
+			result.add(NoGoodCreator.support(headLiteral, bodyRepresentingLiteral));
 		}
 
 		// If the body of the rule contains negation, add choices.

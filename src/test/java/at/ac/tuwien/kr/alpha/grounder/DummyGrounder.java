@@ -40,7 +40,7 @@ import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
 import static at.ac.tuwien.kr.alpha.Util.entry;
-import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
+import static at.ac.tuwien.kr.alpha.common.NoGoodCreator.headFirst;
 import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;

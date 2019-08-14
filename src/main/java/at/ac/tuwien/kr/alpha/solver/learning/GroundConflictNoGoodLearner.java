@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.solver.learning;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.NoGoodCreator;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
@@ -155,7 +156,7 @@ public class GroundConflictNoGoodLearner {
 			// Case a) take other implying NoGood into account.
 			int resolutionAtom = atomAssignmentEntry.getAtom();
 			resolutionAtoms.add(resolutionAtom);
-			currentResolutionNoGood = NoGood.learnt(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, otherContributingNoGood, resolutionAtom, atomAssignmentEntry.getWeakDecisionLevel(), atomAssignmentEntry.getPropagationLevelRespectingLowerMBT()));
+			currentResolutionNoGood = NoGoodCreator.learnt(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, otherContributingNoGood, resolutionAtom, atomAssignmentEntry.getWeakDecisionLevel(), atomAssignmentEntry.getPropagationLevelRespectingLowerMBT()));
 			
 			// TODO: create/edit ResolutionSequence
 		}
@@ -206,7 +207,7 @@ public class GroundConflictNoGoodLearner {
 
 			int resolutionAtom = currentLiteralAssignment.getAtom();
 			resolutionAtoms.add(resolutionAtom);
-			currentResolutionNoGood = NoGood.learnt(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, impliedByNoGood, resolutionAtom, decisionLevel, propagationLevel));
+			currentResolutionNoGood = NoGoodCreator.learnt(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, impliedByNoGood, resolutionAtom, decisionLevel, propagationLevel));
 		}
 	}
 

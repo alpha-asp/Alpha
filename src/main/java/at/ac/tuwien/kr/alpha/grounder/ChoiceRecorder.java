@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.NoGoodCreator;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicInfluencerAtom;
@@ -133,7 +134,7 @@ public class ChoiceRecorder {
 	private NoGood generatePos(final int atomOn, List<Integer> posLiterals) {
 		final int literalOn = atomToLiteral(atomOn);
 
-		return NoGood.fromBodyInternal(posLiterals, emptyList(), literalOn);
+		return NoGoodCreator.fromBodyInternal(posLiterals, emptyList(), literalOn);
 	}
 
 	private List<NoGood> generateNeg(final int atomOff, List<Integer> negLiterals)  {
@@ -143,7 +144,7 @@ public class ChoiceRecorder {
 		for (Integer negLiteral : negLiterals) {
 			// Choice is off if any of the negative atoms is assigned true,
 			// hence we add one nogood for each such atom.
-			noGoods.add(NoGood.headFirstInternal(negLiteralOff, negLiteral));
+			noGoods.add(NoGoodCreator.headFirstInternal(negLiteralOff, negLiteral));
 		}
 		return noGoods;
 	}
