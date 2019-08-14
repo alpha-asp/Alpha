@@ -52,7 +52,7 @@ public final class BranchingHeuristicFactory {
 		GDD_MIN,
 		GDD_PYRO,
 		ALPHA_ACTIVE_RULE,
-		ALPHA_HEAD_MBT,
+//		ALPHA_HEAD_MBT,	// temporarily disabled due to poor performance (TODO: address https://github.com/alpha-asp/Alpha/issues/181)
 		VSIDS,
 		GDD_VSIDS;
 
@@ -108,8 +108,8 @@ public final class BranchingHeuristicFactory {
 			return new GeneralizedDependencyDrivenPyroHeuristic(assignment, choiceManager, random, BodyActivityType.DEFAULT);
 		case ALPHA_ACTIVE_RULE:
 			return new AlphaActiveRuleHeuristic(assignment, choiceManager, random);
-		case ALPHA_HEAD_MBT:
-			return new AlphaHeadMustBeTrueHeuristic(assignment, choiceManager, random);
+//		case ALPHA_HEAD_MBT:
+//			return new AlphaHeadMustBeTrueHeuristic(assignment, choiceManager, random);
 		case VSIDS:
 			return new VSIDS(assignment, choiceManager, heuristicsConfiguration.getMomsStrategy());
 		case GDD_VSIDS:

@@ -28,7 +28,6 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -42,7 +41,6 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assume.assumeFalse;
 
 /**
  * Tests rule transformations described in the following research paper, and their effects on performance:
@@ -56,12 +54,6 @@ public class HeadBodyTransformationTests extends AbstractSolverTests {
 	@Before
 	public void printSolverName() {
 		System.out.println(solverName);
-	}
-
-	@Before
-	public void ignoreAlphaHeadMBTHeuristic() {
-		assumeFalse(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.ALPHA_HEAD_MBT);
-		// ALPHA_HEAD_MBT needs to much resources on these test cases
 	}
 
 	@Test(timeout = 10000)

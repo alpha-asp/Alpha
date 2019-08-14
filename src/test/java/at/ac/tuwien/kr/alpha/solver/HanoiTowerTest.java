@@ -33,9 +33,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import org.antlr.v4.runtime.CharStreams;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -47,7 +45,6 @@ import java.util.Optional;
 import java.util.SortedSet;
 
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
 
 /**
  * Tests {@link AbstractSolver} using some hanoi tower test cases (see https://en.wikipedia.org/wiki/Tower_of_Hanoi).
@@ -58,12 +55,6 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	private static final Logger LOGGER = LoggerFactory.getLogger(HanoiTowerTest.class);
 
 	private final ProgramParser parser = new ProgramParser();
-
-	@Before
-	public void ignoreAlphaHeadMBTHeuristic() {
-		assumeFalse(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.ALPHA_HEAD_MBT);
-		// ALPHA_HEAD_MBT needs to much resources on these test cases
-	}
 
 	@Test(timeout = 10000)
 	@Ignore("disabled to save resources during CI")

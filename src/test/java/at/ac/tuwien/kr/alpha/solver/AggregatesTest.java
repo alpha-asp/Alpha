@@ -31,13 +31,9 @@ import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.transformation.CardinalityNormalization;
 import at.ac.tuwien.kr.alpha.grounder.transformation.SumNormalization;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-
-import static org.junit.Assume.assumeFalse;
 
 /**
  * Tests if correct answer sets for programs containing aggregates are computed.
@@ -46,12 +42,6 @@ import static org.junit.Assume.assumeFalse;
 public abstract class AggregatesTest extends AbstractSolverTests {
 
 	private static final String LS = System.lineSeparator();
-
-	@Before
-	public void ignoreAlphaHeadMBTHeuristic() {
-		assumeFalse(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.ALPHA_HEAD_MBT);
-		// ALPHA_HEAD_MBT needs to much resources on these test cases
-	}
 
 	@Test
 	public void testAggregate_Count_Ground_Positive() throws IOException {
