@@ -37,8 +37,6 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-import static org.junit.Assume.assumeFalse;
-
 /**
  * Tests {@link AbstractSolver} using Omiga benchmark problems.
  *
@@ -91,7 +89,7 @@ public class OmigaBenchmarksTest extends AbstractSolverTests {
 	}
 
 	private void test(String folder, String aspFileName) throws IOException {
-		assumeFalse("naive".equals(solverName));	// disabled for naive solver to save resources during CI
+		ignoreTestForNaiveSolver();
 		CharStream programInputStream = CharStreams.fromPath(
 			Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName)
 		);
