@@ -58,9 +58,8 @@ public class HouseTest extends AbstractSolverTests {
 	@Before
 	public void setUp() {
 		ignoreTestForNaiveSolver();
-		assumeTrue(
-				heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.NAIVE ||
-				heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
+		assumeTrue(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
+		// test only on one heuristics to save resources during CI
 	}
 
 	@Test(timeout = 60000)
