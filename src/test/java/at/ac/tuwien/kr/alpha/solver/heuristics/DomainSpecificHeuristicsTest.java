@@ -54,7 +54,6 @@ public class DomainSpecificHeuristicsTest {
 	private static final String LS = System.lineSeparator();
 	private final AtomStore atomStore;
 	private final ProgramParser parser = new ProgramParser();
-	private final HeuristicsConfiguration heuristicsConfiguration = new HeuristicsConfigurationBuilder().setRespectDomspecHeuristics(true).build();
 	
 	public DomainSpecificHeuristicsTest() {
 		atomStore = new AtomStoreImpl();
