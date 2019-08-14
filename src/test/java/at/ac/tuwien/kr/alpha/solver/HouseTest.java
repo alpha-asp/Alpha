@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import org.antlr.v4.runtime.CharStreams;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -45,6 +46,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests {@link AbstractSolver} using some HRP (House Reconfiguration Problem) test cases.
@@ -56,6 +58,8 @@ public class HouseTest extends AbstractSolverTests {
 	@Before
 	public void setUp() {
 		ignoreTestForNaiveSolver();
+		assumeTrue(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.NAIVE ||
+				   heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
 	}
 
 	@Test(timeout = 60000)
