@@ -65,14 +65,10 @@ public class ChoiceManager implements Checkable {
 
 	private final NoGoodStore store;
 	private final BinaryNoGoodPropagationEstimation bnpEstimation;
+	private final ChoiceManagerStatistics choiceManagerStatistics = new ChoiceManagerStatistics();
 
 	private boolean checksEnabled;
 	private DebugWatcher debugWatcher;
-
-	private int choices;
-	private int backtracks;
-	private int backtracksWithinBackjumps;
-	private int backjumps;
 
 	public ChoiceManager(WritableAssignment assignment, NoGoodStore store) {
 		this(assignment, store, null);
@@ -132,7 +128,7 @@ public class ChoiceManager implements Checkable {
 	}
 
 	int getBackjumps() {
-		return backjumps;
+		return choiceManagerStatistics.getBackjumps();
 	}
 
 	/**
@@ -143,7 +139,7 @@ public class ChoiceManager implements Checkable {
 	 * @return the total number of backtracks
 	 */
 	int getBacktracks() {
-		return backtracks;
+		return choiceManagerStatistics.getBacktracks();
 	}
 
 	/**
@@ -152,11 +148,11 @@ public class ChoiceManager implements Checkable {
 	 * @return the number of backtracks made within backjumps.
 	 */
 	int getBacktracksWithinBackjumps() {
-		return backtracksWithinBackjumps;
+		return choiceManagerStatistics.getBacktracksWithinBackjumps();
 	}
 
 	public int getChoices() {
-		return choices;
+		return choiceManagerStatistics.getChoices();
 	}
 
 	void updateAssignments() {
@@ -168,13 +164,13 @@ public class ChoiceManager implements Checkable {
 
 	public void choose(Choice choice) {
 		if (!choice.isBacktracked()) {
-			choices++;
+			choiceManagerStatistics.incrementChoices();
 		}
 
 		if (assignment.choose(choice.getAtom(), choice.getValue()) != null) {
 			throw oops("Picked choice is incompatible with current assignment");
 		}
-		LOGGER.debug("Choice {} is {}@{}", choices, choice, assignment.getDecisionLevel());
+		LOGGER.debug("Choice {} is {}@{}", choiceManagerStatistics.getChoices(), choice, assignment.getDecisionLevel());
 
 		if (debugWatcher != null) {
 			debugWatcher.runWatcher();
@@ -188,7 +184,7 @@ public class ChoiceManager implements Checkable {
 			throw oops("Backjumping to decision level less than 0");
 		}
 
-		backjumps++;
+		choiceManagerStatistics.incrementBackjumps();
 		LOGGER.debug("Backjumping to decision level {}.", target);
 
 		// Remove everything above the target level, but keep the target level unchanged.
@@ -196,8 +192,8 @@ public class ChoiceManager implements Checkable {
 		assignment.backjump(target);
 		while (currentDecisionLevel-- > target) {
 			final Choice choice = choiceStack.pop();
-			backtracksWithinBackjumps++;
-			backtracks++;
+			choiceManagerStatistics.incrementBacktracksWithinBackjumps();
+			choiceManagerStatistics.incrementBacktracks();
 			LOGGER.debug("Backjumping removed choice {}", choice);
 		}
 	}
@@ -245,7 +241,7 @@ public class ChoiceManager implements Checkable {
 	 */
 	private void backtrack() {
 		store.backtrack();
-		backtracks++;
+		choiceManagerStatistics.incrementBacktracks();
 	}
 
 	void addChoiceInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms, Map<Integer, Set<Integer>> headsToBodies) {
