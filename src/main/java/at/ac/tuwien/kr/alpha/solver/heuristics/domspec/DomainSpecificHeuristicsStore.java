@@ -37,13 +37,13 @@ public interface DomainSpecificHeuristicsStore {
 	
 	/**
 	 * Retrieves and removes the element with the highest priority
-	 * @return
+	 * @return the element with the highest priority
 	 */
 	HeuristicDirectiveValues poll();
 	
 	/**
 	 * Retrieves, but does not remove, the element with the highest priority
-	 * @return
+	 * @return the element with the highest priority
 	 */
 	HeuristicDirectiveValues peek();
 	
