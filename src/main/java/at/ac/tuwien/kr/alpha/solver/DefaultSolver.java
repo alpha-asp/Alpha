@@ -200,6 +200,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				LOGGER.debug("Answer-Set found: {}", as);
 				action.accept(as);
 				logStats();
+				logChoiceStack();
 				return true;
 			} else {
 				LOGGER.debug("Backtracking from wrong choices ({} MBTs).", assignment.getMBTCount());
@@ -589,20 +590,26 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 					LOGGER.debug(heuristicToDecisionCounter.getKey() + ": " + heuristicToDecisionCounter.getValue());
 				}
 			}
-			logFirstChoices(1000);
 		}
 	}
 
-	private void logFirstChoices(int n) {
-		List<Integer> choicesSignedAtoms = choiceManager.getChoiceStack().stream().limit(n)
+	private void logChoiceStack() {
+		final int limitSize = 10000;
+		List<Choice> choiceStack = choiceManager.getChoiceStack();
+		if (choiceStack.size() > limitSize) {
+			LOGGER.debug("Logging choice stack (limited to first {} choices) ...", limitSize);
+		} else {
+			LOGGER.debug("Logging choice stack ...");
+		}
+		List<Integer> choicesSignedAtoms = choiceStack.stream().limit(limitSize)
 			.map(Choice::toSignedInteger).collect(Collectors.toList());
-		LOGGER.debug("First {} choices (without those removed during backtracking): {}", n, choicesSignedAtoms);
+		LOGGER.debug("Choice stack (signed atoms): " + choicesSignedAtoms);
 		List<String> choicesGroundAtoms = new ArrayList<>(choicesSignedAtoms.size());
 		for (int signedAtom : choicesSignedAtoms) {
 			int literal = signedAtomToLiteral(signedAtom);
 			choicesGroundAtoms.add(atomStore.literalToString(literal));
 		}
-		LOGGER.debug("First {} choices (without those removed during backtracking): {}", n, choicesGroundAtoms);
+		LOGGER.debug("Choice stack (ground atoms): " + choicesGroundAtoms);
 	}
 
 	public void setChecksEnabled(boolean checksEnabled) {
