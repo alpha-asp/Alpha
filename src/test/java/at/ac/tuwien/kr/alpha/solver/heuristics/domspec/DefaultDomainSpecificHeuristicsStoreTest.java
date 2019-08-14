@@ -158,11 +158,6 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 		public boolean isActiveChoiceAtom(int atom) {
 			return true;
 		}
-
-		@Override
-		public boolean isActiveHeuristicAtom(int atom) {
-			return true;
-		}
 	}
 
 }
