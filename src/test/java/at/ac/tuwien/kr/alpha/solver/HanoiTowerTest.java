@@ -124,7 +124,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		Predicate steps = Predicate.getInstance("steps", 1);
 		for (Atom atom : parsedProgram.getFacts()) {
 			if (atom.getPredicate().getName().equals(steps.getName()) && atom.getPredicate().getArity() == steps.getArity()) {
-				return Integer.valueOf(atom.getTerms().get(0).toString());
+				return Integer.parseInt(atom.getTerms().get(0).toString());
 			}
 		}
 		throw new IllegalArgumentException("No steps atom found in input program.");
