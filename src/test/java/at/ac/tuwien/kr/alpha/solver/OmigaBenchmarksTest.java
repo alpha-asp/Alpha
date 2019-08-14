@@ -30,6 +30,8 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -40,6 +42,9 @@ import java.util.Optional;
  *
  */
 public class OmigaBenchmarksTest extends AbstractSolverTests {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(OmigaBenchmarksTest.class);
+
 	@Test(timeout = 10000)
 	public void test3Col_10_18() throws IOException {
 		test("3col", "3col-10-18.txt");
@@ -84,6 +89,10 @@ public class OmigaBenchmarksTest extends AbstractSolverTests {
 	}
 
 	private void test(String folder, String aspFileName) throws IOException {
+		if ("naive".equals(solverName)) {
+			LOGGER.warn(this.getClass().getSimpleName() + " disabled for naive solver to save resources during CI");
+			return;
+		}
 		CharStream programInputStream = CharStreams.fromPath(
 			Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName)
 		);
