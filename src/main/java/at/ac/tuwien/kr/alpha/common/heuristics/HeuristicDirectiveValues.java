@@ -39,11 +39,11 @@ import java.util.Comparator;
  */
 public class HeuristicDirectiveValues {
 
-	private int headAtomId;
-	private BasicAtom groundHeadAtom;
-	private int weight;
-	private int level;
-	private boolean sign;
+	private final int headAtomId;
+	private final BasicAtom groundHeadAtom;
+	private final int weight;
+	private final int level;
+	private final boolean sign;
 
 	public HeuristicDirectiveValues(int headAtomId, BasicAtom groundHeadAtom, int weight, int level, boolean sign) {
 		this.headAtomId = headAtomId;
@@ -106,27 +106,20 @@ public class HeuristicDirectiveValues {
 	@SuppressWarnings("unchecked")
 	public static HeuristicDirectiveValues fromHeuristicAtom(HeuristicAtom groundHeuristicAtom, int headAtomId) {
 		WeightAtLevel weightAtLevel = groundHeuristicAtom.getWeightAtLevel();
-		BasicAtom groundHeuristicHead = ((HeuristicAtom)groundHeuristicAtom).getHead().toAtom();
+		BasicAtom groundHeuristicHead = groundHeuristicAtom.getHead().toAtom();
 		return new HeuristicDirectiveValues(headAtomId, groundHeuristicHead, ((ConstantTerm<Integer>)weightAtLevel.getWeight()).getObject(), ((ConstantTerm<Integer>)weightAtLevel.getLevel()).getObject(), ((ConstantTerm<Boolean>)groundHeuristicAtom.getSign()).getObject());
 	}
 	
 	public static class PriorityComparator implements Comparator<HeuristicDirectiveValues> {
-		
-		/**
-		 * TODO: to make this general, we would need to know the maximum weight
-		 */
-		public static final int LEVEL_FACTOR = 1000000;
-		public static final int WEIGHT_FACTOR = 1000;
-		public static final int ATOM_FACTOR = 2;
 
 		@Override
 		public int compare(HeuristicDirectiveValues v1, HeuristicDirectiveValues v2) {
-			int difference = LEVEL_FACTOR * (v1.level - v2.level);
+			int difference = v1.level - v2.level;
 			if (difference == 0) {
-				difference = WEIGHT_FACTOR * (v1.weight - v2.weight);
+				difference = v1.weight - v2.weight;
 			}
 			if (difference == 0) {
-				difference = ATOM_FACTOR * (v1.headAtomId - v2.headAtomId);
+				difference = v1.headAtomId - v2.headAtomId;
 			}
 			if (difference == 0) {
 				difference = (v1.sign ? 1 : 0) - (v2.sign ? 1 : 0);
