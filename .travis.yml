@@ -16,7 +16,7 @@ language: java
 jdk:
   # LTS and in "Premier Support" as of 2019-03 (until 2022-03)
   - openjdk8
-  - oraclejdk8
+  # - oraclejdk8 # Removed due to not being supported on Ubuntu xenial
   # LTS and in "Premier Support" as of 2019-03 (until 2023-09)
   - openjdk11
   - oraclejdk11
