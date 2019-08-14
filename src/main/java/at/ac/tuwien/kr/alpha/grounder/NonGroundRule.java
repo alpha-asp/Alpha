@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -44,7 +44,6 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Represents a non-ground rule or a constraint for the semi-naive grounder.
- * Copyright (c) 2017-2018, the Alpha Team.
  */
 public class NonGroundRule {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NonGroundRule.class);
@@ -59,8 +58,7 @@ public class NonGroundRule {
 
 	final RuleGroundingOrder groundingOrder;
 
-	private NonGroundRule(Rule rule, int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative,
-			Atom headAtom, boolean containsIntervals, boolean containsExternals) {
+	private NonGroundRule(Rule rule, int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
 		this.ruleId = ruleId;
 		this.rule = rule;
 
@@ -86,8 +84,6 @@ public class NonGroundRule {
 		List<Literal> body = rule.getBody();
 		final List<Atom> pos = new ArrayList<>(body.size() / 2);
 		final List<Atom> neg = new ArrayList<>(body.size() / 2);
-		boolean containsIntervals = false;
-		boolean containsExternals = false;
 
 		for (Literal literal : body) {
 			(literal.isNegated() ? neg : pos).add(literal.getAtom());
@@ -99,8 +95,7 @@ public class NonGroundRule {
 			}
 			headAtom = ((DisjunctiveHead)rule.getHead()).disjunctiveAtoms.get(0);
 		}
-		return new NonGroundRule(rule, ID_GENERATOR.getNextId(), pos, neg, headAtom, containsIntervals,
-			containsExternals);
+		return new NonGroundRule(rule, ID_GENERATOR.getNextId(), pos, neg, headAtom);
 	}
 
 	public int getRuleId() {
