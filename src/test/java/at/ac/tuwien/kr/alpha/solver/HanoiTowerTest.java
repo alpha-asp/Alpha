@@ -45,7 +45,6 @@ import java.util.Optional;
 import java.util.SortedSet;
 
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
 
 /**
  * Tests {@link AbstractSolver} using some hanoi tower test cases (see https://en.wikipedia.org/wiki/Tower_of_Hanoi).
@@ -91,7 +90,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	}
 
 	private void testHanoiTower(String instance) throws IOException {
-		assumeFalse("naive".equals(solverName));	// disabled for naive solver to save resources during CI
+		ignoreTestForNaiveSolver();
 		Program parsedProgram = parser.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp")));
 		parsedProgram.accumulate(parser.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "HanoiTower_instances", instance + ".asp"))));
 		Solver solver = getInstance(parsedProgram);
