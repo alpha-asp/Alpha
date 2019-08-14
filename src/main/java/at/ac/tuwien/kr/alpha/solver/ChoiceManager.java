@@ -114,7 +114,6 @@ public class ChoiceManager implements Checkable {
 		this.checksEnabled = checksEnabled;
 		this.choicePointInfluenceManager.setChecksEnabled(checksEnabled);
 		this.heuristicInfluenceManager.setChecksEnabled(checksEnabled);
-		this.domainSpecificHeuristics.setChecksEnabled(checksEnabled);
 
 		if (checksEnabled) {
 			debugWatcher = new DebugWatcher();

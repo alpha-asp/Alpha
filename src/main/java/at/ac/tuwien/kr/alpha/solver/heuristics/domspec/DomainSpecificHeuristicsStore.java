@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -26,13 +26,12 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
-import at.ac.tuwien.kr.alpha.solver.Checkable;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 
 /**
  * Stores information on heuristic directives obtained from the grounder
  */
-public interface DomainSpecificHeuristicsStore extends Checkable {
+public interface DomainSpecificHeuristicsStore {
 	
 	void addInfo(int heuristicId, HeuristicDirectiveValues values);
 	
@@ -49,7 +48,7 @@ public interface DomainSpecificHeuristicsStore extends Checkable {
 	HeuristicDirectiveValues peek();
 	
 	HeuristicDirectiveValues getValues(int heuristicId);
-	
+
 	void setChoiceManager(ChoiceManager choiceManager);
 
 }

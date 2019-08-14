@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -51,11 +51,7 @@ public class EmptyDomainSpecificHeuristicsStore implements DomainSpecificHeurist
 	public HeuristicDirectiveValues getValues(int heuristicId) {
 		return null;
 	}
-	
-	@Override
-	public void setChecksEnabled(boolean checksEnabled) {
-	}
-	
+
 	@Override
 	public void setChoiceManager(ChoiceManager choiceManager) {
 	}
