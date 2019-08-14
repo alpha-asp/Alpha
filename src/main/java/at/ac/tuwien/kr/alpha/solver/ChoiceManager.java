@@ -126,12 +126,12 @@ public class ChoiceManager implements Checkable {
 		return checksEnabled;
 	}
 
-	public void callbackOnChanged(int atom) {
+	void callbackOnChanged(int atom) {
 		choicePointInfluenceManager.callbackOnChanged(atom);
 		heuristicInfluenceManager.callbackOnChanged(atom);
 	}
 
-	public int getBackjumps() {
+	int getBackjumps() {
 		return backjumps;
 	}
 
@@ -142,7 +142,7 @@ public class ChoiceManager implements Checkable {
 	 * 
 	 * @return the total number of backtracks
 	 */
-	public int getBacktracks() {
+	int getBacktracks() {
 		return backtracks;
 	}
 
@@ -151,7 +151,7 @@ public class ChoiceManager implements Checkable {
 	 * 
 	 * @return the number of backtracks made within backjumps.
 	 */
-	public int getBacktracksWithinBackjumps() {
+	int getBacktracksWithinBackjumps() {
 		return backtracksWithinBackjumps;
 	}
 
@@ -159,7 +159,7 @@ public class ChoiceManager implements Checkable {
 		return choices;
 	}
 
-	public void updateAssignments() {
+	void updateAssignments() {
 		LOGGER.trace("Updating assignments of ChoiceManager.");
 		if (checksEnabled) {
 			choicePointInfluenceManager.checkActiveChoicePoints();
@@ -183,7 +183,7 @@ public class ChoiceManager implements Checkable {
 		choiceStack.push(choice);
 	}
 
-	public void backjump(int target) {
+	void backjump(int target) {
 		if (target < 0) {
 			throw oops("Backjumping to decision level less than 0");
 		}
@@ -209,7 +209,7 @@ public class ChoiceManager implements Checkable {
 	 *
 	 * In order to analyze the choice that was backtracked, use the more expensive {@link #backtrackSlow()}.
 	 */
-	public void backtrackFast() {
+	void backtrackFast() {
 		backtrack();
 
 		final Choice choice = choiceStack.pop();
@@ -225,7 +225,7 @@ public class ChoiceManager implements Checkable {
 	 * @return the assignment entry of the choice being backtracked, or {@code null} if the choice cannot be
 	 *         backtracked any further (it already is a backtracking choice)
 	 */
-	public Assignment.Entry backtrackSlow() {
+	Assignment.Entry backtrackSlow() {
 		final Choice choice = choiceStack.pop();
 		final Assignment.Entry lastChoiceEntry = assignment.get(choice.getAtom());
 
@@ -336,7 +336,7 @@ public class ChoiceManager implements Checkable {
 	 *
 	 * @return an unmodifiable view on the current choice stack
 	 */
-	public List<Choice> getChoiceStack() {
+	List<Choice> getChoiceStack() {
 		return Collections.unmodifiableList(choiceStack);
 	}
 
@@ -344,11 +344,11 @@ public class ChoiceManager implements Checkable {
 		return bnpEstimation;
 	}
 
-	public static ChoiceManager withoutDomainSpecificHeuristics(WritableAssignment assignment, NoGoodStore store) {
+	static ChoiceManager withoutDomainSpecificHeuristics(WritableAssignment assignment, NoGoodStore store) {
 		return new ChoiceManager(assignment, store, new EmptyDomainSpecificHeuristicsStore());
 	}
 
-	public static ChoiceManager withDomainSpecificHeuristics(WritableAssignment assignment, NoGoodStore store) {
+	static ChoiceManager withDomainSpecificHeuristics(WritableAssignment assignment, NoGoodStore store) {
 		return new ChoiceManager(assignment, store);
 	}
 
