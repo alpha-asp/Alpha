@@ -296,10 +296,6 @@ public class ChoiceManager implements Checkable {
 		return choicePointInfluenceManager.isActive(atom);
 	}
 
-	public boolean isActiveHeuristicAtom(int atom) {
-		return heuristicInfluenceManager.isActive(atom);
-	}
-
 	public int getNextActiveChoiceAtom() {
 		return choicePointInfluenceManager.getNextActiveAtomOrDefault(DEFAULT_CHOICE_ATOM);
 	}
