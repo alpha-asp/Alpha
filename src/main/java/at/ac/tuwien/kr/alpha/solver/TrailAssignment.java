@@ -62,6 +62,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	private int[] strongDecisionLevels;
 	private ImplicationReasonProvider[] impliedBy;
+	private int[][] impliedByLiterals;
 	private int[] propagationLevels;
 	private int currentPropagationLevel;
 	private boolean[] callbackUponChange;
@@ -84,6 +85,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		this.values = new int[0];
 		this.strongDecisionLevels = new int[0];
 		this.impliedBy = new ImplicationReasonProvider[0];
+		this.impliedByLiterals = new int[0][];	// TODO: temporary solution, impliedBy should be unified with impliedByLiterals, for that the ImplicationReasonProvider interface must be reworked.
 		this.propagationLevels = new int[0];
 		this.callbackUponChange = new boolean[0];
 		this.trailIndicesOfDecisionLevels = new ArrayList<>();
@@ -104,6 +106,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		Arrays.fill(values, 0);
 		Arrays.fill(strongDecisionLevels, -1);
 		Arrays.fill(impliedBy, null);
+		Arrays.fill(impliedByLiterals, null);
 		currentPropagationLevel = 0;
 		Arrays.fill(propagationLevels, 0);
 		Arrays.fill(callbackUponChange, false);
@@ -198,7 +201,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		int start = trailIndicesOfDecisionLevels.get(getDecisionLevel());
 		ListIterator<Integer> backtrackIterator = trail.listIterator(start);
 		while (backtrackIterator.hasNext()) {
-			Integer backtrackAtom = backtrackIterator.next();
+			int backtrackAtom = atomOf(backtrackIterator.next());
 			// Skip already backtracked atoms.
 			if (getTruth(backtrackAtom) == null) {
 				continue;
@@ -340,9 +343,11 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		// If the atom currently is not assigned, simply record the assignment.
 		final ThriceTruth currentTruth = getTruth(atom);
 		if (currentTruth == null) {
-			trail.add(atom);
+			trail.add(atomToLiteral(atom, value.toBoolean()));
 			values[atom] = (getDecisionLevel() << 2) | translateTruth(value);
 			this.impliedBy[atom] = impliedBy;
+			this.impliedByLiterals[atom] = impliedBy != null ? impliedBy.getReasonLiterals() : null;
+			// TODO: should be linked to a WatchedNoGood here in order to bump its activity upon getReason()!
 			this.propagationLevels[atom] = ++currentPropagationLevel;
 			// Adjust MBT counter.
 			if (value == MBT) {
@@ -375,7 +380,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		// There is nothing to do except if MBT becomes TRUE.
 		if (currentTruth == MBT && value == TRUE) {
 			// Record new truth value but keep weak decision level unchanged.
-			trail.add(atom);
+			trail.add(atomToLiteral(atom, true));
 			values[atom] = (getWeakDecisionLevel(atom) << 2) | translateTruth(TRUE);
 			// Record strong decision level.
 			strongDecisionLevels[atom] = getDecisionLevel();
@@ -438,9 +443,14 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	@Override
 	public NoGood getImpliedBy(int atom) {
+		// TODO: this method should be retired/refactored.
 		int assignedLiteral = atomToLiteral(atom, getTruth(atom).toBoolean());
 		// Note that any atom was implied by a literal of opposite truth.
 		return impliedBy[atom] != null ? impliedBy[atom].getNoGood(negateLiteral(assignedLiteral)) : null;
+	}
+
+	public int[] getReason(int atom) {
+		return impliedByLiterals[atom];
 	}
 
 	@Override
@@ -531,6 +541,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		strongDecisionLevels = Arrays.copyOf(strongDecisionLevels, newCapacity);
 		Arrays.fill(strongDecisionLevels, oldLength, strongDecisionLevels.length, -1);
 		impliedBy = Arrays.copyOf(impliedBy, newCapacity);
+		impliedByLiterals = Arrays.copyOf(impliedByLiterals, newCapacity);
 		propagationLevels = Arrays.copyOf(propagationLevels, newCapacity);
 		callbackUponChange = Arrays.copyOf(callbackUponChange, newCapacity);
 	}
@@ -544,13 +555,13 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		}
 		return n;
 	}
-	
+
 	@Override
 	public int getNumberOfAtomsAssignedSinceLastDecision() {
 		Set<Integer> newlyAssignedAtoms = new HashSet<>();
 		int trailIndex = trailIndicesOfDecisionLevels.get(getDecisionLevel());
 		for (; trailIndex < trail.size(); trailIndex++) {
-			newlyAssignedAtoms.add(trail.get(trailIndex));
+			newlyAssignedAtoms.add(atomOf(trail.get(trailIndex)));
 		}
 		return newlyAssignedAtoms.size();
 	}
@@ -601,7 +612,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 		private void advanceCursorToNextPositiveAssignment() {
 			while (newAssignmentsIterator < trail.size()) {
-				ThriceTruth truth = getTruth(trail.get(newAssignmentsIterator));
+				ThriceTruth truth = getTruth(atomOf(trail.get(newAssignmentsIterator)));
 				if (truth != null && truth.toBoolean()) {
 					return;
 				}
@@ -617,7 +628,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 		@Override
 		public Integer next() {
-			return trail.get(newAssignmentsIterator++);
+			return atomOf(trail.get(newAssignmentsIterator++));
 
 		}
 	}
@@ -645,12 +656,12 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 		@Override
 		public int peek() {
-			return trail.get(nextPositionInTrail);
+			return atomOf(trail.get(nextPositionInTrail));
 		}
 
 		@Override
 		public int remove() {
-			Integer current = peek();
+			int current = peek();
 			nextPositionInTrail++;
 			return current;
 		}
@@ -658,6 +669,36 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		@Override
 		public boolean isEmpty() {
 			return nextPositionInTrail >= trail.size();
+		}
+	}
+
+	public TrailBackwardsWalker getTrailBackwardsWalker() {
+		return new TrailBackwardsWalker();
+	}
+
+	public class TrailBackwardsWalker {
+
+		int trailPos;
+
+		TrailBackwardsWalker() {
+			trailPos = trail.size();
+		}
+
+		public int getNextLowerLiteral() {
+			return trail.get(--trailPos);
+		}
+
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder("[");
+			for (Integer literalOnTrail : trail) {
+				sb.append(isPositive(literalOnTrail) ? "+" + atomOf(literalOnTrail) : "-" + atomOf(literalOnTrail));
+				sb.append("@");
+				sb.append(TrailAssignment.this.getWeakDecisionLevel(atomOf(literalOnTrail)));
+				sb.append(", ");
+			}
+			sb.append("]");
+			return sb.toString();
 		}
 	}
 

@@ -35,4 +35,6 @@ public interface NoGoodStore {
 	void backtrack();
 
 	void growForMaxAtomId(int maxAtomId);
+
+	void cleanupLearnedNoGoods();
 }

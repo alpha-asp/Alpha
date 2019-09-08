@@ -27,9 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.NoGoodInterface;
 import org.slf4j.Logger;
@@ -60,6 +58,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	private static final int UNASSIGNED = Integer.MAX_VALUE;
 
 	private final WritableAssignment assignment;
+	private LearnedNoGoodDeletion learnedNoGoodDeletion;
 	@SuppressWarnings("unchecked")
 	private ArrayList<WatchedNoGood>[] watches = new ArrayList[0];
 	@SuppressWarnings("unchecked")
@@ -71,9 +70,10 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	private boolean didPropagate;
 	private boolean hasBinaryNoGoods;
 
-	public NoGoodStoreAlphaRoaming(WritableAssignment assignment, boolean checksEnabled) {
+	NoGoodStoreAlphaRoaming(WritableAssignment assignment, boolean checksEnabled) {
 		this.assignment = assignment;
 		this.checksEnabled = checksEnabled;
+		this.learnedNoGoodDeletion = new LearnedNoGoodDeletion(this, assignment);
 	}
 
 	public NoGoodStoreAlphaRoaming(WritableAssignment assignment) {
@@ -128,6 +128,25 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		this.maxAtomId = maxAtomId;
 	}
 
+	@Override
+	public void cleanupLearnedNoGoods() {
+		if (learnedNoGoodDeletion.needToRunNoGoodDeletion()) {
+			learnedNoGoodDeletion.runNoGoodDeletion();
+		}
+	}
+
+	void removeFromWatches(WatchedNoGood toRemove) {
+		int watchedLiteral1 = toRemove.getLiteral(0);
+		int watchedLiteral2 = toRemove.getLiteral(1);
+		if (!watches(watchedLiteral2).remove(toRemove)
+			|| !watches(watchedLiteral1).remove(toRemove)) {
+			throw oops("Could not remove learned NoGood from watch lists.");
+		}
+		if (toRemove.hasHead()) {
+			throw oops("NoGood has a head.");	// If this occurs, we need to remove the alpha watch too.
+		}
+	}
+
 	private ArrayList<WatchedNoGood> watches(int literal) {
 		return watches[literal];
 	}
@@ -146,8 +165,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		watchesAlpha(literal).add(wng);
 	}
 
-	@Override
-	public ConflictCause add(int id, NoGood noGood) {
+	public ConflictCause add(int id, NoGood noGood, int lbd) {
 		LOGGER.trace("Adding {}", noGood);
 
 		if (noGood.isUnary()) {
@@ -155,8 +173,13 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		} else if (noGood.isBinary()) {
 			return addAndWatchBinary(noGood);
 		} else {
-			return addAndWatch(noGood);
+			return addAndWatch(noGood, lbd);
 		}
+	}
+
+	@Override
+	public ConflictCause add(int id, NoGood noGood) {
+		return add(id, noGood, -1);
 	}
 
 	/**
@@ -180,7 +203,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		return strongDecisionLevel == -1 ? UNASSIGNED : strongDecisionLevel;
 	}
 
-	private ConflictCause addAndWatch(final NoGood noGood) {
+	private ConflictCause addAndWatch(final NoGood noGood, int lbd) {
 		// Collect potential watch candidates.
 		int posWeakUnassigned1 = -1;
 		int posWeakUnassigned2 = -1;
@@ -318,6 +341,12 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		}
 		WatchedNoGood wng = new WatchedNoGood(noGood, watch1, watch2, watchAlpha);
 		LOGGER.trace("WatchedNoGood is {}.", wng);
+
+		// Record for eventual removal if this NoGood is learned.
+		if (noGood.getType() == NoGood.Type.LEARNT) {
+			wng.setLBD(lbd);
+			learnedNoGoodDeletion.recordLearnedNoGood(wng);
+		}
 
 		if (wng.getAlphaPointer() == -1 && noGood.hasHead()) {
 			throw oops("Did not set alpha watch for nogood with head.");
@@ -552,10 +581,14 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 
 	@Override
 	public ConflictCause propagate() {
-		return propagate(false);
+		ConflictCause conflictCause = propagate(false);
+		if (conflictCause != null) {
+			learnedNoGoodDeletion.increaseConflictCounter();
+		}
+		return conflictCause;
 	}
 
-	public ConflictCause propagateOnlyBinaryNoGoods() {
+	private ConflictCause propagateOnlyBinaryNoGoods() {
 		return propagate(true);
 	}
 	
@@ -629,7 +662,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 
 		private ConflictCause addHeadedNoGood(NoGood noGood) {
 			if (noGoodsWithHeadSize + 1 > noGoodsWithHead.length) {
-				noGoodsWithHead = Arrays.copyOf(noGoodsWithHead, Util.arrayGrowthSize(noGoodsWithHeadSize));
+				noGoodsWithHead = Arrays.copyOf(noGoodsWithHead, arrayGrowthSize(noGoodsWithHeadSize));
 			}
 			int otherLiteral = noGood.getLiteral(0) == forLiteral ? noGood.getLiteral(1) : noGood.getLiteral(0);
 			if (isPositive(otherLiteral)) {
@@ -655,7 +688,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 
 		private ConflictCause addOrdinaryNoGood(NoGood noGood) {
 			if (noGoodsWithoutHeadSize + 1 > noGoodsWithoutHead.length) {
-				noGoodsWithoutHead = Arrays.copyOf(noGoodsWithoutHead, Util.arrayGrowthSize(noGoodsWithoutHeadSize));
+				noGoodsWithoutHead = Arrays.copyOf(noGoodsWithoutHead, arrayGrowthSize(noGoodsWithoutHeadSize));
 			}
 			int otherLiteral = noGood.getLiteral(0) == forLiteral ? noGood.getLiteral(1) : noGood.getLiteral(0);
 			noGoodsWithoutHead[noGoodsWithoutHeadSize++] = otherLiteral;
@@ -672,7 +705,12 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		public NoGood getNoGood(int impliedAtom) {
 			return new NoGood(impliedAtom, forLiteral);
 		}
-		
+
+		@Override
+		public int[] getReasonLiterals() {
+			return new int[] {forLiteral};
+		}
+
 		ConflictCause propagateWeakly() {
 			didPropagate |= noGoodsWithHeadSize > 0 || noGoodsWithoutHeadSize > 0;
 			for (int i = 0; i < noGoodsWithoutHeadSize; i++) {
@@ -736,7 +774,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	}
 
 	private int getNumberOfBinaryWatches(int atom, boolean truth) {
-		return binaryWatches[Literals.atomToLiteral(atom, truth)].size();
+		return binaryWatches[atomToLiteral(atom, truth)].size();
 	}
 
 	private int estimateEffectsOfBinaryNoGoodPropagation(int atom, boolean truth) {
@@ -853,6 +891,10 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 				int otherPointer = atom ==  atomOf(watchedNoGood.getLiteral(1)) ? 0 : 1;
 				int otherLiteral = watchedNoGood.getLiteral(otherPointer);
 				int otherAtom = atomOf(otherLiteral);
+				int thisAtom = atomOf(watchedNoGood.getLiteral(1 - otherPointer));
+				if (thisAtom != atom) {
+					throw oops("Watched atom is not at first/second position in literals array.");
+				}
 				Assignment.Entry otherEntry = assignment.get(otherAtom);
 				int otherDecisionLevel = weakDecisionLevel(otherEntry);
 				int otherReplayLevel = weakReplayLevel(otherAtom);

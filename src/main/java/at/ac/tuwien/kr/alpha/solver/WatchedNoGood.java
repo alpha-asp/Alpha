@@ -10,9 +10,11 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
 
 public final class WatchedNoGood implements NoGoodInterface, Iterable<Integer> {
+	private int activity;
 	private final int[] literals;
 	private int alpha;
 	private int head;
+	private boolean isLbdLessOrEqual2;
 
 	WatchedNoGood(NoGood noGood, int a, int b, int alpha) {
 		if (noGood.size() < 3) {
@@ -26,6 +28,7 @@ public final class WatchedNoGood implements NoGoodInterface, Iterable<Integer> {
 		}
 		this.alpha = alpha;
 		head = noGood.hasHead() ? 0 : -1;
+		activity = 0;
 		if (b == 0) {
 			swap(1, a);
 		} else {
@@ -148,5 +151,35 @@ public final class WatchedNoGood implements NoGoodInterface, Iterable<Integer> {
 	public NoGood getNoGood(int impliedLiteral) {
 		// FIXME: this should not be necessary, the GroundConflictNoGoodLearner should be able to work with WatchedNoGood directly.
 		return new NoGood(literals.clone());
+	}
+
+	@Override
+	public int[] getReasonLiterals() {
+		return literals;
+	}
+
+	public int getActivity() {
+		return activity;
+	}
+
+	void decreaseActivity() {
+		activity >>= 1;
+	}
+
+	public void bumpActivity() {
+		activity++;
+	}
+
+	void setLBD(int lbd) {
+		isLbdLessOrEqual2 = lbd <= 2;
+	}
+
+	boolean isLbdLessOrEqual2() {
+		return isLbdLessOrEqual2;
+	}
+
+	int[] getLiteralsClone() {
+		// TODO: this method should be unnecessary and requires refactoring of implication reasons in the assignment.
+		return literals.clone();
 	}
 }

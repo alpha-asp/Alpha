@@ -266,7 +266,13 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 	public NoGood getNoGood(int impliedAtom) {
 		return this;
 	}
-	
+
+	@Override
+	public int[] getReasonLiterals() {
+		// TODO: this is dangerous and should not be necessary (requires further solver internal changes).
+		return literals;
+	}
+
 	/**
 	 * The possible nogood types
 	 */

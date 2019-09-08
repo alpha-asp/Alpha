@@ -7,4 +7,6 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
  */
 public interface ImplicationReasonProvider {
 	NoGood getNoGood(int impliedLiteral);
+
+	int[] getReasonLiterals();
 }

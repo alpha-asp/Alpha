@@ -99,6 +99,10 @@ public class NaiveNoGoodStore implements NoGoodStore {
 	public void growForMaxAtomId(int maxAtomId) {
 	}
 
+	@Override
+	public void cleanupLearnedNoGoods() {
+	}
+
 	/**
 	 * Infer an assignment from a nogood if it is weakly unit.
 	 *

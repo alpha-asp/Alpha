@@ -122,7 +122,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			// Backjump instead of backtrackSlow, enumerationNoGood will invert last choice.
 			choiceManager.backjump(backjumpLevel - 1);
 			LOGGER.debug("Adding enumeration nogood: {}", enumerationNoGood);
-			if (!addAndBackjumpIfNecessary(grounder.register(enumerationNoGood), enumerationNoGood)) {
+			if (!addAndBackjumpIfNecessary(grounder.register(enumerationNoGood), enumerationNoGood, -1)) {
 				return false;
 			}
 		}
@@ -135,6 +135,10 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			ConflictCause conflictCause = store.propagate();
 			didChange |= store.didPropagate();
 			LOGGER.trace("Assignment after propagation is: {}", assignment);
+			if (conflictCause == null) {
+				// Run learned NoGood deletion strategy.
+				store.cleanupLearnedNoGoods();
+			}
 			if (conflictCause != null) {
 				// Learn from conflict.
 				NoGood violatedNoGood = conflictCause.getViolatedNoGood();
@@ -193,8 +197,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	 * @param noGoodId
 	 * @param noGood
 	 */
-	private boolean addAndBackjumpIfNecessary(int noGoodId, NoGood noGood) {
-		while (store.add(noGoodId, noGood) != null) {
+	private boolean addAndBackjumpIfNecessary(int noGoodId, NoGood noGood, int lbd) {
+		while (((NoGoodStoreAlphaRoaming)store).add(noGoodId, noGood, lbd) != null) {
 			LOGGER.debug("Adding noGood (again) caused conflict, computing real backjumping level now.");
 			int backjumpLevel = learner.computeConflictFreeBackjumpingLevel(noGood);
 			if (backjumpLevel < 0) {
@@ -235,7 +239,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 			final NoGood learnedNoGood = analysisResult.learnedNoGood;
 			int noGoodId = grounder.register(learnedNoGood);
-			if (!addAndBackjumpIfNecessary(noGoodId, learnedNoGood)) {
+			if (!addAndBackjumpIfNecessary(noGoodId, learnedNoGood, analysisResult.lbd)) {
 				return false;
 			}
 			return true;
@@ -467,11 +471,14 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			return null;
 		}
 
-		GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.getViolatedNoGood());
+		GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictFromAddingNoGood(conflictCause.getViolatedNoGood());
 		if (conflictAnalysisResult == UNSAT) {
 			return NoGood.UNSAT;
 		}
 		branchingHeuristic.analyzedConflict(conflictAnalysisResult);
+		if (conflictAnalysisResult.learnedNoGood != null || conflictAnalysisResult.clearLastChoiceAfterBackjump) {
+			throw oops("Unexpectedly learned NoGood after addition of new NoGood caused a conflict.");
+		}
 
 		choiceManager.backjump(conflictAnalysisResult.backjumpLevel);
 		if (conflictAnalysisResult.clearLastChoiceAfterBackjump) {
@@ -481,7 +488,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		// If NoGood was learned, add it to the store.
 		// Note that the learned NoGood may cause further conflicts, since propagation on lower decision levels is lazy,
 		// hence backtracking once might not be enough to remove the real conflict cause.
-		if (!addAndBackjumpIfNecessary(noGoodEntry.getKey(), noGoodEntry.getValue())) {
+		if (!addAndBackjumpIfNecessary(noGoodEntry.getKey(), noGoodEntry.getValue(), -1)) {
 			return NoGood.UNSAT;
 		}
 
