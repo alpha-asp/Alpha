@@ -83,6 +83,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	@Test(timeout = 60000)
 	public void testSimple() throws IOException {
 		ignoreTestForNaiveSolver();
+		ignoreNonDefaultDomainIndependentHeuristics();
 		testHanoiTower("simple");
 	}
 

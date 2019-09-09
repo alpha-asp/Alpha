@@ -80,6 +80,7 @@ public class OmigaBenchmarksTest extends AbstractSolverTests {
 	@Test(timeout = 15000)
 	public void testReach_1() throws IOException {
 		ignoreTestForNaiveSolver();
+		ignoreNonDefaultDomainIndependentHeuristics();
 		test("reach", "reach-1.txt");
 	}
 
