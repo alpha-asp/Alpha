@@ -82,6 +82,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 
 	@Test(timeout = 60000)
 	public void testSimple() throws IOException {
+		ignoreTestForNaiveSolver();
 		testHanoiTower("simple");
 	}
 
@@ -90,7 +91,6 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	}
 
 	private void testHanoiTower(String instance) throws IOException {
-		ignoreTestForNaiveSolver();
 		Program parsedProgram = parser.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp")));
 		parsedProgram.accumulate(parser.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "HanoiTower_instances", instance + ".asp"))));
 		Solver solver = getInstance(parsedProgram);

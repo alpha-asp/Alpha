@@ -79,17 +79,17 @@ public class OmigaBenchmarksTest extends AbstractSolverTests {
 
 	@Test(timeout = 15000)
 	public void testReach_1() throws IOException {
+		ignoreTestForNaiveSolver();
 		test("reach", "reach-1.txt");
 	}
 
-	@Test(timeout = 15000)
+	@Test(timeout = 10000)
 	@Ignore("disabled to save resources during CI")
 	public void testReach_4() throws IOException {
 		test("reach", "reach-4.txt");
 	}
 
 	private void test(String folder, String aspFileName) throws IOException {
-		ignoreTestForNaiveSolver();
 		CharStream programInputStream = CharStreams.fromPath(
 			Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName)
 		);
