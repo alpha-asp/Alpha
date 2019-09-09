@@ -192,7 +192,7 @@ public class SystemConfig {
 	}
 
 	public void setReplayChoices(String replayChoices) {
-		this.replayChoices = Arrays.stream(replayChoices.split(", ")).map(Integer::valueOf).collect(Collectors.toList());
+		this.replayChoices = Arrays.stream(replayChoices.split(",")).map(String::trim).map(Integer::valueOf).collect(Collectors.toList());
 	}
 
 }

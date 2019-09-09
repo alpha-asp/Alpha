@@ -27,25 +27,19 @@
  */
 package at.ac.tuwien.kr.alpha.config;
 
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import org.apache.commons.cli.*;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 
 /**
  * Parses given argument lists (as passed when Alpha is called from command line) into {@link AlphaConfig}s and {@link InputConfig}s.
@@ -96,7 +90,7 @@ public class CommandLineParser {
 			.desc("strategy for mom's heuristic (CountBinaryWatches or BinaryNoGoodPropagation, default: " + SystemConfig.DEFAULT_MOMS_STRATEGY.name() + ")")
 			.build();
 	private static final Option OPT_REPLAY_CHOICES = Option.builder("rc").longOpt("replayChoices").hasArg().argName("choices")
-			.desc("list of choices (signed atom IDs) to be replayed")
+			.desc("comma-separated list of choices to be replayed (each choice is represented by a signed integer whose absolute value designates an atom ID and whose sign designates a truth value)")
 			.build();
 	private static final Option OPT_QUIET = Option.builder("q").longOpt("quiet").desc("do not print answer sets (default: " + SystemConfig.DEFAULT_QUIET)
 			.build();

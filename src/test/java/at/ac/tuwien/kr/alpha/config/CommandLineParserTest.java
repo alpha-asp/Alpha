@@ -97,7 +97,7 @@ public class CommandLineParserTest {
 	@Test
 	public void replay() throws ParseException {
 		CommandLineParser parser = new CommandLineParser("java -jar Alpha-bundled.jar", (msg) -> { });
-		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-rc", "\"1, 2, 3\""});
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-rc", "\"1,2, 3\""});
 		Assert.assertEquals(Arrays.asList(1, 2, 3), alphaConfig.getAlphaConfig().getReplayChoices());
 	}
 
