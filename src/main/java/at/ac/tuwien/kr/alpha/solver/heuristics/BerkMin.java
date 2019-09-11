@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018 Siemens AG
+ * Copyright (c) 2016-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -121,8 +121,10 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 			incrementActivityCounter(atomToLiteral(resolutionAtom, true));
 			incrementActivityCounter(atomToLiteral(resolutionAtom, false));
 		}
-		for (int literal : analysisResult.learnedNoGood) {
-			incrementActivityCounter(literal);
+		if (analysisResult.learnedNoGood != null) {
+			for (int literal : analysisResult.learnedNoGood) {
+				incrementActivityCounter(literal);
+			}
 		}
 		decayAllIfTimeHasCome();
 	}
