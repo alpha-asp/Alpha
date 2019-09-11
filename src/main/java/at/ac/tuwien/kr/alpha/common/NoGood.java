@@ -27,6 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.solver.Antecedent;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -135,6 +137,25 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 	@Override
 	public int size() {
 		return literals.length;
+	}
+
+	@Override
+	public Antecedent asAntecedent() {
+		return new Antecedent() {
+
+			@Override
+			public int[] getReasonLiterals() {
+				return NoGood.this.literals; // Beware: returned array must not be modified!
+			}
+
+			@Override
+			public void bumpActivity() {
+			}
+
+			@Override
+			public void decreaseActivity() {
+			}
+		};
 	}
 
 	public NoGood withoutHead() {
@@ -260,17 +281,6 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 		sb.append("}");
 
 		return sb.toString();
-	}
-
-	@Override
-	public NoGood getNoGood(int impliedAtom) {
-		return this;
-	}
-
-	@Override
-	public int[] getReasonLiterals() {
-		// TODO: this is dangerous and should not be necessary (requires further solver internal changes).
-		return literals;
 	}
 
 	/**

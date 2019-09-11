@@ -122,7 +122,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			// Backjump instead of backtrackSlow, enumerationNoGood will invert last choice.
 			choiceManager.backjump(backjumpLevel - 1);
 			LOGGER.debug("Adding enumeration nogood: {}", enumerationNoGood);
-			if (!addAndBackjumpIfNecessary(grounder.register(enumerationNoGood), enumerationNoGood, -1)) {
+			if (!addAndBackjumpIfNecessary(grounder.register(enumerationNoGood), enumerationNoGood, Integer.MAX_VALUE)) {
 				return false;
 			}
 		}
@@ -141,8 +141,10 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			}
 			if (conflictCause != null) {
 				// Learn from conflict.
-				NoGood violatedNoGood = conflictCause.getViolatedNoGood();
 				LOGGER.debug("Violating assignment is: {}", assignment);
+				Antecedent conflictAntecedent = conflictCause.getAntecedent();
+				NoGood violatedNoGood = new NoGood(conflictAntecedent.getReasonLiterals().clone());
+				// TODO: The violatedNoGood should not be necessary here, but this requires major type changes in heuristics.
 				branchingHeuristic.violatedNoGood(violatedNoGood);
 				if (!afterAllAtomsAssigned) {
 					if (!learnBackjumpAddFromConflict(conflictCause)) {
@@ -152,7 +154,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				} else {
 					LOGGER.debug("Assignment is violated after all unassigned atoms have been assigned false.");
 					conflictsAfterClosing++;
-					if (!treatConflictAfterClosing(violatedNoGood)) {
+					if (!treatConflictAfterClosing(conflictAntecedent)) {
 						return false;
 					}
 					afterAllAtomsAssigned = false;
@@ -198,7 +200,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	 * @param noGood
 	 */
 	private boolean addAndBackjumpIfNecessary(int noGoodId, NoGood noGood, int lbd) {
-		while (((NoGoodStoreAlphaRoaming)store).add(noGoodId, noGood, lbd) != null) {
+		while (store.add(noGoodId, noGood, lbd) != null) {
 			LOGGER.debug("Adding noGood (again) caused conflict, computing real backjumping level now.");
 			int backjumpLevel = learner.computeConflictFreeBackjumpingLevel(noGood);
 			if (backjumpLevel < 0) {
@@ -218,7 +220,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	 * @return false iff the analysis result shows that the set of NoGoods is unsatisfiable.
 	 */
 	private boolean learnBackjumpAddFromConflict(ConflictCause conflictCause) {
-		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(conflictCause.getViolatedNoGood());
+		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(conflictCause.getAntecedent());
 
 		LOGGER.debug("Analysis result: {}", analysisResult);
 
@@ -228,11 +230,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 
 		branchingHeuristic.analyzedConflict(analysisResult);
-
-		if (analysisResult.learnedNoGood == null && analysisResult.clearLastChoiceAfterBackjump) {
-			// TODO: Temporarily abort resolution with backtrackFast instead of learning a too large nogood.
-			return backtrack();
-		}
 
 		if (analysisResult.learnedNoGood != null) {
 			choiceManager.backjump(analysisResult.backjumpLevel);
@@ -302,7 +299,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		return NoGood.learnt(reasons);
 	}
 
-	private boolean treatConflictAfterClosing(NoGood violatedNoGood) {
+	private boolean treatConflictAfterClosing(Antecedent violatedNoGood) {
 		if (disableJustificationAfterClosing || disableJustifications || !(grounder instanceof ProgramAnalyzingGrounder)) {
 			// Will not learn from violated NoGood, do simple backtrack.
 			LOGGER.debug("NoGood was violated after all unassigned atoms were assigned to false; will not learn from it; skipping.");
@@ -316,8 +313,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		LOGGER.debug("Justifying atoms in violated nogood.");
 		LinkedHashSet<Integer> toJustify = new LinkedHashSet<>();
 		// Find those literals in violatedNoGood that were just assigned false.
-		for (Integer literal : violatedNoGood) {
-			if (assignment.getImpliedBy(atomOf(literal)) == TrailAssignment.CLOSING_INDICATOR_NOGOOD) {
+		for (Integer literal : violatedNoGood.getReasonLiterals()) {
+			if (assignment.getImpliedBy(atomOf(literal)) == TrailAssignment.CLOSING_INDICATOR_ANTECEDENT) {
 				toJustify.add(literal);
 			}
 		}
@@ -351,9 +348,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 					continue;
 				}
 				int groundAtomId = atomStore.get(groundAtom);
-				Assignment.Entry entry = assignment.get(groundAtomId);
+				Antecedent impliedBy = assignment.getImpliedBy(groundAtomId);
 				// Check if atom was assigned to FALSE during the closing.
-				if (entry.getImpliedBy() == TrailAssignment.CLOSING_INDICATOR_NOGOOD) {
+				if (impliedBy == TrailAssignment.CLOSING_INDICATOR_ANTECEDENT) {
 					ruleAtomReplacements.add(atomToNegatedLiteral(groundAtomId));
 				}
 			}
@@ -448,7 +445,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				return false;
 			}
 
-			final ConflictCause conflictCause = store.add(entry.getKey(), entry.getValue());
+			final ConflictCause conflictCause = store.add(entry.getKey(), entry.getValue(), Integer.MAX_VALUE);
 			if (conflictCause == null) {
 				// There is no conflict, all is fine. Just skip conflict treatment and carry on.
 				continue;
@@ -465,25 +462,16 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private NoGood fixContradiction(Map.Entry<Integer, NoGood> noGoodEntry, ConflictCause conflictCause) {
 		LOGGER.debug("Attempting to fix violation of {} caused by {}", noGoodEntry.getValue(), conflictCause);
 
-		if (conflictCause.getViolatedChoice() != null) {
-			choiceManager.backjump(conflictCause.getViolatedChoice().getDecisionLevel());
-			choiceManager.backtrackFast();
-			return null;
-		}
-
-		GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictFromAddingNoGood(conflictCause.getViolatedNoGood());
+		GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictFromAddingNoGood(conflictCause.getAntecedent());
 		if (conflictAnalysisResult == UNSAT) {
 			return NoGood.UNSAT;
 		}
 		branchingHeuristic.analyzedConflict(conflictAnalysisResult);
-		if (conflictAnalysisResult.learnedNoGood != null || conflictAnalysisResult.clearLastChoiceAfterBackjump) {
+		if (conflictAnalysisResult.learnedNoGood != null) {
 			throw oops("Unexpectedly learned NoGood after addition of new NoGood caused a conflict.");
 		}
 
 		choiceManager.backjump(conflictAnalysisResult.backjumpLevel);
-		if (conflictAnalysisResult.clearLastChoiceAfterBackjump) {
-			choiceManager.backtrackFast();
-		}
 
 		// If NoGood was learned, add it to the store.
 		// Note that the learned NoGood may cause further conflicts, since propagation on lower decision levels is lazy,

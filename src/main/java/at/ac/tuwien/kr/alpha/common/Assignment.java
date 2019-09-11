@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.solver.Antecedent;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 import java.util.Iterator;
@@ -68,7 +69,7 @@ public interface Assignment {
 	 * @param atom the atom.
 	 * @return the implying NoGood.
 	 */
-	NoGood getImpliedBy(int atom);
+	Antecedent getImpliedBy(int atom);
 
 	/**
 	 * Determines if the given {@code noGood} is undefined in the current assignment.
@@ -111,40 +112,10 @@ public interface Assignment {
 		ThriceTruth getTruth();
 		int getAtom();
 		int getDecisionLevel();
-		NoGood getImpliedBy();
-		int getPropagationLevel();
+		Antecedent getImpliedBy();
 
 		boolean hasPreviousMBT();
 		int getMBTDecisionLevel();
-		int getMBTPropagationLevel();
-		NoGood getMBTImpliedBy();
-
-		default int getPropagationLevelRespectingLowerMBT() {
-			return hasPreviousMBT() ? getMBTPropagationLevel() : getPropagationLevel();
-		}
-
-		default NoGood getImpliedByRespectingLowerMBT() {
-			if (hasPreviousMBT()) {
-				return getMBTImpliedBy();
-			}
-			return getImpliedBy();
-		}
-
-		/**
-		 * Returns the literal corresponding to this assignment
-		 * @return atomId if this entry is TRUE/MBT and -atomId if entry is FALSE.
-		 */
-		default int getLiteral() {
-			return atomToLiteral(getAtom(), getTruth().toBoolean());
-		}
-
-		/**
-		 * Returns the weakly assigned decision level.
-		 * @return the decision level of a previous MBT if it exists, otherwise the decision level of this entry.
-		 */
-		default int getWeakDecisionLevel() {
-			return hasPreviousMBT() ? getMBTDecisionLevel() : getDecisionLevel();
-		}
 
 	}
 

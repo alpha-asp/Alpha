@@ -15,6 +15,8 @@ public interface NoGoodStore {
 	 * @return {@code null} if the noGood was added without conflict, a {@link ConflictCause} describing
 	 *         the conflict otherwise.
 	 */
+	ConflictCause add(int id, NoGood noGood, int lbd);
+
 	ConflictCause add(int id, NoGood noGood);
 
 	/**

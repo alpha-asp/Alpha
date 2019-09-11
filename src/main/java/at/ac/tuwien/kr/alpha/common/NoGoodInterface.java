@@ -1,11 +1,11 @@
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.solver.ImplicationReasonProvider;
+import at.ac.tuwien.kr.alpha.solver.Antecedent;
 
 /**
  * Copyright (c) 2018, the Alpha Team.
  */
-public interface NoGoodInterface extends ImplicationReasonProvider {
+public interface NoGoodInterface {
 
 	/**
 	 * Returns the literal at the given index.
@@ -39,4 +39,6 @@ public interface NoGoodInterface extends ImplicationReasonProvider {
 	default boolean isBinary() {
 		return size() == 2;
 	}
+
+	Antecedent asAntecedent();
 }

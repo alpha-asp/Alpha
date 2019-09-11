@@ -155,8 +155,10 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 			incrementActivityCounter(atomToLiteral(resolutionAtom, true));
 			incrementActivityCounter(atomToLiteral(resolutionAtom, false));
 		}
-		for (Integer literal : analysisResult.learnedNoGood) {
-			incrementSignCounter(literal);
+		if (analysisResult.learnedNoGood != null) {
+			for (Integer literal : analysisResult.learnedNoGood) {
+				incrementSignCounter(literal);
+			}
 		}
 		decayAllIfTimeHasCome();
 	}

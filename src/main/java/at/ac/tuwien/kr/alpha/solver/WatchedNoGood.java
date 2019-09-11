@@ -9,7 +9,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
 
-public final class WatchedNoGood implements NoGoodInterface, Iterable<Integer> {
+public final class WatchedNoGood implements NoGoodInterface, Antecedent, Iterable<Integer> {
 	private int activity;
 	private final int[] literals;
 	private int alpha;
@@ -109,6 +109,11 @@ public final class WatchedNoGood implements NoGoodInterface, Iterable<Integer> {
 	}
 
 	@Override
+	public Antecedent asAntecedent() {
+		return this;
+	}
+
+	@Override
 	public Iterator<Integer> iterator() {
 		return new Iterator<Integer>() {
 			private int i;
@@ -148,12 +153,6 @@ public final class WatchedNoGood implements NoGoodInterface, Iterable<Integer> {
 	}
 
 	@Override
-	public NoGood getNoGood(int impliedLiteral) {
-		// FIXME: this should not be necessary, the GroundConflictNoGoodLearner should be able to work with WatchedNoGood directly.
-		return new NoGood(literals.clone());
-	}
-
-	@Override
 	public int[] getReasonLiterals() {
 		return literals;
 	}
@@ -162,10 +161,12 @@ public final class WatchedNoGood implements NoGoodInterface, Iterable<Integer> {
 		return activity;
 	}
 
-	void decreaseActivity() {
+	@Override
+	public void decreaseActivity() {
 		activity >>= 1;
 	}
 
+	@Override
 	public void bumpActivity() {
 		activity++;
 	}
@@ -176,10 +177,5 @@ public final class WatchedNoGood implements NoGoodInterface, Iterable<Integer> {
 
 	boolean isLbdLessOrEqual2() {
 		return isLbdLessOrEqual2;
-	}
-
-	int[] getLiteralsClone() {
-		// TODO: this method should be unnecessary and requires refactoring of implication reasons in the assignment.
-		return literals.clone();
 	}
 }

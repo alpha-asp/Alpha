@@ -1,27 +1,18 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.NoGood;
-
+/**
+ * Indicates the presence of a conflict and contains its reason in terms of a violated Antecedent.
+ * Throughout the solver the absence of a conflict is indicated by ConflictCause = null.
+ */
 public class ConflictCause {
-	private final NoGood violatedNoGood;
-	private final Assignment.Entry violatedChoice;
+	// Note: directly replacing ConflictCause by Antecedent requires another indicator flag of whether a conflict occurred.
+	private final Antecedent violatedNoGood;
 
-	public ConflictCause(NoGood violatedNoGood) {
+	public ConflictCause(Antecedent violatedNoGood) {
 		this.violatedNoGood = violatedNoGood;
-		this.violatedChoice = null;
 	}
 
-	public ConflictCause(Assignment.Entry violatedChoice) {
-		this.violatedNoGood = null;
-		this.violatedChoice = violatedChoice;
-	}
-
-	public Assignment.Entry getViolatedChoice() {
-		return violatedChoice;
-	}
-
-	public NoGood getViolatedNoGood() {
+	public Antecedent getAntecedent() {
 		return violatedNoGood;
 	}
 
@@ -29,9 +20,6 @@ public class ConflictCause {
 	public String toString() {
 		if (violatedNoGood != null) {
 			return violatedNoGood.toString();
-		}
-		if (violatedChoice != null) {
-			return violatedChoice.toString();
 		}
 
 		return "null";

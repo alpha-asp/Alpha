@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.solver.learning;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.solver.Antecedent;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
@@ -42,6 +43,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
 
 /**
+ * Conflict-driven clause learning on ground clauses.
  * Copyright (c) 2016, the Alpha Team.
  */
 public class GroundConflictNoGoodLearner {
@@ -53,7 +55,8 @@ public class GroundConflictNoGoodLearner {
 		int highestDecisionLevel = -1;
 		int secondHighestDecisionLevel = -1;
 		int numAtomsInHighestLevel = 0;
-		for (Integer literal : violatedNoGood) {
+		int[] reasonLiterals = violatedNoGood.asAntecedent().getReasonLiterals();
+		for (int literal : reasonLiterals) {
 			int literalDecisionLevel = assignment.getRealWeakDecisionLevel(atomOf(literal));
 			if (literalDecisionLevel == highestDecisionLevel) {
 				numAtomsInHighestLevel++;
@@ -76,30 +79,27 @@ public class GroundConflictNoGoodLearner {
 
 		public final NoGood learnedNoGood;
 		public final int backjumpLevel;
-		public final boolean clearLastChoiceAfterBackjump;
 		public final Collection<Integer> resolutionAtoms;
 		public final int lbd;
 
 		private ConflictAnalysisResult() {
 			learnedNoGood = null;
 			backjumpLevel = -1;
-			clearLastChoiceAfterBackjump = false;
 			resolutionAtoms = null;
 			lbd = -1;
 		}
 
-		public ConflictAnalysisResult(NoGood learnedNoGood, int backjumpLevel, boolean clearLastChoiceAfterBackjump, Collection<Integer> resolutionAtoms) {
-			this(learnedNoGood, backjumpLevel, clearLastChoiceAfterBackjump, resolutionAtoms, -1);
+		public ConflictAnalysisResult(NoGood learnedNoGood, int backjumpLevel, Collection<Integer> resolutionAtoms) {
+			this(learnedNoGood, backjumpLevel, resolutionAtoms, -1);
 		}
 
-		public ConflictAnalysisResult(NoGood learnedNoGood, int backjumpLevel, boolean clearLastChoiceAfterBackjump, Collection<Integer> resolutionAtoms, int lbd) {
+		public ConflictAnalysisResult(NoGood learnedNoGood, int backjumpLevel, Collection<Integer> resolutionAtoms, int lbd) {
 			if (backjumpLevel < 0) {
 				throw oops("Backjumping level is smaller than 0");
 			}
 
 			this.learnedNoGood = learnedNoGood;
 			this.backjumpLevel = backjumpLevel;
-			this.clearLastChoiceAfterBackjump = clearLastChoiceAfterBackjump;
 			this.resolutionAtoms = resolutionAtoms;
 			this.lbd = lbd;
 		}
@@ -117,29 +117,25 @@ public class GroundConflictNoGoodLearner {
 		this.assignment = assignment;
 	}
 
-	public ConflictAnalysisResult analyzeConflictingNoGoodOld(NoGood violatedNoGood) {
+	public ConflictAnalysisResult analyzeConflictingNoGood(Antecedent violatedNoGood) {
 		LOGGER.trace("Analyzing violated nogood: {}", violatedNoGood);
-		return analyzeConflictingNoGoodRepetition(violatedNoGood, new LinkedHashSet<>());
+		return analyzeTrailBased(violatedNoGood);
 	}
 
-	public ConflictAnalysisResult analyzeConflictingNoGood(NoGood violatedNoGood) {
-		LOGGER.trace("Analyzing violated nogood: {}", violatedNoGood);
-		return analyzeTrailBased(violatedNoGood.getReasonLiterals());
-	}
-
-	public ConflictAnalysisResult analyzeConflictFromAddingNoGood(NoGood violatedNoGood) {
+	public ConflictAnalysisResult analyzeConflictFromAddingNoGood(Antecedent violatedNoGood) {
 		LOGGER.trace("Analyzing conflict caused by adding the (violated) nogood: {}", violatedNoGood);
 		// Simply compute appropriate backjumping level.
 		int removingConflict = backjumpLevelRemovingConflict(violatedNoGood);
 		if (removingConflict < 0) {
 			return ConflictAnalysisResult.UNSAT;
 		}
-		return new ConflictAnalysisResult(null, removingConflict, false, Collections.emptyList(), -1);
+		return new ConflictAnalysisResult(null, removingConflict, Collections.emptyList(), -1);
 	}
 
-	private int backjumpLevelRemovingConflict(NoGood violatedNoGood) {
+	private int backjumpLevelRemovingConflict(Antecedent violatedNoGood) {
 		int highestDL = 0;
-		for (Integer literal : violatedNoGood) {
+		int[] reasonLiterals = violatedNoGood.getReasonLiterals();
+		for (int literal : reasonLiterals) {
 			int literalDL = assignment.getWeakDecisionLevel(atomOf(literal)); //Math.min(assignment.getWeakDecisionLevel(atomOf(literal)), ((TrailAssignment) assignment).getOutOfOrderDecisionLevel(atomOf(literal)));
 			if (literalDL > highestDL) {
 				highestDL = literalDL;
@@ -164,7 +160,7 @@ public class GroundConflictNoGoodLearner {
 		return printReasons(IntStream.of(reasons != null ? reasons : new int[0]).boxed().collect(Collectors.toList()));
 	}
 
-	private ConflictAnalysisResult analyzeTrailBased(int[] conflictReason) {
+	private ConflictAnalysisResult analyzeTrailBased(Antecedent conflictReason) {
 		LOGGER.trace("Analyzing trail based.");
 		if (assignment.getDecisionLevel() == 0) {
 			return ConflictAnalysisResult.UNSAT;
@@ -175,12 +171,13 @@ public class GroundConflictNoGoodLearner {
 		int currentDecisionLevel = assignment.getDecisionLevel();
 		HashSet<Integer> seenAtoms = new HashSet<>();		// NOTE: other solvers use a global array for seen atoms, this might be slightly faster (initial tests with local arrays showed no significant improvement).
 		HashSet<Integer> processedAtoms = new HashSet<>();	// Since trail contains 2 entries for MBT->TRUE assigned atoms, explicitly record which seen atoms have ben processed to avoid processing seen atoms twice.
-		int[] currentConflictReason = conflictReason;
+		int[] currentConflictReason = conflictReason.getReasonLiterals();
 		int backjumpLevel = -1;
+		conflictReason.bumpActivity();
 		TrailAssignment.TrailBackwardsWalker trailWalker = ((TrailAssignment)assignment).getTrailBackwardsWalker();
 		if (LOGGER.isTraceEnabled()) {
 			LOGGER.trace("Current trail is: {}", trailWalker);
-			LOGGER.trace("Violated nogood is: {}", printReasons(conflictReason));
+			LOGGER.trace("Violated nogood is: {}", printReasons(conflictReason.getReasonLiterals()));
 		}
 		int nextAtom = -1;
 		do {
@@ -218,7 +215,11 @@ public class GroundConflictNoGoodLearner {
 				}
 
 			} while (!(seenAtoms.contains(nextAtom) && !processedAtoms.contains(nextAtom)));
-			currentConflictReason = ((TrailAssignment) assignment).getReason(nextAtom);
+			Antecedent impliedBy = assignment.getImpliedBy(nextAtom);
+			if (impliedBy != null) {
+				currentConflictReason = impliedBy.getReasonLiterals();
+				impliedBy.bumpActivity();
+			}
 			processedAtoms.add(nextAtom);
 		} while (numLiteralsInConflictLevel-- > 1);
 		// Add the 1UIP literal.
@@ -242,7 +243,7 @@ public class GroundConflictNoGoodLearner {
 			}
 		}
 		LOGGER.trace("Backjumping decision level: {}", backjumpingDecisionLevel);
-		return new ConflictAnalysisResult(learnedNoGood, backjumpingDecisionLevel, false, resolutionAtoms, computeLBD(learnedLiterals));
+		return new ConflictAnalysisResult(learnedNoGood, backjumpingDecisionLevel, resolutionAtoms, computeLBD(learnedLiterals));
 	}
 
 	private int computeLBD(int[] literals) {
@@ -254,170 +255,6 @@ public class GroundConflictNoGoodLearner {
 			occurringDecisionLevels.add(assignment.getWeakDecisionLevel(atomOf(literal)));
 		}
 		return occurringDecisionLevels.size();
-	}
-
-	private ConflictAnalysisResult analyzeConflictingNoGoodRepetition(NoGood violatedNoGood, Collection<Integer> resolutionAtoms) {
-		NoGood currentResolutionNoGood = violatedNoGood.withoutHead();	// Clone violated NoGood and remove potential head.
-		// Find decision level where conflict occurs (i.e., highest decision level of violatedNoGood).
-		int conflictDecisionLevel = -1;
-		for (Integer literal : currentResolutionNoGood) {
-			int literalDL = assignment.getWeakDecisionLevel(atomOf(literal));
-			if (literalDL > conflictDecisionLevel) {
-				conflictDecisionLevel = literalDL;
-			}
-		}
-		if (conflictDecisionLevel == 0) {
-			// The given set of NoGoods is unsatisfiable (conflict at decisionLevel 0).
-			return ConflictAnalysisResult.UNSAT;
-		}
-		FirstUIPPriorityQueue firstUIPPriorityQueue = new FirstUIPPriorityQueue(conflictDecisionLevel);
-		for (Integer literal : currentResolutionNoGood) {
-			firstUIPPriorityQueue.add(getAssignmentEntryRespectingLowerMBT(literal));
-			//sortLiteralToProcessIntoList(sortedLiteralsToProcess, literal, conflictDecisionLevel);
-		}
-		// TODO: create ResolutionSequence
-		if (firstUIPPriorityQueue.size() == 1) {
-			// There is only one literal to process, i.e., only one literal in the violatedNoGood is from conflict decision level.
-			// This means that the NoGood already was unit but got violated, because another NoGood propagated earlier or a wrong choice was made.
-			// The real conflict therefore is caused by either:
-			// a) two NoGoods propagating the same atom to different truth values in the current decisionLevel, or
-			// b) a NoGood propagating at a lower decision level to the inverse value of a choice with higher decision level.
-			// TODO: b) should no longer be possible, since all propagation is on highest decision level now.
-			// For a) we need to work also with the other NoGood.
-			// For b) we need to backtrack the wrong choice.
-
-			Assignment.Entry atomAssignmentEntry = firstUIPPriorityQueue.poll();
-			NoGood otherContributingNoGood = atomAssignmentEntry.getImpliedByRespectingLowerMBT();
-			if (otherContributingNoGood == null) {
-				// Case b), the other assignment is a decision.
-				return new ConflictAnalysisResult(null, atomAssignmentEntry.getWeakDecisionLevel(), true, resolutionAtoms, -1);
-			}
-			// Case a) take other implying NoGood into account.
-			int resolutionAtom = atomAssignmentEntry.getAtom();
-			resolutionAtoms.add(resolutionAtom);
-			currentResolutionNoGood = NoGood.learnt(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, otherContributingNoGood, resolutionAtom, atomAssignmentEntry.getWeakDecisionLevel(), atomAssignmentEntry.getPropagationLevelRespectingLowerMBT()));
-			
-			// TODO: create/edit ResolutionSequence
-		}
-
-		while (true) {
-			// Check if 1UIP was reached.
-			if (firstUIPPriorityQueue.size() == 1) {
-				// Only one remaining literals to process, we reached 1UIP.
-				int backjumpingDecisionLevel = computeBackjumpingDecisionLevel(currentResolutionNoGood);
-				if (backjumpingDecisionLevel < 0) {
-					return repeatAnalysisIfNotAssigning(currentResolutionNoGood, resolutionAtoms);
-				}
-				return new ConflictAnalysisResult(currentResolutionNoGood, backjumpingDecisionLevel, false, resolutionAtoms, -1);
-			} else if (firstUIPPriorityQueue.size() < 1) {
-				// This can happen if some NoGood implied a literal at a higher decision level and later the implying literals become (re-)assigned at lower decision levels.
-				// Lowering the decision level may be possible but requires further analysis.
-				// For the moment, just report the learned NoGood.
-				return repeatAnalysisIfNotAssigning(currentResolutionNoGood, resolutionAtoms);
-				//return new ConflictAnalysisResult(currentResolutionNoGood, computeBackjumpingDecisionLevel(currentResolutionNoGood), false, noGoodsResponsible);
-			} else if (currentResolutionNoGood.size() > 320000) {
-				// Break if resolved NoGood becomes too large.
-				// Remove all current-dl elements from the resolution NoGood and add the last choice, then backjump like usual.
-				return new ConflictAnalysisResult(null, conflictDecisionLevel, true, resolutionAtoms, -1);	// Flag unsatisfiable abused here.
-				/*if (getAssignmentEntryRespectingLowerMBT(lastGuessedAtom).getDecisionLevel() <= conflictDecisionLevel) {
-					// If lastGuessedAtom is not unassigned after backjump, use repeatAnalysisIfNotAssigning.
-					return repeatAnalysisIfNotAssigning(replaceAllFromConflictDecisionLevelWithGuess(currentResolutionNoGood, conflictDecisionLevel, lastGuessedAtom), noGoodsResponsible, lastGuessedAtom);
-				}
-				return new ConflictAnalysisResult(replaceAllFromConflictDecisionLevelWithGuess(currentResolutionNoGood, conflictDecisionLevel, lastGuessedAtom), conflictDecisionLevel - 1, false, noGoodsResponsible, false, isLearntTooLarge);*/
-			}
-
-			// Resolve next NoGood based on current literal
-			Assignment.Entry currentLiteralAssignment = firstUIPPriorityQueue.poll();
-			int decisionLevel = currentLiteralAssignment.getWeakDecisionLevel();
-			int propagationLevel = currentLiteralAssignment.getPropagationLevelRespectingLowerMBT();
-			// Get NoGood it was implied by.
-			NoGood impliedByNoGood = currentLiteralAssignment.getImpliedByRespectingLowerMBT();
-			if (impliedByNoGood == null) {
-				// Literal was a decision, keep it in the currentResolutionNoGood by simply skipping.
-				continue;
-			}
-			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("ImpliedBy NoGood is: {}.", impliedByNoGood);
-				for (Integer literal : impliedByNoGood) {
-					LOGGER.debug("Literal assignment: {}={}.", atomOf(literal), assignment.get(atomOf(literal)));
-				}
-			}
-			// TODO: add entry in ResolutionSequence.
-
-			int resolutionAtom = currentLiteralAssignment.getAtom();
-			resolutionAtoms.add(resolutionAtom);
-			currentResolutionNoGood = NoGood.learnt(resolveNoGoods(firstUIPPriorityQueue, currentResolutionNoGood, impliedByNoGood, resolutionAtom, decisionLevel, propagationLevel));
-		}
-	}
-
-	/**
-	 * Returns the Assignment.Entry of a literal. If the literal is TRUE but was MBT before, the (previous) MBT entry is returned.
-	 * @param literal
-	 * @return
-	 */
-	private Assignment.Entry getAssignmentEntryRespectingLowerMBT(Integer literal) {
-		Assignment.Entry literalEntry = assignment.get(atomOf(literal));
-		// If current assignment is TRUE and previous was MBT, take previous decision level.
-		return literalEntry;
-	}
-
-	private ConflictAnalysisResult repeatAnalysisIfNotAssigning(NoGood learnedNoGood, Collection<Integer> resolutionAtoms) {
-		int backjumpingDecisionLevel = computeBackjumpingDecisionLevel(learnedNoGood);
-		if (backjumpingDecisionLevel < 0) {
-			// The learned NoGood is not yet assigning, repeat the learning on the now-highest decision level.
-			// This can only be the case if a literal got assigned at a lower decision level, otherwise the learnedNoGood is always assigning.
-			return analyzeConflictingNoGoodRepetition(learnedNoGood, resolutionAtoms);
-		}
-		return new ConflictAnalysisResult(learnedNoGood, backjumpingDecisionLevel, false, resolutionAtoms, -1);
-	}
-
-	/**
-	 * Resolves two NoGoods and returns the new NoGood as array of literals.
-	 * Literals of the second NoGood are sorted into the firstUIPPriorityQueue list.
-	 * Literals of the first NoGood are assumed to be already in that queue and not added to it.
-	 * @param firstUIPPriorityQueue
-	 * @param firstNoGood
-	 * @param secondNoGood
-	 * @return
-	 */
-	private int[] resolveNoGoods(FirstUIPPriorityQueue firstUIPPriorityQueue, NoGood firstNoGood, NoGood secondNoGood, int resolutionAtom, int resolutionLiteralDecisionLevel, int resolutionLiteralPropagationLevel) {
-		// Resolve implied nogood into current resolution.
-		int resolvedLiterals[] = new int[secondNoGood.size() + firstNoGood.size() - 2];
-		int resolvedCounter = 0;
-		// Copy over all literals except the resolving ones.
-		for (int i = 0; i < firstNoGood.size(); i++) {
-			if (atomOf(firstNoGood.getLiteral(i)) != resolutionAtom) {
-				resolvedLiterals[resolvedCounter++] = firstNoGood.getLiteral(i);
-			}
-		}
-		// Copy literals from implying nogood except the resolving one and sort additional literals into processing list.
-		for (int i = 0; i < secondNoGood.size(); i++) {
-			if (atomOf(secondNoGood.getLiteral(i)) != resolutionAtom) {
-				resolvedLiterals[resolvedCounter++] = secondNoGood.getLiteral(i);
-
-				// Sort literal also into queue for further processing.
-				Assignment.Entry newLiteral = getAssignmentEntryRespectingLowerMBT(secondNoGood.getLiteral(i));
-				if (assignment instanceof TrailAssignment) {
-					firstUIPPriorityQueue.add(newLiteral);
-					continue;
-				}
-				// Check for special case where literal was assigned from MBT to TRUE on the same decisionLevel and the propagationLevel of TRUE is higher than the one of the resolutionLiteral.
-				if (newLiteral.getDecisionLevel() == resolutionLiteralDecisionLevel
-					&& newLiteral.getPropagationLevel() > resolutionLiteralPropagationLevel) {
-					if (newLiteral.hasPreviousMBT()
-						&& newLiteral.getMBTDecisionLevel() == resolutionLiteralDecisionLevel
-						&& newLiteral.getMBTPropagationLevel() < resolutionLiteralPropagationLevel) {
-						// Resort to the previous entry (i.e., the one for MBT) and use that one.
-						firstUIPPriorityQueue.add(newLiteral);
-						continue;
-					}
-					throw oops("Implying literal on current decisionLevel has higher propagationLevel than the implied literal and this was no assignment from MBT to TRUE");
-				}
-				// Add literal to queue for finding 1UIP.
-				firstUIPPriorityQueue.add(newLiteral);
-			}
-		}
-		return resolvedLiterals;
 	}
 
 	public ResolutionSequence obtainResolutionSequence() {
@@ -445,9 +282,9 @@ public class GroundConflictNoGoodLearner {
 			LOGGER.trace("NoGood has only one literal, backjumping to level: {}", singleLiteralBackjumpingLevel);
 			return singleLiteralBackjumpingLevel;
 		}
-		for (Integer integer : learnedNoGood) {
-			Assignment.Entry assignmentEntry = assignment.get(atomOf(integer));
-			int atomDecisionLevel = assignmentEntry.getWeakDecisionLevel();
+		int[] reasonLiterals = learnedNoGood.asAntecedent().getReasonLiterals();
+		for (int integer : reasonLiterals) {
+			int atomDecisionLevel = assignment.getWeakDecisionLevel(atomOf(integer));
 			if (assignment instanceof TrailAssignment) {
 				atomDecisionLevel = Math.min(atomDecisionLevel, ((TrailAssignment) assignment).getOutOfOrderDecisionLevel(atomOf(integer)));
 			}

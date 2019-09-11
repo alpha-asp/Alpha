@@ -9,6 +9,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
+import static at.ac.tuwien.kr.alpha.solver.Antecedent.antecedentsEquals;
 import static org.junit.Assert.*;
 
 /**
@@ -56,15 +57,14 @@ public class GroundConflictNoGoodLearnerTest {
 		assertTrue(store.didPropagate());
 
 		assertNotNull(conflictCause);
-		NoGood violatedNoGood = conflictCause.getViolatedNoGood();
+		Antecedent violatedNoGood = conflictCause.getAntecedent();
 		assertNotNull(violatedNoGood);
-		assertTrue(violatedNoGood.equals(n5) || violatedNoGood.equals(n7));
-		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(violatedNoGood);
+		assertTrue(antecedentsEquals(violatedNoGood, n5.asAntecedent()) || antecedentsEquals(violatedNoGood, n7.asAntecedent()));
+		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(conflictCause.getAntecedent());
 		NoGood learnedNoGood = analysisResult.learnedNoGood;
 		assertEquals(new NoGood(fromOldLiterals(1, -8)), learnedNoGood);
 		int backjumpingDecisionLevel = analysisResult.backjumpLevel;
 		assertEquals(backjumpingDecisionLevel, 2);
-		assertFalse(analysisResult.clearLastChoiceAfterBackjump);
 	}
 
 	@Ignore // TrailAssignment no longer propagates at lower decision level.
@@ -81,8 +81,8 @@ public class GroundConflictNoGoodLearnerTest {
 		assertEquals(1, assignment.get(2).getDecisionLevel());
 		ConflictCause conflictCause = store.add(11, n2);
 		assertNotNull(conflictCause);
-		assertNotNull(conflictCause.getViolatedNoGood());
-		GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.getViolatedNoGood());
+		assertNotNull(conflictCause.getAntecedent());
+		GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.getAntecedent());
 		assertNull(conflictAnalysisResult.learnedNoGood);
 		assertEquals(2, conflictAnalysisResult.backjumpLevel);
 

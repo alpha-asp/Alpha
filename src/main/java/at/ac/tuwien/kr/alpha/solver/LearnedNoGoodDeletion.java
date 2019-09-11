@@ -1,7 +1,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.NoGood;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,10 +16,14 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
  */
 class LearnedNoGoodDeletion {
 	private static final Logger LOGGER = LoggerFactory.getLogger(LearnedNoGoodDeletion.class);
+	private static final int RESET_SEQUENCE_AFTER = 20;
+	private static final int RUN_AFTER_AT_LEAST = 2000;
+	private static final int GROWTH_FACTOR = 100;
 	private final ArrayList<WatchedNoGood> learnedNoGoods = new ArrayList<>();	// List of learned NoGoods that can be removed again. Note: should only contain NoGoods of size > 2.
 	private final NoGoodStoreAlphaRoaming store;
 	private final Assignment assignment;
 	private int conflictCounter;
+	private int cleanupCounter;
 
 	LearnedNoGoodDeletion(NoGoodStoreAlphaRoaming store, Assignment assignment) {
 		this.store = store;
@@ -36,11 +39,16 @@ class LearnedNoGoodDeletion {
 	}
 
 	boolean needToRunNoGoodDeletion() {
-		return false; //TODO: disable running of the NoGood deletion for now. Later use something like conflictCounter > 2000;
+		return conflictCounter > RUN_AFTER_AT_LEAST + (GROWTH_FACTOR * cleanupCounter);
 	}
 
 	void runNoGoodDeletion() {
 		conflictCounter = 0;
+		cleanupCounter++;
+		// Reset the sequence after enough growth cycles.
+		if (cleanupCounter > RESET_SEQUENCE_AFTER) {
+			cleanupCounter = 0;
+		}
 		int deletedNoGoods = 0;
 		int originalSize = learnedNoGoods.size();
 		if (originalSize == 0) {
@@ -78,9 +86,7 @@ class LearnedNoGoodDeletion {
 		if (!assignment.isAssigned(watchedAtom1) || !assignment.isAssigned(watchedAtom2)) {
 			return false;
 		}
-		NoGood helperNoGood = new NoGood(noGood.getLiteralsClone());
-		// TODO: this is inefficient, the equality check should be a simple object comparison. For that, the assignment needs to store WatchedNoGoods.
-		return helperNoGood.equals(assignment.getImpliedBy(watchedAtom1))
-			|| helperNoGood.equals(assignment.getImpliedBy(watchedAtom2));
+		return noGood == assignment.getImpliedBy(watchedAtom1)
+			|| noGood == assignment.getImpliedBy(watchedAtom2);
 	}
 }
