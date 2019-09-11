@@ -30,6 +30,11 @@ package at.ac.tuwien.kr.alpha.config;
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class SystemConfig {
 
 	// Note: Defining constants for default values here rather than just
@@ -49,6 +54,7 @@ public class SystemConfig {
 	public static final boolean DEFAULT_DEBUG_INTERNAL_CHECKS = false;
 	public static final boolean DEFAULT_USE_NORMALIZATION_GRID = false;
 	public static final boolean DEFAULT_SORT_ANSWER_SETS = false;
+	public static final List<Integer> DEFAULT_REPLAY_CHOICES = Collections.emptyList();
 
 	private String grounderName = SystemConfig.DEFAULT_GROUNDER_NAME;
 	private String solverName = SystemConfig.DEFAULT_SOLVER_NAME;
@@ -63,6 +69,7 @@ public class SystemConfig {
 	private boolean disableJustificationSearch = SystemConfig.DEFAULT_DISABLE_JUSTIFICATION_SEARCH;
 	private boolean useNormalizationGrid = SystemConfig.DEFAULT_USE_NORMALIZATION_GRID;
 	private boolean sortAnswerSets = SystemConfig.DEFAULT_SORT_ANSWER_SETS;
+	private List<Integer> replayChoices = SystemConfig.DEFAULT_REPLAY_CHOICES;
 
 	public String getGrounderName() {
 		return this.grounderName;
@@ -174,6 +181,18 @@ public class SystemConfig {
 
 	public void setSortAnswerSets(boolean sortAnswerSets) {
 		this.sortAnswerSets = sortAnswerSets;
+	}
+
+	public List<Integer> getReplayChoices() {
+		return replayChoices;
+	}
+
+	public void setReplayChoices(List<Integer> replayChoices) {
+		this.replayChoices = replayChoices;
+	}
+
+	public void setReplayChoices(String replayChoices) {
+		this.replayChoices = Arrays.stream(replayChoices.split(",")).map(String::trim).map(Integer::valueOf).collect(Collectors.toList());
 	}
 
 }
