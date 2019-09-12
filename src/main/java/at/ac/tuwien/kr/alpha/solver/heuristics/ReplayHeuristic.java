@@ -87,4 +87,9 @@ public class ReplayHeuristic implements BranchingHeuristic {
 		return replayChoiceLiteral;
 	}
 
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName();
+	}
+
 }

@@ -30,6 +30,7 @@ import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -75,6 +76,17 @@ public final class BranchingHeuristicFactory {
 	}
 
 	public static BranchingHeuristic getInstanceWithoutDomspec(HeuristicsConfiguration heuristicsConfiguration, WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
+		BranchingHeuristic heuristicWithoutReplay = getInstanceWithoutReplay(heuristicsConfiguration, assignment, choiceManager, random);
+		List<Integer> replayChoices = heuristicsConfiguration.getReplayChoices();
+		if (replayChoices != null && !replayChoices.isEmpty()) {
+			return ChainedBranchingHeuristics.chainOf(
+					new ReplayHeuristic(replayChoices, choiceManager),
+					heuristicWithoutReplay);
+		}
+		return heuristicWithoutReplay;
+	}
+
+	private static BranchingHeuristic getInstanceWithoutReplay(HeuristicsConfiguration heuristicsConfiguration, WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
 		switch (heuristicsConfiguration.getHeuristic()) {
 		case NAIVE:
 			return new NaiveHeuristic(choiceManager);

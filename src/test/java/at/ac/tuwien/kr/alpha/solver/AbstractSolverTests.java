@@ -71,11 +71,20 @@ public abstract class AbstractSolverTests {
 	}
 
 	/**
-	 * Calling this method in a tests leads to the test being ignored for the naive solver.
+	 * Calling this method in a test leads to the test being ignored for the naive solver.
 	 * Note: use this sparingly and only on tests that require too much run time with the naive solver.
 	 */
 	void ignoreTestForNaiveSolver() {
 		org.junit.Assume.assumeFalse(solverName.equals("naive"));
+	}
+
+	/**
+	 * Calling this method in a test leads to the test being ignored for non-default domain-independent heuristics.
+	 * Note: use this sparingly and only on tests that require too much run time with non-default heuristics
+	 * (which are not tuned for good performance as well as VSIDS).
+	 */
+	void ignoreNonDefaultDomainIndependentHeuristics() {
+		org.junit.Assume.assumeTrue(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
 	}
 
 	private static String[] getProperty(String subKey, String def) {

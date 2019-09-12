@@ -28,6 +28,8 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation.Strategy;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 
+import java.util.List;
+
 /**
  * Configuration class holding parameters for {@link BranchingHeuristic}s.
  */
@@ -36,17 +38,19 @@ public class HeuristicsConfiguration {
 	private Heuristic heuristic;
 	private boolean respectDomspecHeuristics;
 	private Strategy momsStrategy;
-
+private List<Integer> replayChoices;
 	/**
 	 * @param heuristic
 	 * @param respectDomspecHeuristics
 	 * @param momsStrategy
+	 * @param replayChoices
 	 */
-	public HeuristicsConfiguration(Heuristic heuristic, boolean respectDomspecHeuristics, Strategy momsStrategy) {
+	public HeuristicsConfiguration(Heuristic heuristic, boolean respectDomspecHeuristics, Strategy momsStrategy, List<Integer> replayChoices) {
 		super();
 		this.heuristic = heuristic;
 		this.respectDomspecHeuristics = respectDomspecHeuristics;
 		this.momsStrategy = momsStrategy;
+		this.replayChoices = replayChoices;
 	}
 
 	public Heuristic getHeuristic() {
@@ -81,7 +85,19 @@ public class HeuristicsConfiguration {
 	public void setMomsStrategy(Strategy momsStrategy) {
 		this.momsStrategy = momsStrategy;
 	}
+/**
+	 * @return the replayChoices
+	 */
+	public List<Integer> getReplayChoices() {
+		return replayChoices;
+	}
 
+	/**
+	 * @param replayChoices the replayChoices to set
+	 */
+	public void setReplayChoices(List<Integer> replayChoices) {
+		this.replayChoices = replayChoices;
+	}
 	public static HeuristicsConfigurationBuilder builder() {
 		return new HeuristicsConfigurationBuilder();
 	}

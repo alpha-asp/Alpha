@@ -115,6 +115,7 @@ public class Alpha {
 		heuristicsConfigurationBuilder.setHeuristic(this.config.getBranchingHeuristic());
 		heuristicsConfigurationBuilder.setMomsStrategy(this.config.getMomsStrategy());
 		heuristicsConfigurationBuilder.setRespectDomspecHeuristics(!this.config.isIgnoreDomspecHeuristics() && program.getInlineDirectives().hasDirectives(InlineDirectives.DIRECTIVE.heuristic));
+		heuristicsConfigurationBuilder.setReplayChoices(this.config.getReplayChoices());
 		HeuristicsConfiguration heuristicsConfiguration = heuristicsConfigurationBuilder.build();
 
 		AtomStore atomStore = new AtomStoreImpl();
