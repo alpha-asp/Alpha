@@ -9,7 +9,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
-import static at.ac.tuwien.kr.alpha.solver.Antecedent.antecedentsEquals;
+import static at.ac.tuwien.kr.alpha.solver.AntecedentTest.antecedentsEquals;
 import static org.junit.Assert.*;
 
 /**

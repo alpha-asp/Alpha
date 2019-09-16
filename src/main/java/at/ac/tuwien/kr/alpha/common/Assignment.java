@@ -87,11 +87,15 @@ public interface Assignment {
 	}
 
 	/**
-	 * Returns an iterator over all new assignments. New assignments are only returned once.
-	 * @return an iterator over all new assignments to TRUE or MBT.
+	 * Returns an iterator over all newly assigned atoms. New assignments are only returned once.
+	 * @return an iterator over all atoms newly assigned to TRUE or MBT.
 	 */
 	Iterator<Integer> getNewPositiveAssignmentsIterator();
 
+	/**
+	 * Returns the new assignments to process.
+	 * @return a Pollable that yields the atoms that were newly assigned.
+	 */
 	Pollable getAssignmentsToProcess();
 
 	/**

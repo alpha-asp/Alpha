@@ -31,20 +31,23 @@ import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.Antecedent;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
-import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
 
 /**
- * Conflict-driven clause learning on ground clauses.
- * Copyright (c) 2016, the Alpha Team.
+ * Conflict-driven learning on ground clauses.
+ * Copyright (c) 2016-2019, the Alpha Team.
  */
 public class GroundConflictNoGoodLearner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(GroundConflictNoGoodLearner.class);
@@ -86,11 +89,11 @@ public class GroundConflictNoGoodLearner {
 			learnedNoGood = null;
 			backjumpLevel = -1;
 			resolutionAtoms = null;
-			lbd = -1;
+			lbd = LBD_NO_VALUE;
 		}
 
 		public ConflictAnalysisResult(NoGood learnedNoGood, int backjumpLevel, Collection<Integer> resolutionAtoms) {
-			this(learnedNoGood, backjumpLevel, resolutionAtoms, -1);
+			this(learnedNoGood, backjumpLevel, resolutionAtoms, LBD_NO_VALUE);
 		}
 
 		public ConflictAnalysisResult(NoGood learnedNoGood, int backjumpLevel, Collection<Integer> resolutionAtoms, int lbd) {
@@ -129,14 +132,14 @@ public class GroundConflictNoGoodLearner {
 		if (removingConflict < 0) {
 			return ConflictAnalysisResult.UNSAT;
 		}
-		return new ConflictAnalysisResult(null, removingConflict, Collections.emptyList(), -1);
+		return new ConflictAnalysisResult(null, removingConflict, Collections.emptyList(), LBD_NO_VALUE);
 	}
 
 	private int backjumpLevelRemovingConflict(Antecedent violatedNoGood) {
 		int highestDL = 0;
 		int[] reasonLiterals = violatedNoGood.getReasonLiterals();
 		for (int literal : reasonLiterals) {
-			int literalDL = assignment.getWeakDecisionLevel(atomOf(literal)); //Math.min(assignment.getWeakDecisionLevel(atomOf(literal)), ((TrailAssignment) assignment).getOutOfOrderDecisionLevel(atomOf(literal)));
+			int literalDL = assignment.getWeakDecisionLevel(atomOf(literal));
 			if (literalDL > highestDL) {
 				highestDL = literalDL;
 			}
@@ -255,10 +258,6 @@ public class GroundConflictNoGoodLearner {
 			occurringDecisionLevels.add(assignment.getWeakDecisionLevel(atomOf(literal)));
 		}
 		return occurringDecisionLevels.size();
-	}
-
-	public ResolutionSequence obtainResolutionSequence() {
-		throw new NotImplementedException("Method not yet implemented.");
 	}
 
 	/**

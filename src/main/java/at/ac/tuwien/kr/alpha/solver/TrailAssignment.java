@@ -42,7 +42,10 @@ import static at.ac.tuwien.kr.alpha.solver.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 
 /**
- * An implementation of Assignment using a trail and arrays as underlying structures for storing assignments.
+ * An implementation of Assignment using a trail (of literals) and arrays as underlying structures for storing
+ * assignments.
+ *
+ * Copyright (c) 2018-2019, the Alpha Team.
  */
 public class TrailAssignment implements WritableAssignment, Checkable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TrailAssignment.class);
@@ -763,7 +766,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		@Override
 		public String toString() {
 			return atom + "=" + value.toString() + "(DL" + decisionLevel + ")"
-				+ (hasPreviousMBT() ? "MBT(DL" + getMBTDecisionLevel() + ", PL-1 )" : "");
+				+ (hasPreviousMBT() ? "MBT(DL" + getMBTDecisionLevel() + ")" : "");
 		}
 	}
 }

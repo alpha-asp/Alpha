@@ -50,6 +50,7 @@ import java.util.function.Consumer;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
 import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
@@ -199,8 +200,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	/**
 	 * Adds a noGood to the store and in case of out-of-order literals causing another conflict, triggers further backjumping.
-	 * @param noGoodId
-	 * @param noGood
+	 * @param noGoodId the unique identifier of the NoGood to add.
+	 * @param noGood the NoGood to add.
+	 * @param lbd the LBD (literal blocks distance) value of the NoGood.
 	 */
 	private boolean addAndBackjumpIfNecessary(int noGoodId, NoGood noGood, int lbd) {
 		while (store.add(noGoodId, noGood, lbd) != null) {
@@ -479,7 +481,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		// If NoGood was learned, add it to the store.
 		// Note that the learned NoGood may cause further conflicts, since propagation on lower decision levels is lazy,
 		// hence backtracking once might not be enough to remove the real conflict cause.
-		if (!addAndBackjumpIfNecessary(noGoodEntry.getKey(), noGoodEntry.getValue(), -1)) {
+		if (!addAndBackjumpIfNecessary(noGoodEntry.getKey(), noGoodEntry.getValue(), LBD_NO_VALUE)) {
 			return NoGood.UNSAT;
 		}
 
