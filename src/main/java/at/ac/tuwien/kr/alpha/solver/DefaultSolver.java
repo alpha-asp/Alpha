@@ -74,6 +74,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private int conflictsAfterClosing;
 	private final boolean disableJustifications;
 	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
+	private final boolean disableNoGoodDeletion;
 
 	private final PerformanceLog performanceLog;
 	
@@ -88,6 +89,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				BranchingHeuristicFactory.getInstance(heuristicsConfiguration, grounder, assignment, choiceManager, random),
 				new NaiveHeuristic(choiceManager));
 		this.disableJustifications = config.isDisableJustificationSearch();
+		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
 	}
 
@@ -136,7 +138,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			ConflictCause conflictCause = store.propagate();
 			didChange |= store.didPropagate();
 			LOGGER.trace("Assignment after propagation is: {}", assignment);
-			if (conflictCause == null) {
+			if (!disableNoGoodDeletion && conflictCause == null) {
 				// Run learned NoGood deletion strategy.
 				store.cleanupLearnedNoGoods();
 			}

@@ -49,6 +49,7 @@ public class SystemConfig {
 	public static final boolean DEFAULT_DEBUG_INTERNAL_CHECKS = false;
 	public static final boolean DEFAULT_USE_NORMALIZATION_GRID = false;
 	public static final boolean DEFAULT_SORT_ANSWER_SETS = false;
+	public static final boolean DEFAULT_DISABLE_NOGOOD_DELETION = false;
 
 	private String grounderName = SystemConfig.DEFAULT_GROUNDER_NAME;
 	private String solverName = SystemConfig.DEFAULT_SOLVER_NAME;
@@ -63,6 +64,7 @@ public class SystemConfig {
 	private boolean disableJustificationSearch = SystemConfig.DEFAULT_DISABLE_JUSTIFICATION_SEARCH;
 	private boolean useNormalizationGrid = SystemConfig.DEFAULT_USE_NORMALIZATION_GRID;
 	private boolean sortAnswerSets = SystemConfig.DEFAULT_SORT_ANSWER_SETS;
+	private boolean disableNoGoodDeletion = SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION;
 
 	public String getGrounderName() {
 		return this.grounderName;
@@ -174,6 +176,14 @@ public class SystemConfig {
 
 	public void setSortAnswerSets(boolean sortAnswerSets) {
 		this.sortAnswerSets = sortAnswerSets;
+	}
+
+	public boolean isDisableNoGoodDeletion() {
+		return this.disableNoGoodDeletion;
+	}
+
+	public void setDisableNoGoodDeletion(boolean disableNoGoodDeletion) {
+		this.disableNoGoodDeletion = disableNoGoodDeletion;
 	}
 
 }
