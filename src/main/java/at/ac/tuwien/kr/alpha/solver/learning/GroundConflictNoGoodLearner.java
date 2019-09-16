@@ -147,7 +147,7 @@ public class GroundConflictNoGoodLearner {
 		return highestDL - 1;
 	}
 
-	private String printReasons(Collection<Integer> reasons) {
+	private String reasonsToString(Collection<Integer> reasons) {
 		StringBuilder sb = new StringBuilder("{");
 		for (int reasonLiteral : reasons) {
 			sb.append(isPositive(reasonLiteral) ? "+" + atomOf(reasonLiteral) : "-" + atomOf(reasonLiteral));
@@ -159,8 +159,8 @@ public class GroundConflictNoGoodLearner {
 		return sb.toString();
 	}
 
-	private String printReasons(int[] reasons) {
-		return printReasons(IntStream.of(reasons != null ? reasons : new int[0]).boxed().collect(Collectors.toList()));
+	private String reasonsToString(int[] reasons) {
+		return reasonsToString(IntStream.of(reasons != null ? reasons : new int[0]).boxed().collect(Collectors.toList()));
 	}
 
 	private ConflictAnalysisResult analyzeTrailBased(Antecedent conflictReason) {
@@ -169,11 +169,11 @@ public class GroundConflictNoGoodLearner {
 			return ConflictAnalysisResult.UNSAT;
 		}
 		int numLiteralsInConflictLevel = 0;
-		ArrayList<Integer> resolutionLiterals = new ArrayList<>();
-		ArrayList<Integer> resolutionAtoms = new ArrayList<>();
+		List<Integer> resolutionLiterals = new ArrayList<>();
+		List<Integer> resolutionAtoms = new ArrayList<>();
 		int currentDecisionLevel = assignment.getDecisionLevel();
-		HashSet<Integer> seenAtoms = new HashSet<>();		// NOTE: other solvers use a global array for seen atoms, this might be slightly faster (initial tests with local arrays showed no significant improvement).
-		HashSet<Integer> processedAtoms = new HashSet<>();	// Since trail contains 2 entries for MBT->TRUE assigned atoms, explicitly record which seen atoms have ben processed to avoid processing seen atoms twice.
+		Set<Integer> seenAtoms = new HashSet<>();		// NOTE: other solvers use a global array for seen atoms, this might be slightly faster (initial tests with local arrays showed no significant improvement).
+		Set<Integer> processedAtoms = new HashSet<>();	// Since trail contains 2 entries for MBT->TRUE assigned atoms, explicitly record which seen atoms have ben processed to avoid processing seen atoms twice.
 		int[] currentConflictReason = conflictReason.getReasonLiterals();
 		int backjumpLevel = -1;
 		conflictReason.bumpActivity();
