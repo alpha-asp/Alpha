@@ -33,6 +33,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 import at.ac.tuwien.kr.alpha.grounder.ProgramAnalyzingGrounder;
@@ -76,7 +77,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	private final PerformanceLog performanceLog;
 	
-	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, HeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, boolean disableJustifications) {
+	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, SystemConfig config, HeuristicsConfiguration heuristicsConfiguration) {
 		super(atomStore, grounder);
 
 		this.assignment = assignment;
@@ -86,7 +87,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		this.branchingHeuristic = ChainedBranchingHeuristics.chainOf(
 				BranchingHeuristicFactory.getInstance(heuristicsConfiguration, grounder, assignment, choiceManager, random),
 				new NaiveHeuristic(choiceManager));
-		this.disableJustifications = disableJustifications;
+		this.disableJustifications = config.isDisableJustificationSearch();
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
 	}
 

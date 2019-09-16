@@ -28,18 +28,25 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
 
 import java.util.Random;
 
 public final class SolverFactory {
-	public static Solver getInstance(String name, String storeName, AtomStore atomStore, Grounder grounder, Random random, HeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, boolean disableJustifications) {
+	public static Solver getInstance(SystemConfig config, AtomStore atomStore, Grounder grounder) {
+		final String solverName = config.getSolverName();
+		final String nogoodStoreName = config.getNogoodStoreName();
+		final Random random = new Random(config.getSeed());
+		final boolean debugInternalChecks = config.isDebugInternalChecks();
+		final HeuristicsConfiguration heuristicsConfiguration = buildHeuristicsConfiguration(config);
 		final WritableAssignment assignment = new TrailAssignment(atomStore, debugInternalChecks);
 
 		NoGoodStore store;
 
-		switch (storeName.toLowerCase()) {
+		switch (nogoodStoreName.toLowerCase()) {
 			case "naive":
 				store = new NaiveNoGoodStore(assignment);
 				break;
@@ -50,12 +57,19 @@ public final class SolverFactory {
 				throw new IllegalArgumentException("Unknown store requested.");
 		}
 
-		switch (name.toLowerCase()) {
+		switch (solverName.toLowerCase()) {
 			case "naive" :
 				return new NaiveSolver(atomStore, grounder);
 			case "default":
-				return new DefaultSolver(atomStore, grounder, store, assignment, random, heuristicsConfiguration, debugInternalChecks, disableJustifications);
+				return new DefaultSolver(atomStore, grounder, store, assignment, random, config, heuristicsConfiguration);
 		}
 		throw new IllegalArgumentException("Unknown solver requested.");
+	}
+
+	private static HeuristicsConfiguration buildHeuristicsConfiguration(SystemConfig config) {
+		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
+		heuristicsConfigurationBuilder.setHeuristic(config.getBranchingHeuristic());
+		heuristicsConfigurationBuilder.setMomsStrategy(config.getMomsStrategy());
+		return heuristicsConfigurationBuilder.build();
 	}
 }
