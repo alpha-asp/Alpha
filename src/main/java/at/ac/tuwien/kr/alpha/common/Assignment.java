@@ -67,7 +67,7 @@ public interface Assignment {
 	/**
 	 * Returns the NoGood that implied the atom.
 	 * @param atom the atom.
-	 * @return the implying NoGood.
+	 * @return the implying Antecedent.
 	 */
 	Antecedent getImpliedBy(int atom);
 

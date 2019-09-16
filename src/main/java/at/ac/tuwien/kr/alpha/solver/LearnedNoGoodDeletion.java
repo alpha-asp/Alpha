@@ -59,7 +59,7 @@ class LearnedNoGoodDeletion {
 		for (WatchedNoGood learnedNoGood : learnedNoGoods) {
 			activitySum += learnedNoGood.getActivity();
 		}
-		double avgActivity = activitySum / originalSize;
+		double avgActivity = (double) activitySum / originalSize;
 		double scoreThreshold = avgActivity * 1.5;
 		for (Iterator<WatchedNoGood> iterator = learnedNoGoods.iterator(); iterator.hasNext();) {
 			WatchedNoGood learnedNoGood = iterator.next();

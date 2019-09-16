@@ -2,7 +2,7 @@ package at.ac.tuwien.kr.alpha.solver;
 
 /**
  * Indicates the presence of a conflict and contains its reason in terms of a violated Antecedent.
- * Throughout the solver the absence of a conflict is indicated by ConflictCause = null.
+ * Throughout the solver the absence of a conflict is indicated by {@code ConflictCause = null}.
  */
 public class ConflictCause {
 	// Note: directly replacing ConflictCause by Antecedent requires another indicator flag of whether a conflict occurred.
@@ -18,10 +18,7 @@ public class ConflictCause {
 
 	@Override
 	public String toString() {
-		if (violatedNoGood != null) {
-			return violatedNoGood.toString();
-		}
 
-		return "null";
+		return String.valueOf(violatedNoGood);
 	}
 }

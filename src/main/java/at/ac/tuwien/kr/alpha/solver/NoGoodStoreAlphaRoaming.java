@@ -58,7 +58,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	private static final int UNASSIGNED = Integer.MAX_VALUE;
 
 	private final WritableAssignment assignment;
-	private LearnedNoGoodDeletion learnedNoGoodDeletion;
+	private final LearnedNoGoodDeletion learnedNoGoodDeletion;
 	@SuppressWarnings("unchecked")
 	private ArrayList<WatchedNoGood>[] watches = new ArrayList[0];
 	@SuppressWarnings("unchecked")

@@ -3,10 +3,10 @@ package at.ac.tuwien.kr.alpha.solver;
 import java.util.HashSet;
 
 /**
- * An interface to reasons of implications as used internally by the solver. This is a lightweight NoGood that only
+ * An interface to reasons of implications as used internally by the solver. This is a lightweight {@link at.ac.tuwien.kr.alpha.common.NoGood} that only
  * provides an array of literals (in some order) and has an activity that may change.
  *
- * Copyright (c) 2018, the Alpha Team.
+ * Copyright (c) 2019, the Alpha Team.
  */
 public interface Antecedent {
 
