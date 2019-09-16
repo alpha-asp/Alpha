@@ -34,10 +34,7 @@ import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -180,13 +177,13 @@ public class GroundConflictNoGoodLearner {
 		TrailAssignment.TrailBackwardsWalker trailWalker = ((TrailAssignment)assignment).getTrailBackwardsWalker();
 		if (LOGGER.isTraceEnabled()) {
 			LOGGER.trace("Current trail is: {}", trailWalker);
-			LOGGER.trace("Violated nogood is: {}", printReasons(conflictReason.getReasonLiterals()));
+			LOGGER.trace("Violated nogood is: {}", reasonsToString(conflictReason.getReasonLiterals()));
 		}
 		int nextAtom = -1;
 		do {
 			// Add current conflict reasons; only add those of lower decision levels, since from current one, only the 1UIP literal will be added.
 			if (LOGGER.isTraceEnabled()) {
-				LOGGER.trace("Atom {} implied by {}, resolving with that nogood", nextAtom, printReasons(currentConflictReason));
+				LOGGER.trace("Atom {} implied by {}, resolving with that nogood", nextAtom, reasonsToString(currentConflictReason));
 			}
 			for (int literal : currentConflictReason) {
 				// Seen atoms have already been dealt with.
@@ -207,7 +204,7 @@ public class GroundConflictNoGoodLearner {
 			if (LOGGER.isTraceEnabled()) {
 				LOGGER.trace("LiteralsInConflictLevel now: {}", numLiteralsInConflictLevel);
 				LOGGER.trace("Seen atoms are {}.", seenAtoms);
-				LOGGER.trace("Intermediate learned literals: {}", printReasons(resolutionLiterals));
+				LOGGER.trace("Intermediate learned literals: {}", reasonsToString(resolutionLiterals));
 			}
 			// Find next literal, i.e. first from top of trail that has been seen but is not yet processed.
 			do {
