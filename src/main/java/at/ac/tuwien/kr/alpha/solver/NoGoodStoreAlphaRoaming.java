@@ -70,7 +70,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	private boolean didPropagate;
 	private boolean hasBinaryNoGoods;
 
-	NoGoodStoreAlphaRoaming(WritableAssignment assignment, boolean checksEnabled) {
+	public NoGoodStoreAlphaRoaming(WritableAssignment assignment, boolean checksEnabled) {
 		this.assignment = assignment;
 		this.checksEnabled = checksEnabled;
 		this.learnedNoGoodDeletion = new LearnedNoGoodDeletion(this, assignment);
