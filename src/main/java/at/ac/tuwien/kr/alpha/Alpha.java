@@ -102,6 +102,13 @@ public class Alpha {
 	public Solver prepareSolverFor(Program program, java.util.function.Predicate<Predicate> filter) {
 		String grounderName = this.config.getGrounderName();
 		boolean doDebugChecks = this.config.isDebugInternalChecks();
+		boolean disableJustificationSearch = this.config.isDisableJustificationSearch();
+
+		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
+		heuristicsConfigurationBuilder.setHeuristic(this.config.getBranchingHeuristic());
+		heuristicsConfigurationBuilder.setMomsStrategy(this.config.getMomsStrategy());
+		heuristicsConfigurationBuilder.setReplayChoices(this.config.getReplayChoices());
+
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, doDebugChecks);
 
