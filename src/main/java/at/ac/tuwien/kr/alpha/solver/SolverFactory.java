@@ -70,6 +70,7 @@ public final class SolverFactory {
 		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
 		heuristicsConfigurationBuilder.setHeuristic(config.getBranchingHeuristic());
 		heuristicsConfigurationBuilder.setMomsStrategy(config.getMomsStrategy());
+		heuristicsConfigurationBuilder.setReplayChoices(config.getReplayChoices());
 		return heuristicsConfigurationBuilder.build();
 	}
 }
