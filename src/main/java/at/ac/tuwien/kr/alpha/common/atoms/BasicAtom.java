@@ -27,14 +27,18 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import static at.ac.tuwien.kr.alpha.Util.join;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
-import static at.ac.tuwien.kr.alpha.Util.join;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 /**
  * Copyright (c) 2016-2018, the Alpha Team.
@@ -71,6 +75,21 @@ public class BasicAtom extends Atom implements VariableNormalizableAtom {
 
 	public BasicAtom(Predicate predicate) {
 		this(predicate, Collections.emptyList());
+	}
+
+	/**
+	 * Convenience method for a simple atom with just constant terms (no nested terms)
+	 * 
+	 * @param predSymbol the predicate symbol
+	 * @param terms      the constant terms
+	 */
+	public static BasicAtom newInstance(String predSymbol, String... constTerms) {
+		Predicate pred = Predicate.getInstance(predSymbol, constTerms.length);
+		List<Term> trms = new ArrayList<>();
+		for (String s : constTerms) {
+			trms.add(ConstantTerm.getSymbolicInstance(s));
+		}
+		return new BasicAtom(pred, trms);
 	}
 
 	@Override
@@ -159,5 +178,5 @@ public class BasicAtom extends Atom implements VariableNormalizableAtom {
 	public Atom setTerms(List<Term> terms) {
 		return new BasicAtom(this.predicate, terms);
 	}
-	
+
 }

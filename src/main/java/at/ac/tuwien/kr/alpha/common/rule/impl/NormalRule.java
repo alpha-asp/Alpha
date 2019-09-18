@@ -39,6 +39,10 @@ public class NormalRule extends AbstractRule<NormalHead> {
 		return new NormalRule(headAtom != null ? new NormalHead(headAtom) : null, new ArrayList<>(rule.getBody()));
 	}
 
+	public static Builder builder() {
+		return new Builder();
+	}
+
 	public boolean isGround() {
 		if (!isConstraint() && !this.getHead().isGround()) {
 			return false;
@@ -53,6 +57,31 @@ public class NormalRule extends AbstractRule<NormalHead> {
 
 	public Atom getHeadAtom() {
 		return this.isConstraint() ? null : this.getHead().getAtom();
+	}
+
+	public static class Builder {
+
+		private Atom headAtom;
+		private List<Literal> body = new ArrayList<>();
+
+		public NormalRule build() {
+			return new NormalRule(new NormalHead(headAtom), body);
+		}
+
+		public Builder withHead(Atom h) {
+			this.headAtom = h;
+			return this;
+		}
+
+		public Builder withBodyAtom(Atom ba) {
+			this.body.add(ba.toLiteral());
+			return this;
+		}
+
+		public Builder withNegativeBodyAtom(Atom ba) {
+			this.body.add(ba.toLiteral(false));
+			return this;
+		}
 	}
 
 }

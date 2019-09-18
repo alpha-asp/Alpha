@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 import static at.ac.tuwien.kr.alpha.Util.join;
 
 public class ExternalAtom extends Atom {
+
 	private final List<Term> input;
 	private final List<Term> output;
 
@@ -109,5 +110,51 @@ public class ExternalAtom extends Atom {
 	@Override
 	public Atom setTerms(List<Term> terms) {
 		throw new UnsupportedOperationException("Editing term list is not supported for external atoms!");
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((this.input == null) ? 0 : this.input.hashCode());
+		result = prime * result + ((this.output == null) ? 0 : this.output.hashCode());
+		result = prime * result + ((this.predicate == null) ? 0 : this.predicate.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof ExternalAtom)) {
+			return false;
+		}
+		ExternalAtom other = (ExternalAtom) obj;
+		if (this.input == null) {
+			if (other.input != null) {
+				return false;
+			}
+		} else if (!this.input.equals(other.input)) {
+			return false;
+		}
+		if (this.output == null) {
+			if (other.output != null) {
+				return false;
+			}
+		} else if (!this.output.equals(other.output)) {
+			return false;
+		}
+		if (this.predicate == null) {
+			if (other.predicate != null) {
+				return false;
+			}
+		} else if (!this.predicate.equals(other.predicate)) {
+			return false;
+		}
+		return true;
 	}
 }

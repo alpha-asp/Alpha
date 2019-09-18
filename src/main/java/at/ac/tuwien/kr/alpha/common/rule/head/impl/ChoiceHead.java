@@ -94,4 +94,59 @@ public class ChoiceHead extends Head {
 
 		return result;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((this.choiceElements == null) ? 0 : this.choiceElements.hashCode());
+		result = prime * result + ((this.lowerBound == null) ? 0 : this.lowerBound.hashCode());
+		result = prime * result + ((this.lowerOp == null) ? 0 : this.lowerOp.hashCode());
+		result = prime * result + ((this.upperBound == null) ? 0 : this.upperBound.hashCode());
+		result = prime * result + ((this.upperOp == null) ? 0 : this.upperOp.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof ChoiceHead)) {
+			return false;
+		}
+		ChoiceHead other = (ChoiceHead) obj;
+		if (this.choiceElements == null) {
+			if (other.choiceElements != null) {
+				return false;
+			}
+		} else if (!this.choiceElements.equals(other.choiceElements)) {
+			return false;
+		}
+		if (this.lowerBound == null) {
+			if (other.lowerBound != null) {
+				return false;
+			}
+		} else if (!this.lowerBound.equals(other.lowerBound)) {
+			return false;
+		}
+		if (this.lowerOp != other.lowerOp) {
+			return false;
+		}
+		if (this.upperBound == null) {
+			if (other.upperBound != null) {
+				return false;
+			}
+		} else if (!this.upperBound.equals(other.upperBound)) {
+			return false;
+		}
+		if (this.upperOp != other.upperOp) {
+			return false;
+		}
+		return true;
+	}
+
 }

@@ -28,10 +28,8 @@ public class DepthFirstSearchHelper {
 	}
 
 	/**
-	 * Performs a depth-first search on the given graph. During the search, the <code>NodeInfo</code> for each node is filled out, specifically, the
-	 * dfsDiscoveryTime, dfsFinishTime and dfsPredecessor values for each node are set. The algorithm follows the approach outlined in "Introduction to
-	 * Algortihms, 3rd. Edition" by Cormen et al. Note that no separate data structure for the discovered depth-first forest is returned as that information can
-	 * be gained from the completely filled <code>NodeInfo</code>s
+	 * Performs a depth-first search on the given graph. The algorithm follows the approach outlined in "Introduction to
+	 * Algortihms, 3rd. Edition" by Cormen et al.
 	 * 
 	 * @param nodeVisitIt an Iterator defining in which sequence nodes should be visited
 	 * @param nodes       an adjacency map defining the dependency graph of an ASP program

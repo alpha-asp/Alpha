@@ -150,4 +150,10 @@ public abstract class Atom implements Comparable<Atom> {
 		return false;
 	}
 
+	@Override
+	public abstract boolean equals(Object o);
+
+	@Override
+	public abstract int hashCode();
+
 }

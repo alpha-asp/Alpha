@@ -33,4 +33,34 @@ public class NormalHead extends Head {
 		return this.atom.toString();
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((this.atom == null) ? 0 : this.atom.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof NormalHead)) {
+			return false;
+		}
+		NormalHead other = (NormalHead) obj;
+		if (this.atom == null) {
+			if (other.atom != null) {
+				return false;
+			}
+		} else if (!this.atom.equals(other.atom)) {
+			return false;
+		}
+		return true;
+	}
+
 }

@@ -40,6 +40,7 @@ import java.util.List;
 import static at.ac.tuwien.kr.alpha.Util.join;
 
 public class ChoiceAtom extends Atom {
+
 	public static final Predicate ON = Predicate.getInstance("ChoiceOn", 1, true, true);
 	public static final Predicate OFF = Predicate.getInstance("ChoiceOff", 1, true, true);
 
@@ -100,5 +101,43 @@ public class ChoiceAtom extends Atom {
 			throw new UnsupportedOperationException("ChoiceAtom only supports one term!");
 		}
 		return new ChoiceAtom(this.predicate, terms.get(0));
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((this.predicate == null) ? 0 : this.predicate.hashCode());
+		result = prime * result + ((this.terms == null) ? 0 : this.terms.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof ChoiceAtom)) {
+			return false;
+		}
+		ChoiceAtom other = (ChoiceAtom) obj;
+		if (this.predicate == null) {
+			if (other.predicate != null) {
+				return false;
+			}
+		} else if (!this.predicate.equals(other.predicate)) {
+			return false;
+		}
+		if (this.terms == null) {
+			if (other.terms != null) {
+				return false;
+			}
+		} else if (!this.terms.equals(other.terms)) {
+			return false;
+		}
+		return true;
 	}
 }

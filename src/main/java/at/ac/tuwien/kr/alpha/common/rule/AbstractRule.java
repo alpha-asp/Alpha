@@ -14,7 +14,7 @@ import at.ac.tuwien.kr.alpha.common.rule.head.Head;
  * 
  * @param <H> the type of head for this rule Copyright (c) 2019, the Alpha Team.
  * 
- * Copyright (c) 2017-2019, the Alpha Team.
+ *        Copyright (c) 2017-2019, the Alpha Team.
  */
 public abstract class AbstractRule<H extends Head> {
 
@@ -77,6 +77,44 @@ public abstract class AbstractRule<H extends Head> {
 
 	public List<Literal> getBody() {
 		return Collections.unmodifiableList(this.body);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((this.body == null) ? 0 : this.body.hashCode());
+		result = prime * result + ((this.head == null) ? 0 : this.head.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof AbstractRule)) {
+			return false;
+		}
+		AbstractRule<?> other = (AbstractRule<?>) obj;
+		if (this.body == null) {
+			if (other.body != null) {
+				return false;
+			}
+		} else if (!this.body.equals(other.body)) {
+			return false;
+		}
+		if (this.head == null) {
+			if (other.head != null) {
+				return false;
+			}
+		} else if (!this.head.equals(other.head)) {
+			return false;
+		}
+		return true;
 	}
 
 }

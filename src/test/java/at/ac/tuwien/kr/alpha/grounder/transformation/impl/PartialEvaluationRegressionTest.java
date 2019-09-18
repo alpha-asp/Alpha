@@ -21,10 +21,11 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 @RunWith(Parameterized.class)
 public class PartialEvaluationRegressionTest {
 
-	//private static final Logger LOGGER = LoggerFactory.getLogger(PartialEvaluationRegressionTest.class);
+	// private static final Logger LOGGER = LoggerFactory.getLogger(PartialEvaluationRegressionTest.class);
 
 	private static final String BASIC_TEST_ASP = "a. b:- a.";
 	private static final String BASIC_MULTI_INSTANCE_ASP = "p(a). p(b). q(X) :- p(X).";
+	private static final String BASIC_NEGATION_ASP = "p(a). q(b). p(c). q(d). r(c). s(X, Y) :- p(X), q(Y), not r(X).";
 
 	@Parameters(name = "Run {index}: aspString={0}, verifier={1}")
 	public static Iterable<Object[]> params() {
@@ -32,8 +33,9 @@ public class PartialEvaluationRegressionTest {
 		List<Object[]> paramList = new ArrayList<>();
 		testCases.add(new ImmutablePair<>(BASIC_TEST_ASP, PartialEvaluationRegressionTest::verifyBasic));
 		testCases.add(new ImmutablePair<>(BASIC_MULTI_INSTANCE_ASP, PartialEvaluationRegressionTest::verifyBasicMultiInstance));
+		testCases.add(new ImmutablePair<>(BASIC_NEGATION_ASP, PartialEvaluationRegressionTest::verifyBasicNegation));
 
-		testCases.forEach((pair) -> paramList.add(new Object[] {pair.left, pair.right}));
+		testCases.forEach((pair) -> paramList.add(new Object[] {pair.left, pair.right }));
 		return paramList;
 	}
 
@@ -66,6 +68,11 @@ public class PartialEvaluationRegressionTest {
 		BasicAtom qOfB = new BasicAtom(Predicate.getInstance("q", 1), ConstantTerm.getSymbolicInstance("b"));
 		Assert.assertTrue(evaluated.getFacts().contains(qOfA));
 		Assert.assertTrue(evaluated.getFacts().contains(qOfB));
+		Assert.assertTrue(evaluated.getRules().size() == 0);
+	}
+
+	private static void verifyBasicNegation(InternalProgram evaluated) {
+		
 	}
 
 }

@@ -11,6 +11,8 @@ import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation
 
 public class InputConfig {
 
+	// TODO seems like there's currently no way in CLI to specify that dependency graphs should be written
+	
 	public static final java.util.function.Predicate<Predicate> DEFAULT_FILTER = p -> true;
 	public static final boolean DEFAULT_LITERATE = false;
 	public static final int DEFAULT_NUM_ANSWER_SETS = 0;

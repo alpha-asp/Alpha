@@ -126,6 +126,7 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 		} while (!this.workingMemory.modified().isEmpty()); // if evaluation of rules doesn't modify the working memory we have a fixed point
 		LOGGER.debug("Evaluation done - reached a fixed point on component {}", comp);
 		this.addFactsToProgram(addedInstances);
+		rulesToEvaluate.forEach((rule) -> this.solvedRuleIds.add(rule.getRuleId()));
 		LOGGER.debug("Finished adding program facts");
 	}
 
