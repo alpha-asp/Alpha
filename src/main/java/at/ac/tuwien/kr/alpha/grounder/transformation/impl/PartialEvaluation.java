@@ -64,7 +64,7 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 	private Map<Predicate, HashSet<InternalRule>> predicateDefiningRules;
 	private Map<Predicate, LinkedHashSet<Instance>> programFacts;
 
-	// context settings for bindNextAtom - TODO make better
+	// context settings for bindNextAtom
 	private boolean stopBindingAtNonTruePositiveBody = true;
 	private AtomStore atomStore = new AtomStoreImpl();
 	private int maxAtomIdBeforeGroundingNewNoGoods = -1;
@@ -88,6 +88,7 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 			this.workingMemory.initialize(entry.getKey());
 			this.workingMemory.addInstances(entry.getKey(), true, entry.getValue());
 		}
+		this.workingMemory.reset();
 
 		ComponentEvaluationOrder evaluationOrder = new ComponentEvaluationOrder(strata);
 		for (SCComponent currComponent : evaluationOrder) {
@@ -96,7 +97,10 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 
 		// build the resulting program
 		List<Atom> outputFacts = new ArrayList<>(inputProgram.getFacts());
-		outputFacts.addAll(this.additionalFacts);
+		this.additionalFacts.forEach((f) -> {
+			if (!outputFacts.contains(f))
+				outputFacts.add(f);
+		});
 		List<InternalRule> outputRules = new ArrayList<>();
 		inputProgram.getRulesById().entrySet().stream().filter((entry) -> !this.solvedRuleIds.contains(entry.getKey()))
 				.forEach((entry) -> outputRules.add(entry.getValue()));
@@ -109,6 +113,7 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 		Set<InternalRule> rulesToEvaluate = this.getRulesToEvaluate(comp);
 		if (rulesToEvaluate.isEmpty()) {
 			LOGGER.debug("No rules to evaluate for component {}", comp);
+			return;
 		}
 		Map<Predicate, List<Instance>> addedInstances = new HashMap<>();
 		do {
@@ -143,16 +148,12 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 	}
 
 	private void evaluateRule(InternalRule rule) {
-		// TODO for starting literals: only look at instances that were recently added
-		// note: only applies to starting literals, negative body check needs to check everything as well
-		// TODO when working on recently added instances, clear them before further modifying working memory
 		LOGGER.debug("Evaluating rule {}", rule);
 		RuleGroundingOrder groundingOrder = rule.getGroundingOrder();
 		Collection<Literal> startingLiterals = groundingOrder.getStartingLiterals();
 		Predicate tmpPred;
 		IndexedInstanceStorage tmpPredInstanceStorage;
 		Substitution tmpSubstitution;
-		rule.getHeadAtom().getBindingVariables();
 		for (Literal lit : startingLiterals) {
 			tmpPred = lit.getPredicate();
 			// fetch positive instances of predicate in current starting literal
@@ -203,7 +204,9 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 		if (!this.workingMemory.contains(newAtom.getPredicate())) {
 			this.workingMemory.initialize(newAtom.getPredicate());
 		}
-		this.workingMemory.addInstance(newAtom, true);
+		if (!this.workingMemory.get(newAtom.toLiteral()).containsInstance(new Instance(newAtom.getTerms()))) {
+			this.workingMemory.addInstance(newAtom, true);
+		}
 	}
 
 	private void addFactsToProgram(Map<Predicate, List<Instance>> instances) {
@@ -275,7 +278,6 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 
 				if (atomId > maxAtomIdBeforeGroundingNewNoGoods || truth == null || !truth.toBoolean()) {
 					// Atom currently does not hold, skip further grounding.
-					// TODO: investigate grounding heuristics for use here, i.e., ground anyways to avoid re-grounding in the future.
 					if (!disableInstanceRemoval) {
 						removeAfterObtainingNewNoGoods.add(substitute);
 						return emptyList();
@@ -325,7 +327,6 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 					ThriceTruth truth = currentAssignment.getTruth(atomId);
 					if (atomId > maxAtomIdBeforeGroundingNewNoGoods || truth == null || !truth.toBoolean()) {
 						// Atom currently does not hold, skip further grounding.
-						// TODO: investigate grounding heuristics for use here, i.e., ground anyways to avoid re-grounding in the future.
 						if (!disableInstanceRemoval) {
 							removeAfterObtainingNewNoGoods.add(substitutedAtom);
 							continue;

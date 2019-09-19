@@ -28,16 +28,12 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import static java.util.Collections.emptySet;
-import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.Set;
-import java.util.StringJoiner;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -48,7 +44,6 @@ import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.Alpha;
-import at.ac.tuwien.kr.alpha.AnswerSetsParser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
@@ -58,6 +53,7 @@ import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
@@ -79,8 +75,8 @@ public abstract class AbstractSolverTests {
 	}
 
 	/**
-	 * Calling this method in a tests leads to the test being ignored for the naive solver.
-	 * Note: use this sparingly and only on tests that require too much run time with the naive solver.
+	 * Calling this method in a tests leads to the test being ignored for the naive solver. Note: use this sparingly and only on tests that require too much run
+	 * time with the naive solver.
 	 */
 	void ignoreTestForNaiveSolver() {
 		org.junit.Assume.assumeFalse(solverName.equals("naive"));
@@ -127,9 +123,7 @@ public abstract class AbstractSolverTests {
 			for (String grounder : grounders) {
 				for (String store : stores) {
 					for (String heuristic : heuristics) {
-						factories.add(new Object[]{
-							solver, grounder, store, BranchingHeuristicFactory.Heuristic.valueOf(heuristic), seed, checks
-						});
+						factories.add(new Object[] {solver, grounder, store, BranchingHeuristicFactory.Heuristic.valueOf(heuristic), seed, checks });
 					}
 				}
 			}
@@ -192,51 +186,26 @@ public abstract class AbstractSolverTests {
 	}
 
 	protected void assertAnswerSets(String program, String... answerSets) throws IOException {
-		if (answerSets.length == 0) {
-			assertAnswerSets(program, emptySet());
-			return;
-		}
-
-		StringJoiner joiner = new StringJoiner("} {", "{", "}");
-		Arrays.stream(answerSets).forEach(joiner::add);
-		assertAnswerSets(program, AnswerSetsParser.parse(joiner.toString()));
+		Set<AnswerSet> actualAnswerSets = emptySet();
+		actualAnswerSets = collectSet(program);
+		TestUtils.assertAnswerSetsEqual(answerSets, actualAnswerSets);
 	}
 
 	protected void assertAnswerSet(String program, String answerSet) throws IOException {
-		assertAnswerSets(program, AnswerSetsParser.parse("{ " + answerSet + " }"));
+		Set<AnswerSet> actualAnswerSets = emptySet();
+		actualAnswerSets = collectSet(program);
+		TestUtils.assertAnswerSetsEqual(answerSet, actualAnswerSets);
 	}
 
 	protected void assertAnswerSetsWithBase(String program, String base, String... answerSets) throws IOException {
-		base = base.trim();
-		if (!base.endsWith(",")) {
-			base += ", ";
-		}
-
-		for (int i = 0; i < answerSets.length; i++) {
-			answerSets[i] = base + answerSets[i];
-			// Remove trailing ",".
-			answerSets[i] = answerSets[i].trim();
-			if (answerSets[i].endsWith(",")) {
-				answerSets[i] = answerSets[i].substring(0, answerSets[i].length() - 1);
-			}
-		}
-
-		assertAnswerSets(program, answerSets);
+		Set<AnswerSet> actualAnswerSets = emptySet();
+		actualAnswerSets = collectSet(program);
+		TestUtils.assertAnswerSetsEqualWithBase(base, answerSets, actualAnswerSets);
 	}
 
 	protected void assertAnswerSets(String program, Set<AnswerSet> answerSets) throws IOException {
 		Set<AnswerSet> actualAnswerSets = emptySet();
-		try {
-			actualAnswerSets = collectSet(program);
-			assertEquals(answerSets, actualAnswerSets);
-		} catch (AssertionError e) {
-			Set<AnswerSet> expectedMinusActual = new LinkedHashSet<>(answerSets);
-			expectedMinusActual.removeAll(actualAnswerSets);
-			Set<AnswerSet> actualMinusExpected = new LinkedHashSet<>(actualAnswerSets);
-			actualMinusExpected.removeAll(answerSets);
-			String setDiffs = "Expected and computed answer sets do not agree, differences are:\nExpected \\ Actual:\n" + expectedMinusActual + "\nActual \\ Expected:\n" + actualMinusExpected;
-			throw new AssertionError(setDiffs + e.getMessage(), e);
-		}
-
+		actualAnswerSets = collectSet(program);
+		TestUtils.assertAnswerSetsEqual(answerSets, actualAnswerSets);
 	}
 }
