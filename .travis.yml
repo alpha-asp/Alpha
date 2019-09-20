@@ -20,9 +20,9 @@ jdk:
   # LTS and in "Premier Support" as of 2019-03 (until 2023-09)
   - openjdk11
   - oraclejdk11
-  # Not succeeded as of 2019-03. Scheduled to be succeeded by
-  # Java 13 in 2019-09, see http://openjdk.java.net/projects/jdk/13/spec/
-  - openjdk12
+  # Not succeeded as of 2019-11. Scheduled to be succeeded by
+  # Java 14 in 2020-03, see http://openjdk.java.net/projects/jdk/14/spec/
+  - openjdk13
   # No Oracle JDK >11, see
   # https://blogs.oracle.com/java-platform-group/oracle-jdk-releases-for-java-11-and-later
 
