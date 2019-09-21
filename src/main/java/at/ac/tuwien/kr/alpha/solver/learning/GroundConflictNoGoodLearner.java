@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.solver.learning;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.Antecedent;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
@@ -50,6 +51,7 @@ public class GroundConflictNoGoodLearner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(GroundConflictNoGoodLearner.class);
 
 	private final Assignment assignment;
+	private final AtomStore atomStore;
 
 	public int computeConflictFreeBackjumpingLevel(NoGood violatedNoGood) {
 		int highestDecisionLevel = -1;
@@ -113,8 +115,9 @@ public class GroundConflictNoGoodLearner {
 		}
 	}
 
-	public GroundConflictNoGoodLearner(Assignment assignment) {
+	public GroundConflictNoGoodLearner(Assignment assignment, AtomStore atomStore) {
 		this.assignment = assignment;
+		this.atomStore = atomStore;
 	}
 
 	public ConflictAnalysisResult analyzeConflictingNoGood(Antecedent violatedNoGood) {
@@ -163,6 +166,7 @@ public class GroundConflictNoGoodLearner {
 	private ConflictAnalysisResult analyzeTrailBased(Antecedent conflictReason) {
 		LOGGER.trace("Analyzing trail based.");
 		if (assignment.getDecisionLevel() == 0) {
+			LOGGER.trace("Conflict on decision level 0.");
 			return ConflictAnalysisResult.UNSAT;
 		}
 		int numLiteralsInConflictLevel = 0;
@@ -206,15 +210,14 @@ public class GroundConflictNoGoodLearner {
 				LOGGER.trace("Seen atoms are {}.", seenAtoms);
 				LOGGER.trace("Intermediate learned literals: {}", reasonsToString(resolutionLiterals));
 			}
-			// Find next literal, i.e. first from top of trail that has been seen but is not yet processed.
+			// Find next literal, i.e. first from top of trail that has been seen but is not yet processed, also skip atoms whose TRUE assignment is on current level but their MBT/weak assignment is lower.
 			do {
 				int nextLiteral = trailWalker.getNextLowerLiteral();
 				nextAtom = atomOf(nextLiteral);
 				if (LOGGER.isTraceEnabled()) {
 					LOGGER.trace("Next literal on trail is: {}", isPositive(nextLiteral) ? "+" + nextAtom : "-" + nextAtom);
 				}
-
-			} while (!(seenAtoms.contains(nextAtom) && !processedAtoms.contains(nextAtom)));
+			} while (assignment.getWeakDecisionLevel(nextAtom) != currentDecisionLevel || !seenAtoms.contains(nextAtom) || processedAtoms.contains(nextAtom));
 			Antecedent impliedBy = assignment.getImpliedBy(nextAtom);
 			if (impliedBy != null) {
 				currentConflictReason = impliedBy.getReasonLiterals();
@@ -232,7 +235,9 @@ public class GroundConflictNoGoodLearner {
 		}
 
 		NoGood learnedNoGood = NoGood.learnt(learnedLiterals);
-		LOGGER.trace("Learned NoGood is: {}", learnedNoGood);
+		if (LOGGER.isTraceEnabled()) {
+			LOGGER.trace("Learned NoGood is: {}", atomStore.noGoodToString(learnedNoGood));
+		}
 
 		int backjumpingDecisionLevel = computeBackjumpingDecisionLevel(learnedNoGood);
 		if (backjumpingDecisionLevel < 0) {

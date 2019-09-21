@@ -761,6 +761,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 			@Override
 			public void decreaseActivity() {
 			}
+
+			@Override
+			public String toString() {
+				return "{" + literalToString(literals[0]) + ", " + literalToString(literals[1]) + "}";
+			}
 		}
 	}
 

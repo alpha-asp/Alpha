@@ -76,4 +76,8 @@ public final class Literals {
 	public static int positiveLiteral(int literal) {
 		return literal & ~0x1;
 	}
+
+	public static String literalToString(int literal) {
+		return (isPositive(literal) ? "+" : "-") + atomOf(literal);
+	}
 }

@@ -19,6 +19,7 @@ public class GroundConflictNoGoodLearnerTest {
 
 	private final WritableAssignment assignment;
 	private final NoGoodStore store;
+	AtomStore atomStore;
 
 	public GroundConflictNoGoodLearnerTest() {
 		AtomStore atomStore = new AtomStoreImpl();
@@ -31,7 +32,7 @@ public class GroundConflictNoGoodLearnerTest {
 
 	@Test
 	public void smallConflictNonTrivial1UIP() {
-		GroundConflictNoGoodLearner learner = new GroundConflictNoGoodLearner(assignment);
+		GroundConflictNoGoodLearner learner = new GroundConflictNoGoodLearner(assignment, atomStore);
 
 		NoGood n1 = new NoGood(fromOldLiterals(2, -8, 1));
 		NoGood n2 = new NoGood(fromOldLiterals(-1, -7));
@@ -70,7 +71,7 @@ public class GroundConflictNoGoodLearnerTest {
 	@Ignore // TrailAssignment no longer propagates at lower decision level.
 	@Test
 	public void subCurrentDLPropagationWithChoiceCauseOfConflict() {
-		GroundConflictNoGoodLearner learner = new GroundConflictNoGoodLearner(assignment);
+		GroundConflictNoGoodLearner learner = new GroundConflictNoGoodLearner(assignment, atomStore);
 		NoGood n1 = new NoGood(fromOldLiterals(1, -2));
 		NoGood n2 = new NoGood(fromOldLiterals(2, 3));
 		store.add(10, n1);

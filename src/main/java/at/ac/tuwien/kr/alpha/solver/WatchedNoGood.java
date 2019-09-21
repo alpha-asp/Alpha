@@ -6,8 +6,7 @@ import at.ac.tuwien.kr.alpha.common.NoGoodInterface;
 import java.util.Iterator;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.common.Literals.*;
 
 public final class WatchedNoGood implements NoGoodInterface, Antecedent, Iterable<Integer> {
 	private int activity;
@@ -139,8 +138,7 @@ public final class WatchedNoGood implements NoGoodInterface, Antecedent, Iterabl
 
 		int hcount = 0;
 		for (int literal : literals) {
-			sb.append(isPositive(literal) ? "+" : "-");
-			sb.append(atomOf(literal));
+			sb.append(literalToString(literal));
 			sb.append(hasHead() && head == hcount ? "h" : "");
 			sb.append(" ");
 			hcount++;
