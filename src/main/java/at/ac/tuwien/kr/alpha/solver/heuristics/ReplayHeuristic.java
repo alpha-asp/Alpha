@@ -70,7 +70,7 @@ public class ReplayHeuristic implements BranchingHeuristic {
 			return DEFAULT_CHOICE_LITERAL;
 		}
 		int replayChoiceSignedAtom = choicesIterator.next();
-		if (replayChoiceSignedAtom == 0 ) {
+		if (replayChoiceSignedAtom == 0) {
 			// Use 0 to signal no more choices.
 			return DEFAULT_CHOICE_LITERAL;
 		}
