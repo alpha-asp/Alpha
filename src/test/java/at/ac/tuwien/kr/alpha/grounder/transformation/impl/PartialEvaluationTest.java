@@ -12,7 +12,7 @@ import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
 
 public class PartialEvaluationTest {
-	
+
 	@Test
 	public void testDuplicateFacts() {
 		String aspStr = "p(a). p(b). q(b). q(X) :- p(X).";
@@ -23,8 +23,8 @@ public class PartialEvaluationTest {
 		BasicAtom qOfB = BasicAtom.newInstance("q", "b");
 		List<Atom> facts = evaluated.getFacts();
 		int numQOfB = 0;
-		for(Atom at : facts) {
-			if(at.equals(qOfB)) {
+		for (Atom at : facts) {
+			if (at.equals(qOfB)) {
 				numQOfB++;
 			}
 		}

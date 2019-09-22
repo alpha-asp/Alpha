@@ -98,8 +98,9 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 		// build the resulting program
 		List<Atom> outputFacts = new ArrayList<>(inputProgram.getFacts());
 		this.additionalFacts.forEach((f) -> {
-			if (!outputFacts.contains(f))
+			if (!outputFacts.contains(f)) {
 				outputFacts.add(f);
+			}
 		});
 		List<InternalRule> outputRules = new ArrayList<>();
 		inputProgram.getRulesById().entrySet().stream().filter((entry) -> !this.solvedRuleIds.contains(entry.getKey()))
