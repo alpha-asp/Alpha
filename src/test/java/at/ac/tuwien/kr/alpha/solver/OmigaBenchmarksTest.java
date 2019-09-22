@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,8 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -40,6 +42,9 @@ import java.util.Optional;
  *
  */
 public class OmigaBenchmarksTest extends AbstractSolverTests {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(OmigaBenchmarksTest.class);
+
 	@Test(timeout = 10000)
 	public void test3Col_10_18() throws IOException {
 		test("3col", "3col-10-18.txt");
@@ -50,14 +55,12 @@ public class OmigaBenchmarksTest extends AbstractSolverTests {
 		test("3col", "3col-20-38.txt");
 	}
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
+	@Test(timeout = 15000)
 	public void testCutedge_100_30() throws IOException {
 		test("cutedge", "cutedge-100-30.txt");
 	}
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
+	@Test(timeout = 15000)
 	public void testCutedge_100_50() throws IOException {
 		test("cutedge", "cutedge-100-50.txt");
 	}
@@ -74,9 +77,10 @@ public class OmigaBenchmarksTest extends AbstractSolverTests {
 		test("locstrat", "locstrat-400.txt");
 	}
 
-	@Test(timeout = 10000)
-	@Ignore("disabled to save resources during CI")
+	@Test(timeout = 15000)
 	public void testReach_1() throws IOException {
+		ignoreTestForNaiveSolver();
+		ignoreNonDefaultDomainIndependentHeuristics();
 		test("reach", "reach-1.txt");
 	}
 

@@ -27,19 +27,25 @@
  */
 package at.ac.tuwien.kr.alpha.config;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
-import org.apache.commons.cli.*;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.PrintWriter;
-import java.util.*;
-import java.util.function.Consumer;
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 
 /**
  * Parses given argument lists (as passed when Alpha is called from command line) into {@link AlphaConfig}s and {@link InputConfig}s.
@@ -89,6 +95,9 @@ public class CommandLineParser {
 	private static final Option OPT_MOMS_STRATEGY = Option.builder("ms").longOpt("momsStrategy").hasArg(true).argName("strategy")
 			.desc("strategy for mom's heuristic (CountBinaryWatches or BinaryNoGoodPropagation, default: " + SystemConfig.DEFAULT_MOMS_STRATEGY.name() + ")")
 			.build();
+	private static final Option OPT_REPLAY_CHOICES = Option.builder("rc").longOpt("replayChoices").hasArg().argName("choices")
+			.desc("comma-separated list of choices to be replayed (each choice is represented by a signed integer whose absolute value designates an atom ID and whose sign designates a truth value)")
+			.build();
 	private static final Option OPT_QUIET = Option.builder("q").longOpt("quiet").desc("do not print answer sets (default: " + SystemConfig.DEFAULT_QUIET)
 			.build();
 	private static final Option OPT_STATS = Option.builder("st").longOpt("stats").desc("print statistics (default: " + SystemConfig.DEFAULT_PRINT_STATS + ")")
@@ -124,6 +133,7 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_DEBUG_INTERNAL_CHECKS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_BRANCHING_HEURISTIC);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_MOMS_STRATEGY);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_REPLAY_CHOICES);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_QUIET);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_STATS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_JUSTIFICATION);
@@ -165,6 +175,7 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_DEBUG_INTERNAL_CHECKS.getOpt(), this::handleInternalChecks);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_BRANCHING_HEURISTIC.getOpt(), this::handleBranchingHeuristic);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_MOMS_STRATEGY.getOpt(), this::handleMomsStrategy);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_REPLAY_CHOICES.getOpt(), this::handleReplayChoices);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_QUIET.getOpt(), this::handleQuiet);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_STATS.getOpt(), this::handleStats);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), this::handleNoJustification);
@@ -263,9 +274,8 @@ public class CommandLineParser {
 	}
 
 	private void handleFilters(Option opt, InputConfig cfg) {
-		Set<String> desiredPredicates = new HashSet<>(Arrays.asList(opt.getValues()));
-		java.util.function.Predicate<Predicate> filter = p -> desiredPredicates.contains(p.getName());
-		cfg.setFilter(filter);
+		String pred = opt.getValue().trim();
+		cfg.getDesiredPredicates().add(pred);
 	}
 
 	private void handleAspString(Option opt, InputConfig cfg) {
@@ -313,6 +323,15 @@ public class CommandLineParser {
 			cfg.setMomsStrategyName(momsStrategyName);
 		} catch (IllegalArgumentException e) {
 			throw new ParseException("Unknown mom's strategy: " + momsStrategyName + ". Please try one of the following: " + BinaryNoGoodPropagationEstimation.Strategy.listAllowedValues());
+		}
+	}
+	
+	private void handleReplayChoices(Option opt, SystemConfig cfg) throws ParseException {
+		String replayChoices = opt.getValue(SystemConfig.DEFAULT_REPLAY_CHOICES.toString());
+		try {
+			cfg.setReplayChoices(replayChoices);
+		} catch (NumberFormatException e) {
+			throw new ParseException("Cannot parse list of signed integers indicating choices to be replayed: " + replayChoices);
 		}
 	}
 

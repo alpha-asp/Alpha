@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -45,6 +45,7 @@ import org.apache.commons.lang3.StringUtils;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
@@ -81,7 +82,7 @@ public class Alpha {
 			prgBuilder.addInlineDirectives(tmpProg.getInlineDirectives());
 		}
 		if (!cfg.getAspStrings().isEmpty()) {
-			tmpProg = this.readProgramString(StringUtils.join(cfg.getAspStrings(), "\n"), cfg.getPredicateMethods());
+			tmpProg = this.readProgramString(StringUtils.join(cfg.getAspStrings(), System.lineSeparator()), cfg.getPredicateMethods());
 			prgBuilder.addFacts(tmpProg.getFacts());
 			prgBuilder.addRules(tmpProg.getRules());
 			prgBuilder.addInlineDirectives(tmpProg.getInlineDirectives());
@@ -97,6 +98,7 @@ public class Alpha {
 	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException {
 		return this.readProgramFiles(literate, externals, paths.stream().map(Paths::get).collect(Collectors.toList()).toArray(new Path[] {}));
 	}
+
 
 	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
 		ProgramParser parser = new ProgramParser(externals);
@@ -131,25 +133,27 @@ public class Alpha {
 	 * (e.g. for obtaining statistics)
 	 * 
 	 * @param program the program to solve
+	 * @param filter  a (java util) predicate that filters (asp-)predicates which should be contained in the answer set stream from the solver
 	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
 	 */
-	public Solver prepareSolverFor(InternalProgram program) {
+	public Solver prepareSolverFor(InternalProgram program, java.util.function.Predicate<Predicate> filter) {
 		String grounderName = this.config.getGrounderName();
 		String solverName = this.config.getSolverName();
 		String nogoodStoreName = this.config.getNogoodStoreName();
 		long seed = this.config.getSeed();
 		boolean doDebugChecks = this.config.isDebugInternalChecks();
 		boolean disableJustificationSearch = this.config.isDisableJustificationSearch();
-		
+
 		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
 		heuristicsConfigurationBuilder.setHeuristic(this.config.getBranchingHeuristic());
 		heuristicsConfigurationBuilder.setMomsStrategy(this.config.getMomsStrategy());
+		heuristicsConfigurationBuilder.setReplayChoices(this.config.getReplayChoices());
 
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, doDebugChecks);
+		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, doDebugChecks);
 
-		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed),
-				heuristicsConfigurationBuilder.build(), doDebugChecks, disableJustificationSearch);
+		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed), heuristicsConfigurationBuilder.build(),
+				doDebugChecks, disableJustificationSearch);
 		return solver;
 	}
 
@@ -160,7 +164,7 @@ public class Alpha {
 	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
 	 */
 	public Solver prepareSolverFor(NormalProgram program) {
-		return this.prepareSolverFor(InternalProgram.fromNormalProgram(program));
+		return this.prepareSolverFor(InternalProgram.fromNormalProgram(program), InputConfig.DEFAULT_FILTER);
 	}
 
 	/**
@@ -171,7 +175,7 @@ public class Alpha {
 	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
 	 */
 	public Solver prepareSolverFor(InputProgram program) {
-		return this.prepareSolverFor(this.performProgramPreprocessing(program));
+		return this.prepareSolverFor(this.performProgramPreprocessing(program), InputConfig.DEFAULT_FILTER);
 	}
 
 	/**
@@ -180,16 +184,35 @@ public class Alpha {
 	 * @param program an AnalyzedNormalProgram to solve
 	 * @return a Stream of answer sets representing stable models of the given program
 	 */
-	public Stream<AnswerSet> solve(InternalProgram program) {
-		Stream<AnswerSet> retVal = this.prepareSolverFor(program).stream();
+	public Stream<AnswerSet> solve(InternalProgram program, java.util.function.Predicate<Predicate> filter) {
+		Stream<AnswerSet> retVal = this.prepareSolverFor(program, filter).stream();
 		return this.config.isSortAnswerSets() ? retVal.sorted() : retVal;
 	}
 
+	public Stream<AnswerSet> solve(InternalProgram program) {
+		return this.solve(program, InputConfig.DEFAULT_FILTER);
+	}
+	
+	/**
+	 * Convenience method - overloaded version of solve(AnalyzedNormalProgram) for cases where details of the program analysis aren't of interest
+	 */
+	public Stream<AnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
+		return this.solve(InternalProgram.fromNormalProgram(program), filter);
+	}
+
+	/**
+	 * Convenience method - overloaded version of solve(AnalyzedNormalProgram) for cases where details of the program analysis and normalization aren't of
+	 * interest
+	 */
+	public Stream<AnswerSet> solve(InputProgram program, java.util.function.Predicate<Predicate> filter) {
+		return this.solve(this.performProgramPreprocessing(program), filter);
+	}
+	
 	/**
 	 * Convenience method - overloaded version of solve(AnalyzedNormalProgram) for cases where details of the program analysis aren't of interest
 	 */
 	public Stream<AnswerSet> solve(NormalProgram program) {
-		return this.solve(InternalProgram.fromNormalProgram(program));
+		return this.solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
 	/**
@@ -197,7 +220,7 @@ public class Alpha {
 	 * interest
 	 */
 	public Stream<AnswerSet> solve(InputProgram program) {
-		return this.solve(this.performProgramPreprocessing(program));
+		return this.solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
 	public SystemConfig getConfig() {

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,8 @@ import java.util.SortedSet;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
@@ -43,36 +45,46 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
 /**
  * Tests {@link AbstractSolver} using some hanoi tower test cases (see https://en.wikipedia.org/wiki/Tower_of_Hanoi).
  *
  */
-@Ignore("disabled to save resources during CI")
 public class HanoiTowerTest extends AbstractSolverTests {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(HanoiTowerTest.class);
+
+	private final ProgramParser parser = new ProgramParser();
+
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testInstance1() throws IOException {
 		testHanoiTower(1);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testInstance2() throws IOException {
 		testHanoiTower(2);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testInstance3() throws IOException {
 		testHanoiTower(3);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testInstance4() throws IOException {
 		testHanoiTower(4);
 	}
 
 	@Test(timeout = 60000)
 	public void testSimple() throws IOException {
+		ignoreTestForNaiveSolver();
+		ignoreNonDefaultDomainIndependentHeuristics();
 		testHanoiTower("simple");
 	}
 
@@ -92,8 +104,8 @@ public class HanoiTowerTest extends AbstractSolverTests {
 	}
 
 	/**
-	 * Conducts a very simple, non-comprehensive goal check (i.e. it may classify answer sets as correct that are actually wrong) by checking if for every
-	 * goal/3 fact in the input there is a corresponding on/3 atom in the output.
+	 * Conducts a very simple, non-comprehensive goal check (i.e. it may classify answer sets as correct that are actually wrong) by checking if for every goal/3
+	 * fact in the input there is a corresponding on/3 atom in the output.
 	 */
 	private void checkGoal(InputProgram parsedProgram, AnswerSet answerSet) {
 		Predicate ongoal = Predicate.getInstance("ongoal", 2);
@@ -102,9 +114,9 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		SortedSet<Atom> onInstancesInAnswerSet = answerSet.getPredicateInstances(on);
 		for (Atom atom : parsedProgram.getFacts()) {
 			if (atom.getPredicate().getName().equals(ongoal.getName()) && atom.getPredicate().getArity() == ongoal.getArity()) {
-				Term expectedTop = ConstantTerm.getInstance(atom.getTerms().get(0).toString());
-				Term expectedBottom = ConstantTerm.getInstance(atom.getTerms().get(1).toString());
-				Term expectedSteps = ConstantTerm.getInstance(String.valueOf(steps));
+				Term expectedTop = atom.getTerms().get(0);
+				Term expectedBottom = atom.getTerms().get(1);
+				Term expectedSteps = ConstantTerm.getInstance(steps);
 				Atom expectedAtom = new BasicAtom(on, expectedSteps, expectedBottom, expectedTop);
 				assertTrue("Answer set does not contain " + expectedAtom, onInstancesInAnswerSet.contains(expectedAtom));
 			}

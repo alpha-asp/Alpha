@@ -63,6 +63,13 @@ $ ./gradlew bundledJar
 
 and pick up `build/libs/alpha-bundled.jar`.
 
+### A Note on IDEs
+
+We have contributors using [IntelliJ IDEA](https://www.jetbrains.com/idea/) as well as [Eclipse IDE](https://www.eclipse.org/).
+However, we decided to not check in files related to project configuration. For both tools, standard features to "import"
+the project based on its Gradle build configuration are available, and they will infer sane defaults. If you
+run into trouble feel free to file an issue.
+
 ## Suggested Reading
 
  * [Answer Set Programming: A Primer](http://www.kr.tuwien.ac.at/staff/tkren/pub/2009/rw2009-asp.pdf)
@@ -74,6 +81,7 @@ and pick up `build/libs/alpha-bundled.jar`.
 
 Peer-reviewed publications part of journals, conferences and workshops:
 
+ * [Degrees of Laziness in Grounding: Effects of Lazy-Grounding Strategies on ASP Solving](https://doi.org/10.1007/978-3-030-20528-7_22) ([preprint](https://arxiv.org/abs/1903.12510) | [supplementary material](https://git-ainf.aau.at/DynaCon/website/tree/master/supplementary_material/2019_LPNMR_Degrees_of_Laziness))
  * [Exploiting Justifications for Lazy Grounding of Answer Set Programs](https://doi.org/10.24963/ijcai.2018/240)
  * [Lazy Grounding for Dynamic Configuration: Efficient Large-Scale (Re)Configuration of Cyber-Physical Systems with ASP](https://doi.org/10.1007/s13218-018-0536-x)
  * [Blending Lazy-Grounding and CDNL Search for Answer-Set Solving](https://doi.org/10.1007/978-3-319-61660-5_17) ([preprint](http://www.kr.tuwien.ac.at/research/systems/alpha/blending_lazy_grounding.pdf))

@@ -373,6 +373,20 @@ public class AlphaTest {
 	}
 
 	/**
+	 * Verifies that filters are handled correctly (regression test case introduced when fixing issue #189)
+	 */
+	@Test
+	public void filterTest() {
+		String progstr = "a. b. c. d :- c. e(a, b) :- d.";
+		Alpha system = new Alpha();
+		InputProgram prog = system.readProgramString(progstr, null);
+		Set<AnswerSet> actual = system.solve(prog, (p) -> p.equals(Predicate.getInstance("a", 0)) || p.equals(Predicate.getInstance("e", 2)))
+				.collect(Collectors.toSet());
+		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").predicate("e").symbolicInstance("a", "b").build()));
+		assertEquals(expected, actual);
+	}
+
+	/**
 	 * Runs a test that formerly caused some sort of exception.
 	 */
 	@Test
