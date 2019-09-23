@@ -83,10 +83,15 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	@SuppressWarnings("unchecked")
 	void clear() {
 		assignment.clear();
+		learnedNoGoodDeletion.reset();
 		binaryWatches = new BinaryWatchList[0];
 		watches = new ArrayList[0];
 		watchesAlpha = new ArrayList[0];
 		maxAtomId = 0;
+	}
+
+	public LearnedNoGoodDeletion getLearnedNoGoodDeletion() {
+		return learnedNoGoodDeletion;
 	}
 
 	@Override

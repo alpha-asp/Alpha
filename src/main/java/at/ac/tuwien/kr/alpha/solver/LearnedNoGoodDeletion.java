@@ -4,8 +4,7 @@ import at.ac.tuwien.kr.alpha.common.Assignment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
@@ -16,9 +15,9 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
  */
 class LearnedNoGoodDeletion {
 	private static final Logger LOGGER = LoggerFactory.getLogger(LearnedNoGoodDeletion.class);
-	private static final int RESET_SEQUENCE_AFTER = 20;
-	private static final int RUN_AFTER_AT_LEAST = 2000;
-	private static final int GROWTH_FACTOR = 100;
+	public static final int RESET_SEQUENCE_AFTER = 20;
+	public static final int RUN_AFTER_AT_LEAST = 2000;
+	public static final int GROWTH_FACTOR = 100;
 	private final ArrayList<WatchedNoGood> learnedNoGoods = new ArrayList<>();	// List of learned NoGoods that can be removed again. Note: should only contain NoGoods of size > 2.
 	private final NoGoodStoreAlphaRoaming store;
 	private final Assignment assignment;
@@ -28,6 +27,21 @@ class LearnedNoGoodDeletion {
 	LearnedNoGoodDeletion(NoGoodStoreAlphaRoaming store, Assignment assignment) {
 		this.store = store;
 		this.assignment = assignment;
+	}
+
+	void reset() {
+		learnedNoGoods.clear();
+		conflictCounter = 0;
+		cleanupCounter = 0;
+	}
+
+	/**
+	 * Returns WatchedNoGoods known to {@link LearnedNoGoodDeletion}.
+	 * Note: this is likely just a subset of all learned nogoods.
+	 * @return an unmodifiable list of {@link WatchedNoGood}s.
+	 */
+	public List<WatchedNoGood> inspectLearnedNoGoods() {
+		return Collections.unmodifiableList(learnedNoGoods);
 	}
 
 	void recordLearnedNoGood(WatchedNoGood learnedWatchedNoGood) {
