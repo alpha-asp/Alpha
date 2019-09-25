@@ -13,16 +13,16 @@ import static at.ac.tuwien.kr.alpha.solver.AntecedentTest.antecedentsEquals;
 import static org.junit.Assert.*;
 
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  */
 public class GroundConflictNoGoodLearnerTest {
 
 	private final WritableAssignment assignment;
 	private final NoGoodStore store;
-	AtomStore atomStore;
+	private AtomStore atomStore;
 
 	public GroundConflictNoGoodLearnerTest() {
-		AtomStore atomStore = new AtomStoreImpl();
+		atomStore = new AtomStoreImpl();
 		AtomStoreTest.fillAtomStore(atomStore, 20);
 		this.assignment = new TrailAssignment(atomStore);
 		this.assignment.growForMaxAtomId();
