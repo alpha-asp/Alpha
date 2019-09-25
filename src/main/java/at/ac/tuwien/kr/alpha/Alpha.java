@@ -27,24 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import java.io.IOException;
-import java.nio.charset.CodingErrorAction;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.stream.Stream;
-
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.apache.commons.lang3.StringUtils;
-
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
@@ -53,8 +36,17 @@ import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
-import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.IOException;
+import java.nio.charset.CodingErrorAction;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 public class Alpha {
 
@@ -109,23 +101,12 @@ public class Alpha {
 	 */
 	public Solver prepareSolverFor(Program program, java.util.function.Predicate<Predicate> filter) {
 		String grounderName = this.config.getGrounderName();
-		String solverName = this.config.getSolverName();
-		String nogoodStoreName = this.config.getNogoodStoreName();
-		long seed = this.config.getSeed();
 		boolean doDebugChecks = this.config.isDebugInternalChecks();
-		boolean disableJustificationSearch = this.config.isDisableJustificationSearch();
-
-		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
-		heuristicsConfigurationBuilder.setHeuristic(this.config.getBranchingHeuristic());
-		heuristicsConfigurationBuilder.setMomsStrategy(this.config.getMomsStrategy());
-		heuristicsConfigurationBuilder.setReplayChoices(this.config.getReplayChoices());
 
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, doDebugChecks);
 
-		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed), heuristicsConfigurationBuilder.build(),
-				doDebugChecks, disableJustificationSearch);
-		return solver;
+		return SolverFactory.getInstance(this.config, atomStore, grounder);
 	}
 
 	public Solver prepareSolverFor(Program program) {

@@ -32,11 +32,11 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
-import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.antlr.v4.runtime.CharStream;
@@ -158,8 +158,18 @@ public abstract class AbstractSolverTests {
 	public boolean checks;
 
 	protected Solver getInstance(AtomStore atomStore, Grounder grounder) {
-		HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(heuristic).build();
-		return SolverFactory.getInstance(solverName, storeName, atomStore, grounder, new Random(seed), heuristicsConfiguration, checks, false);
+		return SolverFactory.getInstance(buildSystemConfig(), atomStore, grounder);
+	}
+
+	private SystemConfig buildSystemConfig() {
+		SystemConfig config = new SystemConfig();
+		config.setSolverName(solverName);
+		config.setNogoodStoreName(storeName);
+		config.setSeed(seed);
+		config.setBranchingHeuristic(heuristic);
+		config.setDebugInternalChecks(checks);
+		config.setDisableJustificationSearch(false);
+		return config;
 	}
 
 	protected Solver getInstance(Program program) {
