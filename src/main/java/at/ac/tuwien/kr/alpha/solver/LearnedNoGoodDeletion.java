@@ -4,7 +4,10 @@ import at.ac.tuwien.kr.alpha.common.Assignment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
@@ -23,6 +26,7 @@ class LearnedNoGoodDeletion {
 	private final Assignment assignment;
 	private int conflictCounter;
 	private int cleanupCounter;
+	private int numberOfDeletedNoGoods;
 
 	LearnedNoGoodDeletion(NoGoodStoreAlphaRoaming store, Assignment assignment) {
 		this.store = store;
@@ -33,6 +37,7 @@ class LearnedNoGoodDeletion {
 		learnedNoGoods.clear();
 		conflictCounter = 0;
 		cleanupCounter = 0;
+		numberOfDeletedNoGoods = 0;
 	}
 
 	/**
@@ -92,6 +97,7 @@ class LearnedNoGoodDeletion {
 			}
 		}
 		LOGGER.debug("Removed {} NoGoods from store.", deletedNoGoods);
+		this.numberOfDeletedNoGoods += deletedNoGoods;
 	}
 
 	private boolean isLocked(WatchedNoGood noGood, Assignment assignment) {
@@ -102,5 +108,9 @@ class LearnedNoGoodDeletion {
 		}
 		return noGood == assignment.getImpliedBy(watchedAtom1)
 			|| noGood == assignment.getImpliedBy(watchedAtom2);
+	}
+
+	public int getNumberOfDeletedNoGoods() {
+		return numberOfDeletedNoGoods;
 	}
 }
