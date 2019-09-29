@@ -281,7 +281,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 		ProgramAnalyzingGrounder analyzingGrounder = (ProgramAnalyzingGrounder) grounder;
 		// Justify one MBT assigned atom.
-		Integer atomToJustify = assignment.getBasicAtomAssignedMBT();
+		int atomToJustify = assignment.getBasicAtomAssignedMBT();
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Searching for justification of {} / {}", atomToJustify, atomStore.atomToString(atomToJustify));
 			LOGGER.debug("Assignment is (TRUE part only): {}", translate(assignment.getTrueAssignments()));

@@ -49,7 +49,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
  */
 public class TrailAssignment implements WritableAssignment, Checkable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TrailAssignment.class);
-	public static final Antecedent CLOSING_INDICATOR_ANTECEDENT = new Antecedent() {
+	static final Antecedent CLOSING_INDICATOR_ANTECEDENT = new Antecedent() {
 		int[] literals = new int[0];
 
 		@Override
@@ -81,6 +81,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	private int[] strongDecisionLevels;
 	private Antecedent[] impliedBy;
 	private boolean[] callbackUponChange;
+	private boolean[] phase;
 	private ArrayList<OutOfOrderLiteral> outOfOrderLiterals = new ArrayList<>();
 	private int highestDecisionLevelContainingOutOfOrderLiterals;
 	private ArrayList<Integer> trail = new ArrayList<>();
@@ -101,6 +102,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		this.strongDecisionLevels = new int[0];
 		this.impliedBy = new Antecedent[0];
 		this.callbackUponChange = new boolean[0];
+		this.phase = new boolean[0];
 		this.trailIndicesOfDecisionLevels.add(0);
 		nextPositionInTrail = 0;
 		newAssignmentsIterator = 0;
@@ -119,6 +121,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		Arrays.fill(strongDecisionLevels, -1);
 		Arrays.fill(impliedBy, null);
 		Arrays.fill(callbackUponChange, false);
+		Arrays.fill(phase, false);
 		outOfOrderLiterals = new ArrayList<>();
 		highestDecisionLevelContainingOutOfOrderLiterals = 0;
 		trail = new ArrayList<>();
@@ -353,6 +356,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			trail.add(atomToLiteral(atom, value.toBoolean()));
 			values[atom] = (getDecisionLevel() << 2) | translateTruth(value);
 			this.impliedBy[atom] = impliedBy;
+			this.phase[atom] = value.toBoolean();
 			// Adjust MBT counter.
 			if (value == MBT) {
 				mbtCount++;
@@ -446,6 +450,11 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	}
 
 	@Override
+	public boolean getLastValue(int atom) {
+		return phase[atom];
+	}
+
+	@Override
 	public Set<Integer> getTrueAssignments() {
 		Set<Integer> result = new HashSet<>();
 		for (int i = 0; i < values.length; i++) {
@@ -533,6 +542,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		strongDecisionLevels = Arrays.copyOf(strongDecisionLevels, newCapacity);
 		Arrays.fill(strongDecisionLevels, oldLength, strongDecisionLevels.length, -1);
 		impliedBy = Arrays.copyOf(impliedBy, newCapacity);
+		phase = Arrays.copyOf(phase, newCapacity);
 		callbackUponChange = Arrays.copyOf(callbackUponChange, newCapacity);
 	}
 

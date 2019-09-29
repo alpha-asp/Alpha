@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
+import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
 /**
@@ -56,8 +57,8 @@ public class HeapOfActiveAtoms {
 	private static final double SCORE_EPSILON = 1E-100;
 
 	private boolean[] incrementedActivityScores = new boolean[0];
-	protected double[] activityScores = new double[0];
-	protected final PriorityQueue<Integer> heap = new PriorityQueue<>(new AtomActivityComparator().reversed());
+	private double[] activityScores = new double[0];
+	final PriorityQueue<Integer> heap = new PriorityQueue<>(new AtomActivityComparator().reversed());
 
 	protected ChoiceManager choiceManager;
 	private int decayPeriod;
@@ -68,7 +69,7 @@ public class HeapOfActiveAtoms {
 	
 	private final MOMs moms;
 
-	public HeapOfActiveAtoms(int decayPeriod, double decayFactor, ChoiceManager choiceManager) {
+	HeapOfActiveAtoms(int decayPeriod, double decayFactor, ChoiceManager choiceManager) {
 		this.decayPeriod = decayPeriod;
 		this.decayFactor = decayFactor;
 		this.choiceManager = choiceManager;
@@ -144,7 +145,7 @@ public class HeapOfActiveAtoms {
 	/**
 	 * Computes and stores initial activity values for the atoms occurring in the given nogood.
 	 */
-	protected void initActivity(NoGood newNoGood) {
+	private void initActivity(NoGood newNoGood) {
 		if (moms != null) {
 			initActivityMOMs(newNoGood);
 		} else {
@@ -183,6 +184,19 @@ public class HeapOfActiveAtoms {
 		incrementedActivityScores = Arrays.copyOf(incrementedActivityScores, newCapacity);
 	}
 
+	void growForMaxAtomId(int maxAtomId) {
+		// Grow arrays only if needed.
+		if (activityScores.length > maxAtomId) {
+			return;
+		}
+		int newCapacity = arrayGrowthSize(activityScores.length);
+		if (newCapacity < maxAtomId + 1) {
+			newCapacity = maxAtomId + 1;
+		}
+		activityScores = Arrays.copyOf(activityScores, newCapacity);
+		incrementedActivityScores = Arrays.copyOf(incrementedActivityScores, newCapacity);
+	}
+
 	private void initActivityNaive(NoGood newNoGood) {
 		LOGGER.debug("Initializing activity scores naively");
 		for (Integer literal : newNoGood) {
@@ -194,7 +208,7 @@ public class HeapOfActiveAtoms {
 	/**
 	 * Returns the atom with the highest activity score and removes it from the heap.
 	 */
-	public Integer getMostActiveAtom() {
+	Integer getMostActiveAtom() {
 		return heap.poll();
 	}
 
@@ -204,7 +218,7 @@ public class HeapOfActiveAtoms {
 	 * by adding to it the current activity increment times the increment factor.
 	 * If the new value exceeds a certain threshold, all activity scores are normalized.
 	 */
-	public void incrementActivity(int atom) {
+	void incrementActivity(int atom) {
 		incrementActivity(atom, currentActivityIncrement);
 	}
 	
@@ -271,7 +285,7 @@ public class HeapOfActiveAtoms {
 		}
 	}
 
-	public void setMOMsStrategy(BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
+	void setMOMsStrategy(BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
 		if (moms != null) {
 			moms.setStrategy(momsStrategy);
 		}
