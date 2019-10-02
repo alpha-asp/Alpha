@@ -37,6 +37,7 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.antlr.v4.runtime.CharStream;
@@ -158,7 +159,7 @@ public abstract class AbstractSolverTests {
 	public boolean checks;
 
 	protected Solver getInstance(AtomStore atomStore, Grounder grounder) {
-		return SolverFactory.getInstance(buildSystemConfig(), atomStore, grounder);
+		return SolverFactory.getInstance(buildSystemConfig(), atomStore, grounder, heuristicsConfiguration);
 	}
 
 	private SystemConfig buildSystemConfig() {
@@ -166,7 +167,7 @@ public abstract class AbstractSolverTests {
 		config.setSolverName(solverName);
 		config.setNogoodStoreName(storeName);
 		config.setSeed(seed);
-		config.setBranchingHeuristic(heuristic);
+		config.setBranchingHeuristic(heuristicsConfiguration.getHeuristic());
 		config.setDebugInternalChecks(checks);
 		config.setDisableJustificationSearch(false);
 		return config;

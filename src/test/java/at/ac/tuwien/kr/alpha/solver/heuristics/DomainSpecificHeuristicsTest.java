@@ -29,6 +29,7 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.DefaultSolver;
@@ -40,7 +41,6 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -54,9 +54,13 @@ public class DomainSpecificHeuristicsTest {
 	private static final String LS = System.lineSeparator();
 	private final AtomStore atomStore;
 	private final ProgramParser parser = new ProgramParser();
-	
+	private final HeuristicsConfiguration heuristicsConfiguration;
+	private final SystemConfig systemConfig;
+
 	public DomainSpecificHeuristicsTest() {
 		atomStore = new AtomStoreImpl();
+		heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(Heuristic.NAIVE).build();
+		systemConfig = buildSystemConfig();
 	}
 	
 	@Test
@@ -287,8 +291,7 @@ public class DomainSpecificHeuristicsTest {
 				":- partnerunits(U,P1), partnerunits(U,P2), partnerunits(U,P3), P1<P2, P2<P3."
 		);
 
-		HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(Heuristic.NAIVE).build();
-		Solver solver = SolverFactory.getInstance("default", "alpharoaming", atomStore, GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true), new Random(), heuristicsConfiguration, true, false);
+		Solver solver = SolverFactory.getInstance(systemConfig, atomStore, GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true), heuristicsConfiguration);
 		solver.stream().limit(1).collect(Collectors.toList()).get(0);
 		DefaultSolver defaultSolver = (DefaultSolver) solver;
 		assertTrue("No backjumps done", defaultSolver.getNumberOfBackjumps() > 0);
@@ -309,7 +312,17 @@ public class DomainSpecificHeuristicsTest {
 
 	private void solveAndAssertAnswerSets(Program program, String... expectedAnswerSets) {
 		HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(Heuristic.NAIVE).build();
-		Solver solver = SolverFactory.getInstance("default", "alpharoaming", atomStore, GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true), new Random(), heuristicsConfiguration, true, false);
+		Solver solver = SolverFactory.getInstance(systemConfig, atomStore, GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true), heuristicsConfiguration);
 		assertEquals(Arrays.asList(expectedAnswerSets), solver.stream().map(AnswerSet::toString).collect(Collectors.toList()));
+	}
+
+	private SystemConfig buildSystemConfig() {
+		SystemConfig config = new SystemConfig();
+		config.setSolverName("default");
+		config.setNogoodStoreName("alpharoaming");
+		config.setBranchingHeuristic(heuristicsConfiguration.getHeuristic());
+		config.setDebugInternalChecks(true);
+		config.setDisableJustificationSearch(false);
+		return config;
 	}
 }

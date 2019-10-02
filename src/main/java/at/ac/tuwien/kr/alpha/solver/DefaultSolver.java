@@ -77,7 +77,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final boolean disableJustifications;
 	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
 	private final boolean disableNoGoodDeletion;
-
 	private final PerformanceLog performanceLog;
 
 	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, SystemConfig config, HeuristicsConfiguration heuristicsConfiguration) {
@@ -329,7 +328,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		return NoGoodCreator.learnt(reasons);
 	}
 
-	private boolean treatConflictAfterClosing(NoGood violatedNoGood) {
+	private boolean treatConflictAfterClosing(Antecedent violatedNoGood) {
 		if (disableJustificationAfterClosing || disableJustifications || !(grounder instanceof ProgramAnalyzingGrounder)) {
 			// Will not learn from violated NoGood, do simple backtrack.
 			LOGGER.debug("NoGood was violated after all unassigned atoms were assigned to false; will not learn from it; skipping.");

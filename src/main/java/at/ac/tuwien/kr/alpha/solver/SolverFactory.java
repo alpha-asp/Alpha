@@ -31,17 +31,15 @@ import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
 
 import java.util.Random;
 
 public final class SolverFactory {
-	public static Solver getInstance(SystemConfig config, AtomStore atomStore, Grounder grounder) {
+	public static Solver getInstance(SystemConfig config, AtomStore atomStore, Grounder grounder, HeuristicsConfiguration heuristicsConfiguration) {
 		final String solverName = config.getSolverName();
 		final String nogoodStoreName = config.getNogoodStoreName();
 		final Random random = new Random(config.getSeed());
 		final boolean debugInternalChecks = config.isDebugInternalChecks();
-		final HeuristicsConfiguration heuristicsConfiguration = buildHeuristicsConfiguration(config);
 		final TrailAssignment assignment = new TrailAssignment(atomStore, debugInternalChecks);
 		assignment.setChecksEnabled(debugInternalChecks);
 
@@ -67,14 +65,5 @@ public final class SolverFactory {
 				return solver;
 		}
 		throw new IllegalArgumentException("Unknown solver requested.");
-	}
-
-	private static HeuristicsConfiguration buildHeuristicsConfiguration(SystemConfig config) {
-		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
-		heuristicsConfigurationBuilder.setHeuristic(config.getBranchingHeuristic());
-		heuristicsConfigurationBuilder.setMomsStrategy(config.getMomsStrategy());
-		heuristicsConfigurationBuilder.setRespectDomspecHeuristics(!config.isIgnoreDomspecHeuristics() && program.getInlineDirectives().hasDirectives(InlineDirectives.DIRECTIVE.heuristic));
-		heuristicsConfigurationBuilder.setReplayChoices(config.getReplayChoices());
-		HeuristicsConfiguration heuristicsConfiguration = heuristicsConfigurationBuilder.build();
 	}
 }

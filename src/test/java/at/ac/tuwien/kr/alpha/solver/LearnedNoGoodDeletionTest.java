@@ -27,10 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
-import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -84,8 +81,8 @@ public class LearnedNoGoodDeletionTest {
 		assertFalse(learnedNoGoodDeletion.needToRunNoGoodDeletion());
 		learnedNoGoodDeletion.increaseConflictCounter();
 		assertTrue(learnedNoGoodDeletion.needToRunNoGoodDeletion());
-		assertNull(store.add(4, NoGood.learnt(fromOldLiterals(10, 11, 12)), 3));
-		assertNull(store.add(5, NoGood.learnt(fromOldLiterals(10, -13, -14)), 4));
+		assertNull(store.add(4, NoGoodCreator.learnt(fromOldLiterals(10, 11, 12)), 3));
+		assertNull(store.add(5, NoGoodCreator.learnt(fromOldLiterals(10, -13, -14)), 4));
 		List<WatchedNoGood> watchedNoGoods = learnedNoGoodDeletion.inspectLearnedNoGoods();
 		assertTrue(watchedNoGoods.size() >= 2);
 		WatchedNoGood watchedNoGood = watchedNoGoods.get(0);
@@ -105,8 +102,8 @@ public class LearnedNoGoodDeletionTest {
 		assertFalse(learnedNoGoodDeletion.needToRunNoGoodDeletion());
 		learnedNoGoodDeletion.increaseConflictCounter();
 		assertTrue(learnedNoGoodDeletion.needToRunNoGoodDeletion());
-		assertNull(store.add(4, NoGood.learnt(fromOldLiterals(10, 11, 12)), 3));
-		assertNull(store.add(5, NoGood.learnt(fromOldLiterals(10, -13, -14)), 4));
+		assertNull(store.add(4, NoGoodCreator.learnt(fromOldLiterals(10, 11, 12)), 3));
+		assertNull(store.add(5, NoGoodCreator.learnt(fromOldLiterals(10, -13, -14)), 4));
 		assertEquals(0, learnedNoGoodDeletion.getNumberOfDeletedNoGoods());
 		learnedNoGoodDeletion.runNoGoodDeletion();
 		assertTrue(learnedNoGoodDeletion.getNumberOfDeletedNoGoods() > 0);
