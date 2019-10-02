@@ -28,27 +28,20 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Collections;
-import java.util.List;
 
-import static at.ac.tuwien.kr.alpha.Util.join;
-
-public class ChoiceAtom implements Atom {
+public class ChoiceAtom extends BasicAtom {
 	public static final Predicate ON = Predicate.getInstance("ChoiceOn", 1, true, true);
 	public static final Predicate OFF = Predicate.getInstance("ChoiceOff", 1, true, true);
 
-	private final Predicate predicate;
-	private final List<Term> terms;
-
 	private ChoiceAtom(Predicate predicate, Term term) {
-		this.predicate = predicate;
-		this.terms = Collections.singletonList(term);
+		super(predicate, Collections.singletonList(term));
 	}
 
 	private ChoiceAtom(Predicate predicate, int id) {
@@ -64,52 +57,18 @@ public class ChoiceAtom implements Atom {
 	}
 
 	@Override
-	public Predicate getPredicate() {
-		return predicate;
-	}
-
-	@Override
-	public List<Term> getTerms() {
-		return terms;
-	}
-
-	@Override
 	public boolean isGround() {
 		// NOTE: Term is a ConstantTerm, which is ground by definition.
 		return true;
 	}
 
 	@Override
-	public Literal toLiteral(boolean negated) {
+	public BasicLiteral toLiteral(boolean negated) {
 		throw new UnsupportedOperationException(this.getClass().getName() + " cannot be literalized");
 	}
 
 	@Override
-	public Atom substitute(Substitution substitution) {
+	public ChoiceAtom substitute(Substitution substitution) {
 		return this;
-	}
-
-	@Override
-	public String toString() {
-		return join(predicate.getName() + "(", terms, ")");
-	}
-	
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
-		}
-
-		ChoiceAtom that = (ChoiceAtom) o;
-
-		return predicate.equals(that.predicate) && terms.equals(that.terms);
-	}
-
-	@Override
-	public int hashCode() {
-		return 31 * predicate.hashCode() + terms.hashCode();
 	}
 }
