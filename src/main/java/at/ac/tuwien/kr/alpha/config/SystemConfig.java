@@ -56,6 +56,7 @@ public class SystemConfig {
 	public static final boolean DEFAULT_SORT_ANSWER_SETS = false;
 	public static final boolean DEFAULT_IGNORE_DOMSPEC_HEURISTICS = false;
 	public static final List<Integer> DEFAULT_REPLAY_CHOICES = Collections.emptyList();
+	public static final boolean DEFAULT_DISABLE_NOGOOD_DELETION = false;
 
 	private String grounderName = SystemConfig.DEFAULT_GROUNDER_NAME;
 	private String solverName = SystemConfig.DEFAULT_SOLVER_NAME;
@@ -72,6 +73,7 @@ public class SystemConfig {
 	private boolean sortAnswerSets = SystemConfig.DEFAULT_SORT_ANSWER_SETS;
 	private boolean ignoreDomspecHeuristics = SystemConfig.DEFAULT_IGNORE_DOMSPEC_HEURISTICS;
 	private List<Integer> replayChoices = SystemConfig.DEFAULT_REPLAY_CHOICES;
+	private boolean disableNoGoodDeletion = SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION;
 
 	public String getGrounderName() {
 		return this.grounderName;
@@ -203,6 +205,14 @@ public class SystemConfig {
 
 	public void setReplayChoices(String replayChoices) {
 		this.replayChoices = Arrays.stream(replayChoices.split(",")).map(String::trim).map(Integer::valueOf).collect(Collectors.toList());
+	}
+
+	public boolean isDisableNoGoodDeletion() {
+		return this.disableNoGoodDeletion;
+	}
+
+	public void setDisableNoGoodDeletion(boolean disableNoGoodDeletion) {
+		this.disableNoGoodDeletion = disableNoGoodDeletion;
 	}
 
 }

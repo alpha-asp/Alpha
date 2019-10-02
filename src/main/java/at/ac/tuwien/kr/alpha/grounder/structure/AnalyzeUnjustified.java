@@ -70,8 +70,8 @@ public class AnalyzeUnjustified {
 		// If atom instanceof RuleAtom and atom is FALSE, then this comes from a violated constraint in the end and the corresponding rule body can be taken as the single rule deriving the RuleAtom.
 		assignedAtoms = new LinkedHashMap<>();
 		for (int i = 1; i <= atomStore.getMaxAtomId(); i++) {
-			Assignment.Entry entry = currentAssignment.get(i);
-			if (entry == null) {
+			ThriceTruth truth = currentAssignment.getTruth(i);
+			if (truth == null) {
 				continue;
 			}
 			Atom assignedAtom = atomStore.get(i);

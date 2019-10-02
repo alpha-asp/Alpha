@@ -33,12 +33,9 @@ import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
-import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.apache.commons.lang3.StringUtils;
@@ -49,7 +46,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.stream.Stream;
 
 public class Alpha {
@@ -105,25 +101,12 @@ public class Alpha {
 	 */
 	public Solver prepareSolverFor(Program program, java.util.function.Predicate<Predicate> filter) {
 		String grounderName = this.config.getGrounderName();
-		String solverName = this.config.getSolverName();
-		String nogoodStoreName = this.config.getNogoodStoreName();
-		long seed = this.config.getSeed();
 		boolean doDebugChecks = this.config.isDebugInternalChecks();
-		boolean disableJustificationSearch = this.config.isDisableJustificationSearch();
-
-		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
-		heuristicsConfigurationBuilder.setHeuristic(this.config.getBranchingHeuristic());
-		heuristicsConfigurationBuilder.setMomsStrategy(this.config.getMomsStrategy());
-		heuristicsConfigurationBuilder.setRespectDomspecHeuristics(!this.config.isIgnoreDomspecHeuristics() && program.getInlineDirectives().hasDirectives(InlineDirectives.DIRECTIVE.heuristic));
-		heuristicsConfigurationBuilder.setReplayChoices(this.config.getReplayChoices());
-		HeuristicsConfiguration heuristicsConfiguration = heuristicsConfigurationBuilder.build();
 
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, heuristicsConfiguration, filter, doDebugChecks);
 
-		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed), heuristicsConfiguration, doDebugChecks,
-				disableJustificationSearch);
-		return solver;
+		return SolverFactory.getInstance(this.config, atomStore, grounder);
 	}
 
 	public Solver prepareSolverFor(Program program) {

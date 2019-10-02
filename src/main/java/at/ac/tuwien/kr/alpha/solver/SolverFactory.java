@@ -28,19 +28,26 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
 
 import java.util.Random;
 
 public final class SolverFactory {
-	public static Solver getInstance(String name, String storeName, AtomStore atomStore, Grounder grounder, Random random, HeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, boolean disableJustifications) {
+	public static Solver getInstance(SystemConfig config, AtomStore atomStore, Grounder grounder) {
+		final String solverName = config.getSolverName();
+		final String nogoodStoreName = config.getNogoodStoreName();
+		final Random random = new Random(config.getSeed());
+		final boolean debugInternalChecks = config.isDebugInternalChecks();
+		final HeuristicsConfiguration heuristicsConfiguration = buildHeuristicsConfiguration(config);
 		final TrailAssignment assignment = new TrailAssignment(atomStore, debugInternalChecks);
 		assignment.setChecksEnabled(debugInternalChecks);
 
 		NoGoodStore store;
 
-		switch (storeName.toLowerCase()) {
+		switch (nogoodStoreName.toLowerCase()) {
 			case "naive":
 				store = new NaiveNoGoodStore(assignment);
 				break;
@@ -51,14 +58,23 @@ public final class SolverFactory {
 				throw new IllegalArgumentException("Unknown store requested.");
 		}
 
-		switch (name.toLowerCase()) {
+		switch (solverName.toLowerCase()) {
 			case "naive" :
 				return new NaiveSolver(atomStore, grounder);
 			case "default":
-				DefaultSolver solver = new DefaultSolver(atomStore, grounder, store, assignment, random, heuristicsConfiguration, debugInternalChecks, disableJustifications);
+				DefaultSolver solver = new DefaultSolver(atomStore, grounder, store, assignment, random, config, heuristicsConfiguration);
 				solver.setChecksEnabled(debugInternalChecks);
 				return solver;
 		}
 		throw new IllegalArgumentException("Unknown solver requested.");
+	}
+
+	private static HeuristicsConfiguration buildHeuristicsConfiguration(SystemConfig config) {
+		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
+		heuristicsConfigurationBuilder.setHeuristic(config.getBranchingHeuristic());
+		heuristicsConfigurationBuilder.setMomsStrategy(config.getMomsStrategy());
+		heuristicsConfigurationBuilder.setRespectDomspecHeuristics(!config.isIgnoreDomspecHeuristics() && program.getInlineDirectives().hasDirectives(InlineDirectives.DIRECTIVE.heuristic));
+		heuristicsConfigurationBuilder.setReplayChoices(config.getReplayChoices());
+		HeuristicsConfiguration heuristicsConfiguration = heuristicsConfigurationBuilder.build();
 	}
 }

@@ -41,6 +41,8 @@ public interface SolverMaintainingStatistics {
 	int getNumberOfBackjumps();
 
 	int getNumberOfBacktracksDueToRemnantMBTs();
+
+	int getNumberOfDeletedNoGoods();
 	
 	/**
 	 * @return the number of times the solver had to backtrack after closing unassigned atoms
@@ -49,11 +51,12 @@ public interface SolverMaintainingStatistics {
 
 	default String getStatisticsString() {
 		return "g=" + getNumberOfChoices() + ", bt=" + getNumberOfBacktracks() + ", bj=" + getNumberOfBackjumps() + ", bt_within_bj="
-				+ getNumberOfBacktracksWithinBackjumps() + ", mbt=" + getNumberOfBacktracksDueToRemnantMBTs() + ", cac=" + getNumberOfConflictsAfterClosing();
+				+ getNumberOfBacktracksWithinBackjumps() + ", mbt=" + getNumberOfBacktracksDueToRemnantMBTs() + ", cac=" + getNumberOfConflictsAfterClosing()
+				+ ", del_ng=" + getNumberOfDeletedNoGoods();
 	}
 	
 	default String getStatisticsCSV() {
-		return String.format("%d,%d,%d,%d,%d,%d", getNumberOfChoices(), getNumberOfBacktracks(), getNumberOfBackjumps(), getNumberOfBacktracksWithinBackjumps(), getNumberOfBacktracksDueToRemnantMBTs(), getNumberOfConflictsAfterClosing());
+		return String.format("%d,%d,%d,%d,%d,%d,%d", getNumberOfChoices(), getNumberOfBacktracks(), getNumberOfBackjumps(), getNumberOfBacktracksWithinBackjumps(), getNumberOfBacktracksDueToRemnantMBTs(), getNumberOfConflictsAfterClosing(), getNumberOfDeletedNoGoods());
 	}
 
 	default void printStatistics(PrintStream out) {

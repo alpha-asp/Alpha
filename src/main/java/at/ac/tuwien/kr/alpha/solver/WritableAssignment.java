@@ -60,9 +60,9 @@ public interface WritableAssignment extends Assignment {
 	 * @param decisionLevel
 	 * @return
 	 */
-	ConflictCause assign(int atom, ThriceTruth value, ImplicationReasonProvider impliedBy, int decisionLevel);
+	ConflictCause assign(int atom, ThriceTruth value, Antecedent impliedBy, int decisionLevel);
 
-	default ConflictCause assign(int atom, ThriceTruth value, ImplicationReasonProvider impliedBy) {
+	default ConflictCause assign(int atom, ThriceTruth value, Antecedent impliedBy) {
 		return assign(atom, value, impliedBy, getDecisionLevel());
 	}
 

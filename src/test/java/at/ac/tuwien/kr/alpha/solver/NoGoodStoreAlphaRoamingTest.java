@@ -35,6 +35,7 @@ import org.junit.Test;
 import static at.ac.tuwien.kr.alpha.common.NoGoodCreator.fact;
 import static at.ac.tuwien.kr.alpha.common.NoGoodCreator.headFirst;
 import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
+import static at.ac.tuwien.kr.alpha.solver.AntecedentTest.antecedentsEquals;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 import static org.junit.Assert.*;
 
@@ -360,7 +361,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		assignment.assign(1, FALSE);
 		ConflictCause conflictCause = store.add(1, noGood);
 		assertNotNull(conflictCause);
-		assertEquals(noGood, conflictCause.getViolatedNoGood());
+		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
 	@Test
@@ -369,7 +370,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		assignment.assign(1, TRUE);
 		assignment.assign(2, TRUE);
 		ConflictCause conflictCause = store.add(1, noGood);
-		assertEquals(noGood, conflictCause.getViolatedNoGood());
+		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
 	@Test
@@ -379,7 +380,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		assignment.assign(2, TRUE);
 		assignment.assign(3, TRUE);
 		ConflictCause conflictCause = store.add(1, noGood);
-		assertEquals(noGood, conflictCause.getViolatedNoGood());
+		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
 	@Test
@@ -392,7 +393,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		ConflictCause conflictCause = store.propagate();
 		assertNotNull(conflictCause);
 		assertFalse(store.didPropagate());
-		//assertEquals(noGood, conflictCause.getViolatedNoGood());
+		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
 	@Test
@@ -414,7 +415,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		ConflictCause conflictCause = store.propagate();
 		assertFalse(store.didPropagate());
 		assertNotNull(conflictCause);
-		//assertEquals(noGood, conflictCause.getViolatedNoGood());
+		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
 	@Test
@@ -427,7 +428,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		ConflictCause conflictCause = store.propagate();
 		assertFalse(store.didPropagate());
 		assertNotNull(conflictCause);
-		//assertEquals(noGood, conflictCause.getViolatedNoGood());
+		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
 	@Test
@@ -458,7 +459,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		assertNull(assignment.assign(3, TRUE));
 		ConflictCause conflictCause = store.add(11, noGood);
 		assertNotNull(conflictCause);
-		assertNotNull(conflictCause.getViolatedNoGood());
+		assertNotNull(conflictCause.getAntecedent());
 	}
 
 	@Test
@@ -469,7 +470,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		assertNull(assignment.assign(3, MBT));
 		ConflictCause conflictCause = store.add(11, noGood);
 		assertNotNull(conflictCause);
-		assertNotNull(conflictCause.getViolatedNoGood());
+		assertNotNull(conflictCause.getAntecedent());
 	}
 
 	@Test
@@ -488,7 +489,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		assertNull(assignment.assign(2, TRUE));
 		ConflictCause conflictCause = store.add(11, noGood);
 		assertNotNull(conflictCause);
-		assertNotNull(conflictCause.getViolatedNoGood());
+		assertNotNull(conflictCause.getAntecedent());
 	}
 
 	@Test
@@ -498,7 +499,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		assertNull(assignment.assign(2, MBT));
 		ConflictCause conflictCause = store.add(11, noGood);
 		assertNotNull(conflictCause);
-		assertNotNull(conflictCause.getViolatedNoGood());
+		assertNotNull(conflictCause.getAntecedent());
 	}
 
 	@Test
@@ -510,7 +511,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		assignment.backtrack();
 		assertNull(store.add(3, noGood));
 		store.propagate();
-		assertTrue(FALSE.equals(assignment.getTruth(195)));
+		assertEquals(FALSE, assignment.getTruth(195));
 	}
 
 	@Test
@@ -523,7 +524,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		assignment.backtrack();
 		assertNull(store.add(3, noGood));
 		store.propagate();
-		assertTrue(FALSE.equals(assignment.getTruth(36)));
+		assertEquals(FALSE, assignment.getTruth(36));
 	}
 
 	@Test
@@ -532,7 +533,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		assertNull(store.add(5, noGood));
 		assertNull(assignment.choose(12, FALSE));
 		store.propagate();
-		assertTrue(TRUE.equals(assignment.getTruth(11)));
+		assertEquals(TRUE, assignment.getTruth(11));
 	}
 
 	@Test
@@ -541,7 +542,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		assertNull(store.add(5, noGood));
 		assertNull(assignment.choose(12, TRUE));
 		store.propagate();
-		assertTrue(TRUE.equals(assignment.getTruth(11)));
+		assertEquals(TRUE, assignment.getTruth(11));
 	}
 
 
@@ -550,7 +551,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		NoGood noGood = headFirst(fromOldLiterals(-11, -12));
 		assertNull(assignment.choose(12, FALSE));
 		assertNull(store.add(5, noGood));
-		assertTrue(TRUE.equals(assignment.getTruth(11)));
+		assertEquals(TRUE, assignment.getTruth(11));
 	}
 
 	@Test
@@ -559,7 +560,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		assertNull(assignment.choose(12, TRUE));
 		assertNull(store.add(5, noGood));
 		store.propagate();
-		assertTrue(TRUE.equals(assignment.getTruth(11)));
+		assertEquals(TRUE, assignment.getTruth(11));
 	}
 
 	@Test
@@ -570,7 +571,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		store.propagate();
 		assertNull(assignment.assign(3, FALSE));
 		store.propagate();
-		assertTrue(TRUE.equals(assignment.getTruth(1)));
+		assertEquals(TRUE, assignment.getTruth(1));
 	}
 
 	@Test
@@ -581,7 +582,7 @@ public class NoGoodStoreAlphaRoamingTest {
 		store.propagate();
 		assertNull(assignment.assign(2, TRUE));
 		store.propagate();
-		assertTrue(TRUE.equals(assignment.getTruth(1)));
+		assertEquals(TRUE, assignment.getTruth(1));
 	}
 
 	@Ignore // TrailAssignment no longer propagates at lower decision level.
@@ -593,9 +594,9 @@ public class NoGoodStoreAlphaRoamingTest {
 		assertNull(assignment.choose(4, TRUE));
 		assertNull(store.add(10, noGood));
 		store.propagate();
-		assertTrue(TRUE.equals(assignment.getTruth(1)));
+		assertEquals(TRUE, assignment.getTruth(1));
 		Assignment.Entry entry = assignment.get(1);
-		assertTrue(TRUE.equals(entry.getTruth()));
+		assertEquals(TRUE, entry.getTruth());
 		assertEquals(2, entry.getDecisionLevel());
 	}
 

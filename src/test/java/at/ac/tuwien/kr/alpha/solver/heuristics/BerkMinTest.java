@@ -179,12 +179,12 @@ public class BerkMinTest {
 		int backjumpLevel = 1;
 		boolean clearLastChoiceAfterBackjump = true;
 		Collection<Integer> resolutionAtoms = Collections.emptySet();
-		berkmin.analyzedConflict(new ConflictAnalysisResult(learnedNoGood, backjumpLevel, clearLastChoiceAfterBackjump,
-				resolutionAtoms));
+		berkmin.analyzedConflict(new ConflictAnalysisResult(learnedNoGood, backjumpLevel,
+			resolutionAtoms));
 		assertEquals(learnedNoGood, berkmin.getCurrentTopClause());
 	}
 
 	private static ConflictAnalysisResult pseudo(NoGood noGood) {
-		return new ConflictAnalysisResult(noGood, 0, false, Collections.emptySet());
+		return new ConflictAnalysisResult(noGood, 0, Collections.emptySet());
 	}
 }

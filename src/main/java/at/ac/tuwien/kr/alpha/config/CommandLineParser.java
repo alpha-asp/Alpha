@@ -103,6 +103,10 @@ public class CommandLineParser {
 	private static final Option OPT_NORMALIZATION_GRID = Option.builder("ng").longOpt("normalizationCountingGrid")
 			.desc("use counting grid normalization instead of sorting circuit for #count (default: " + SystemConfig.DEFAULT_USE_NORMALIZATION_GRID + ")")
 			.build();
+	private static final Option OPT_NO_NOGOOD_DELETION = Option.builder("dnd").longOpt("disableNoGoodDeletion")
+			.desc("disable the deletion of (learned, little active) nogoods (default: "
+					+ SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION + ")")
+			.build();
 	private static final Option OPT_IGNORE_DOMSPEC_HEURISTICS = Option.builder("ids").longOpt("ignoreDomSpecHeuristics")
 			.desc("ignore domain-specific heuristics defined via heuristic directives (default: " + SystemConfig.DEFAULT_IGNORE_DOMSPEC_HEURISTICS + ")")
 			.build();
@@ -135,6 +139,7 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_STATS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_JUSTIFICATION);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NORMALIZATION_GRID);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_NOGOOD_DELETION);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_IGNORE_DOMSPEC_HEURISTICS);
 	}
 
@@ -178,6 +183,7 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_STATS.getOpt(), this::handleStats);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), this::handleNoJustification);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NORMALIZATION_GRID.getOpt(), this::handleNormalizationGrid);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_IGNORE_DOMSPEC_HEURISTICS.getOpt(), this::handleIgnoreDomspecHeuristic);
 
 		this.inputOptionHandlers.put(CommandLineParser.OPT_NUM_ANSWER_SETS.getOpt(), this::handleNumAnswerSets);
@@ -315,7 +321,7 @@ public class CommandLineParser {
 			throw new ParseException("Unknown branching heuristic: " + branchingHeuristicName + ". Please try one of the following: " + Heuristic.listAllowedValues());
 		}
 	}
-
+	
 	private void handleMomsStrategy(Option opt, SystemConfig cfg) throws ParseException {
 		String momsStrategyName = opt.getValue(SystemConfig.DEFAULT_MOMS_STRATEGY.name());
 		try {
@@ -352,6 +358,10 @@ public class CommandLineParser {
 
 	private void handleNormalizationGrid(Option opt, SystemConfig cfg) {
 		cfg.setUseNormalizationGrid(true);
+	}
+
+	private void handleNoNoGoodDeletion(Option opt, SystemConfig cfg) {
+		cfg.setDisableNoGoodDeletion(true);
 	}
 
 	private void handleIgnoreDomspecHeuristic(Option opt, SystemConfig cfg) {
