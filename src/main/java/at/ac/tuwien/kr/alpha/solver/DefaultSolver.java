@@ -537,7 +537,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	@Override
 	public int getNumberOfChoices() {
-		return choiceManager.getChoices();
+		return choiceManager.getStatistics().getChoices();
 	}
 
 	@Override
@@ -553,17 +553,17 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	@Override
 	public int getNumberOfBacktracks() {
-		return choiceManager.getBacktracks();
+		return choiceManager.getStatistics().getBacktracks();
 	}
 
 	@Override
 	public int getNumberOfBacktracksWithinBackjumps() {
-		return choiceManager.getBacktracksWithinBackjumps();
+		return choiceManager.getStatistics().getBacktracksWithinBackjumps();
 	}
 
 	@Override
 	public int getNumberOfBackjumps() {
-		return choiceManager.getBackjumps();
+		return choiceManager.getStatistics().getBackjumps();
 	}
 
 	@Override

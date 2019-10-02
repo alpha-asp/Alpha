@@ -127,32 +127,8 @@ public class ChoiceManager implements Checkable {
 		heuristicInfluenceManager.callbackOnChanged(atom);
 	}
 
-	int getBackjumps() {
-		return choiceManagerStatistics.getBackjumps();
-	}
-
-	/**
-	 * Returns the total number of backtracks.
-	 * 
-	 * The number of backtracks excluding those within backjumps is {@link #getBacktracks()} minus {@link #getBacktracksWithinBackjumps()}.
-	 * 
-	 * @return the total number of backtracks
-	 */
-	int getBacktracks() {
-		return choiceManagerStatistics.getBacktracks();
-	}
-
-	/**
-	 * Returns the number of backtracks made within backjumps.
-	 * 
-	 * @return the number of backtracks made within backjumps.
-	 */
-	int getBacktracksWithinBackjumps() {
-		return choiceManagerStatistics.getBacktracksWithinBackjumps();
-	}
-
-	public int getChoices() {
-		return choiceManagerStatistics.getChoices();
+	public ChoiceManagerStatistics getStatistics() {
+		return choiceManagerStatistics;
 	}
 
 	void updateAssignments() {

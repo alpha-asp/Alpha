@@ -124,24 +124,10 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	}
 
 	/**
-	 * Sets the number of steps after which all counters are decayed (i.e. multiplied by {@link #getDecayFactor()}.
-	 */
-	public void setDecayPeriod(int decayPeriod) {
-		this.decayPeriod = decayPeriod;
-	}
-
-	/**
 	 * Gets the factor by which all counters are multiplied to decay after {@link #getDecayPeriod()}.
 	 */
 	public double getDecayFactor() {
 		return decayFactor;
-	}
-
-	/**
-	 * Sets the factor by which all counters are multiplied to decay after {@link #getDecayPeriod()}.
-	 */
-	public void setDecayFactor(double decayFactor) {
-		this.decayFactor = decayFactor;
 	}
 
 	@Override
@@ -315,19 +301,6 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 			activityCounters.replaceAll((k, v) -> v * decayFactor);
 			stepsSinceLastDecay = 0;
 		}
-	}
-
-	/**
-	 * Gets the most recent conflict that is still violated.
-	 * @return the violated nogood closest to the top of the stack of nogoods.
-	 */
-	NoGood getCurrentTopClause() {
-		for (NoGood noGood : stackOfNoGoods) {
-			if (assignment.isUndefined(noGood)) {
-				return noGood;
-			}
-		}
-		return null;
 	}
 
 	protected boolean isUnassigned(int atom) {
