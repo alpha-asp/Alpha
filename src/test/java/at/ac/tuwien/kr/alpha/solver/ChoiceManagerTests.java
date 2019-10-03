@@ -40,6 +40,7 @@ import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.NormalProgram;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
@@ -55,7 +56,8 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 		Alpha system = new Alpha();
 		String testProgram = "h :- b1, b2, not b3, not b4.";
 		InputProgram parsedProgram = new ProgramParser().parse(testProgram);
-		InternalProgram pa = system.performProgramPreprocessing(parsedProgram);
+		NormalProgram normal = system.normalizeProgram(parsedProgram);
+		InternalProgram pa = system.performProgramPreprocessing(normal);
 		this.atomStore = new AtomStoreImpl();
 		this.grounder = new NaiveGrounder(pa, atomStore, true);
 		WritableAssignment assignment = new TrailAssignment(atomStore);

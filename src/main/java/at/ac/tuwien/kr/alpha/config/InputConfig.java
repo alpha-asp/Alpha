@@ -1,6 +1,5 @@
 package at.ac.tuwien.kr.alpha.config;
 
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,13 +12,15 @@ import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation
 
 public class InputConfig {
 
-	// TODO seems like there's currently no way in CLI to specify that dependency graphs should be written
-	
 	public static final java.util.function.Predicate<Predicate> DEFAULT_FILTER = p -> true;
 	public static final boolean DEFAULT_LITERATE = false;
 	public static final int DEFAULT_NUM_ANSWER_SETS = 0;
 	public static final boolean DEFAULT_WRITE_DEPENDENCY_GRAPH = false;
-	public static final String DEFAULT_DEPGRAPH_PATH = "dep-graph.dot";
+	public static final String DEFAULT_DEPGRAPH_TARGET = "depgraph.dot";
+	public static final boolean DEFAULT_WRITE_COMPONENT_GRAPH = false;
+	public static final String DEFAULT_COMPGRAPH_TARGET = "compgraph.dot";
+	public static final boolean DEFAULT_WRITE_PREPROCESSED_PROG = false;
+	public static final String DEFAULT_PREPROC_TARGET = "input.preproc.asp";
 
 	private List<String> aspStrings = new ArrayList<>();
 	private List<String> files = new ArrayList<>();
@@ -28,7 +29,11 @@ public class InputConfig {
 	private Set<String> desiredPredicates = new HashSet<>();
 	private Map<String, PredicateInterpretation> predicateMethods = new HashMap<>();
 	private boolean writeDependencyGraph = InputConfig.DEFAULT_WRITE_DEPENDENCY_GRAPH;
-	private OutputStream depGraphTarget;
+	private String depgraphPath = InputConfig.DEFAULT_DEPGRAPH_TARGET;
+	private boolean writeComponentGraph = InputConfig.DEFAULT_WRITE_COMPONENT_GRAPH;
+	private String compgraphPath = InputConfig.DEFAULT_COMPGRAPH_TARGET;
+	private boolean writePreprocessed = InputConfig.DEFAULT_WRITE_PREPROCESSED_PROG;
+	private String preprocessedPath = InputConfig.DEFAULT_PREPROC_TARGET;
 
 	public static InputConfig forString(String str) {
 		InputConfig retVal = new InputConfig();
@@ -100,12 +105,44 @@ public class InputConfig {
 		this.writeDependencyGraph = writeDependencyGraph;
 	}
 
-	public OutputStream getDepGraphTarget() {
-		return this.depGraphTarget;
+	public boolean isWriteComponentGraph() {
+		return this.writeComponentGraph;
 	}
 
-	public void setDepGraphTarget(OutputStream depGraphTarget) {
-		this.depGraphTarget = depGraphTarget;
+	public void setWriteComponentGraph(boolean writeComponentGraph) {
+		this.writeComponentGraph = writeComponentGraph;
+	}
+
+	public boolean isWritePreprocessed() {
+		return this.writePreprocessed;
+	}
+
+	public void setWritePreprocessed(boolean writePreprocessed) {
+		this.writePreprocessed = writePreprocessed;
+	}
+
+	public String getDepgraphPath() {
+		return this.depgraphPath;
+	}
+
+	public void setDepgraphPath(String depgraphPath) {
+		this.depgraphPath = depgraphPath;
+	}
+
+	public String getCompgraphPath() {
+		return this.compgraphPath;
+	}
+
+	public void setCompgraphPath(String compgraphPath) {
+		this.compgraphPath = compgraphPath;
+	}
+
+	public String getPreprocessedPath() {
+		return this.preprocessedPath;
+	}
+
+	public void setPreprocessedPath(String preprocessedPath) {
+		this.preprocessedPath = preprocessedPath;
 	}
 
 }

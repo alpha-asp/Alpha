@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.common.depgraph.io;
+package at.ac.tuwien.kr.alpha.common.graphio;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -14,7 +14,6 @@ import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
 import at.ac.tuwien.kr.alpha.common.depgraph.Edge;
 import at.ac.tuwien.kr.alpha.common.depgraph.Node;
 
-// TODO handle component graph separately
 public class DependencyGraphWriter {
 
 	private static final String DEFAULT_GRAPH_HEADING = "digraph dependencyGraph";

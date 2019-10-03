@@ -74,6 +74,12 @@ public class CommandLineParser {
 			.desc("provide the asp program as a string").build();
 	private static final Option OPT_LITERATE = Option.builder("l").longOpt("literate")
 			.desc("enable literate programming mode (default: " + InputConfig.DEFAULT_LITERATE + ")").build();
+	private static final Option OPT_WRITE_PREPROCESSED = Option.builder("pp").longOpt("write-preproc").hasArg(true).argName("target")
+			.desc("write the internal program that is passed into the solver after transformations to a file").build();
+	private static final Option OPT_WRITE_DEPGRAPH = Option.builder("dG").longOpt("depgraph").hasArg(true).argName("target")
+			.desc("Write a dot file with the input program's dependency graph").build();
+	private static final Option OPT_WRITE_COMPGRAPH = Option.builder("cG").longOpt("compgraph").hasArg(true).argName("target")
+			.desc("Write a dot file with the input program's component graph").build();
 
 	// general system-wide config
 	private static final Option OPT_GROUNDER = Option.builder("g").longOpt("grounder").hasArg(true).argName("grounder")
@@ -95,8 +101,8 @@ public class CommandLineParser {
 	private static final Option OPT_MOMS_STRATEGY = Option.builder("ms").longOpt("momsStrategy").hasArg(true).argName("strategy")
 			.desc("strategy for mom's heuristic (CountBinaryWatches or BinaryNoGoodPropagation, default: " + SystemConfig.DEFAULT_MOMS_STRATEGY.name() + ")")
 			.build();
-	private static final Option OPT_REPLAY_CHOICES = Option.builder("rc").longOpt("replayChoices").hasArg().argName("choices")
-			.desc("comma-separated list of choices to be replayed (each choice is represented by a signed integer whose absolute value designates an atom ID and whose sign designates a truth value)")
+	private static final Option OPT_REPLAY_CHOICES = Option.builder("rc").longOpt("replayChoices").hasArg().argName("choices").desc(
+			"comma-separated list of choices to be replayed (each choice is represented by a signed integer whose absolute value designates an atom ID and whose sign designates a truth value)")
 			.build();
 	private static final Option OPT_QUIET = Option.builder("q").longOpt("quiet").desc("do not print answer sets (default: " + SystemConfig.DEFAULT_QUIET)
 			.build();
@@ -109,6 +115,7 @@ public class CommandLineParser {
 	private static final Option OPT_NORMALIZATION_GRID = Option.builder("ng").longOpt("normalizationCountingGrid")
 			.desc("use counting grid normalization instead of sorting circuit for #count (default: " + SystemConfig.DEFAULT_USE_NORMALIZATION_GRID + ")")
 			.build();
+	private static final Option OPT_NO_EVAL_STRATIFIED = Option.builder("nse").longOpt("disable-stratified-eval").desc("Disable stratified evaluation").build();
 
 	private static final Options CLI_OPTS = new Options();
 
@@ -123,6 +130,9 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_LITERATE);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_INPUT);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_ASPSTRING);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_PREPROCESSED);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_DEPGRAPH);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_COMPGRAPH);
 
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SOLVER);
@@ -138,6 +148,7 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_STATS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_JUSTIFICATION);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NORMALIZATION_GRID);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_EVAL_STRATIFIED);
 	}
 
 	/*
@@ -180,12 +191,16 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_STATS.getOpt(), this::handleStats);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), this::handleNoJustification);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NORMALIZATION_GRID.getOpt(), this::handleNormalizationGrid);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_EVAL_STRATIFIED.getOpt(), this::handleDisableStratifedEval);
 
 		this.inputOptionHandlers.put(CommandLineParser.OPT_NUM_ANSWER_SETS.getOpt(), this::handleNumAnswerSets);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_INPUT.getOpt(), this::handleInput);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_FILTER.getOpt(), this::handleFilters);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_ASPSTRING.getOpt(), this::handleAspString);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_LITERATE.getOpt(), this::handleLiterate);
+		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_PREPROCESSED.getOpt(), this::handleWritePreprocessed);
+		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_DEPGRAPH.getOpt(), this::handleWriteDepgraph);
+		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_COMPGRAPH.getOpt(), this::handleWriteCompgraph);
 	}
 
 	public AlphaConfig parseCommandLine(String[] args) throws ParseException {
@@ -313,19 +328,21 @@ public class CommandLineParser {
 		try {
 			cfg.setBranchingHeuristicName(branchingHeuristicName);
 		} catch (IllegalArgumentException e) {
-			throw new ParseException("Unknown branching heuristic: " + branchingHeuristicName + ". Please try one of the following: " + Heuristic.listAllowedValues());
+			throw new ParseException(
+					"Unknown branching heuristic: " + branchingHeuristicName + ". Please try one of the following: " + Heuristic.listAllowedValues());
 		}
 	}
-	
+
 	private void handleMomsStrategy(Option opt, SystemConfig cfg) throws ParseException {
 		String momsStrategyName = opt.getValue(SystemConfig.DEFAULT_MOMS_STRATEGY.name());
 		try {
 			cfg.setMomsStrategyName(momsStrategyName);
 		} catch (IllegalArgumentException e) {
-			throw new ParseException("Unknown mom's strategy: " + momsStrategyName + ". Please try one of the following: " + BinaryNoGoodPropagationEstimation.Strategy.listAllowedValues());
+			throw new ParseException("Unknown mom's strategy: " + momsStrategyName + ". Please try one of the following: "
+					+ BinaryNoGoodPropagationEstimation.Strategy.listAllowedValues());
 		}
 	}
-	
+
 	private void handleReplayChoices(Option opt, SystemConfig cfg) throws ParseException {
 		String replayChoices = opt.getValue(SystemConfig.DEFAULT_REPLAY_CHOICES.toString());
 		try {
@@ -353,6 +370,28 @@ public class CommandLineParser {
 
 	private void handleNormalizationGrid(Option opt, SystemConfig cfg) {
 		cfg.setUseNormalizationGrid(true);
+	}
+
+	private void handleDisableStratifedEval(Option opt, SystemConfig cfg) {
+		cfg.setEvaluateStratifiedPart(false);
+	}
+
+	private void handleWritePreprocessed(Option opt, InputConfig cfg) {
+		cfg.setWritePreprocessed(true);
+		String preprocessedPath = opt.getValue(InputConfig.DEFAULT_PREPROC_TARGET);
+		cfg.setPreprocessedPath(preprocessedPath);
+	}
+
+	private void handleWriteDepgraph(Option opt, InputConfig cfg) {
+		cfg.setWriteDependencyGraph(true);
+		String depgraphPath = opt.getValue(InputConfig.DEFAULT_DEPGRAPH_TARGET);
+		cfg.setDepgraphPath(depgraphPath);
+	}
+
+	private void handleWriteCompgraph(Option opt, InputConfig cfg) {
+		cfg.setWriteComponentGraph(true);
+		String compgraphPath = opt.getValue(InputConfig.DEFAULT_COMPGRAPH_TARGET);
+		cfg.setCompgraphPath(compgraphPath);
 	}
 
 }

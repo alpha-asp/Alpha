@@ -41,12 +41,15 @@ import java.util.stream.Stream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.common.program.impl.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.NormalProgram;
@@ -56,12 +59,15 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.impl.NormalizeProgramTransformation;
+import at.ac.tuwien.kr.alpha.grounder.transformation.impl.PartialEvaluation;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
 
 public class Alpha {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(Alpha.class);
 
 	private SystemConfig config = new SystemConfig(); // config is initialized with default values
 
@@ -90,15 +96,36 @@ public class Alpha {
 		return prgBuilder.build();
 	}
 
-	public InternalProgram performProgramPreprocessing(InputProgram program) {
-		NormalProgram normalProg = new NormalizeProgramTransformation(this.config.isUseNormalizationGrid()).apply(program);
-		return InternalProgram.fromNormalProgram(normalProg);
+	public NormalProgram normalizeProgram(InputProgram program) {
+		return new NormalizeProgramTransformation(this.config.isUseNormalizationGrid()).apply(program);
+	}
+
+	public InternalProgram performProgramPreprocessing(NormalProgram program) {
+		return this.performProgramPreprocessing(InternalProgram.fromNormalProgram(program));
+	}
+
+	public InternalProgram performProgramPreprocessing(InternalProgram program) {
+		LOGGER.info("Preprocessing InternalProgram!");
+		InternalProgram retVal = program;
+		if (this.config.isEvaluateStratifiedPart()) {
+			AnalyzedProgram analyzed = new AnalyzedProgram(program.getRules(), program.getFacts());
+			retVal = new PartialEvaluation().apply(analyzed);
+		}
+		return retVal;
+	}
+
+	public InternalProgram performProgramPreprocessing(AnalyzedProgram program) {
+		LOGGER.info("Preprocessing AnalyzedProgram!");
+		InternalProgram retVal = program;
+		if (this.config.isEvaluateStratifiedPart()) {
+			retVal = new PartialEvaluation().apply(program);
+		}
+		return retVal;
 	}
 
 	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException {
 		return this.readProgramFiles(literate, externals, paths.stream().map(Paths::get).collect(Collectors.toList()).toArray(new Path[] {}));
 	}
-
 
 	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
 		ProgramParser parser = new ProgramParser(externals);
@@ -175,7 +202,9 @@ public class Alpha {
 	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
 	 */
 	public Solver prepareSolverFor(InputProgram program) {
-		return this.prepareSolverFor(this.performProgramPreprocessing(program), InputConfig.DEFAULT_FILTER);
+		NormalProgram normalized = this.normalizeProgram(program);
+		InternalProgram preprocessed = this.performProgramPreprocessing(normalized);
+		return this.prepareSolverFor(preprocessed, InputConfig.DEFAULT_FILTER);
 	}
 
 	/**
@@ -192,7 +221,7 @@ public class Alpha {
 	public Stream<AnswerSet> solve(InternalProgram program) {
 		return this.solve(program, InputConfig.DEFAULT_FILTER);
 	}
-	
+
 	/**
 	 * Convenience method - overloaded version of solve(AnalyzedNormalProgram) for cases where details of the program analysis aren't of interest
 	 */
@@ -205,9 +234,11 @@ public class Alpha {
 	 * interest
 	 */
 	public Stream<AnswerSet> solve(InputProgram program, java.util.function.Predicate<Predicate> filter) {
-		return this.solve(this.performProgramPreprocessing(program), filter);
+		NormalProgram normalized = this.normalizeProgram(program);
+		InternalProgram preprocessed = this.performProgramPreprocessing(normalized);
+		return this.solve(preprocessed, filter);
 	}
-	
+
 	/**
 	 * Convenience method - overloaded version of solve(AnalyzedNormalProgram) for cases where details of the program analysis aren't of interest
 	 */

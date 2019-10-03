@@ -37,6 +37,7 @@ import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.NormalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.impl.InternalRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -65,7 +66,8 @@ public class NoGoodGeneratorTest {
 		InputProgram input = PARSER.parse("p(a,b). "
 				+ "q(a,b) :- not nq(a,b). "
 				+ "nq(a,b) :- not q(a,b).");
-		InternalProgram program = system.performProgramPreprocessing(input);	
+		NormalProgram normal = system.normalizeProgram(input);
+		InternalProgram program = system.performProgramPreprocessing(normal);	
 		
 		InternalRule rule = program.getRules().get(1);
 		AtomStore atomStore = new AtomStoreImpl();

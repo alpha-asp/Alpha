@@ -66,11 +66,11 @@ public class ExternalAtom extends Atom {
 		return interpretation;
 	}
 
-	List<Term> getInput() {
+	public List<Term> getInput() {
 		return Collections.unmodifiableList(input);
 	}
 
-	List<Term> getOutput() {
+	public List<Term> getOutput() {
 		return Collections.unmodifiableList(output);
 	}
 
@@ -81,7 +81,17 @@ public class ExternalAtom extends Atom {
 
 	@Override
 	public boolean isGround() {
-		return false;
+		for (Term t : input) {
+			if (!t.isGround()) {
+				return false;
+			}
+		}
+		for (Term t : output) {
+			if (!t.isGround()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override

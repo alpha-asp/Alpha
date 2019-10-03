@@ -110,6 +110,7 @@ test {
 	testLogging {
 		exceptionFormat = 'full'
 	}
+	
 }
 
 wrapper {

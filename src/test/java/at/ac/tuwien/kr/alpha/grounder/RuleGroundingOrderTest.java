@@ -10,7 +10,9 @@ import org.junit.Test;
 import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.NormalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.impl.InternalRule;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
 
 /**
  * Copyright (c) 2017, the Alpha Team.
@@ -19,10 +21,14 @@ public class RuleGroundingOrderTest {
 
 	@Test
 	public void groundingOrder() throws IOException {
-		Alpha system = new Alpha();
+		SystemConfig cfg = new SystemConfig();
+		// disable for this test, otherwise rule will be eliminated by stratified evaluation
+		cfg.setEvaluateStratifiedPart(false);
+		Alpha system = new Alpha(cfg);
 		InputProgram input = system.readProgramString(
 				"h(X,C) :- p(X,Y), q(A,B), r(Y,A), s(C)." + "j(A,B,X,Y) :- r1(A,B), r1(X,Y), r1(A,X), r1(B,Y), A = B." + "p(a) :- b = a.", null);
-		InternalProgram program = system.performProgramPreprocessing(input);
+		NormalProgram normal = system.normalizeProgram(input);
+		InternalProgram program = system.performProgramPreprocessing(normal);
 
 		InternalRule normalRule0 = program.getRules().get(0);
 		RuleGroundingOrder rgo0 = new RuleGroundingOrder(normalRule0);
@@ -44,7 +50,8 @@ public class RuleGroundingOrderTest {
 	public void groundingOrderUnsafe() throws IOException {
 		Alpha system = new Alpha();
 		InputProgram input = system.readProgramString("h(X,C) :- X = Y, Y = C .. 3, C = X.", null);
-		InternalProgram program = system.performProgramPreprocessing(input);
+		NormalProgram normal = system.normalizeProgram(input);
+		InternalProgram program = system.performProgramPreprocessing(normal);
 
 		InternalRule normalRule0 = program.getRules().get(0);
 		RuleGroundingOrder rgo0 = new RuleGroundingOrder(normalRule0);

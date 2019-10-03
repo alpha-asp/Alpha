@@ -33,6 +33,8 @@ import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.NormalProgram;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.transformation.impl.CardinalityNormalization;
 import at.ac.tuwien.kr.alpha.grounder.transformation.impl.SumNormalization;
@@ -168,7 +170,9 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	protected Solver getInstance(InputProgram program) {
 		Alpha system = new Alpha();
 		AtomStore atomStore = new AtomStoreImpl();
-		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, system.performProgramPreprocessing(program), atomStore,
+		NormalProgram normal = system.normalizeProgram(program);
+		InternalProgram preprocessed = system.performProgramPreprocessing(normal);
+		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, preprocessed, atomStore,
 				p -> true, useCountingGridNormalization(), true));
 	}
 

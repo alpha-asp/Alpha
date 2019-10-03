@@ -44,6 +44,7 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.NormalProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 
@@ -63,7 +64,8 @@ public class NaiveGrounderTest {
 		InputProgram program = PARSER.parse("a :- not b. "
 				+ "b :- not a. "
 				+ "c :- b.");
-		InternalProgram prog = system.performProgramPreprocessing(program);
+		NormalProgram normal = system.normalizeProgram(program);
+		InternalProgram prog = system.performProgramPreprocessing(normal);
 		
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", prog, atomStore, true);
@@ -85,7 +87,8 @@ public class NaiveGrounderTest {
 				+ "b :- not a. "
 				+ "c :- b. "
 				+ "d :- b, c. ");
-		InternalProgram prog = system.performProgramPreprocessing(program);
+		NormalProgram normal = system.normalizeProgram(program);
+		InternalProgram prog = system.performProgramPreprocessing(normal);
 		
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", prog, atomStore, true);
@@ -110,7 +113,8 @@ public class NaiveGrounderTest {
 		InputProgram program = PARSER.parse("a :- not b. "
 				+ "b :- not a. "
 				+ ":- b.");
-		InternalProgram prog = system.performProgramPreprocessing(program);
+		NormalProgram normal = system.normalizeProgram(program);
+		InternalProgram prog = system.performProgramPreprocessing(normal);
 		
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", prog, atomStore, true);

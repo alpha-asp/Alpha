@@ -45,6 +45,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.NormalProgram;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
@@ -68,7 +69,8 @@ public class AnalyzeUnjustifiedTest {
 			"nr :- not r." +
 			":- not p(5).";
 		InputProgram parsedProgram = parser.parse(program);
-		InternalProgram pa = system.performProgramPreprocessing(parsedProgram);
+		NormalProgram normal = system.normalizeProgram(parsedProgram);
+		InternalProgram pa = system.performProgramPreprocessing(normal);
 		AtomStore atomStore = new AtomStoreImpl();
 		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore, true);
 		grounder.getNoGoods(null);
@@ -95,7 +97,8 @@ public class AnalyzeUnjustifiedTest {
 			"{s(1,2)}." +
 			":- not p(1).";
 		InputProgram parsedProgram = parser.parse(program);
-		InternalProgram pa = system.performProgramPreprocessing(parsedProgram);
+		NormalProgram normal = system.normalizeProgram(parsedProgram);
+		InternalProgram pa = system.performProgramPreprocessing(normal);
 		AtomStore atomStore = new AtomStoreImpl();
 		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore, true);
 		grounder.getNoGoods(null);
@@ -134,7 +137,8 @@ public class AnalyzeUnjustifiedTest {
 			"p(X) :- p(Y), s(Y,X)." +
 			":- not p(c).";
 		InputProgram parsedProgram = parser.parse(program);
-		InternalProgram pa = system.performProgramPreprocessing(parsedProgram);
+		NormalProgram normal = system.normalizeProgram(parsedProgram);
+		InternalProgram pa = system.performProgramPreprocessing(normal);
 		AtomStore atomStore = new AtomStoreImpl();
 		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore, true);
 		grounder.getNoGoods(null);
@@ -192,7 +196,8 @@ public class AnalyzeUnjustifiedTest {
 			"nr :- not r." +
 			":- not p(5).";
 		InputProgram parsedProgram = parser.parse(program);
-		InternalProgram pa = system.performProgramPreprocessing(parsedProgram);
+		NormalProgram normal = system.normalizeProgram(parsedProgram);
+		InternalProgram pa = system.performProgramPreprocessing(normal);
 		AtomStore atomStore = new AtomStoreImpl();
 		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore, true);
 		grounder.getNoGoods(null);

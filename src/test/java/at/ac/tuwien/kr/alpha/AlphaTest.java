@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -57,6 +58,8 @@ import at.ac.tuwien.kr.alpha.common.atoms.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.external.ExternalAtoms;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.MethodPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.NormalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -384,6 +387,37 @@ public class AlphaTest {
 				.collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").predicate("e").symbolicInstance("a", "b").build()));
 		assertEquals(expected, actual);
+	}
+
+	/**
+	 * Verifies that no stratified evaluation is performed up-front when disabled in config
+	 */
+	@Test
+	public void disableStratifiedEvalTest() {
+		String progstr = "p(a). q(X) :- p(X).";
+		SystemConfig cfg = new SystemConfig();
+		cfg.setEvaluateStratifiedPart(false);
+		Alpha system = new Alpha(cfg);
+		InputProgram input = system.readProgramString(progstr);
+		NormalProgram normal = system.normalizeProgram(input);
+		InternalProgram preprocessed = system.performProgramPreprocessing(normal);
+		Assert.assertFalse("Preprocessed program contains fact derived from stratifiable rule, but shouldn't!",
+				preprocessed.getFacts().contains(BasicAtom.newInstance("q", "a")));
+	}
+
+	/**
+	 * Verifies that stratified evaluation is performed up-front if not otherwise configured
+	 */
+	@Test
+	public void enableStratifiedEvalTest() {
+		String progstr = "p(a). q(X) :- p(X).";
+		SystemConfig cfg = new SystemConfig();
+		Alpha system = new Alpha(cfg);
+		InputProgram input = system.readProgramString(progstr);
+		NormalProgram normal = system.normalizeProgram(input);
+		InternalProgram preprocessed = system.performProgramPreprocessing(normal);
+		Assert.assertTrue("Preprocessed program does not contain fact derived from stratifiable rule, but should!",
+				preprocessed.getFacts().contains(BasicAtom.newInstance("q", "a")));
 	}
 
 	/**

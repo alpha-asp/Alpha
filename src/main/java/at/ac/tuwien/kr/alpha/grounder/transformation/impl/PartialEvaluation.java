@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,22 +27,26 @@ import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph;
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph.SCComponent;
 import at.ac.tuwien.kr.alpha.common.depgraph.Node;
 import at.ac.tuwien.kr.alpha.common.depgraph.StratificationHelper;
-import at.ac.tuwien.kr.alpha.common.depgraph.StronglyConnectedComponentsHelper;
-import at.ac.tuwien.kr.alpha.common.depgraph.StronglyConnectedComponentsHelper.SCCResult;
+import at.ac.tuwien.kr.alpha.common.program.impl.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.impl.InternalRule;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.IndexedInstanceStorage;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
 import at.ac.tuwien.kr.alpha.grounder.RuleGroundingOrder;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.WorkingMemory;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationLiteral;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
@@ -50,19 +55,19 @@ import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
  * 
  * Copyright (c) 2019, the Alpha Team.
  */
-// TODO maybe use NormalProgram as input type, could do dependency graph right here
 // TODO ideally return "PartiallyEvaluatedProgram" here, grounder can use working memories created here rather than re-initialize everything
 // TODO add solved rules to internal program (in extra list)
-public class PartialEvaluation extends ProgramTransformation<InternalProgram, InternalProgram> {
+public class PartialEvaluation extends ProgramTransformation<AnalyzedProgram, InternalProgram> {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(PartialEvaluation.class);
 
-	private StronglyConnectedComponentsHelper sccHelper = new StronglyConnectedComponentsHelper();
 	private StratificationHelper stratificationHelper = new StratificationHelper();
 
 	private WorkingMemory workingMemory = new WorkingMemory();
 	private Map<Predicate, HashSet<InternalRule>> predicateDefiningRules;
 	private Map<Predicate, LinkedHashSet<Instance>> programFacts;
+
+	private Map<Predicate, Set<Instance>> modifiedInLastEvaluationRun = new HashMap<>();
 
 	// context settings for bindNextAtom
 	private boolean stopBindingAtNonTruePositiveBody = true;
@@ -75,10 +80,9 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 	private Set<Integer> solvedRuleIds = new HashSet<>();
 
 	@Override
-	public InternalProgram apply(InternalProgram inputProgram) {
+	public InternalProgram apply(AnalyzedProgram inputProgram) {
 		// first, we calculate a component graph and stratification
-		SCCResult sccResult = this.sccHelper.findStronglyConnectedComponents(inputProgram.getDependencyGraph());
-		ComponentGraph componentGraph = ComponentGraph.buildComponentGraph(inputProgram.getDependencyGraph(), sccResult);
+		ComponentGraph componentGraph = inputProgram.getComponentGraph();
 		Map<Integer, List<SCComponent>> strata = this.stratificationHelper.calculateStratification(componentGraph);
 		this.predicateDefiningRules = inputProgram.getPredicateDefiningRules();
 		this.programFacts = inputProgram.getFactsByPredicate();
@@ -88,6 +92,14 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 			this.workingMemory.initialize(entry.getKey());
 			this.workingMemory.addInstances(entry.getKey(), true, entry.getValue());
 		}
+
+		for (InternalRule nonGroundRule : inputProgram.getRulesById().values()) {
+			// Create working memories for all predicates occurring in the rule
+			for (Predicate predicate : nonGroundRule.getOccurringPredicates()) {
+				workingMemory.initialize(predicate);
+			}
+		}
+
 		this.workingMemory.reset();
 
 		ComponentEvaluationOrder evaluationOrder = new ComponentEvaluationOrder(strata);
@@ -117,17 +129,43 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 			return;
 		}
 		Map<Predicate, List<Instance>> addedInstances = new HashMap<>();
+		this.modifiedInLastEvaluationRun = new HashMap<>();
+		Predicate tmpPredicate;
+		IndexedInstanceStorage tmpInstances;
+		for (InternalRule rule : rulesToEvaluate) {
+			// register rule head instances
+			tmpPredicate = rule.getHeadAtom().getPredicate();
+			tmpInstances = this.workingMemory.get(tmpPredicate, true);
+			this.modifiedInLastEvaluationRun.putIfAbsent(tmpPredicate, new LinkedHashSet<>());
+			if (tmpInstances != null) {
+				this.modifiedInLastEvaluationRun.get(tmpPredicate).addAll(tmpInstances.getAllInstances());
+			}
+			// register positive body instances
+			for (Atom a : rule.getBodyAtomsPositive()) {
+				tmpPredicate = a.getPredicate();
+				tmpInstances = this.workingMemory.get(tmpPredicate, true);
+				this.modifiedInLastEvaluationRun.putIfAbsent(tmpPredicate, new LinkedHashSet<>());
+				if (tmpInstances != null) {
+					this.modifiedInLastEvaluationRun.get(tmpPredicate).addAll(tmpInstances.getAllInstances());
+				}
+			}
+		}
 		do {
 			this.workingMemory.reset();
 			LOGGER.debug("Starting component evaluation run...");
 			for (InternalRule r : rulesToEvaluate) {
 				this.evaluateRule(r);
 			}
+			this.modifiedInLastEvaluationRun = new HashMap<>();
 			// since we're stratified we never have to backtrack, therefore just collect the added instances
 			for (IndexedInstanceStorage instanceStorage : this.workingMemory.modified()) {
 				// NOTE: we're only dealing with positive instances
 				addedInstances.putIfAbsent(instanceStorage.getPredicate(), new ArrayList<>());
 				addedInstances.get(instanceStorage.getPredicate()).addAll(instanceStorage.getRecentlyAddedInstances());
+				this.modifiedInLastEvaluationRun.putIfAbsent(instanceStorage.getPredicate(), new LinkedHashSet<>());
+				this.modifiedInLastEvaluationRun.get(instanceStorage.getPredicate()).addAll(instanceStorage.getRecentlyAddedInstances());
+				instanceStorage.markRecentlyAddedInstancesDone();
+
 			}
 		} while (!this.workingMemory.modified().isEmpty()); // if evaluation of rules doesn't modify the working memory we have a fixed point
 		LOGGER.debug("Evaluation done - reached a fixed point on component {}", comp);
@@ -136,64 +174,84 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 		LOGGER.debug("Finished adding program facts");
 	}
 
-	private Set<InternalRule> getRulesToEvaluate(SCComponent comp) {
-		Set<InternalRule> retVal = new HashSet<>();
-		HashSet<InternalRule> tmpPredicateRules;
-		for (Node node : comp.getNodes()) {
-			tmpPredicateRules = this.predicateDefiningRules.get(node.getPredicate());
-			if (tmpPredicateRules != null) {
-				retVal.addAll(tmpPredicateRules);
+	private void evaluateRule(InternalRule rule) {
+		LOGGER.debug("Evaluating rule {}", rule);
+		List<Substitution> groundSubstitutions = this.groundRule(rule);
+		boolean canRuleFire;
+		for (Substitution subst : groundSubstitutions) {
+			LOGGER.debug("Checking if rule can fire for substitution: {}", subst);
+			canRuleFire = this.canFire(rule, subst);
+			LOGGER.debug("canFire result = {}", canRuleFire);
+			if (canRuleFire) {
+				this.fireRule(rule, subst);
+			}
+		}
+	}
+
+	private List<Substitution> groundRule(InternalRule rule) {
+		LOGGER.debug("Grounding rule {}", rule);
+		RuleGroundingOrder groundingOrder = rule.getGroundingOrder();
+		Collection<Literal> startingLiterals = groundingOrder.getStartingLiterals();
+		List<Substitution> groundSubstitutions = new ArrayList<>(); // the actual full ground substitutions for the rule
+		LOGGER.debug("Is fixed rule? {}", rule.getGroundingOrder().fixedInstantiation());
+		if (rule.getGroundingOrder().fixedInstantiation()) {
+			groundSubstitutions.addAll(this.bindNextAtomInRule(rule, rule.getGroundingOrder().getFixedGroundingOrder(), 0, new Substitution(), null));
+		} else {
+			for (Literal lit : startingLiterals) {
+				groundSubstitutions.addAll(this.calcSubstitutionsForStartingLiteral(rule, lit));
+			}
+		}
+		return groundSubstitutions;
+	}
+
+	// TODO maybe check if a substitution was already used before, save performance
+	private List<Substitution> calcSubstitutionsForStartingLiteral(InternalRule rule, Literal startingLiteral) {
+		List<Substitution> retVal = new ArrayList<>();
+		Substitution partialStartSubstitution = new Substitution();
+		if (startingLiteral instanceof FixedInterpretationLiteral) {
+			// if the starting literal is a builtin or external, we don't have instances in working memory,
+			// but just get fixed substitutions and let bindNextAtomInRule do it's magic ;)
+			FixedInterpretationLiteral fixedInterpretationLiteral = (FixedInterpretationLiteral) startingLiteral;
+			for (Substitution fixedSubstitution : fixedInterpretationLiteral.getSubstitutions(partialStartSubstitution)) {
+				LOGGER.debug("calling bindNextAtom, startingLiteral = {}", startingLiteral);
+				retVal.addAll(this.bindNextAtomInRule(rule, rule.getGroundingOrder().orderStartingFrom(startingLiteral), 0, fixedSubstitution, null));
+			}
+		} else {
+			Predicate predicate = startingLiteral.getPredicate();
+			if (!this.modifiedInLastEvaluationRun.containsKey(predicate)) {
+				return retVal;
+			}
+			Set<Instance> instances;
+			if (!this.workingMemory.contains(predicate)) {
+				LOGGER.debug("No instances for starting literal " + predicate.toString() + " in working memory!");
+			} else {
+				instances = this.modifiedInLastEvaluationRun.get(predicate);
+				for (Instance inst : instances) {
+					LOGGER.trace("Building substitutions for instance: {}", predicate.getName() + inst.toString());
+					partialStartSubstitution = Substitution.unify(startingLiteral, inst, new Substitution());
+					LOGGER.trace("Got partial substitution for instance: {}", partialStartSubstitution);
+					if (partialStartSubstitution == null) {
+						// continue at this point - when substitution is null it means there's no valid unifier, therefore move on
+						continue;
+					}
+					LOGGER.trace("calling bindNextAtom, startingLiteral = {}", startingLiteral);
+					List<Substitution> subs = this.bindNextAtomInRule(rule, rule.getGroundingOrder().orderStartingFrom(startingLiteral), 0,
+							partialStartSubstitution, null);
+					retVal.addAll(subs);
+				}
 			}
 		}
 		return retVal;
 	}
 
-	private void evaluateRule(InternalRule rule) {
-		LOGGER.debug("Evaluating rule {}", rule);
-		RuleGroundingOrder groundingOrder = rule.getGroundingOrder();
-		Collection<Literal> startingLiterals = groundingOrder.getStartingLiterals();
-		Predicate tmpPred;
-		IndexedInstanceStorage tmpPredInstanceStorage;
-		Substitution tmpSubstitution;
-		for (Literal lit : startingLiterals) {
-			tmpPred = lit.getPredicate();
-			// fetch positive instances of predicate in current starting literal
-			tmpPredInstanceStorage = this.workingMemory.get(tmpPred, true);
-			for (Instance inst : tmpPredInstanceStorage.getAllInstances()) {
-				LOGGER.debug("Instance: {}", tmpPred.getName() + inst.toString());
-				tmpSubstitution = Substitution.unify(lit, inst, new Substitution());
-				LOGGER.debug("Got substitution for instance: {}", tmpSubstitution);
-				List<Substitution> subs = this.bindNextAtomInRule(rule, rule.getGroundingOrder().orderStartingFrom(lit), 0, tmpSubstitution, null);
-				LOGGER.debug("Got {} substitutions from bindNextAtom", subs.size());
-				for (Substitution subst : subs) {
-					LOGGER.debug("substitution from bindNextAtom {}", subst);
-					boolean canFire = this.canFire(rule, subst);
-					LOGGER.debug("canFire result = {}", canFire);
-					if (canFire) {
-						this.fireRule(rule, subst);
-					}
-				}
-			}
-		}
-	}
-
 	private boolean canFire(InternalRule rule, Substitution substitution) {
-		// positive body is completely bound
-		// now check if any part of the negative body is fulfilled
-		List<Atom> negativeBody = rule.getBodyAtomsNegative();
-		IndexedInstanceStorage instancesForAtom;
-		Atom tmpGroundAtom;
-		boolean negatedAtomTrue = false;
-		for (Atom a : negativeBody) {
-			tmpGroundAtom = a.substitute(substitution);
-			if (tmpGroundAtom.isGround()) {
-				instancesForAtom = this.workingMemory.get(tmpGroundAtom, true);
-				negatedAtomTrue |= instancesForAtom.containsInstance(new Instance(tmpGroundAtom.getTerms()));
-			} else {
-				throw Util.oops("Rule " + rule.toString() + " doesn't seem to be safe!");
-			}
+		List<Literal> body = rule.getBody();
+		boolean bodyFulfilled = true;
+
+		for (Literal lit : body) {
+			bodyFulfilled &= this.isLiteralTrue(lit, substitution);
 		}
-		return !negatedAtomTrue;
+		return bodyFulfilled;
 	}
 
 	private void fireRule(InternalRule rule, Substitution substitution) {
@@ -202,24 +260,13 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 			throw new IllegalStateException("Trying to fire rule " + rule.toString() + " with incompatible substitution " + substitution.toString());
 		}
 		LOGGER.debug("Firing rule - got head atom: {}", newAtom);
-		if (!this.workingMemory.contains(newAtom.getPredicate())) {
-			this.workingMemory.initialize(newAtom.getPredicate());
-		}
-		if (!this.workingMemory.get(newAtom.toLiteral()).containsInstance(new Instance(newAtom.getTerms()))) {
-			this.workingMemory.addInstance(newAtom, true);
-		}
-	}
-
-	private void addFactsToProgram(Map<Predicate, List<Instance>> instances) {
-		for (Entry<Predicate, List<Instance>> entry : instances.entrySet()) {
-			for (Instance inst : entry.getValue()) {
-				this.additionalFacts.add(new BasicAtom(entry.getKey(), inst.terms));
-			}
-		}
+		this.workingMemory.addInstance(newAtom, true);
 	}
 
 	private List<Substitution> bindNextAtomInRule(InternalRule rule, Literal[] groundingOrder, int orderPosition, Substitution partialSubstitution,
 			Assignment currentAssignment) {
+		LOGGER.debug("Starting bindNextAtom(\n\trule = {},\n\tgroundingOrder = {},\n\torderPosition = {},\n\tsubstitution = {})", rule,
+				StringUtils.join(groundingOrder, ", "), orderPosition, partialSubstitution);
 		if (orderPosition == groundingOrder.length) {
 			return singletonList(partialSubstitution);
 		}
@@ -342,6 +389,111 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 		return generatedSubstitutions;
 	}
 
+	private Set<InternalRule> getRulesToEvaluate(SCComponent comp) {
+		Set<InternalRule> retVal = new HashSet<>();
+		HashSet<InternalRule> tmpPredicateRules;
+		for (Node node : comp.getNodes()) {
+			tmpPredicateRules = this.predicateDefiningRules.get(node.getPredicate());
+			if (tmpPredicateRules != null) {
+				retVal.addAll(tmpPredicateRules);
+			}
+		}
+		return retVal;
+	}
+
+	private void addFactsToProgram(Map<Predicate, List<Instance>> instances) {
+		for (Entry<Predicate, List<Instance>> entry : instances.entrySet()) {
+			for (Instance inst : entry.getValue()) {
+				this.additionalFacts.add(new BasicAtom(entry.getKey(), inst.terms));
+			}
+		}
+	}
+
+	private boolean isLiteralTrue(Literal lit, Substitution substitution) {
+		if (lit instanceof FixedInterpretationLiteral) {
+			return this.isFixedInterpretationLiteralTrue((FixedInterpretationLiteral) lit, substitution);
+		}
+		if (lit instanceof EnumerationLiteral) {
+			return true; // TODO
+		}
+		Literal groundLiteral = lit.substitute(substitution);
+		if (!groundLiteral.isGround()) {
+			throw Util.oops("Literal (" + groundLiteral.getClass().getSimpleName() + ")" + groundLiteral.toString() + " should be ground, but is not");
+		}
+		Atom at = groundLiteral.getAtom();
+		IndexedInstanceStorage positiveInstances = this.workingMemory.get(at, true);
+		boolean instanceKnown = positiveInstances.containsInstance(new Instance(at.getTerms()));
+		return lit.isNegated() ? (!instanceKnown) : instanceKnown;
+	}
+
+	private boolean isFixedInterpretationLiteralTrue(FixedInterpretationLiteral lit, Substitution substitution) {
+		if (lit instanceof ExternalLiteral) {
+			return this.isExternalLiteralTrue((ExternalLiteral) lit, substitution);
+		}
+		Set<VariableTerm> variables = lit.getOccurringVariables();
+		Substitution candidate = new Substitution(substitution);
+		List<Substitution> validSubstitutions = lit.getSubstitutions(substitution);
+		if (validSubstitutions.isEmpty()) {
+			// even if lit is ground, an empty substitution must be here for the whole substitution to be valid
+			return false;
+		}
+		Term candidateSubstitute;
+		Term validSubstitute;
+		boolean candidateValid = true;
+		for (Substitution valid : validSubstitutions) {
+			candidateValid = true;
+			for (VariableTerm var : variables) {
+				candidateSubstitute = candidate.eval(var);
+				validSubstitute = valid.eval(var);
+				candidateValid &= candidateSubstitute.equals(validSubstitute);
+			}
+			if (candidateValid) {
+				// if the given substitution matches one of the valid substitutions for the literal,
+				// the literal is true
+				return true;
+			}
+		}
+		// at this point, we checked all valid substitutions, but found none that matches the candidate
+		// --> literal is false
+		return false;
+	}
+
+	private boolean isExternalLiteralTrue(ExternalLiteral lit, Substitution substitution) {
+		ExternalAtom at = lit.getAtom();
+		Substitution resultSubstitution = new Substitution(); // we use this substitution to check for binding of output terms
+		for (VariableTerm var : substitution.getOccurringVariables()) {
+			if (!at.getOutput().contains(var)) { // add every binding other than output of the external to resultSubstitution
+				resultSubstitution.put(var, substitution.eval(var));
+			}
+		}
+		List<Substitution> validSubstitutions = lit.getSubstitutions(resultSubstitution);
+		if (validSubstitutions.isEmpty()) {
+			// even if lit is ground, an empty substitution must be here for the whole substitution to be valid
+			return false;
+		}
+		// TODO helper for checking if variables match in substitutions
+		// now check that substitution matches one of the valid substitutions given by the external literal
+		Term candidateSubstitute;
+		Term validSubstitute;
+		boolean candidateValid = true;
+		for (Substitution valid : validSubstitutions) {
+			candidateValid = true;
+			for (VariableTerm var : lit.getOccurringVariables()) {
+				candidateSubstitute = substitution.eval(var);
+				validSubstitute = valid.eval(var);
+				candidateValid &= candidateSubstitute.equals(validSubstitute);
+			}
+			if (candidateValid) {
+				// if the given substitution matches one of the valid substitutions for the literal,
+				// the literal is true
+				return true;
+			}
+		}
+		// at this point, we checked all valid substitutions, but found none that matches the candidate
+		// --> literal is false
+		return false;
+	}
+
 	private class ComponentEvaluationOrder implements Iterable<SCComponent> {
 
 		private Map<Integer, List<SCComponent>> stratification;
@@ -368,6 +520,10 @@ public class PartialEvaluation extends ProgramTransformation<InternalProgram, In
 
 				@Override
 				public boolean hasNext() {
+					if (ComponentEvaluationOrder.this.componentIterator == null) {
+						// can happen when there are actually no components, as is the case for empty programs or programs just consisting of facts
+						return false;
+					}
 					if (ComponentEvaluationOrder.this.componentIterator.hasNext()) {
 						return true;
 					} else {

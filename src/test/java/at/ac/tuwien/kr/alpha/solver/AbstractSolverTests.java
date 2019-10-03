@@ -48,6 +48,8 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.NormalProgram;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
@@ -167,7 +169,9 @@ public abstract class AbstractSolverTests {
 	protected Solver getInstance(InputProgram program) {
 		Alpha system = new Alpha(); // note that this might be a performance hit, we might wanna adapt how solvers are obtained here
 		AtomStore atomStore = new AtomStoreImpl();
-		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, system.performProgramPreprocessing(program), atomStore, true));
+		NormalProgram normalized = system.normalizeProgram(program);
+		InternalProgram preprocessed = system.performProgramPreprocessing(normalized);
+		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, preprocessed, atomStore, true));
 	}
 
 	protected Solver getInstance(String program) {

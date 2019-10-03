@@ -17,15 +17,17 @@ import org.slf4j.LoggerFactory;
 import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph.SCComponent;
-import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.AnalyzedProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.impl.NormalProgram;
 
 public class ComponentGraphTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ComponentGraphTest.class);
 
 	private StronglyConnectedComponentsHelper componentHelper = new StronglyConnectedComponentsHelper();
-	private StratificationHelper stratificationHelper =  new StratificationHelper();
-	
+	private StratificationHelper stratificationHelper = new StratificationHelper();
+
 	private static void assertNodesMatchStratumNodes(List<SCComponent> stratum, Node... nodes) {
 		ComponentGraphTest.assertNodesMatchStratumNodes(stratum, Arrays.asList(nodes));
 	}
@@ -64,8 +66,10 @@ public class ComponentGraphTest {
 	@Test
 	public void stratifyOneRuleTest() throws IOException {
 		Alpha system = new Alpha();
-		InternalProgram prog = system.performProgramPreprocessing(system.readProgramString("a :- b.", null));
-		DependencyGraph dg = prog.getDependencyGraph();
+		InputProgram prog = system.readProgramString("a :- b.", null);
+		NormalProgram normalProg = system.normalizeProgram(prog);
+		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
+		DependencyGraph dg = analyzed.getDependencyGraph();
 		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, this.componentHelper.findStronglyConnectedComponents(dg));
 		Map<Integer, List<SCComponent>> strata = this.stratificationHelper.calculateStratification(cg);
 
@@ -78,8 +82,10 @@ public class ComponentGraphTest {
 		StringBuilder bld = new StringBuilder();
 		bld.append("b :- a.").append("\n");
 		bld.append("c :- b.").append("\n");
-		InternalProgram prog = system.performProgramPreprocessing(system.readProgramString(bld.toString(), null));
-		DependencyGraph dg = prog.getDependencyGraph();
+		InputProgram prog = system.readProgramString(bld.toString(), null);
+		NormalProgram normalProg = system.normalizeProgram(prog);
+		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
+		DependencyGraph dg = analyzed.getDependencyGraph();
 		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, this.componentHelper.findStronglyConnectedComponents(dg));
 		Map<Integer, List<SCComponent>> strata = this.stratificationHelper.calculateStratification(cg);
 
@@ -96,8 +102,10 @@ public class ComponentGraphTest {
 		bld.append("c :- b.").append("\n");
 		bld.append("d :- not c.").append("\n");
 		bld.append("e :- d.").append("\n");
-		InternalProgram prog = system.performProgramPreprocessing(system.readProgramString(bld.toString(), null));
-		DependencyGraph dg = prog.getDependencyGraph();
+		InputProgram prog = system.readProgramString(bld.toString(), null);
+		NormalProgram normalProg = system.normalizeProgram(prog);
+		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
+		DependencyGraph dg = analyzed.getDependencyGraph();
 		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, this.componentHelper.findStronglyConnectedComponents(dg));
 		Map<Integer, List<SCComponent>> strata = this.stratificationHelper.calculateStratification(cg);
 
@@ -125,8 +133,10 @@ public class ComponentGraphTest {
 		StringBuilder bld = new StringBuilder();
 		bld.append("ancestor_of(X, Y) :- parent_of(X, Y).");
 		bld.append("ancestor_of(X, Z) :- parent_of(X, Y), ancestor_of(Y, Z).");
-		InternalProgram prog = system.performProgramPreprocessing(system.readProgramString(bld.toString(), null));
-		DependencyGraph dg = prog.getDependencyGraph();
+		InputProgram prog = system.readProgramString(bld.toString(), null);
+		NormalProgram normalProg = system.normalizeProgram(prog);
+		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
+		DependencyGraph dg = analyzed.getDependencyGraph();
 		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, this.componentHelper.findStronglyConnectedComponents(dg));
 		Map<Integer, List<SCComponent>> strata = this.stratificationHelper.calculateStratification(cg);
 
@@ -156,9 +166,11 @@ public class ComponentGraphTest {
 		bld.append("m :- not k, not l.");
 		bld.append("n :- m, not i, not j.");
 		bld.append("p :- not m, not n.");
-		InternalProgram prog = system.performProgramPreprocessing(system.readProgramString(bld.toString(), null));
 
-		DependencyGraph dg = prog.getDependencyGraph();
+		InputProgram prog = system.readProgramString(bld.toString(), null);
+		NormalProgram normalProg = system.normalizeProgram(prog);
+		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
+		DependencyGraph dg = analyzed.getDependencyGraph();
 		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, this.componentHelper.findStronglyConnectedComponents(dg));
 		Map<Integer, List<SCComponent>> strata = this.stratificationHelper.calculateStratification(cg);
 
@@ -197,9 +209,11 @@ public class ComponentGraphTest {
 		bld.append("m :- not k, not l.");
 		bld.append("n :- m, not i, not j.");
 		bld.append("p :- not m, not n.");
-		InternalProgram prog = system.performProgramPreprocessing(system.readProgramString(bld.toString(), null));
 
-		DependencyGraph dg = prog.getDependencyGraph();
+		InputProgram prog = system.readProgramString(bld.toString(), null);
+		NormalProgram normalProg = system.normalizeProgram(prog);
+		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
+		DependencyGraph dg = analyzed.getDependencyGraph();
 		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, this.componentHelper.findStronglyConnectedComponents(dg));
 		Map<Integer, List<SCComponent>> strata = this.stratificationHelper.calculateStratification(cg);
 
@@ -236,9 +250,11 @@ public class ComponentGraphTest {
 		bld.append("b :- a.");
 		bld.append("c :- b.");
 		bld.append("c :- a.");
-		InternalProgram prog = system.performProgramPreprocessing(system.readProgramString(bld.toString(), null));
 
-		DependencyGraph dg = prog.getDependencyGraph();
+		InputProgram prog = system.readProgramString(bld.toString(), null);
+		NormalProgram normalProg = system.normalizeProgram(prog);
+		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
+		DependencyGraph dg = analyzed.getDependencyGraph();
 		ComponentGraph cg = ComponentGraph.buildComponentGraph(dg, this.componentHelper.findStronglyConnectedComponents(dg));
 		Map<Integer, List<SCComponent>> strata = this.stratificationHelper.calculateStratification(cg);
 

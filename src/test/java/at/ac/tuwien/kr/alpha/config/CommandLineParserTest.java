@@ -104,7 +104,21 @@ public class CommandLineParserTest {
 	@Test(expected = ParseException.class)
 	public void replayWithNonNumericLiteral() throws ParseException {
 		CommandLineParser parser = new CommandLineParser("java -jar Alpha-bundled.jar", (msg) -> { });
-		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-rc", "\"1, 2, x\""});
+		parser.parseCommandLine(new String[]{"-str", "aString.", "-rc", "\"1, 2, x\""});
+	}
+	
+	@Test
+	public void disableStratifiedEval() throws ParseException {
+		CommandLineParser parser = new CommandLineParser("java-jar Alpha-bundled.jar", (msg) -> { });
+		AlphaConfig ctx = parser.parseCommandLine(new String[] {"-i", "someFile.asp", "-i", "someOtherFile.asp", "-nse"});
+		Assert.assertFalse(ctx.getSystemConfig().isEvaluateStratifiedPart());
+	}
+	
+	@Test
+	public void disableStratifiedEvalLongOpt() throws ParseException {
+		CommandLineParser parser = new CommandLineParser("java-jar Alpha-bundled.jar", (msg) -> { });
+		AlphaConfig ctx = parser.parseCommandLine(new String[] {"-i", "someFile.asp", "-i", "someOtherFile.asp", "--disable-stratified-eval"});
+		Assert.assertFalse(ctx.getSystemConfig().isEvaluateStratifiedPart());
 	}
 
 }

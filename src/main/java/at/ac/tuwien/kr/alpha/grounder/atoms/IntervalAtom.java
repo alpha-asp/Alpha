@@ -69,7 +69,12 @@ public class IntervalAtom extends Atom implements VariableNormalizableAtom {
 
 	@Override
 	public boolean isGround() {
-		return false;
+		for (Term t : this.terms) {
+			if (!t.isGround()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override

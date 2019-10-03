@@ -9,9 +9,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
 import at.ac.tuwien.kr.alpha.common.program.AbstractProgram;
 import at.ac.tuwien.kr.alpha.common.rule.impl.InternalRule;
 import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
@@ -29,16 +30,14 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 	private final Map<Predicate, HashSet<InternalRule>> predicateDefiningRules = new HashMap<>();
 	private final Map<Predicate, LinkedHashSet<Instance>> factsByPredicate = new LinkedHashMap<>();
 	private final Map<Integer, InternalRule> rulesById = new HashMap<>();
-	private final DependencyGraph dependencyGraph;
 
 	public InternalProgram(List<InternalRule> rules, List<Atom> facts) {
 		super(rules, facts, null);
 		this.analyzeFacts(facts);
 		this.analyzeRules(rules);
-		this.dependencyGraph = DependencyGraph.buildDependencyGraph(this.rulesById);
 	}
 
-	public static InternalProgram fromNormalProgram(NormalProgram normalProgram) {
+	protected static ImmutablePair<List<Atom>, List<InternalRule>> internalizeFactsAndRules(NormalProgram normalProgram) {
 		List<InternalRule> internalRules = new ArrayList<>();
 		List<Atom> facts = new ArrayList<>(normalProgram.getFacts());
 		for (NormalRule r : normalProgram.getRules()) {
@@ -53,8 +52,12 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 				internalRules.add(InternalRule.fromNormalRule(r));
 			}
 		}
-		// note that any inlineDirectives from the input are discarded here, the assumption is that these are taken care of by earlier processing steps
-		return new InternalProgram(internalRules, facts);
+		return new ImmutablePair<>(facts, internalRules);
+	}
+
+	public static InternalProgram fromNormalProgram(NormalProgram normalProgram) {
+		ImmutablePair<List<Atom>, List<InternalRule>> factsAndRules = InternalProgram.internalizeFactsAndRules(normalProgram);
+		return new InternalProgram(factsAndRules.right, factsAndRules.left);
 	}
 
 	private void analyzeFacts(List<Atom> facts) {
@@ -97,7 +100,4 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 		return Collections.unmodifiableMap(this.rulesById);
 	}
 
-	public DependencyGraph getDependencyGraph() {
-		return this.dependencyGraph;
-	}
 }
