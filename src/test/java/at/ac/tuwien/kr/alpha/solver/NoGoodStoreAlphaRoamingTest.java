@@ -1,9 +1,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
+import at.ac.tuwien.kr.alpha.common.*;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;

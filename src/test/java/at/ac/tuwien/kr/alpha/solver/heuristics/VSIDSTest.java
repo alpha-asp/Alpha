@@ -25,10 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
-import at.ac.tuwien.kr.alpha.common.Literals;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.solver.NoGoodStoreAlphaRoaming;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
