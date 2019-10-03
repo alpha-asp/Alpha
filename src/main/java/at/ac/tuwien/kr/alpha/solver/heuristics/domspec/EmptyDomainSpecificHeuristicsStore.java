@@ -43,16 +43,6 @@ public class EmptyDomainSpecificHeuristicsStore implements DomainSpecificHeurist
 	}
 
 	@Override
-	public HeuristicDirectiveValues peek() {
-		return null;
-	}
-	
-	@Override
-	public HeuristicDirectiveValues getValues(int heuristicId) {
-		return null;
-	}
-
-	@Override
 	public void setChoiceManager(ChoiceManager choiceManager) {
 	}
 

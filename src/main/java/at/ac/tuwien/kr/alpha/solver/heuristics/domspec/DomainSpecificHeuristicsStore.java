@@ -40,14 +40,6 @@ public interface DomainSpecificHeuristicsStore {
 	 * @return the element with the highest priority
 	 */
 	HeuristicDirectiveValues poll();
-	
-	/**
-	 * Retrieves, but does not remove, the element with the highest priority
-	 * @return the element with the highest priority
-	 */
-	HeuristicDirectiveValues peek();
-	
-	HeuristicDirectiveValues getValues(int heuristicId);
 
 	void setChoiceManager(ChoiceManager choiceManager);
 

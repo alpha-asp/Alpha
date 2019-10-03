@@ -57,17 +57,6 @@ public class DefaultDomainSpecificHeuristicsStore implements DomainSpecificHeuri
 	}
 
 	@Override
-	public HeuristicDirectiveValues peek() {
-		Integer heuristicId = prioritisedHeuristics.peek();
-		return heuristicId == null ? null : mapHeuristicToHeuristicValue.get(heuristicId);
-	}
-
-	@Override
-	public HeuristicDirectiveValues getValues(int heuristicId) {
-		return mapHeuristicToHeuristicValue.get(heuristicId);
-	}
-
-	@Override
 	public void setChoiceManager(ChoiceManager choiceManager) {
 		if (choiceManager != null) {
 			choiceManager.setHeuristicActivityListener(new HeuristicActivityListener());
