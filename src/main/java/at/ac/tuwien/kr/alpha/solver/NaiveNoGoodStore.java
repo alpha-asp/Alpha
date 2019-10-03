@@ -55,14 +55,19 @@ public class NaiveNoGoodStore implements NoGoodStore {
 	}
 
 	@Override
-	public ConflictCause add(int id, NoGood noGood) {
+	public ConflictCause add(int id, NoGood noGood, int lbd) {
 		counter.count(noGood);
 		if (assignment.violates(noGood)) {
-			return new ConflictCause(noGood);
+			return new ConflictCause(noGood.asAntecedent());
 		}
 
 		delegate.put(id, noGood);
 		return null;
+	}
+
+	@Override
+	public ConflictCause add(int id, NoGood noGood) {
+		return add(id, noGood, Integer.MAX_VALUE);
 	}
 
 	@Override
@@ -103,7 +108,7 @@ public class NaiveNoGoodStore implements NoGoodStore {
 
 		for (NoGood noGood : delegate.values()) {
 			if (assignment.violates(noGood)) {
-				return new ConflictCause(noGood);
+				return new ConflictCause(noGood.asAntecedent());
 			}
 		}
 
@@ -127,10 +132,14 @@ public class NaiveNoGoodStore implements NoGoodStore {
 	@Override
 	public void growForMaxAtomId(int maxAtomId) {
 	}
-	
+
 	@Override
 	public NoGoodCounter getNoGoodCounter() {
 		return counter;
+	}
+
+	@Override
+	public void cleanupLearnedNoGoods() {
 	}
 
 	/**
@@ -171,7 +180,7 @@ public class NaiveNoGoodStore implements NoGoodStore {
 		hasInferredAssignments = true;
 
 		final int literal = noGood.getLiteral(index);
-		return assignment.assign(atomOf(literal), isNegated(literal) ? MBT : FALSE, noGood);
+		return assignment.assign(atomOf(literal), isNegated(literal) ? MBT : FALSE, noGood.asAntecedent());
 	}
 
 	/**
@@ -217,6 +226,6 @@ public class NaiveNoGoodStore implements NoGoodStore {
 
 		hasInferredAssignments = true;
 
-		return assignment.assign(headAtom, TRUE, noGood);
+		return assignment.assign(headAtom, TRUE, noGood.asAntecedent());
 	}
 }

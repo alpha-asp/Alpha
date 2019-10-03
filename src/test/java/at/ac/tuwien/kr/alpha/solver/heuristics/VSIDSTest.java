@@ -25,7 +25,10 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
+import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.solver.NoGoodStoreAlphaRoaming;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
@@ -93,7 +96,7 @@ public class VSIDSTest {
 
 		NoGood learnedNoGood = new NoGood(lit2, lit3);
 		Collection<Integer> resolutionAtoms = Arrays.asList(1);
-		ConflictAnalysisResult analysisResult = new ConflictAnalysisResult(learnedNoGood, 1, true, resolutionAtoms);
+		ConflictAnalysisResult analysisResult = new ConflictAnalysisResult(learnedNoGood, 1, resolutionAtoms);
 		vsids.analyzedConflict(analysisResult);
 		assertEquals(vsids.getActivity(lit1), vsids.getActivity(lit2), DOUBLE_COMPARISON_EPSILON);
 		assertEquals(vsids.getActivity(lit2), vsids.getActivity(lit3), DOUBLE_COMPARISON_EPSILON);
@@ -122,7 +125,7 @@ public class VSIDSTest {
 
 		NoGood learnedNoGood = new NoGood(lit1Neg, lit4);
 		Collection<Integer> resolutionAtoms = Arrays.asList(2);
-		ConflictAnalysisResult analysisResult = new ConflictAnalysisResult(learnedNoGood, 1, true, resolutionAtoms);
+		ConflictAnalysisResult analysisResult = new ConflictAnalysisResult(learnedNoGood, 1, resolutionAtoms);
 		vsids.analyzedConflict(analysisResult);
 		assertEquals(activity1 + VSIDS.DEFAULT_DECAY_FACTOR, vsids.getActivity(lit1), DOUBLE_COMPARISON_EPSILON);
 		assertEquals(activity2 + VSIDS.DEFAULT_DECAY_FACTOR, vsids.getActivity(lit2), DOUBLE_COMPARISON_EPSILON);

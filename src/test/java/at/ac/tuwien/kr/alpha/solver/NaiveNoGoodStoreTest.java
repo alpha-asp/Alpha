@@ -1,6 +1,9 @@
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -8,6 +11,7 @@ import org.junit.Test;
 import static at.ac.tuwien.kr.alpha.common.NoGood.fact;
 import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
 import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
+import static at.ac.tuwien.kr.alpha.solver.AntecedentTest.antecedentsEquals;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
 import static org.junit.Assert.*;
 
@@ -338,7 +342,7 @@ public class NaiveNoGoodStoreTest {
 		assignment.assign(1, FALSE);
 		ConflictCause conflictCause = store.add(1, noGood);
 		assertNotNull(conflictCause);
-		assertEquals(noGood, conflictCause.getViolatedNoGood());
+		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
 	@Test
@@ -348,7 +352,7 @@ public class NaiveNoGoodStoreTest {
 		assignment.assign(1, TRUE);
 		assignment.assign(2, TRUE);
 		ConflictCause conflictCause = store.add(1, noGood);
-		assertEquals(noGood, conflictCause.getViolatedNoGood());
+		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
 	@Test
@@ -359,7 +363,7 @@ public class NaiveNoGoodStoreTest {
 		assignment.assign(2, TRUE);
 		assignment.assign(3, TRUE);
 		ConflictCause conflictCause = store.add(1, noGood);
-		assertEquals(noGood, conflictCause.getViolatedNoGood());
+		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
 	@Test
@@ -372,7 +376,7 @@ public class NaiveNoGoodStoreTest {
 		ConflictCause conflictCause = store.propagate();
 		assertNotNull(conflictCause);
 		assertFalse(store.didPropagate());
-		assertEquals(noGood, conflictCause.getViolatedNoGood());
+		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
 	@Test
@@ -395,7 +399,7 @@ public class NaiveNoGoodStoreTest {
 		ConflictCause conflictCause = store.propagate();
 		assertNotNull(conflictCause);
 		assertFalse(store.didPropagate());
-		assertEquals(noGood, conflictCause.getViolatedNoGood());
+		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
 	@Test
@@ -408,7 +412,7 @@ public class NaiveNoGoodStoreTest {
 		ConflictCause conflictCause = store.propagate();
 		assertNotNull(conflictCause);
 		assertFalse(store.didPropagate());
-		assertEquals(noGood, conflictCause.getViolatedNoGood());
+		assertTrue(antecedentsEquals(noGood.asAntecedent(), conflictCause.getAntecedent()));
 	}
 
 	@Test
@@ -440,7 +444,7 @@ public class NaiveNoGoodStoreTest {
 		assertNull(assignment.assign(3, TRUE));
 		ConflictCause conflictCause = store.add(11, noGood);
 		assertNotNull(conflictCause);
-		assertNotNull(conflictCause.getViolatedNoGood());
+		assertNotNull(conflictCause.getAntecedent());
 	}
 
 	@Test
@@ -452,7 +456,7 @@ public class NaiveNoGoodStoreTest {
 		assertNull(assignment.assign(3, MBT));
 		ConflictCause conflictCause = store.add(11, noGood);
 		assertNotNull(conflictCause);
-		assertNotNull(conflictCause.getViolatedNoGood());
+		assertNotNull(conflictCause.getAntecedent());
 	}
 
 	@Test
@@ -472,7 +476,7 @@ public class NaiveNoGoodStoreTest {
 		assertNull(assignment.assign(2, TRUE));
 		ConflictCause conflictCause = store.add(11, noGood);
 		assertNotNull(conflictCause);
-		assertNotNull(conflictCause.getViolatedNoGood());
+		assertNotNull(conflictCause.getAntecedent());
 	}
 
 	@Test
@@ -483,7 +487,7 @@ public class NaiveNoGoodStoreTest {
 		assertNull(assignment.assign(2, MBT));
 		ConflictCause conflictCause = store.add(11, noGood);
 		assertNotNull(conflictCause);
-		assertNotNull(conflictCause.getViolatedNoGood());
+		assertNotNull(conflictCause.getAntecedent());
 	}
 
 	@Test
@@ -495,7 +499,7 @@ public class NaiveNoGoodStoreTest {
 		assignment.backtrack();
 		assertNull(store.add(3, noGood));
 		store.propagate();
-		assertTrue(FALSE.equals(assignment.getTruth(195)));
+		assertEquals(FALSE, assignment.getTruth(195));
 	}
 
 	@Test
@@ -508,7 +512,7 @@ public class NaiveNoGoodStoreTest {
 		assignment.backtrack();
 		assertNull(store.add(3, noGood));
 		store.propagate();
-		assertTrue(FALSE.equals(assignment.getTruth(36)));
+		assertEquals(FALSE, assignment.getTruth(36));
 	}
 
 	@Test
@@ -517,7 +521,7 @@ public class NaiveNoGoodStoreTest {
 		assertNull(store.add(5, noGood));
 		assertNull(assignment.choose(12, FALSE));
 		store.propagate();
-		assertTrue(TRUE.equals(assignment.getTruth(11)));
+		assertEquals(TRUE, assignment.getTruth(11));
 	}
 
 	@Test
@@ -526,7 +530,7 @@ public class NaiveNoGoodStoreTest {
 		assertNull(store.add(5, noGood));
 		assertNull(assignment.choose(12, TRUE));
 		store.propagate();
-		assertTrue(TRUE.equals(assignment.getTruth(11)));
+		assertEquals(TRUE, assignment.getTruth(11));
 	}
 
 
@@ -536,7 +540,7 @@ public class NaiveNoGoodStoreTest {
 		NoGood noGood = headFirst(fromOldLiterals(-11, -12));
 		assertNull(assignment.choose(12, FALSE));
 		assertNull(store.add(5, noGood));
-		assertTrue(TRUE.equals(assignment.getTruth(11)));
+		assertEquals(TRUE, assignment.getTruth(11));
 	}
 
 	@Test
@@ -545,7 +549,7 @@ public class NaiveNoGoodStoreTest {
 		assertNull(assignment.choose(12, TRUE));
 		assertNull(store.add(5, noGood));
 		store.propagate();
-		assertTrue(TRUE.equals(assignment.getTruth(11)));
+		assertEquals(TRUE, assignment.getTruth(11));
 	}
 
 	@Test
@@ -556,7 +560,7 @@ public class NaiveNoGoodStoreTest {
 		store.propagate();
 		assertNull(assignment.assign(3, FALSE));
 		store.propagate();
-		assertTrue(TRUE.equals(assignment.getTruth(1)));
+		assertEquals(TRUE, assignment.getTruth(1));
 	}
 
 	@Test
@@ -567,7 +571,7 @@ public class NaiveNoGoodStoreTest {
 		store.propagate();
 		assertNull(assignment.assign(2, TRUE));
 		store.propagate();
-		assertTrue(TRUE.equals(assignment.getTruth(1)));
+		assertEquals(TRUE, assignment.getTruth(1));
 	}
 
 	@Test

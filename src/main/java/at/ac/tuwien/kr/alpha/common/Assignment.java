@@ -27,12 +27,14 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.solver.Antecedent;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 import java.util.Iterator;
 import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 
 public interface Assignment {
 	Entry get(int atom);
@@ -66,9 +68,9 @@ public interface Assignment {
 	/**
 	 * Returns the NoGood that implied the atom.
 	 * @param atom the atom.
-	 * @return the implying NoGood.
+	 * @return the implying Antecedent.
 	 */
-	NoGood getImpliedBy(int atom);
+	Antecedent getImpliedBy(int atom);
 
 	/**
 	 * Determines if the given {@code noGood} is undefined in the current assignment.
@@ -86,11 +88,15 @@ public interface Assignment {
 	}
 
 	/**
-	 * Returns an iterator over all new assignments. New assignments are only returned once.
-	 * @return an iterator over all new assignments to TRUE or MBT.
+	 * Returns an iterator over all newly assigned atoms. New assignments are only returned once.
+	 * @return an iterator over all atoms newly assigned to TRUE or MBT.
 	 */
 	Iterator<Integer> getNewPositiveAssignmentsIterator();
 
+	/**
+	 * Returns the new assignments to process.
+	 * @return a Pollable that yields the atoms that were newly assigned.
+	 */
 	Pollable getAssignmentsToProcess();
 
 	/**
@@ -111,40 +117,10 @@ public interface Assignment {
 		ThriceTruth getTruth();
 		int getAtom();
 		int getDecisionLevel();
-		NoGood getImpliedBy();
-		int getPropagationLevel();
+		Antecedent getImpliedBy();
 
 		boolean hasPreviousMBT();
 		int getMBTDecisionLevel();
-		int getMBTPropagationLevel();
-		NoGood getMBTImpliedBy();
-
-		default int getPropagationLevelRespectingLowerMBT() {
-			return hasPreviousMBT() ? getMBTPropagationLevel() : getPropagationLevel();
-		}
-
-		default NoGood getImpliedByRespectingLowerMBT() {
-			if (hasPreviousMBT()) {
-				return getMBTImpliedBy();
-			}
-			return getImpliedBy();
-		}
-
-		/**
-		 * Returns the literal corresponding to this assignment
-		 * @return atomId if this entry is TRUE/MBT and -atomId if entry is FALSE.
-		 */
-		default int getLiteral() {
-			return atomToLiteral(getAtom(), getTruth().toBoolean());
-		}
-
-		/**
-		 * Returns the weakly assigned decision level.
-		 * @return the decision level of a previous MBT if it exists, otherwise the decision level of this entry.
-		 */
-		default int getWeakDecisionLevel() {
-			return hasPreviousMBT() ? getMBTDecisionLevel() : getDecisionLevel();
-		}
 
 	}
 

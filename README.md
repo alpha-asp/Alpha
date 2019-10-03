@@ -81,6 +81,8 @@ run into trouble feel free to file an issue.
 
 Peer-reviewed publications part of journals, conferences and workshops:
 
+ * [Exploiting Partial Knowledge in Declarative Domain-Specific Heuristics for ASP](https://doi.org/10.4204/EPTCS.306.9) ([supplementary material](https://git-ainf.aau.at/DynaCon/website/tree/master/supplementary_material/2019_ICLP_Domain-Specific_Heuristics))
+ * [Degrees of Laziness in Grounding: Effects of Lazy-Grounding Strategies on ASP Solving](https://doi.org/10.1007/978-3-030-20528-7_22) ([preprint](https://arxiv.org/abs/1903.12510) | [supplementary material](https://git-ainf.aau.at/DynaCon/website/tree/master/supplementary_material/2019_LPNMR_Degrees_of_Laziness))
  * [Exploiting Justifications for Lazy Grounding of Answer Set Programs](https://doi.org/10.24963/ijcai.2018/240)
  * [Lazy Grounding for Dynamic Configuration: Efficient Large-Scale (Re)Configuration of Cyber-Physical Systems with ASP](https://doi.org/10.1007/s13218-018-0536-x)
  * [Blending Lazy-Grounding and CDNL Search for Answer-Set Solving](https://doi.org/10.1007/978-3-319-61660-5_17) ([preprint](http://www.kr.tuwien.ac.at/research/systems/alpha/blending_lazy_grounding.pdf))

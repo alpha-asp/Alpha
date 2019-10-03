@@ -97,6 +97,10 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 			decisionCounters = Arrays.copyOf(decisionCounters, decisionCounters.length + 1);
 		}
 	}
+
+	public BranchingHeuristic getLastElement() {
+		return chain.get(chain.size() - 1);
+	}
 	
 	public static ChainedBranchingHeuristics chainOf(BranchingHeuristic... branchingHeuristics) {
 		return new ChainedBranchingHeuristics(branchingHeuristics);

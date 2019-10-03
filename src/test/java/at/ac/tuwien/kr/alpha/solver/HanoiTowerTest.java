@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Siemens AG
+ * Copyright (c) 2017-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,8 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.antlr.v4.runtime.CharStreams;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -48,32 +50,40 @@ import static org.junit.Assert.assertTrue;
  * Tests {@link AbstractSolver} using some hanoi tower test cases (see https://en.wikipedia.org/wiki/Tower_of_Hanoi).
  *
  */
-@Ignore("disabled to save resources during CI")
 public class HanoiTowerTest extends AbstractSolverTests {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(HanoiTowerTest.class);
+
 	private final ProgramParser parser = new ProgramParser();
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testInstance1() throws IOException {
 		testHanoiTower(1);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testInstance2() throws IOException {
 		testHanoiTower(2);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testInstance3() throws IOException {
 		testHanoiTower(3);
 	}
 
 	@Test(timeout = 10000)
+	@Ignore("disabled to save resources during CI")
 	public void testInstance4() throws IOException {
 		testHanoiTower(4);
 	}
 
 	@Test(timeout = 60000)
 	public void testSimple() throws IOException {
+		ignoreTestForNaiveSolver();
+		ignoreNonDefaultDomainIndependentHeuristics();
 		testHanoiTower("simple");
 	}
 
@@ -87,7 +97,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		Solver solver = getInstance(parsedProgram);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		assertTrue(answerSet.isPresent());
-		//System.out.println(answerSet.get());
+		System.out.println(answerSet.get());
 		checkGoal(parsedProgram, answerSet.get());
 	}
 
@@ -102,9 +112,9 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		SortedSet<Atom> onInstancesInAnswerSet = answerSet.getPredicateInstances(on);
 		for (Atom atom : parsedProgram.getFacts()) {
 			if (atom.getPredicate().getName().equals(ongoal.getName()) && atom.getPredicate().getArity() == ongoal.getArity()) {
-				Term expectedTop = ConstantTerm.getInstance(atom.getTerms().get(0).toString());
-				Term expectedBottom = ConstantTerm.getInstance(atom.getTerms().get(1).toString());
-				Term expectedSteps = ConstantTerm.getInstance(String.valueOf(steps));
+				Term expectedTop = atom.getTerms().get(0);
+				Term expectedBottom = atom.getTerms().get(1);
+				Term expectedSteps = ConstantTerm.getInstance(steps);
 				Atom expectedAtom = new BasicAtom(on, expectedSteps, expectedBottom, expectedTop);
 				assertTrue("Answer set does not contain " + expectedAtom, onInstancesInAnswerSet.contains(expectedAtom));
 			}
@@ -115,7 +125,7 @@ public class HanoiTowerTest extends AbstractSolverTests {
 		Predicate steps = Predicate.getInstance("steps", 1);
 		for (Atom atom : parsedProgram.getFacts()) {
 			if (atom.getPredicate().getName().equals(steps.getName()) && atom.getPredicate().getArity() == steps.getArity()) {
-				return Integer.valueOf(atom.getTerms().get(0).toString());
+				return Integer.parseInt(atom.getTerms().get(0).toString());
 			}
 		}
 		throw new IllegalArgumentException("No steps atom found in input program.");

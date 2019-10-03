@@ -28,7 +28,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
@@ -283,76 +282,6 @@ public class NaiveSolver extends AbstractSolver {
 		newTruthAssignments.clear();
 	}
 
-
-	private static final class Entry implements Assignment.Entry {
-		private final ThriceTruth value;
-		private final int atom;
-
-		Entry(int atom, ThriceTruth value) {
-			this.value = value;
-			this.atom = atom;
-		}
-
-		@Override
-		public ThriceTruth getTruth() {
-			return value;
-		}
-
-		@Override
-		public int getDecisionLevel() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean hasPreviousMBT() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public int getMBTDecisionLevel() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public int getMBTPropagationLevel() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public int getPropagationLevelRespectingLowerMBT() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public int getWeakDecisionLevel() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public NoGood getMBTImpliedBy() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public NoGood getImpliedBy() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public int getAtom() {
-			return atom;
-		}
-
-		@Override
-		public int getPropagationLevel() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public String toString() {
-			throw new UnsupportedOperationException();
-		}
-	}
 
 	private void obtainNoGoodsFromGrounder() {
 		final int oldSize = knownNoGoods.size();

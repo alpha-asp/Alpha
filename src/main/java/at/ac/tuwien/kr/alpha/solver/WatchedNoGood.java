@@ -6,13 +6,14 @@ import at.ac.tuwien.kr.alpha.common.NoGoodInterface;
 import java.util.Iterator;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.common.Literals.literalToString;
 
-public final class WatchedNoGood implements NoGoodInterface, Iterable<Integer> {
+public final class WatchedNoGood implements NoGoodInterface, Antecedent, Iterable<Integer> {
+	private int activity;
 	private final int[] literals;
 	private int alpha;
 	private int head;
+	private boolean isLbdLessOrEqual2;
 
 	WatchedNoGood(NoGood noGood, int a, int b, int alpha) {
 		if (noGood.size() < 3) {
@@ -26,6 +27,7 @@ public final class WatchedNoGood implements NoGoodInterface, Iterable<Integer> {
 		}
 		this.alpha = alpha;
 		head = noGood.hasHead() ? 0 : -1;
+		activity = 0;
 		if (b == 0) {
 			swap(1, a);
 		} else {
@@ -106,6 +108,11 @@ public final class WatchedNoGood implements NoGoodInterface, Iterable<Integer> {
 	}
 
 	@Override
+	public Antecedent asAntecedent() {
+		return this;
+	}
+
+	@Override
 	public Iterator<Integer> iterator() {
 		return new Iterator<Integer>() {
 			private int i;
@@ -131,8 +138,7 @@ public final class WatchedNoGood implements NoGoodInterface, Iterable<Integer> {
 
 		int hcount = 0;
 		for (int literal : literals) {
-			sb.append(isPositive(literal) ? "+" : "-");
-			sb.append(atomOf(literal));
+			sb.append(literalToString(literal));
 			sb.append(hasHead() && head == hcount ? "h" : "");
 			sb.append(" ");
 			hcount++;
@@ -145,8 +151,29 @@ public final class WatchedNoGood implements NoGoodInterface, Iterable<Integer> {
 	}
 
 	@Override
-	public NoGood getNoGood(int impliedLiteral) {
-		// FIXME: this should not be necessary, the GroundConflictNoGoodLearner should be able to work with WatchedNoGood directly.
-		return new NoGood(literals.clone());
+	public int[] getReasonLiterals() {
+		return literals;
+	}
+
+	public int getActivity() {
+		return activity;
+	}
+
+	@Override
+	public void decreaseActivity() {
+		activity >>= 1;
+	}
+
+	@Override
+	public void bumpActivity() {
+		activity++;
+	}
+
+	void setLBD(int lbd) {
+		isLbdLessOrEqual2 = lbd <= 2;
+	}
+
+	boolean isLbdLessOrEqual2() {
+		return isLbdLessOrEqual2;
 	}
 }
