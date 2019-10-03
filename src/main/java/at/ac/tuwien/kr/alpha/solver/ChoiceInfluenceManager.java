@@ -120,17 +120,11 @@ public class ChoiceInfluenceManager implements Checkable {
 	}
 
 	boolean isActive(int atom) {
-		if (checksEnabled) {
-			checkActiveChoicePoints();
-		}
 		ChoicePoint choicePoint = influencers.get(atom);
 		return choicePoint != null && choicePoint.isActive && choicePoint.atom == atom;
 	}
 
 	int getNextActiveAtomOrDefault(int defaultAtom) {
-		if (checksEnabled) {
-			checkActiveChoicePoints();
-		}
 		return activeChoicePointsAtoms.size() > 0 ? activeChoicePointsAtoms.iterator().next() : defaultAtom;
 	}
 
