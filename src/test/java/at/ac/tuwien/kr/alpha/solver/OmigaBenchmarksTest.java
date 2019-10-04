@@ -45,65 +45,55 @@ public class OmigaBenchmarksTest extends AbstractSolverTests {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(OmigaBenchmarksTest.class);
 
-	//@Test(timeout = 10000)
-	@Test
+	@Test(timeout = 10000)
 	public void test3Col_10_18() throws IOException {
 		test("3col", "3col-10-18.txt");
 	}
 
-	//@Test(timeout = 10000)
-	@Test
+	@Test(timeout = 10000)
 	public void test3Col_20_38() throws IOException {
 		test("3col", "3col-20-38.txt");
 	}
 
-	//@Test(timeout = 15000)
-	@Test
+	@Test(timeout = 15000)
 	public void testCutedge_100_30() throws IOException {
 		test("cutedge", "cutedge-100-30.txt");
 	}
 
-	//@Test(timeout = 15000)
-	@Test
+	@Test(timeout = 15000)
 	public void testCutedge_100_50() throws IOException {
 		test("cutedge", "cutedge-100-50.txt");
 	}
 
-	//@Test(timeout = 10000)
-	@Test
+	@Test(timeout = 10000)
 	@Ignore("disabled to save resources during CI")
 	public void testLocstrat_200() throws IOException {
 		test("locstrat", "locstrat-200.txt");
 	}
 
-	//@Test(timeout = 10000)
-	@Test
+	@Test(timeout = 10000)
 	@Ignore("disabled to save resources during CI")
 	public void testLocstrat_400() throws IOException {
 		test("locstrat", "locstrat-400.txt");
 	}
 
-	//@Test(timeout = 15000)
-	@Test
+	@Test(timeout = 15000)
 	public void testReach_1() throws IOException {
 		ignoreTestForNaiveSolver();
 		ignoreNonDefaultDomainIndependentHeuristics();
 		test("reach", "reach-1.txt");
 	}
 
-	//@Test(timeout = 10000)
-	@Test
+	@Test(timeout = 10000)
 	@Ignore("disabled to save resources during CI")
 	public void testReach_4() throws IOException {
 		test("reach", "reach-4.txt");
 	}
 
 	private void test(String folder, String aspFileName) throws IOException {
-		CharStream programInputStream = CharStreams.fromPath(
-			Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName)
-		);
+		CharStream programInputStream = CharStreams.fromPath(Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName));
 		Optional<AnswerSet> answerSet = getInstance(programInputStream).stream().findFirst();
-		//System.out.println(answerSet);
+		// System.out.println(answerSet);
 		// TODO: check correctness of answer set
 	}
 

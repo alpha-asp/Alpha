@@ -108,17 +108,19 @@ public class PartialEvaluation extends ProgramTransformation<AnalyzedProgram, In
 		}
 
 		// build the resulting program
-		List<Atom> outputFacts = new ArrayList<>(inputProgram.getFacts());
-		this.additionalFacts.forEach((f) -> {
-			if (!outputFacts.contains(f)) {
-				outputFacts.add(f);
-			}
-		});
+		List<Atom> outputFacts = this.buildOutputFacts(inputProgram.getFacts(), this.additionalFacts);
 		List<InternalRule> outputRules = new ArrayList<>();
 		inputProgram.getRulesById().entrySet().stream().filter((entry) -> !this.solvedRuleIds.contains(entry.getKey()))
 				.forEach((entry) -> outputRules.add(entry.getValue()));
 		InternalProgram retVal = new InternalProgram(outputRules, outputFacts);
 		return retVal;
+	}
+
+	// extra method is better visible in CPU traces when profiling
+	private List<Atom> buildOutputFacts(List<Atom> initialFacts, Set<Atom> newFacts) {
+		Set<Atom> atomSet = new LinkedHashSet<>(initialFacts);
+		atomSet.addAll(newFacts);
+		return new ArrayList<>(atomSet);
 	}
 
 	private void evaluateComponent(SCComponent comp) {
