@@ -107,6 +107,10 @@ public class CommandLineParser {
 			.desc("disable the deletion of (learned, little active) nogoods (default: "
 					+ SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION + ")")
 			.build();
+	private static final Option OPT_ENABLE_RESTARTS = Option.builder("rs").longOpt("enableRestarts")
+		.desc("enable the usage of (dynamic and static) restarts (default: "
+			+ SystemConfig.DEFAULT_ENABLE_RESTARTS + ")")
+		.build();
 
 	private static final Options CLI_OPTS = new Options();
 
@@ -137,6 +141,7 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_JUSTIFICATION);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NORMALIZATION_GRID);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_NOGOOD_DELETION);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_ENABLE_RESTARTS);
 	}
 
 	/*
@@ -180,6 +185,7 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), this::handleNoJustification);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NORMALIZATION_GRID.getOpt(), this::handleNormalizationGrid);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_ENABLE_RESTARTS.getOpt(), this::handleEnableRestarts);
 
 		this.inputOptionHandlers.put(CommandLineParser.OPT_NUM_ANSWER_SETS.getOpt(), this::handleNumAnswerSets);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_INPUT.getOpt(), this::handleInput);
@@ -359,4 +365,7 @@ public class CommandLineParser {
 		cfg.setDisableNoGoodDeletion(true);
 	}
 
+	private void handleEnableRestarts(Option opt, SystemConfig cfg) {
+		cfg.setRestartsEnabled(true);
+	}
 }

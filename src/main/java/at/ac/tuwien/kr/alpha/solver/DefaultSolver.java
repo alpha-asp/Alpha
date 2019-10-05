@@ -67,6 +67,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final WritableAssignment assignment;
 
 	private final GroundConflictNoGoodLearner learner;
+	private final MixedRestartStrategy restartStrategy;
 
 	private final BranchingHeuristic branchingHeuristic;
 
@@ -86,10 +87,16 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		this.store = store;
 		this.choiceManager = new ChoiceManager(assignment, store);
 		this.learner = new GroundConflictNoGoodLearner(assignment, atomStore);
+		LearnedNoGoodDeletion learnedNoGoodDeletion = this.store instanceof NoGoodStoreAlphaRoaming ? ((NoGoodStoreAlphaRoaming)store).getLearnedNoGoodDeletion() : null;
+		if (config.areRestartsEnabled() && this.store instanceof NoGoodStoreAlphaRoaming) {
+			this.restartStrategy = new MixedRestartStrategy(learnedNoGoodDeletion);
+		} else {
+			this.restartStrategy = null;
+		}
 		this.branchingHeuristic = chainFallbackHeuristic(grounder, assignment, random, heuristicsConfiguration);
 		this.disableJustifications = config.isDisableJustificationSearch();
 		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();
-		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
+		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, restartStrategy, learnedNoGoodDeletion, 1000);
 	}
 
 	private BranchingHeuristic chainFallbackHeuristic(Grounder grounder, WritableAssignment assignment, Random random, HeuristicsConfiguration heuristicsConfiguration) {
@@ -148,9 +155,17 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			ConflictCause conflictCause = store.propagate();
 			didChange |= store.didPropagate();
 			LOGGER.trace("Assignment after propagation is: {}", assignment);
-			if (!disableNoGoodDeletion && conflictCause == null) {
-				// Run learned NoGood deletion strategy.
-				store.cleanupLearnedNoGoods();
+			if (conflictCause == null) {
+				if (!disableNoGoodDeletion) {
+					// Run learned NoGood deletion strategy.
+					store.cleanupLearnedNoGoods();
+				}
+				if (restartStrategy != null && restartStrategy.shouldRestart()) {
+					// Restart if necessary.
+					LOGGER.trace("Restarting search.");
+					choiceManager.backjump(0);
+					restartStrategy.onRestart();
+				}
 			}
 			if (conflictCause != null) {
 				// Learn from conflict.
@@ -244,6 +259,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 
 		branchingHeuristic.analyzedConflict(analysisResult);
+		if (restartStrategy != null) {
+			restartStrategy.newConflictWithLbd(analysisResult.lbd);
+		}
 
 		if (analysisResult.learnedNoGood != null) {
 			choiceManager.backjump(analysisResult.backjumpLevel);

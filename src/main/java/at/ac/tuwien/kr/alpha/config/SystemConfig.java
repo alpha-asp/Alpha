@@ -56,6 +56,7 @@ public class SystemConfig {
 	public static final boolean DEFAULT_SORT_ANSWER_SETS = false;
 	public static final List<Integer> DEFAULT_REPLAY_CHOICES = Collections.emptyList();
 	public static final boolean DEFAULT_DISABLE_NOGOOD_DELETION = false;
+	public static final boolean DEFAULT_ENABLE_RESTARTS = false;
 
 	private String grounderName = SystemConfig.DEFAULT_GROUNDER_NAME;
 	private String solverName = SystemConfig.DEFAULT_SOLVER_NAME;
@@ -72,6 +73,7 @@ public class SystemConfig {
 	private boolean sortAnswerSets = SystemConfig.DEFAULT_SORT_ANSWER_SETS;
 	private List<Integer> replayChoices = SystemConfig.DEFAULT_REPLAY_CHOICES;
 	private boolean disableNoGoodDeletion = SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION;
+	private boolean areRestartsEnabled = SystemConfig.DEFAULT_ENABLE_RESTARTS;
 
 	public String getGrounderName() {
 		return this.grounderName;
@@ -203,6 +205,14 @@ public class SystemConfig {
 
 	public void setDisableNoGoodDeletion(boolean disableNoGoodDeletion) {
 		this.disableNoGoodDeletion = disableNoGoodDeletion;
+	}
+
+	public boolean areRestartsEnabled() {
+		return areRestartsEnabled;
+	}
+
+	public void setRestartsEnabled(boolean areRestartsEnabled) {
+		this.areRestartsEnabled = areRestartsEnabled;
 	}
 
 }
