@@ -58,10 +58,11 @@ public class VSIDSWithPhaseSaving implements ActivityBasedBranchingHeuristic {
 
 	protected final Assignment assignment;
 	protected final ChoiceManager choiceManager;
-
 	private final HeapOfActiveAtoms heapOfActiveAtoms;
-
 	private final Collection<NoGood> bufferedNoGoods = new ArrayList<>();
+
+	private double activityDecrease;
+	private long numThrownAway;
 
 	private VSIDSWithPhaseSaving(Assignment assignment, ChoiceManager choiceManager, HeapOfActiveAtoms heapOfActiveAtoms, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
 		this.assignment = assignment;
@@ -111,6 +112,14 @@ public class VSIDSWithPhaseSaving implements ActivityBasedBranchingHeuristic {
 		bufferedNoGoods.clear();
 	}
 
+	public double getActivityDecrease() {
+		return activityDecrease;
+	}
+
+	public long getNumThrownAway() {
+		return numThrownAway;
+	}
+
 	/**
 	 * {@link VSIDSWithPhaseSaving} works like {@link VSIDS} for selecting an atom but uses the saved phase to
 	 * determine the truth value to choose.
@@ -128,10 +137,20 @@ public class VSIDSWithPhaseSaving implements ActivityBasedBranchingHeuristic {
 	private int chooseAtom() {
 		ingestBufferedNoGoods();
 		Integer mostActiveAtom;
+		double maxActivity = 0.0f;
 		while ((mostActiveAtom = heapOfActiveAtoms.getMostActiveAtom()) != null) {
+			double activity = heapOfActiveAtoms.getActivity(atomToLiteral(mostActiveAtom));
+			if (activity > maxActivity) {
+				maxActivity = activity;
+			}
 			if (choiceManager.isActiveChoiceAtom(mostActiveAtom)) {
+				if (maxActivity > activity) {
+					double lostActitivyNormalized = (maxActivity - activity) / heapOfActiveAtoms.getCurrentActivityIncrement();
+					activityDecrease += lostActitivyNormalized;
+				}
 				return mostActiveAtom;
 			}
+			numThrownAway++;
 		}
 		return DEFAULT_CHOICE_ATOM;
 	}

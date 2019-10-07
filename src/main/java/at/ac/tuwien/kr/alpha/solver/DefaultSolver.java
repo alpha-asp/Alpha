@@ -96,7 +96,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		this.branchingHeuristic = chainFallbackHeuristic(grounder, assignment, random, heuristicsConfiguration);
 		this.disableJustifications = config.isDisableJustificationSearch();
 		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();
-		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, restartStrategy, learnedNoGoodDeletion, 1000);
+		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, restartStrategy, learnedNoGoodDeletion, branchingHeuristic, 1000);
 	}
 
 	private BranchingHeuristic chainFallbackHeuristic(Grounder grounder, WritableAssignment assignment, Random random, HeuristicsConfiguration heuristicsConfiguration) {

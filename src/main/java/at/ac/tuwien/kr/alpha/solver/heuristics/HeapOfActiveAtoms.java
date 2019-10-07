@@ -103,6 +103,10 @@ public class HeapOfActiveAtoms {
 		return decayFactor;
 	}
 
+	double getCurrentActivityIncrement() {
+		return currentActivityIncrement;
+	}
+
 	/**
 	 * @see #getDecayFactor()
 	 */

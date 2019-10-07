@@ -25,6 +25,9 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.ChainedBranchingHeuristics;
+import at.ac.tuwien.kr.alpha.solver.heuristics.VSIDSWithPhaseSaving;
 import org.slf4j.Logger;
 
 /**
@@ -38,6 +41,7 @@ public class PerformanceLog {
 	private final TrailAssignment assignment;
 	private final MixedRestartStrategy restartStrategy;
 	private final LearnedNoGoodDeletion learnedNoGoodDeletion;
+	private final BranchingHeuristic branchingHeuristic;
 	private long msBetweenOutputs;
 	
 	private Long timeFirstEntry;
@@ -47,12 +51,13 @@ public class PerformanceLog {
 	private int numberOfConflictsLastPerformanceLog;
 	private int numberOfDeletedNoGoodsLastPerformanceLog;
 
-	public PerformanceLog(ChoiceManager choiceManager, TrailAssignment assignment, MixedRestartStrategy restartStrategy, LearnedNoGoodDeletion learnedNoGoodDeletion, long msBetweenOutputs) {
+	public PerformanceLog(ChoiceManager choiceManager, TrailAssignment assignment, MixedRestartStrategy restartStrategy, LearnedNoGoodDeletion learnedNoGoodDeletion, BranchingHeuristic branchingHeuristic, long msBetweenOutputs) {
 		super();
 		this.choiceManager = choiceManager;
 		this.assignment = assignment;
 		this.restartStrategy = restartStrategy;
 		this.learnedNoGoodDeletion = learnedNoGoodDeletion;
+		this.branchingHeuristic = branchingHeuristic;
 		this.msBetweenOutputs = msBetweenOutputs;
 	}
 
@@ -82,6 +87,16 @@ public class PerformanceLog {
 			int currentNumberOfRestarts = totalRestarts - numberOfRestartsLastPerformanceLog;
 			logStatsPerTime(logger, "Restarts", timeSinceLastLog, overallTime, totalRestarts, currentNumberOfRestarts);
 			numberOfRestartsLastPerformanceLog = totalRestarts;
+		}
+		if (branchingHeuristic != null && branchingHeuristic instanceof ChainedBranchingHeuristics) {
+			BranchingHeuristic firstHeuristic = ((ChainedBranchingHeuristics) branchingHeuristic).getFirstElement();
+			if (firstHeuristic instanceof VSIDSWithPhaseSaving) {
+				VSIDSWithPhaseSaving vsidsWithPhaseSaving = (VSIDSWithPhaseSaving) firstHeuristic;
+				long numThrownAway = vsidsWithPhaseSaving.getNumThrownAway();
+				double activityDecrease = vsidsWithPhaseSaving.getActivityDecrease();
+				logger.info("Heuristic threw away {} preferred choices.", numThrownAway);
+				logger.info("Atom activity decreased overall by {} or {} per choice on average", activityDecrease, activityDecrease / currentNumberOfChoices);
+			}
 		}
 		if (learnedNoGoodDeletion != null) {
 			int totalConflicts = learnedNoGoodDeletion.getNumTotalConflicts();
