@@ -206,7 +206,6 @@ public class PartialEvaluation extends ProgramTransformation<AnalyzedProgram, In
 		return groundSubstitutions;
 	}
 
-	// TODO maybe check if a substitution was already used before, save performance
 	private List<Substitution> calcSubstitutionsForStartingLiteral(InternalRule rule, Literal startingLiteral) {
 		List<Substitution> retVal = new ArrayList<>();
 		Substitution partialStartSubstitution = new Substitution();
@@ -416,7 +415,7 @@ public class PartialEvaluation extends ProgramTransformation<AnalyzedProgram, In
 			return this.isFixedInterpretationLiteralTrue((FixedInterpretationLiteral) lit, substitution);
 		}
 		if (lit instanceof EnumerationLiteral) {
-			return true; // TODO
+			return this.isEnumerationLiteralTrue((EnumerationLiteral) lit, substitution);
 		}
 		Literal groundLiteral = lit.substitute(substitution);
 		if (!groundLiteral.isGround()) {
@@ -473,7 +472,6 @@ public class PartialEvaluation extends ProgramTransformation<AnalyzedProgram, In
 			// even if lit is ground, an empty substitution must be here for the whole substitution to be valid
 			return false;
 		}
-		// TODO helper for checking if variables match in substitutions
 		// now check that substitution matches one of the valid substitutions given by the external literal
 		Term candidateSubstitute;
 		Term validSubstitute;
@@ -494,6 +492,10 @@ public class PartialEvaluation extends ProgramTransformation<AnalyzedProgram, In
 		// at this point, we checked all valid substitutions, but found none that matches the candidate
 		// --> literal is false
 		return false;
+	}
+
+	private boolean isEnumerationLiteralTrue(EnumerationLiteral lit, Substitution subst) {
+		return EnumerationAtom.isTrueUnderSubstitution(lit.getAtom(), subst);
 	}
 
 	private class ComponentEvaluationOrder implements Iterable<SCComponent> {

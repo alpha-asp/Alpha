@@ -41,8 +41,6 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-
 public class Util {
 	private static final String LITERATE_INDENT = "    ";
 
@@ -118,11 +116,6 @@ public class Util {
 	public static int arrayGrowthSize(int oldSize) {
 		// Growth factor is 1.5.
 		return oldSize + (oldSize >> 1);
-	}
-	
-	// TODO
-	public static Term parseTerm(String term) {
-		return null;
 	}
 	
 }

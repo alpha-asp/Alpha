@@ -75,4 +75,16 @@ public class PartialEvaluationTest {
 		TestUtils.assertAnswerSetsEqual("p(a), q(a,b)", answerSets);
 	}
 
+	@Test
+	public void testCountAggregate() {
+		String asp = "a. b :- 1 <= #count { 1 : a }.";
+		Alpha system = new Alpha();
+		InputProgram prg = system.readProgramString(asp);
+		NormalProgram normal = system.normalizeProgram(prg);
+		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normal);
+		InternalProgram evaluated = new PartialEvaluation().apply(analyzed);
+		Set<AnswerSet> answerSets = system.solve(evaluated).collect(Collectors.toSet());
+		TestUtils.assertAnswerSetsEqual("a, b", answerSets);
+	}
+	
 }

@@ -12,7 +12,6 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
  * 
  * Copyright (c) 2017-2019, the Alpha Team.
  */
-// TODO ensure immutability
 public class Node {
 
 	private final Predicate predicate;

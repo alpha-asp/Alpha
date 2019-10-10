@@ -63,12 +63,6 @@ public class Main {
 	private static final String ALPHA_CALL_SYNTAX = "java -jar alpha-bundled.jar" + System.lineSeparator() + "java -jar alpha.jar";
 
 	public static void main(String[] args) {
-//		// TODO remove below line - really dirty hack for profiling
-//		try {
-//			Thread.sleep(120000);
-//		} catch (InterruptedException ex) {
-//			LOGGER.warn("Cannot sleep - bad dreams?");
-//		}
 		CommandLineParser commandLineParser = new CommandLineParser(Main.ALPHA_CALL_SYNTAX, (msg) -> Main.exitWithMessage(msg, 0));
 		AlphaConfig cfg = null;
 		try {
