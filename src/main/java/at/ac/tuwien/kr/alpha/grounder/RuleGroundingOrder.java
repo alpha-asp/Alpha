@@ -80,7 +80,7 @@ public class RuleGroundingOrder {
 	}
 
 	/**
-	 * @return the position in {@link #getOtherLiterals()} from which on all variables are bound
+	 * @return the zero-based position from which on all variables are bound in list of literals except the starting literal
 	 */
 	public int getPositionFromWhichAllVarsAreBound() {
 		return positionLastVarBound + 1;
