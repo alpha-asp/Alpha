@@ -91,7 +91,7 @@ public abstract class AbstractSolverTests {
 		return System.getProperty("test." + subKey, def).split(",");
 	}
 
-	@Parameters(name = "{0}/{1}/{2}/{3}")
+	@Parameters(name = "{0}/{1}/{2}/{3}/seed={4}/checks={5}/gtc={6}/gtr={7}/dir={8}")
 	public static Collection<Object[]> parameters() {
 		// Check whether we are running in a CI environment.
 		boolean ci = Boolean.valueOf(System.getenv("CI"));
@@ -100,6 +100,9 @@ public abstract class AbstractSolverTests {
 		String[] grounders = getProperty("grounders", "naive");
 		String[] stores = getProperty("stores", ci ? "alpharoaming,naive" : "alpharoaming");
 		String[] heuristics = getProperty("heuristics", ci ? "ALL" : "NAIVE,VSIDS");
+		String[] gtcValues = getProperty("grounderToleranceConstraints", ci ? "strict,1,lax" : "strict,lax");
+		String[] gtrValues = getProperty("grounderToleranceRules", ci ? "strict,1,lax" : "strict");
+		String[] dirValues = getProperty("disableInstanceRemoval", ci ? "false,true" : "false");
 
 		// "ALL" is a magic value that will be expanded to contain all heuristics.
 		if ("ALL".equals(heuristics[0])) {
@@ -128,9 +131,15 @@ public abstract class AbstractSolverTests {
 			for (String grounder : grounders) {
 				for (String store : stores) {
 					for (String heuristic : heuristics) {
-						factories.add(new Object[]{
-							solver, grounder, store, BranchingHeuristicFactory.Heuristic.valueOf(heuristic), seed, checks
-						});
+						for (String gtc : gtcValues) {
+							for (String gtr : gtrValues) {
+								for (String dir : dirValues) {
+									factories.add(new Object[]{
+											solver, grounder, store, BranchingHeuristicFactory.Heuristic.valueOf(heuristic), seed, checks, gtc, gtr, Boolean.valueOf(dir)
+									});
+								}
+							}
+						}
 					}
 				}
 			}
@@ -156,6 +165,15 @@ public abstract class AbstractSolverTests {
 
 	@Parameter(5)
 	public boolean checks;
+
+	@Parameter(6)
+	public String grounderToleranceConstraints;
+
+	@Parameter(7)
+	public String grounderToleranceRules;
+
+	@Parameter(8)
+	public boolean disableInstanceRemoval;
 
 	protected Solver getInstance(AtomStore atomStore, Grounder grounder) {
 		return SolverFactory.getInstance(buildSystemConfig(), atomStore, grounder);
