@@ -46,7 +46,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
@@ -549,19 +548,23 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				throw oops("Grounded atom should be ground but is not");
 			}
 
-			AtomicInteger atomicRemainingTolerance = new AtomicInteger(remainingTolerance);	// TODO: done this way for call-by-reference, should be refactored
 			if (factsFromProgram.get(substitutedAtom.getPredicate()) == null || !factsFromProgram.get(substitutedAtom.getPredicate()).contains(new Instance(substitutedAtom.getTerms()))) {
-				if (storeAtomAndTerminateIfAtomDoesNotHold(substitutedAtom, currentAssignment, atomicRemainingTolerance)) {
+				final TerminateOrTolerate terminateOrTolerate = storeAtomAndTerminateIfAtomDoesNotHold(substitutedAtom, currentAssignment, remainingTolerance);
+				if (terminateOrTolerate.decrementTolerance) {
+					remainingTolerance--;
+				}
+				if (terminateOrTolerate.terminate) {
 					continue;
 				}
 			}
-			bindingResult.add(advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, atomicRemainingTolerance.get(), unified, currentAssignment));
+			bindingResult.add(advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, unified, currentAssignment));
 		}
 
 		return bindingResult;
 	}
 
-	private boolean storeAtomAndTerminateIfAtomDoesNotHold(final Atom substitute, Assignment currentAssignment, AtomicInteger remainingTolerance) {
+	private TerminateOrTolerate storeAtomAndTerminateIfAtomDoesNotHold(final Atom substitute, final Assignment currentAssignment, final int remainingTolerance) {
+		int decrementedTolerance = remainingTolerance;
 		if (currentAssignment != null) { // if we are not in bootstrapping
 			final int atomId = atomStore.putIfAbsent(substitute);
 			ThriceTruth truth = currentAssignment.isAssigned(atomId) ? currentAssignment.getTruth(atomId) : null;
@@ -570,26 +573,39 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				final Instance instance = new Instance(substitute.getTerms());
 				boolean isInWorkingMemory = workingMemory.get(substitute, true).containsInstance(instance);
 				if (isInWorkingMemory) {
-					return false;
+					return new TerminateOrTolerate(false, false);
 				}
-				if (truth != null && !truth.toBoolean() || remainingTolerance.decrementAndGet() < 0) {
+				if (truth != null && !truth.toBoolean()) {
+					return new TerminateOrTolerate(true, false);
+				}
+				if (--decrementedTolerance < 0) {
 					// terminate if more positive atoms are unsatisfied as tolerated by the heuristic
-					return true;
+					return new TerminateOrTolerate(true, true);
 				}
 			} else {
 				if (truth == null || !truth.toBoolean()) {
 					// Atom currently does not hold
 					removeAfterObtainingNewNoGoods.add(substitute);
 				}
-				if (truth == null && remainingTolerance.decrementAndGet() < 0) {
+				if (truth == null && --decrementedTolerance < 0) {
 					// terminate if more positive atoms are unsatisfied as tolerated by the heuristic
-					return true;
+					return new TerminateOrTolerate(true, true);
 				}
 				// terminate if positive body atom is assigned false
-				return truth != null && !truth.toBoolean();
+				return new TerminateOrTolerate(truth != null && !truth.toBoolean(), decrementedTolerance < remainingTolerance);
 			}
 		}
-		return false;
+		return new TerminateOrTolerate(false, decrementedTolerance < remainingTolerance);
+	}
+
+	private static class TerminateOrTolerate {
+		boolean terminate;
+		boolean decrementTolerance;
+
+		TerminateOrTolerate(boolean terminate, boolean decrementTolerance) {
+			this.terminate = terminate;
+			this.decrementTolerance = decrementTolerance;
+		}
 	}
 
 	@Override
