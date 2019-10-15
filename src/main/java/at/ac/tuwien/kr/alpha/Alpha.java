@@ -106,6 +106,7 @@ public class Alpha {
 
 		GrounderHeuristicsConfiguration grounderHeuristicConfiguration = GrounderHeuristicsConfiguration
 				.getInstance(this.config.getGrounderToleranceConstraints(), this.config.getGrounderToleranceRules());
+		grounderHeuristicConfiguration.setDisableInstanceRemoval(this.config.isDisableInstanceRemoval());
 
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, grounderHeuristicConfiguration, doDebugChecks);

@@ -74,7 +74,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	private ArrayList<NonGroundRule> fixedRules = new ArrayList<>();
 	private LinkedHashSet<Atom> removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
-	private boolean disableInstanceRemoval;
 	private final boolean useCountingGridNormalization;
 	private final boolean debugInternalChecks;
 
@@ -567,7 +566,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			final int atomId = atomStore.putIfAbsent(substitute);
 			ThriceTruth truth = currentAssignment.isAssigned(atomId) ? currentAssignment.getTruth(atomId) : null;
 
-			if (disableInstanceRemoval) {
+			if (heuristicsConfiguration.isDisableInstanceRemoval()) {
 				final Instance instance = new Instance(substitute.getTerms());
 				boolean isInWorkingMemory = workingMemory.get(substitute, true).containsInstance(instance);
 				if (isInWorkingMemory) {

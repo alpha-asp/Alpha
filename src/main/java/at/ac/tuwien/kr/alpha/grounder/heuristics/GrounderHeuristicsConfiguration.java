@@ -46,6 +46,9 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
  * The default value for both parameters is {@code 0}, which means that only those rules and constraints are
  * grounded whose positive body is already satisfied.
  *
+ * The additional parameter {@link #disableInstanceRemoval} is a switch for the accumulator grounding strategy
+ * which disables the removal of instances from the grounder memory in certain cases.
+ *
  */
 public class GrounderHeuristicsConfiguration {
 
@@ -56,6 +59,7 @@ public class GrounderHeuristicsConfiguration {
 	
 	private int toleranceConstraints;
 	private int toleranceRules;
+	private boolean disableInstanceRemoval;
 	
 	public GrounderHeuristicsConfiguration() {
 		super();
@@ -102,7 +106,15 @@ public class GrounderHeuristicsConfiguration {
 	public boolean isLax(boolean ruleIsConstraint) {
 		return getTolerance(ruleIsConstraint) != STRICT_INT;
 	}
-	
+
+	public boolean isDisableInstanceRemoval() {
+		return disableInstanceRemoval;
+	}
+
+	public void setDisableInstanceRemoval(boolean disableInstanceRemoval) {
+		this.disableInstanceRemoval = disableInstanceRemoval;
+	}
+
 	public static GrounderHeuristicsConfiguration strict() {
 		return new GrounderHeuristicsConfiguration(STRICT_INT, STRICT_INT);
 	}
@@ -131,7 +143,7 @@ public class GrounderHeuristicsConfiguration {
 	
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName() + "(toleranceConstraints=" + toleranceConstraints + ",toleranceRules=" + toleranceRules + ")";
+		return this.getClass().getSimpleName() + "(toleranceConstraints=" + toleranceConstraints + ",toleranceRules=" + toleranceRules + ",disableInstanceRemoval=" + disableInstanceRemoval + ")";
 	}
 
 }
