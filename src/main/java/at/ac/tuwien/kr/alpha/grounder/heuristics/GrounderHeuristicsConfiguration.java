@@ -59,8 +59,8 @@ public class GrounderHeuristicsConfiguration {
 	
 	public GrounderHeuristicsConfiguration() {
 		super();
-		this.toleranceConstraints = 0;
-		this.toleranceRules = 0;
+		this.toleranceConstraints = STRICT_INT;
+		this.toleranceRules = STRICT_INT;
 	}
 	
 	/**
