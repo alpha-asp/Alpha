@@ -289,7 +289,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 * Prepares facts of the input program for joining and derives all NoGoods representing ground rules. May only be called once.
 	 * @return
 	 */
-	private HashMap<Integer, NoGood> bootstrap() {
+	HashMap<Integer, NoGood> bootstrap() {
 		final HashMap<Integer, NoGood> groundNogoods = new LinkedHashMap<>();
 
 		for (Predicate predicate : factsFromProgram.keySet()) {
@@ -407,7 +407,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return registry.register(noGood);
 	}
 
-	private BindingResult bindNextAtomInRule(NonGroundRule rule, RuleGroundingOrder groundingOrder, Substitution partialSubstitution, Assignment currentAssignment) {
+	BindingResult bindNextAtomInRule(NonGroundRule rule, RuleGroundingOrder groundingOrder, Substitution partialSubstitution, Assignment currentAssignment) {
 		int tolerance = heuristicsConfiguration.getTolerance(rule.isConstraint());
 		if (tolerance < 0) {
 			tolerance = Integer.MAX_VALUE;
@@ -714,7 +714,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 	}
 
-	private static class BindingResult {
+	static class BindingResult {
 		final List<Substitution> generatedSubstitutions = new ArrayList<>();
 		final List<Integer> numbersOfUnassignedPositiveBodyAtoms = new ArrayList<>();
 		

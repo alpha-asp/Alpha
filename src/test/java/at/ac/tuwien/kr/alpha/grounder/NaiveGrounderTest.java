@@ -27,6 +27,8 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
@@ -40,7 +42,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-import static at.ac.tuwien.kr.alpha.TestUtil.*;
+import static at.ac.tuwien.kr.alpha.TestUtil.atom;
+import static at.ac.tuwien.kr.alpha.TestUtil.literal;
 import static org.junit.Assert.*;
 
 /**
@@ -49,7 +52,7 @@ import static org.junit.Assert.*;
  * Some test cases use atoms of the something/1 predicate to trick the grounder
  * into believing that other atoms might become true. This is fragile because future implementations
  * of preprocessing techniques might render this trick useless.
- * TODO: make less fragile
+ * If unit tests in this class begin to fail due to such improvements to preprocessing, this issue must be addressed.
  */
 public class NaiveGrounderTest {
 	private static final ProgramParser PARSER = new ProgramParser();
@@ -116,17 +119,16 @@ public class NaiveGrounderTest {
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		int litB = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))));
-		assertTrue(noGoods.containsValue(NoGood.fromConstraint(Arrays.asList(litB), Collections.emptyList())));
+		assertTrue(noGoods.containsValue(NoGood.fromConstraint(Collections.singletonList(litB), Collections.emptyList())));
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
-	@Ignore("Currently, NaiveGrounder tries to escape this situation instead of throwing an exception")
+	@Test
 	public void avoidDeadEndsWithLaxGrounderHeuristic() {
 		RuleGroundingOrder groundingOrderP1 = new RuleGroundingOrder(literal("p1", "X"),
 				Arrays.asList(literal("p2", "X"), literal("q2", "Y"), literal("q1", "Y")), -1, false);
 		RuleGroundingOrder groundingOrderQ1 = new RuleGroundingOrder(literal("q1", "Y"),
 				Arrays.asList(literal("q2", "Y"), literal("p2", "X"), literal("p1", "X")), -1, false);
-		testDeadEnd(groundingOrderP1, groundingOrderQ1, false);
+		testDeadEnd(groundingOrderP1, groundingOrderQ1, true);
 	}
 
 	@Test
@@ -148,13 +150,20 @@ public class NaiveGrounderTest {
 		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, p -> true, GrounderHeuristicsConfiguration.lax(), true);
 
 		NonGroundRule nonGroundRule = grounder.getNonGroundRule(0);
-		nonGroundRule.groundingOrder.groundingOrders.put(literal("p1", "X"), groundingOrderP1);
-		nonGroundRule.groundingOrder.groundingOrders.put(literal("q1", "Y"), groundingOrderQ1);
+		final Literal litP1X = literal("p1", "X");
+		final Literal litQ1Y = literal("q1", "Y");
+		nonGroundRule.groundingOrder.groundingOrders.put(litP1X, groundingOrderP1);
+		nonGroundRule.groundingOrder.groundingOrders.put(litQ1Y, groundingOrderQ1);
 
+		grounder.bootstrap();
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
-		Map<Integer, NoGood> noGoods = grounder.getNoGoods(currentAssignment);
-		printNoGoods(atomStore, noGoods.values());
-		assertEquals(expectNoGoods, !noGoods.isEmpty());
+		final Substitution substP1X1 = Substitution.unify(litP1X, new Instance(ConstantTerm.getInstance(1)), new Substitution());
+		final Substitution substQ1Y1 = Substitution.unify(litQ1Y, new Instance(ConstantTerm.getInstance(1)), new Substitution());
+		final NaiveGrounder.BindingResult bindingResultP1 = grounder.bindNextAtomInRule(nonGroundRule, groundingOrderP1, substP1X1, currentAssignment);
+		final NaiveGrounder.BindingResult bindingResultQ1 = grounder.bindNextAtomInRule(nonGroundRule, groundingOrderQ1, substQ1Y1, currentAssignment);
+
+		assertEquals(expectNoGoods, bindingResultP1.size() > 0);
+		assertEquals(expectNoGoods, bindingResultQ1.size() > 0);
 	}
 
 	@Test
@@ -162,7 +171,7 @@ public class NaiveGrounderTest {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X). "
 				+ "b(X) :- something(X). ");
-		testIfGrounderGroundsRule(program, ThriceTruth.FALSE, false);
+		testIfGrounderGroundsRule(program, 0, literal("a", "X"), 1, ThriceTruth.FALSE, false);
 	}
 
 	@Test
@@ -170,7 +179,7 @@ public class NaiveGrounderTest {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X). "
 				+ "b(X) :- something(X). ");
-		testIfGrounderGroundsRule(program, ThriceTruth.TRUE, true);
+		testIfGrounderGroundsRule(program, 0, literal("a", "X"), 1, ThriceTruth.TRUE, true);
 	}
 
 	@Test
@@ -179,7 +188,7 @@ public class NaiveGrounderTest {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), not b(X). "
 				+ "b(X) :- something(X). ");
-		testIfGrounderGroundsRule(program, ThriceTruth.TRUE, false);
+		testIfGrounderGroundsRule(program, 0, literal("a", "X"), 1, ThriceTruth.TRUE, false);
 	}
 
 	@Test
@@ -187,10 +196,11 @@ public class NaiveGrounderTest {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), not b(X). "
 				+ "b(X) :- something(X). ");
-		testIfGrounderGroundsRule(program, ThriceTruth.FALSE, true);
+
+		testIfGrounderGroundsRule(program, 0, literal("a", "X"), 1, ThriceTruth.FALSE, true);
 	}
 
-	private void testIfGrounderGroundsRule(Program program, ThriceTruth bTruth, boolean expectNoGoods) {
+	private void testIfGrounderGroundsRule(Program program, int ruleID, Literal startingLiteral, int startingInstance, ThriceTruth bTruth, boolean expectNoGoods) {
 		AtomStore atomStore = new AtomStoreImpl();
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
 		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, p -> true, GrounderHeuristicsConfiguration.lax(), true);
@@ -199,9 +209,11 @@ public class NaiveGrounderTest {
 		currentAssignment.growForMaxAtomId();
 		currentAssignment.assign(b, bTruth);
 
-		Map<Integer, NoGood> noGoods = grounder.getNoGoods(currentAssignment);
-		printNoGoods(atomStore, noGoods.values());
-		assertEquals(expectNoGoods, !noGoods.isEmpty());
+		grounder.bootstrap();
+		final NonGroundRule nonGroundRule = grounder.getNonGroundRule(ruleID);
+		final Substitution substStartingLiteral = Substitution.unify(startingLiteral, new Instance(ConstantTerm.getInstance(startingInstance)), new Substitution());
+		final NaiveGrounder.BindingResult bindingResult = grounder.bindNextAtomInRule(nonGroundRule, nonGroundRule.groundingOrder.groundingOrders.get(startingLiteral), substStartingLiteral, currentAssignment);
+		assertEquals(expectNoGoods, bindingResult.size() > 0);
 	}
 	
 	@Test
@@ -209,7 +221,7 @@ public class NaiveGrounderTest {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X). "
 				+ "b(X) :- something(X).");
-		testLaxGrounderHeuristicTolerance(program, 0, 0, false);
+		testLaxGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 0, 0, false);
 	}
 	
 	@Test
@@ -217,7 +229,7 @@ public class NaiveGrounderTest {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X). "
 				+ "b(X) :- something(X).");
-		testLaxGrounderHeuristicTolerance(program, 1, 0, true);
+		testLaxGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 1, 0, true);
 	}
 	
 	@Test
@@ -225,7 +237,7 @@ public class NaiveGrounderTest {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X), b(X+1). "
 				+ "b(X) :- something(X).");
-		testLaxGrounderHeuristicTolerance(program, 1, 0, false);
+		testLaxGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 1, 0, false);
 	}
 	
 	@Test
@@ -233,7 +245,7 @@ public class NaiveGrounderTest {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X), b(X+1). "
 				+ "b(X) :- something(X).");
-		testLaxGrounderHeuristicTolerance(program, 2, 0, true);
+		testLaxGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 2, 0, true);
 	}
 
 	@Test
@@ -241,7 +253,7 @@ public class NaiveGrounderTest {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X), b(X+1), b(X+2). "
 				+ "b(X) :- something(X).");
-		testLaxGrounderHeuristicTolerance(program, 2, 0, false);
+		testLaxGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 2, 0, false);
 	}
 
 	@Test
@@ -249,10 +261,10 @@ public class NaiveGrounderTest {
 		Program program = PARSER.parse("a(1). b(1). "
 				+ "c(X) :- a(X), b(X), b(X+1), b(X+2). "
 				+ "b(X) :- something(X).");
-		testLaxGrounderHeuristicTolerance(program, 2, 0, true);
+		testLaxGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 2, 0, true);
 	}
 
-	private void testLaxGrounderHeuristicTolerance(Program program, int tolerance, int nTrueBs, boolean expectNoGoods) {
+	private void testLaxGrounderHeuristicTolerance(Program program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance, int nTrueBs, boolean expectNoGoods) {
 		AtomStore atomStore = new AtomStoreImpl();
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
 		GrounderHeuristicsConfiguration heuristicConfiguration = GrounderHeuristicsConfiguration.getInstance(tolerance, tolerance);
@@ -264,9 +276,11 @@ public class NaiveGrounderTest {
 			currentAssignment.assign(b, ThriceTruth.TRUE);
 		}
 
-		Map<Integer, NoGood> noGoods = grounder.getNoGoods(currentAssignment);
-		printNoGoods(atomStore, noGoods.values());
-		assertEquals(expectNoGoods, !noGoods.isEmpty());
+		grounder.bootstrap();
+		final NonGroundRule nonGroundRule = grounder.getNonGroundRule(ruleID);
+		final Substitution substStartingLiteral = Substitution.unify(startingLiteral, new Instance(ConstantTerm.getInstance(startingInstance)), new Substitution());
+		final NaiveGrounder.BindingResult bindingResult = grounder.bindNextAtomInRule(nonGroundRule, nonGroundRule.groundingOrder.groundingOrders.get(startingLiteral), substStartingLiteral, currentAssignment);
+		assertEquals(expectNoGoods, bindingResult.size() > 0);
 	}
 
 	private void assertExistsNoGoodContaining(Collection<NoGood> noGoods, int literal) {
