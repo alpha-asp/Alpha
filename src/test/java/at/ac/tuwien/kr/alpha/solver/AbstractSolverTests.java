@@ -100,8 +100,8 @@ public abstract class AbstractSolverTests {
 		String[] grounders = getProperty("grounders", "naive");
 		String[] stores = getProperty("stores", ci ? "alpharoaming,naive" : "alpharoaming");
 		String[] heuristics = getProperty("heuristics", ci ? "ALL" : "NAIVE,VSIDS");
-		String[] gtcValues = getProperty("grounderToleranceConstraints", ci ? "strict,1,lax" : "strict,lax");
-		String[] gtrValues = getProperty("grounderToleranceRules", ci ? "strict,1,lax" : "strict");
+		String[] gtcValues = getProperty("grounderToleranceConstraints", "strict,lax");
+		String[] gtrValues = getProperty("grounderToleranceRules", "strict");
 		String[] dirValues = getProperty("disableInstanceRemoval", ci ? "false,true" : "false");
 
 		// "ALL" is a magic value that will be expanded to contain all heuristics.
