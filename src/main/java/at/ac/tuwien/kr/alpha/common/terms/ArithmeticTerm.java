@@ -93,9 +93,7 @@ public class ArithmeticTerm extends Term {
 
 	public static Integer evaluateGroundTerm(Term term) {
 		if (!term.isGround()) {
-//			throw new RuntimeException("Cannot evaluate arithmetic term since it is not ground: " + term);
-			return null;
-			// TODO: maybe this has to be revised. In the case of lax grounder heuristics, it may be that we try to evaluate a non-ground term here, but an exception does not help
+			throw new RuntimeException("Cannot evaluate arithmetic term since it is not ground: " + term);
 		}
 		return evaluateGroundTermHelper(term);
 	}
