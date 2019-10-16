@@ -449,12 +449,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		if (currentLiteral instanceof FixedInterpretationLiteral) {
 			// Generate all substitutions for the builtin/external/interval atom.
 			FixedInterpretationLiteral substitutedLiteral = (FixedInterpretationLiteral)currentLiteral.substitute(partialSubstitution);
-			// TODO: this has to be improved before merging into master:
-			if (!substitutedLiteral.isGround() &&
-					!(substitutedLiteral instanceof ComparisonLiteral && ((ComparisonLiteral)substitutedLiteral).isLeftOrRightAssigning()) &&
-					!(substitutedLiteral instanceof IntervalLiteral && substitutedLiteral.getTerms().get(0).isGround()) &&
-					!(substitutedLiteral instanceof ExternalLiteral)
-					) {
+			if (shallPushBackFixedInterpretationLiteral(substitutedLiteral)) {
 				return pushBackAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
 			}
 			final List<Substitution> substitutions = substitutedLiteral.getSubstitutions(partialSubstitution);
@@ -518,6 +513,13 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 
 		return createBindings(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment, instances, substitute);
+	}
+
+	private boolean shallPushBackFixedInterpretationLiteral(FixedInterpretationLiteral substitutedLiteral) {
+		return !(substitutedLiteral.isGround() ||
+				(substitutedLiteral instanceof ComparisonLiteral && ((ComparisonLiteral)substitutedLiteral).isLeftOrRightAssigning()) ||
+				(substitutedLiteral instanceof IntervalLiteral && substitutedLiteral.getTerms().get(0).isGround()) ||
+				(substitutedLiteral instanceof ExternalLiteral));
 	}
 
 	private Collection<Instance> getInstancesForSubstitute(Atom substitute, Substitution partialSubstitution) {
