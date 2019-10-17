@@ -564,8 +564,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				}
 			}
 			NoGoodCounter noGoodCounter = store.getNoGoodCounter();
-			LOGGER.info("Number of NoGoods by type: " + noGoodCounter.getStatsByType());
-			LOGGER.info("Number of NoGoods by cardinality: " + noGoodCounter.getStatsByCardinality());
+			LOGGER.debug("Number of NoGoods by type: " + noGoodCounter.getStatsByType());
+			LOGGER.debug("Number of NoGoods by cardinality: " + noGoodCounter.getStatsByCardinality());
 		}
 	}
 }
