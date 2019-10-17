@@ -554,6 +554,11 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		return ((NoGoodStoreAlphaRoaming)store).getLearnedNoGoodDeletion().getNumberOfDeletedNoGoods();
 	}
 
+	@Override
+	public NoGoodCounter getNoGoodCounter() {
+		return store.getNoGoodCounter();
+	}
+
 	private void logStats() {
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug(getStatisticsString());

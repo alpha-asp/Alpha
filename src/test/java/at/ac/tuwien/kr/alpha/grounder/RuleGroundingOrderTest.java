@@ -37,8 +37,7 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static at.ac.tuwien.kr.alpha.TestUtil.literal;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Copyright (c) 2017-2019, the Alpha Team.
@@ -96,7 +95,7 @@ public class RuleGroundingOrderTest {
 			assertEquals(0, rgo0.orderStartingFrom(startingLiteral).getPositionFromWhichAllVarsAreBound());
 		}
 	}
-	
+
 	@Test
 	public void testPositionFromWhichAllVarsAreBound_longerSimpleNonGround() {
 		Program program = parser.parse("a(X) :- b(X), c(X), d(X), not e(X).");
@@ -106,7 +105,22 @@ public class RuleGroundingOrderTest {
 			assertEquals(0, rgo0.orderStartingFrom(startingLiteral).getPositionFromWhichAllVarsAreBound());
 		}
 	}
-	
+
+	@Test
+	public void testToString_longerSimpleNonGround() {
+		Program program = parser.parse("a(X) :- b(X), c(X), d(X), not e(X).");
+		RuleGroundingOrders rgo0 = computeGroundingOrdersForRule(program, 0);
+		assertEquals(3, rgo0.getStartingLiterals().size());
+		for (Literal startingLiteral : rgo0.getStartingLiterals()) {
+			switch (startingLiteral.getPredicate().getName()) {
+				case "b": assertEquals("b(X) : | c(X), d(X), not e(X)", rgo0.orderStartingFrom(startingLiteral).toString()); break;
+				case "c": assertEquals("c(X) : | b(X), d(X), not e(X)", rgo0.orderStartingFrom(startingLiteral).toString()); break;
+				case "d": assertEquals("d(X) : | b(X), c(X), not e(X)", rgo0.orderStartingFrom(startingLiteral).toString()); break;
+				default: fail("Unexpected starting literal: " + startingLiteral);
+			}
+		}
+	}
+
 	@Test
 	public void testPositionFromWhichAllVarsAreBound_joinedNonGround() {
 		Program program = parser.parse("a(X) :- b(X), c(X,Y), d(X,Z), not e(X).");

@@ -32,7 +32,7 @@ import static at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfig
 import static org.junit.Assert.*;
 
 /**
- * Tests {@link GrounderHeuristicConfiguration}
+ * Tests {@link GrounderHeuristicsConfiguration}
  */
 public class GrounderHeuristicConfigurationTest {
 
@@ -75,6 +75,15 @@ public class GrounderHeuristicConfigurationTest {
 	@Test
 	public void testGetInstanceIntInt() {
 		GrounderHeuristicsConfiguration grounderHeuristicsConfiguration = GrounderHeuristicsConfiguration.getInstance(5, 1);
+		assertTrue(grounderHeuristicsConfiguration.isLax(true));
+		assertTrue(grounderHeuristicsConfiguration.isLax(false));
+		assertEquals(5, grounderHeuristicsConfiguration.getToleranceConstraints());
+		assertEquals(1, grounderHeuristicsConfiguration.getToleranceRules());
+	}
+
+	@Test
+	public void testGetInstanceStringIntStringInt() {
+		GrounderHeuristicsConfiguration grounderHeuristicsConfiguration = GrounderHeuristicsConfiguration.getInstance("5", "1");
 		assertTrue(grounderHeuristicsConfiguration.isLax(true));
 		assertTrue(grounderHeuristicsConfiguration.isLax(false));
 		assertEquals(5, grounderHeuristicsConfiguration.getToleranceConstraints());

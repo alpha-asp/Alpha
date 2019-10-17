@@ -28,6 +28,9 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.NoGood.Type;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Maintains statistics on numbers of various types of {@link NoGood}s.
  */
@@ -99,14 +102,11 @@ public class NoGoodCounter {
 	 * @return a string giving statistics on numbers of nogoods by type
 	 */
 	public String getStatsByType() {
-		StringBuilder sb = new StringBuilder();
-		for (Type type : NoGood.Type.values()) {
-			sb.append(type.name());
-			sb.append(": ");
-			sb.append(countByType[type.ordinal()]);
-			sb.append(" ");
+		List<String> statsList = new ArrayList<>(Type.values().length);
+		for (Type type : Type.values()) {
+			statsList.add(type.name() + ": " + countByType[type.ordinal()]);
 		}
-		return sb.toString();
+		return String.join(" ", statsList);
 	}
 
 	/**
