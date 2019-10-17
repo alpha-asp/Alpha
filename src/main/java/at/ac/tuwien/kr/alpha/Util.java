@@ -47,10 +47,6 @@ public class Util {
 		return Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue);
 	}
 
-	public static <E> String join(Iterable<E> iterable) {
-		return join("", iterable, "");
-	}
-
 	public static <E> String join(String prefix, Iterable<E> iterable, String suffix) {
 		return join(prefix, iterable, ", ", suffix);
 	}

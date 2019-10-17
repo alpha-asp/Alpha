@@ -99,6 +99,15 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 	 */
 	protected final MultiValuedMap<Integer, Integer> atomsToBodiesAtoms = new HashSetValuedHashMap<>();
 
+	/**
+	 *
+	 * @param assignment
+	 * @param choiceManager
+	 * @param decayPeriod the number of steps after which all counters are decayed (i.e. multiplied by {@code decayFactor}).
+	 * @param decayFactor
+	 * @param random
+	 * @param bodyActivityType
+	 */
 	public DependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, Random random, BodyActivityType bodyActivityType) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
@@ -114,20 +123,6 @@ public class DependencyDrivenHeuristic implements ActivityBasedBranchingHeuristi
 
 	public DependencyDrivenHeuristic(Assignment assignment, ChoiceManager choiceManager, Random random) {
 		this(assignment, choiceManager, random, BodyActivityType.DEFAULT);
-	}
-
-	/**
-	 * Gets the number of steps after which all counters are decayed (i.e. multiplied by {@link #getDecayFactor()}.
-	 */
-	public int getDecayPeriod() {
-		return decayPeriod;
-	}
-
-	/**
-	 * Gets the factor by which all counters are multiplied to decay after {@link #getDecayPeriod()}.
-	 */
-	public double getDecayFactor() {
-		return decayFactor;
 	}
 
 	@Override

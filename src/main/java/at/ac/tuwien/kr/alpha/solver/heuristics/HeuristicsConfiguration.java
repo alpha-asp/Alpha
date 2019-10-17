@@ -35,10 +35,11 @@ import java.util.List;
  */
 public class HeuristicsConfiguration {
 
-	private Heuristic heuristic;
-	private boolean respectDomspecHeuristics;
-	private Strategy momsStrategy;
-private List<Integer> replayChoices;
+	private final Heuristic heuristic;
+	private final boolean respectDomspecHeuristics;
+	private final Strategy momsStrategy;
+	private final List<Integer> replayChoices;
+
 	/**
 	 * @param heuristic
 	 * @param respectDomspecHeuristics
@@ -57,19 +58,8 @@ private List<Integer> replayChoices;
 		return heuristic;
 	}
 
-	/**
-	 * @param heuristic the heuristic to set
-	 */
-	public void setHeuristic(Heuristic heuristic) {
-		this.heuristic = heuristic;
-	}
-
 	public boolean isRespectDomspecHeuristics() {
 		return respectDomspecHeuristics;
-	}
-
-	public void setRespectDomspecHeuristics(boolean respectDomspecHeuristics) {
-		this.respectDomspecHeuristics = respectDomspecHeuristics;
 	}
 
 	/**
@@ -78,13 +68,6 @@ private List<Integer> replayChoices;
 	public Strategy getMomsStrategy() {
 		return momsStrategy;
 	}
-
-	/**
-	 * @param momsStrategy the momsStrategy to set
-	 */
-	public void setMomsStrategy(Strategy momsStrategy) {
-		this.momsStrategy = momsStrategy;
-	}
 /**
 	 * @return the replayChoices
 	 */
@@ -92,12 +75,6 @@ private List<Integer> replayChoices;
 		return replayChoices;
 	}
 
-	/**
-	 * @param replayChoices the replayChoices to set
-	 */
-	public void setReplayChoices(List<Integer> replayChoices) {
-		this.replayChoices = replayChoices;
-	}
 	public static HeuristicsConfigurationBuilder builder() {
 		return new HeuristicsConfigurationBuilder();
 	}

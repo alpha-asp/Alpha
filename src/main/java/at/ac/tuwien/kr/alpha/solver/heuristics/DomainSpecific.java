@@ -36,7 +36,9 @@ import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.Conflic
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
@@ -128,77 +130,5 @@ public class DomainSpecific implements BranchingHeuristic {
 	@Override
 	public String toString() {
 		return this.getClass().getSimpleName();
-	}
-
-	class ActiveHeuristicsToBodies {
-		private final Set<Integer> bodiesForActiveHeuristics = new HashSet<>();
-		private HeuristicDirectiveValues heuristicDirectiveValues;
-		private boolean severalValues;
-		private final Map<HeuristicDirectiveValues, Set<Integer>> activeHeuristicsToBodies = new HashMap<>();
-
-		public void add(HeuristicDirectiveValues newValues) {
-			if (!severalValues) {
-				if (heuristicDirectiveValues == null) {
-					heuristicDirectiveValues = newValues;
-				} else if (!heuristicDirectiveValues.equals(newValues)) {
-					switchToSeveralValues();
-				}
-			}
-			addBodies(newValues);
-			if (isEmpty()) {
-				heuristicDirectiveValues = null;
-				severalValues = false;
-			}
-		}
-
-		boolean isEmpty() {
-			return bodiesForActiveHeuristics.isEmpty();
-		}
-
-		private void switchToSeveralValues() {
-			severalValues = true;
-			addBodiesToMap(heuristicDirectiveValues, bodiesForActiveHeuristics);
-			heuristicDirectiveValues = null;
-		}
-
-		private void addBodies(HeuristicDirectiveValues newValues) {
-			int headAtomId = newValues.getHeadAtomId();
-			if (assignment.isUnassignedOrMBT(headAtomId)) {
-				Set<Integer> activeChoiceAtomsDerivingHead = choiceManager.getActiveChoiceAtomsDerivingHead(headAtomId);
-				addBodiesToSet(activeChoiceAtomsDerivingHead);
-				addBodiesToMap(newValues, activeChoiceAtomsDerivingHead);
-			}
-		}
-
-		private void addBodiesToSet(Set<Integer> bodies) {
-			bodiesForActiveHeuristics.addAll(bodies);
-			if (!severalValues) {
-				activeHeuristicsToBodies.put(heuristicDirectiveValues, bodiesForActiveHeuristics);
-			}
-		}
-
-		private void addBodiesToMap(HeuristicDirectiveValues values, Set<Integer> bodies) {
-			if (bodies.isEmpty()) {
-				return;
-			}
-			Set<Integer> existingBodies = activeHeuristicsToBodies.computeIfAbsent(values, k -> new HashSet<>());
-			existingBodies.addAll(bodies);
-		}
-
-		public Set<Integer> getBodiesForActiveHeuristics() {
-			return bodiesForActiveHeuristics;
-		}
-
-		public HeuristicDirectiveValues getHeuristicDirectiveValues() {
-			return heuristicDirectiveValues;
-		}
-
-		public boolean isSeveralValues() {
-			return severalValues;
-		}
-
-		public Map<HeuristicDirectiveValues, Set<Integer>> getActiveHeuristicsToBodies() {
-			return activeHeuristicsToBodies;
-		}
 	}
 }

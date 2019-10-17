@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -29,7 +29,6 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
-import at.ac.tuwien.kr.alpha.common.Substitutable;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -42,8 +41,9 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
@@ -163,15 +163,6 @@ public class Substitution {
 
 	public boolean isEmpty() {
 		return substitution.isEmpty();
-	}
-
-	public <T extends Substitutable<T>> T applyTo(T substitutable) {
-		return substitutable.substitute(this);
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T extends Substitutable<? super T>> List<T> applyTo(Collection<T> substitutables) {
-		return substitutables.stream().map(s -> (T) s.substitute(this)).collect(Collectors.toList());
 	}
 
 	public boolean isVariableSet(VariableTerm variable) {
