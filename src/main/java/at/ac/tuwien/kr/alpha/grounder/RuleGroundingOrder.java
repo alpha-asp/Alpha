@@ -54,13 +54,6 @@ public class RuleGroundingOrder {
 		this(otherRuleGroundingOrder.startingLiteral, new ArrayList<>(otherRuleGroundingOrder.otherLiterals), otherRuleGroundingOrder.positionLastVarBound, otherRuleGroundingOrder.ground);
 		this.stopBindingAtOrderPosition = otherRuleGroundingOrder.stopBindingAtOrderPosition;
 	}
-
-	/**
-	 * @return the startingLiteral
-	 */
-	public Literal getStartingLiteral() {
-		return startingLiteral;
-	}
 	
 	/**
 	 * Returns the literal at the given position in the grounding order,
