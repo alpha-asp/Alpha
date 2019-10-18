@@ -69,7 +69,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	private final GroundConflictNoGoodLearner learner;
 
-	private final BranchingHeuristic branchingHeuristic;
+	final BranchingHeuristic branchingHeuristic;
 
 	private boolean initialize = true;
 	private int mbtAtFixpoint;
