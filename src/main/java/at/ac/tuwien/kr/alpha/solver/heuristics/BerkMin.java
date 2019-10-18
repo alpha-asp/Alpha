@@ -277,9 +277,8 @@ public class BerkMin implements ActivityBasedBranchingHeuristic {
 		return getMostActiveChoosableAtom(streamOfChoosableAtoms);
 	}
 
-	protected int getMostActiveChoosableAtom(Stream<Integer> streamOfLiterals) {
-		return streamOfLiterals
-				.map(Literals::atomOf)
+	protected int getMostActiveChoosableAtom(Stream<Integer> streamOfAtoms) {
+		return streamOfAtoms
 				.filter(this::isUnassigned)
 				.filter(choiceManager::isActiveChoiceAtom)
 				.max(Comparator.comparingDouble(this::getActivity))
