@@ -75,10 +75,12 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 	
 	@Override
 	public int chooseAtom() {
-		for (BranchingHeuristic element : chain) {
+		for (int i = 0; i < chain.size(); i++) {
+			BranchingHeuristic element = chain.get(i);
 			int chosenAtom = element.chooseAtom();
 			if (chosenAtom != DEFAULT_CHOICE_ATOM) {
 				logChosenAtom(element, chosenAtom);
+				decisionCounters[i]++;
 				return chosenAtom;
 			}
 		}
