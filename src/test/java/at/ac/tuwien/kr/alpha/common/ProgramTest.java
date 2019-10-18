@@ -32,19 +32,21 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class ProgramTest {
-	
+
+	public static final String LS = System.lineSeparator();
+
 	@Test
 	public void testToString() {
 		Program parsedProgram = new ProgramParser().parse(
-				"#heuristic q(X) : p(X). [X@2]" + System.lineSeparator() +
-					"p(a)." + System.lineSeparator() +
-					"q(X) :- p(X)." + System.lineSeparator() +
+				"#heuristic q(X) : p(X). [X@2]" + LS +
+					"p(a)." + LS +
+					"q(X) :- p(X)." + LS +
 					"p(b).");
 		assertEquals(
-				"p(a)." + System.lineSeparator() +
-					"p(b)." + System.lineSeparator() +
-					"q(X) :- p(X)." + System.lineSeparator() +
-					"#heuristic q(X) : p(X). [X@2]" + System.lineSeparator(),
+				"p(a)." + LS +
+					"p(b)." + LS +
+					"q(X) :- p(X)." + LS +
+					"#heuristic q(X) : p(X). [X@2]" + LS,
 				parsedProgram.toString());
 	}
 
@@ -60,5 +62,22 @@ public class ProgramTest {
 		Program parsedProgram = new ProgramParser().parse(
 				"#heuristic q(X) : p(X).");
 		assertEquals(ConstantTerm.getInstance(0), ((HeuristicDirective)parsedProgram.getInlineDirectives().getDirectives().iterator().next()).getWeightAtLevel().getLevel());
+	}
+
+	@Test
+	public void testAccumulation() {
+		Program program1 = new ProgramParser().parse(
+				"a." + LS +
+				"b :- a, not c." + LS +
+				"#heuristic b : not c. [1@2]"
+		);
+		Program program2 = new ProgramParser().parse(
+			"c :- a, not b." + LS +
+				"#heuristic c : not b. [2@3]"
+		);
+		program1.accumulate(program2);
+		assertEquals(1, program1.getFacts().size());
+		assertEquals(2, program1.getRules().size());
+		assertEquals(2, program1.getInlineDirectives().getDirectives().size());
 	}
 }

@@ -63,6 +63,7 @@ public class HeuristicDirectiveValuesTest {
 		HeuristicDirectiveValues values1 = new HeuristicDirectiveValues(headAtomId, new BasicAtom(Predicate.getInstance("a", 0)), weight, level, true);
 		HeuristicDirectiveValues values2 = new HeuristicDirectiveValues(headAtomId, new BasicAtom(Predicate.getInstance("a", 0)), weight, level, true);
 		assertEquals(values1, values2);
+		assertEquals(values1.hashCode(), values2.hashCode());
 	}
 
 	@Test
@@ -74,6 +75,7 @@ public class HeuristicDirectiveValuesTest {
 		HeuristicDirectiveValues values1 = new HeuristicDirectiveValues(headAtomId, new BasicAtom(Predicate.getInstance("a", 0)), weight1, level, true);
 		HeuristicDirectiveValues values2 = new HeuristicDirectiveValues(headAtomId, new BasicAtom(Predicate.getInstance("a", 0)), weight2, level, true);
 		assertNotEquals(values1, values2);
+		assertNotEquals(values1.hashCode(), values2.hashCode());
 	}
 
 	@Test
@@ -85,6 +87,7 @@ public class HeuristicDirectiveValuesTest {
 		HeuristicDirectiveValues values1 = new HeuristicDirectiveValues(headAtomId, new BasicAtom(Predicate.getInstance("a", 0)), weight, level1, true);
 		HeuristicDirectiveValues values2 = new HeuristicDirectiveValues(headAtomId, new BasicAtom(Predicate.getInstance("a", 0)), weight, level2, true);
 		assertNotEquals(values1, values2);
+		assertNotEquals(values1.hashCode(), values2.hashCode());
 	}
 
 	@Test
@@ -96,6 +99,7 @@ public class HeuristicDirectiveValuesTest {
 		HeuristicDirectiveValues values1 = new HeuristicDirectiveValues(headAtomId1, new BasicAtom(Predicate.getInstance("a", 0)), weight, level, true);
 		HeuristicDirectiveValues values2 = new HeuristicDirectiveValues(headAtomId2, new BasicAtom(Predicate.getInstance("a", 0)), weight, level, true);
 		assertNotEquals(values1, values2);
+		assertNotEquals(values1.hashCode(), values2.hashCode());
 	}
 
 	@Test
@@ -105,6 +109,17 @@ public class HeuristicDirectiveValuesTest {
 		final int level = 3;
 		HeuristicDirectiveValues values1 = new HeuristicDirectiveValues(headAtomId, new BasicAtom(Predicate.getInstance("a", 0)), weight, level, true);
 		HeuristicDirectiveValues values2 = new HeuristicDirectiveValues(headAtomId, new BasicAtom(Predicate.getInstance("a", 0)), weight, level, false);
+		assertNotEquals(values1, values2);
+		assertNotEquals(values1.hashCode(), values2.hashCode());
+	}
+
+	@Test
+	public void testNotEquals_null() {
+		final int headAtomId = 2;
+		final int weight = 5;
+		final int level = 3;
+		HeuristicDirectiveValues values1 = new HeuristicDirectiveValues(headAtomId, new BasicAtom(Predicate.getInstance("a", 0)), weight, level, true);
+		HeuristicDirectiveValues values2 = null;
 		assertNotEquals(values1, values2);
 	}
 }

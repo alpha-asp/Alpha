@@ -249,9 +249,19 @@ public class DomainSpecificHeuristicsTest {
 	public void testTwoHeuristicsWithSameHeadAndPriority() {
 		Program program = parser.parse(
 				"a :- not b." + LS +
-				"b :- not a." + LS +
-				"#heuristic a : not b. [2@1]" + LS +
-				"#heuristic a : not a. [2@1]");
+						"b :- not a." + LS +
+						"#heuristic a : not b. [2@1]" + LS +
+						"#heuristic a : not a. [2@1]");
+		solveAndAssertAnswerSets(program, "{ a }", "{ b }");
+	}
+
+	@Test
+	public void testTwoHeuristicsOneWithoutRule() {
+		Program program = parser.parse(
+				"a :- not b." + LS +
+						"b :- not a." + LS +
+						"#heuristic a : not b. [2@1]" + LS +
+						"#heuristic c : not a. [3@1]");
 		solveAndAssertAnswerSets(program, "{ a }", "{ b }");
 	}
 

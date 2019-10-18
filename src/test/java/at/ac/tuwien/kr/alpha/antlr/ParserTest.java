@@ -185,9 +185,20 @@ public class ParserTest {
 	}
 
 	@Test
-	public void parseEnumerationDirective() throws IOException {
+	public void parseEnumerationDirective() {
 		Program parsedProgram = parser.parse("p(a,1)." +
 			"# enumeration_predicate_is mune." +
+			"r(X) :- p(X), mune(X)." +
+			"p(b,2).");
+		String directive = ((EnumerationDirective)parsedProgram.getInlineDirectives().getDirectiveValue(InlineDirectives.DIRECTIVE.enum_predicate_is)).getValue();
+		assertEquals("mune", directive);
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void parseEnumerationDirectiveMultiplyDefined() {
+		Program parsedProgram = parser.parse("p(a,1)." +
+			"# enumeration_predicate_is mune." +
+			"#enumeration_predicate_is mune." +
 			"r(X) :- p(X), mune(X)." +
 			"p(b,2).");
 		String directive = ((EnumerationDirective)parsedProgram.getInlineDirectives().getDirectiveValue(InlineDirectives.DIRECTIVE.enum_predicate_is)).getValue();
