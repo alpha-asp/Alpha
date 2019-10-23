@@ -111,6 +111,9 @@ public class CommandLineParser {
 		.desc("enable the usage of (dynamic and static) restarts (default: "
 			+ SystemConfig.DEFAULT_ENABLE_RESTARTS + ")")
 		.build();
+	private static final Option OPT_INITIAL_PHASE = Option.builder("ph").longOpt("initialPhase").hasArg(true).argName("initializer")
+		.desc("set the initial phase [ alltrue | allfalse | random ] (default: " + SystemConfig.DEFAULT_PHASE_INITIALIZER + ")")
+		.build();
 
 	private static final Options CLI_OPTS = new Options();
 
@@ -142,6 +145,7 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NORMALIZATION_GRID);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_NOGOOD_DELETION);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_ENABLE_RESTARTS);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_INITIAL_PHASE);
 	}
 
 	/*
@@ -186,6 +190,7 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NORMALIZATION_GRID.getOpt(), this::handleNormalizationGrid);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_ENABLE_RESTARTS.getOpt(), this::handleEnableRestarts);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_INITIAL_PHASE.getOpt(), this::handleInitialPhase);
 
 		this.inputOptionHandlers.put(CommandLineParser.OPT_NUM_ANSWER_SETS.getOpt(), this::handleNumAnswerSets);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_INPUT.getOpt(), this::handleInput);
@@ -367,5 +372,9 @@ public class CommandLineParser {
 
 	private void handleEnableRestarts(Option opt, SystemConfig cfg) {
 		cfg.setRestartsEnabled(true);
+	}
+
+	private void handleInitialPhase(Option opt, SystemConfig cfg) {
+		cfg.setPhaseInitializer(opt.getValue(SystemConfig.DEFAULT_PHASE_INITIALIZER));
 	}
 }

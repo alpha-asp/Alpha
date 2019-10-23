@@ -27,6 +27,7 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.grounder.structure.AtomChoiceRelation;
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
@@ -37,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
 
@@ -58,25 +60,27 @@ public class VSIDSWithPhaseSaving implements ActivityBasedBranchingHeuristic {
 
 	protected final Assignment assignment;
 	protected final ChoiceManager choiceManager;
+	private final AtomChoiceRelation atomChoiceRelation;
 	private final HeapOfActiveAtoms heapOfActiveAtoms;
 	private final Collection<NoGood> bufferedNoGoods = new ArrayList<>();
 
 	private double activityDecrease;
 	private long numThrownAway;
 
-	private VSIDSWithPhaseSaving(Assignment assignment, ChoiceManager choiceManager, HeapOfActiveAtoms heapOfActiveAtoms, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
+	private VSIDSWithPhaseSaving(Assignment assignment, ChoiceManager choiceManager, AtomChoiceRelation atomChoiceRelation, HeapOfActiveAtoms heapOfActiveAtoms, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
+		this.atomChoiceRelation = atomChoiceRelation;
 		this.heapOfActiveAtoms = heapOfActiveAtoms;
 		this.heapOfActiveAtoms.setMOMsStrategy(momsStrategy);
 	}
 
-	private VSIDSWithPhaseSaving(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
-		this(assignment, choiceManager, new HeapOfActiveAtoms(decayPeriod, decayFactor, choiceManager),  momsStrategy);
+	private VSIDSWithPhaseSaving(Assignment assignment, ChoiceManager choiceManager, AtomChoiceRelation atomChoiceRelation, int decayPeriod, double decayFactor, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
+		this(assignment, choiceManager, atomChoiceRelation, new HeapOfActiveAtoms(decayPeriod, decayFactor, choiceManager),  momsStrategy);
 	}
 
-	VSIDSWithPhaseSaving(Assignment assignment, ChoiceManager choiceManager, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
-		this(assignment, choiceManager, DEFAULT_DECAY_PERIOD, DEFAULT_DECAY_FACTOR,  momsStrategy);
+	VSIDSWithPhaseSaving(Assignment assignment, ChoiceManager choiceManager, AtomChoiceRelation atomChoiceRelation, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
+		this(assignment, choiceManager, atomChoiceRelation, DEFAULT_DECAY_PERIOD, DEFAULT_DECAY_FACTOR,  momsStrategy);
 	}
 
 	@Override
@@ -87,14 +91,27 @@ public class VSIDSWithPhaseSaving implements ActivityBasedBranchingHeuristic {
 	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
 		ingestBufferedNoGoods();	//analysisResult may contain new atoms whose activity must be initialized
 		for (int resolutionAtom : analysisResult.resolutionAtoms) {
-			heapOfActiveAtoms.incrementActivity(resolutionAtom);
+			incrementActivityOfRelatedChoiceAtoms(resolutionAtom);
 		}
 		if (analysisResult.learnedNoGood != null) {
 			for (int literal : analysisResult.learnedNoGood) {
-				heapOfActiveAtoms.incrementActivity(atomOf(literal));
+				incrementActivityOfRelatedChoiceAtoms(atomOf(literal));
 			}
 		}
 		heapOfActiveAtoms.decayIfTimeHasCome();
+	}
+
+	private void incrementActivityOfRelatedChoiceAtoms(int toAtom) {
+		if (atomChoiceRelation == null) {
+			heapOfActiveAtoms.incrementActivity(toAtom);
+			return;
+		}
+		for (Integer relatedChoiceAtom : atomChoiceRelation.getRelatedChoiceAtoms(toAtom)) {
+			if (!choiceManager.isAtomChoice(relatedChoiceAtom)) {
+				throw oops("Related atom is no choice.");
+			}
+			heapOfActiveAtoms.incrementActivity(relatedChoiceAtom);
+		}
 	}
 
 	@Override
@@ -172,6 +189,9 @@ public class VSIDSWithPhaseSaving implements ActivityBasedBranchingHeuristic {
 
 	public void growForMaxAtomId(int maxAtomId) {
 		heapOfActiveAtoms.growForMaxAtomId(maxAtomId);
+		if (atomChoiceRelation != null) {
+			atomChoiceRelation.growForMaxAtomId(maxAtomId);
+		}
 	}
 
 	@Override

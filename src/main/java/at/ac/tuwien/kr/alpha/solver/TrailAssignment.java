@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.solver.heuristics.PhaseInitializerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +70,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	private final AtomStore atomStore;
 	private ChoiceManager choiceManagerCallback;
+	private final PhaseInitializerFactory.PhaseInitializer phaseInitializer;
 
 	/**
 	 * Contains for each known atom a value whose two least
@@ -82,6 +84,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	private Antecedent[] impliedBy;
 	private boolean[] callbackUponChange;
 	private boolean[] phase;
+	private boolean[] hasPhaseSet;
 	private ArrayList<OutOfOrderLiteral> outOfOrderLiterals = new ArrayList<>();
 	private int highestDecisionLevelContainingOutOfOrderLiterals;
 	private ArrayList<Integer> trail = new ArrayList<>();
@@ -95,7 +98,8 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	private boolean checksEnabled;
 	int replayCounter;
 
-	public TrailAssignment(AtomStore atomStore, boolean checksEnabled) {
+	public TrailAssignment(AtomStore atomStore, PhaseInitializerFactory.PhaseInitializer phaseInitializer, boolean checksEnabled) {
+		this.phaseInitializer = phaseInitializer;
 		this.checksEnabled = checksEnabled;
 		this.atomStore = atomStore;
 		this.values = new int[0];
@@ -103,6 +107,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		this.impliedBy = new Antecedent[0];
 		this.callbackUponChange = new boolean[0];
 		this.phase = new boolean[0];
+		this.hasPhaseSet = new boolean[0];
 		this.trailIndicesOfDecisionLevels.add(0);
 		nextPositionInTrail = 0;
 		newAssignmentsIterator = 0;
@@ -110,8 +115,8 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		assignmentsForChoicePosition = 0;
 	}
 
-	public TrailAssignment(AtomStore atomStore) {
-		this(atomStore, false);
+	public TrailAssignment(AtomStore atomStore, PhaseInitializerFactory.PhaseInitializer phaseInitializer) {
+		this(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue(), false);
 	}
 
 	@Override
@@ -122,6 +127,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		Arrays.fill(impliedBy, null);
 		Arrays.fill(callbackUponChange, false);
 		Arrays.fill(phase, false);
+		Arrays.fill(hasPhaseSet, false);
 		outOfOrderLiterals = new ArrayList<>();
 		highestDecisionLevelContainingOutOfOrderLiterals = 0;
 		trail = new ArrayList<>();
@@ -357,6 +363,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			values[atom] = (getDecisionLevel() << 2) | translateTruth(value);
 			this.impliedBy[atom] = impliedBy;
 			this.phase[atom] = value.toBoolean();
+			this.hasPhaseSet[atom] = true;
 			// Adjust MBT counter.
 			if (value == MBT) {
 				mbtCount++;
@@ -451,7 +458,10 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	@Override
 	public boolean getLastValue(int atom) {
-		return phase[atom];
+		if (hasPhaseSet[atom]) {
+			return phase[atom];
+		}
+		return phaseInitializer.getNextInitialPhase();
 	}
 
 	@Override
@@ -543,6 +553,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		Arrays.fill(strongDecisionLevels, oldLength, strongDecisionLevels.length, -1);
 		impliedBy = Arrays.copyOf(impliedBy, newCapacity);
 		phase = Arrays.copyOf(phase, newCapacity);
+		hasPhaseSet = Arrays.copyOf(hasPhaseSet, newCapacity);
 		callbackUponChange = Arrays.copyOf(callbackUponChange, newCapacity);
 	}
 

@@ -32,6 +32,7 @@ import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
+import at.ac.tuwien.kr.alpha.solver.heuristics.PhaseInitializerFactory;
 
 import java.util.Random;
 
@@ -42,7 +43,9 @@ public final class SolverFactory {
 		final Random random = new Random(config.getSeed());
 		final boolean debugInternalChecks = config.isDebugInternalChecks();
 		final HeuristicsConfiguration heuristicsConfiguration = buildHeuristicsConfiguration(config);
-		final WritableAssignment assignment = new TrailAssignment(atomStore, debugInternalChecks);
+		final PhaseInitializerFactory.PhaseInitializer phaseInitializer =
+			PhaseInitializerFactory.getInstance(config.getPhaseInitializerName(), random);
+		final WritableAssignment assignment = new TrailAssignment(atomStore, phaseInitializer, debugInternalChecks);
 
 		NoGoodStore store;
 

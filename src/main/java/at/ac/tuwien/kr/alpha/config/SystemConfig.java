@@ -57,6 +57,7 @@ public class SystemConfig {
 	public static final List<Integer> DEFAULT_REPLAY_CHOICES = Collections.emptyList();
 	public static final boolean DEFAULT_DISABLE_NOGOOD_DELETION = false;
 	public static final boolean DEFAULT_ENABLE_RESTARTS = false;
+	public static final String DEFAULT_PHASE_INITIALIZER = "random";
 
 	private String grounderName = SystemConfig.DEFAULT_GROUNDER_NAME;
 	private String solverName = SystemConfig.DEFAULT_SOLVER_NAME;
@@ -74,6 +75,7 @@ public class SystemConfig {
 	private List<Integer> replayChoices = SystemConfig.DEFAULT_REPLAY_CHOICES;
 	private boolean disableNoGoodDeletion = SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION;
 	private boolean areRestartsEnabled = SystemConfig.DEFAULT_ENABLE_RESTARTS;
+	private String phaseInitializer = SystemConfig.DEFAULT_PHASE_INITIALIZER;
 
 	public String getGrounderName() {
 		return this.grounderName;
@@ -213,6 +215,14 @@ public class SystemConfig {
 
 	public void setRestartsEnabled(boolean areRestartsEnabled) {
 		this.areRestartsEnabled = areRestartsEnabled;
+	}
+
+	public String getPhaseInitializerName() {
+		return phaseInitializer;
+	}
+
+	public void  setPhaseInitializer(String phaseInitializer) {
+		this.phaseInitializer = phaseInitializer;
 	}
 
 }

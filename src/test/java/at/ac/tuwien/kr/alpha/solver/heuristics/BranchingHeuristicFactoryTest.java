@@ -48,7 +48,7 @@ public class BranchingHeuristicFactoryTest {
 	@Before
 	public void setUp() {
 		AtomStore atomStore = new AtomStoreImpl();
-		WritableAssignment assignment = new TrailAssignment(atomStore);
+		WritableAssignment assignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
 		NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment, debugInternalChecks);
 		this.choiceManager = new ChoiceManager(assignment, store);
 	}

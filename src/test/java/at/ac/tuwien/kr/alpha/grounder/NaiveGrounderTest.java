@@ -29,6 +29,7 @@ import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.solver.heuristics.PhaseInitializerFactory;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -57,7 +58,7 @@ public class NaiveGrounderTest {
 		
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
-		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
+		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue()));
 		int litCNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("c", 0))), false);
 		int litB = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))));
 		assertExistsNoGoodContaining(noGoods.values(), litCNeg);
@@ -77,7 +78,7 @@ public class NaiveGrounderTest {
 		
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
-		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
+		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue()));
 		int litANeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("a", 0))), false);
 		int litBNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))), false);
 		int litCNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("c", 0))), false);
@@ -100,7 +101,7 @@ public class NaiveGrounderTest {
 		
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
-		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
+		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue()));
 		int litB = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))));
 		assertTrue(noGoods.containsValue(NoGood.fromConstraint(Arrays.asList(litB), Collections.emptyList())));
 	}

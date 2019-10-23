@@ -165,6 +165,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 					LOGGER.trace("Restarting search.");
 					choiceManager.backjump(0);
 					restartStrategy.onRestart();
+					continue;
 				}
 			}
 			if (conflictCause != null) {

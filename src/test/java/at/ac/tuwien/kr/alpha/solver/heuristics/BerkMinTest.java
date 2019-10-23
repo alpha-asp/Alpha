@@ -62,7 +62,7 @@ public class BerkMinTest {
 	public void setUp() {
 		AtomStore atomStore = new AtomStoreImpl();
 		AtomStoreTest.fillAtomStore(atomStore, 2);
-		WritableAssignment assignment = new TrailAssignment(atomStore);
+		WritableAssignment assignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
 		assignment.growForMaxAtomId();
 		this.berkmin = new BerkMin(
 			assignment,

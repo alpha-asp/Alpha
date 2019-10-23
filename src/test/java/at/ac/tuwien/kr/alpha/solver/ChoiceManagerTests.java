@@ -33,6 +33,7 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.solver.heuristics.PhaseInitializerFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,7 +54,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 		Program parsedProgram = new ProgramParser().parse(testProgram);
 		this.atomStore = new AtomStoreImpl();
 		this.grounder = new NaiveGrounder(parsedProgram, atomStore, true);
-		WritableAssignment assignment = new TrailAssignment(atomStore);
+		WritableAssignment assignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
 		NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment);
 		this.choiceManager = new ChoiceManager(assignment, store);
 	}
