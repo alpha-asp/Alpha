@@ -93,8 +93,10 @@ public class PerformanceLog {
 			if (firstHeuristic instanceof VSIDSWithPhaseSaving) {
 				VSIDSWithPhaseSaving vsidsWithPhaseSaving = (VSIDSWithPhaseSaving) firstHeuristic;
 				long numThrownAway = vsidsWithPhaseSaving.getNumThrownAway();
+				long numNoChoicePoint = vsidsWithPhaseSaving.getNumNoChoicePoint();
+				long numNotActiveChoicePoint = vsidsWithPhaseSaving.getNumNotActiveChoicePoint();
 				double activityDecrease = vsidsWithPhaseSaving.getActivityDecrease();
-				logger.info("Heuristic threw away {} preferred choices.", numThrownAway);
+				logger.info("Heuristic threw away {} preferred choices ({} no choice, {} not active choice points).", numThrownAway, numNoChoicePoint, numNotActiveChoicePoint);
 				logger.info("Atom activity decreased overall by {} or {} per choice on average", activityDecrease, activityDecrease / currentNumberOfChoices);
 			}
 		}

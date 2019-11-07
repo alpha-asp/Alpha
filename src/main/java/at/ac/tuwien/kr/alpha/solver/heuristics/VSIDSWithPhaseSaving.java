@@ -66,6 +66,8 @@ public class VSIDSWithPhaseSaving implements ActivityBasedBranchingHeuristic {
 
 	private double activityDecrease;
 	private long numThrownAway;
+	private long numNoChoicePoint;
+	private long numNotActiveChoicePoint;
 
 	private VSIDSWithPhaseSaving(Assignment assignment, ChoiceManager choiceManager, AtomChoiceRelation atomChoiceRelation, HeapOfActiveAtoms heapOfActiveAtoms, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
 		this.assignment = assignment;
@@ -76,7 +78,7 @@ public class VSIDSWithPhaseSaving implements ActivityBasedBranchingHeuristic {
 	}
 
 	private VSIDSWithPhaseSaving(Assignment assignment, ChoiceManager choiceManager, AtomChoiceRelation atomChoiceRelation, int decayPeriod, double decayFactor, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
-		this(assignment, choiceManager, atomChoiceRelation, new HeapOfActiveAtoms(decayPeriod, decayFactor, choiceManager),  momsStrategy);
+		this(assignment, choiceManager, atomChoiceRelation, new HeapOfRelatedChoiceAtoms(decayPeriod, decayFactor, choiceManager, atomChoiceRelation),  momsStrategy);
 	}
 
 	VSIDSWithPhaseSaving(Assignment assignment, ChoiceManager choiceManager, AtomChoiceRelation atomChoiceRelation, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
@@ -137,6 +139,14 @@ public class VSIDSWithPhaseSaving implements ActivityBasedBranchingHeuristic {
 		return numThrownAway;
 	}
 
+	public long getNumNoChoicePoint() {
+		return numNoChoicePoint;
+	}
+
+	public long getNumNotActiveChoicePoint() {
+		return numNotActiveChoicePoint;
+	}
+
 	/**
 	 * {@link VSIDSWithPhaseSaving} works like {@link VSIDS} for selecting an atom but uses the saved phase to
 	 * determine the truth value to choose.
@@ -166,6 +176,11 @@ public class VSIDSWithPhaseSaving implements ActivityBasedBranchingHeuristic {
 					activityDecrease += lostActitivyNormalized;
 				}
 				return mostActiveAtom;
+			}
+			if (choiceManager.isAtomChoice(mostActiveAtom)) {
+				numNotActiveChoicePoint++;
+			} else {
+				numNoChoicePoint++;
 			}
 			numThrownAway++;
 		}

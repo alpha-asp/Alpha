@@ -54,10 +54,10 @@ public class HeapOfActiveAtoms {
 
 	private static final double NORMALIZATION_THRESHOLD = 1E100;
 	private static final double INCREMENT_TO_AVOID_DENORMALS = Double.MIN_VALUE * NORMALIZATION_THRESHOLD;
-	private static final double SCORE_EPSILON = 1E-100;
+	static final double SCORE_EPSILON = 1E-100;
 
-	private boolean[] incrementedActivityScores = new boolean[0];
-	private double[] activityScores = new double[0];
+	boolean[] incrementedActivityScores = new boolean[0];
+	double[] activityScores = new double[0];
 	final PriorityQueue<Integer> heap = new PriorityQueue<>(new AtomActivityComparator().reversed());
 
 	protected ChoiceManager choiceManager;
@@ -65,9 +65,9 @@ public class HeapOfActiveAtoms {
 	private double decayFactor;
 	private int stepsSinceLastDecay;
 	private double currentActivityIncrement = 1.0;
-	private int numberOfNormalizations;
+	int numberOfNormalizations;
 	
-	private final MOMs moms;
+	final MOMs moms;
 
 	HeapOfActiveAtoms(int decayPeriod, double decayFactor, ChoiceManager choiceManager) {
 		this.decayPeriod = decayPeriod;
@@ -164,7 +164,7 @@ public class HeapOfActiveAtoms {
 	 * 1.01 is added to avoid computing the logarithm of a number between 0 and 1 (input scores have to be greater or equal to 0!)
 	 * @param newNoGood a new nogood, the atoms occurring in which will be initialized
 	 */
-	private void initActivityMOMs(NoGood newNoGood) {
+	protected void initActivityMOMs(NoGood newNoGood) {
 		LOGGER.debug("Initializing activity scores with MOMs");
 		for (int literal : newNoGood) {
 			int atom = atomOf(literal);
@@ -233,7 +233,7 @@ public class HeapOfActiveAtoms {
 		incrementedActivityScores[atom] = true;
 	}
 
-	private void setActivity(int atom, double newActivity) {
+	void setActivity(int atom, double newActivity) {
 		activityScores[atom] = newActivity;
 		LOGGER.trace("Activity of atom {} set to {}", atom, newActivity);
 
@@ -258,7 +258,7 @@ public class HeapOfActiveAtoms {
 		}
 	}
 
-	private double normalizeNewActivityScore(double newActivity) {
+	double normalizeNewActivityScore(double newActivity) {
 		for (int i = 0; i < numberOfNormalizations; i++) {
 			newActivity = (newActivity + INCREMENT_TO_AVOID_DENORMALS) / NORMALIZATION_THRESHOLD;
 		}

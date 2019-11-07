@@ -468,6 +468,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		int maxAtomId = atomStore.getMaxAtomId();
 		store.growForMaxAtomId(maxAtomId);
 		branchingHeuristic.growForMaxAtomId(maxAtomId);
+		choiceManager.addChoiceInformation(grounder.getChoiceAtoms(), grounder.getHeadsToBodies());
 		branchingHeuristic.newNoGoods(obtained.values());
 
 		LinkedList<Map.Entry<Integer, NoGood>> noGoodsToAdd = new LinkedList<>(obtained.entrySet());
@@ -517,7 +518,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private boolean choose() {
-		choiceManager.addChoiceInformation(grounder.getChoiceAtoms(), grounder.getHeadsToBodies());
 		choiceManager.updateAssignments();
 
 		// Hint: for custom heuristics, evaluate them here and pick a value if the heuristics suggests one.
