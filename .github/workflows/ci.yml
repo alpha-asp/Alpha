@@ -8,11 +8,43 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        java: [8, 11, 13]
+        # We test against Java releases:
+        #  - greater than 7
+        #  AND
+        #    - with LTS and in "Premier Support" phase
+        #    OR
+        #    - not succeeded by any other release
+        # https://www.oracle.com/technetwork/java/java-se-support-roadmap.html
+        java:
+        # LTS and in "Premier Support" as of 2019-11 (until 2022-03)
+        - 8
+        # LTS and in "Premier Support" as of 2019-11 (until 2023-09)
+        - 11
+        # Not succeeded as of 2019-11. Scheduled to be succeeded by
+        # Java 14 in 2020-03, see http://openjdk.java.net/projects/jdk/14/spec/
+        - 13
     steps:
     - uses: actions/checkout@v1
+    - uses: actions/cache@v1
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
     - name: Set up JDK
       uses: actions/setup-java@v1
       with:
         java-version: ${{ matrix.java }}
-    - run: ./gradlew build
+    - run: ./gradlew build jacocoTestReport coveralls
+      env:
+        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+    - uses: codecov/codecov-action@v1.0.3
+      if: "startsWith(matrix.os, 'ubuntu')"
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+    # The following does not work, see
+    # https://github.com/coverallsapp/github-action/issues/22
+    #- uses: coverallsapp/github-action@master
+    #  with:
+    #    github-token: ${{ secrets.github_token }}
