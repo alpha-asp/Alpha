@@ -96,7 +96,8 @@ public class PerformanceLog {
 				long numNoChoicePoint = vsidsWithPhaseSaving.getNumNoChoicePoint();
 				long numNotActiveChoicePoint = vsidsWithPhaseSaving.getNumNotActiveChoicePoint();
 				double activityDecrease = vsidsWithPhaseSaving.getActivityDecrease();
-				logger.info("Heuristic threw away {} preferred choices ({} no choice, {} not active choice points).", numThrownAway, numNoChoicePoint, numNotActiveChoicePoint);
+				logger.info("Heuristic threw away {} preferred choices ({} no choice, {} not active choice points) averaging {} thrown away per choice done.", numThrownAway, numNoChoicePoint, numNotActiveChoicePoint, (float) numThrownAway / currentNumberOfChoices);
+				logger.info("HeapOfActiveAtoms had {} choices added due to increased activity.", vsidsWithPhaseSaving.getNumAddedToHeapByActivity());
 				logger.info("Atom activity decreased overall by {} or {} per choice on average", activityDecrease, activityDecrease / currentNumberOfChoices);
 			}
 		}
