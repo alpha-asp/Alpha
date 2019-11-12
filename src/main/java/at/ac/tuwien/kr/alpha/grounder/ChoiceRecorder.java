@@ -121,7 +121,7 @@ public class ChoiceRecorder {
 		}
 		sb.append(" disablers: ");
 		for (Map.Entry<Integer, Integer> disablers : newChoiceAtoms.getRight().entrySet()) {
-			sb.append(disablers.getKey()).append("/").append(disablers.getValue());
+			sb.append(disablers.getKey()).append("/").append(disablers.getValue()).append(", ");
 		}
 		return sb.append("]").toString();
 	}

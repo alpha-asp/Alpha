@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.grounder.structure.AtomChoiceRelation;
 
 import java.util.Set;
 
@@ -32,4 +33,10 @@ public interface ProgramAnalyzingGrounder extends Grounder {
 	 * @return the corresponding NonGroundRule.
 	 */
 	NonGroundRule getNonGroundRule(Integer ruleId);
+
+	/**
+	 * Provides relationship information between atoms and choice points influencing their truth values.
+	 * @return the {@link AtomChoiceRelation}.
+	 */
+	AtomChoiceRelation getAtomChoiceRelation();
 }

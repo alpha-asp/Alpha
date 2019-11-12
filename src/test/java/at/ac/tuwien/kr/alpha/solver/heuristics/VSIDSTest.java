@@ -68,7 +68,7 @@ public class VSIDSTest {
 	public void setUp() {
 		atomStore = new AtomStoreImpl();
 		AtomStoreTest.fillAtomStore(atomStore, 4);
-		assignment = new TrailAssignment(atomStore);
+		assignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
 		assignment.growForMaxAtomId();
 		noGoodStore = new NoGoodStoreAlphaRoaming(assignment);
 		this.vsids = new VSIDS(

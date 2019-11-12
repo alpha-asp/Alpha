@@ -73,7 +73,7 @@ public class AlphaHeuristicTestAssumptions {
 		Program parsedProgram = new ProgramParser().parse(testProgram);
 		this.atomStore = new AtomStoreImpl();
 		this.grounder = new NaiveGrounder(parsedProgram, atomStore, true);
-		this.assignment = new TrailAssignment(atomStore);
+		this.assignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
 		this.choiceManager = new TestableChoiceManager(assignment, new NaiveNoGoodStore(assignment));
 	}
 

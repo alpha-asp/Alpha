@@ -33,6 +33,7 @@ import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.solver.heuristics.PhaseInitializerFactory;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -48,7 +49,7 @@ import static org.junit.Assert.*;
 
 /**
  * Tests {@link NaiveGrounder}
- * 
+ *
  * Some test cases use atoms of the something/1 predicate to trick the grounder
  * into believing that other atoms might become true. This is fragile because future implementations
  * of preprocessing techniques might render this trick useless.
@@ -74,7 +75,7 @@ public class NaiveGrounderTest {
 
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
-		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
+		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue()));
 		int litCNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("c", 0))), false);
 		int litB = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))));
 		assertExistsNoGoodContaining(noGoods.values(), litCNeg);
@@ -94,7 +95,7 @@ public class NaiveGrounderTest {
 
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
-		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
+		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue()));
 		int litANeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("a", 0))), false);
 		int litBNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))), false);
 		int litCNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("c", 0))), false);
@@ -117,7 +118,7 @@ public class NaiveGrounderTest {
 
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
-		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
+		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue()));
 		int litB = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))));
 		assertTrue(noGoods.containsValue(NoGood.fromConstraint(Collections.singletonList(litB), Collections.emptyList())));
 	}
@@ -215,7 +216,7 @@ public class NaiveGrounderTest {
 		final NaiveGrounder.BindingResult bindingResult = grounder.bindNextAtomInRule(nonGroundRule, nonGroundRule.groundingOrder.groundingOrders.get(startingLiteral), substStartingLiteral, currentAssignment);
 		assertEquals(expectNoGoods, bindingResult.size() > 0);
 	}
-	
+
 	@Test
 	public void testLaxGrounderHeuristicTolerance_0_reject() {
 		Program program = PARSER.parse("a(1). "
@@ -223,7 +224,7 @@ public class NaiveGrounderTest {
 				+ "b(X) :- something(X).");
 		testLaxGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 0, 0, false);
 	}
-	
+
 	@Test
 	public void testLaxGrounderHeuristicTolerance_1_accept() {
 		Program program = PARSER.parse("a(1). "
@@ -231,7 +232,7 @@ public class NaiveGrounderTest {
 				+ "b(X) :- something(X).");
 		testLaxGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 1, 0, true);
 	}
-	
+
 	@Test
 	public void testLaxGrounderHeuristicTolerance_1_reject() {
 		Program program = PARSER.parse("a(1). "
@@ -239,7 +240,7 @@ public class NaiveGrounderTest {
 				+ "b(X) :- something(X).");
 		testLaxGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 1, 0, false);
 	}
-	
+
 	@Test
 	public void testLaxGrounderHeuristicTolerance_2_accept() {
 		Program program = PARSER.parse("a(1). "

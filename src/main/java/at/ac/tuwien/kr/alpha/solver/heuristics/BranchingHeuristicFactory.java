@@ -26,6 +26,8 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.grounder.ProgramAnalyzingGrounder;
+import at.ac.tuwien.kr.alpha.grounder.structure.AtomChoiceRelation;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
@@ -56,7 +58,8 @@ public final class BranchingHeuristicFactory {
 		ALPHA_ACTIVE_RULE,
 		ALPHA_HEAD_MBT,
 		VSIDS,
-		GDD_VSIDS;
+		GDD_VSIDS,
+		VSIDS_PHASE_SAVING;
 
 		/**
 		 * @return a comma-separated list of names of known heuristics
@@ -117,6 +120,9 @@ public final class BranchingHeuristicFactory {
 			return new VSIDS(assignment, choiceManager, heuristicsConfiguration.getMomsStrategy());
 		case GDD_VSIDS:
 			return new DependencyDrivenVSIDS(assignment, choiceManager, random, heuristicsConfiguration.getMomsStrategy());
+		case VSIDS_PHASE_SAVING:
+			AtomChoiceRelation atomChoiceRelation = grounder instanceof ProgramAnalyzingGrounder ? ((ProgramAnalyzingGrounder) grounder).getAtomChoiceRelation() : null;
+			return new VSIDSWithPhaseSaving(assignment, choiceManager, atomChoiceRelation, heuristicsConfiguration.getMomsStrategy());
 		}
 		throw new IllegalArgumentException("Unknown branching heuristic requested.");
 	}

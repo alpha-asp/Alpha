@@ -118,6 +118,13 @@ public class CommandLineParser {
 	private static final Option OPT_NO_INSTANCE_REMOVAL = Option.builder("dir").longOpt("disableInstanceRemoval")
 			.desc("activates the accumulator grounding strategy by disabling removal of instances from grounder memory in certain cases (default: " + SystemConfig.DEFAULT_DISABLE_INSTANCE_REMOVAL + ")")
 			.build();
+	private static final Option OPT_ENABLE_RESTARTS = Option.builder("rs").longOpt("enableRestarts")
+		.desc("enable the usage of (dynamic and static) restarts (default: "
+			+ SystemConfig.DEFAULT_ENABLE_RESTARTS + ")")
+		.build();
+	private static final Option OPT_INITIAL_PHASE = Option.builder("ph").longOpt("initialPhase").hasArg(true).argName("initializer")
+		.desc("set the initial phase [ alltrue | allfalse | random ] (default: " + SystemConfig.DEFAULT_PHASE_INITIALIZER + ")")
+		.build();
 
 	private static final Options CLI_OPTS = new Options();
 
@@ -151,6 +158,8 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_INSTANCE_REMOVAL);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_ENABLE_RESTARTS);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_INITIAL_PHASE);
 	}
 
 	/*
@@ -197,6 +206,8 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS.getOpt(), this::handleGrounderToleranceConstraints);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES.getOpt(), this::handleGrounderToleranceRules);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_INSTANCE_REMOVAL.getOpt(), this::handleNoInstanceRemoval);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_ENABLE_RESTARTS.getOpt(), this::handleEnableRestarts);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_INITIAL_PHASE.getOpt(), this::handleInitialPhase);
 
 		this.inputOptionHandlers.put(CommandLineParser.OPT_NUM_ANSWER_SETS.getOpt(), this::handleNumAnswerSets);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_INPUT.getOpt(), this::handleInput);
@@ -390,4 +401,11 @@ public class CommandLineParser {
 		cfg.setDisableInstanceRemoval(true);
 	}
 
+	private void handleEnableRestarts(Option opt, SystemConfig cfg) {
+		cfg.setRestartsEnabled(true);
+	}
+
+	private void handleInitialPhase(Option opt, SystemConfig cfg) {
+		cfg.setPhaseInitializer(opt.getValue(SystemConfig.DEFAULT_PHASE_INITIALIZER));
+	}
 }

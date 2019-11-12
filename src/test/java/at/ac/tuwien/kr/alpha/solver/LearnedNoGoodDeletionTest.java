@@ -31,6 +31,7 @@ import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.solver.heuristics.PhaseInitializerFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -47,7 +48,7 @@ public class LearnedNoGoodDeletionTest {
 	public LearnedNoGoodDeletionTest() {
 		AtomStore atomStore = new AtomStoreImpl();
 		AtomStoreTest.fillAtomStore(atomStore, 200);
-		WritableAssignment assignment = new TrailAssignment(atomStore);
+		WritableAssignment assignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
 		assignment.growForMaxAtomId();
 		store = new NoGoodStoreAlphaRoaming(assignment);
 		learnedNoGoodDeletion = store.getLearnedNoGoodDeletion();

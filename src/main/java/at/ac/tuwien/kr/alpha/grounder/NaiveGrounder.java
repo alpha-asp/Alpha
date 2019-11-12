@@ -38,6 +38,7 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
+import at.ac.tuwien.kr.alpha.grounder.structure.AtomChoiceRelation;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 import at.ac.tuwien.kr.alpha.grounder.transformation.*;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
@@ -70,6 +71,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final Map<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
 	private final Map<NonGroundRule, HashSet<Substitution>> knownGroundingSubstitutions = new HashMap<>();
 	private final Map<Integer, NonGroundRule> knownNonGroundRules = new HashMap<>();
+	private final AtomChoiceRelation atomChoiceRelation = new AtomChoiceRelation();
 
 	private ArrayList<NonGroundRule> fixedRules = new ArrayList<>();
 	private LinkedHashSet<Atom> removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
@@ -104,9 +106,12 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 		final Set<NonGroundRule> uniqueGroundRulePerGroundHead = getRulesWithUniqueHead();
 		choiceRecorder = new ChoiceRecorder(atomStore);
-		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, programAnalysis, uniqueGroundRulePerGroundHead);
-
+		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, programAnalysis, uniqueGroundRulePerGroundHead, atomChoiceRelation);
 		this.debugInternalChecks = debugInternalChecks;
+	}
+
+	public AtomChoiceRelation getAtomChoiceRelation() {
+		return atomChoiceRelation;
 	}
 
 	private void initializeFactsAndRules(Program program) {
@@ -436,10 +441,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 		return bindNextAtomInRule(modifiedGroundingOrder, orderPosition + 1, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
 	}
-	
+
 	private BindingResult bindNextAtomInRule(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment) {
 		boolean laxGrounderHeuristic = originalTolerance > 0;
-		
+
 		Literal currentLiteral = groundingOrder.getLiteralAtOrderPosition(orderPosition);
 		if (currentLiteral == null) {
 			return BindingResult.singleton(partialSubstitution, originalTolerance - remainingTolerance);
@@ -719,7 +724,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	static class BindingResult {
 		final List<Substitution> generatedSubstitutions = new ArrayList<>();
 		final List<Integer> numbersOfUnassignedPositiveBodyAtoms = new ArrayList<>();
-		
+
 		void add(Substitution generatedSubstitution, int numberOfUnassignedPositiveBodyAtoms) {
 			this.generatedSubstitutions.add(generatedSubstitution);
 			this.numbersOfUnassignedPositiveBodyAtoms.add(numberOfUnassignedPositiveBodyAtoms);

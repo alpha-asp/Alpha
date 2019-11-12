@@ -106,6 +106,10 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 		return new ChainedBranchingHeuristics(branchingHeuristics);
 	}
 
+	public BranchingHeuristic getFirstElement() {
+		return chain.get(0);
+	}
+
 	/**
 	 * Returns a mapping from individual heuristics to number of decisions made by them.
 	 */

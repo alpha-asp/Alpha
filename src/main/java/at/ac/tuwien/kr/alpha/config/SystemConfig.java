@@ -60,6 +60,8 @@ public class SystemConfig {
 	public static final String DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS = GrounderHeuristicsConfiguration.STRICT_STRING;
 	public static final String DEFAULT_GROUNDER_TOLERANCE_RULES = GrounderHeuristicsConfiguration.STRICT_STRING;
 	public static final boolean DEFAULT_DISABLE_INSTANCE_REMOVAL = false;
+	public static final boolean DEFAULT_ENABLE_RESTARTS = false;
+	public static final String DEFAULT_PHASE_INITIALIZER = "random";
 
 	private String grounderName = SystemConfig.DEFAULT_GROUNDER_NAME;
 	private String solverName = SystemConfig.DEFAULT_SOLVER_NAME;
@@ -79,6 +81,8 @@ public class SystemConfig {
 	private String grounderToleranceConstraints = DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS;
 	private String grounderToleranceRules = DEFAULT_GROUNDER_TOLERANCE_RULES;
 	private boolean disableInstanceRemoval = DEFAULT_DISABLE_INSTANCE_REMOVAL;
+	private boolean areRestartsEnabled = SystemConfig.DEFAULT_ENABLE_RESTARTS;
+	private String phaseInitializer = SystemConfig.DEFAULT_PHASE_INITIALIZER;
 
 	public String getGrounderName() {
 		return this.grounderName;
@@ -235,4 +239,20 @@ public class SystemConfig {
 	public void setDisableInstanceRemoval(boolean disableInstanceRemoval) {
 		this.disableInstanceRemoval = disableInstanceRemoval;
 	}
+	public boolean areRestartsEnabled() {
+		return areRestartsEnabled;
+	}
+
+	public void setRestartsEnabled(boolean areRestartsEnabled) {
+		this.areRestartsEnabled = areRestartsEnabled;
+	}
+
+	public String getPhaseInitializerName() {
+		return phaseInitializer;
+	}
+
+	public void  setPhaseInitializer(String phaseInitializer) {
+		this.phaseInitializer = phaseInitializer;
+	}
+
 }
