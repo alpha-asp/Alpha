@@ -76,6 +76,6 @@ public class MixedRestartStrategy {
 		} else {
 			vn <<= 1;
 		}
-		lubyLimit = vn * LUBY_FACTOR;
+		lubyLimit = vn * LUBY_FACTOR + learnedNoGoodDeletion.getNumTotalConflicts();
 	}
 }

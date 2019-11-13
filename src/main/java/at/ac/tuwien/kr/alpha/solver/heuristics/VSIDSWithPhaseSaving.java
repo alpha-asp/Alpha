@@ -147,6 +147,10 @@ public class VSIDSWithPhaseSaving implements ActivityBasedBranchingHeuristic {
 		return numNotActiveChoicePoint;
 	}
 
+	public long getNumAddedToHeapByActivity() {
+		return heapOfActiveAtoms.getNumAddedToHeapByActivity();
+	}
+
 	/**
 	 * {@link VSIDSWithPhaseSaving} works like {@link VSIDS} for selecting an atom but uses the saved phase to
 	 * determine the truth value to choose.

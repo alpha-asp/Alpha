@@ -110,6 +110,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		this.debugInternalChecks = debugInternalChecks;
 	}
 
+	@Override
 	public AtomChoiceRelation getAtomChoiceRelation() {
 		return atomChoiceRelation;
 	}

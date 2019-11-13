@@ -57,6 +57,7 @@ public class HeapOfActiveAtoms {
 	static final double SCORE_EPSILON = 1E-100;
 
 	boolean[] incrementedActivityScores = new boolean[0];
+	boolean[] occursInHeap = new boolean[0];
 	double[] activityScores = new double[0];
 	final PriorityQueue<Integer> heap = new PriorityQueue<>(new AtomActivityComparator().reversed());
 
@@ -66,6 +67,7 @@ public class HeapOfActiveAtoms {
 	private int stepsSinceLastDecay;
 	private double currentActivityIncrement = 1.0;
 	int numberOfNormalizations;
+	private long numAddedToHeapByActivity;
 	
 	final MOMs moms;
 
@@ -186,6 +188,7 @@ public class HeapOfActiveAtoms {
 	void growToCapacity(int newCapacity) {
 		activityScores = Arrays.copyOf(activityScores, newCapacity);
 		incrementedActivityScores = Arrays.copyOf(incrementedActivityScores, newCapacity);
+		occursInHeap = Arrays.copyOf(occursInHeap, newCapacity);
 	}
 
 	void growForMaxAtomId(int maxAtomId) {
@@ -197,8 +200,7 @@ public class HeapOfActiveAtoms {
 		if (newCapacity < maxAtomId + 1) {
 			newCapacity = maxAtomId + 1;
 		}
-		activityScores = Arrays.copyOf(activityScores, newCapacity);
-		incrementedActivityScores = Arrays.copyOf(incrementedActivityScores, newCapacity);
+		growToCapacity(newCapacity);
 	}
 
 	private void initActivityNaive(NoGood newNoGood) {
@@ -213,7 +215,11 @@ public class HeapOfActiveAtoms {
 	 * Returns the atom with the highest activity score and removes it from the heap.
 	 */
 	Integer getMostActiveAtom() {
-		return heap.poll();
+		Integer mostActiveAtom = heap.poll();
+		if (mostActiveAtom != null) {
+			occursInHeap[mostActiveAtom] = false;
+		}
+		return mostActiveAtom;
 	}
 
 	/**
@@ -241,7 +247,11 @@ public class HeapOfActiveAtoms {
 			normalizeActivityScores();
 		}
 
-		heap.add(atom); // ignores the fact that atom may already be in the heap for performance reasons (may be revised in future)
+		if (choiceManager.isActiveChoiceAtom(atom)) {
+			numAddedToHeapByActivity++;
+			occursInHeap[atom] = true;
+			heap.add(atom); // ignores the fact that atom may already be in the heap for performance reasons (may be revised in future)
+		}
 	}
 
 	/**
@@ -265,6 +275,10 @@ public class HeapOfActiveAtoms {
 		return newActivity;
 	}
 
+	long getNumAddedToHeapByActivity() {
+		return numAddedToHeapByActivity;
+	}
+
 	private class AtomActivityComparator implements Comparator<Integer> {
 
 		@Override
@@ -277,14 +291,13 @@ public class HeapOfActiveAtoms {
 	private class ChoicePointActivityListener implements ChoiceInfluenceManager.ActivityListener {
 
 		@Override
-		public void callbackOnChanged(int atom, boolean active) {
-			if (active && choiceManager.isActiveChoiceAtom(atom)) {
-				if (atom < activityScores.length) {
-					/* if atom has no activity score, probably the atom is still being buffered
-					   by DependencyDrivenVSIDSHeuristic and will get an initial activity
-					   when the buffer is ingested */
-					heap.add(atom);
-				}
+		public void callbackOnChange(int atom) {
+			if (!occursInHeap[atom] && atom < activityScores.length) {
+				/* if atom has no activity score, probably the atom is still being buffered
+				   by DependencyDrivenVSIDSHeuristic and will get an initial activity
+				   when the buffer is ingested */
+				occursInHeap[atom] = true;
+				heap.add(atom);
 			}
 		}
 	}
