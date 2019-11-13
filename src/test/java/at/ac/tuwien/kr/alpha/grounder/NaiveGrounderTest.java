@@ -157,7 +157,7 @@ public class NaiveGrounderTest {
 		nonGroundRule.groundingOrder.groundingOrders.put(litQ1Y, groundingOrderQ1);
 
 		grounder.bootstrap();
-		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
+		TrailAssignment currentAssignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
 		final Substitution substP1X1 = Substitution.unify(litP1X, new Instance(ConstantTerm.getInstance(1)), new Substitution());
 		final Substitution substQ1Y1 = Substitution.unify(litQ1Y, new Instance(ConstantTerm.getInstance(1)), new Substitution());
 		final NaiveGrounder.BindingResult bindingResultP1 = grounder.bindNextAtomInRule(nonGroundRule, groundingOrderP1, substP1X1, currentAssignment);
@@ -203,7 +203,7 @@ public class NaiveGrounderTest {
 
 	private void testIfGrounderGroundsRule(Program program, int ruleID, Literal startingLiteral, int startingInstance, ThriceTruth bTruth, boolean expectNoGoods) {
 		AtomStore atomStore = new AtomStoreImpl();
-		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
+		TrailAssignment currentAssignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
 		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, p -> true, GrounderHeuristicsConfiguration.lax(), true);
 
 		int b = atomStore.putIfAbsent(atom("b", 1));
@@ -267,7 +267,7 @@ public class NaiveGrounderTest {
 
 	private void testLaxGrounderHeuristicTolerance(Program program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance, int nTrueBs, boolean expectNoGoods) {
 		AtomStore atomStore = new AtomStoreImpl();
-		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
+		TrailAssignment currentAssignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
 		GrounderHeuristicsConfiguration heuristicConfiguration = GrounderHeuristicsConfiguration.getInstance(tolerance, tolerance);
 		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, p -> true, heuristicConfiguration, true);
 
