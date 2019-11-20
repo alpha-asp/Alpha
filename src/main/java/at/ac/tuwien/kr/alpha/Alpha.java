@@ -34,7 +34,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -59,11 +58,9 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.impl.NormalizeProgramTransformation;
-import at.ac.tuwien.kr.alpha.grounder.transformation.impl.PartialEvaluation;
+import at.ac.tuwien.kr.alpha.grounder.transformation.impl.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
-import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
 
 public class Alpha {
 
@@ -109,7 +106,7 @@ public class Alpha {
 		InternalProgram retVal = program;
 		if (this.config.isEvaluateStratifiedPart()) {
 			AnalyzedProgram analyzed = new AnalyzedProgram(program.getRules(), program.getFacts());
-			retVal = new PartialEvaluation().apply(analyzed);
+			retVal = new StratifiedEvaluation().apply(analyzed);
 		}
 		return retVal;
 	}
@@ -118,7 +115,7 @@ public class Alpha {
 		LOGGER.info("Preprocessing AnalyzedProgram!");
 		InternalProgram retVal = program;
 		if (this.config.isEvaluateStratifiedPart()) {
-			retVal = new PartialEvaluation().apply(program);
+			retVal = new StratifiedEvaluation().apply(program);
 		}
 		return retVal;
 	}
@@ -165,23 +162,12 @@ public class Alpha {
 	 */
 	public Solver prepareSolverFor(InternalProgram program, java.util.function.Predicate<Predicate> filter) {
 		String grounderName = this.config.getGrounderName();
-		String solverName = this.config.getSolverName();
-		String nogoodStoreName = this.config.getNogoodStoreName();
-		long seed = this.config.getSeed();
 		boolean doDebugChecks = this.config.isDebugInternalChecks();
-		boolean disableJustificationSearch = this.config.isDisableJustificationSearch();
-
-		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
-		heuristicsConfigurationBuilder.setHeuristic(this.config.getBranchingHeuristic());
-		heuristicsConfigurationBuilder.setMomsStrategy(this.config.getMomsStrategy());
-		heuristicsConfigurationBuilder.setReplayChoices(this.config.getReplayChoices());
 
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, doDebugChecks);
 
-		Solver solver = SolverFactory.getInstance(solverName, nogoodStoreName, atomStore, grounder, new Random(seed), heuristicsConfigurationBuilder.build(),
-				doDebugChecks, disableJustificationSearch);
-		return solver;
+		return SolverFactory.getInstance(this.config, atomStore, grounder);
 	}
 
 	/**

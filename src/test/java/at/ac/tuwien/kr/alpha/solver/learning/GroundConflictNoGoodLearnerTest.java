@@ -9,18 +9,20 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
+import static at.ac.tuwien.kr.alpha.solver.AntecedentTest.antecedentsEquals;
 import static org.junit.Assert.*;
 
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  */
 public class GroundConflictNoGoodLearnerTest {
 
 	private final WritableAssignment assignment;
 	private final NoGoodStore store;
+	private AtomStore atomStore;
 
 	public GroundConflictNoGoodLearnerTest() {
-		AtomStore atomStore = new AtomStoreImpl();
+		atomStore = new AtomStoreImpl();
 		AtomStoreTest.fillAtomStore(atomStore, 20);
 		this.assignment = new TrailAssignment(atomStore);
 		this.assignment.growForMaxAtomId();
@@ -30,7 +32,7 @@ public class GroundConflictNoGoodLearnerTest {
 
 	@Test
 	public void smallConflictNonTrivial1UIP() {
-		GroundConflictNoGoodLearner learner = new GroundConflictNoGoodLearner(assignment);
+		GroundConflictNoGoodLearner learner = new GroundConflictNoGoodLearner(assignment, atomStore);
 
 		NoGood n1 = new NoGood(fromOldLiterals(2, -8, 1));
 		NoGood n2 = new NoGood(fromOldLiterals(-1, -7));
@@ -56,21 +58,20 @@ public class GroundConflictNoGoodLearnerTest {
 		assertTrue(store.didPropagate());
 
 		assertNotNull(conflictCause);
-		NoGood violatedNoGood = conflictCause.getViolatedNoGood();
+		Antecedent violatedNoGood = conflictCause.getAntecedent();
 		assertNotNull(violatedNoGood);
-		assertTrue(violatedNoGood.equals(n5) || violatedNoGood.equals(n7));
-		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(violatedNoGood);
+		assertTrue(antecedentsEquals(violatedNoGood, n5.asAntecedent()) || antecedentsEquals(violatedNoGood, n7.asAntecedent()));
+		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(conflictCause.getAntecedent());
 		NoGood learnedNoGood = analysisResult.learnedNoGood;
 		assertEquals(new NoGood(fromOldLiterals(1, -8)), learnedNoGood);
 		int backjumpingDecisionLevel = analysisResult.backjumpLevel;
 		assertEquals(backjumpingDecisionLevel, 2);
-		assertFalse(analysisResult.clearLastChoiceAfterBackjump);
 	}
 
 	@Ignore // TrailAssignment no longer propagates at lower decision level.
 	@Test
 	public void subCurrentDLPropagationWithChoiceCauseOfConflict() {
-		GroundConflictNoGoodLearner learner = new GroundConflictNoGoodLearner(assignment);
+		GroundConflictNoGoodLearner learner = new GroundConflictNoGoodLearner(assignment, atomStore);
 		NoGood n1 = new NoGood(fromOldLiterals(1, -2));
 		NoGood n2 = new NoGood(fromOldLiterals(2, 3));
 		store.add(10, n1);
@@ -81,8 +82,8 @@ public class GroundConflictNoGoodLearnerTest {
 		assertEquals(1, assignment.get(2).getDecisionLevel());
 		ConflictCause conflictCause = store.add(11, n2);
 		assertNotNull(conflictCause);
-		assertNotNull(conflictCause.getViolatedNoGood());
-		GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.getViolatedNoGood());
+		assertNotNull(conflictCause.getAntecedent());
+		GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.getAntecedent());
 		assertNull(conflictAnalysisResult.learnedNoGood);
 		assertEquals(2, conflictAnalysisResult.backjumpLevel);
 

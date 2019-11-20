@@ -50,11 +50,11 @@ import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.NormalProgram;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
-import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -77,17 +77,16 @@ public abstract class AbstractSolverTests {
 	}
 
 	/**
-	 * Calling this method in a tests leads to the test being ignored for the naive solver.
-	 * Note: use this sparingly and only on tests that require too much run time with the naive solver.
+	 * Calling this method in a test leads to the test being ignored for the naive solver. Note: use this sparingly and only on tests that require too much run
+	 * time with the naive solver.
 	 */
 	void ignoreTestForNaiveSolver() {
 		org.junit.Assume.assumeFalse(solverName.equals("naive"));
 	}
 
 	/**
-	 * Calling this method in a test leads to the test being ignored for non-default domain-independent heuristics.
-	 * Note: use this sparingly and only on tests that require too much run time with non-default heuristics
-	 * (which are not tuned for good performance as well as VSIDS).
+	 * Calling this method in a test leads to the test being ignored for non-default domain-independent heuristics. Note: use this sparingly and only on tests
+	 * that require too much run time with non-default heuristics (which are not tuned for good performance as well as VSIDS).
 	 */
 	void ignoreNonDefaultDomainIndependentHeuristics() {
 		org.junit.Assume.assumeTrue(heuristic == BranchingHeuristicFactory.Heuristic.VSIDS);
@@ -162,8 +161,18 @@ public abstract class AbstractSolverTests {
 	public boolean checks;
 
 	protected Solver getInstance(AtomStore atomStore, Grounder grounder) {
-		HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(heuristic).build();
-		return SolverFactory.getInstance(solverName, storeName, atomStore, grounder, new Random(seed), heuristicsConfiguration, checks, false);
+		return SolverFactory.getInstance(buildSystemConfig(), atomStore, grounder);
+	}
+
+	private SystemConfig buildSystemConfig() {
+		SystemConfig config = new SystemConfig();
+		config.setSolverName(solverName);
+		config.setNogoodStoreName(storeName);
+		config.setSeed(seed);
+		config.setBranchingHeuristic(heuristic);
+		config.setDebugInternalChecks(checks);
+		config.setDisableJustificationSearch(false);
+		return config;
 	}
 
 	protected Solver getInstance(InputProgram program) {

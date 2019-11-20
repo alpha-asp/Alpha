@@ -64,8 +64,8 @@ public class AnalyzeUnjustified {
 		// the single rule deriving the RuleAtom.
 		assignedAtoms = new LinkedHashMap<>();
 		for (int i = 1; i <= atomStore.getMaxAtomId(); i++) {
-			Assignment.Entry entry = currentAssignment.get(i);
-			if (entry == null) {
+			ThriceTruth truth = currentAssignment.getTruth(i);
+			if (truth == null) {
 				continue;
 			}
 			Atom assignedAtom = atomStore.get(i);

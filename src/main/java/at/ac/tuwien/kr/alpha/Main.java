@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,6 +64,11 @@ public class Main {
 	private static final String ALPHA_CALL_SYNTAX = "java -jar alpha-bundled.jar" + System.lineSeparator() + "java -jar alpha.jar";
 
 	public static void main(String[] args) {
+//		try {
+//			Thread.sleep(40000);
+//		} catch (InterruptedException ex) {
+//			LOGGER.error("Cannot sleep - bad dreams?");
+//		}
 		CommandLineParser commandLineParser = new CommandLineParser(Main.ALPHA_CALL_SYNTAX, (msg) -> Main.exitWithMessage(msg, 0));
 		AlphaConfig cfg = null;
 		try {
@@ -119,7 +125,14 @@ public class Main {
 			preprocessed = alpha.performProgramPreprocessing(normalized);
 		}
 		if (cfg.getInputConfig().isWritePreprocessed()) {
-			System.out.println("dummy");
+			String preprocPath = cfg.getInputConfig().getPreprocessedPath();
+			LOGGER.info("Writing preprocessed program to {}", preprocPath);
+			try (PrintStream ps = new PrintStream(new File(preprocPath))) {
+				ps.println(preprocessed.toString());
+			} catch (IOException ex) {
+				LOGGER.error("Failed writing preprocessed program file", ex);
+				Main.bailOut("Failed writing preprocessed program file " + ex.getMessage());
+			}
 		}
 		Main.computeAndConsumeAnswerSets(alpha, cfg.getInputConfig(), preprocessed);
 	}

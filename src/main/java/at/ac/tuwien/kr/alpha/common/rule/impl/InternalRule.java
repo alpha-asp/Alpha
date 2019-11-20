@@ -56,6 +56,7 @@ public class InternalRule extends NormalRule {
 
 	private final List<Atom> bodyAtomsPositive;
 	private final List<Atom> bodyAtomsNegative;
+	private final List<Predicate> occurringPredicates;
 
 	private final RuleGroundingOrder groundingOrder;
 
@@ -70,12 +71,17 @@ public class InternalRule extends NormalRule {
 		final List<Atom> pos = new ArrayList<>(body.size() / 2);
 		final List<Atom> neg = new ArrayList<>(body.size() / 2);
 
+		this.occurringPredicates = new ArrayList<>();
+		if (!isConstraint()) {
+			this.occurringPredicates.add(this.getHeadAtom().getPredicate());
+		}
+
 		for (Literal literal : body) {
-			// TODO should we check for more than just aggregates here?
 			if (literal instanceof AggregateLiteral) {
 				throw new IllegalArgumentException("AggregateLiterals aren't supported in InternalRules! (lit: " + literal.toString() + ")");
 			}
 			(literal.isNegated() ? neg : pos).add(literal.getAtom());
+			this.occurringPredicates.add(literal.getPredicate());
 		}
 
 		// Sort for better join order.
@@ -139,19 +145,8 @@ public class InternalRule extends NormalRule {
 	 *
 	 * @return a list of all ordinary predicates occurring in the rule (may contain duplicates, does not contain builtin atoms).
 	 */
-	// FIXME NormalRule should be immutable, so we shouldn't have to calculate these every time!
 	public List<Predicate> getOccurringPredicates() {
-		ArrayList<Predicate> predicateList = new ArrayList<>(this.bodyAtomsPositive.size() + this.bodyAtomsNegative.size() + 1);
-		for (Atom posAtom : this.bodyAtomsPositive) {
-			predicateList.add(posAtom.getPredicate());
-		}
-		for (Atom negAtom : this.bodyAtomsNegative) {
-			predicateList.add(negAtom.getPredicate());
-		}
-		if (!isConstraint()) {
-			predicateList.add(this.getHeadAtom().getPredicate());
-		}
-		return predicateList;
+		return this.occurringPredicates;
 	}
 
 	@Override

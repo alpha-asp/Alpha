@@ -56,6 +56,7 @@ public class SystemConfig {
 	public static final boolean DEFAULT_SORT_ANSWER_SETS = false;
 	public static final List<Integer> DEFAULT_REPLAY_CHOICES = Collections.emptyList();
 	public static final boolean DEFAULT_STRATIFIED_EVAL = true;
+	public static final boolean DEFAULT_DISABLE_NOGOOD_DELETION = false;
 
 	private String grounderName = SystemConfig.DEFAULT_GROUNDER_NAME;
 	private String solverName = SystemConfig.DEFAULT_SOLVER_NAME;
@@ -72,7 +73,7 @@ public class SystemConfig {
 	private boolean sortAnswerSets = SystemConfig.DEFAULT_SORT_ANSWER_SETS;
 	private List<Integer> replayChoices = SystemConfig.DEFAULT_REPLAY_CHOICES;
 	private boolean evaluateStratifiedPart = SystemConfig.DEFAULT_STRATIFIED_EVAL;
-
+	private boolean disableNoGoodDeletion = SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION;
 
 	public String getGrounderName() {
 		return this.grounderName;
@@ -204,6 +205,14 @@ public class SystemConfig {
 
 	public void setEvaluateStratifiedPart(boolean evaluateStratifiedPart) {
 		this.evaluateStratifiedPart = evaluateStratifiedPart;
+	}
+
+	public boolean isDisableNoGoodDeletion() {
+		return this.disableNoGoodDeletion;
+	}
+
+	public void setDisableNoGoodDeletion(boolean disableNoGoodDeletion) {
+		this.disableNoGoodDeletion = disableNoGoodDeletion;
 	}
 
 }
