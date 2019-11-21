@@ -31,6 +31,8 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -47,32 +49,32 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
  * Tests {@link NoGoodGenerator}
  */
 public class NoGoodGeneratorTest {
+	private static final Logger LOGGER = LoggerFactory.getLogger(NoGoodGeneratorTest.class);
+
 	private static final ProgramParser PARSER = new ProgramParser();
-	
+
 	private static final ConstantTerm<?> A = ConstantTerm.getSymbolicInstance("a");
 	private static final ConstantTerm<?> B = ConstantTerm.getSymbolicInstance("b");
 
 	private static final VariableTerm X = VariableTerm.getInstance("X");
 	private static final VariableTerm Y = VariableTerm.getInstance("Y");
-	
+
 	/**
-	 * Calls {@link NoGoodGenerator#collectNegLiterals(NonGroundRule, Substitution)},
-	 * which puts the atom occuring negatively in a rule into the atom store.
-	 * It is then checked whether the atom in the atom store is positive.
+	 * Calls {@link NoGoodGenerator#collectNegLiterals(NonGroundRule, Substitution)}, which puts the atom occuring negatively in a rule into the atom store. It
+	 * is then checked whether the atom in the atom store is positive.
 	 */
 	@Test
 	public void collectNeg_ContainsOnlyPositiveLiterals() {
 		Alpha system = new Alpha();
-		InputProgram input = PARSER.parse("p(a,b). "
-				+ "q(a,b) :- not nq(a,b). "
-				+ "nq(a,b) :- not q(a,b).");
+		InputProgram input = PARSER.parse("p(a,b). " + "q(a,b) :- not nq(a,b). " + "nq(a,b) :- not q(a,b).");
 		NormalProgram normal = system.normalizeProgram(input);
-		InternalProgram program = system.performProgramPreprocessing(normal);	
-		
+		InternalProgram program = system.performProgramPreprocessing(normal);
+		LOGGER.debug("Internalized program is: \n{}", program);
+
 		InternalRule rule = program.getRules().get(1);
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
-		NoGoodGenerator noGoodGenerator = ((NaiveGrounder)grounder).noGoodGenerator;
+		NoGoodGenerator noGoodGenerator = ((NaiveGrounder) grounder).noGoodGenerator;
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
