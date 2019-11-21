@@ -49,7 +49,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
  * Tests {@link NoGoodGenerator}
  */
 public class NoGoodGeneratorTest {
-	private static final Logger LOGGER = LoggerFactory.getLogger(NoGoodGeneratorTest.class);
+	//private static final Logger LOGGER = LoggerFactory.getLogger(NoGoodGeneratorTest.class);
 
 	private static final ProgramParser PARSER = new ProgramParser();
 
@@ -66,7 +66,9 @@ public class NoGoodGeneratorTest {
 	@Test
 	public void collectNeg_ContainsOnlyPositiveLiterals() {
 		Alpha system = new Alpha();
-		InputProgram input = PARSER.parse("p(a,b). " + "q(a,b) :- not nq(a,b). " + "nq(a,b) :- not q(a,b).");
+		InputProgram input = PARSER.parse("p(a,b). " 
+				+ "q(a,b) :- not nq(a,b). " 
+				+ "nq(a,b) :- not q(a,b).");
 		NormalProgram normal = system.normalizeProgram(input);
 		InternalProgram program = system.performProgramPreprocessing(normal);
 		//LOGGER.warn("Internalized program is: \n{}", program);
