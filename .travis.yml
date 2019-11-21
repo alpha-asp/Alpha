@@ -45,7 +45,7 @@ install:
   - true
 
 script:
-  - ./gradlew build --debug --scan --stacktrace
+  - ./gradlew build --warn --scan --stacktrace
 
 after_success:
   - ./gradlew jacocoTestReport coveralls
