@@ -64,8 +64,8 @@ public class NoGoodGeneratorTest {
 	public void collectNeg_ContainsOnlyPositiveLiterals() {
 		Alpha system = new Alpha();
 		InputProgram input = PARSER.parse("p(a,b). "
-				+ "nq(a,b) :- not q(a,b)." // TODO switched rules for testing
-				+ "q(a,b) :- not nq(a,b). ");
+				+ "q(a,b) :- not nq(a,b). "
+				+ "nq(a,b) :- not q(a,b).");
 		NormalProgram normal = system.normalizeProgram(input);
 		InternalProgram program = system.performProgramPreprocessing(normal);	
 		
