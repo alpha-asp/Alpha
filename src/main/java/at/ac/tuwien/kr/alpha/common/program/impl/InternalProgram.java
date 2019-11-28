@@ -27,9 +27,9 @@ import at.ac.tuwien.kr.alpha.grounder.Instance;
  */
 public class InternalProgram extends AbstractProgram<InternalRule> {
 
-	private final Map<Predicate, HashSet<InternalRule>> predicateDefiningRules = new HashMap<>();
+	private final Map<Predicate, HashSet<InternalRule>> predicateDefiningRules = new LinkedHashMap<>();
 	private final Map<Predicate, LinkedHashSet<Instance>> factsByPredicate = new LinkedHashMap<>();
-	private final Map<Integer, InternalRule> rulesById = new HashMap<>();
+	private final Map<Integer, InternalRule> rulesById = new LinkedHashMap<>();
 
 	public InternalProgram(List<InternalRule> rules, List<Atom> facts) {
 		super(rules, facts, null);

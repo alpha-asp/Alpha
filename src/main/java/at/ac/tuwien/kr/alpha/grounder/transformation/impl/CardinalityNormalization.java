@@ -238,7 +238,7 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 
 	static Collection<Term> getGlobalVariables(List<Literal> ruleBody, AggregateAtom aggregateAtom) {
 		// Hacky way to get all global variables: take all variables inside the aggregate that occur also in the rest of the rule.
-		HashSet<Term> occurringVariables = new HashSet<>();
+		HashSet<Term> occurringVariables = new LinkedHashSet<>();
 		for (Literal element : ruleBody) {
 			if (element instanceof AggregateLiteral) {
 				continue;

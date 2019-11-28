@@ -28,7 +28,7 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,7 +57,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 	 */
 	private static NormalRule rewriteIntervalSpecifications(NormalRule rule) {
 		// Collect all intervals and replace them with variables.
-		Map<VariableTerm, IntervalTerm> intervalReplacements = new HashMap<>();
+		Map<VariableTerm, IntervalTerm> intervalReplacements = new LinkedHashMap<>();
 
 		List<Literal> rewrittenBody = new ArrayList<>();
 		NormalHead rewrittenHead = rule.isConstraint() ? null : new NormalHead(rule.getHeadAtom());
