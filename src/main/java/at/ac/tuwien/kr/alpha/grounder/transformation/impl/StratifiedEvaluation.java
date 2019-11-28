@@ -21,9 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -48,7 +45,6 @@ import at.ac.tuwien.kr.alpha.grounder.WorkingMemory;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationLiteral;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 /**
  * Evaluates the stratifiable part (if any) of the given program
@@ -71,10 +67,6 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 	// context settings for bindNextAtom
 	private boolean stopBindingAtNonTruePositiveBody = true;
-	private AtomStore atomStore = new AtomStoreImpl();
-	private int maxAtomIdBeforeGroundingNewNoGoods = -1;
-	private LinkedHashSet<Atom> removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
-	private boolean disableInstanceRemoval;
 
 	private Set<Atom> additionalFacts = new HashSet<>();
 	private Set<Integer> solvedRuleIds = new HashSet<>();
@@ -205,7 +197,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		List<Substitution> groundSubstitutions = new ArrayList<>(); // the actual full ground substitutions for the rule
 		LOGGER.debug("Is fixed rule? {}", rule.getGroundingOrder().fixedInstantiation());
 		if (rule.getGroundingOrder().fixedInstantiation()) {
-			groundSubstitutions.addAll(this.bindNextAtomInRule(rule, rule.getGroundingOrder().getFixedGroundingOrder(), 0, new Substitution(), null));
+			groundSubstitutions.addAll(this.bindNextAtomInRule(rule, rule.getGroundingOrder().getFixedGroundingOrder(), 0, new Substitution()));
 		} else {
 			for (Literal lit : startingLiterals) {
 				groundSubstitutions.addAll(this.calcSubstitutionsForStartingLiteral(rule, lit));
@@ -223,7 +215,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			FixedInterpretationLiteral fixedInterpretationLiteral = (FixedInterpretationLiteral) startingLiteral;
 			for (Substitution fixedSubstitution : fixedInterpretationLiteral.getSubstitutions(partialStartSubstitution)) {
 				LOGGER.debug("calling bindNextAtom, startingLiteral = {}", startingLiteral);
-				retVal.addAll(this.bindNextAtomInRule(rule, rule.getGroundingOrder().orderStartingFrom(startingLiteral), 0, fixedSubstitution, null));
+				retVal.addAll(this.bindNextAtomInRule(rule, rule.getGroundingOrder().orderStartingFrom(startingLiteral), 0, fixedSubstitution));
 			}
 		} else {
 			Predicate predicate = startingLiteral.getPredicate();
@@ -245,7 +237,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 					}
 					LOGGER.trace("calling bindNextAtom, startingLiteral = {}", startingLiteral);
 					List<Substitution> subs = this.bindNextAtomInRule(rule, rule.getGroundingOrder().orderStartingFrom(startingLiteral), 0,
-							partialStartSubstitution, null);
+							partialStartSubstitution);
 					retVal.addAll(subs);
 				}
 			}
@@ -272,8 +264,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		this.workingMemory.addInstance(newAtom, true);
 	}
 
-	private List<Substitution> bindNextAtomInRule(InternalRule rule, Literal[] groundingOrder, int orderPosition, Substitution partialSubstitution,
-			Assignment currentAssignment) {
+	private List<Substitution> bindNextAtomInRule(InternalRule rule, Literal[] groundingOrder, int orderPosition, Substitution partialSubstitution) {
 		LOGGER.debug("Starting bindNextAtom(\n\trule = {},\n\tgroundingOrder = {},\n\torderPosition = {},\n\tsubstitution = {})", rule,
 				StringUtils.join(groundingOrder, ", "), orderPosition, partialSubstitution);
 		if (orderPosition == groundingOrder.length) {
@@ -294,14 +285,14 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			final List<Substitution> generatedSubstitutions = new ArrayList<>();
 			for (Substitution substitution : substitutions) {
 				// Continue grounding with each of the generated values.
-				generatedSubstitutions.addAll(bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, substitution, currentAssignment));
+				generatedSubstitutions.addAll(bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, substitution));
 			}
 			return generatedSubstitutions;
 		}
 		if (currentAtom instanceof EnumerationAtom) {
 			// Get the enumeration value and add it to the current partialSubstitution.
 			((EnumerationAtom) currentAtom).addEnumerationToSubstitution(partialSubstitution);
-			return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
+			return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, partialSubstitution);
 		}
 
 		// check if partialVariableSubstitution already yields a ground atom
@@ -311,7 +302,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			// Substituted atom is ground, in case it is positive, only ground if it also holds true
 			if (currentLiteral.isNegated()) {
 				// Atom occurs negated in the rule, continue grounding
-				return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
+				return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, partialSubstitution);
 			}
 
 			if (this.stopBindingAtNonTruePositiveBody && !rule.isGround()
@@ -324,22 +315,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			final LinkedHashSet<Instance> instances = this.programFacts.get(substitute.getPredicate());
 			if (!(instances == null || !instances.contains(new Instance(substitute.getTerms())))) {
 				// Ground literal holds, continue finding a variable substitution.
-				return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
-			}
-
-			// Atom is not a fact already.
-			final int atomId = atomStore.putIfAbsent(substitute);
-
-			if (currentAssignment != null) {
-				final ThriceTruth truth = currentAssignment.getTruth(atomId);
-
-				if (atomId > maxAtomIdBeforeGroundingNewNoGoods || truth == null || !truth.toBoolean()) {
-					// Atom currently does not hold, skip further grounding.
-					if (!disableInstanceRemoval) {
-						removeAfterObtainingNewNoGoods.add(substitute);
-						return emptyList();
-					}
-				}
+				return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, partialSubstitution);
 			}
 		}
 
@@ -368,30 +344,13 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			if (unified == null) {
 				continue;
 			}
-
 			// Check if atom is also assigned true.
 			Atom substituteClone = new BasicAtom(substitute.getPredicate(), substitute.getTerms());
 			Atom substitutedAtom = substituteClone.substitute(unified);
 			if (!substitutedAtom.isGround()) {
 				throw oops("Grounded atom should be ground but is not");
 			}
-
-			if (this.programFacts.get(substitutedAtom.getPredicate()) == null
-					|| !this.programFacts.get(substitutedAtom.getPredicate()).contains(new Instance(substitutedAtom.getTerms()))) {
-				int atomId = atomStore.putIfAbsent(substitutedAtom);
-
-				if (currentAssignment != null) {
-					ThriceTruth truth = currentAssignment.getTruth(atomId);
-					if (atomId > maxAtomIdBeforeGroundingNewNoGoods || truth == null || !truth.toBoolean()) {
-						// Atom currently does not hold, skip further grounding.
-						if (!disableInstanceRemoval) {
-							removeAfterObtainingNewNoGoods.add(substitutedAtom);
-							continue;
-						}
-					}
-				}
-			}
-			List<Substitution> boundSubstitutions = bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, unified, currentAssignment);
+			List<Substitution> boundSubstitutions = bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, unified);
 			generatedSubstitutions.addAll(boundSubstitutions);
 		}
 
