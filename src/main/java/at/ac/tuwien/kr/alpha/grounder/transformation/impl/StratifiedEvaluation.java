@@ -130,27 +130,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			return;
 		}
 		Map<Predicate, List<Instance>> addedInstances = new HashMap<>();
-		this.modifiedInLastEvaluationRun = new HashMap<>();
-		Predicate tmpPredicate;
-		IndexedInstanceStorage tmpInstances;
-		for (InternalRule rule : rulesToEvaluate) {
-			// register rule head instances
-			tmpPredicate = rule.getHeadAtom().getPredicate();
-			tmpInstances = this.workingMemory.get(tmpPredicate, true);
-			this.modifiedInLastEvaluationRun.putIfAbsent(tmpPredicate, new LinkedHashSet<>());
-			if (tmpInstances != null) {
-				this.modifiedInLastEvaluationRun.get(tmpPredicate).addAll(tmpInstances.getAllInstances());
-			}
-			// register positive body instances
-			for (Atom a : rule.getBodyAtomsPositive()) {
-				tmpPredicate = a.getPredicate();
-				tmpInstances = this.workingMemory.get(tmpPredicate, true);
-				this.modifiedInLastEvaluationRun.putIfAbsent(tmpPredicate, new LinkedHashSet<>());
-				if (tmpInstances != null) {
-					this.modifiedInLastEvaluationRun.get(tmpPredicate).addAll(tmpInstances.getAllInstances());
-				}
-			}
-		}
+		this.prepareComponentEvaluation(rulesToEvaluate);
 		do {
 			this.workingMemory.reset();
 			LOGGER.debug("Starting component evaluation run...");
@@ -173,6 +153,35 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		this.addFactsToProgram(addedInstances);
 		rulesToEvaluate.forEach((rule) -> this.solvedRuleIds.add(rule.getRuleId()));
 		LOGGER.debug("Finished adding program facts");
+	}
+
+	/**
+	 * To be called at the start of evaluateComponent. Adds all known instances of the predicates occurring in the given set of rules to the
+	 * "modifiedInLastEvaluationRun" map in order to "bootstrap" incremental grounding, i.e. making sure that those instances are taken into account for ground
+	 * substitutions by evaluateRule.
+	 */
+	private void prepareComponentEvaluation(Set<InternalRule> rulesToEvaluate) {
+		this.modifiedInLastEvaluationRun = new HashMap<>();
+		Predicate tmpPredicate;
+		IndexedInstanceStorage tmpInstances;
+		for (InternalRule rule : rulesToEvaluate) {
+			// register rule head instances
+			tmpPredicate = rule.getHeadAtom().getPredicate();
+			tmpInstances = this.workingMemory.get(tmpPredicate, true);
+			this.modifiedInLastEvaluationRun.putIfAbsent(tmpPredicate, new LinkedHashSet<>());
+			if (tmpInstances != null) {
+				this.modifiedInLastEvaluationRun.get(tmpPredicate).addAll(tmpInstances.getAllInstances());
+			}
+			// register positive body instances
+			for (Atom a : rule.getBodyAtomsPositive()) {
+				tmpPredicate = a.getPredicate();
+				tmpInstances = this.workingMemory.get(tmpPredicate, true);
+				this.modifiedInLastEvaluationRun.putIfAbsent(tmpPredicate, new LinkedHashSet<>());
+				if (tmpInstances != null) {
+					this.modifiedInLastEvaluationRun.get(tmpPredicate).addAll(tmpInstances.getAllInstances());
+				}
+			}
+		}
 	}
 
 	private void evaluateRule(InternalRule rule) {

@@ -42,7 +42,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 /**
- * Parses given argument lists (as passed when Alpha is called from command line) into {@link AlphaConfig}s and {@link InputConfig}s.
+ * Parses given argument lists (as passed when Alpha is called from command line) into {@link SystemConfig}s and {@link InputConfig}s.
  *
  */
 public class CommandLineParser {
@@ -111,9 +111,7 @@ public class CommandLineParser {
 			.build();
 	private static final Option OPT_NO_EVAL_STRATIFIED = Option.builder("nse").longOpt("disable-stratified-eval").desc("Disable stratified evaluation").build();
 	private static final Option OPT_NO_NOGOOD_DELETION = Option.builder("dnd").longOpt("disableNoGoodDeletion")
-			.desc("disable the deletion of (learned, little active) nogoods (default: "
-					+ SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION + ")")
-			.build();
+			.desc("disable the deletion of (learned, little active) nogoods (default: " + SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION + ")").build();
 
 	private static final Options CLI_OPTS = new Options();
 
@@ -147,7 +145,7 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_JUSTIFICATION);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NORMALIZATION_GRID);
 
-CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_EVAL_STRATIFIED);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_EVAL_STRATIFIED);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_NOGOOD_DELETION);
 	}
 
@@ -171,7 +169,11 @@ CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_EVAL_STRATIFIED);
 	public CommandLineParser(String cmdLineSyntax, Consumer<String> abortAction) {
 		this.cmdSyntax = cmdLineSyntax;
 		this.abortAction = abortAction;
-
+		this.initializeGlobalOptionHandlers();
+		this.initializeInputOptionHandlers();
+	}
+	
+	private void initializeGlobalOptionHandlers() {
 		/*
 		 * below put invocations are used to "register" the handler methods for each commandline option
 		 */
@@ -191,10 +193,11 @@ CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_EVAL_STRATIFIED);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_STATS.getOpt(), this::handleStats);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), this::handleNoJustification);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NORMALIZATION_GRID.getOpt(), this::handleNormalizationGrid);
-
-this.globalOptionHandlers.put(CommandLineParser.OPT_NO_EVAL_STRATIFIED.getOpt(), this::handleDisableStratifedEval);
-		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);
-
+		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_EVAL_STRATIFIED.getOpt(), this::handleDisableStratifedEval);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);		
+	}
+	
+	private void initializeInputOptionHandlers() {
 		this.inputOptionHandlers.put(CommandLineParser.OPT_NUM_ANSWER_SETS.getOpt(), this::handleNumAnswerSets);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_INPUT.getOpt(), this::handleInput);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_FILTER.getOpt(), this::handleFilters);
@@ -204,6 +207,8 @@ this.globalOptionHandlers.put(CommandLineParser.OPT_NO_EVAL_STRATIFIED.getOpt(),
 		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_DEPGRAPH.getOpt(), this::handleWriteDepgraph);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_COMPGRAPH.getOpt(), this::handleWriteCompgraph);
 	}
+	
+	
 
 	public AlphaConfig parseCommandLine(String[] args) throws ParseException {
 		CommandLine commandLine = new DefaultParser().parse(CommandLineParser.CLI_OPTS, args);
@@ -213,8 +218,6 @@ this.globalOptionHandlers.put(CommandLineParser.OPT_NO_EVAL_STRATIFIED.getOpt(),
 		AlphaConfig retVal = new AlphaConfig();
 		SystemConfig sysConf = new SystemConfig();
 		InputConfig inputConf = new InputConfig();
-		CliOptionHandler<SystemConfig> globalOptionHandler;
-		CliOptionHandler<InputConfig> inputOptionHandler;
 		if (commandLine.hasOption(CommandLineParser.OPT_HELP.getOpt())) {
 			LOGGER.debug("Found help option!");
 			this.handleHelp();
@@ -222,23 +225,29 @@ this.globalOptionHandlers.put(CommandLineParser.OPT_NO_EVAL_STRATIFIED.getOpt(),
 			this.validate(commandLine);
 		}
 		for (Option opt : commandLine.getOptions()) {
-			globalOptionHandler = this.globalOptionHandlers.get(opt.getOpt());
-			if (globalOptionHandler != null) {
-				globalOptionHandler.handleOption(opt, sysConf);
-			} else {
-				inputOptionHandler = this.inputOptionHandlers.get(opt.getOpt());
-				if (inputOptionHandler != null) {
-					inputOptionHandler.handleOption(opt, inputConf);
-				} else {
-					throw new ParseException("Cannot handle option: " + opt.getOpt());
-				}
-			}
+			this.handleOption(opt, sysConf, inputConf);
 		}
 		retVal.setSystemConfig(sysConf);
 		retVal.setInputConfig(inputConf);
 		return retVal;
 	}
 
+	private void handleOption(Option opt, SystemConfig sysConf, InputConfig inputConf) throws ParseException {
+		CliOptionHandler<SystemConfig> globalOptionHandler;
+		CliOptionHandler<InputConfig> inputOptionHandler;
+		globalOptionHandler = this.globalOptionHandlers.get(opt.getOpt());
+		if (globalOptionHandler != null) {
+			globalOptionHandler.handleOption(opt, sysConf);
+		} else {
+			inputOptionHandler = this.inputOptionHandlers.get(opt.getOpt());
+			if (inputOptionHandler != null) {
+				inputOptionHandler.handleOption(opt, inputConf);
+			} else {
+				throw new ParseException("Cannot handle option: " + opt.getOpt());
+			}
+		}		
+	}
+	
 	public String getUsageMessage() {
 		HelpFormatter formatter = new HelpFormatter();
 		// Unfortunately, commons-cli does not offer a method of simply rendering a help
