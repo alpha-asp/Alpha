@@ -34,7 +34,7 @@ import at.ac.tuwien.kr.alpha.common.rule.AbstractRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 
 /**
- * Represents a non-ground rule or a constraint. A @{link Rule} has a general {@link Head}, meaning both choice heads and disjunctive heads are permissible.
+ * Represents a non-ground rule or a constraint. A @{link BasicRule} has a general {@link Head}, meaning both choice heads and disjunctive heads are permissible.
  * This implementation represents a rule after being parsed from a given ASP program, but before being transformed into a @{link NormalRule} Copyright (c)
  * 2016-2019, the Alpha Team.
  */

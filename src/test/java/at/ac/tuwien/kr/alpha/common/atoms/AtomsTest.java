@@ -1,7 +1,11 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,6 +14,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.external.ExternalAtoms;
 import at.ac.tuwien.kr.alpha.common.atoms.external.Predicate;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
 /**
@@ -24,12 +29,22 @@ public class AtomsTest {
 	public AtomsTest() throws NoSuchMethodException, SecurityException {
 		Map<String, PredicateInterpretation> externals = new HashMap<>();
 		externals.put("isFoo", ExternalAtoms.processPredicateMethod(AtomsTest.class.getMethod("isFoo", int.class)));
+		externals.put("extWithOutput", ExternalAtoms.processPredicateMethod(AtomsTest.class.getMethod("extWithOutput", int.class)));
 		this.parser = new ProgramParser(externals);
 	}
 
 	@Predicate
 	public static final boolean isFoo(int bar) {
 		return 0xF00 == bar;
+	}
+
+	@Predicate
+	public static final Set<List<ConstantTerm<Integer>>> extWithOutput(int in) {
+		Set<List<ConstantTerm<Integer>>> retVal = new HashSet<>();
+		List<ConstantTerm<Integer>> lst = new ArrayList<>();
+		lst.add(ConstantTerm.getSymbolicInstance(Integer.toString(in)));
+		retVal.add(lst);
+		return retVal;
 	}
 
 	@Test
@@ -89,6 +104,7 @@ public class AtomsTest {
 	}
 
 	@Test
+	@SuppressWarnings("unlikely-arg-type")
 	public void testAreExternalAtomsEqual() {
 		InputProgram p1 = parser.parse("a :- &isFoo[1].");
 		Atom ext1 = p1.getRules().get(0).getBody().get(0).getAtom();
@@ -96,6 +112,18 @@ public class AtomsTest {
 		Atom ext2 = p2.getRules().get(0).getBody().get(0).getAtom();
 		Assert.assertEquals(ext1, ext2);
 		Assert.assertEquals(ext2, ext1);
+
+		Assert.assertFalse(ext1.equals(null));
+		Assert.assertFalse(ext1.equals("bla"));
+		Assert.assertTrue(ext1.hashCode() == ext2.hashCode());
+	}
+
+	@Test
+	public void testExternalHasOutput() {
+		InputProgram p = parser.parse("a:- &extWithOutput[1](OUT).");
+		Atom ext = p.getRules().get(0).getBody().get(0).getAtom();
+		this.assertExternalAtomGround(ext, false);
+		Assert.assertTrue(((ExternalAtom) ext).hasOutput());
 	}
 
 	private void assertBasicAtomGround(Atom a, boolean expectedGround) {
