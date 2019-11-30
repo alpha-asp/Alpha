@@ -39,10 +39,13 @@ public class RuleTest {
 		BasicRule r3 = p3.getRules().get(0);
 		Assert.assertTrue(r1.equals(r2));
 		Assert.assertTrue(r2.equals(r1));
+		Assert.assertTrue(r1.hashCode() == r2.hashCode());
 		Assert.assertFalse(r1.equals(r3));
 		Assert.assertFalse(r3.equals(r1));
+		Assert.assertTrue(r1.hashCode() != r3.hashCode());
 		Assert.assertFalse(r2.equals(r3));
 		Assert.assertFalse(r3.equals(r2));
+		Assert.assertTrue(r2.hashCode() != r3.hashCode());
 	}
 
 }
