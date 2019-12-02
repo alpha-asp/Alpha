@@ -6,7 +6,6 @@ plugins {
 	id 'jacoco'
 
 	id 'com.github.kt3k.coveralls' version '2.8.1'
-	id 'com.gradle.build-scan' version '2.2.1'
 }
 
 sourceCompatibility = 1.8
@@ -113,20 +112,6 @@ test {
 }
 
 wrapper {
-	gradleVersion = '5.3'
+	gradleVersion = '6.0'
 	distributionType = 'ALL'
-}
-
-buildScan {
-        termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-        termsOfServiceAgree = 'yes'
-	// Detect whether the build is running on Travis CI, and if
-	// so, add a reference from the build scan to the build.
-        if (System.getenv('TRAVIS')) {
-		tag 'ci'
-                link('Travis CI', System.getenv('TRAVIS_JOB_WEB_URL'))
-        }
-        buildScanPublished { com.gradle.scan.plugin.PublishedBuildScan scan ->
-                file('build/scan.txt') << "${scan.buildScanUri}\n"
-        }
 }
