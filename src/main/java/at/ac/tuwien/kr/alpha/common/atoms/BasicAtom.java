@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -41,7 +41,7 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  */
 public class BasicAtom extends Atom implements VariableNormalizableAtom {
 	private final Predicate predicate;
@@ -109,7 +109,9 @@ public class BasicAtom extends Atom implements VariableNormalizableAtom {
 
 	@Override
 	public BasicAtom substitute(Substitution substitution) {
-		return new BasicAtom(predicate, terms.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList()));
+		return new BasicAtom(predicate, terms.stream()
+				.map(t -> t.substitute(substitution))
+				.collect(Collectors.toList()));
 	}
 
 	@Override

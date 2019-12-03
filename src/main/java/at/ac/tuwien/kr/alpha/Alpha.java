@@ -171,7 +171,7 @@ public class Alpha {
 	}
 
 	/**
-	 * Convenience method - overloaded version of prepareSolverFor(AnalyzedNormalProgram) for cases where details of the program analysis are not of interest
+	 * Convenience method - overloaded version of prepareSolverFor({@link InternalProgram}) for cases where details of the program analysis are not of interest
 	 * 
 	 * @param program a NormalProgram to solve
 	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
@@ -181,7 +181,7 @@ public class Alpha {
 	}
 
 	/**
-	 * Convenience method - overloaded version of prepareSolverFor(AnalyzedNormalProgram) for cases where details of the program analysis and program
+	 * Convenience method - overloaded version of prepareSolverFor({@link InternalProgram}) for cases where details of the program analysis and program
 	 * normalization are not of interest
 	 * 
 	 * @param program a NormalProgram to solve
@@ -194,9 +194,10 @@ public class Alpha {
 	}
 
 	/**
-	 * Solves the given program
+	 * Solves the given program and filters answer sets based on the passed predicate
 	 * 
 	 * @param program an {@link InternalProgram} to solve
+	 * @param a       {@link Predicate} filtering {@at.ac.tuwien.kr.alpha.common.Predicate}s in the returned answer sets
 	 * @return a Stream of answer sets representing stable models of the given program
 	 */
 	public Stream<AnswerSet> solve(InternalProgram program, java.util.function.Predicate<Predicate> filter) {
@@ -204,20 +205,26 @@ public class Alpha {
 		return this.config.isSortAnswerSets() ? retVal.sorted() : retVal;
 	}
 
+	/**
+	 * Overloaded version of solve({@link InternalProgram}, {@link Predicate}) that uses a default filter (accept everything)
+	 * 
+	 * @param program the program to solve
+	 * @return a stream of answer sets
+	 */
 	public Stream<AnswerSet> solve(InternalProgram program) {
 		return this.solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
 	/**
-	 * Convenience method - overloaded version of solve(AnalyzedNormalProgram) for cases where details of the program analysis aren't of interest
+	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the program analysis aren't of interest
 	 */
 	public Stream<AnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
 		return this.solve(InternalProgram.fromNormalProgram(program), filter);
 	}
 
 	/**
-	 * Convenience method - overloaded version of solve(AnalyzedNormalProgram) for cases where details of the program analysis and normalization aren't of
-	 * interest
+	 * Convenience method - overloaded version of solve({@link InternalProgram}, {@link Predicate}) for cases where details of the program analysis and
+	 * normalization aren't of interest
 	 */
 	public Stream<AnswerSet> solve(InputProgram program, java.util.function.Predicate<Predicate> filter) {
 		NormalProgram normalized = this.normalizeProgram(program);
@@ -226,14 +233,14 @@ public class Alpha {
 	}
 
 	/**
-	 * Convenience method - overloaded version of solve(AnalyzedNormalProgram) for cases where details of the program analysis aren't of interest
+	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the program analysis aren't of interest
 	 */
 	public Stream<AnswerSet> solve(NormalProgram program) {
 		return this.solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
 	/**
-	 * Convenience method - overloaded version of solve(AnalyzedNormalProgram) for cases where details of the program analysis and normalization aren't of
+	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the program analysis and normalization aren't of
 	 * interest
 	 */
 	public Stream<AnswerSet> solve(InputProgram program) {

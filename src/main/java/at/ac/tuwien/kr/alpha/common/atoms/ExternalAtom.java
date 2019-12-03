@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -96,8 +96,9 @@ public class ExternalAtom extends Atom {
 
 	@Override
 	public ExternalAtom substitute(Substitution substitution) {
-		return new ExternalAtom(predicate, interpretation, input.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList()),
-				output.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList()));
+		List<Term> substitutedInput = this.input.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
+		List<Term> substitutedOutput = this.output.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
+		return new ExternalAtom(predicate, interpretation, substitutedInput, substitutedOutput);
 	}
 
 	@Override
