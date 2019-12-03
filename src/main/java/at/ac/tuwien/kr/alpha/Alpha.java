@@ -102,7 +102,7 @@ public class Alpha {
 	}
 
 	public InternalProgram performProgramPreprocessing(InternalProgram program) {
-		LOGGER.info("Preprocessing InternalProgram!");
+		LOGGER.debug("Preprocessing InternalProgram!");
 		InternalProgram retVal = program;
 		if (this.config.isEvaluateStratifiedPart()) {
 			AnalyzedProgram analyzed = new AnalyzedProgram(program.getRules(), program.getFacts());
@@ -112,7 +112,7 @@ public class Alpha {
 	}
 
 	public InternalProgram performProgramPreprocessing(AnalyzedProgram program) {
-		LOGGER.info("Preprocessing AnalyzedProgram!");
+		LOGGER.debug("Preprocessing AnalyzedProgram!");
 		InternalProgram retVal = program;
 		if (this.config.isEvaluateStratifiedPart()) {
 			retVal = new StratifiedEvaluation().apply(program);
@@ -196,7 +196,7 @@ public class Alpha {
 	/**
 	 * Solves the given program
 	 * 
-	 * @param program an AnalyzedNormalProgram to solve
+	 * @param program an {@link InternalProgram} to solve
 	 * @return a Stream of answer sets representing stable models of the given program
 	 */
 	public Stream<AnswerSet> solve(InternalProgram program, java.util.function.Predicate<Predicate> filter) {

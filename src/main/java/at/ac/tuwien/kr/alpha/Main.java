@@ -42,6 +42,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph;
+import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
 import at.ac.tuwien.kr.alpha.common.graphio.ComponentGraphWriter;
 import at.ac.tuwien.kr.alpha.common.graphio.DependencyGraphWriter;
 import at.ac.tuwien.kr.alpha.common.program.impl.AnalyzedProgram;
@@ -64,11 +66,6 @@ public class Main {
 	private static final String ALPHA_CALL_SYNTAX = "java -jar alpha-bundled.jar" + System.lineSeparator() + "java -jar alpha.jar";
 
 	public static void main(String[] args) {
-//		try {
-//			Thread.sleep(40000);
-//		} catch (InterruptedException ex) {
-//			LOGGER.error("Cannot sleep - bad dreams?");
-//		}
 		CommandLineParser commandLineParser = new CommandLineParser(Main.ALPHA_CALL_SYNTAX, (msg) -> Main.exitWithMessage(msg, 0));
 		AlphaConfig cfg = null;
 		try {
@@ -97,44 +94,70 @@ public class Main {
 		NormalProgram normalized = alpha.normalizeProgram(program);
 		InternalProgram preprocessed;
 		if (cfg.getInputConfig().isWriteDependencyGraph() || cfg.getInputConfig().isWriteComponentGraph()) {
-			LOGGER.info("Performing program analysis in preparation for writing dependency and/or component graph file...");
+			LOGGER.debug("Performing program analysis in preparation for writing dependency and/or component graph file...");
 			AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalized);
-
-			DependencyGraphWriter depGraphWriter = new DependencyGraphWriter();
-			ComponentGraphWriter compGraphWriter = new ComponentGraphWriter();
-
 			if (cfg.getInputConfig().isWriteDependencyGraph()) {
-				String depGraphTarget = cfg.getInputConfig().getDepgraphPath();
-				try (FileOutputStream os = new FileOutputStream(new File(depGraphTarget))) {
-					depGraphWriter.writeAsDot(analyzed.getDependencyGraph(), os);
-				} catch (IOException ex) {
-					Main.bailOut("Error writing dependency graph: " + ex.getMessage());
-				}
+				Main.writeDependencyGraph(analyzed.getDependencyGraph(), cfg.getInputConfig().getDepgraphPath());
 			}
 			if (cfg.getInputConfig().isWriteComponentGraph()) {
-				String compGraphTarget = cfg.getInputConfig().getCompgraphPath();
-				try (FileOutputStream os = new FileOutputStream(new File(compGraphTarget))) {
-					compGraphWriter.writeAsDot(analyzed.getComponentGraph(), os);
-				} catch (IOException ex) {
-					Main.bailOut("Error writing component graph: " + ex.getMessage());
-				}
+				Main.writeComponentGraph(analyzed.getComponentGraph(), cfg.getInputConfig().getCompgraphPath());
 			}
 			preprocessed = alpha.performProgramPreprocessing(analyzed);
 		} else {
-			LOGGER.info("Not writing dependency or component graphs, starting preprocessing...");
+			LOGGER.debug("Not writing dependency or component graphs, starting preprocessing...");
 			preprocessed = alpha.performProgramPreprocessing(normalized);
 		}
 		if (cfg.getInputConfig().isWritePreprocessed()) {
-			String preprocPath = cfg.getInputConfig().getPreprocessedPath();
-			LOGGER.info("Writing preprocessed program to {}", preprocPath);
-			try (PrintStream ps = new PrintStream(new File(preprocPath))) {
-				ps.println(preprocessed.toString());
-			} catch (IOException ex) {
-				LOGGER.error("Failed writing preprocessed program file", ex);
-				Main.bailOut("Failed writing preprocessed program file " + ex.getMessage());
-			}
+			Main.writeInternalProgram(preprocessed, cfg.getInputConfig().getPreprocessedPath());
 		}
 		Main.computeAndConsumeAnswerSets(alpha, cfg.getInputConfig(), preprocessed);
+	}
+
+	/**
+	 * Writes the given {@link DependencyGraph} to the destination passed as the second parameter
+	 * 
+	 * @param dg   the dependency graph to write
+	 * @param path the path to write the graph to
+	 */
+	private static void writeDependencyGraph(DependencyGraph dg, String path) {
+		DependencyGraphWriter depGraphWriter = new DependencyGraphWriter();
+		try (FileOutputStream os = new FileOutputStream(new File(path))) {
+			depGraphWriter.writeAsDot(dg, os);
+		} catch (IOException ex) {
+			Main.bailOut("Error writing dependency graph: " + ex.getMessage());
+		}
+	}
+
+	/**
+	 * Writes the given {@link ComponentGraph} to the destination passed as the second parameter
+	 * 
+	 * @param cg   the component graph to write
+	 * @param path the path to write the graph to
+	 */
+	private static void writeComponentGraph(ComponentGraph cg, String path) {
+		ComponentGraphWriter compGraphWriter = new ComponentGraphWriter();
+		try (FileOutputStream os = new FileOutputStream(new File(path))) {
+			compGraphWriter.writeAsDot(cg, os);
+		} catch (IOException ex) {
+			Main.bailOut("Error writing component graph: " + ex.getMessage());
+		}
+
+	}
+
+	/**
+	 * Writes the given {@link InternalProgram} to the destination passed as the second parameter
+	 * 
+	 * @param cg   the program to write
+	 * @param path the path to write the program to
+	 */
+	private static void writeInternalProgram(InternalProgram prg, String path) {
+		LOGGER.debug("Writing preprocessed program to {}", path);
+		try (PrintStream ps = new PrintStream(new File(path))) {
+			ps.println(prg.toString());
+		} catch (IOException ex) {
+			LOGGER.error("Failed writing preprocessed program file", ex);
+			Main.bailOut("Failed writing preprocessed program file " + ex.getMessage());
+		}
 	}
 
 	private static void computeAndConsumeAnswerSets(Alpha alpha, InputConfig inputCfg, InternalProgram program) {
