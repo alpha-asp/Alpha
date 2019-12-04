@@ -89,7 +89,7 @@ public final class ExternalAtoms {
 		return new SuppliedPredicateInterpretation(supplier);
 	}
 
-	public static <T extends Comparable<T>> List<Atom> asFacts(Class<T> clazz, Collection<T> extFacts) {
+	public static <T extends Comparable<T>> List<Atom> asFacts(Class<T> classOfExtFacts, Collection<T> extFacts) {
 		// use Class<T> as parameter here, taking simple name from first element might not give desired result if it's a subtype
 		List<Atom> retVal = new ArrayList<>();
 		String javaName = clazz.getSimpleName();
