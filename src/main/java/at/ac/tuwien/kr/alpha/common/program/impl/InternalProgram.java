@@ -63,7 +63,7 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 	private void analyzeFacts(List<Atom> facts) {
 		List<Instance> tmpInstances;
 		Predicate tmpPredicate;
-		for (Atom fact : facts) { // TODO should we really unroll intervals here??
+		for (Atom fact : facts) {
 			tmpInstances = FactIntervalEvaluator.constructFactInstances(fact);
 			tmpPredicate = fact.getPredicate();
 			this.factsByPredicate.putIfAbsent(tmpPredicate, new LinkedHashSet<>());
