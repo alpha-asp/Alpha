@@ -41,7 +41,9 @@ import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
 /**
- * Alpha-internal representation of an ASP program, i.e., a set of ASP rules. Copyright (c) 2017 - 2019, the Alpha Team.
+ * Alpha-internal representation of an ASP program, i.e., a set of ASP rules.
+ * 
+ * Copyright (c) 2017-2019, the Alpha Team.
  */
 public class InputProgram extends AbstractProgram<BasicRule> {
 
