@@ -1,4 +1,31 @@
+/**
+ * Copyright (c) 2019, the Alpha Team.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1) Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ * 2) Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package at.ac.tuwien.kr.alpha.common.depgraph;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,10 +36,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
-
 import at.ac.tuwien.kr.alpha.common.depgraph.StronglyConnectedComponentsHelper.SCCResult;
+import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
 
+/**
+ * Representation of an {@link InternalProgram}'s component graph, i.e. the directed acyclic graph resulting from condensing the program's
+ * {@link DependencyGraph} into its strongly connected components. Needed in order to calculate stratifications from which an evaluation order for the
+ * {@link StratifiedEvaluation} transformation can be derived.
+ * 
+ * Copyright (c) 2019, the Alpha Team.
+ */
 public final class ComponentGraph {
 
 	private final Map<Integer, SCComponent> components;
@@ -23,6 +56,14 @@ public final class ComponentGraph {
 		this.entryPoints = entryPoints;
 	}
 
+	/**
+	 * Creates a new {@link ComponentGraph} based on a dependency graph and an {@link SCCResult} representing the result of calculating the dependency graph's
+	 * strongly connected components (SCCs)
+	 * 
+	 * @param dg        the dependency graph backing this component graph
+	 * @param sccResult the SCC calculation result for the dependency graph in question
+	 * @return a new {@link ComponentGraph} representing the strongly connected components of the given dependency graph
+	 */
 	public static ComponentGraph buildComponentGraph(DependencyGraph dg, SCCResult sccResult) {
 		return new ComponentGraph.Builder(dg, sccResult).build();
 	}
