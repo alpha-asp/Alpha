@@ -170,7 +170,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			return InputProgram.EMPTY;
 		}
 		this.inlineDirectives = new InlineDirectives();
-		// inputProgram = new BasicProgram(new ArrayList<>(), new ArrayList<>(), inlineDirectives);
 		this.programBuilder = InputProgram.builder();
 		visitStatements(ctx.statements());
 		this.programBuilder.addInlineDirectives(this.inlineDirectives);
