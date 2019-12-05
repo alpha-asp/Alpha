@@ -152,7 +152,6 @@ public class Substitution {
 			throw oops("Right-hand term is not ground.");
 		}
 		Term alreadyAssigned = substitution.get(variableTerm);
-		// if (alreadyAssigned != null && alreadyAssigned != groundTerm) {
 		if (alreadyAssigned != null && !alreadyAssigned.equals(groundTerm)) {
 			throw oops("Variable is already assigned to another term.");
 		}

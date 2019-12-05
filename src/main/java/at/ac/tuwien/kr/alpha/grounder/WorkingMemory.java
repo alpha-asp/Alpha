@@ -110,5 +110,4 @@ public class WorkingMemory {
 	public Set<IndexedInstanceStorage> modified() {
 		return modifiedWorkingMemories;
 	}
-
 }
