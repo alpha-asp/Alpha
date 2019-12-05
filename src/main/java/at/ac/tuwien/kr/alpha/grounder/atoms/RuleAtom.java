@@ -58,7 +58,11 @@ public class RuleAtom extends Atom {
 	}
 
 	public RuleAtom(InternalRule nonGroundRule, Substitution substitution) {
-		this(Arrays.asList(getInstance(Integer.toString(nonGroundRule.getRuleId())), getInstance(substitution.toString())));
+		this(Arrays.asList(
+				getInstance(Integer.toString(nonGroundRule.getRuleId())), 
+				getInstance(substitution.toString())
+				)
+			);
 	}
 
 	@Override
