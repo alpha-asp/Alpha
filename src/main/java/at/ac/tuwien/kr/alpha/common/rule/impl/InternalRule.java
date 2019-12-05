@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -45,8 +45,7 @@ import at.ac.tuwien.kr.alpha.grounder.RuleGroundingOrder;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 
 /**
- * Represents a normal rule or a constraint for the semi-naive grounder. A normal rule has one (or no if it's a constraint) atom in it's head. Copyright (c)
- * 2017-2019, the Alpha Team.
+ * Represents a normal rule or a constraint for the semi-naive grounder. A normal rule has one (or no if it's a constraint) atom in it's head.
  */
 public class InternalRule extends NormalRule {
 
