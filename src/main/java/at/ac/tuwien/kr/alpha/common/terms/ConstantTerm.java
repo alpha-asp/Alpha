@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016, 2019, the Alpha Team.
  */
 public class ConstantTerm<T extends Comparable<T>> extends Term {
 	private static final Interner<ConstantTerm<?>> INTERNER = new Interner<>();
