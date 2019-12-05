@@ -92,7 +92,7 @@ public final class ExternalAtoms {
 	public static <T extends Comparable<T>> List<Atom> asFacts(Class<T> classOfExtFacts, Collection<T> extFacts) {
 		// use Class<T> as parameter here, taking simple name from first element might not give desired result if it's a subtype
 		List<Atom> retVal = new ArrayList<>();
-		String javaName = clazz.getSimpleName();
+		String javaName = classOfExtFacts.getSimpleName();
 		String name = javaName.substring(0, 1).toLowerCase() + javaName.substring(1); // camel-cased, but starting with lower case letter
 		for (T instance : extFacts) {
 			retVal.add(new BasicAtom(at.ac.tuwien.kr.alpha.common.Predicate.getInstance(name, 1), ConstantTerm.getInstance(instance)));
