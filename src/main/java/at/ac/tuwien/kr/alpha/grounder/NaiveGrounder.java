@@ -300,7 +300,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		for (NonGroundRule nonGroundRule : fixedRules) {
 			// Generate NoGoods for all rules that have a fixed grounding.
 			RuleGroundingOrder groundingOrder = nonGroundRule.groundingOrder.getFixedGroundingOrder();
-			BindingResult bindingResult = bindNextAtomInRule(nonGroundRule, groundingOrder, new Substitution(), null);
+			BindingResult bindingResult = getGroundInstantiations(nonGroundRule, groundingOrder, new Substitution(), null);
 			groundAndRegister(nonGroundRule, bindingResult.generatedSubstitutions, groundNogoods);
 		}
 
@@ -344,7 +344,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 						continue;
 					}
 
-					final BindingResult bindingResult = bindNextAtomInRule(
+					final BindingResult bindingResult = getGroundInstantiations(
 						nonGroundRule,
 						nonGroundRule.groundingOrder.orderStartingFrom(firstBindingAtom.startingLiteral),
 						unifier,
@@ -407,7 +407,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return registry.register(noGood);
 	}
 
-	BindingResult bindNextAtomInRule(NonGroundRule rule, RuleGroundingOrder groundingOrder, Substitution partialSubstitution, Assignment currentAssignment) {
+	BindingResult getGroundInstantiations(NonGroundRule rule, RuleGroundingOrder groundingOrder, Substitution partialSubstitution, Assignment currentAssignment) {
 		int tolerance = heuristicsConfiguration.getTolerance(rule.isConstraint());
 		if (tolerance < 0) {
 			tolerance = Integer.MAX_VALUE;

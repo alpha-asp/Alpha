@@ -44,10 +44,6 @@ import java.util.stream.Collectors;
  *
  */
 public class TestUtil {
-	
-	public static Literal literal(String predicateName, String... termStrings) {
-		return atom(predicateName, termStrings).toLiteral();
-	}
 
 	public static Atom atom(String predicateName, String... termStrings) {
 		Term[] terms = new Term[termStrings.length];
@@ -61,10 +57,6 @@ public class TestUtil {
 		}
 		return new BasicAtom(Predicate.getInstance(predicateName, terms.length), terms);
 	}
-	
-	public static Literal literal(String predicateName, int... termInts) {
-		return atom(predicateName, termInts).toLiteral();
-	}
 
 	public static Atom atom(String predicateName, int... termInts) {
 		Term[] terms = new Term[termInts.length];
@@ -72,6 +64,14 @@ public class TestUtil {
 			terms[i] = ConstantTerm.getInstance(termInts[i]);
 		}
 		return new BasicAtom(Predicate.getInstance(predicateName, terms.length), terms);
+	}
+
+	public static Literal literal(String predicateName, String... termStrings) {
+		return atom(predicateName, termStrings).toLiteral();
+	}
+
+	public static Literal literal(String predicateName, int... termInts) {
+		return atom(predicateName, termInts).toLiteral();
 	}
 	
 	public static void printNoGoods(AtomStore atomStore, Collection<NoGood> noGoods) {

@@ -115,8 +115,8 @@ public class CommandLineParser {
 			.desc("grounder tolerance for rules (default: " + SystemConfig.DEFAULT_GROUNDER_TOLERANCE_RULES + ")")
 			.hasArg().argName("tolerance")
 			.build();
-	private static final Option OPT_NO_INSTANCE_REMOVAL = Option.builder("dir").longOpt("disableInstanceRemoval")
-			.desc("activates the accumulator grounding strategy by disabling removal of instances from grounder memory in certain cases (default: " + SystemConfig.DEFAULT_DISABLE_INSTANCE_REMOVAL + ")")
+	private static final Option OPT_GROUNDER_NO_INSTANCE_REMOVAL = Option.builder("dir").longOpt("disableInstanceRemoval")
+			.desc("activates the accumulator grounding strategy by disabling removal of instances from grounder memory in certain cases (default: " + SystemConfig.DEFAULT_GROUNDER_DISABLE_INSTANCE_REMOVAL + ")")
 			.build();
 
 	private static final Options CLI_OPTS = new Options();
@@ -150,7 +150,7 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_NOGOOD_DELETION);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES);
-		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_INSTANCE_REMOVAL);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_NO_INSTANCE_REMOVAL);
 	}
 
 	/*
@@ -196,7 +196,7 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS.getOpt(), this::handleGrounderToleranceConstraints);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES.getOpt(), this::handleGrounderToleranceRules);
-		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_INSTANCE_REMOVAL.getOpt(), this::handleNoInstanceRemoval);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_NO_INSTANCE_REMOVAL.getOpt(), this::handleGrounderNoInstanceRemoval);
 
 		this.inputOptionHandlers.put(CommandLineParser.OPT_NUM_ANSWER_SETS.getOpt(), this::handleNumAnswerSets);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_INPUT.getOpt(), this::handleInput);
@@ -386,8 +386,8 @@ public class CommandLineParser {
 		cfg.setGrounderToleranceRules(grounderToleranceRules);
 	}
 
-	private void handleNoInstanceRemoval(Option opt, SystemConfig cfg) {
-		cfg.setDisableInstanceRemoval(true);
+	private void handleGrounderNoInstanceRemoval(Option opt, SystemConfig cfg) {
+		cfg.setGrounderDisableInstanceRemoval(true);
 	}
 
 }

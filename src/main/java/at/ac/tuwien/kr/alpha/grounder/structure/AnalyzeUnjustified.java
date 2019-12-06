@@ -2,10 +2,7 @@ package at.ac.tuwien.kr.alpha.grounder.structure;
 
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
-import at.ac.tuwien.kr.alpha.grounder.Instance;
-import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
-import at.ac.tuwien.kr.alpha.grounder.Unification;
-import at.ac.tuwien.kr.alpha.grounder.Unifier;
+import at.ac.tuwien.kr.alpha.grounder.*;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -145,7 +145,7 @@ public class CommandLineParserTest {
 	public void noInstanceRemoval() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
 		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-dir"});
-		assertTrue(alphaConfig.getAlphaConfig().isDisableInstanceRemoval());
+		assertTrue(alphaConfig.getAlphaConfig().isGrounderDisableInstanceRemoval());
 	}
 
 }

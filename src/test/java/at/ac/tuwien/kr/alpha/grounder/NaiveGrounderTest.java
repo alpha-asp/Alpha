@@ -159,8 +159,8 @@ public class NaiveGrounderTest {
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
 		final Substitution substP1X1 = Substitution.unify(litP1X, new Instance(ConstantTerm.getInstance(1)), new Substitution());
 		final Substitution substQ1Y1 = Substitution.unify(litQ1Y, new Instance(ConstantTerm.getInstance(1)), new Substitution());
-		final NaiveGrounder.BindingResult bindingResultP1 = grounder.bindNextAtomInRule(nonGroundRule, groundingOrderP1, substP1X1, currentAssignment);
-		final NaiveGrounder.BindingResult bindingResultQ1 = grounder.bindNextAtomInRule(nonGroundRule, groundingOrderQ1, substQ1Y1, currentAssignment);
+		final NaiveGrounder.BindingResult bindingResultP1 = grounder.getGroundInstantiations(nonGroundRule, groundingOrderP1, substP1X1, currentAssignment);
+		final NaiveGrounder.BindingResult bindingResultQ1 = grounder.getGroundInstantiations(nonGroundRule, groundingOrderQ1, substQ1Y1, currentAssignment);
 
 		assertEquals(expectNoGoods, bindingResultP1.size() > 0);
 		assertEquals(expectNoGoods, bindingResultQ1.size() > 0);
@@ -212,7 +212,7 @@ public class NaiveGrounderTest {
 		grounder.bootstrap();
 		final NonGroundRule nonGroundRule = grounder.getNonGroundRule(ruleID);
 		final Substitution substStartingLiteral = Substitution.unify(startingLiteral, new Instance(ConstantTerm.getInstance(startingInstance)), new Substitution());
-		final NaiveGrounder.BindingResult bindingResult = grounder.bindNextAtomInRule(nonGroundRule, nonGroundRule.groundingOrder.groundingOrders.get(startingLiteral), substStartingLiteral, currentAssignment);
+		final NaiveGrounder.BindingResult bindingResult = grounder.getGroundInstantiations(nonGroundRule, nonGroundRule.groundingOrder.groundingOrders.get(startingLiteral), substStartingLiteral, currentAssignment);
 		assertEquals(expectNoGoods, bindingResult.size() > 0);
 	}
 	
@@ -279,7 +279,7 @@ public class NaiveGrounderTest {
 		grounder.bootstrap();
 		final NonGroundRule nonGroundRule = grounder.getNonGroundRule(ruleID);
 		final Substitution substStartingLiteral = Substitution.unify(startingLiteral, new Instance(ConstantTerm.getInstance(startingInstance)), new Substitution());
-		final NaiveGrounder.BindingResult bindingResult = grounder.bindNextAtomInRule(nonGroundRule, nonGroundRule.groundingOrder.groundingOrders.get(startingLiteral), substStartingLiteral, currentAssignment);
+		final NaiveGrounder.BindingResult bindingResult = grounder.getGroundInstantiations(nonGroundRule, nonGroundRule.groundingOrder.groundingOrders.get(startingLiteral), substStartingLiteral, currentAssignment);
 		assertEquals(expectNoGoods, bindingResult.size() > 0);
 	}
 

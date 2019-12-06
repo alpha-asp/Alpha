@@ -59,7 +59,7 @@ public class SystemConfig {
 	public static final boolean DEFAULT_DISABLE_NOGOOD_DELETION = false;
 	public static final String DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS = GrounderHeuristicsConfiguration.STRICT_STRING;
 	public static final String DEFAULT_GROUNDER_TOLERANCE_RULES = GrounderHeuristicsConfiguration.STRICT_STRING;
-	public static final boolean DEFAULT_DISABLE_INSTANCE_REMOVAL = false;
+	public static final boolean DEFAULT_GROUNDER_DISABLE_INSTANCE_REMOVAL = false;
 
 	private String grounderName = SystemConfig.DEFAULT_GROUNDER_NAME;
 	private String solverName = SystemConfig.DEFAULT_SOLVER_NAME;
@@ -78,7 +78,7 @@ public class SystemConfig {
 	private boolean disableNoGoodDeletion = SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION;
 	private String grounderToleranceConstraints = DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS;
 	private String grounderToleranceRules = DEFAULT_GROUNDER_TOLERANCE_RULES;
-	private boolean disableInstanceRemoval = DEFAULT_DISABLE_INSTANCE_REMOVAL;
+	private boolean grounderDisableInstanceRemoval = DEFAULT_GROUNDER_DISABLE_INSTANCE_REMOVAL;
 
 	public String getGrounderName() {
 		return this.grounderName;
@@ -228,11 +228,11 @@ public class SystemConfig {
 		this.grounderToleranceRules = grounderToleranceRules;
 	}
 
-	public boolean isDisableInstanceRemoval() {
-		return disableInstanceRemoval;
+	public boolean isGrounderDisableInstanceRemoval() {
+		return grounderDisableInstanceRemoval;
 	}
 
-	public void setDisableInstanceRemoval(boolean disableInstanceRemoval) {
-		this.disableInstanceRemoval = disableInstanceRemoval;
+	public void setGrounderDisableInstanceRemoval(boolean grounderDisableInstanceRemoval) {
+		this.grounderDisableInstanceRemoval = grounderDisableInstanceRemoval;
 	}
 }
