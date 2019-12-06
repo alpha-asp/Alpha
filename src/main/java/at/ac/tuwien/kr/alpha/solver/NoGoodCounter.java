@@ -26,7 +26,8 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.NoGood.Type;
+import at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type;
+import at.ac.tuwien.kr.alpha.common.NoGoodInterface;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,19 +41,28 @@ public class NoGoodCounter {
 	private static final int CARD_UNARY = 1;
 	private static final int CARD_BINARY = 2;
 	
-	private int[] countByType = new int[NoGood.Type.values().length];
+	private int[] countByType = new int[Type.values().length];
 	private int[] countByCardinality = new int[3];
-	
+
 	/**
 	 * Increases counters for the types of the given NoGood
 	 * @param noGood
 	 */
-	void count(NoGood noGood) {
+	void add(NoGoodInterface noGood) {
 		countByType[noGood.getType().ordinal()]++;
 		countByCardinality[getAbstractCardinality(noGood)]++;
 	}
 
-	private int getAbstractCardinality(NoGood noGood) {
+	/**
+	 * Decreases counters for the types of the given NoGood
+	 * @param noGood
+	 */
+	void remove(NoGoodInterface noGood) {
+		countByType[noGood.getType().ordinal()]--;
+		countByCardinality[getAbstractCardinality(noGood)]--;
+	}
+
+	private int getAbstractCardinality(NoGoodInterface noGood) {
 		if (noGood.isUnary()) {
 			return CARD_UNARY;
 		}
@@ -66,7 +76,7 @@ public class NoGoodCounter {
 	 * @param type
 	 * @return the number of nogoods of the given type
 	 */
-	public int getNumberOfNoGoods(NoGood.Type type) {
+	public int getNumberOfNoGoods(Type type) {
 		return countByType[type.ordinal()];
 	}
 	

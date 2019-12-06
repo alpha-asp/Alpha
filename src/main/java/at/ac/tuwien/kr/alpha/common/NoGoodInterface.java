@@ -41,4 +41,31 @@ public interface NoGoodInterface {
 	}
 
 	Antecedent asAntecedent();
+
+	Type getType();
+
+	/**
+	 * The possible nogood types
+	 */
+	enum Type {
+		/**
+		 * Unremovable nogood from the input program
+		 */
+		STATIC,
+
+		/**
+		 * Removable support nogood from the input program
+		 */
+		SUPPORT,
+
+		/**
+		 * Removable nogood learnt from a conflict
+		 */
+		LEARNT,
+
+		/**
+		 * Nogood containing solver-internal atoms
+		 */
+		INTERNAL,
+	}
 }

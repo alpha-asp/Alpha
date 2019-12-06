@@ -56,7 +56,7 @@ public class NaiveNoGoodStore implements NoGoodStore {
 
 	@Override
 	public ConflictCause add(int id, NoGood noGood, int lbd) {
-		counter.count(noGood);
+		counter.add(noGood);
 		if (assignment.violates(noGood)) {
 			return new ConflictCause(noGood.asAntecedent());
 		}

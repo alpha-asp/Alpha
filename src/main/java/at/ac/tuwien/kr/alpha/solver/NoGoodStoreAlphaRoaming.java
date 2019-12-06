@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type;
 import at.ac.tuwien.kr.alpha.common.NoGoodInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,6 +149,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	}
 
 	void removeFromWatches(WatchedNoGood toRemove) {
+		counter.remove(toRemove);
 		int watchedLiteral1 = toRemove.getLiteral(0);
 		int watchedLiteral2 = toRemove.getLiteral(1);
 		if (!watches(watchedLiteral2).remove(toRemove)
@@ -180,7 +182,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	@Override
 	public ConflictCause add(int id, NoGood noGood, int lbd) {
 		LOGGER.trace("Adding {}", noGood);
-		counter.count(noGood);
+		counter.add(noGood);
 
 		if (noGood.isUnary()) {
 			return addUnary(noGood);
@@ -356,7 +358,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		LOGGER.trace("WatchedNoGood is {}.", wng);
 
 		// Record for eventual removal if this NoGood is learned.
-		if (noGood.getType() == NoGood.Type.LEARNT) {
+		if (noGood.getType() == Type.LEARNT) {
 			wng.setLBD(lbd);
 			learnedNoGoodDeletion.recordLearnedNoGood(wng);
 		}
