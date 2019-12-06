@@ -587,43 +587,34 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	private TerminateOrTolerate storeAtomAndTerminateIfAtomDoesNotHold(final Atom substitute, final Assignment currentAssignment, final int remainingTolerance) {
-		int decrementedTolerance = remainingTolerance;
-		if (currentAssignment != null) { // if we are not in bootstrapping
-			final int atomId = atomStore.putIfAbsent(substitute);
-			currentAssignment.growForMaxAtomId();
-			ThriceTruth truth = currentAssignment.isAssigned(atomId) ? currentAssignment.getTruth(atomId) : null;
-
-			if (heuristicsConfiguration.isDisableInstanceRemoval()) {
-				// special handling for the accumulator variants of lazy-grounding strategies
-				final Instance instance = new Instance(substitute.getTerms());
-				boolean isInWorkingMemory = workingMemory.get(substitute, true).containsInstance(instance);
-				if (isInWorkingMemory) {
-					// the atom is in the working memory, so we need neither terminate nor decrement tolerance
-					return new TerminateOrTolerate(false, false);
-				}
-				if (truth != null && !truth.toBoolean()) {
-					// terminate if positive body atom is assigned F
-					return new TerminateOrTolerate(true, false);
-				}
-				if (--decrementedTolerance < 0) {
-					// terminate if more positive atoms are unsatisfied as tolerated by the heuristic
-					return new TerminateOrTolerate(true, true);
-				}
-			} else {
-				// no accumulator, we have to test for the real assignment
-				if (truth == null || !truth.toBoolean()) {
-					// Atom currently does not hold, working memory needs to be updated
-					removeAfterObtainingNewNoGoods.add(substitute);
-				}
-				if (truth == null && --decrementedTolerance < 0) {
-					// terminate if more positive atoms are unsatisfied as tolerated by the heuristic
-					return new TerminateOrTolerate(true, true);
-				}
-				// terminate if positive body atom is assigned false
-				return new TerminateOrTolerate(truth != null && !truth.toBoolean(), decrementedTolerance < remainingTolerance);
-			}
+		if (currentAssignment == null) { // if we are in bootstrapping
+			return new TerminateOrTolerate(false, false);
 		}
-		return new TerminateOrTolerate(false, decrementedTolerance < remainingTolerance);
+
+		int decrementedTolerance = remainingTolerance;
+		final int atomId = atomStore.putIfAbsent(substitute);
+		currentAssignment.growForMaxAtomId();
+		ThriceTruth truth = currentAssignment.isAssigned(atomId) ? currentAssignment.getTruth(atomId) : null;
+
+		if (heuristicsConfiguration.isDisableInstanceRemoval()) {
+			// special handling for the accumulator variants of lazy-grounding strategies
+			final Instance instance = new Instance(substitute.getTerms());
+			boolean isInWorkingMemory = workingMemory.get(substitute, true).containsInstance(instance);
+			if (isInWorkingMemory) {
+				// the atom is in the working memory, so we need neither terminate nor decrement tolerance
+				return new TerminateOrTolerate(false, false);
+			}
+		} else if (truth == null || !truth.toBoolean()) {
+			// no accumulator and the atom currently does not hold, so the working memory needs to be updated
+			removeAfterObtainingNewNoGoods.add(substitute);
+		}
+
+		if (truth == null && --decrementedTolerance < 0) {
+			// terminate if more positive atoms are unsatisfied as tolerated by the heuristic
+			return new TerminateOrTolerate(true, true);
+		}
+		// terminate if positive body atom is assigned false
+		return new TerminateOrTolerate(truth != null && !truth.toBoolean(), decrementedTolerance < remainingTolerance);
 	}
 
 	private static class TerminateOrTolerate {
