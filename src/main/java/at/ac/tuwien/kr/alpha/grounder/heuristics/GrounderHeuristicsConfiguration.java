@@ -35,9 +35,10 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
  * <ul>
  * 	<li>All variables in the rule are bound (either by positive body literals that are already
  *      satisfied, or because the whole rule is ground).</li>
- * 	<li>No atom occurring positively in the body is assigned F, and no atom occurring negatively
- *      in the body is assigned T or MBT (because this would make the rule irrelevant in the current
- *      part of the search space).</li>
+ * 	<li>No atom occurring positively in the body is assigned F.</li>
+ * 	<li>No atom occurring negatively in the body is true as a fact.
+ * 		(Note: The rule is still grounded if an atom occurring negatively in the body is assigned true without
+ * 		being a fact, because the alternative would necessitate triggering re-grounding during backtracking.)</li>
  * 	<li>At most {@code N} atoms occurring positively in the body are still unassigned.</li>
  * </ul>
  * 
