@@ -511,6 +511,18 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return createBindings(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment, instances, substitute);
 	}
 
+	/**
+	 * Any {@link FixedInterpretationLiteral} that does <emph>not</emph> fulfil any of the following conditions is
+	 * "pushed back" in the grounding order because it cannot be used to generate substitutions now but maybe later:
+	 * <ul>
+	 * 	<li>the literal is ground</li>
+	 * 	<li>the literal is a {@link ComparisonLiteral} that is left-assigning or right-assigning</li>
+	 * 	<li>the literal is an {@link IntervalLiteral} representing a ground interval term</li>
+	 * 	<li>the literal is an {@link ExternalLiteral}.</li>
+	 * </ul>
+	 * @param substitutedLiteral
+	 * @return
+	 */
 	private boolean shallPushBackFixedInterpretationLiteral(FixedInterpretationLiteral substitutedLiteral) {
 		return !(substitutedLiteral.isGround() ||
 				(substitutedLiteral instanceof ComparisonLiteral && ((ComparisonLiteral)substitutedLiteral).isLeftOrRightAssigning()) ||
