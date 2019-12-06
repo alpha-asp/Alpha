@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
- * 
+ *
  * Additional changes made by Siemens.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -432,10 +432,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 		return bindNextAtomInRule(modifiedGroundingOrder, orderPosition + 1, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
 	}
-	
+
 	private BindingResult bindNextAtomInRule(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment) {
 		boolean laxGrounderHeuristic = originalTolerance > 0;
-		
+
 		Literal currentLiteral = groundingOrder.getLiteralAtOrderPosition(orderPosition);
 		if (currentLiteral == null) {
 			return BindingResult.singleton(partialSubstitution, originalTolerance - remainingTolerance);
@@ -533,6 +533,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private BindingResult createBindings(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment, Collection<Instance> instances, Atom substitute) {
 		BindingResult bindingResult = new BindingResult();
 		for (Instance instance : instances) {
+			int remainingToleranceForThisInstance = remainingTolerance;
 			// Check each instance if it matches with the atom.
 			Substitution unified = Substitution.unify(substitute, instance, new Substitution(partialSubstitution));
 			if (unified == null) {
@@ -547,15 +548,15 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 
 			if (factsFromProgram.get(substitutedAtom.getPredicate()) == null || !factsFromProgram.get(substitutedAtom.getPredicate()).contains(new Instance(substitutedAtom.getTerms()))) {
-				final TerminateOrTolerate terminateOrTolerate = storeAtomAndTerminateIfAtomDoesNotHold(substitutedAtom, currentAssignment, remainingTolerance);
-				if (terminateOrTolerate.decrementTolerance) {
-					remainingTolerance--;
-				}
+				final TerminateOrTolerate terminateOrTolerate = storeAtomAndTerminateIfAtomDoesNotHold(substitutedAtom, currentAssignment, remainingToleranceForThisInstance);
 				if (terminateOrTolerate.terminate) {
 					continue;
 				}
+				if (terminateOrTolerate.decrementTolerance) {
+					remainingToleranceForThisInstance--;
+				}
 			}
-			bindingResult.add(advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, unified, currentAssignment));
+			bindingResult.add(advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingToleranceForThisInstance, unified, currentAssignment));
 		}
 
 		return bindingResult;
@@ -720,7 +721,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	static class BindingResult {
 		final List<Substitution> generatedSubstitutions = new ArrayList<>();
 		final List<Integer> numbersOfUnassignedPositiveBodyAtoms = new ArrayList<>();
-		
+
 		void add(Substitution generatedSubstitution, int numberOfUnassignedPositiveBodyAtoms) {
 			this.generatedSubstitutions.add(generatedSubstitution);
 			this.numbersOfUnassignedPositiveBodyAtoms.add(numberOfUnassignedPositiveBodyAtoms);
