@@ -542,6 +542,18 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return instances;
 	}
 
+	/**
+	 * Uses {@code instances} to create ground instantiations for {@code substitute} and then proceeds in the {@groundingOrder}.
+	 * @param groundingOrder the grounding order to follow while grounding the corresponding rule.
+	 * @param orderPosition the current position in the {@code groundingOrder}.
+	 * @param originalTolerance the original number of tolerated unassigned positive body literals.
+	 * @param remainingTolerance the remaining number of tolerated unassigned positive body literals.
+	 * @param partialSubstitution the partial substitution created so far while grounding the current rule.
+	 * @param currentAssignment the current assignment.
+	 * @param instances instances used to ground the current atom.
+	 * @param substitute the current atom, to which {@code partialSubstitution} has already been applied.
+	 * @return
+	 */
 	private BindingResult createBindings(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment, Collection<Instance> instances, Atom substitute) {
 		BindingResult bindingResult = new BindingResult();
 		for (Instance instance : instances) {
