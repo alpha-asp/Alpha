@@ -713,6 +713,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 	}
 
+	/**
+	 * Contains substitions produced for generating ground substitutions of a rule,
+	 * and for every substitution the number of positive body atoms still unassigned in the respective ground rule.
+	 */
 	static class BindingResult {
 		final List<Substitution> generatedSubstitutions = new ArrayList<>();
 		final List<Integer> numbersOfUnassignedPositiveBodyAtoms = new ArrayList<>();
