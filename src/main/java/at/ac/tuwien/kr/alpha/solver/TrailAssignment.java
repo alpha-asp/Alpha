@@ -142,7 +142,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	@Override
 	public boolean isAssigned(int atom) {
-		return values.length > atom && values[atom] != 0;
+		return values[atom] != 0;
 	}
 
 	@Override

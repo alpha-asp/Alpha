@@ -565,6 +565,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		int decrementedTolerance = remainingTolerance;
 		if (currentAssignment != null) { // if we are not in bootstrapping
 			final int atomId = atomStore.putIfAbsent(substitute);
+			currentAssignment.growForMaxAtomId();
 			ThriceTruth truth = currentAssignment.isAssigned(atomId) ? currentAssignment.getTruth(atomId) : null;
 
 			if (heuristicsConfiguration.isDisableInstanceRemoval()) {
