@@ -570,12 +570,15 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			ThriceTruth truth = currentAssignment.isAssigned(atomId) ? currentAssignment.getTruth(atomId) : null;
 
 			if (heuristicsConfiguration.isDisableInstanceRemoval()) {
+				// special handling for the accumulator variants of lazy-grounding strategies
 				final Instance instance = new Instance(substitute.getTerms());
 				boolean isInWorkingMemory = workingMemory.get(substitute, true).containsInstance(instance);
 				if (isInWorkingMemory) {
+					// the atom is in the working memory, so we need neither terminate nor decrement tolerance
 					return new TerminateOrTolerate(false, false);
 				}
 				if (truth != null && !truth.toBoolean()) {
+					// terminate if positive body atom is assigned F
 					return new TerminateOrTolerate(true, false);
 				}
 				if (--decrementedTolerance < 0) {
@@ -583,8 +586,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 					return new TerminateOrTolerate(true, true);
 				}
 			} else {
+				// no accumulator, we have to test for the real assignment
 				if (truth == null || !truth.toBoolean()) {
-					// Atom currently does not hold
+					// Atom currently does not hold, working memory needs to be updated
 					removeAfterObtainingNewNoGoods.add(substitute);
 				}
 				if (truth == null && --decrementedTolerance < 0) {
