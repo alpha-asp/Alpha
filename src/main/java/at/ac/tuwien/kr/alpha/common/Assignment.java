@@ -33,7 +33,10 @@ import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import java.util.Iterator;
 import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 public interface Assignment {
 	Entry get(int atom);
@@ -125,6 +128,13 @@ public interface Assignment {
 
 	int getDecisionLevel();
 
+	/**
+	 * TODO: rename to isSatisfied? (cf. issue #121)
+	 * @param literal
+	 * @return {@code true} iff {@code literal} is assigned,
+	 * 	and either it is positive and its value is {@link ThriceTruth#TRUE} or {@link ThriceTruth#MBT}
+	 * 	or it is negative and its value is {@link ThriceTruth#FALSE}.
+	 */
 	default boolean isViolated(int literal) {
 		final int atom = atomOf(literal);
 		final ThriceTruth truth = getTruth(atom);
@@ -132,6 +142,18 @@ public interface Assignment {
 		// For unassigned atoms, any literal is not violated.
 		return truth != null && isNegated(literal) != truth.toBoolean();
 
+	}
+	
+	/**
+	 * Determines whether a given atom is unassigned or MBT.
+	 * 
+	 * This method is usually used to determine if an atom is eligible for a choice.
+	 * @param atom
+	 * @return {@code true} iff {@code atom} is neither {@link ThriceTruth#FALSE} nor {@link ThriceTruth#TRUE}.
+	 */
+	default boolean isUnassignedOrMBT(int atom) {
+		final ThriceTruth truth = getTruth(atom);
+		return truth != FALSE && truth != TRUE;
 	}
 
 	default boolean violates(NoGood noGood) {

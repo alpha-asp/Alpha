@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -27,18 +27,20 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 
 import java.util.*;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
@@ -63,7 +65,7 @@ public class NoGoodGenerator {
 
 	/**
 	 * Generates all NoGoods resulting from a non-ground rule and a variable substitution.
-	 * 
+	 *
 	 * @param nonGroundRule
 	 *          the non-ground rule.
 	 * @param substitution
@@ -71,7 +73,7 @@ public class NoGoodGenerator {
 	 *          Assumption: atoms with fixed interpretation evaluate to true under the substitution.
 	 * @return a list of the NoGoods corresponding to the ground rule.
 	 */
-	List<NoGood> generateNoGoodsFromGroundSubstitution(final NonGroundRule nonGroundRule, final Substitution substitution) {
+	Collection<NoGood> generateNoGoodsFromGroundSubstitution(final NonGroundRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> posLiterals = collectPosLiterals(nonGroundRule, substitution);
 		final List<Integer> negLiterals = collectNegLiterals(nonGroundRule, substitution);
 
@@ -81,14 +83,11 @@ public class NoGoodGenerator {
 
 		// A constraint is represented by exactly one nogood.
 		if (nonGroundRule.isConstraint()) {
-			return singletonList(NoGood.fromConstraint(posLiterals, negLiterals));
+			return singletonList(NoGoodCreator.fromConstraint(posLiterals, negLiterals));
 		}
 
-		final List<NoGood> result = new ArrayList<>();
-
 		final Atom groundHeadAtom = nonGroundRule.getHeadAtom().substitute(substitution);
-		final int headId = atomStore.putIfAbsent(groundHeadAtom);
-		
+
 		// Prepare atom representing the rule body.
 		final RuleAtom bodyAtom = new RuleAtom(nonGroundRule, substitution);
 
@@ -100,15 +99,43 @@ public class NoGoodGenerator {
 			return emptyList();
 		}
 
-		final int bodyRepresentingLiteral = atomToLiteral(atomStore.putIfAbsent(bodyAtom));
-		final int headLiteral = atomToLiteral(atomStore.putIfAbsent(nonGroundRule.getHeadAtom().substitute(substitution)));
+		final int bodyRepresentingAtom = atomStore.putIfAbsent(bodyAtom);
 
-		choiceRecorder.addHeadToBody(headId, atomOf(bodyRepresentingLiteral));
-		
+		if (groundHeadAtom instanceof HeuristicAtom) {
+			return generateNoGoodsForHeuristicRule(posLiterals, negLiterals, (HeuristicAtom) groundHeadAtom, bodyRepresentingAtom);
+		} else {
+			return generateNoGoodsForNonConstraintNonHeuristicRule(nonGroundRule, posLiterals, negLiterals, groundHeadAtom, bodyRepresentingAtom);
+		}
+	}
+
+	private Collection<NoGood> generateNoGoodsForHeuristicRule(List<Integer> posLiterals, List<Integer> negLiterals, HeuristicAtom groundHeadAtom, int bodyRepresentingAtom) {
+		BasicAtom groundHeuristicHead = groundHeadAtom.getHead().toAtom();
+		final int heuristicHeadId = atomStore.putIfAbsent(groundHeuristicHead);
+
+		final List<NoGood> result = new ArrayList<>();
+		result.addAll(choiceRecorder.generateHeuristicNoGoods(posLiterals, negLiterals, groundHeadAtom, bodyRepresentingAtom, heuristicHeadId));
+
+		// if the head of the heuristic directive is assigned, the body of the heuristic rule shall also be assigned s.t. it is not applicable anymore:
+		@SuppressWarnings("unchecked")
+		boolean heuristicSign = ((ConstantTerm<Boolean>)groundHeadAtom.getSign()).getObject();
+		result.add(NoGoodCreator.headFirstInternal(atomToLiteral(bodyRepresentingAtom, false), atomToLiteral(heuristicHeadId, heuristicSign)));
+		result.add(NoGoodCreator.internal(atomToLiteral(bodyRepresentingAtom,  true), atomToLiteral(heuristicHeadId, !heuristicSign)));
+
+		return result;
+	}
+
+	private Collection<NoGood> generateNoGoodsForNonConstraintNonHeuristicRule(NonGroundRule nonGroundRule, List<Integer> posLiterals, List<Integer> negLiterals, Atom groundHeadAtom, int bodyRepresentingAtom) {
+		final List<NoGood> result = new ArrayList<>();
+		final int headId = atomStore.putIfAbsent(groundHeadAtom);
+		final int headLiteral = atomToLiteral(headId);
+		final int bodyRepresentingLiteral = Literals.atomToLiteral(bodyRepresentingAtom);
+
+		choiceRecorder.addHeadToBody(headId, bodyRepresentingAtom);
+
 		// Create a nogood for the head.
-		result.add(NoGood.headFirst(negateLiteral(headLiteral), bodyRepresentingLiteral));
+		result.add(NoGoodCreator.headFirst(negateLiteral(headLiteral), bodyRepresentingLiteral));
 
-		final NoGood ruleBody = NoGood.fromBody(posLiterals, negLiterals, bodyRepresentingLiteral);
+		final NoGood ruleBody = NoGoodCreator.fromBody(posLiterals, negLiterals, bodyRepresentingLiteral);
 		result.add(ruleBody);
 
 		// Nogoods such that the atom representing the body is true iff the body is true.
@@ -118,14 +145,13 @@ public class NoGoodGenerator {
 
 		// If the rule head is unique, add support.
 		if (uniqueGroundRulePerGroundHead.contains(nonGroundRule)) {
-			result.add(NoGood.support(headLiteral, bodyRepresentingLiteral));
+			result.add(NoGoodCreator.support(headLiteral, bodyRepresentingLiteral));
 		}
 
 		// If the body of the rule contains negation, add choices.
 		if (!negLiterals.isEmpty()) {
-			result.addAll(choiceRecorder.generateChoiceNoGoods(posLiterals, negLiterals, bodyRepresentingLiteral));
+			result.addAll(choiceRecorder.generateChoiceNoGoods(posLiterals, negLiterals, bodyRepresentingAtom));
 		}
-
 		return result;
 	}
 

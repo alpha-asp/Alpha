@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -30,10 +30,14 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Directive_heuristicContext;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Weight_annotationContext;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Weight_at_levelContext;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.terms.*;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives.DIRECTIVE;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -42,14 +46,14 @@ import java.util.*;
 import static java.util.Collections.emptyList;
 
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  */
 public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	private final Map<String, PredicateInterpretation> externals;
 	private final boolean acceptVariables;
 
 	private Program inputProgram;
-	private boolean isCurrentLiteralNegated;
+	private boolean temporarilyAllowClassicalNegation;
 	private InlineDirectives inlineDirectives;
 
 	public ParseTreeVisitor(Map<String, PredicateInterpretation> externals) {
@@ -179,6 +183,8 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		return null;
 	}
 
+
+
 	@Override
 	public Object visitStatement_constraint(ASPCore2Parser.Statement_constraintContext ctx) {
 		// CONS body DOT
@@ -283,7 +289,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Object visitDirective_enumeration(ASPCore2Parser.Directive_enumerationContext ctx) {
 		// directive_enumeration : SHARP 'enum_predicate_is' ID DOT;
-		inlineDirectives.addDirective(InlineDirectives.DIRECTIVE.enum_predicate_is, ctx.ID().getText());
+		inlineDirectives.addDirective(InlineDirectives.DIRECTIVE.enum_predicate_is, new EnumerationDirective(ctx.ID().getText()));
 		return null;
 	}
 
@@ -454,11 +460,34 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		}
 		throw notSupported(ctx);
 	}
+	
+	@Override
+	public WeightAtLevel visitWeight_annotation(Weight_annotationContext ctx) {
+		// SQUARE_OPEN weight_at_level SQUARE_CLOSE
+		if (ctx == null) {
+			return new WeightAtLevel(null, null);
+		}
+		return visitWeight_at_level(ctx.weight_at_level());
+	}
+	
+	@Override
+	public WeightAtLevel visitWeight_at_level(Weight_at_levelContext ctx) {
+		// term (AT term)? (COMMA terms)?
+		Term weight;
+		Term level = null;
+		weight = (Term) visit(ctx.term(0));
+		if (ctx.AT() != null) {
+			level = (Term) visit(ctx.term(1));
+		}
+		// FIXME: further terms are currently ignored
+
+		return new WeightAtLevel(weight, level);
+	}
 
 	@Override
 	public BasicAtom visitClassical_literal(ASPCore2Parser.Classical_literalContext ctx) {
 		// classical_literal : MINUS? ID (PAREN_OPEN terms PAREN_CLOSE)?;
-		if (ctx.MINUS() != null) {
+		if (ctx.MINUS() != null && !temporarilyAllowClassicalNegation) {
 			throw notSupported(ctx);
 		}
 
@@ -549,6 +578,22 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			visitTerms(ctx.input),
 			outputTerms
 		);
+	}
+
+	
+	public Object visitDirective_heuristic(Directive_heuristicContext ctx) {
+		// SHARP 'heuristic' classical_literal (COLON body)? DOT weight_annotation?
+		boolean positive = ctx.classical_literal().MINUS() == null;
+		temporarilyAllowClassicalNegation = true;
+		BasicAtom head = visitClassical_literal(ctx.classical_literal());
+		temporarilyAllowClassicalNegation = false; // currently, classical negation is only allowed in the head of heuristic directives
+		List<Literal> body = visitBody(ctx.body());
+		if (body.isEmpty()) {
+			throw notSupported(ctx);
+		}
+		WeightAtLevel annotation = visitWeight_annotation(ctx.weight_annotation());
+		inputProgram.getInlineDirectives().addDirective(DIRECTIVE.heuristic, new HeuristicDirective(head, body, annotation, positive));
+		return null;
 	}
 
 	public IntervalTerm visitTerm_interval(ASPCore2Parser.Term_intervalContext ctx) {

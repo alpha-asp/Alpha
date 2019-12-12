@@ -25,7 +25,6 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
@@ -54,7 +53,7 @@ public final class BranchingHeuristicFactory {
 		GDD_MIN,
 		GDD_PYRO,
 		ALPHA_ACTIVE_RULE,
-		ALPHA_HEAD_MBT,
+//		ALPHA_HEAD_MBT,	// temporarily disabled due to poor performance (TODO: address https://github.com/alpha-asp/Alpha/issues/181)
 		VSIDS,
 		GDD_VSIDS;
 
@@ -66,8 +65,18 @@ public final class BranchingHeuristicFactory {
 		}
 	}
 
-	public static BranchingHeuristic getInstance(HeuristicsConfiguration heuristicsConfiguration, Grounder grounder, WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
-		BranchingHeuristic heuristicWithoutReplay = getInstanceWithoutReplay(heuristicsConfiguration, grounder, assignment, choiceManager, random);
+	public static BranchingHeuristic getInstance(HeuristicsConfiguration heuristicsConfiguration, WritableAssignment assignment, ChoiceManager choiceManager,
+			Random random) {
+		BranchingHeuristic fallbackHeuristic = getInstanceWithoutDomspec(heuristicsConfiguration, assignment, choiceManager, random);
+		if (heuristicsConfiguration.isRespectDomspecHeuristics()) {
+			return ChainedBranchingHeuristics.chainOf(new DomainSpecific(assignment, choiceManager, fallbackHeuristic), fallbackHeuristic);
+		} else {
+			return fallbackHeuristic;
+		}
+	}
+
+	public static BranchingHeuristic getInstanceWithoutDomspec(HeuristicsConfiguration heuristicsConfiguration, WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
+		BranchingHeuristic heuristicWithoutReplay = getInstanceWithoutReplay(heuristicsConfiguration, assignment, choiceManager, random);
 		List<Integer> replayChoices = heuristicsConfiguration.getReplayChoices();
 		if (replayChoices != null && !replayChoices.isEmpty()) {
 			return ChainedBranchingHeuristics.chainOf(
@@ -76,8 +85,8 @@ public final class BranchingHeuristicFactory {
 		}
 		return heuristicWithoutReplay;
 	}
-	
-	private static BranchingHeuristic getInstanceWithoutReplay(HeuristicsConfiguration heuristicsConfiguration, Grounder grounder, WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
+
+	private static BranchingHeuristic getInstanceWithoutReplay(HeuristicsConfiguration heuristicsConfiguration, WritableAssignment assignment, ChoiceManager choiceManager, Random random) {
 		switch (heuristicsConfiguration.getHeuristic()) {
 		case NAIVE:
 			return new NaiveHeuristic(choiceManager);
@@ -111,8 +120,8 @@ public final class BranchingHeuristicFactory {
 			return new GeneralizedDependencyDrivenPyroHeuristic(assignment, choiceManager, random, BodyActivityType.DEFAULT);
 		case ALPHA_ACTIVE_RULE:
 			return new AlphaActiveRuleHeuristic(assignment, choiceManager, random);
-		case ALPHA_HEAD_MBT:
-			return new AlphaHeadMustBeTrueHeuristic(assignment, choiceManager, random);
+//		case ALPHA_HEAD_MBT:
+//			return new AlphaHeadMustBeTrueHeuristic(assignment, choiceManager, random);
 		case VSIDS:
 			return new VSIDS(assignment, choiceManager, heuristicsConfiguration.getMomsStrategy());
 		case GDD_VSIDS:

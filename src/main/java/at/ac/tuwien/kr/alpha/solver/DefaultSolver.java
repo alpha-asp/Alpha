@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
@@ -68,7 +69,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	private final GroundConflictNoGoodLearner learner;
 
-	private final BranchingHeuristic branchingHeuristic;
+	final BranchingHeuristic branchingHeuristic;
 
 	private boolean initialize = true;
 	private int mbtAtFixpoint;
@@ -76,28 +77,37 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final boolean disableJustifications;
 	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
 	private final boolean disableNoGoodDeletion;
-
 	private final PerformanceLog performanceLog;
-	
+
 	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, SystemConfig config, HeuristicsConfiguration heuristicsConfiguration) {
 		super(atomStore, grounder);
 
 		this.assignment = assignment;
 		this.store = store;
-		this.choiceManager = new ChoiceManager(assignment, store);
+
+		if (heuristicsConfiguration.isRespectDomspecHeuristics()) {
+			this.choiceManager = ChoiceManager.withDomainSpecificHeuristics(assignment, store);
+		} else {
+			this.choiceManager = ChoiceManager.withoutDomainSpecificHeuristics(assignment, store);
+		}
+
 		this.learner = new GroundConflictNoGoodLearner(assignment, atomStore);
-		this.branchingHeuristic = chainFallbackHeuristic(grounder, assignment, random, heuristicsConfiguration);
+		this.branchingHeuristic = chainFallbackHeuristic(heuristicsConfiguration, assignment, random);
 		this.disableJustifications = config.isDisableJustificationSearch();
 		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
 	}
 
-	private BranchingHeuristic chainFallbackHeuristic(Grounder grounder, WritableAssignment assignment, Random random, HeuristicsConfiguration heuristicsConfiguration) {
-		BranchingHeuristic branchingHeuristic = BranchingHeuristicFactory.getInstance(heuristicsConfiguration, grounder, assignment, choiceManager, random);
+	private BranchingHeuristic chainFallbackHeuristic(HeuristicsConfiguration heuristicsConfiguration, WritableAssignment assignment, Random random) {
+		BranchingHeuristic branchingHeuristic = BranchingHeuristicFactory.getInstance(heuristicsConfiguration, assignment, choiceManager, random);
 		if (branchingHeuristic instanceof NaiveHeuristic) {
 			return branchingHeuristic;
 		}
-		if (branchingHeuristic instanceof ChainedBranchingHeuristics && ((ChainedBranchingHeuristics)branchingHeuristic).getLastElement() instanceof NaiveHeuristic) {
+		if (branchingHeuristic instanceof ChainedBranchingHeuristics) {
+			ChainedBranchingHeuristics chainedBranchingHeuristics = (ChainedBranchingHeuristics) branchingHeuristic;
+			if (!(chainedBranchingHeuristics.getLastElement() instanceof NaiveHeuristic)) {
+				chainedBranchingHeuristics.add(new NaiveHeuristic(choiceManager));
+			}
 			return branchingHeuristic;
 		}
 		return ChainedBranchingHeuristics.chainOf(branchingHeuristic, new NaiveHeuristic(choiceManager));
@@ -158,6 +168,10 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				Antecedent conflictAntecedent = conflictCause.getAntecedent();
 				NoGood violatedNoGood = new NoGood(conflictAntecedent.getReasonLiterals().clone());
 				// TODO: The violatedNoGood should not be necessary here, but this requires major type changes in heuristics.
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug("Violated nogood is: {}", atomStore.noGoodToString(violatedNoGood));
+					LOGGER.debug("Violating assignment is: {}", assignment);
+				}
 				branchingHeuristic.violatedNoGood(violatedNoGood);
 				if (!afterAllAtomsAssigned) {
 					if (!learnBackjumpAddFromConflict(conflictCause)) {
@@ -196,6 +210,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				LOGGER.debug("Answer-Set found: {}", as);
 				action.accept(as);
 				logStats();
+				logChoiceStack();
 				return true;
 			} else {
 				LOGGER.debug("Backtracking from wrong choices ({} MBTs).", assignment.getMBTCount());
@@ -310,7 +325,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		for (Literal literal : reasonsForUnjustified) {
 			reasons[arrpos++] = atomToLiteral(atomStore.get(literal.getAtom()), !literal.isNegated());
 		}
-		return NoGood.learnt(reasons);
+		return NoGoodCreator.learnt(reasons);
 	}
 
 	private boolean treatConflictAfterClosing(Antecedent violatedNoGood) {
@@ -474,12 +489,15 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private NoGood fixContradiction(Map.Entry<Integer, NoGood> noGoodEntry, ConflictCause conflictCause) {
-		LOGGER.debug("Attempting to fix violation of {} caused by {}", noGoodEntry.getValue(), conflictCause);
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Attempting to fix violation of {} caused by {}", atomStore.noGoodToString(noGoodEntry.getValue()), conflictCause);
+		}
 
 		GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictFromAddingNoGood(conflictCause.getAntecedent());
 		if (conflictAnalysisResult == UNSAT) {
 			return NoGood.UNSAT;
 		}
+		LOGGER.debug("Learned NoGood: " + conflictAnalysisResult.learnedNoGood);
 		branchingHeuristic.analyzedConflict(conflictAnalysisResult);
 		if (conflictAnalysisResult.learnedNoGood != null) {
 			throw oops("Unexpectedly learned NoGood after addition of new NoGood caused a conflict.");
@@ -499,6 +517,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	private boolean choose() {
 		choiceManager.addChoiceInformation(grounder.getChoiceAtoms(), grounder.getHeadsToBodies());
+		choiceManager.addHeuristicInformation(grounder.getHeuristicAtoms(), grounder.getHeuristicValues());
 		choiceManager.updateAssignments();
 
 		// Hint: for custom heuristics, evaluate them here and pick a value if the heuristics suggests one.
@@ -515,25 +534,36 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		choiceManager.choose(new Choice(literal, false));
 		return true;
 	}
-	
+
 	@Override
 	public int getNumberOfChoices() {
-		return choiceManager.getChoices();
+		return choiceManager.getStatistics().getChoices();
+	}
+
+	@Override
+	public Map<String, Integer> getNumberOfChoicesPerBranchingHeuristic() {
+		Map<String, Integer> mapHeuristicNameToNumberOfDecisions = new LinkedHashMap<>();
+		for (Entry<BranchingHeuristic, Integer> entry : ((ChainedBranchingHeuristics) branchingHeuristic).getNumberOfDecisions().entrySet()) {
+			if (mapHeuristicNameToNumberOfDecisions.put(entry.getKey().toString(), entry.getValue()) != null) {
+				throw new IllegalStateException("Multiple heuristics with the same name: " + entry.getKey().toString());
+			}
+		}
+		return Collections.unmodifiableMap(mapHeuristicNameToNumberOfDecisions);
 	}
 
 	@Override
 	public int getNumberOfBacktracks() {
-		return choiceManager.getBacktracks();
+		return choiceManager.getStatistics().getBacktracks();
 	}
 
 	@Override
 	public int getNumberOfBacktracksWithinBackjumps() {
-		return choiceManager.getBacktracksWithinBackjumps();
+		return choiceManager.getStatistics().getBacktracksWithinBackjumps();
 	}
 
 	@Override
 	public int getNumberOfBackjumps() {
-		return choiceManager.getBackjumps();
+		return choiceManager.getStatistics().getBackjumps();
 	}
 
 	@Override
@@ -564,5 +594,28 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				}
 			}
 		}
+	}
+
+	private void logChoiceStack() {
+		final int limitSize = 10000;
+		List<Choice> choiceStack = choiceManager.getChoiceStack();
+		if (choiceStack.size() > limitSize) {
+			LOGGER.debug("Logging choice stack (limited to first {} choices) ...", limitSize);
+		} else {
+			LOGGER.debug("Logging choice stack ...");
+		}
+		List<Integer> choicesSignedAtoms = choiceStack.stream().limit(limitSize)
+			.map(Choice::toSignedInteger).collect(Collectors.toList());
+		LOGGER.debug("Choice stack (signed atoms): " + choicesSignedAtoms);
+		List<String> choicesGroundAtoms = new ArrayList<>(choicesSignedAtoms.size());
+		for (int signedAtom : choicesSignedAtoms) {
+			int literal = signedAtomToLiteral(signedAtom);
+			choicesGroundAtoms.add(atomStore.literalToString(literal));
+		}
+		LOGGER.debug("Choice stack (ground atoms): " + choicesGroundAtoms);
+	}
+
+	public void setChecksEnabled(boolean checksEnabled) {
+		choiceManager.setChecksEnabled(checksEnabled);
 	}
 }

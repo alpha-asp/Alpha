@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -28,15 +28,10 @@
 package at.ac.tuwien.kr.alpha;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
-import java.util.AbstractMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -69,7 +64,7 @@ public class Util {
 			return a.size() - b.size();
 		}
 
-		if (a.isEmpty() && b.isEmpty()) {
+		if (a.isEmpty()) {
 			return 0;
 		}
 
@@ -109,7 +104,7 @@ public class Util {
 		});
 	}
 
-	public static ReadableByteChannel streamToChannel(Stream<String> lines) throws IOException {
+	public static ReadableByteChannel streamToChannel(Stream<String> lines) {
 		return Channels.newChannel(new ByteArrayInputStream(lines.collect(Collectors.joining(System.lineSeparator())).getBytes(StandardCharsets.UTF_8)));
 	}
 

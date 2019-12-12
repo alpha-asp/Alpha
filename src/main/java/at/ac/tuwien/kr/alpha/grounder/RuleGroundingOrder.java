@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2017-2018, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -50,7 +50,8 @@ import java.util.*;
  *
  * Note that rules with self-joins (rules with p(X,Y), p(A,B) in their body) make it necessary that every positive
  * literal (whose interpretation is not fixed) is a starting literal, at least for the current grounding procedure.
- * Copyright (c) 2017, the Alpha Team.
+ * 
+ * Copyright (c) 2017-2018, the Alpha Team.
  */
 public class RuleGroundingOrder {
 	private final NonGroundRule nonGroundRule;
@@ -71,7 +72,7 @@ public class RuleGroundingOrder {
 
 	private void resetLiteralSelectivity() {
 		// Set selectivity of all literals to 1.0f.
-		for (Literal literal : nonGroundRule.getBodyLiterals()) {
+		for (Literal literal : getLiteralsToBeGrounded()) {
 			literalSelectivity.put(literal, 1.0f);
 		}
 	}
@@ -90,7 +91,6 @@ public class RuleGroundingOrder {
 			return true;
 		}
 		
-		// Check each literal in the rule body whether it is eligible.
 		for (Literal literal : nonGroundRule.getBodyLiterals()) {
 			// Only literals that need no variables already bound can start grounding.
 			if (literal.getNonBindingVariables().size() != 0) {
@@ -117,6 +117,13 @@ public class RuleGroundingOrder {
 		} else {
 			throw new RuntimeException("Unsafe rule encountered: " + nonGroundRule.getRule());
 		}
+	}
+
+	/**
+	 * Gets all literals that (may) have to be grounded, i.e. literals appearing in the rule's body.
+	 */
+	private List<Literal> getLiteralsToBeGrounded() {
+		return new ArrayList<>(nonGroundRule.getRule().getBody());
 	}
 
 	Collection<Literal> getStartingLiterals() {
@@ -169,6 +176,17 @@ public class RuleGroundingOrder {
 		} else {
 			literalsOrder = new ArrayList<>(bodyLiterals.size() - 1);
 		}
+		processRemainingLiterals(remainingLiterals, startingLiteral, literalsOrder, boundVariables);
+		// process generator literals only after body has been processed:
+		processRemainingLiterals(remainingLiterals, startingLiteral, literalsOrder, boundVariables);
+		if (fixedGroundingInstantiation) {
+			fixedGroundingOrder = literalsOrder.toArray(new Literal[0]);
+		}
+		groundingOrder.put(startingLiteral, literalsOrder.toArray(new Literal[0]));
+	}
+
+	void processRemainingLiterals(LinkedHashSet<Literal> remainingLiterals, Literal startingLiteral, ArrayList<Literal> literalsOrder,
+			HashSet<VariableTerm> boundVariables) {
 		while (!remainingLiterals.isEmpty()) {
 			Literal nextGroundingLiteral = selectNextGroundingLiteral(remainingLiterals, boundVariables);
 			if (nextGroundingLiteral == null) {
@@ -178,10 +196,6 @@ public class RuleGroundingOrder {
 			boundVariables.addAll(nextGroundingLiteral.getBindingVariables());
 			literalsOrder.add(nextGroundingLiteral);
 		}
-		if (fixedGroundingInstantiation) {
-			fixedGroundingOrder = literalsOrder.toArray(new Literal[0]);
-		}
-		groundingOrder.put(startingLiteral, literalsOrder.toArray(new Literal[0]));
 	}
 
 	private Literal selectNextGroundingLiteral(LinkedHashSet<Literal> remainingLiterals, Set<VariableTerm> boundVariables) {

@@ -47,7 +47,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 public class Rule {
 	private final Head head;
 	private final List<Literal> body;
-
+	
 	public Rule(Head head, List<Literal> body) {
 		this.head = head;
 		// Remove duplicate body literals.
@@ -150,7 +150,7 @@ public class Rule {
 		if (head != null && !head.isNormal()) {
 			throw oops("Called isGround on non-normal rule");
 		}
-		if (!isConstraint() && !((DisjunctiveHead)head).isGround()) {
+		if (!isConstraint() && !((DisjunctiveHead) head).isGround()) {
 			return false;
 		}
 		for (Literal bodyElement : body) {

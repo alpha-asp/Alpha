@@ -33,9 +33,12 @@ import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.apache.commons.lang3.StringUtils;
@@ -104,9 +107,19 @@ public class Alpha {
 		boolean doDebugChecks = this.config.isDebugInternalChecks();
 
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, doDebugChecks);
+		HeuristicsConfiguration heuristicsConfiguration = buildHeuristicsConfiguration(program);
+		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, heuristicsConfiguration, filter, doDebugChecks);
 
-		return SolverFactory.getInstance(this.config, atomStore, grounder);
+		return SolverFactory.getInstance(this.config, atomStore, grounder, heuristicsConfiguration);
+	}
+
+	private HeuristicsConfiguration buildHeuristicsConfiguration(Program program) {
+		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
+		heuristicsConfigurationBuilder.setHeuristic(this.config.getBranchingHeuristic());
+		heuristicsConfigurationBuilder.setMomsStrategy(this.config.getMomsStrategy());
+		heuristicsConfigurationBuilder.setRespectDomspecHeuristics(!this.config.isIgnoreDomspecHeuristics() && program.getInlineDirectives().hasDirectives(InlineDirectives.DIRECTIVE.heuristic));
+		heuristicsConfigurationBuilder.setReplayChoices(this.config.getReplayChoices());
+		return heuristicsConfigurationBuilder.build();
 	}
 
 	public Solver prepareSolverFor(Program program) {
@@ -117,7 +130,7 @@ public class Alpha {
 		Stream<AnswerSet> retVal = this.prepareSolverFor(program, filter).stream();
 		return this.config.isSortAnswerSets() ? retVal.sorted() : retVal;
 	}
-	
+
 	public Stream<AnswerSet> solve(Program program) {
 		return this.solve(program, InputConfig.DEFAULT_FILTER);
 	}

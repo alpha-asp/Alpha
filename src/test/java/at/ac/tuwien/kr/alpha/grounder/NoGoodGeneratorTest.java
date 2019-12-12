@@ -1,16 +1,16 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 
  * 1) Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ *    list of conditions and the following disclaimer.
  * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -32,6 +32,8 @@ import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
 import org.junit.Test;
 
 import java.util.List;
@@ -50,7 +52,9 @@ public class NoGoodGeneratorTest {
 
 	private static final VariableTerm X = VariableTerm.getInstance("X");
 	private static final VariableTerm Y = VariableTerm.getInstance("Y");
-	
+
+	private final HeuristicsConfiguration heuristicsConfiguration = new HeuristicsConfigurationBuilder().build();
+
 	/**
 	 * Calls {@link NoGoodGenerator#collectNegLiterals(NonGroundRule, Substitution)},
 	 * which puts the atom occuring negatively in a rule into the atom store.
@@ -64,7 +68,7 @@ public class NoGoodGeneratorTest {
 		
 		Rule rule = program.getRules().get(1);
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
+		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true);
 		NoGoodGenerator noGoodGenerator = ((NaiveGrounder)grounder).noGoodGenerator;
 		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
 		Substitution substitution = new Substitution();

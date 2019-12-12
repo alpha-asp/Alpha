@@ -33,15 +33,15 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
-import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
-import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.*;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 import at.ac.tuwien.kr.alpha.grounder.transformation.*;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,7 +79,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private boolean disableInstanceRemoval;
 	private boolean useCountingGridNormalization;
 	private boolean debugInternalChecks;
-	
+
 	/**
 	 * If this configuration parameter is {@code true} (which it is by default),
 	 * the grounder stops grounding a rule if it contains a positive body atom which is not
@@ -88,11 +88,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 */
 	private boolean stopBindingAtNonTruePositiveBody = true;
 
-	public NaiveGrounder(Program program, AtomStore atomStore, boolean debugInternalChecks, Bridge... bridges) {
-		this(program, atomStore, p -> true, false, debugInternalChecks, bridges);
+	public NaiveGrounder(Program program, AtomStore atomStore, HeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, Bridge... bridges) {
+		this(program, atomStore, heuristicsConfiguration, p -> true, false, debugInternalChecks, bridges);
 	}
 
-	NaiveGrounder(Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, boolean useCountingGrid, boolean debugInternalChecks, Bridge... bridges) {
+	NaiveGrounder(Program program, AtomStore atomStore, HeuristicsConfiguration heuristicsConfiguration, java.util.function.Predicate<Predicate> filter, boolean useCountingGrid, boolean debugInternalChecks, Bridge... bridges) {
 		super(filter, bridges);
 		this.atomStore = atomStore;
 
@@ -101,7 +101,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 		// Apply program transformations/rewritings.
 		useCountingGridNormalization = useCountingGrid;
-		applyProgramTransformations(program);
+		applyProgramTransformations(program, heuristicsConfiguration);
 		LOGGER.debug("Transformed input program is:\n" + program);
 
 		initializeFactsAndRules(program);
@@ -109,7 +109,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		final Set<NonGroundRule> uniqueGroundRulePerGroundHead = getRulesWithUniqueHead();
 		choiceRecorder = new ChoiceRecorder(atomStore);
 		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, programAnalysis, uniqueGroundRulePerGroundHead);
-		
+
 		this.debugInternalChecks = debugInternalChecks;
 	}
 
@@ -134,6 +134,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		workingMemory.initialize(RuleAtom.PREDICATE);
 		workingMemory.initialize(ChoiceAtom.OFF);
 		workingMemory.initialize(ChoiceAtom.ON);
+		workingMemory.initialize(HeuristicInfluencerAtom.OFF);
+		workingMemory.initialize(HeuristicInfluencerAtom.ON);
+		workingMemory.initialize(HeuristicAtom.PREDICATE);
 
 		// Initialize rules and constraints.
 		for (Rule rule : program.getRules()) {
@@ -143,7 +146,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 			// Record defining rules for each predicate.
 			Atom headAtom = nonGroundRule.getHeadAtom();
-			if (headAtom != null) {
+			if (headAtom != null && !(headAtom instanceof HeuristicAtom)) {
 				Predicate headPredicate = headAtom.getPredicate();
 				programAnalysis.recordDefiningRule(headPredicate, nonGroundRule);
 			}
@@ -203,9 +206,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return uniqueGroundRulePerGroundHead;
 	}
 
-	private void applyProgramTransformations(Program program) {
+	private void applyProgramTransformations(Program program, HeuristicsConfiguration heuristicsConfiguration) {
 		// Transform choice rules.
 		new ChoiceHeadToNormal().transform(program);
+		// Transform heuristic directives.
+		new HeuristicDirectiveToRule(heuristicsConfiguration).transform(program);
 		// Transform cardinality aggregates.
 		new CardinalityNormalization(!useCountingGridNormalization).transform(program);
 		// Transform sum aggregates.
@@ -378,17 +383,17 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 			LOGGER.debug("{}", choiceRecorder);
 		}
-		
+
 		if (debugInternalChecks) {
 			checkTypesOfNoGoods(newNoGoods.values());
 		}
-		
+
 		return newNoGoods;
 	}
 
 	/**
 	 * Grounds the given {@code nonGroundRule} by applying the given {@code substitutions} and registers the nogoods generated during that process.
-	 * 
+	 *
 	 * @param nonGroundRule
 	 *          the rule to be grounded
 	 * @param substitutions
@@ -398,7 +403,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 */
 	private void groundAndRegister(final NonGroundRule nonGroundRule, final List<Substitution> substitutions, final Map<Integer, NoGood> newNoGoods) {
 		for (Substitution substitution : substitutions) {
-			List<NoGood> generatedNoGoods = noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution);
+			Collection<NoGood> generatedNoGoods = noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution);
 			registry.register(generatedNoGoods, newNoGoods);
 		}
 	}
@@ -445,7 +450,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				// Atom occurs negated in the rule: continue grounding
 				return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
 			}
-			
+
 			if (stopBindingAtNonTruePositiveBody && !rule.getRule().isGround() && !workingMemory.get(currentAtom.getPredicate(), true).containsInstance(new Instance(substitute.getTerms()))) {
 				// Generate no variable substitution.
 				return emptyList();
@@ -534,7 +539,17 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
 		return choiceRecorder.getAndResetChoices();
 	}
-	
+
+	@Override
+	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getHeuristicAtoms() {
+		return choiceRecorder.getAndResetHeuristics();
+	}
+
+	@Override
+	public Map<Integer, HeuristicDirectiveValues> getHeuristicValues() {
+		return choiceRecorder.getAndResetHeuristicValues();
+	}
+
 	@Override
 	public Map<Integer, Set<Integer>> getHeadsToBodies() {
 		return choiceRecorder.getAndResetHeadsToBodies();
@@ -550,6 +565,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	@Override
 	public void forgetAssignment(int[] atomIds) {
 		throw new UnsupportedOperationException("Forgetting assignments is not implemented");
+	}
+
+	@Override
+	public AtomStore getAtomStore() {
+		return this.atomStore;
 	}
 
 	public void printCurrentlyKnownGroundRules() {

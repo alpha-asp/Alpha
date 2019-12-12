@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -27,24 +27,34 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
+import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * Tests {@link NaiveGrounder}
  */
 public class NaiveGrounderTest {
 	private static final ProgramParser PARSER = new ProgramParser();
-	
+	private static final VariableTerm N = VariableTerm.getInstance("N");
+	private static final ConstantTerm<Integer> ONE = ConstantTerm.getInstance(1);
+	private final HeuristicsConfiguration heuristicsConfiguration = new HeuristicsConfigurationBuilder().setRespectDomspecHeuristics(true).build();
+
+	@Before
+	public void resetIdGenerator() {
+		ChoiceRecorder.ID_GENERATOR.resetGenerator();
+	}
+
 	/**
 	 * Asserts that a ground rule whose positive body is not satisfied by the empty assignment
 	 * is grounded immediately.
@@ -56,7 +66,7 @@ public class NaiveGrounderTest {
 				+ "c :- b.");
 		
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
+		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		int litCNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("c", 0))), false);
 		int litB = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))));
@@ -76,7 +86,7 @@ public class NaiveGrounderTest {
 				+ "d :- b, c. ");
 		
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
+		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		int litANeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("a", 0))), false);
 		int litBNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))), false);
@@ -99,10 +109,10 @@ public class NaiveGrounderTest {
 				+ ":- b.");
 		
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
+		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true);
 		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		int litB = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))));
-		assertTrue(noGoods.containsValue(NoGood.fromConstraint(Arrays.asList(litB), Collections.emptyList())));
+		assertTrue(noGoods.containsValue(NoGoodCreator.fromConstraint(Arrays.asList(litB), Collections.emptyList())));
 	}
 	
 	private void assertExistsNoGoodContaining(Collection<NoGood> noGoods, int literal) {
@@ -114,6 +124,34 @@ public class NaiveGrounderTest {
 			}
 		}
 		fail("No NoGood exists that contains literal " + literal);
+	}
+
+	@Test
+	public void testGenerateHeuristicNoGoods() {
+		Program program = PARSER.parse("{ a(1) }."
+				+ "{ b(N) } :- a(N)."
+				+ "#heuristic b(N) : a(N), not b(N). [N@2]");
+
+		AtomStore atomStore = new AtomStoreImpl();
+		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true);
+		NoGoodGenerator noGoodGenerator = ((NaiveGrounder)grounder).noGoodGenerator;
+		Rule rule = findHeuristicRule(program.getRules());
+		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
+		Substitution substitution = new Substitution();
+		substitution.unifyTerms(N, ONE);
+		List<NoGood> generatedNoGoods = new ArrayList<>(noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution));
+		assertEquals(4, generatedNoGoods.size());
+		assertEquals("*{-(HeuOff(\"0\")), +(b(1))}", atomStore.noGoodToString(generatedNoGoods.get(0)));
+		assertEquals("*{-(HeuOn(\"0\")), +(a(1))}", atomStore.noGoodToString(generatedNoGoods.get(1)));
+	}
+
+	private Rule findHeuristicRule(List<Rule> rules) {
+		for (Rule rule : rules) {
+			if (rule.getHead() instanceof DisjunctiveHead && ((DisjunctiveHead)rule.getHead()).disjunctiveAtoms.get(0) instanceof HeuristicAtom) {
+				return rule;
+			}
+		}
+		return null;
 	}
 
 }

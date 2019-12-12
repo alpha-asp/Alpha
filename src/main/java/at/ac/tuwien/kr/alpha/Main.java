@@ -27,17 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.antlr.v4.runtime.RecognitionException;
-import org.apache.commons.cli.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.config.AlphaConfig;
@@ -45,6 +34,16 @@ import at.ac.tuwien.kr.alpha.config.CommandLineParser;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverMaintainingStatistics;
+import org.antlr.v4.runtime.RecognitionException;
+import org.apache.commons.cli.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Main entry point for Alpha.

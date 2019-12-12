@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
- * 
+ *
  * Additional changes made by Siemens.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -29,22 +29,30 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.NoGoodCreator;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
+import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicInfluencerAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
 import static at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom.off;
 import static at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom.on;
 import static java.util.Collections.emptyList;
 
 public class ChoiceRecorder {
-	private static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
+	static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
 
 	private final AtomStore atomStore;
 	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newChoiceAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
+	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newHeuristicAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
+	private Map<Integer, HeuristicDirectiveValues> newHeuristicValues = new LinkedHashMap<>();
 	private Map<Integer, Set<Integer>> newHeadsToBodies = new LinkedHashMap<>();
 
 	public ChoiceRecorder(AtomStore atomStore) {
@@ -69,11 +77,29 @@ public class ChoiceRecorder {
 		return currentHeadsToBodies;
 	}
 
-	
-	public List<NoGood> generateChoiceNoGoods(final List<Integer> posLiterals, final List<Integer> negLiterals, final int bodyRepresentingLiteral) {
+
+	/**
+	 * @return new heuristic atoms and their enablers and disablers.
+	 */
+	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getAndResetHeuristics() {
+		Pair<Map<Integer, Integer>, Map<Integer, Integer>> currentHeuristicAtoms = newHeuristicAtoms;
+		newHeuristicAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
+		return currentHeuristicAtoms;
+	}
+
+	/**
+	 * @return a set of new mappings from heuristic atoms to {@link HeuristicDirectiveValues}.
+	 */
+	public Map<Integer, HeuristicDirectiveValues> getAndResetHeuristicValues() {
+		Map<Integer, HeuristicDirectiveValues> currentHeuristicValues = newHeuristicValues;
+		newHeuristicValues = new LinkedHashMap<>();
+		return currentHeuristicValues;
+	}
+
+
+	public List<NoGood> generateChoiceNoGoods(final List<Integer> posLiterals, final List<Integer> negLiterals, final int bodyRepresentingAtom) {
 		// Obtain an ID for this new choice.
 		final int choiceId = ID_GENERATOR.getNextId();
-		final int bodyRepresentingAtom = atomOf(bodyRepresentingLiteral);
 		// Create ChoiceOn and ChoiceOff atoms.
 		final int choiceOnAtom = atomStore.putIfAbsent(on(choiceId));
 		newChoiceAtoms.getLeft().put(bodyRepresentingAtom, choiceOnAtom);
@@ -85,11 +111,30 @@ public class ChoiceRecorder {
 
 		return noGoods;
 	}
-	
+
+	public Collection<NoGood> generateHeuristicNoGoods(final List<Integer> posLiterals, final List<Integer> negLiterals, HeuristicAtom groundHeuristicAtom, final int bodyRepresentingAtom, final int headId) {
+		// Obtain an ID for this new heuristic.
+		final int heuristicId = ID_GENERATOR.getNextId();
+		// Create HeuristicOn and HeuristicOff atoms.
+		final int heuristicOnAtom = atomStore.putIfAbsent(HeuristicInfluencerAtom.on(heuristicId));
+		newHeuristicAtoms.getLeft().put(bodyRepresentingAtom, heuristicOnAtom);
+		final int heuristicOffAtom = atomStore.putIfAbsent(HeuristicInfluencerAtom.off(heuristicId));
+		newHeuristicAtoms.getRight().put(bodyRepresentingAtom, heuristicOffAtom);
+
+		final List<NoGood> noGoods = generateNeg(heuristicOffAtom, negLiterals);
+		noGoods.add(generatePos(heuristicOnAtom, posLiterals));
+
+		if (newHeuristicValues.put(bodyRepresentingAtom, HeuristicDirectiveValues.fromHeuristicAtom(groundHeuristicAtom, headId)) != null) {
+			throw oops("Same heuristic body-representing atom used for two heuristic directives");
+		}
+
+		return noGoods;
+	}
+
 	private NoGood generatePos(final int atomOn, List<Integer> posLiterals) {
 		final int literalOn = atomToLiteral(atomOn);
 
-		return NoGood.fromBodyInternal(posLiterals, emptyList(), literalOn);
+		return NoGoodCreator.fromBodyInternal(posLiterals, emptyList(), literalOn);
 	}
 
 	private List<NoGood> generateNeg(final int atomOff, List<Integer> negLiterals)  {
@@ -99,7 +144,7 @@ public class ChoiceRecorder {
 		for (Integer negLiteral : negLiterals) {
 			// Choice is off if any of the negative atoms is assigned true,
 			// hence we add one nogood for each such atom.
-			noGoods.add(NoGood.headFirstInternal(negLiteralOff, negLiteral));
+			noGoods.add(NoGoodCreator.headFirstInternal(negLiteralOff, negLiteral));
 		}
 		return noGoods;
 	}

@@ -32,21 +32,22 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 
 public final class GrounderFactory {
-	public static Grounder getInstance(String name, Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, boolean useCountingGridNormalization, boolean debugInternalChecks, Bridge... bridges) {
+	public static Grounder getInstance(String name, Program program, AtomStore atomStore, HeuristicsConfiguration heuristicsConfiguration, java.util.function.Predicate<Predicate> filter, boolean useCountingGridNormalization, boolean debugInternalChecks, Bridge... bridges) {
 		switch (name.toLowerCase()) {
 			case "naive":
-				return new NaiveGrounder(program, atomStore, filter, useCountingGridNormalization, debugInternalChecks, bridges);
+				return new NaiveGrounder(program, atomStore, heuristicsConfiguration, filter, useCountingGridNormalization, debugInternalChecks, bridges);
 		}
 		throw new IllegalArgumentException("Unknown grounder requested.");
 	}
 
-	public static Grounder getInstance(String name, Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, boolean debugInternalChecks) {
-		return getInstance(name, program, atomStore, filter, false, debugInternalChecks);
-	}	
-	
-	public static Grounder getInstance(String name, Program program, AtomStore atomStore, boolean debugInternalChecks) {
-		return getInstance(name, program, atomStore, InputConfig.DEFAULT_FILTER, false, debugInternalChecks);
+	public static Grounder getInstance(String name, Program program, AtomStore atomStore, HeuristicsConfiguration heuristicsConfiguration, java.util.function.Predicate<Predicate> filter, boolean debugInternalChecks) {
+		return getInstance(name, program, atomStore, heuristicsConfiguration, filter, false, debugInternalChecks);
+	}
+
+	public static Grounder getInstance(String name, Program program, AtomStore atomStore, HeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks) {
+		return getInstance(name, program, atomStore, heuristicsConfiguration, InputConfig.DEFAULT_FILTER, false, debugInternalChecks);
 	}
 }

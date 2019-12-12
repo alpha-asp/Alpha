@@ -50,6 +50,7 @@ import java.util.Optional;
  * DOI: 10.1017/S1471068416000569
  */
 public class ThreeColouringWheelTest extends AbstractSolverTests {
+
 	@Test(timeout = 1000)
 	public void testN4() throws IOException {
 		testThreeColouring(4);

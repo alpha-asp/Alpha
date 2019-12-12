@@ -61,6 +61,7 @@ public class OmigaBenchmarksTest extends AbstractSolverTests {
 	}
 
 	@Test(timeout = 15000)
+	@Ignore("disabled to save resources during CI")
 	public void testCutedge_100_50() throws IOException {
 		test("cutedge", "cutedge-100-50.txt");
 	}

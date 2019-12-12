@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@ import java.io.IOException;
 public abstract class AggregatesTest extends AbstractSolverTests {
 
 	private static final String LS = System.lineSeparator();
-	
+
 	@Test
 	public void testAggregate_Count_Ground_Positive() throws IOException {
 		String program = "a." + LS
@@ -165,7 +165,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	@Override
 	protected Solver getInstance(Program program) {
 		AtomStore atomStore = new AtomStoreImpl();
-		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, program, atomStore, p->true, useCountingGridNormalization(), true));
+		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, program, atomStore, heuristicsConfiguration, p->true, useCountingGridNormalization(), true));
 	}
 	
 	protected abstract boolean useCountingGridNormalization();

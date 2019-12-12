@@ -6,7 +6,7 @@ import at.ac.tuwien.kr.alpha.common.NoGoodInterface;
 import java.util.Iterator;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.Literals.literalToString;
 
 public final class WatchedNoGood implements NoGoodInterface, Antecedent, Iterable<Integer> {
 	private int activity;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018 Siemens AG
+ * Copyright (c) 2017-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,8 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,6 +45,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static org.junit.Assert.assertTrue;
 
 public class ChoiceManagerTests extends AbstractSolverTests {
+	private final HeuristicsConfiguration heuristicsConfiguration = new HeuristicsConfigurationBuilder().build();
 	private Grounder grounder;
 	private ChoiceManager choiceManager;
 	private AtomStore atomStore;
@@ -52,7 +55,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 		String testProgram = "h :- b1, b2, not b3, not b4.";
 		Program parsedProgram = new ProgramParser().parse(testProgram);
 		this.atomStore = new AtomStoreImpl();
-		this.grounder = new NaiveGrounder(parsedProgram, atomStore, true);
+		this.grounder = new NaiveGrounder(parsedProgram, atomStore, heuristicsConfiguration, true);
 		WritableAssignment assignment = new TrailAssignment(atomStore);
 		NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment);
 		this.choiceManager = new ChoiceManager(assignment, store);

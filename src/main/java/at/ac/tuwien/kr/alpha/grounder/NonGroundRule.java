@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -32,6 +32,8 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,9 +44,9 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Represents a non-ground rule or a constraint for the semi-naive grounder.
- * Copyright (c) 2017-2018, the Alpha Team.
  */
 public class NonGroundRule {
+	private static final Logger LOGGER = LoggerFactory.getLogger(NonGroundRule.class);
 	private static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
 
 	private final int ruleId;
@@ -73,6 +75,8 @@ public class NonGroundRule {
 		checkSafety();
 		this.groundingOrder = new RuleGroundingOrder(this);
 		groundingOrder.computeGroundingOrders();
+
+		LOGGER.debug("Rule ID {} assigned to {}", ruleId, rule);
 	}
 
 	// FIXME: NonGroundRule should extend Rule and then its constructor directly be used.

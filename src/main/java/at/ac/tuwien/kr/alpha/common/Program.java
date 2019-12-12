@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017-2018, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -41,7 +41,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Alpha-internal representation of an ASP program, i.e., a set of ASP rules.
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017-2018, the Alpha Team.
  */
 public class Program {
 	public static final Program EMPTY = new Program(Collections.emptyList(), Collections.emptyList(), new InlineDirectives());
@@ -49,7 +49,7 @@ public class Program {
 	private final List<Rule> rules;
 	private final List<Atom> facts;
 	private final InlineDirectives inlineDirectives;
-
+	
 	public Program(List<Rule> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
 		this.rules = rules;
 		this.facts = facts;
@@ -67,7 +67,7 @@ public class Program {
 	public List<Atom> getFacts() {
 		return facts;
 	}
-
+	
 	public InlineDirectives getInlineDirectives() {
 		return inlineDirectives;
 	}
@@ -99,15 +99,21 @@ public class Program {
 	@Override
 	public String toString() {
 		final String ls = System.lineSeparator();
-		final String result = join("", facts, "." + ls, "." + ls);
+		String result = join("", facts, "." + ls, "." + ls);
 
 		if (rules.isEmpty()) {
 			return result;
 		}
-
-		return join(result, rules, ls, ls);
+		
+		result = join(result, rules, ls, ls);
+		
+		if (inlineDirectives.isEmpty()) {
+			return result;
+		}
+		
+		return join(result, inlineDirectives.getDirectives(), ls, ls);
 	}
-
+	
 	public <T extends Comparable<T>> Program withExternalFacts(Collection<T> factBeans) {
 		ExternalAtoms.addExternalFactsToProgram(this, factBeans);
 		return this;

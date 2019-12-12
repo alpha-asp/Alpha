@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.*;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -40,7 +41,7 @@ import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
 import static at.ac.tuwien.kr.alpha.Util.entry;
-import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
+import static at.ac.tuwien.kr.alpha.common.NoGoodCreator.headFirst;
 import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
@@ -164,7 +165,17 @@ public class ChoiceGrounder implements Grounder {
 			return new ImmutablePair<>(new HashMap<>(), new HashMap<>());
 		}
 	}
-	
+
+	@Override
+	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getHeuristicAtoms() {
+		return new ImmutablePair<>(Collections.emptyMap(), Collections.emptyMap());
+	}
+
+	@Override
+	public Map<Integer, HeuristicDirectiveValues> getHeuristicValues() {
+		return Collections.emptyMap();
+	}
+
 	@Override
 	public Map<Integer, Set<Integer>> getHeadsToBodies() {
 		return Collections.emptyMap();
@@ -188,5 +199,10 @@ public class ChoiceGrounder implements Grounder {
 			solverDerivedNoGoods.put(noGood, solverDerivedNoGoodIdCounter++);
 		}
 		return solverDerivedNoGoods.get(noGood);
+	}
+
+	@Override
+	public AtomStore getAtomStore() {
+		return null;
 	}
 }

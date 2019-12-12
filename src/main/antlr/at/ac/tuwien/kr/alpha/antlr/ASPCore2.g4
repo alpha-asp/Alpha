@@ -6,6 +6,7 @@ import ASPLexer;
  * https://www.mat.unical.it/aspcomp2013/files/ASP-CORE-2.01c.pdf
  * (sections 4 and 5, pages 10-12).
  * It is extended a bit to parse widespread syntax (e.g. used by gringo/clasp).
+ * It is also extended by heuristic directives for Alpha.
  */
 
 program : statements? query? EOF;
@@ -17,7 +18,7 @@ query : classical_literal QUERY_MARK;
 statement : head DOT                     # statement_fact
           | CONS body DOT                # statement_constraint
           | head CONS body DOT           # statement_rule
-          | WCONS body? DOT SQUARE_OPEN weight_at_level SQUARE_CLOSE # statement_weightConstraint
+          | WCONS body? DOT weight_annotation        # statement_weightConstraint
           | directive                    # statement_directive;   // NOT Core2 syntax.
 
 head : disjunction | choice;
@@ -39,6 +40,8 @@ aggregate_elements : aggregate_element (SEMICOLON aggregate_elements)?;
 aggregate_element : basic_terms? (COLON naf_literals?)?;
 
 aggregate_function : AGGREGATE_COUNT | AGGREGATE_MAX | AGGREGATE_MIN | AGGREGATE_SUM;
+
+weight_annotation : SQUARE_OPEN weight_at_level SQUARE_CLOSE;
 
 weight_at_level : term (AT term)? (COMMA terms)?;
 
@@ -73,9 +76,11 @@ interval : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE); // N
 
 external_atom : MINUS? AMPERSAND ID (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?; // NOT Core2 syntax.
 
-directive : directive_enumeration;  // NOT Core2 syntax, allows solver specific directives. Further directives shall be added here.
+directive : directive_enumeration | directive_heuristic;  // NOT Core2 syntax, allows solver specific directives. Further directives shall be added here.
 
 directive_enumeration : SHARP 'enumeration_predicate_is' ID DOT;  // NOT Core2 syntax, used for aggregate translation.
+
+directive_heuristic : SHARP 'heuristic' classical_literal (COLON body)? DOT weight_annotation?;
 
 basic_terms : basic_term (COMMA basic_terms)? ;
 
