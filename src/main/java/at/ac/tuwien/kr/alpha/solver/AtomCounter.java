@@ -47,7 +47,7 @@ public class AtomCounter {
 	 * @return the number of atoms of the given type
 	 */
 	public int getNumberOfAtoms(Class<? extends Atom> type) {
-		return countByType.get(type);
+		return countByType.getOrDefault(type, 0);
 	}
 
 	/**
