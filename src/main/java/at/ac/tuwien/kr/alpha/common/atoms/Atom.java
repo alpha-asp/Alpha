@@ -142,7 +142,7 @@ public abstract class Atom implements Comparable<Atom> {
 	}
 
 	/**
-	 * Returns whether this Atom is a builtin-atom according to the ASP standard. This covers the atoms currently defined by <code>ComparisonAtom</code>.
+	 * Returns whether this Atom is a builtin atom according to the ASP standard. This covers the atoms currently defined by {@link ComparisonAtom}.
 	 * 
 	 * @return true if this Atom is a comparison atom, false otherwise.
 	 */
