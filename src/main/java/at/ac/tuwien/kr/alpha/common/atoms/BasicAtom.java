@@ -193,7 +193,7 @@ public class BasicAtom extends Atom implements VariableNormalizableAtom {
 	}
 
 	@Override
-	public Atom setTerms(List<Term> terms) {
+	public Atom withTerms(List<Term> terms) {
 		return new BasicAtom(this.predicate, terms);
 	}
 

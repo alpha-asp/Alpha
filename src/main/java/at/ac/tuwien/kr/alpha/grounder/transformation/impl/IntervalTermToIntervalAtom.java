@@ -99,7 +99,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 			}
 		}
 		if (didChange) {
-			Atom rewrittenAtom = atom.setTerms(termList);
+			Atom rewrittenAtom = atom.withTerms(termList);
 			return lit.isNegated() ? rewrittenAtom.toLiteral().negate() : rewrittenAtom.toLiteral();
 		}
 		return lit;

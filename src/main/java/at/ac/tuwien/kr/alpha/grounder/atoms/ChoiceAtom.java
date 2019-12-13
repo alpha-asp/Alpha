@@ -96,7 +96,7 @@ public class ChoiceAtom extends Atom {
 	}
 
 	@Override
-	public Atom setTerms(List<Term> terms) {
+	public Atom withTerms(List<Term> terms) {
 		if (terms.size() != 1) {
 			throw new UnsupportedOperationException("ChoiceAtom only supports one term!");
 		}

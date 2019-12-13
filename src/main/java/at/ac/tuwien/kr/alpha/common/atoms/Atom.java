@@ -51,7 +51,7 @@ public abstract class Atom implements Comparable<Atom> {
 	 * @param terms the terms to set
 	 * @return a new Atom with the given terms set
 	 */
-	public abstract Atom setTerms(List<Term> terms);
+	public abstract Atom withTerms(List<Term> terms);
 
 	public abstract boolean isGround();
 

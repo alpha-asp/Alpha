@@ -126,7 +126,7 @@ public class IntervalAtom extends Atom implements VariableNormalizableAtom {
 	}
 
 	@Override
-	public Atom setTerms(List<Term> terms) {
+	public Atom withTerms(List<Term> terms) {
 		throw new UnsupportedOperationException("IntervalAtoms do not support setting ofd terms!");
 	}
 }

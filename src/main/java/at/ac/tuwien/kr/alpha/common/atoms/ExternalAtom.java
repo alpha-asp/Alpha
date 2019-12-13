@@ -119,7 +119,7 @@ public class ExternalAtom extends Atom {
 	}
 
 	@Override
-	public Atom setTerms(List<Term> terms) {
+	public Atom withTerms(List<Term> terms) {
 		throw new UnsupportedOperationException("Editing term list is not supported for external atoms!");
 	}
 

@@ -116,7 +116,7 @@ public class RuleAtom extends Atom {
 	}
 
 	@Override
-	public Atom setTerms(List<Term> terms) {
+	public Atom withTerms(List<Term> terms) {
 		throw new UnsupportedOperationException("RuleAtoms do not support setting of terms!");
 	}
 }
