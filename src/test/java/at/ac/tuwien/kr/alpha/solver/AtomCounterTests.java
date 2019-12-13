@@ -25,7 +25,12 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -35,6 +40,7 @@ import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -46,7 +52,12 @@ import static org.junit.Assert.assertTrue;
 
 public class AtomCounterTests {
 
-	private final AtomStore atomStore = new AtomStoreImpl();
+	private AtomStore atomStore;
+
+	@Before
+	public void setUp() {
+		this.atomStore = new AtomStoreImpl();
+	}
 
 	@Test
 	public void testGetNumberOfAtoms() throws NoSuchMethodException {
