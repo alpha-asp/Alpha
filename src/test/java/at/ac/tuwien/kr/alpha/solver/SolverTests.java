@@ -693,30 +693,6 @@ public class SolverTests extends AbstractSolverTests {
 		SortedSet<Atom> positions2 = answerSet.getPredicateInstances(Predicate.getInstance("unique_position2", 2));
 		assertEnumerationPositions(positions2, 4);
 	}
-	
-//	@Test
-//	public void instanceEnumerationMultipleIdentifiers_new() {
-//		String prgString = "# enumeration_predicate_is enum." +
-//				"dom(a). dom(b). dom(c). dom(d)." +
-//				"p(X) :- dom(X)." +
-//				"unique_position1(Term,Pos) :- p(Term), enum(id,Term,Pos)." +
-//				"unique_position2(Term,Pos) :- p(Term), enum(otherid,Term,Pos)." +
-//				"wrong_double_occurrence :- unique_position(T1,P), unique_position(T2,P), T1 != T2." +
-//				"wrong_double_occurrence :- unique_position2(T1,P), unique_position(T2,P), T1 != T2.";
-//		Alpha system = new Alpha();
-//		InputProgram program = system.readProgramString(prgString, null);
-//		AnalyzedNormalProgram analyzedProgram = system.performProgramPreprocessing(program);
-//		Set<AnswerSet> answerSets = system.prepareSolverFor(analyzedProgram).collectSet();
-//		// Since enumeration depends on evaluation, we do not know which unique_position is actually assigned.
-//		// Check manually that there is one answer set, wrong_double_occurrence has not been derived, and enum yielded a unique position for each term.
-//		assertEquals(1, answerSets.size());
-//		AnswerSet answerSet = answerSets.iterator().next();
-//		assertPropositionalPredicateFalse(answerSet, Predicate.getInstance("wrong_double_occurrence", 0));
-//		SortedSet<Atom> positions = answerSet.getPredicateInstances(Predicate.getInstance("unique_position1", 2));
-//		assertEnumerationPositions(positions, 4);
-//		SortedSet<Atom> positions2 = answerSet.getPredicateInstances(Predicate.getInstance("unique_position2", 2));
-//		assertEnumerationPositions(positions2, 4);
-//	}
 
 	private void assertPropositionalPredicateFalse(AnswerSet answerSet, Predicate predicate) {
 		assertEquals(null, answerSet.getPredicateInstances(predicate));

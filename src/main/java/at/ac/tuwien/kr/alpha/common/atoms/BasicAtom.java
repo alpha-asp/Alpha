@@ -78,18 +78,34 @@ public class BasicAtom extends Atom implements VariableNormalizableAtom {
 	}
 
 	/**
-	 * Convenience method for a simple atom with just constant terms (no nested terms)
+	 * Convenience method for a simple atom with just constant terms (no nested terms). 
+	 * Terms are interpreted as symbolic terms, 
+	 * i.e. the string "a" will be interpreted as the symbol "a" rather than the String "\"a\"".
 	 * 
 	 * @param predSymbol the predicate symbol
-	 * @param terms      the constant terms
+	 * @param constTerms the constant (symbolic) terms
 	 */
-	public static BasicAtom newInstance(String predSymbol, String... constTerms) {
-		Predicate pred = Predicate.getInstance(predSymbol, constTerms.length);
-		List<Term> trms = new ArrayList<>();
+	public static BasicAtom getInstanceWithSymbolicTerms(String predSymbol, String... constTerms) {
+		List<Term> terms = new ArrayList<>();
 		for (String s : constTerms) {
-			trms.add(ConstantTerm.getSymbolicInstance(s));
+			terms.add(ConstantTerm.getSymbolicInstance(s));
 		}
-		return new BasicAtom(pred, trms);
+		return new BasicAtom(Predicate.getInstance(predSymbol, terms.size()), terms);
+	}
+	
+	/**
+	 * Convenience method to quickly create a BasicAtom with the given terms.
+	 * 
+	 * @param predSymbol the predicate symbol
+	 * @param terms the terms
+	 */
+	public static BasicAtom getInstance(String predSymbol, Term... terms) {
+		Predicate pred = Predicate.getInstance(predSymbol, terms.length);
+		List<Term> trms = new ArrayList<>();
+		for (Term s : terms) {
+			trms.add(s);
+		}
+		return new BasicAtom(pred, terms);
 	}
 
 	@Override

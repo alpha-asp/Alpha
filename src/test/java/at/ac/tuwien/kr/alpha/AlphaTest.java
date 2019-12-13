@@ -402,7 +402,7 @@ public class AlphaTest {
 		NormalProgram normal = system.normalizeProgram(input);
 		InternalProgram preprocessed = system.performProgramPreprocessing(normal);
 		Assert.assertFalse("Preprocessed program contains fact derived from stratifiable rule, but shouldn't!",
-				preprocessed.getFacts().contains(BasicAtom.newInstance("q", "a")));
+				preprocessed.getFacts().contains(BasicAtom.getInstanceWithSymbolicTerms("q", "a")));
 	}
 
 	/**
@@ -417,7 +417,7 @@ public class AlphaTest {
 		NormalProgram normal = system.normalizeProgram(input);
 		InternalProgram preprocessed = system.performProgramPreprocessing(normal);
 		Assert.assertTrue("Preprocessed program does not contain fact derived from stratifiable rule, but should!",
-				preprocessed.getFacts().contains(BasicAtom.newInstance("q", "a")));
+				preprocessed.getFacts().contains(BasicAtom.getInstanceWithSymbolicTerms("q", "a")));
 	}
 
 	/**

@@ -59,7 +59,7 @@ public class StratifiedEvaluationTest {
 		NormalProgram normal = system.normalizeProgram(prg);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normal);
 		InternalProgram evaluated = new StratifiedEvaluation().apply(analyzed);
-		BasicAtom qOfB = BasicAtom.newInstance("q", "b");
+		BasicAtom qOfB = BasicAtom.getInstanceWithSymbolicTerms("q", "b");
 		List<Atom> facts = evaluated.getFacts();
 		int numQOfB = 0;
 		for (Atom at : facts) {
@@ -78,7 +78,7 @@ public class StratifiedEvaluationTest {
 		NormalProgram normal = system.normalizeProgram(prg);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normal);
 		InternalProgram evaluated = new StratifiedEvaluation().apply(analyzed);
-		BasicAtom equal = BasicAtom.newInstance("equal");
+		BasicAtom equal = BasicAtom.getInstanceWithSymbolicTerms("equal");
 		assertTrue(evaluated.getFacts().contains(equal));
 	}
 	
@@ -149,7 +149,7 @@ public class StratifiedEvaluationTest {
 		NormalProgram normal = system.normalizeProgram(prg);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normal);
 		InternalProgram evaluated = new StratifiedEvaluation().apply(analyzed);
-		assertTrue(evaluated.getFacts().contains(BasicAtom.newInstance("allThings")));
+		assertTrue(evaluated.getFacts().contains(BasicAtom.getInstanceWithSymbolicTerms("allThings")));
 		Set<AnswerSet> answerSets = system.solve(evaluated).collect(Collectors.toSet());
 		TestUtils.assertAnswerSetsEqual("allThings, thing(1), thing(2), thing(3), chosenMaxThing, chosenSomething, chosenThing(3)", answerSets);
 	}
