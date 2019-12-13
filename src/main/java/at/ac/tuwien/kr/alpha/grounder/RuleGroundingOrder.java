@@ -102,8 +102,14 @@ public class RuleGroundingOrder {
 	}
 
 	/**
-	 * @param orderPosition
-	 * @return
+	 * "Pushes a literal back" in a grounding order because the literal cannot be used to generate substitutions now but
+	 * maybe later. Pushing back means adding the literal again at the end of the grounding order. Since the literal will
+	 * occur twice in the new grounding order returned by this method, we assume that the grounding order is processed
+	 * from left to right and the literal at {@code orderPosition} will not be considered again.
+	 *
+	 * @param orderPosition the position in the grounding order of the literal to be pushed back.
+	 * @return a new grounding order in which the atom is pushed back,
+	 * or {@code null} if the position of the grounding order after which no new bindings can be found has been reached.
 	 */
 	public RuleGroundingOrder pushBack(int orderPosition) {
 		if (orderPosition >= stopBindingAtOrderPosition - 1) {
