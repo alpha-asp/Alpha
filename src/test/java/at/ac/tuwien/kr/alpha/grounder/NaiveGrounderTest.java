@@ -235,6 +235,13 @@ public class NaiveGrounderTest {
 		testIfGrounderGroundsRule(program, 0, literal("a", "X"), 1, ThriceTruth.FALSE, true);
 	}
 
+	/**
+	 * Tests if {@link NaiveGrounder#getGroundInstantiations(NonGroundRule, RuleGroundingOrder, Substitution, Assignment)}
+	 * produces ground instantiations for the rule with ID {@code ruleID} in {@code program} when {@code startingLiteral}
+	 * unified with the numeric instance {@code startingInstance} is used as starting literal and {@code b(1)} is assigned
+	 * {@code bTruth}.
+	 * It is asserted that ground instantiations are produced if and only if {@code expectNoGoods} is true.
+	 */
 	private void testIfGrounderGroundsRule(Program program, int ruleID, Literal startingLiteral, int startingInstance, ThriceTruth bTruth, boolean expectNoGoods) {
 		AtomStore atomStore = new AtomStoreImpl();
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
