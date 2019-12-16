@@ -25,6 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Literals;
@@ -149,6 +150,26 @@ public class NaiveGrounderTest {
 		testDeadEnd(groundingOrderP1, groundingOrderQ1, true);
 	}
 
+	/**
+	 * Tests the method {@link NaiveGrounder#getGroundInstantiations(NonGroundRule, RuleGroundingOrder, Substitution, Assignment)} on a predefined program:
+	 * <code>
+	 *  p1(1). q1(1). <br/>
+	 * 	x :- p1(X), p2(X), q1(Y), q2(Y). <br/>
+	 * 	p2(X) :- something(X). <br/>
+	 * 	q2(X) :- something(X). <br/>
+	 * </code>
+	 * Given two grounding orders for the first rule in this program,
+	 * {@code groundingOrderP1} which starts with {@code p1(X)} and
+	 * {@code groundingOrderQ1} which starts with {@code q1(Y)},
+	 * the first is used with the substitution X=1 to ground the rule and
+	 * the second is used with the substitution Y=1 to ground the rule.
+	 * It is then asserted that each of the two grounding orders individually leads to the production of ground
+	 * instantiations if and only if {@code expectNoGoods} is true.
+	 *
+	 * @param groundingOrderP1 a grounding order for the first rule in the predefined program that starts with {@code p1(X)}.
+	 * @param groundingOrderQ1 a grounding order for the first rule in the predefined program that starts with {@code q1(Y)}.
+	 * @param expectNoGoods {@code true} iff ground instantiations are expected to be produced under the conditions described above.
+	 */
 	private void testDeadEnd(RuleGroundingOrder groundingOrderP1, RuleGroundingOrder groundingOrderQ1, boolean expectNoGoods) {
 		Program program = PARSER.parse("p1(1). q1(1). "
 				+ "x :- p1(X), p2(X), q1(Y), q2(Y). "
