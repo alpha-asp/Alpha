@@ -326,6 +326,24 @@ public class NaiveGrounderTest {
 		testPermissiveGrounderHeuristicTolerance(program, ruleID, startingLiteral, startingInstance, tolerance, new ThriceTruth[]{}, 1, expectNoGoods, expectedNumbersOfUnassignedPositiveBodyAtoms);
 	}
 
+	/**
+	 * Tests if {@link NaiveGrounder#getGroundInstantiations(NonGroundRule, RuleGroundingOrder, Substitution, Assignment)}
+	 * produces ground instantiations for the rule with ID {@code ruleID} in {@code program} when {@code startingLiteral}
+	 * unified with the numeric instance {@code startingInstance} is used as starting literal and the following
+	 * additional conditions are established:
+	 * <ul>
+	 *     <li>The atoms {@code b([startingInstance], 1), ..., b([startingInstance], n)} are added to the grounder's
+	 *     working memory without changing the assignment, where {@code arityOfB-1} occurences of {@code startingInstance}
+	 *     are used instead of {@code [startingInstance]} and {@code n} is the length of the {@code truthsOfB} array.
+	 *     For example, if the length of {@code truthsOfB} is 2 and {@code arityOfB} is also 2, these atoms are
+	 *     {@code b(1,1), b(1,2)}.
+	 *     </li>
+	 *     <li>The same atoms are assigned the truth values in the {@code truthsOfB} array.</li>
+	 * </ul>
+	 * It is asserted that ground instantiations are produced if and only if {@code expectNoGoods} is true.
+	 * If ground instantiations are produced, it is also asserted that the numbers of unassigned positive body atoms
+	 * determined by {@code getGroundInstantiations} match those given in {@code expectedNumbersOfUnassignedPositiveBodyAtoms}.
+	 */
 	private void testPermissiveGrounderHeuristicTolerance(Program program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance, ThriceTruth[] truthsOfB, int arityOfB, boolean expectNoGoods, List<Integer> expectedNumbersOfUnassignedPositiveBodyAtoms) {
 		AtomStore atomStore = new AtomStoreImpl();
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
