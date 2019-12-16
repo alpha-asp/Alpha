@@ -26,6 +26,10 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Set;
@@ -34,6 +38,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeTrue;
 
 public class SolverStatisticsTests extends AbstractSolverTests {
+
+	private AtomStore atomStore;
+
+	@Before
+	public void setUp() {
+		this.atomStore = new AtomStoreImpl();
+	}
 
 	@Test
 	public void checkStatsStringZeroChoices() {
@@ -50,31 +61,17 @@ public class SolverStatisticsTests extends AbstractSolverTests {
 	}
 
 	@Test
-	public void checkNoGoodCounterStatsByTypeZeroChoices() {
-		Solver solver = getInstance("a.");
+	public void checkNoGoodCounterStatsByTypeUsingDummyGrounder() {
+		Solver solver = getInstance(atomStore, new DummyGrounder(atomStore));
 		assumeTrue(solver instanceof SolverMaintainingStatistics);
-		collectAnswerSetsAndCheckNoGoodCounterStatsByType(solver, 0, 0, 0, 0);
+		collectAnswerSetsAndCheckNoGoodCounterStatsByType(solver, 4, 0, 0, 0);
 	}
 
 	@Test
-	public void checkNoGoodCounterStatsByTypeOneChoice() {
-		Solver solver = getInstance("a :- not b. b :- not a.");
+	public void checkNoGoodCounterStatsByCardinalityUsingDummyGrounder() {
+		Solver solver = getInstance(atomStore, new DummyGrounder(atomStore));
 		assumeTrue(solver instanceof SolverMaintainingStatistics);
-		collectAnswerSetsAndCheckNoGoodCounterStatsByType(solver, 7, 2, 0, 4);
-	}
-
-	@Test
-	public void checkNoGoodCounterStatsByCardinalityZeroChoices() {
-		Solver solver = getInstance("a.");
-		assumeTrue(solver instanceof SolverMaintainingStatistics);
-		collectAnswerSetsAndCheckNoGoodCounterStatsByCardinality(solver, 0, 0, 0);
-	}
-
-	@Test
-	public void checkNoGoodCounterStatsByCardinalityOneChoice() {
-		Solver solver = getInstance("a :- not b. b :- not a.");
-		assumeTrue(solver instanceof SolverMaintainingStatistics);
-		collectAnswerSetsAndCheckNoGoodCounterStatsByCardinality(solver, 3, 10, 0);
+		collectAnswerSetsAndCheckNoGoodCounterStatsByCardinality(solver, 2, 1, 1);
 	}
 
 	private void collectAnswerSetsAndCheckStats(Solver solver, int expectedNumberOfAnswerSets, int expectedNumberOfGuesses, int expectedTotalNumberOfBacktracks,
