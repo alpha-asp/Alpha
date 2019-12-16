@@ -263,7 +263,7 @@ public class NaiveGrounderTest {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X). "
 				+ "b(X) :- something(X).");
-		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 0, 0, false, Arrays.asList(1));
+		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 0, false, Arrays.asList(1));
 	}
 	
 	@Test
@@ -271,7 +271,7 @@ public class NaiveGrounderTest {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X). "
 				+ "b(X) :- something(X).");
-		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 1, 0, true, Arrays.asList(1));
+		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 1, true, Arrays.asList(1));
 	}
 	
 	@Test
@@ -279,7 +279,7 @@ public class NaiveGrounderTest {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X), b(X+1). "
 				+ "b(X) :- something(X).");
-		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 1, 0, false, Arrays.asList(2));
+		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 1, false, Arrays.asList(2));
 	}
 
 	@Test
@@ -287,7 +287,7 @@ public class NaiveGrounderTest {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X), b(X+1). "
 				+ "b(X) :- something(X).");
-		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 2, 0, true, Arrays.asList(2));
+		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 2, true, Arrays.asList(2));
 	}
 
 	@Test
@@ -311,7 +311,7 @@ public class NaiveGrounderTest {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X), b(X+1), b(X+2). "
 				+ "b(X) :- something(X).");
-		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 2, 0, false, Arrays.asList(3));
+		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 2, false, Arrays.asList(3));
 	}
 
 	@Test
@@ -319,15 +319,11 @@ public class NaiveGrounderTest {
 		Program program = PARSER.parse("a(1). b(1). "
 				+ "c(X) :- a(X), b(X), b(X+1), b(X+2). "
 				+ "b(X) :- something(X).");
-		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 2, 0, true, Arrays.asList(2));
+		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 2, true, Arrays.asList(2));
 	}
 
-	private void testPermissiveGrounderHeuristicTolerance(Program program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance, int nTrueBs, boolean expectNoGoods, List<Integer> expectedNumbersOfUnassignedPositiveBodyAtoms) {
-		ThriceTruth[] truthsOfB = new ThriceTruth[nTrueBs];
-		for (int i = 0; i < nTrueBs; i++) {
-			truthsOfB[i] = ThriceTruth.TRUE;
-		}
-		testPermissiveGrounderHeuristicTolerance(program, ruleID, startingLiteral, startingInstance, tolerance, truthsOfB, 1, expectNoGoods, expectedNumbersOfUnassignedPositiveBodyAtoms);
+	private void testPermissiveGrounderHeuristicTolerance(Program program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance, boolean expectNoGoods, List<Integer> expectedNumbersOfUnassignedPositiveBodyAtoms) {
+		testPermissiveGrounderHeuristicTolerance(program, ruleID, startingLiteral, startingInstance, tolerance, new ThriceTruth[]{}, 1, expectNoGoods, expectedNumbersOfUnassignedPositiveBodyAtoms);
 	}
 
 	private void testPermissiveGrounderHeuristicTolerance(Program program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance, ThriceTruth[] truthsOfB, int arityOfB, boolean expectNoGoods, List<Integer> expectedNumbersOfUnassignedPositiveBodyAtoms) {
