@@ -25,6 +25,9 @@
  */
 package at.ac.tuwien.kr.alpha.common.depgraph;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,19 +35,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.impl.InternalRule;
 
 /**
- * Internal representation of an {@link InternalProgram}'s dependency graph. The dependency graph tracks dependencies between rules of a program. Each
- * {@link Node} of the graph represents a {@link Predicate} occurring in the program. A node has an incoming {@link Edge} for every {@link Literal} in some rule
- * body that depends on it, i.e. the predicate of the literal in question is the same as that of the node. The "sign" flag of an {@link Edge} indicates whether
- * the dependency is a positive or negative one, i.e. if the atom in question is preceded by a "not".
+ * Internal representation of an {@link at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram}'s dependency graph. The dependency graph tracks dependencies
+ * between rules of a program. Each {@link Node} of the graph represents a {@link Predicate} occurring in the program. A node has an incoming {@link Edge} for
+ * every {@link Literal} in some rule body that depends on it, i.e. the predicate of the literal in question is the same as that of the node. The "sign" flag of
+ * an {@link Edge} indicates whether the dependency is a positive or negative one, i.e. if the atom in question is preceded by a "not".
  * 
  * Note that constraints are represented by one dummy predicate (named "constr_{num}"). Each constraint node has a negative edge to itself to express the
  * notation of a constraint ":- a, b." as "x :- a, b, not x.".
@@ -55,7 +55,7 @@ public final class DependencyGraph {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DependencyGraph.class);
 
-	/**
+	/*
 	 * Maps nodes to outgoing edges of that node NOTE: Doing the value as List<Edge> rather than Map<Integer,Boolean> as one node may have positive and negative
 	 * edges to another.
 	 */
