@@ -131,21 +131,4 @@ public class AtomCounterTests {
 		assertTrue("Expected number of " + classOfAtoms.getSimpleName() + "s not contained in stats string", atomCounter.getStatsByType().contains(classOfAtoms.getSimpleName() + ": " + expectedNumber));
 	}
 
-	@at.ac.tuwien.kr.alpha.common.atoms.external.Predicate
-	public static boolean thinger(Thingy thingy) {
-		return true;
-	}
-
-	private static class Thingy implements Comparable<Thingy> {
-		@Override
-		public String toString() {
-			return "thingy";
-		}
-
-		@Override
-		public int compareTo(Thingy o) {
-			return 0;
-		}
-	}
-
 }
