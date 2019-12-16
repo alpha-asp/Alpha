@@ -133,21 +133,31 @@ public class NaiveGrounderTest {
 	}
 
 	@Test
-	public void avoidDeadEndsWithPermissiveGrounderHeuristic() {
+	public void avoidDeadEndsWithPermissiveGrounderHeuristicForP1() {
 		RuleGroundingOrder groundingOrderP1 = new RuleGroundingOrder(literal("p1", "X"),
 				Arrays.asList(literal("p2", "X"), literal("q2", "Y"), literal("q1", "Y")), -1, false);
-		RuleGroundingOrder groundingOrderQ1 = new RuleGroundingOrder(literal("q1", "Y"),
-				Arrays.asList(literal("q2", "Y"), literal("p2", "X"), literal("p1", "X")), -1, false);
-		testDeadEnd(groundingOrderP1, groundingOrderQ1, true);
+		testDeadEnd("p1", groundingOrderP1, true);
 	}
 
 	@Test
-	public void noDeadEndWithPermissiveGrounderHeuristic() {
+	public void avoidDeadEndsWithPermissiveGrounderHeuristicForQ1() {
+		RuleGroundingOrder groundingOrderQ1 = new RuleGroundingOrder(literal("q1", "Y"),
+				Arrays.asList(literal("q2", "Y"), literal("p2", "X"), literal("p1", "X")), -1, false);
+		testDeadEnd("q1", groundingOrderQ1, true);
+	}
+
+	@Test
+	public void noDeadEndWithPermissiveGrounderHeuristicForP1() {
 		RuleGroundingOrder groundingOrderP1 = new RuleGroundingOrder(literal("p1", "X"),
 				Arrays.asList(literal("p2", "X"), literal("q1", "Y"), literal("q2", "Y")), -1, false);
+		testDeadEnd("p1", groundingOrderP1, true);
+	}
+
+	@Test
+	public void noDeadEndWithPermissiveGrounderHeuristicForQ1() {
 		RuleGroundingOrder groundingOrderQ1 = new RuleGroundingOrder(literal("q1", "Y"),
 				Arrays.asList(literal("q2", "Y"), literal("p1", "X"), literal("p2", "X")), -1, false);
-		testDeadEnd(groundingOrderP1, groundingOrderQ1, true);
+		testDeadEnd("q1", groundingOrderQ1, true);
 	}
 
 	/**
@@ -158,19 +168,18 @@ public class NaiveGrounderTest {
 	 * 	p2(X) :- something(X). <br/>
 	 * 	q2(X) :- something(X). <br/>
 	 * </code>
-	 * Given two grounding orders for the first rule in this program,
-	 * {@code groundingOrderP1} which starts with {@code p1(X)} and
-	 * {@code groundingOrderQ1} which starts with {@code q1(Y)},
-	 * the first is used with the substitution X=1 to ground the rule and
-	 * the second is used with the substitution Y=1 to ground the rule.
-	 * It is then asserted that each of the two grounding orders individually leads to the production of ground
-	 * instantiations if and only if {@code expectNoGoods} is true.
+	 * Given one grounding order {@code groundingOrder} for the first rule in this program which starts with
+	 * the literal whose predicate name is {@code predicateNameOfStartingLiteral} and a substitution substituting
+	 * the variable in this literal by 1 it is attempted to ground the rule.
+	 * It is then asserted that ground instantiations are produced if and only if {@code expectNoGoods} is true.
 	 *
-	 * @param groundingOrderP1 a grounding order for the first rule in the predefined program that starts with {@code p1(X)}.
-	 * @param groundingOrderQ1 a grounding order for the first rule in the predefined program that starts with {@code q1(Y)}.
-	 * @param expectNoGoods {@code true} iff ground instantiations are expected to be produced under the conditions described above.
+	 * @param predicateNameOfStartingLiteral the predicate name of the starting literal, either "p1" or "q1".
+	 * @param groundingOrder a grounding order for the first rule in the predefined program that starts with the literal
+	 *                          whose predicate name is {@code predicateNameOfStartingLiteral}.
+	 * @param expectNoGoods {@code true} iff ground instantiations are expected to be produced under the conditions
+	 *                                     described above.
 	 */
-	private void testDeadEnd(RuleGroundingOrder groundingOrderP1, RuleGroundingOrder groundingOrderQ1, boolean expectNoGoods) {
+	private void testDeadEnd(String predicateNameOfStartingLiteral, RuleGroundingOrder groundingOrder, boolean expectNoGoods) {
 		Program program = PARSER.parse("p1(1). q1(1). "
 				+ "x :- p1(X), p2(X), q1(Y), q2(Y). "
 				+ "p2(X) :- something(X). "
@@ -180,20 +189,16 @@ public class NaiveGrounderTest {
 		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, p -> true, GrounderHeuristicsConfiguration.permissive(), true);
 
 		NonGroundRule nonGroundRule = grounder.getNonGroundRule(0);
-		final Literal litP1X = literal("p1", "X");
-		final Literal litQ1Y = literal("q1", "Y");
-		nonGroundRule.groundingOrder.groundingOrders.put(litP1X, groundingOrderP1);
-		nonGroundRule.groundingOrder.groundingOrders.put(litQ1Y, groundingOrderQ1);
+		String varName = "p1".equals(predicateNameOfStartingLiteral) ? "X" : "Y";
+		final Literal startingLiteral = literal("p1", varName);
+		nonGroundRule.groundingOrder.groundingOrders.put(startingLiteral, groundingOrder);
 
 		grounder.bootstrap();
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
-		final Substitution substP1X1 = Substitution.unify(litP1X, new Instance(ConstantTerm.getInstance(1)), new Substitution());
-		final Substitution substQ1Y1 = Substitution.unify(litQ1Y, new Instance(ConstantTerm.getInstance(1)), new Substitution());
-		final NaiveGrounder.BindingResult bindingResultP1 = grounder.getGroundInstantiations(nonGroundRule, groundingOrderP1, substP1X1, currentAssignment);
-		final NaiveGrounder.BindingResult bindingResultQ1 = grounder.getGroundInstantiations(nonGroundRule, groundingOrderQ1, substQ1Y1, currentAssignment);
+		final Substitution subst1 = Substitution.unify(startingLiteral, new Instance(ConstantTerm.getInstance(1)), new Substitution());
+		final NaiveGrounder.BindingResult bindingResult = grounder.getGroundInstantiations(nonGroundRule, groundingOrder, subst1, currentAssignment);
 
-		assertEquals(expectNoGoods, bindingResultP1.size() > 0);
-		assertEquals(expectNoGoods, bindingResultQ1.size() > 0);
+		assertEquals(expectNoGoods, bindingResult.size() > 0);
 	}
 
 	@Test
