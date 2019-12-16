@@ -47,7 +47,7 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
  * The default value for both parameters is {@code 0}, which means that only those rules and constraints are
  * grounded whose positive body is already satisfied.
  *
- * The additional parameter {@link #disableInstanceRemoval} is a switch for the accumulator grounding strategy
+ * The additional parameter {@link #accumulatorEnabled} is a switch for the accumulator grounding strategy
  * which disables the removal of instances from the grounder memory in certain cases.
  *
  */
@@ -55,12 +55,12 @@ public class GrounderHeuristicsConfiguration {
 
 	public static final String STRICT_STRING = "strict";
 	public static final int STRICT_INT = 0;
-	public static final String LAX_STRING = "lax";
-	public static final int LAX_INT = -1;
+	public static final String PERMISSIVE_STRING = "permissive";
+	public static final int PERMISSIVE_INT = -1;
 	
 	private int toleranceConstraints;
 	private int toleranceRules;
-	private boolean disableInstanceRemoval;
+	private boolean accumulatorEnabled;
 	
 	public GrounderHeuristicsConfiguration() {
 		super();
@@ -104,24 +104,24 @@ public class GrounderHeuristicsConfiguration {
 	 * @param ruleIsConstraint {@code true} iff the parameter for constraints shall be returned
 	 * @return {@code true} iff the tolerance is not 0
 	 */
-	public boolean isLax(boolean ruleIsConstraint) {
+	public boolean isPermissive(boolean ruleIsConstraint) {
 		return getTolerance(ruleIsConstraint) != STRICT_INT;
 	}
 
-	public boolean isDisableInstanceRemoval() {
-		return disableInstanceRemoval;
+	public boolean isAccumulatorEnabled() {
+		return accumulatorEnabled;
 	}
 
-	public void setDisableInstanceRemoval(boolean disableInstanceRemoval) {
-		this.disableInstanceRemoval = disableInstanceRemoval;
+	public void setAccumulatorEnabled(boolean accumulatorEnabled) {
+		this.accumulatorEnabled = accumulatorEnabled;
 	}
 
 	public static GrounderHeuristicsConfiguration strict() {
 		return new GrounderHeuristicsConfiguration(STRICT_INT, STRICT_INT);
 	}
 	
-	public static GrounderHeuristicsConfiguration lax() {
-		return new GrounderHeuristicsConfiguration(LAX_INT, LAX_INT);
+	public static GrounderHeuristicsConfiguration permissive() {
+		return new GrounderHeuristicsConfiguration(PERMISSIVE_INT, PERMISSIVE_INT);
 	}
 	
 	public static GrounderHeuristicsConfiguration getInstance(int toleranceConstraints, int toleranceRules) {
@@ -135,8 +135,8 @@ public class GrounderHeuristicsConfiguration {
 	private static int parseTolerance(String tolerance) {
 		if (STRICT_STRING.equalsIgnoreCase(tolerance)) {
 			return STRICT_INT;
-		} else if (LAX_STRING.equalsIgnoreCase(tolerance)) {
-			return LAX_INT;
+		} else if (PERMISSIVE_STRING.equalsIgnoreCase(tolerance)) {
+			return PERMISSIVE_INT;
 		} else {
 			return Integer.parseInt(tolerance);
 		}
@@ -144,7 +144,7 @@ public class GrounderHeuristicsConfiguration {
 	
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName() + "(toleranceConstraints=" + toleranceConstraints + ",toleranceRules=" + toleranceRules + ",disableInstanceRemoval=" + disableInstanceRemoval + ")";
+		return this.getClass().getSimpleName() + "(toleranceConstraints=" + toleranceConstraints + ",toleranceRules=" + toleranceRules + ",disableInstanceRemoval=" + accumulatorEnabled + ")";
 	}
 
 }

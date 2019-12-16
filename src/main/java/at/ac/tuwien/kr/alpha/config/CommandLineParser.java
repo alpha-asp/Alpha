@@ -29,7 +29,12 @@ package at.ac.tuwien.kr.alpha.config;
 
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,8 +120,8 @@ public class CommandLineParser {
 			.desc("grounder tolerance for rules (default: " + SystemConfig.DEFAULT_GROUNDER_TOLERANCE_RULES + ")")
 			.hasArg().argName("tolerance")
 			.build();
-	private static final Option OPT_GROUNDER_NO_INSTANCE_REMOVAL = Option.builder("dir").longOpt("disableInstanceRemoval")
-			.desc("activates the accumulator grounding strategy by disabling removal of instances from grounder memory in certain cases (default: " + SystemConfig.DEFAULT_GROUNDER_DISABLE_INSTANCE_REMOVAL + ")")
+	private static final Option OPT_GROUNDER_NO_INSTANCE_REMOVAL = Option.builder("acc").longOpt("enableAccumulator")
+			.desc("activates the accumulator grounding strategy by disabling removal of instances from grounder memory in certain cases (default: " + SystemConfig.DEFAULT_GROUNDER_ACCUMULATOR_ENABLED + ")")
 			.build();
 
 	private static final Options CLI_OPTS = new Options();
@@ -387,7 +392,7 @@ public class CommandLineParser {
 	}
 
 	private void handleGrounderNoInstanceRemoval(Option opt, SystemConfig cfg) {
-		cfg.setGrounderDisableInstanceRemoval(true);
+		cfg.setGrounderAccumulatorEnabled(true);
 	}
 
 }

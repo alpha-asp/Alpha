@@ -137,15 +137,15 @@ public class CommandLineParserTest {
 	@Test
 	public void grounderToleranceRules_string() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-gtr", "lax"});
-		assertEquals("lax", alphaConfig.getAlphaConfig().getGrounderToleranceRules());
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-gtr", "permissive"});
+		assertEquals("permissive", alphaConfig.getAlphaConfig().getGrounderToleranceRules());
 	}
 
 	@Test
 	public void noInstanceRemoval() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-dir"});
-		assertTrue(alphaConfig.getAlphaConfig().isGrounderDisableInstanceRemoval());
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-acc"});
+		assertTrue(alphaConfig.getAlphaConfig().isGrounderAccumulatorEnabled());
 	}
 
 }

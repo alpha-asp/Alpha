@@ -27,9 +27,11 @@ package at.ac.tuwien.kr.alpha.grounder.heuristics;
 
 import org.junit.Test;
 
-import static at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration.LAX_STRING;
+import static at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration.PERMISSIVE_STRING;
 import static at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration.STRICT_STRING;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests {@link GrounderHeuristicsConfiguration}
@@ -39,35 +41,35 @@ public class GrounderHeuristicConfigurationTest {
 	@Test
 	public void testGetInstanceStrictStrict() {
 		GrounderHeuristicsConfiguration grounderHeuristicsConfiguration = GrounderHeuristicsConfiguration.getInstance(STRICT_STRING, STRICT_STRING);
-		assertFalse(grounderHeuristicsConfiguration.isLax(true));
-		assertFalse(grounderHeuristicsConfiguration.isLax(false));
+		assertFalse(grounderHeuristicsConfiguration.isPermissive(true));
+		assertFalse(grounderHeuristicsConfiguration.isPermissive(false));
 		assertEquals(0, grounderHeuristicsConfiguration.getToleranceConstraints());
 		assertEquals(0, grounderHeuristicsConfiguration.getToleranceRules());
 	}
 
 	@Test
-	public void testGetInstanceStrictLax() {
-		GrounderHeuristicsConfiguration grounderHeuristicsConfiguration = GrounderHeuristicsConfiguration.getInstance(STRICT_STRING, LAX_STRING);
-		assertFalse(grounderHeuristicsConfiguration.isLax(true));
-		assertTrue(grounderHeuristicsConfiguration.isLax(false));
+	public void testGetInstanceStrictPermissive() {
+		GrounderHeuristicsConfiguration grounderHeuristicsConfiguration = GrounderHeuristicsConfiguration.getInstance(STRICT_STRING, PERMISSIVE_STRING);
+		assertFalse(grounderHeuristicsConfiguration.isPermissive(true));
+		assertTrue(grounderHeuristicsConfiguration.isPermissive(false));
 		assertEquals(0, grounderHeuristicsConfiguration.getToleranceConstraints());
 		assertEquals(-1, grounderHeuristicsConfiguration.getToleranceRules());
 	}
 
 	@Test
-	public void testGetInstanceLaxStrict() {
-		GrounderHeuristicsConfiguration grounderHeuristicsConfiguration = GrounderHeuristicsConfiguration.getInstance(LAX_STRING, STRICT_STRING);
-		assertTrue(grounderHeuristicsConfiguration.isLax(true));
-		assertFalse(grounderHeuristicsConfiguration.isLax(false));
+	public void testGetInstancePermissiveStrict() {
+		GrounderHeuristicsConfiguration grounderHeuristicsConfiguration = GrounderHeuristicsConfiguration.getInstance(PERMISSIVE_STRING, STRICT_STRING);
+		assertTrue(grounderHeuristicsConfiguration.isPermissive(true));
+		assertFalse(grounderHeuristicsConfiguration.isPermissive(false));
 		assertEquals(-1, grounderHeuristicsConfiguration.getToleranceConstraints());
 		assertEquals(0, grounderHeuristicsConfiguration.getToleranceRules());
 	}
 
 	@Test
-	public void testGetInstanceLaxLax() {
-		GrounderHeuristicsConfiguration grounderHeuristicsConfiguration = GrounderHeuristicsConfiguration.getInstance(LAX_STRING, LAX_STRING);
-		assertTrue(grounderHeuristicsConfiguration.isLax(true));
-		assertTrue(grounderHeuristicsConfiguration.isLax(false));
+	public void testGetInstancePermissivePermissive() {
+		GrounderHeuristicsConfiguration grounderHeuristicsConfiguration = GrounderHeuristicsConfiguration.getInstance(PERMISSIVE_STRING, PERMISSIVE_STRING);
+		assertTrue(grounderHeuristicsConfiguration.isPermissive(true));
+		assertTrue(grounderHeuristicsConfiguration.isPermissive(false));
 		assertEquals(-1, grounderHeuristicsConfiguration.getToleranceConstraints());
 		assertEquals(-1, grounderHeuristicsConfiguration.getToleranceRules());
 	}
@@ -75,8 +77,8 @@ public class GrounderHeuristicConfigurationTest {
 	@Test
 	public void testGetInstanceIntInt() {
 		GrounderHeuristicsConfiguration grounderHeuristicsConfiguration = GrounderHeuristicsConfiguration.getInstance(5, 1);
-		assertTrue(grounderHeuristicsConfiguration.isLax(true));
-		assertTrue(grounderHeuristicsConfiguration.isLax(false));
+		assertTrue(grounderHeuristicsConfiguration.isPermissive(true));
+		assertTrue(grounderHeuristicsConfiguration.isPermissive(false));
 		assertEquals(5, grounderHeuristicsConfiguration.getToleranceConstraints());
 		assertEquals(1, grounderHeuristicsConfiguration.getToleranceRules());
 	}
@@ -84,8 +86,8 @@ public class GrounderHeuristicConfigurationTest {
 	@Test
 	public void testGetInstanceStringIntStringInt() {
 		GrounderHeuristicsConfiguration grounderHeuristicsConfiguration = GrounderHeuristicsConfiguration.getInstance("5", "1");
-		assertTrue(grounderHeuristicsConfiguration.isLax(true));
-		assertTrue(grounderHeuristicsConfiguration.isLax(false));
+		assertTrue(grounderHeuristicsConfiguration.isPermissive(true));
+		assertTrue(grounderHeuristicsConfiguration.isPermissive(false));
 		assertEquals(5, grounderHeuristicsConfiguration.getToleranceConstraints());
 		assertEquals(1, grounderHeuristicsConfiguration.getToleranceRules());
 	}

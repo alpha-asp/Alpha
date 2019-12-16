@@ -27,7 +27,11 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
@@ -106,7 +110,7 @@ public class Alpha {
 
 		GrounderHeuristicsConfiguration grounderHeuristicConfiguration = GrounderHeuristicsConfiguration
 				.getInstance(this.config.getGrounderToleranceConstraints(), this.config.getGrounderToleranceRules());
-		grounderHeuristicConfiguration.setDisableInstanceRemoval(this.config.isGrounderDisableInstanceRemoval());
+		grounderHeuristicConfiguration.setAccumulatorEnabled(this.config.isGrounderAccumulatorEnabled());
 
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, grounderHeuristicConfiguration, doDebugChecks);

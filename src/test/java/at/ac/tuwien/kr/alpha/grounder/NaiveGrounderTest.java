@@ -25,7 +25,12 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.Literals;
+import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -37,12 +42,18 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import static at.ac.tuwien.kr.alpha.TestUtil.atom;
 import static at.ac.tuwien.kr.alpha.TestUtil.literal;
-import static org.junit.Assert.*;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests {@link NaiveGrounder}
@@ -121,7 +132,7 @@ public class NaiveGrounderTest {
 	}
 
 	@Test
-	public void avoidDeadEndsWithLaxGrounderHeuristic() {
+	public void avoidDeadEndsWithPermissiveGrounderHeuristic() {
 		RuleGroundingOrder groundingOrderP1 = new RuleGroundingOrder(literal("p1", "X"),
 				Arrays.asList(literal("p2", "X"), literal("q2", "Y"), literal("q1", "Y")), -1, false);
 		RuleGroundingOrder groundingOrderQ1 = new RuleGroundingOrder(literal("q1", "Y"),
@@ -130,7 +141,7 @@ public class NaiveGrounderTest {
 	}
 
 	@Test
-	public void noDeadEndWithLaxGrounderHeuristic() {
+	public void noDeadEndWithPermissiveGrounderHeuristic() {
 		RuleGroundingOrder groundingOrderP1 = new RuleGroundingOrder(literal("p1", "X"),
 				Arrays.asList(literal("p2", "X"), literal("q1", "Y"), literal("q2", "Y")), -1, false);
 		RuleGroundingOrder groundingOrderQ1 = new RuleGroundingOrder(literal("q1", "Y"),
@@ -145,7 +156,7 @@ public class NaiveGrounderTest {
 				+ "q2(X) :- something(X). ");
 
 		AtomStore atomStore = new AtomStoreImpl();
-		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, p -> true, GrounderHeuristicsConfiguration.lax(), true);
+		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, p -> true, GrounderHeuristicsConfiguration.permissive(), true);
 
 		NonGroundRule nonGroundRule = grounder.getNonGroundRule(0);
 		final Literal litP1X = literal("p1", "X");
@@ -201,7 +212,7 @@ public class NaiveGrounderTest {
 	private void testIfGrounderGroundsRule(Program program, int ruleID, Literal startingLiteral, int startingInstance, ThriceTruth bTruth, boolean expectNoGoods) {
 		AtomStore atomStore = new AtomStoreImpl();
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
-		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, p -> true, GrounderHeuristicsConfiguration.lax(), true);
+		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, p -> true, GrounderHeuristicsConfiguration.permissive(), true);
 
 		int b = atomStore.putIfAbsent(atom("b", 1));
 		currentAssignment.growForMaxAtomId();
@@ -215,78 +226,78 @@ public class NaiveGrounderTest {
 	}
 	
 	@Test
-	public void testLaxGrounderHeuristicTolerance_0_reject() {
+	public void testPermissiveGrounderHeuristicTolerance_0_reject() {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X). "
 				+ "b(X) :- something(X).");
-		testLaxGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 0, 0, false, Arrays.asList(1));
+		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 0, 0, false, Arrays.asList(1));
 	}
 	
 	@Test
-	public void testLaxGrounderHeuristicTolerance_1_accept() {
+	public void testPermissiveGrounderHeuristicTolerance_1_accept() {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X). "
 				+ "b(X) :- something(X).");
-		testLaxGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 1, 0, true, Arrays.asList(1));
+		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 1, 0, true, Arrays.asList(1));
 	}
 	
 	@Test
-	public void testLaxGrounderHeuristicTolerance_1_reject() {
+	public void testPermissiveGrounderHeuristicTolerance_1_reject() {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X), b(X+1). "
 				+ "b(X) :- something(X).");
-		testLaxGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 1, 0, false, Arrays.asList(2));
+		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 1, 0, false, Arrays.asList(2));
 	}
 
 	@Test
-	public void testLaxGrounderHeuristicTolerance_2_accept() {
+	public void testPermissiveGrounderHeuristicTolerance_2_accept() {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X), b(X+1). "
 				+ "b(X) :- something(X).");
-		testLaxGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 2, 0, true, Arrays.asList(2));
+		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 2, 0, true, Arrays.asList(2));
 	}
 
 	@Test
-	public void testLaxGrounderHeuristicTolerance_1_accept_two_substitutions() {
+	public void testPermissiveGrounderHeuristicTolerance_1_accept_two_substitutions() {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X,Y). "
 				+ "b(X,Y) :- something(X,Y).");
-		testLaxGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 1, new ThriceTruth[] {TRUE, TRUE}, 2, true, Arrays.asList(0, 0));
+		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 1, new ThriceTruth[] {TRUE, TRUE}, 2, true, Arrays.asList(0, 0));
 	}
 
 	@Test
-	public void testLaxGrounderHeuristicTolerance_1_accept_accept_two_substitutions_with_different_remaining_tolerances() {
+	public void testPermissiveGrounderHeuristicTolerance_1_accept_accept_two_substitutions_with_different_remaining_tolerances() {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(1), b(X,Y). "
 				+ "b(X,Y) :- something(X,Y).");
-		testLaxGrounderHeuristicTolerance(program, 0, literal("a", 1), 1, 1, new ThriceTruth[] {null, null}, 2, true, Arrays.asList(1, 1));
+		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", 1), 1, 1, new ThriceTruth[] {null, null}, 2, true, Arrays.asList(1, 1));
 	}
 
 	@Test
-	public void testLaxGrounderHeuristicTolerance_2_reject() {
+	public void testPermissiveGrounderHeuristicTolerance_2_reject() {
 		Program program = PARSER.parse("a(1). "
 				+ "c(X) :- a(X), b(X), b(X+1), b(X+2). "
 				+ "b(X) :- something(X).");
-		testLaxGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 2, 0, false, Arrays.asList(3));
+		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 2, 0, false, Arrays.asList(3));
 	}
 
 	@Test
-	public void testLaxGrounderHeuristicTolerance_2_accept_multiple_facts_of_same_variable() {
+	public void testPermissiveGrounderHeuristicTolerance_2_accept_multiple_facts_of_same_variable() {
 		Program program = PARSER.parse("a(1). b(1). "
 				+ "c(X) :- a(X), b(X), b(X+1), b(X+2). "
 				+ "b(X) :- something(X).");
-		testLaxGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 2, 0, true, Arrays.asList(2));
+		testPermissiveGrounderHeuristicTolerance(program, 0, literal("a", "X"), 1, 2, 0, true, Arrays.asList(2));
 	}
 
-	private void testLaxGrounderHeuristicTolerance(Program program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance, int nTrueBs, boolean expectNoGoods, List<Integer> expectedNumbersOfUnassignedPositiveBodyAtoms) {
+	private void testPermissiveGrounderHeuristicTolerance(Program program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance, int nTrueBs, boolean expectNoGoods, List<Integer> expectedNumbersOfUnassignedPositiveBodyAtoms) {
 		ThriceTruth[] truthsOfB = new ThriceTruth[nTrueBs];
 		for (int i = 0; i < nTrueBs; i++) {
 			truthsOfB[i] = ThriceTruth.TRUE;
 		}
-		testLaxGrounderHeuristicTolerance(program, ruleID, startingLiteral, startingInstance, tolerance, truthsOfB, 1, expectNoGoods, expectedNumbersOfUnassignedPositiveBodyAtoms);
+		testPermissiveGrounderHeuristicTolerance(program, ruleID, startingLiteral, startingInstance, tolerance, truthsOfB, 1, expectNoGoods, expectedNumbersOfUnassignedPositiveBodyAtoms);
 	}
 
-	private void testLaxGrounderHeuristicTolerance(Program program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance, ThriceTruth[] truthsOfB, int arityOfB, boolean expectNoGoods, List<Integer> expectedNumbersOfUnassignedPositiveBodyAtoms) {
+	private void testPermissiveGrounderHeuristicTolerance(Program program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance, ThriceTruth[] truthsOfB, int arityOfB, boolean expectNoGoods, List<Integer> expectedNumbersOfUnassignedPositiveBodyAtoms) {
 		AtomStore atomStore = new AtomStoreImpl();
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
 		GrounderHeuristicsConfiguration heuristicConfiguration = GrounderHeuristicsConfiguration.getInstance(tolerance, tolerance);

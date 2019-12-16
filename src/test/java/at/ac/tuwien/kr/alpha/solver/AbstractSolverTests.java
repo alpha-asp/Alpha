@@ -48,7 +48,13 @@ import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Random;
+import java.util.Set;
+import java.util.StringJoiner;
 
 import static java.util.Collections.emptySet;
 import static org.junit.Assert.assertEquals;
@@ -100,7 +106,7 @@ public abstract class AbstractSolverTests {
 		String[] grounders = getProperty("grounders", "naive");
 		String[] stores = getProperty("stores", ci ? "alpharoaming,naive" : "alpharoaming");
 		String[] heuristics = getProperty("heuristics", ci ? "ALL" : "NAIVE,VSIDS");
-		String[] gtcValues = getProperty("grounderToleranceConstraints", "strict,lax");
+		String[] gtcValues = getProperty("grounderToleranceConstraints", "strict,permissive");
 		String[] gtrValues = getProperty("grounderToleranceRules", "strict");
 		String[] dirValues = getProperty("disableInstanceRemoval", ci ? "false,true" : "false");
 
