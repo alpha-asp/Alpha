@@ -120,7 +120,7 @@ public class CommandLineParser {
 			.desc("grounder tolerance for rules (default: " + SystemConfig.DEFAULT_GROUNDER_TOLERANCE_RULES + ")")
 			.hasArg().argName("tolerance")
 			.build();
-	private static final Option OPT_GROUNDER_NO_INSTANCE_REMOVAL = Option.builder("acc").longOpt("enableAccumulator")
+	private static final Option OPT_GROUNDER_ACCUMULATOR_ENABLED = Option.builder("acc").longOpt("enableAccumulator")
 			.desc("activates the accumulator grounding strategy by disabling removal of instances from grounder memory in certain cases (default: " + SystemConfig.DEFAULT_GROUNDER_ACCUMULATOR_ENABLED + ")")
 			.build();
 
@@ -155,7 +155,7 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_NOGOOD_DELETION);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES);
-		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_NO_INSTANCE_REMOVAL);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_ACCUMULATOR_ENABLED);
 	}
 
 	/*
@@ -201,7 +201,7 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS.getOpt(), this::handleGrounderToleranceConstraints);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES.getOpt(), this::handleGrounderToleranceRules);
-		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_NO_INSTANCE_REMOVAL.getOpt(), this::handleGrounderNoInstanceRemoval);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_ACCUMULATOR_ENABLED.getOpt(), this::handleGrounderNoInstanceRemoval);
 
 		this.inputOptionHandlers.put(CommandLineParser.OPT_NUM_ANSWER_SETS.getOpt(), this::handleNumAnswerSets);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_INPUT.getOpt(), this::handleInput);
