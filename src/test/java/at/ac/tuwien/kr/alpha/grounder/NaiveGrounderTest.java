@@ -373,6 +373,9 @@ public class NaiveGrounderTest {
 		}
 	}
 
+	/**
+	 * Assigns {@code truthValues} to atoms {@code atomIDs} in {@code currentAssignment}.
+	 */
 	private void assign(TrailAssignment currentAssignment, int[] atomIDs, ThriceTruth[] truthValues) {
 		currentAssignment.growForMaxAtomId();
 		for (int i = 0; i < truthValues.length; i++) {
@@ -383,6 +386,11 @@ public class NaiveGrounderTest {
 		}
 	}
 
+	/**
+	 * Adds atoms {@code atomIDs} to {@code grounder}'s working memory without changing the assignment.
+	 * This is achieved by creating a temporary assignment on {@code atomStore} in which those atoms are assigned true
+	 * and using this temporary assignment to update the grounder's working memory.
+	 */
 	private void addAtomsToWorkingMemoryWithoutChangingTheAssignment(AtomStore atomStore, NaiveGrounder grounder, int[] atomIDs) {
 		TrailAssignment temporaryAssignment = new TrailAssignment(atomStore);
 		temporaryAssignment.growForMaxAtomId();
