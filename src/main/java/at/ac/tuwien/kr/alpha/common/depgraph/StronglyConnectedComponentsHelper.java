@@ -105,7 +105,7 @@ public class StronglyConnectedComponentsHelper {
 				if (!transposed.containsKey(e.getTarget())) {
 					transposed.put(targetNode, new ArrayList<>());
 				}
-				transposed.get(targetNode).add(new Edge(entry.getKey(), e.getSign(), e.getLabel()));
+				transposed.get(targetNode).add(new Edge(entry.getKey(), e.getSign()));
 			}
 		}
 		return transposed;

@@ -43,10 +43,10 @@ public class Edge {
 	 * @param target
 	 * @param sign
 	 */
-	public Edge(Node target, boolean sign, String label) {
+	public Edge(Node target, boolean sign) {
 		this.target = target;
 		this.sign = sign;
-		this.label = label;
+		this.label = sign ? "+" : "-";
 	}
 
 	@Override

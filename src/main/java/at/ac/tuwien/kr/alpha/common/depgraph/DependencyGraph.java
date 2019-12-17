@@ -101,10 +101,10 @@ public final class DependencyGraph {
 
 		private DependencyGraph build() {
 			Node tmpHeadNode;
-			for (InternalRule tmpRule : this.rules) {
-				LOGGER.debug("Processing rule: {}", tmpRule);
-				tmpHeadNode = this.handleRuleHead(tmpRule);
-				for (Literal l : tmpRule.getBody()) {
+			for (InternalRule rule : this.rules) {
+				LOGGER.debug("Processing rule: {}", rule);
+				tmpHeadNode = this.handleRuleHead(rule);
+				for (Literal l : rule.getBody()) {
 					LOGGER.trace("Processing rule body literal: {}", l);
 					if (l.getAtom().isBuiltin()) {
 						LOGGER.trace("Ignoring builtin atom in literal {}", l);
@@ -122,9 +122,9 @@ public final class DependencyGraph {
 			Predicate pred;
 			if (rule.isConstraint()) {
 				pred = this.generateConstraintDummyPredicate();
-				retVal = new Node(pred, pred.toString(), true);
+				retVal = new Node(pred, true);
 				List<Edge> dependencies = new ArrayList<>();
-				dependencies.add(new Edge(retVal, false, "-"));
+				dependencies.add(new Edge(retVal, false));
 				if (this.nodes.containsKey(retVal)) {
 					throw new IllegalStateException("Dependency graph already contains node for constraint " + pred.toString() + "!");
 				}
@@ -133,7 +133,7 @@ public final class DependencyGraph {
 			} else {
 				Atom head = rule.getHeadAtom();
 				pred = head.getPredicate();
-				retVal = new Node(pred, pred.toString());
+				retVal = new Node(pred);
 				if (!this.nodesByPredicate.containsKey(pred)) {
 					this.nodes.put(retVal, new ArrayList<>());
 					this.nodesByPredicate.put(pred, retVal);
@@ -160,7 +160,7 @@ public final class DependencyGraph {
 				bodyNode = this.nodesByPredicate.get(p);
 				dependants = this.nodes.get(bodyNode);
 			}
-			tmpEdge = new Edge(headNode, !lit.isNegated(), lit.isNegated() ? "-" : "+");
+			tmpEdge = new Edge(headNode, !lit.isNegated());
 			if (!dependants.contains(tmpEdge)) {
 				LOGGER.trace("Adding dependency: {} -> {} ({})", bodyNode.getPredicate(), headNode.getPredicate(), tmpEdge.getSign() ? "+" : "-");
 				dependants.add(tmpEdge);
@@ -169,8 +169,7 @@ public final class DependencyGraph {
 		}
 
 		private Predicate generateConstraintDummyPredicate() {
-			Predicate retVal = Predicate.getInstance(String.format(DependencyGraph.Builder.CONSTRAINT_PREDICATE_FORMAT, this.nextConstraintNumber()), 0);
-			return retVal;
+			return Predicate.getInstance(String.format(DependencyGraph.Builder.CONSTRAINT_PREDICATE_FORMAT, this.nextConstraintNumber()), 0);
 		}
 
 		private int nextConstraintNumber() {

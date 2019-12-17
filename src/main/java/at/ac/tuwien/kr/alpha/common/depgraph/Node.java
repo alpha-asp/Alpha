@@ -40,19 +40,14 @@ public class Node {
 	private final String label;
 	private final boolean isConstraint;
 
-	public Node(Predicate predicate, String label, boolean isConstraint) {
+	public Node(Predicate predicate, boolean isConstraint) {
 		this.predicate = predicate;
-		this.label = label;
+		this.label = predicate.toString();
 		this.isConstraint = isConstraint;
 	}
 
-
-	public Node(Predicate predicate, String label) {
-		this(predicate, label, false);
-	}
-
 	public Node(Predicate predicate) {
-		this(predicate, predicate.toString());
+		this(predicate, false);
 	}
 
 	/**
@@ -61,7 +56,7 @@ public class Node {
 	 * @param original the node to copy
 	 */
 	public Node(Node original) {
-		this(original.predicate, original.label, original.isConstraint);
+		this(original.predicate, original.isConstraint);
 	}
 
 	@Override
