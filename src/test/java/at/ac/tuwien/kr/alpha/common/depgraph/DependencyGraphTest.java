@@ -1,15 +1,15 @@
 package at.ac.tuwien.kr.alpha.common.depgraph;
 
+import org.antlr.v4.runtime.CharStreams;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import org.antlr.v4.runtime.CharStreams;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -67,8 +67,8 @@ public class DependencyGraphTest {
 	@Test
 	public void edgesEqualTest() {
 		Predicate testPredicate = Predicate.getInstance("test", 2, false, false);
-		Edge e1 = new Edge(new Node(testPredicate, testPredicate.toString()), true, null);
-		Edge e2 = new Edge(new Node(testPredicate, testPredicate.toString()), true, null);
+		Edge e1 = new Edge(new Node(testPredicate), true);
+		Edge e2 = new Edge(new Node(testPredicate), true);
 		Assert.assertEquals(e1, e2);
 	}
 
