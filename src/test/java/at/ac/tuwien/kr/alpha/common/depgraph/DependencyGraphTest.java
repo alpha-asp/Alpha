@@ -13,7 +13,6 @@ import java.util.Map;
 
 import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.depgraph.StronglyConnectedComponentsHelper.SCCResult;
 import at.ac.tuwien.kr.alpha.common.graphio.DependencyGraphWriter;
 import at.ac.tuwien.kr.alpha.common.program.impl.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
@@ -221,7 +220,7 @@ public class DependencyGraphTest {
 		Node z = dg.getNodeForPredicate(Predicate.getInstance("z", 0));
 
 		StronglyConnectedComponentsHelper componentHelper = new StronglyConnectedComponentsHelper();
-		SCCResult sccResult = componentHelper.findStronglyConnectedComponents(dg);
+		SccResult sccResult = componentHelper.findStronglyConnectedComponents(dg);
 		Map<Node, Integer> nodesByComponent = sccResult.getNodesByComponentId();
 		Map<Integer, List<Node>> stronglyConnectedComponents = sccResult.getStronglyConnectedComponents();
 		Assert.assertEquals(8, stronglyConnectedComponents.size());

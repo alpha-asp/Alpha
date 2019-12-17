@@ -48,19 +48,20 @@ public class DepthFirstSearchHelper {
 		this.depthFirstForest.put(null, new ArrayList<>());
 	}
 
-	public DfsResult performDfs(Map<Node, List<Edge>> nodes) {
-		return this.performDfs(nodes.keySet().iterator(), nodes);
+	public DfsResult performDfs(Map<Node, List<Edge>> graph) {
+		return this.performDfs(graph.keySet().iterator(), graph);
 	}
 
 	/**
-	 * Performs a depth-first search on the given graph. The algorithm follows the approach outlined in "Introduction to
-	 * Algortihms, 3rd. Edition" by Cormen et al.
+	 * Performs a depth-first search on the given graph. The algorithm follows the approach outlined in 
+	 * "Introduction to Algortihms, 3rd Edition" by Cormen et al. 
+	 * Discovered nodes are "gray" and finished nodes "black", respectively, in the terminology used in the book.
 	 * 
 	 * @param nodeVisitIt an Iterator defining in which sequence nodes should be visited
-	 * @param nodes       an adjacency map defining the dependency graph of an ASP program
+	 * @param graph       an adjacency map defining the dependency graph of an ASP program
 	 * @return a Set<Node> holding all finished nodes (i.e. all nodes at the end of the DFS run)
 	 */
-	public DfsResult performDfs(Iterator<Node> nodeVisitIt, Map<Node, List<Edge>> nodes) {
+	public DfsResult performDfs(Iterator<Node> nodeVisitIt, Map<Node, List<Edge>> graph) {
 		this.reset();
 		DfsResult retVal = new DfsResult();
 		Node tmp;
@@ -68,7 +69,7 @@ public class DepthFirstSearchHelper {
 			tmp = nodeVisitIt.next();
 			if (!(this.discoveredNodes.contains(tmp) || this.finishedNodes.contains(tmp))) {
 				this.depthFirstForest.get(null).add(tmp);
-				this.dfsVisit(tmp, nodes);
+				this.dfsVisit(tmp, graph);
 			}
 		}
 		retVal.setFinishedNodes(this.finishedNodes);
@@ -76,10 +77,10 @@ public class DepthFirstSearchHelper {
 		return retVal;
 	}
 
-	private void dfsVisit(Node currNode, Map<Node, List<Edge>> nodes) {
+	private void dfsVisit(Node currNode, Map<Node, List<Edge>> graph) {
 		this.discoveredNodes.add(currNode);
 		Node tmpNeighbor;
-		for (Edge e : nodes.get(currNode)) {
+		for (Edge e : graph.get(currNode)) {
 			// progress to adjacent nodes
 			tmpNeighbor = e.getTarget();
 			if (!(this.discoveredNodes.contains(tmpNeighbor) || this.finishedNodes.contains(tmpNeighbor))) {
@@ -87,7 +88,7 @@ public class DepthFirstSearchHelper {
 					this.depthFirstForest.put(currNode, new ArrayList<>());
 				}
 				this.depthFirstForest.get(currNode).add(tmpNeighbor);
-				this.dfsVisit(tmpNeighbor, nodes);
+				this.dfsVisit(tmpNeighbor, graph);
 			}
 		}
 		this.finishedNodes.add(currNode);

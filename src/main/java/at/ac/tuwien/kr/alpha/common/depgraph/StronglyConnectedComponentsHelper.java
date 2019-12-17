@@ -48,19 +48,19 @@ public class StronglyConnectedComponentsHelper {
 
 	/**
 	 * Calculates the strongly connected components of the given {@link DependencyGraph} according to the algorithm given in "Introduction to algorithms" by
-	 * Cormen, Leiserson, Rivest, and Stein (aka "Kosajaru-algorithm", {@link https://en.wikipedia.org/wiki/Kosaraju%27s_algorithm})
+	 * Cormen, Leiserson, Rivest, and Stein (aka <a href="https://en.wikipedia.org/wiki/Kosaraju%27s_algorithm">Kosajaru-algorithm</a>)
 	 * 
 	 * @param dg
 	 * @return
 	 */
-	public SCCResult findStronglyConnectedComponents(DependencyGraph dg) {
+	public SccResult findStronglyConnectedComponents(DependencyGraph dg) {
 		this.reset();
-		DfsResult intermediateResult = this.dfsHelper.performDfs(dg.getNodes());
-		Map<Node, List<Edge>> transposedNodes = this.transposeGraph(dg.getNodes());
+		DfsResult intermediateResult = this.dfsHelper.performDfs(dg.getAdjancencyMap());
+		Map<Node, List<Edge>> transposedNodes = this.transposeGraph(dg.getAdjancencyMap());
 		Deque<Node> finishedNodes = intermediateResult.getFinishedNodes();
 		DfsResult finalResult = this.dfsHelper.performDfs(finishedNodes.descendingIterator(), transposedNodes);
 		Map<Integer, List<Node>> componentMap = this.extractComponents(finalResult);
-		return new SCCResult(componentMap, this.nodesByComponentId);
+		return new SccResult(componentMap, this.nodesByComponentId);
 	}
 
 	private Map<Integer, List<Node>> extractComponents(DfsResult dfsResult) {
@@ -89,13 +89,13 @@ public class StronglyConnectedComponentsHelper {
 	}
 
 	/**
-	 * (Re-)Writes the <code>transposedNodes</code> of this <code>DependencyGraph</code>
+	 * "Transposes" the given dependency graph, i.e. reverses the direction of each edge.
 	 */
-	private Map<Node, List<Edge>> transposeGraph(Map<Node, List<Edge>> nodes) {
+	private Map<Node, List<Edge>> transposeGraph(Map<Node, List<Edge>> graph) {
 		Map<Node, List<Edge>> transposed = new HashMap<>();
 		Node srcNode;
 		Node targetNode;
-		for (Map.Entry<Node, List<Edge>> entry : nodes.entrySet()) {
+		for (Map.Entry<Node, List<Edge>> entry : graph.entrySet()) {
 			srcNode = entry.getKey();
 			if (!transposed.containsKey(srcNode)) {
 				transposed.put(srcNode, new ArrayList<>());
@@ -109,26 +109,6 @@ public class StronglyConnectedComponentsHelper {
 			}
 		}
 		return transposed;
-	}
-
-	public static class SCCResult {
-
-		private final Map<Integer, List<Node>> stronglyConnectedComponents;
-		private final Map<Node, Integer> nodesByComponentId;
-
-		private SCCResult(Map<Integer, List<Node>> components, Map<Node, Integer> nodesByComponentId) {
-			this.stronglyConnectedComponents = components;
-			this.nodesByComponentId = nodesByComponentId;
-		}
-
-		public Map<Integer, List<Node>> getStronglyConnectedComponents() {
-			return this.stronglyConnectedComponents;
-		}
-
-		public Map<Node, Integer> getNodesByComponentId() {
-			return this.nodesByComponentId;
-		}
-
 	}
 
 }

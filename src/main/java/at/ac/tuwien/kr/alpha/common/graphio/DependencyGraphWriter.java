@@ -51,7 +51,7 @@ public class DependencyGraphWriter {
 	}
 
 	public void writeAsDot(DependencyGraph graph, OutputStream out) throws IOException {
-		this.writeAsDot(graph.getNodes(), out);
+		this.writeAsDot(graph.getAdjancencyMap(), out);
 	}
 
 	public void writeAsDot(Map<Node, List<Edge>> graph, OutputStream out) throws IOException {

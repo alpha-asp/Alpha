@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.common.depgraph.StronglyConnectedComponentsHelper.SCCResult;
 import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
 
 /**
@@ -57,14 +56,14 @@ public final class ComponentGraph {
 	}
 
 	/**
-	 * Creates a new {@link ComponentGraph} based on a dependency graph and an {@link SCCResult} representing the result of calculating the dependency graph's
+	 * Creates a new {@link ComponentGraph} based on a dependency graph and an {@link SccResult} representing the result of calculating the dependency graph's
 	 * strongly connected components (SCCs)
 	 * 
 	 * @param dg        the dependency graph backing this component graph
 	 * @param sccResult the SCC calculation result for the dependency graph in question
 	 * @return a new {@link ComponentGraph} representing the strongly connected components of the given dependency graph
 	 */
-	public static ComponentGraph buildComponentGraph(DependencyGraph dg, SCCResult sccResult) {
+	public static ComponentGraph buildComponentGraph(DependencyGraph dg, SccResult sccResult) {
 		return new ComponentGraph.Builder(dg, sccResult).build();
 	}
 
@@ -146,7 +145,7 @@ public final class ComponentGraph {
 		private Map<Integer, SCComponent.Builder> componentBuilders = new HashMap<>();
 		private Map<Integer, SCComponent> components = new HashMap<>();
 
-		private Builder(DependencyGraph dg, SCCResult sccResult) {
+		private Builder(DependencyGraph dg, SccResult sccResult) {
 			this.depGraph = dg;
 			this.componentMap = sccResult.getStronglyConnectedComponents();
 			this.nodesByComponentId = sccResult.getNodesByComponentId();
@@ -158,7 +157,7 @@ public final class ComponentGraph {
 			}
 			for (Entry<Integer, SCComponent.Builder> entry : this.componentBuilders.entrySet()) {
 				for (Node node : entry.getValue().nodes) {
-					for (Edge edge : this.depGraph.getNodes().get(node)) {
+					for (Edge edge : this.depGraph.getAdjancencyMap().get(node)) {
 						this.registerEdge(entry.getKey(), edge);
 					}
 				}

@@ -59,12 +59,12 @@ public final class DependencyGraph {
 	 * Maps nodes to outgoing edges of that node NOTE: Doing the value as List<Edge> rather than Map<Integer,Boolean> as one node may have positive and negative
 	 * edges to another.
 	 */
-	private final Map<Node, List<Edge>> nodes;
+	private final Map<Node, List<Edge>> adjacencyMap;
 
 	private final Map<Predicate, Node> nodesByPredicate;
 
-	private DependencyGraph(Map<Node, List<Edge>> nodes, Map<Predicate, Node> nodesByPredicate) {
-		this.nodes = nodes;
+	private DependencyGraph(Map<Node, List<Edge>> adjacencyMap, Map<Predicate, Node> nodesByPredicate) {
+		this.adjacencyMap = adjacencyMap;
 		this.nodesByPredicate = nodesByPredicate;
 	}
 
@@ -76,8 +76,8 @@ public final class DependencyGraph {
 		return this.nodesByPredicate.get(p);
 	}
 
-	public Map<Node, List<Edge>> getNodes() {
-		return Collections.unmodifiableMap(this.nodes);
+	public Map<Node, List<Edge>> getAdjancencyMap() {
+		return Collections.unmodifiableMap(this.adjacencyMap);
 	}
 
 	public Map<Predicate, Node> getNodesByPredicate() {

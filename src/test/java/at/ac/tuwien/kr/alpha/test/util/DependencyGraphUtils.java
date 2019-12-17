@@ -26,7 +26,7 @@ public final class DependencyGraphUtils {
 		if (src.equals(dest)) {
 			return true;
 		}
-		if ((outgoingEdges = dg.getNodes().get(src)) == null) {
+		if ((outgoingEdges = dg.getAdjancencyMap().get(src)) == null) {
 			return false;
 		}
 		discovered.add(src);
@@ -76,7 +76,7 @@ public final class DependencyGraphUtils {
 		for (Node n : componentNodes) {
 			lst.add(n);
 		}
-		for (Node n : dg.getNodes().keySet()) {
+		for (Node n : dg.getAdjancencyMap().keySet()) {
 			if (lst.contains(n)) {
 				continue;
 			}
