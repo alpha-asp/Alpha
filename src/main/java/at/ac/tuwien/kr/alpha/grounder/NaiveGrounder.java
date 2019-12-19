@@ -622,6 +622,29 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return bindingResult;
 	}
 
+	/**
+	 * Does nothing if {@code currentAssignment == null}, which means we are in bootstrapping.
+	 * Otherwise, stores {@code substitute} in the atom store if it is not yet stored.
+	 * Afterwards, the truth value currently assigned to this atom and the observation whether the atom is in the
+	 * grounder's working memory or not are used to determine whether binding the current rule shall be terminated or not,
+	 * and whether or not the remaining tolerance (for permissive grounding) shall be decremented.
+	 * <p/>
+	 * Binding shall not be terminated if accumulator is enabled and the atom is in the working memory.
+	 * Otherwise, binding shall be terminated if either the atom is not assigned and tolerance is exhausted,
+	 * or if the atom is assigned false.
+	 * <p/>
+	 * Tolerance shall be decremented if the atom is unassigned (and also not in the working memory, if accumulator
+	 * is enabled) and binding is not terminated.
+	 * <p/>
+	 * If the atom is assigned false and accumulator is not enabled, the atom is also added to {@link #removeAfterObtainingNewNoGoods}
+	 * to trigger lazy update of the working memory.
+	 *
+	 * @param substitute         the atom to store.
+	 * @param currentAssignment  the current assignment.
+	 * @param remainingTolerance the remaining number of positive body atoms tolerated not to be assigned.
+	 * @return {@link #TERMINATE_BINDING} if binding shall be terminated; {@link #DECREMENT_TOLERANCE} if remaining
+	 * tolerance shall be decremented; {@link #NEITHER_TERMINATE_BINDING_NOR_DECREMENT_TOLERANCE} if neither shall be done.
+	 */
 	private int storeAtomAndTerminateIfAtomDoesNotHold(final Atom substitute, final Assignment currentAssignment, final int remainingTolerance) {
 		if (currentAssignment == null) { // if we are in bootstrapping
 			return NEITHER_TERMINATE_BINDING_NOR_DECREMENT_TOLERANCE;
