@@ -28,9 +28,9 @@ package at.ac.tuwien.kr.alpha.grounder;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static org.junit.Assert.assertEquals;
 
-import java.util.List;
-
 import org.junit.Test;
+
+import java.util.List;
 
 import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -47,7 +47,6 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
  * Tests {@link NoGoodGenerator}
  */
 public class NoGoodGeneratorTest {
-	//private static final Logger LOGGER = LoggerFactory.getLogger(NoGoodGeneratorTest.class);
 
 	private static final ProgramParser PARSER = new ProgramParser();
 
@@ -69,7 +68,6 @@ public class NoGoodGeneratorTest {
 				+ "nq(a,b) :- not q(a,b).");
 		NormalProgram normal = system.normalizeProgram(input);
 		InternalProgram program = system.performProgramPreprocessing(normal);
-		//LOGGER.warn("Internalized program is: \n{}", program);
 
 		InternalRule rule = program.getRules().get(1);
 		AtomStore atomStore = new AtomStoreImpl();
