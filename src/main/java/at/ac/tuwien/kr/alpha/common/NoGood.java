@@ -36,6 +36,7 @@ import java.util.stream.IntStream;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.*;
 
 public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<NoGood> {
 	public static final int HEAD = 0;
@@ -46,7 +47,7 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 	private final Type type;
 
 	public NoGood(int... literals) {
-		this(Type.STATIC, literals, false);
+		this(STATIC, literals, false);
 	}
 	
 	public NoGood(Type type, int... literals) {
@@ -82,15 +83,15 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 	}
 	
 	public static NoGood learnt(int... literals) {
-		return new NoGood(Type.LEARNT, literals);
+		return new NoGood(LEARNT, literals);
 	}
 
 	public static NoGood headFirst(int... literals) {
-		return headFirst(Type.STATIC, literals);
+		return headFirst(STATIC, literals);
 	}
 
 	public static NoGood headFirstInternal(int... literals) {
-		return headFirst(Type.INTERNAL, literals);
+		return headFirst(INTERNAL, literals);
 	}
 	
 	public static NoGood headFirst(Type type, int... literals) {
@@ -102,7 +103,7 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 	}
 
 	public static NoGood support(int headLiteral, int bodyRepresentingLiteral) {
-		return new NoGood(Type.SUPPORT, headLiteral, negateLiteral(bodyRepresentingLiteral));
+		return new NoGood(SUPPORT, headLiteral, negateLiteral(bodyRepresentingLiteral));
 	}
 
 	public static NoGood fromConstraint(List<Integer> posLiterals, List<Integer> negLiterals) {
@@ -110,11 +111,11 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 	}
 	
 	public static NoGood fromBody(List<Integer> posLiterals, List<Integer> negLiterals, int bodyRepresentingLiteral) {
-		return fromBody(Type.STATIC, posLiterals, negLiterals, bodyRepresentingLiteral);
+		return fromBody(STATIC, posLiterals, negLiterals, bodyRepresentingLiteral);
 	}
 	
 	public static NoGood fromBodyInternal(List<Integer> posLiterals, List<Integer> negLiterals, int bodyRepresentingLiteral) {
-		return fromBody(Type.INTERNAL, posLiterals, negLiterals, bodyRepresentingLiteral);
+		return fromBody(INTERNAL, posLiterals, negLiterals, bodyRepresentingLiteral);
 	}
 
 	public static NoGood fromBody(Type type, List<Integer> posLiterals, List<Integer> negLiterals, int bodyRepresentingLiteral) {
@@ -183,7 +184,8 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 	public int getHead() {
 		return getLiteral(HEAD);
 	}
-	
+
+	@Override
 	public Type getType() {
 		return type;
 	}
@@ -281,30 +283,5 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 		sb.append("}");
 
 		return sb.toString();
-	}
-
-	/**
-	 * The possible nogood types
-	 */
-	public enum Type {
-		/**
-		 * Unremovable nogood from the input program
-		 */
-		STATIC,
-		
-		/**
-		 * Removable support nogood from the input program
-		 */
-		SUPPORT,
-		
-		/**
-		 * Removable nogood learnt from a conflict
-		 */
-		LEARNT,
-		
-		/**
-		 * Nogood containing solver-internal atoms
-		 */
-		INTERNAL,
 	}
 }

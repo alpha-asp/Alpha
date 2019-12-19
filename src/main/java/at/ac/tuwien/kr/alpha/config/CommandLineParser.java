@@ -29,7 +29,12 @@ package at.ac.tuwien.kr.alpha.config;
 
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,6 +112,17 @@ public class CommandLineParser {
 			.desc("disable the deletion of (learned, little active) nogoods (default: "
 					+ SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION + ")")
 			.build();
+	private static final Option OPT_GROUNDER_TOLERANCE_CONSTRAINTS = Option.builder("gtc").longOpt("grounderToleranceConstraints")
+			.desc("grounder tolerance for constraints (default: " + SystemConfig.DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS + ")")
+			.hasArg().argName("tolerance")
+			.build();
+	private static final Option OPT_GROUNDER_TOLERANCE_RULES = Option.builder("gtr").longOpt("grounderToleranceRules")
+			.desc("grounder tolerance for rules (default: " + SystemConfig.DEFAULT_GROUNDER_TOLERANCE_RULES + ")")
+			.hasArg().argName("tolerance")
+			.build();
+	private static final Option OPT_GROUNDER_ACCUMULATOR_ENABLED = Option.builder("acc").longOpt("enableAccumulator")
+			.desc("activates the accumulator grounding strategy by disabling removal of instances from grounder memory in certain cases (default: " + SystemConfig.DEFAULT_GROUNDER_ACCUMULATOR_ENABLED + ")")
+			.build();
 
 	private static final Options CLI_OPTS = new Options();
 
@@ -137,6 +153,9 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_JUSTIFICATION);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NORMALIZATION_GRID);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_NOGOOD_DELETION);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_ACCUMULATOR_ENABLED);
 	}
 
 	/*
@@ -180,6 +199,9 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), this::handleNoJustification);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NORMALIZATION_GRID.getOpt(), this::handleNormalizationGrid);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS.getOpt(), this::handleGrounderToleranceConstraints);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES.getOpt(), this::handleGrounderToleranceRules);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_ACCUMULATOR_ENABLED.getOpt(), this::handleGrounderNoInstanceRemoval);
 
 		this.inputOptionHandlers.put(CommandLineParser.OPT_NUM_ANSWER_SETS.getOpt(), this::handleNumAnswerSets);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_INPUT.getOpt(), this::handleInput);
@@ -325,7 +347,7 @@ public class CommandLineParser {
 			throw new ParseException("Unknown mom's strategy: " + momsStrategyName + ". Please try one of the following: " + BinaryNoGoodPropagationEstimation.Strategy.listAllowedValues());
 		}
 	}
-	
+
 	private void handleReplayChoices(Option opt, SystemConfig cfg) throws ParseException {
 		String replayChoices = opt.getValue(SystemConfig.DEFAULT_REPLAY_CHOICES.toString());
 		try {
@@ -357,6 +379,20 @@ public class CommandLineParser {
 
 	private void handleNoNoGoodDeletion(Option opt, SystemConfig cfg) {
 		cfg.setDisableNoGoodDeletion(true);
+	}
+
+	private void handleGrounderToleranceConstraints(Option opt, SystemConfig cfg) {
+		String grounderToleranceConstraints = opt.getValue(SystemConfig.DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS);
+		cfg.setGrounderToleranceConstraints(grounderToleranceConstraints);
+	}
+
+	private void handleGrounderToleranceRules(Option opt, SystemConfig cfg) {
+		String grounderToleranceRules = opt.getValue(SystemConfig.DEFAULT_GROUNDER_TOLERANCE_RULES);
+		cfg.setGrounderToleranceRules(grounderToleranceRules);
+	}
+
+	private void handleGrounderNoInstanceRemoval(Option opt, SystemConfig cfg) {
+		cfg.setGrounderAccumulatorEnabled(true);
 	}
 
 }

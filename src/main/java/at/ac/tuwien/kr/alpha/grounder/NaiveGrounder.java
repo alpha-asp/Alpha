@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
- * 
+ *
  * Additional changes made by Siemens.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -27,38 +27,68 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.common.NoGood.Type;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
+import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.NoGoodInterface;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalLiteral;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
+import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
-import at.ac.tuwien.kr.alpha.grounder.transformation.*;
+import at.ac.tuwien.kr.alpha.grounder.transformation.CardinalityNormalization;
+import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
+import at.ac.tuwien.kr.alpha.grounder.transformation.EnumerationRewriting;
+import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
+import at.ac.tuwien.kr.alpha.grounder.transformation.SumNormalization;
+import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
 /**
  * A semi-naive grounder.
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  */
 public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGrounder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
+
+	private final static int NEITHER_TERMINATE_BINDING_NOR_DECREMENT_TOLERANCE = 0;
+	private final static int TERMINATE_BINDING = 1;
+	private final static int DECREMENT_TOLERANCE = 2;
 
 	private final WorkingMemory workingMemory = new WorkingMemory();
 	private final AtomStore atomStore;
@@ -75,26 +105,24 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	private ArrayList<NonGroundRule> fixedRules = new ArrayList<>();
 	private LinkedHashSet<Atom> removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
-	private int maxAtomIdBeforeGroundingNewNoGoods = -1;
-	private boolean disableInstanceRemoval;
-	private boolean useCountingGridNormalization;
-	private boolean debugInternalChecks;
-	
-	/**
-	 * If this configuration parameter is {@code true} (which it is by default),
-	 * the grounder stops grounding a rule if it contains a positive body atom which is not
-	 * yet true, except if the whole rule is already ground. Is currently used only internally,
-	 * but might be used for grounder heuristics and also set from the outside in the future.
-	 */
-	private boolean stopBindingAtNonTruePositiveBody = true;
+	private final boolean useCountingGridNormalization;
+	private final boolean debugInternalChecks;
+
+	private final GrounderHeuristicsConfiguration heuristicsConfiguration;
 
 	public NaiveGrounder(Program program, AtomStore atomStore, boolean debugInternalChecks, Bridge... bridges) {
-		this(program, atomStore, p -> true, false, debugInternalChecks, bridges);
+		this(program, atomStore, new GrounderHeuristicsConfiguration(), debugInternalChecks, bridges);
 	}
 
-	NaiveGrounder(Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, boolean useCountingGrid, boolean debugInternalChecks, Bridge... bridges) {
+	private NaiveGrounder(Program program, AtomStore atomStore, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, Bridge... bridges) {
+		this(program, atomStore, p -> true, heuristicsConfiguration, false, debugInternalChecks, bridges);
+	}
+
+	NaiveGrounder(Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean useCountingGrid, boolean debugInternalChecks, Bridge... bridges) {
 		super(filter, bridges);
 		this.atomStore = atomStore;
+		this.heuristicsConfiguration = heuristicsConfiguration;
+		LOGGER.debug("Grounder configuration: {}", heuristicsConfiguration);
 
 		programAnalysis = new ProgramAnalysis(program);
 		analyzeUnjustified = new AnalyzeUnjustified(programAnalysis, atomStore, factsFromProgram);
@@ -102,14 +130,14 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// Apply program transformations/rewritings.
 		useCountingGridNormalization = useCountingGrid;
 		applyProgramTransformations(program);
-		LOGGER.debug("Transformed input program is:\n" + program);
+		LOGGER.debug("Transformed input program is:\n{}", program);
 
 		initializeFactsAndRules(program);
 
 		final Set<NonGroundRule> uniqueGroundRulePerGroundHead = getRulesWithUniqueHead();
 		choiceRecorder = new ChoiceRecorder(atomStore);
 		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, programAnalysis, uniqueGroundRulePerGroundHead);
-		
+
 		this.debugInternalChecks = debugInternalChecks;
 	}
 
@@ -140,6 +168,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			// Record the rule for later use
 			NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
 			knownNonGroundRules.put(nonGroundRule.getRuleId(), nonGroundRule);
+			LOGGER.debug("NonGroundRule #{}: {}", nonGroundRule.getRuleId(), nonGroundRule);
 
 			// Record defining rules for each predicate.
 			Atom headAtom = nonGroundRule.getHeadAtom();
@@ -292,7 +321,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 * Prepares facts of the input program for joining and derives all NoGoods representing ground rules. May only be called once.
 	 * @return
 	 */
-	private HashMap<Integer, NoGood> bootstrap() {
+	HashMap<Integer, NoGood> bootstrap() {
 		final HashMap<Integer, NoGood> groundNogoods = new LinkedHashMap<>();
 
 		for (Predicate predicate : factsFromProgram.keySet()) {
@@ -302,9 +331,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 		for (NonGroundRule nonGroundRule : fixedRules) {
 			// Generate NoGoods for all rules that have a fixed grounding.
-			Literal[] groundingOrder = nonGroundRule.groundingOrder.getFixedGroundingOrder();
-			List<Substitution> substitutions = bindNextAtomInRule(nonGroundRule, groundingOrder, 0, new Substitution(), null);
-			groundAndRegister(nonGroundRule, substitutions, groundNogoods);
+			RuleGroundingOrder groundingOrder = nonGroundRule.groundingOrder.getFixedGroundingOrder();
+			BindingResult bindingResult = getGroundInstantiations(nonGroundRule, groundingOrder, new Substitution(), null);
+			groundAndRegister(nonGroundRule, bindingResult.generatedSubstitutions, groundNogoods);
 		}
 
 		fixedRules = null;
@@ -317,7 +346,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// In first call, prepare facts and ground rules.
 		final Map<Integer, NoGood> newNoGoods = fixedRules != null ? bootstrap() : new LinkedHashMap<>();
 
-		maxAtomIdBeforeGroundingNewNoGoods = atomStore.getMaxAtomId();
 		// Compute new ground rule (evaluate joins with newly changed atoms)
 		for (IndexedInstanceStorage modifiedWorkingMemory : workingMemory.modified()) {
 			// Skip predicates solely used in the solver which do not occur in rules.
@@ -348,15 +376,14 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 						continue;
 					}
 
-					final List<Substitution> substitutions = bindNextAtomInRule(
+					final BindingResult bindingResult = getGroundInstantiations(
 						nonGroundRule,
 						nonGroundRule.groundingOrder.orderStartingFrom(firstBindingAtom.startingLiteral),
-						0,
 						unifier,
 						currentAssignment
 					);
 
-					groundAndRegister(nonGroundRule, substitutions, newNoGoods);
+					groundAndRegister(nonGroundRule, bindingResult.generatedSubstitutions, newNoGoods);
 				}
 			}
 
@@ -367,7 +394,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		workingMemory.reset();
 		for (Atom removeAtom : removeAfterObtainingNewNoGoods) {
 			final IndexedInstanceStorage storage = this.workingMemory.get(removeAtom, true);
-			storage.removeInstance(new Instance(removeAtom.getTerms()));
+			Instance instance = new Instance(removeAtom.getTerms());
+			if (storage.containsInstance(instance)) {
+				// permissive grounder heuristics may attempt to remove instances that are not yet in the working memory
+				storage.removeInstance(instance);
+			}
 		}
 
 		removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
@@ -378,17 +409,17 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 			LOGGER.debug("{}", choiceRecorder);
 		}
-		
+
 		if (debugInternalChecks) {
 			checkTypesOfNoGoods(newNoGoods.values());
 		}
-		
+
 		return newNoGoods;
 	}
 
 	/**
 	 * Grounds the given {@code nonGroundRule} by applying the given {@code substitutions} and registers the nogoods generated during that process.
-	 * 
+	 *
 	 * @param nonGroundRule
 	 *          the rule to be grounded
 	 * @param substitutions
@@ -408,93 +439,161 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return registry.register(noGood);
 	}
 
-	private List<Substitution> bindNextAtomInRule(NonGroundRule rule, Literal[] groundingOrder, int orderPosition, Substitution partialSubstitution, Assignment currentAssignment) {
-		if (orderPosition == groundingOrder.length) {
-			return singletonList(partialSubstitution);
+	BindingResult getGroundInstantiations(NonGroundRule rule, RuleGroundingOrder groundingOrder, Substitution partialSubstitution, Assignment currentAssignment) {
+		int tolerance = heuristicsConfiguration.getTolerance(rule.isConstraint());
+		if (tolerance < 0) {
+			tolerance = Integer.MAX_VALUE;
+		}
+		BindingResult bindingResult = bindNextAtomInRule(groundingOrder, 0, tolerance, tolerance, partialSubstitution, currentAssignment);
+		if (LOGGER.isDebugEnabled()) {
+			for (int i = 0; i < bindingResult.size(); i++) {
+				Integer numberOfUnassignedPositiveBodyAtoms = bindingResult.numbersOfUnassignedPositiveBodyAtoms.get(i);
+				if (numberOfUnassignedPositiveBodyAtoms > 0) {
+					LOGGER.debug("Grounded rule in which {} positive atoms are still unassigned: {} (substitution: {})", numberOfUnassignedPositiveBodyAtoms, rule, bindingResult.generatedSubstitutions.get(i));
+				}
+			}
+		}
+		return bindingResult;
+	}
+
+	private BindingResult advanceAndBindNextAtomInRule(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment) {
+		groundingOrder.considerUntilCurrentEnd();
+		return bindNextAtomInRule(groundingOrder, orderPosition + 1, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
+	}
+
+	private BindingResult pushBackAndBindNextAtomInRule(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment) {
+		RuleGroundingOrder modifiedGroundingOrder = groundingOrder.pushBack(orderPosition);
+		if (modifiedGroundingOrder == null) {
+			return BindingResult.empty();
+		}
+		return bindNextAtomInRule(modifiedGroundingOrder, orderPosition + 1, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
+	}
+
+	private BindingResult bindNextAtomInRule(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment) {
+		boolean permissiveGrounderHeuristic = originalTolerance > 0;
+
+		Literal currentLiteral = groundingOrder.getLiteralAtOrderPosition(orderPosition);
+		if (currentLiteral == null) {
+			return BindingResult.singleton(partialSubstitution, originalTolerance - remainingTolerance);
 		}
 
-		Literal currentLiteral = groundingOrder[orderPosition];
 		Atom currentAtom = currentLiteral.getAtom();
 		if (currentLiteral instanceof FixedInterpretationLiteral) {
 			// Generate all substitutions for the builtin/external/interval atom.
-			final List<Substitution> substitutions = ((FixedInterpretationLiteral)currentLiteral.substitute(partialSubstitution)).getSubstitutions(partialSubstitution);
+			FixedInterpretationLiteral substitutedLiteral = (FixedInterpretationLiteral)currentLiteral.substitute(partialSubstitution);
+			if (shallPushBackFixedInterpretationLiteral(substitutedLiteral)) {
+				return pushBackAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
+			}
+			final List<Substitution> substitutions = substitutedLiteral.getSubstitutions(partialSubstitution);
 
 			if (substitutions.isEmpty()) {
-				return emptyList();
+				// if FixedInterpretationLiteral cannot be satisfied now, it will never be
+				return BindingResult.empty();
 			}
 
-			final List<Substitution> generatedSubstitutions = new ArrayList<>();
+			final BindingResult bindingResult = new BindingResult();
 			for (Substitution substitution : substitutions) {
 				// Continue grounding with each of the generated values.
-				generatedSubstitutions.addAll(bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, substitution, currentAssignment));
+				bindingResult.add(advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, substitution, currentAssignment));
 			}
-			return generatedSubstitutions;
+			return bindingResult;
 		}
 		if (currentAtom instanceof EnumerationAtom) {
 			// Get the enumeration value and add it to the current partialSubstitution.
 			((EnumerationAtom) currentAtom).addEnumerationToSubstitution(partialSubstitution);
-			return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
+			return advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
 		}
+
+		Collection<Instance> instances = null;
 
 		// check if partialVariableSubstitution already yields a ground atom
 		final Atom substitute = currentAtom.substitute(partialSubstitution);
-
 		if (substitute.isGround()) {
 			// Substituted atom is ground, in case it is positive, only ground if it also holds true
 			if (currentLiteral.isNegated()) {
 				// Atom occurs negated in the rule: continue grounding
-				return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
+				return advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
 			}
-			
-			if (stopBindingAtNonTruePositiveBody && !rule.getRule().isGround() && !workingMemory.get(currentAtom.getPredicate(), true).containsInstance(new Instance(substitute.getTerms()))) {
+
+			if (!groundingOrder.isGround() && remainingTolerance <= 0
+					&& !workingMemory.get(currentAtom.getPredicate(), true).containsInstance(new Instance(substitute.getTerms()))) {
 				// Generate no variable substitution.
-				return emptyList();
+				return BindingResult.empty();
 			}
 
-			// Check if atom is also assigned true.
-			final LinkedHashSet<Instance> instances = factsFromProgram.get(substitute.getPredicate());
-			if (!(instances == null || !instances.contains(new Instance(substitute.getTerms())))) {
-				// Ground literal holds, continue finding a variable substitution.
-				return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, partialSubstitution, currentAssignment);
-			}
-
-			// Atom is not a fact already.
-			final int atomId = atomStore.putIfAbsent(substitute);
-
-			if (currentAssignment != null) {
-				final ThriceTruth truth = currentAssignment.getTruth(atomId);
-
-				if (atomId > maxAtomIdBeforeGroundingNewNoGoods || truth == null || !truth.toBoolean()) {
-					// Atom currently does not hold, skip further grounding.
-					// TODO: investigate grounding heuristics for use here, i.e., ground anyways to avoid re-grounding in the future.
-					if (!disableInstanceRemoval) {
-						removeAfterObtainingNewNoGoods.add(substitute);
-						return emptyList();
-					}
-				}
-			}
+			instances = singletonList(new Instance(substitute.getTerms()));
 		}
 
 		// substituted atom contains variables
 		if (currentLiteral.isNegated()) {
-			throw oops("Current atom should be positive at this point but is not");
+			if (permissiveGrounderHeuristic) {
+				return pushBackAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
+			} else {
+				throw oops("Current atom should be positive at this point but is not");
+			}
 		}
 
-		IndexedInstanceStorage storage = workingMemory.get(currentAtom.getPredicate(), true);
+		if (instances == null) {
+			instances = getInstancesForSubstitute(substitute, partialSubstitution);
+		}
+
+		if (permissiveGrounderHeuristic && instances.isEmpty()) {
+			// we have reached a point where we have to terminate binding,
+			// but it might be possible that a different grounding order would allow us to continue binding
+			// under the presence of a permissive grounder heuristic
+			return pushBackAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment);
+		}
+
+		return createBindings(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution, currentAssignment, instances, substitute);
+	}
+
+	/**
+	 * Any {@link FixedInterpretationLiteral} that does <emph>not</emph> fulfil any of the following conditions is
+	 * "pushed back" in the grounding order because it cannot be used to generate substitutions now but maybe later:
+	 * <ul>
+	 * 	<li>the literal is ground</li>
+	 * 	<li>the literal is a {@link ComparisonLiteral} that is left-assigning or right-assigning</li>
+	 * 	<li>the literal is an {@link IntervalLiteral} representing a ground interval term</li>
+	 * 	<li>the literal is an {@link ExternalLiteral}.</li>
+	 * </ul>
+	 * @param substitutedLiteral
+	 * @return
+	 */
+	private boolean shallPushBackFixedInterpretationLiteral(FixedInterpretationLiteral substitutedLiteral) {
+		return !(substitutedLiteral.isGround() ||
+				(substitutedLiteral instanceof ComparisonLiteral && ((ComparisonLiteral)substitutedLiteral).isLeftOrRightAssigning()) ||
+				(substitutedLiteral instanceof IntervalLiteral && substitutedLiteral.getTerms().get(0).isGround()) ||
+				(substitutedLiteral instanceof ExternalLiteral));
+	}
+
+	private Collection<Instance> getInstancesForSubstitute(Atom substitute, Substitution partialSubstitution) {
 		Collection<Instance> instances;
+		IndexedInstanceStorage storage = workingMemory.get(substitute.getPredicate(), true);
 		if (partialSubstitution.isEmpty()) {
-			if (currentLiteral.isGround()) {
-				instances = singletonList(new Instance(currentLiteral.getTerms()));
-			} else {
-				// No variables are bound, but first atom in the body became recently true, consider all instances now.
-				instances = storage.getAllInstances();
-			}
+			// No variables are bound, but first atom in the body became recently true, consider all instances now.
+			instances = storage.getAllInstances();
 		} else {
 			instances = storage.getInstancesFromPartiallyGroundAtom(substitute);
 		}
+		return instances;
+	}
 
-		ArrayList<Substitution> generatedSubstitutions = new ArrayList<>();
+	/**
+	 * Uses {@code instances} to create ground instantiations for {@code substitute} and then proceeds in the {@groundingOrder}.
+	 * @param groundingOrder the grounding order to follow while grounding the corresponding rule.
+	 * @param orderPosition the current position in the {@code groundingOrder}.
+	 * @param originalTolerance the original number of tolerated unassigned positive body literals.
+	 * @param remainingTolerance the remaining number of tolerated unassigned positive body literals.
+	 * @param partialSubstitution the partial substitution created so far while grounding the current rule.
+	 * @param currentAssignment the current assignment.
+	 * @param instances instances used to ground the current atom.
+	 * @param substitute the current atom, to which {@code partialSubstitution} has already been applied.
+	 * @return
+	 */
+	private BindingResult createBindings(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance, Substitution partialSubstitution, Assignment currentAssignment, Collection<Instance> instances, Atom substitute) {
+		BindingResult bindingResult = new BindingResult();
 		for (Instance instance : instances) {
+			int remainingToleranceForThisInstance = remainingTolerance;
 			// Check each instance if it matches with the atom.
 			Substitution unified = Substitution.unify(substitute, instance, new Substitution(partialSubstitution));
 			if (unified == null) {
@@ -509,32 +608,84 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 
 			if (factsFromProgram.get(substitutedAtom.getPredicate()) == null || !factsFromProgram.get(substitutedAtom.getPredicate()).contains(new Instance(substitutedAtom.getTerms()))) {
-				int atomId = atomStore.putIfAbsent(substitutedAtom);
-
-				if (currentAssignment != null) {
-					ThriceTruth truth = currentAssignment.getTruth(atomId);
-					if (atomId > maxAtomIdBeforeGroundingNewNoGoods || truth == null || !truth.toBoolean()) {
-						// Atom currently does not hold, skip further grounding.
-						// TODO: investigate grounding heuristics for use here, i.e., ground anyways to avoid re-grounding in the future.
-						if (!disableInstanceRemoval) {
-							removeAfterObtainingNewNoGoods.add(substitutedAtom);
-							continue;
-						}
-					}
+				final int terminateOrDecrement = storeAtomAndTerminateIfAtomDoesNotHold(substitutedAtom, currentAssignment, remainingToleranceForThisInstance);
+				if (terminateOrDecrement == TERMINATE_BINDING) {
+					continue;
+				}
+				if (terminateOrDecrement == DECREMENT_TOLERANCE) {
+					remainingToleranceForThisInstance--;
 				}
 			}
-			List<Substitution> boundSubstitutions = bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, unified, currentAssignment);
-			generatedSubstitutions.addAll(boundSubstitutions);
+			bindingResult.add(advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingToleranceForThisInstance, unified, currentAssignment));
 		}
 
-		return generatedSubstitutions;
+		return bindingResult;
+	}
+
+	/**
+	 * Does nothing if {@code currentAssignment == null}, which means we are in bootstrapping.
+	 * Otherwise, stores {@code substitute} in the atom store if it is not yet stored.
+	 * Afterwards, the truth value currently assigned to this atom and the observation whether the atom is in the
+	 * grounder's working memory or not are used to determine whether binding the current rule shall be terminated or not,
+	 * and whether or not the remaining tolerance (for permissive grounding) shall be decremented.
+	 * <p/>
+	 * Binding shall not be terminated if accumulator is enabled and the atom is in the working memory.
+	 * Otherwise, binding shall be terminated if either the atom is not assigned and tolerance is exhausted,
+	 * or if the atom is assigned false.
+	 * <p/>
+	 * Tolerance shall be decremented if the atom is unassigned (and also not in the working memory, if accumulator
+	 * is enabled) and binding is not terminated.
+	 * <p/>
+	 * If the atom is assigned false and accumulator is not enabled, the atom is also added to {@link #removeAfterObtainingNewNoGoods}
+	 * to trigger lazy update of the working memory.
+	 *
+	 * @param substitute         the atom to store.
+	 * @param currentAssignment  the current assignment.
+	 * @param remainingTolerance the remaining number of positive body atoms tolerated not to be assigned.
+	 * @return {@link #TERMINATE_BINDING} if binding shall be terminated; {@link #DECREMENT_TOLERANCE} if remaining
+	 * tolerance shall be decremented; {@link #NEITHER_TERMINATE_BINDING_NOR_DECREMENT_TOLERANCE} if neither shall be done.
+	 */
+	private int storeAtomAndTerminateIfAtomDoesNotHold(final Atom substitute, final Assignment currentAssignment, final int remainingTolerance) {
+		if (currentAssignment == null) { // if we are in bootstrapping
+			return NEITHER_TERMINATE_BINDING_NOR_DECREMENT_TOLERANCE;
+		}
+
+		int decrementedTolerance = remainingTolerance;
+		final int atomId = atomStore.putIfAbsent(substitute);
+		currentAssignment.growForMaxAtomId();
+		ThriceTruth truth = currentAssignment.isAssigned(atomId) ? currentAssignment.getTruth(atomId) : null;
+
+		if (heuristicsConfiguration.isAccumulatorEnabled()) {
+			// special handling for the accumulator variants of lazy-grounding strategies
+			final Instance instance = new Instance(substitute.getTerms());
+			boolean isInWorkingMemory = workingMemory.get(substitute, true).containsInstance(instance);
+			if (isInWorkingMemory) {
+				// the atom is in the working memory, so we need neither terminate nor decrement tolerance
+				return NEITHER_TERMINATE_BINDING_NOR_DECREMENT_TOLERANCE;
+			}
+		} else if (truth == null || !truth.toBoolean()) {
+			// no accumulator and the atom currently does not hold, so the working memory needs to be updated
+			removeAfterObtainingNewNoGoods.add(substitute);
+		}
+
+		if (truth == null && --decrementedTolerance < 0) {
+			// terminate if more positive atoms are unsatisfied as tolerated by the heuristic
+			return TERMINATE_BINDING;
+		}
+		// terminate if positive body atom is assigned false
+		if (truth != null && !truth.toBoolean()) {
+			return TERMINATE_BINDING;
+		} else if (decrementedTolerance < remainingTolerance) {
+			return DECREMENT_TOLERANCE;
+		}
+		return NEITHER_TERMINATE_BINDING_NOR_DECREMENT_TOLERANCE;
 	}
 
 	@Override
 	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms() {
 		return choiceRecorder.getAndResetChoices();
 	}
-	
+
 	@Override
 	public Map<Integer, Set<Integer>> getHeadsToBodies() {
 		return choiceRecorder.getAndResetHeadsToBodies();
@@ -550,17 +701,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	@Override
 	public void forgetAssignment(int[] atomIds) {
 		throw new UnsupportedOperationException("Forgetting assignments is not implemented");
-	}
-
-	public void printCurrentlyKnownGroundRules() {
-		System.out.println("Printing known ground rules:");
-		for (Map.Entry<NonGroundRule, HashSet<Substitution>> ruleSubstitutionsEntry : knownGroundingSubstitutions.entrySet()) {
-			NonGroundRule nonGroundRule = ruleSubstitutionsEntry.getKey();
-			HashSet<Substitution> substitutions = ruleSubstitutionsEntry.getValue();
-			for (Substitution substitution : substitutions) {
-				System.out.println(groundAndPrintRule(nonGroundRule, substitution));
-			}
-		}
 	}
 
 	public static String groundAndPrintRule(NonGroundRule rule, Substitution substitution) {
@@ -620,13 +760,13 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	/**
-	 * Checks that every nogood not marked as {@link NoGood.Type#INTERNAL} contains only
+	 * Checks that every nogood not marked as {@link NoGoodInterface.Type#INTERNAL} contains only
 	 * atoms which are not {@link Predicate#isSolverInternal()} (except {@link RuleAtom}s, which are allowed).
 	 * @param newNoGoods
 	 */
 	private void checkTypesOfNoGoods(Collection<NoGood> newNoGoods) {
 		for (NoGood noGood : newNoGoods) {
-			if (noGood.getType() != Type.INTERNAL) {
+			if (noGood.getType() != NoGoodInterface.Type.INTERNAL) {
 				for (int literal : noGood) {
 					Atom atom = atomStore.get(atomOf(literal));
 					if (atom.getPredicate().isSolverInternal() && !(atom instanceof RuleAtom)) {
@@ -638,12 +778,46 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	private static class FirstBindingAtom {
-		NonGroundRule rule;
-		Literal startingLiteral;
+		final NonGroundRule rule;
+		final Literal startingLiteral;
 
 		FirstBindingAtom(NonGroundRule rule, Literal startingLiteral) {
 			this.rule = rule;
 			this.startingLiteral = startingLiteral;
 		}
+	}
+
+	/**
+	 * Contains substitions produced for generating ground substitutions of a rule,
+	 * and for every substitution the number of positive body atoms still unassigned in the respective ground rule.
+	 */
+	static class BindingResult {
+		final List<Substitution> generatedSubstitutions = new ArrayList<>();
+		final List<Integer> numbersOfUnassignedPositiveBodyAtoms = new ArrayList<>();
+
+		void add(Substitution generatedSubstitution, int numberOfUnassignedPositiveBodyAtoms) {
+			this.generatedSubstitutions.add(generatedSubstitution);
+			this.numbersOfUnassignedPositiveBodyAtoms.add(numberOfUnassignedPositiveBodyAtoms);
+		}
+
+		void add(BindingResult otherBindingResult) {
+			this.generatedSubstitutions.addAll(otherBindingResult.generatedSubstitutions);
+			this.numbersOfUnassignedPositiveBodyAtoms.addAll(otherBindingResult.numbersOfUnassignedPositiveBodyAtoms);
+		}
+
+		int size() {
+			return generatedSubstitutions.size();
+		}
+
+		static BindingResult empty() {
+			return new BindingResult();
+		}
+
+		static BindingResult singleton(Substitution generatedSubstitution, int numberOfUnassignedPositiveBodyAtoms) {
+			BindingResult bindingResult = new BindingResult();
+			bindingResult.add(generatedSubstitution, numberOfUnassignedPositiveBodyAtoms);
+			return bindingResult;
+		}
+
 	}
 }
