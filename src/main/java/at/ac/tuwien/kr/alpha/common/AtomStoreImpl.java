@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.common;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.solver.AtomCounter;
 
 import java.util.*;
 
@@ -37,14 +38,14 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * This class stores ground atoms and provides the translation from an (integer) atomId to a (structured) predicate instance.
- * Copyright (c) 2016-2017, the Alpha Team.
  */
 public class AtomStoreImpl implements AtomStore {
-	private List<Atom> atomIdsToInternalBasicAtoms = new ArrayList<>();
-	private Map<Atom, Integer> predicateInstancesToAtomIds = new HashMap<>();
-	private IntIdGenerator atomIdGenerator = new IntIdGenerator(1);
+	private final List<Atom> atomIdsToInternalBasicAtoms = new ArrayList<>();
+	private final Map<Atom, Integer> predicateInstancesToAtomIds = new HashMap<>();
+	private final IntIdGenerator atomIdGenerator = new IntIdGenerator(1);
+	private final AtomCounter atomCounter = new AtomCounter();
 
-	private List<Integer> releasedAtomIds = new ArrayList<>();	// contains atomIds ready to be garbage collected if necessary.
+	private final List<Integer> releasedAtomIds = new ArrayList<>();	// contains atomIds ready to be garbage collected if necessary.
 
 	public AtomStoreImpl() {
 		// Create atomId for falsum (currently not needed, but it gets atomId 0, which cannot represent a negated literal).
@@ -63,6 +64,7 @@ public class AtomStoreImpl implements AtomStore {
 			id = atomIdGenerator.getNextId();
 			predicateInstancesToAtomIds.put(groundAtom, id);
 			atomIdsToInternalBasicAtoms.add(id, groundAtom);
+			atomCounter.add(groundAtom);
 		}
 
 		return id;
@@ -117,5 +119,10 @@ public class AtomStoreImpl implements AtomStore {
 	@Override
 	public int get(Atom atom) {
 		return predicateInstancesToAtomIds.get(atom);
+	}
+
+	@Override
+	public AtomCounter getAtomCounter() {
+		return atomCounter;
 	}
 }

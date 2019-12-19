@@ -580,6 +580,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 					LOGGER.debug(heuristicToDecisionCounter.getKey() + ": " + heuristicToDecisionCounter.getValue());
 				}
 			}
+			AtomCounter atomCounter = atomStore.getAtomCounter();
+			LOGGER.debug("Number of atoms by type: " + atomCounter.getStatsByType());
 		}
 	}
 }
