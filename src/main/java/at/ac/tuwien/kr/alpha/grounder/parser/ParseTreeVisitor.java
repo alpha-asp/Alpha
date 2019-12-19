@@ -29,6 +29,9 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 
 import static java.util.Collections.emptyList;
 
+import org.antlr.v4.runtime.RuleContext;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -38,9 +41,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
-import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.tree.TerminalNode;
 
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
@@ -147,17 +147,24 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		return node.getText();
 	}
 
-	/*
-	 * protected CommonParsedObject aggregateResult(CommonParsedObject aggregate, CommonParsedObject nextResult) { ListOfParsedObjects aggList; if (aggregate
-	 * instanceof ListOfParsedObjects) { aggList = (ListOfParsedObjects) aggregate; ((ListOfParsedObjects) aggregate).add(nextResult); } else { aggList = new
-	 * ListOfParsedObjects(new ArrayList<>()); }
-	 * 
-	 * if (aggregate != null) { // default result is null, ignore it aggList.add(aggregate); }
-	 * 
-	 * if (nextResult instanceof ListOfParsedObjects) { aggList.addAll((ListOfParsedObjects) nextResult); } else { aggList.add(nextResult); }
-	 * 
-	 * return aggList; }
-	 */
+	/*protected CommonParsedObject aggregateResult(CommonParsedObject aggregate, CommonParsedObject nextResult) {
+		ListOfParsedObjects aggList;
+		if (aggregate instanceof ListOfParsedObjects) {
+			aggList = (ListOfParsedObjects) aggregate;
+			((ListOfParsedObjects) aggregate).add(nextResult);
+		} else {
+			aggList = new ListOfParsedObjects(new ArrayList<>());
+		}
+		if (aggregate != null) { // default result is null, ignore it
+			aggList.add(aggregate);
+		}
+		if (nextResult instanceof ListOfParsedObjects) {
+			aggList.addAll((ListOfParsedObjects) nextResult);
+		} else {
+			aggList.add(nextResult);
+		}
+		return aggList;
+	}*/
 
 	@Override
 	public InputProgram visitProgram(ASPCore2Parser.ProgramContext ctx) {
@@ -327,7 +334,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public AggregateLiteral visitAggregate(ASPCore2Parser.AggregateContext ctx) {
-		
+
 		// aggregate : NAF? (lt=term lop=binop)? aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE (uop=binop ut=term)?;
 		boolean isPositive = ctx.NAF() == null;
 		Term lt = null;
