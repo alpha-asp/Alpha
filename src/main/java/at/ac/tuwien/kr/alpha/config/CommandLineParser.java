@@ -27,9 +27,12 @@
  */
 package at.ac.tuwien.kr.alpha.config;
 
-import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +43,9 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 
 /**
  * Parses given argument lists (as passed when Alpha is called from command line) into {@link SystemConfig}s and {@link InputConfig}s.
@@ -70,9 +76,9 @@ public class CommandLineParser {
 			.desc("enable literate programming mode (default: " + InputConfig.DEFAULT_LITERATE + ")").build();
 	private static final Option OPT_WRITE_PREPROCESSED = Option.builder("pp").longOpt("write-preproc").hasArg(true).argName("target")
 			.desc("write the internal program that is passed into the solver after transformations to a file").build();
-	private static final Option OPT_WRITE_DEPGRAPH = Option.builder("dG").longOpt("depgraph").hasArg(true).argName("target")
+	private static final Option OPT_WRITE_DEPGRAPH = Option.builder("dg").longOpt("depgraph").hasArg(true).argName("target")
 			.desc("Write a dot file with the input program's dependency graph").build();
-	private static final Option OPT_WRITE_COMPGRAPH = Option.builder("cG").longOpt("compgraph").hasArg(true).argName("target")
+	private static final Option OPT_WRITE_COMPGRAPH = Option.builder("cg").longOpt("compgraph").hasArg(true).argName("target")
 			.desc("Write a dot file with the input program's component graph").build();
 
 	// general system-wide config
