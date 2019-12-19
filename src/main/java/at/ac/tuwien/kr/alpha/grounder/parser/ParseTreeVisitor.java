@@ -461,7 +461,11 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public ComparisonAtom visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
 		// builtin_atom : term binop term;
-		return new ComparisonAtom((Term) visit(ctx.term(0)), (Term) visit(ctx.term(1)), visitBinop(ctx.binop()));
+		return new ComparisonAtom(
+				(Term) visit(ctx.term(0)), 
+				(Term) visit(ctx.term(1)), 
+				visitBinop(ctx.binop())
+		);
 	}
 
 	@Override
@@ -566,7 +570,12 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 		List<Term> outputTerms = visitTerms(ctx.output);
 
-		return new ExternalAtom(Predicate.getInstance(predicateName, outputTerms.size()), interpretation, visitTerms(ctx.input), outputTerms);
+		return new ExternalAtom(
+				Predicate.getInstance(predicateName, outputTerms.size()), 
+				interpretation, 
+				visitTerms(ctx.input), 
+				outputTerms
+		);
 	}
 
 	@Override
