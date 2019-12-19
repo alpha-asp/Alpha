@@ -25,15 +25,15 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import org.junit.Ignore;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-
-import org.junit.Ignore;
-import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -45,8 +45,10 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
 /**
- * Tests {@link AbstractSolver} using some three-coloring test cases, as described in: Lefèvre, Claire; Béatrix, Christopher; Stéphan, Igor; Garcia, Laurent
- * (2017): ASPeRiX, a first-order forward chaining approach for answer set computing. In Theory and Practice of Logic Programming, pp. 1-45. DOI:
+ * Tests {@link AbstractSolver} using some three-coloring test cases, as described in: 
+ * Lefèvre, Claire; Béatrix, Christopher; Stéphan, Igor; Garcia, Laurent (2017): 
+ * ASPeRiX, a first-order forward chaining approach for answer set computing. 
+ * In Theory and Practice of Logic Programming, pp. 1-45. DOI:
  * 10.1017/S1471068416000569
  */
 public class ThreeColouringTestWithRandom extends AbstractSolverTests {

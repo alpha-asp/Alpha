@@ -29,12 +29,6 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import static java.util.Collections.emptySet;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Random;
-import java.util.Set;
-
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.junit.runner.RunWith;
@@ -42,6 +36,12 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Random;
+import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
@@ -77,16 +77,17 @@ public abstract class AbstractSolverTests {
 	}
 
 	/**
-	 * Calling this method in a test leads to the test being ignored for the naive solver. Note: use this sparingly and only on tests that require too much run
-	 * time with the naive solver.
+	 * Calling this method in a test leads to the test being ignored for the naive solver. 
+	 * Note: use this sparingly and only on tests that require too much run time with the naive solver.
 	 */
 	void ignoreTestForNaiveSolver() {
 		org.junit.Assume.assumeFalse(solverName.equals("naive"));
 	}
 
 	/**
-	 * Calling this method in a test leads to the test being ignored for non-default domain-independent heuristics. Note: use this sparingly and only on tests
-	 * that require too much run time with non-default heuristics (which are not tuned for good performance as well as VSIDS).
+	 * Calling this method in a test leads to the test being ignored for non-default domain-independent heuristics. 
+	 * Note: use this sparingly and only on tests that require too much run time with non-default heuristics 
+	 * (which are not tuned for good performance as well as VSIDS).
 	 */
 	void ignoreNonDefaultDomainIndependentHeuristics() {
 		org.junit.Assume.assumeTrue(heuristic == BranchingHeuristicFactory.Heuristic.VSIDS);
