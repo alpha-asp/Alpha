@@ -118,7 +118,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		super(filter, bridges);
 		this.atomStore = atomStore;
 		this.heuristicsConfiguration = heuristicsConfiguration;
-		LOGGER.debug("Grounder configuration: " + heuristicsConfiguration);
+		LOGGER.debug("Grounder configuration: {}", heuristicsConfiguration);
 
 		programAnalysis = new ProgramAnalysis(program);
 		analyzeUnjustified = new AnalyzeUnjustified(programAnalysis, atomStore, factsFromProgram);
@@ -126,7 +126,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// Apply program transformations/rewritings.
 		useCountingGridNormalization = useCountingGrid;
 		applyProgramTransformations(program);
-		LOGGER.debug("Transformed input program is:\n" + program);
+		LOGGER.debug("Transformed input program is:\n{}", program);
 
 		initializeFactsAndRules(program);
 
@@ -164,7 +164,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			// Record the rule for later use
 			NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
 			knownNonGroundRules.put(nonGroundRule.getRuleId(), nonGroundRule);
-			LOGGER.debug("NonGroundRule #" + nonGroundRule.getRuleId() + ": " + nonGroundRule);
+			LOGGER.debug("NonGroundRule #{}: {}", nonGroundRule.getRuleId(), nonGroundRule);
 
 			// Record defining rules for each predicate.
 			Atom headAtom = nonGroundRule.getHeadAtom();
@@ -445,7 +445,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			for (int i = 0; i < bindingResult.size(); i++) {
 				Integer numberOfUnassignedPositiveBodyAtoms = bindingResult.numbersOfUnassignedPositiveBodyAtoms.get(i);
 				if (numberOfUnassignedPositiveBodyAtoms > 0) {
-					LOGGER.debug("Grounded rule in which " + numberOfUnassignedPositiveBodyAtoms + " positive atoms are still unassigned: " + rule + " (substitution: " + bindingResult.generatedSubstitutions.get(i) + ")");
+					LOGGER.debug("Grounded rule in which {} positive atoms are still unassigned: {} (substitution: {})", numberOfUnassignedPositiveBodyAtoms, rule, bindingResult.generatedSubstitutions.get(i));
 				}
 			}
 		}

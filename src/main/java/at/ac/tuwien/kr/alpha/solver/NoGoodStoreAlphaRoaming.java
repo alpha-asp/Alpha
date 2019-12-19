@@ -29,18 +29,28 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type;
 import at.ac.tuwien.kr.alpha.common.NoGoodInterface;
+import at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
 import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.common.Literals.literalToString;
 import static at.ac.tuwien.kr.alpha.common.NoGood.HEAD;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 /**
  * NoGoodStore using for each NoGood three watches, two ordinary ones and an alpha watch.
@@ -249,7 +259,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 			if (occurringAtomPolarity.containsKey(atomOf(literal))) {
 				if (occurringAtomPolarity.get(atomOf(literal)) != isNegated(literal)) {
 					// NoGood cannot be violated or propagate, ignore it.
-					LOGGER.debug("Added NoGood can never propagate or be violated, ignoring it. NoGood is: " + noGood);
+					LOGGER.debug("Added NoGood can never propagate or be violated, ignoring it. NoGood is: {}", noGood);
 					return null;
 				}
 			} else {
