@@ -86,6 +86,10 @@ import static java.util.Collections.singletonList;
 public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGrounder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
 
+	private final static int NEITHER_TERMINATE_BINDING_NOR_DECREMENT_TOLERANCE = 0;
+	private final static int TERMINATE_BINDING = 1;
+	private final static int DECREMENT_TOLERANCE = 2;
+
 	private final WorkingMemory workingMemory = new WorkingMemory();
 	private final AtomStore atomStore;
 	private final NogoodRegistry registry = new NogoodRegistry();
@@ -604,11 +608,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 
 			if (factsFromProgram.get(substitutedAtom.getPredicate()) == null || !factsFromProgram.get(substitutedAtom.getPredicate()).contains(new Instance(substitutedAtom.getTerms()))) {
-				final TerminateOrTolerate terminateOrTolerate = storeAtomAndTerminateIfAtomDoesNotHold(substitutedAtom, currentAssignment, remainingToleranceForThisInstance);
-				if (terminateOrTolerate.terminate) {
+				final int terminateOrDecrement = storeAtomAndTerminateIfAtomDoesNotHold(substitutedAtom, currentAssignment, remainingToleranceForThisInstance);
+				if (terminateOrDecrement == TERMINATE_BINDING) {
 					continue;
 				}
-				if (terminateOrTolerate.decrementTolerance) {
+				if (terminateOrDecrement == DECREMENT_TOLERANCE) {
 					remainingToleranceForThisInstance--;
 				}
 			}
@@ -618,9 +622,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return bindingResult;
 	}
 
-	private TerminateOrTolerate storeAtomAndTerminateIfAtomDoesNotHold(final Atom substitute, final Assignment currentAssignment, final int remainingTolerance) {
+	private int storeAtomAndTerminateIfAtomDoesNotHold(final Atom substitute, final Assignment currentAssignment, final int remainingTolerance) {
 		if (currentAssignment == null) { // if we are in bootstrapping
-			return new TerminateOrTolerate(false, false);
+			return NEITHER_TERMINATE_BINDING_NOR_DECREMENT_TOLERANCE;
 		}
 
 		int decrementedTolerance = remainingTolerance;
@@ -634,7 +638,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			boolean isInWorkingMemory = workingMemory.get(substitute, true).containsInstance(instance);
 			if (isInWorkingMemory) {
 				// the atom is in the working memory, so we need neither terminate nor decrement tolerance
-				return new TerminateOrTolerate(false, false);
+				return NEITHER_TERMINATE_BINDING_NOR_DECREMENT_TOLERANCE;
 			}
 		} else if (truth == null || !truth.toBoolean()) {
 			// no accumulator and the atom currently does not hold, so the working memory needs to be updated
@@ -643,20 +647,15 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 		if (truth == null && --decrementedTolerance < 0) {
 			// terminate if more positive atoms are unsatisfied as tolerated by the heuristic
-			return new TerminateOrTolerate(true, true);
+			return TERMINATE_BINDING;
 		}
 		// terminate if positive body atom is assigned false
-		return new TerminateOrTolerate(truth != null && !truth.toBoolean(), decrementedTolerance < remainingTolerance);
-	}
-
-	private static class TerminateOrTolerate {
-		boolean terminate;
-		boolean decrementTolerance;
-
-		TerminateOrTolerate(boolean terminate, boolean decrementTolerance) {
-			this.terminate = terminate;
-			this.decrementTolerance = decrementTolerance;
+		if (truth != null && !truth.toBoolean()) {
+			return TERMINATE_BINDING;
+		} else if (decrementedTolerance < remainingTolerance) {
+			return DECREMENT_TOLERANCE;
 		}
+		return NEITHER_TERMINATE_BINDING_NOR_DECREMENT_TOLERANCE;
 	}
 
 	@Override
