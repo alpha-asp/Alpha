@@ -32,9 +32,11 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
@@ -55,6 +57,7 @@ public class NonGroundRule {
 	private final Atom headAtom;
 
 	final RuleGroundingOrders groundingOrder;
+	private final boolean isNonProjective;
 
 	private NonGroundRule(Rule rule, int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
 		this.ruleId = ruleId;
@@ -69,6 +72,7 @@ public class NonGroundRule {
 		this.bodyAtomsNegative = Collections.unmodifiableList(bodyAtomsNegative);
 
 		this.headAtom = headAtom;
+		this.isNonProjective = checkIsNonProjective();
 
 		checkSafety();
 		this.groundingOrder = new RuleGroundingOrders(this);
@@ -94,11 +98,33 @@ public class NonGroundRule {
 		return new NonGroundRule(rule, ID_GENERATOR.getNextId(), pos, neg, headAtom);
 	}
 
+	private boolean checkIsNonProjective() {
+
+
+		// Collect head and body variables.
+		HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.toLiteral().getBindingVariables());
+		HashSet<VariableTerm> occurringVariablesBody = new HashSet<>();
+		for (Atom atom : getBodyAtomsPositive()) {
+			occurringVariablesBody.addAll(atom.toLiteral().getBindingVariables());
+		}
+		// Non-Projective condition 1:
+		// Check that all variables of the body also occur in the head (otherwise grounding is not unique).
+		occurringVariablesBody.removeAll(occurringVariablesHead);
+		// Check if ever body variables occurs in the head.
+		if (occurringVariablesBody.isEmpty()) {
+			return true;
+		}
+
+		// TODO: Check further non-projective conditions here.
+
+		return false;
+	}
+
 	public int getRuleId() {
 		return ruleId;
 	}
 
-	public List<Literal> getBodyLiterals() {
+	List<Literal> getBodyLiterals() {
 		return new ArrayList<>(rule.getBody());
 	}
 
@@ -106,7 +132,7 @@ public class NonGroundRule {
 	 *
 	 * @return a list of all ordinary predicates occurring in the rule (may contain duplicates, does not contain builtin atoms).
 	 */
-	public List<Predicate> getOccurringPredicates() {
+	List<Predicate> getOccurringPredicates() {
 		ArrayList<Predicate> predicateList = new ArrayList<>(bodyAtomsPositive.size() + bodyAtomsNegative.size() + 1);
 		for (Atom posAtom : bodyAtomsPositive) {
 			predicateList.add(posAtom.getPredicate());
@@ -162,5 +188,9 @@ public class NonGroundRule {
 
 	public Atom getHeadAtom() {
 		return headAtom;
+	}
+
+	public boolean isNonProjective() {
+		return isNonProjective;
 	}
 }
