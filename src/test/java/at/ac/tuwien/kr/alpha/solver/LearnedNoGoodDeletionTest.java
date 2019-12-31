@@ -27,14 +27,15 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
-import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
 import static org.junit.Assert.*;
@@ -110,5 +111,39 @@ public class LearnedNoGoodDeletionTest {
 		assertEquals(0, learnedNoGoodDeletion.getNumberOfDeletedNoGoods());
 		learnedNoGoodDeletion.runNoGoodDeletion();
 		assertTrue(learnedNoGoodDeletion.getNumberOfDeletedNoGoods() > 0);
+	}
+
+	@Test
+	public void testDeletionReducesNumberOfLearntNoGoods() {
+		for (int i = 0; i < LearnedNoGoodDeletion.RUN_AFTER_AT_LEAST; i++) {
+			learnedNoGoodDeletion.increaseConflictCounter();
+		}
+		assertFalse(learnedNoGoodDeletion.needToRunNoGoodDeletion());
+		learnedNoGoodDeletion.increaseConflictCounter();
+		assertTrue(learnedNoGoodDeletion.needToRunNoGoodDeletion());
+		assertNull(store.add(4, NoGood.learnt(fromOldLiterals(10, 11, 12)), 3));
+		assertNull(store.add(5, NoGood.learnt(fromOldLiterals(10, -13, -14)), 4));
+
+		final Map<Type, Integer> countersBeforeDeletion = countNoGoodsByType(store);
+		learnedNoGoodDeletion.runNoGoodDeletion();
+		final Map<Type, Integer> countersAfterDeletion = countNoGoodsByType(store);
+
+		for (Type type : Type.values()) {
+			if (type == Type.LEARNT) {
+				assertTrue("Count of LEARNT nogoods did not decrease during deletion", countersBeforeDeletion.get(type) > countersAfterDeletion.get(type));
+			} else {
+				assertEquals("Unexpected count of " + type + " nogoods", countersBeforeDeletion.get(type), countersAfterDeletion.get(type));
+			}
+		}
+
+	}
+
+	private Map<Type, Integer> countNoGoodsByType(NoGoodStore store) {
+		final Map<Type, Integer> counters = new HashMap<>();
+		final NoGoodCounter noGoodCounter = store.getNoGoodCounter();
+		for (Type type : Type.values()) {
+			counters.put(type, noGoodCounter.getNumberOfNoGoods(type));
+		}
+		return counters;
 	}
 }

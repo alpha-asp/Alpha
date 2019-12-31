@@ -29,6 +29,8 @@ package at.ac.tuwien.kr.alpha.common.rule.impl;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +43,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.head.impl.NormalHead;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
-import at.ac.tuwien.kr.alpha.grounder.RuleGroundingOrder;
+import at.ac.tuwien.kr.alpha.grounder.RuleGroundingOrders;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 
 /**
@@ -50,6 +52,11 @@ import at.ac.tuwien.kr.alpha.grounder.Unifier;
 public class InternalRule extends NormalRule {
 
 	private static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
+	
+	@VisibleForTesting
+	public static void resetIdGenerator() {
+		InternalRule.ID_GENERATOR.resetGenerator();
+	}
 
 	private final int ruleId;
 
@@ -57,7 +64,7 @@ public class InternalRule extends NormalRule {
 	private final List<Atom> bodyAtomsNegative;
 	private final List<Predicate> occurringPredicates;
 
-	private final RuleGroundingOrder groundingOrder;
+	private final RuleGroundingOrders groundingOrders;
 
 	public InternalRule(NormalHead head, List<Literal> body) {
 		super(head, body);
@@ -84,18 +91,18 @@ public class InternalRule extends NormalRule {
 		}
 
 		// Sort for better join order.
-		this.bodyAtomsPositive = pos;
+		this.bodyAtomsPositive = Collections.unmodifiableList(pos);
 
 		// Since rule is safe, all variables in the negative body are already bound,
 		// i.e., joining them cannot degenerate into cross-product.
 		// Hence, there is no need to sort them.
-		this.bodyAtomsNegative = neg;
+		this.bodyAtomsNegative = Collections.unmodifiableList(neg);
 
 		// not needed, done in AbstractRule! Leaving it commented out for future reference since this might actually be the proper place to put it
 		// this.checkSafety();
 
-		this.groundingOrder = new RuleGroundingOrder(this);
-		this.groundingOrder.computeGroundingOrders();
+		this.groundingOrders = new RuleGroundingOrders(this);
+		this.groundingOrders.computeGroundingOrders();
 	}
 
 	/**
@@ -162,8 +169,8 @@ public class InternalRule extends NormalRule {
 		return Collections.unmodifiableList(this.bodyAtomsNegative);
 	}
 
-	public RuleGroundingOrder getGroundingOrder() {
-		return this.groundingOrder;
+	public RuleGroundingOrders getGroundingOrders() {
+		return this.groundingOrders;
 	}
 
 	public int getRuleId() {

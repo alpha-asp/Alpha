@@ -571,17 +571,25 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		return ((NoGoodStoreAlphaRoaming)store).getLearnedNoGoodDeletion().getNumberOfDeletedNoGoods();
 	}
 
+	@Override
+	public NoGoodCounter getNoGoodCounter() {
+		return store.getNoGoodCounter();
+	}
+
 	private void logStats() {
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug(getStatisticsString());
 			if (branchingHeuristic instanceof ChainedBranchingHeuristics) {
 				LOGGER.debug("Decisions made by each heuristic:");
 				for (Entry<BranchingHeuristic, Integer> heuristicToDecisionCounter : ((ChainedBranchingHeuristics)branchingHeuristic).getNumberOfDecisions().entrySet()) {
-					LOGGER.debug(heuristicToDecisionCounter.getKey() + ": " + heuristicToDecisionCounter.getValue());
+					LOGGER.debug("{}: {}", heuristicToDecisionCounter.getKey(), heuristicToDecisionCounter.getValue());
 				}
 			}
+			NoGoodCounter noGoodCounter = store.getNoGoodCounter();
+			LOGGER.debug("Number of NoGoods by type: {}", noGoodCounter.getStatsByType());
+			LOGGER.debug("Number of NoGoods by cardinality: {}", noGoodCounter.getStatsByCardinality());
 			AtomCounter atomCounter = atomStore.getAtomCounter();
-			LOGGER.debug("Number of atoms by type: " + atomCounter.getStatsByType());
+			LOGGER.debug("Number of atoms by type: {}", atomCounter.getStatsByType());
 		}
 	}
 }

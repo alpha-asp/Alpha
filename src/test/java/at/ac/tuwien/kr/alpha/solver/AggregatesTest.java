@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Siemens AG
+ * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -25,9 +25,9 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import java.io.IOException;
-
 import org.junit.Test;
+
+import java.io.IOException;
 
 import at.ac.tuwien.kr.alpha.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -36,6 +36,7 @@ import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.NormalProgram;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.transformation.impl.CardinalityNormalization;
 import at.ac.tuwien.kr.alpha.grounder.transformation.impl.SumNormalization;
 
@@ -169,13 +170,13 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	@Override
 	protected Solver getInstance(InputProgram program) {
 		Alpha system = new Alpha();
+		system.getConfig().setUseNormalizationGrid(this.useCountingGridNormalization());
 		AtomStore atomStore = new AtomStoreImpl();
 		NormalProgram normal = system.normalizeProgram(program);
 		InternalProgram preprocessed = system.performProgramPreprocessing(normal);
-		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, preprocessed, atomStore,
-				p -> true, useCountingGridNormalization(), true));
+		return super.getInstance(atomStore, GrounderFactory.getInstance(grounderName, preprocessed, atomStore, p->true, new GrounderHeuristicsConfiguration(), true));
 	}
-
+	
 	protected abstract boolean useCountingGridNormalization();
 
 }

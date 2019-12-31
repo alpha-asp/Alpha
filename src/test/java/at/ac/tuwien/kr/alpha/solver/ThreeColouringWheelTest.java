@@ -25,13 +25,13 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import org.junit.Ignore;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import org.junit.Ignore;
-import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;

@@ -4,6 +4,10 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,10 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -40,6 +40,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.IndexedInstanceStorage;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
 import at.ac.tuwien.kr.alpha.grounder.RuleGroundingOrder;
+import at.ac.tuwien.kr.alpha.grounder.RuleGroundingOrders;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.WorkingMemory;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
@@ -192,13 +193,13 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 	private List<Substitution> groundRule(InternalRule rule) {
 		LOGGER.debug("Grounding rule {}", rule);
-		RuleGroundingOrder groundingOrder = rule.getGroundingOrder();
-		Collection<Literal> startingLiterals = groundingOrder.getStartingLiterals();
+		RuleGroundingOrders groundingOrders = rule.getGroundingOrders();
 		List<Substitution> groundSubstitutions = new ArrayList<>(); // the actual full ground substitutions for the rule
-		LOGGER.debug("Is fixed rule? {}", rule.getGroundingOrder().fixedInstantiation());
-		if (rule.getGroundingOrder().fixedInstantiation()) {
-			groundSubstitutions.addAll(this.bindNextAtomInRule(rule, rule.getGroundingOrder().getFixedGroundingOrder(), 0, new Substitution()));
+		LOGGER.debug("Is fixed rule? {}", rule.getGroundingOrders().fixedInstantiation());
+		if (groundingOrders.fixedInstantiation()) {
+			groundSubstitutions.addAll(this.bindNextAtomInRule(rule, groundingOrders.getFixedGroundingOrder(), 0, new Substitution()));
 		} else {
+			Collection<Literal> startingLiterals = groundingOrders.getStartingLiterals();
 			for (Literal lit : startingLiterals) {
 				groundSubstitutions.addAll(this.calcSubstitutionsForStartingLiteral(rule, lit));
 			}
@@ -215,7 +216,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			FixedInterpretationLiteral fixedInterpretationLiteral = (FixedInterpretationLiteral) startingLiteral;
 			for (Substitution fixedSubstitution : fixedInterpretationLiteral.getSubstitutions(partialStartSubstitution)) {
 				LOGGER.debug("calling bindNextAtom, startingLiteral = {}", startingLiteral);
-				retVal.addAll(this.bindNextAtomInRule(rule, rule.getGroundingOrder().orderStartingFrom(startingLiteral), 0, fixedSubstitution));
+				retVal.addAll(this.bindNextAtomInRule(rule, rule.getGroundingOrders().orderStartingFrom(startingLiteral), 0, fixedSubstitution));
 			}
 		} else {
 			Predicate predicate = startingLiteral.getPredicate();
@@ -236,7 +237,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 						continue;
 					}
 					LOGGER.trace("calling bindNextAtom, startingLiteral = {}", startingLiteral);
-					List<Substitution> subs = this.bindNextAtomInRule(rule, rule.getGroundingOrder().orderStartingFrom(startingLiteral), 0,
+					List<Substitution> subs = this.bindNextAtomInRule(rule, rule.getGroundingOrders().orderStartingFrom(startingLiteral), 0,
 							partialStartSubstitution);
 					retVal.addAll(subs);
 				}
@@ -264,14 +265,15 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		this.workingMemory.addInstance(newAtom, true);
 	}
 
-	private List<Substitution> bindNextAtomInRule(InternalRule rule, Literal[] groundingOrder, int orderPosition, Substitution partialSubstitution) {
+	private List<Substitution> bindNextAtomInRule(InternalRule rule, RuleGroundingOrder groundingOrder, int orderPosition, Substitution partialSubstitution) {
 		LOGGER.debug("Starting bindNextAtom(\n\trule = {},\n\tgroundingOrder = {},\n\torderPosition = {},\n\tsubstitution = {})", rule,
 				StringUtils.join(groundingOrder, ", "), orderPosition, partialSubstitution);
-		if (orderPosition == groundingOrder.length) {
+		Literal currentLiteral = groundingOrder.getLiteralAtOrderPosition(orderPosition);
+		if (currentLiteral == null) {
+			// we're at the end of the grounding order, no more literals to bind
 			return singletonList(partialSubstitution);
 		}
-
-		Literal currentLiteral = groundingOrder[orderPosition];
+		
 		Atom currentAtom = currentLiteral.getAtom();
 		if (currentLiteral instanceof FixedInterpretationLiteral) {
 			// Generate all substitutions for the builtin/external/interval atom.

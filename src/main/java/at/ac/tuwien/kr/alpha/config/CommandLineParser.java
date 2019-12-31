@@ -118,6 +118,18 @@ public class CommandLineParser {
 	private static final Option OPT_NO_EVAL_STRATIFIED = Option.builder("nse").longOpt("disable-stratified-eval").desc("Disable stratified evaluation").build();
 	private static final Option OPT_NO_NOGOOD_DELETION = Option.builder("dnd").longOpt("disableNoGoodDeletion")
 			.desc("disable the deletion of (learned, little active) nogoods (default: " + SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION + ")").build();
+	private static final Option OPT_GROUNDER_TOLERANCE_CONSTRAINTS = Option.builder("gtc").longOpt("grounderToleranceConstraints")
+			.desc("grounder tolerance for constraints (default: " + SystemConfig.DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS + ")")
+			.hasArg().argName("tolerance")
+			.build();
+	private static final Option OPT_GROUNDER_TOLERANCE_RULES = Option.builder("gtr").longOpt("grounderToleranceRules")
+			.desc("grounder tolerance for rules (default: " + SystemConfig.DEFAULT_GROUNDER_TOLERANCE_RULES + ")")
+			.hasArg().argName("tolerance")
+			.build();
+	private static final Option OPT_GROUNDER_ACCUMULATOR_ENABLED = Option.builder("acc").longOpt("enableAccumulator")
+			.desc("activates the accumulator grounding strategy by disabling removal of instances from grounder memory in certain cases (default: " + SystemConfig.DEFAULT_GROUNDER_ACCUMULATOR_ENABLED + ")")
+			.build();
+
 
 	private static final Options CLI_OPTS = new Options();
 
@@ -153,6 +165,9 @@ public class CommandLineParser {
 
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_EVAL_STRATIFIED);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_NOGOOD_DELETION);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_ACCUMULATOR_ENABLED);
 	}
 
 	/*
@@ -200,7 +215,11 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), this::handleNoJustification);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NORMALIZATION_GRID.getOpt(), this::handleNormalizationGrid);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_EVAL_STRATIFIED.getOpt(), this::handleDisableStratifedEval);
-		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);		
+		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);	
+this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS.getOpt(), this::handleGrounderToleranceConstraints);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES.getOpt(), this::handleGrounderToleranceRules);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_ACCUMULATOR_ENABLED.getOpt(), this::handleGrounderNoInstanceRemoval);	
 	}
 	
 	private void initializeInputOptionHandlers() {
@@ -414,5 +433,20 @@ public class CommandLineParser {
 	private void handleNoNoGoodDeletion(Option opt, SystemConfig cfg) {
 		cfg.setDisableNoGoodDeletion(true);
 	}
+
+	private void handleGrounderToleranceConstraints(Option opt, SystemConfig cfg) {
+		String grounderToleranceConstraints = opt.getValue(SystemConfig.DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS);
+		cfg.setGrounderToleranceConstraints(grounderToleranceConstraints);
+	}
+
+	private void handleGrounderToleranceRules(Option opt, SystemConfig cfg) {
+		String grounderToleranceRules = opt.getValue(SystemConfig.DEFAULT_GROUNDER_TOLERANCE_RULES);
+		cfg.setGrounderToleranceRules(grounderToleranceRules);
+	}
+
+	private void handleGrounderNoInstanceRemoval(Option opt, SystemConfig cfg) {
+		cfg.setGrounderAccumulatorEnabled(true);
+	}
+
 
 }
