@@ -52,6 +52,7 @@ public class NoGoodGenerator {
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private final ProgramAnalysis programAnalysis;
 	private final Set<NonGroundRule> uniqueGroundRulePerGroundHead;
+	private final CompletionGenerator completionGenerator;
 
 	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, ProgramAnalysis programAnalysis, Set<NonGroundRule> uniqueGroundRulePerGroundHead) {
 		this.atomStore = atomStore;
@@ -59,6 +60,7 @@ public class NoGoodGenerator {
 		this.factsFromProgram = factsFromProgram;
 		this.programAnalysis = programAnalysis;
 		this.uniqueGroundRulePerGroundHead = uniqueGroundRulePerGroundHead;
+		completionGenerator = new CompletionGenerator(programAnalysis);
 	}
 
 	/**
@@ -115,6 +117,10 @@ public class NoGoodGenerator {
 		for (int j = 1; j < ruleBody.size(); j++) {
 			result.add(new NoGood(bodyRepresentingLiteral, negateLiteral(ruleBody.getLiteral(j))));
 		}
+
+		// Generate and add completion NoGoods if possible.
+		List<NoGood> completionNogoods = completionGenerator.generateCompletionNoGoods(nonGroundRule, groundHeadAtom, headLiteral, bodyRepresentingLiteral);
+		result.addAll(completionNogoods);
 
 		// If the rule head is unique, add support.
 		if (uniqueGroundRulePerGroundHead.contains(nonGroundRule)) {

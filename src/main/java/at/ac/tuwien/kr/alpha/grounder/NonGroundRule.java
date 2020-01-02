@@ -100,7 +100,6 @@ public class NonGroundRule {
 
 	private boolean checkIsNonProjective() {
 
-
 		// Collect head and body variables.
 		HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.toLiteral().getBindingVariables());
 		HashSet<VariableTerm> occurringVariablesBody = new HashSet<>();
