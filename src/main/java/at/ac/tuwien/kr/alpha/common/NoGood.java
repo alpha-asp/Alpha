@@ -106,7 +106,7 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 		return new NoGood(SUPPORT, headLiteral, negateLiteral(bodyRepresentingLiteral));
 	}
 
-	public static NoGood support(int headLiteral, int ... bodyRepresentingLiterals) {
+	public static NoGood support(int headLiteral, int... bodyRepresentingLiterals) {
 		int[] literals = new int[bodyRepresentingLiterals.length + 1];
 		literals[0] = headLiteral;
 		for (int i = 0; i < bodyRepresentingLiterals.length; i++) {

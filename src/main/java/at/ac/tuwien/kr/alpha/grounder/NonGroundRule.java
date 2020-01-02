@@ -72,7 +72,7 @@ public class NonGroundRule {
 		this.bodyAtomsNegative = Collections.unmodifiableList(bodyAtomsNegative);
 
 		this.headAtom = headAtom;
-		this.isNonProjective = checkIsNonProjective();
+		this.isNonProjective = headAtom != null && checkIsNonProjective();
 
 		checkSafety();
 		this.groundingOrder = new RuleGroundingOrders(this);
@@ -99,7 +99,6 @@ public class NonGroundRule {
 	}
 
 	private boolean checkIsNonProjective() {
-
 		// Collect head and body variables.
 		HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.toLiteral().getBindingVariables());
 		HashSet<VariableTerm> occurringVariablesBody = new HashSet<>();
