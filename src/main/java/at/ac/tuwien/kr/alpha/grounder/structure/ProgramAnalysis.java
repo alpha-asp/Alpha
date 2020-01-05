@@ -34,6 +34,13 @@ public class ProgramAnalysis {
 		return Collections.unmodifiableMap(predicateDefiningRules);
 	}
 
+	/**
+	 * Runs program analysis after all defining rules have been recorded.
+	 */
+	public void runProgramAnalysis() {
+		computeRulesDerivingSameHeadBasedOnPredicate();
+	}
+
 	private void computeRulesDerivingSameHeadBasedOnPredicate() {
 		rulesDerivingSameHead = new LinkedHashMap<>();
 		// Iterate all rules having the same predicate in the head.
@@ -47,7 +54,9 @@ public class ProgramAnalysis {
 				}
 				rulesDerivingSameHead.put(rule, rules);
 			}
-			this.isFullyNonProjective.addAll(rules);
+			if (isFullyNonProjective) {
+				this.isFullyNonProjective.addAll(rules);
+			}
 		}
 	}
 
@@ -56,9 +65,6 @@ public class ProgramAnalysis {
 	}
 
 	public Map<NonGroundRule, LinkedHashSet<NonGroundRule>> getRulesDerivingSameHead() {
-		if (rulesDerivingSameHead == null) {
-			computeRulesDerivingSameHeadBasedOnPredicate();
-		}
 		return rulesDerivingSameHead;
 	}
 }

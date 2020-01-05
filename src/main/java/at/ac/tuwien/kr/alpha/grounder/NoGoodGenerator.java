@@ -36,9 +36,16 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
@@ -51,15 +58,13 @@ public class NoGoodGenerator {
 	private final ChoiceRecorder choiceRecorder;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private final ProgramAnalysis programAnalysis;
-	private final Set<NonGroundRule> uniqueGroundRulePerGroundHead;
 	private final CompletionGenerator completionGenerator;
 
-	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, ProgramAnalysis programAnalysis, Set<NonGroundRule> uniqueGroundRulePerGroundHead) {
+	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, ProgramAnalysis programAnalysis) {
 		this.atomStore = atomStore;
 		this.choiceRecorder = recorder;
 		this.factsFromProgram = factsFromProgram;
 		this.programAnalysis = programAnalysis;
-		this.uniqueGroundRulePerGroundHead = uniqueGroundRulePerGroundHead;
 		completionGenerator = new CompletionGenerator(programAnalysis);
 	}
 
@@ -121,11 +126,6 @@ public class NoGoodGenerator {
 		// Generate and add completion NoGoods if possible.
 		List<NoGood> completionNogoods = completionGenerator.generateCompletionNoGoods(nonGroundRule, groundHeadAtom, headLiteral, bodyRepresentingLiteral);
 		result.addAll(completionNogoods);
-
-		// If the rule head is unique, add support.
-		if (uniqueGroundRulePerGroundHead.contains(nonGroundRule)) {
-			result.add(NoGood.support(headLiteral, bodyRepresentingLiteral));
-		}
 
 		// If the body of the rule contains negation, add choices.
 		if (!negLiterals.isEmpty()) {

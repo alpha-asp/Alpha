@@ -68,7 +68,7 @@ public class CompletionGenerator {
 		PartialCompletion partialCompletion = partiallyCompletedCompletions.get(groundedHeadAtom);
 		if (partialCompletion == null) {
 			// Create new partial completion and store it.
-			PartialCompletion newPartialCompletion = new PartialCompletion(2);
+			PartialCompletion newPartialCompletion = new PartialCompletion(rulesDerivingSameHead.size());
 			newPartialCompletion.addBodyLiteral(bodyRepresentingLiteral);
 			partiallyCompletedCompletions.put(groundedHeadAtom, newPartialCompletion);
 		} else {
