@@ -146,13 +146,22 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	}
 
 	@Override
-	public int getBasicAtomAssignedMBT() {
+	public int getBasicAtomAssignedMBT(Set<Integer> excludedAtoms) {
+		boolean mbtAtomWasExcluded = false;
 		for (int atom = 1; atom <= atomStore.getMaxAtomId(); atom++) {
 			if (getTruth(atom) == MBT && atomStore.get(atom) instanceof BasicAtom) {
+				// Skip excluded atoms.
+				if (excludedAtoms.contains(atom)) {
+					mbtAtomWasExcluded = true;
+					continue;
+				}
 				return atom;
 			}
 		}
-		throw oops("No BasicAtom is assigned MBT.");
+		if (mbtAtomWasExcluded) {
+			return -1;
+		}
+		throw oops("No BasicAtom is assigned MBT (and not excluded).");
 	}
 
 	@Override

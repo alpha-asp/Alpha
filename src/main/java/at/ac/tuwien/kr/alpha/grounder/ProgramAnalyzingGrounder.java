@@ -1,9 +1,11 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -32,4 +34,11 @@ public interface ProgramAnalyzingGrounder extends Grounder {
 	 * @return the corresponding NonGroundRule.
 	 */
 	NonGroundRule getNonGroundRule(Integer ruleId);
+
+	/**
+	 * Computes the completion of the given atom and grounds rules deriving it, if that is possible.
+	 * @param atom the atom to complete.
+	 * @return an empty list if completion is not possible, otherwise the completion nogood and all nogoods resulting from rules deriving the atom.
+	 */
+	List<NoGood> completeAndGroundRulesFor(int atom);
 }

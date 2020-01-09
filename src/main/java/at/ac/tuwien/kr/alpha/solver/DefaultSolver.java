@@ -54,10 +54,13 @@ import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -92,6 +95,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private int mbtAtFixpoint;
 	private int conflictsAfterClosing;
 	private final boolean disableJustifications;
+	private enum CONFIGCOMPLETION {disabled, completion_only, justification_only, completion_and_justification};
+	private CONFIGCOMPLETION currentCompletionConfig = CONFIGCOMPLETION.completion_and_justification;
+	private final Set<Integer> atomsCompleteOrTried = new HashSet<>();
 	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
 	private final boolean disableNoGoodDeletion;
 
@@ -290,7 +296,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private boolean justifyMbtAndBacktrack() {
 		mbtAtFixpoint++;
 		// Run justification only if enabled and possible.
-		if (disableJustifications || !(grounder instanceof ProgramAnalyzingGrounder)) {
+		if (currentCompletionConfig == CONFIGCOMPLETION.disabled || !(grounder instanceof ProgramAnalyzingGrounder)) {
 			if (!backtrack()) {
 				logStats();
 				return false;
@@ -298,21 +304,44 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			return true;
 		}
 		ProgramAnalyzingGrounder analyzingGrounder = (ProgramAnalyzingGrounder) grounder;
-		// Justify one MBT assigned atom.
-		Integer atomToJustify = assignment.getBasicAtomAssignedMBT();
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Searching for justification of {} / {}", atomToJustify, atomStore.atomToString(atomToJustify));
-			LOGGER.debug("Assignment is (TRUE part only): {}", translate(assignment.getTrueAssignments()));
-		}
-		Set<Literal> reasonsForUnjustified = analyzingGrounder.justifyAtom(atomToJustify, assignment);
-		NoGood noGood = noGoodFromJustificationReasons(atomToJustify, reasonsForUnjustified);
-
-
-		int noGoodID = grounder.register(noGood);
 		Map<Integer, NoGood> obtained = new LinkedHashMap<>();
-		obtained.put(noGoodID, noGood);
-		LOGGER.debug("Learned NoGood is: {}", atomStore.noGoodToString(noGood));
-		// Add NoGood and trigger backjumping.
+
+		// Depending on configuration, run completion first and if that fails run justification.
+		boolean completionFailed = false;
+		if (currentCompletionConfig == CONFIGCOMPLETION.completion_only || currentCompletionConfig == CONFIGCOMPLETION.completion_and_justification) {
+			// Pick an MBT assigned atom that is not yet completed and has not been tried to be completed before.
+			int atomToJustify = assignment.getBasicAtomAssignedMBT(atomsCompleteOrTried);
+			if (atomToJustify != -1) {
+				atomsCompleteOrTried.add(atomToJustify);
+				// Try to complete the atom.
+				List<NoGood> completionAndRules = analyzingGrounder.completeAndGroundRulesFor(atomToJustify);
+				for (NoGood completionAndRule : completionAndRules) {
+					obtained.put(grounder.register(completionAndRule), completionAndRule);
+				}
+				if (completionAndRules.isEmpty()) {
+					completionFailed = true;
+				}
+			} else {
+				completionFailed = true;
+			}
+		}
+		if (currentCompletionConfig == CONFIGCOMPLETION.justification_only
+			|| (currentCompletionConfig == CONFIGCOMPLETION.completion_and_justification && completionFailed)) {
+			// Pick one MBT assigned atom regardless if we already tried to complete it.
+			int atomToJustify = assignment.getBasicAtomAssignedMBT(Collections.emptySet());
+			LOGGER.debug("Running justification analysis algorithm.");
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("Searching for justification of {} / {}", atomToJustify, atomStore.atomToString(atomToJustify));
+				LOGGER.debug("Assignment is (TRUE part only): {}", translate(assignment.getTrueAssignments()));
+			}
+			// Justify the MBT assigned atom.
+			Set<Literal> reasonsForUnjustified = analyzingGrounder.justifyAtom(atomToJustify, assignment);
+			NoGood noGood = noGoodFromJustificationReasons(atomToJustify, reasonsForUnjustified);
+			obtained.put(grounder.register(noGood), noGood);
+			LOGGER.debug("Learned NoGood is: {}", atomStore.noGoodToString(noGood));
+		}
+
+		// Add NoGood(s) and trigger backjumping.
 		if (!ingest(obtained)) {
 			logStats();
 			return false;

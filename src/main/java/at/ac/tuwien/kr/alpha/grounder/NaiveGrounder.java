@@ -63,6 +63,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -76,6 +77,7 @@ import java.util.TreeSet;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.grounder.Substitution.unify;
 import static java.util.Collections.singletonList;
 
 /**
@@ -333,7 +335,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				for (Instance instance : modifiedWorkingMemory.getRecentlyAddedInstances()) {
 					// Check instance if it matches with the atom.
 
-					final Substitution unifier = Substitution.unify(firstBindingAtom.startingLiteral, instance, new Substitution());
+					final Substitution unifier = unify(firstBindingAtom.startingLiteral, instance, new Substitution());
 
 					if (unifier == null) {
 						continue;
@@ -558,7 +560,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		for (Instance instance : instances) {
 			int remainingToleranceForThisInstance = remainingTolerance;
 			// Check each instance if it matches with the atom.
-			Substitution unified = Substitution.unify(substitute, instance, new Substitution(partialSubstitution));
+			Substitution unified = unify(substitute, instance, new Substitution(partialSubstitution));
 			if (unified == null) {
 				continue;
 			}
@@ -694,6 +696,38 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	@Override
 	public NonGroundRule getNonGroundRule(Integer ruleId) {
 		return knownNonGroundRules.get(ruleId);
+	}
+
+	@Override
+	public List<NoGood> completeAndGroundRulesFor(int atom) {
+		Atom atomToComplete = atomStore.get(atom);
+		LOGGER.debug("Trying to complete for atom {}/{}.", atom, atomToComplete);
+		// Check if all rules deriving the atom are fully non-projective.
+		HashSet<NonGroundRule> nonGroundRules = programAnalysis.getPredicateDefiningRules().get(atomToComplete.getPredicate());
+		if (nonGroundRules.isEmpty()) {
+			return Collections.emptyList();
+		}
+		NonGroundRule nonGroundRule = nonGroundRules.iterator().next();
+		LinkedHashSet<NonGroundRule> rulesDerivingSameHead = programAnalysis.getRulesDerivingSameHead().get(nonGroundRule);
+		if (rulesDerivingSameHead.isEmpty()) {
+			return Collections.emptyList();
+		}
+		NonGroundRule ruleDerivingSameHead = rulesDerivingSameHead.iterator().next();
+		if (!programAnalysis.isRuleFullyNonProjective(ruleDerivingSameHead)) {
+			return Collections.emptyList();
+		}
+		LOGGER.debug("All rules for atom {} are fully non-projective. Generating completion now.", atomToComplete);
+		// All rules deriving this atom are fully non-projective.
+
+		ArrayList<NoGood> generatedNoGoods = new ArrayList<>();
+		for (NonGroundRule rule : rulesDerivingSameHead) {
+			// For each rule, unify the atom with its head to get a unifier/grounding substitution.
+			Substitution unifier = unify(rule.getHeadAtom(), new Instance(atomToComplete.getTerms()), new Substitution());
+			// TODO: for non-projective rules, the unifier is a grounding substitution, but for functional-dependence we need to evaluate the function to get a grounding substitution.
+			generatedNoGoods.addAll(noGoodGenerator.generateNoGoodsFromGroundSubstitution(rule, unifier));
+			// Note: the completion NoGood is returned when generating the NoGoods for the last rule.
+		}
+		return generatedNoGoods;
 	}
 
 	@Override

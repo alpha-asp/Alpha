@@ -173,9 +173,10 @@ public interface Assignment {
 
 	/**
 	 * Obtain a BasicAtom that is currently assigned MBT (but not TRUE).
-	 * @return some BasicAtom that is assigned MBT.
+	 * @param excludedAtoms a set of atoms not to return.
+	 * @return some BasicAtom that is assigned MBT or -1 if none such exists.
 	 */
-	int getBasicAtomAssignedMBT();
+	int getBasicAtomAssignedMBT(Set<Integer> excludedAtoms);
 
 	/**
 	 * Assigns all unassigned atoms to FALSE.

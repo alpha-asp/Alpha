@@ -44,11 +44,11 @@ public class CompletionGenerator {
 	private final ProgramAnalysis programAnalysis;
 	private final Map<Atom, PartialCompletion> partiallyCompletedCompletions = new HashMap<>();
 
-	public CompletionGenerator(ProgramAnalysis programAnalysis) {
+	CompletionGenerator(ProgramAnalysis programAnalysis) {
 		this.programAnalysis = programAnalysis;
 	}
 
-	public List<NoGood> generateCompletionNoGoods(NonGroundRule nonGroundRule, Atom groundedHeadAtom, int headLiteral, int bodyRepresentingLiteral) {
+	List<NoGood> generateCompletionNoGoods(NonGroundRule nonGroundRule, Atom groundedHeadAtom, int headLiteral, int bodyRepresentingLiteral) {
 		if (!programAnalysis.isRuleFullyNonProjective(nonGroundRule)) {
 			return Collections.emptyList();
 		}
@@ -76,6 +76,7 @@ public class CompletionGenerator {
 			partialCompletion.addBodyLiteral(bodyRepresentingLiteral);
 			// Check if partial completion is a full completion now.
 			if (partialCompletion.isComplete()) {
+				partiallyCompletedCompletions.remove(groundedHeadAtom);
 				// Generate completion NoGood.
 				return Collections.singletonList(NoGood.support(headLiteral, partialCompletion.getGeneratedBodyLiterals()));
 			}
