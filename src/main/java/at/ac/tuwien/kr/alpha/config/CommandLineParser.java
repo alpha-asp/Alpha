@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2019, the Alpha Team.
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -27,6 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha.config;
 
+import at.ac.tuwien.kr.alpha.grounder.CompletionConfiguration;
+import at.ac.tuwien.kr.alpha.grounder.CompletionConfiguration.CompletionAndOrJustificationStrategy;
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 import org.apache.commons.cli.CommandLine;
@@ -101,10 +103,6 @@ public class CommandLineParser {
 			.build();
 	private static final Option OPT_STATS = Option.builder("st").longOpt("stats").desc("print statistics (default: " + SystemConfig.DEFAULT_PRINT_STATS + ")")
 			.build();
-	private static final Option OPT_NO_JUSTIFICATION = Option.builder("dj").longOpt("disableJustifications")
-			.desc("disable the search for justifications on must-be-true assigned atoms in the solver (default: "
-					+ SystemConfig.DEFAULT_DISABLE_JUSTIFICATION_SEARCH + ")")
-			.build();
 	private static final Option OPT_NORMALIZATION_GRID = Option.builder("ng").longOpt("normalizationCountingGrid")
 			.desc("use counting grid normalization instead of sorting circuit for #count (default: " + SystemConfig.DEFAULT_USE_NORMALIZATION_GRID + ")")
 			.build();
@@ -121,7 +119,22 @@ public class CommandLineParser {
 			.hasArg().argName("tolerance")
 			.build();
 	private static final Option OPT_GROUNDER_ACCUMULATOR_ENABLED = Option.builder("acc").longOpt("enableAccumulator")
-			.desc("activates the accumulator grounding strategy by disabling removal of instances from grounder memory in certain cases (default: " + SystemConfig.DEFAULT_GROUNDER_ACCUMULATOR_ENABLED + ")")
+			.desc("disables the accumulator grounding strategy by disabling removal of instances from grounder memory in certain cases")
+			.build();
+	private static final Option OPT_COMPLETION_DISABLE_SINGLE_RULES = Option.builder("dcsr").longOpt("disableCompletionForSingleRules")
+			.desc("disables the generation of completion nogoods for single non-projective rules")
+			.build();
+	private static final Option OPT_COMPLETION_DISABLE_MULTIPLE_RULES = Option.builder("dcmr").longOpt("disableCompletionForMultipleRules")
+			.desc("disables the generation of completion nogoods for multiple rules")
+			.build();
+	private static final Option OPT_COMPLETION_DISABLE_DIRECT_FUNCTIONAL_DEPENDENCIES = Option.builder("dcdfd").longOpt("disableCompletionForDirectFunctionalDependencies")
+			.desc("disables the generation of completion nogoods for direct functional dependencies")
+			.build();
+	private static final Option OPT_COMPLETION_DISABLE_SOLVED_PREDICATES = Option.builder("dcsp").longOpt("disableCompletionForSolvedPredicates")
+			.desc("disables the generation of completion nogoods for solved predicates")
+			.build();
+	private static final Option OPT_COMPLETION_JUSTIFICATION_STRATEGY = Option.builder("cjs").longOpt("completionJustificationStrategy").hasArg(true).argName("strategy")
+			.desc("determines if completion nogoods and/or justifications shall be generated at all (allowed values: " + CompletionAndOrJustificationStrategy.listAllowedValues() + "; default: " + CompletionConfiguration.DEFAULT_COMPLETION_AND_OR_JUSTIFICATION_STRATEGY.name() + ")")
 			.build();
 
 	private static final Options CLI_OPTS = new Options();
@@ -150,12 +163,16 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_REPLAY_CHOICES);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_QUIET);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_STATS);
-		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_JUSTIFICATION);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NORMALIZATION_GRID);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_NO_NOGOOD_DELETION);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_ACCUMULATOR_ENABLED);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_COMPLETION_DISABLE_SINGLE_RULES);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_COMPLETION_DISABLE_MULTIPLE_RULES);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_COMPLETION_DISABLE_DIRECT_FUNCTIONAL_DEPENDENCIES);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_COMPLETION_DISABLE_SOLVED_PREDICATES);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_COMPLETION_JUSTIFICATION_STRATEGY);
 	}
 
 	/*
@@ -196,12 +213,16 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_REPLAY_CHOICES.getOpt(), this::handleReplayChoices);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_QUIET.getOpt(), this::handleQuiet);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_STATS.getOpt(), this::handleStats);
-		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), this::handleNoJustification);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NORMALIZATION_GRID.getOpt(), this::handleNormalizationGrid);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS.getOpt(), this::handleGrounderToleranceConstraints);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES.getOpt(), this::handleGrounderToleranceRules);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_ACCUMULATOR_ENABLED.getOpt(), this::handleGrounderNoInstanceRemoval);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_COMPLETION_DISABLE_SINGLE_RULES.getOpt(), this::handleCompletionDisableSingleRules);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_COMPLETION_DISABLE_MULTIPLE_RULES.getOpt(), this::handleCompletionDisableMultipleRules);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_COMPLETION_DISABLE_DIRECT_FUNCTIONAL_DEPENDENCIES.getOpt(), this::handleCompletionDisableDirectFunctionalDependencies);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_COMPLETION_DISABLE_SOLVED_PREDICATES.getOpt(), this::handleCompletionDisableSolvedPredicates);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_COMPLETION_JUSTIFICATION_STRATEGY.getOpt(), this::handleCompletionJustificationStrategy);
 
 		this.inputOptionHandlers.put(CommandLineParser.OPT_NUM_ANSWER_SETS.getOpt(), this::handleNumAnswerSets);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_INPUT.getOpt(), this::handleInput);
@@ -369,10 +390,6 @@ public class CommandLineParser {
 		cfg.setPrintStats(true);
 	}
 
-	private void handleNoJustification(Option opt, SystemConfig cfg) {
-		cfg.setDisableJustificationSearch(true);
-	}
-
 	private void handleNormalizationGrid(Option opt, SystemConfig cfg) {
 		cfg.setUseNormalizationGrid(true);
 	}
@@ -393,6 +410,31 @@ public class CommandLineParser {
 
 	private void handleGrounderNoInstanceRemoval(Option opt, SystemConfig cfg) {
 		cfg.setGrounderAccumulatorEnabled(true);
+	}
+
+	private void handleCompletionDisableSingleRules(Option option, SystemConfig cfg) {
+		cfg.getCompletionConfiguration().setEnableCompletionForSingleNonProjectiveRule(false);
+	}
+
+	private void handleCompletionDisableMultipleRules(Option option, SystemConfig cfg) {
+		cfg.getCompletionConfiguration().setEnableCompletionForMultipleRules(false);
+	}
+
+	private void handleCompletionDisableDirectFunctionalDependencies(Option option, SystemConfig cfg) {
+		cfg.getCompletionConfiguration().setEnableCompletionForDirectFunctionalDependencies(false);
+	}
+
+	private void handleCompletionDisableSolvedPredicates(Option option, SystemConfig cfg) {
+		cfg.getCompletionConfiguration().setEnableCompletionForSolvedPredicates(false);
+	}
+
+	private void handleCompletionJustificationStrategy(Option option, SystemConfig cfg) throws ParseException {
+		String strategyName = option.getValue(CompletionConfiguration.DEFAULT_COMPLETION_AND_OR_JUSTIFICATION_STRATEGY.name());
+		try {
+			cfg.getCompletionConfiguration().setCompletionAndOrJustificationStrategyName(strategyName);
+		} catch (IllegalArgumentException e) {
+			throw new ParseException("Unknown completion/justification strategy: " + strategyName + ". Please try one of the following: " + CompletionAndOrJustificationStrategy.listAllowedValues());
+		}
 	}
 
 }
