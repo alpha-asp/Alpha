@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019, the Alpha Team.
+ * Copyright (c) 2019-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.config;
 
+import at.ac.tuwien.kr.alpha.grounder.CompletionConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
@@ -51,7 +52,6 @@ public class SystemConfig {
 	public static final boolean DEFAULT_DETERMINISTIC = false;
 	public static final boolean DEFAULT_PRINT_STATS = false;
 	public static final boolean DEFAULT_QUIET = false;
-	public static final boolean DEFAULT_DISABLE_JUSTIFICATION_SEARCH = false;
 	public static final boolean DEFAULT_DEBUG_INTERNAL_CHECKS = false;
 	public static final boolean DEFAULT_USE_NORMALIZATION_GRID = false;
 	public static final boolean DEFAULT_SORT_ANSWER_SETS = false;
@@ -71,7 +71,6 @@ public class SystemConfig {
 	private BinaryNoGoodPropagationEstimation.Strategy momsStrategy = SystemConfig.DEFAULT_MOMS_STRATEGY;
 	private boolean quiet = SystemConfig.DEFAULT_QUIET;
 	private boolean printStats = SystemConfig.DEFAULT_PRINT_STATS;
-	private boolean disableJustificationSearch = SystemConfig.DEFAULT_DISABLE_JUSTIFICATION_SEARCH;
 	private boolean useNormalizationGrid = SystemConfig.DEFAULT_USE_NORMALIZATION_GRID;
 	private boolean sortAnswerSets = SystemConfig.DEFAULT_SORT_ANSWER_SETS;
 	private List<Integer> replayChoices = SystemConfig.DEFAULT_REPLAY_CHOICES;
@@ -79,6 +78,7 @@ public class SystemConfig {
 	private String grounderToleranceConstraints = DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS;
 	private String grounderToleranceRules = DEFAULT_GROUNDER_TOLERANCE_RULES;
 	private boolean grounderAccumulatorEnabled = DEFAULT_GROUNDER_ACCUMULATOR_ENABLED;
+	private final CompletionConfiguration completionConfiguration = new CompletionConfiguration();
 
 	public String getGrounderName() {
 		return this.grounderName;
@@ -168,14 +168,6 @@ public class SystemConfig {
 		this.printStats = printStats;
 	}
 
-	public boolean isDisableJustificationSearch() {
-		return this.disableJustificationSearch;
-	}
-
-	public void setDisableJustificationSearch(boolean disableJustificationSearch) {
-		this.disableJustificationSearch = disableJustificationSearch;
-	}
-
 	public boolean isUseNormalizationGrid() {
 		return this.useNormalizationGrid;
 	}
@@ -234,5 +226,9 @@ public class SystemConfig {
 
 	public void setGrounderAccumulatorEnabled(boolean grounderAccumulatorEnabled) {
 		this.grounderAccumulatorEnabled = grounderAccumulatorEnabled;
+	}
+
+	public CompletionConfiguration getCompletionConfiguration() {
+		return completionConfiguration;
 	}
 }

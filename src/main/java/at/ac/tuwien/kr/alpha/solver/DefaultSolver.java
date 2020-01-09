@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2019, the Alpha Team.
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -38,6 +38,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.grounder.CompletionConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 import at.ac.tuwien.kr.alpha.grounder.ProgramAnalyzingGrounder;
@@ -91,7 +92,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private boolean initialize = true;
 	private int mbtAtFixpoint;
 	private int conflictsAfterClosing;
-	private final boolean disableJustifications;
+	private final CompletionConfiguration completionConfiguration;
 	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
 	private final boolean disableNoGoodDeletion;
 
@@ -105,7 +106,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		this.choiceManager = new ChoiceManager(assignment, store);
 		this.learner = new GroundConflictNoGoodLearner(assignment, atomStore);
 		this.branchingHeuristic = chainFallbackHeuristic(grounder, assignment, random, heuristicsConfiguration);
-		this.disableJustifications = config.isDisableJustificationSearch();
+		this.completionConfiguration = config.getCompletionConfiguration();
 		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
 	}
@@ -290,7 +291,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private boolean justifyMbtAndBacktrack() {
 		mbtAtFixpoint++;
 		// Run justification only if enabled and possible.
-		if (disableJustifications || !(grounder instanceof ProgramAnalyzingGrounder)) {
+		if (completionConfiguration.getCompletionAndOrJustificationStrategy().isJustificationDisabled()
+				|| !(grounder instanceof ProgramAnalyzingGrounder)) {
 			if (!backtrack()) {
 				logStats();
 				return false;
@@ -332,7 +334,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private boolean treatConflictAfterClosing(Antecedent violatedNoGood) {
-		if (disableJustificationAfterClosing || disableJustifications || !(grounder instanceof ProgramAnalyzingGrounder)) {
+		if (disableJustificationAfterClosing
+				|| completionConfiguration.getCompletionAndOrJustificationStrategy().isJustificationDisabled()
+				|| !(grounder instanceof ProgramAnalyzingGrounder)) {
 			// Will not learn from violated NoGood, do simple backtrack.
 			LOGGER.debug("NoGood was violated after all unassigned atoms were assigned to false; will not learn from it; skipping.");
 			if (!backtrack()) {

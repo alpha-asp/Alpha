@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019, the Alpha Team.
+ * Copyright (c) 2019-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.config;
 
+import at.ac.tuwien.kr.alpha.grounder.CompletionConfiguration;
 import org.apache.commons.cli.ParseException;
 import org.junit.Test;
 
@@ -34,6 +35,7 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class CommandLineParserTest {
@@ -146,6 +148,97 @@ public class CommandLineParserTest {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
 		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-acc"});
 		assertTrue(alphaConfig.getAlphaConfig().isGrounderAccumulatorEnabled());
+	}
+
+	@Test
+	public void enableCompletionForSingleRules() throws ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString."});
+		assertTrue(alphaConfig.getAlphaConfig().getCompletionConfiguration().isEnableCompletionForSingleNonProjectiveRule());
+	}
+
+	@Test
+	public void disableCompletionForSingleRules() throws ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-dcsr"});
+		assertFalse(alphaConfig.getAlphaConfig().getCompletionConfiguration().isEnableCompletionForSingleNonProjectiveRule());
+	}
+
+	@Test
+	public void enableCompletionForMultipleRules() throws ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString."});
+		assertTrue(alphaConfig.getAlphaConfig().getCompletionConfiguration().isEnableCompletionForMultipleRules());
+	}
+
+	@Test
+	public void disableCompletionForMultipleRules() throws ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-dcmr"});
+		assertFalse(alphaConfig.getAlphaConfig().getCompletionConfiguration().isEnableCompletionForMultipleRules());
+	}
+
+	@Test
+	public void enableCompletionForDirectFunctionalDependencies() throws ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString."});
+		assertTrue(alphaConfig.getAlphaConfig().getCompletionConfiguration().isEnableCompletionForDirectFunctionalDependencies());
+	}
+
+	@Test
+	public void disableCompletionForDirectFunctionalDependencies() throws ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-dcdfd"});
+		assertFalse(alphaConfig.getAlphaConfig().getCompletionConfiguration().isEnableCompletionForDirectFunctionalDependencies());
+	}
+
+	@Test
+	public void enableCompletionForSolvedPredicates() throws ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString."});
+		assertTrue(alphaConfig.getAlphaConfig().getCompletionConfiguration().isEnableCompletionForSolvedPredicates());
+	}
+
+	@Test
+	public void disableCompletionForSolvedPredicates() throws ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-dcsp"});
+		assertFalse(alphaConfig.getAlphaConfig().getCompletionConfiguration().isEnableCompletionForSolvedPredicates());
+	}
+
+	@Test
+	public void completionJustificationStrategyDefault() throws  ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString."});
+		assertEquals(CompletionConfiguration.DEFAULT_COMPLETION_AND_OR_JUSTIFICATION_STRATEGY, alphaConfig.getAlphaConfig().getCompletionConfiguration().getCompletionAndOrJustificationStrategy());
+	}
+
+	@Test
+	public void completionJustificationStrategyNone() throws  ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-cjs", "None"});
+		assertEquals(CompletionConfiguration.CompletionAndOrJustificationStrategy.None, alphaConfig.getAlphaConfig().getCompletionConfiguration().getCompletionAndOrJustificationStrategy());
+	}
+
+	@Test
+	public void completionJustificationStrategyOnlyCompletion() throws  ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-cjs", "OnlyCompletion"});
+		assertEquals(CompletionConfiguration.CompletionAndOrJustificationStrategy.OnlyCompletion, alphaConfig.getAlphaConfig().getCompletionConfiguration().getCompletionAndOrJustificationStrategy());
+	}
+
+	@Test
+	public void completionJustificationStrategyOnlyJustification() throws  ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-cjs", "OnlyJustification"});
+		assertEquals(CompletionConfiguration.CompletionAndOrJustificationStrategy.OnlyJustification, alphaConfig.getAlphaConfig().getCompletionConfiguration().getCompletionAndOrJustificationStrategy());
+	}
+
+	@Test
+	public void completionJustificationStrategyBoth() throws  ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-cjs", "Both"});
+		assertEquals(CompletionConfiguration.CompletionAndOrJustificationStrategy.Both, alphaConfig.getAlphaConfig().getCompletionConfiguration().getCompletionAndOrJustificationStrategy());
 	}
 
 }
