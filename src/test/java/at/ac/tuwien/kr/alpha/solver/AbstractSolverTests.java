@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2019, the Alpha Team.
+ * Copyright (c) 2017-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -192,7 +192,6 @@ public abstract class AbstractSolverTests {
 		config.setSeed(seed);
 		config.setBranchingHeuristic(heuristic);
 		config.setDebugInternalChecks(checks);
-		config.setDisableJustificationSearch(false);
 		return config;
 	}
 
