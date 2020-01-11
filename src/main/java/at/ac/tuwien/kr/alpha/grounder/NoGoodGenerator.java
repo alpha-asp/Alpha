@@ -35,6 +35,8 @@ import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -54,6 +56,8 @@ import static java.util.Collections.singletonList;
  * Copyright (c) 2017-2018, the Alpha Team.
  */
 public class NoGoodGenerator {
+	private static final Logger LOGGER = LoggerFactory.getLogger(NoGoodGenerator.class);
+
 	private final AtomStore atomStore;
 	private final ChoiceRecorder choiceRecorder;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
@@ -76,14 +80,23 @@ public class NoGoodGenerator {
 	 * @param substitution
 	 *          the grounding substitution, i.e., applying substitution to nonGroundRule results in a ground rule.
 	 *          Assumption: atoms with fixed interpretation evaluate to true under the substitution.
+	 * @param ignoreIfUnsatisfiable return no NoGoods if the nonGroundRule can never fire; in case this is false and
+	 *                              nonGroundRule has a head, NoGoods are generated such that:
+	 *                              a) the body representing atom implies the head atom, and
+	 *                              b) the body representing atom must be false.
 	 * @return a list of the NoGoods corresponding to the ground rule.
 	 */
-	List<NoGood> generateNoGoodsFromGroundSubstitution(final NonGroundRule nonGroundRule, final Substitution substitution) {
+	List<NoGood> generateNoGoodsFromGroundSubstitution(final NonGroundRule nonGroundRule, final Substitution substitution, boolean ignoreIfUnsatisfiable) {
 		final List<Integer> posLiterals = collectPosLiterals(nonGroundRule, substitution);
 		final List<Integer> negLiterals = collectNegLiterals(nonGroundRule, substitution);
 
+		boolean ruleCannotFire = false;
 		if (posLiterals == null || negLiterals == null) {
-			return emptyList();
+			if (ignoreIfUnsatisfiable || nonGroundRule.isConstraint()) {
+				return emptyList();
+			}
+			// The nonGroundRule has a head and cannot fire.
+			ruleCannotFire = true;
 		}
 
 		// A constraint is represented by exactly one nogood.
@@ -115,20 +128,31 @@ public class NoGoodGenerator {
 		// Create a nogood for the head.
 		result.add(NoGood.headFirst(negateLiteral(headLiteral), bodyRepresentingLiteral));
 
-		final NoGood ruleBody = NoGood.fromBody(posLiterals, negLiterals, bodyRepresentingLiteral);
-		result.add(ruleBody);
+		if (ruleCannotFire) {
+			// If the rule cannot fire, its body representing literal is always false, add unary NoGood expressing this.
+			result.add(new NoGood(bodyRepresentingLiteral));
+		} else {
+			// Rule can in principle fire, establish iff between body literals and bodyRepresentingLiteral.
+			final NoGood ruleBody = NoGood.fromBody(posLiterals, negLiterals, bodyRepresentingLiteral);
+			result.add(ruleBody);
 
-		// Nogoods such that the atom representing the body is true iff the body is true.
-		for (int j = 1; j < ruleBody.size(); j++) {
-			result.add(new NoGood(bodyRepresentingLiteral, negateLiteral(ruleBody.getLiteral(j))));
+			// Nogoods such that the atom representing the body is true iff the body is true.
+			for (int j = 1; j < ruleBody.size(); j++) {
+				result.add(new NoGood(bodyRepresentingLiteral, negateLiteral(ruleBody.getLiteral(j))));
+			}
 		}
 
 		// Generate and add completion NoGoods if possible.
 		List<NoGood> completionNogoods = completionGenerator.generateCompletionNoGoods(nonGroundRule, groundHeadAtom, headLiteral, bodyRepresentingLiteral);
+		if (LOGGER.isTraceEnabled()) {
+			for (NoGood completionNogood : completionNogoods) {
+				LOGGER.trace(atomStore.noGoodToString(completionNogood));
+			}
+		}
 		result.addAll(completionNogoods);
 
 		// If the body of the rule contains negation, add choices.
-		if (!negLiterals.isEmpty()) {
+		if (!ruleCannotFire && !negLiterals.isEmpty()) {
 			result.addAll(choiceRecorder.generateChoiceNoGoods(posLiterals, negLiterals, bodyRepresentingLiteral));
 		}
 

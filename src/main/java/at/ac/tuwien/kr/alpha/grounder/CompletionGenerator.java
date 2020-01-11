@@ -59,7 +59,6 @@ public class CompletionGenerator {
 		if (rulesDerivingSameHead.size() == 1) {
 			// Rule has unique-head predicate property.
 			return Collections.singletonList(NoGood.support(headLiteral, bodyRepresentingLiteral));
-			// TODO: if non-projective condition is generalized, this may be more complicated here (i.e., generate functionally-dependent variables for ground instantiation)
 		}
 
 		// If multiple rules can derive the same head, add all their respective bodyRepresenting literals to the completion nogood.

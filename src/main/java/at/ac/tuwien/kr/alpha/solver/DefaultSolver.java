@@ -292,6 +292,14 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		return true;
 	}
 
+	private boolean abortJustifyWithBacktrack() {
+		if (!backtrack()) {
+			logStats();
+			return false;
+		}
+		return true;
+	}
+
 	private boolean justifyMbtAndBacktrack() {
 		mbtAtFixpoint++;
 
@@ -299,11 +307,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		// Run justification only if enabled and possible.
 		if (completionStrategy == CompletionConfiguration.Strategy.None
 			|| !(grounder instanceof ProgramAnalyzingGrounder)) {
-			if (!backtrack()) {
-				logStats();
-				return false;
-			}
-			return true;
+			return abortJustifyWithBacktrack();
 		}
 		ProgramAnalyzingGrounder analyzingGrounder = (ProgramAnalyzingGrounder) grounder;
 		Map<Integer, NoGood> obtained = new LinkedHashMap<>();
@@ -326,6 +330,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			} else {
 				completionFailed = true;
 			}
+		}
+		if (completionFailed && completionStrategy != CompletionConfiguration.Strategy.Both) {
+			return abortJustifyWithBacktrack();
 		}
 		if (completionStrategy == CompletionConfiguration.Strategy.OnlyJustification
 			|| (completionStrategy == CompletionConfiguration.Strategy.Both && completionFailed)) {

@@ -44,17 +44,17 @@ public class ProgramAnalysis {
 	private void computeRulesDerivingSameHeadBasedOnPredicate() {
 		rulesDerivingSameHead = new LinkedHashMap<>();
 		// Iterate all rules having the same predicate in the head.
-		boolean isFullyNonProjective;
+		boolean isCompletable;
 		for (Map.Entry<Predicate, LinkedHashSet<NonGroundRule>> definingRules : predicateDefiningRules.entrySet()) {
-			isFullyNonProjective = true;
+			isCompletable = true;
 			LinkedHashSet<NonGroundRule> rules = definingRules.getValue();
 			for (NonGroundRule rule : rules) {
-				if (!rule.isNonProjective()) {
-					isFullyNonProjective = false;
+				if (!rule.isNonProjective() && !rule.isFunctionallyDependent()) {
+					isCompletable = false;
 				}
 				rulesDerivingSameHead.put(rule, rules);
 			}
-			if (isFullyNonProjective) {
+			if (isCompletable) {
 				this.isFullyNonProjective.addAll(rules);
 			}
 		}

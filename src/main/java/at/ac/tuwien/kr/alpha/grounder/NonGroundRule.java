@@ -33,6 +33,7 @@ import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.structure.DirectFunctionalDependency;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,6 +42,7 @@ import java.util.List;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.grounder.structure.DirectFunctionalDependency.computeDirectFunctionalDependencies;
 
 /**
  * Represents a non-ground rule or a constraint for the semi-naive grounder.
@@ -58,6 +60,7 @@ public class NonGroundRule {
 
 	final RuleGroundingOrders groundingOrder;
 	private final boolean isNonProjective;
+	private final DirectFunctionalDependency functionalDependency;
 
 	private NonGroundRule(Rule rule, int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
 		this.ruleId = ruleId;
@@ -73,6 +76,7 @@ public class NonGroundRule {
 
 		this.headAtom = headAtom;
 		this.isNonProjective = headAtom != null && checkIsNonProjective();
+		this.functionalDependency = headAtom == null ? null : computeDirectFunctionalDependencies(this);
 
 		checkSafety();
 		this.groundingOrder = new RuleGroundingOrders(this);
@@ -190,5 +194,13 @@ public class NonGroundRule {
 
 	public boolean isNonProjective() {
 		return isNonProjective;
+	}
+
+	public boolean isFunctionallyDependent() {
+		return functionalDependency != null;
+	}
+
+	public DirectFunctionalDependency getFunctionalDependency() {
+		return functionalDependency;
 	}
 }

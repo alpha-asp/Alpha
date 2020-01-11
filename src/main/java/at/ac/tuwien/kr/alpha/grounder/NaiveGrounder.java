@@ -394,7 +394,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 */
 	private void groundAndRegister(final NonGroundRule nonGroundRule, final List<Substitution> substitutions, final Map<Integer, NoGood> newNoGoods) {
 		for (Substitution substitution : substitutions) {
-			List<NoGood> generatedNoGoods = noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution);
+			List<NoGood> generatedNoGoods = noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution, true);
 			registry.register(generatedNoGoods, newNoGoods);
 		}
 	}
@@ -723,8 +723,15 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		for (NonGroundRule rule : rulesDerivingSameHead) {
 			// For each rule, unify the atom with its head to get a unifier/grounding substitution.
 			Substitution unifier = unify(rule.getHeadAtom(), new Instance(atomToComplete.getTerms()), new Substitution());
-			// TODO: for non-projective rules, the unifier is a grounding substitution, but for functional-dependence we need to evaluate the function to get a grounding substitution.
-			generatedNoGoods.addAll(noGoodGenerator.generateNoGoodsFromGroundSubstitution(rule, unifier));
+			// For non-projective rules, the unifier is already a grounding substitution.
+
+			// For projective but functionally dependent rules we need to evaluate the functional dependency to get a grounding substitution.
+			if (!rule.isNonProjective() && rule.isFunctionallyDependent()) {
+				unifier = rule.getFunctionalDependency().evaluate(unifier);
+			}
+
+			// We have a grounding substitution now, generate all NoGoods.
+			generatedNoGoods.addAll(noGoodGenerator.generateNoGoodsFromGroundSubstitution(rule, unifier, false));
 			// Note: the completion NoGood is returned when generating the NoGoods for the last rule.
 		}
 		return generatedNoGoods;
