@@ -23,6 +23,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 public class EnumerationAtom extends BasicAtom {
 	public static final Predicate ENUMERATION_PREDICATE = Predicate.getInstance("_Enumeration", 3);
 	private static final HashMap<Term, HashMap<Term, Integer>> ENUMERATIONS = new HashMap<>();
+	private static final HashMap<Term, HashMap<Integer, Term>> REVERSE_ENUMERATIONS = new HashMap<>();
 
 	public EnumerationAtom(List<Term> terms) {
 		super(ENUMERATION_PREDICATE, terms);
@@ -36,6 +37,7 @@ public class EnumerationAtom extends BasicAtom {
 
 	public static void resetEnumerations() {
 		ENUMERATIONS.clear();
+		REVERSE_ENUMERATIONS.clear();
 	}
 
 	private Integer getEnumerationIndex(Term identifier, Term enumerationTerm) {
@@ -45,11 +47,19 @@ public class EnumerationAtom extends BasicAtom {
 		if (assignedInteger == null) {
 			int enumerationIndex = enumeratedTerms.size() + 1;
 			enumeratedTerms.put(enumerationTerm, enumerationIndex);
+			REVERSE_ENUMERATIONS.putIfAbsent(identifier, new HashMap<>());
+			HashMap<Integer, Term> indexToTerms = REVERSE_ENUMERATIONS.get(identifier);
+			indexToTerms.put(enumerationIndex, enumerationTerm);
 			return enumerationIndex;
 		} else {
 			return assignedInteger;
 		}
 
+	}
+
+	public Term getTermWithIndex(Term identifier, Integer index) {
+		HashMap<Integer, Term> indexToTerms = REVERSE_ENUMERATIONS.get(identifier);
+		return indexToTerms.get(index);
 	}
 
 	public void addEnumerationToSubstitution(Substitution substitution) {
