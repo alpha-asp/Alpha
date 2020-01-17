@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2018 Siemens AG
+/*
+ * Copyright (c) 2018, 2020 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -25,59 +25,40 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-
-import java.util.List;
-
-import static at.ac.tuwien.kr.alpha.Util.join;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveAtom;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveBody;
 
 /**
  * Represents a heuristic directive, e.g. {@code #heuristic a : b. [2@1]}
  */
 public class HeuristicDirective extends Directive {
-
-	public static final boolean DEFAULT_SIGN = true;
-	public static final Term DEFAULT_SIGN_TERM = ConstantTerm.getInstance(DEFAULT_SIGN);
 	
-	private final BasicAtom head;	// TODO: replace by classical literal and drop sign?
-	private final List<Literal> body;
+	private final HeuristicDirectiveAtom head;
+	private final HeuristicDirectiveBody body;
 	private final WeightAtLevel weightAtLevel;
-	private final Term sign;	//Term, not boolean, in case we want to support variable signs
-	
-	public HeuristicDirective(BasicAtom head, List<Literal> body, WeightAtLevel weightAtLevel, Term sign) {
+
+	public HeuristicDirective(HeuristicDirectiveAtom head, HeuristicDirectiveBody body, WeightAtLevel weightAtLevel) {
 		super();
 		this.head = head;
 		this.body = body;
 		this.weightAtLevel = weightAtLevel;
-		this.sign = sign != null ? sign : DEFAULT_SIGN_TERM;
-	}
-	
-	public HeuristicDirective(BasicAtom head, List<Literal> body, WeightAtLevel weightAtLevel, boolean sign) {
-		this(head, body, weightAtLevel, ConstantTerm.getInstance(sign));
 	}
 
-	public BasicAtom getHead() {
+	public HeuristicDirectiveAtom getHead() {
 		return head;
 	}
 
-	public List<Literal> getBody() {
+	public HeuristicDirectiveBody getBody() {
 		return body;
 	}
 
 	public WeightAtLevel getWeightAtLevel() {
 		return weightAtLevel;
 	}
-	
-	public Term getSign() {
-		return sign;
-	}
-	
+
 	@Override
 	public String toString() {
-		return join("#heuristic " + head + " : ", body, ". [" + weightAtLevel + "]");
+		return "#heuristic " + head + " : " + ". [" + weightAtLevel + "]";
 	}
 	
 }

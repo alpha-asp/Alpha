@@ -48,3 +48,7 @@ QUOTED_STRING : QUOTE ( '\\"' | . )*? QUOTE;
 COMMENT : '%' ~[\r\n]* -> channel(HIDDEN);
 MULTI_LINE_COMMEN : '%*' .*? '*%' -> channel(HIDDEN);
 BLANK : [ \t\r\n\f]+ -> channel(HIDDEN);
+
+HEU_SIGN_T : 'T';
+HEU_SIGN_M : 'M';
+HEU_SIGN_F : 'F';

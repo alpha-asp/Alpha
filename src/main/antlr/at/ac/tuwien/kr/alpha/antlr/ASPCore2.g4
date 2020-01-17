@@ -49,7 +49,9 @@ naf_literals : naf_literal (COMMA naf_literals)?;
 
 naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
 
-classical_literal : MINUS? ID (PAREN_OPEN terms PAREN_CLOSE)?;
+classical_literal : MINUS? basic_atom;
+
+basic_atom : ID (PAREN_OPEN terms PAREN_CLOSE)?;
 
 builtin_atom : term binop term;
 
@@ -80,7 +82,23 @@ directive : directive_enumeration | directive_heuristic;  // NOT Core2 syntax, a
 
 directive_enumeration : SHARP 'enumeration_predicate_is' ID DOT;  // NOT Core2 syntax, used for aggregate translation.
 
-directive_heuristic : SHARP 'heuristic' classical_literal (COLON body)? DOT weight_annotation?;
+directive_heuristic : SHARP 'heuristic' heuristic_head_atom (heuristic_body)? DOT heuristic_weight_annotation?;
+
+heuristic_head_atom : (heuristic_head_sign)? basic_atom;
+
+heuristic_head_sign : HEU_SIGN_T | HEU_SIGN_F;
+
+heuristic_body : COLON heuristic_body_literal (COMMA heuristic_body_literal)*;
+
+heuristic_body_literal : NAF? heuristic_body_atom;
+
+heuristic_body_atom : (heuristic_body_sign)* basic_atom;
+
+heuristic_body_sign : HEU_SIGN_T | HEU_SIGN_M | HEU_SIGN_F;
+
+heuristic_weight_annotation : SQUARE_OPEN heuristic_weight_at_level SQUARE_CLOSE;
+
+heuristic_weight_at_level : term (AT term)?;
 
 basic_terms : basic_term (COMMA basic_terms)? ;
 

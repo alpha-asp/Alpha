@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2019, the Alpha Team.
+/*
+ * Copyright (c) 2017-2020, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -136,6 +136,6 @@ public class HeuristicAtom implements Atom {
 	}
 
 	public static HeuristicAtom fromHeuristicDirective(HeuristicDirective heuristicDirective) {
-		return new HeuristicAtom(heuristicDirective.getHead(), heuristicDirective.getWeightAtLevel(), heuristicDirective.getSign());
+		return null; // TODO: update conversion // new HeuristicAtom(heuristicDirective.getHead(), heuristicDirective.getWeightAtLevel(), heuristicDirective.getSign());
 	}
 }

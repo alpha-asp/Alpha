@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -33,27 +33,62 @@ import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Directive_heuristicContext;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Weight_annotationContext;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Weight_at_levelContext;
-import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.common.atoms.*;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
+import at.ac.tuwien.kr.alpha.common.ChoiceHead;
+import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.common.EnumerationDirective;
+import at.ac.tuwien.kr.alpha.common.Head;
+import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.Rule;
+import at.ac.tuwien.kr.alpha.common.WeightAtLevel;
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.ExternalLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.common.terms.*;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveAtom;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveBody;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveLiteral;
+import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives.DIRECTIVE;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
 import static java.util.Collections.emptyList;
 
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
- */
 public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	private final Map<String, PredicateInterpretation> externals;
 	private final boolean acceptVariables;
 
 	private Program inputProgram;
-	private boolean temporarilyAllowClassicalNegation;
 	private InlineDirectives inlineDirectives;
 
 	public ParseTreeVisitor(Map<String, PredicateInterpretation> externals) {
@@ -265,7 +300,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public ChoiceHead.ChoiceElement visitChoice_element(ASPCore2Parser.Choice_elementContext ctx) {
 		// choice_element : classical_literal (COLON naf_literals?)?;
-		BasicAtom atom = (BasicAtom) visitClassical_literal(ctx.classical_literal());
+		BasicAtom atom = visitClassical_literal(ctx.classical_literal());
 		if (ctx.naf_literals() != null) {
 			return new ChoiceHead.ChoiceElement(atom, visitNaf_literals(ctx.naf_literals()));
 		} else {
@@ -486,11 +521,16 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public BasicAtom visitClassical_literal(ASPCore2Parser.Classical_literalContext ctx) {
-		// classical_literal : MINUS? ID (PAREN_OPEN terms PAREN_CLOSE)?;
-		if (ctx.MINUS() != null && !temporarilyAllowClassicalNegation) {
+		// classical_literal : MINUS? basic_atom;
+		if (ctx.MINUS() != null) {
 			throw notSupported(ctx);
 		}
+		return visitBasic_atom(ctx.basic_atom());
+	}
 
+	@Override
+	public BasicAtom visitBasic_atom(ASPCore2Parser.Basic_atomContext ctx) {
+		// basic_atom : ID (PAREN_OPEN terms PAREN_CLOSE)?;
 		final List<Term> terms = visitTerms(ctx.terms());
 		return new BasicAtom(Predicate.getInstance(ctx.ID().getText(), terms.size()), terms);
 	}
@@ -580,20 +620,104 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		);
 	}
 
-	
+	@Override
 	public Object visitDirective_heuristic(Directive_heuristicContext ctx) {
-		// SHARP 'heuristic' classical_literal (COLON body)? DOT weight_annotation?
-		boolean positive = ctx.classical_literal().MINUS() == null;
-		temporarilyAllowClassicalNegation = true;
-		BasicAtom head = visitClassical_literal(ctx.classical_literal());
-		temporarilyAllowClassicalNegation = false; // currently, classical negation is only allowed in the head of heuristic directives
-		List<Literal> body = visitBody(ctx.body());
-		if (body.isEmpty()) {
-			throw notSupported(ctx);
-		}
-		WeightAtLevel annotation = visitWeight_annotation(ctx.weight_annotation());
-		inputProgram.getInlineDirectives().addDirective(DIRECTIVE.heuristic, new HeuristicDirective(head, body, annotation, positive));
+		// directive_heuristic : SHARP 'heuristic' heuristic_head_atom (heuristic_body)? DOT heuristic_weight_annotation?;
+		final HeuristicDirectiveAtom head = visitHeuristic_head_atom(ctx.heuristic_head_atom());
+		final HeuristicDirectiveBody body = visitHeuristic_body(ctx.heuristic_body());
+		final WeightAtLevel weightAtLevel = visitHeuristic_weight_annotation(ctx.heuristic_weight_annotation());
+		inputProgram.getInlineDirectives().addDirective(DIRECTIVE.heuristic, new HeuristicDirective(head, body, weightAtLevel));
 		return null;
+	}
+
+	@Override
+	public HeuristicDirectiveAtom visitHeuristic_head_atom(ASPCore2Parser.Heuristic_head_atomContext ctx) {
+		// heuristic_head_atom : (heuristic_head_sign)? basic_atom;
+		final ThriceTruth sign = visitHeuristic_head_sign(ctx.heuristic_head_sign());
+		final BasicAtom atom = visitBasic_atom(ctx.basic_atom());
+		return HeuristicDirectiveAtom.head(sign, atom);
+	}
+
+	@Override
+	public ThriceTruth visitHeuristic_head_sign(ASPCore2Parser.Heuristic_head_signContext ctx) {
+		// heuristic_head_sign : HEU_SIGN_T | HEU_SIGN_F;
+		if (ctx.HEU_SIGN_F() != null) {
+			return ThriceTruth.FALSE;
+		} else if (ctx.HEU_SIGN_T() != null) {
+			return ThriceTruth.TRUE;
+		} else {
+			throw oops("Unknown heuristic head sign");
+		}
+	}
+
+	@Override
+	public HeuristicDirectiveBody visitHeuristic_body(ASPCore2Parser.Heuristic_bodyContext ctx) {
+		// heuristic_body : COLON heuristic_body_literal (COMMA heuristic_body_literal)*;
+		if (ctx.heuristic_body_literal() == null) {
+			return null;
+		}
+		final List<HeuristicDirectiveLiteral> bodyLiterals = new ArrayList<>();
+		int i = 0;
+		for (ASPCore2Parser.Heuristic_body_literalContext literalContext : ctx.heuristic_body_literal()) {
+			bodyLiterals.add(visitHeuristic_body_literal(ctx.heuristic_body_literal(i)));
+			i++;
+		}
+		return new HeuristicDirectiveBody(bodyLiterals);
+	}
+
+	@Override
+	public HeuristicDirectiveLiteral visitHeuristic_body_literal(ASPCore2Parser.Heuristic_body_literalContext ctx) {
+		// heuristic_body_literal : NAF? heuristic_body_atom;
+		return new HeuristicDirectiveLiteral(visitHeuristic_body_atom(ctx.heuristic_body_atom()), ctx.NAF() == null);
+	}
+
+	@Override
+	public HeuristicDirectiveAtom visitHeuristic_body_atom(ASPCore2Parser.Heuristic_body_atomContext ctx) {
+		// heuristic_body_atom : (heuristic_body_sign)* basic_atom;
+		final Set<ThriceTruth> signs = new HashSet<>();
+		int i = 0;
+		for (ASPCore2Parser.Heuristic_body_signContext bodySignContext : ctx.heuristic_body_sign()) {
+			signs.add(visitHeuristic_body_sign(ctx.heuristic_body_sign(i)));
+			i++;
+		}
+		final BasicAtom atom = visitBasic_atom(ctx.basic_atom());
+		return HeuristicDirectiveAtom.body(signs, atom);
+	}
+
+	@Override
+	public ThriceTruth visitHeuristic_body_sign(ASPCore2Parser.Heuristic_body_signContext ctx) {
+		// heuristic_body_sign : HEU_SIGN_T | HEU_SIGN_M | HEU_SIGN_F;
+		if (ctx.HEU_SIGN_T() != null) {
+			return ThriceTruth.TRUE;
+		} else if (ctx.HEU_SIGN_M() != null) {
+			return ThriceTruth.MBT;
+		} else if (ctx.HEU_SIGN_F() != null) {
+			return ThriceTruth.FALSE;
+		} else {
+			throw oops("Unknown heuristic body sign");
+		}
+	}
+
+	@Override
+	public WeightAtLevel visitHeuristic_weight_annotation(ASPCore2Parser.Heuristic_weight_annotationContext ctx) {
+		// heuristic_weight_annotation : SQUARE_OPEN heuristic_weight_at_level SQUARE_CLOSE;
+		if (ctx == null) {
+			return new WeightAtLevel(null, null);
+		}
+		return visitHeuristic_weight_at_level(ctx.heuristic_weight_at_level());
+	}
+
+	@Override
+	public WeightAtLevel visitHeuristic_weight_at_level(ASPCore2Parser.Heuristic_weight_at_levelContext ctx) {
+		// heuristic_weight_at_level : term (AT term)?;
+		Term weight;
+		Term level = null;
+		weight = (Term) visit(ctx.term(0));
+		if (ctx.AT() != null) {
+			level = (Term) visit(ctx.term(1));
+		}
+
+		return new WeightAtLevel(weight, level);
 	}
 
 	public IntervalTerm visitTerm_interval(ASPCore2Parser.Term_intervalContext ctx) {

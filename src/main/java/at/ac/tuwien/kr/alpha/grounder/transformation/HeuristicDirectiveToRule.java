@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2018-2019 Siemens AG
  * All rights reserved.
  * 
@@ -25,7 +25,12 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.Directive;
+import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.common.Head;
+import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
+import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
@@ -66,7 +71,7 @@ public class HeuristicDirectiveToRule implements ProgramTransformation {
 
 	private void transformAndAddToProgram(HeuristicDirective heuristicDirective, Program program) {
 		Head head = new DisjunctiveHead(HeuristicAtom.fromHeuristicDirective(heuristicDirective));
-		Rule rule = new Rule(head, heuristicDirective.getBody());
+		Rule rule = null; // TODO: update conversion to rule // new Rule(head, heuristicDirective.getBody());
 		program.getRules().add(rule);
 	}
 }
