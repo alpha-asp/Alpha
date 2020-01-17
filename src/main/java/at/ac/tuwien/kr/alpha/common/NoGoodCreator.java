@@ -44,6 +44,10 @@ public class NoGoodCreator {
 		return new NoGood(LEARNT, literals);
 	}
 
+	public static NoGood internal(int... literals) {
+		return new NoGood(NoGood.Type.INTERNAL, literals);
+	}
+
 	public static NoGood headFirst(int... literals) {
 		return headFirst(STATIC, literals);
 	}

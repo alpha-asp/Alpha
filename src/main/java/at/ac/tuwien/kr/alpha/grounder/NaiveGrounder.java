@@ -57,6 +57,7 @@ import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 import at.ac.tuwien.kr.alpha.grounder.transformation.CardinalityNormalization;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
 import at.ac.tuwien.kr.alpha.grounder.transformation.EnumerationRewriting;
+import at.ac.tuwien.kr.alpha.grounder.transformation.HeuristicDirectiveToRule;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.SumNormalization;
 import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
@@ -112,7 +113,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final boolean useCountingGridNormalization;
 	private final boolean debugInternalChecks;
 
-	private final GrounderHeuristicsConfiguration heuristicsConfiguration;
+	private final GrounderHeuristicsConfiguration grounderHeuristicsConfiguration;
 
 	public NaiveGrounder(Program program, AtomStore atomStore, HeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, Bridge... bridges) {
 		this(program, atomStore, heuristicsConfiguration, new GrounderHeuristicsConfiguration(), debugInternalChecks, bridges);
@@ -125,7 +126,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	NaiveGrounder(Program program, AtomStore atomStore, HeuristicsConfiguration heuristicsConfiguration, java.util.function.Predicate<Predicate> filter, GrounderHeuristicsConfiguration grounderHeuristicsConfiguration, boolean useCountingGrid, boolean debugInternalChecks, Bridge... bridges) {
 		super(filter, bridges);
 		this.atomStore = atomStore;
-		this.heuristicsConfiguration = heuristicsConfiguration;
+		this.grounderHeuristicsConfiguration = grounderHeuristicsConfiguration;
 		LOGGER.debug("Grounder configuration: {}", heuristicsConfiguration);
 
 		programAnalysis = new ProgramAnalysis(program);
@@ -449,7 +450,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	BindingResult getGroundInstantiations(NonGroundRule rule, RuleGroundingOrder groundingOrder, Substitution partialSubstitution, Assignment currentAssignment) {
-		int tolerance = heuristicsConfiguration.getTolerance(rule.isConstraint());
+		int tolerance = grounderHeuristicsConfiguration.getTolerance(rule.isConstraint());
 		if (tolerance < 0) {
 			tolerance = Integer.MAX_VALUE;
 		}
@@ -664,7 +665,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		currentAssignment.growForMaxAtomId();
 		ThriceTruth truth = currentAssignment.isAssigned(atomId) ? currentAssignment.getTruth(atomId) : null;
 
-		if (heuristicsConfiguration.isAccumulatorEnabled()) {
+		if (grounderHeuristicsConfiguration.isAccumulatorEnabled()) {
 			// special handling for the accumulator variants of lazy-grounding strategies
 			final Instance instance = new Instance(substitute.getTerms());
 			boolean isInWorkingMemory = workingMemory.get(substitute, true).containsInstance(instance);

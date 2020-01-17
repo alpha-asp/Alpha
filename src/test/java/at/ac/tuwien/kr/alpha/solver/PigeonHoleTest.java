@@ -45,43 +45,43 @@ import static org.junit.Assume.assumeTrue;
 public class PigeonHoleTest extends AbstractSolverTests {
 	@Test(timeout = 10000)
 	public void test2Pigeons2Holes() throws IOException {
-		assumeTrue(heuristic == BranchingHeuristicFactory.Heuristic.VSIDS);
+		assumeTrue(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
 		testPigeonsHoles(2, 2);
 	}
 
 	@Test(timeout = 10000)
 	public void test3Pigeons2Holes() throws IOException {
-		assumeTrue(heuristic == BranchingHeuristicFactory.Heuristic.VSIDS);
+		assumeTrue(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
 		testPigeonsHoles(3, 2);
 	}
 
 	@Test(timeout = 10000)
 	public void test2Pigeons3Holes() throws IOException {
-		assumeTrue(heuristic == BranchingHeuristicFactory.Heuristic.VSIDS);
+		assumeTrue(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
 		testPigeonsHoles(2, 3);
 	}
 
 	@Test(timeout = 10000)
 	public void test3Pigeons3Holes() throws IOException {
-		assumeTrue(heuristic == BranchingHeuristicFactory.Heuristic.VSIDS);
+		assumeTrue(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
 		testPigeonsHoles(3, 3);
 	}
 
 	@Test(timeout = 10000)
 	public void test4Pigeons3Holes() throws IOException {
-		assumeTrue(heuristic == BranchingHeuristicFactory.Heuristic.VSIDS);
+		assumeTrue(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
 		testPigeonsHoles(4, 3);
 	}
 
 	@Test(timeout = 10000)
 	public void test3Pigeons4Holes() throws IOException {
-		assumeTrue(heuristic == BranchingHeuristicFactory.Heuristic.VSIDS);
+		assumeTrue(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
 		testPigeonsHoles(3, 4);
 	}
 
 	@Test(timeout = 10000)
 	public void test4Pigeons4Holes() throws IOException {
-		assumeTrue(heuristic == BranchingHeuristicFactory.Heuristic.VSIDS);
+		assumeTrue(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
 		testPigeonsHoles(4, 4);
 	}
 

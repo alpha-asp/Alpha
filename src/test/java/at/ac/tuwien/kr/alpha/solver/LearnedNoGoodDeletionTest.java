@@ -127,8 +127,8 @@ public class LearnedNoGoodDeletionTest {
 		assertFalse(learnedNoGoodDeletion.needToRunNoGoodDeletion());
 		learnedNoGoodDeletion.increaseConflictCounter();
 		assertTrue(learnedNoGoodDeletion.needToRunNoGoodDeletion());
-		assertNull(store.add(4, NoGood.learnt(fromOldLiterals(10, 11, 12)), 3));
-		assertNull(store.add(5, NoGood.learnt(fromOldLiterals(10, -13, -14)), 4));
+		assertNull(store.add(4, NoGoodCreator.learnt(fromOldLiterals(10, 11, 12)), 3));
+		assertNull(store.add(5, NoGoodCreator.learnt(fromOldLiterals(10, -13, -14)), 4));
 
 		final Map<Type, Integer> countersBeforeDeletion = countNoGoodsByType(store);
 		learnedNoGoodDeletion.runNoGoodDeletion();
