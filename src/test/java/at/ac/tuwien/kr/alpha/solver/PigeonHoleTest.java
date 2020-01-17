@@ -1,17 +1,17 @@
 /**
  * Copyright (c) 2017 Siemens AG
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,6 +26,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -36,44 +37,51 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests {@link AbstractSolver} using some pigeon-hole test cases (see https://en.wikipedia.org/wiki/Pigeonhole_principle).
- *
  */
 public class PigeonHoleTest extends AbstractSolverTests {
 	@Test(timeout = 10000)
 	public void test2Pigeons2Holes() throws IOException {
+		assumeTrue(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
 		testPigeonsHoles(2, 2);
 	}
 
 	@Test(timeout = 10000)
 	public void test3Pigeons2Holes() throws IOException {
+		assumeTrue(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
 		testPigeonsHoles(3, 2);
 	}
 
 	@Test(timeout = 10000)
 	public void test2Pigeons3Holes() throws IOException {
+		assumeTrue(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
 		testPigeonsHoles(2, 3);
 	}
 
 	@Test(timeout = 10000)
 	public void test3Pigeons3Holes() throws IOException {
+		assumeTrue(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
 		testPigeonsHoles(3, 3);
 	}
 
-	@Test(timeout = 3000)
+	@Test(timeout = 10000)
 	public void test4Pigeons3Holes() throws IOException {
+		assumeTrue(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
 		testPigeonsHoles(4, 3);
 	}
 
-	@Test(timeout = 3000)
+	@Test(timeout = 10000)
 	public void test3Pigeons4Holes() throws IOException {
+		assumeTrue(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
 		testPigeonsHoles(3, 4);
 	}
 
-	@Test(timeout = 3000)
+	@Test(timeout = 10000)
 	public void test4Pigeons4Holes() throws IOException {
+		assumeTrue(heuristicsConfiguration.getHeuristic() == BranchingHeuristicFactory.Heuristic.VSIDS);
 		testPigeonsHoles(4, 4);
 	}
 

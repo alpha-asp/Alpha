@@ -143,10 +143,10 @@ public interface Assignment {
 		return truth != null && isNegated(literal) != truth.toBoolean();
 
 	}
-	
+
 	/**
 	 * Determines whether a given atom is unassigned or MBT.
-	 * 
+	 *
 	 * This method is usually used to determine if an atom is eligible for a choice.
 	 * @param atom
 	 * @return {@code true} iff {@code atom} is neither {@link ThriceTruth#FALSE} nor {@link ThriceTruth#TRUE}.

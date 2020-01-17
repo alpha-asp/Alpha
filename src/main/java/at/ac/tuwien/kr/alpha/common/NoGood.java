@@ -36,6 +36,7 @@ import java.util.stream.IntStream;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 import static at.ac.tuwien.kr.alpha.common.Literals.positiveLiteral;
+import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.STATIC;
 
 public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<NoGood> {
 	public static final int HEAD = 0;
@@ -46,7 +47,7 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 	private final Type type;
 
 	public NoGood(int... literals) {
-		this(Type.STATIC, literals, false);
+		this(STATIC, literals, false);
 	}
 	
 	public NoGood(Type type, int... literals) {
@@ -130,7 +131,8 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 	public int getHead() {
 		return getLiteral(HEAD);
 	}
-	
+
+	@Override
 	public Type getType() {
 		return type;
 	}
@@ -227,30 +229,5 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 		sb.append("}");
 
 		return sb.toString();
-	}
-
-	/**
-	 * The possible nogood types
-	 */
-	public enum Type {
-		/**
-		 * Unremovable nogood from the input program
-		 */
-		STATIC,
-		
-		/**
-		 * Removable support nogood from the input program
-		 */
-		SUPPORT,
-		
-		/**
-		 * Removable nogood learnt from a conflict
-		 */
-		LEARNT,
-		
-		/**
-		 * Nogood containing solver-internal atoms
-		 */
-		INTERNAL,
 	}
 }

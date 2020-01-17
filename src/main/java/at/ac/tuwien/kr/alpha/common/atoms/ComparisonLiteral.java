@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -34,7 +34,11 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm.evaluateGroundTerm;
 
@@ -170,6 +174,12 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 		Substitution extendedSubstitution = new Substitution(partialSubstitution);
 		extendedSubstitution.put(variable, resultTerm);
 		return Collections.singletonList(extendedSubstitution);
+	}
+	
+	public boolean isLeftOrRightAssigning() {
+		final Term left = getTerms().get(0);
+		final Term right = getTerms().get(1);
+		return isNormalizedEquality && (assignable(left) && right.isGround() || assignable(right) && left.isGround());
 	}
 
 	private Term evaluateTerm(Term term) {

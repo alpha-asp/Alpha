@@ -49,6 +49,8 @@ public interface SolverMaintainingStatistics {
 	 */
 	int getNumberOfConflictsAfterClosing();
 
+	NoGoodCounter getNoGoodCounter();
+
 	default String getStatisticsString() {
 		return "g=" + getNumberOfChoices() + ", bt=" + getNumberOfBacktracks() + ", bj=" + getNumberOfBackjumps() + ", bt_within_bj="
 				+ getNumberOfBacktracksWithinBackjumps() + ", mbt=" + getNumberOfBacktracksDueToRemnantMBTs() + ", cac=" + getNumberOfConflictsAfterClosing()

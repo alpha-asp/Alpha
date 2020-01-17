@@ -33,7 +33,9 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class CommandLineParserTest {
 
@@ -110,6 +112,41 @@ public class CommandLineParserTest {
 	public void replayWithNonNumericLiteral() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
 		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-rc", "\"1, 2, x\""});
+	}
+
+	@Test
+	public void grounderToleranceConstraints_numeric() throws ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-gtc", "-1"});
+		assertEquals("-1", alphaConfig.getAlphaConfig().getGrounderToleranceConstraints());
+	}
+
+	@Test
+	public void grounderToleranceConstraints_string() throws ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-gtc", "strict"});
+		assertEquals("strict", alphaConfig.getAlphaConfig().getGrounderToleranceConstraints());
+	}
+
+	@Test
+	public void grounderToleranceRules_numeric() throws ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-gtr", "1"});
+		assertEquals("1", alphaConfig.getAlphaConfig().getGrounderToleranceRules());
+	}
+
+	@Test
+	public void grounderToleranceRules_string() throws ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-gtr", "permissive"});
+		assertEquals("permissive", alphaConfig.getAlphaConfig().getGrounderToleranceRules());
+	}
+
+	@Test
+	public void noInstanceRemoval() throws ParseException {
+		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-acc"});
+		assertTrue(alphaConfig.getAlphaConfig().isGrounderAccumulatorEnabled());
 	}
 
 	@Test

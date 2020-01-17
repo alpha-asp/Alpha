@@ -27,7 +27,11 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Counts the number of ground atoms stored for each type (i.e., subclass of {@link Atom}.
@@ -47,7 +51,7 @@ public class AtomCounter {
 	 * @return the number of atoms of the given type
 	 */
 	public int getNumberOfAtoms(Class<? extends Atom> type) {
-		return countByType.get(type);
+		return countByType.getOrDefault(type, 0);
 	}
 
 	/**

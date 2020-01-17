@@ -45,7 +45,7 @@ install:
   - true
 
 script:
-  - ./gradlew build --stacktrace
+  - travis_wait ./gradlew build --stacktrace
 
 after_success:
   - ./gradlew jacocoTestReport coveralls

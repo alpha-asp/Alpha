@@ -13,6 +13,7 @@ public final class WatchedNoGood implements NoGoodInterface, Antecedent, Iterabl
 	private final int[] literals;
 	private int alpha;
 	private int head;
+	private final Type type;
 	private boolean isLbdLessOrEqual2;
 
 	WatchedNoGood(NoGood noGood, int a, int b, int alpha) {
@@ -34,6 +35,7 @@ public final class WatchedNoGood implements NoGoodInterface, Antecedent, Iterabl
 			swap(0, a);
 			swap(1, b);
 		}
+		this.type = noGood.getType();
 	}
 
 	private void checkPointers(int a, int b, int alpha) {
@@ -105,6 +107,11 @@ public final class WatchedNoGood implements NoGoodInterface, Antecedent, Iterabl
 	@Override
 	public int size() {
 		return literals.length;
+	}
+
+	@Override
+	public Type getType() {
+		return type;
 	}
 
 	@Override
