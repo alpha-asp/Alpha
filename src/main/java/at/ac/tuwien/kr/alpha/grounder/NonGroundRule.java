@@ -47,7 +47,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  */
 public class NonGroundRule {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NonGroundRule.class);
-	private static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
+	static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
 
 	private final int ruleId;
 	private final Rule rule;
@@ -56,7 +56,7 @@ public class NonGroundRule {
 	private final List<Atom> bodyAtomsNegative;
 	private final Atom headAtom;
 
-	final RuleGroundingOrder groundingOrder;
+	final RuleGroundingOrders groundingOrder;
 
 	private NonGroundRule(Rule rule, int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
 		this.ruleId = ruleId;
@@ -73,7 +73,7 @@ public class NonGroundRule {
 		this.headAtom = headAtom;
 
 		checkSafety();
-		this.groundingOrder = new RuleGroundingOrder(this);
+		this.groundingOrder = new RuleGroundingOrders(this);
 		groundingOrder.computeGroundingOrders();
 
 		LOGGER.debug("Rule ID {} assigned to {}", ruleId, rule);

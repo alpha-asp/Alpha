@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.config;
 
+import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 
@@ -57,6 +58,9 @@ public class SystemConfig {
 	public static final boolean DEFAULT_IGNORE_DOMSPEC_HEURISTICS = false;
 	public static final List<Integer> DEFAULT_REPLAY_CHOICES = Collections.emptyList();
 	public static final boolean DEFAULT_DISABLE_NOGOOD_DELETION = false;
+	public static final String DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS = GrounderHeuristicsConfiguration.STRICT_STRING;
+	public static final String DEFAULT_GROUNDER_TOLERANCE_RULES = GrounderHeuristicsConfiguration.STRICT_STRING;
+	public static final boolean DEFAULT_GROUNDER_ACCUMULATOR_ENABLED = false;
 
 	private String grounderName = SystemConfig.DEFAULT_GROUNDER_NAME;
 	private String solverName = SystemConfig.DEFAULT_SOLVER_NAME;
@@ -74,6 +78,9 @@ public class SystemConfig {
 	private boolean ignoreDomspecHeuristics = SystemConfig.DEFAULT_IGNORE_DOMSPEC_HEURISTICS;
 	private List<Integer> replayChoices = SystemConfig.DEFAULT_REPLAY_CHOICES;
 	private boolean disableNoGoodDeletion = SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION;
+	private String grounderToleranceConstraints = DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS;
+	private String grounderToleranceRules = DEFAULT_GROUNDER_TOLERANCE_RULES;
+	private boolean grounderAccumulatorEnabled = DEFAULT_GROUNDER_ACCUMULATOR_ENABLED;
 
 	public String getGrounderName() {
 		return this.grounderName;
@@ -215,4 +222,27 @@ public class SystemConfig {
 		this.disableNoGoodDeletion = disableNoGoodDeletion;
 	}
 
+	public String getGrounderToleranceConstraints() {
+		return grounderToleranceConstraints;
+	}
+
+	public void setGrounderToleranceConstraints(String grounderToleranceConstraints) {
+		this.grounderToleranceConstraints = grounderToleranceConstraints;
+	}
+
+	public String getGrounderToleranceRules() {
+		return grounderToleranceRules;
+	}
+
+	public void setGrounderToleranceRules(String grounderToleranceRules) {
+		this.grounderToleranceRules = grounderToleranceRules;
+	}
+
+	public boolean isGrounderAccumulatorEnabled() {
+		return grounderAccumulatorEnabled;
+	}
+
+	public void setGrounderAccumulatorEnabled(boolean grounderAccumulatorEnabled) {
+		this.grounderAccumulatorEnabled = grounderAccumulatorEnabled;
+	}
 }

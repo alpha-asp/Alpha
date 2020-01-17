@@ -30,28 +30,29 @@ package at.ac.tuwien.kr.alpha.common;
 import java.util.List;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
+import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type;
+import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.INTERNAL;
+import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.LEARNT;
+import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.STATIC;
+import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.SUPPORT;
 
 /**
  * Offers static methods to create {@link NoGood}s
  */
 public class NoGoodCreator {
 	public static NoGood learnt(int... literals) {
-		return new NoGood(NoGood.Type.LEARNT, literals);
-	}
-
-	public static NoGood internal(int... literals) {
-		return new NoGood(NoGood.Type.INTERNAL, literals);
+		return new NoGood(LEARNT, literals);
 	}
 
 	public static NoGood headFirst(int... literals) {
-		return headFirst(NoGood.Type.STATIC, literals);
+		return headFirst(STATIC, literals);
 	}
 
 	public static NoGood headFirstInternal(int... literals) {
-		return headFirst(NoGood.Type.INTERNAL, literals);
+		return headFirst(INTERNAL, literals);
 	}
 
-	public static NoGood headFirst(NoGood.Type type, int... literals) {
+	public static NoGood headFirst(Type type, int... literals) {
 		return new NoGood(type, literals, true);
 	}
 
@@ -60,7 +61,7 @@ public class NoGoodCreator {
 	}
 
 	public static NoGood support(int headLiteral, int bodyRepresentingLiteral) {
-		return new NoGood(NoGood.Type.SUPPORT, headLiteral, negateLiteral(bodyRepresentingLiteral));
+		return new NoGood(SUPPORT, headLiteral, negateLiteral(bodyRepresentingLiteral));
 	}
 
 	public static NoGood fromConstraint(List<Integer> posLiterals, List<Integer> negLiterals) {
@@ -68,14 +69,14 @@ public class NoGoodCreator {
 	}
 
 	public static NoGood fromBody(List<Integer> posLiterals, List<Integer> negLiterals, int bodyRepresentingLiteral) {
-		return fromBody(NoGood.Type.STATIC, posLiterals, negLiterals, bodyRepresentingLiteral);
+		return fromBody(STATIC, posLiterals, negLiterals, bodyRepresentingLiteral);
 	}
 
 	public static NoGood fromBodyInternal(List<Integer> posLiterals, List<Integer> negLiterals, int bodyRepresentingLiteral) {
-		return fromBody(NoGood.Type.INTERNAL, posLiterals, negLiterals, bodyRepresentingLiteral);
+		return fromBody(INTERNAL, posLiterals, negLiterals, bodyRepresentingLiteral);
 	}
 
-	public static NoGood fromBody(NoGood.Type type, List<Integer> posLiterals, List<Integer> negLiterals, int bodyRepresentingLiteral) {
+	public static NoGood fromBody(Type type, List<Integer> posLiterals, List<Integer> negLiterals, int bodyRepresentingLiteral) {
 		int[] bodyLiterals = new int[posLiterals.size() + negLiterals.size() + 1];
 		bodyLiterals[0] = negateLiteral(bodyRepresentingLiteral);
 		return headFirst(type, addPosNeg(bodyLiterals, posLiterals, negLiterals, 1));

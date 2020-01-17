@@ -43,6 +43,7 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -226,7 +227,7 @@ public class Substitution {
 
 		Substitution that = (Substitution) o;
 
-		return substitution != null ? substitution.equals(that.substitution) : that.substitution == null;
+		return Objects.equals(substitution, that.substitution);
 	}
 
 	@Override
