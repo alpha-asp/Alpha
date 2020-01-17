@@ -109,17 +109,10 @@ public class NonGroundRule {
 		for (Atom atom : getBodyAtomsPositive()) {
 			occurringVariablesBody.addAll(atom.toLiteral().getBindingVariables());
 		}
-		// Non-Projective condition 1:
 		// Check that all variables of the body also occur in the head (otherwise grounding is not unique).
 		occurringVariablesBody.removeAll(occurringVariablesHead);
 		// Check if ever body variables occurs in the head.
-		if (occurringVariablesBody.isEmpty()) {
-			return true;
-		}
-
-		// TODO: Check further non-projective conditions here.
-
-		return false;
+		return occurringVariablesBody.isEmpty();
 	}
 
 	public int getRuleId() {

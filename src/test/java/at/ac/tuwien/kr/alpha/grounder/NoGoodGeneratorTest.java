@@ -52,7 +52,7 @@ public class NoGoodGeneratorTest {
 	private static final VariableTerm Y = VariableTerm.getInstance("Y");
 	
 	/**
-	 * Calls {@link NoGoodGenerator#collectNegLiterals(NonGroundRule, Substitution)},
+	 * Calls {@link NoGoodGenerator#collectNegLiterals(NonGroundRule, Substitution, boolean)},
 	 * which puts the atom occuring negatively in a rule into the atom store.
 	 * It is then checked whether the atom in the atom store is positive.
 	 */
@@ -70,7 +70,7 @@ public class NoGoodGeneratorTest {
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
-		List<Integer> collectedNeg = noGoodGenerator.collectNegLiterals(nonGroundRule, substitution);
+		List<Integer> collectedNeg = noGoodGenerator.collectNegLiterals(nonGroundRule, substitution, false);
 		assertEquals(1, collectedNeg.size());
 		String negAtomString = atomStore.atomToString(atomOf(collectedNeg.get(0)));
 		assertEquals("q(a, b)", negAtomString);

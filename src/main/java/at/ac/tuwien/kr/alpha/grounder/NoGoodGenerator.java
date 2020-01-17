@@ -31,8 +31,11 @@ import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 import org.slf4j.Logger;
@@ -84,11 +87,15 @@ public class NoGoodGenerator {
 	 *                              nonGroundRule has a head, NoGoods are generated such that:
 	 *                              a) the body representing atom implies the head atom, and
 	 *                              b) the body representing atom must be false.
+	 * @param checkFixedInterpretationLiterals if true, {@link FixedInterpretationLiteral}s occurring in the rule
+	 *                                         body are again evaluated and if one such literal evaluates to false,
+	 *                                         the rule is either ignored or the body representing atom is fixed to
+	 *                                         false (depending on the value of ignoreIfUnsatisfiable.
 	 * @return a list of the NoGoods corresponding to the ground rule.
 	 */
-	List<NoGood> generateNoGoodsFromGroundSubstitution(final NonGroundRule nonGroundRule, final Substitution substitution, boolean ignoreIfUnsatisfiable) {
-		final List<Integer> posLiterals = collectPosLiterals(nonGroundRule, substitution);
-		final List<Integer> negLiterals = collectNegLiterals(nonGroundRule, substitution);
+	List<NoGood> generateNoGoodsFromGroundSubstitution(final NonGroundRule nonGroundRule, final Substitution substitution, boolean ignoreIfUnsatisfiable, boolean checkFixedInterpretationLiterals) {
+		final List<Integer> posLiterals = collectPosLiterals(nonGroundRule, substitution, checkFixedInterpretationLiterals);
+		final List<Integer> negLiterals = collectNegLiterals(nonGroundRule, substitution, checkFixedInterpretationLiterals);
 
 		boolean ruleCannotFire = false;
 		if (posLiterals == null || negLiterals == null) {
@@ -159,9 +166,18 @@ public class NoGoodGenerator {
 		return result;
 	}
 
-	List<Integer> collectNegLiterals(final NonGroundRule nonGroundRule, final Substitution substitution) {
+	List<Integer> collectNegLiterals(final NonGroundRule nonGroundRule, final Substitution substitution, boolean checkFixedInterpretationLiterals) {
 		final List<Integer> bodyLiteralsNegative = new ArrayList<>();
 		for (Atom atom : nonGroundRule.getBodyAtomsNegative()) {
+			// TODO: if checkFixedInterpretationLiterals is true, the atom must be checked if it comes from a FixedInterpretationLiteral.
+			// TODO: current types do not allow this check! Workaround enumerates all known Atom types inside a FixedInterpretationLiteral.
+			if (atom instanceof ComparisonAtom || atom instanceof ExternalAtom || atom instanceof IntervalAtom) {
+				final List<Substitution> substitutions = ((FixedInterpretationLiteral)atom.toLiteral(false)).getSubstitutions(substitution);
+				if (substitutions.isEmpty()) {
+					return null;
+				}
+			}
+
 			Atom groundAtom = atom.substitute(substitution);
 			
 			final Set<Instance> factInstances = factsFromProgram.get(groundAtom.getPredicate());
@@ -181,15 +197,22 @@ public class NoGoodGenerator {
 		return bodyLiteralsNegative;
 	}
 
-	private List<Integer> collectPosLiterals(final NonGroundRule nonGroundRule, final Substitution substitution) {
+	private List<Integer> collectPosLiterals(final NonGroundRule nonGroundRule, final Substitution substitution, boolean checkFixedInterpretationLiterals) {
 		final List<Integer> bodyLiteralsPositive = new ArrayList<>();
 		for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
 			if (atom.toLiteral() instanceof FixedInterpretationLiteral) {
 				// TODO: conversion of atom to literal is ugly. NonGroundRule could manage atoms instead of literals, cf. FIXME there
-				// Atom has fixed interpretation, hence was checked earlier that it
-				// evaluates to true under the given substitution.
-				// FixedInterpretationAtoms need not be shown to the solver, skip it.
-				continue;
+				if (!checkFixedInterpretationLiterals) {
+					// Atom has fixed interpretation, hence was checked earlier that it
+					// evaluates to true under the given substitution.
+					// FixedInterpretationAtoms need not be shown to the solver, skip it.
+					continue;
+				}
+				final List<Substitution> substitutions = ((FixedInterpretationLiteral)atom.toLiteral()).getSubstitutions(substitution);
+				if (substitutions.isEmpty()) {
+					// This FixedInterpretationLiteral is not satisfied by the ground substitution we have, the rule cannot fire.
+					return null;
+				}
 			}
 			// Skip the special enumeration atom.
 			if (atom instanceof EnumerationAtom) {

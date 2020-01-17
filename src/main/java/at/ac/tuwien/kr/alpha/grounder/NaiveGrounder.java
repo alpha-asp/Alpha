@@ -394,7 +394,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 */
 	private void groundAndRegister(final NonGroundRule nonGroundRule, final List<Substitution> substitutions, final Map<Integer, NoGood> newNoGoods) {
 		for (Substitution substitution : substitutions) {
-			List<NoGood> generatedNoGoods = noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution, true);
+			List<NoGood> generatedNoGoods = noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution, true, false);
 			registry.register(generatedNoGoods, newNoGoods);
 		}
 	}
@@ -731,7 +731,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 
 			// We have a grounding substitution now, generate all NoGoods.
-			generatedNoGoods.addAll(noGoodGenerator.generateNoGoodsFromGroundSubstitution(rule, unifier, false));
+			generatedNoGoods.addAll(noGoodGenerator.generateNoGoodsFromGroundSubstitution(rule, unifier, false, true));
 			// Note: the completion NoGood is returned when generating the NoGoods for the last rule.
 		}
 		return generatedNoGoods;
