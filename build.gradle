@@ -86,8 +86,15 @@ task bundledJar(type: Jar) {
 
 	archiveFileName = "${project.name}-bundled.jar"
 
-	exclude('META-INF/LICENSE.txt')
-	exclude('META-INF/NOTICE.txt')
+	/*
+	 * In order to make sure wo don't overwrite NOTICE and LICENSE files coming from dependency
+	 * jars with each other, number them while copying
+	 */
+	int i = 1
+	rename { name -> name.equals("NOTICE.txt") ? "NOTICE." + (i++) + ".txt" :  null }
+
+	int j = 1
+	rename { name -> name.equals("LICENSE.txt") ? "LICENSE." + (j++) + ".txt" : null }
 
 	with jar
 }
