@@ -94,33 +94,6 @@ public class Alpha {
 		return prgBuilder.build();
 	}
 
-	public NormalProgram normalizeProgram(InputProgram program) {
-		return new NormalizeProgramTransformation(this.config.isUseNormalizationGrid()).apply(program);
-	}
-
-	public InternalProgram performProgramPreprocessing(NormalProgram program) {
-		return this.performProgramPreprocessing(InternalProgram.fromNormalProgram(program));
-	}
-
-	public InternalProgram performProgramPreprocessing(InternalProgram program) {
-		LOGGER.debug("Preprocessing InternalProgram!");
-		InternalProgram retVal = program;
-		if (this.config.isEvaluateStratifiedPart()) {
-			AnalyzedProgram analyzed = new AnalyzedProgram(program.getRules(), program.getFacts());
-			retVal = new StratifiedEvaluation().apply(analyzed);
-		}
-		return retVal;
-	}
-
-	public InternalProgram performProgramPreprocessing(AnalyzedProgram program) {
-		LOGGER.debug("Preprocessing AnalyzedProgram!");
-		InternalProgram retVal = program;
-		if (this.config.isEvaluateStratifiedPart()) {
-			retVal = new StratifiedEvaluation().apply(program);
-		}
-		return retVal;
-	}
-
 	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException {
 		return this.readProgramFiles(literate, externals, paths.stream().map(Paths::get).collect(Collectors.toList()).toArray(new Path[] {}));
 	}
@@ -153,6 +126,114 @@ public class Alpha {
 		return this.readProgramString(aspString, null);
 	}
 
+	public NormalProgram normalizeProgram(InputProgram program) {
+		return new NormalizeProgramTransformation(this.config.isUseNormalizationGrid()).apply(program);
+	}
+
+	public InternalProgram performProgramPreprocessing(NormalProgram program) {
+		return this.performProgramPreprocessing(InternalProgram.fromNormalProgram(program));
+	}
+
+	public InternalProgram performProgramPreprocessing(InternalProgram program) {
+		LOGGER.debug("Preprocessing InternalProgram!");
+		InternalProgram retVal = program;
+		if (this.config.isEvaluateStratifiedPart()) {
+			AnalyzedProgram analyzed = new AnalyzedProgram(program.getRules(), program.getFacts());
+			retVal = new StratifiedEvaluation().apply(analyzed);
+		}
+		return retVal;
+	}
+
+	public InternalProgram performProgramPreprocessing(AnalyzedProgram program) {
+		LOGGER.debug("Preprocessing AnalyzedProgram!");
+		InternalProgram retVal = program;
+		if (this.config.isEvaluateStratifiedPart()) {
+			retVal = new StratifiedEvaluation().apply(program);
+		}
+		return retVal;
+	}
+
+	/**
+	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the program analysis and normalization aren't of
+	 * interest
+	 */
+	public Stream<AnswerSet> solve(InputProgram program) {
+		return this.solve(program, InputConfig.DEFAULT_FILTER);
+	}
+
+	/**
+	 * Convenience method - overloaded version of solve({@link InternalProgram}, {@link Predicate}) for cases where details of the program analysis and
+	 * normalization aren't of interest
+	 */
+	public Stream<AnswerSet> solve(InputProgram program, java.util.function.Predicate<Predicate> filter) {
+		NormalProgram normalized = this.normalizeProgram(program);
+		return this.solve(normalized, filter);
+	}
+
+	/**
+	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the program analysis aren't of interest
+	 */
+	public Stream<AnswerSet> solve(NormalProgram program) {
+		return this.solve(program, InputConfig.DEFAULT_FILTER);
+	}
+
+	/**
+	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the program analysis aren't of interest
+	 */
+	public Stream<AnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
+		InternalProgram preprocessed = this.performProgramPreprocessing(program);
+		return this.solve(preprocessed, filter);
+	}
+
+	/**
+	 * Overloaded version of solve({@link InternalProgram}, {@link Predicate}) that uses a default filter (accept everything)
+	 * 
+	 * @param program the program to solve
+	 * @return a stream of answer sets
+	 */
+	public Stream<AnswerSet> solve(InternalProgram program) {
+		return this.solve(program, InputConfig.DEFAULT_FILTER);
+	}
+
+	/**
+	 * Solves the given program and filters answer sets based on the passed predicate
+	 * 
+	 * @param program an {@link InternalProgram} to solve
+	 * @param a       {@link Predicate} filtering {@at.ac.tuwien.kr.alpha.common.Predicate}s in the returned answer sets
+	 * @return a Stream of answer sets representing stable models of the given program
+	 */
+	public Stream<AnswerSet> solve(InternalProgram program, java.util.function.Predicate<Predicate> filter) {
+		Stream<AnswerSet> retVal = this.prepareSolverFor(program, filter).stream();
+		return this.config.isSortAnswerSets() ? retVal.sorted() : retVal;
+	}
+
+	/**
+	 * Convenience method - overloaded version of prepareSolverFor({@link InternalProgram}) for cases where details of the program analysis and program
+	 * normalization are not of interest
+	 * 
+	 * @param program a NormalProgram to solve
+	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
+	 */
+	public Solver prepareSolverFor(InputProgram program) {
+		NormalProgram normalized = this.normalizeProgram(program);
+		return this.prepareSolverFor(normalized, InputConfig.DEFAULT_FILTER);
+	}
+
+	/**
+	 * Convenience method - overloaded version of prepareSolverFor({@link InternalProgram}) for cases where details of the program analysis are not of interest
+	 * 
+	 * @param program a NormalProgram to solve
+	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
+	 */
+	public Solver prepareSolverFor(NormalProgram program) {
+		return this.prepareSolverFor(program, InputConfig.DEFAULT_FILTER);
+	}
+
+	public Solver prepareSolverFor(NormalProgram normalized, java.util.function.Predicate<Predicate> filter) {
+		InternalProgram preprocessed = this.performProgramPreprocessing(normalized);
+		return this.prepareSolverFor(preprocessed, filter);
+	}
+
 	/**
 	 * Prepares a solver (and accompanying grounder) instance pre-loaded with the given program. Use this if the solver is needed after reading answer sets
 	 * (e.g. for obtaining statistics)
@@ -173,83 +254,6 @@ public class Alpha {
 		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, grounderHeuristicConfiguration, doDebugChecks);
 
 		return SolverFactory.getInstance(this.config, atomStore, grounder);
-	}
-
-	/**
-	 * Convenience method - overloaded version of prepareSolverFor({@link InternalProgram}) for cases where details of the program analysis are not of interest
-	 * 
-	 * @param program a NormalProgram to solve
-	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
-	 */
-	public Solver prepareSolverFor(NormalProgram program) {
-		return this.prepareSolverFor(InternalProgram.fromNormalProgram(program), InputConfig.DEFAULT_FILTER);
-	}
-
-	/**
-	 * Convenience method - overloaded version of prepareSolverFor({@link InternalProgram}) for cases where details of the program analysis and program
-	 * normalization are not of interest
-	 * 
-	 * @param program a NormalProgram to solve
-	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
-	 */
-	public Solver prepareSolverFor(InputProgram program) {
-		NormalProgram normalized = this.normalizeProgram(program);
-		InternalProgram preprocessed = this.performProgramPreprocessing(normalized);
-		return this.prepareSolverFor(preprocessed, InputConfig.DEFAULT_FILTER);
-	}
-
-	/**
-	 * Solves the given program and filters answer sets based on the passed predicate
-	 * 
-	 * @param program an {@link InternalProgram} to solve
-	 * @param a       {@link Predicate} filtering {@at.ac.tuwien.kr.alpha.common.Predicate}s in the returned answer sets
-	 * @return a Stream of answer sets representing stable models of the given program
-	 */
-	public Stream<AnswerSet> solve(InternalProgram program, java.util.function.Predicate<Predicate> filter) {
-		Stream<AnswerSet> retVal = this.prepareSolverFor(program, filter).stream();
-		return this.config.isSortAnswerSets() ? retVal.sorted() : retVal;
-	}
-
-	/**
-	 * Overloaded version of solve({@link InternalProgram}, {@link Predicate}) that uses a default filter (accept everything)
-	 * 
-	 * @param program the program to solve
-	 * @return a stream of answer sets
-	 */
-	public Stream<AnswerSet> solve(InternalProgram program) {
-		return this.solve(program, InputConfig.DEFAULT_FILTER);
-	}
-
-	/**
-	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the program analysis aren't of interest
-	 */
-	public Stream<AnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
-		return this.solve(InternalProgram.fromNormalProgram(program), filter);
-	}
-
-	/**
-	 * Convenience method - overloaded version of solve({@link InternalProgram}, {@link Predicate}) for cases where details of the program analysis and
-	 * normalization aren't of interest
-	 */
-	public Stream<AnswerSet> solve(InputProgram program, java.util.function.Predicate<Predicate> filter) {
-		NormalProgram normalized = this.normalizeProgram(program);
-		InternalProgram preprocessed = this.performProgramPreprocessing(normalized);
-		return this.solve(preprocessed, filter);
-	}
-
-	/**
-	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the program analysis aren't of interest
-	 */
-	public Stream<AnswerSet> solve(NormalProgram program) {
-		return this.solve(program, InputConfig.DEFAULT_FILTER);
-	}
-
-	/**
-	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the program analysis and normalization aren't of
-	 * interest
-	 */
-	public Stream<AnswerSet> solve(InputProgram program) {
-		return this.solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
 	public SystemConfig getConfig() {
