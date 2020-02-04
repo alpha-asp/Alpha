@@ -29,13 +29,20 @@ package at.ac.tuwien.kr.alpha.common.heuristics;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 public class HeuristicDirectiveAtom {
+
+	public static final ThriceTruth DEFAULT_HEAD_SIGN = TRUE;
+	public static final Set<ThriceTruth> DEFAULT_BODY_SIGNS = new HashSet<>(Arrays.asList(TRUE, MBT));
 
 	private final Set<ThriceTruth> signs;
 	private final BasicAtom atom;
@@ -49,10 +56,16 @@ public class HeuristicDirectiveAtom {
 		if (sign == ThriceTruth.MBT) {
 			throw oops("M sign in heuristic head");
 		}
+		if (sign == null) {
+			sign = DEFAULT_HEAD_SIGN;
+		}
 		return new HeuristicDirectiveAtom(Collections.singleton(sign), atom);
 	}
 
 	public static HeuristicDirectiveAtom body(Set<ThriceTruth> signs, BasicAtom atom) {
+		if (signs == null || signs.isEmpty()) {
+			signs = DEFAULT_BODY_SIGNS;
+		}
 		return new HeuristicDirectiveAtom(signs, atom);
 	}
 

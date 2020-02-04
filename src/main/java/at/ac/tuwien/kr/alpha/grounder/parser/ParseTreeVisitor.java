@@ -641,7 +641,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public ThriceTruth visitHeuristic_head_sign(ASPCore2Parser.Heuristic_head_signContext ctx) {
 		// heuristic_head_sign : HEU_SIGN_T | HEU_SIGN_F;
-		if (ctx.HEU_SIGN_F() != null) {
+		if (ctx == null) {
+			return null;
+		} else if (ctx.HEU_SIGN_F() != null) {
 			return ThriceTruth.FALSE;
 		} else if (ctx.HEU_SIGN_T() != null) {
 			return ThriceTruth.TRUE;
@@ -687,7 +689,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public ThriceTruth visitHeuristic_body_sign(ASPCore2Parser.Heuristic_body_signContext ctx) {
 		// heuristic_body_sign : HEU_SIGN_T | HEU_SIGN_M | HEU_SIGN_F;
-		if (ctx.HEU_SIGN_T() != null) {
+		if (ctx == null) {
+			return null;
+		} else if (ctx.HEU_SIGN_T() != null) {
 			return ThriceTruth.TRUE;
 		} else if (ctx.HEU_SIGN_M() != null) {
 			return ThriceTruth.MBT;
