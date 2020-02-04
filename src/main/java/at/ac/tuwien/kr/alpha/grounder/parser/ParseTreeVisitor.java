@@ -81,7 +81,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
 import static java.util.Collections.emptyList;
 
 public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
@@ -429,8 +428,8 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Term visitVariable_term(ASPCore2Parser.Variable_termContext ctx) {
 		// variable_term : VARIABLE | ANONYMOUS_VARIABLE;
-		if (ctx.VARIABLE() != null) {
-			return VariableTerm.getInstance(ctx.VARIABLE().getText());
+		if (ctx.VARIABLE_OR_HEU_SIGNS() != null) {
+			return VariableTerm.getInstance(ctx.VARIABLE_OR_HEU_SIGNS().getText());
 		} else {
 			return VariableTerm.getAnonymousInstance();
 		}
@@ -587,7 +586,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			throw notSupported(ctx);
 		}
 
-		return VariableTerm.getInstance(ctx.VARIABLE().getText());
+		return VariableTerm.getInstance(ctx.VARIABLE_OR_HEU_SIGNS().getText());
 	}
 
 	@Override
@@ -640,16 +639,17 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public ThriceTruth visitHeuristic_head_sign(ASPCore2Parser.Heuristic_head_signContext ctx) {
-		// heuristic_head_sign : HEU_SIGN_T | HEU_SIGN_F;
-		if (ctx == null) {
-			return null;
-		} else if (ctx.HEU_SIGN_F() != null) {
-			return ThriceTruth.FALSE;
-		} else if (ctx.HEU_SIGN_T() != null) {
-			return ThriceTruth.TRUE;
-		} else {
-			throw oops("Unknown heuristic head sign");
+		// heuristic_head_sign : VARIABLE_OR_HEU_SIGNS;
+		// we cannot parse heu signs directly because their lexical definition would overlap with variables
+		if (ctx != null && ctx.VARIABLE_OR_HEU_SIGNS() != null) {
+			final String heuSign = ctx.VARIABLE_OR_HEU_SIGNS().getText();
+			try {
+				return ThriceTruth.fromShortString(heuSign);
+			} catch (IllegalArgumentException e) {
+				throw new IllegalArgumentException("Unknown heuristic head sign: " + heuSign);
+			}
 		}
+		return null;
 	}
 
 	@Override
@@ -676,30 +676,35 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public HeuristicDirectiveAtom visitHeuristic_body_atom(ASPCore2Parser.Heuristic_body_atomContext ctx) {
 		// heuristic_body_atom : (heuristic_body_sign)* basic_atom;
-		final Set<ThriceTruth> signs = new HashSet<>();
+		final Set<ThriceTruth> allSigns = new HashSet<>();
 		int i = 0;
-		for (ASPCore2Parser.Heuristic_body_signContext bodySignContext : ctx.heuristic_body_sign()) {
-			signs.add(visitHeuristic_body_sign(ctx.heuristic_body_sign(i)));
+		for (ASPCore2Parser.Heuristic_body_signsContext bodySignContext : ctx.heuristic_body_signs()) {
+			final Set<ThriceTruth> currentSigns = visitHeuristic_body_signs(ctx.heuristic_body_signs(i));
+			if (currentSigns != null) {
+				allSigns.addAll(currentSigns);
+			}
 			i++;
 		}
 		final BasicAtom atom = visitBasic_atom(ctx.basic_atom());
-		return HeuristicDirectiveAtom.body(signs, atom);
+		return HeuristicDirectiveAtom.body(allSigns, atom);
 	}
 
 	@Override
-	public ThriceTruth visitHeuristic_body_sign(ASPCore2Parser.Heuristic_body_signContext ctx) {
-		// heuristic_body_sign : HEU_SIGN_T | HEU_SIGN_M | HEU_SIGN_F;
-		if (ctx == null) {
-			return null;
-		} else if (ctx.HEU_SIGN_T() != null) {
-			return ThriceTruth.TRUE;
-		} else if (ctx.HEU_SIGN_M() != null) {
-			return ThriceTruth.MBT;
-		} else if (ctx.HEU_SIGN_F() != null) {
-			return ThriceTruth.FALSE;
-		} else {
-			throw oops("Unknown heuristic body sign");
+	public Set<ThriceTruth> visitHeuristic_body_signs(ASPCore2Parser.Heuristic_body_signsContext ctx) {
+		// heuristic_body_sign : VARIABLE_OR_HEU_SIGNS;
+		// we cannot parse heu signs directly because their lexical definition would overlap with variables
+		if (ctx != null && ctx.VARIABLE_OR_HEU_SIGNS() != null) {
+			final String heuSignList = ctx.VARIABLE_OR_HEU_SIGNS().getText();
+			final Set<ThriceTruth> heuSigns = new HashSet<>();
+			for (char heuSign : heuSignList.toCharArray()) {
+				try {
+					heuSigns.add(ThriceTruth.fromShortString(String.valueOf(heuSign)));
+				} catch (IllegalArgumentException e) {
+					throw new IllegalArgumentException("Unknown heuristic head sign: " + heuSign);
+				}
+			}
 		}
+		return null;
 	}
 
 	@Override

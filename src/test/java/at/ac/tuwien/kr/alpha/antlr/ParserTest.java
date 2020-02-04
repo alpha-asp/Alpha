@@ -63,6 +63,7 @@ import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.asSet;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -334,6 +335,24 @@ public class ParserTest {
 	public void parseProgramWithHeuristicDirective_HeadMultipleSigns() {
 		parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
 				+ "#heuristic TF c(X) : p(X,a,_), q(Xaa,xaa), not c(X).");
+	}
+
+	@Test
+	public void parseProgramWithHeuristicDirective_MultipleBodySignsWithSpaces() {
+		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
+				+ "#heuristic c(X) : T F p(X,a,_), not c(X).");
+
+		HeuristicDirective directive = getFirstHeuristicDirective(parsedProgram);
+		assertEquals(asSet(TRUE, FALSE), directive.getBody().getBodyAtomsPositive().get(0).getSigns());
+	}
+
+	@Test
+	public void parseProgramWithHeuristicDirective_MultipleBodySignsWithoutSpaces() {
+		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
+				+ "#heuristic c(X) : TM p(X,a,_), not c(X).");
+
+		HeuristicDirective directive = getFirstHeuristicDirective(parsedProgram);
+		assertEquals(asSet(TRUE, MBT), directive.getBody().getBodyAtomsPositive().get(0).getSigns());
 	}
 
 	@Test(expected = RuntimeException.class)

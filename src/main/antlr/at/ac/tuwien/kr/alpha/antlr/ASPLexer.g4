@@ -40,12 +40,12 @@ AGGREGATE_MAX : '#max';
 AGGREGATE_MIN : '#min';
 AGGREGATE_SUM : '#sum';
 
-HEU_SIGN_T : 'T';
+/*HEU_SIGN_T : 'T';
 HEU_SIGN_M : 'M';
-HEU_SIGN_F : 'F';
+HEU_SIGN_F : 'F';*/ // not possible like this because definitions overlap with VARIABLE!
 
 ID : ('a'..'z') ( 'A'..'Z' | 'a'..'z' | '0'..'9' | '_' )*;
-VARIABLE : ('A'..'Z') ( 'A'..'Z' | 'a'..'z' | '0'..'9' | '_' )*;
+VARIABLE_OR_HEU_SIGNS : ('A'..'Z') ( 'A'..'Z' | 'a'..'z' | '0'..'9' | '_' )*;
 NUMBER : '0' | ('1'..'9') ('0'..'9')*;
 QUOTED_STRING : QUOTE ( '\\"' | . )*? QUOTE;
 
