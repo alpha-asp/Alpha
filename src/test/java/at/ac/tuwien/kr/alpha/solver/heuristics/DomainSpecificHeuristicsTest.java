@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 Siemens AG
+ * Copyright (c) 2018-2020 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
@@ -36,13 +37,16 @@ import at.ac.tuwien.kr.alpha.solver.DefaultSolver;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static at.ac.tuwien.kr.alpha.TestUtil.atom;
+import static at.ac.tuwien.kr.alpha.TestUtil.checkExpectedAtomsInAnswerSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -62,7 +66,7 @@ public class DomainSpecificHeuristicsTest {
 		heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(Heuristic.NAIVE).build();
 		systemConfig = buildSystemConfig();
 	}
-	
+
 	@Test
 	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_SameLevel() {
 		Program program = parser.parse(
@@ -72,9 +76,18 @@ public class DomainSpecificHeuristicsTest {
 				"#heuristic b : not a. [1@1]");
 		solveAndAssertAnswerSets(program, "{ a }", "{ b }");
 	}
+
+	@Test
+	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_SameLevel_HeadsF() {
+		Program program = parser.parse(
+				"a :- not b." + LS +
+						"b :- not a." + LS +
+						"#heuristic F a : not b. [2@1]" + LS +
+						"#heuristic F b : not a. [1@1]");
+		solveAndAssertAnswerSets(program, "{ a }", "{ b }");
+	}
 	
 	@Test
-	@Ignore("Empty heuristic conditions are not yet supported")
 	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_SameLevel_EmptyCondition() {
 		Program program = parser.parse(
 				"a :- not b." + LS +
@@ -318,6 +331,43 @@ public class DomainSpecificHeuristicsTest {
 			}
 		}
 
+	}
+
+	/**
+	 * This is an example with domain-specific heuristics from one of our papers.
+	 * TODO: insert pointer to paper
+	 * Note that the constraint has been removed from the program because it is irrelevant to the behaviour of the domain-specific heuristics.
+	 */
+	@Test
+	public void testExampleFromPaper() {
+		final Program program = parser.parse(
+				"{ a(2); a(4); a(6); a(8); a(5) }." +
+						"#heuristic a(5). [1]" +
+						"#heuristic a(4) : not a(5). [2]" +
+						"#heuristic F a(5) : a(4). [2]" +
+						"#heuristic a(6) : F a(5), T a(4). [2]"
+		);
+
+		final Solver solver = SolverFactory.getInstance(systemConfig, atomStore, GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true), heuristicsConfiguration);
+		final AnswerSet answerSet = solver.stream().limit(1).collect(Collectors.toList()).get(0);
+		final List<BasicAtom> atomsExpectedInAnswerSet = Arrays.asList(atom("a", 4), atom("a", 6));
+		final List<BasicAtom> atomsNotExpectedInAnswerSet = Collections.singletonList(atom("a", 5));
+		checkExpectedAtomsInAnswerSet(answerSet, atomsExpectedInAnswerSet, atomsNotExpectedInAnswerSet);
+
+		final DefaultSolver defaultSolver = (DefaultSolver) solver;
+		assertEquals(0, defaultSolver.getNumberOfBackjumps());
+		final Map<String, Integer> numberOfChoicesPerBranchingHeuristic = defaultSolver.getNumberOfChoicesPerBranchingHeuristic();
+		assertFalse("No numbers of choices per branching heuristic", numberOfChoicesPerBranchingHeuristic.isEmpty());
+		for (Map.Entry<String, Integer> entry : numberOfChoicesPerBranchingHeuristic.entrySet()) {
+			if (entry.getKey().equals("DomainSpecific")) {
+				assertTrue("No choices done by DomainSpecific", entry.getValue() > 0);
+			} else if (entry.getKey().equals("NaiveHeuristic")) {
+				// default heuristic has to decide two choice points that are not covered by the domain-specific one
+				assertEquals("Unexpected number of choices done by Naive", Integer.valueOf(2), entry.getValue());
+			} else {
+				assertEquals("Choices done by " + entry.getKey(), Integer.valueOf(0), entry.getValue());
+			}
+		}
 	}
 
 	private void solveAndAssertAnswerSets(Program program, String... expectedAnswerSets) {

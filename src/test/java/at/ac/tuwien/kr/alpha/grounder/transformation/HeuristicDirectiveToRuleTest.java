@@ -47,17 +47,17 @@ public class HeuristicDirectiveToRuleTest {
 				+ "#heuristic b(N) : a(N). [N@2]");
 		
 		new HeuristicDirectiveToRule(heuristicsConfiguration).transform(program);
-		assertEquals("_h(N, 2, true, b(N)) :- a(N).", program.getRules().get(program.getRules().size() - 1).toString());
+		assertEquals("_h(N, 2, true, b(N), condpos(mt(a(N))), condneg()) :- a(N).", program.getRules().get(program.getRules().size() - 1).toString());
 	}
 	
 	@Test
 	public void testNegativeDirectiveWithBodyWeightAndLevel() {
 		Program program = parser.parse("a(1)."
 				+ "{ b(N) } :- a(N)."
-				+ "#heuristic -b(N) : a(N). [N@2]");
+				+ "#heuristic F b(N) : T a(N), not F b(N). [N@2]");
 		
 		new HeuristicDirectiveToRule(heuristicsConfiguration).transform(program);
-		assertEquals("_h(N, 2, false, b(N)) :- a(N).", program.getRules().get(program.getRules().size() - 1).toString());
+		assertEquals("_h(N, 2, false, b(N), condpos(t(a(N))), condneg(f(b(N)))) :- a(N).", program.getRules().get(program.getRules().size() - 1).toString());
 	}
 
 }

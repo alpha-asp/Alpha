@@ -32,8 +32,11 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringJoiner;
 import java.util.stream.Collector;
@@ -115,5 +118,10 @@ public class Util {
 	public static int arrayGrowthSize(int oldSize) {
 		// Growth factor is 1.5.
 		return oldSize + (oldSize >> 1);
+	}
+
+	@SafeVarargs
+	public static <T> Set<T> asSet(T... elements) {
+		return new HashSet<>(Arrays.asList(elements));
 	}
 }

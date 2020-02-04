@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2019, the Alpha Team.
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -28,12 +28,22 @@
 package at.ac.tuwien.kr.alpha.antlr;
 
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.ChoiceHead;
+import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.common.EnumerationDirective;
+import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.WeightAtLevel;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.*;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.HeuristicDirectiveToRule;
@@ -51,10 +61,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import static at.ac.tuwien.kr.alpha.Util.asSet;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
- * Copyright (c) 2016-2019, the Alpha Team.
+ * Copyright (c) 2016-2020, the Alpha Team.
  */
 public class ParserTest {
 	private final ProgramParser parser = new ProgramParser();
@@ -223,11 +238,11 @@ public class ParserTest {
 	@Test
 	public void parseProgramWithHeuristicDirective_W() {
 		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
-				+ "#heuristic c(X) : p(X,a,_), q(Xaa,xaa). [X]");
+				+ "#heuristic c(X) : T p(X,a,_), q(Xaa,xaa). [X]");
 
-		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getInlineDirectives().getDirectives().iterator().next();
+		HeuristicDirective directive = getFirstHeuristicDirective(parsedProgram);
 		assertEquals("c(X)", directive.getHead().toString());
-		assertEquals("[p(X, a, _1), q(Xaa, xaa)]", directive.getBody().toString());
+		assertEquals("T p(X, a, _1), q(Xaa, xaa)", directive.getBody().toString());
 		WeightAtLevel weightAtLevel = directive.getWeightAtLevel();
 		assertEquals("X", weightAtLevel.getWeight().toString());
 		assertEquals("0", weightAtLevel.getLevel().toString());
@@ -236,60 +251,90 @@ public class ParserTest {
 	@Test
 	public void parseProgramWithHeuristicDirective_WP() {
 		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
-				+ "#heuristic c(X) : p(X,a,_), q(Xaa,xaa). [X@2]");
+				+ "#heuristic c(X) : p(X,a,_), T q(Xaa,xaa). [X@2]");
 
-		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getInlineDirectives().getDirectives().iterator().next();
+		HeuristicDirective directive = getFirstHeuristicDirective(parsedProgram);
 		assertEquals("c(X)", directive.getHead().toString());
-		assertEquals("[p(X, a, _1), q(Xaa, xaa)]", directive.getBody().toString());
+		assertEquals("p(X, a, _1), T q(Xaa, xaa)", directive.getBody().toString());
 		WeightAtLevel weightAtLevel = directive.getWeightAtLevel();
 		assertEquals("X", weightAtLevel.getWeight().toString());
 		assertEquals("2", weightAtLevel.getLevel().toString());
 	}
 
 	@Test
-	public void parseProgramWithHeuristicDirective_Generator() {
+	public void parseProgramWithHeuristicDirective_Condition() {
 		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
-				+ "#heuristic c(X) : p(X,a,_), q(Xaa,xaa), not c(X). [X@2]");
+				+ "#heuristic c(X) : MT p(X,a,_), q(Xaa,xaa), not c(X). [X@2]");
 
-		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getInlineDirectives().getDirectives().iterator().next();
+		HeuristicDirective directive = getFirstHeuristicDirective(parsedProgram);
 		assertEquals("c(X)", directive.getHead().toString());
-		assertEquals("[p(X, a, _1), q(Xaa, xaa), not c(X)]", directive.getBody().toString());
+		assertEquals("TM p(X, a, _1), q(Xaa, xaa), not c(X)", directive.getBody().toString());
 		WeightAtLevel weightAtLevel = directive.getWeightAtLevel();
 		assertEquals("X", weightAtLevel.getWeight().toString());
 		assertEquals("2", weightAtLevel.getLevel().toString());
 	}
 
 	@Test
-	public void parseProgramWithHeuristicDirective_GeneratorWithArithmetics() {
+	public void parseProgramWithHeuristicDirective_ConditionWithArithmetics() {
 		Program parsedProgram = parser.parse("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
-				+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T), holds(F,Tp1), Tp1=T+1, LTp1mT=LT+1-T. [LTp1mT@1]");
+				+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not F holds(F,T), holds(F,Tp1), Tp1=T+1, LTp1mT=LT+1-T. [LTp1mT@1]");
 
-		HeuristicDirective directive = (HeuristicDirective) parsedProgram.getInlineDirectives().getDirectives().iterator().next();
+		HeuristicDirective directive = getFirstHeuristicDirective(parsedProgram);
 		assertEquals("holds(F, T)", directive.getHead().toString());
-		assertEquals("[fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F, T), holds(F, Tp1), Tp1 = T + 1, LTp1mT = LT + 1 - T]", directive.getBody().toString());
+		assertEquals("fluent(F), time(T), T > 0, lasttime(LT), not F holds(F, T), holds(F, Tp1), Tp1 = T + 1, LTp1mT = LT + 1 - T", directive.getBody().toString());
 		WeightAtLevel weightAtLevel = directive.getWeightAtLevel();
 		assertEquals("LTp1mT", weightAtLevel.getWeight().toString());
 		assertEquals("1", weightAtLevel.getLevel().toString());
 	}
 
-	/**
-	 * Classical negation in heuristic conditions is not yet supported.
-	 */
-	@Test(expected = UnsupportedOperationException.class)
-	public void parseProgramWithClassicalNegationInHeuristicCondition() {
-		parser.parse("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
-				+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T), -holds(F,Tp1), Tp1=T+1, LTp1mT=LT+1-T. [LTp1mT@1]");
-	}
-	
-	/**
-	 * Empty heuristic conditions are not yet supported.
-	 */
-	@Test(expected = UnsupportedOperationException.class)
-	public void testEmptyCondition() {
-		parser.parse("a(1)."
+	@Test
+	public void parseProgramWithHeuristicDirective_EmptyCondition() {
+		Program parsedProgram = parser.parse("a(1)."
 				+ "{ b(N) } :- a(N)."
 				+ "#heuristic b(1). [1@2]");
-		}
+		HeuristicDirective directive = getFirstHeuristicDirective(parsedProgram);
+		assertTrue(directive.getBody().getBodyAtomsPositive().isEmpty());
+		assertTrue(directive.getBody().getBodyAtomsNegative().isEmpty());
+	}
+
+	@Test
+	public void parseProgramWithHeuristicDirective_HeadDefaultSign() {
+		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
+				+ "#heuristic c(X) : p(X,a,_), q(Xaa,xaa), not c(X).");
+
+		HeuristicDirective directive = getFirstHeuristicDirective(parsedProgram);
+		assertEquals(asSet(TRUE), directive.getHead().getSigns());
+	}
+
+	@Test
+	public void parseProgramWithHeuristicDirective_HeadTSign() {
+		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
+				+ "#heuristic T c(X) : p(X,a,_), q(Xaa,xaa), not c(X).");
+
+		HeuristicDirective directive = getFirstHeuristicDirective(parsedProgram);
+		assertEquals(asSet(TRUE), directive.getHead().getSigns());
+	}
+
+	@Test
+	public void parseProgramWithHeuristicDirective_HeadFSign() {
+		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
+				+ "#heuristic F c(X) : p(X,a,_), q(Xaa,xaa), not c(X).");
+
+		HeuristicDirective directive = getFirstHeuristicDirective(parsedProgram);
+		assertEquals(asSet(FALSE), directive.getHead().getSigns());
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void parseProgramWithHeuristicDirective_HeadMSign() {
+		parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
+				+ "#heuristic M c(X) : p(X,a,_), q(Xaa,xaa), not c(X).");
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void parseProgramWithHeuristicDirective_HeadMultipleSigns() {
+		parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
+				+ "#heuristic TF c(X) : p(X,a,_), q(Xaa,xaa), not c(X).");
+	}
 
 	@Test(expected = RuntimeException.class)
 	@Ignore("Currently, Rule#isSafe does nothing")
@@ -315,5 +360,9 @@ public class ParserTest {
 	private void parseProgramAndTransformHeuristicDirectives(String input) {
 		Program program = parser.parse(input);
 		new HeuristicDirectiveToRule(heuristicsConfiguration).transform(program); // without transforming it to a rule, the safety of a heuristic directive is not checked currently
+	}
+
+	private static HeuristicDirective getFirstHeuristicDirective(Program parsedProgram) {
+		return (HeuristicDirective) parsedProgram.getInlineDirectives().getDirectives().iterator().next();
 	}
 }
