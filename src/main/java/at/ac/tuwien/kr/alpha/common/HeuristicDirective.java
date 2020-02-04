@@ -28,6 +28,8 @@ package at.ac.tuwien.kr.alpha.common;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveAtom;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveBody;
 
+import java.util.Objects;
+
 /**
  * Represents a heuristic directive, e.g. {@code #heuristic a : b. [2@1]}
  */
@@ -54,6 +56,25 @@ public class HeuristicDirective extends Directive {
 
 	public WeightAtLevel getWeightAtLevel() {
 		return weightAtLevel;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		HeuristicDirective that = (HeuristicDirective) o;
+		return head.equals(that.head) &&
+				body.equals(that.body) &&
+				weightAtLevel.equals(that.weightAtLevel);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(head, body, weightAtLevel);
 	}
 
 	@Override

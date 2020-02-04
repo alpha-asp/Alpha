@@ -50,6 +50,14 @@ public class HeuristicDirectiveBody {
 		);
 	}
 
+	public List<HeuristicDirectiveAtom> getBodyAtomsPositive() {
+		return bodyAtomsPositive;
+	}
+
+	public List<HeuristicDirectiveAtom> getBodyAtomsNegative() {
+		return bodyAtomsNegative;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {

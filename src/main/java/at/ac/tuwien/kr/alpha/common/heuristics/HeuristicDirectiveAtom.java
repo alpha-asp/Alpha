@@ -56,6 +56,14 @@ public class HeuristicDirectiveAtom {
 		return new HeuristicDirectiveAtom(signs, atom);
 	}
 
+	public Set<ThriceTruth> getSigns() {
+		return signs;
+	}
+
+	public BasicAtom getAtom() {
+		return atom;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
