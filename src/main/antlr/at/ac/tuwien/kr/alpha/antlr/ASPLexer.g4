@@ -40,6 +40,10 @@ AGGREGATE_MAX : '#max';
 AGGREGATE_MIN : '#min';
 AGGREGATE_SUM : '#sum';
 
+HEU_SIGN_T : 'T';
+HEU_SIGN_M : 'M';
+HEU_SIGN_F : 'F';
+
 ID : ('a'..'z') ( 'A'..'Z' | 'a'..'z' | '0'..'9' | '_' )*;
 VARIABLE : ('A'..'Z') ( 'A'..'Z' | 'a'..'z' | '0'..'9' | '_' )*;
 NUMBER : '0' | ('1'..'9') ('0'..'9')*;
@@ -48,7 +52,3 @@ QUOTED_STRING : QUOTE ( '\\"' | . )*? QUOTE;
 COMMENT : '%' ~[\r\n]* -> channel(HIDDEN);
 MULTI_LINE_COMMEN : '%*' .*? '*%' -> channel(HIDDEN);
 BLANK : [ \t\r\n\f]+ -> channel(HIDDEN);
-
-HEU_SIGN_T : 'T';
-HEU_SIGN_M : 'M';
-HEU_SIGN_F : 'F';
