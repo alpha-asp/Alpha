@@ -79,7 +79,7 @@ public class HeuristicDirective extends Directive {
 
 	@Override
 	public String toString() {
-		return "#heuristic " + head + " : " + ". [" + weightAtLevel + "]";
+		return "#heuristic " + head + " : " + body + ". [" + weightAtLevel + "]";
 	}
 	
 }

@@ -78,12 +78,15 @@ public class HeuristicDirectiveBody {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(join("", bodyAtomsPositive, ""));
-		if (!bodyAtomsPositive.isEmpty() && !bodyAtomsNegative.isEmpty()) {
-			sb.append(", ");
-		}
-		sb.append(join("", bodyAtomsNegative, ""));
-		return sb.toString();
+		return join(
+				join(
+						"",
+						bodyAtomsPositive,
+						bodyAtomsNegative.size() > 0 ? ", not " : ""
+				),
+				bodyAtomsNegative,
+				", not ",
+				""
+		);
 	}
 }

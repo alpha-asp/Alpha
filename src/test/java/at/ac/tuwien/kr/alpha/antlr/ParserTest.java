@@ -242,8 +242,8 @@ public class ParserTest {
 				+ "#heuristic c(X) : T p(X,a,_), q(Xaa,xaa). [X]");
 
 		HeuristicDirective directive = getFirstHeuristicDirective(parsedProgram);
-		assertEquals("c(X)", directive.getHead().toString());
-		assertEquals("T p(X, a, _1), q(Xaa, xaa)", directive.getBody().toString());
+		assertEquals("T c(X)", directive.getHead().toString());
+		assertEquals("T p(X, a, _1), TM q(Xaa, xaa)", directive.getBody().toString());
 		WeightAtLevel weightAtLevel = directive.getWeightAtLevel();
 		assertEquals("X", weightAtLevel.getWeight().toString());
 		assertEquals("0", weightAtLevel.getLevel().toString());
@@ -268,8 +268,9 @@ public class ParserTest {
 				+ "#heuristic c(X) : MT p(X,a,_), q(Xaa,xaa), not c(X). [X@2]");
 
 		HeuristicDirective directive = getFirstHeuristicDirective(parsedProgram);
-		assertEquals("c(X)", directive.getHead().toString());
-		assertEquals("TM p(X, a, _1), q(Xaa, xaa), not c(X)", directive.getBody().toString());
+		assertEquals("T c(X)", directive.getHead().toString());
+		assertEquals("TM p(X, a, _1), TM q(Xaa, xaa), not TM c(X)", directive.getBody().toString());
+		assertEquals("#heuristic T c(X) : TM p(X, a, _1), TM q(Xaa, xaa), not TM c(X). [X@2]", directive.toString());
 		WeightAtLevel weightAtLevel = directive.getWeightAtLevel();
 		assertEquals("X", weightAtLevel.getWeight().toString());
 		assertEquals("2", weightAtLevel.getLevel().toString());

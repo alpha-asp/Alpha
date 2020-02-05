@@ -36,7 +36,6 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -55,7 +54,7 @@ public class HeuristicDirectiveAtom {
 
 	public static HeuristicDirectiveAtom head(ThriceTruth sign, BasicAtom atom) {
 		if (sign == ThriceTruth.MBT) {
-			throw oops("M sign in heuristic head");
+			throw new IllegalArgumentException("M sign in heuristic head");
 		}
 		if (sign == null) {
 			sign = DEFAULT_HEAD_SIGN;
