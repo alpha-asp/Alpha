@@ -26,6 +26,7 @@
 
 package at.ac.tuwien.kr.alpha.common.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
@@ -45,9 +46,9 @@ public class HeuristicDirectiveAtom {
 	public static final Set<ThriceTruth> DEFAULT_BODY_SIGNS = new HashSet<>(Arrays.asList(TRUE, MBT));
 
 	private final Set<ThriceTruth> signs;
-	private final BasicAtom atom;
+	private final Atom atom;
 
-	private HeuristicDirectiveAtom(Set<ThriceTruth> signs, BasicAtom atom) {
+	private HeuristicDirectiveAtom(Set<ThriceTruth> signs, Atom atom) {
 		this.signs = Collections.unmodifiableSet(signs);
 		this.atom = atom;
 	}
@@ -62,7 +63,7 @@ public class HeuristicDirectiveAtom {
 		return new HeuristicDirectiveAtom(Collections.singleton(sign), atom);
 	}
 
-	public static HeuristicDirectiveAtom body(Set<ThriceTruth> signs, BasicAtom atom) {
+	public static HeuristicDirectiveAtom body(Set<ThriceTruth> signs, Atom atom) {
 		if (signs == null || signs.isEmpty()) {
 			signs = DEFAULT_BODY_SIGNS;
 		}
@@ -73,7 +74,7 @@ public class HeuristicDirectiveAtom {
 		return signs;
 	}
 
-	public BasicAtom getAtom() {
+	public Atom getAtom() {
 		return atom;
 	}
 

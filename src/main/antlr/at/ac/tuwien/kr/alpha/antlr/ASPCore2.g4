@@ -49,6 +49,8 @@ naf_literals : naf_literal (COMMA naf_literals)?;
 
 naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
 
+atom : (external_atom | classical_literal | builtin_atom);
+
 classical_literal : MINUS? basic_atom;
 
 basic_atom : ID (PAREN_OPEN terms PAREN_CLOSE)?;
@@ -92,7 +94,7 @@ heuristic_body : COLON heuristic_body_literal (COMMA heuristic_body_literal)*;
 
 heuristic_body_literal : NAF? heuristic_body_atom;
 
-heuristic_body_atom : (heuristic_body_signs)* basic_atom;
+heuristic_body_atom : (heuristic_body_signs)* atom;
 
 heuristic_body_signs : VARIABLE_OR_HEU_SIGNS; // HEU_SIGN_T | HEU_SIGN_M | HEU_SIGN_F;
 

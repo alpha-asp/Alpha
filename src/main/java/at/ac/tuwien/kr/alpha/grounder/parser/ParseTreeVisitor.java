@@ -494,7 +494,19 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		}
 		throw notSupported(ctx);
 	}
-	
+
+	@Override
+	public Atom visitAtom(ASPCore2Parser.AtomContext ctx) {
+		if (ctx.builtin_atom() != null) {
+			return visitBuiltin_atom(ctx.builtin_atom());
+		} else if (ctx.classical_literal() != null) {
+			return visitClassical_literal(ctx.classical_literal());
+		} else if (ctx.external_atom() != null) {
+			return visitExternal_atom(ctx.external_atom());
+		}
+		throw notSupported(ctx);
+	}
+
 	@Override
 	public WeightAtLevel visitWeight_annotation(Weight_annotationContext ctx) {
 		// SQUARE_OPEN weight_at_level SQUARE_CLOSE
@@ -685,7 +697,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			}
 			i++;
 		}
-		final BasicAtom atom = visitBasic_atom(ctx.basic_atom());
+		final Atom atom = visitAtom(ctx.atom());
 		return HeuristicDirectiveAtom.body(allSigns, atom);
 	}
 
