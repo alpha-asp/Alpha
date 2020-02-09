@@ -65,7 +65,7 @@ term : ID                                   # term_const
      | ID (PAREN_OPEN terms? PAREN_CLOSE)   # term_func
      | NUMBER                               # term_number
      | QUOTED_STRING                        # term_string
-     | VARIABLE_OR_HEU_SIGNS                # term_variable
+     | variable                             # term_variable
      | ANONYMOUS_VARIABLE                   # term_anonymousVariable
      | PAREN_OPEN term PAREN_CLOSE          # term_parenthesisedTerm
      | interval                             # term_interval // Syntax extension.
@@ -76,7 +76,7 @@ term : ID                                   # term_const
      | term BITXOR term                     # term_bitxorArithTerm
      ;
 
-interval : lower = (NUMBER | VARIABLE_OR_HEU_SIGNS) DOT DOT upper = (NUMBER | VARIABLE_OR_HEU_SIGNS); // NOT Core2 syntax, but widespread
+interval : (lowerNum=NUMBER | lowerVar=variable) DOT DOT (upperNum=NUMBER | upperVar=variable); // NOT Core2 syntax, but widespread
 
 external_atom : MINUS? AMPERSAND ID (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?; // NOT Core2 syntax.
 
@@ -86,17 +86,17 @@ directive_enumeration : SHARP 'enumeration_predicate_is' ID DOT;  // NOT Core2 s
 
 directive_heuristic : SHARP 'heuristic' heuristic_head_atom (heuristic_body)? DOT heuristic_weight_annotation?;
 
-heuristic_head_atom : (heuristic_head_sign)? basic_atom;
+heuristic_head_atom : heuristic_head_sign? basic_atom;
 
-heuristic_head_sign : VARIABLE_OR_HEU_SIGNS; // HEU_SIGN_T | HEU_SIGN_F;
+heuristic_head_sign : HEU_SIGN_T | HEU_SIGN_F;
 
 heuristic_body : COLON heuristic_body_literal (COMMA heuristic_body_literal)*;
 
 heuristic_body_literal : NAF? heuristic_body_atom;
 
-heuristic_body_atom : (heuristic_body_signs)* atom;
+heuristic_body_atom : heuristic_body_sign? basic_atom;
 
-heuristic_body_signs : VARIABLE_OR_HEU_SIGNS; // HEU_SIGN_T | HEU_SIGN_M | HEU_SIGN_F;
+heuristic_body_sign : (HEU_SIGN_T | HEU_SIGN_M | HEU_SIGN_F | HEU_BODY_SIGN)+; // single-char signs have their own classes in the lexer
 
 heuristic_weight_annotation : SQUARE_OPEN heuristic_weight_at_level SQUARE_CLOSE;
 
@@ -108,7 +108,9 @@ basic_term : ground_term | variable_term;
 
 ground_term : /*SYMBOLIC_CONSTANT*/ ID | QUOTED_STRING | MINUS? NUMBER;
 
-variable_term : VARIABLE_OR_HEU_SIGNS | ANONYMOUS_VARIABLE;
+variable_term : variable | ANONYMOUS_VARIABLE;
+
+variable : HEU_SIGN_T | HEU_SIGN_M | HEU_SIGN_F | HEU_BODY_SIGN | VARIABLE; // to be able to treat heuristic sign keywords as variable identifiers
 
 answer_set : CURLY_OPEN classical_literal? (COMMA classical_literal)* CURLY_CLOSE;
 

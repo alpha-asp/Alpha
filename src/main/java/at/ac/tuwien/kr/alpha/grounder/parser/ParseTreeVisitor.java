@@ -28,7 +28,6 @@
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Directive_heuristicContext;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser.Weight_annotationContext;
@@ -427,9 +426,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public Term visitVariable_term(ASPCore2Parser.Variable_termContext ctx) {
-		// variable_term : VARIABLE | ANONYMOUS_VARIABLE;
-		if (ctx.VARIABLE_OR_HEU_SIGNS() != null) {
-			return VariableTerm.getInstance(ctx.VARIABLE_OR_HEU_SIGNS().getText());
+		// variable_term : variable | ANONYMOUS_VARIABLE;
+		if (ctx.variable() != null) {
+			return VariableTerm.getInstance(ctx.variable().getText());
 		} else {
 			return VariableTerm.getAnonymousInstance();
 		}
@@ -598,7 +597,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			throw notSupported(ctx);
 		}
 
-		return VariableTerm.getInstance(ctx.VARIABLE_OR_HEU_SIGNS().getText());
+		return VariableTerm.getInstance(ctx.variable().getText());
 	}
 
 	@Override
@@ -651,14 +650,12 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public ThriceTruth visitHeuristic_head_sign(ASPCore2Parser.Heuristic_head_signContext ctx) {
-		// heuristic_head_sign : VARIABLE_OR_HEU_SIGNS;
-		// we cannot parse heu signs directly because their lexical definition would overlap with variables
-		if (ctx != null && ctx.VARIABLE_OR_HEU_SIGNS() != null) {
-			final String heuSign = ctx.VARIABLE_OR_HEU_SIGNS().getText();
-			try {
-				return ThriceTruth.fromShortString(heuSign);
-			} catch (IllegalArgumentException e) {
-				throw new IllegalArgumentException("Unknown heuristic head sign: " + heuSign);
+		// heuristic_head_sign : HEU_SIGN_T | HEU_SIGN_F;
+		if (ctx != null) {
+			if (ctx.HEU_SIGN_T() != null) {
+				return ThriceTruth.TRUE;
+			} else if (ctx.HEU_SIGN_F() != null) {
+				return ThriceTruth.FALSE;
 			}
 		}
 		return null;
@@ -671,10 +668,8 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			return null;
 		}
 		final List<HeuristicDirectiveLiteral> bodyLiterals = new ArrayList<>();
-		int i = 0;
 		for (ASPCore2Parser.Heuristic_body_literalContext literalContext : ctx.heuristic_body_literal()) {
-			bodyLiterals.add(visitHeuristic_body_literal(ctx.heuristic_body_literal(i)));
-			i++;
+			bodyLiterals.add(visitHeuristic_body_literal(literalContext));
 		}
 		return new HeuristicDirectiveBody(bodyLiterals);
 	}
@@ -687,36 +682,28 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public HeuristicDirectiveAtom visitHeuristic_body_atom(ASPCore2Parser.Heuristic_body_atomContext ctx) {
-		// heuristic_body_atom : (heuristic_body_sign)* basic_atom;
-		final Set<ThriceTruth> allSigns = new HashSet<>();
-		int i = 0;
-		for (ASPCore2Parser.Heuristic_body_signsContext bodySignContext : ctx.heuristic_body_signs()) {
-			final Set<ThriceTruth> currentSigns = visitHeuristic_body_signs(ctx.heuristic_body_signs(i));
-			if (currentSigns != null) {
-				allSigns.addAll(currentSigns);
-			}
-			i++;
-		}
-		final Atom atom = visitAtom(ctx.atom());
-		return HeuristicDirectiveAtom.body(allSigns, atom);
+		// heuristic_body_atom : heuristic_body_sign? basic_atom;
+		final Set<ThriceTruth> heuristicSigns = visitHeuristic_body_sign(ctx.heuristic_body_sign());
+		final Atom atom = visitBasic_atom(ctx.basic_atom());
+		return HeuristicDirectiveAtom.body(heuristicSigns, atom);
 	}
 
 	@Override
-	public Set<ThriceTruth> visitHeuristic_body_signs(ASPCore2Parser.Heuristic_body_signsContext ctx) {
-		// heuristic_body_sign : VARIABLE_OR_HEU_SIGNS;
-		// we cannot parse heu signs directly because their lexical definition would overlap with variables
-		if (ctx != null && ctx.VARIABLE_OR_HEU_SIGNS() != null) {
-			final String heuSignList = ctx.VARIABLE_OR_HEU_SIGNS().getText();
-			final Set<ThriceTruth> heuSigns = new HashSet<>();
-			for (char heuSign : heuSignList.toCharArray()) {
-				try {
-					heuSigns.add(ThriceTruth.fromShortString(String.valueOf(heuSign)));
-				} catch (IllegalArgumentException e) {
-					throw new IllegalArgumentException("Unknown heuristic head sign: " + heuSign);
-				}
-			}
+	public Set<ThriceTruth> visitHeuristic_body_sign(ASPCore2Parser.Heuristic_body_signContext ctx) {
+		if (ctx == null) {
+			return null;
 		}
-		return null;
+		final Set<ThriceTruth> heuristicSigns = new HashSet<>();
+		if (!ctx.HEU_SIGN_T().isEmpty()) {
+			heuristicSigns.add(ThriceTruth.TRUE);
+		}
+		if (!ctx.HEU_SIGN_F().isEmpty()) {
+			heuristicSigns.add(ThriceTruth.FALSE);
+		}
+		if (!ctx.HEU_SIGN_M().isEmpty()) {
+			heuristicSigns.add(ThriceTruth.MBT);
+		}
+		return heuristicSigns;
 	}
 
 	@Override
@@ -742,12 +729,10 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	public IntervalTerm visitTerm_interval(ASPCore2Parser.Term_intervalContext ctx) {
-		// interval : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE);
+		//interval : (lowerNum=NUMBER | lowerVar=variable) DOT DOT (upperNum=NUMBER | upperVar=variable);
 		ASPCore2Parser.IntervalContext ictx = ctx.interval();
-		String lowerText = ictx.lower.getText();
-		String upperText = ictx.upper.getText();
-		Term lower = ictx.lower.getType() == ASPCore2Lexer.NUMBER ? ConstantTerm.getInstance(Integer.parseInt(lowerText)) : VariableTerm.getInstance(lowerText);
-		Term upper = ictx.upper.getType() == ASPCore2Lexer.NUMBER ? ConstantTerm.getInstance(Integer.parseInt(upperText)) : VariableTerm.getInstance(upperText);
+		Term lower = ictx.lowerNum != null ? ConstantTerm.getInstance(Integer.parseInt(ictx.lowerNum.getText())) : VariableTerm.getInstance(ictx.lowerVar.getText());
+		Term upper = ictx.upperNum != null ? ConstantTerm.getInstance(Integer.parseInt(ictx.upperNum.getText())) : VariableTerm.getInstance(ictx.upperVar.getText());
 		return IntervalTerm.getInstance(lower, upper);
 	}
 
