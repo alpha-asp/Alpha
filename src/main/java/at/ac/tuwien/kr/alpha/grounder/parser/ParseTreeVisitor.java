@@ -664,12 +664,11 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public HeuristicDirectiveBody visitHeuristic_body(ASPCore2Parser.Heuristic_bodyContext ctx) {
 		// heuristic_body : COLON heuristic_body_literal (COMMA heuristic_body_literal)*;
-		if (ctx.heuristic_body_literal() == null) {
-			return null;
-		}
 		final List<HeuristicDirectiveLiteral> bodyLiterals = new ArrayList<>();
-		for (ASPCore2Parser.Heuristic_body_literalContext literalContext : ctx.heuristic_body_literal()) {
-			bodyLiterals.add(visitHeuristic_body_literal(literalContext));
+		if (ctx != null) {
+			for (ASPCore2Parser.Heuristic_body_literalContext literalContext : ctx.heuristic_body_literal()) {
+				bodyLiterals.add(visitHeuristic_body_literal(literalContext));
+			}
 		}
 		return new HeuristicDirectiveBody(bodyLiterals);
 	}

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
@@ -82,7 +82,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void parseFact() throws IOException {
+	public void parseFact() {
 		Program parsedProgram = parser.parse("p(a,b).");
 
 		assertEquals("Program contains one fact.", 1, parsedProgram.getFacts().size());
@@ -255,8 +255,8 @@ public class ParserTest {
 				+ "#heuristic c(X) : p(X,a,_), T q(Xaa,xaa). [X@2]");
 
 		HeuristicDirective directive = getFirstHeuristicDirective(parsedProgram);
-		assertEquals("c(X)", directive.getHead().toString());
-		assertEquals("p(X, a, _1), T q(Xaa, xaa)", directive.getBody().toString());
+		assertEquals("T c(X)", directive.getHead().toString());
+		assertEquals("TM p(X, a, _1), T q(Xaa, xaa)", directive.getBody().toString());
 		WeightAtLevel weightAtLevel = directive.getWeightAtLevel();
 		assertEquals("X", weightAtLevel.getWeight().toString());
 		assertEquals("2", weightAtLevel.getLevel().toString());
@@ -282,8 +282,8 @@ public class ParserTest {
 				+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not F holds(F,T), holds(F,Tp1), Tp1=T+1, LTp1mT=LT+1-T. [LTp1mT@1]");
 
 		HeuristicDirective directive = getFirstHeuristicDirective(parsedProgram);
-		assertEquals("holds(F, T)", directive.getHead().toString());
-		assertEquals("fluent(F), time(T), T > 0, lasttime(LT), not F holds(F, T), holds(F, Tp1), Tp1 = T + 1, LTp1mT = LT + 1 - T", directive.getBody().toString());
+		assertEquals("T holds(F, T)", directive.getHead().toString());
+		assertEquals("MT fluent(F), MT time(T), MT T > 0, MT lasttime(LT), not F holds(F, T), MT holds(F, Tp1), Tp1 = T + 1, LTp1mT = LT + 1 - T", directive.getBody().toString());
 		WeightAtLevel weightAtLevel = directive.getWeightAtLevel();
 		assertEquals("LTp1mT", weightAtLevel.getWeight().toString());
 		assertEquals("1", weightAtLevel.getLevel().toString());
