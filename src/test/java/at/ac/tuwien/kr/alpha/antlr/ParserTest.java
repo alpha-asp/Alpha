@@ -67,6 +67,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -93,7 +94,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void parseFactWithFunctionTerms() throws IOException {
+	public void parseFactWithFunctionTerms() {
 		Program parsedProgram = parser.parse("p(f(a),g(h(Y))).");
 
 		assertEquals("Program contains one fact.", 1, parsedProgram.getFacts().size());
@@ -104,7 +105,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void parseSmallProgram() throws IOException {
+	public void parseSmallProgram() {
 		Program parsedProgram = parser.parse(
 				"a :- b, not d." + System.lineSeparator() +
 				"c(X) :- p(X,a,_), q(Xaa,xaa)." + System.lineSeparator() +
@@ -114,12 +115,12 @@ public class ParserTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void parseBadSyntax() throws IOException {
+	public void parseBadSyntax() {
 		parser.parse("Wrong Syntax.");
 	}
 
 	@Test
-	public void parseBuiltinAtom() throws IOException {
+	public void parseBuiltinAtom() {
 		Program parsedProgram = parser.parse("a :- p(X), X != Y, q(Y).");
 		assertEquals(1, parsedProgram.getRules().size());
 		assertEquals(3, parsedProgram.getRules().get(0).getBody().size());
@@ -127,39 +128,39 @@ public class ParserTest {
 
 	@Test(expected = UnsupportedOperationException.class)
 	// Change expected after Alpha can deal with disjunction.
-	public void parseProgramWithDisjunctionInHead() throws IOException {
+	public void parseProgramWithDisjunctionInHead() {
 		parser.parse("r(X) | q(X) :- q(X)." + System.lineSeparator() + "q(a)." + System.lineSeparator());
 	}
 
 	@Test
-	public void parseInterval() throws IOException {
+	public void parseInterval() {
 		Program parsedProgram = parser.parse("fact(2..5). p(X) :- q(a, 3 .. X).");
 		IntervalTerm factInterval = (IntervalTerm) parsedProgram.getFacts().get(0).getTerms().get(0);
-		assertTrue(factInterval.equals(IntervalTerm.getInstance(ConstantTerm.getInstance(2), ConstantTerm.getInstance(5))));
-		IntervalTerm bodyInterval = (IntervalTerm) ((Literal)parsedProgram.getRules().get(0).getBody().get(0)).getTerms().get(1);
-		assertTrue(bodyInterval.equals(IntervalTerm.getInstance(ConstantTerm.getInstance(3), VariableTerm.getInstance("X"))));
+		assertEquals(factInterval, IntervalTerm.getInstance(ConstantTerm.getInstance(2), ConstantTerm.getInstance(5)));
+		IntervalTerm bodyInterval = (IntervalTerm) parsedProgram.getRules().get(0).getBody().get(0).getTerms().get(1);
+		assertEquals(bodyInterval, IntervalTerm.getInstance(ConstantTerm.getInstance(3), VariableTerm.getInstance("X")));
 	}
 
 	@Test
-	public void parseChoiceRule() throws IOException {
+	public void parseChoiceRule() {
 		Program parsedProgram = parser.parse("dom(1). dom(2). { a ; b } :- dom(X).");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
 		BasicAtom atomA = new BasicAtom(Predicate.getInstance("a", 0));
 		assertEquals(2, choiceHead.getChoiceElements().size());
-		assertTrue(choiceHead.getChoiceElements().get(0).choiceAtom.toString().equals("a"));
-		assertTrue(choiceHead.getChoiceElements().get(1).choiceAtom.toString().equals("b"));
-		assertEquals(null, choiceHead.getLowerBound());
-		assertEquals(null, choiceHead.getUpperBound());
+		assertEquals("a", choiceHead.getChoiceElements().get(0).choiceAtom.toString());
+		assertEquals("b", choiceHead.getChoiceElements().get(1).choiceAtom.toString());
+		assertNull(choiceHead.getLowerBound());
+		assertNull(choiceHead.getUpperBound());
 	}
 
 	@Test
-	public void parseChoiceRuleBounded() throws IOException {
+	public void parseChoiceRuleBounded() {
 		Program parsedProgram = parser.parse("dom(1). dom(2). 1 < { a: p(v,w), not r; b } <= 13 :- dom(X). foo.");
 		ChoiceHead choiceHead = (ChoiceHead) parsedProgram.getRules().get(0).getHead();
 		BasicAtom atomA = new BasicAtom(Predicate.getInstance("a", 0));
 		assertEquals(2, choiceHead.getChoiceElements().size());
-		assertTrue(choiceHead.getChoiceElements().get(0).choiceAtom.toString().equals("a"));
-		assertTrue(choiceHead.getChoiceElements().get(1).choiceAtom.toString().equals("b"));
+		assertEquals("a", choiceHead.getChoiceElements().get(0).choiceAtom.toString());
+		assertEquals("b", choiceHead.getChoiceElements().get(1).choiceAtom.toString());
 		List<Literal> conditionalLiterals = choiceHead.getChoiceElements().get(0).conditionLiterals;
 		assertEquals(2, conditionalLiterals.size());
 		assertFalse(conditionalLiterals.get(0).isNegated());
@@ -222,7 +223,7 @@ public class ParserTest {
 	}
 
 	@Test
-	public void cardinalityAggregate() throws IOException {
+	public void cardinalityAggregate() {
 		Program parsedProgram = parser.parse("num(K) :-  K <= #count {X,Y,Z : p(X,Y,Z) }, dom(K).");
 		Literal bodyElement = parsedProgram.getRules().get(0).getBody().get(0);
 		assertTrue(bodyElement instanceof AggregateLiteral);
