@@ -94,7 +94,7 @@ heuristic_body : COLON heuristic_body_literal (COMMA heuristic_body_literal)*;
 
 heuristic_body_literal : NAF? heuristic_body_atom;
 
-heuristic_body_atom : heuristic_body_sign? basic_atom;
+heuristic_body_atom : (heuristic_body_sign? basic_atom) | builtin_atom | external_atom;
 
 heuristic_body_sign : (HEU_SIGN_T | HEU_SIGN_M | HEU_SIGN_F | HEU_BODY_SIGN)+; // single-char signs have their own classes in the lexer
 

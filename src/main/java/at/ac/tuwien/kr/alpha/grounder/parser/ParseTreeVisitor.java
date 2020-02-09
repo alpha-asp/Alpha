@@ -80,6 +80,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
 import static java.util.Collections.emptyList;
 
 public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
@@ -681,9 +682,18 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public HeuristicDirectiveAtom visitHeuristic_body_atom(ASPCore2Parser.Heuristic_body_atomContext ctx) {
-		// heuristic_body_atom : heuristic_body_sign? basic_atom;
+		// heuristic_body_atom : (heuristic_body_sign? basic_atom) | builtin_atom | external_atom;
 		final Set<ThriceTruth> heuristicSigns = visitHeuristic_body_sign(ctx.heuristic_body_sign());
-		final Atom atom = visitBasic_atom(ctx.basic_atom());
+		Atom atom;
+		if (ctx.basic_atom() != null) {
+			atom = visitBasic_atom(ctx.basic_atom());
+		} else if (ctx.builtin_atom() != null) {
+			atom = visitBuiltin_atom(ctx.builtin_atom());
+		} else if (ctx.external_atom() != null) {
+			atom = visitExternal_atom(ctx.external_atom());
+		} else {
+			throw oops("No known atom found in heuristic body atom");
+		}
 		return HeuristicDirectiveAtom.body(heuristicSigns, atom);
 	}
 

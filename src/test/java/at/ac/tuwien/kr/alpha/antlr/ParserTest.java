@@ -284,10 +284,16 @@ public class ParserTest {
 
 		HeuristicDirective directive = getFirstHeuristicDirective(parsedProgram);
 		assertEquals("T holds(F, T)", directive.getHead().toString());
-		assertEquals("MT fluent(F), MT time(T), MT T > 0, MT lasttime(LT), not F holds(F, T), MT holds(F, Tp1), Tp1 = T + 1, LTp1mT = LT + 1 - T", directive.getBody().toString());
+		assertEquals("TM fluent(F), TM time(T), T > 0, TM lasttime(LT), TM holds(F, Tp1), Tp1 = T + 1, LTp1mT = LT + 1 - T, not F holds(F, T)", directive.getBody().toString());
 		WeightAtLevel weightAtLevel = directive.getWeightAtLevel();
 		assertEquals("LTp1mT", weightAtLevel.getWeight().toString());
 		assertEquals("1", weightAtLevel.getLevel().toString());
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void parseProgramWithHeuristicDirective_ConditionWithHeuristicSignWithBuiltinAtom() {
+		parser.parse("holds(F,T) :- fluent(F), time(T), TM T > 0, lasttime(LT), not not_holds(F,T). "
+				+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not F holds(F,T), holds(F,Tp1), Tp1=T+1, LTp1mT=LT+1-T. [LTp1mT@1]");
 	}
 
 	@Test

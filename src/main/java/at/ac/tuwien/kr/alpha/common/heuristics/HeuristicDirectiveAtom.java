@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -48,7 +49,11 @@ public class HeuristicDirectiveAtom {
 	private final Atom atom;
 
 	private HeuristicDirectiveAtom(Set<ThriceTruth> signs, Atom atom) {
-		this.signs = Collections.unmodifiableSet(signs);
+		if (atom instanceof BasicAtom) {
+			this.signs = Collections.unmodifiableSet(signs);
+		} else {
+			this.signs = null;
+		}
 		this.atom = atom;
 	}
 
@@ -65,6 +70,8 @@ public class HeuristicDirectiveAtom {
 	public static HeuristicDirectiveAtom body(Set<ThriceTruth> signs, Atom atom) {
 		if (signs == null || signs.isEmpty()) {
 			signs = DEFAULT_BODY_SIGNS;
+		} else if (!(atom instanceof BasicAtom)) {
+			throw oops("Non-basic heuristic directive atom with non-empty sign list");
 		}
 		return new HeuristicDirectiveAtom(signs, atom);
 	}
@@ -98,13 +105,15 @@ public class HeuristicDirectiveAtom {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		for (ThriceTruth truth : ThriceTruth.values()) {
-			if (signs.contains(truth)) {
-				sb.append(truth);
+		if (signs != null) {
+			for (ThriceTruth truth : ThriceTruth.values()) {
+				if (signs.contains(truth)) {
+					sb.append(truth);
+				}
 			}
-		}
-		if (!signs.isEmpty()) {
-			sb.append(" ");
+			if (!signs.isEmpty()) {
+				sb.append(" ");
+			}
 		}
 		sb.append(atom);
 		return sb.toString();
