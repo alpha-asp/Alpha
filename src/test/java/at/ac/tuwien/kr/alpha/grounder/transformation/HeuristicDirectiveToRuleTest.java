@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2018-2019 Siemens AG
+/*
+ * Copyright (c) 2018-2020 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,7 @@ public class HeuristicDirectiveToRuleTest {
 				+ "#heuristic b(N) : a(N). [N@2]");
 		
 		new HeuristicDirectiveToRule(heuristicsConfiguration).transform(program);
-		assertEquals("_h(N, 2, true, b(N), condpos(mt(a(N))), condneg()) :- a(N).", program.getRules().get(program.getRules().size() - 1).toString());
+		assertEquals("_h(N, 2, true, b(N), condpos(tm(a(N))), condneg()) :- a(N).", program.getRules().get(program.getRules().size() - 1).toString());
 	}
 	
 	@Test

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2019 Siemens AG
+ * Copyright (c) 2018-2020 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -70,8 +70,8 @@ public class HeuristicDirectiveToRule implements ProgramTransformation {
 	}
 
 	private void transformAndAddToProgram(HeuristicDirective heuristicDirective, Program program) {
-		Head head = new DisjunctiveHead(HeuristicAtom.fromHeuristicDirective(heuristicDirective));
-		Rule rule = null; // TODO: update conversion to rule // new Rule(head, heuristicDirective.getBody());
+		final Head head = new DisjunctiveHead(HeuristicAtom.fromHeuristicDirective(heuristicDirective));
+		final Rule rule = new Rule(head, heuristicDirective.getBody().toPositiveRuleBody());
 		program.getRules().add(rule);
 	}
 }

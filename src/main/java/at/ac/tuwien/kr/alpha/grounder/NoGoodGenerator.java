@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2019, the Alpha Team.
+/*
+ * Copyright (c) 2017-2020, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -27,17 +27,26 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.Literals;
+import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.NoGoodCreator;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
 import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
@@ -109,15 +118,15 @@ public class NoGoodGenerator {
 	}
 
 	private Collection<NoGood> generateNoGoodsForHeuristicRule(List<Integer> posLiterals, List<Integer> negLiterals, HeuristicAtom groundHeadAtom, int bodyRepresentingAtom) {
-		BasicAtom groundHeuristicHead = groundHeadAtom.getHead().toAtom();
+		BasicAtom groundHeuristicHead = groundHeadAtom.getHeadAtom().toAtom();
 		final int heuristicHeadId = atomStore.putIfAbsent(groundHeuristicHead);
 
 		final List<NoGood> result = new ArrayList<>();
 		result.addAll(choiceRecorder.generateHeuristicNoGoods(posLiterals, negLiterals, groundHeadAtom, bodyRepresentingAtom, heuristicHeadId));
 
 		// if the head of the heuristic directive is assigned, the body of the heuristic rule shall also be assigned s.t. it is not applicable anymore:
-		@SuppressWarnings("unchecked")
-		boolean heuristicSign = ((ConstantTerm<Boolean>)groundHeadAtom.getSign()).getObject();
+		// TODO: adapt for new stuff
+		boolean heuristicSign = groundHeadAtom.getHeadSign().toBoolean();
 		result.add(NoGoodCreator.headFirstInternal(atomToLiteral(bodyRepresentingAtom, false), atomToLiteral(heuristicHeadId, heuristicSign)));
 		result.add(NoGoodCreator.internal(atomToLiteral(bodyRepresentingAtom,  true), atomToLiteral(heuristicHeadId, !heuristicSign)));
 

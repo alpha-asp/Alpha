@@ -1,17 +1,17 @@
-/**
- * Copyright (c) 2018-2019 Siemens AG
+/*
+ * Copyright (c) 2018-2020 Siemens AG
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -29,14 +29,22 @@ import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.solver.ChoiceInfluenceManager.ActivityListener;
-import at.ac.tuwien.kr.alpha.solver.*;
+import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.solver.NaiveNoGoodStore;
+import at.ac.tuwien.kr.alpha.solver.NoGoodStore;
+import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -57,7 +65,7 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 	}
 
 	@Before
-	public void setUp() throws IOException {
+	public void setUp() {
 		this.store = new DefaultDomainSpecificHeuristicsStore();
 		this.choiceManager = new PseudoChoiceManager(assignment, new NaiveNoGoodStore(assignment), store);
 	}
@@ -119,7 +127,7 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 	}
 
 	private HeuristicDirectiveValues info(int atom, int weight, int level) {
-		return new HeuristicDirectiveValues(atom, null, weight, level, true);
+		return new HeuristicDirectiveValues(atom, null, weight, level, TRUE);
 	}
 
 	private List<HeuristicDirectiveValues> listHeuristicsOrderedByDecreasingPriority() {

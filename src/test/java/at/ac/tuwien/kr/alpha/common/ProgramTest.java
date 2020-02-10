@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2019 Siemens AG
+/*
+ * Copyright (c) 2017-2020 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,7 @@ public class ProgramTest {
 				"p(a)." + LS +
 					"p(b)." + LS +
 					"q(X) :- p(X)." + LS +
-					"#heuristic q(X) : p(X). [X@2]" + LS,
+					"#heuristic T q(X) : TM p(X). [X@2]" + LS,
 				parsedProgram.toString());
 	}
 

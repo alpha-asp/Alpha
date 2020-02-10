@@ -26,9 +26,14 @@
 
 package at.ac.tuwien.kr.alpha.common.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
@@ -56,6 +61,21 @@ public class HeuristicDirectiveBody {
 
 	public List<HeuristicDirectiveAtom> getBodyAtomsNegative() {
 		return bodyAtomsNegative;
+	}
+
+	/**
+	 * Returns the positive part of this body as a rule body, which is used to represent heuristic directives as rules.
+	 * @return the atoms in the positive part of this body whose heuristic signs do not include F, without heuristic signs
+	 */
+	public List<Literal> toPositiveRuleBody() {
+		final List<Literal> positiveLiterals = new ArrayList<>();
+		for (HeuristicDirectiveAtom heuristicDirectiveAtom : bodyAtomsPositive) {
+			final Set<ThriceTruth> signs = heuristicDirectiveAtom.getSigns();
+			if (signs == null || !signs.contains(ThriceTruth.FALSE)) {
+				positiveLiterals.add(heuristicDirectiveAtom.getAtom().toLiteral());
+			}
+		}
+		return positiveLiterals;
 	}
 
 	@Override

@@ -33,49 +33,54 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.WeightAtLevel;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveAtom;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * An internal atom that stores information on domain-specific heuristics.
  *
  */
 public class HeuristicAtom implements Atom {
-	public static final Predicate PREDICATE = Predicate.getInstance("_h", 4, true);
+	public static final Predicate PREDICATE = Predicate.getInstance("_h", 6, true);
+	private static final String FUNCTION_POSITIVE_CONDITION = "condpos";
+	private static final String FUNCTION_NEGATIVE_CONDITION = "condneg";
 	
 	private final WeightAtLevel weightAtLevel;
-	private final Term sign;
-	private final FunctionTerm head;
+	private final ThriceTruth headSign;
+	private final FunctionTerm headAtom;
+	private final FunctionTerm positiveCondition;
+	private final FunctionTerm negativeCondition;
 	private final boolean ground;
-	
-	/**
-	 * Constructs a heuristic atom using information from a {@link HeuristicDirective}.
-	 */
-	public HeuristicAtom(Atom head, WeightAtLevel weightAtLevel, Term sign) {
-		this(head.toFunctionTerm(), weightAtLevel, sign);
-	}
-	
-	private HeuristicAtom(FunctionTerm head, WeightAtLevel weightAtLevel, Term sign) {
-		this.head = head;
+
+	private HeuristicAtom(WeightAtLevel weightAtLevel, ThriceTruth headSign, FunctionTerm headAtom, FunctionTerm positiveCondition, FunctionTerm negativeCondition) {
 		this.weightAtLevel = weightAtLevel;
-		this.sign = sign;
+		this.headSign = headSign;
+		this.headAtom = headAtom;
+		this.positiveCondition = positiveCondition;
+		this.negativeCondition = negativeCondition;
 		this.ground = getTerms().stream().allMatch(Term::isGround);
 	}
 
 	public WeightAtLevel getWeightAtLevel() {
 		return weightAtLevel;
 	}
-	
-	public Term getSign() {
-		return sign;
+
+	public ThriceTruth getHeadSign() {
+		return headSign;
 	}
-	
-	public FunctionTerm getHead() {
-		return head;
+
+	public FunctionTerm getHeadAtom() {
+		return headAtom;
 	}
 
 	@Override
@@ -85,7 +90,14 @@ public class HeuristicAtom implements Atom {
 
 	@Override
 	public List<Term> getTerms() {
-		return Arrays.asList(weightAtLevel.getWeight(), weightAtLevel.getLevel(), sign, head);
+		return Arrays.asList(
+				weightAtLevel.getWeight(),
+				weightAtLevel.getLevel(),
+				ConstantTerm.getInstance(headSign.toBoolean()),
+				headAtom,
+				positiveCondition,
+				negativeCondition
+		);
 	}
 
 	@Override
@@ -101,9 +113,11 @@ public class HeuristicAtom implements Atom {
 	@Override
 	public HeuristicAtom substitute(Substitution substitution) {
 		return new HeuristicAtom(
-			head.substitute(substitution),
-			weightAtLevel.substitute(substitution),
-			sign.substitute(substitution)
+				weightAtLevel.substitute(substitution),
+				headSign,
+				headAtom.substitute(substitution),
+				positiveCondition.substitute(substitution),
+				negativeCondition.substitute(substitution)
 		);
 	}
 
@@ -111,7 +125,7 @@ public class HeuristicAtom implements Atom {
 	public String toString() {
 		return Util.join(PREDICATE.getName() + "(", this.getTerms(), ")");
 	}
-	
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -120,22 +134,49 @@ public class HeuristicAtom implements Atom {
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-
 		HeuristicAtom that = (HeuristicAtom) o;
-
-		return weightAtLevel.equals(that.weightAtLevel) && sign.equals(that.sign) && head.equals(that.head);
+		return weightAtLevel.equals(that.weightAtLevel) &&
+				headSign == that.headSign &&
+				headAtom.equals(that.headAtom) &&
+				positiveCondition.equals(that.positiveCondition) &&
+				negativeCondition.equals(that.negativeCondition);
 	}
-	
+
 	@Override
 	public int hashCode() {
-		int result = head != null ? head.hashCode() : 0;
-		result = 31 * result + (weightAtLevel != null ? weightAtLevel.hashCode() : 0);
-		result = 31 * result + (sign != null ? sign.hashCode() : 0);
-		result = 31 * result + (ground ? 1 : 0);
-		return result;
+		return Objects.hash(weightAtLevel, headSign, headAtom, positiveCondition, negativeCondition);
 	}
 
 	public static HeuristicAtom fromHeuristicDirective(HeuristicDirective heuristicDirective) {
-		return null; // TODO: update conversion // new HeuristicAtom(heuristicDirective.getHead(), heuristicDirective.getWeightAtLevel(), heuristicDirective.getSign());
+		return new HeuristicAtom(
+				heuristicDirective.getWeightAtLevel(),
+				heuristicDirective.getHead().getSigns().iterator().next(),
+				heuristicDirective.getHead().getAtom().toFunctionTerm(),
+				conditionToFunctionTerm(heuristicDirective.getBody().getBodyAtomsPositive(), FUNCTION_POSITIVE_CONDITION),
+				conditionToFunctionTerm(heuristicDirective.getBody().getBodyAtomsNegative(), FUNCTION_NEGATIVE_CONDITION)
+		);
+	}
+
+	private static FunctionTerm conditionToFunctionTerm(List<HeuristicDirectiveAtom> heuristicDirectiveAtoms, String topLevelFunctionName) {
+		final List<Term> terms = new ArrayList<>(heuristicDirectiveAtoms.size());
+		for (HeuristicDirectiveAtom heuristicDirectiveAtom : heuristicDirectiveAtoms) {
+			String atomFunctionName = signsToFunctionName(heuristicDirectiveAtom.getSigns());
+			terms.add(FunctionTerm.getInstance(atomFunctionName, heuristicDirectiveAtom.getAtom().toFunctionTerm()));
+		}
+		return FunctionTerm.getInstance(topLevelFunctionName, terms);
+	}
+
+	/**
+	 * Creates a function name to represent a set of signs. The order of signs will be consistent.
+	 * E.g., the set containing {@link ThriceTruth#MBT} and {@link ThriceTruth#TRUE} will result in "tm".
+	 */
+	private static String signsToFunctionName(Set<ThriceTruth> signs) {
+		StringBuilder sb = new StringBuilder();
+		for (ThriceTruth value : ThriceTruth.values()) {
+			if (signs.contains(value)) {
+				sb.append(value.toString().toLowerCase());
+			}
+		}
+		return sb.toString();
 	}
 }

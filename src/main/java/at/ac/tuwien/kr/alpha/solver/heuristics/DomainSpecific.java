@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2018-2019 Siemens AG
+/*
+ * Copyright (c) 2018-2020 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -124,7 +124,7 @@ public class DomainSpecific implements BranchingHeuristic {
 		} else {
 			atom = fallbackHeuristic.chooseAtom(activeChoiceAtomsDerivingHead);
 		}
-		return Optional.of(Literals.atomToLiteral(atom, values.getSign()));
+		return Optional.of(Literals.atomToLiteral(atom, values.getSign().toBoolean())); // TODO: ThriceTruth sign?
 	}
 	
 	@Override

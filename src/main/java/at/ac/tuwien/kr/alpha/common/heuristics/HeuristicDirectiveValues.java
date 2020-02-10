@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2018-2019 Siemens AG
+/*
+ * Copyright (c) 2018-2020 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,8 +30,10 @@ import at.ac.tuwien.kr.alpha.common.WeightAtLevel;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 import java.util.Comparator;
+import java.util.Objects;
 
 /**
  * Holds values defined by a {@link HeuristicDirective} to steer domain-specific heuristic choice for a single ground heuristic directive.
@@ -43,9 +45,9 @@ public class HeuristicDirectiveValues {
 	private final BasicAtom groundHeadAtom;
 	private final int weight;
 	private final int level;
-	private final boolean sign;
+	private final ThriceTruth sign;
 
-	public HeuristicDirectiveValues(int headAtomId, BasicAtom groundHeadAtom, int weight, int level, boolean sign) {
+	public HeuristicDirectiveValues(int headAtomId, BasicAtom groundHeadAtom, int weight, int level, ThriceTruth sign) {
 		this.headAtomId = headAtomId;
 		this.groundHeadAtom = groundHeadAtom;
 		this.weight = weight;
@@ -61,7 +63,7 @@ public class HeuristicDirectiveValues {
 		return groundHeadAtom;
 	}
 
-	public boolean getSign() {
+	public ThriceTruth getSign() {
 		return sign;
 	}
 
@@ -73,20 +75,22 @@ public class HeuristicDirectiveValues {
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-
 		HeuristicDirectiveValues that = (HeuristicDirectiveValues) o;
-
-		return headAtomId == that.headAtomId && weight == that.weight && level == that.level && sign == that.sign;
+		return headAtomId == that.headAtomId &&
+				weight == that.weight &&
+				level == that.level &&
+				groundHeadAtom.equals(that.groundHeadAtom) &&
+				sign == that.sign;
 	}
-	
+
 	@Override
 	public int hashCode() {
-		return 60 * headAtomId + 53 * weight + 57 * level + (sign ? 1 : 0);
+		return Objects.hash(headAtomId, groundHeadAtom, weight, level, sign);
 	}
-	
+
 	@Override
 	public String toString() {
-		return String.format((sign ? "" : "-") + "%d [%d@%d]", headAtomId, weight, level);
+		return String.format(sign + " %d [%d@%d]", headAtomId, weight, level);
 	}
 
 	/**
@@ -98,8 +102,8 @@ public class HeuristicDirectiveValues {
 	@SuppressWarnings("unchecked")
 	public static HeuristicDirectiveValues fromHeuristicAtom(HeuristicAtom groundHeuristicAtom, int headAtomId) {
 		WeightAtLevel weightAtLevel = groundHeuristicAtom.getWeightAtLevel();
-		BasicAtom groundHeuristicHead = groundHeuristicAtom.getHead().toAtom();
-		return new HeuristicDirectiveValues(headAtomId, groundHeuristicHead, ((ConstantTerm<Integer>)weightAtLevel.getWeight()).getObject(), ((ConstantTerm<Integer>)weightAtLevel.getLevel()).getObject(), ((ConstantTerm<Boolean>)groundHeuristicAtom.getSign()).getObject());
+		BasicAtom groundHeuristicHead = groundHeuristicAtom.getHeadAtom().toAtom();
+		return new HeuristicDirectiveValues(headAtomId, groundHeuristicHead, ((ConstantTerm<Integer>)weightAtLevel.getWeight()).getObject(), ((ConstantTerm<Integer>)weightAtLevel.getLevel()).getObject(), groundHeuristicAtom.getHeadSign());
 	}
 	
 	public static class PriorityComparator implements Comparator<HeuristicDirectiveValues> {
@@ -114,7 +118,7 @@ public class HeuristicDirectiveValues {
 				difference = v1.headAtomId - v2.headAtomId;
 			}
 			if (difference == 0) {
-				difference = (v1.sign ? 1 : 0) - (v2.sign ? 1 : 0);
+				difference = v1.sign.ordinal() - v2.sign.ordinal();
 			}
 			return difference;
 		}
