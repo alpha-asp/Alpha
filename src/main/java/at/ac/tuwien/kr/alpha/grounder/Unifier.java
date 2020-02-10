@@ -47,6 +47,18 @@ public class Unifier extends Substitution {
 		return this;
 	}
 
+	/**
+	 * Returns a list of all variables that this unifier maps to something else, i.e., it returns all variables on the left-hand side of the unifier.
+	 * @return the list of mapped variables.
+	 */
+	public List<Term> getMappedVariables() {
+		ArrayList<Term> ret = new ArrayList<>();
+		for (Map.Entry<VariableTerm, Term> substitution : substitution.entrySet()) {
+			ret.add(substitution.getKey());
+		}
+		return ret;
+	}
+
 
 	public <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term term) {
 		// If term is not ground, store it for right-hand side reverse-lookup.
