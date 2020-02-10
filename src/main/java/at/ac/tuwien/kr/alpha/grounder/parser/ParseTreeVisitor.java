@@ -712,6 +712,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		if (!ctx.HEU_SIGN_M().isEmpty()) {
 			heuristicSigns.add(ThriceTruth.MBT);
 		}
+		if (!ctx.HEU_BODY_SIGN().isEmpty()) {
+			for (TerminalNode compoundBodySign : ctx.HEU_BODY_SIGN()) {
+				for (char signChar : compoundBodySign.getText().toCharArray()) {
+					heuristicSigns.add(ThriceTruth.fromChar(signChar));
+				}
+			}
+		}
 		return heuristicSigns;
 	}
 

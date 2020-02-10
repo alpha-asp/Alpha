@@ -56,6 +56,15 @@ public enum ThriceTruth implements Truth {
 		return value ? TRUE : FALSE;
 	}
 
+	public static ThriceTruth fromChar(char signChar) {
+		for (ThriceTruth value : values()) {
+			if (value.asString.equals(String.valueOf(signChar))) {
+				return value;
+			}
+		}
+		throw new IllegalArgumentException("Unknown " + ThriceTruth.class.getSimpleName() + ": " + signChar);
+	}
+
 	/**
 	 * @return true if this is MBT.
 	 */
