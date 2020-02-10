@@ -13,7 +13,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 /**
  * A variable substitution allowing variables to occur on the right-hand side. Chains of variable substitutions are
  * resolved automatically, i.e., adding the substitutions (X -> A) and (A -> d) results in (X -> d), (A -> d).
- * Copyright (c) 2018, the Alpha Team.
+ * Copyright (c) 2018-2020, the Alpha Team.
  */
 public class Unifier extends Substitution {
 

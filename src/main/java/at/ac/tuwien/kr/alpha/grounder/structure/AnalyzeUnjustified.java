@@ -33,7 +33,7 @@ import java.util.Set;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
- * Copyright (c) 2018, the Alpha Team.
+ * Copyright (c) 2018-2020, the Alpha Team.
  */
 public class AnalyzeUnjustified {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AnalyzeUnjustified.class);
