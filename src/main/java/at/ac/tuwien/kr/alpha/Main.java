@@ -29,16 +29,23 @@ package at.ac.tuwien.kr.alpha;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.RecognitionException;
 import org.apache.commons.cli.ParseException;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.api.mapper.impl.AnswerSetToWorkbookMapper;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.config.AlphaConfig;
@@ -99,7 +106,25 @@ public class Main {
 
 		if (!alpha.getConfig().isQuiet()) {
 			AtomicInteger counter = new AtomicInteger(0);
-			stream.forEach(as -> System.out.println("Answer set " + counter.incrementAndGet() + ":" + System.lineSeparator() + as.toString()));
+			// stream.forEach(as -> System.out.println("Answer set " + counter.incrementAndGet() + ":" + System.lineSeparator() + as.toString()));
+			stream.forEach(as -> {
+				int cnt = counter.incrementAndGet();
+				System.out.println("Answer set " + Integer.toString(cnt) + ":" + System.lineSeparator() + as.toString());
+				if (inputCfg.isWriteAnswerSetsAsXlsx()) {
+					try {
+						Path outputPath = Paths.get(inputCfg.getAnswerSetFileOutputPath() + "." + Integer.toString(cnt) + ".xlsx");
+						OutputStream os = Files.newOutputStream(outputPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE,
+								StandardOpenOption.TRUNCATE_EXISTING);
+						Workbook wb = new AnswerSetToWorkbookMapper().mapFromAnswerSet(as);
+						wb.write(os);
+						wb.close();
+						os.close();
+						System.out.println("Answer set written to file " + outputPath.toString());
+					} catch (IOException ex) {
+						System.err.println("Failed writing answer set as xlsx file! (" + ex.getMessage() + ")");
+					}
+				}
+			});
 			if (counter.get() == 0) {
 				System.out.println("UNSATISFIABLE");
 			} else {
