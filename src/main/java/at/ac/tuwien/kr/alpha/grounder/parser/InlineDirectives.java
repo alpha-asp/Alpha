@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2019, the Alpha Team.
+/*
+ * Copyright (c) 2017-2020, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -29,7 +29,11 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 
 import at.ac.tuwien.kr.alpha.common.Directive;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Stores directives appearing in the ASP program. Each directive starts with # and ends with .
@@ -58,6 +62,10 @@ public class InlineDirectives {
 	public void addDirective(DIRECTIVE directive, Directive value) {
 		directives.putIfAbsent(directive, new ArrayList<>());
 		directives.get(directive).add(value);
+	}
+
+	public void replaceDirectives(DIRECTIVE directive, List<Directive> values) {
+		directives.put(directive, values);
 	}
 
 	public void accumulate(InlineDirectives other) {

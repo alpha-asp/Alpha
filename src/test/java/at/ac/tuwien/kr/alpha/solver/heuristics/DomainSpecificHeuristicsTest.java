@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2018-2020 Siemens AG
  * All rights reserved.
  * 
@@ -369,6 +369,42 @@ public class DomainSpecificHeuristicsTest {
 				assertEquals("Choices done by " + entry.getKey(), Integer.valueOf(0), entry.getValue());
 			}
 		}
+	}
+
+	@Test
+	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_PositiveAnySignCondition_aF() {
+		Program program = parser.parse(
+				"{a}." + LS +
+						"{b}." + LS +
+						"#heuristic F a. [2@1]" + LS +
+						"#heuristic F b : FMT a. [1@1]");
+		solveAndAssertAnswerSets(program, "{ }", "{ b }", "{ a }", "{ a, b }");
+	}
+
+	@Test
+	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_PositiveAnySignCondition_aT() {
+		Program program = parser.parse(
+				"{a}." + LS +
+						"{b}." + LS +
+						"#heuristic T a. [2@1]" + LS +
+						"#heuristic F b : FMT a. [1@1]");
+		solveAndAssertAnswerSets(program, "{ a }", "{ a, b }", "{ }", "{ b }");
+	}
+
+	@Test
+	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_NegativeeAnySignCondition_HeadF() {
+		Program program = parser.parse(
+				"{a}." + LS +
+						"#heuristic F a : not FMT a.");
+		solveAndAssertAnswerSets(program, "{ }", "{ a }");
+	}
+
+	@Test
+	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_NegativeeAnySignCondition_HeadT() {
+		Program program = parser.parse(
+				"{a}." + LS +
+						"#heuristic T a : not FMT a.");
+		solveAndAssertAnswerSets(program, "{ a }", "{ }");
 	}
 
 	private void solveAndAssertAnswerSets(Program program, String... expectedAnswerSets) {

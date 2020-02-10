@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -57,6 +57,7 @@ import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 import at.ac.tuwien.kr.alpha.grounder.transformation.CardinalityNormalization;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
 import at.ac.tuwien.kr.alpha.grounder.transformation.EnumerationRewriting;
+import at.ac.tuwien.kr.alpha.grounder.transformation.HeuristicDirectiveEliminateAnySignConditions;
 import at.ac.tuwien.kr.alpha.grounder.transformation.HeuristicDirectiveToRule;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.SumNormalization;
@@ -243,7 +244,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private void applyProgramTransformations(Program program, HeuristicsConfiguration heuristicsConfiguration) {
 		// Transform choice rules.
 		new ChoiceHeadToNormal().transform(program);
-		// Transform heuristic directives.
+		// Eliminate any-sign conditions from heuristic directives.
+		new HeuristicDirectiveEliminateAnySignConditions().transform(program);
+		// Translate heuristic directives to rules.
 		new HeuristicDirectiveToRule(heuristicsConfiguration).transform(program);
 		// Transform cardinality aggregates.
 		new CardinalityNormalization(!useCountingGridNormalization).transform(program);
