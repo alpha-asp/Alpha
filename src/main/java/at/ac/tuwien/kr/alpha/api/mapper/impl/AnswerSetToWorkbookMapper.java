@@ -45,7 +45,7 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 /**
  * Implementation of {@link AnswerSetToObjectMapper} that generates an office open xml workbook ("excel file") from a given answer set.
  * 
- * Copyright (c) 2019, the Alpha Team.
+ * Copyright (c) 2020, the Alpha Team.
  */
 public class AnswerSetToWorkbookMapper implements AnswerSetToObjectMapper<Workbook> {
 
