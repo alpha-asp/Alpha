@@ -74,7 +74,7 @@ public class CommandLineParser {
 	private static final Option OPT_LITERATE = Option.builder("l").longOpt("literate")
 			.desc("enable literate programming mode (default: " + InputConfig.DEFAULT_LITERATE + ")").build();
 	private static final Option OPT_WRITE_XSLX = Option.builder("wx").longOpt("write-xlsx").hasArg(true).argName("path").type(String.class)
-			.desc("Write answer sets to xlsx workbooks (one workbook per answer set)").build();
+			.desc("Write answer sets to excel files, i.e. xlsx workbooks (one workbook per answer set)").build();
 
 	// general system-wide config
 	private static final Option OPT_GROUNDER = Option.builder("g").longOpt("grounder").hasArg(true).argName("grounder")
