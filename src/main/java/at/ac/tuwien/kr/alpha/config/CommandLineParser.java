@@ -96,8 +96,8 @@ public class CommandLineParser {
 	private static final Option OPT_MOMS_STRATEGY = Option.builder("ms").longOpt("momsStrategy").hasArg(true).argName("strategy")
 			.desc("strategy for mom's heuristic (CountBinaryWatches or BinaryNoGoodPropagation, default: " + SystemConfig.DEFAULT_MOMS_STRATEGY.name() + ")")
 			.build();
-	private static final Option OPT_REPLAY_CHOICES = Option.builder("rc").longOpt("replayChoices").hasArg().argName("choices").desc(
-			"comma-separated list of choices to be replayed (each choice is represented by a signed integer whose absolute value designates an atom ID and whose sign designates a truth value)")
+	private static final Option OPT_REPLAY_CHOICES = Option.builder("rc").longOpt("replayChoices").hasArg().argName("choices")
+			.desc("comma-separated list of choices to be replayed (each choice is represented by a signed integer whose absolute value designates an atom ID and whose sign designates a truth value)")
 			.build();
 	private static final Option OPT_QUIET = Option.builder("q").longOpt("quiet").desc("do not print answer sets (default: " + SystemConfig.DEFAULT_QUIET)
 			.build();
