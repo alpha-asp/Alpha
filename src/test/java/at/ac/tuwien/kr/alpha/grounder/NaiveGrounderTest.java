@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 Siemens AG
+ * Copyright (c) 2018-2020 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -195,7 +195,7 @@ public class NaiveGrounderTest {
 		nonGroundRule.groundingOrder.groundingOrders.put(startingLiteral, groundingOrder);
 
 		grounder.bootstrap();
-		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
+		TrailAssignment currentAssignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
 		final Substitution subst1 = Substitution.unify(startingLiteral, new Instance(ConstantTerm.getInstance(1)), new Substitution());
 		final NaiveGrounder.BindingResult bindingResult = grounder.getGroundInstantiations(nonGroundRule, groundingOrder, subst1, currentAssignment);
 
@@ -245,7 +245,7 @@ public class NaiveGrounderTest {
 	 */
 	private void testIfGrounderGroundsRule(Program program, int ruleID, Literal startingLiteral, int startingInstance, ThriceTruth bTruth, boolean expectNoGoods) {
 		AtomStore atomStore = new AtomStoreImpl();
-		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
+		TrailAssignment currentAssignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
 		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, p -> true, GrounderHeuristicsConfiguration.permissive(), true);
 
 		int b = atomStore.putIfAbsent(atom("b", 1));
@@ -347,7 +347,7 @@ public class NaiveGrounderTest {
 	 */
 	private void testPermissiveGrounderHeuristicTolerance(Program program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance, ThriceTruth[] truthsOfB, int arityOfB, boolean expectNoGoods, List<Integer> expectedNumbersOfUnassignedPositiveBodyAtoms) {
 		AtomStore atomStore = new AtomStoreImpl();
-		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
+		TrailAssignment currentAssignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
 		GrounderHeuristicsConfiguration heuristicConfiguration = GrounderHeuristicsConfiguration.getInstance(tolerance, tolerance);
 		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, p -> true, heuristicConfiguration, true);
 
@@ -393,7 +393,7 @@ public class NaiveGrounderTest {
 	 * and using this temporary assignment to update the grounder's working memory.
 	 */
 	private void addAtomsToWorkingMemoryWithoutChangingTheAssignment(AtomStore atomStore, NaiveGrounder grounder, int[] atomIDs) {
-		TrailAssignment temporaryAssignment = new TrailAssignment(atomStore);
+		TrailAssignment temporaryAssignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
 		temporaryAssignment.growForMaxAtomId();
 		for (int b : atomIDs) {
 			temporaryAssignment.assign(b, TRUE);
