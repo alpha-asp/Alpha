@@ -51,9 +51,9 @@ import static at.ac.tuwien.kr.alpha.Util.asSet;
  */
 public class HeuristicDirectiveEliminateAnySignConditions implements ProgramTransformation {
 
-	public static Set<ThriceTruth> SET_ALL_SIGNS = asSet(ThriceTruth.values());
-	public static Set<ThriceTruth> SET_TM = asSet(ThriceTruth.TRUE, ThriceTruth.MBT);
-	public static Set<ThriceTruth> SET_F = asSet(ThriceTruth.FALSE);
+	public static final Set<ThriceTruth> SET_ALL_SIGNS = asSet(ThriceTruth.values());
+	public static final Set<ThriceTruth> SET_TM = asSet(ThriceTruth.TRUE, ThriceTruth.MBT);
+	public static final Set<ThriceTruth> SET_F = asSet(ThriceTruth.FALSE);
 
 	@Override
 	public void transform(Program inputProgram) {
