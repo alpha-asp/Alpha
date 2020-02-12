@@ -33,7 +33,8 @@ import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import java.util.Iterator;
 import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 
 public interface Assignment {
 	Entry get(int atom);

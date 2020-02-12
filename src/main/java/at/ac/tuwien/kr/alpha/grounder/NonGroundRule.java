@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2019, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -45,7 +45,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  * Copyright (c) 2017-2018, the Alpha Team.
  */
 public class NonGroundRule {
-	private static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
+	static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
 
 	private final int ruleId;
 	private final Rule rule;
@@ -54,7 +54,7 @@ public class NonGroundRule {
 	private final List<Atom> bodyAtomsNegative;
 	private final Atom headAtom;
 
-	final RuleGroundingOrder groundingOrder;
+	final RuleGroundingOrders groundingOrder;
 
 	private NonGroundRule(Rule rule, int ruleId, List<Atom> bodyAtomsPositive, List<Atom> bodyAtomsNegative, Atom headAtom) {
 		this.ruleId = ruleId;
@@ -71,7 +71,7 @@ public class NonGroundRule {
 		this.headAtom = headAtom;
 
 		checkSafety();
-		this.groundingOrder = new RuleGroundingOrder(this);
+		this.groundingOrder = new RuleGroundingOrders(this);
 		groundingOrder.computeGroundingOrders();
 	}
 

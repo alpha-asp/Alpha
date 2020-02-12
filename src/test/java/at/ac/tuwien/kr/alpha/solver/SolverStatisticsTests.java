@@ -26,37 +26,77 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 public class SolverStatisticsTests extends AbstractSolverTests {
+
+	private AtomStore atomStore;
+
+	@Before
+	public void setUp() {
+		this.atomStore = new AtomStoreImpl();
+	}
 
 	@Test
 	public void checkStatsStringZeroChoices() {
 		Solver solver = getInstance("a.");
+		assumeTrue(solver instanceof SolverMaintainingStatistics);
 		collectAnswerSetsAndCheckStats(solver, 1, 0, 0, 0, 0, 0, 0, 0);
 	}
 
 	@Test
 	public void checkStatsStringOneChoice() {
 		Solver solver = getInstance("a :- not b. b :- not a.");
+		assumeTrue(solver instanceof SolverMaintainingStatistics);
 		collectAnswerSetsAndCheckStats(solver, 2, 1, 1, 1, 1, 0, 0, 0);
+	}
+
+	@Test
+	public void checkNoGoodCounterStatsByTypeUsingDummyGrounder() {
+		Solver solver = getInstance(atomStore, new DummyGrounder(atomStore));
+		assumeTrue(solver instanceof SolverMaintainingStatistics);
+		collectAnswerSetsAndCheckNoGoodCounterStatsByType(solver, 4, 0, 0, 0);
+	}
+
+	@Test
+	public void checkNoGoodCounterStatsByCardinalityUsingDummyGrounder() {
+		Solver solver = getInstance(atomStore, new DummyGrounder(atomStore));
+		assumeTrue(solver instanceof SolverMaintainingStatistics);
+		collectAnswerSetsAndCheckNoGoodCounterStatsByCardinality(solver, 2, 1, 1);
 	}
 
 	private void collectAnswerSetsAndCheckStats(Solver solver, int expectedNumberOfAnswerSets, int expectedNumberOfGuesses, int expectedTotalNumberOfBacktracks,
 			int expectedNumberOfBacktracksWithinBackjumps, int expectedNumberOfBackjumps, int expectedNumberOfMBTs, int expectedNumberOfConflictsAfterClosing, int expectedNumberOfDeletedNoGoods) {
 		Set<AnswerSet> answerSets = solver.collectSet();
 		assertEquals(expectedNumberOfAnswerSets, answerSets.size());
-		if (solver instanceof SolverMaintainingStatistics) {
-			SolverMaintainingStatistics solverMaintainingStatistics = (SolverMaintainingStatistics) solver;
-			assertEquals(
-					String.format("g=%d, bt=%d, bj=%d, bt_within_bj=%d, mbt=%d, cac=%d, del_ng=%d", expectedNumberOfGuesses, expectedTotalNumberOfBacktracks, expectedNumberOfBackjumps,
-							expectedNumberOfBacktracksWithinBackjumps, expectedNumberOfMBTs, expectedNumberOfConflictsAfterClosing, expectedNumberOfDeletedNoGoods),
-					solverMaintainingStatistics.getStatisticsString());
-		}
+		SolverMaintainingStatistics solverMaintainingStatistics = (SolverMaintainingStatistics) solver;
+		assertEquals(
+				String.format("g=%d, bt=%d, bj=%d, bt_within_bj=%d, mbt=%d, cac=%d, del_ng=%d", expectedNumberOfGuesses, expectedTotalNumberOfBacktracks, expectedNumberOfBackjumps,
+						expectedNumberOfBacktracksWithinBackjumps, expectedNumberOfMBTs, expectedNumberOfConflictsAfterClosing, expectedNumberOfDeletedNoGoods),
+				solverMaintainingStatistics.getStatisticsString());
+	}
+
+	private void collectAnswerSetsAndCheckNoGoodCounterStatsByType(Solver solver, int expectedNumberOfStaticNoGoods, int expectedNumberOfSupportNoGoods, int expectedNumberOfLearntNoGoods, int expectedNumberOfInternalNoGoods) {
+		solver.collectSet();
+		SolverMaintainingStatistics solverMaintainingStatistics = (SolverMaintainingStatistics) solver;
+		final NoGoodCounter noGoodCounter =  solverMaintainingStatistics.getNoGoodCounter();
+		assertEquals("STATIC: " + expectedNumberOfStaticNoGoods + " SUPPORT: " + expectedNumberOfSupportNoGoods + " LEARNT: " + expectedNumberOfLearntNoGoods + " INTERNAL: " + expectedNumberOfInternalNoGoods, noGoodCounter.getStatsByType());
+	}
+
+	private void collectAnswerSetsAndCheckNoGoodCounterStatsByCardinality(Solver solver, int expectedNumberOfUnaryNoGoods, int expectedNumberOfBinaryNoGoods, int expectedNumberOfNAryNoGoods) {
+		solver.collectSet();
+		SolverMaintainingStatistics solverMaintainingStatistics = (SolverMaintainingStatistics) solver;
+		final NoGoodCounter noGoodCounter =  solverMaintainingStatistics.getNoGoodCounter();
+		assertEquals("unary: " + expectedNumberOfUnaryNoGoods + " binary: " + expectedNumberOfBinaryNoGoods + " larger: " + expectedNumberOfNAryNoGoods, noGoodCounter.getStatsByCardinality());
 	}
 
 }
