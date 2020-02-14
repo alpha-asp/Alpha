@@ -8,7 +8,11 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.function.BiConsumer;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import at.ac.tuwien.kr.alpha.api.mapper.AnswerSetToObjectMapper;
 import at.ac.tuwien.kr.alpha.api.mapper.impl.AnswerSetToWorkbookMapper;
@@ -37,6 +41,20 @@ public class AnswerSetToXlsxWriter implements BiConsumer<Integer, AnswerSet> {
 		} catch (IOException ex) {
 			System.err.println("Failed writing answer set as xlsx file! (" + ex.getMessage() + ")");
 		}
+	}
+
+	public static void writeUnsatInfo(Path path) throws IOException {
+		Workbook workbook = new XSSFWorkbook();
+		// first, create a worksheet for 0-arity predicates
+		Sheet sheet = workbook.createSheet("Unsatisfiable");
+		Row row = sheet.createRow(0);
+		Cell cell = row.createCell(0);
+		cell.setCellValue("Input is unsatisfiable - No answer sets!");
+		sheet.autoSizeColumn(0);
+		OutputStream os = Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+		workbook.write(os);
+		workbook.close();
+		os.close();
 	}
 
 }

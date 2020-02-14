@@ -29,7 +29,6 @@ package at.ac.tuwien.kr.alpha;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -120,7 +119,7 @@ public class Main {
 				System.out.println("UNSATISFIABLE");
 				if (inputCfg.isWriteAnswerSetsAsXlsx()) {
 					try {
-						Files.createFile(Paths.get(inputCfg.getAnswerSetFileOutputPath() + ".UNSAT.xlsx"));
+						AnswerSetToXlsxWriter.writeUnsatInfo(Paths.get(inputCfg.getAnswerSetFileOutputPath() + ".UNSAT.xlsx"));
 					} catch (IOException ex) {
 						System.err.println("Failed writing unsat file!");
 					}

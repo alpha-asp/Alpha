@@ -28,6 +28,10 @@ package at.ac.tuwien.kr.alpha.api.mapper.impl;
 import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -60,15 +64,23 @@ public class AnswerSetToWorkbookMapper implements AnswerSetToObjectMapper<Workbo
 	public Workbook mapFromAnswerSet(AnswerSet answerSet) {
 		LOGGER.debug("Start mapping answer set to workbook");
 		Workbook workbook = new XSSFWorkbook();
+		// create cell style for header cells
+		CellStyle headerStyle = this.createHeaderStyle(workbook);
+
 		// first, create a worksheet for 0-arity predicates
-		Sheet flags = workbook.createSheet("Flags");
+		Sheet flags = this.createSheetWithHeader(workbook, headerStyle, "Flags", "Flags");
 		Sheet currentPredicateSheet;
+		String[] headerContent;
 		for (Predicate pred : answerSet.getPredicates()) {
 			if (pred.getArity() == 0) {
 				// 0-artiy predicate has no instances in answer set, create a dummy atom
 				this.writeAtomToSheet(flags, new BasicAtom(pred));
 			} else {
-				currentPredicateSheet = workbook.createSheet(pred.getName() + "_" + pred.getArity());
+				headerContent = new String[pred.getArity()];
+				for (int i = 0; i < headerContent.length; i++) {
+					headerContent[i] = "Attribute " + Integer.toString(i + 1);
+				}
+				currentPredicateSheet = this.createSheetWithHeader(workbook, headerStyle, pred.getName() + "_" + pred.getArity(), headerContent);
 				for (Atom atom : answerSet.getPredicateInstances(pred)) {
 					this.writeAtomToSheet(currentPredicateSheet, atom);
 				}
@@ -100,6 +112,29 @@ public class AnswerSetToWorkbookMapper implements AnswerSetToObjectMapper<Workbo
 				sheet.autoSizeColumn(i);
 			}
 		}
+	}
+
+	private CellStyle createHeaderStyle(Workbook workbook) {
+		CellStyle headerStyle = workbook.createCellStyle();
+		Font headerFont = workbook.createFont();
+		headerFont.setFontHeightInPoints((short) 11);
+		headerFont.setBold(true); // (short) 0x74c4f2
+		headerStyle.setFont(headerFont);
+		headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+		headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+		return headerStyle;
+	}
+
+	private Sheet createSheetWithHeader(Workbook wb, CellStyle headerStyle, String sheetName, String... headerContent) {
+		Sheet retVal = wb.createSheet(sheetName);
+		Row headerRow = retVal.createRow(0);
+		Cell cell;
+		for (int i = 0; i < headerContent.length; i++) {
+			cell = headerRow.createCell(i);
+			cell.setCellStyle(headerStyle);
+			cell.setCellValue(headerContent[i]);
+		}
+		return retVal;
 	}
 
 }
