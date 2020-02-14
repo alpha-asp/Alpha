@@ -58,9 +58,11 @@ public class HeuristicDirectiveEliminateAnySignConditions implements ProgramTran
 	@Override
 	public void transform(Program inputProgram) {
 		Collection<Directive> heuristicDirectives = inputProgram.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
-		Queue<HeuristicDirective> queue = toQueue(heuristicDirectives);
-		List<Directive> transformedDirectives = transformDirectives(queue);
-		inputProgram.getInlineDirectives().replaceDirectives(InlineDirectives.DIRECTIVE.heuristic, transformedDirectives);
+		if (heuristicDirectives != null) {
+			Queue<HeuristicDirective> queue = toQueue(heuristicDirectives);
+			List<Directive> transformedDirectives = transformDirectives(queue);
+			inputProgram.getInlineDirectives().replaceDirectives(InlineDirectives.DIRECTIVE.heuristic, transformedDirectives);
+		}
 	}
 
 	private static List<Directive> transformDirectives(Queue<HeuristicDirective> queue) {
