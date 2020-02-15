@@ -7,7 +7,7 @@ before_build:
   - ps: Get-Command java
 
 build_script:
-  - gradlew build --scan --stacktrace
+  - gradlew build --stacktrace
 
 test_script:
   - gradlew check

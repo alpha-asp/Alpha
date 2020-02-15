@@ -53,4 +53,6 @@ public interface NoGoodStore {
 	 * necessary.
 	 */
 	void cleanupLearnedNoGoods();
+
+	NoGoodCounter getNoGoodCounter();
 }

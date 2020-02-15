@@ -1,17 +1,17 @@
 /**
- * Copyright (c) 2017-2019 Siemens AG
+ * Copyright (c) 2019 Siemens AG
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,44 +25,45 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import java.io.PrintStream;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 
-public interface SolverMaintainingStatistics {
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-	int getNumberOfChoices();
+/**
+ * Counts the number of ground atoms stored for each type (i.e., subclass of {@link Atom}.
+ * For every atom, only the counter for one class (the most specific one) is incremented,
+ * not the counters for more general classes of which the atom is also an instance.
+ */
+public class AtomCounter {
 
-	int getNumberOfBacktracks();
+	private final Map<Class<? extends Atom>, Integer> countByType = new HashMap<>();
 
-	int getNumberOfBacktracksWithinBackjumps();
+	public void add(Atom atom) {
+		countByType.compute(atom.getClass(), (k, v) -> (v == null) ? 1 : v + 1);
+	}
 
-	int getNumberOfBackjumps();
-
-	int getNumberOfBacktracksDueToRemnantMBTs();
-
-	int getNumberOfDeletedNoGoods();
-	
 	/**
-	 * @return the number of times the solver had to backtrack after closing unassigned atoms
+	 * @param type the class of atoms to count
+	 * @return the number of atoms of the given type
 	 */
-	int getNumberOfConflictsAfterClosing();
-
-	NoGoodCounter getNoGoodCounter();
-
-	default String getStatisticsString() {
-		return "g=" + getNumberOfChoices() + ", bt=" + getNumberOfBacktracks() + ", bj=" + getNumberOfBackjumps() + ", bt_within_bj="
-				+ getNumberOfBacktracksWithinBackjumps() + ", mbt=" + getNumberOfBacktracksDueToRemnantMBTs() + ", cac=" + getNumberOfConflictsAfterClosing()
-				+ ", del_ng=" + getNumberOfDeletedNoGoods();
-	}
-	
-	default String getStatisticsCSV() {
-		return String.format("%d,%d,%d,%d,%d,%d,%d", getNumberOfChoices(), getNumberOfBacktracks(), getNumberOfBackjumps(), getNumberOfBacktracksWithinBackjumps(), getNumberOfBacktracksDueToRemnantMBTs(), getNumberOfConflictsAfterClosing(), getNumberOfDeletedNoGoods());
+	public int getNumberOfAtoms(Class<? extends Atom> type) {
+		return countByType.getOrDefault(type, 0);
 	}
 
-	default void printStatistics(PrintStream out) {
-		out.println(getStatisticsString());
+	/**
+	 * @return a string giving statistics on numbers of atoms by type
+	 */
+	public String getStatsByType() {
+		List<String> statsList = new ArrayList<>();
+		for (Map.Entry<Class<? extends Atom>, Integer> entry : countByType.entrySet()) {
+			statsList.add(entry.getKey().getSimpleName() + ": " + entry.getValue());
+		}
+		Collections.sort(statsList);
+		return String.join(" ", statsList);
 	}
 
-	default void printStatistics() {
-		printStatistics(System.out);
-	}
 }

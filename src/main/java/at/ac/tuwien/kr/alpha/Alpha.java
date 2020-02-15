@@ -27,12 +27,17 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
@@ -103,8 +108,12 @@ public class Alpha {
 		String grounderName = this.config.getGrounderName();
 		boolean doDebugChecks = this.config.isDebugInternalChecks();
 
+		GrounderHeuristicsConfiguration grounderHeuristicConfiguration = GrounderHeuristicsConfiguration
+				.getInstance(this.config.getGrounderToleranceConstraints(), this.config.getGrounderToleranceRules());
+		grounderHeuristicConfiguration.setAccumulatorEnabled(this.config.isGrounderAccumulatorEnabled());
+
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, doDebugChecks);
+		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, grounderHeuristicConfiguration, doDebugChecks);
 
 		return SolverFactory.getInstance(this.config, atomStore, grounder);
 	}
@@ -117,7 +126,7 @@ public class Alpha {
 		Stream<AnswerSet> retVal = this.prepareSolverFor(program, filter).stream();
 		return this.config.isSortAnswerSets() ? retVal.sorted() : retVal;
 	}
-	
+
 	public Stream<AnswerSet> solve(Program program) {
 		return this.solve(program, InputConfig.DEFAULT_FILTER);
 	}
