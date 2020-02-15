@@ -56,13 +56,14 @@ public class CardinalityNormalization implements ProgramTransformation {
 			"sorting_network_output(R,K) :- sorting_network_bound(R,K), sorting_network_v(R,K,D), sorting_network_done(N,D), K<=N.\n" +
 			"sorting_network_output(R,K) :- sorting_network_bound(R,K), K<=0.\n" +
 
-			"sorting_network_part(P) :- sorting_network_span(_,I), Im1=I-1, sorting_network_log2(Im1,P1), P=P1+1.\n" +
+			"sorting_network_span_project(I) :- sorting_network_span(_,I).\n" +
+			"sorting_network_part(P) :- sorting_network_span_project(I), Im1=I-1, sorting_network_log2(Im1,P1), P=P1+1.\n" +
 			"sorting_network_lvl(1,1,1) :- sorting_network_part(1).\n" +
 			"sorting_network_lvl(L,P1,DL) :- sorting_network_lvl(P,P,D), P1=P+1, sorting_network_part(P1), L=1..P1, DL=D+L.\n" +
-			"sorting_network_comp(I,J,D) :- sorting_network_lvl(1,P,D), sorting_network_span(_,I), I<J, J=((I-1)^(2**(P-1)))+1.\n" +
-			"sorting_network_comp(I,J,D) :- sorting_network_lvl(L,P,D), sorting_network_span(_,I), J=I+S, 1<L, N!=0, N!=B-1, N \\ 2 = 1, " + phi + ".\n" +
-			"sorting_network_pass(I,D) :- sorting_network_lvl(L,P,D), sorting_network_span(_,I), 1<L, N=0, " + phi + ".\n" +
-			"sorting_network_pass(I,D) :- sorting_network_lvl(L,P,D), sorting_network_span(_,I), 1<L, N=B-1, " + phi + ".\n" +
+			"sorting_network_comp(I,J,D) :- sorting_network_lvl(1,P,D), sorting_network_span_project(I), I<J, J=((I-1)^(2**(P-1)))+1.\n" +
+			"sorting_network_comp(I,J,D) :- sorting_network_lvl(L,P,D), sorting_network_span_project(I), J=I+S, 1<L, N!=0, N!=B-1, N \\ 2 = 1, " + phi + ".\n" +
+			"sorting_network_pass(I,D) :- sorting_network_lvl(L,P,D), sorting_network_span_project(I), 1<L, N=0, " + phi + ".\n" +
+			"sorting_network_pass(I,D) :- sorting_network_lvl(L,P,D), sorting_network_span_project(I), 1<L, N=B-1, " + phi + ".\n" +
 			"sorting_network_dh(R,1..D) :- sorting_network_span(R,N1), N1=N+1, sorting_network_done(N,_), N2=N*2, sorting_network_done(N2,D).\n" +
 			"sorting_network_done(N,D) :- sorting_network_log2(N,P), sorting_network_lvl(P,P,D).\n" +
 			"sorting_network_done(1,0).\n" +
