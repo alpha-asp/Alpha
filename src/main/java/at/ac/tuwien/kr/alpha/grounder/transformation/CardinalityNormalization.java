@@ -47,7 +47,8 @@ public class CardinalityNormalization implements ProgramTransformation {
 		// Transforms all cardinality-aggregates into normal logic rules employing a lazy-grounded sorting circuit.
 		String phi = "N = (I - 1) / S - ((I - 1) / S / B) * B, S = 2 ** (P - L), B = 2 ** L";
 		String cardinalitySortingCircuit =
-			"sorting_network_span(R, 1..I) :- sorting_network_input_number(R,I).\n" +
+			"sorting_network_span(R,I) :- sorting_network_input_number(R,I).\n" +
+			"sorting_network_span(R,Im1) :- sorting_network_span(R,I), 1<I, Im1=I-1.\n" +
 			"sorting_network_v(R,I,D) :- sorting_network_input_number(R,I), D=0.\n" +
 			"sorting_network_v(R,I,D) :- sorting_network_v(R,I,D1), D1=D-1, sorting_network_comp(I,_,D), sorting_network_dh(R,D).\n" +
 			"sorting_network_v(R,I,D) :- sorting_network_v(R,J,D1), D1=D-1, sorting_network_comp(I,J,D), sorting_network_dh(R,D).\n" +
