@@ -48,13 +48,14 @@ public class Unifier extends Substitution {
 	}
 
 	/**
-	 * Returns a list of all variables that this unifier maps to something else, i.e., it returns all variables on the left-hand side of the unifier.
-	 * @return the list of mapped variables.
+	 * Returns a list of all variables occurring in that unifier, i.e., variables that are mapped and those that occur (nested) in the right-hand side of the unifier.
+	 * @return the list of variables occurring somewhere in the unifier.
 	 */
-	public List<Term> getMappedVariables() {
+	public List<Term> getOccurringVariables() {
 		ArrayList<Term> ret = new ArrayList<>();
 		for (Map.Entry<VariableTerm, Term> substitution : substitution.entrySet()) {
 			ret.add(substitution.getKey());
+			ret.addAll(substitution.getValue().getOccurringVariables());
 		}
 		return ret;
 	}

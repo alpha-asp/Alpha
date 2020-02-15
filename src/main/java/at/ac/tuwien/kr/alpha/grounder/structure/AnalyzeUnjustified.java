@@ -240,13 +240,13 @@ public class AnalyzeUnjustified {
 				if (!bSigma.isGround()) {
 					throw oops("Resulting atom is not ground.");
 				}
-				List<Term> variablesMappedBySigma = sigma.getMappedVariables();
+				List<Term> variablesOccurringInSigma = sigma.getOccurringVariables();
 				if (Unification.instantiate(bSigmaY, bSigma) != null) {
 					for (Unifier sigmaN : vN) {
-						ArrayList<Term> occurringVariables = new ArrayList<>(variablesMappedBySigma);
-						occurringVariables.addAll(sigmaN.getMappedVariables());
+						ArrayList<Term> occurringVariables = new ArrayList<>(variablesOccurringInSigma);
+						occurringVariables.addAll(sigmaN.getOccurringVariables());
 						BasicAtom genericAtom = new BasicAtom(Predicate.getInstance("_", occurringVariables.size(), true), occurringVariables);
-						BasicAtom genericSubstituted = genericAtom.substitute(sigmaN);
+						Atom genericSubstituted = genericAtom.substitute(sigmaN).renameVariables("_analyzeTest");
 						if (Unification.instantiate(genericSubstituted, genericAtom.substitute(sigma)) != null) {
 							log("Atom {} is excluded by: {} via {}", genericSubstituted, sigmaN, sigma);
 							continue atomLoop;
