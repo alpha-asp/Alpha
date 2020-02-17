@@ -398,7 +398,8 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 	private boolean isFixedInterpretationLiteralTrue(FixedInterpretationLiteral lit, Substitution substitution) {
 		if (lit instanceof ExternalLiteral) {
-			return this.isExternalLiteralTrue((ExternalLiteral) lit, substitution);
+			boolean atomTrue = this.isExternalLiteralTrue((ExternalLiteral) lit, substitution);
+			return lit.isNegated() ? !atomTrue : atomTrue;
 		}
 		Set<VariableTerm> variables = lit.getOccurringVariables();
 		Substitution candidate = new Substitution(substitution);
