@@ -43,7 +43,6 @@ import at.ac.tuwien.kr.alpha.api.mapper.AnswerSetToObjectMapper;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 /**
@@ -74,7 +73,7 @@ public class AnswerSetToWorkbookMapper implements AnswerSetToObjectMapper<Workbo
 		for (Predicate pred : answerSet.getPredicates()) {
 			if (pred.getArity() == 0) {
 				// 0-artiy predicate has no instances in answer set, create a dummy atom
-				this.writeAtomToSheet(flags, new BasicAtom(pred));
+				this.writeAtomToSheet(flags, answerSet.getPredicateInstances(pred).first());
 			} else {
 				headerContent = new String[pred.getArity()];
 				for (int i = 0; i < headerContent.length; i++) {
