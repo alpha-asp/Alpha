@@ -60,6 +60,7 @@ public class CommandLineParser {
 	 * to the handler.
 	 */
 	// "special", i.e. non-configuration options
+	//@formatter:off
 	private static final Option OPT_HELP = Option.builder("h").longOpt("help").hasArg(false).desc("shows this help").build();
 
 	// input-specific options
@@ -111,16 +112,22 @@ public class CommandLineParser {
 			.desc("use counting grid normalization instead of sorting circuit for #count (default: " + SystemConfig.DEFAULT_USE_NORMALIZATION_GRID + ")")
 			.build();
 	private static final Option OPT_NO_NOGOOD_DELETION = Option.builder("dnd").longOpt("disableNoGoodDeletion")
-			.desc("disable the deletion of (learned, little active) nogoods (default: " + SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION + ")").build();
+			.desc("disable the deletion of (learned, little active) nogoods (default: " 
+							+ SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION + ")")
+			.build();
 	private static final Option OPT_GROUNDER_TOLERANCE_CONSTRAINTS = Option.builder("gtc").longOpt("grounderToleranceConstraints")
-			.desc("grounder tolerance for constraints (default: " + SystemConfig.DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS + ")").hasArg().argName("tolerance")
+			.desc("grounder tolerance for constraints (default: " + SystemConfig.DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS + ")")
+			.hasArg().argName("tolerance")
 			.build();
 	private static final Option OPT_GROUNDER_TOLERANCE_RULES = Option.builder("gtr").longOpt("grounderToleranceRules")
-			.desc("grounder tolerance for rules (default: " + SystemConfig.DEFAULT_GROUNDER_TOLERANCE_RULES + ")").hasArg().argName("tolerance").build();
+			.desc("grounder tolerance for rules (default: " + SystemConfig.DEFAULT_GROUNDER_TOLERANCE_RULES + ")")
+			.hasArg().argName("tolerance")
+			.build();
 	private static final Option OPT_GROUNDER_ACCUMULATOR_ENABLED = Option.builder("acc").longOpt("enableAccumulator")
 			.desc("activates the accumulator grounding strategy by disabling removal of instances from grounder memory in certain cases (default: "
-					+ SystemConfig.DEFAULT_GROUNDER_ACCUMULATOR_ENABLED + ")")
+						+ SystemConfig.DEFAULT_GROUNDER_ACCUMULATOR_ENABLED + ")")
 			.build();
+	//@formatter:on
 
 	private static final Options CLI_OPTS = new Options();
 
