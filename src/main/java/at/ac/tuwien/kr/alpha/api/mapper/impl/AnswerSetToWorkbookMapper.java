@@ -72,7 +72,6 @@ public class AnswerSetToWorkbookMapper implements AnswerSetToObjectMapper<Workbo
 		String[] headerContent;
 		for (Predicate pred : answerSet.getPredicates()) {
 			if (pred.getArity() == 0) {
-				// 0-artiy predicate has no instances in answer set, create a dummy atom
 				this.writeAtomToSheet(flags, answerSet.getPredicateInstances(pred).first());
 			} else {
 				headerContent = new String[pred.getArity()];
