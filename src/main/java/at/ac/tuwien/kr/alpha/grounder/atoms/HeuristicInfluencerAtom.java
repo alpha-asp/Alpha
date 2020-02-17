@@ -33,34 +33,41 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
+import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.toName;
+import static java.util.Arrays.asList;
 
 public class HeuristicInfluencerAtom implements Atom {
-	public static final Predicate ON = Predicate.getInstance("HeuOn", 1, true);
-	public static final Predicate OFF = Predicate.getInstance("HeuOff", 1, true);
+	public static final Predicate ON = Predicate.getInstance("HeuOn", 2, true);
+	public static final Predicate OFF = Predicate.getInstance("HeuOff", 2, true);
 
 	private final Predicate predicate;
 	private final List<Term> terms;
 
-	private HeuristicInfluencerAtom(Predicate predicate, Term term) {
+	private HeuristicInfluencerAtom(Predicate predicate, Term heuristicID, Term signSetName) {
 		this.predicate = predicate;
-		this.terms = Collections.singletonList(term);
+		this.terms = asList(heuristicID, signSetName);
 	}
 
-	private HeuristicInfluencerAtom(Predicate predicate, int id) {
-		this(predicate, ConstantTerm.getInstance(Integer.toString(id)));
+	private HeuristicInfluencerAtom(Predicate predicate, int id, String signSetName) {
+		this(predicate, ConstantTerm.getInstance(Integer.toString(id)), ConstantTerm.getInstance(signSetName));
 	}
 
-	public static HeuristicInfluencerAtom on(int id) {
-		return new HeuristicInfluencerAtom(ON, id);
+	public static HeuristicInfluencerAtom on(int id, Set<ThriceTruth> signSet) {
+		return new HeuristicInfluencerAtom(ON, id, toName(signSet));
 	}
 
-	public static HeuristicInfluencerAtom off(int id) {
-		return new HeuristicInfluencerAtom(OFF, id);
+	public static HeuristicInfluencerAtom off(int id, Set<ThriceTruth> signSet) {
+		return new HeuristicInfluencerAtom(OFF, id, toName(signSet));
+	}
+
+	public static HeuristicInfluencerAtom get(boolean on, int id, Set<ThriceTruth> signSet) {
+		return new HeuristicInfluencerAtom(on ? ON : OFF, id, toName(signSet));
 	}
 
 	@Override

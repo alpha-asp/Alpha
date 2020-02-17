@@ -34,6 +34,7 @@ import at.ac.tuwien.kr.alpha.common.WeightAtLevel;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveAtom;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveLiteral;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -46,8 +47,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.toName;
+import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.toSignSet;
+
 /**
  * An internal atom that stores information on domain-specific heuristics.
+ *
+ * For example, the information from the heuristic directive:
+ * 	<code>#heuristic b(1) : T a(0), MT a(1), M a(2), F a(3), not T a(4), not MT a(5), not M a(6), not F a(7). [3@2]</code>
+ * is encoded in a heuristic atom in the following form:
+ * 	<code>_h(3, 2, true, b(1), condpos(t(a(0)), tm(a(1)), m(a(2)), f(a(3))), condneg(t(a(4)), tm(a(5)), m(a(6)), f(a(7))))</code>
  *
  */
 public class HeuristicAtom implements Atom {
@@ -121,6 +130,27 @@ public class HeuristicAtom implements Atom {
 		);
 	}
 
+	public List<HeuristicDirectiveLiteral> getOriginalCondition() {
+		final List<HeuristicDirectiveAtom> originalPositiveCondition = getOriginalPositiveCondition();
+		final List<HeuristicDirectiveAtom> originalNegativeCondition = getOriginalNegativeCondition();
+		final List<HeuristicDirectiveLiteral> originalCondition = new ArrayList<>(originalPositiveCondition.size() + originalNegativeCondition.size());
+		for (HeuristicDirectiveAtom posAtom : originalPositiveCondition) {
+			originalCondition.add(new HeuristicDirectiveLiteral(posAtom, true));
+		}
+		for (HeuristicDirectiveAtom negAtom : originalNegativeCondition) {
+			originalCondition.add(new HeuristicDirectiveLiteral(negAtom, false));
+		}
+		return originalCondition;
+	}
+
+	public List<HeuristicDirectiveAtom> getOriginalPositiveCondition() {
+		return functionTermToCondition(positiveCondition);
+	}
+
+	public List<HeuristicDirectiveAtom> getOriginalNegativeCondition() {
+		return functionTermToCondition(negativeCondition);
+	}
+
 	@Override
 	public String toString() {
 		return Util.join(PREDICATE.getName() + "(", this.getTerms(), ")");
@@ -160,23 +190,21 @@ public class HeuristicAtom implements Atom {
 	private static FunctionTerm conditionToFunctionTerm(List<HeuristicDirectiveAtom> heuristicDirectiveAtoms, String topLevelFunctionName) {
 		final List<Term> terms = new ArrayList<>(heuristicDirectiveAtoms.size());
 		for (HeuristicDirectiveAtom heuristicDirectiveAtom : heuristicDirectiveAtoms) {
-			String atomFunctionName = signsToFunctionName(heuristicDirectiveAtom.getSigns());
-			terms.add(FunctionTerm.getInstance(atomFunctionName, heuristicDirectiveAtom.getAtom().toFunctionTerm()));
+			final Atom atom = heuristicDirectiveAtom.getAtom();
+			String atomFunctionName = toName(heuristicDirectiveAtom.getSigns());
+			terms.add(FunctionTerm.getInstance(atomFunctionName, atom.toFunctionTerm()));
 		}
 		return FunctionTerm.getInstance(topLevelFunctionName, terms);
 	}
 
-	/**
-	 * Creates a function name to represent a set of signs. The order of signs will be consistent.
-	 * E.g., the set containing {@link ThriceTruth#MBT} and {@link ThriceTruth#TRUE} will result in "tm".
-	 */
-	private static String signsToFunctionName(Set<ThriceTruth> signs) {
-		StringBuilder sb = new StringBuilder();
-		for (ThriceTruth value : ThriceTruth.values()) {
-			if (signs.contains(value)) {
-				sb.append(value.toString().toLowerCase());
-			}
+	private static List<HeuristicDirectiveAtom> functionTermToCondition(FunctionTerm functionTerm) {
+		final List<Term> terms = functionTerm.getTerms();
+		final List<HeuristicDirectiveAtom> condition = new ArrayList<>(terms.size());
+		for (Term term : terms) {
+			final FunctionTerm termHeuristicDirectiveAtom = (FunctionTerm) term;
+			final Set<ThriceTruth> signSet = toSignSet(termHeuristicDirectiveAtom.getSymbol());
+			condition.add(HeuristicDirectiveAtom.body(signSet, ((FunctionTerm)termHeuristicDirectiveAtom.getTerms().get(0)).toAtom()));
 		}
-		return sb.toString();
+		return condition;
 	}
 }

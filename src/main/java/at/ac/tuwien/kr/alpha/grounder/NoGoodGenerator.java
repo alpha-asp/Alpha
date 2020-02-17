@@ -111,21 +111,19 @@ public class NoGoodGenerator {
 		final int bodyRepresentingAtom = atomStore.putIfAbsent(bodyAtom);
 
 		if (groundHeadAtom instanceof HeuristicAtom) {
-			return generateNoGoodsForHeuristicRule(posLiterals, negLiterals, (HeuristicAtom) groundHeadAtom, bodyRepresentingAtom);
+			return generateNoGoodsForHeuristicRule((HeuristicAtom) groundHeadAtom, bodyRepresentingAtom);
 		} else {
 			return generateNoGoodsForNonConstraintNonHeuristicRule(nonGroundRule, posLiterals, negLiterals, groundHeadAtom, bodyRepresentingAtom);
 		}
 	}
 
-	private Collection<NoGood> generateNoGoodsForHeuristicRule(List<Integer> posLiterals, List<Integer> negLiterals, HeuristicAtom groundHeadAtom, int bodyRepresentingAtom) {
+	private Collection<NoGood> generateNoGoodsForHeuristicRule(HeuristicAtom groundHeadAtom, int bodyRepresentingAtom) {
 		BasicAtom groundHeuristicHead = groundHeadAtom.getHeadAtom().toAtom();
 		final int heuristicHeadId = atomStore.putIfAbsent(groundHeuristicHead);
 
-		final List<NoGood> result = new ArrayList<>();
-		result.addAll(choiceRecorder.generateHeuristicNoGoods(posLiterals, negLiterals, groundHeadAtom, bodyRepresentingAtom, heuristicHeadId));
+		final List<NoGood> result = new ArrayList<>(choiceRecorder.generateHeuristicNoGoods(groundHeadAtom, bodyRepresentingAtom, heuristicHeadId));
 
 		// if the head of the heuristic directive is assigned, the body of the heuristic rule shall also be assigned s.t. it is not applicable anymore:
-		// TODO: adapt for new stuff
 		boolean heuristicSign = groundHeadAtom.getHeadSign().toBoolean();
 		result.add(NoGoodCreator.headFirstInternal(atomToLiteral(bodyRepresentingAtom, false), atomToLiteral(heuristicHeadId, heuristicSign)));
 		result.add(NoGoodCreator.internal(atomToLiteral(bodyRepresentingAtom,  true), atomToLiteral(heuristicHeadId, !heuristicSign)));

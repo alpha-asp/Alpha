@@ -50,15 +50,18 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.TestUtil.atom;
 import static at.ac.tuwien.kr.alpha.TestUtil.literal;
+import static at.ac.tuwien.kr.alpha.Util.asSet;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -430,21 +433,32 @@ public class NaiveGrounderTest {
 
 	@Test
 	public void testGenerateHeuristicNoGoods() {
-		Program program = PARSER.parse("{ a(1) }."
+		final Program program = PARSER.parse("{ a(0); a(1); a(2); a(3); a(4); a(5); a(6); a(7) }."
 				+ "{ b(N) } :- a(N)."
-				+ "#heuristic b(N) : a(N), not b(N). [N@2]");
+				+ "#heuristic b(1) : T a(0), MT a(1), M a(2), F a(3), not T a(4), not MT a(5), not M a(6), not F a(7). [3@2]");
+		final int expectedNumberOfHeuristicRule = 19;	//because there are 18 ground rules except the heuristic rule
 
-		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true);
-		NoGoodGenerator noGoodGenerator = ((NaiveGrounder)grounder).noGoodGenerator;
-		Rule rule = findHeuristicRule(program.getRules());
-		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
-		Substitution substitution = new Substitution();
-		substitution.unifyTerms(N, ONE);
-		List<NoGood> generatedNoGoods = new ArrayList<>(noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution));
-		assertEquals(4, generatedNoGoods.size());
-		assertEquals("*{-(HeuOff(\"0\")), +(b(1))}", atomStore.noGoodToString(generatedNoGoods.get(0)));
-		assertEquals("*{-(HeuOn(\"0\")), +(a(1))}", atomStore.noGoodToString(generatedNoGoods.get(1)));
+		final AtomStore atomStore = new AtomStoreImpl();
+		final Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true);
+		final NoGoodGenerator noGoodGenerator = ((NaiveGrounder)grounder).noGoodGenerator;
+		final Rule rule = findHeuristicRule(program.getRules());
+		assert rule != null;
+		final NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
+		final Set<NoGood> generatedNoGoods = new HashSet<>(noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, new Substitution()));
+		assertEquals(10, generatedNoGoods.size());
+		final Set<String> noGoodsToString = generatedNoGoods.stream().map(atomStore::noGoodToString).collect(Collectors.toSet());
+		assertEquals(asSet(
+				"*{-(HeuOn(\"0\", \"t\")), +(a(0))}",
+				"*{-(HeuOn(\"0\", \"tm\")), +(a(1))}",
+				"*{-(HeuOn(\"0\", \"m\")), +(a(2))}",
+				"*{-(HeuOn(\"0\", \"f\")), -(a(3))}",
+				"*{-(HeuOff(\"0\", \"t\")), +(a(4))}",
+				"*{-(HeuOff(\"0\", \"tm\")), +(a(5))}",
+				"*{-(HeuOff(\"0\", \"m\")), +(a(6))}",
+				"*{-(HeuOff(\"0\", \"f\")), -(a(7))}",
+				"*{-(_R_(\"" + expectedNumberOfHeuristicRule + "\",\"{}\")), +(b(1))}",
+				"{+(_R_(\"" + expectedNumberOfHeuristicRule + "\",\"{}\")), -(b(1))}"
+		), noGoodsToString);
 	}
 
 	private Rule findHeuristicRule(List<Rule> rules) {

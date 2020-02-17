@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2019, the Alpha Team.
+/*
+ * Copyright (c) 2017-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -30,18 +30,30 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.NoGoodCreator;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveAtom;
+import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveLiteral;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicInfluencerAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
 import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
+import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.isF;
+import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.isProcessable;
 import static at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom.off;
 import static at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom.on;
 import static java.util.Collections.emptyList;
@@ -112,23 +124,31 @@ public class ChoiceRecorder {
 		return noGoods;
 	}
 
-	public Collection<NoGood> generateHeuristicNoGoods(final List<Integer> posLiterals, final List<Integer> negLiterals, HeuristicAtom groundHeuristicAtom, final int bodyRepresentingAtom, final int headId) {
+	public Collection<NoGood> generateHeuristicNoGoods(HeuristicAtom groundHeuristicAtom, final int bodyRepresentingAtom, final int headId) {
 		// Obtain an ID for this new heuristic.
 		final int heuristicId = ID_GENERATOR.getNextId();
-		// Create HeuristicOn and HeuristicOff atoms.
-		final int heuristicOnAtom = atomStore.putIfAbsent(HeuristicInfluencerAtom.on(heuristicId));
-		newHeuristicAtoms.getLeft().put(bodyRepresentingAtom, heuristicOnAtom);
-		final int heuristicOffAtom = atomStore.putIfAbsent(HeuristicInfluencerAtom.off(heuristicId));
-		newHeuristicAtoms.getRight().put(bodyRepresentingAtom, heuristicOffAtom);
 
-		final List<NoGood> noGoods = generateNeg(heuristicOffAtom, negLiterals);
-		noGoods.add(generatePos(heuristicOnAtom, posLiterals));
+		final List<NoGood> noGoods = new ArrayList<>();
+		for (HeuristicDirectiveLiteral heuristicDirectiveLiteral : groundHeuristicAtom.getOriginalCondition()) {
+			final HeuristicDirectiveAtom heuristicDirectiveAtom = heuristicDirectiveLiteral.getAtom();
+			final Set<ThriceTruth> signSet = heuristicDirectiveAtom.getSigns();
+			final int heuristicInfluencerAtom = atomStore.putIfAbsent(HeuristicInfluencerAtom.get(!heuristicDirectiveLiteral.isNegated(), heuristicId, signSet));
+			noGoods.add(generateHeuristicNoGood(heuristicDirectiveAtom.getAtom(), signSet, heuristicInfluencerAtom));
+		}
 
 		if (newHeuristicValues.put(bodyRepresentingAtom, HeuristicDirectiveValues.fromHeuristicAtom(groundHeuristicAtom, headId)) != null) {
 			throw oops("Same heuristic body-representing atom used for two heuristic directives");
 		}
 
 		return noGoods;
+	}
+
+	private NoGood generateHeuristicNoGood(Atom atom, Set<ThriceTruth> signSet, int heuristicInfluencerAtom) {
+		if (!isProcessable(signSet)) {
+			throw oops("Heuristic sign not processable: " + signSet);
+		}
+		final int atomID = atomStore.putIfAbsent(atom);
+		return NoGoodCreator.headFirstInternal(atomToLiteral(heuristicInfluencerAtom, false), atomToLiteral(atomID, !isF(signSet)));
 	}
 
 	private NoGood generatePos(final int atomOn, List<Integer> posLiterals) {
