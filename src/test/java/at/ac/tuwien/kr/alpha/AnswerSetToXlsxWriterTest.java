@@ -5,9 +5,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
+import at.ac.tuwien.kr.alpha.api.mapper.impl.AnswerSetToWorkbookMapperTest;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
 
@@ -25,6 +28,8 @@ public class AnswerSetToXlsxWriterTest {
 		Assert.assertEquals(generatedFiles.length, 1);
 		File answerSetFile = generatedFiles[0];
 		Assert.assertEquals("alphaAnswerSet.0.xlsx", answerSetFile.getName());
+		Workbook wb = WorkbookFactory.create(answerSetFile);
+		AnswerSetToWorkbookMapperTest.assertWorkbookMatchesAnswerSet(wb, as);
 		// clean up
 		answerSetFile.delete();
 		tmpDirFile.delete();

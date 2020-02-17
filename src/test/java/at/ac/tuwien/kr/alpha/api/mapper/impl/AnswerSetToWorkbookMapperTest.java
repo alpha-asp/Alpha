@@ -50,7 +50,7 @@ public class AnswerSetToWorkbookMapperTest {
 		AnswerSetToWorkbookMapperTest.assertWorkbookMatchesAnswerSet(answerSetWorkbook, as);
 	}
 
-	private static void assertWorkbookMatchesAnswerSet(Workbook wb, AnswerSet as) {
+	public static void assertWorkbookMatchesAnswerSet(Workbook wb, AnswerSet as) {
 		for (Predicate pred : as.getPredicates()) {
 			if (pred.getArity() == 0) {
 				boolean flagFound = false;
