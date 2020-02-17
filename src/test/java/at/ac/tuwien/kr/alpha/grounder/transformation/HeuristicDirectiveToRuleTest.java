@@ -60,4 +60,24 @@ public class HeuristicDirectiveToRuleTest {
 		assertEquals("_h(N, 2, false, b(N), condpos(t(a(N))), condneg(f(b(N)))) :- a(N).", program.getRules().get(program.getRules().size() - 1).toString());
 	}
 
+	@Test
+	public void testPositiveComparisonAtom() {
+		Program program = parser.parse("a(1). a(2)."
+				+ "{ b(N) } :- a(N)."
+				+ "#heuristic F b(N) : T a(N), Nm1 = N - 1, not F b(Nm1). [N@2]");
+
+		new HeuristicDirectiveToRule(heuristicsConfiguration).transform(program);
+		assertEquals("_h(N, 2, false, b(N), condpos(t(a(N))), condneg(f(b(Nm1)))) :- a(N), Nm1 = N - 1.", program.getRules().get(program.getRules().size() - 1).toString());
+	}
+
+	@Test
+	public void testNegativeComparisonAtom() {
+		Program program = parser.parse("a(1). a(2)."
+				+ "{ b(N) } :- a(N)."
+				+ "#heuristic F b(N) : T a(N), T b(M), not N < M. [N@2]");
+
+		new HeuristicDirectiveToRule(heuristicsConfiguration).transform(program);
+		assertEquals("_h(N, 2, false, b(N), condpos(t(a(N)), t(b(M))), condneg) :- a(N), b(M), not N < M.", program.getRules().get(program.getRules().size() - 1).toString());
+	}
+
 }

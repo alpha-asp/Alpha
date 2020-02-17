@@ -71,7 +71,7 @@ public class HeuristicDirectiveToRule implements ProgramTransformation {
 
 	private void transformAndAddToProgram(HeuristicDirective heuristicDirective, Program program) {
 		final Head head = new DisjunctiveHead(HeuristicAtom.fromHeuristicDirective(heuristicDirective));
-		final Rule rule = new Rule(head, heuristicDirective.getBody().toPositiveRuleBody());
+		final Rule rule = new Rule(head, heuristicDirective.getBody().toReducedRuleBody());
 		program.getRules().add(rule);
 	}
 }

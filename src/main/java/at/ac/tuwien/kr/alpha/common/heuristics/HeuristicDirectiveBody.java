@@ -26,6 +26,7 @@
 
 package at.ac.tuwien.kr.alpha.common.heuristics;
 
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
@@ -64,18 +65,29 @@ public class HeuristicDirectiveBody {
 	}
 
 	/**
-	 * Returns the positive part of this body as a rule body, which is used to represent heuristic directives as rules.
-	 * @return the atoms in the positive part of this body whose heuristic signs do not include F, without heuristic signs
+	 * Returns relevant parts of this body as a rule body, which is used to represent heuristic directives as rules.
+	 * @return the basic atoms in the positive part of this body whose heuristic signs do not include F, without heuristic signs; and all non-basic literals in this body
 	 */
-	public List<Literal> toPositiveRuleBody() {
-		final List<Literal> positiveLiterals = new ArrayList<>();
+	public List<Literal> toReducedRuleBody() {
+		final List<Literal> relevantLiterals = new ArrayList<>();
 		for (HeuristicDirectiveAtom heuristicDirectiveAtom : bodyAtomsPositive) {
-			final Set<ThriceTruth> signs = heuristicDirectiveAtom.getSigns();
-			if (signs == null || !signs.contains(ThriceTruth.FALSE)) {
-				positiveLiterals.add(heuristicDirectiveAtom.getAtom().toLiteral());
+			final Literal literal = heuristicDirectiveAtom.getAtom().toLiteral();
+			if (literal instanceof FixedInterpretationLiteral) {
+				relevantLiterals.add(literal);
+			} else {
+				final Set<ThriceTruth> signs = heuristicDirectiveAtom.getSigns();
+				if (signs == null || !signs.contains(ThriceTruth.FALSE)) {
+					relevantLiterals.add(literal);
+				}
 			}
 		}
-		return positiveLiterals;
+		for (HeuristicDirectiveAtom heuristicDirectiveAtom : bodyAtomsNegative) {
+			final Literal literal = heuristicDirectiveAtom.getAtom().toLiteral(false);
+			if (literal instanceof FixedInterpretationLiteral) {
+				relevantLiterals.add(literal);
+			}
+		}
+		return relevantLiterals;
 	}
 
 	@Override

@@ -32,6 +32,7 @@ import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.WeightAtLevel;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveAtom;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveLiteral;
@@ -191,8 +192,10 @@ public class HeuristicAtom implements Atom {
 		final List<Term> terms = new ArrayList<>(heuristicDirectiveAtoms.size());
 		for (HeuristicDirectiveAtom heuristicDirectiveAtom : heuristicDirectiveAtoms) {
 			final Atom atom = heuristicDirectiveAtom.getAtom();
-			String atomFunctionName = toName(heuristicDirectiveAtom.getSigns());
-			terms.add(FunctionTerm.getInstance(atomFunctionName, atom.toFunctionTerm()));
+			if (atom instanceof BasicAtom) {
+				String atomFunctionName = toName(heuristicDirectiveAtom.getSigns());
+				terms.add(FunctionTerm.getInstance(atomFunctionName, atom.toFunctionTerm()));
+			}
 		}
 		return FunctionTerm.getInstance(topLevelFunctionName, terms);
 	}
