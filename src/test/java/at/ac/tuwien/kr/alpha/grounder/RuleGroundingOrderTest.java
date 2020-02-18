@@ -36,7 +36,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import at.ac.tuwien.kr.alpha.Alpha;
+import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.impl.InternalRule;

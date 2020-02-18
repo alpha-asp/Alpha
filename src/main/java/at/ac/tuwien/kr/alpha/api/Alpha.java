@@ -25,7 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha;
+package at.ac.tuwien.kr.alpha.api;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
@@ -154,7 +155,8 @@ public class Alpha {
 	}
 
 	/**
-	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the program analysis and normalization aren't of
+	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the program
+	 * analysis and normalization aren't of
 	 * interest
 	 */
 	public Stream<AnswerSet> solve(InputProgram program) {
@@ -162,7 +164,8 @@ public class Alpha {
 	}
 
 	/**
-	 * Convenience method - overloaded version of solve({@link InternalProgram}, {@link Predicate}) for cases where details of the program analysis and
+	 * Convenience method - overloaded version of solve({@link InternalProgram}, {@link Predicate}) for cases where details
+	 * of the program analysis and
 	 * normalization aren't of interest
 	 */
 	public Stream<AnswerSet> solve(InputProgram program, java.util.function.Predicate<Predicate> filter) {
@@ -171,14 +174,16 @@ public class Alpha {
 	}
 
 	/**
-	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the program analysis aren't of interest
+	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the program
+	 * analysis aren't of interest
 	 */
 	public Stream<AnswerSet> solve(NormalProgram program) {
 		return this.solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
 	/**
-	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the program analysis aren't of interest
+	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the program
+	 * analysis aren't of interest
 	 */
 	public Stream<AnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
 		InternalProgram preprocessed = this.performProgramPreprocessing(program);
@@ -186,7 +191,8 @@ public class Alpha {
 	}
 
 	/**
-	 * Overloaded version of solve({@link InternalProgram}, {@link Predicate}) that uses a default filter (accept everything)
+	 * Overloaded version of solve({@link InternalProgram}, {@link Predicate}) that uses a default filter (accept
+	 * everything)
 	 * 
 	 * @param program the program to solve
 	 * @return a stream of answer sets
@@ -208,7 +214,8 @@ public class Alpha {
 	}
 
 	/**
-	 * Convenience method - overloaded version of prepareSolverFor({@link InternalProgram}) for cases where details of the program analysis and program
+	 * Convenience method - overloaded version of prepareSolverFor({@link InternalProgram}) for cases where details of the
+	 * program analysis and program
 	 * normalization are not of interest
 	 * 
 	 * @param program a NormalProgram to solve
@@ -220,7 +227,8 @@ public class Alpha {
 	}
 
 	/**
-	 * Convenience method - overloaded version of prepareSolverFor({@link InternalProgram}) for cases where details of the program analysis are not of interest
+	 * Convenience method - overloaded version of prepareSolverFor({@link InternalProgram}) for cases where details of the
+	 * program analysis are not of interest
 	 * 
 	 * @param program a NormalProgram to solve
 	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
@@ -235,11 +243,13 @@ public class Alpha {
 	}
 
 	/**
-	 * Prepares a solver (and accompanying grounder) instance pre-loaded with the given program. Use this if the solver is needed after reading answer sets
+	 * Prepares a solver (and accompanying grounder) instance pre-loaded with the given program. Use this if the solver is
+	 * needed after reading answer sets
 	 * (e.g. for obtaining statistics)
 	 * 
 	 * @param program the program to solve
-	 * @param filter  a (java util) predicate that filters (asp-)predicates which should be contained in the answer set stream from the solver
+	 * @param filter  a (java util) predicate that filters (asp-)predicates which should be contained in the answer set
+	 *                stream from the solver
 	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
 	 */
 	public Solver prepareSolverFor(InternalProgram program, java.util.function.Predicate<Predicate> filter) {

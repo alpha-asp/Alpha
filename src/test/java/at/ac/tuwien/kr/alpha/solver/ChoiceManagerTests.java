@@ -28,13 +28,13 @@ package at.ac.tuwien.kr.alpha.solver;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
-import java.util.Collection;
-
 import org.junit.Before;
 import org.junit.Test;
 
-import at.ac.tuwien.kr.alpha.Alpha;
+import java.io.IOException;
+import java.util.Collection;
+
+import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.NoGood;

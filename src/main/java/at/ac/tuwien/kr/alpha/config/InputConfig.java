@@ -21,7 +21,7 @@ public class InputConfig {
 	public static final String DEFAULT_COMPGRAPH_TARGET = "compgraph.dot";
 	public static final boolean DEFAULT_WRITE_PREPROCESSED_PROG = false;
 	public static final String DEFAULT_PREPROC_TARGET = "input.preproc.asp";
-        public static final boolean DEFAULT_WRITE_XLSX = false;
+	public static final boolean DEFAULT_WRITE_XLSX = false;
 	public static final String DEFAULT_OUTFILE_PATH = "alphaAnswerSet"; // current directory, files named "alphaAnswerSet.{num}.{ext}"
 
 	private List<String> aspStrings = new ArrayList<>();
@@ -36,7 +36,7 @@ public class InputConfig {
 	private String compgraphPath = InputConfig.DEFAULT_COMPGRAPH_TARGET;
 	private boolean writePreprocessed = InputConfig.DEFAULT_WRITE_PREPROCESSED_PROG;
 	private String preprocessedPath = InputConfig.DEFAULT_PREPROC_TARGET;
-        private boolean writeAnswerSetsAsXlsx = InputConfig.DEFAULT_WRITE_XLSX;
+	private boolean writeAnswerSetsAsXlsx = InputConfig.DEFAULT_WRITE_XLSX;
 	private String answerSetFileOutputPath;
 
 	public static InputConfig forString(String str) {
@@ -148,6 +148,7 @@ public class InputConfig {
 	public void setPreprocessedPath(String preprocessedPath) {
 		this.preprocessedPath = preprocessedPath;
 	}
+
 	public boolean isWriteAnswerSetsAsXlsx() {
 		return this.writeAnswerSetsAsXlsx;
 	}

@@ -48,7 +48,8 @@ import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 
 /**
- * Parses given argument lists (as passed when Alpha is called from command line) into {@link SystemConfig}s and {@link InputConfig}s.
+ * Parses given argument lists (as passed when Alpha is called from command line) into {@link SystemConfig}s and
+ * {@link InputConfig}s.
  *
  */
 public class CommandLineParser {
@@ -56,8 +57,10 @@ public class CommandLineParser {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CommandLineParser.class);
 
 	/*
-	 * Whenever a new command line option is added, perform the following steps: 1. Add it as a constant option below. 2. Add the constant option into the
-	 * Options "CLI_OPTS" in the static initializer 3. Add a handler method for it and add the respective map entry in the constructor with a method reference
+	 * Whenever a new command line option is added, perform the following steps: 1. Add it as a constant option below. 2.
+	 * Add the constant option into the
+	 * Options "CLI_OPTS" in the static initializer 3. Add a handler method for it and add the respective map entry in the
+	 * constructor with a method reference
 	 * to the handler.
 	 */
 	// "special", i.e. non-configuration options
@@ -147,10 +150,10 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_LITERATE);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_INPUT);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_ASPSTRING);
-CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_XSLX);
-	CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_PREPROCESSED);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_XSLX);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_PREPROCESSED);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_DEPGRAPH);
-	CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_COMPGRAPH);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_COMPGRAPH);
 
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SOLVER);
@@ -175,7 +178,8 @@ CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_XSLX);
 	}
 
 	/*
-	 * Below maps map commandline options to handler methods. If a new option is added, the appropriate put into the map must be added in the constructor
+	 * Below maps map commandline options to handler methods. If a new option is added, the appropriate put into the map
+	 * must be added in the constructor
 	 */
 	private final Map<String, CliOptionHandler<SystemConfig>> globalOptionHandlers = new HashMap<>();
 	private final Map<String, CliOptionHandler<InputConfig>> inputOptionHandlers = new HashMap<>();
@@ -183,12 +187,16 @@ CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_XSLX);
 	private String cmdSyntax;
 
 	/**
-	 * Creates a new <code>CommandLineParser</code>. The abortAction described below is passed into the constructor externally in order to avoid strongly
-	 * coupling this class to any other part of the application. Especially an abortAction - which likely will include some call like System.exit({state}) -
+	 * Creates a new <code>CommandLineParser</code>. The abortAction described below is passed into the constructor
+	 * externally in order to avoid strongly
+	 * coupling this class to any other part of the application. Especially an abortAction - which likely will include some
+	 * call like System.exit({state}) -
 	 * should not be specified by utility classes themselves, but rather by the application's main class.
 	 * 
-	 * @param cmdLineSyntax a string describing the basic call syntax for the application binary, e.g. "java -jar somejar.jar"
-	 * @param abortAction   a <code>Consumer<String></code> that is called when option parsing is aborted, as is the case when the "help" option is encountered.
+	 * @param cmdLineSyntax a string describing the basic call syntax for the application binary, e.g. "java -jar
+	 *                      somejar.jar"
+	 * @param abortAction   a <code>Consumer<String></code> that is called when option parsing is aborted, as is the case
+	 *                      when the "help" option is encountered.
 	 *                      It expects a string parameter, which is a message accompanying the abort
 	 */
 	public CommandLineParser(String cmdLineSyntax, Consumer<String> abortAction) {
@@ -197,7 +205,7 @@ CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_XSLX);
 		this.initializeGlobalOptionHandlers();
 		this.initializeInputOptionHandlers();
 	}
-	
+
 	private void initializeGlobalOptionHandlers() {
 		/*
 		 * below put invocations are used to "register" the handler methods for each commandline option
@@ -219,25 +227,24 @@ CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_XSLX);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), this::handleNoJustification);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NORMALIZATION_GRID.getOpt(), this::handleNormalizationGrid);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_EVAL_STRATIFIED.getOpt(), this::handleDisableStratifedEval);
-		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);	
-this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS.getOpt(), this::handleGrounderToleranceConstraints);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES.getOpt(), this::handleGrounderToleranceRules);
-		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_ACCUMULATOR_ENABLED.getOpt(), this::handleGrounderNoInstanceRemoval);	
+		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_ACCUMULATOR_ENABLED.getOpt(), this::handleGrounderNoInstanceRemoval);
 	}
-	
+
 	private void initializeInputOptionHandlers() {
 		this.inputOptionHandlers.put(CommandLineParser.OPT_NUM_ANSWER_SETS.getOpt(), this::handleNumAnswerSets);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_INPUT.getOpt(), this::handleInput);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_FILTER.getOpt(), this::handleFilters);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_ASPSTRING.getOpt(), this::handleAspString);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_LITERATE.getOpt(), this::handleLiterate);
-this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_XSLX.getOpt(), this::handleWriteXlsx);		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_PREPROCESSED.getOpt(), this::handleWritePreprocessed);
+		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_XSLX.getOpt(), this::handleWriteXlsx);
+		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_PREPROCESSED.getOpt(), this::handleWritePreprocessed);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_DEPGRAPH.getOpt(), this::handleWriteDepgraph);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_COMPGRAPH.getOpt(), this::handleWriteCompgraph);
 	}
-	
-	
 
 	public AlphaConfig parseCommandLine(String[] args) throws ParseException {
 		CommandLine commandLine = new DefaultParser().parse(CommandLineParser.CLI_OPTS, args);
@@ -274,9 +281,9 @@ this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_XSLX.getOpt(), this::ha
 			} else {
 				throw new ParseException("Cannot handle option: " + opt.getOpt());
 			}
-		}		
+		}
 	}
-	
+
 	public String getUsageMessage() {
 		HelpFormatter formatter = new HelpFormatter();
 		// Unfortunately, commons-cli does not offer a method of simply rendering a help

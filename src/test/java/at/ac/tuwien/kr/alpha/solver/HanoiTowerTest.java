@@ -27,17 +27,17 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Optional;
-import java.util.SortedSet;
-
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.ac.tuwien.kr.alpha.Alpha;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Optional;
+import java.util.SortedSet;
+
+import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
