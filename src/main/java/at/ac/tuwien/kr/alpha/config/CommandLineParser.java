@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2019, the Alpha Team.
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -61,6 +61,7 @@ public class CommandLineParser {
 	 * to the handler.
 	 */
 	// "special", i.e. non-configuration options
+	//@formatter:off
 	private static final Option OPT_HELP = Option.builder("h").longOpt("help").hasArg(false).desc("shows this help").build();
 
 	// input-specific options
@@ -80,6 +81,8 @@ public class CommandLineParser {
 			.desc("Write a dot file with the input program's dependency graph").build();
 	private static final Option OPT_WRITE_COMPGRAPH = Option.builder("cg").longOpt("compgraph").hasArg(true).argName("target")
 			.desc("Write a dot file with the input program's component graph").build();
+	private static final Option OPT_WRITE_XSLX = Option.builder("wx").longOpt("write-xlsx").hasArg(true).argName("path").type(String.class)
+			.desc("Write answer sets to excel files, i.e. xlsx workbooks (one workbook per answer set)").build();
 
 	// general system-wide config
 	private static final Option OPT_GROUNDER = Option.builder("g").longOpt("grounder").hasArg(true).argName("grounder")
@@ -101,8 +104,8 @@ public class CommandLineParser {
 	private static final Option OPT_MOMS_STRATEGY = Option.builder("ms").longOpt("momsStrategy").hasArg(true).argName("strategy")
 			.desc("strategy for mom's heuristic (CountBinaryWatches or BinaryNoGoodPropagation, default: " + SystemConfig.DEFAULT_MOMS_STRATEGY.name() + ")")
 			.build();
-	private static final Option OPT_REPLAY_CHOICES = Option.builder("rc").longOpt("replayChoices").hasArg().argName("choices").desc(
-			"comma-separated list of choices to be replayed (each choice is represented by a signed integer whose absolute value designates an atom ID and whose sign designates a truth value)")
+	private static final Option OPT_REPLAY_CHOICES = Option.builder("rc").longOpt("replayChoices").hasArg().argName("choices")
+			.desc("comma-separated list of choices to be replayed (each choice is represented by a signed integer whose absolute value designates an atom ID and whose sign designates a truth value)")
 			.build();
 	private static final Option OPT_QUIET = Option.builder("q").longOpt("quiet").desc("do not print answer sets (default: " + SystemConfig.DEFAULT_QUIET)
 			.build();
@@ -129,7 +132,7 @@ public class CommandLineParser {
 	private static final Option OPT_GROUNDER_ACCUMULATOR_ENABLED = Option.builder("acc").longOpt("enableAccumulator")
 			.desc("activates the accumulator grounding strategy by disabling removal of instances from grounder memory in certain cases (default: " + SystemConfig.DEFAULT_GROUNDER_ACCUMULATOR_ENABLED + ")")
 			.build();
-
+	//@formatter:on
 
 	private static final Options CLI_OPTS = new Options();
 
@@ -144,9 +147,10 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_LITERATE);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_INPUT);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_ASPSTRING);
-		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_PREPROCESSED);
+CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_XSLX);
+	CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_PREPROCESSED);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_DEPGRAPH);
-		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_COMPGRAPH);
+	CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_COMPGRAPH);
 
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SOLVER);
@@ -228,7 +232,7 @@ this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(),
 		this.inputOptionHandlers.put(CommandLineParser.OPT_FILTER.getOpt(), this::handleFilters);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_ASPSTRING.getOpt(), this::handleAspString);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_LITERATE.getOpt(), this::handleLiterate);
-		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_PREPROCESSED.getOpt(), this::handleWritePreprocessed);
+this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_XSLX.getOpt(), this::handleWriteXlsx);		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_PREPROCESSED.getOpt(), this::handleWritePreprocessed);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_DEPGRAPH.getOpt(), this::handleWriteDepgraph);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_COMPGRAPH.getOpt(), this::handleWriteCompgraph);
 	}
@@ -396,6 +400,12 @@ this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(),
 		cfg.setLiterate(true);
 	}
 
+	private void handleWriteXlsx(Option opt, InputConfig cfg) {
+		cfg.setWriteAnswerSetsAsXlsx(true);
+		String outputPath = opt.getValue(InputConfig.DEFAULT_OUTFILE_PATH);
+		cfg.setAnswerSetFileOutputPath(outputPath);
+	}
+
 	private void handleStats(Option opt, SystemConfig cfg) {
 		cfg.setPrintStats(true);
 	}
@@ -447,6 +457,5 @@ this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(),
 	private void handleGrounderNoInstanceRemoval(Option opt, SystemConfig cfg) {
 		cfg.setGrounderAccumulatorEnabled(true);
 	}
-
 
 }
