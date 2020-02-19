@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -152,7 +152,8 @@ public class RuleGroundingOrders {
 	}
 
 	void computeGroundingOrders() {
-		if (fixedGroundingInstantiation) {
+		// startingLiterals is empty if the body of a rule is empty (which can only occur for rewritten rules, e.g. heuristic rules)
+		if (fixedGroundingInstantiation && !startingLiterals.isEmpty()) {
 			// Fixed grounding is only evaluated once and not depending on a starting variable, just use the first.
 			computeGroundingOrder(startingLiterals.get(0));
 			return;
@@ -165,8 +166,7 @@ public class RuleGroundingOrders {
 
 	private void computeGroundingOrder(Literal startingLiteral) {
 		List<Literal> bodyLiterals = nonGroundRule.getBodyLiterals();
-		HashSet<VariableTerm> boundVariables = new HashSet<>();
-		boundVariables.addAll(startingLiteral.getBindingVariables());
+		HashSet<VariableTerm> boundVariables = new HashSet<>(startingLiteral.getBindingVariables());
 		LinkedHashSet<Literal> remainingLiterals = new LinkedHashSet<>(bodyLiterals);
 		remainingLiterals.remove(startingLiteral);
 		ArrayList<Literal> literalsOrder;

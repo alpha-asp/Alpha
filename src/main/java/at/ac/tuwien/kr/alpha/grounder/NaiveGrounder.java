@@ -345,8 +345,15 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		for (NonGroundRule nonGroundRule : fixedRules) {
 			// Generate NoGoods for all rules that have a fixed grounding.
 			RuleGroundingOrder groundingOrder = nonGroundRule.groundingOrder.getFixedGroundingOrder();
-			BindingResult bindingResult = getGroundInstantiations(nonGroundRule, groundingOrder, new Substitution(), null);
-			groundAndRegister(nonGroundRule, bindingResult.generatedSubstitutions, groundNogoods);
+			List<Substitution> substitutions;
+			if (groundingOrder != null) {
+				BindingResult bindingResult = getGroundInstantiations(nonGroundRule, groundingOrder, new Substitution(), null);
+				substitutions = bindingResult.generatedSubstitutions;
+			} else {
+				// groundingOrder may be null if body of rewritten rule (e.g., heuristic rule) is empty
+				substitutions = singletonList(new Substitution());
+			}
+			groundAndRegister(nonGroundRule, substitutions, groundNogoods);
 		}
 
 		fixedRules = null;
