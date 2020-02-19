@@ -26,7 +26,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 
 /**
- * Copyright (c) 2017-2019, the Alpha Team.
+ * Copyright (c) 2017-2020, the Alpha Team.
  */
 public class CardinalityNormalization extends ProgramTransformation<InputProgram, InputProgram> {
 
@@ -54,33 +54,41 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 		InputProgram.Builder programBuilder = InputProgram.builder();
 		programBuilder.addFacts(inputProgram.getFacts());
 		programBuilder.addInlineDirectives(inputProgram.getInlineDirectives());
-		String cardinalityCountingGrid = "span(R,1..I1) :- I1 = I-1, sorting_network_input_number(R,I).\n"
-				+ "sum(R,0,0)    :- sorting_network_input_number(R,_).\n" + "sum(R,I,S)    :- sum(R,I1,S), I1 = I-1, span(R,I).\n"
-				+ "sum(R,I,S1)   :- sum(R,I1,S),S1 = S+1, I1 = I-1, sorting_network_input_number(R,I),\n"
-				+ "                  sorting_network_bound(R,K), S < K.\n" + "sorting_network_output(R,K) :- sorting_network_bound(R,K), K <= S, sum(R,_,S).\n";
+		//@formatter:off
+		String cardinalityCountingGrid =
+			"span(R,1..I1) :- I1 = I-1, sorting_network_input_number(R,I).\n" +
+			"sum(R,0,0)    :- sorting_network_input_number(R,_).\n" +
+			"sum(R,I,S)    :- sum(R,I1,S), I1 = I-1, span(R,I).\n" +
+			"sum(R,I,S1)   :- sum(R,I1,S),S1 = S+1, I1 = I-1, sorting_network_input_number(R,I),\n" +
+			"                  sorting_network_bound(R,K), S < K.\n" +
+			"sorting_network_output(R,K) :- sorting_network_bound(R,K), K <= S, sum(R,_,S).\n";
 
 		// Transforms all cardinality-aggregates into normal logic rules employing a lazy-grounded sorting circuit.
-		String cardinalitySortingCircuit = "sorting_network_wire_value(R, I, D) :- sorting_network_input_number(R, I), D = 0.\n"
-				+ "sorting_network_wire_value(R, I, D) :- sorting_network_wire_value(R, I, D1), D1 = D - 1, sorting_network_comparator(I, _, D), sorting_network_relevant_depth(R, D).\n"
-				+ "sorting_network_wire_value(R, I, D) :- sorting_network_wire_value(R, J, D1), D1 = D - 1, sorting_network_comparator(I, J, D), sorting_network_relevant_depth(R, D).\n"
-				+ "sorting_network_wire_value(R, J, D) :- sorting_network_wire_value(R, I, D1), D1 = D - 1, sorting_network_wire_value(R, J, D1), sorting_network_comparator(I, J, D), sorting_network_relevant_depth(R, D).\n"
-				+ "sorting_network_wire_value(R, I, D) :- sorting_network_wire_value(R, I, D1), D1 = D - 1, sorting_network_passthrough(I, D), sorting_network_relevant_depth(R, D).\n"
-				+ "sorting_network_input_range(R, 1..I) :- sorting_network_input_number(R, I).\n"
-				+ "sorting_network_relevant_depth(R, D) :- sorting_network_odd_even_level(R, _, _, D).\n"
-				+ "sorting_network_part(R, G) :- sorting_network_input_range(R, I), I1 = I - 1, G = G1 + 1, sorting_network_log2(I1, G1).\n"
-				+ "sorting_network_output(R, K) :- sorting_network_bound(R, K), sorting_network_wire_value(R, K, D), sorting_network_sorted_count(N, D), K <= N.\n"
-				+ "sorting_network_output(R, K) :- sorting_network_bound(R, K), K <= 0.\n"
-				+ "sorting_network_odd_even_level(R, 1, 1, 1) :- sorting_network_part(R, 1).\n"
-				+ "sorting_network_odd_even_level(R, L, P1, DL) :- P1 = P + 1, L = 1..P1, DL = D + L, sorting_network_odd_even_level(R, P, P, D), sorting_network_part(R, P1).\n"
-				+ "sorting_network_odd_even_comparator(1, P, I, J) :- sorting_network_odd_even_level(_, 1, P, _), sorting_network_input_range(_, I), I < J, J = ((I - 1) ^ 2 ** (P - 1)) + 1.\n"
-				+ "sorting_network_odd_even_comparator(L, P, I, J) :- sorting_network_odd_even_level(_, L, P, _), sorting_network_input_range(_, I), J = I + S, 1 < L, N != 0, N != B - 1, N \\ 2 = 1, N = (I - 1) / S - ((I - 1) / S / B) * B, S = 2 ** (P - L), B = 2 ** L.\n"
-				+ "sorting_network_odd_even_passthrough(L, P, I) :- sorting_network_odd_even_level(_, L, P, _), sorting_network_input_range(_, I), 1 < L, N = 0, N = (I - 1) / S - ((I - 1) / S / B) * B, S = 2 ** (P - L), B = 2 ** L.\n"
-				+ "sorting_network_odd_even_passthrough(L, P, I) :- sorting_network_odd_even_level(_, L, P, _), sorting_network_input_range(_, I), 1 < L, N = B - 1, N = (I - 1) / S - ((I - 1) / S / B) * B, S = 2 ** (P - L), B = 2 ** L.\n"
-				+ "sorting_network_comparator(I, J, D) :- sorting_network_odd_even_comparator(L, P, I, J), sorting_network_odd_even_level(_, L, P, D).\n"
-				+ "sorting_network_passthrough(I, D) :- sorting_network_odd_even_passthrough(L, P, I), sorting_network_odd_even_level(_, L, P, D).\n"
-				+ "sorting_network_sorted_count(1, 0).\n"
-				+ "sorting_network_sorted_count(N, D) :- sorting_network_log2(N, P), sorting_network_odd_even_level(_, P, P, D).\n"
-				+ "sorting_network_log2(Ip2, I) :- Ip2 = 2 ** I, I = 0..30.\n";
+		String phi = "N = (I - 1) / S - ((I - 1) / S / B) * B, S = 2 ** (P - L), B = 2 ** L";
+		String cardinalitySortingCircuit =
+			"sorting_network_span(R,I) :- sorting_network_input_number(R,I).\n" +
+			"sorting_network_span(R,Im1) :- sorting_network_span(R,I), 1<I, Im1=I-1.\n" +
+			"sorting_network_v(R,I,D) :- sorting_network_input_number(R,I), D=0.\n" +
+			"sorting_network_v(R,I,D) :- sorting_network_v(R,I,D1), D1=D-1, sorting_network_comp(I,_,D), sorting_network_dh(R,D).\n" +
+			"sorting_network_v(R,I,D) :- sorting_network_v(R,J,D1), D1=D-1, sorting_network_comp(I,J,D), sorting_network_dh(R,D).\n" +
+			"sorting_network_v(R,J,D) :- sorting_network_v(R,I,D1), D1=D-1, sorting_network_comp(I,J,D), sorting_network_dh(R,D), sorting_network_v(R,J,D1).\n" +
+			"sorting_network_v(R,I,D) :- sorting_network_v(R,I,D1), D1=D-1, sorting_network_pass(I,D), sorting_network_dh(R,D).\n" +
+			"sorting_network_output(R,K) :- sorting_network_bound(R,K), sorting_network_v(R,K,D), sorting_network_done(N,D), K<=N.\n" +
+			"sorting_network_output(R,K) :- sorting_network_bound(R,K), K<=0.\n" +
+
+			"sorting_network_span_project(I) :- sorting_network_span(_,I).\n" +
+			"sorting_network_part(P) :- sorting_network_span_project(I), Im1=I-1, sorting_network_log2(Im1,P1), P=P1+1.\n" +
+			"sorting_network_lvl(1,1,1) :- sorting_network_part(1).\n" +
+			"sorting_network_lvl(L,P1,DL) :- sorting_network_lvl(P,P,D), P1=P+1, sorting_network_part(P1), L=1..P1, DL=D+L.\n" +
+			"sorting_network_comp(I,J,D) :- sorting_network_lvl(1,P,D), sorting_network_span_project(I), I<J, J=((I-1)^(2**(P-1)))+1.\n" +
+			"sorting_network_comp(I,J,D) :- sorting_network_lvl(L,P,D), sorting_network_span_project(I), J=I+S, 1<L, N!=0, N!=B-1, N \\ 2 = 1, " + phi + ".\n" +
+			"sorting_network_pass(I,D) :- sorting_network_lvl(L,P,D), sorting_network_span_project(I), 1<L, N=0, " + phi + ".\n" +
+			"sorting_network_pass(I,D) :- sorting_network_lvl(L,P,D), sorting_network_span_project(I), 1<L, N=B-1, " + phi + ".\n" +
+			"sorting_network_dh(R,1..D) :- sorting_network_span(R,N1), N1=N+1, sorting_network_done(N,_), N2=N*2, sorting_network_done(N2,D).\n" +
+			"sorting_network_done(N,D) :- sorting_network_log2(N,P), sorting_network_lvl(P,P,D).\n" +
+			"sorting_network_done(1,0).\n" +
+			"sorting_network_log2(Ip2, I) :- Ip2 = 2 ** I, I = 0..30.";
+		//@formatter:on
 
 		// Connect/Rewrite every aggregate in each rule.
 		List<BasicRule> rewrittenRules = this.rewriteAggregates(inputProgram.getRules());
@@ -98,7 +106,8 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 		programBuilder.addRules(rewrittenRules);
 
 		// Add enumeration rule that uses the special EnumerationAtom.
-		// The enumeration rule is: "sorting_network_input_number(A, I) :- sorting_network_input(A, X), sorting_network_index(A, X, I)."
+		// The enumeration rule is: "sorting_network_input_number(A, I) :- sorting_network_input(A, X), sorting_network_index(A,
+		// X, I)."
 		BasicRule tmpEnumRule = PredicateInternalizer.makePredicatesInternal(parse("sorting_network_input_number(A, I) :- sorting_network_input(A, X)."))
 				.getRules().get(0);
 		EnumerationAtom enumerationAtom = new EnumerationAtom(parse("sorting_network_index(A, X, I).").getFacts().get(0).getTerms());
@@ -216,7 +225,8 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 				BasicAtom inputHeadAtom = aggregateInputAtom.substitute(elementSubstitution);
 				List<Literal> elementLiterals = new ArrayList<>(aggregateElement.getElementLiterals());
 
-				// If there are global variables used inside the aggregate, add original rule body (minus the aggregate itself) to input rule.
+				// If there are global variables used inside the aggregate, add original rule body (minus the aggregate itself) to input
+				// rule.
 				if (!globalVariables.isEmpty()) {
 					elementLiterals.addAll(rewrittenBody);
 				}
@@ -237,7 +247,8 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 	}
 
 	static Collection<Term> getGlobalVariables(List<Literal> ruleBody, AggregateAtom aggregateAtom) {
-		// Hacky way to get all global variables: take all variables inside the aggregate that occur also in the rest of the rule.
+		// Hacky way to get all global variables: take all variables inside the aggregate that occur also in the rest of the
+		// rule.
 		HashSet<Term> occurringVariables = new LinkedHashSet<>();
 		for (Literal element : ruleBody) {
 			if (element instanceof AggregateLiteral) {
