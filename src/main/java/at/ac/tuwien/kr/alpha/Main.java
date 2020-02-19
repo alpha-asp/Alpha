@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2019, the Alpha Team.
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -27,6 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha;
 
+import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.config.AlphaConfig;
@@ -41,7 +42,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -97,9 +100,29 @@ public class Main {
 
 		if (!alpha.getConfig().isQuiet()) {
 			AtomicInteger counter = new AtomicInteger(0);
-			stream.forEach(as -> System.out.println("Answer set " + counter.incrementAndGet() + ":" + System.lineSeparator() + as.toString()));
+			final BiConsumer<Integer, AnswerSet> answerSetHandler;
+			BiConsumer<Integer, AnswerSet> stdoutPrinter = (n, as) -> {
+				System.out.println("Answer set " + Integer.toString(n) + ":" + System.lineSeparator() + as.toString());
+			};
+			if (inputCfg.isWriteAnswerSetsAsXlsx()) {
+				BiConsumer<Integer, AnswerSet> xlsxWriter = new AnswerSetToXlsxWriter(inputCfg.getAnswerSetFileOutputPath());
+				answerSetHandler = stdoutPrinter.andThen(xlsxWriter);
+			} else {
+				answerSetHandler = stdoutPrinter;
+			}
+			stream.forEach(as -> {
+				int cnt = counter.incrementAndGet();
+				answerSetHandler.accept(cnt, as);
+			});
 			if (counter.get() == 0) {
 				System.out.println("UNSATISFIABLE");
+				if (inputCfg.isWriteAnswerSetsAsXlsx()) {
+					try {
+						AnswerSetToXlsxWriter.writeUnsatInfo(Paths.get(inputCfg.getAnswerSetFileOutputPath() + ".UNSAT.xlsx"));
+					} catch (IOException ex) {
+						System.err.println("Failed writing unsat file!");
+					}
+				}
 			} else {
 				System.out.println("SATISFIABLE");
 			}
