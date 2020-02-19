@@ -43,7 +43,7 @@ public class HeuristicSignSetUtil {
 	private static final String NAME_SIGN_SET_TM = "tm";
 	private static final String NAME_SIGN_SET_M = "m";
 	private static final String NAME_SIGN_SET_F = "f";
-	private static final Map<Set<ThriceTruth>,String> SIGN_SET_TO_NAME = new HashMap<>();
+	private static final Map<Set<ThriceTruth>, String> SIGN_SET_TO_NAME = new HashMap<>();
 	private static final Map<String, Set<ThriceTruth>> NAME_TO_SIGN_SET = new HashMap<>();
 
 	static {
