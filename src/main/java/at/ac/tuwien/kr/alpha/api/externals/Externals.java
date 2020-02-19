@@ -28,10 +28,10 @@ import at.ac.tuwien.kr.alpha.common.fixedinterpretations.UnaryPredicateInterpret
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
-public final class ExternalAtoms {
+public final class Externals {
 
 	// private constructor since this is a utility class
-	private ExternalAtoms() {
+	private Externals() {
 
 	}
 
@@ -49,7 +49,7 @@ public final class ExternalAtoms {
 				name = method.getName();
 			}
 
-			retVal.put(name, ExternalAtoms.processPredicateMethod(method));
+			retVal.put(name, Externals.processPredicateMethod(method));
 		}
 		return retVal;
 	}

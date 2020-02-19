@@ -27,7 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.api.externals.ExternalAtoms;
+import at.ac.tuwien.kr.alpha.api.externals.Externals;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
@@ -109,7 +109,7 @@ public class Program {
 	}
 
 	public <T extends Comparable<T>> Program withExternalFacts(Collection<T> factBeans) {
-		ExternalAtoms.addExternalFactsToProgram(this, factBeans);
+		Externals.addExternalFactsToProgram(this, factBeans);
 		return this;
 	}
 }
