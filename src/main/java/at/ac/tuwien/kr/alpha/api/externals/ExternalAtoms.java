@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.common.atoms.external;
+package at.ac.tuwien.kr.alpha.api.externals;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

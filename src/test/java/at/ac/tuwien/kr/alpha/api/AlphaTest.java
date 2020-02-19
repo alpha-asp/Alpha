@@ -49,6 +49,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.AnswerSetsParser;
+import at.ac.tuwien.kr.alpha.api.externals.ExternalAtoms;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
@@ -58,7 +59,6 @@ import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.external.ExternalAtoms;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.MethodPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
@@ -68,18 +68,18 @@ import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 public class AlphaTest {
 	private static int invocations;
 
-	@at.ac.tuwien.kr.alpha.common.atoms.external.Predicate
+	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static boolean isOne(int term) {
 		invocations++;
 		return term == 1;
 	}
 
-	@at.ac.tuwien.kr.alpha.common.atoms.external.Predicate
+	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static boolean isFoo(Integer a) {
 		return a == 0xF00;
 	}
 
-	@at.ac.tuwien.kr.alpha.common.atoms.external.Predicate
+	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static boolean thinger(Thingy thingy) {
 		return true;
 	}
@@ -155,7 +155,7 @@ public class AlphaTest {
 		assertEquals(expected, actual);
 	}
 
-	@at.ac.tuwien.kr.alpha.common.atoms.external.Predicate
+	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static Set<List<ConstantTerm<?>>> bestNode() {
 		return singleton(singletonList(ConstantTerm.getInstance(1)));
 	}
