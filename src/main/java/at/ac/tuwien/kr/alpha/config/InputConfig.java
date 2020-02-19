@@ -3,13 +3,20 @@ package at.ac.tuwien.kr.alpha.config;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class InputConfig {
 
 	public static final java.util.function.Predicate<Predicate> DEFAULT_FILTER = p -> true;
 	public static final boolean DEFAULT_LITERATE = false;
 	public static final int DEFAULT_NUM_ANSWER_SETS = 0;
+	public static final boolean DEFAULT_WRITE_XLSX = false;
+	public static final String DEFAULT_OUTFILE_PATH = "alphaAnswerSet"; // current directory, files named "alphaAnswerSet.{num}.{ext}"
 
 	private List<String> aspStrings = new ArrayList<>();
 	private List<String> files = new ArrayList<>();
@@ -17,6 +24,8 @@ public class InputConfig {
 	private int numAnswerSets = InputConfig.DEFAULT_NUM_ANSWER_SETS;
 	private Set<String> desiredPredicates = new HashSet<>();
 	private Map<String, PredicateInterpretation> predicateMethods = new HashMap<>();
+	private boolean writeAnswerSetsAsXlsx = InputConfig.DEFAULT_WRITE_XLSX;
+	private String answerSetFileOutputPath;
 
 	public static InputConfig forString(String str) {
 		InputConfig retVal = new InputConfig();
@@ -78,6 +87,22 @@ public class InputConfig {
 
 	public void setDesiredPredicates(Set<String> desiredPredicates) {
 		this.desiredPredicates = desiredPredicates;
+	}
+
+	public boolean isWriteAnswerSetsAsXlsx() {
+		return this.writeAnswerSetsAsXlsx;
+	}
+
+	public void setWriteAnswerSetsAsXlsx(boolean writeAnswerSetsAsXslx) {
+		this.writeAnswerSetsAsXlsx = writeAnswerSetsAsXslx;
+	}
+
+	public String getAnswerSetFileOutputPath() {
+		return this.answerSetFileOutputPath;
+	}
+
+	public void setAnswerSetFileOutputPath(String answerSetFileOutputPath) {
+		this.answerSetFileOutputPath = answerSetFileOutputPath;
 	}
 
 }
