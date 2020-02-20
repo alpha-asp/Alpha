@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2019, the Alpha Team.
+/*
+ * Copyright (c) 2017-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -37,8 +37,15 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.Stack;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -60,8 +67,8 @@ public class ChoiceManager implements Checkable {
 	private final Map<Integer, Integer> bodiesToHeads = new HashMap<>();
 
 	// Two "influence managers" managing active choice points and heuristics.
-	private final ChoiceInfluenceManager choicePointInfluenceManager;
-	private final ChoiceInfluenceManager heuristicInfluenceManager;
+	private final ChoicePointInfluenceManager choicePointInfluenceManager;
+	private final HeuristicInfluenceManager heuristicInfluenceManager;
 
 	private final NoGoodStore store;
 	private final BinaryNoGoodPropagationEstimation bnpEstimation;
@@ -77,8 +84,8 @@ public class ChoiceManager implements Checkable {
 	protected ChoiceManager(WritableAssignment assignment, NoGoodStore store, DomainSpecificHeuristicsStore domainSpecificHeuristicsStore) {
 		this.store = store;
 		this.assignment = assignment;
-		this.choicePointInfluenceManager = new ChoiceInfluenceManager(assignment);
-		this.heuristicInfluenceManager = new ChoiceInfluenceManager(assignment);
+		this.choicePointInfluenceManager = new ChoicePointInfluenceManager(assignment);
+		this.heuristicInfluenceManager = new HeuristicInfluenceManager(assignment);
 		this.choiceStack = new Stack<>();
 		if (domainSpecificHeuristicsStore != null) {
 			this.domainSpecificHeuristics = domainSpecificHeuristicsStore;
@@ -272,11 +279,11 @@ public class ChoiceManager implements Checkable {
 		return choicePointInfluenceManager.isAtomInfluenced(atom);
 	}
 
-	public void setChoicePointActivityListener(ChoiceInfluenceManager.ActivityListener activityListener) {
+	public void setChoicePointActivityListener(InfluenceManager.ActivityListener activityListener) {
 		choicePointInfluenceManager.setActivityListener(activityListener);
 	}
 
-	public void setHeuristicActivityListener(ChoiceInfluenceManager.ActivityListener activityListener) {
+	public void setHeuristicActivityListener(InfluenceManager.ActivityListener activityListener) {
 		heuristicInfluenceManager.setActivityListener(activityListener);
 	}
 

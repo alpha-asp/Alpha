@@ -42,18 +42,18 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 /**
- * Manages influence of atoms on the activity of rule atoms (choice points).
+ * Manages influence of atoms on the activity of heuristics.
  *
  */
-public class ChoicePointInfluenceManager extends InfluenceManager {
-	
-	private static final Logger LOGGER = LoggerFactory.getLogger(ChoicePointInfluenceManager.class);
-	
+public class HeuristicInfluenceManager extends InfluenceManager {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(HeuristicInfluenceManager.class);
+
 	// Active choice points and all atoms that influence a choice point (enabler, disabler, choice atom itself).
 	private final Set<ChoicePoint> activeChoicePoints = new LinkedHashSet<>();
 	private final Map<Integer, ChoicePoint> influencers = new HashMap<>();
 
-	public ChoicePointInfluenceManager(WritableAssignment assignment) {
+	public HeuristicInfluenceManager(WritableAssignment assignment) {
 		super(assignment);
 	}
 
