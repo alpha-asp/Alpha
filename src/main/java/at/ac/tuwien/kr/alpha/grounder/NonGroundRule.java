@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -32,6 +32,7 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +75,10 @@ public class NonGroundRule {
 
 		checkSafety();
 		this.groundingOrder = new RuleGroundingOrders(this);
-		groundingOrder.computeGroundingOrders();
+		if (!(isHeuristicRule() && bodyAtomsPositive.isEmpty() && bodyAtomsNegative.isEmpty())) {
+			// compute grounding orders only if the body of a rule is non-empty (it can be empty only in rewritten heuristic rules)
+			groundingOrder.computeGroundingOrders();
+		}
 
 		LOGGER.debug("Rule ID {} assigned to {}", ruleId, rule);
 	}
@@ -136,6 +140,10 @@ public class NonGroundRule {
 
 	public boolean isConstraint() {
 		return headAtom == null;
+	}
+
+	public boolean isHeuristicRule() {
+		return headAtom instanceof HeuristicAtom;
 	}
 
 	@Override

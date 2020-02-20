@@ -152,8 +152,7 @@ public class RuleGroundingOrders {
 	}
 
 	void computeGroundingOrders() {
-		// startingLiterals is empty if the body of a rule is empty (which can only occur for rewritten rules, e.g. heuristic rules)
-		if (fixedGroundingInstantiation && !startingLiterals.isEmpty()) {
+		if (fixedGroundingInstantiation) {
 			// Fixed grounding is only evaluated once and not depending on a starting variable, just use the first.
 			computeGroundingOrder(startingLiterals.get(0));
 			return;
