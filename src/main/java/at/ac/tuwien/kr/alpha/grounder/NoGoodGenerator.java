@@ -55,7 +55,7 @@ import static java.util.Collections.singletonList;
 
 /**
  * Class to generate ground NoGoods out of non-ground rules and grounding substitutions.
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2020, the Alpha Team.
  */
 public class NoGoodGenerator {
 	private final AtomStore atomStore;
@@ -83,7 +83,9 @@ public class NoGoodGenerator {
 	 * @return a list of the NoGoods corresponding to the ground rule.
 	 */
 	Collection<NoGood> generateNoGoodsFromGroundSubstitution(final NonGroundRule nonGroundRule, final Substitution substitution) {
-		final List<Integer> posLiterals = collectPosLiterals(nonGroundRule, substitution);
+		final boolean isHeuristicRule = nonGroundRule.getHeadAtom() instanceof HeuristicAtom;
+		final Set<Atom> collectedFacts = isHeuristicRule ? new HashSet<>() : null;
+		final List<Integer> posLiterals = collectPosLiterals(nonGroundRule, substitution, collectedFacts);
 		final List<Integer> negLiterals = collectNegLiterals(nonGroundRule, substitution);
 
 		if (posLiterals == null || negLiterals == null) {
@@ -110,18 +112,18 @@ public class NoGoodGenerator {
 
 		final int bodyRepresentingAtom = atomStore.putIfAbsent(bodyAtom);
 
-		if (groundHeadAtom instanceof HeuristicAtom) {
-			return generateNoGoodsForHeuristicRule((HeuristicAtom) groundHeadAtom, bodyRepresentingAtom);
+		if (isHeuristicRule) {
+			return generateNoGoodsForHeuristicRule((HeuristicAtom) groundHeadAtom, bodyRepresentingAtom, collectedFacts);
 		} else {
 			return generateNoGoodsForNonConstraintNonHeuristicRule(nonGroundRule, posLiterals, negLiterals, groundHeadAtom, bodyRepresentingAtom);
 		}
 	}
 
-	private Collection<NoGood> generateNoGoodsForHeuristicRule(HeuristicAtom groundHeadAtom, int bodyRepresentingAtom) {
+	private Collection<NoGood> generateNoGoodsForHeuristicRule(HeuristicAtom groundHeadAtom, int bodyRepresentingAtom, Set<Atom> collectedFacts) {
 		BasicAtom groundHeuristicHead = groundHeadAtom.getHeadAtom().toAtom();
 		final int heuristicHeadId = atomStore.putIfAbsent(groundHeuristicHead);
 
-		final List<NoGood> result = new ArrayList<>(choiceRecorder.generateHeuristicNoGoods(groundHeadAtom, bodyRepresentingAtom, heuristicHeadId));
+		final List<NoGood> result = new ArrayList<>(choiceRecorder.generateHeuristicNoGoods(groundHeadAtom, bodyRepresentingAtom, heuristicHeadId, collectedFacts));
 
 		// if the head of the heuristic directive is assigned, the body of the heuristic rule shall also be assigned s.t. it is not applicable anymore:
 		boolean heuristicSign = groundHeadAtom.getHeadSign().toBoolean();
@@ -185,7 +187,7 @@ public class NoGoodGenerator {
 		return bodyLiteralsNegative;
 	}
 
-	private List<Integer> collectPosLiterals(final NonGroundRule nonGroundRule, final Substitution substitution) {
+	private List<Integer> collectPosLiterals(final NonGroundRule nonGroundRule, final Substitution substitution, final Collection<Atom> collectFacts) {
 		final List<Integer> bodyLiteralsPositive = new ArrayList<>();
 		for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
 			if (atom.toLiteral() instanceof FixedInterpretationLiteral) {
@@ -206,6 +208,9 @@ public class NoGoodGenerator {
 			// and eliminate nogoods that are always satisfied due to facts.
 			Set<Instance> factInstances = factsFromProgram.get(groundAtom.getPredicate());
 			if (factInstances != null && factInstances.contains(new Instance(groundAtom.getTerms()))) {
+				if (collectFacts != null) {
+					collectFacts.add(groundAtom);
+				}
 				// Skip positive atoms that are always true.
 				continue;
 			}
