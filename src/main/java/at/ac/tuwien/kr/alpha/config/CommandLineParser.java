@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2019, the Alpha Team.
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -60,6 +60,7 @@ public class CommandLineParser {
 	 * to the handler.
 	 */
 	// "special", i.e. non-configuration options
+	//@formatter:off
 	private static final Option OPT_HELP = Option.builder("h").longOpt("help").hasArg(false).desc("shows this help").build();
 
 	// input-specific options
@@ -73,6 +74,8 @@ public class CommandLineParser {
 			.desc("provide the asp program as a string").build();
 	private static final Option OPT_LITERATE = Option.builder("l").longOpt("literate")
 			.desc("enable literate programming mode (default: " + InputConfig.DEFAULT_LITERATE + ")").build();
+	private static final Option OPT_WRITE_XSLX = Option.builder("wx").longOpt("write-xlsx").hasArg(true).argName("path").type(String.class)
+			.desc("Write answer sets to excel files, i.e. xlsx workbooks (one workbook per answer set)").build();
 
 	// general system-wide config
 	private static final Option OPT_GROUNDER = Option.builder("g").longOpt("grounder").hasArg(true).argName("grounder")
@@ -110,7 +113,7 @@ public class CommandLineParser {
 			.build();
 	private static final Option OPT_NO_NOGOOD_DELETION = Option.builder("dnd").longOpt("disableNoGoodDeletion")
 			.desc("disable the deletion of (learned, little active) nogoods (default: "
-					+ SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION + ")")
+							+ SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION + ")")
 			.build();
 	private static final Option OPT_GROUNDER_TOLERANCE_CONSTRAINTS = Option.builder("gtc").longOpt("grounderToleranceConstraints")
 			.desc("grounder tolerance for constraints (default: " + SystemConfig.DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS + ")")
@@ -121,7 +124,8 @@ public class CommandLineParser {
 			.hasArg().argName("tolerance")
 			.build();
 	private static final Option OPT_GROUNDER_ACCUMULATOR_ENABLED = Option.builder("acc").longOpt("enableAccumulator")
-			.desc("activates the accumulator grounding strategy by disabling removal of instances from grounder memory in certain cases (default: " + SystemConfig.DEFAULT_GROUNDER_ACCUMULATOR_ENABLED + ")")
+			.desc("activates the accumulator grounding strategy by disabling removal of instances from grounder memory in certain cases (default: "
+						+ SystemConfig.DEFAULT_GROUNDER_ACCUMULATOR_ENABLED + ")")
 			.build();
 	private static final Option OPT_ENABLE_RESTARTS = Option.builder("rs").longOpt("enableRestarts")
 		.desc("enable the usage of (dynamic and static) restarts (default: "
@@ -130,6 +134,7 @@ public class CommandLineParser {
 	private static final Option OPT_INITIAL_PHASE = Option.builder("ph").longOpt("initialPhase").hasArg(true).argName("initializer")
 		.desc("set the initial phase [ alltrue | allfalse | random ] (default: " + SystemConfig.DEFAULT_PHASE_INITIALIZER + ")")
 		.build();
+	//@formatter:on
 
 	private static final Options CLI_OPTS = new Options();
 
@@ -144,6 +149,7 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_LITERATE);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_INPUT);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_ASPSTRING);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_XSLX);
 
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SOLVER);
@@ -219,6 +225,7 @@ public class CommandLineParser {
 		this.inputOptionHandlers.put(CommandLineParser.OPT_FILTER.getOpt(), this::handleFilters);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_ASPSTRING.getOpt(), this::handleAspString);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_LITERATE.getOpt(), this::handleLiterate);
+		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_XSLX.getOpt(), this::handleWriteXlsx);
 	}
 
 	public AlphaConfig parseCommandLine(String[] args) throws ParseException {
@@ -346,16 +353,18 @@ public class CommandLineParser {
 		try {
 			cfg.setBranchingHeuristicName(branchingHeuristicName);
 		} catch (IllegalArgumentException e) {
-			throw new ParseException("Unknown branching heuristic: " + branchingHeuristicName + ". Please try one of the following: " + Heuristic.listAllowedValues());
+			throw new ParseException(
+					"Unknown branching heuristic: " + branchingHeuristicName + ". Please try one of the following: " + Heuristic.listAllowedValues());
 		}
 	}
-	
+
 	private void handleMomsStrategy(Option opt, SystemConfig cfg) throws ParseException {
 		String momsStrategyName = opt.getValue(SystemConfig.DEFAULT_MOMS_STRATEGY.name());
 		try {
 			cfg.setMomsStrategyName(momsStrategyName);
 		} catch (IllegalArgumentException e) {
-			throw new ParseException("Unknown mom's strategy: " + momsStrategyName + ". Please try one of the following: " + BinaryNoGoodPropagationEstimation.Strategy.listAllowedValues());
+			throw new ParseException("Unknown mom's strategy: " + momsStrategyName + ". Please try one of the following: "
+					+ BinaryNoGoodPropagationEstimation.Strategy.listAllowedValues());
 		}
 	}
 
@@ -374,6 +383,12 @@ public class CommandLineParser {
 
 	private void handleLiterate(Option opt, InputConfig cfg) {
 		cfg.setLiterate(true);
+	}
+
+	private void handleWriteXlsx(Option opt, InputConfig cfg) {
+		cfg.setWriteAnswerSetsAsXlsx(true);
+		String outputPath = opt.getValue(InputConfig.DEFAULT_OUTFILE_PATH);
+		cfg.setAnswerSetFileOutputPath(outputPath);
 	}
 
 	private void handleStats(Option opt, SystemConfig cfg) {
