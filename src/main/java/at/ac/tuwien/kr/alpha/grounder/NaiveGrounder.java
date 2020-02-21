@@ -87,7 +87,7 @@ import static java.util.Collections.singletonList;
 
 /**
  * A semi-naive grounder.
- * Copyright (c) 2016-2019, the Alpha Team.
+ * Copyright (c) 2016-2020, the Alpha Team.
  */
 public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGrounder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
@@ -723,7 +723,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	@Override
-	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getHeuristicAtoms() {
+	public Pair<Map<Integer, Integer[]>, Map<Integer, Integer[]>> getHeuristicAtoms() {
 		return choiceRecorder.getAndResetHeuristics();
 	}
 

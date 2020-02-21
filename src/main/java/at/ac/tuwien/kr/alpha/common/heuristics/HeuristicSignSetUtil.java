@@ -39,22 +39,40 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 public class HeuristicSignSetUtil {
 
+	private static final Set<ThriceTruth> SET_T = asSet(TRUE);
+	private static final Set<ThriceTruth> SET_TM = asSet(TRUE, MBT);
+	private static final Set<ThriceTruth> SET_M = asSet(MBT);
+	private static final Set<ThriceTruth> SET_F = asSet(FALSE);
+
 	private static final String NAME_SIGN_SET_T = "t";
 	private static final String NAME_SIGN_SET_TM = "tm";
 	private static final String NAME_SIGN_SET_M = "m";
 	private static final String NAME_SIGN_SET_F = "f";
+
+	public static final int IDX_T = 0;
+	public static final int IDX_TM = 1;
+	public static final int IDX_M = 2;
+	public static final int IDX_F = 3;
+
 	private static final Map<Set<ThriceTruth>, String> SIGN_SET_TO_NAME = new HashMap<>();
 	private static final Map<String, Set<ThriceTruth>> NAME_TO_SIGN_SET = new HashMap<>();
+	private static final Map<Set<ThriceTruth>, Integer> SIGN_SET_TO_IDX = new HashMap<>();
 
 	static {
-		SIGN_SET_TO_NAME.put(asSet(TRUE), NAME_SIGN_SET_T);
-		SIGN_SET_TO_NAME.put(asSet(TRUE, MBT), NAME_SIGN_SET_TM);
-		SIGN_SET_TO_NAME.put(asSet(MBT), NAME_SIGN_SET_M);
-		SIGN_SET_TO_NAME.put(asSet(FALSE), NAME_SIGN_SET_F);
-		NAME_TO_SIGN_SET.put(NAME_SIGN_SET_T, asSet(TRUE));
-		NAME_TO_SIGN_SET.put(NAME_SIGN_SET_TM, asSet(TRUE, MBT));
-		NAME_TO_SIGN_SET.put(NAME_SIGN_SET_M, asSet(MBT));
-		NAME_TO_SIGN_SET.put(NAME_SIGN_SET_F, asSet(FALSE));
+		SIGN_SET_TO_NAME.put(SET_T, NAME_SIGN_SET_T);
+		SIGN_SET_TO_NAME.put(SET_TM, NAME_SIGN_SET_TM);
+		SIGN_SET_TO_NAME.put(SET_M, NAME_SIGN_SET_M);
+		SIGN_SET_TO_NAME.put(SET_F, NAME_SIGN_SET_F);
+
+		NAME_TO_SIGN_SET.put(NAME_SIGN_SET_T, SET_T);
+		NAME_TO_SIGN_SET.put(NAME_SIGN_SET_TM, SET_TM);
+		NAME_TO_SIGN_SET.put(NAME_SIGN_SET_M, SET_M);
+		NAME_TO_SIGN_SET.put(NAME_SIGN_SET_F, SET_F);
+
+		SIGN_SET_TO_IDX.put(SET_T, IDX_T);
+		SIGN_SET_TO_IDX.put(SET_TM, IDX_TM);
+		SIGN_SET_TO_IDX.put(SET_M, IDX_M);
+		SIGN_SET_TO_IDX.put(SET_F, IDX_F);
 	}
 
 	public static String toName(Set<ThriceTruth> signSet) {
@@ -63,6 +81,10 @@ public class HeuristicSignSetUtil {
 
 	public static Set<ThriceTruth> toSignSet(String name) {
 		return NAME_TO_SIGN_SET.get(name.toLowerCase());
+	}
+
+	public static int getIndex(Set<ThriceTruth> signSet) {
+		return SIGN_SET_TO_IDX.get(signSet);
 	}
 
 	/**

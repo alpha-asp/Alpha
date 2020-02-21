@@ -32,12 +32,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.IDX_F;
+import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.IDX_M;
+import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.IDX_T;
+import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.IDX_TM;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
@@ -49,105 +52,121 @@ public class HeuristicInfluenceManager extends InfluenceManager {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(HeuristicInfluenceManager.class);
 
-	// Active choice points and all atoms that influence a choice point (enabler, disabler, choice atom itself).
-	private final Set<ChoicePoint> activeChoicePoints = new LinkedHashSet<>();
-	private final Map<Integer, ChoicePoint> influencers = new HashMap<>();
+	// Active heuristic choice points and all atoms that influence a heuristic choice point (enablers, disablers, heuristic choice atom itself).
+	private final Set<HeuristicChoicePoint> activeHeuristicChoicePoints = new LinkedHashSet<>();
+	private final Map<Integer, HeuristicChoicePoint> influencers = new HashMap<>();
 
 	public HeuristicInfluenceManager(WritableAssignment assignment) {
 		super(assignment);
 	}
 
-	void addInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> choiceAtoms) {
+	void addInformation(Pair<Map<Integer, Integer[]>, Map<Integer, Integer[]>> choiceAtoms) {
 		// Assumption: we get all enabler/disabler pairs in one call.
-		Map<Integer, Integer> enablers = choiceAtoms.getLeft();
-		Map<Integer, Integer> disablers = choiceAtoms.getRight();
-		for (Map.Entry<Integer, Integer> atomToEnabler : enablers.entrySet()) {
-			addInformation(atomToEnabler, disablers);
+		Map<Integer, Integer[]> enablers = choiceAtoms.getLeft();
+		Map<Integer, Integer[]> disablers = choiceAtoms.getRight();
+		for (Map.Entry<Integer, Integer[]> atomToEnablers : enablers.entrySet()) {
+			addInformation(atomToEnablers, disablers);
 		}
 	}
 
-	private void addInformation(Map.Entry<Integer, Integer> atomToEnabler, Map<Integer, Integer> disablers) {
+	private void addInformation(Map.Entry<Integer, Integer[]> atomToEnablers, Map<Integer, Integer[]> atomsToDisablers) {
 		// Construct and record ChoicePoint.
-		Integer atom = atomToEnabler.getKey();
+		Integer atom = atomToEnablers.getKey();
 		if (atom == null) {
 			throw oops("Incomplete choice point description found (no atom)");
 		}
 		if (influencers.get(atom) != null) {
 			throw oops("Received choice information repeatedly");
 		}
-		Integer enabler = atomToEnabler.getValue();
-		Integer disabler = disablers.get(atom);
-		if (enabler == null || disabler == null) {
+		Integer[] enablers = atomToEnablers.getValue();
+		Integer[] disablers = atomsToDisablers.get(atom);
+		if (enablers == null || disablers == null) {
 			throw oops("Incomplete choice point description found (no enabler or disabler)");
 		}
-		assignment.registerCallbackOnChange(atom);
-		assignment.registerCallbackOnChange(enabler);
-		assignment.registerCallbackOnChange(disabler);
-		ChoicePoint choicePoint = new ChoicePoint(atom, enabler, disabler);
-		influencers.put(atom, choicePoint);
-		influencers.put(enabler, choicePoint);
-		influencers.put(disabler, choicePoint);
+		registerCallbackOnChange(atom);
+		registerCallbackOnChange(enablers);
+		registerCallbackOnChange(disablers);
+		HeuristicChoicePoint choicePoint = new HeuristicChoicePoint(atom, enablers, disablers);
+		addHeuristicChoicePointToInfluencers(choicePoint, atom);
+		addHeuristicChoicePointToInfluencers(choicePoint, enablers);
+		addHeuristicChoicePointToInfluencers(choicePoint, disablers);
 		choicePoint.recomputeActive();
 	}
 
-	void checkActiveChoicePoints() {
-		HashSet<ChoicePoint> actualActiveChoicePoints = new HashSet<>();
-		for (ChoicePoint choicePoint : influencers.values()) {
-			if (checkActiveChoicePoint(choicePoint)) {
-				actualActiveChoicePoints.add(choicePoint);
+	private void registerCallbackOnChange(Integer... atoms) {
+		for (Integer atom : atoms) {
+			if (atom != null) {
+				assignment.registerCallbackOnChange(atom);
 			}
 		}
-		if (!actualActiveChoicePoints.equals(activeChoicePoints)) {
-			throw oops("ChoiceInfluenceManager internal checker detected wrong activeChoicePoints");
-		}
-		LOGGER.trace("Checking internal choice manger: all ok.");
 	}
-	
-	private boolean checkActiveChoicePoint(ChoicePoint choicePoint) {
-		ThriceTruth enablerTruth = assignment.getTruth(choicePoint.enabler);
-		ThriceTruth disablerTruth = assignment.getTruth(choicePoint.disabler);
-		boolean isActive = enablerTruth == TRUE
-			&& (disablerTruth == null || !disablerTruth.toBoolean());
-		ThriceTruth atomTruth = assignment.getTruth(choicePoint.atom);
-		boolean isNotChosen = atomTruth == null || atomTruth == MBT;
-		return isActive && isNotChosen;
+
+	private void addHeuristicChoicePointToInfluencers(HeuristicChoicePoint heuristicChoicePoint, Integer... atoms) {
+		for (Integer atom : atoms) {
+			if (atom != null) {
+				if (influencers.put(atom, heuristicChoicePoint) != null) {
+					throw oops("Multiple heuristic choice points mapped to same atom " + atom);
+				}
+			}
+		}
 	}
 
 	boolean isActive(int atom) {
-		ChoicePoint choicePoint = influencers.get(atom);
+		HeuristicChoicePoint choicePoint = influencers.get(atom);
 		return choicePoint != null && choicePoint.isActive && choicePoint.atom == atom;
-	}
-
-	boolean isAtomInfluenced(int atom) {
-		ChoicePoint choicePoint = influencers.get(atom);
-		return choicePoint != null && choicePoint.atom == atom;
 	}
 
 	void callbackOnChanged(int atom) {
 		LOGGER.trace("Callback received on influencer atom: {}", atom);
-		ChoicePoint choicePoint = influencers.get(atom);
+		HeuristicChoicePoint choicePoint = influencers.get(atom);
 		if (choicePoint != null) {
 			choicePoint.recomputeActive();
 		}
 	}
 
-	private class ChoicePoint {
+	private class HeuristicChoicePoint {
 		final Integer atom;
-		final int enabler;
-		final int disabler;
+		final Integer[] enablers;
+		final Integer[] disablers;
 		boolean isActive;
 
-		private ChoicePoint(Integer atom, Integer enabler, int disabler) {
+		private HeuristicChoicePoint(Integer atom, Integer[] enablers, Integer[] disablers) {
 			this.atom = atom;
-			this.enabler = enabler;
-			this.disabler = disabler;
+			this.enablers = enablers;
+			this.disablers = disablers;
 		}
 
-		private boolean isActiveChoicePoint() {
-			ThriceTruth enablerTruth = assignment.getTruth(enabler);
-			ThriceTruth disablerTruth = assignment.getTruth(disabler);
-			return  enablerTruth == TRUE
-				&& (disablerTruth == null || !disablerTruth.toBoolean());
+		/**
+		 * A heuristic choice point is active if all of the following conditions hold:
+		 * <ul>
+		 * 	<li>enabler[T] is assigned TRUE</li>
+		 * 	<li>enabler[TM] is assigned TRUE or MBT</li>
+		 * 	<li>enabler[M] is assigned MBT</li>
+		 * 	<li>enabler[F] is assigned FALSE</li>
+		 * 	<li>disabler[T] is not assigned TRUE</li>
+		 * 	<li>disabler[TM] is assigned neither TRUE nor MBT</li>
+		 * 	<li>disabler[M] is not assigned MBT</li>
+		 * 	<li>disabler[F] is not assigned F.</li>
+		 * </ul>
+		 * @return {@code true} iff all the above conditions hold and the choice point's atom is unassigned or assigned MBT.
+		 */
+		private boolean isActive() {
+			final ThriceTruth truthEnablerTM = getNullsafeTruth(enablers[IDX_TM]);
+			boolean isActive = enablers[IDX_TM] == null || truthEnablerTM == TRUE || truthEnablerTM == MBT;
+			isActive &= enablers[IDX_T] == null || getNullsafeTruth(enablers[IDX_T]) == TRUE;
+			isActive &= enablers[IDX_M] == null || getNullsafeTruth(enablers[IDX_M]) == MBT;
+			isActive &= enablers[IDX_F] == null || getNullsafeTruth(enablers[IDX_F]) == TRUE;
+
+			final ThriceTruth truthDisablerTM = getNullsafeTruth(disablers[IDX_TM]);
+			isActive &= truthDisablerTM != TRUE && truthDisablerTM != MBT;
+			isActive &= getNullsafeTruth(disablers[IDX_T]) != TRUE;
+			isActive &= getNullsafeTruth(disablers[IDX_M]) != MBT;
+			isActive &= getNullsafeTruth(disablers[IDX_F]) != TRUE;
+			return isActive;
+		}
+
+		private ThriceTruth getNullsafeTruth(Integer atom) {
+			return atom == null ? null : assignment.getTruth(atom);
 		}
 
 		private boolean isNotChosen() {
@@ -158,15 +177,15 @@ public class HeuristicInfluenceManager extends InfluenceManager {
 		void recomputeActive() {
 			LOGGER.trace("Recomputing activity of atom {}.", atom);
 			final boolean wasActive = isActive;
-			isActive = isNotChosen() && isActiveChoicePoint();
+			isActive = isNotChosen() && isActive();
 			boolean changed = false;
 			if (isActive && !wasActive) {
-				activeChoicePoints.add(this);
+				activeHeuristicChoicePoints.add(this);
 				activeChoicePointsAtoms.add(atom);
 				changed = true;
 				LOGGER.debug("Activating choice point for atom {}", this.atom);
 			} else if (wasActive && !isActive) {
-				activeChoicePoints.remove(this);
+				activeHeuristicChoicePoints.remove(this);
 				activeChoicePointsAtoms.remove(atom);
 				changed = true;
 				LOGGER.debug("Deactivating choice point for atom {}", this.atom);

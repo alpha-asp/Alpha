@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -76,7 +76,7 @@ public interface Grounder {
 	 * Must be preceded by a call to {@link #getNoGoods(Assignment)}.
 	 * @see #getChoiceAtoms()
 	 */
-	Pair<Map<Integer, Integer>, Map<Integer, Integer>> getHeuristicAtoms();
+	Pair<Map<Integer, Integer[]>, Map<Integer, Integer[]>> getHeuristicAtoms();
 
 	/**
 	 * Returns a set of new mappings from heuristic atoms to {@link HeuristicDirectiveValues}.

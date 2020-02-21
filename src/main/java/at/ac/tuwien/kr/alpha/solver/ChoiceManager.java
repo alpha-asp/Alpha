@@ -53,7 +53,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
 
 /**
  * This class provides functionality for choice point management, detection of active choice points, etc.
- * Copyright (c) 2017-2019, the Alpha Team.
+ * Copyright (c) 2017-2020, the Alpha Team.
  */
 public class ChoiceManager implements Checkable {
 
@@ -232,7 +232,7 @@ public class ChoiceManager implements Checkable {
 		addHeadsToBodies(headsToBodies);
 	}
 
-	void addHeuristicInformation(Pair<Map<Integer, Integer>, Map<Integer, Integer>> heuristicAtoms, Map<Integer, HeuristicDirectiveValues> heuristicValues) {
+	void addHeuristicInformation(Pair<Map<Integer, Integer[]>, Map<Integer, Integer[]>> heuristicAtoms, Map<Integer, HeuristicDirectiveValues> heuristicValues) {
 		addInformation(heuristicValues);
 		heuristicInfluenceManager.addInformation(heuristicAtoms);
 	}

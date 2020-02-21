@@ -52,6 +52,7 @@ import java.util.Set;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
 import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
+import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.getIndex;
 import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.isF;
 import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.isProcessable;
 import static at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom.off;
@@ -63,7 +64,7 @@ public class ChoiceRecorder {
 
 	private final AtomStore atomStore;
 	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newChoiceAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
-	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newHeuristicAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
+	private Pair<Map<Integer, Integer[]>, Map<Integer, Integer[]>> newHeuristicAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
 	private Map<Integer, HeuristicDirectiveValues> newHeuristicValues = new LinkedHashMap<>();
 	private Map<Integer, Set<Integer>> newHeadsToBodies = new LinkedHashMap<>();
 
@@ -93,8 +94,8 @@ public class ChoiceRecorder {
 	/**
 	 * @return new heuristic atoms and their enablers and disablers.
 	 */
-	public Pair<Map<Integer, Integer>, Map<Integer, Integer>> getAndResetHeuristics() {
-		Pair<Map<Integer, Integer>, Map<Integer, Integer>> currentHeuristicAtoms = newHeuristicAtoms;
+	public Pair<Map<Integer, Integer[]>, Map<Integer, Integer[]>> getAndResetHeuristics() {
+		Pair<Map<Integer, Integer[]>, Map<Integer, Integer[]>> currentHeuristicAtoms = newHeuristicAtoms;
 		newHeuristicAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
 		return currentHeuristicAtoms;
 	}
@@ -124,17 +125,33 @@ public class ChoiceRecorder {
 		return noGoods;
 	}
 
-	public Collection<NoGood> generateHeuristicNoGoods(HeuristicAtom groundHeuristicAtom, final int bodyRepresentingAtom, final int headId) {
+	public Collection<NoGood> generateHeuristicNoGoods(HeuristicAtom groundHeuristicAtom, final int bodyRepresentingAtom, final int headId, Set<Atom> collectedFacts) {
+		final int idxOff = 1;
+		final int idxOn = 0;
+
 		// Obtain an ID for this new heuristic.
 		final int heuristicId = ID_GENERATOR.getNextId();
+		final Integer[][] influencers = new Integer[2][4]; // dim 1: [on,off], dim 2: [T,TM,M,F]
 
 		final List<NoGood> noGoods = new ArrayList<>();
 		for (HeuristicDirectiveLiteral heuristicDirectiveLiteral : groundHeuristicAtom.getOriginalCondition()) {
 			final HeuristicDirectiveAtom heuristicDirectiveAtom = heuristicDirectiveLiteral.getAtom();
+			final Atom atom = heuristicDirectiveAtom.getAtom();
 			final Set<ThriceTruth> signSet = heuristicDirectiveAtom.getSigns();
-			final int heuristicInfluencerAtom = atomStore.putIfAbsent(HeuristicInfluencerAtom.get(!heuristicDirectiveLiteral.isNegated(), heuristicId, signSet));
-			noGoods.add(generateHeuristicNoGood(heuristicDirectiveAtom.getAtom(), signSet, heuristicInfluencerAtom));
+
+			if (collectedFacts.contains(atom)) {
+				continue; // TODO: special handling if "wrong" sign (s.t. heuristic can never fire)
+			}
+
+			final int idxOnOff = heuristicDirectiveLiteral.isNegated() ? idxOff : idxOn;
+			final int idxSignSet = getIndex(signSet);
+			if (influencers[idxOnOff][idxSignSet] == null) {
+				influencers[idxOnOff][idxSignSet] = atomStore.putIfAbsent(HeuristicInfluencerAtom.get(!heuristicDirectiveLiteral.isNegated(), heuristicId, signSet));
+			}
+			noGoods.add(generateHeuristicNoGood(atom, signSet, influencers[idxOnOff][idxSignSet]));
 		}
+		newHeuristicAtoms.getLeft().put(bodyRepresentingAtom, influencers[idxOn]);
+		newHeuristicAtoms.getRight().put(bodyRepresentingAtom, influencers[idxOff]);
 
 		if (newHeuristicValues.put(bodyRepresentingAtom, HeuristicDirectiveValues.fromHeuristicAtom(groundHeuristicAtom, headId)) != null) {
 			throw oops("Same heuristic body-representing atom used for two heuristic directives");
