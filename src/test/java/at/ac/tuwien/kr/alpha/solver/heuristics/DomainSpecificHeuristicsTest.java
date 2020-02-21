@@ -85,7 +85,7 @@ public class DomainSpecificHeuristicsTest {
 						"b :- not a." + LS +
 						"#heuristic F a : not b. [2@1]" + LS +
 						"#heuristic F b : not a. [1@1]");
-		solveAndAssertAnswerSets(program, "{ a }", "{ b }");
+		solveAndAssertAnswerSets(program, "{ b }", "{ a }");
 	}
 	
 	@Test
@@ -378,7 +378,7 @@ public class DomainSpecificHeuristicsTest {
 						"{b}." + LS +
 						"#heuristic F a. [2@1]" + LS +
 						"#heuristic F b : FMT a. [1@1]");
-		solveAndAssertAnswerSets(program, "{ }", "{ b }", "{ a }", "{ a, b }");
+		solveAndAssertAnswerSets(program, "{}", "{ b }", "{ a }", "{ a, b }");
 	}
 
 	@Test
@@ -388,7 +388,7 @@ public class DomainSpecificHeuristicsTest {
 						"{b}." + LS +
 						"#heuristic T a. [2@1]" + LS +
 						"#heuristic F b : FMT a. [1@1]");
-		solveAndAssertAnswerSets(program, "{ a }", "{ a, b }", "{ }", "{ b }");
+		solveAndAssertAnswerSets(program, "{ a }", "{ a, b }", "{}", "{ b }");
 	}
 
 	@Test
@@ -396,7 +396,7 @@ public class DomainSpecificHeuristicsTest {
 		Program program = parser.parse(
 				"{a}." + LS +
 						"#heuristic F a : not FMT a.");
-		solveAndAssertAnswerSets(program, "{ }", "{ a }");
+		solveAndAssertAnswerSets(program, "{}", "{ a }");
 	}
 
 	@Test
@@ -404,7 +404,7 @@ public class DomainSpecificHeuristicsTest {
 		Program program = parser.parse(
 				"{a}." + LS +
 						"#heuristic T a : not FMT a.");
-		solveAndAssertAnswerSets(program, "{ a }", "{ }");
+		solveAndAssertAnswerSets(program, "{ a }", "{}");
 	}
 
 	private void solveAndAssertAnswerSets(Program program, String... expectedAnswerSets) {
