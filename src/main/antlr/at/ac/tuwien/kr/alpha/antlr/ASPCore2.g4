@@ -5,8 +5,6 @@ import ASPLexer;
 /* The ASP-Core-2 grammar in ANTLR v4 based on
  * https://www.mat.unical.it/aspcomp2013/files/ASP-CORE-2.01c.pdf
  * (sections 4 and 5, pages 10-12).
- * It is extended a bit to parse widespread syntax (e.g. used by gringo/clasp).
- * It is also extended by heuristic directives for Alpha.
  */
 
 program : statements? query? EOF;
@@ -18,8 +16,7 @@ query : classical_literal QUERY_MARK;
 statement : head DOT                     # statement_fact
           | CONS body DOT                # statement_constraint
           | head CONS body DOT           # statement_rule
-          | WCONS body? DOT weight_annotation        # statement_weightConstraint
-          | directive                    # statement_directive;   // NOT Core2 syntax.
+          | WCONS body? DOT weight_annotation        # statement_weightConstraint;
 
 head : disjunction | choice;
 
@@ -47,9 +44,9 @@ weight_at_level : term (AT term)? (COMMA terms)?;
 
 naf_literals : naf_literal (COMMA naf_literals)?;
 
-naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
+naf_literal : NAF? (classical_literal | builtin_atom);
 
-atom : (external_atom | classical_literal | builtin_atom);
+atom : (classical_literal | builtin_atom);
 
 classical_literal : MINUS? basic_atom;
 
@@ -68,7 +65,6 @@ term : ID                                   # term_const
      | variable                             # term_variable
      | ANONYMOUS_VARIABLE                   # term_anonymousVariable
      | PAREN_OPEN term PAREN_CLOSE          # term_parenthesisedTerm
-     | interval                             # term_interval // Syntax extension.
      | MINUS term                           # term_minusArithTerm
      |<assoc=right> term POWER term         # term_powerArithTerm
      | term (TIMES | DIV | MODULO) term     # term_timesdivmodArithTerm
@@ -78,30 +74,6 @@ term : ID                                   # term_const
 
 interval : (lowerNum=NUMBER | lowerVar=variable) DOT DOT (upperNum=NUMBER | upperVar=variable); // NOT Core2 syntax, but widespread
 
-external_atom : MINUS? AMPERSAND ID (SQUARE_OPEN input = terms SQUARE_CLOSE)? (PAREN_OPEN output = terms PAREN_CLOSE)?; // NOT Core2 syntax.
-
-directive : directive_enumeration | directive_heuristic;  // NOT Core2 syntax, allows solver specific directives. Further directives shall be added here.
-
-directive_enumeration : SHARP 'enumeration_predicate_is' ID DOT;  // NOT Core2 syntax, used for aggregate translation.
-
-directive_heuristic : SHARP 'heuristic' heuristic_head_atom (heuristic_body)? DOT heuristic_weight_annotation?;
-
-heuristic_head_atom : heuristic_head_sign? basic_atom;
-
-heuristic_head_sign : HEU_SIGN_T | HEU_SIGN_F;
-
-heuristic_body : COLON heuristic_body_literal (COMMA heuristic_body_literal)*;
-
-heuristic_body_literal : NAF? heuristic_body_atom;
-
-heuristic_body_atom : (heuristic_body_sign? basic_atom) | builtin_atom | external_atom;
-
-heuristic_body_sign : (HEU_SIGN_T | HEU_SIGN_M | HEU_SIGN_F | HEU_BODY_SIGN)+; // single-char signs have their own classes in the lexer
-
-heuristic_weight_annotation : SQUARE_OPEN heuristic_weight_at_level SQUARE_CLOSE;
-
-heuristic_weight_at_level : term (AT term)?;
-
 basic_terms : basic_term (COMMA basic_terms)? ;
 
 basic_term : ground_term | variable_term;
@@ -110,7 +82,7 @@ ground_term : /*SYMBOLIC_CONSTANT*/ ID | QUOTED_STRING | MINUS? NUMBER;
 
 variable_term : variable | ANONYMOUS_VARIABLE;
 
-variable : HEU_SIGN_T | HEU_SIGN_M | HEU_SIGN_F | HEU_BODY_SIGN | VARIABLE; // to be able to treat heuristic sign keywords as variable identifiers
+variable : VARIABLE;
 
 answer_set : CURLY_OPEN classical_literal? (COMMA classical_literal)* CURLY_CLOSE;
 
