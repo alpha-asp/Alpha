@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2018, the Alpha Team.
+/*
+ * Copyright (c) 2017-2020, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -36,9 +36,16 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
@@ -63,7 +70,7 @@ public class NoGoodGenerator {
 
 	/**
 	 * Generates all NoGoods resulting from a non-ground rule and a variable substitution.
-	 * 
+	 *
 	 * @param nonGroundRule
 	 *          the non-ground rule.
 	 * @param substitution
@@ -88,7 +95,7 @@ public class NoGoodGenerator {
 
 		final Atom groundHeadAtom = nonGroundRule.getHeadAtom().substitute(substitution);
 		final int headId = atomStore.putIfAbsent(groundHeadAtom);
-		
+
 		// Prepare atom representing the rule body.
 		final RuleAtom bodyAtom = new RuleAtom(nonGroundRule, substitution);
 
@@ -104,7 +111,7 @@ public class NoGoodGenerator {
 		final int headLiteral = atomToLiteral(atomStore.putIfAbsent(nonGroundRule.getHeadAtom().substitute(substitution)));
 
 		choiceRecorder.addHeadToBody(headId, atomOf(bodyRepresentingLiteral));
-		
+
 		// Create a nogood for the head.
 		result.add(NoGood.headFirst(negateLiteral(headLiteral), bodyRepresentingLiteral));
 
@@ -119,6 +126,7 @@ public class NoGoodGenerator {
 		// If the rule head is unique, add support.
 		if (uniqueGroundRulePerGroundHead.contains(nonGroundRule)) {
 			result.add(NoGood.support(headLiteral, bodyRepresentingLiteral));
+			result.add(NoGood.support(negateLiteral(headLiteral), negateLiteral(bodyRepresentingLiteral)));
 		}
 
 		// If the body of the rule contains negation, add choices.
