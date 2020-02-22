@@ -49,7 +49,7 @@ public class DirectFunctionalDependency {
 				EnumerationAtom enumerationAtom = (EnumerationAtom) literal.getAtom();
 				Term identifier = enumerationAtom.getTerms().get(0).substitute(extendedSubstitution);
 				Term term = enumerationAtom.getTerms().get(1).substitute(extendedSubstitution);
-				Term index = enumerationAtom.getTerms().get(3).substitute(extendedSubstitution);
+				Term index = enumerationAtom.getTerms().get(2).substitute(extendedSubstitution);
 
 				// Distinguish between the two possible FDs for EnumerationLiterals.
 				if (identifier.isGround() && term.isGround()) {
