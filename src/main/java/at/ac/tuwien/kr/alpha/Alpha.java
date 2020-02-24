@@ -113,7 +113,7 @@ public class Alpha {
 		grounderHeuristicConfiguration.setAccumulatorEnabled(this.config.isGrounderAccumulatorEnabled());
 
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, grounderHeuristicConfiguration, doDebugChecks);
+		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, grounderHeuristicConfiguration, this.config.getCompletionConfiguration(), doDebugChecks);
 
 		return SolverFactory.getInstance(this.config, atomStore, grounder);
 	}

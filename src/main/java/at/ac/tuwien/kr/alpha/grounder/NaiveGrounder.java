@@ -112,14 +112,14 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final GrounderHeuristicsConfiguration heuristicsConfiguration;
 
 	public NaiveGrounder(Program program, AtomStore atomStore, boolean debugInternalChecks, Bridge... bridges) {
-		this(program, atomStore, new GrounderHeuristicsConfiguration(), debugInternalChecks, bridges);
+		this(program, atomStore, new GrounderHeuristicsConfiguration(), debugInternalChecks, new CompletionConfiguration(), bridges);
 	}
 
-	private NaiveGrounder(Program program, AtomStore atomStore, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, Bridge... bridges) {
-		this(program, atomStore, p -> true, heuristicsConfiguration, false, debugInternalChecks, bridges);
+	private NaiveGrounder(Program program, AtomStore atomStore, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, CompletionConfiguration completionConfiguration, Bridge... bridges) {
+		this(program, atomStore, p -> true, heuristicsConfiguration, false, debugInternalChecks, completionConfiguration, bridges);
 	}
 
-	NaiveGrounder(Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean useCountingGrid, boolean debugInternalChecks, Bridge... bridges) {
+	NaiveGrounder(Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean useCountingGrid, boolean debugInternalChecks, CompletionConfiguration completionConfiguration, Bridge... bridges) {
 		super(filter, bridges);
 		this.atomStore = atomStore;
 		this.heuristicsConfiguration = heuristicsConfiguration;
@@ -136,7 +136,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		initializeFactsAndRules(program);
 
 		choiceRecorder = new ChoiceRecorder(atomStore);
-		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, programAnalysis);
+		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, programAnalysis, completionConfiguration);
 
 		this.debugInternalChecks = debugInternalChecks;
 	}
@@ -703,12 +703,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		Atom atomToComplete = atomStore.get(atom);
 		LOGGER.debug("Trying to complete for atom {}/{}.", atom, atomToComplete);
 		// Check if all rules deriving the atom are fully non-projective.
-		HashSet<NonGroundRule> nonGroundRules = programAnalysis.getPredicateDefiningRules().get(atomToComplete.getPredicate());
-		if (nonGroundRules.isEmpty()) {
-			return Collections.emptyList();
-		}
-		NonGroundRule nonGroundRule = nonGroundRules.iterator().next();
-		LinkedHashSet<NonGroundRule> rulesDerivingSameHead = programAnalysis.getRulesDerivingSameHead().get(nonGroundRule);
+		Set<NonGroundRule> rulesDerivingSameHead = programAnalysis.getRulesUnifyingWithGroundHead(atomToComplete);
 		if (rulesDerivingSameHead.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -779,6 +774,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				}
 			}
 		}
+	}
+
+	@Override
+	public Set<Integer> getNewlyCompletedAtoms() {
+		return noGoodGenerator.getCompletionGenerator().getNewlyCompletedAtoms();
 	}
 
 	private static class FirstBindingAtom {

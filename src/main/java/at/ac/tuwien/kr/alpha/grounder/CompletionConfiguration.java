@@ -29,6 +29,8 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.grounder.CompletionConfiguration.Strategy.Both;
+import static at.ac.tuwien.kr.alpha.grounder.CompletionConfiguration.Strategy.OnlyCompletion;
+import static at.ac.tuwien.kr.alpha.grounder.CompletionConfiguration.Strategy.OnlyJustification;
 
 /**
  * Contains configuration parameters for the generation of completion nogoods and justifications.
@@ -48,6 +50,8 @@ public class CompletionConfiguration {
 	private boolean enableCompletionForMultipleRules = true;
 	private boolean enableCompletionForDirectFunctionalDependencies = true;
 	private boolean enableCompletionForSolvedPredicates = true;
+	private boolean enableBackwardsCompletion = true;
+	private boolean enableAtConflictAfterClosing = true;
 	private Strategy strategy = DEFAULT_STRATEGY;
 
 	/**
@@ -80,10 +84,14 @@ public class CompletionConfiguration {
 		public static String listAllowedValues() {
 			return Arrays.stream(values()).map(Strategy::toString).collect(Collectors.joining(", "));
 		}
+	}
 
-		public boolean isJustificationDisabled() {
-			return this == None || this == OnlyCompletion;
-		}
+	public boolean isJustificationEnabled() {
+		return strategy == Both || strategy == OnlyJustification;
+	}
+
+	public boolean isCompletionEnabled() {
+		return strategy == Both || strategy == OnlyCompletion;
 	}
 
 	public boolean isEnableCompletionForSingleNonProjectiveRule() {
@@ -91,6 +99,7 @@ public class CompletionConfiguration {
 	}
 
 	public void setEnableCompletionForSingleNonProjectiveRule(boolean enableCompletionForSingleNonProjectiveRule) {
+		ensureCompletionEnabled();
 		this.enableCompletionForSingleNonProjectiveRule = enableCompletionForSingleNonProjectiveRule;
 	}
 
@@ -99,6 +108,7 @@ public class CompletionConfiguration {
 	}
 
 	public void setEnableCompletionForMultipleRules(boolean enableCompletionForMultipleRules) {
+		ensureCompletionEnabled();
 		this.enableCompletionForMultipleRules = enableCompletionForMultipleRules;
 	}
 
@@ -107,6 +117,7 @@ public class CompletionConfiguration {
 	}
 
 	public void setEnableCompletionForDirectFunctionalDependencies(boolean enableCompletionForDirectFunctionalDependencies) {
+		ensureCompletionEnabled();
 		this.enableCompletionForDirectFunctionalDependencies = enableCompletionForDirectFunctionalDependencies;
 	}
 
@@ -115,7 +126,35 @@ public class CompletionConfiguration {
 	}
 
 	public void setEnableCompletionForSolvedPredicates(boolean enableCompletionForSolvedPredicates) {
+		ensureCompletionEnabled();
 		this.enableCompletionForSolvedPredicates = enableCompletionForSolvedPredicates;
+	}
+
+	public void setEnableBackwardsCompletion(boolean enableBackwardsCompletion) {
+		ensureCompletionEnabled();
+		this.enableBackwardsCompletion = enableBackwardsCompletion;
+	}
+
+	private void ensureCompletionEnabled() {
+		if (!isCompletionEnabled()) {
+			if (isJustificationEnabled()) {
+				strategy = Both;
+			} else {
+				strategy = OnlyCompletion;
+			}
+		}
+	}
+
+	public boolean isEnableBackwardsCompletion() {
+		return isCompletionEnabled() && enableBackwardsCompletion;
+	}
+
+	public boolean isEnableAtConflictAfterClosing() {
+		return enableAtConflictAfterClosing && (isJustificationEnabled() || isCompletionEnabled());
+	}
+
+	public void setEnableAtConflictAfterClosing(boolean enableAtConflictAfterClosing) {
+		this.enableAtConflictAfterClosing = enableAtConflictAfterClosing;
 	}
 
 	public Strategy getStrategy() {
@@ -137,6 +176,7 @@ public class CompletionConfiguration {
 				",enableCompletionForMultipleRules=" + enableCompletionForMultipleRules +
 				",enableCompletionForDirectFunctionalDependencies=" + enableCompletionForDirectFunctionalDependencies +
 				",enableCompletionForSolvedPredicates=" + enableCompletionForSolvedPredicates +
+				",enableBackwardsCompletion=" + enableBackwardsCompletion +
 				",strategy=" + strategy +
 				")";
 	}

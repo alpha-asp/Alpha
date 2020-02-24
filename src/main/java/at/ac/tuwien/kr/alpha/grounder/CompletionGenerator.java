@@ -6,9 +6,12 @@ import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
 /**
  * Generates completion nogoods if possible.
@@ -43,22 +46,33 @@ public class CompletionGenerator {
 
 	private final ProgramAnalysis programAnalysis;
 	private final Map<Atom, PartialCompletion> partiallyCompletedCompletions = new HashMap<>();
+	private final CompletionConfiguration completionConfiguration;
+	private HashSet<Integer> newlyCompletedAtoms = new HashSet<>();
 
-	CompletionGenerator(ProgramAnalysis programAnalysis) {
+	CompletionGenerator(ProgramAnalysis programAnalysis, CompletionConfiguration completionConfiguration) {
 		this.programAnalysis = programAnalysis;
+		this.completionConfiguration = completionConfiguration;
 	}
 
 	List<NoGood> generateCompletionNoGoods(NonGroundRule nonGroundRule, Atom groundedHeadAtom, int headLiteral, int bodyRepresentingLiteral) {
+		if (!completionConfiguration.isCompletionEnabled()) {
+			return Collections.emptyList();
+		}
 		if (!programAnalysis.isRuleFullyNonProjective(nonGroundRule)) {
 			return Collections.emptyList();
 		}
 
 		// Rule is fully non-projective at this point.
 
-		LinkedHashSet<NonGroundRule> rulesDerivingSameHead = programAnalysis.getRulesDerivingSameHead().get(nonGroundRule);
+		Set<NonGroundRule> rulesDerivingSameHead = programAnalysis.getRulesUnifyingWithGroundHead(groundedHeadAtom);
 		if (rulesDerivingSameHead.size() == 1) {
 			// Rule has unique-head predicate property.
+			newlyCompletedAtoms.add(atomOf(headLiteral));
 			return Collections.singletonList(NoGood.support(headLiteral, bodyRepresentingLiteral));
+		}
+		// Stop if only unique-head completion nogoods are configured.
+		if (!completionConfiguration.isEnableCompletionForMultipleRules()) {
+			return Collections.emptyList();
 		}
 
 		// If multiple rules can derive the same head, add all their respective bodyRepresenting literals to the completion nogood.
@@ -75,6 +89,7 @@ public class CompletionGenerator {
 			partialCompletion.addBodyLiteral(bodyRepresentingLiteral);
 			// Check if partial completion is a full completion now.
 			if (partialCompletion.isComplete()) {
+				newlyCompletedAtoms.add(atomOf(headLiteral));
 				partiallyCompletedCompletions.remove(groundedHeadAtom);
 				// Generate completion NoGood.
 				return Collections.singletonList(NoGood.support(headLiteral, partialCompletion.getGeneratedBodyLiterals()));
@@ -82,5 +97,14 @@ public class CompletionGenerator {
 		}
 		// No full completion NoGood can be generated yet.
 		return Collections.emptyList();
+	}
+
+	HashSet<Integer> getNewlyCompletedAtoms() {
+		if (newlyCompletedAtoms.isEmpty()) {
+			return newlyCompletedAtoms;
+		}
+		HashSet<Integer> ret = newlyCompletedAtoms;
+		newlyCompletedAtoms = new HashSet<>();
+		return ret;
 	}
 }

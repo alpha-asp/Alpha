@@ -133,6 +133,12 @@ public class CommandLineParser {
 	private static final Option OPT_COMPLETION_DISABLE_SOLVED_PREDICATES = Option.builder("dcsp").longOpt("disableCompletionForSolvedPredicates")
 			.desc("disables the generation of completion nogoods for solved predicates")
 			.build();
+	private static final Option OPT_COMPLETION_DISABLE_BACKWARDS_COMPLETION = Option.builder("dcbw").longOpt("disableCompletionBackwards")
+			.desc("disables the backwards generation of completion nogoods")
+			.build();
+	private static final Option OPT_COMPLETION_JUSTIFICATION_DISABLE_AFTER_CLOSING = Option.builder().longOpt("disableCompletionJustificationAfterClosing")
+			.desc("disables completion/justification at conflicts after closing")
+			.build();
 	private static final Option OPT_COMPLETION_JUSTIFICATION_STRATEGY = Option.builder("cjs").longOpt("completionJustificationStrategy").hasArg(true).argName("strategy")
 			.desc("determines if completion nogoods and/or justifications shall be generated at all (allowed values: " + Strategy.listAllowedValues() + "; default: " + CompletionConfiguration.DEFAULT_STRATEGY.name() + ")")
 			.build();
@@ -172,6 +178,8 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_COMPLETION_DISABLE_MULTIPLE_RULES);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_COMPLETION_DISABLE_DIRECT_FUNCTIONAL_DEPENDENCIES);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_COMPLETION_DISABLE_SOLVED_PREDICATES);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_COMPLETION_DISABLE_BACKWARDS_COMPLETION);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_COMPLETION_JUSTIFICATION_DISABLE_AFTER_CLOSING);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_COMPLETION_JUSTIFICATION_STRATEGY);
 	}
 
@@ -222,6 +230,8 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_COMPLETION_DISABLE_MULTIPLE_RULES.getOpt(), this::handleCompletionDisableMultipleRules);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_COMPLETION_DISABLE_DIRECT_FUNCTIONAL_DEPENDENCIES.getOpt(), this::handleCompletionDisableDirectFunctionalDependencies);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_COMPLETION_DISABLE_SOLVED_PREDICATES.getOpt(), this::handleCompletionDisableSolvedPredicates);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_COMPLETION_DISABLE_BACKWARDS_COMPLETION.getOpt(), this::handleCompletionDisableBackwardsCompletion);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_COMPLETION_JUSTIFICATION_DISABLE_AFTER_CLOSING.getOpt(), this::handleCompletionDisableAfterClosing);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_COMPLETION_JUSTIFICATION_STRATEGY.getOpt(), this::handleCompletionJustificationStrategy);
 
 		this.inputOptionHandlers.put(CommandLineParser.OPT_NUM_ANSWER_SETS.getOpt(), this::handleNumAnswerSets);
@@ -426,6 +436,14 @@ public class CommandLineParser {
 
 	private void handleCompletionDisableSolvedPredicates(Option option, SystemConfig cfg) {
 		cfg.getCompletionConfiguration().setEnableCompletionForSolvedPredicates(false);
+	}
+
+	private void handleCompletionDisableBackwardsCompletion(Option option, SystemConfig cfg) {
+		cfg.getCompletionConfiguration().setEnableBackwardsCompletion(false);
+	}
+
+	private void handleCompletionDisableAfterClosing(Option option, SystemConfig cfg) {
+		cfg.getCompletionConfiguration().setEnableAtConflictAfterClosing(false);
 	}
 
 	private void handleCompletionJustificationStrategy(Option option, SystemConfig cfg) throws ParseException {

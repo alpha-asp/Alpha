@@ -97,7 +97,6 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private int conflictsAfterClosing;
 	private final CompletionConfiguration completionConfiguration;
 	private final Set<Integer> atomsCompleteOrTried = new HashSet<>();
-	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
 	private final boolean disableNoGoodDeletion;
 
 	private final PerformanceLog performanceLog;
@@ -202,6 +201,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				grounder.updateAssignment(assignment.getNewPositiveAssignmentsIterator());
 
 				Map<Integer, NoGood> obtained = grounder.getNoGoods(assignment);
+				if (completionConfiguration.isCompletionEnabled() && grounder instanceof ProgramAnalyzingGrounder) {
+					atomsCompleteOrTried.addAll(((ProgramAnalyzingGrounder)grounder).getNewlyCompletedAtoms());
+				}
 				didChange = !obtained.isEmpty();
 				if (!ingest(obtained)) {
 					logStats();
@@ -303,9 +305,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private boolean justifyMbtAndBacktrack() {
 		mbtAtFixpoint++;
 
-		CompletionConfiguration.Strategy completionStrategy = completionConfiguration.getStrategy();
-		// Run justification only if enabled and possible.
-		if (completionStrategy == CompletionConfiguration.Strategy.None
+		// Run justification/completion only if enabled and possible.
+		if (!(completionConfiguration.isCompletionEnabled() || completionConfiguration.isJustificationEnabled())
 			|| !(grounder instanceof ProgramAnalyzingGrounder)) {
 			return abortJustifyWithBacktrack();
 		}
@@ -313,29 +314,31 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		Map<Integer, NoGood> obtained = new LinkedHashMap<>();
 
 		// Depending on configuration, run completion first and if that fails run justification.
-		boolean completionFailed = false;
-		if (completionStrategy == CompletionConfiguration.Strategy.OnlyCompletion || completionStrategy == CompletionConfiguration.Strategy.Both) {
+		boolean didComplete = false;
+		if (completionConfiguration.isCompletionEnabled() && completionConfiguration.isEnableBackwardsCompletion()) {
 			// Pick an MBT assigned atom that is not yet completed and has not been tried to be completed before.
 			int atomToJustify = assignment.getBasicAtomAssignedMBT(atomsCompleteOrTried);
-			if (atomToJustify != -1) {
+			// Try completing all atoms that are MBT assigned.
+			while (atomToJustify != -1) {
 				atomsCompleteOrTried.add(atomToJustify);
 				// Try to complete the atom.
 				List<NoGood> completionAndRules = analyzingGrounder.completeAndGroundRulesFor(atomToJustify);
 				for (NoGood completionAndRule : completionAndRules) {
 					obtained.put(grounder.register(completionAndRule), completionAndRule);
 				}
-				if (completionAndRules.isEmpty()) {
-					completionFailed = true;
+				if (!completionAndRules.isEmpty()) {
+					didComplete = true;
 				}
-			} else {
-				completionFailed = true;
+				assignment.growForMaxAtomId();	// Completion may create new atoms, inform assignment.
+				atomToJustify = assignment.getBasicAtomAssignedMBT(atomsCompleteOrTried);
 			}
 		}
-		if (completionFailed && completionStrategy != CompletionConfiguration.Strategy.Both) {
+		// Abort if justification is not enabled and completion failed.
+		if (!didComplete && !completionConfiguration.isJustificationEnabled()) {
 			return abortJustifyWithBacktrack();
 		}
-		if (completionStrategy == CompletionConfiguration.Strategy.OnlyJustification
-			|| (completionStrategy == CompletionConfiguration.Strategy.Both && completionFailed)) {
+		// Run justification now in case completion failed.
+		if (!didComplete) {
 			// Pick one MBT assigned atom regardless if we already tried to complete it.
 			int atomToJustify = assignment.getBasicAtomAssignedMBT(Collections.emptySet());
 			LOGGER.debug("Running justification analysis algorithm.");
@@ -370,8 +373,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	private boolean treatConflictAfterClosing(Antecedent violatedNoGood) {
-		if (disableJustificationAfterClosing
-				|| completionConfiguration.getStrategy().isJustificationDisabled()
+		if (!completionConfiguration.isEnableAtConflictAfterClosing()
 				|| !(grounder instanceof ProgramAnalyzingGrounder)) {
 			// Will not learn from violated NoGood, do simple backtrack.
 			LOGGER.debug("NoGood was violated after all unassigned atoms were assigned to false; will not learn from it; skipping.");
@@ -430,12 +432,23 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 		toJustify.addAll(ruleAtomReplacements);
 		for (Integer literalToJustify : toJustify) {
-			LOGGER.debug("Searching for justification(s) of {} / {}", toJustify, atomStore.atomToString(atomOf(literalToJustify)));
-			Set<Literal> reasonsForUnjustified = analyzingGrounder.justifyAtom(atomOf(literalToJustify), assignment);
-			NoGood noGood = noGoodFromJustificationReasons(atomOf(literalToJustify), reasonsForUnjustified);
-			int noGoodID = grounder.register(noGood);
-			obtained.put(noGoodID, noGood);
-			LOGGER.debug("Learned NoGood is: {}", atomStore.noGoodToString(noGood));
+			if (completionConfiguration.isJustificationEnabled()) {
+				LOGGER.debug("Searching for justification(s) of {} / {}", toJustify, atomStore.atomToString(atomOf(literalToJustify)));
+				Set<Literal> reasonsForUnjustified = analyzingGrounder.justifyAtom(atomOf(literalToJustify), assignment);
+				NoGood noGood = noGoodFromJustificationReasons(atomOf(literalToJustify), reasonsForUnjustified);
+				int noGoodID = grounder.register(noGood);
+				obtained.put(noGoodID, noGood);
+				LOGGER.debug("Learned NoGood is: {}", atomStore.noGoodToString(noGood));
+			} else if (completionConfiguration.isEnableBackwardsCompletion()) {
+				// Do completion.
+				int atomToJustify = atomOf(literalToJustify);
+				atomsCompleteOrTried.add(atomToJustify);
+				// Try to complete the atom.
+				List<NoGood> completionAndRules = analyzingGrounder.completeAndGroundRulesFor(atomToJustify);
+				for (NoGood completionAndRule : completionAndRules) {
+					obtained.put(grounder.register(completionAndRule), completionAndRule);
+				}
+			}
 		}
 		// Backtrack to remove the violation.
 		if (!backtrack()) {

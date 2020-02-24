@@ -67,12 +67,12 @@ public class NoGoodGenerator {
 	private final ProgramAnalysis programAnalysis;
 	private final CompletionGenerator completionGenerator;
 
-	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, ProgramAnalysis programAnalysis) {
+	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, ProgramAnalysis programAnalysis, CompletionConfiguration completionConfiguration) {
 		this.atomStore = atomStore;
 		this.choiceRecorder = recorder;
 		this.factsFromProgram = factsFromProgram;
 		this.programAnalysis = programAnalysis;
-		completionGenerator = new CompletionGenerator(programAnalysis);
+		completionGenerator = new CompletionGenerator(programAnalysis, completionConfiguration);
 	}
 
 	/**
@@ -213,6 +213,8 @@ public class NoGoodGenerator {
 					// This FixedInterpretationLiteral is not satisfied by the ground substitution we have, the rule cannot fire.
 					return null;
 				}
+				// FixedInterpretationLiteral has substitutions, i.e., it is satisfied by the ground substitution, continue with next atom.
+				continue;
 			}
 			// Skip the special enumeration atom.
 			if (atom instanceof EnumerationAtom) {
@@ -242,5 +244,9 @@ public class NoGoodGenerator {
 	private boolean existsRuleWithPredicateInHead(final Predicate predicate) {
 		final HashSet<NonGroundRule> definingRules = programAnalysis.getPredicateDefiningRules().get(predicate);
 		return definingRules != null && !definingRules.isEmpty();
+	}
+
+	CompletionGenerator getCompletionGenerator() {
+		return completionGenerator;
 	}
 }

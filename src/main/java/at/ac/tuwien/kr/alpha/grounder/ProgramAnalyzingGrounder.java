@@ -41,4 +41,12 @@ public interface ProgramAnalyzingGrounder extends Grounder {
 	 * @return an empty list if completion is not possible, otherwise the completion nogood and all nogoods resulting from rules deriving the atom.
 	 */
 	List<NoGood> completeAndGroundRulesFor(int atom);
+
+	/**
+	 * Returns a set of atomIds that have been completed (or attempted to be completed) during recent grounding.
+	 * Newly completed atoms are only reported once. Calling completeAndGroundRulesFor for an atomId that got
+	 * reported as newly completed previously is useless.
+	 * @return a set of atomIds previously completed.
+	 */
+	Set<Integer> getNewlyCompletedAtoms();
 }
