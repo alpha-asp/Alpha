@@ -126,7 +126,6 @@ public class NoGoodGenerator {
 		// If the rule head is unique, add support.
 		if (uniqueGroundRulePerGroundHead.contains(nonGroundRule)) {
 			result.add(NoGood.support(headLiteral, bodyRepresentingLiteral));
-			result.add(NoGood.support(negateLiteral(headLiteral), negateLiteral(bodyRepresentingLiteral)));
 		}
 
 		// If the body of the rule contains negation, add choices.
