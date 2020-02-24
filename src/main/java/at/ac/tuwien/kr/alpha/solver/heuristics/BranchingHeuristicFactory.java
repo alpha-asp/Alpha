@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2019 Siemens AG
+/*
+ * Copyright (c) 2017-2020 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -40,18 +40,31 @@ public final class BranchingHeuristicFactory {
 		NAIVE,
 		BERKMIN,
 		BERKMINLITERAL,
+		@Deprecated
 		DD,
+		@Deprecated
 		DD_SUM,
+		@Deprecated
 		DD_AVG,
+		@Deprecated
 		DD_MAX,
+		@Deprecated
 		DD_MIN,
+		@Deprecated
 		DD_PYRO,
+		@Deprecated
 		GDD,
+		@Deprecated
 		GDD_SUM,
+		@Deprecated
 		GDD_AVG,
+		@Deprecated
 		GDD_MAX,
+		@Deprecated
 		GDD_MIN,
+		@Deprecated
 		GDD_PYRO,
+		@Deprecated
 		ALPHA_ACTIVE_RULE,
 //		ALPHA_HEAD_MBT,	// temporarily disabled due to poor performance (TODO: address https://github.com/alpha-asp/Alpha/issues/181)
 		VSIDS,

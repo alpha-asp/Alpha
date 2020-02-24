@@ -98,7 +98,6 @@ public class NoGoodGenerator {
 		}
 
 		final Atom groundHeadAtom = nonGroundRule.getHeadAtom().substitute(substitution);
-
 		// Prepare atom representing the rule body.
 		final RuleAtom bodyAtom = new RuleAtom(nonGroundRule, substitution);
 
@@ -140,7 +139,6 @@ public class NoGoodGenerator {
 		final int bodyRepresentingLiteral = Literals.atomToLiteral(bodyRepresentingAtom);
 
 		choiceRecorder.addHeadToBody(headId, bodyRepresentingAtom);
-
 		// Create a nogood for the head.
 		result.add(NoGoodCreator.headFirst(negateLiteral(headLiteral), bodyRepresentingLiteral));
 
