@@ -53,13 +53,11 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.emptySet;
 import static org.junit.Assert.assertEquals;
@@ -67,15 +65,15 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public abstract class AbstractSolverTests {
 
-	private static final Collection<Heuristic> NON_DEPRECATED_HEURISTICS;
+	private static final String[] NON_DEPRECATED_HEURISTICS_NAMES;
 	static {
-		final List<Heuristic> nonDeprecatedHeuristics = new ArrayList<>();
+		final List<String> nonDeprecatedHeuristicsNames = new ArrayList<>();
 		for (Field field : Heuristic.class.getFields()) {
 			if (field.getAnnotation(Deprecated.class) == null) {
-				nonDeprecatedHeuristics.add(Heuristic.valueOf(field.getName()));
+				nonDeprecatedHeuristicsNames.add(field.getName());
 			}
 		}
-		NON_DEPRECATED_HEURISTICS = Collections.unmodifiableCollection(nonDeprecatedHeuristics);
+		NON_DEPRECATED_HEURISTICS_NAMES = nonDeprecatedHeuristicsNames.toArray(new String[]{});
 	}
 
 	private final ProgramParser parser = new ProgramParser();
@@ -138,7 +136,7 @@ public abstract class AbstractSolverTests {
 		}
 		// "NON_DEPRECATED" is a magic value that will be expanded to contain all non-deprecated heuristics.
 		if ("NON_DEPRECATED".equals(heuristics[0])) {
-			heuristics = NON_DEPRECATED_HEURISTICS.stream().map(Heuristic::name).collect(Collectors.toList()).toArray(heuristics);
+			heuristics = NON_DEPRECATED_HEURISTICS_NAMES;
 		}
 
 		// NOTE:
