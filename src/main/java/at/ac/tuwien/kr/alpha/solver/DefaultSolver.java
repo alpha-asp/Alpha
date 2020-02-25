@@ -306,7 +306,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		mbtAtFixpoint++;
 
 		// Run justification/completion only if enabled and possible.
-		if (!(completionConfiguration.isCompletionEnabled() || completionConfiguration.isJustificationEnabled())
+		if (!(completionConfiguration.isEnableBackwardsCompletion() || completionConfiguration.isJustificationEnabled())
 			|| !(grounder instanceof ProgramAnalyzingGrounder)) {
 			return abortJustifyWithBacktrack();
 		}
@@ -315,7 +315,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 		// Depending on configuration, run completion first and if that fails run justification.
 		boolean didComplete = false;
-		if (completionConfiguration.isCompletionEnabled() && completionConfiguration.isEnableBackwardsCompletion()) {
+		if (completionConfiguration.isEnableBackwardsCompletion()) {
 			// Pick an MBT assigned atom that is not yet completed and has not been tried to be completed before.
 			int atomToJustify = assignment.getBasicAtomAssignedMBT(atomsCompleteOrTried);
 			// Try completing all atoms that are MBT assigned.
@@ -432,22 +432,26 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 		toJustify.addAll(ruleAtomReplacements);
 		for (Integer literalToJustify : toJustify) {
-			if (completionConfiguration.isJustificationEnabled()) {
-				LOGGER.debug("Searching for justification(s) of {} / {}", toJustify, atomStore.atomToString(atomOf(literalToJustify)));
-				Set<Literal> reasonsForUnjustified = analyzingGrounder.justifyAtom(atomOf(literalToJustify), assignment);
-				NoGood noGood = noGoodFromJustificationReasons(atomOf(literalToJustify), reasonsForUnjustified);
-				int noGoodID = grounder.register(noGood);
-				obtained.put(noGoodID, noGood);
-				LOGGER.debug("Learned NoGood is: {}", atomStore.noGoodToString(noGood));
-			} else if (completionConfiguration.isEnableBackwardsCompletion()) {
-				// Do completion.
+			boolean didComplete = false;
+			// Do completion if enabled.
+			if (completionConfiguration.isCompletionEnabled()) {
 				int atomToJustify = atomOf(literalToJustify);
 				atomsCompleteOrTried.add(atomToJustify);
 				// Try to complete the atom.
 				List<NoGood> completionAndRules = analyzingGrounder.completeAndGroundRulesFor(atomToJustify);
 				for (NoGood completionAndRule : completionAndRules) {
 					obtained.put(grounder.register(completionAndRule), completionAndRule);
+					didComplete = true;
 				}
+			}
+			// If completion failed, also do justification if enabled.
+			if (completionConfiguration.isJustificationEnabled() && !didComplete) {
+				LOGGER.debug("Searching for justification(s) of {} / {}", toJustify, atomStore.atomToString(atomOf(literalToJustify)));
+				Set<Literal> reasonsForUnjustified = analyzingGrounder.justifyAtom(atomOf(literalToJustify), assignment);
+				NoGood noGood = noGoodFromJustificationReasons(atomOf(literalToJustify), reasonsForUnjustified);
+				int noGoodID = grounder.register(noGood);
+				obtained.put(noGoodID, noGood);
+				LOGGER.debug("Learned NoGood is: {}", atomStore.noGoodToString(noGood));
 			}
 		}
 		// Backtrack to remove the violation.

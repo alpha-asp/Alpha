@@ -95,58 +95,43 @@ public class CompletionConfiguration {
 	}
 
 	public boolean isEnableCompletionForSingleNonProjectiveRule() {
-		return enableCompletionForSingleNonProjectiveRule;
+		return isCompletionEnabled() && enableCompletionForSingleNonProjectiveRule;
 	}
 
 	public void setEnableCompletionForSingleNonProjectiveRule(boolean enableCompletionForSingleNonProjectiveRule) {
-		ensureCompletionEnabled();
 		this.enableCompletionForSingleNonProjectiveRule = enableCompletionForSingleNonProjectiveRule;
 	}
 
 	public boolean isEnableCompletionForMultipleRules() {
-		return enableCompletionForMultipleRules;
+		return isCompletionEnabled() && enableCompletionForMultipleRules;
 	}
 
 	public void setEnableCompletionForMultipleRules(boolean enableCompletionForMultipleRules) {
-		ensureCompletionEnabled();
 		this.enableCompletionForMultipleRules = enableCompletionForMultipleRules;
 	}
 
 	public boolean isEnableCompletionForDirectFunctionalDependencies() {
-		return enableCompletionForDirectFunctionalDependencies;
+		return isCompletionEnabled() && enableCompletionForDirectFunctionalDependencies;
 	}
 
 	public void setEnableCompletionForDirectFunctionalDependencies(boolean enableCompletionForDirectFunctionalDependencies) {
-		ensureCompletionEnabled();
 		this.enableCompletionForDirectFunctionalDependencies = enableCompletionForDirectFunctionalDependencies;
 	}
 
 	public boolean isEnableCompletionForSolvedPredicates() {
-		return enableCompletionForSolvedPredicates;
+		return isCompletionEnabled() && enableCompletionForSolvedPredicates;
 	}
 
 	public void setEnableCompletionForSolvedPredicates(boolean enableCompletionForSolvedPredicates) {
-		ensureCompletionEnabled();
 		this.enableCompletionForSolvedPredicates = enableCompletionForSolvedPredicates;
-	}
-
-	public void setEnableBackwardsCompletion(boolean enableBackwardsCompletion) {
-		ensureCompletionEnabled();
-		this.enableBackwardsCompletion = enableBackwardsCompletion;
-	}
-
-	private void ensureCompletionEnabled() {
-		if (!isCompletionEnabled()) {
-			if (isJustificationEnabled()) {
-				strategy = Both;
-			} else {
-				strategy = OnlyCompletion;
-			}
-		}
 	}
 
 	public boolean isEnableBackwardsCompletion() {
 		return isCompletionEnabled() && enableBackwardsCompletion;
+	}
+
+	public void setEnableBackwardsCompletion(boolean enableBackwardsCompletion) {
+		this.enableBackwardsCompletion = enableBackwardsCompletion;
 	}
 
 	public boolean isEnableAtConflictAfterClosing() {
