@@ -55,6 +55,26 @@ public final class AspStandardLibrary {
 		return ExternalUtils.wrapAsSet(terms);
 	}
 
+	/**
+	 * Compares two datetimes and returns true iff the first datetime (dt1) is
+	 * before the second datetime (dt2). Both datetimes are represented as six
+	 * integers each, referring to years, months, days, hours, minutes and seconds
+	 * respectively.
+	 * 
+	 * @param dt1Year   the year field for dt1
+	 * @param dt1Month  the month field for dt1
+	 * @param dt1Day    the day field for dt1
+	 * @param dt1Hour   the hour field for dt1
+	 * @param dt1Minute the minute field for dt1
+	 * @param dt1Second the second field for dt1
+	 * @param dt2Year   the year field for dt2
+	 * @param dt2Month  the month field for dt2
+	 * @param dt2Day    the day field for dt2
+	 * @param dt2Hour   the hour field for dt2
+	 * @param dt2Minute the minute field for dt2
+	 * @param dt2Second the second field for dt2
+	 * @return true if dt1 is before dt2 in time, false otherwise
+	 */
 	@Predicate
 	public static boolean stdlib_datetime_is_before(int dt1Year, int dt1Month, int dt1Day, int dt1Hour, int dt1Minute, int dt1Second,
 			int dt2Year, int dt2Month, int dt2Day, int dt2Hour, int dt2Minute, int dt2Second) {
@@ -63,6 +83,21 @@ public final class AspStandardLibrary {
 		return dt1.isBefore(dt2);
 	}
 
+	/**
+	 * Formats a datetime value represented using six integers as a string according
+	 * to the given pattern. Valid format trings are those accepted by
+	 * {@link DateTimeFormatter.ofPattern}.
+	 * 
+	 * @param year
+	 * @param month
+	 * @param day
+	 * @param hours
+	 * @param minutes
+	 * @param seconds
+	 * @param format
+	 * @return a string representing the given datetime in the format specified by
+	 *         the format string
+	 */
 	@Predicate
 	public static Set<List<ConstantTerm<String>>> stdlib_datetime_to_string(int year, int month, int day, int hours, int minutes, int seconds, String format) {
 		LocalDateTime datetime = LocalDateTime.of(year, month, day, hours, minutes, seconds);
@@ -70,19 +105,28 @@ public final class AspStandardLibrary {
 		return ExternalUtils.wrapAsSet(Terms.asTermList(formatter.format(datetime)));
 	}
 
+	/**
+	 * Checks whether the given string matches the given regex.
+	 */
 	@Predicate
 	public static boolean stdlib_string_matches_regex(String str, String regex) {
-		return false;
+		return str.matches(regex);
 	}
 
+	/**
+	 * Returns the length of the given string
+	 */
 	@Predicate
 	public static Set<List<ConstantTerm<Integer>>> stdlib_string_length(String str) {
-		return null;
+		return ExternalUtils.wrapSingleTerm(ConstantTerm.getInstance(str.length()));
 	}
 
+	/**
+	 * Concatenates the two given strings
+	 */
 	@Predicate
 	public static Set<List<ConstantTerm<String>>> stdlib_string_concat(String s1, String s2) {
-		return null;
+		return ExternalUtils.wrapSingleTerm(ConstantTerm.getInstance(s1 + s2));
 	}
 
 }
