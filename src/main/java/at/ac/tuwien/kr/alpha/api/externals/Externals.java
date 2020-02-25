@@ -5,15 +5,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
 
+import at.ac.tuwien.kr.alpha.api.externals.stdlib.AspStandardLibrary;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -35,20 +35,41 @@ public final class Externals {
 
 	}
 
-	public static Map<String, PredicateInterpretation> scan(String basePackage) {
-		Map<String, PredicateInterpretation> retVal = new HashMap<>();
-		Reflections reflections = new Reflections(
-				new ConfigurationBuilder().setUrls(ClasspathHelper.forPackage(basePackage)).setScanners(new MethodAnnotationsScanner()));
+	/**
+	 * Returns a map of external definitions making up the "standard library" of
+	 * exterals that are always available in programs for Alpha.
+	 * This method scans all predicate-annotated methods in the package holding the
+	 * class {@link AspStandardLibrary}.
+	 */
+	public static Map<String, PredicateInterpretation> getStandardLibraryExternals() {
+		return Externals.scan(AspStandardLibrary.class.getPackage());
+	}
 
+	public static Map<String, PredicateInterpretation> scan(Package basePackage) {
+		Reflections reflections = new Reflections(basePackage.getName(), new MethodAnnotationsScanner());
 		Set<Method> methods = reflections.getMethodsAnnotatedWith(Predicate.class);
+		return Externals.scanMethods(methods);
+	}
 
+	public static Map<String, PredicateInterpretation> scan(Class<?> classWithPredicateMethods) {
+		Method[] methods = classWithPredicateMethods.getMethods();
+		Set<Method> predicateMethods = new HashSet<>();
 		for (Method method : methods) {
-			String name = method.getAnnotation(Predicate.class).name();
+			if (method.isAnnotationPresent(Predicate.class)) {
+				predicateMethods.add(method);
+			}
+		}
+		return Externals.scanMethods(predicateMethods);
+	}
 
+	private static Map<String, PredicateInterpretation> scanMethods(Iterable<Method> methods) {
+		Map<String, PredicateInterpretation> retVal = new HashMap<>();
+		String name;
+		for (Method method : methods) {
+			name = method.getAnnotation(Predicate.class).name();
 			if (name.isEmpty()) {
 				name = method.getName();
 			}
-
 			retVal.put(name, Externals.processPredicateMethod(method));
 		}
 		return retVal;
