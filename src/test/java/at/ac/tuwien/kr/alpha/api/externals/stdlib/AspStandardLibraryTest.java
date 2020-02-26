@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
@@ -31,7 +30,9 @@ public class AspStandardLibraryTest {
 			+ ""
 			+ ":- resultstring(S), &stdlib_string_length[S](LEN), LEN != 6."
 			+ "containsFoo(S) :- resultstring(S), &stdlib_string_matches_regex[S, \".*foo.*\"]."
-			+ ":- resultstring(S), not containsFoo(S).";
+			+ ":- resultstring(S), not containsFoo(S)."
+			+ "has_resultstring :- resultstring(_)."
+			+ ":- not has_resultstring.";
 	//@formatter:on
 
 	@Test
@@ -111,8 +112,6 @@ public class AspStandardLibraryTest {
 	}
 
 	@Test
-	@Ignore // FIXME: currently fails because ExternalAtoms cannot be normalized in
-			// justification analysis
 	@SuppressWarnings("unchecked")
 	public void programWithStringStuff() throws IOException {
 		Alpha alpha = new Alpha();

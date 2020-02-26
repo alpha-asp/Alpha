@@ -95,12 +95,6 @@ public class BasicAtom implements Atom, VariableNormalizableAtom {
 	}
 
 	@Override
-	public BasicAtom normalizeVariables(String prefix, int counterStartingValue) {
-		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
-		return new BasicAtom(predicate, renamedTerms);
-	}
-
-	@Override
 	public BasicLiteral toLiteral(boolean positive) {
 		return new BasicLiteral(this, positive);
 	}

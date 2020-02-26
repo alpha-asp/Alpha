@@ -27,18 +27,19 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static at.ac.tuwien.kr.alpha.Util.join;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-public class ExternalAtom implements Atom {
+public class ExternalAtom implements Atom, VariableNormalizableAtom {
+
 	private final List<Term> input;
 	private final List<Term> output;
 
@@ -115,4 +116,5 @@ public class ExternalAtom implements Atom {
 		}
 		return result;
 	}
+
 }
