@@ -13,7 +13,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 /**
  * A variable substitution allowing variables to occur on the right-hand side. Chains of variable substitutions are
  * resolved automatically, i.e., adding the substitutions (X -> A) and (A -> d) results in (X -> d), (A -> d).
- * Copyright (c) 2018, the Alpha Team.
+ * Copyright (c) 2018-2020, the Alpha Team.
  */
 public class Unifier extends Substitution {
 
@@ -45,6 +45,19 @@ public class Unifier extends Substitution {
 			this.put(extensionVariable.getKey(), extensionVariable.getValue());
 		}
 		return this;
+	}
+
+	/**
+	 * Returns a list of all variables occurring in that unifier, i.e., variables that are mapped and those that occur (nested) in the right-hand side of the unifier.
+	 * @return the list of variables occurring somewhere in the unifier.
+	 */
+	public List<Term> getOccurringVariables() {
+		ArrayList<Term> ret = new ArrayList<>();
+		for (Map.Entry<VariableTerm, Term> substitution : substitution.entrySet()) {
+			ret.add(substitution.getKey());
+			ret.addAll(substitution.getValue().getOccurringVariables());
+		}
+		return ret;
 	}
 
 
