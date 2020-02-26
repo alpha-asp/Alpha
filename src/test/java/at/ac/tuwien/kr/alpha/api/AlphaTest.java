@@ -291,6 +291,18 @@ public class AlphaTest {
 		assertEquals(expected, actual);
 	}
 
+	/**
+	 * Externals may only be scanned once per implementation.
+	 * If at the time of a scan, the name of an external is already registered,
+	 * an exception is thrown.
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void errorDuplicateExternal() throws Exception {
+		InputConfig cfg = InputConfig.forString("someString.");
+		cfg.addPredicateMethods(Externals.scan(this.getClass()));
+		cfg.addPredicateMethods(Externals.scan(this.getClass()));
+	}
+
 	@Test
 	public void withNativeExternal() throws Exception {
 		Alpha system = new Alpha();
