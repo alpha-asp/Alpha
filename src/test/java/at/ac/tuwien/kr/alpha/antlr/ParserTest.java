@@ -27,20 +27,9 @@
  */
 package at.ac.tuwien.kr.alpha.antlr;
 
-import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.ChoiceHead;
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.*;
-import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.antlr.v4.runtime.CharStreams;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
@@ -49,7 +38,28 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.junit.Assert;
+import org.junit.Test;
+
+import at.ac.tuwien.kr.alpha.Util;
+import at.ac.tuwien.kr.alpha.common.ChoiceHead;
+import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -199,5 +209,15 @@ public class ParserTest {
 		AggregateAtom.AggregateElement aggregateElement = new AggregateAtom.AggregateElement(basicTerms, Collections.singletonList(new BasicAtom(Predicate.getInstance("p", 3), x, y, z).toLiteral()));
 		AggregateAtom expectedAggregate = new AggregateAtom(ComparisonOperator.LE, VariableTerm.getInstance("K"), null, null, AggregateAtom.AGGREGATEFUNCTION.COUNT, Collections.singletonList(aggregateElement));
 		assertEquals(expectedAggregate, parsedAggregate.getAtom());
+	}
+	
+	@Test
+	public void stringWithEscapedQuotes() throws IOException {
+		CharStream stream = CharStreams.fromStream(ParserTest.class.getResourceAsStream("/escaped_quotes.asp"));
+		Program prog = parser.parse(stream);
+		Assert.assertEquals(1, prog.getFacts().size());
+		Atom stringAtom = prog.getFacts().get(0);
+		String stringWithQuotes = stringAtom.getTerms().get(0).toString();
+		Assert.assertEquals("\"a string with \"quotes\"\"", stringWithQuotes);
 	}
 }
