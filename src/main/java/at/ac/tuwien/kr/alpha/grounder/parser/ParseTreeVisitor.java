@@ -494,7 +494,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public ConstantTerm<?> visitTerm_string(ASPCore2Parser.Term_stringContext ctx) {
-		String quotedString = ctx.QUOTED_STRING().getText();
+		String quotedString = ctx.QUOTED_STRING().getText().replace("\\\"", "\"");
 		return ConstantTerm.getInstance(quotedString.substring(1, quotedString.length() - 1));
 	}
 
