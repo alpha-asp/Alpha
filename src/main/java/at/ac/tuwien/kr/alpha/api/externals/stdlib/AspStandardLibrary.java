@@ -27,10 +27,10 @@ package at.ac.tuwien.kr.alpha.api.externals.stdlib;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.api.externals.ExternalUtils;
 import at.ac.tuwien.kr.alpha.api.externals.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Terms;
@@ -77,7 +77,7 @@ public final class AspStandardLibrary {
 		List<ConstantTerm<Integer>> terms = Terms.asTermList(
 				datetime.getYear(), datetime.getMonth().getValue(), datetime.getDayOfMonth(),
 				datetime.getHour(), datetime.getMinute(), datetime.getSecond());
-		return ExternalUtils.wrapAsSet(terms);
+		return Collections.singleton(terms);
 	}
 
 	/**
@@ -127,7 +127,7 @@ public final class AspStandardLibrary {
 	public static Set<List<ConstantTerm<String>>> stdlib_datetime_to_string(int year, int month, int day, int hours, int minutes, int seconds, String format) {
 		LocalDateTime datetime = LocalDateTime.of(year, month, day, hours, minutes, seconds);
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-		return ExternalUtils.wrapAsSet(Terms.asTermList(formatter.format(datetime)));
+		return Collections.singleton(Terms.asTermList(formatter.format(datetime)));
 	}
 
 	/**
@@ -143,7 +143,7 @@ public final class AspStandardLibrary {
 	 */
 	@Predicate
 	public static Set<List<ConstantTerm<Integer>>> stdlib_string_length(String str) {
-		return ExternalUtils.wrapSingleTerm(ConstantTerm.getInstance(str.length()));
+		return Collections.singleton(Terms.asTermList(str.length()));
 	}
 
 	/**
@@ -151,7 +151,7 @@ public final class AspStandardLibrary {
 	 */
 	@Predicate
 	public static Set<List<ConstantTerm<String>>> stdlib_string_concat(String s1, String s2) {
-		return ExternalUtils.wrapSingleTerm(ConstantTerm.getInstance(s1 + s2));
+		return Collections.singleton(Terms.asTermList(s1 + s2));
 	}
 
 }
