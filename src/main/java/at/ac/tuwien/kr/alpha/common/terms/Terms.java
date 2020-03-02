@@ -12,8 +12,13 @@ import java.util.List;
  */
 public final class Terms {
 
+	/**
+	 * Since this is purely a utility class, it may not be instantiated.
+	 * 
+	 * @throws AssertionError if called
+	 */
 	private Terms() {
-
+		throw new AssertionError(Terms.class.getSimpleName() + " is a non-instantiable utility class!");
 	}
 
 	@SafeVarargs
