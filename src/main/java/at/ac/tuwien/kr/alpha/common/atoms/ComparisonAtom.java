@@ -113,4 +113,10 @@ public class ComparisonAtom implements Atom, VariableNormalizableAtom {
 		return 31 * (31 * operator.hashCode() + terms.hashCode());
 	}
 
+	@Override
+	public ComparisonAtom normalizeVariables(String prefix, int counterStartingValue) {
+		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
+		return new ComparisonAtom(renamedTerms.get(0), renamedTerms.get(1), operator);
+	}	
+	
 }

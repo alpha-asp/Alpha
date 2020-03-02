@@ -116,5 +116,11 @@ public class IntervalAtom implements Atom, VariableNormalizableAtom {
 	public IntervalAtom substitute(Substitution substitution) {
 		return new IntervalAtom((IntervalTerm)terms.get(0).substitute(substitution), terms.get(1).substitute(substitution));
 	}
+	
+	@Override
+	public IntervalAtom normalizeVariables(String prefix, int counterStartingValue) {
+		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
+		return new IntervalAtom((IntervalTerm) renamedTerms.get(0), renamedTerms.get(1));
+	}	
 
 }

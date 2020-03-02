@@ -116,5 +116,12 @@ public class ExternalAtom implements Atom, VariableNormalizableAtom {
 		}
 		return result;
 	}
+	
+	@Override
+	public ExternalAtom normalizeVariables(String prefix, int counterStartingValue) {
+		List<Term> renamedInput = Term.renameTerms(this.input, prefix + "_IN_", counterStartingValue);
+		List<Term> renamedOutput = Term.renameTerms(this.output, prefix + "_OUT_", counterStartingValue);
+		return new ExternalAtom(this.predicate, this.interpretation, renamedInput, renamedOutput);
+	}
 
 }

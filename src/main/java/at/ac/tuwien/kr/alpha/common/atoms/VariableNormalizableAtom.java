@@ -1,20 +1,11 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import java.util.List;
-
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-
 /**
  * Interface for atom whose variables can be normalized, i.e., enumerated from
  * left to right.
  * Copyright (c) 2018 the Alpha Team.
  */
 public interface VariableNormalizableAtom {
-
-	Predicate getPredicate();
-
-	List<Term> getTerms();
 
 	/**
 	 * Returns an Atom whose variables are enumerated as Vi, .. Vn.
@@ -24,8 +15,6 @@ public interface VariableNormalizableAtom {
 	 * @return the Atom where all variables are renamed and enumerated
 	 *         left-to-right.
 	 */
-	default Atom normalizeVariables(String prefix, int counterStartingValue) {
-		List<Term> renamedTerms = Term.renameTerms(this.getTerms(), prefix, counterStartingValue);
-		return new BasicAtom(this.getPredicate(), renamedTerms);
-	}
+	Atom normalizeVariables(String prefix, int counterStartingValue);
+	
 }
