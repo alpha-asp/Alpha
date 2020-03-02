@@ -17,15 +17,13 @@ public class InputConfig {
 	public static final int DEFAULT_NUM_ANSWER_SETS = 0;
 	public static final boolean DEFAULT_WRITE_XLSX = false;
 	public static final String DEFAULT_OUTFILE_PATH = "alphaAnswerSet"; // current directory, files named "alphaAnswerSet.{num}.{ext}"
-	// standard library externals are always loaded
-	// public static final Map<String, PredicateInterpretation>
-	// DEFAULT_LOADED_EXTERNALS = Externals.getStandardLibraryExternals();
 
 	private List<String> aspStrings = new ArrayList<>();
 	private List<String> files = new ArrayList<>();
 	private boolean literate = InputConfig.DEFAULT_LITERATE;
 	private int numAnswerSets = InputConfig.DEFAULT_NUM_ANSWER_SETS;
 	private Set<String> desiredPredicates = new HashSet<>();
+	// standard library externals are always loaded
 	private Map<String, PredicateInterpretation> predicateMethods = Externals.getStandardLibraryExternals();
 	private boolean writeAnswerSetsAsXlsx = InputConfig.DEFAULT_WRITE_XLSX;
 	private String answerSetFileOutputPath;
