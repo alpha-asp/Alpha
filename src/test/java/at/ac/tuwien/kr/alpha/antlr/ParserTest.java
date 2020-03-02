@@ -31,6 +31,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Arrays;
@@ -38,14 +43,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.antlr.v4.runtime.CharStreams;
-import org.junit.Test;
-
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
@@ -205,4 +208,15 @@ public class ParserTest {
 		AggregateAtom expectedAggregate = new AggregateAtom(ComparisonOperator.LE, VariableTerm.getInstance("K"), null, null, AggregateAtom.AGGREGATEFUNCTION.COUNT, Collections.singletonList(aggregateElement));
 		assertEquals(expectedAggregate, parsedAggregate.getAtom());
 	}
+
+	@Test
+	public void stringWithEscapedQuotes() throws IOException {
+		CharStream stream = CharStreams.fromStream(ParserTest.class.getResourceAsStream("/escaped_quotes.asp"));
+		InputProgram prog = parser.parse(stream);
+		Assert.assertEquals(1, prog.getFacts().size());
+		Atom stringAtom = prog.getFacts().get(0);
+		String stringWithQuotes = stringAtom.getTerms().get(0).toString();
+		Assert.assertEquals("\"a string with \"quotes\"\"", stringWithQuotes);
+	}
+
 }
