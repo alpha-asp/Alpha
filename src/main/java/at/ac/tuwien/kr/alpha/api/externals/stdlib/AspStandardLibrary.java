@@ -70,8 +70,8 @@ public final class AspStandardLibrary {
 	 * @param format   a format string that is accepted by {@link DateTimeFormatter}
 	 * @return a 6-value integer tuple of format (YEAR, MONTH, DAY, HOUR, MIN, SEC)
 	 */
-	@Predicate
-	public static Set<List<ConstantTerm<Integer>>> stdlib_datetime_parse(String dtstr, String format) {
+	@Predicate(name = "stdlib_datetime_parse")
+	public static Set<List<ConstantTerm<Integer>>> datetimeParse(String dtstr, String format) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
 		LocalDateTime datetime = LocalDateTime.parse(dtstr, formatter);
 		List<ConstantTerm<Integer>> terms = Terms.asTermList(
@@ -100,8 +100,8 @@ public final class AspStandardLibrary {
 	 * @param dt2Second the second field for dt2
 	 * @return true if dt1 is before dt2 in time, false otherwise
 	 */
-	@Predicate
-	public static boolean stdlib_datetime_is_before(int dt1Year, int dt1Month, int dt1Day, int dt1Hour, int dt1Minute, int dt1Second,
+	@Predicate(name = "stdlib_datetime_is_before")
+	public static boolean datetimeIsBefore(int dt1Year, int dt1Month, int dt1Day, int dt1Hour, int dt1Minute, int dt1Second,
 			int dt2Year, int dt2Month, int dt2Day, int dt2Hour, int dt2Minute, int dt2Second) {
 		LocalDateTime dt1 = LocalDateTime.of(dt1Year, dt1Month, dt1Day, dt1Hour, dt1Minute, dt1Second);
 		LocalDateTime dt2 = LocalDateTime.of(dt2Year, dt2Month, dt2Day, dt2Hour, dt2Minute, dt2Second);
@@ -123,8 +123,8 @@ public final class AspStandardLibrary {
 	 * @return a string representing the given datetime in the format specified by
 	 *         the format string
 	 */
-	@Predicate
-	public static Set<List<ConstantTerm<String>>> stdlib_datetime_to_string(int year, int month, int day, int hours, int minutes, int seconds, String format) {
+	@Predicate(name = "stdlib_datetime_to_string")
+	public static Set<List<ConstantTerm<String>>> datetimeToString(int year, int month, int day, int hours, int minutes, int seconds, String format) {
 		LocalDateTime datetime = LocalDateTime.of(year, month, day, hours, minutes, seconds);
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
 		return Collections.singleton(Terms.asTermList(formatter.format(datetime)));
@@ -133,24 +133,24 @@ public final class AspStandardLibrary {
 	/**
 	 * Checks whether the given string matches the given regex.
 	 */
-	@Predicate
-	public static boolean stdlib_string_matches_regex(String str, String regex) {
+	@Predicate(name = "stdlib_string_matches_regex")
+	public static boolean stringMatchesRegex(String str, String regex) {
 		return str.matches(regex);
 	}
 
 	/**
 	 * Returns the length of the given string
 	 */
-	@Predicate
-	public static Set<List<ConstantTerm<Integer>>> stdlib_string_length(String str) {
+	@Predicate(name = "stdlib_string_length")
+	public static Set<List<ConstantTerm<Integer>>> stringLength(String str) {
 		return Collections.singleton(Terms.asTermList(str.length()));
 	}
 
 	/**
 	 * Concatenates the two given strings
 	 */
-	@Predicate
-	public static Set<List<ConstantTerm<String>>> stdlib_string_concat(String s1, String s2) {
+	@Predicate(name = "stdlib_string_concat")
+	public static Set<List<ConstantTerm<String>>> stringConcat(String s1, String s2) {
 		return Collections.singleton(Terms.asTermList(s1 + s2));
 	}
 

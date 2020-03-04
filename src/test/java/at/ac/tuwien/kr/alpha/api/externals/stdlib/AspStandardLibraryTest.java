@@ -35,7 +35,7 @@ public class AspStandardLibraryTest {
 
 	@Test
 	public void parseDateTime1() {
-		Set<List<ConstantTerm<Integer>>> dtSubstitution = AspStandardLibrary.stdlib_datetime_parse("20.05.2020 01:19:13", "dd.MM.yyyy HH:mm:ss");
+		Set<List<ConstantTerm<Integer>>> dtSubstitution = AspStandardLibrary.datetimeParse("20.05.2020 01:19:13", "dd.MM.yyyy HH:mm:ss");
 		Assert.assertEquals(1, dtSubstitution.size());
 		List<ConstantTerm<Integer>> dtTerms = dtSubstitution.stream().findFirst().get();
 		Assert.assertEquals(6, dtTerms.size());
@@ -49,7 +49,7 @@ public class AspStandardLibraryTest {
 
 	@Test
 	public void parseDateTime2() {
-		Set<List<ConstantTerm<Integer>>> dtSubstitution = AspStandardLibrary.stdlib_datetime_parse("07/2123/18 22/37/01", "MM/yyyy/dd HH/mm/ss");
+		Set<List<ConstantTerm<Integer>>> dtSubstitution = AspStandardLibrary.datetimeParse("07/2123/18 22/37/01", "MM/yyyy/dd HH/mm/ss");
 		Assert.assertEquals(1, dtSubstitution.size());
 		List<ConstantTerm<Integer>> dtTerms = dtSubstitution.stream().findFirst().get();
 		Assert.assertEquals(6, dtTerms.size());
@@ -63,7 +63,7 @@ public class AspStandardLibraryTest {
 
 	@Test
 	public void parseDateTime3() {
-		Set<List<ConstantTerm<Integer>>> dtSubstitution = AspStandardLibrary.stdlib_datetime_parse("\"03,12,2019\", \"11:00:00\"",
+		Set<List<ConstantTerm<Integer>>> dtSubstitution = AspStandardLibrary.datetimeParse("\"03,12,2019\", \"11:00:00\"",
 				"\"dd,MM,yyyy\", \"HH:mm:ss\"");
 		Assert.assertEquals(1, dtSubstitution.size());
 		List<ConstantTerm<Integer>> dtTerms = dtSubstitution.stream().findFirst().get();
@@ -78,20 +78,20 @@ public class AspStandardLibraryTest {
 
 	@Test
 	public void datetimeBefore() {
-		Assert.assertTrue(AspStandardLibrary.stdlib_datetime_is_before(1990, 2, 14, 15, 16, 17, 1990, 3, 1, 0, 59, 1));
-		Assert.assertFalse(AspStandardLibrary.stdlib_datetime_is_before(2015, 5, 13, 12, 1, 33, 2003, 1, 1, 0, 0, 1));
-		Assert.assertFalse(AspStandardLibrary.stdlib_datetime_is_before(2022, 2, 22, 22, 22, 22, 2022, 2, 22, 22, 22, 22));
+		Assert.assertTrue(AspStandardLibrary.datetimeIsBefore(1990, 2, 14, 15, 16, 17, 1990, 3, 1, 0, 59, 1));
+		Assert.assertFalse(AspStandardLibrary.datetimeIsBefore(2015, 5, 13, 12, 1, 33, 2003, 1, 1, 0, 0, 1));
+		Assert.assertFalse(AspStandardLibrary.datetimeIsBefore(2022, 2, 22, 22, 22, 22, 2022, 2, 22, 22, 22, 22));
 	}
 
 	@Test
 	public void matchesRegex() {
-		Assert.assertTrue(AspStandardLibrary.stdlib_string_matches_regex("Blaaaaa Blubbb!!", "Bla+ Blub+!!"));
-		Assert.assertFalse(AspStandardLibrary.stdlib_string_matches_regex("Foobar", "Bla+ Blub+!!"));
+		Assert.assertTrue(AspStandardLibrary.stringMatchesRegex("Blaaaaa Blubbb!!", "Bla+ Blub+!!"));
+		Assert.assertFalse(AspStandardLibrary.stringMatchesRegex("Foobar", "Bla+ Blub+!!"));
 	}
 
 	@Test
 	public void stringLength() {
-		Set<List<ConstantTerm<Integer>>> result = AspStandardLibrary.stdlib_string_length("A String of length 21");
+		Set<List<ConstantTerm<Integer>>> result = AspStandardLibrary.stringLength("A String of length 21");
 		Assert.assertEquals(1, result.size());
 		List<ConstantTerm<Integer>> lengthTerms = result.stream().findFirst().get();
 		Assert.assertEquals(1, lengthTerms.size());
@@ -101,7 +101,7 @@ public class AspStandardLibraryTest {
 
 	@Test
 	public void stringConcat() {
-		Set<List<ConstantTerm<String>>> result = AspStandardLibrary.stdlib_string_concat("Foo", "bar");
+		Set<List<ConstantTerm<String>>> result = AspStandardLibrary.stringConcat("Foo", "bar");
 		Assert.assertEquals(1, result.size());
 		List<ConstantTerm<String>> concatTerms = result.stream().findFirst().get();
 		Assert.assertEquals(1, concatTerms.size());
