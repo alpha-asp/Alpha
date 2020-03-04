@@ -48,7 +48,7 @@ import at.ac.tuwien.kr.alpha.common.terms.Terms;
 public final class AspStandardLibrary {
 
 	private AspStandardLibrary() {
-
+		throw new AssertionError(this.getClass().getSimpleName() + " is a non-instantiable utility class!");
 	}
 
 	/**
