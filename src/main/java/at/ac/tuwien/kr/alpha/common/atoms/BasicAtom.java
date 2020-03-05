@@ -95,12 +95,6 @@ public class BasicAtom implements Atom, VariableNormalizableAtom {
 	}
 
 	@Override
-	public BasicAtom normalizeVariables(String prefix, int counterStartingValue) {
-		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
-		return new BasicAtom(predicate, renamedTerms);
-	}
-
-	@Override
 	public BasicLiteral toLiteral(boolean positive) {
 		return new BasicLiteral(this, positive);
 	}
@@ -155,4 +149,11 @@ public class BasicAtom implements Atom, VariableNormalizableAtom {
 	public int hashCode() {
 		return 31 * predicate.hashCode() + terms.hashCode();
 	}
+	
+	@Override
+	public Atom normalizeVariables(String prefix, int counterStartingValue) {
+		List<Term> renamedTerms = Term.renameTerms(this.getTerms(), prefix, counterStartingValue);
+		return new BasicAtom(this.getPredicate(), renamedTerms);
+	}
+	
 }
