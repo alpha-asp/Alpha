@@ -39,10 +39,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.api.externals.Externals;
+import at.ac.tuwien.kr.alpha.api.externals.Predicate;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.external.ExternalAtoms;
 import at.ac.tuwien.kr.alpha.common.program.impl.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
@@ -161,7 +162,7 @@ public class StratifiedEvaluationTest {
 		TestUtils.assertAnswerSetsEqual("stuff(1), stuff(2), smallStuff(1)", answerSets);
 	}
 
-	@at.ac.tuwien.kr.alpha.common.atoms.external.Predicate
+	@Predicate
 	public static boolean sayTrue(Object o) {
 		return true;
 	}
@@ -171,7 +172,7 @@ public class StratifiedEvaluationTest {
 		String asp = "claimedTruth(bla). truth(X) :- claimedTruth(X), &sayTrue[X]. lie(X) :- claimedTruth(X), not &sayTrue[X].";
 		Alpha alpha = new Alpha();
 		InputConfig inputCfg = InputConfig.forString(asp);
-		inputCfg.addPredicateMethod("sayTrue", ExternalAtoms.processPredicateMethod(this.getClass().getMethod("sayTrue", Object.class)));
+		inputCfg.addPredicateMethod("sayTrue", Externals.processPredicateMethod(this.getClass().getMethod("sayTrue", Object.class)));
 		InputProgram input = alpha.readProgram(inputCfg);
 		NormalProgram normal = alpha.normalizeProgram(input);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normal);

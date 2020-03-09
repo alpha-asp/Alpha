@@ -32,10 +32,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.externals.Externals;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.atoms.external.ExternalAtoms;
 import at.ac.tuwien.kr.alpha.common.program.AbstractProgram;
 import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
@@ -108,7 +108,7 @@ public class InputProgram extends AbstractProgram<BasicRule> {
 		}
 
 		public <T extends Comparable<T>> Builder addExternalFacts(Class<T> clazz, Collection<T> extFacts) {
-			return this.addFacts(ExternalAtoms.asFacts(clazz, extFacts));
+			return this.addFacts(Externals.asFacts(clazz, extFacts));
 		}
 
 		public Builder addInlineDirectives(InlineDirectives inlineDirectives) {

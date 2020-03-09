@@ -1,5 +1,8 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -7,11 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import at.ac.tuwien.kr.alpha.common.atoms.external.ExternalAtoms;
-import at.ac.tuwien.kr.alpha.common.atoms.external.Predicate;
+import at.ac.tuwien.kr.alpha.api.externals.Externals;
+import at.ac.tuwien.kr.alpha.api.externals.Predicate;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -28,8 +28,8 @@ public class AtomsTest {
 
 	public AtomsTest() throws NoSuchMethodException, SecurityException {
 		Map<String, PredicateInterpretation> externals = new HashMap<>();
-		externals.put("isFoo", ExternalAtoms.processPredicateMethod(AtomsTest.class.getMethod("isFoo", int.class)));
-		externals.put("extWithOutput", ExternalAtoms.processPredicateMethod(AtomsTest.class.getMethod("extWithOutput", int.class)));
+		externals.put("isFoo", Externals.processPredicateMethod(AtomsTest.class.getMethod("isFoo", int.class)));
+		externals.put("extWithOutput", Externals.processPredicateMethod(AtomsTest.class.getMethod("extWithOutput", int.class)));
 		this.parser = new ProgramParser(externals);
 	}
 
