@@ -37,7 +37,7 @@ import java.util.*;
  * A storage for instances with a certain arity, where each position of the instance can be indexed.
  * This aids in matching and joining instances. An index can be added or removed at any time for a desired position of
  * all instances.
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2020, the Alpha Team.
  */
 public class IndexedInstanceStorage {
 	private final Predicate predicate;
