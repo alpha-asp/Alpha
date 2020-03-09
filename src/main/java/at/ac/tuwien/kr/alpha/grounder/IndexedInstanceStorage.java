@@ -166,23 +166,34 @@ public class IndexedInstanceStorage {
 			throw new RuntimeException("IndexedInstanceStorage queried for position " + position + " which is not indexed.");
 		}
 		ArrayList<Instance> matchingInstances = indexForPosition.get(term);
-		return matchingInstances == null ? new ArrayList<>() : matchingInstances;
+		return matchingInstances == null ? Collections.emptyList() : matchingInstances;
 	}
 
 
-	private int getFirstGroundTermPosition(Atom atom) {
+	private int getMostSelectiveGroundTermPosition(Atom atom) {
+		int smallestNumberOfInstances = Integer.MAX_VALUE;
+		int mostSelectiveTermPosition = -1;
 		for (int i = 0; i < atom.getTerms().size(); i++) {
 			Term testTerm = atom.getTerms().get(i);
 			if (testTerm.isGround()) {
-				return i;
+				ArrayList<Instance> instancesMatchingTest = indices.get(i).get(testTerm);
+				if (instancesMatchingTest == null) {
+					// Ground term at i matches zero instances, it is most selective.
+					return i;
+				}
+				int numInstancesTestTerm = instancesMatchingTest.size();
+				if (numInstancesTestTerm < smallestNumberOfInstances) {
+					smallestNumberOfInstances = numInstancesTestTerm;
+					mostSelectiveTermPosition = i;
+				}
 			}
 		}
-		return -1;
+		return mostSelectiveTermPosition;
 	}
 
-	public List<Instance> getInstancesFromPartiallyGroundAtom(Atom substitute) {
+	List<Instance> getInstancesFromPartiallyGroundAtom(Atom substitute) {
 		// For selection of the instances, find ground term on which to select.
-		int firstGroundTermPosition = getFirstGroundTermPosition(substitute);
+		int firstGroundTermPosition = getMostSelectiveGroundTermPosition(substitute);
 		// Select matching instances, select all if no ground term was found.
 		if (firstGroundTermPosition != -1) {
 			Term firstGroundTerm = substitute.getTerms().get(firstGroundTermPosition);
