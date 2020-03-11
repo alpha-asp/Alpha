@@ -139,8 +139,7 @@ public final class AspStandardLibrary {
 	/**
 	 * Compares two datetimes and returns true iff the first datetime (dt1) is
 	 * before or equal to the second datetime (dt2). Both datetimes are represented
-	 * as six
-	 * integers each, referring to years, months, days, hours, minutes and seconds
+	 * as six integers each, referring to years, months, days, hours, minutes and seconds
 	 * respectively.
 	 * 
 	 * @param dt1Year   the year field for dt1
