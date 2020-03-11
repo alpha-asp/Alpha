@@ -109,6 +109,64 @@ public final class AspStandardLibrary {
 	}
 
 	/**
+	 * Compares two datetimes and returns true iff the first datetime (dt1) is
+	 * equal to the second datetime (dt2). Both datetimes are represented as six
+	 * integers each, referring to years, months, days, hours, minutes and seconds
+	 * respectively.
+	 * 
+	 * @param dt1Year   the year field for dt1
+	 * @param dt1Month  the month field for dt1
+	 * @param dt1Day    the day field for dt1
+	 * @param dt1Hour   the hour field for dt1
+	 * @param dt1Minute the minute field for dt1
+	 * @param dt1Second the second field for dt1
+	 * @param dt2Year   the year field for dt2
+	 * @param dt2Month  the month field for dt2
+	 * @param dt2Day    the day field for dt2
+	 * @param dt2Hour   the hour field for dt2
+	 * @param dt2Minute the minute field for dt2
+	 * @param dt2Second the second field for dt2
+	 * @return true if dt1 is equal to dt2, false otherwise
+	 */
+	@Predicate(name = "stdlib_datetime_is_equal")
+	public static boolean datetimeIsEqual(int dt1Year, int dt1Month, int dt1Day, int dt1Hour, int dt1Minute, int dt1Second,
+			int dt2Year, int dt2Month, int dt2Day, int dt2Hour, int dt2Minute, int dt2Second) {
+		LocalDateTime dt1 = LocalDateTime.of(dt1Year, dt1Month, dt1Day, dt1Hour, dt1Minute, dt1Second);
+		LocalDateTime dt2 = LocalDateTime.of(dt2Year, dt2Month, dt2Day, dt2Hour, dt2Minute, dt2Second);
+		return dt1.isEqual(dt2);
+	}
+
+	/**
+	 * Compares two datetimes and returns true iff the first datetime (dt1) is
+	 * before or equal to the second datetime (dt2). Both datetimes are represented
+	 * as six
+	 * integers each, referring to years, months, days, hours, minutes and seconds
+	 * respectively.
+	 * 
+	 * @param dt1Year   the year field for dt1
+	 * @param dt1Month  the month field for dt1
+	 * @param dt1Day    the day field for dt1
+	 * @param dt1Hour   the hour field for dt1
+	 * @param dt1Minute the minute field for dt1
+	 * @param dt1Second the second field for dt1
+	 * @param dt2Year   the year field for dt2
+	 * @param dt2Month  the month field for dt2
+	 * @param dt2Day    the day field for dt2
+	 * @param dt2Hour   the hour field for dt2
+	 * @param dt2Minute the minute field for dt2
+	 * @param dt2Second the second field for dt2
+	 * @return true if dt1 is before dt2 in time or both dt1 and dt2 denote the same
+	 *         point in time, false otherwise
+	 */
+	@Predicate(name = "stdlib_datetime_is_before_or_equal")
+	public static boolean datetimeIsBeforeOrEqual(int dt1Year, int dt1Month, int dt1Day, int dt1Hour, int dt1Minute, int dt1Second,
+			int dt2Year, int dt2Month, int dt2Day, int dt2Hour, int dt2Minute, int dt2Second) {
+		LocalDateTime dt1 = LocalDateTime.of(dt1Year, dt1Month, dt1Day, dt1Hour, dt1Minute, dt1Second);
+		LocalDateTime dt2 = LocalDateTime.of(dt2Year, dt2Month, dt2Day, dt2Hour, dt2Minute, dt2Second);
+		return dt1.isBefore(dt2) || dt1.isEqual(dt2);
+	}
+
+	/**
 	 * Formats a datetime value represented using six integers as a string according
 	 * to the given pattern. Valid format trings are those accepted by
 	 * {@link DateTimeFormatter.ofPattern}.
