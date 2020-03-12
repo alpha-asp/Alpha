@@ -75,7 +75,8 @@ import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.
 
 /**
  * The new default solver employed in Alpha.
- * Copyright (c) 2016-2019, the Alpha Team.
+ *
+ * Copyright (c) 2016-2020, the Alpha Team.
  */
 public class DefaultSolver extends AbstractSolver implements SolverMaintainingStatistics {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolver.class);
@@ -466,6 +467,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		assignment.growForMaxAtomId();
 		int maxAtomId = atomStore.getMaxAtomId();
 		store.growForMaxAtomId(maxAtomId);
+		choiceManager.growForMaxAtomId(maxAtomId);
 		branchingHeuristic.growForMaxAtomId(maxAtomId);
 		branchingHeuristic.newNoGoods(obtained.values());
 
