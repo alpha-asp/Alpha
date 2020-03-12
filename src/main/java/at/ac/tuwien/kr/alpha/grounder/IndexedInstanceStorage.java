@@ -27,11 +27,18 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-
-import java.util.*;
 
 /**
  * A storage for instances with a certain arity, where each position of the instance can be indexed.
@@ -191,7 +198,7 @@ public class IndexedInstanceStorage {
 		return mostSelectiveTermPosition;
 	}
 
-	List<Instance> getInstancesFromPartiallyGroundAtom(Atom substitute) {
+	public List<Instance> getInstancesFromPartiallyGroundAtom(Atom substitute) {
 		// For selection of the instances, find ground term on which to select.
 		int firstGroundTermPosition = getMostSelectiveGroundTermPosition(substitute);
 		// Select matching instances, select all if no ground term was found.
