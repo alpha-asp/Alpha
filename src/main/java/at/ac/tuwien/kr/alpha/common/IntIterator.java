@@ -10,11 +10,11 @@ public interface IntIterator {
 	/**
 	 * @return true if the iterator has more elements.
 	 */
-	public abstract boolean hasNext();
+	boolean hasNext();
 
 	/**
 	 * @return the next int in the iteration.
 	 */
-	public abstract int next();
+	int next();
 
 }
