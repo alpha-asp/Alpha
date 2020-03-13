@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.IntIterator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import org.apache.commons.lang3.tuple.Pair;
@@ -42,7 +43,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.*;
 import static java.lang.Math.abs;
 
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2020, the Alpha Team.
  */
 public class NaiveSolver extends AbstractSolver {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveSolver.class);
@@ -277,8 +278,22 @@ public class NaiveSolver extends AbstractSolver {
 		}
 	}
 
+	private static IntIterator fromIterator(Iterator<Integer> it) {
+		return new IntIterator() {
+			@Override
+			public boolean hasNext() {
+				return it.hasNext();
+			}
+
+			@Override
+			public int next() {
+				return it.next();
+			}
+		};
+	}
+
 	private void updateGrounderAssignments() {
-		grounder.updateAssignment(newTruthAssignments.stream().filter(atom -> truthAssignments.get(atom)).iterator());
+		grounder.updateAssignment(fromIterator(newTruthAssignments.stream().filter(atom -> truthAssignments.get(atom)).iterator()));
 		newTruthAssignments.clear();
 	}
 
