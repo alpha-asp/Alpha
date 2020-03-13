@@ -45,7 +45,8 @@ import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
 
 /**
  * Conflict-driven learning on ground clauses.
- * Copyright (c) 2016-2019, the Alpha Team.
+ *
+ * Copyright (c) 2016-2020, the Alpha Team.
  */
 public class GroundConflictNoGoodLearner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(GroundConflictNoGoodLearner.class);
@@ -247,7 +248,9 @@ public class GroundConflictNoGoodLearner {
 				return ConflictAnalysisResult.UNSAT;
 			}
 		}
-		LOGGER.trace("Backjumping decision level: {}", backjumpingDecisionLevel);
+		if (LOGGER.isTraceEnabled()) {
+			LOGGER.trace("Backjumping decision level: {}", backjumpingDecisionLevel);
+		}
 		return new ConflictAnalysisResult(learnedNoGood, backjumpingDecisionLevel, resolutionAtoms, computeLBD(learnedLiterals));
 	}
 
