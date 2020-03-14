@@ -231,8 +231,32 @@ public class GroundConflictNoGoodLearner {
 
 		int[] learnedLiterals = new int[resolutionLiterals.size()];
 		int i = 0;
+		// Do local clause minimization: if an implied literal has all its antecedents seen (i.e., in the clause already), it can be removed.
+		learnedLiteralsLoop:
 		for (Integer resolutionLiteral : resolutionLiterals) {
-			learnedLiterals[i++] = resolutionLiteral;
+			if (assignment.getWeakDecisionLevel(atomOf(resolutionLiteral)) == 0) {
+				// Skip literals from decision level 0.
+				continue;
+			}
+			Antecedent antecedent = assignment.getImpliedBy(atomOf(resolutionLiteral));
+			if (antecedent == null) {
+				// The resolutionLiteral is a decision, keep it.
+				learnedLiterals[i++] = resolutionLiteral;
+			} else {
+				for (int antecedentReasonLiteral : antecedent.getReasonLiterals()) {
+					// Only add current resolutionLiteral if at least one of its antecedents has not been seen already.
+					if (!seenAtoms.contains(atomOf(antecedentReasonLiteral))) {
+						learnedLiterals[i++] = resolutionLiteral;
+						continue learnedLiteralsLoop;
+					}
+				}
+				// Debug: don't delete anything.
+				//learnedLiterals[i++] = resolutionLiteral;
+			}
+		}
+		// Shrink array if we did not copy over all literals from resolutionLiterals.
+		if (i < resolutionLiterals.size()) {
+			learnedLiterals = Arrays.copyOf(learnedLiterals, i);
 		}
 
 		NoGood learnedNoGood = NoGood.learnt(learnedLiterals);
