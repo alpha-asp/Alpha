@@ -138,8 +138,21 @@ public class ChoiceRecorder {
 		final int heuristicId = ID_GENERATOR.getNextId();
 		final Integer[][] influencers = new Integer[2][4]; // dim 1: [on,off], dim 2: [T,TM,M,F]
 
-		final List<NoGood> noGoods = new ArrayList<>();
+		final List<NoGood> noGoods = generateHeuristicNoGoodsForPositiveCondition(groundHeuristicAtom, heuristicId, collectedFacts, influencers);
+		noGoods.addAll(generateHeuristicNoGoodsForNegativeCondition(groundHeuristicAtom, heuristicId, collectedFacts, influencers));
 
+		newHeuristicAtoms.getLeft().put(bodyRepresentingAtom, influencers[IDX_ON]);
+		newHeuristicAtoms.getRight().put(bodyRepresentingAtom, influencers[IDX_OFF]);
+
+		if (newHeuristicValues.put(bodyRepresentingAtom, HeuristicDirectiveValues.fromHeuristicAtom(groundHeuristicAtom, headId)) != null) {
+			throw oops("Same heuristic body-representing atom used for two heuristic directives");
+		}
+
+		return noGoods;
+	}
+
+	private List<NoGood> generateHeuristicNoGoodsForPositiveCondition(HeuristicAtom groundHeuristicAtom, int heuristicId, Set<Atom> collectedFacts, Integer[][] influencers) {
+		final List<NoGood> noGoods = new ArrayList<>();
 		final Map<Integer, Set<Atom>> positiveAtomsBySignSet = new HashMap<>(NUM_SIGN_SETS);
 		for (HeuristicDirectiveAtom heuristicDirectiveAtom : groundHeuristicAtom.getOriginalPositiveCondition()) {
 			final Atom atom = heuristicDirectiveAtom.getAtom();
@@ -162,7 +175,11 @@ public class ChoiceRecorder {
 			createHeuristicInfluencer(heuristicId, signSet, inNegativeBody, influencers);
 			noGoods.add(generateHeuristicPos(positiveAtomsBySignSet.get(idxSignSet), signSet, influencers[IDX_ON][idxSignSet]));
 		}
+		return noGoods;
+	}
 
+	private List<NoGood> generateHeuristicNoGoodsForNegativeCondition(HeuristicAtom groundHeuristicAtom, int heuristicId, Set<Atom> collectedFacts, Integer[][] influencers) {
+		final List<NoGood> noGoods = new ArrayList<>();
 		for (HeuristicDirectiveAtom heuristicDirectiveAtom : groundHeuristicAtom.getOriginalNegativeCondition()) {
 			final Atom atom = heuristicDirectiveAtom.getAtom();
 			final Set<ThriceTruth> signSet = heuristicDirectiveAtom.getSigns();
@@ -176,13 +193,6 @@ public class ChoiceRecorder {
 			createHeuristicInfluencer(heuristicId, signSet, inNegativeBody, influencers);
 			noGoods.add(generateHeuristicNeg(atom, signSet, influencers[IDX_OFF][idxSignSet]));
 		}
-		newHeuristicAtoms.getLeft().put(bodyRepresentingAtom, influencers[IDX_ON]);
-		newHeuristicAtoms.getRight().put(bodyRepresentingAtom, influencers[IDX_OFF]);
-
-		if (newHeuristicValues.put(bodyRepresentingAtom, HeuristicDirectiveValues.fromHeuristicAtom(groundHeuristicAtom, headId)) != null) {
-			throw oops("Same heuristic body-representing atom used for two heuristic directives");
-		}
-
 		return noGoods;
 	}
 
@@ -194,6 +204,12 @@ public class ChoiceRecorder {
 		}
 	}
 
+	private NoGood generatePos(final int atomOn, List<Integer> posLiterals) {
+		final int literalOn = atomToLiteral(atomOn);
+
+		return NoGoodCreator.fromBodyInternal(posLiterals, emptyList(), literalOn);
+	}
+
 	private NoGood generateHeuristicPos(Set<Atom> atoms, Set<ThriceTruth> signSet, int heuristicInfluencerAtom) {
 		final int literalOn = atomToLiteral(heuristicInfluencerAtom);
 		final List<Integer> literals = atoms.stream().map(atomStore::get).map(Literals::atomToLiteral).collect(Collectors.toList());
@@ -202,12 +218,6 @@ public class ChoiceRecorder {
 		} else {
 			return NoGoodCreator.fromBodyInternal(literals, emptyList(), literalOn);
 		}
-	}
-
-	private NoGood generatePos(final int atomOn, List<Integer> posLiterals) {
-		final int literalOn = atomToLiteral(atomOn);
-
-		return NoGoodCreator.fromBodyInternal(posLiterals, emptyList(), literalOn);
 	}
 
 	private List<NoGood> generateNeg(final int atomOff, List<Integer> negLiterals)  {
