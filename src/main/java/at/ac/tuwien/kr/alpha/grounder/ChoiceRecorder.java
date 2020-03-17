@@ -67,6 +67,9 @@ import static java.util.Collections.emptyList;
 public class ChoiceRecorder {
 	static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
 
+	private static final int IDX_OFF = 1;
+	private static final int IDX_ON = 0;
+
 	private final AtomStore atomStore;
 	private Pair<Map<Integer, Integer>, Map<Integer, Integer>> newChoiceAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
 	private Pair<Map<Integer, Integer[]>, Map<Integer, Integer[]>> newHeuristicAtoms = new ImmutablePair<>(new LinkedHashMap<>(), new LinkedHashMap<>());
@@ -131,9 +134,6 @@ public class ChoiceRecorder {
 	}
 
 	public Collection<NoGood> generateHeuristicNoGoods(HeuristicAtom groundHeuristicAtom, final int bodyRepresentingAtom, final int headId, Set<Atom> collectedFacts) {
-		final int idxOff = 1;
-		final int idxOn = 0;
-
 		// Obtain an ID for this new heuristic.
 		final int heuristicId = ID_GENERATOR.getNextId();
 		final Integer[][] influencers = new Integer[2][4]; // dim 1: [on,off], dim 2: [T,TM,M,F]
@@ -158,12 +158,9 @@ public class ChoiceRecorder {
 				continue;
 			}
 			final boolean inNegativeBody = false;
-			final int idxOnOff = inNegativeBody ? idxOff : idxOn;
 			final Set<ThriceTruth> signSet = getSignSetByIndex(idxSignSet);
-			if (influencers[idxOnOff][idxSignSet] == null) {
-				influencers[idxOnOff][idxSignSet] = atomStore.putIfAbsent(HeuristicInfluencerAtom.get(!inNegativeBody, heuristicId, signSet));
-			}
-			noGoods.add(generateHeuristicPos(positiveAtomsBySignSet.get(idxSignSet), signSet, influencers[idxOnOff][idxSignSet]));
+			createHeuristicInfluencer(heuristicId, signSet, inNegativeBody, influencers);
+			noGoods.add(generateHeuristicPos(positiveAtomsBySignSet.get(idxSignSet), signSet, influencers[IDX_ON][idxSignSet]));
 		}
 
 		for (HeuristicDirectiveAtom heuristicDirectiveAtom : groundHeuristicAtom.getOriginalNegativeCondition()) {
@@ -175,21 +172,26 @@ public class ChoiceRecorder {
 			}
 
 			final boolean inNegativeBody = true;
-			final int idxOnOff = inNegativeBody ? idxOff : idxOn;
 			final int idxSignSet = getIndex(signSet);
-			if (influencers[idxOnOff][idxSignSet] == null) {
-				influencers[idxOnOff][idxSignSet] = atomStore.putIfAbsent(HeuristicInfluencerAtom.get(!inNegativeBody, heuristicId, signSet));
-			}
-			noGoods.add(generateHeuristicNeg(atom, signSet, influencers[idxOnOff][idxSignSet]));
+			createHeuristicInfluencer(heuristicId, signSet, inNegativeBody, influencers);
+			noGoods.add(generateHeuristicNeg(atom, signSet, influencers[IDX_OFF][idxSignSet]));
 		}
-		newHeuristicAtoms.getLeft().put(bodyRepresentingAtom, influencers[idxOn]);
-		newHeuristicAtoms.getRight().put(bodyRepresentingAtom, influencers[idxOff]);
+		newHeuristicAtoms.getLeft().put(bodyRepresentingAtom, influencers[IDX_ON]);
+		newHeuristicAtoms.getRight().put(bodyRepresentingAtom, influencers[IDX_OFF]);
 
 		if (newHeuristicValues.put(bodyRepresentingAtom, HeuristicDirectiveValues.fromHeuristicAtom(groundHeuristicAtom, headId)) != null) {
 			throw oops("Same heuristic body-representing atom used for two heuristic directives");
 		}
 
 		return noGoods;
+	}
+
+	private void createHeuristicInfluencer(int heuristicId, Set<ThriceTruth> signSet, boolean inNegativeBody, Integer[][] influencers) {
+		final int idxOnOff = inNegativeBody ? IDX_OFF : IDX_ON;
+		final int idxSignSet = getIndex(signSet);
+		if (influencers[idxOnOff][idxSignSet] == null) {
+			influencers[idxOnOff][idxSignSet] = atomStore.putIfAbsent(HeuristicInfluencerAtom.get(!inNegativeBody, heuristicId, signSet));
+		}
 	}
 
 	private NoGood generateHeuristicPos(Set<Atom> atoms, Set<ThriceTruth> signSet, int heuristicInfluencerAtom) {
