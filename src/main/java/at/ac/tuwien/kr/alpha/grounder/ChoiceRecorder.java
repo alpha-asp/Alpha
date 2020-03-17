@@ -212,7 +212,7 @@ public class ChoiceRecorder {
 
 	private NoGood generateHeuristicPos(Set<Atom> atoms, Set<ThriceTruth> signSet, int heuristicInfluencerAtom) {
 		final int literalOn = atomToLiteral(heuristicInfluencerAtom);
-		final List<Integer> literals = atoms.stream().map(atomStore::get).map(Literals::atomToLiteral).collect(Collectors.toList());
+		final List<Integer> literals = atoms.stream().map(atomStore::putIfAbsent).map(Literals::atomToLiteral).collect(Collectors.toList());
 		if (SET_F.equals(signSet)) {
 			return NoGoodCreator.fromBodyInternal(emptyList(), literals, literalOn);
 		} else {
