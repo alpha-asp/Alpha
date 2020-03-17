@@ -39,6 +39,8 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 public class HeuristicSignSetUtil {
 
+	public static final int NUM_SIGN_SETS = 4;
+
 	private static final Set<ThriceTruth> SET_T = asSet(TRUE);
 	private static final Set<ThriceTruth> SET_TM = asSet(TRUE, MBT);
 	private static final Set<ThriceTruth> SET_M = asSet(MBT);
@@ -57,6 +59,7 @@ public class HeuristicSignSetUtil {
 	private static final Map<Set<ThriceTruth>, String> SIGN_SET_TO_NAME = new HashMap<>();
 	private static final Map<String, Set<ThriceTruth>> NAME_TO_SIGN_SET = new HashMap<>();
 	private static final Map<Set<ThriceTruth>, Integer> SIGN_SET_TO_IDX = new HashMap<>();
+	private static final Map<Integer, Set<ThriceTruth>> IDX_TO_SIGN_SET = new HashMap<>();
 
 	static {
 		SIGN_SET_TO_NAME.put(SET_T, NAME_SIGN_SET_T);
@@ -73,6 +76,11 @@ public class HeuristicSignSetUtil {
 		SIGN_SET_TO_IDX.put(SET_TM, IDX_TM);
 		SIGN_SET_TO_IDX.put(SET_M, IDX_M);
 		SIGN_SET_TO_IDX.put(SET_F, IDX_F);
+
+		IDX_TO_SIGN_SET.put(IDX_T, SET_T);
+		IDX_TO_SIGN_SET.put(IDX_TM, SET_TM);
+		IDX_TO_SIGN_SET.put(IDX_M, SET_M);
+		IDX_TO_SIGN_SET.put(IDX_F, SET_F);
 	}
 
 	public static String toName(Set<ThriceTruth> signSet) {
@@ -85,6 +93,10 @@ public class HeuristicSignSetUtil {
 
 	public static int getIndex(Set<ThriceTruth> signSet) {
 		return SIGN_SET_TO_IDX.get(signSet);
+	}
+
+	public static Set<ThriceTruth> getSignSetByIndex(int idx) {
+		return IDX_TO_SIGN_SET.get(idx);
 	}
 
 	/**

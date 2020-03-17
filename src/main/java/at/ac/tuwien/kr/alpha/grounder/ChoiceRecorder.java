@@ -28,11 +28,11 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.NoGoodCreator;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveAtom;
-import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveLiteral;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicInfluencerAtom;
@@ -43,20 +43,25 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
 import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
+import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.NUM_SIGN_SETS;
 import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.getIndex;
+import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.getSignSetByIndex;
 import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.isF;
 import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.isProcessable;
 import static at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom.off;
 import static at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom.on;
+import static at.ac.tuwien.kr.alpha.grounder.transformation.HeuristicDirectiveEliminateAnySignConditions.SET_F;
 import static java.util.Collections.emptyList;
 
 public class ChoiceRecorder {
@@ -134,8 +139,9 @@ public class ChoiceRecorder {
 		final Integer[][] influencers = new Integer[2][4]; // dim 1: [on,off], dim 2: [T,TM,M,F]
 
 		final List<NoGood> noGoods = new ArrayList<>();
-		for (HeuristicDirectiveLiteral heuristicDirectiveLiteral : groundHeuristicAtom.getOriginalCondition()) {
-			final HeuristicDirectiveAtom heuristicDirectiveAtom = heuristicDirectiveLiteral.getAtom();
+
+		final Map<Integer, Set<Atom>> positiveAtomsBySignSet = new HashMap<>(NUM_SIGN_SETS);
+		for (HeuristicDirectiveAtom heuristicDirectiveAtom : groundHeuristicAtom.getOriginalPositiveCondition()) {
 			final Atom atom = heuristicDirectiveAtom.getAtom();
 			final Set<ThriceTruth> signSet = heuristicDirectiveAtom.getSigns();
 
@@ -143,12 +149,38 @@ public class ChoiceRecorder {
 				continue; // TODO: special handling if "wrong" sign (s.t. heuristic can never fire)
 			}
 
-			final int idxOnOff = heuristicDirectiveLiteral.isNegated() ? idxOff : idxOn;
+			final int idxSignSet = getIndex(signSet);
+			final Set<Atom> atomsForSignSet = positiveAtomsBySignSet.computeIfAbsent(idxSignSet, k -> new HashSet<>());
+			atomsForSignSet.add(atom);
+		}
+		for (int idxSignSet = 0; idxSignSet < NUM_SIGN_SETS; idxSignSet++) {
+			if (positiveAtomsBySignSet.get(idxSignSet) == null) {
+				continue;
+			}
+			final boolean inNegativeBody = false;
+			final int idxOnOff = inNegativeBody ? idxOff : idxOn;
+			final Set<ThriceTruth> signSet = getSignSetByIndex(idxSignSet);
+			if (influencers[idxOnOff][idxSignSet] == null) {
+				influencers[idxOnOff][idxSignSet] = atomStore.putIfAbsent(HeuristicInfluencerAtom.get(!inNegativeBody, heuristicId, signSet));
+			}
+			noGoods.add(generateHeuristicPos(positiveAtomsBySignSet.get(idxSignSet), signSet, influencers[idxOnOff][idxSignSet]));
+		}
+
+		for (HeuristicDirectiveAtom heuristicDirectiveAtom : groundHeuristicAtom.getOriginalNegativeCondition()) {
+			final Atom atom = heuristicDirectiveAtom.getAtom();
+			final Set<ThriceTruth> signSet = heuristicDirectiveAtom.getSigns();
+
+			if (collectedFacts.contains(atom)) {
+				continue; // TODO: special handling if "wrong" sign (s.t. heuristic can never fire)
+			}
+
+			final boolean inNegativeBody = true;
+			final int idxOnOff = inNegativeBody ? idxOff : idxOn;
 			final int idxSignSet = getIndex(signSet);
 			if (influencers[idxOnOff][idxSignSet] == null) {
-				influencers[idxOnOff][idxSignSet] = atomStore.putIfAbsent(HeuristicInfluencerAtom.get(!heuristicDirectiveLiteral.isNegated(), heuristicId, signSet));
+				influencers[idxOnOff][idxSignSet] = atomStore.putIfAbsent(HeuristicInfluencerAtom.get(!inNegativeBody, heuristicId, signSet));
 			}
-			noGoods.add(generateHeuristicNoGood(atom, signSet, influencers[idxOnOff][idxSignSet]));
+			noGoods.add(generateHeuristicNeg(atom, signSet, influencers[idxOnOff][idxSignSet]));
 		}
 		newHeuristicAtoms.getLeft().put(bodyRepresentingAtom, influencers[idxOn]);
 		newHeuristicAtoms.getRight().put(bodyRepresentingAtom, influencers[idxOff]);
@@ -160,12 +192,14 @@ public class ChoiceRecorder {
 		return noGoods;
 	}
 
-	private NoGood generateHeuristicNoGood(Atom atom, Set<ThriceTruth> signSet, int heuristicInfluencerAtom) {
-		if (!isProcessable(signSet)) {
-			throw oops("Heuristic sign not processable: " + signSet);
+	private NoGood generateHeuristicPos(Set<Atom> atoms, Set<ThriceTruth> signSet, int heuristicInfluencerAtom) {
+		final int literalOn = atomToLiteral(heuristicInfluencerAtom);
+		final List<Integer> literals = atoms.stream().map(atomStore::get).map(Literals::atomToLiteral).collect(Collectors.toList());
+		if (SET_F.equals(signSet)) {
+			return NoGoodCreator.fromBodyInternal(emptyList(), literals, literalOn);
+		} else {
+			return NoGoodCreator.fromBodyInternal(literals, emptyList(), literalOn);
 		}
-		final int atomID = atomStore.putIfAbsent(atom);
-		return NoGoodCreator.headFirstInternal(atomToLiteral(heuristicInfluencerAtom, false), atomToLiteral(atomID, !isF(signSet)));
 	}
 
 	private NoGood generatePos(final int atomOn, List<Integer> posLiterals) {
@@ -184,6 +218,14 @@ public class ChoiceRecorder {
 			noGoods.add(NoGoodCreator.headFirstInternal(negLiteralOff, negLiteral));
 		}
 		return noGoods;
+	}
+
+	private NoGood generateHeuristicNeg(Atom atom, Set<ThriceTruth> signSet, int heuristicInfluencerAtom) {
+		if (!isProcessable(signSet)) {
+			throw oops("Heuristic sign not processable: " + signSet);
+		}
+		final int atomID = atomStore.putIfAbsent(atom);
+		return NoGoodCreator.headFirstInternal(atomToLiteral(heuristicInfluencerAtom, false), atomToLiteral(atomID, !isF(signSet)));
 	}
 
 	public void addHeadToBody(int headId, int bodyId) {

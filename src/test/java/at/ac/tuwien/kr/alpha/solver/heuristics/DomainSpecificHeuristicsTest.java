@@ -392,7 +392,7 @@ public class DomainSpecificHeuristicsTest {
 	}
 
 	@Test
-	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_NegativeeAnySignCondition_HeadF() {
+	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_NegativeAnySignCondition_HeadF() {
 		Program program = parser.parse(
 				"{a}." + LS +
 						"#heuristic F a : not FMT a.");
@@ -400,17 +400,77 @@ public class DomainSpecificHeuristicsTest {
 	}
 
 	@Test
-	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_NegativeeAnySignCondition_HeadT() {
+	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_NegativeAnySignCondition_HeadT() {
 		Program program = parser.parse(
 				"{a}." + LS +
 						"#heuristic T a : not FMT a.");
 		solveAndAssertAnswerSets(program, "{ a }", "{}");
 	}
 
+	@Test
+	public void testSimpleGroundHeuristicProgram_MultipleTAtomsInPositiveCondition_NotApplicable() {
+		Program program = parser.parse(
+				"{a}." + LS +
+						"{b}." + LS +
+						"c :- not d." + LS +
+						"d :- not c." + LS +
+						"#heuristic F a. [3@1]" + LS +
+						"#heuristic T b : F a. [2@1]" + LS +
+						"#heuristic T c : a, b. [2@1]" + LS +
+						"#heuristic T d : b, not c. [1@1]");
+		solveAndAssertAnswerSets(program, 1, "{ b, d }");
+	}
+
+	@Test
+	public void testSimpleGroundHeuristicProgram_MultipleTAtomsInPositiveCondition_Applicable() {
+		Program program = parser.parse(
+				"{a}." + LS +
+						"{b}." + LS +
+						"c :- not d." + LS +
+						"d :- not c." + LS +
+						"#heuristic T a. [3@1]" + LS +
+						"#heuristic T b : T a. [2@1]" + LS +
+						"#heuristic T c : a, b. [2@1]" + LS +
+						"#heuristic T d : b, not c. [2@1]");
+		solveAndAssertAnswerSets(program, 1, "{ a, b, c }");
+	}
+
+	@Test
+	public void testSimpleGroundHeuristicProgram_MultipleFAtomsInPositiveCondition_NotApplicable() {
+		Program program = parser.parse(
+				"{a}." + LS +
+						"{b}." + LS +
+						"c :- not d." + LS +
+						"d :- not c." + LS +
+						"#heuristic F a. [3@1]" + LS +
+						"#heuristic T b : F a. [2@1]" + LS +
+						"#heuristic T c : F a, F b. [2@1]" + LS +
+						"#heuristic T d : b, not c. [1@1]");
+		solveAndAssertAnswerSets(program, 1, "{ b, d }");
+	}
+
+	@Test
+	public void testSimpleGroundHeuristicProgram_MultipleFAtomsInPositiveCondition_Applicable() {
+		Program program = parser.parse(
+				"{a}." + LS +
+						"{b}." + LS +
+						"c :- not d." + LS +
+						"d :- not c." + LS +
+						"#heuristic F a. [3@1]" + LS +
+						"#heuristic F b : F a. [2@1]" + LS +
+						"#heuristic T c : F a, F b. [2@1]" + LS +
+						"#heuristic T d : b, not c. [2@1]");
+		solveAndAssertAnswerSets(program, 1, "{ c }");
+	}
+
 	private void solveAndAssertAnswerSets(Program program, String... expectedAnswerSets) {
+		solveAndAssertAnswerSets(program, Integer.MAX_VALUE, expectedAnswerSets);
+	}
+
+	private void solveAndAssertAnswerSets(Program program, int limit, String... expectedAnswerSets) {
 		HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(Heuristic.NAIVE).build();
 		Solver solver = SolverFactory.getInstance(systemConfig, atomStore, GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true), heuristicsConfiguration);
-		assertEquals(Arrays.asList(expectedAnswerSets), solver.stream().map(AnswerSet::toString).collect(Collectors.toList()));
+		assertEquals(Arrays.asList(expectedAnswerSets), solver.stream().limit(limit).map(AnswerSet::toString).collect(Collectors.toList()));
 	}
 
 	private SystemConfig buildSystemConfig() {
