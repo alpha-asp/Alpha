@@ -40,7 +40,7 @@ public class DirectFunctionalDependency {
 	 * @return the enlarged {@link Substitution}.
 	 */
 	public Substitution evaluate(Substitution substitution) {
-		LOGGER.debug("Evaluating FD.");
+		LOGGER.trace("Evaluating FD.");
 		Substitution extendedSubstitution = substitution;
 		for (Literal literal : evaluationOrder) {
 			if (literal instanceof ComparisonLiteral) {
@@ -72,7 +72,7 @@ public class DirectFunctionalDependency {
 				throw oops("Unknown DirectFunctionalDependency encountered, literal is: " + literal);
 			}
 		}
-		LOGGER.debug("Extended substitution {} into {}.",  substitution, extendedSubstitution);
+		LOGGER.trace("Extended substitution {} into {}.",  substitution, extendedSubstitution);
 		return extendedSubstitution;
 	}
 
