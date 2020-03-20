@@ -42,6 +42,7 @@ public final class WatchedNoGood implements NoGoodInterface, Antecedent {
 	private int head;
 	private final Type type;
 	private boolean isLbdLessOrEqual2;
+	private final NoGood originalNoGood;
 
 	WatchedNoGood(NoGood noGood, int a, int b, int alpha) {
 		if (noGood.size() < 3) {
@@ -63,6 +64,7 @@ public final class WatchedNoGood implements NoGoodInterface, Antecedent {
 			swap(1, b);
 		}
 		this.type = noGood.getType();
+		this.originalNoGood = noGood;
 	}
 
 	private void checkPointers(int a, int b, int alpha) {
@@ -159,6 +161,11 @@ public final class WatchedNoGood implements NoGoodInterface, Antecedent {
 				return literals[i++];
 			}
 		};
+	}
+
+	@Override
+	public NoGood getOriginalNoGood() {
+		return originalNoGood;
 	}
 
 	@Override
