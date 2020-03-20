@@ -35,7 +35,7 @@ import java.util.Iterator;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.literalToString;
 
-public final class WatchedNoGood implements NoGoodInterface, Antecedent {
+public final class WatchedNoGood implements NoGoodInterface<Integer>, Antecedent {
 	private int activity;
 	private final int[] literals;
 	private int alpha;
@@ -101,7 +101,7 @@ public final class WatchedNoGood implements NoGoodInterface, Antecedent {
 	}
 
 	@Override
-	public int getHead() {
+	public Integer getHead() {
 		return literals[head];
 	}
 
@@ -117,7 +117,7 @@ public final class WatchedNoGood implements NoGoodInterface, Antecedent {
 	}
 
 	@Override
-	public int getLiteral(int index) {
+	public Integer getLiteral(int index) {
 		return literals[index];
 	}
 

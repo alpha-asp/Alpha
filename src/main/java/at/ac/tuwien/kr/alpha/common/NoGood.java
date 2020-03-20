@@ -45,13 +45,13 @@ import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.LEARNT;
 import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.STATIC;
 import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.SUPPORT;
 
-public class NoGood implements NoGoodInterface, Comparable<NoGood> {
-	public static final int HEAD = 0;
+public class NoGood implements NoGoodInterface<Integer>, Comparable<NoGood> {
 	public static final NoGood UNSAT = new NoGood();
 
 	protected final int[] literals;
 	private final boolean head;
 	private final Type type;
+	private NonGroundNoGood nonGroundNoGood;
 
 	public NoGood(int... literals) {
 		this(STATIC, literals, false);
@@ -64,7 +64,7 @@ public class NoGood implements NoGoodInterface, Comparable<NoGood> {
 	private NoGood(Type type, int[] literals, boolean head) {
 		this.type = type;
 		this.head = head;
-		if (head && !isNegated(literals[0])) {
+		if (head && !isNegated(literals[HEAD])) {
 			throw oops("Head is not negative");
 		}
 
@@ -87,6 +87,7 @@ public class NoGood implements NoGoodInterface, Comparable<NoGood> {
 		this.literals = noGood.literals.clone();
 		this.head = noGood.head;
 		this.type = noGood.type;
+		this.nonGroundNoGood = noGood.nonGroundNoGood;
 	}
 	
 	public static NoGood learnt(int... literals) {
@@ -185,7 +186,7 @@ public class NoGood implements NoGoodInterface, Comparable<NoGood> {
 	}
 
 	@Override
-	public int getLiteral(int index) {
+	public Integer getLiteral(int index) {
 		return literals[index];
 	}
 
@@ -195,13 +196,16 @@ public class NoGood implements NoGoodInterface, Comparable<NoGood> {
 	}
 
 	@Override
-	public int getHead() {
-		return getLiteral(HEAD);
-	}
-
-	@Override
 	public Type getType() {
 		return type;
+	}
+
+	public NonGroundNoGood getNonGroundNoGood() {
+		return nonGroundNoGood;
+	}
+
+	public void setNonGroundNoGood(NonGroundNoGood nonGroundNoGood) {
+		this.nonGroundNoGood = nonGroundNoGood;
 	}
 
 	@Override

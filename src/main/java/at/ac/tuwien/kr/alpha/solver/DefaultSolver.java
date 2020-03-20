@@ -575,7 +575,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	@Override
-	public NoGoodCounter getNoGoodCounter() {
+	public NoGoodCounter<Integer> getNoGoodCounter() {
 		return store.getNoGoodCounter();
 	}
 
@@ -588,7 +588,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 					LOGGER.debug("{}: {}", heuristicToDecisionCounter.getKey(), heuristicToDecisionCounter.getValue());
 				}
 			}
-			NoGoodCounter noGoodCounter = store.getNoGoodCounter();
+			final NoGoodCounter<Integer> noGoodCounter = store.getNoGoodCounter();
 			LOGGER.debug("Number of NoGoods by type: {}", noGoodCounter.getStatsByType());
 			LOGGER.debug("Number of NoGoods by cardinality: {}", noGoodCounter.getStatsByCardinality());
 			AtomCounter atomCounter = atomStore.getAtomCounter();

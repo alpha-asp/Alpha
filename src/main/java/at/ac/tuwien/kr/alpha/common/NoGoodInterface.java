@@ -29,14 +29,16 @@ package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.solver.Antecedent;
 
-public interface NoGoodInterface extends Iterable<Integer> {
+public interface NoGoodInterface<T> extends Iterable<T> {
+
+	int HEAD = 0;
 
 	/**
 	 * Returns the literal at the given index.
 	 * @param index the index position within the NoGood.
 	 * @return the literal at the index.
 	 */
-	int getLiteral(int index);
+	T getLiteral(int index);
 
 	/**
 	 * Returns whether the NoGood has a head.
@@ -46,9 +48,11 @@ public interface NoGoodInterface extends Iterable<Integer> {
 
 	/**
 	 * Returns the head literal of the NoGood, if present.
-	 * @return the head literal if the NoGood has a head, otherwise an arbitrary integer.
+	 * @return the head literal if the NoGood has a head, otherwise an arbitrary literal.
 	 */
-	int getHead();
+	default T getHead() {
+		return getLiteral(HEAD);
+	}
 
 	/**
 	 * Returns the size, i.e., number of literals, in the NoGood.

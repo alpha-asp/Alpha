@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2018, the Alpha Team.
+/*
+ * Copyright (c) 2016-2018, 2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -29,7 +29,6 @@ package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
@@ -84,8 +83,8 @@ public class RuleAtom implements Atom {
 	}
 	
 	@Override
-	public Literal toLiteral(boolean positive) {
-		throw new UnsupportedOperationException("RuleAtom cannot be literalized");
+	public BodyRepresentingLiteral toLiteral(boolean positive) {
+		return new BodyRepresentingLiteral(this, positive);
 	}
 
 	@Override

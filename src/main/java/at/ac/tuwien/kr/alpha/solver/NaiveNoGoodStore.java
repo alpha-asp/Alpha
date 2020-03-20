@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2019, the Alpha Team.
+/*
+ * Copyright (c) 2017-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -33,15 +33,19 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.*;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 
 public class NaiveNoGoodStore implements NoGoodStore {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveNoGoodStore.class);
 
 	private HashMap<Integer, NoGood> delegate = new HashMap<>();
 	private final WritableAssignment assignment;
-	private final NoGoodCounter counter = new NoGoodCounter();
+	private final NoGoodCounter<Integer> counter = new NoGoodCounter<>();
 
 	private boolean hasInferredAssignments;
 
@@ -134,7 +138,7 @@ public class NaiveNoGoodStore implements NoGoodStore {
 	}
 
 	@Override
-	public NoGoodCounter getNoGoodCounter() {
+	public NoGoodCounter<Integer> getNoGoodCounter() {
 		return counter;
 	}
 

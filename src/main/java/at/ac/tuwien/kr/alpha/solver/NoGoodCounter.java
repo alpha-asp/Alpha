@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2019 Siemens AG
+/*
+ * Copyright (c) 2019-2020 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,8 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type;
 import at.ac.tuwien.kr.alpha.common.NoGoodInterface;
+import at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * Maintains statistics on numbers of various types of {@link NoGood}s.
  */
-public class NoGoodCounter {
+public class NoGoodCounter<T> {
 
 	private static final int CARD_NARY = 0;
 	private static final int CARD_UNARY = 1;
@@ -48,7 +48,7 @@ public class NoGoodCounter {
 	 * Increases counters for the types of the given NoGood
 	 * @param noGood
 	 */
-	void add(NoGoodInterface noGood) {
+	void add(NoGoodInterface<T> noGood) {
 		countByType[noGood.getType().ordinal()]++;
 		countByCardinality[getAbstractCardinality(noGood)]++;
 	}
@@ -57,12 +57,12 @@ public class NoGoodCounter {
 	 * Decreases counters for the types of the given NoGood
 	 * @param noGood
 	 */
-	void remove(NoGoodInterface noGood) {
+	void remove(NoGoodInterface<T> noGood) {
 		countByType[noGood.getType().ordinal()]--;
 		countByCardinality[getAbstractCardinality(noGood)]--;
 	}
 
-	private int getAbstractCardinality(NoGoodInterface noGood) {
+	private int getAbstractCardinality(NoGoodInterface<T> noGood) {
 		if (noGood.isUnary()) {
 			return CARD_UNARY;
 		}
