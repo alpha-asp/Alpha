@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.NonGroundNoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
@@ -36,9 +37,16 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
@@ -52,6 +60,8 @@ public class NoGoodGenerator {
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private final ProgramAnalysis programAnalysis;
 	private final Set<NonGroundRule> uniqueGroundRulePerGroundHead;
+
+	private final boolean conflictGeneralisationEnabled = true; // TODO: make parameterisable
 
 	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, ProgramAnalysis programAnalysis, Set<NonGroundRule> uniqueGroundRulePerGroundHead) {
 		this.atomStore = atomStore;
@@ -106,7 +116,13 @@ public class NoGoodGenerator {
 		choiceRecorder.addHeadToBody(headId, atomOf(bodyRepresentingLiteral));
 		
 		// Create a nogood for the head.
-		result.add(NoGood.headFirst(negateLiteral(headLiteral), bodyRepresentingLiteral));
+		final NoGood ngHead = NoGood.headFirst(negateLiteral(headLiteral), bodyRepresentingLiteral);
+		result.add(ngHead);
+		if (conflictGeneralisationEnabled) {
+			ngHead.setNonGroundNoGood(NonGroundNoGood.forGroundNoGood(ngHead,
+					nonGroundRule.getHeadAtom().toLiteral(false),
+					nonGroundRule.getNonGroundRuleAtom().toLiteral()));
+		}
 
 		final NoGood ruleBody = NoGood.fromBody(posLiterals, negLiterals, bodyRepresentingLiteral);
 		result.add(ruleBody);
