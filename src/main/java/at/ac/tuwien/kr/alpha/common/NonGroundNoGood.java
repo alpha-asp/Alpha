@@ -26,15 +26,22 @@
 
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.grounder.NoGoodGenerator;
 import at.ac.tuwien.kr.alpha.solver.Antecedent;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
+import static at.ac.tuwien.kr.alpha.Util.join;
 import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
 import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.STATIC;
 
 /**
@@ -67,14 +74,32 @@ public class NonGroundNoGood implements NoGoodInterface<Literal> {
     private NonGroundNoGood(Type type, List<Literal> literals, boolean head) {
         this.type = type;
         this.head = head;
-        if (head && literals.get(HEAD).isNegated()) {
+        if (head && !literals.get(HEAD).isNegated()) {
             throw oops("Head is not negative");
         }
         this.literals = literals;
     }
 
-    public static NonGroundNoGood forGroundNoGood(NoGood groundNoGood, Literal... literals) {
-        return new NonGroundNoGood(groundNoGood.getType(), Arrays.asList(literals));
+    public static NonGroundNoGood forGroundNoGood(NoGood groundNoGood, Map<Integer, Atom> atomMapping) {
+        final List<Literal> literals = literalsForGroundNoGood(groundNoGood, atomMapping);
+        return new NonGroundNoGood(groundNoGood.getType(), literals, groundNoGood.hasHead());
+    }
+
+    public static NonGroundNoGood fromBody(NoGood groundNoGood, NoGoodGenerator.CollectedLiterals posLiterals, NoGoodGenerator.CollectedLiterals negLiterals, Literal nonGroundBodyRepresentingLiteral, Map<Integer, Atom> atomMapping) {
+        final List<Literal> literals = literalsForGroundNoGood(groundNoGood, atomMapping);
+        literals.addAll(posLiterals.getSkippedFacts());
+        literals.addAll(posLiterals.getSkippedFixedInterpretationLiterals());
+        literals.addAll(negLiterals.getSkippedFacts().stream().map(Literal::negate).collect(Collectors.toList()));
+        literals.addAll(negLiterals.getSkippedFixedInterpretationLiterals().stream().map(Literal::negate).collect(Collectors.toList()));
+        return new NonGroundNoGood(groundNoGood.getType(), literals, groundNoGood.hasHead());
+    }
+
+    private static List<Literal> literalsForGroundNoGood(NoGood groundNoGood, Map<Integer, Atom> atomMapping) {
+        final List<Literal> literals = new ArrayList<>(groundNoGood.size());
+        for (int groundLiteral : groundNoGood) {
+            literals.add(atomMapping.get(atomOf(groundLiteral)).toLiteral(isPositive(groundLiteral)));
+        }
+        return literals;
     }
 
     @Override
@@ -124,22 +149,10 @@ public class NonGroundNoGood implements NoGoodInterface<Literal> {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-
-        if (head) {
-            sb.append("*");
-        }
-
-        sb.append("{ ");
-
+        final List<String> stringLiterals = new ArrayList<>(literals.size());
         for (Literal literal : literals) {
-            sb.append(literal.isNegated() ? "-" : "+");
-            sb.append(literal.getAtom().toString());
-            sb.append(" ");
+            stringLiterals.add((literal.isNegated() ? "-" : "+") + "(" + literal.getAtom() + ")");
         }
-
-        sb.append("}");
-
-        return sb.toString();
+        return (head ? "*" : "") + join("{ ", stringLiterals, ", ", " }");
     }
 }

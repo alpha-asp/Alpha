@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2018, the Alpha Team.
+/*
+ * Copyright (c) 2017-2018, 2020, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -33,11 +33,14 @@ import at.ac.tuwien.kr.alpha.common.NonGroundNoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -52,7 +55,7 @@ import static java.util.Collections.singletonList;
 
 /**
  * Class to generate ground NoGoods out of non-ground rules and grounding substitutions.
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2018, 2020, the Alpha Team.
  */
 public class NoGoodGenerator {
 	private final AtomStore atomStore;
@@ -82,8 +85,8 @@ public class NoGoodGenerator {
 	 * @return a list of the NoGoods corresponding to the ground rule.
 	 */
 	List<NoGood> generateNoGoodsFromGroundSubstitution(final NonGroundRule nonGroundRule, final Substitution substitution) {
-		final List<Integer> posLiterals = collectPosLiterals(nonGroundRule, substitution);
-		final List<Integer> negLiterals = collectNegLiterals(nonGroundRule, substitution);
+		final CollectedLiterals posLiterals = collectPosLiterals(nonGroundRule, substitution);
+		final CollectedLiterals negLiterals = collectNegLiterals(nonGroundRule, substitution);
 
 		if (posLiterals == null || negLiterals == null) {
 			return emptyList();
@@ -91,7 +94,7 @@ public class NoGoodGenerator {
 
 		// A constraint is represented by exactly one nogood.
 		if (nonGroundRule.isConstraint()) {
-			return singletonList(NoGood.fromConstraint(posLiterals, negLiterals));
+			return singletonList(NoGood.fromConstraint(posLiterals.collectedGroundLiterals, negLiterals.collectedGroundLiterals));
 		}
 
 		final List<NoGood> result = new ArrayList<>();
@@ -110,8 +113,20 @@ public class NoGoodGenerator {
 			return emptyList();
 		}
 
-		final int bodyRepresentingLiteral = atomToLiteral(atomStore.putIfAbsent(bodyAtom));
+		final int bodyRepresentingAtom = atomStore.putIfAbsent(bodyAtom);
+		final int bodyRepresentingLiteral = atomToLiteral(bodyRepresentingAtom);
+		final RuleAtom nonGroundBodyRepresentingAtom = nonGroundRule.getNonGroundRuleAtom();
+		final Literal nonGroundBodyRepresentingLiteral = nonGroundBodyRepresentingAtom.toLiteral();
 		final int headLiteral = atomToLiteral(atomStore.putIfAbsent(nonGroundRule.getHeadAtom().substitute(substitution)));
+
+		final Map<Integer, Atom> mapGroundToNonGroundAtoms;
+		if (conflictGeneralisationEnabled) {
+			mapGroundToNonGroundAtoms = new HashMap<>();
+			mapGroundToNonGroundAtoms.put(headId, nonGroundRule.getHeadAtom());
+			mapGroundToNonGroundAtoms.put(bodyRepresentingAtom, nonGroundBodyRepresentingAtom);
+			mapGroundToNonGroundAtoms.putAll(posLiterals.getAtomMapping());
+			mapGroundToNonGroundAtoms.putAll(negLiterals.getAtomMapping());
+		}
 
 		choiceRecorder.addHeadToBody(headId, atomOf(bodyRepresentingLiteral));
 		
@@ -119,34 +134,43 @@ public class NoGoodGenerator {
 		final NoGood ngHead = NoGood.headFirst(negateLiteral(headLiteral), bodyRepresentingLiteral);
 		result.add(ngHead);
 		if (conflictGeneralisationEnabled) {
-			ngHead.setNonGroundNoGood(NonGroundNoGood.forGroundNoGood(ngHead,
-					nonGroundRule.getHeadAtom().toLiteral(false),
-					nonGroundRule.getNonGroundRuleAtom().toLiteral()));
+			ngHead.setNonGroundNoGood(NonGroundNoGood.forGroundNoGood(ngHead, mapGroundToNonGroundAtoms));
 		}
 
-		final NoGood ruleBody = NoGood.fromBody(posLiterals, negLiterals, bodyRepresentingLiteral);
-		result.add(ruleBody);
+		final NoGood ngWholeBody = NoGood.fromBody(posLiterals.collectedGroundLiterals, negLiterals.collectedGroundLiterals, bodyRepresentingLiteral);
+		if (conflictGeneralisationEnabled) {
+			ngWholeBody.setNonGroundNoGood(NonGroundNoGood.fromBody(ngWholeBody, posLiterals, negLiterals, nonGroundBodyRepresentingLiteral, mapGroundToNonGroundAtoms));
+		}
+		result.add(ngWholeBody);
 
 		// Nogoods such that the atom representing the body is true iff the body is true.
-		for (int j = 1; j < ruleBody.size(); j++) {
-			result.add(new NoGood(bodyRepresentingLiteral, negateLiteral(ruleBody.getLiteral(j))));
+		for (int j = 1; j < ngWholeBody.size(); j++) {
+			final NoGood ngOneBodyLiteral = new NoGood(bodyRepresentingLiteral, negateLiteral(ngWholeBody.getLiteral(j)));
+			result.add(ngOneBodyLiteral);
+			if (conflictGeneralisationEnabled) {
+				ngOneBodyLiteral.setNonGroundNoGood(NonGroundNoGood.forGroundNoGood(ngOneBodyLiteral, mapGroundToNonGroundAtoms));
+			}
 		}
 
 		// If the rule head is unique, add support.
 		if (uniqueGroundRulePerGroundHead.contains(nonGroundRule)) {
-			result.add(NoGood.support(headLiteral, bodyRepresentingLiteral));
+			final NoGood ngSupport = NoGood.support(headLiteral, bodyRepresentingLiteral);
+			if (conflictGeneralisationEnabled) {
+				ngSupport.setNonGroundNoGood(NonGroundNoGood.forGroundNoGood(ngSupport, mapGroundToNonGroundAtoms));
+			}
+			result.add(ngSupport);
 		}
 
 		// If the body of the rule contains negation, add choices.
-		if (!negLiterals.isEmpty()) {
-			result.addAll(choiceRecorder.generateChoiceNoGoods(posLiterals, negLiterals, bodyRepresentingLiteral));
+		if (!negLiterals.collectedGroundLiterals.isEmpty()) {
+			result.addAll(choiceRecorder.generateChoiceNoGoods(posLiterals.collectedGroundLiterals, negLiterals.collectedGroundLiterals, bodyRepresentingLiteral));
 		}
 
 		return result;
 	}
 
-	List<Integer> collectNegLiterals(final NonGroundRule nonGroundRule, final Substitution substitution) {
-		final List<Integer> bodyLiteralsNegative = new ArrayList<>();
+	CollectedLiterals collectNegLiterals(final NonGroundRule nonGroundRule, final Substitution substitution) {
+		final CollectedLiterals collectedLiterals = new CollectedLiterals();
 		for (Atom atom : nonGroundRule.getBodyAtomsNegative()) {
 			Atom groundAtom = atom.substitute(substitution);
 			
@@ -162,23 +186,27 @@ public class NoGoodGenerator {
 				continue;
 			}
 
-			bodyLiteralsNegative.add(atomToLiteral(atomStore.putIfAbsent(groundAtom)));
+			collectedLiterals.collectedGroundLiterals.add(atomToLiteral(atomStore.putIfAbsent(groundAtom)));
+			collectedLiterals.correspondingNonGroundLiterals.add(atom.toLiteral());
 		}
-		return bodyLiteralsNegative;
+		return collectedLiterals;
 	}
 
-	private List<Integer> collectPosLiterals(final NonGroundRule nonGroundRule, final Substitution substitution) {
-		final List<Integer> bodyLiteralsPositive = new ArrayList<>();
+	private CollectedLiterals collectPosLiterals(final NonGroundRule nonGroundRule, final Substitution substitution) {
+		final CollectedLiterals collectedLiterals = new CollectedLiterals();
 		for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
-			if (atom.toLiteral() instanceof FixedInterpretationLiteral) {
+			final Literal literal = atom.toLiteral();
+			if (literal instanceof FixedInterpretationLiteral) {
 				// TODO: conversion of atom to literal is ugly. NonGroundRule could manage atoms instead of literals, cf. FIXME there
 				// Atom has fixed interpretation, hence was checked earlier that it
 				// evaluates to true under the given substitution.
 				// FixedInterpretationAtoms need not be shown to the solver, skip it.
+				collectedLiterals.skippedFixedInterpretationLiterals.add(literal);
 				continue;
 			}
 			// Skip the special enumeration atom.
 			if (atom instanceof EnumerationAtom) {
+				// TODO: ???
 				continue;
 			}
 
@@ -189,6 +217,7 @@ public class NoGoodGenerator {
 			Set<Instance> factInstances = factsFromProgram.get(groundAtom.getPredicate());
 			if (factInstances != null && factInstances.contains(new Instance(groundAtom.getTerms()))) {
 				// Skip positive atoms that are always true.
+				collectedLiterals.skippedFacts.add(literal);
 				continue;
 			}
 
@@ -197,13 +226,47 @@ public class NoGoodGenerator {
 				return null;
 			}
 
-			bodyLiteralsPositive.add(atomToLiteral(atomStore.putIfAbsent(groundAtom)));
+			collectedLiterals.collectedGroundLiterals.add(atomToLiteral(atomStore.putIfAbsent(groundAtom)));
+			collectedLiterals.correspondingNonGroundLiterals.add(literal);
 		}
-		return bodyLiteralsPositive;
+		return collectedLiterals;
 	}
 
 	private boolean existsRuleWithPredicateInHead(final Predicate predicate) {
 		final HashSet<NonGroundRule> definingRules = programAnalysis.getPredicateDefiningRules().get(predicate);
 		return definingRules != null && !definingRules.isEmpty();
+	}
+
+	public static class CollectedLiterals {
+		private final List<Integer> collectedGroundLiterals = new ArrayList<>();
+		private final List<Literal> correspondingNonGroundLiterals = new ArrayList<>();
+		private final List<Literal> skippedFixedInterpretationLiterals = new ArrayList<>();
+		private final List<Literal> skippedFacts = new ArrayList<>();
+
+		public List<Integer> getCollectedGroundLiterals() {
+			return Collections.unmodifiableList(collectedGroundLiterals);
+		}
+
+		public List<Literal> getCorrespondingNonGroundLiterals() {
+			return Collections.unmodifiableList(correspondingNonGroundLiterals);
+		}
+
+		public List<Literal> getSkippedFixedInterpretationLiterals() {
+			return Collections.unmodifiableList(skippedFixedInterpretationLiterals);
+		}
+
+		public List<Literal> getSkippedFacts() {
+			return Collections.unmodifiableList(skippedFacts);
+		}
+
+		public Map<Integer, Atom> getAtomMapping() {
+			final Map<Integer, Atom> atomMapping = new HashMap<>();
+			for (int i = 0; i < collectedGroundLiterals.size(); i++) {
+				final int groundAtom = atomOf(collectedGroundLiterals.get(i));
+				final Atom nonGroundAtom = correspondingNonGroundLiterals.get(i).getAtom();
+				atomMapping.put(groundAtom, nonGroundAtom);
+			}
+			return atomMapping;
+		}
 	}
 }
