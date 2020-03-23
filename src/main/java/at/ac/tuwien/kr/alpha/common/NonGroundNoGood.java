@@ -85,7 +85,7 @@ public class NonGroundNoGood implements NoGoodInterface<Literal> {
 		return new NonGroundNoGood(groundNoGood.getType(), literals, groundNoGood.hasHead());
 	}
 
-	public static NonGroundNoGood fromBody(NoGood groundNoGood, NoGoodGenerator.CollectedLiterals posLiterals, NoGoodGenerator.CollectedLiterals negLiterals, Literal nonGroundBodyRepresentingLiteral, Map<Integer, Atom> atomMapping) {
+	public static NonGroundNoGood fromBody(NoGood groundNoGood, NoGoodGenerator.CollectedLiterals posLiterals, NoGoodGenerator.CollectedLiterals negLiterals, Map<Integer, Atom> atomMapping) {
 		final List<Literal> literals = literalsForGroundNoGood(groundNoGood, atomMapping);
 		literals.addAll(posLiterals.getSkippedFacts());
 		literals.addAll(posLiterals.getSkippedFixedInterpretationLiterals());

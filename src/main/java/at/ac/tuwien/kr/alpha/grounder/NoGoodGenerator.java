@@ -92,9 +92,20 @@ public class NoGoodGenerator {
 			return emptyList();
 		}
 
+		final Map<Integer, Atom> mapGroundToNonGroundAtoms;
+		if (conflictGeneralisationEnabled) {
+			mapGroundToNonGroundAtoms = new HashMap<>();
+			mapGroundToNonGroundAtoms.putAll(posLiterals.getAtomMapping());
+			mapGroundToNonGroundAtoms.putAll(negLiterals.getAtomMapping());
+		}
+
 		// A constraint is represented by exactly one nogood.
 		if (nonGroundRule.isConstraint()) {
-			return singletonList(NoGood.fromConstraint(posLiterals.collectedGroundLiterals, negLiterals.collectedGroundLiterals));
+			final NoGood ngConstraint = NoGood.fromConstraint(posLiterals.collectedGroundLiterals, negLiterals.collectedGroundLiterals);
+			if (conflictGeneralisationEnabled) {
+				ngConstraint.setNonGroundNoGood(NonGroundNoGood.fromBody(ngConstraint, posLiterals, negLiterals, mapGroundToNonGroundAtoms));
+			}
+			return singletonList(ngConstraint);
 		}
 
 		final List<NoGood> result = new ArrayList<>();
@@ -115,17 +126,11 @@ public class NoGoodGenerator {
 
 		final int bodyRepresentingAtom = atomStore.putIfAbsent(bodyAtom);
 		final int bodyRepresentingLiteral = atomToLiteral(bodyRepresentingAtom);
-		final RuleAtom nonGroundBodyRepresentingAtom = nonGroundRule.getNonGroundRuleAtom();
-		final Literal nonGroundBodyRepresentingLiteral = nonGroundBodyRepresentingAtom.toLiteral();
 		final int headLiteral = atomToLiteral(atomStore.putIfAbsent(nonGroundRule.getHeadAtom().substitute(substitution)));
 
-		final Map<Integer, Atom> mapGroundToNonGroundAtoms;
 		if (conflictGeneralisationEnabled) {
-			mapGroundToNonGroundAtoms = new HashMap<>();
 			mapGroundToNonGroundAtoms.put(headId, nonGroundRule.getHeadAtom());
-			mapGroundToNonGroundAtoms.put(bodyRepresentingAtom, nonGroundBodyRepresentingAtom);
-			mapGroundToNonGroundAtoms.putAll(posLiterals.getAtomMapping());
-			mapGroundToNonGroundAtoms.putAll(negLiterals.getAtomMapping());
+			mapGroundToNonGroundAtoms.put(bodyRepresentingAtom, nonGroundRule.getNonGroundRuleAtom());
 		}
 
 		choiceRecorder.addHeadToBody(headId, atomOf(bodyRepresentingLiteral));
@@ -139,7 +144,7 @@ public class NoGoodGenerator {
 
 		final NoGood ngWholeBody = NoGood.fromBody(posLiterals.collectedGroundLiterals, negLiterals.collectedGroundLiterals, bodyRepresentingLiteral);
 		if (conflictGeneralisationEnabled) {
-			ngWholeBody.setNonGroundNoGood(NonGroundNoGood.fromBody(ngWholeBody, posLiterals, negLiterals, nonGroundBodyRepresentingLiteral, mapGroundToNonGroundAtoms));
+			ngWholeBody.setNonGroundNoGood(NonGroundNoGood.fromBody(ngWholeBody, posLiterals, negLiterals, mapGroundToNonGroundAtoms));
 		}
 		result.add(ngWholeBody);
 

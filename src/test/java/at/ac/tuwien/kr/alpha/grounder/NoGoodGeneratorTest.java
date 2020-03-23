@@ -137,12 +137,32 @@ public class NoGoodGeneratorTest {
 		assertEquals(6, seenExpected);
 	}
 
+	@Test
+	public void testNonGroundNoGoods_constraint() {
+		final Program program = PARSER.parse("p(1,1). " +
+				"{ p(X1,Y) } :- p(X,Y), X1=X+1. " +
+				":- p(X,Y), X1=X+1, not p(X1,Y).");
+		final Rule rule = program.getRules().get(1);
+		final AtomStore atomStore = new AtomStoreImpl();
+		final Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
+		final NoGoodGenerator noGoodGenerator = ((NaiveGrounder)grounder).noGoodGenerator;
+		final NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
+		final Substitution substitution = new Substitution();
+
+		substitution.put(VariableTerm.getInstance("X"), ConstantTerm.getInstance(2));
+		substitution.put(VariableTerm.getInstance("X1"), ConstantTerm.getInstance(3));
+		substitution.put(VariableTerm.getInstance("Y"), ConstantTerm.getInstance(1));
+		final List<NoGood> noGoods = noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, substitution);
+
+		assertEquals(1, noGoods.size());
+		final NoGood noGood = noGoods.get(0);
+		final String groundNoGoodToString = atomStore.noGoodToString(noGood);
+		final String nonGroundNoGoodToString = noGood.getNonGroundNoGood() == null ? null : noGood.getNonGroundNoGood().toString();
+		expectNonGroundNoGoodForGroundNoGood(groundNoGoodToString, "{ +(p(X, Y)), -(p(X1, Y)), +(X1 = X + 1) }", nonGroundNoGoodToString);
+	}
+
 	private void expectNonGroundNoGoodForGroundNoGood(String groundNoGoodToString, String expectedNonGroundNoGoodToString, String nonGroundNoGoodToString) {
 		assertEquals("Unexpected non-ground nogood for ground nogood " + groundNoGoodToString, expectedNonGroundNoGoodToString, nonGroundNoGoodToString);
 	}
-
-	// TODO: enumeration atom
-
-	// TODO: constraint
 
 }
