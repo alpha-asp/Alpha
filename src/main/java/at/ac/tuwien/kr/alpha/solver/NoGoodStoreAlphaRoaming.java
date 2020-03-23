@@ -85,6 +85,8 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 
 	private final NoGoodCounter<Integer> counter = new NoGoodCounter<>();
 
+	private final boolean conflictGeneralisationEnabled = true; // TODO: make parameterisable
+
 	public NoGoodStoreAlphaRoaming(WritableAssignment assignment, boolean checksEnabled) {
 		this.assignment = assignment;
 		this.checksEnabled = checksEnabled;
@@ -679,6 +681,8 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		private int noGoodsWithHeadSize;
 		private final int forLiteral;
 
+		private final Map<Integer, NoGood> originalNoGoods = new HashMap<>();
+
 		private BinaryWatchList(int forLiteral) {
 			this.forLiteral = forLiteral;
 		}
@@ -703,6 +707,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 				throw oops("NoGood has wrong head.");
 			}
 			noGoodsWithHead[noGoodsWithHeadSize++] = otherLiteral;
+			addOriginalNoGoodIfConflictGeneralisationEnabled(otherLiteral, noGood);
 			// Assign (weakly) otherLiteral if the newly added NoGood is unit.
 			ThriceTruth literalTruth = assignment.getTruth(atomOf(forLiteral));
 			if (literalTruth != null && literalTruth.toBoolean() == isPositive(forLiteral)) {
@@ -726,6 +731,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 			}
 			int otherLiteral = noGood.getLiteral(0) == forLiteral ? noGood.getLiteral(1) : noGood.getLiteral(0);
 			noGoodsWithoutHead[noGoodsWithoutHeadSize++] = otherLiteral;
+			addOriginalNoGoodIfConflictGeneralisationEnabled(otherLiteral, noGood);
 			// Assign otherLiteral if the newly added NoGood is unit.
 			ThriceTruth literalTruth = assignment.getTruth(atomOf(forLiteral));
 			if (literalTruth != null && literalTruth.toBoolean() == isPositive(forLiteral)) {
@@ -765,6 +771,17 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 			}
 			return null;
 		}
+
+		private void addOriginalNoGoodIfConflictGeneralisationEnabled(int otherLiteral, NoGood noGood) {
+			if (conflictGeneralisationEnabled) {
+				final NoGood originalNoGood = originalNoGoods.get(otherLiteral);
+				if (originalNoGood != null) {
+					throw oops("Original nogood already stored: " + originalNoGood);
+				} else {
+					originalNoGoods.put(otherLiteral, noGood);
+				}
+			}
+		}
 		
 		public int size() {
 			return noGoodsWithHeadSize + noGoodsWithoutHeadSize;
@@ -799,6 +816,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 
 			@Override
 			public void decreaseActivity() {
+			}
+
+			@Override
+			public NoGood getOriginalNoGood() {
+				return originalNoGoods.get(literals[0]);
 			}
 
 			@Override
