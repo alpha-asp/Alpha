@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -79,5 +79,20 @@ public final class Literals {
 
 	public static String literalToString(int literal) {
 		return (isPositive(literal) ? "+" : "-") + atomOf(literal);
+	}
+
+	/**
+	 * Returns the index of the first position at which a literal of the given atom occurs in the given array of literals.
+	 * @param atom the atom to look for
+	 * @param literals an array of literals
+	 * @return the first index where the atom occurs, or -1 if it does not occur
+	 */
+	public static int findAtomInLiterals(int atom, int[] literals) {
+		for (int i = 0; i < literals.length; i++) {
+			if (atomOf(literals[i]) == atom) {
+				return i;
+			}
+		}
+		return -1;
 	}
 }

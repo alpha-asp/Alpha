@@ -229,6 +229,15 @@ public class NoGood implements NoGoodInterface<Integer>, Comparable<NoGood> {
 		return Arrays.stream(literals);
 	}
 
+	public int indexOf(int literal) {
+		for (int i = 0; i < literals.length; i++) {
+			if (literals[i] == literal) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
 	@Override
 	public int compareTo(NoGood o) {
 		if (o == null) {

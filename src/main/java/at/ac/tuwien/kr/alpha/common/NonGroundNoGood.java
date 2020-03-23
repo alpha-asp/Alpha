@@ -32,6 +32,7 @@ import at.ac.tuwien.kr.alpha.grounder.NoGoodGenerator;
 import at.ac.tuwien.kr.alpha.solver.Antecedent;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ import static at.ac.tuwien.kr.alpha.Util.join;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.LEARNT;
 import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.STATIC;
 
 /**
@@ -92,6 +94,10 @@ public class NonGroundNoGood implements NoGoodInterface<Literal> {
 		literals.addAll(negLiterals.getSkippedFacts().stream().map(Literal::negate).collect(Collectors.toList()));
 		literals.addAll(negLiterals.getSkippedFixedInterpretationLiterals().stream().map(Literal::negate).collect(Collectors.toList()));
 		return new NonGroundNoGood(groundNoGood.getType(), literals, groundNoGood.hasHead());
+	}
+
+	public static NonGroundNoGood learnt(Collection<Literal> literals) {
+		return new NonGroundNoGood(LEARNT, new ArrayList<>(literals));
 	}
 
 	private static List<Literal> literalsForGroundNoGood(NoGood groundNoGood, Map<Integer, Atom> atomMapping) {

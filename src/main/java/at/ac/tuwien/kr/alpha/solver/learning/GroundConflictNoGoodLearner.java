@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2018, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -30,17 +30,27 @@ package at.ac.tuwien.kr.alpha.solver.learning;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.NonGroundNoGood;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.solver.Antecedent;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.*;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.findAtomInLiterals;
+import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
 import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
 
 /**
@@ -53,6 +63,8 @@ public class GroundConflictNoGoodLearner {
 
 	private final Assignment assignment;
 	private final AtomStore atomStore;
+
+	private final boolean conflictGeneralisationEnabled = true; // TODO: make parameterisable
 
 	public int computeConflictFreeBackjumpingLevel(NoGood violatedNoGood) {
 		int highestDecisionLevel = -1;
@@ -173,10 +185,14 @@ public class GroundConflictNoGoodLearner {
 		int numLiteralsInConflictLevel = 0;
 		List<Integer> resolutionLiterals = new ArrayList<>();
 		List<Integer> resolutionAtoms = new ArrayList<>();
+		List<Literal> nonGroundResolutionLiterals = new ArrayList<>();
 		int currentDecisionLevel = assignment.getDecisionLevel();
 		Set<Integer> seenAtoms = new HashSet<>();		// NOTE: other solvers use a global array for seen atoms, this might be slightly faster (initial tests with local arrays showed no significant improvement).
 		Set<Integer> processedAtoms = new HashSet<>();	// Since trail contains 2 entries for MBT->TRUE assigned atoms, explicitly record which seen atoms have ben processed to avoid processing seen atoms twice.
 		int[] currentConflictReason = conflictReason.getReasonLiterals();
+		NoGood currentOriginalNoGood = conflictReason.getOriginalNoGood();
+		NonGroundNoGood currentOriginalNonGroundNoGood = currentOriginalNoGood.getNonGroundNoGood();
+		Literal lastNonGroundLiteral = null;
 		int backjumpLevel = -1;
 		conflictReason.bumpActivity();
 		TrailAssignment.TrailBackwardsWalker trailWalker = ((TrailAssignment)assignment).getTrailBackwardsWalker();
@@ -194,17 +210,47 @@ public class GroundConflictNoGoodLearner {
 				// Seen atoms have already been dealt with.
 				if (!seenAtoms.contains(atomOf(literal))) {
 					seenAtoms.add(atomOf(literal));
+
+					Literal nonGroundLiteral = null;
+					if (conflictGeneralisationEnabled) {
+						if (currentOriginalNoGood == null) {
+							nonGroundResolutionLiterals = null;
+							LOGGER.warn("Cannot generalise conflict because original nogood unknown for " + reasonsToString(currentConflictReason));
+						} else if (nonGroundResolutionLiterals != null) {
+							if (currentOriginalNonGroundNoGood == null) {
+								nonGroundResolutionLiterals = null;
+								LOGGER.warn("Cannot generalise conflict because non-ground nogood unknown for " + atomStore.noGoodToString(currentOriginalNoGood));
+							} else {
+								// index must be looked up because literals may have different order in antecedent than in original nogood:
+								final int indexOfLiteralInOriginalNogood = currentOriginalNoGood.indexOf(literal);
+								final Literal nonGroundResolutionLiteral = currentOriginalNonGroundNoGood.getLiteral(indexOfLiteralInOriginalNogood);
+								nonGroundLiteral = nonGroundResolutionLiteral;
+								if (!nonGroundResolutionLiteral.getPredicate().equals(atomStore.get(atomOf(literal)).getPredicate())) {
+									throw oops("Wrong non-ground literal assigned to ground literal");
+									// TODO: execute this check only if internal checks enabled (?)
+								}
+							}
+						}
+					}
+
 					int literalDecisionLevel = assignment.getWeakDecisionLevel(atomOf(literal));
 					if (literalDecisionLevel == currentDecisionLevel) {
 						numLiteralsInConflictLevel++;
+						lastNonGroundLiteral = nonGroundLiteral;	// TODO: does this work in general? I don´t understand yet if the last literal seen here is always the 1UIP.
 					} else {
 						resolutionLiterals.add(literal);
+						if (nonGroundLiteral != null) {
+							nonGroundResolutionLiterals.add(nonGroundLiteral);
+						}
 						if (literalDecisionLevel > backjumpLevel) {
 							backjumpLevel = literalDecisionLevel;
 						}
 					}
 					resolutionAtoms.add(atomOf(literal));
 				}
+			}
+			if (conflictGeneralisationEnabled && nonGroundResolutionLiterals != null && currentOriginalNonGroundNoGood != null) {
+				nonGroundResolutionLiterals.addAll(getAdditionalLiterals(currentOriginalNonGroundNoGood, currentConflictReason.length));
 			}
 			if (LOGGER.isTraceEnabled()) {
 				LOGGER.trace("LiteralsInConflictLevel now: {}", numLiteralsInConflictLevel);
@@ -222,17 +268,32 @@ public class GroundConflictNoGoodLearner {
 			Antecedent impliedBy = assignment.getImpliedBy(nextAtom);
 			if (impliedBy != null) {
 				currentConflictReason = impliedBy.getReasonLiterals();
+				currentOriginalNoGood = impliedBy.getOriginalNoGood();
+				currentOriginalNonGroundNoGood = currentOriginalNoGood == null ? null : currentOriginalNoGood.getNonGroundNoGood();
 				impliedBy.bumpActivity();
-			}
+			} // TODO: what if impliedBy == null? Will we go through the loop again with the same conflict reason? Is this correct?
 			processedAtoms.add(nextAtom);
 		} while (numLiteralsInConflictLevel-- > 1);
 		// Add the 1UIP literal.
 		resolutionLiterals.add(atomToLiteral(nextAtom, assignment.getTruth(nextAtom).toBoolean()));
+		if (conflictGeneralisationEnabled && nonGroundResolutionLiterals != null) {
+			if (currentOriginalNonGroundNoGood != null) {
+				nonGroundResolutionLiterals.add(currentOriginalNonGroundNoGood.getLiteral(findAtomInLiterals(nextAtom, currentConflictReason)));
+				nonGroundResolutionLiterals.addAll(getAdditionalLiterals(currentOriginalNonGroundNoGood, currentConflictReason.length));
+			} else if (lastNonGroundLiteral != null) {
+				nonGroundResolutionLiterals.add(lastNonGroundLiteral);
+			}
+		}
 
 		int[] learnedLiterals = new int[resolutionLiterals.size()];
 		int i = 0;
 		for (Integer resolutionLiteral : resolutionLiterals) {
 			learnedLiterals[i++] = resolutionLiteral;
+		}
+		if (conflictGeneralisationEnabled && nonGroundResolutionLiterals != null && !nonGroundResolutionLiterals.isEmpty()) {
+			final NonGroundNoGood learnedNonGroundNoGood = NonGroundNoGood.learnt(nonGroundResolutionLiterals);
+			LOGGER.info("Learnt non-ground nogood: " + learnedNonGroundNoGood);
+			// TODO: do something more with it
 		}
 
 		NoGood learnedNoGood = NoGood.learnt(learnedLiterals);
@@ -252,6 +313,14 @@ public class GroundConflictNoGoodLearner {
 			LOGGER.trace("Backjumping decision level: {}", backjumpingDecisionLevel);
 		}
 		return new ConflictAnalysisResult(learnedNoGood, backjumpingDecisionLevel, resolutionAtoms, computeLBD(learnedLiterals));
+	}
+
+	private List<? extends Literal> getAdditionalLiterals(NonGroundNoGood nonGroundNoGood, int numberOfAlreadyConsideredLiterals) {
+		final List<Literal> result = new ArrayList<>(nonGroundNoGood.size() - numberOfAlreadyConsideredLiterals);
+		for (int i = numberOfAlreadyConsideredLiterals; i < nonGroundNoGood.size(); i++) {
+			result.add(nonGroundNoGood.getLiteral(i));
+		}
+		return result;
 	}
 
 	private int computeLBD(int[] literals) {
