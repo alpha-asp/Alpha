@@ -35,6 +35,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -54,6 +55,11 @@ public class NoGoodGeneratorTest {
 
 	private static final VariableTerm X = VariableTerm.getInstance("X");
 	private static final VariableTerm Y = VariableTerm.getInstance("Y");
+
+	@Before
+	public void setUp() {
+		NonGroundRule.ID_GENERATOR.resetGenerator();
+	}
 	
 	/**
 	 * Calls {@link NoGoodGenerator#collectNegLiterals(NonGroundRule, Substitution)},
