@@ -46,7 +46,7 @@ import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.STATIC;
 
 /**
  * Represents a non-ground nogood that corresponds to several ground nogoods generated from it.
- *
+ * <p>
  * This class assumes the following to hold without checking it:
  * <ul>
  *     <li>no literal appears twice (different variable names are OK, if different literals correspond to different ground literals)</li>
@@ -59,100 +59,104 @@ import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.STATIC;
  */
 public class NonGroundNoGood implements NoGoodInterface<Literal> {
 
-    protected final List<Literal> literals;
-    private final boolean head;
-    private final Type type;
+	protected final List<Literal> literals;
+	private final boolean head;
+	private final Type type;
 
-    public NonGroundNoGood(List<Literal> literals) {
-        this(STATIC, literals, false);
-    }
+	public NonGroundNoGood(List<Literal> literals) {
+		this(STATIC, literals, false);
+	}
 
-    public NonGroundNoGood(Type type, List<Literal> literals) {
-        this(type, literals, false);
-    }
+	public NonGroundNoGood(Type type, List<Literal> literals) {
+		this(type, literals, false);
+	}
 
-    private NonGroundNoGood(Type type, List<Literal> literals, boolean head) {
-        this.type = type;
-        this.head = head;
-        if (head && !literals.get(HEAD).isNegated()) {
-            throw oops("Head is not negative");
-        }
-        this.literals = literals;
-    }
+	private NonGroundNoGood(Type type, List<Literal> literals, boolean head) {
+		this.type = type;
+		this.head = head;
+		if (head && !literals.get(HEAD).isNegated()) {
+			throw oops("Head is not negative");
+		}
+		this.literals = literals;
+	}
 
-    public static NonGroundNoGood forGroundNoGood(NoGood groundNoGood, Map<Integer, Atom> atomMapping) {
-        final List<Literal> literals = literalsForGroundNoGood(groundNoGood, atomMapping);
-        return new NonGroundNoGood(groundNoGood.getType(), literals, groundNoGood.hasHead());
-    }
+	public static NonGroundNoGood forGroundNoGood(NoGood groundNoGood, Map<Integer, Atom> atomMapping) {
+		final List<Literal> literals = literalsForGroundNoGood(groundNoGood, atomMapping);
+		return new NonGroundNoGood(groundNoGood.getType(), literals, groundNoGood.hasHead());
+	}
 
-    public static NonGroundNoGood fromBody(NoGood groundNoGood, NoGoodGenerator.CollectedLiterals posLiterals, NoGoodGenerator.CollectedLiterals negLiterals, Literal nonGroundBodyRepresentingLiteral, Map<Integer, Atom> atomMapping) {
-        final List<Literal> literals = literalsForGroundNoGood(groundNoGood, atomMapping);
-        literals.addAll(posLiterals.getSkippedFacts());
-        literals.addAll(posLiterals.getSkippedFixedInterpretationLiterals());
-        literals.addAll(negLiterals.getSkippedFacts().stream().map(Literal::negate).collect(Collectors.toList()));
-        literals.addAll(negLiterals.getSkippedFixedInterpretationLiterals().stream().map(Literal::negate).collect(Collectors.toList()));
-        return new NonGroundNoGood(groundNoGood.getType(), literals, groundNoGood.hasHead());
-    }
+	public static NonGroundNoGood fromBody(NoGood groundNoGood, NoGoodGenerator.CollectedLiterals posLiterals, NoGoodGenerator.CollectedLiterals negLiterals, Literal nonGroundBodyRepresentingLiteral, Map<Integer, Atom> atomMapping) {
+		final List<Literal> literals = literalsForGroundNoGood(groundNoGood, atomMapping);
+		literals.addAll(posLiterals.getSkippedFacts());
+		literals.addAll(posLiterals.getSkippedFixedInterpretationLiterals());
+		literals.addAll(negLiterals.getSkippedFacts().stream().map(Literal::negate).collect(Collectors.toList()));
+		literals.addAll(negLiterals.getSkippedFixedInterpretationLiterals().stream().map(Literal::negate).collect(Collectors.toList()));
+		return new NonGroundNoGood(groundNoGood.getType(), literals, groundNoGood.hasHead());
+	}
 
-    private static List<Literal> literalsForGroundNoGood(NoGood groundNoGood, Map<Integer, Atom> atomMapping) {
-        final List<Literal> literals = new ArrayList<>(groundNoGood.size());
-        for (int groundLiteral : groundNoGood) {
-            literals.add(atomMapping.get(atomOf(groundLiteral)).toLiteral(isPositive(groundLiteral)));
-        }
-        return literals;
-    }
+	private static List<Literal> literalsForGroundNoGood(NoGood groundNoGood, Map<Integer, Atom> atomMapping) {
+		final List<Literal> literals = new ArrayList<>(groundNoGood.size());
+		for (int groundLiteral : groundNoGood) {
+			literals.add(atomMapping.get(atomOf(groundLiteral)).toLiteral(isPositive(groundLiteral)));
+		}
+		return literals;
+	}
 
-    @Override
-    public Literal getLiteral(int index) {
-        return literals.get(index);
-    }
+	@Override
+	public Literal getLiteral(int index) {
+		return literals.get(index);
+	}
 
-    @Override
-    public boolean hasHead() {
-        return head;
-    }
+	@Override
+	public boolean hasHead() {
+		return head;
+	}
 
-    @Override
-    public int size() {
-        return literals.size();
-    }
+	@Override
+	public int size() {
+		return literals.size();
+	}
 
-    @Override
-    public Antecedent asAntecedent() {
-        throw new UnsupportedOperationException("Non-ground nogood cannot be represented as an antecedent");
-    }
+	@Override
+	public Antecedent asAntecedent() {
+		throw new UnsupportedOperationException("Non-ground nogood cannot be represented as an antecedent");
+	}
 
-    @Override
-    public Type getType() {
-        return type;
-    }
+	@Override
+	public Type getType() {
+		return type;
+	}
 
-    @Override
-    public Iterator<Literal> iterator() {
-        return literals.iterator();
-    }
+	@Override
+	public Iterator<Literal> iterator() {
+		return literals.iterator();
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        NonGroundNoGood that = (NonGroundNoGood) o;
-        return head == that.head &&
-                literals.equals(that.literals) &&
-                type == that.type;
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		NonGroundNoGood that = (NonGroundNoGood) o;
+		return head == that.head &&
+				literals.equals(that.literals) &&
+				type == that.type;
+	}
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(literals, head, type);
-    }
+	@Override
+	public int hashCode() {
+		return Objects.hash(literals, head, type);
+	}
 
-    @Override
-    public String toString() {
-        final List<String> stringLiterals = new ArrayList<>(literals.size());
-        for (Literal literal : literals) {
-            stringLiterals.add((literal.isNegated() ? "-" : "+") + "(" + literal.getAtom() + ")");
-        }
-        return (head ? "*" : "") + join("{ ", stringLiterals, ", ", " }");
-    }
+	@Override
+	public String toString() {
+		final List<String> stringLiterals = new ArrayList<>(literals.size());
+		for (Literal literal : literals) {
+			stringLiterals.add((literal.isNegated() ? "-" : "+") + "(" + literal.getAtom() + ")");
+		}
+		return (head ? "*" : "") + join("{ ", stringLiterals, ", ", " }");
+	}
 }

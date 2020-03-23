@@ -56,11 +56,11 @@ public class NoGood implements NoGoodInterface<Integer>, Comparable<NoGood> {
 	public NoGood(int... literals) {
 		this(STATIC, literals, false);
 	}
-	
+
 	public NoGood(Type type, int... literals) {
 		this(type, literals, false);
 	}
-	
+
 	private NoGood(Type type, int[] literals, boolean head) {
 		this.type = type;
 		this.head = head;
@@ -89,7 +89,7 @@ public class NoGood implements NoGoodInterface<Integer>, Comparable<NoGood> {
 		this.type = noGood.type;
 		this.nonGroundNoGood = noGood.nonGroundNoGood;
 	}
-	
+
 	public static NoGood learnt(int... literals) {
 		return new NoGood(LEARNT, literals);
 	}
@@ -101,7 +101,7 @@ public class NoGood implements NoGoodInterface<Integer>, Comparable<NoGood> {
 	public static NoGood headFirstInternal(int... literals) {
 		return headFirst(INTERNAL, literals);
 	}
-	
+
 	public static NoGood headFirst(Type type, int... literals) {
 		return new NoGood(type, literals, true);
 	}
@@ -117,11 +117,11 @@ public class NoGood implements NoGoodInterface<Integer>, Comparable<NoGood> {
 	public static NoGood fromConstraint(List<Integer> posLiterals, List<Integer> negLiterals) {
 		return new NoGood(addPosNeg(new int[posLiterals.size() + negLiterals.size()], posLiterals, negLiterals, 0));
 	}
-	
+
 	public static NoGood fromBody(List<Integer> posLiterals, List<Integer> negLiterals, int bodyRepresentingLiteral) {
 		return fromBody(STATIC, posLiterals, negLiterals, bodyRepresentingLiteral);
 	}
-	
+
 	public static NoGood fromBodyInternal(List<Integer> posLiterals, List<Integer> negLiterals, int bodyRepresentingLiteral) {
 		return fromBody(INTERNAL, posLiterals, negLiterals, bodyRepresentingLiteral);
 	}
@@ -167,11 +167,11 @@ public class NoGood implements NoGoodInterface<Integer>, Comparable<NoGood> {
 			public void decreaseActivity() {
 			}
 
-            @Override
-            public NoGood getOriginalNoGood() {
-                return originalNoGood;
-            }
-        };
+			@Override
+			public NoGood getOriginalNoGood() {
+				return originalNoGood;
+			}
+		};
 	}
 
 	public NoGood withoutHead() {

@@ -38,32 +38,32 @@ import java.util.Set;
  */
 public class BodyRepresentingLiteral extends Literal {
 
-    public BodyRepresentingLiteral(RuleAtom atom, boolean positive) {
-        super(atom, positive);
-    }
+	public BodyRepresentingLiteral(RuleAtom atom, boolean positive) {
+		super(atom, positive);
+	}
 
-    @Override
-    public RuleAtom getAtom() {
-        return (RuleAtom) super.getAtom();
-    }
+	@Override
+	public RuleAtom getAtom() {
+		return (RuleAtom) super.getAtom();
+	}
 
-    @Override
-    public BodyRepresentingLiteral negate() {
-        return new BodyRepresentingLiteral(getAtom(), !positive);
-    }
+	@Override
+	public BodyRepresentingLiteral negate() {
+		return new BodyRepresentingLiteral(getAtom(), !positive);
+	}
 
-    @Override
-    public BodyRepresentingLiteral substitute(Substitution substitution) {
-        return this; // a BodyRepresentingLiteral is currently always ground
-    }
+	@Override
+	public BodyRepresentingLiteral substitute(Substitution substitution) {
+		return this; // a BodyRepresentingLiteral is currently always ground
+	}
 
-    @Override
-    public Set<VariableTerm> getBindingVariables() {
-        return Collections.emptySet();
-    }
+	@Override
+	public Set<VariableTerm> getBindingVariables() {
+		return Collections.emptySet();
+	}
 
-    @Override
-    public Set<VariableTerm> getNonBindingVariables() {
-        return Collections.emptySet();
-    }
+	@Override
+	public Set<VariableTerm> getNonBindingVariables() {
+		return Collections.emptySet();
+	}
 }
