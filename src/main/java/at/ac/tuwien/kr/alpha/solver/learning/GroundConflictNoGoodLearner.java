@@ -272,12 +272,13 @@ public class GroundConflictNoGoodLearner {
 				currentOriginalNonGroundNoGood = currentOriginalNoGood == null ? null : currentOriginalNoGood.getNonGroundNoGood();
 				impliedBy.bumpActivity();
 			} // TODO: what if impliedBy == null? Will we go through the loop again with the same conflict reason? Is this correct?
+			// (note: in AlphaTest.problematicRun_3col_1119654162577372 it happens that impliedBy is null, then we exit the loop but then currentConflictReason does not contain a literal of nextAtom
 			processedAtoms.add(nextAtom);
 		} while (numLiteralsInConflictLevel-- > 1);
 		// Add the 1UIP literal.
 		resolutionLiterals.add(atomToLiteral(nextAtom, assignment.getTruth(nextAtom).toBoolean()));
 		if (conflictGeneralisationEnabled && nonGroundResolutionLiterals != null) {
-			if (currentOriginalNonGroundNoGood != null) {
+			if (assignment.getImpliedBy(nextAtom) != null && currentOriginalNonGroundNoGood != null) {
 				nonGroundResolutionLiterals.add(currentOriginalNonGroundNoGood.getLiteral(findAtomInLiterals(nextAtom, currentConflictReason)));
 				nonGroundResolutionLiterals.addAll(getAdditionalLiterals(currentOriginalNonGroundNoGood, currentConflictReason.length));
 			} else if (lastNonGroundLiteral != null) {
