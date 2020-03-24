@@ -114,7 +114,7 @@ public class NoGoodGenerator {
 		final int headId = atomStore.putIfAbsent(groundHeadAtom);
 		
 		// Prepare atom representing the rule body.
-		final RuleAtom bodyAtom = new RuleAtom(nonGroundRule, substitution);
+		final RuleAtom bodyAtom = RuleAtom.ground(nonGroundRule, substitution);
 
 		// Check uniqueness of ground rule by testing whether the
 		// body representing atom already has an id.

@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2019 Siemens AG
+/*
+ * Copyright (c) 2019-2020 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -120,7 +120,7 @@ public class AtomCounterTests {
 	private void createRuleAtom() {
 		Atom atomAA = new BasicAtom(Predicate.getInstance("aa", 0));
 		Rule ruleAA = new Rule(new DisjunctiveHead(Collections.singletonList(atomAA)), Collections.singletonList(new BasicAtom(Predicate.getInstance("bb", 0)).toLiteral(false)));
-		atomStore.putIfAbsent(new RuleAtom(NonGroundRule.constructNonGroundRule(ruleAA), new Substitution()));
+		atomStore.putIfAbsent(RuleAtom.ground(NonGroundRule.constructNonGroundRule(ruleAA), new Substitution()));
 	}
 
 	private void expectGetNumberOfAtoms(AtomCounter atomCounter, Class<? extends Atom> classOfAtoms, int expectedNumber) {

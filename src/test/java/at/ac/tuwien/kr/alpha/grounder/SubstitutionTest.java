@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2018, the Alpha Team.
+/*
+ * Copyright (c) 2016-2018, 2020, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -141,7 +141,7 @@ public class SubstitutionTest {
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
-		RuleAtom ruleAtom = new RuleAtom(nonGroundRule, substitution);
+		RuleAtom ruleAtom = RuleAtom.ground(nonGroundRule, substitution);
 		String substitutionString = (String) ((ConstantTerm<?>) ruleAtom.getTerms().get(1)).getObject();
 		Substitution fromString = Substitution.fromString(substitutionString);
 		assertTrue(substitution.equals(fromString));

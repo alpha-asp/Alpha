@@ -113,16 +113,16 @@ public class NoGoodGeneratorTest {
 			final String nonGroundNoGoodToString = noGood.getNonGroundNoGood() == null ? null : noGood.getNonGroundNoGood().toString();
 			if (hasHead && atomStore.get(headAtom).getPredicate().getName().equals("q")) {
 				// head to body
-				expectNonGroundNoGoodForGroundNoGood(groundNoGoodToString, "*{ -(q(X, Y)), +(_R_(\"3\",\"{}\")) }", nonGroundNoGoodToString);
+				expectNonGroundNoGoodForGroundNoGood(groundNoGoodToString, "*{ -(q(X, Y)), +(_R_(\"3\",(X, X1, Y))) }", nonGroundNoGoodToString);
 			} else if (hasHead && atomStore.get(headAtom) instanceof RuleAtom) {
 				// body-representing atom to full body
-				expectNonGroundNoGoodForGroundNoGood(groundNoGoodToString, "*{ -(_R_(\"3\",\"{}\")), +(p(X, Y)), -(p(X1, Y)), +(X1 = X + 1) }", nonGroundNoGoodToString);
+				expectNonGroundNoGoodForGroundNoGood(groundNoGoodToString, "*{ -(_R_(\"3\",(X, X1, Y))), +(p(X, Y)), -(p(X1, Y)), +(X1 = X + 1) }", nonGroundNoGoodToString);
 			} else if (!hasHead && isNegated(firstLiteral)) {
 				// positive body atom to body-representing atom
-				expectNonGroundNoGoodForGroundNoGood(groundNoGoodToString, "{ -(p(X, Y)), +(_R_(\"3\",\"{}\")) }", nonGroundNoGoodToString);
+				expectNonGroundNoGoodForGroundNoGood(groundNoGoodToString, "{ -(p(X, Y)), +(_R_(\"3\",(X, X1, Y))) }", nonGroundNoGoodToString);
 			} else if (!hasHead && !isNegated(firstLiteral)) {
 				// negative body atom to body-representing atom
-				expectNonGroundNoGoodForGroundNoGood(groundNoGoodToString, "{ +(p(X1, Y)), +(_R_(\"3\",\"{}\")) }", nonGroundNoGoodToString);
+				expectNonGroundNoGoodForGroundNoGood(groundNoGoodToString, "{ +(p(X1, Y)), +(_R_(\"3\",(X, X1, Y))) }", nonGroundNoGoodToString);
 			} else if (hasHead && atomStore.get(atomOf(firstLiteral)).getPredicate().equals(ChoiceAtom.OFF)) {
 				// ChoiceOff
 				expectNonGroundNoGoodForGroundNoGood(groundNoGoodToString, null, nonGroundNoGoodToString);

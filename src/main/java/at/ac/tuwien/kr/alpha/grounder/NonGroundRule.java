@@ -32,18 +32,20 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Represents a non-ground rule or a constraint for the semi-naive grounder.
- * Copyright (c) 2017-2018, the Alpha Team.
  */
 public class NonGroundRule {
 	static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
@@ -71,7 +73,7 @@ public class NonGroundRule {
 		this.bodyAtomsNegative = Collections.unmodifiableList(bodyAtomsNegative);
 
 		this.headAtom = headAtom;
-		this.nonGroundRuleAtom = new RuleAtom(this, new Substitution());
+		this.nonGroundRuleAtom = RuleAtom.nonGround(this);
 
 		checkSafety();
 		this.groundingOrder = new RuleGroundingOrders(this);
@@ -121,6 +123,20 @@ public class NonGroundRule {
 			predicateList.add(headAtom.getPredicate());
 		}
 		return predicateList;
+	}
+
+	public Set<VariableTerm> getOccurringVariables() {
+		final Set<VariableTerm> occurringVariables = new HashSet<>();
+		for (Atom posAtom : bodyAtomsPositive) {
+			occurringVariables.addAll(posAtom.getOccurringVariables());
+		}
+		for (Atom negAtom : bodyAtomsNegative) {
+			occurringVariables.addAll(negAtom.getOccurringVariables());
+		}
+		if (!isConstraint()) {
+			occurringVariables.addAll(headAtom.getOccurringVariables());
+		}
+		return occurringVariables;
 	}
 
 	/**

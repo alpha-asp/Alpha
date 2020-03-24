@@ -29,13 +29,18 @@ package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
 
@@ -46,21 +51,44 @@ import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
 public class RuleAtom implements Atom {
 	public static final Predicate PREDICATE = Predicate.getInstance("_R_", 2, true, true);
 
-	private final List<ConstantTerm<String>> terms;
+	private final List<Term> terms;
+	private final boolean ground;
 
-	private RuleAtom(List<ConstantTerm<String>> terms) {
+	private RuleAtom(List<Term> terms, boolean ground) {
 		if (terms.size() != 2) {
 			throw new IllegalArgumentException();
 		}
 
 		this.terms = terms;
+		this.ground = ground;
 	}
 
-	public RuleAtom(NonGroundRule nonGroundRule, Substitution substitution) {
-		this(Arrays.asList(
+	/**
+	 * Constructs a {@link RuleAtom} representing a ground rule.
+	 * @param nonGroundRule a rule
+	 * @param substitution a substitution that makes the rule ground
+	 * @return a rule atom representing the ground rule
+	 */
+	public static RuleAtom ground(NonGroundRule nonGroundRule, Substitution substitution) {
+		return new RuleAtom(Arrays.asList(
 			getInstance(Integer.toString(nonGroundRule.getRuleId())),
 			getInstance(substitution.toString())
-		));
+		), true);
+	}
+
+	/**
+	 * Constructs a {@link RuleAtom} representing a non-ground rule (to be used in {@link at.ac.tuwien.kr.alpha.common.NonGroundNoGood}s, for example).
+	 * @param nonGroundRule a rule
+	 * @return a rule atom representing the non-ground rule which contains all the variables occurring in the rule
+	 */
+	public static RuleAtom nonGround(NonGroundRule nonGroundRule) {
+		final Set<VariableTerm> occurringVariables = nonGroundRule.getOccurringVariables();
+		final List<Term> sortedVariables = new ArrayList<>(occurringVariables);
+		Collections.sort(sortedVariables);
+		return new RuleAtom(Arrays.asList(
+				getInstance(Integer.toString(nonGroundRule.getRuleId())),
+				FunctionTerm.getInstance("", sortedVariables)
+		), false);
 	}
 
 	@Override
@@ -78,8 +106,7 @@ public class RuleAtom implements Atom {
 
 	@Override
 	public boolean isGround() {
-		// NOTE: Both terms are ConstantTerms, which are ground by definition.
-		return true;
+		return ground;
 	}
 	
 	@Override
@@ -89,7 +116,13 @@ public class RuleAtom implements Atom {
 
 	@Override
 	public Atom substitute(Substitution substitution) {
-		return this;
+		if (ground) {
+			return this;
+		} else {
+			return new RuleAtom(terms.stream()
+					.map(t -> t.substitute(substitution))
+					.collect(Collectors.toList()), false);
+		}
 	}
 
 	@Override

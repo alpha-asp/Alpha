@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -27,14 +27,30 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
+import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.common.IntIterator;
+import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
@@ -73,7 +89,7 @@ public class DummyGrounder implements Grounder {
 	private static Atom atomBB = new BasicAtom(Predicate.getInstance("b", 0));
 	private static Atom atomCC = new BasicAtom(Predicate.getInstance("c", 0));
 	private static Rule ruleABC = new Rule(new DisjunctiveHead(Collections.singletonList(atomCC)), Arrays.asList(atomAA.toLiteral(), atomBB.toLiteral()));
-	private static Atom rule1 = new RuleAtom(NonGroundRule.constructNonGroundRule(ruleABC), new Substitution());
+	private static Atom rule1 = RuleAtom.ground(NonGroundRule.constructNonGroundRule(ruleABC), new Substitution());
 	private Set<Integer> returnedNogoods = new HashSet<>();
 
 	public DummyGrounder(AtomStore atomStore) {
