@@ -134,6 +134,9 @@ public class GroundConflictNoGoodLearner {
 
 	public ConflictAnalysisResult analyzeConflictingNoGood(Antecedent violatedNoGood) {
 		LOGGER.trace("Analyzing violated nogood: {}", violatedNoGood);
+		if (conflictGeneralisationEnabled) {
+			return analyzeConflictingNoGoodAndGeneraliseConflict(violatedNoGood);
+		}
 		return analyzeTrailBased(violatedNoGood);
 	}
 
@@ -303,6 +306,21 @@ public class GroundConflictNoGoodLearner {
 			LOGGER.trace("Backjumping decision level: {}", backjumpingDecisionLevel);
 		}
 		return new ConflictAnalysisResult(learnedNoGood, backjumpingDecisionLevel, resolutionAtoms, computeLBD(learnedLiterals));
+	}
+
+	/**
+	 * Analyzes a conflict and learns both a ground nogood (if possible) and one or more non-ground nogoods (if possible).
+	 *
+	 * This method also contains an implementation of first UIP learning that is redundant to the one in {@link #analyzeTrailBased(Antecedent)} on purpose:
+	 * While the other implementation is designed for efficiency, this one is designed to be easily understood such that
+	 * the connection to conflict generalisation (non-ground conflict learning) becomes apparent.
+	 * This implementation also uses the other one internally to check the correctness of learned ground nogoods.
+	 *
+	 * @param violatedNoGood the violated nogood to start analysis from
+	 * @return an analysis result, possibly including a learned ground nogood and one or more learned non-ground nogoods
+	 */
+	private ConflictAnalysisResult analyzeConflictingNoGoodAndGeneraliseConflict(Antecedent violatedNoGood) {
+		return null; // TODO: implement
 	}
 
 	private List<? extends Literal> getAdditionalLiterals(NonGroundNoGood nonGroundNoGood, int numberOfAlreadyConsideredLiterals) {
