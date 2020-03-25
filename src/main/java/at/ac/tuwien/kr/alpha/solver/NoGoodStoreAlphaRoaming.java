@@ -775,8 +775,14 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		private void addOriginalNoGoodIfConflictGeneralisationEnabled(int otherLiteral, NoGood noGood) {
 			if (conflictGeneralisationEnabled) {
 				final NoGood originalNoGood = originalNoGoods.get(otherLiteral);
-				if (originalNoGood != null) {
-					throw oops("Original nogood already stored: " + originalNoGood);
+				if (originalNoGood != null && !originalNoGood.equals(noGood)) {
+					if (checksEnabled && !originalNoGood.withoutHead().equals(noGood.withoutHead())) {
+						throw oops("Unexpected nogood for literals " + literalToString(forLiteral) + " and " + literalToString(otherLiteral) + ": " + noGood + " (already stored: " + originalNoGood + ")");
+					}
+					if (noGood.hasHead()) {
+						// if two nogoods have the same literals, prefer the one with head because it contains more information
+						originalNoGoods.put(otherLiteral, noGood);
+					}
 				} else {
 					originalNoGoods.put(otherLiteral, noGood);
 				}
