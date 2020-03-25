@@ -187,13 +187,10 @@ public class GroundConflictNoGoodLearner {
 		int numLiteralsInConflictLevel = 0;
 		List<Integer> resolutionLiterals = new ArrayList<>();
 		List<Integer> resolutionAtoms = new ArrayList<>();
-		List<Literal> nonGroundResolutionLiterals = new ArrayList<>();
 		int currentDecisionLevel = assignment.getDecisionLevel();
 		Set<Integer> seenAtoms = new HashSet<>();		// NOTE: other solvers use a global array for seen atoms, this might be slightly faster (initial tests with local arrays showed no significant improvement).
 		Set<Integer> processedAtoms = new HashSet<>();	// Since trail contains 2 entries for MBT->TRUE assigned atoms, explicitly record which seen atoms have ben processed to avoid processing seen atoms twice.
 		int[] currentConflictReason = conflictReason.getReasonLiterals();
-		NoGood currentOriginalNoGood = conflictReason.getOriginalNoGood();
-		NonGroundNoGood currentOriginalNonGroundNoGood = currentOriginalNoGood.getNonGroundNoGood();
 		int backjumpLevel = -1;
 		conflictReason.bumpActivity();
 		TrailAssignment.TrailBackwardsWalker trailWalker = ((TrailAssignment)assignment).getTrailBackwardsWalker();
@@ -211,46 +208,17 @@ public class GroundConflictNoGoodLearner {
 				// Seen atoms have already been dealt with.
 				if (!seenAtoms.contains(atomOf(literal))) {
 					seenAtoms.add(atomOf(literal));
-
-					Literal nonGroundLiteral = null;
-					if (conflictGeneralisationEnabled) {
-						if (currentOriginalNoGood == null) {
-							nonGroundResolutionLiterals = null;
-							LOGGER.warn("Cannot generalise conflict because original nogood unknown for " + reasonsToString(currentConflictReason));
-						} else if (nonGroundResolutionLiterals != null) {
-							if (currentOriginalNonGroundNoGood == null) {
-								nonGroundResolutionLiterals = null;
-								LOGGER.warn("Cannot generalise conflict because non-ground nogood unknown for " + atomStore.noGoodToString(currentOriginalNoGood));
-							} else {
-								// index must be looked up because literals may have different order in antecedent than in original nogood:
-								final int indexOfLiteralInOriginalNogood = currentOriginalNoGood.indexOf(literal);
-								final Literal nonGroundResolutionLiteral = currentOriginalNonGroundNoGood.getLiteral(indexOfLiteralInOriginalNogood);
-								nonGroundLiteral = nonGroundResolutionLiteral;
-								if (!nonGroundResolutionLiteral.getPredicate().equals(atomStore.get(atomOf(literal)).getPredicate())) {
-									throw oops("Wrong non-ground literal assigned to ground literal");
-									// TODO: execute this check only if internal checks enabled (?)
-								}
-							}
-						}
-					}
-
 					int literalDecisionLevel = assignment.getWeakDecisionLevel(atomOf(literal));
 					if (literalDecisionLevel == currentDecisionLevel) {
 						numLiteralsInConflictLevel++;
 					} else {
 						resolutionLiterals.add(literal);
-						if (nonGroundLiteral != null) {
-							nonGroundResolutionLiterals.add(nonGroundLiteral);
-						}
 						if (literalDecisionLevel > backjumpLevel) {
 							backjumpLevel = literalDecisionLevel;
 						}
 					}
 					resolutionAtoms.add(atomOf(literal));
 				}
-			}
-			if (conflictGeneralisationEnabled && nonGroundResolutionLiterals != null && currentOriginalNonGroundNoGood != null) {
-				nonGroundResolutionLiterals.addAll(getAdditionalLiterals(currentOriginalNonGroundNoGood, currentConflictReason.length));
 			}
 			if (LOGGER.isTraceEnabled()) {
 				LOGGER.trace("LiteralsInConflictLevel now: {}", numLiteralsInConflictLevel);
@@ -268,25 +236,17 @@ public class GroundConflictNoGoodLearner {
 			Antecedent impliedBy = assignment.getImpliedBy(nextAtom);
 			if (impliedBy != null) {
 				currentConflictReason = impliedBy.getReasonLiterals();
-				currentOriginalNoGood = impliedBy.getOriginalNoGood();
-				currentOriginalNonGroundNoGood = currentOriginalNoGood == null ? null : currentOriginalNoGood.getNonGroundNoGood();
 				impliedBy.bumpActivity();
 			}
 			processedAtoms.add(nextAtom);
 		} while (numLiteralsInConflictLevel-- > 1);
 		// Add the 1UIP literal.
 		resolutionLiterals.add(atomToLiteral(nextAtom, assignment.getTruth(nextAtom).toBoolean()));
-		// TODO: find and add non-ground 1UIP literal
 
 		int[] learnedLiterals = new int[resolutionLiterals.size()];
 		int i = 0;
 		for (Integer resolutionLiteral : resolutionLiterals) {
 			learnedLiterals[i++] = resolutionLiteral;
-		}
-		if (conflictGeneralisationEnabled && nonGroundResolutionLiterals != null && !nonGroundResolutionLiterals.isEmpty()) {
-			final NonGroundNoGood learnedNonGroundNoGood = NonGroundNoGood.learnt(nonGroundResolutionLiterals);
-			LOGGER.info("Learnt non-ground nogood: " + learnedNonGroundNoGood);
-			// TODO: do something more with it
 		}
 
 		NoGood learnedNoGood = NoGood.learnt(learnedLiterals);
