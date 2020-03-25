@@ -4,13 +4,23 @@ import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.*;
+import at.ac.tuwien.kr.alpha.solver.Antecedent;
+import at.ac.tuwien.kr.alpha.solver.ConflictCause;
+import at.ac.tuwien.kr.alpha.solver.NoGoodStore;
+import at.ac.tuwien.kr.alpha.solver.NoGoodStoreAlphaRoaming;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
+import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
 import static at.ac.tuwien.kr.alpha.solver.AntecedentTest.antecedentsEquals;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Copyright (c) 2016-2019, the Alpha Team.
@@ -61,7 +71,7 @@ public class GroundConflictNoGoodLearnerTest {
 		Antecedent violatedNoGood = conflictCause.getAntecedent();
 		assertNotNull(violatedNoGood);
 		assertTrue(antecedentsEquals(violatedNoGood, n5.asAntecedent()) || antecedentsEquals(violatedNoGood, n7.asAntecedent()));
-		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(conflictCause.getAntecedent());
+		ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(conflictCause.getAntecedent());
 		NoGood learnedNoGood = analysisResult.learnedNoGood;
 		assertEquals(new NoGood(fromOldLiterals(1, -8)), learnedNoGood);
 		int backjumpingDecisionLevel = analysisResult.backjumpLevel;
@@ -83,7 +93,7 @@ public class GroundConflictNoGoodLearnerTest {
 		ConflictCause conflictCause = store.add(11, n2);
 		assertNotNull(conflictCause);
 		assertNotNull(conflictCause.getAntecedent());
-		GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.getAntecedent());
+		ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictingNoGood(conflictCause.getAntecedent());
 		assertNull(conflictAnalysisResult.learnedNoGood);
 		assertEquals(2, conflictAnalysisResult.backjumpLevel);
 

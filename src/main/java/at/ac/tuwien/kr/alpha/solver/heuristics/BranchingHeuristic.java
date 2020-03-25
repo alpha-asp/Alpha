@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, 2018-2019 Siemens AG
+/*
+ * Copyright (c) 2016, 2018-2020 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -26,7 +26,7 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
+import at.ac.tuwien.kr.alpha.solver.learning.ConflictAnalysisResult;
 
 import java.util.Collection;
 
@@ -56,7 +56,7 @@ public interface BranchingHeuristic {
 	 * 
 	 * @param analysisResult
 	 */
-	void analyzedConflict(GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult);
+	void analyzedConflict(ConflictAnalysisResult analysisResult);
 
 	/**
 	 * Stores a newly grounded {@link NoGood} and updates associated activity counters.

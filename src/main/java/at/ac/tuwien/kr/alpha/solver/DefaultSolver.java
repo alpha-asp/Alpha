@@ -48,6 +48,7 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.ChainedBranchingHeuristics;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
+import at.ac.tuwien.kr.alpha.solver.learning.ConflictAnalysisResult;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +72,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomToNegatedLiteral;
 import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
-import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
+import static at.ac.tuwien.kr.alpha.solver.learning.ConflictAnalysisResult.UNSAT;
 
 /**
  * The new default solver employed in Alpha.
@@ -253,7 +254,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	 * @return false iff the analysis result shows that the set of NoGoods is unsatisfiable.
 	 */
 	private boolean learnBackjumpAddFromConflict(ConflictCause conflictCause) {
-		GroundConflictNoGoodLearner.ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(conflictCause.getAntecedent());
+		ConflictAnalysisResult analysisResult = learner.analyzeConflictingNoGood(conflictCause.getAntecedent());
 
 		LOGGER.debug("Analysis result: {}", analysisResult);
 
@@ -496,7 +497,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private NoGood fixContradiction(Map.Entry<Integer, NoGood> noGoodEntry, ConflictCause conflictCause) {
 		LOGGER.debug("Attempting to fix violation of {} caused by {}", noGoodEntry.getValue(), conflictCause);
 
-		GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictFromAddingNoGood(conflictCause.getAntecedent());
+		ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictFromAddingNoGood(conflictCause.getAntecedent());
 		if (conflictAnalysisResult == UNSAT) {
 			return NoGood.UNSAT;
 		}

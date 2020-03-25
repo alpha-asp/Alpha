@@ -1,19 +1,19 @@
 /*
- * Copyright (c) 2016-2018, 2020, the Alpha Team.
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
- * 
+ *
  * Additional changes made by Siemens.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,51 +25,50 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.solver.heuristics;
+package at.ac.tuwien.kr.alpha.solver.learning;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.learning.ConflictAnalysisResult;
 
 import java.util.Collection;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
 
-/**
- * The default heuristic that had been used by {@link at.ac.tuwien.kr.alpha.solver.DefaultSolver} before {@link BerkMin} was implemented.
- *
- */
-public class NaiveHeuristic implements BranchingHeuristic {
+public class ConflictAnalysisResult {
+	public static final ConflictAnalysisResult UNSAT = new ConflictAnalysisResult();
 
-	private final ChoiceManager choiceManager;
+	public final NoGood learnedNoGood;
+	public final int backjumpLevel;
+	public final Collection<Integer> resolutionAtoms;
+	public final int lbd;
 
-	public NaiveHeuristic(ChoiceManager choiceManager) {
-		this.choiceManager = choiceManager;
+	private ConflictAnalysisResult() {
+		learnedNoGood = null;
+		backjumpLevel = -1;
+		resolutionAtoms = null;
+		lbd = LBD_NO_VALUE;
 	}
 
-	@Override
-	public void violatedNoGood(NoGood violatedNoGood) {
+	public ConflictAnalysisResult(NoGood learnedNoGood, int backjumpLevel, Collection<Integer> resolutionAtoms) {
+		this(learnedNoGood, backjumpLevel, resolutionAtoms, LBD_NO_VALUE);
 	}
 
-	@Override
-	public void analyzedConflict(ConflictAnalysisResult analysisResult) {
+	public ConflictAnalysisResult(NoGood learnedNoGood, int backjumpLevel, Collection<Integer> resolutionAtoms, int lbd) {
+		if (backjumpLevel < 0) {
+			throw oops("Backjumping level is smaller than 0");
+		}
+
+		this.learnedNoGood = learnedNoGood;
+		this.backjumpLevel = backjumpLevel;
+		this.resolutionAtoms = resolutionAtoms;
+		this.lbd = lbd;
 	}
 
-	@Override
-	public void newNoGood(NoGood newNoGood) {
-	}
-
-	@Override
-	public void newNoGoods(Collection<NoGood> newNoGoods) {
-	}
-
-	@Override
-	public int chooseLiteral() {
-		return atomToLiteral(choiceManager.getNextActiveChoiceAtom());
-	}
-	
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName();
+		if (this == UNSAT) {
+			return "UNSATISFIABLE";
+		}
+		return learnedNoGood + "@" + backjumpLevel;
 	}
 }

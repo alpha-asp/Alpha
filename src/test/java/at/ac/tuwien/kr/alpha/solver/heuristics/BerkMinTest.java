@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2018 Siemens AG
+/*
+ * Copyright (c) 2016-2020 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.solver.NaiveNoGoodStore;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
-import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
+import at.ac.tuwien.kr.alpha.solver.learning.ConflictAnalysisResult;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,8 +45,6 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * Tests {@link BerkMin}.
- * 
- * Copyright (c) 2016 Siemens AG
  *
  */
 public class BerkMinTest {

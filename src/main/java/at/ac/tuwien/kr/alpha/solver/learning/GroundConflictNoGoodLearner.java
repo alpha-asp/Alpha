@@ -88,45 +88,6 @@ public class GroundConflictNoGoodLearner {
 		return highestDecisionLevel - 1;
 	}
 
-	public static class ConflictAnalysisResult {
-		public static final ConflictAnalysisResult UNSAT = new ConflictAnalysisResult();
-
-		public final NoGood learnedNoGood;
-		public final int backjumpLevel;
-		public final Collection<Integer> resolutionAtoms;
-		public final int lbd;
-
-		private ConflictAnalysisResult() {
-			learnedNoGood = null;
-			backjumpLevel = -1;
-			resolutionAtoms = null;
-			lbd = LBD_NO_VALUE;
-		}
-
-		public ConflictAnalysisResult(NoGood learnedNoGood, int backjumpLevel, Collection<Integer> resolutionAtoms) {
-			this(learnedNoGood, backjumpLevel, resolutionAtoms, LBD_NO_VALUE);
-		}
-
-		public ConflictAnalysisResult(NoGood learnedNoGood, int backjumpLevel, Collection<Integer> resolutionAtoms, int lbd) {
-			if (backjumpLevel < 0) {
-				throw oops("Backjumping level is smaller than 0");
-			}
-
-			this.learnedNoGood = learnedNoGood;
-			this.backjumpLevel = backjumpLevel;
-			this.resolutionAtoms = resolutionAtoms;
-			this.lbd = lbd;
-		}
-
-		@Override
-		public String toString() {
-			if (this == UNSAT) {
-				return "UNSATISFIABLE";
-			}
-			return learnedNoGood + "@" + backjumpLevel;
-		}
-	}
-
 	public GroundConflictNoGoodLearner(Assignment assignment, AtomStore atomStore) {
 		this.assignment = assignment;
 		this.atomStore = atomStore;
