@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -33,8 +33,11 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringJoiner;
 import java.util.stream.Collector;
@@ -117,4 +120,22 @@ public class Util {
 		// Growth factor is 1.5.
 		return oldSize + (oldSize >> 1);
 	}
+
+	public static Set<Integer> intArrayToLinkedHashSet(int[] array) {
+		final Set<Integer> set = new LinkedHashSet<>(array.length);
+		for (int element : array) {
+			set.add(element);
+		}
+		return set;
+	}
+
+	public static int[] collectionToIntArray(Collection<? extends Integer> collection) {
+		final int[] array = new int[collection.size()];
+		int i = 0;
+		for (Integer element : collection) {
+			array[i++] = element;
+		}
+		return array;
+	}
+
 }

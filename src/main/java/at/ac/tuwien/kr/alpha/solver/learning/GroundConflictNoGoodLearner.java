@@ -30,14 +30,13 @@ package at.ac.tuwien.kr.alpha.solver.learning;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.NonGroundNoGood;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.solver.Antecedent;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -62,8 +61,6 @@ public class GroundConflictNoGoodLearner {
 
 	private final Assignment assignment;
 	private final AtomStore atomStore;
-
-	private final boolean conflictGeneralisationEnabled = true; // TODO: make parameterisable
 
 	public int computeConflictFreeBackjumpingLevel(NoGood violatedNoGood) {
 		int highestDecisionLevel = -1;
@@ -95,9 +92,6 @@ public class GroundConflictNoGoodLearner {
 
 	public ConflictAnalysisResult analyzeConflictingNoGood(Antecedent violatedNoGood) {
 		LOGGER.trace("Analyzing violated nogood: {}", violatedNoGood);
-		if (conflictGeneralisationEnabled) {
-			return analyzeConflictingNoGoodAndGeneraliseConflict(violatedNoGood);
-		}
 		return analyzeTrailBased(violatedNoGood);
 	}
 
@@ -140,6 +134,10 @@ public class GroundConflictNoGoodLearner {
 	}
 
 	private ConflictAnalysisResult analyzeTrailBased(Antecedent conflictReason) {
+		return analyzeTrailBased(conflictReason, true);
+	}
+
+	ConflictAnalysisResult analyzeTrailBased(Antecedent conflictReason, boolean minimizeLearnedNoGood) {
 		LOGGER.trace("Analyzing trail based.");
 		if (assignment.getDecisionLevel() == 0) {
 			LOGGER.trace("Conflict on decision level 0.");
@@ -204,7 +202,16 @@ public class GroundConflictNoGoodLearner {
 		// Add the 1UIP literal.
 		resolutionLiterals.add(atomToLiteral(nextAtom, assignment.getTruth(nextAtom).toBoolean()));
 
-		int[] learnedLiterals = minimizeLearnedLiterals(resolutionLiterals, seenAtoms);
+		final int[] learnedLiterals;
+		if (minimizeLearnedNoGood) {
+			learnedLiterals = minimizeLearnedLiterals(resolutionLiterals, seenAtoms);
+		} else {
+			learnedLiterals = new int[resolutionLiterals.size()];
+			int i = 0;
+			for (Integer resolutionLiteral : resolutionLiterals) {
+				learnedLiterals[i++] = resolutionLiteral;
+			}
+		}
 
 		NoGood learnedNoGood = NoGood.learnt(learnedLiterals);
 		if (LOGGER.isTraceEnabled()) {
@@ -254,29 +261,6 @@ public class GroundConflictNoGoodLearner {
 			learnedLiterals = Arrays.copyOf(learnedLiterals, i);
 		}
 		return learnedLiterals;
-	}
-
-	/**
-	 * Analyzes a conflict and learns both a ground nogood (if possible) and one or more non-ground nogoods (if possible).
-	 *
-	 * This method also contains an implementation of first UIP learning that is redundant to the one in {@link #analyzeTrailBased(Antecedent)} on purpose:
-	 * While the other implementation is designed for efficiency, this one is designed to be easily understood such that
-	 * the connection to conflict generalisation (non-ground conflict learning) becomes apparent.
-	 * This implementation also uses the other one internally to check the correctness of learned ground nogoods.
-	 *
-	 * @param violatedNoGood the violated nogood to start analysis from
-	 * @return an analysis result, possibly including a learned ground nogood and one or more learned non-ground nogoods
-	 */
-	private ConflictAnalysisResult analyzeConflictingNoGoodAndGeneraliseConflict(Antecedent violatedNoGood) {
-		return null; // TODO: implement
-	}
-
-	private List<? extends Literal> getAdditionalLiterals(NonGroundNoGood nonGroundNoGood, int numberOfAlreadyConsideredLiterals) {
-		final List<Literal> result = new ArrayList<>(nonGroundNoGood.size() - numberOfAlreadyConsideredLiterals);
-		for (int i = numberOfAlreadyConsideredLiterals; i < nonGroundNoGood.size(); i++) {
-			result.add(nonGroundNoGood.getLiteral(i));
-		}
-		return result;
 	}
 
 	private int computeLBD(int[] literals) {
