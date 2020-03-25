@@ -249,8 +249,6 @@ public class GroundConflictNoGoodLearner {
 						continue learnedLiteralsLoop;
 					}
 				}
-				// Debug: don't delete anything.
-				//learnedLiterals[i++] = resolutionLiteral;
 			}
 		}
 		// Shrink array if we did not copy over all literals from resolutionLiterals.
