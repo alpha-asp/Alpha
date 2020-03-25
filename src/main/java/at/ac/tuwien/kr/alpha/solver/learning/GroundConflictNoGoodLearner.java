@@ -49,7 +49,6 @@ import java.util.stream.IntStream;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.common.Literals.findAtomInLiterals;
 import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
 import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
 
@@ -192,7 +191,6 @@ public class GroundConflictNoGoodLearner {
 		int[] currentConflictReason = conflictReason.getReasonLiterals();
 		NoGood currentOriginalNoGood = conflictReason.getOriginalNoGood();
 		NonGroundNoGood currentOriginalNonGroundNoGood = currentOriginalNoGood.getNonGroundNoGood();
-		Literal lastNonGroundLiteral = null;
 		int backjumpLevel = -1;
 		conflictReason.bumpActivity();
 		TrailAssignment.TrailBackwardsWalker trailWalker = ((TrailAssignment)assignment).getTrailBackwardsWalker();
@@ -236,7 +234,6 @@ public class GroundConflictNoGoodLearner {
 					int literalDecisionLevel = assignment.getWeakDecisionLevel(atomOf(literal));
 					if (literalDecisionLevel == currentDecisionLevel) {
 						numLiteralsInConflictLevel++;
-						lastNonGroundLiteral = nonGroundLiteral;	// TODO: does this work in general? I don´t understand yet if the last literal seen here is always the 1UIP.
 					} else {
 						resolutionLiterals.add(literal);
 						if (nonGroundLiteral != null) {
@@ -271,20 +268,12 @@ public class GroundConflictNoGoodLearner {
 				currentOriginalNoGood = impliedBy.getOriginalNoGood();
 				currentOriginalNonGroundNoGood = currentOriginalNoGood == null ? null : currentOriginalNoGood.getNonGroundNoGood();
 				impliedBy.bumpActivity();
-			} // TODO: what if impliedBy == null? Will we go through the loop again with the same conflict reason? Is this correct?
-			// (note: in AlphaTest.problematicRun_3col_1119654162577372 it happens that impliedBy is null, then we exit the loop but then currentConflictReason does not contain a literal of nextAtom
+			}
 			processedAtoms.add(nextAtom);
 		} while (numLiteralsInConflictLevel-- > 1);
 		// Add the 1UIP literal.
 		resolutionLiterals.add(atomToLiteral(nextAtom, assignment.getTruth(nextAtom).toBoolean()));
-		if (conflictGeneralisationEnabled && nonGroundResolutionLiterals != null) {
-			if (assignment.getImpliedBy(nextAtom) != null && currentOriginalNonGroundNoGood != null) {
-				nonGroundResolutionLiterals.add(currentOriginalNonGroundNoGood.getLiteral(findAtomInLiterals(nextAtom, currentConflictReason)));
-				nonGroundResolutionLiterals.addAll(getAdditionalLiterals(currentOriginalNonGroundNoGood, currentConflictReason.length));
-			} else if (lastNonGroundLiteral != null) {
-				nonGroundResolutionLiterals.add(lastNonGroundLiteral);
-			}
-		}
+		// TODO: find and add non-ground 1UIP literal
 
 		int[] learnedLiterals = new int[resolutionLiterals.size()];
 		int i = 0;
