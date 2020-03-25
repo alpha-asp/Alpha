@@ -420,12 +420,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 			return new ConflictCause(noGood.asAntecedent());
 		}
 
-		ConflictCause conflictCause = binaryWatches[a].add(noGood);
-		if (conflictCause != null) {
-			return conflictCause;
-		}
+		// The above violation check guarantees that adding (and propagation on other literal) results in no conflict.
+		binaryWatches[a].add(noGood);
+		binaryWatches[b].add(noGood);
 		hasBinaryNoGoods = true;
-		return binaryWatches[b].add(noGood);
+		return null;
 	}
 
 	private ConflictCause assignWeakComplement(final int literalIndex, final NoGoodInterface<Integer> impliedBy, int decisionLevel) {

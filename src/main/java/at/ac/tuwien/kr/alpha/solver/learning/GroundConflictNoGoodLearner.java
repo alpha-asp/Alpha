@@ -243,11 +243,7 @@ public class GroundConflictNoGoodLearner {
 		// Add the 1UIP literal.
 		resolutionLiterals.add(atomToLiteral(nextAtom, assignment.getTruth(nextAtom).toBoolean()));
 
-		int[] learnedLiterals = new int[resolutionLiterals.size()];
-		int i = 0;
-		for (Integer resolutionLiteral : resolutionLiterals) {
-			learnedLiterals[i++] = resolutionLiteral;
-		}
+		int[] learnedLiterals = minimizeLearnedLiterals(resolutionLiterals, seenAtoms);
 
 		NoGood learnedNoGood = NoGood.learnt(learnedLiterals);
 		if (LOGGER.isTraceEnabled()) {
@@ -266,6 +262,37 @@ public class GroundConflictNoGoodLearner {
 			LOGGER.trace("Backjumping decision level: {}", backjumpingDecisionLevel);
 		}
 		return new ConflictAnalysisResult(learnedNoGood, backjumpingDecisionLevel, resolutionAtoms, computeLBD(learnedLiterals));
+	}
+
+	private int[] minimizeLearnedLiterals(List<Integer> resolutionLiterals, Set<Integer> seenAtoms) {
+		int[] learnedLiterals = new int[resolutionLiterals.size()];
+		int i = 0;
+		// Do local clause minimization: if an implied literal has all its antecedents seen (i.e., in the clause already), it can be removed.
+		learnedLiteralsLoop:
+		for (Integer resolutionLiteral : resolutionLiterals) {
+			if (assignment.getWeakDecisionLevel(atomOf(resolutionLiteral)) == 0) {
+				// Skip literals from decision level 0.
+				continue;
+			}
+			Antecedent antecedent = assignment.getImpliedBy(atomOf(resolutionLiteral));
+			if (antecedent == null) {
+				// The resolutionLiteral is a decision, keep it.
+				learnedLiterals[i++] = resolutionLiteral;
+			} else {
+				for (int antecedentReasonLiteral : antecedent.getReasonLiterals()) {
+					// Only add current resolutionLiteral if at least one of its antecedents has not been seen already.
+					if (!seenAtoms.contains(atomOf(antecedentReasonLiteral))) {
+						learnedLiterals[i++] = resolutionLiteral;
+						continue learnedLiteralsLoop;
+					}
+				}
+			}
+		}
+		// Shrink array if we did not copy over all literals from resolutionLiterals.
+		if (i < resolutionLiterals.size()) {
+			learnedLiterals = Arrays.copyOf(learnedLiterals, i);
+		}
+		return learnedLiterals;
 	}
 
 	/**
