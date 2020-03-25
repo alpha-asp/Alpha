@@ -40,6 +40,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.intArrayToLinkedHashSet;
@@ -131,10 +132,19 @@ public class NonGroundConflictNoGoodLearnerTest {
 		assertEquals(ng6, antecedent.getOriginalNoGood());
 
 		final ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictingNoGoodAndGeneraliseConflict(antecedent);
-		final Set<Integer> expectedLearnedNoGood = new HashSet<>();
+		Set<Integer> expectedLearnedNoGood = new HashSet<>();
+		expectedLearnedNoGood.add(atomToLiteral(x4, true));
+		expectedLearnedNoGood.add(atomToLiteral(x21, false));
+		assert conflictAnalysisResult.learnedNoGood != null;
+		assertEquals(expectedLearnedNoGood, intArrayToLinkedHashSet(conflictAnalysisResult.learnedNoGood.asAntecedent().getReasonLiterals()));
+
+		final List<NoGood> additionalLearnedNoGoods = conflictAnalysisResult.getAdditionalLearnedNoGoods();
+		assertEquals(1, additionalLearnedNoGoods.size());
+		expectedLearnedNoGood = new HashSet<>();
 		expectedLearnedNoGood.add(atomToLiteral(x1, false));
 		expectedLearnedNoGood.add(atomToLiteral(x21, false));
 		expectedLearnedNoGood.add(atomToLiteral(x31, false));
-		assertEquals(expectedLearnedNoGood, intArrayToLinkedHashSet(conflictAnalysisResult.learnedNoGood.asAntecedent().getReasonLiterals()));
+		System.out.println(atomStore.noGoodToString(additionalLearnedNoGoods.get(0)));
+		assertEquals(expectedLearnedNoGood, intArrayToLinkedHashSet(additionalLearnedNoGoods.get(0).asAntecedent().getReasonLiterals()));
 	}
 }

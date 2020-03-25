@@ -42,6 +42,7 @@ import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.collectionToIntArray;
 import static at.ac.tuwien.kr.alpha.Util.intArrayToLinkedHashSet;
+import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
 
@@ -72,13 +73,28 @@ public class NonGroundConflictNoGoodLearner {
 	 * @return an analysis result, possibly including a learned ground nogood and one or more learned non-ground nogoods
 	 */
 	ConflictAnalysisResult analyzeConflictingNoGoodAndGeneraliseConflict(Antecedent violatedNoGood) {
+		NoGood firstLearnedNoGood = null;
+		List<NoGood> additionalLearnedNoGoods = new ArrayList<>();
 		Set<Integer> currentNoGood;
 		Set<Integer> resolvent = intArrayToLinkedHashSet(violatedNoGood.getReasonLiterals());
 		do {
 			currentNoGood = resolvent;
 			resolvent = makeOneResolutionStep(currentNoGood);
+			if (resolvent != null && containsUIP(resolvent)) {
+				final NoGood learntNoGood = createLearntNoGood(resolvent);
+				if (firstLearnedNoGood == null) {
+					firstLearnedNoGood = learntNoGood;
+				} else {
+					additionalLearnedNoGoods.add(learntNoGood);
+				}
+			}
 		} while (resolvent != null);
-		return new ConflictAnalysisResult(NoGood.learnt(collectionToIntArray(currentNoGood)), 0, Collections.emptyList()); // TODO
+		// TODO: enhance conflictAnalysisResult with data from ground analysis
+		final ConflictAnalysisResult conflictAnalysisResult = new ConflictAnalysisResult(firstLearnedNoGood, 0, Collections.emptyList());
+		if (!additionalLearnedNoGoods.isEmpty()) {
+			conflictAnalysisResult.addLearnedNoGoods(additionalLearnedNoGoods);
+		}
+		return conflictAnalysisResult;
 	}
 
 	/**
@@ -111,6 +127,28 @@ public class NonGroundConflictNoGoodLearner {
 			}
 		}
 		return resolvent;
+	}
+
+	private boolean containsUIP(Set<Integer> resolvent) {
+		final int currentDecisionLevel = assignment.getDecisionLevel();
+		boolean containsLiteralOnCurrentDecisionLevel = false;
+		for (Integer literal : resolvent) {
+			if (assignment.getWeakDecisionLevel(atomOf(literal)) == currentDecisionLevel) {
+				if (containsLiteralOnCurrentDecisionLevel) {
+					return false;
+				} else {
+					containsLiteralOnCurrentDecisionLevel = true;
+				}
+			}
+		}
+		if (!containsLiteralOnCurrentDecisionLevel) {
+			throw oops("Resolvent does not contain any literal from the current decsion level: " + resolvent);
+		}
+		return true;
+	}
+
+	private NoGood createLearntNoGood(Set<Integer> resolvent) {
+		return NoGood.learnt(collectionToIntArray(resolvent));
 	}
 
 	private List<? extends Literal> getAdditionalLiterals(NonGroundNoGood nonGroundNoGood, int numberOfAlreadyConsideredLiterals) {

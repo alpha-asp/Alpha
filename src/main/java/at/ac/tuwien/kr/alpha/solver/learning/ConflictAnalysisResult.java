@@ -30,6 +30,8 @@ package at.ac.tuwien.kr.alpha.solver.learning;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
@@ -41,6 +43,8 @@ public class ConflictAnalysisResult {
 	public final int backjumpLevel;
 	public final Collection<Integer> resolutionAtoms;
 	public final int lbd;
+
+	private List<NoGood> additionalLearnedNoGoods;
 
 	private ConflictAnalysisResult() {
 		learnedNoGood = null;
@@ -62,6 +66,26 @@ public class ConflictAnalysisResult {
 		this.backjumpLevel = backjumpLevel;
 		this.resolutionAtoms = resolutionAtoms;
 		this.lbd = lbd;
+	}
+
+	/**
+	 * Adds nogoods that have been learned additionally to the primary learned nogood on non-first UIPs.
+	 * @param additionalLearnedNoGoods the nogoods learnt on non-first UIPs
+	 */
+	void addLearnedNoGoods(List<NoGood> additionalLearnedNoGoods) {
+		if (this.additionalLearnedNoGoods == null) {
+			this.additionalLearnedNoGoods = additionalLearnedNoGoods;
+		} else {
+			this.additionalLearnedNoGoods.addAll(additionalLearnedNoGoods);
+		}
+	}
+
+	/**
+	 * Gets a list of nogoods that have been learned additionally to the primary learned nogood on non-first UIPs.
+	 * @return a list of additional learned nogoods
+	 */
+	List<NoGood> getAdditionalLearnedNoGoods() {
+		return additionalLearnedNoGoods == null ? Collections.emptyList() : Collections.unmodifiableList(additionalLearnedNoGoods);
 	}
 
 	@Override
