@@ -74,7 +74,8 @@ public class NonGroundConflictNoGoodLearnerTest {
 	 */
 	@Test
 	public void exampleFromSatisfiabilityHandbook() {
-		final NonGroundConflictNoGoodLearner learner = new NonGroundConflictNoGoodLearner(assignment, atomStore);
+		final GroundConflictNoGoodLearner groundLearner = new GroundConflictNoGoodLearner(assignment, atomStore);
+		final NonGroundConflictNoGoodLearner learner = new NonGroundConflictNoGoodLearner(assignment, groundLearner);
 		int x1 = atomStore.putIfAbsent(new BasicAtom(Predicate.getInstance("x1", 0)));
 		int x2 = atomStore.putIfAbsent(new BasicAtom(Predicate.getInstance("x2", 0)));
 		int x3 = atomStore.putIfAbsent(new BasicAtom(Predicate.getInstance("x3", 0)));

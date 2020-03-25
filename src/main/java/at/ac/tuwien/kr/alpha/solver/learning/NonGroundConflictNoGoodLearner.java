@@ -26,7 +26,6 @@
 package at.ac.tuwien.kr.alpha.solver.learning;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.NonGroundNoGood;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
@@ -35,9 +34,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.collectionToIntArray;
@@ -48,16 +47,37 @@ import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
 
 /**
  * Conflict-driven learning on ground clauses that also learns non-ground nogoods.
+ *
+ * This class builds upon an underlying {@link GroundConflictNoGoodLearner}, to which it acts as a proxy for all operations
+ * not implemented on the non-ground level.
+ * The non-ground learning capabilities implemented here are not designed for efficiency (yet), so this class should only
+ * be used in an "offline" conflict generalisation mode.
  */
-public class NonGroundConflictNoGoodLearner {
+public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NonGroundConflictNoGoodLearner.class);
 
 	private final Assignment assignment;
-	private final AtomStore atomStore;
+	private final GroundConflictNoGoodLearner groundLearner;
 
-	public NonGroundConflictNoGoodLearner(Assignment assignment, AtomStore atomStore) {
+	public NonGroundConflictNoGoodLearner(Assignment assignment, GroundConflictNoGoodLearner groundLearner) {
 		this.assignment = assignment;
-		this.atomStore = atomStore;
+		this.groundLearner = groundLearner;
+	}
+
+	@Override
+	public int computeConflictFreeBackjumpingLevel(NoGood noGood) {
+		return groundLearner.computeConflictFreeBackjumpingLevel(noGood);
+	}
+
+	@Override
+	public ConflictAnalysisResult analyzeConflictFromAddingNoGood(Antecedent antecedent) {
+		return groundLearner.analyzeConflictFromAddingNoGood(antecedent);
+	}
+
+	@Override
+	public ConflictAnalysisResult analyzeConflictingNoGood(Antecedent violatedNoGood) {
+		LOGGER.trace("Analyzing violated nogood: {}", violatedNoGood);
+		return analyzeConflictingNoGoodAndGeneraliseConflict(violatedNoGood);
 	}
 
 	/**
@@ -89,12 +109,15 @@ public class NonGroundConflictNoGoodLearner {
 				}
 			}
 		} while (resolvent != null);
-		// TODO: enhance conflictAnalysisResult with data from ground analysis
-		final ConflictAnalysisResult conflictAnalysisResult = new ConflictAnalysisResult(firstLearnedNoGood, 0, Collections.emptyList());
-		if (!additionalLearnedNoGoods.isEmpty()) {
-			conflictAnalysisResult.addLearnedNoGoods(additionalLearnedNoGoods);
+		final ConflictAnalysisResult groundAnalysisResultNotMinimized = groundLearner.analyzeTrailBased(violatedNoGood, false);
+		if (!Objects.equals(groundAnalysisResultNotMinimized.learnedNoGood, firstLearnedNoGood)) {
+			throw oops("Learned nogood is not the same as the one computed by ground analysis");
 		}
-		return conflictAnalysisResult;
+		final ConflictAnalysisResult analysisResult = groundLearner.analyzeConflictingNoGood(violatedNoGood);
+		if (!additionalLearnedNoGoods.isEmpty()) {
+			analysisResult.addLearnedNoGoods(additionalLearnedNoGoods);
+		}
+		return analysisResult;
 	}
 
 	/**

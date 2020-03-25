@@ -49,7 +49,9 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.ChainedBranchingHeuristics;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
 import at.ac.tuwien.kr.alpha.solver.learning.ConflictAnalysisResult;
+import at.ac.tuwien.kr.alpha.solver.learning.ConflictNoGoodLearner;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
+import at.ac.tuwien.kr.alpha.solver.learning.NonGroundConflictNoGoodLearner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,7 +88,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final ChoiceManager choiceManager;
 	private final WritableAssignment assignment;
 
-	private final GroundConflictNoGoodLearner learner;
+	private final ConflictNoGoodLearner learner;
 
 	private final BranchingHeuristic branchingHeuristic;
 
@@ -98,6 +100,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final boolean disableNoGoodDeletion;
 
 	private final PerformanceLog performanceLog;
+
+	private final boolean conflictGeneralisationEnabled = true; // TODO: make parameterisable
 	
 	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, SystemConfig config, HeuristicsConfiguration heuristicsConfiguration) {
 		super(atomStore, grounder);
@@ -105,7 +109,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		this.assignment = assignment;
 		this.store = store;
 		this.choiceManager = new ChoiceManager(assignment, store);
-		this.learner = new GroundConflictNoGoodLearner(assignment, atomStore);
+		final GroundConflictNoGoodLearner groundLearner = new GroundConflictNoGoodLearner(assignment, atomStore);
+		this.learner = conflictGeneralisationEnabled ? new NonGroundConflictNoGoodLearner(assignment, groundLearner) : groundLearner;
 		this.branchingHeuristic = chainFallbackHeuristic(grounder, assignment, random, heuristicsConfiguration);
 		this.disableJustifications = config.isDisableJustificationSearch();
 		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();

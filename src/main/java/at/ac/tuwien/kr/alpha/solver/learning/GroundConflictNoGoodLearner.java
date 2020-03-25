@@ -56,12 +56,13 @@ import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
  *
  * Copyright (c) 2016-2020, the Alpha Team.
  */
-public class GroundConflictNoGoodLearner {
+public class GroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(GroundConflictNoGoodLearner.class);
 
 	private final Assignment assignment;
 	private final AtomStore atomStore;
 
+	@Override
 	public int computeConflictFreeBackjumpingLevel(NoGood violatedNoGood) {
 		int highestDecisionLevel = -1;
 		int secondHighestDecisionLevel = -1;
@@ -90,11 +91,13 @@ public class GroundConflictNoGoodLearner {
 		this.atomStore = atomStore;
 	}
 
+	@Override
 	public ConflictAnalysisResult analyzeConflictingNoGood(Antecedent violatedNoGood) {
 		LOGGER.trace("Analyzing violated nogood: {}", violatedNoGood);
 		return analyzeTrailBased(violatedNoGood);
 	}
 
+	@Override
 	public ConflictAnalysisResult analyzeConflictFromAddingNoGood(Antecedent violatedNoGood) {
 		LOGGER.trace("Analyzing conflict caused by adding the (violated) nogood: {}", violatedNoGood);
 		// Simply compute appropriate backjumping level.
