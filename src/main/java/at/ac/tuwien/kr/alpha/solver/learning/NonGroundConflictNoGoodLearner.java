@@ -94,6 +94,10 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 	 * @return an analysis result, possibly including a learned ground nogood and one or more learned non-ground nogoods
 	 */
 	ConflictAnalysisResult analyzeConflictingNoGoodAndGeneraliseConflict(Antecedent violatedNoGood) {
+		if (assignment.getDecisionLevel() == 0) {
+			LOGGER.trace("Conflict on decision level 0.");
+			return ConflictAnalysisResult.UNSAT;
+		}
 		final TrailAssignment.TrailBackwardsWalker trailWalker = ((TrailAssignment)assignment).getTrailBackwardsWalker();
 		NoGood firstLearnedNoGood = null;
 		List<NoGood> additionalLearnedNoGoods = new ArrayList<>();
