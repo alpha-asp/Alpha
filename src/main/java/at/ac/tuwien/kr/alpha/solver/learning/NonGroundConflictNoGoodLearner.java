@@ -30,6 +30,7 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.NonGroundNoGood;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.solver.Antecedent;
+import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,13 +94,14 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 	 * @return an analysis result, possibly including a learned ground nogood and one or more learned non-ground nogoods
 	 */
 	ConflictAnalysisResult analyzeConflictingNoGoodAndGeneraliseConflict(Antecedent violatedNoGood) {
+		final TrailAssignment.TrailBackwardsWalker trailWalker = ((TrailAssignment)assignment).getTrailBackwardsWalker();
 		NoGood firstLearnedNoGood = null;
 		List<NoGood> additionalLearnedNoGoods = new ArrayList<>();
 		Set<Integer> currentNoGood;
 		Set<Integer> resolvent = intArrayToLinkedHashSet(violatedNoGood.getReasonLiterals());
 		do {
 			currentNoGood = resolvent;
-			resolvent = makeOneResolutionStep(currentNoGood);
+			resolvent = makeOneResolutionStep(currentNoGood, trailWalker);
 			if (resolvent != null && containsUIP(resolvent)) {
 				final NoGood learntNoGood = createLearntNoGood(resolvent);
 				if (firstLearnedNoGood == null) {
@@ -123,17 +125,26 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 	/**
 	 * Resolves the current nogood with the antecedent of one of its literals assigned on the current decision level.
 	 * @param currentNoGood the nogood to resolve with the antecedent of one of its literals
+	 * @param trailWalker a backwards-walker on the trail
 	 * @return the resolvent (as a set of literals), or {@code null} if no further resolution step is possible
 	 */
-	private Set<Integer> makeOneResolutionStep(Set<Integer> currentNoGood) {
-		final int currentDecisionLevel = assignment.getDecisionLevel();
-		for (int literal : currentNoGood) {
-			final int atom = atomOf(literal);
-			if (assignment.getWeakDecisionLevel(atom) == currentDecisionLevel && assignment.getImpliedBy(atom) != null) {
-				return resolve(currentNoGood, literal, intArrayToLinkedHashSet(assignment.getImpliedBy(atom).getReasonLiterals()));
-			}
+	private Set<Integer> makeOneResolutionStep(Set<Integer> currentNoGood, TrailAssignment.TrailBackwardsWalker trailWalker) {
+		if (!containsLiteralForResolution(currentNoGood)) {
+			return null;
 		}
-		return null;
+		final int literal = findNextLiteralToResolve(currentNoGood, trailWalker);
+		return resolve(currentNoGood, literal, intArrayToLinkedHashSet(assignment.getImpliedBy(atomOf(literal)).getReasonLiterals()));
+	}
+
+	private Integer findNextLiteralToResolve(Set<Integer> noGood, TrailAssignment.TrailBackwardsWalker trailWalker) {
+		final int currentDecisionLevel = assignment.getDecisionLevel();
+		int literal;
+		int atom;
+		do {
+			literal = trailWalker.getNextLowerLiteral();
+			atom = atomOf(literal);
+		} while (assignment.getWeakDecisionLevel(atom) != currentDecisionLevel || assignment.getImpliedBy(atom) == null || !noGood.contains(literal));
+		return literal;
 	}
 
 	private Set<Integer> resolve(Set<Integer> noGood1, int literalInNoGood1, Set<Integer> noGood2) {
@@ -152,6 +163,17 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 		return resolvent;
 	}
 
+	private boolean containsLiteralForResolution(Set<Integer> noGood) {
+		final int currentDecisionLevel = assignment.getDecisionLevel();
+		for (Integer literal : noGood) {
+			final int atom = atomOf(literal);
+			if (assignment.getWeakDecisionLevel(atom) == currentDecisionLevel && assignment.getImpliedBy(atom) != null) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private boolean containsUIP(Set<Integer> resolvent) {
 		final int currentDecisionLevel = assignment.getDecisionLevel();
 		boolean containsLiteralOnCurrentDecisionLevel = false;
@@ -164,10 +186,8 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 				}
 			}
 		}
-		if (!containsLiteralOnCurrentDecisionLevel) {
-			throw oops("Resolvent does not contain any literal from the current decsion level: " + resolvent);
-		}
-		return true;
+		// TODO: is it problematic if containsLiteralOnCurrentDecisionLevel == false?
+		return containsLiteralOnCurrentDecisionLevel;
 	}
 
 	private NoGood createLearntNoGood(Set<Integer> resolvent) {
