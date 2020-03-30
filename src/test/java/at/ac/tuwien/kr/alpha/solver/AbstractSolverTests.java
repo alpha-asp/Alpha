@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2019, the Alpha Team.
+/*
+ * Copyright (c) 2017-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -38,8 +38,10 @@ import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -55,12 +57,25 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
 @RunWith(Parameterized.class)
 public abstract class AbstractSolverTests {
+
+	private static final String[] NON_DEPRECATED_HEURISTICS_NAMES;
+	static {
+		final List<String> nonDeprecatedHeuristicsNames = new ArrayList<>();
+		for (Field field : Heuristic.class.getFields()) {
+			if (field.getAnnotation(Deprecated.class) == null) {
+				nonDeprecatedHeuristicsNames.add(field.getName());
+			}
+		}
+		NON_DEPRECATED_HEURISTICS_NAMES = nonDeprecatedHeuristicsNames.toArray(new String[]{});
+	}
+
 	private final ProgramParser parser = new ProgramParser();
 
 	/**
@@ -105,7 +120,7 @@ public abstract class AbstractSolverTests {
 		String[] solvers = getProperty("solvers", ci ? "default,naive" : "default");
 		String[] grounders = getProperty("grounders", "naive");
 		String[] stores = getProperty("stores", ci ? "alpharoaming,naive" : "alpharoaming");
-		String[] heuristics = getProperty("heuristics", ci ? "ALL" : "NAIVE,VSIDS");
+		String[] heuristics = getProperty("heuristics", ci ? "NON_DEPRECATED" : "NAIVE,VSIDS");
 		String[] gtcValues = getProperty("grounderToleranceConstraints", "strict,permissive");
 		String[] gtrValues = getProperty("grounderToleranceRules", "strict");
 		String[] dirValues = getProperty("disableInstanceRemoval", ci ? "false,true" : "false");
@@ -118,6 +133,10 @@ public abstract class AbstractSolverTests {
 			for (BranchingHeuristicFactory.Heuristic heuristic : values) {
 				heuristics[i++] = heuristic.toString();
 			}
+		}
+		// "NON_DEPRECATED" is a magic value that will be expanded to contain all non-deprecated heuristics.
+		if ("NON_DEPRECATED".equals(heuristics[0])) {
+			heuristics = NON_DEPRECATED_HEURISTICS_NAMES;
 		}
 
 		// NOTE:
