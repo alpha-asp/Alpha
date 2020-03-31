@@ -120,7 +120,8 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 			throw oops("Learned nogood is not the same as the one computed by ground analysis");
 		}
 		final ConflictAnalysisResult analysisResult = groundLearner.analyzeConflictingNoGood(violatedNoGood);
-		if (!additionalLearnedNoGoods.isEmpty()) {
+		// if backJumpLevel < 0, then problem is UNSAT (ground analysis result does additional checks for this)
+		if (!additionalLearnedNoGoods.isEmpty() && analysisResult.backjumpLevel >= 0) {
 			analysisResult.addLearnedNoGoods(additionalLearnedNoGoods);
 		}
 		return analysisResult;

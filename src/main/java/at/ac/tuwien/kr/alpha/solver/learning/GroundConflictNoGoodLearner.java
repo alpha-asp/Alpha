@@ -140,7 +140,18 @@ public class GroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 		return analyzeTrailBased(conflictReason, true);
 	}
 
-	ConflictAnalysisResult analyzeTrailBased(Antecedent conflictReason, boolean minimizeLearnedNoGood) {
+	/**
+	 * Analyzes a conflict based on the trail assignment.
+	 * @param conflictReason the violated nogood
+	 * @param optimizeAnalysisResult if {@code true}, the analysis result will be optimized in two ways:
+	 *                               <ol>
+	 *                               	<li>if the learned nogood is not assigning due to out-of-order assigned literals
+	 *                               	and thus the program can be proven to be UNSAT, UNSAT will be returned</li>
+	 *                               	<li>the learned nogood will be minimized by local clause minimization</li>
+	 *                               </ol>
+	 * @return an instance of {@link ConflictAnalysisResult} that may contain a learned nogood or the information that the problem is UNSAT.
+	 */
+	ConflictAnalysisResult analyzeTrailBased(Antecedent conflictReason, boolean optimizeAnalysisResult) {
 		LOGGER.trace("Analyzing trail based.");
 		if (assignment.getDecisionLevel() == 0) {
 			LOGGER.trace("Conflict on decision level 0.");
@@ -206,7 +217,7 @@ public class GroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 		resolutionLiterals.add(atomToLiteral(nextAtom, assignment.getTruth(nextAtom).toBoolean()));
 
 		final int[] learnedLiterals;
-		if (minimizeLearnedNoGood) {
+		if (optimizeAnalysisResult) {
 			learnedLiterals = minimizeLearnedLiterals(resolutionLiterals, seenAtoms);
 		} else {
 			learnedLiterals = new int[resolutionLiterals.size()];
@@ -223,10 +234,14 @@ public class GroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 
 		int backjumpingDecisionLevel = computeBackjumpingDecisionLevel(learnedNoGood);
 		if (backjumpingDecisionLevel < 0) {
-			// Due to out-of-order assigned literals, the learned nogood may be not assigning.
-			backjumpingDecisionLevel = computeConflictFreeBackjumpingLevel(learnedNoGood);
-			if (backjumpingDecisionLevel < 0) {
-				return ConflictAnalysisResult.UNSAT;
+			if (optimizeAnalysisResult) {
+				// Due to out-of-order assigned literals, the learned nogood may be not assigning.
+				backjumpingDecisionLevel = computeConflictFreeBackjumpingLevel(learnedNoGood);
+				if (backjumpingDecisionLevel < 0) {
+					return ConflictAnalysisResult.UNSAT;
+				}
+			} else {
+				backjumpingDecisionLevel = 0;
 			}
 		}
 		if (LOGGER.isTraceEnabled()) {
