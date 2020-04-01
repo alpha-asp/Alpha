@@ -23,31 +23,30 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.api.test;
+package at.ac.tuwien.kr.alpha.api.test.exception;
 
-import at.ac.tuwien.kr.alpha.api.test.exception.TestExecutionException;
-import at.ac.tuwien.kr.alpha.lang.test.TestSuite;
-import at.ac.tuwien.kr.alpha.lang.test.TestSuiteResult;
+import at.ac.tuwien.kr.alpha.lang.test.TestCase;
 
 /**
- * A component that is capable of executing tests written in ASP code as
- * specified in the
- * <a href="https://github.com/alpha-asp/Alpha/issues/237">corresponding github
- * issue</a>.
+ * Checked exception used by
+ * {@link at.ac.tuwien.kr.alpha.api.test.AspTestRunner}s to communicate internal
+ * errors during test execution. Use this in order to distinguish errors in test
+ * execution from legitimately failing tests
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
-public interface AspTestRunner {
+@SuppressWarnings("serial")
+public class TestExecutionException extends Exception {
 
-	/**
-	 * Executes all {@link TestCase}s contained in the given suite
-	 * 
-	 * @param tests a test suite
-	 * @return a {@link TestSuiteResult} representing the results of running all
-	 *         test cases in the suite
-	 * @throws TestExecutionException in case of internal errors during test
-	 *                                execution
-	 */
-	TestSuiteResult runSuite(TestSuite suite) throws TestExecutionException;
+	private final TestCase testCase;
+
+	public TestExecutionException(TestCase testCase, String message) {
+		super(message);
+		this.testCase = testCase;
+	}
+
+	public TestCase getTestCase() {
+		return this.testCase;
+	}
 
 }
