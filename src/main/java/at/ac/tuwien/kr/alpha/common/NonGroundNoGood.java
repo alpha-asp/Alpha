@@ -28,15 +28,18 @@ package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.NoGoodGenerator;
 import at.ac.tuwien.kr.alpha.solver.Antecedent;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
@@ -73,7 +76,7 @@ public class NonGroundNoGood implements NoGoodInterface<Literal> {
 		this(type, literals, false);
 	}
 
-	private NonGroundNoGood(Type type, List<Literal> literals, boolean head) {
+	NonGroundNoGood(Type type, List<Literal> literals, boolean head) {
 		this.type = type;
 		this.head = head;
 		if (head && !literals.get(HEAD).isNegated()) {
@@ -121,6 +124,14 @@ public class NonGroundNoGood implements NoGoodInterface<Literal> {
 	@Override
 	public int size() {
 		return literals.size();
+	}
+
+	public Set<VariableTerm> getOccurringVariables() {
+		final Set<VariableTerm> occurringVariables = new HashSet<>();
+		for (Literal literal : literals) {
+			occurringVariables.addAll(literal.getOccurringVariables());
+		}
+		return occurringVariables;
 	}
 
 	@Override

@@ -115,7 +115,7 @@ public class RuleAtom implements Atom {
 	}
 
 	@Override
-	public Atom substitute(Substitution substitution) {
+	public RuleAtom substitute(Substitution substitution) {
 		if (ground) {
 			return this;
 		} else {

@@ -24,46 +24,51 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package at.ac.tuwien.kr.alpha.grounder.atoms;
+package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
-/**
- * A literal containing a {@link RuleAtom} (only to be used internally, e.g., in {@link at.ac.tuwien.kr.alpha.common.NonGroundNoGood}s)
- */
-public class BodyRepresentingLiteral extends Literal {
+public class UniqueVariableNames {
 
-	public BodyRepresentingLiteral(RuleAtom atom, boolean positive) {
-		super(atom, positive);
+	private final Map<VariableTerm, Integer> variablesToOccurrences = new HashMap<>();
+
+	public NonGroundNoGood makeVariableNamesUnique(NonGroundNoGood noGood) {
+		final Substitution substitution = renameVariablesIfAlreadyUsed(noGood.getOccurringVariables());
+		if (substitution.isEmpty()) {
+			return noGood;
+		}
+		final List<Literal> newLiterals = new ArrayList<>(noGood.size());
+		for (Literal literal : noGood) {
+			newLiterals.add(literal.substitute(substitution));
+		}
+		return new NonGroundNoGood(noGood.getType(), newLiterals, noGood.hasHead());
+
 	}
 
-	@Override
-	public RuleAtom getAtom() {
-		return (RuleAtom) super.getAtom();
+	private Substitution renameVariablesIfAlreadyUsed(Set<VariableTerm> variables) {
+		final TreeMap<VariableTerm, Term> substitution = new TreeMap<>();
+		for (VariableTerm variable : variables) {
+			if (variablesToOccurrences.containsKey(variable)) {
+				VariableTerm newVariable;
+				do {
+					newVariable = VariableTerm.getInstance(variable.toString() + "_" + (variablesToOccurrences.computeIfPresent(variable, (v,o) -> o+1)));
+				} while (variablesToOccurrences.containsKey(newVariable));
+				substitution.put(variable, newVariable);
+			} else {
+				variablesToOccurrences.put(variable, 0);
+			}
+		}
+		return new Substitution(substitution);
 	}
 
-	@Override
-	public BodyRepresentingLiteral negate() {
-		return new BodyRepresentingLiteral(getAtom(), !positive);
-	}
-
-	@Override
-	public BodyRepresentingLiteral substitute(Substitution substitution) {
-		return new BodyRepresentingLiteral(getAtom().substitute(substitution), positive);
-	}
-
-	@Override
-	public Set<VariableTerm> getBindingVariables() {
-		return Collections.emptySet();
-	}
-
-	@Override
-	public Set<VariableTerm> getNonBindingVariables() {
-		return Collections.emptySet();
-	}
 }

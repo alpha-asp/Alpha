@@ -53,7 +53,7 @@ public class Substitution {
 
 	protected TreeMap<VariableTerm, Term> substitution;
 
-	private Substitution(TreeMap<VariableTerm, Term> substitution) {
+	public Substitution(TreeMap<VariableTerm, Term> substitution) { // FIXME
 		if (substitution == null) {
 			throw oops("Substitution is null.");
 		}
