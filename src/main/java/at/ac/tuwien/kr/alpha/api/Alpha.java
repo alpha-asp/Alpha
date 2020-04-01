@@ -27,6 +27,18 @@
  */
 package at.ac.tuwien.kr.alpha.api;
 
+import java.io.IOException;
+import java.nio.charset.CodingErrorAction;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
+
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.apache.commons.lang3.StringUtils;
+
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -40,19 +52,10 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.lang.test.TestSuite;
+import at.ac.tuwien.kr.alpha.lang.test.TestSuiteResult;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.IOException;
-import java.nio.charset.CodingErrorAction;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
 
 public class Alpha {
 
@@ -98,12 +101,15 @@ public class Alpha {
 	}
 
 	/**
-	 * Prepares a solver (and accompanying grounder) instance pre-loaded with the given program. Use this if the solver is needed after reading answer sets
+	 * Prepares a solver (and accompanying grounder) instance pre-loaded with the
+	 * given program. Use this if the solver is needed after reading answer sets
 	 * (e.g. for obtaining statistics)
 	 * 
 	 * @param program the program to solve
-	 * @param filter  a (java util) predicate that filters (asp-)predicates which should be contained in the answer set stream from the solver
-	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
+	 * @param filter  a (java util) predicate that filters (asp-)predicates which
+	 *                should be contained in the answer set stream from the solver
+	 * @return a solver (and accompanying grounder) instance pre-loaded with the
+	 *         given program
 	 */
 	public Solver prepareSolverFor(Program program, java.util.function.Predicate<Predicate> filter) {
 		String grounderName = this.config.getGrounderName();
@@ -130,6 +136,17 @@ public class Alpha {
 
 	public Stream<AnswerSet> solve(Program program) {
 		return this.solve(program, InputConfig.DEFAULT_FILTER);
+	}
+
+	/**
+	 * Executes all {@link TestCase}s contained in the given suite
+	 * 
+	 * @param tests a test suite
+	 * @return a {@link TestSuiteResult} representing the results of running all
+	 *         test cases in the suite
+	 */
+	public TestSuiteResult executeTests(TestSuite tests) {
+		return null;
 	}
 
 	public SystemConfig getConfig() {
