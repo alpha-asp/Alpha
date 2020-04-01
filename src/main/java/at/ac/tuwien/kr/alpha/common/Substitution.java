@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -54,7 +54,7 @@ public class Substitution {
 
 	protected TreeMap<VariableTerm, Term> substitution;
 
-	public Substitution(TreeMap<VariableTerm, Term> substitution) { // FIXME
+	Substitution(TreeMap<VariableTerm, Term> substitution) {
 		if (substitution == null) {
 			throw oops("Substitution is null.");
 		}
@@ -69,7 +69,7 @@ public class Substitution {
 		this(new TreeMap<>(clone.substitution));
 	}
 	
-	static Substitution unify(Literal literal, Instance instance, Substitution substitution) {
+	public static Substitution unify(Literal literal, Instance instance, Substitution substitution) {
 		return unify(literal.getAtom(), instance, substitution);
 	}
 
