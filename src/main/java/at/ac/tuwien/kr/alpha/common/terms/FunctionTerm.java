@@ -1,9 +1,13 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
 import at.ac.tuwien.kr.alpha.common.Interner;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.common.Substitution;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 

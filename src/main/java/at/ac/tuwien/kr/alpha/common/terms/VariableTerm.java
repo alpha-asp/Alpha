@@ -1,8 +1,8 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
 import at.ac.tuwien.kr.alpha.common.Interner;
+import at.ac.tuwien.kr.alpha.common.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Collections;
 import java.util.List;

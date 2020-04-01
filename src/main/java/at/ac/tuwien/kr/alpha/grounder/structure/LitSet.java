@@ -1,9 +1,9 @@
 package at.ac.tuwien.kr.alpha.grounder.structure;
 
+import at.ac.tuwien.kr.alpha.common.Unification;
+import at.ac.tuwien.kr.alpha.common.Unifier;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.VariableNormalizableAtom;
-import at.ac.tuwien.kr.alpha.grounder.Unifier;
-import at.ac.tuwien.kr.alpha.grounder.Unification;
 
 import java.util.Collections;
 import java.util.HashSet;

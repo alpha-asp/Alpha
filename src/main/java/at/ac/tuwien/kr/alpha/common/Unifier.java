@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.grounder;
+package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;

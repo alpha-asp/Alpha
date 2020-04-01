@@ -29,7 +29,6 @@ package at.ac.tuwien.kr.alpha.common;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.common.Substitution;
 
 import java.util.ArrayList;
 import java.util.HashMap;
