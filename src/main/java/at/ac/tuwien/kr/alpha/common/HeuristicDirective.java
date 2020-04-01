@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, 2020 Siemens AG
+ * Copyright (c) 2018, 2020, 2022, Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -25,10 +25,13 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveAtom;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveBody;
-
-import java.util.Objects;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
 /**
  * Represents a heuristic directive, e.g. {@code #heuristic a : b. [2@1]}
@@ -56,6 +59,18 @@ public class HeuristicDirective extends Directive {
 
 	public WeightAtLevel getWeightAtLevel() {
 		return weightAtLevel;
+	}
+
+	/**
+	 * Returns the set of all variables occurring in the heuristic directive.
+	 */
+	public Set<VariableTerm> getOccurringVariables() {
+		final Set<VariableTerm> variables = new HashSet<>();
+		// assumption: all the variables are in the positive body due to safety
+		for (HeuristicDirectiveAtom atom : body.getBodyAtomsPositive()) {
+			variables.addAll(atom.getAtom().getOccurringVariables());
+		}
+		return variables;
 	}
 
 	@Override

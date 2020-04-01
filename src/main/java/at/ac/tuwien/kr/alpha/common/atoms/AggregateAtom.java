@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2021, the Alpha Team.
+ * Copyright (c) 2017-2022, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -48,7 +48,7 @@ public class AggregateAtom extends Atom {
 	private final ComparisonOperator upperBoundOperator;
 	private final Term upperBoundTerm;
 	private final AggregateFunctionSymbol aggregatefunction;
-	private final List<AggregateElement> aggregateElements;
+	final List<AggregateElement> aggregateElements;
 
 	public AggregateAtom(ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, ComparisonOperator upperBoundOperator, Term upperBoundTerm, AggregateFunctionSymbol aggregatefunction, List<AggregateElement> aggregateElements) {
 		this.lowerBoundOperator = lowerBoundOperator;

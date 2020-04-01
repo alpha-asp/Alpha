@@ -33,6 +33,7 @@ import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.common.Directive;
 import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
+import at.ac.tuwien.kr.alpha.common.UniqueVariableNames;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -122,17 +123,16 @@ public class HeuristicDirectiveConditionEnhancement extends ProgramTransformatio
 			}
 		}
 		for (BasicRule headDerivingRule : headDerivingRules) {
+			final UniqueVariableNames uniqueVariableNames = new UniqueVariableNames();
+			final Unifier unifierForStandardisingApart = uniqueVariableNames.makeVariableNamesUnique(directive, headDerivingRule);
+			headDerivingRule = headDerivingRule.substitute(unifierForStandardisingApart);
 			final Atom ruleHeadAtom = getMatchingRuleHeadAtom(headDerivingRule.getHead(), directiveHeadAtom);
-			Unifier unifier = Unification.instantiate(ruleHeadAtom, directiveHeadAtom);
-			HeuristicDirective unifiedDirective = directive;
-			if (unifier != null) {
-				headDerivingRule = headDerivingRule.substitute(unifier);
-			} else {
-				unifier = Unification.instantiate(directiveHeadAtom, ruleHeadAtom);
-				if (unifier != null) {
-					unifiedDirective = new HeuristicDirective(directive.getHead().substitute(unifier), directive.getBody().substitute(unifier), directive.getWeightAtLevel().substitute(unifier));
-				}
+			Unifier unifier = Unification.unifyAtoms(ruleHeadAtom, directiveHeadAtom);
+			if (unifier == null) {
+				continue; // do not enhance directive with rule whose head does not unify
 			}
+			headDerivingRule = headDerivingRule.substitute(unifier);
+			final HeuristicDirective unifiedDirective = new HeuristicDirective(directive.getHead().substitute(unifier), directive.getBody().substitute(unifier), directive.getWeightAtLevel().substitute(unifier));
 			final HeuristicDirectiveBody newDirectiveBody = new HeuristicDirectiveBody(
 					joinAtoms(unifiedDirective.getBody().getBodyAtomsPositive(), headDerivingRule.getPositiveBody(), HeuristicDirectiveAtom.SIGNS_T),
 					joinAtoms(unifiedDirective.getBody().getBodyAtomsNegative(), headDerivingRule.getNegativeBody(), HeuristicDirectiveAtom.DEFAULT_BODY_SIGNS));

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, the Alpha Team.
+ * Copyright (c) 2019-2022, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -27,15 +27,18 @@
  */
 package at.ac.tuwien.kr.alpha.common.rule;
 
-import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.rule.head.Head;
-import org.apache.commons.collections4.SetUtils;
-
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
+
+import org.apache.commons.collections4.SetUtils;
+
+import at.ac.tuwien.kr.alpha.Util;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.rule.head.Head;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
 /**
  * An abstract representation of a rule with a specific type of @{link Head} (type parameter H)
@@ -129,6 +132,18 @@ public abstract class AbstractRule<H extends Head> {
 
 	public Set<Literal> getNegativeBody() {
 		return this.bodyLiteralsNegative;
+	}
+
+	/**
+	 * Returns the set of all variables occurring in the rule.
+	 */
+	public Set<VariableTerm> getOccurringVariables() {
+		final Set<VariableTerm> variables = new HashSet<>();
+		// assumption: all the variables are in the positive body due to safety
+		for (Literal literal : bodyLiteralsPositive) {
+			variables.addAll(literal.getOccurringVariables());
+		}
+		return variables;
 	}
 
 	@Override

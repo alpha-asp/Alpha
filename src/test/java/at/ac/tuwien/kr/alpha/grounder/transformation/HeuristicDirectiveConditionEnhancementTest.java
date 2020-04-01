@@ -190,7 +190,7 @@ public class HeuristicDirectiveConditionEnhancementTest {
 		program = new ChoiceHeadToNormal().apply(program);
 		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
 		Collection<HeuristicDirective> expectedHeuristicDirectives = Collections.singletonList(
-				programPartParser.parseHeuristicDirective("#heuristic assign(1,d,D) : T comUnit(1), T elem(d,D), not gt(d,D,1).")
+				programPartParser.parseHeuristicDirective("#heuristic assign(1,d,X) : T comUnit(1), T elem(d,X), not gt(d,X,1).")
 		);
 		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
 	}
@@ -205,7 +205,7 @@ public class HeuristicDirectiveConditionEnhancementTest {
 		program = new ChoiceHeadToNormal().apply(program);
 		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
 		Collection<HeuristicDirective> expectedHeuristicDirectives = Collections.singletonList(
-				programPartParser.parseHeuristicDirective("#heuristic assign(U+1,d,D) : T comUnit(U), T elem(d,D), T comUnit(U+1), not gt(d,D,U+1).")
+				programPartParser.parseHeuristicDirective("#heuristic assign(U_1+1,d,X) : T comUnit(U_1), T elem(d,X), T comUnit(U_1+1), not gt(d,X,U_1+1).")
 		);
 		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
 	}
@@ -220,7 +220,38 @@ public class HeuristicDirectiveConditionEnhancementTest {
 		program = new ChoiceHeadToNormal().apply(program);
 		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
 		Collection<HeuristicDirective> expectedHeuristicDirectives = Collections.singletonList(
-				programPartParser.parseHeuristicDirective("#heuristic assign(U1,d,D) : T elem(d,D), T comUnit(U), T comUnit(U1), U1=U+1, not gt(d,D,U1).")
+				programPartParser.parseHeuristicDirective("#heuristic assign(Un,d,X) : T elem(d,X), T comUnit(Un), T comUnit(U), Un=U+1, not gt(d,X,Un).")
+		);
+		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
+	}
+
+	@Test
+	public void testUnificationWithFunctionTerm() {
+		InputProgram program = parser.parse("legacyConfig(cabinetTOthing(1,2)). legacyConfig(roomTOcabinet(3,1))."
+				+ "reuse(cabinetTOthing(X,Y))  :- legacyConfig(cabinetTOthing(X,Y)), not delete(cabinetTOthing(X,Y))."
+				+ "delete(cabinetTOthing(X,Y)) :- legacyConfig(cabinetTOthing(X,Y)), not  reuse(cabinetTOthing(X,Y))."
+				+ "reuse(roomTOcabinet(X,Y))  :- legacyConfig(roomTOcabinet(X,Y)), not delete(roomTOcabinet(X,Y))."
+				+ "delete(roomTOcabinet(X,Y)) :- legacyConfig(roomTOcabinet(X,Y)), not  reuse(roomTOcabinet(X,Y))."
+				+ "#heuristic reuse(cabinetTOthing(C,T)) : T legacyConfig(cabinetTOthing(C,T)), not thingLong(T).");
+
+		program = new ChoiceHeadToNormal().apply(program);
+		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
+		Collection<HeuristicDirective> expectedHeuristicDirectives = Collections.singletonList(
+				programPartParser.parseHeuristicDirective("#heuristic reuse(cabinetTOthing(C,T)) : T legacyConfig(cabinetTOthing(C,T)), not TM delete(cabinetTOthing(C,T)), not TM thingLong(T).")
+		);
+		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
+	}
+
+	@Test
+	public void testBidirectionalUnificationWithFunctionTerm() {
+		InputProgram program = parser.parse("b(fn1(1,2),fn2(3,4))."
+				+ "h(Y,fn2(C,D)) :- b(Y,fn2(C,D))."
+				+ "#heuristic h(fn1(A,B),X).");
+
+		program = new ChoiceHeadToNormal().apply(program);
+		program = new HeuristicDirectiveConditionEnhancement(heuristicsConfiguration).apply(program);
+		Collection<HeuristicDirective> expectedHeuristicDirectives = Collections.singletonList(
+				programPartParser.parseHeuristicDirective("#heuristic h(fn1(A,B),fn2(C,D)) : T b(fn1(A,B),fn2(C,D)).")
 		);
 		assertEquals(expectedHeuristicDirectives, program.getInlineDirectives().getDirectives());
 	}
