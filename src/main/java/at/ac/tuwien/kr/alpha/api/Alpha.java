@@ -52,8 +52,6 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.lang.test.TestSuite;
-import at.ac.tuwien.kr.alpha.lang.test.TestSuiteResult;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 
@@ -136,17 +134,6 @@ public class Alpha {
 
 	public Stream<AnswerSet> solve(Program program) {
 		return this.solve(program, InputConfig.DEFAULT_FILTER);
-	}
-
-	/**
-	 * Executes all {@link TestCase}s contained in the given suite
-	 * 
-	 * @param tests a test suite
-	 * @return a {@link TestSuiteResult} representing the results of running all
-	 *         test cases in the suite
-	 */
-	public TestSuiteResult executeTests(TestSuite tests) {
-		return null;
 	}
 
 	public SystemConfig getConfig() {

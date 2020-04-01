@@ -23,42 +23,30 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.lang.test;
+package at.ac.tuwien.kr.alpha.api.test.impl;
 
-import java.util.Set;
-
-import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.api.test.AspTestRunner;
+import at.ac.tuwien.kr.alpha.lang.test.TestSuite;
+import at.ac.tuwien.kr.alpha.lang.test.TestSuiteResult;
 
 /**
- * Represents all test cases executed on a given program, according to the
- * specification from the
- * <a href="https://github.com/alpha-asp/Alpha/issues/237">corresponding github
- * issue</a>.
+ * Default single-threaded implementation of {@link AspTestRunner}.
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
-public class TestSuite {
+public class DefaultAspTestRunner implements AspTestRunner {
 
-	private final String name;
-	private final Program testedUnit;
-	private final Set<TestCase> testCases;
+	private final Alpha alpha;
 
-	public TestSuite(String name, Program testedUnit, Set<TestCase> testCases) {
-		this.name = name;
-		this.testedUnit = testedUnit;
-		this.testCases = testCases;
+	public DefaultAspTestRunner(Alpha alpha) {
+		this.alpha = alpha;
 	}
 
-	public String getName() {
-		return this.name;
-	}
-
-	public Program getTestedUnit() {
-		return this.testedUnit;
-	}
-
-	public Set<TestCase> getTestCases() {
-		return this.testCases;
+	@Override
+	public TestSuiteResult runSuite(TestSuite suite) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
