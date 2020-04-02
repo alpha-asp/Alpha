@@ -38,6 +38,7 @@ import at.ac.tuwien.kr.alpha.api.test.runner.AspTestRunner;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.grounder.transformation.ConstraintsToAssertionErrors;
 import at.ac.tuwien.kr.alpha.lang.test.TestCase;
 import at.ac.tuwien.kr.alpha.lang.test.TestSuite;
 import at.ac.tuwien.kr.alpha.lang.test.TestSuiteResult;
@@ -50,6 +51,7 @@ import at.ac.tuwien.kr.alpha.lang.test.TestSuiteResult;
 public class DefaultAspTestRunner implements AspTestRunner {
 
 	private final Alpha alpha;
+	private ConstraintsToAssertionErrors constraintTransformer = new ConstraintsToAssertionErrors();
 
 	public DefaultAspTestRunner(Alpha alpha) {
 		this.alpha = alpha;
@@ -73,9 +75,10 @@ public class DefaultAspTestRunner implements AspTestRunner {
 		if (testProgramAnswers.size() != testCase.getExpectedAnswerSets()) {
 			return new IncorrectAnswerSetsTestResult(testCase.getExpectedAnswerSets(), testProgramAnswers.size());
 		}
+		Program baseVerifier = this.constraintTransformer.apply(testCase.getVerifier());
 		Program verifier;
 		for (AnswerSet as : testProgramAnswers) {
-			verifier = null; // TODO verifier = union(as, rewriteConstraints(testCase.getVerifier()));
+			verifier = this.buildVerifyProgram(as, baseVerifier);
 			Set<AnswerSet> verifierAnswers = this.alpha.solve(verifier).collect(Collectors.toSet());
 			if (verifierAnswers.size() != 1) {
 				throw new TestExecutionException(testCase, "Invalid number of answer sets for verifier: " + verifierAnswers.size());
@@ -83,6 +86,12 @@ public class DefaultAspTestRunner implements AspTestRunner {
 			// TODO map answer set to assertion errors!
 		}
 		return null;
+	}
+
+	private Program buildVerifyProgram(AnswerSet answerToVerify, Program baseVerifier) {
+		List<Atom> facts = answerToVerify.flatten();
+		facts.addAll(baseVerifier.getFacts());
+		return new Program(baseVerifier.getRules(), facts, baseVerifier.getInlineDirectives());
 	}
 
 }
