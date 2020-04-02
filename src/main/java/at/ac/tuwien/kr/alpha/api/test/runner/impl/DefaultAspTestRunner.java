@@ -23,7 +23,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.api.test.impl;
+package at.ac.tuwien.kr.alpha.api.test.runner.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,13 +31,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
-import at.ac.tuwien.kr.alpha.api.test.AspTestRunner;
 import at.ac.tuwien.kr.alpha.api.test.exception.TestExecutionException;
+import at.ac.tuwien.kr.alpha.api.test.result.TestCaseResult;
+import at.ac.tuwien.kr.alpha.api.test.result.impl.IncorrectAnswerSetsTestResult;
+import at.ac.tuwien.kr.alpha.api.test.runner.AspTestRunner;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.lang.test.TestCase;
-import at.ac.tuwien.kr.alpha.lang.test.TestCaseResult;
 import at.ac.tuwien.kr.alpha.lang.test.TestSuite;
 import at.ac.tuwien.kr.alpha.lang.test.TestSuiteResult;
 
@@ -70,13 +71,13 @@ public class DefaultAspTestRunner implements AspTestRunner {
 		Program testProgram = new Program(testedUnit.getRules(), testProgramFacts, testedUnit.getInlineDirectives());
 		Set<AnswerSet> testProgramAnswers = this.alpha.solve(testProgram).collect(Collectors.toSet());
 		if (testProgramAnswers.size() != testCase.getExpectedAnswerSets()) {
-			// TODO return appropriate result
+			return new IncorrectAnswerSetsTestResult(testCase.getExpectedAnswerSets(), testProgramAnswers.size());
 		}
 		Program verifier;
-		for(AnswerSet as : testProgramAnswers) {
+		for (AnswerSet as : testProgramAnswers) {
 			verifier = null; // TODO verifier = union(as, rewriteConstraints(testCase.getVerifier()));
 			Set<AnswerSet> verifierAnswers = this.alpha.solve(verifier).collect(Collectors.toSet());
-			if(verifierAnswers.size() != 1) {
+			if (verifierAnswers.size() != 1) {
 				throw new TestExecutionException(testCase, "Invalid number of answer sets for verifier: " + verifierAnswers.size());
 			}
 			// TODO map answer set to assertion errors!

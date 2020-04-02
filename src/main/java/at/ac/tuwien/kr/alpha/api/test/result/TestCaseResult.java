@@ -23,13 +23,18 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.lang.test;
+package at.ac.tuwien.kr.alpha.api.test.result;
 
 /**
  * Result of executing a test case.
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
-public class TestCaseResult {
+public abstract class TestCaseResult {
 
+	public enum Type {
+		SUCCESS,
+		FAIL_NUM_ANSWER_SETS,
+		FAIL_ASSERTION;
+	}
 }

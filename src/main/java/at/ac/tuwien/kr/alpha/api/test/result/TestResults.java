@@ -23,30 +23,17 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.api.test.exception;
-
-import at.ac.tuwien.kr.alpha.lang.test.TestCase;
+package at.ac.tuwien.kr.alpha.api.test.result;
 
 /**
- * Checked exception used by
- * {@link at.ac.tuwien.kr.alpha.api.test.runner.AspTestRunner}s to communicate internal
- * errors during test execution. Use this in order to distinguish errors in test
- * execution from legitimately failing tests
+ * Utility class for test results
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
-@SuppressWarnings("serial")
-public class TestExecutionException extends Exception {
+public final class TestResults {
 
-	private final TestCase testCase;
-
-	public TestExecutionException(TestCase testCase, String message) {
-		super(message);
-		this.testCase = testCase;
-	}
-
-	public TestCase getTestCase() {
-		return this.testCase;
+	private TestResults() {
+		throw new AssertionError("This is a utility class. It therefore really does not want to be instantiated!");
 	}
 
 }
