@@ -54,17 +54,20 @@ public class ConstraintsToAssertionErrors {
 	}
 
 	private Rule transformConstraint(Rule constraint) {
-		Atom assertionErrorHead;
 		Set<VariableTerm> bodyVariables = new LinkedHashSet<>();
 		for (Literal lit : constraint.getBody()) {
 			lit.getOccurringVariables().forEach(bodyVariables::add);
 		}
-		List<Term> headTerms = new ArrayList<>(bodyVariables);
-		headTerms.add(ConstantTerm.getInstance(constraint.toString()));
-		assertionErrorHead = new BasicAtom(Predicate.getInstance(ASSERTION_ERROR, headTerms.size()), headTerms);
+		return this.buildAssertionErrorRule(bodyVariables, constraint.toString(), constraint.getBody());
+	}
+
+	private Rule buildAssertionErrorRule(Set<VariableTerm> headVars, String constraint, List<Literal> constraintBody) {
+		List<Term> headTerms = new ArrayList<>(headVars);
+		headTerms.add(ConstantTerm.getInstance(constraint));
+		Atom assertionErrorHead = new BasicAtom(Predicate.getInstance(ASSERTION_ERROR, headTerms.size()), headTerms);
 		List<Atom> headAtoms = new ArrayList<>();
 		headAtoms.add(assertionErrorHead);
-		return new Rule(new DisjunctiveHead(headAtoms), constraint.getBody());
+		return new Rule(new DisjunctiveHead(headAtoms), constraintBody);
 	}
 
 }
