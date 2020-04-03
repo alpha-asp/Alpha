@@ -71,9 +71,19 @@ public class TermTest {
 	}
 
 	@Test
-	public void testStringTermEquality() {
+	public void testStringVsConstantSymbolEquality() {
 		ConstantTerm<String> stringConstant = ConstantTerm.getInstance("string");
 		ConstantTerm<String> constantSymbol = ConstantTerm.getSymbolicInstance("string");
+		System.out.println(stringConstant.hashCode());
+		System.out.println(constantSymbol.hashCode());
+		// reference equality must hold for both constructs..
+		Assert.assertTrue(stringConstant == ConstantTerm.getInstance("string"));
+		ConstantTerm<String> sameConstantSymbol = ConstantTerm.getSymbolicInstance("string");
+		Assert.assertTrue(constantSymbol == sameConstantSymbol);
+		// ... but stringConstant and constantSymbol are NOT the same thing!
+		Assert.assertNotEquals(stringConstant.hashCode(), constantSymbol.hashCode());
 		Assert.assertNotEquals(stringConstant, constantSymbol);
+		// ... same goes for compareTo, must behave in sync with equals and hashCode
+		Assert.assertNotEquals(0, stringConstant.compareTo(constantSymbol));
 	}
 }
