@@ -4,6 +4,8 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.LinkedList;
@@ -20,7 +22,8 @@ public class TermTest {
 
 	@Test
 	public void testTermReferenceEquality() {
-		// Terms must have a unique representation so that reference comparison is sufficient to check
+		// Terms must have a unique representation so that reference comparison is
+		// sufficient to check
 		// whether two terms are equal.
 		ConstantTerm ta1 = ConstantTerm.getInstance("a");
 		ConstantTerm ta2 = ConstantTerm.getInstance("a");
@@ -65,5 +68,12 @@ public class TermTest {
 
 		assertTrue(cto.compareTo(ft) < 0);
 		assertTrue(ft.compareTo(cto) > 0);
+	}
+
+	@Test
+	public void testStringTermEquality() {
+		ConstantTerm<String> stringConstant = ConstantTerm.getInstance("string");
+		ConstantTerm<String> constantSymbol = ConstantTerm.getSymbolicInstance("string");
+		Assert.assertNotEquals(stringConstant, constantSymbol);
 	}
 }
