@@ -106,25 +106,6 @@ public final class AtomQuery implements java.util.function.Predicate<Atom> {
 	}
 
 	/**
-	 * Adds an additional filter checking for string constants to this
-	 * {@link AtomQuery}.
-	 * The resulting query will match atoms of the query predicate where the term at
-	 * the specified index is a string constant equal to the given string.
-	 * Example - The following query will match the atom <code>p("bla")</code>.
-	 * 
-	 * <pre>
-	 * AtomQuery.forPredicate(Predicate.getInstance("p", 1)).withConstantEquals(0, "bla");
-	 * </pre>
-	 * 
-	 * @param termIdx the index of the term on which to apply the filter
-	 * @param str     the string to filter for
-	 * @return this atom query, extended by the given filter (builder pattern)
-	 */
-	public AtomQuery withConstantEquals(int termIdx, String str) {
-		return this.withFilter(termIdx, AtomQuery.constantTermEquals(str));
-	}
-
-	/**
 	 * Adds an additional filter checking for function terms to this
 	 * {@link AtomQuery}.
 	 * The resulting query will match atoms of the query predicate where the term at
@@ -171,6 +152,46 @@ public final class AtomQuery implements java.util.function.Predicate<Atom> {
 	}
 
 	/**
+	 * Adds an additional filter checking for constant symbols to this
+	 * {@link AtomQuery}.
+	 * The resulting query will match atoms of the query predicate where the term at
+	 * the specified index is a constant symbol (i.e. non-quoted string) equal to
+	 * the given string.
+	 * Example - The following query will match the atom <code>p(bla)</code>.
+	 * 
+	 * <pre>
+	 * AtomQuery.forPredicate(Predicate.getInstance("p", 1)).withConstantSymbolEquals(0, "bla");
+	 * </pre>
+	 * 
+	 * @param termIdx the index of the term on which to apply the filter
+	 * @param smybol  the constant symbol to filter for
+	 * @return this atom query, extended by the given filter (builder pattern)
+	 */
+	public AtomQuery withConstantSymbolEquals(int termIdx, String symbol) {
+		return this.withTermEquals(termIdx, ConstantTerm.getSymbolicInstance(symbol));
+	}
+
+	/**
+	 * Adds an additional filter checking for string constants to this
+	 * {@link AtomQuery}.
+	 * The resulting query will match atoms of the query predicate where the term at
+	 * the specified index is a string constant (i.e. "quoted string") equal to the
+	 * given string.
+	 * Example - The following query will match the atom <code>p("bla")</code>.
+	 * 
+	 * <pre>
+	 * AtomQuery.forPredicate(Predicate.getInstance("p", 1)).withStringEquals(0, "bla");
+	 * </pre>
+	 * 
+	 * @param termIdx the index of the term on which to apply the filter
+	 * @param str     the string to filter for
+	 * @return this atom query, extended by the given filter (builder pattern)
+	 */
+	public AtomQuery withStringEquals(int termIdx, String str) {
+		return this.withTermEquals(termIdx, ConstantTerm.getInstance(str));
+	}
+
+	/**
 	 * Applies this query to an atom. Filters are worked off in
 	 * order of ascending term index in a conjunctive fashion, i.e. for an atom
 	 * to match the query, all of its terms must satisfy all filters on these
@@ -198,20 +219,6 @@ public final class AtomQuery implements java.util.function.Predicate<Atom> {
 			}
 		}
 		return atomMatches;
-	}
-
-	private static java.util.function.Predicate<Term> constantTermEquals(final String str) {
-		java.util.function.Predicate<Term> equalsGivenString = (t) -> {
-			return AtomQuery.constantTermEquals(t, str);
-		};
-		return equalsGivenString;
-	}
-
-	private static boolean constantTermEquals(Term term, String str) {
-		if (!(term instanceof ConstantTerm<?>)) {
-			return false;
-		}
-		return ((ConstantTerm<?>) term).getObject().toString().equals(str);
 	}
 
 	public Predicate getPredicate() {
