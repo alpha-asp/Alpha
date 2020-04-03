@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -63,6 +63,8 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
  *  The second condition ensures that after backtracking the NoGood is still satisfied or both watches
  *  point to unassigned literals. Observe that for an assignment to TRUE the (potentially lower) decision level of MBT
  *  is taken.
+ *
+ *  Copyright (c) 2017-2020, the Alpha Team.
  */
 public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropagationEstimation, Checkable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NoGoodStoreAlphaRoaming.class);
@@ -192,15 +194,20 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	@Override
 	public ConflictCause add(int id, NoGood noGood, int lbd) {
 		LOGGER.trace("Adding {}", noGood);
-		counter.add(noGood);
 
+		final ConflictCause conflictCause;
 		if (noGood.isUnary()) {
-			return addUnary(noGood);
+			conflictCause = addUnary(noGood);
 		} else if (noGood.isBinary()) {
-			return addAndWatchBinary(noGood);
+			conflictCause = addAndWatchBinary(noGood);
 		} else {
-			return addAndWatch(noGood, lbd);
+			conflictCause = addAndWatch(noGood, lbd);
 		}
+
+		if (conflictCause == null) {
+			counter.add(noGood);
+		}
+		return conflictCause;
 	}
 
 	public ConflictCause add(int id, NoGood noGood) {
@@ -411,12 +418,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 			return new ConflictCause(noGood.asAntecedent());
 		}
 
-		ConflictCause conflictCause = binaryWatches[a].add(noGood);
-		if (conflictCause != null) {
-			return conflictCause;
-		}
+		// The above violation check guarantees that adding (and propagation on other literal) results in no conflict.
+		binaryWatches[a].add(noGood);
+		binaryWatches[b].add(noGood);
 		hasBinaryNoGoods = true;
-		return binaryWatches[b].add(noGood);
+		return null;
 	}
 
 	private ConflictCause assignWeakComplement(final int literalIndex, final NoGoodInterface impliedBy, int decisionLevel) {
@@ -626,7 +632,9 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 			final int atom = assignmentsToProcess.peek();
 			final ThriceTruth currentTruth = assignment.getTruth(atom);
 			final int literal = atomToLiteral(atom, currentTruth.toBoolean());
-			LOGGER.trace("Propagation processing atom: {}={}", atom, currentTruth);
+			if (LOGGER.isTraceEnabled()) {
+				LOGGER.trace("Propagation processing atom: {}={}", atom, currentTruth);
+			}
 
 			// Propagate weakly, except if there is an earlier MBT, where propagation already took place.
 			if (currentTruth != TRUE || assignment.getWeakDecisionLevel(atom) == currentDecisionLevel) {
@@ -663,7 +671,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		this.checksEnabled = checksEnabled;
 	}
 
-	private class BinaryWatchList {
+	class BinaryWatchList implements ShallowAntecedent {
 		private int[] noGoodsWithoutHead = new int[10];
 		private int noGoodsWithoutHeadSize;
 		private int[] noGoodsWithHead = new int[10];
@@ -698,7 +706,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 			ThriceTruth literalTruth = assignment.getTruth(atomOf(forLiteral));
 			if (literalTruth != null && literalTruth.toBoolean() == isPositive(forLiteral)) {
 				int weakDecisionLevel = assignment.getWeakDecisionLevel(atomOf(forLiteral));
-				ConflictCause conflictCause = assignment.assign(atomOf(otherLiteral), isPositive(otherLiteral) ? FALSE : MBT, new BinaryAntecedent(forLiteral, otherLiteral), weakDecisionLevel);
+				ConflictCause conflictCause = assignment.assign(atomOf(otherLiteral), isPositive(otherLiteral) ? FALSE : MBT, this, weakDecisionLevel);
 				if (conflictCause != null) {
 					return conflictCause;
 				}
@@ -706,7 +714,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 			// Assign head (strongly) if the newly added NoGood is unit.
 			int strongDecisionLevel = assignment.getStrongDecisionLevel(atomOf(forLiteral));
 			if (strongDecisionLevel != -1 && assignment.getTruth(atomOf(forLiteral)).toBoolean() == isPositive(forLiteral)) {
-				return assignment.assign(atomOf(otherLiteral), TRUE, new BinaryAntecedent(forLiteral, otherLiteral), strongDecisionLevel);
+				return assignment.assign(atomOf(otherLiteral), TRUE, this, strongDecisionLevel);
 			}
 			return null;
 		}
@@ -721,7 +729,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 			ThriceTruth literalTruth = assignment.getTruth(atomOf(forLiteral));
 			if (literalTruth != null && literalTruth.toBoolean() == isPositive(forLiteral)) {
 				int weakDecisionLevel = assignment.getWeakDecisionLevel(atomOf(forLiteral));
-				return assignment.assign(atomOf(otherLiteral), isPositive(otherLiteral) ? FALSE : MBT, new BinaryAntecedent(otherLiteral, forLiteral), weakDecisionLevel);
+				return assignment.assign(atomOf(otherLiteral), isPositive(otherLiteral) ? FALSE : MBT, this, weakDecisionLevel);
 			}
 			return null;
 		}
@@ -730,14 +738,14 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 			didPropagate |= noGoodsWithHeadSize > 0 || noGoodsWithoutHeadSize > 0;
 			for (int i = 0; i < noGoodsWithoutHeadSize; i++) {
 				final int otherLiteral = noGoodsWithoutHead[i];
-				ConflictCause conflictCause = assignment.assign(atomOf(otherLiteral), isPositive(otherLiteral) ? FALSE : MBT, new BinaryAntecedent(otherLiteral, forLiteral));
+				ConflictCause conflictCause = assignment.assign(atomOf(otherLiteral), isPositive(otherLiteral) ? FALSE : MBT, this);
 				if (conflictCause != null) {
 					return conflictCause;
 				}
 			}
 			for (int i = 0; i < noGoodsWithHeadSize; i++) {
 				final int otherLiteral = noGoodsWithHead[i];
-				ConflictCause conflictCause = assignment.assign(atomOf(otherLiteral), isPositive(otherLiteral) ? FALSE : MBT, new BinaryAntecedent(otherLiteral, forLiteral));
+				ConflictCause conflictCause = assignment.assign(atomOf(otherLiteral), isPositive(otherLiteral) ? FALSE : MBT, this);
 				if (conflictCause != null) {
 					return conflictCause;
 				}
@@ -749,7 +757,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 			didPropagate |= noGoodsWithHeadSize > 0;
 			for (int i = 0; i < noGoodsWithHeadSize; i++) {
 				final int headLiteral = noGoodsWithHead[i];
-				ConflictCause conflictCause = assignment.assign(atomOf(headLiteral), TRUE, new BinaryAntecedent(headLiteral, forLiteral));
+				ConflictCause conflictCause = assignment.assign(atomOf(headLiteral), TRUE, this);
 				if (conflictCause != null) {
 					return conflictCause;
 				}
@@ -764,6 +772,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		@Override
 		public String toString() {
 			return "BinaryWatchList(" + forLiteral + ")";
+		}
+
+		@Override
+		public Antecedent instantiateAntecedent(int impliedLiteral) {
+			return new BinaryAntecedent(impliedLiteral, forLiteral);
 		}
 
 		private class BinaryAntecedent implements Antecedent {
@@ -827,7 +840,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		return assignedNewly;
 	}
 
-	public void runInternalChecks() {
+	private void runInternalChecks() {
 		new WatchedNoGoodsChecker().doWatchesCheck();
 	}
 
