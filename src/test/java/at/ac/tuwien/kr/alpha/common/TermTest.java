@@ -74,8 +74,6 @@ public class TermTest {
 	public void testStringVsConstantSymbolEquality() {
 		ConstantTerm<String> stringConstant = ConstantTerm.getInstance("string");
 		ConstantTerm<String> constantSymbol = ConstantTerm.getSymbolicInstance("string");
-		System.out.println(stringConstant.hashCode());
-		System.out.println(constantSymbol.hashCode());
 		// reference equality must hold for both constructs..
 		Assert.assertTrue(stringConstant == ConstantTerm.getInstance("string"));
 		ConstantTerm<String> sameConstantSymbol = ConstantTerm.getSymbolicInstance("string");

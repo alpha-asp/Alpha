@@ -120,7 +120,7 @@ public class ConstantTerm<T extends Comparable<T>> extends Term {
 		// wrong if we have some bug that generates strange
 		// ConstantTerms at runtime, bypassing the check for T
 		// at compile-time.
-		if (other.object.getClass() == this.object.getClass()) {
+		if (other.object.getClass() == this.object.getClass() && other.symbolic == this.symbolic) {
 			return this.object.compareTo((T) other.object);
 		}
 
