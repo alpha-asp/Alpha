@@ -72,16 +72,20 @@ public class TermTest {
 
 	@Test
 	public void testStringVsConstantSymbolEquality() {
-		ConstantTerm<String> stringConstant = ConstantTerm.getInstance("string");
-		ConstantTerm<String> constantSymbol = ConstantTerm.getSymbolicInstance("string");
-		// reference equality must hold for both constructs..
-		Assert.assertTrue(stringConstant == ConstantTerm.getInstance("string"));
-		ConstantTerm<String> sameConstantSymbol = ConstantTerm.getSymbolicInstance("string");
+		String theString = "string";
+		ConstantTerm<String> stringConstant = ConstantTerm.getInstance(theString);
+		ConstantTerm<String> constantSymbol = ConstantTerm.getSymbolicInstance(theString);
+		// Reference equality must hold for both the string constant and the constant
+		// symbol.
+		Assert.assertTrue(stringConstant == ConstantTerm.getInstance(theString));
+		ConstantTerm<String> sameConstantSymbol = ConstantTerm.getSymbolicInstance(theString);
 		Assert.assertTrue(constantSymbol == sameConstantSymbol);
-		// ... but stringConstant and constantSymbol are NOT the same thing!
+		// Make sure both hashCode and equals understand that stringConstant and
+		// constantSymbol are NOT the same thing!
 		Assert.assertNotEquals(stringConstant.hashCode(), constantSymbol.hashCode());
 		Assert.assertNotEquals(stringConstant, constantSymbol);
-		// ... same goes for compareTo, must behave in sync with equals and hashCode
+		// This also applies to compareTo - it must behave in sync with equals and
+		// hashCode, i.e. return a non-zero result for non-equal objects
 		Assert.assertNotEquals(0, stringConstant.compareTo(constantSymbol));
 	}
 }
