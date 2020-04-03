@@ -249,6 +249,20 @@ public class NoGoodGenerator {
 		private final List<Literal> skippedFixedInterpretationLiterals = new ArrayList<>();
 		private final List<Literal> skippedFacts = new ArrayList<>();
 
+		public CollectedLiterals() {
+			super();
+		}
+
+		public CollectedLiterals(
+				List<Integer> collectedGroundLiterals, List<Literal> correspondingNonGroundLiterals,
+				List<Literal> skippedFixedInterpretationLiterals, List<Literal> skippedFacts) {
+			this();
+			this.collectedGroundLiterals.addAll(collectedGroundLiterals);
+			this.correspondingNonGroundLiterals.addAll(correspondingNonGroundLiterals);
+			this.skippedFixedInterpretationLiterals.addAll(skippedFixedInterpretationLiterals);
+			this.skippedFacts.addAll(skippedFacts);
+		}
+
 		public List<Integer> getCollectedGroundLiterals() {
 			return Collections.unmodifiableList(collectedGroundLiterals);
 		}

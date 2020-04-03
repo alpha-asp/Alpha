@@ -1,11 +1,13 @@
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -47,7 +49,24 @@ public class Unifier extends Substitution {
 		return this;
 	}
 
+	public void unify(Atom modifiableAtom, Atom unmodifiableAtom) {
+		if (modifiableAtom == null || unmodifiableAtom == null) {
+			throw new IllegalArgumentException("Atom must not be null.");
+		}
+		if (!Objects.equals(modifiableAtom.getPredicate(), unmodifiableAtom.getPredicate())) {
+			throw new IllegalArgumentException("Predicates of two atoms do not match.");
+		}
+		int i = 0;
+		for (Term modifiableTerm : modifiableAtom.getTerms()) {
+			if (!unifyTerms(modifiableTerm, unmodifiableAtom.getTerms().get(i), true)) {
+				throw new IllegalArgumentException("Atoms cannot be unified: " + modifiableAtom + ", " + unmodifiableAtom);
+			}
+			i++;
+		}
 
+	}
+
+	@Override
 	public <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term term) {
 		// If term is not ground, store it for right-hand side reverse-lookup.
 		if (!term.isGround()) {

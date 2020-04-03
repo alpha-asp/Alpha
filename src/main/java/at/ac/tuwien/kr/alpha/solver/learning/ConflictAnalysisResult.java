@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.solver.learning;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.NonGroundNoGood;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -45,6 +46,8 @@ public class ConflictAnalysisResult {
 	public final int lbd;
 
 	private List<NoGood> additionalLearnedNoGoods;
+	private NonGroundNoGood learnedNonGroundNoGood;
+	private List<NonGroundNoGood> additionalLearnedNonGroundNoGoods;
 
 	private ConflictAnalysisResult() {
 		learnedNoGood = null;
@@ -86,6 +89,34 @@ public class ConflictAnalysisResult {
 	 */
 	List<NoGood> getAdditionalLearnedNoGoods() {
 		return additionalLearnedNoGoods == null ? Collections.emptyList() : Collections.unmodifiableList(additionalLearnedNoGoods);
+	}
+
+	/**
+	 * Adds non-ground nogoods that have been learned additionally to the primary learned nogood on non-first UIPs.
+	 * @param additionalLearnedNonGroundNoGoods the non-ground nogoods learnt on non-first UIPs
+	 */
+	void addLearnedNonGroundNoGoods(List<NonGroundNoGood> additionalLearnedNonGroundNoGoods) {
+		if (this.additionalLearnedNonGroundNoGoods == null) {
+			this.additionalLearnedNonGroundNoGoods = additionalLearnedNonGroundNoGoods;
+		} else {
+			this.additionalLearnedNonGroundNoGoods.addAll(additionalLearnedNonGroundNoGoods);
+		}
+	}
+
+	/**
+	 * Gets a list of non-ground nogoods that have been learned additionally to the primary learned nogood on non-first UIPs.
+	 * @return a list of additional learned non-ground nogoods
+	 */
+	List<NonGroundNoGood> getAdditionalLearnedNonGroundNoGoods() {
+		return additionalLearnedNonGroundNoGoods == null ? Collections.emptyList() : Collections.unmodifiableList(additionalLearnedNonGroundNoGoods);
+	}
+
+	void setLearnedNonGroundNoGood(NonGroundNoGood learnedNonGroundNoGood) {
+		this.learnedNonGroundNoGood = learnedNonGroundNoGood;
+	}
+
+	public NonGroundNoGood getLearnedNonGroundNoGood() {
+		return learnedNonGroundNoGood;
 	}
 
 	@Override

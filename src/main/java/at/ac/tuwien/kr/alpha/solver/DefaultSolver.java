@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -110,7 +110,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		this.store = store;
 		this.choiceManager = new ChoiceManager(assignment, store);
 		final GroundConflictNoGoodLearner groundLearner = new GroundConflictNoGoodLearner(assignment, atomStore);
-		this.learner = conflictGeneralisationEnabled ? new NonGroundConflictNoGoodLearner(assignment, groundLearner) : groundLearner;
+		this.learner = conflictGeneralisationEnabled ? new NonGroundConflictNoGoodLearner(assignment, atomStore, groundLearner) : groundLearner;
 		this.branchingHeuristic = chainFallbackHeuristic(grounder, assignment, random, heuristicsConfiguration);
 		this.disableJustifications = config.isDisableJustificationSearch();
 		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();

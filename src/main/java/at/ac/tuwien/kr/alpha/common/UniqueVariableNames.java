@@ -27,7 +27,6 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
 import java.util.ArrayList;
@@ -35,39 +34,38 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 public class UniqueVariableNames {
 
 	private final Map<VariableTerm, Integer> variablesToOccurrences = new HashMap<>();
 
 	public NonGroundNoGood makeVariableNamesUnique(NonGroundNoGood noGood) {
-		final Substitution substitution = renameVariablesIfAlreadyUsed(noGood.getOccurringVariables());
-		if (substitution.isEmpty()) {
+		final Unifier unifier = renameVariablesIfAlreadyUsed(noGood.getOccurringVariables());
+		if (unifier.isEmpty()) {
 			return noGood;
 		}
 		final List<Literal> newLiterals = new ArrayList<>(noGood.size());
 		for (Literal literal : noGood) {
-			newLiterals.add(literal.substitute(substitution));
+			newLiterals.add(literal.substitute(unifier));
 		}
 		return new NonGroundNoGood(noGood.getType(), newLiterals, noGood.hasHead());
 
 	}
 
-	private Substitution renameVariablesIfAlreadyUsed(Set<VariableTerm> variables) {
-		final TreeMap<VariableTerm, Term> substitution = new TreeMap<>();
+	private Unifier renameVariablesIfAlreadyUsed(Set<VariableTerm> variables) {
+		final Unifier unifier = new Unifier();
 		for (VariableTerm variable : variables) {
 			if (variablesToOccurrences.containsKey(variable)) {
 				VariableTerm newVariable;
 				do {
 					newVariable = VariableTerm.getInstance(variable.toString() + "_" + (variablesToOccurrences.computeIfPresent(variable, (v,o) -> o+1)));
 				} while (variablesToOccurrences.containsKey(newVariable));
-				substitution.put(variable, newVariable);
+				unifier.put(variable, newVariable);
 			} else {
 				variablesToOccurrences.put(variable, 0);
 			}
 		}
-		return new Substitution(substitution);
+		return unifier;
 	}
 
 }

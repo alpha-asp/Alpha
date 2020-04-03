@@ -29,13 +29,15 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
 
+import java.util.Iterator;
+
 /**
  * An interface to reasons of implications as used internally by the solver. This is a lightweight {@link at.ac.tuwien.kr.alpha.common.NoGood} that only
  * provides an array of literals (in some order) and has an activity that may change.
  *
  * Copyright (c) 2019-2020, the Alpha Team.
  */
-public interface Antecedent {
+public interface Antecedent extends Iterable<Integer> {
 
 	int[] getReasonLiterals();
 
@@ -51,4 +53,25 @@ public interface Antecedent {
 		return null;
 	}
 
+	@Override
+	default Iterator<Integer> iterator() {
+		return new Iterator<Integer>() {
+			private int i;
+			private int[] literals = getReasonLiterals();
+
+			@Override
+			public boolean hasNext() {
+				return literals.length > i;
+			}
+
+			@Override
+			public Integer next() {
+				return literals[i++];
+			}
+		};
+	}
+
+	default int size() {
+		return getReasonLiterals().length;
+	}
 }

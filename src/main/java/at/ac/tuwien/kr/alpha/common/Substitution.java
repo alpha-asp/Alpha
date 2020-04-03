@@ -92,34 +92,56 @@ public class Substitution {
 	}
 
 	/**
-	 * Checks if the left possible non-ground term unifies with the ground term.
-	 * @param termNonGround
-	 * @param termGround
-	 * @return
+	 * Checks if the left, possibly non-ground term unifies with the right ground term.
+	 * This substitution is modified to reflect the unification.
+	 * @param termNonGround the left term, possibly non-ground
+	 * @param termGround the right term, must be ground
+	 * @return {@code true} iff the unification succeeds
 	 */
 	public boolean unifyTerms(Term termNonGround, Term termGround) {
-		if (termNonGround == termGround) {
-			// Both terms are either the same constant or the same variable term
+		return unifyTerms(termNonGround, termGround, false);
+	}
+
+	/**
+	 * Checks if the left, possibly non-ground term unifies with the right, possibly non-ground term.
+	 * This substitution is modified to reflect the unification.
+	 * @param termLeft the left term, possibly
+	 * @param termRight the right term, may only be non-ground if {@code allowNonGroundTermRight} is {@code true}
+	 * @return {@code true} iff the unification succeeds
+	 */
+	public boolean unifyTerms(Term termLeft, Term termRight, boolean allowNonGroundTermRight) {
+		final boolean isRightTermGround = termRight.isGround();
+		if (!allowNonGroundTermRight && !isRightTermGround) {
+			throw new IllegalArgumentException("Term " + termRight + " is not ground.");
+		}
+		if (termLeft == termRight) {
 			return true;
-		} else if (termNonGround instanceof ConstantTerm) {
+		} else if (isRightTermGround && termLeft instanceof ConstantTerm) {
 			// Since right term is ground, both terms differ
 			return false;
-		} else if (termNonGround instanceof VariableTerm) {
-			VariableTerm variableTerm = (VariableTerm)termNonGround;
-			// Left term is variable, bind it to the right term.
-			Term bound = eval(variableTerm);
+		} else if (termLeft instanceof VariableTerm) {
+			VariableTerm variableTermLeft = (VariableTerm)termLeft;
+			if (isRightTermGround) {
+				// Left term is variable, bind it to the right term.
+				Term bound = eval(variableTermLeft);
 
-			if (bound != null) {
-				// Variable is already bound, return true if binding is the same as the current ground term.
-				return termGround == bound;
+				if (bound != null) {
+					// Variable is already bound, return true if binding is the same as the current ground term.
+					return termRight == bound;
+				}
+
+				put(variableTermLeft, termRight);
+				return true;
+			} else {
+				assert termRight instanceof VariableTerm;
+				put(variableTermLeft, termRight); // see Unifier#put
+				// TODO is this right, or should we check if the variable is already bound?
+				return true;
 			}
-
-			substitution.put(variableTerm, termGround);
-			return true;
-		} else if (termNonGround instanceof FunctionTerm && termGround instanceof FunctionTerm) {
+		} else if (termLeft instanceof FunctionTerm && termRight instanceof FunctionTerm) {
 			// Both terms are function terms
-			FunctionTerm ftNonGround = (FunctionTerm) termNonGround;
-			FunctionTerm ftGround = (FunctionTerm) termGround;
+			FunctionTerm ftNonGround = (FunctionTerm) termLeft;
+			FunctionTerm ftGround = (FunctionTerm) termRight;
 
 			if (!(ftNonGround.getSymbol().equals(ftGround.getSymbol()))) {
 				return false;
@@ -130,7 +152,7 @@ public class Substitution {
 
 			// Iterate over all subterms of both function terms
 			for (int i = 0; i < ftNonGround.getTerms().size(); i++) {
-				if (!unifyTerms(ftNonGround.getTerms().get(i), ftGround.getTerms().get(i))) {
+				if (!unifyTerms(ftNonGround.getTerms().get(i), ftGround.getTerms().get(i), allowNonGroundTermRight)) {
 					return false;
 				}
 			}
