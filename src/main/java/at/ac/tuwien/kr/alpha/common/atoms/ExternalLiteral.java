@@ -148,7 +148,10 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 			}
 		} else {
 			if (this.isNegated()) {
-				return Collections.emptyList();
+				List<Substitution> retVal = new ArrayList<>();
+				retVal.add(partialSubstitution);
+				return retVal;
+				// return Collections.emptyList();
 			} else {
 				return this.buildSubstitutionsForOutputs(partialSubstitution, results);
 			}

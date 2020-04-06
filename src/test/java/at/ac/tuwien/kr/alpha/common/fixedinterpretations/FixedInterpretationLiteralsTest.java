@@ -27,6 +27,8 @@ public class FixedInterpretationLiteralsTest {
 			+ "positive_external_with_output :- "
 			+ "&stdlib_datetime_parse[\"01.01.2121 21:11:12\", \"dd.MM.yyyy HH:mm:ss\"](Y, MO, D, H, MI, S), Y = 2121, MO = 1, D = 1, H = 21, MI = 11, S = 12."
 			+ "negative_external_with_output :- Y = 2121, MO = 1, D = 1, H = 21, MI = 11, S = 12, "
+			+ "not &stdlib_datetime_parse[\"22.02.2222 21:11:12\", \"dd.MM.yyyy HH:mm:ss\"](Y, MO, D, H, MI, S)."
+			+ "negative_external_with_output_dontfire :- Y = 2222, MO = 2, D = 22, H = 21, MI = 11, S = 12,"
 			+ "not &stdlib_datetime_parse[\"22.02.2222 21:11:12\", \"dd.MM.yyyy HH:mm:ss\"](Y, MO, D, H, MI, S).";
 
 	private AnswerSet answerSet;
@@ -71,6 +73,11 @@ public class FixedInterpretationLiteralsTest {
 	@Test
 	public void negativeExternalWithOutput() {
 		Assert.assertTrue(this.answerSet.getPredicates().contains(Predicate.getInstance("negative_external_with_output", 0)));
+	}
+
+	@Test
+	public void negativeExternalWithOutputDontfire() {
+		Assert.assertFalse(this.answerSet.getPredicates().contains(Predicate.getInstance("negative_external_with_output_dontfire", 0)));
 	}
 
 }
