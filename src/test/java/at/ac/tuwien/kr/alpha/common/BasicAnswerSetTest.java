@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.api.answersets.AtomQuery;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -104,5 +105,36 @@ public class BasicAnswerSetTest {
 		Assert.assertTrue(flatAs.contains(q1Inst1));
 		Assert.assertTrue(flatAs.contains(q1Inst2));
 		Assert.assertTrue(flatAs.contains(r2Inst1));
+	}
+
+	@Test
+	public void queryAnswerSet() {
+		Predicate p0 = Predicate.getInstance("p", 0);
+		Atom p0Inst = new BasicAtom(p0);
+		Predicate q1 = Predicate.getInstance("q", 1);
+		Atom q1Inst1 = new BasicAtom(q1, ConstantTerm.getInstance("bla"));
+		Atom q1Inst2 = new BasicAtom(q1, ConstantTerm.getInstance("blub"));
+		Predicate r2 = Predicate.getInstance("r", 2);
+		Atom r2Inst1 = new BasicAtom(r2, ConstantTerm.getInstance("foo"), ConstantTerm.getInstance("bar"));
+		SortedSet<Predicate> predicates = new TreeSet<>();
+		predicates.add(p0);
+		predicates.add(q1);
+		predicates.add(r2);
+		Map<Predicate, SortedSet<Atom>> instances = new HashMap<>();
+		SortedSet<Atom> p0Instances = new TreeSet<>();
+		SortedSet<Atom> q1Instances = new TreeSet<>();
+		SortedSet<Atom> r2Instances = new TreeSet<>();
+		p0Instances.add(p0Inst);
+		q1Instances.add(q1Inst1);
+		q1Instances.add(q1Inst2);
+		r2Instances.add(r2Inst1);
+		instances.put(p0, p0Instances);
+		instances.put(q1, q1Instances);
+		instances.put(r2, r2Instances);
+		AnswerSet as = new BasicAnswerSet(predicates, instances);
+		AtomQuery query = AtomQuery.forPredicate(Predicate.getInstance("q", 1)).withStringEquals(0, "blub");
+		List<Atom> queryResult = as.query(query);
+		Assert.assertEquals(1, queryResult.size());
+		Assert.assertTrue(queryResult.contains(q1Inst2));
 	}
 }
