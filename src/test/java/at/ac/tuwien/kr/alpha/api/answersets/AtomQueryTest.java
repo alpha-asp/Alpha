@@ -68,7 +68,7 @@ public class AtomQueryTest {
 			if (!(constTerm.getObject() instanceof Integer)) {
 				return false;
 			}
-			int value = (int) constTerm.getObject();
+			int value = (Integer) constTerm.getObject();
 			return value % 2 == 0;
 		};
 		AtomQuery query = AtomQuery.forPredicate(p).withStringEquals(0, "foo").withFilter(2, intEven);
