@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +68,11 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 	private final Assignment assignment;
 	private final AtomStore atomStore;
 	private final GroundConflictNoGoodLearner groundLearner;
+
+	private Map<NonGroundNoGood,Integer> nonGroundNoGoodViolationCounter = new HashMap<>();
+	private Map<NonGroundNoGood,Set<NonGroundNoGood>> learnedOnFirstUIP = new HashMap<>();
+	private Map<NonGroundNoGood,Set<NonGroundNoGood>> learnedOnLastUIP = new HashMap<>();
+	private Map<NonGroundNoGood,Set<NonGroundNoGood>> learnedOnOtherUIPs = new HashMap<>();
 
 	public NonGroundConflictNoGoodLearner(Assignment assignment, AtomStore atomStore, GroundConflictNoGoodLearner groundLearner) {
 		this.assignment = assignment;
@@ -124,7 +130,9 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 					firstLearnedNonGroundNoGood = learntNonGroundNoGood;
 				} else {
 					additionalLearnedNoGoods.add(learntNoGood);
-					additionalLearnedNonGroundNoGoods.add(learntNonGroundNoGood);
+					if (learntNonGroundNoGood != null) {
+						additionalLearnedNonGroundNoGoods.add(learntNonGroundNoGood);
+					}
 				}
 			}
 		}
@@ -142,6 +150,7 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 				analysisResult.addLearnedNonGroundNoGoods(additionalLearnedNonGroundNoGoods);
 				LOGGER.info("Additionally learned non-ground nogoods: {}", additionalLearnedNonGroundNoGoods);
 			}
+			countAndRememberLearnedNonGroundNoGoods(violatedNoGood, analysisResult);
 		}
 		return analysisResult;
 	}
@@ -215,6 +224,44 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 			result.add(nonGroundNoGood.getLiteral(i));
 		}
 		return result;
+	}
+
+	private void countAndRememberLearnedNonGroundNoGoods(Antecedent violatedNoGood, ConflictAnalysisResult analysisResult) {
+		if (violatedNoGood.getOriginalNoGood() == null) {
+			return;
+		}
+		final NonGroundNoGood violatedNonGroundNoGood = violatedNoGood.getOriginalNoGood().getNonGroundNoGood();
+		if (violatedNonGroundNoGood == null) {
+			return;
+		}
+		final NonGroundNoGood learnedNonGroundNoGood = analysisResult.getLearnedNonGroundNoGood();
+		final List<NonGroundNoGood> additionalLearnedNonGroundNoGoods = analysisResult.getAdditionalLearnedNonGroundNoGoods();
+		if (!nonGroundNoGoodViolationCounter.containsKey(violatedNonGroundNoGood)) {
+			nonGroundNoGoodViolationCounter.put(violatedNonGroundNoGood, 0);
+			learnedOnFirstUIP.put(violatedNonGroundNoGood, new HashSet<>());
+			learnedOnLastUIP.put(violatedNonGroundNoGood, new HashSet<>());
+			learnedOnOtherUIPs.put(violatedNonGroundNoGood, new HashSet<>());
+		}
+		nonGroundNoGoodViolationCounter.computeIfPresent(violatedNonGroundNoGood, (n,c) -> c + 1);
+		if (learnedNonGroundNoGood != null) {
+			learnedOnFirstUIP.get(violatedNonGroundNoGood).add(learnedNonGroundNoGood);
+		}
+		if (!additionalLearnedNonGroundNoGoods.isEmpty()) {
+			learnedOnLastUIP.get(violatedNonGroundNoGood).add(additionalLearnedNonGroundNoGoods.get(additionalLearnedNonGroundNoGoods.size() - 1));
+			for (int i = 0; i < additionalLearnedNonGroundNoGoods.size() - 1; i++) {
+				learnedOnOtherUIPs.get(violatedNonGroundNoGood).add(additionalLearnedNonGroundNoGoods.get(i));
+			}
+		}
+	}
+
+	public void logLearnedNonGroundNoGoods() {
+		LOGGER.info("LEARNED NON-GROUND NOGOODS:");
+		for (NonGroundNoGood violatedNonGroundNoGood : nonGroundNoGoodViolationCounter.keySet()) {
+			LOGGER.info("Violated {} times: {}", nonGroundNoGoodViolationCounter.get(violatedNonGroundNoGood), violatedNonGroundNoGood);
+			LOGGER.info("Learned on first UIP: {}", learnedOnFirstUIP.get(violatedNonGroundNoGood));
+			LOGGER.info("Learned on last UIP: {}", learnedOnLastUIP.get(violatedNonGroundNoGood));
+			LOGGER.info("Learned on other UIPs: {}", learnedOnOtherUIPs.get(violatedNonGroundNoGood));
+		}
 	}
 
 	class GroundAndNonGroundNoGood {

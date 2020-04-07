@@ -600,5 +600,12 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			AtomCounter atomCounter = atomStore.getAtomCounter();
 			LOGGER.debug("Number of atoms by type: {}", atomCounter.getStatsByType());
 		}
+		logLearnedNonGroundNoGoods();
+	}
+
+	private void logLearnedNonGroundNoGoods() {
+		if (learner instanceof NonGroundConflictNoGoodLearner) {
+			((NonGroundConflictNoGoodLearner)learner).logLearnedNonGroundNoGoods();
+		}
 	}
 }
