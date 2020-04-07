@@ -353,6 +353,11 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 			literals.addAll(additionalNonGroundLiterals);
 			return NonGroundNoGood.learnt(literals);
 		}
+
+		@Override
+		public String toString() {
+			return String.valueOf(toNonGroundNoGood());
+		}
 	}
 
 }
