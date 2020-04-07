@@ -136,9 +136,11 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 		if (analysisResult.backjumpLevel >= 0) {
 			// if backJumpLevel < 0, then problem is UNSAT (ground analysis result does additional checks for this)
 			analysisResult.setLearnedNonGroundNoGood(firstLearnedNonGroundNoGood);
+			LOGGER.info("Learned non-ground nogood for ground conflict {}: {}", violatedNoGood, firstLearnedNonGroundNoGood);
 			if (!additionalLearnedNoGoods.isEmpty()) {
 				analysisResult.addLearnedNoGoods(additionalLearnedNoGoods);
 				analysisResult.addLearnedNonGroundNoGoods(additionalLearnedNonGroundNoGoods);
+				LOGGER.info("Additionally learned non-ground nogoods: {}", additionalLearnedNonGroundNoGoods);
 			}
 		}
 		return analysisResult;
