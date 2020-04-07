@@ -51,8 +51,10 @@ import static at.ac.tuwien.kr.alpha.Util.collectionToIntArray;
 import static at.ac.tuwien.kr.alpha.Util.intArrayToLinkedHashSet;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
 import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
 import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
+import static at.ac.tuwien.kr.alpha.solver.Atoms.FALSUM;
 
 /**
  * Conflict-driven learning on ground clauses that also learns non-ground nogoods.
@@ -276,10 +278,10 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 
 		public GroundAndNonGroundNoGood(Antecedent antecedent) {
 			this.groundNoGood = intArrayToLinkedHashSet(antecedent.getReasonLiterals());
-			canLearnNonGround = digestOriginalNonGroundNoGood(antecedent);
+			canLearnNonGround = digestOriginalNonGroundNoGood(antecedent, atomToLiteral(FALSUM));
 		}
 
-		private boolean digestOriginalNonGroundNoGood(Antecedent antecedent) {
+		private boolean digestOriginalNonGroundNoGood(Antecedent antecedent, int impliedLiteral) {
 			final NoGood originalNoGood = antecedent.getOriginalNoGood();
 			if (originalNoGood == null) {
 				LOGGER.warn("Cannot generalise conflict because original nogood unknown for " + antecedent);
@@ -293,14 +295,33 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 
 			nonGroundNoGood = uniqueVariableNames.makeVariableNamesUnique(nonGroundNoGood);
 			final Unifier unifier = new Unifier();
+			assert (impliedLiteral == atomToLiteral(FALSUM)) == mapToNonGroundAtoms.isEmpty(); // impliedLiteral is only FALSUM for violated nogood
 			if (!mapToNonGroundAtoms.isEmpty()) {
 				// if we already have atoms stored, we need to unify conflicting non-ground atoms:
+				final Map<Integer,Unifier> mapExistingAtomToConflictUnifier = new HashMap<>();
 				for (int literal : antecedent) {
 					final Literal nonGroundLiteral = findNonGroundLiteral(literal, originalNoGood, nonGroundNoGood);
+					final Atom nonGroundAtom = nonGroundLiteral.getAtom();
 					final Atom existingNonGroundAtom = mapToNonGroundAtoms.get(atomOf(literal));
-					if (existingNonGroundAtom != null) {
-						unifier.unify(nonGroundLiteral.getAtom(), existingNonGroundAtom);
+					if (literal == negateLiteral(impliedLiteral)) {
+						// this is the literal used for resolution
+						assert existingNonGroundAtom != null;
+						unifier.unify(nonGroundAtom, existingNonGroundAtom);
+					} else if (existingNonGroundAtom != null) {
+						// this is another atom that already exists in the current nogood. It may be that because of this,
+						// the current nogood uses two variable names for what should be the same variable.
+						// Therefore, additional unification may be necessary in the current nogood:
+						// all atoms that are substituted in the conflicting atom must also be substituted in the existing atom
+						final Unifier conflictUnifier = new Unifier();
+						conflictUnifier.unify(existingNonGroundAtom, nonGroundAtom);
+						mapExistingAtomToConflictUnifier.put(atomOf(literal), conflictUnifier);
 					}
+				}
+				for (Map.Entry<Integer, Unifier> existingAtomToConflictUnifier : mapExistingAtomToConflictUnifier.entrySet()) {
+					final int existingAtom = existingAtomToConflictUnifier.getKey();
+					final Unifier mergedUnifier = Unifier.mergeIntoLeft(existingAtomToConflictUnifier.getValue(), unifier);
+					mapToNonGroundAtoms.computeIfPresent(existingAtom, (a,n) -> n.substitute(mergedUnifier));
+					// TODO: should this actually be done for ALL existing atoms ?!
 				}
 			}
 			for (int literal : antecedent) {
@@ -333,7 +354,7 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 		}
 
 		void resolveWith(Antecedent antecedent, int literalInThisNoGood) {
-			canLearnNonGround = canLearnNonGround && digestOriginalNonGroundNoGood(antecedent);
+			canLearnNonGround = canLearnNonGround && digestOriginalNonGroundNoGood(antecedent, literalInThisNoGood);
 			this.groundNoGood.remove(literalInThisNoGood);
 			for (int literal : antecedent.getReasonLiterals()) {
 				if (literal != negateLiteral(literalInThisNoGood)) {
