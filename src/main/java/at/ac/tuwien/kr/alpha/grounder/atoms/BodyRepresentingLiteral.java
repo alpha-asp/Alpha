@@ -28,10 +28,6 @@ package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Substitution;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * A literal containing a {@link RuleAtom} (only to be used internally, e.g., in {@link at.ac.tuwien.kr.alpha.common.NonGroundNoGood}s)
@@ -55,15 +51,5 @@ public class BodyRepresentingLiteral extends Literal {
 	@Override
 	public BodyRepresentingLiteral substitute(Substitution substitution) {
 		return new BodyRepresentingLiteral(getAtom().substitute(substitution), positive);
-	}
-
-	@Override
-	public Set<VariableTerm> getBindingVariables() {
-		return Collections.emptySet();
-	}
-
-	@Override
-	public Set<VariableTerm> getNonBindingVariables() {
-		return Collections.emptySet();
 	}
 }

@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2018, the Alpha Team.
+/*
+ * Copyright (c) 2017-2018, 2020, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -33,13 +33,13 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import org.apache.commons.collections4.SetUtils;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
  * A potentially negated {@link Atom}
- * 
- * Copyright (c) 2017-2018, the Alpha Team.
  */
 public abstract class Literal {
 	
@@ -62,10 +62,46 @@ public abstract class Literal {
 	public abstract Literal negate();
 	
 	public abstract Literal substitute(Substitution substitution);
-	
-	public abstract Set<VariableTerm> getBindingVariables();
-	
-	public abstract Set<VariableTerm> getNonBindingVariables();
+
+	/**
+	 * Set of all variables occurring in the Atom that are potentially binding, i.e., variables in positive atoms.
+	 *
+	 * This is the default implementation used by {@link BasicLiteral} and {@link at.ac.tuwien.kr.alpha.grounder.atoms.BodyRepresentingLiteral}
+	 * and may be overridden in implementing classes.
+	 *
+	 * @return the set of binding variables in this literal
+	 */
+	public Set<VariableTerm> getBindingVariables() {
+		if (!positive) {
+			// Negative literal has no binding variables.
+			return Collections.emptySet();
+		}
+		Set<VariableTerm> bindingVariables = new HashSet<>();
+		for (Term term : atom.getTerms()) {
+			bindingVariables.addAll(term.getOccurringVariables());
+		}
+		return bindingVariables;
+	}
+
+	/**
+	 * Set of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
+	 *
+	 * This is the default implementation used by {@link BasicLiteral} and {@link at.ac.tuwien.kr.alpha.grounder.atoms.BodyRepresentingLiteral}
+	 * and may be overridden in implementing classes.
+	 *
+	 * @return the set of non-binding variables in this literal
+	 */
+	public Set<VariableTerm> getNonBindingVariables() {
+		if (positive) {
+			// Positive literal has only binding variables.
+			return Collections.emptySet();
+		}
+		Set<VariableTerm> nonbindingVariables = new HashSet<>();
+		for (Term term : atom.getTerms()) {
+			nonbindingVariables.addAll(term.getOccurringVariables());
+		}
+		return nonbindingVariables;
+	}
 	
 	/**
 	 * Union of {@link #getBindingVariables()} and {@link #getNonBindingVariables()}

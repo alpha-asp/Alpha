@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2018, the Alpha Team.
+/*
+ * Copyright (c) 2017-2018, 2020, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -28,17 +28,9 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Substitution;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Contains a potentially negated {@link BasicAtom}.
- * 
- * Copyright (c) 2017-2018, the Alpha Team.
  */
 public class BasicLiteral extends Literal {
 	
@@ -65,41 +57,5 @@ public class BasicLiteral extends Literal {
 	@Override
 	public BasicLiteral substitute(Substitution substitution) {
 		return new BasicLiteral(getAtom().substitute(substitution), positive);
-	}
-
-	/**
-	 * Set of all variables occurring in the Atom that are potentially binding, i.e., variables in positive atoms.
-	 * 
-	 * @return
-	 */
-	@Override
-	public Set<VariableTerm> getBindingVariables() {
-		if (!positive) {
-			// Negative literal has no binding variables.
-			return Collections.emptySet();
-		}
-		Set<VariableTerm> bindingVariables = new HashSet<>();
-		for (Term term : atom.getTerms()) {
-			bindingVariables.addAll(term.getOccurringVariables());
-		}
-		return bindingVariables;
-	}
-
-	/**
-	 * Set of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
-	 * 
-	 * @return
-	 */
-	@Override
-	public Set<VariableTerm> getNonBindingVariables() {
-		if (positive) {
-			// Positive literal has only binding variables.
-			return Collections.emptySet();
-		}
-		Set<VariableTerm> nonbindingVariables = new HashSet<>();
-		for (Term term : atom.getTerms()) {
-			nonbindingVariables.addAll(term.getOccurringVariables());
-		}
-		return nonbindingVariables;
 	}
 }
