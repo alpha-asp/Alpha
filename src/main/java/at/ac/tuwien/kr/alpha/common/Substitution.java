@@ -105,7 +105,7 @@ public class Substitution {
 	/**
 	 * Checks if the left, possibly non-ground term unifies with the right, possibly non-ground term.
 	 * This substitution is modified to reflect the unification.
-	 * @param termLeft the left term, possibly
+	 * @param termLeft the left term, possibly non-ground
 	 * @param termRight the right term, may only be non-ground if {@code allowNonGroundTermRight} is {@code true}
 	 * @return {@code true} iff the unification succeeds
 	 */
@@ -116,9 +116,14 @@ public class Substitution {
 		}
 		if (termLeft == termRight) {
 			return true;
-		} else if (isRightTermGround && termLeft instanceof ConstantTerm) {
-			// Since right term is ground, both terms differ
-			return false;
+		} else if (termLeft instanceof ConstantTerm) {
+			if (isRightTermGround) {
+				// Since right term is ground, both terms differ
+				return false;
+			} else {
+				throw new UnsupportedOperationException();
+				// TODO: substitute right term to unify with left term
+			}
 		} else if (termLeft instanceof VariableTerm) {
 			VariableTerm variableTermLeft = (VariableTerm)termLeft;
 			if (isRightTermGround) {
