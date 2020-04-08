@@ -26,45 +26,30 @@
 
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import static org.junit.Assert.assertEquals;
 
-public class UniqueVariableNames {
+/**
+ * Tests {@link NonGroundNoGood}
+ */
+public class NonGroundNoGoodTest {
 
-	private final Map<VariableTerm, Integer> variablesToOccurrences = new HashMap<>();
-
-	public NonGroundNoGood makeVariableNamesUnique(NonGroundNoGood noGood) {
-		final Unifier unifier = renameVariablesIfAlreadyUsed(noGood.getOccurringVariables());
-		if (unifier.isEmpty()) {
-			return noGood;
-		}
-		final Literal[] newLiterals = new Literal[noGood.size()];
-		for (int i = 0; i < noGood.size(); i++) {
-			final Literal literal = noGood.getLiteral(i);
-			newLiterals[i] = literal.substitute(unifier);
-		}
-		return new NonGroundNoGood(noGood.getType(), newLiterals, noGood.hasHead());
-
-	}
-
-	private Unifier renameVariablesIfAlreadyUsed(Set<VariableTerm> variables) {
-		final Unifier unifier = new Unifier();
-		for (VariableTerm variable : variables) {
-			if (variablesToOccurrences.containsKey(variable)) {
-				VariableTerm newVariable;
-				do {
-					newVariable = VariableTerm.getInstance(variable.toString() + "_" + (variablesToOccurrences.computeIfPresent(variable, (v, o) -> o + 1)));
-				} while (variablesToOccurrences.containsKey(newVariable));
-				unifier.put(variable, newVariable);
-			} else {
-				variablesToOccurrences.put(variable, 0);
-			}
-		}
-		return unifier;
+	@Test
+	public void testEqualsIgnoreOrderOfLiterals() {
+		final Predicate predA = Predicate.getInstance("a", 1);
+		final Predicate predB = Predicate.getInstance("b", 1);
+		final VariableTerm varX = VariableTerm.getInstance("X");
+		final VariableTerm varY = VariableTerm.getInstance("Y");
+		final Literal literalAX = new BasicAtom(predA, varX).toLiteral();
+		final Literal literalBY = new BasicAtom(predB, varY).toLiteral();
+		final NonGroundNoGood ng1 = new NonGroundNoGood(literalAX, literalBY);
+		final NonGroundNoGood ng2 = new NonGroundNoGood(literalBY, literalAX);
+		assertEquals(ng1, ng2);
+		assertEquals(ng1.hashCode(), ng2.hashCode());
 	}
 
 }

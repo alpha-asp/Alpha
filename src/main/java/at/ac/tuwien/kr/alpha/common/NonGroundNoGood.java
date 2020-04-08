@@ -33,6 +33,7 @@ import at.ac.tuwien.kr.alpha.grounder.NoGoodGenerator;
 import at.ac.tuwien.kr.alpha.solver.Antecedent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -64,56 +65,75 @@ import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.STATIC;
  */
 public class NonGroundNoGood implements NoGoodInterface<Literal> {
 
-	protected final List<Literal> literals;
+	protected final Literal[] literals;
+	private final Literal[] sortedLiterals;
 	private final boolean head;
 	private final Type type;
 
-	public NonGroundNoGood(List<Literal> literals) {
+	public NonGroundNoGood(Literal... literals) {
 		this(STATIC, literals, false);
 	}
 
-	public NonGroundNoGood(Type type, List<Literal> literals) {
+	public NonGroundNoGood(Type type, Literal... literals) {
 		this(type, literals, false);
 	}
 
-	NonGroundNoGood(Type type, List<Literal> literals, boolean head) {
+	NonGroundNoGood(Type type, Literal[] literals, boolean head) {
 		this.type = type;
 		this.head = head;
-		if (head && !literals.get(HEAD).isNegated()) {
+		if (head && !literals[HEAD].isNegated()) {
 			throw oops("Head is not negative");
 		}
-		this.literals = literals;
+
+		this.literals = Arrays.copyOf(literals, literals.length);
+		// note: literals are not sorted here (in contrast to ground NoGood) because of the assumption that the literals
+		// appear in the same order as in the corresponding ground nogood
+		// however, we maintain a second array of literals that is sorted for comparison purposes:
+		// (the following code is duplicated from the constructor of NoGood)
+
+		Arrays.sort(literals, head ? 1 : 0, literals.length);
+
+		int shift = 0;
+		for (int i = 1; i < literals.length; i++) {
+			if (literals[i - 1] == literals[i]) { // check for duplicate
+				shift++;
+			}
+			literals[i - shift] = literals[i]; // Remove duplicates in place by shifting remaining literals.
+		}
+
+		// copy-shrink array if needed.
+		this.sortedLiterals = shift <= 0 ? literals : Arrays.copyOf(literals, literals.length - shift);
 	}
 
 	public static NonGroundNoGood forGroundNoGood(NoGood groundNoGood, Map<Integer, Atom> atomMapping) {
-		final List<Literal> literals = literalsForGroundNoGood(groundNoGood, atomMapping);
-		return new NonGroundNoGood(groundNoGood.getType(), literals, groundNoGood.hasHead());
+		return new NonGroundNoGood(groundNoGood.getType(), literalsForGroundNoGood(groundNoGood, atomMapping), groundNoGood.hasHead());
 	}
 
 	public static NonGroundNoGood fromBody(NoGood groundNoGood, NoGoodGenerator.CollectedLiterals posLiterals, NoGoodGenerator.CollectedLiterals negLiterals, Map<Integer, Atom> atomMapping) {
-		final List<Literal> literals = literalsForGroundNoGood(groundNoGood, atomMapping);
+		final List<Literal> literals = new ArrayList<>(Arrays.asList(literalsForGroundNoGood(groundNoGood, atomMapping)));
 		literals.addAll(posLiterals.getSkippedFacts());
 		literals.addAll(posLiterals.getSkippedFixedInterpretationLiterals());
 		literals.addAll(negLiterals.getSkippedFacts().stream().map(Literal::negate).collect(Collectors.toList()));
 		literals.addAll(negLiterals.getSkippedFixedInterpretationLiterals().stream().map(Literal::negate).collect(Collectors.toList()));
-		return new NonGroundNoGood(groundNoGood.getType(), literals, groundNoGood.hasHead());
+		return new NonGroundNoGood(groundNoGood.getType(), literals.toArray(new Literal[]{}), groundNoGood.hasHead());
 	}
 
 	public static NonGroundNoGood learnt(Collection<Literal> literals) {
-		return new NonGroundNoGood(LEARNT, new ArrayList<>(literals));
+		return new NonGroundNoGood(LEARNT, literals.toArray(new Literal[]{}));
 	}
 
-	private static List<Literal> literalsForGroundNoGood(NoGood groundNoGood, Map<Integer, Atom> atomMapping) {
-		final List<Literal> literals = new ArrayList<>(groundNoGood.size());
-		for (int groundLiteral : groundNoGood) {
-			literals.add(atomMapping.get(atomOf(groundLiteral)).toLiteral(isPositive(groundLiteral)));
+	private static Literal[] literalsForGroundNoGood(NoGood groundNoGood, Map<Integer, Atom> atomMapping) {
+		final Literal[] literals = new Literal[groundNoGood.size()];
+		for (int i = 0; i < groundNoGood.size(); i++) {
+			final int groundLiteral = groundNoGood.getLiteral(i);
+			literals[i] = atomMapping.get(atomOf(groundLiteral)).toLiteral(isPositive(groundLiteral));
 		}
 		return literals;
 	}
 
 	@Override
 	public Literal getLiteral(int index) {
-		return literals.get(index);
+		return literals[index];
 	}
 
 	@Override
@@ -123,7 +143,7 @@ public class NonGroundNoGood implements NoGoodInterface<Literal> {
 
 	@Override
 	public int size() {
-		return literals.size();
+		return literals.length;
 	}
 
 	public Set<VariableTerm> getOccurringVariables() {
@@ -146,7 +166,19 @@ public class NonGroundNoGood implements NoGoodInterface<Literal> {
 
 	@Override
 	public Iterator<Literal> iterator() {
-		return literals.iterator();
+		return new Iterator<Literal>() {
+			private int i;
+
+			@Override
+			public boolean hasNext() {
+				return literals.length > i;
+			}
+
+			@Override
+			public Literal next() {
+				return literals[i++];
+			}
+		};
 	}
 
 	@Override
@@ -159,18 +191,18 @@ public class NonGroundNoGood implements NoGoodInterface<Literal> {
 		}
 		NonGroundNoGood that = (NonGroundNoGood) o;
 		return head == that.head &&
-				literals.equals(that.literals) &&
+				Arrays.equals(sortedLiterals, that.sortedLiterals) &&
 				type == that.type;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(literals, head, type);
+		return Objects.hash(Arrays.hashCode(sortedLiterals), head, type);
 	}
 
 	@Override
 	public String toString() {
-		final List<String> stringLiterals = new ArrayList<>(literals.size());
+		final List<String> stringLiterals = new ArrayList<>(literals.length);
 		for (Literal literal : literals) {
 			stringLiterals.add((literal.isNegated() ? "-" : "+") + "(" + literal.getAtom() + ")");
 		}

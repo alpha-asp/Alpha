@@ -51,8 +51,10 @@ public abstract class Term implements Comparable<Term> {
 			return 2;
 		} else if (clazz.equals(VariableTerm.class)) {
 			return 3;
+		} else if (clazz.equals(ArithmeticTerm.class)) {
+			return 4;
 		}
-		throw new UnsupportedOperationException("Can only compare constant term, function terms and variable terms among each other.");
+		throw new UnsupportedOperationException("Can only compare constant term, function terms, variable terms, and arithmetic terms among each other.");
 	}
 
 	@Override

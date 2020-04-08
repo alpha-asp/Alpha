@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * A potentially negated {@link Atom}
  */
-public abstract class Literal {
+public abstract class Literal implements Comparable<Literal> {
 	
 	protected final Atom atom;
 	protected final boolean positive;
@@ -155,4 +155,11 @@ public abstract class Literal {
 		return 12 * atom.hashCode() + (positive ? 1 : 0);
 	}
 
+	@Override
+	public int compareTo(Literal o) {
+		if (this.positive == o.positive) {
+			return this.getAtom().compareTo(o.getAtom());
+		}
+		return Boolean.compare(this.positive, o.positive);
+	}
 }

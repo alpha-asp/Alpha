@@ -38,9 +38,6 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static at.ac.tuwien.kr.alpha.common.ComparisonOperator.EQ;
 import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.LEARNT;
 import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.STATIC;
@@ -69,16 +66,19 @@ public class UniqueVariableNamesTest {
 		final VariableTerm varY2 = VariableTerm.getInstance("Y_2");
 		final VariableTerm varZ = VariableTerm.getInstance("Z");
 
-		final List<Literal> literals1 = new ArrayList<>();
-		literals1.add(lit(true, predA, varX, varY));
-		literals1.add(lit(false, predA, varX, varY1));
-		literals1.add(comp(varY1, plus(varY, ConstantTerm.getInstance(1)), EQ));
+		final Literal[] literals1 = new Literal[]{
+				lit(true, predA, varX, varY),
+				lit(false, predA, varX, varY1),
+				comp(varY1, plus(varY, ConstantTerm.getInstance(1)), EQ)
+		};
 
-		final List<Literal> literals2 = new ArrayList<>();
-		literals2.add(lit(true, predB, varY, varZ));
+		final Literal[] literals2 = new Literal[]{
+				lit(true, predB, varY, varZ)
+		};
 
-		final List<Literal> expectedModifiedLiterals2 = new ArrayList<>();
-		expectedModifiedLiterals2.add(lit(true, predB, varY2, varZ));
+		final Literal[] expectedModifiedLiterals2 = new Literal[]{
+				lit(true, predB, varY2, varZ)
+		};
 
 		final NonGroundNoGood noGood1 = new NonGroundNoGood(LEARNT, literals1, false);
 		final NonGroundNoGood noGood2 = new NonGroundNoGood(STATIC, literals2, false);
