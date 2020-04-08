@@ -58,7 +58,7 @@ import static at.ac.tuwien.kr.alpha.solver.Atoms.FALSUM;
 
 /**
  * Conflict-driven learning on ground clauses that also learns non-ground nogoods.
- *
+ * <p>
  * This class builds upon an underlying {@link GroundConflictNoGoodLearner}, to which it acts as a proxy for all operations
  * not implemented on the non-ground level.
  * The non-ground learning capabilities implemented here are not designed for efficiency (yet), so this class should only
@@ -71,10 +71,10 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 	private final AtomStore atomStore;
 	private final GroundConflictNoGoodLearner groundLearner;
 
-	private Map<NonGroundNoGood,Integer> nonGroundNoGoodViolationCounter = new HashMap<>();
-	private Map<NonGroundNoGood,Set<NonGroundNoGood>> learnedOnFirstUIP = new HashMap<>();
-	private Map<NonGroundNoGood,Set<NonGroundNoGood>> learnedOnLastUIP = new HashMap<>();
-	private Map<NonGroundNoGood,Set<NonGroundNoGood>> learnedOnOtherUIPs = new HashMap<>();
+	private Map<NonGroundNoGood, Integer> nonGroundNoGoodViolationCounter = new HashMap<>();
+	private Map<NonGroundNoGood, Set<NonGroundNoGood>> learnedOnFirstUIP = new HashMap<>();
+	private Map<NonGroundNoGood, Set<NonGroundNoGood>> learnedOnLastUIP = new HashMap<>();
+	private Map<NonGroundNoGood, Set<NonGroundNoGood>> learnedOnOtherUIPs = new HashMap<>();
 
 	public NonGroundConflictNoGoodLearner(Assignment assignment, AtomStore atomStore, GroundConflictNoGoodLearner groundLearner) {
 		this.assignment = assignment;
@@ -100,7 +100,7 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 
 	/**
 	 * Analyzes a conflict and learns both a ground nogood (if possible) and one or more non-ground nogoods (if possible).
-	 *
+	 * <p>
 	 * This method also contains an implementation of first UIP learning that is redundant to the one in
 	 * {@link GroundConflictNoGoodLearner#analyzeTrailBased(Antecedent, boolean)} on purpose:
 	 * While the other implementation is designed for efficiency, this one is designed to be easily understood such that
@@ -116,7 +116,7 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 			return ConflictAnalysisResult.UNSAT;
 		}
 
-		final TrailAssignment.TrailBackwardsWalker trailWalker = ((TrailAssignment)assignment).getTrailBackwardsWalker();
+		final TrailAssignment.TrailBackwardsWalker trailWalker = ((TrailAssignment) assignment).getTrailBackwardsWalker();
 		NoGood firstLearnedNoGood = null;
 		NonGroundNoGood firstLearnedNonGroundNoGood = null;
 		List<NoGood> additionalLearnedNoGoods = new ArrayList<>();
@@ -160,8 +160,9 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 	/**
 	 * Resolves the current nogood with the antecedent of one of its literals assigned on the current decision level.
 	 * The given {@code currentNoGood} is modified in situ.
+	 *
 	 * @param currentNoGood the nogood to resolve with the antecedent of one of its literals
-	 * @param trailWalker a backwards-walker on the trail
+	 * @param trailWalker   a backwards-walker on the trail
 	 * @return {@code true} if resolution succeeded, or {@code false} if no further resolution step is possible
 	 */
 	private boolean makeOneResolutionStep(GroundAndNonGroundNoGood currentNoGood, TrailAssignment.TrailBackwardsWalker trailWalker) {
@@ -244,7 +245,7 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 			learnedOnLastUIP.put(violatedNonGroundNoGood, new HashSet<>());
 			learnedOnOtherUIPs.put(violatedNonGroundNoGood, new HashSet<>());
 		}
-		nonGroundNoGoodViolationCounter.computeIfPresent(violatedNonGroundNoGood, (n,c) -> c + 1);
+		nonGroundNoGoodViolationCounter.computeIfPresent(violatedNonGroundNoGood, (n, c) -> c + 1);
 		if (learnedNonGroundNoGood != null) {
 			learnedOnFirstUIP.get(violatedNonGroundNoGood).add(learnedNonGroundNoGood);
 		}
@@ -298,7 +299,7 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 			assert (impliedLiteral == atomToLiteral(FALSUM)) == mapToNonGroundAtoms.isEmpty(); // impliedLiteral is only FALSUM for violated nogood
 			if (!mapToNonGroundAtoms.isEmpty()) {
 				// if we already have atoms stored, we need to unify conflicting non-ground atoms:
-				final Map<Integer,Unifier> mapExistingAtomToConflictUnifier = new HashMap<>();
+				final Map<Integer, Unifier> mapExistingAtomToConflictUnifier = new HashMap<>();
 				for (int literal : antecedent) {
 					final Literal nonGroundLiteral = findNonGroundLiteral(literal, originalNoGood, nonGroundNoGood);
 					final Atom nonGroundAtom = nonGroundLiteral.getAtom();
@@ -320,7 +321,7 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 				for (Map.Entry<Integer, Unifier> existingAtomToConflictUnifier : mapExistingAtomToConflictUnifier.entrySet()) {
 					final int existingAtom = existingAtomToConflictUnifier.getKey();
 					final Unifier mergedUnifier = Unifier.mergeIntoLeft(existingAtomToConflictUnifier.getValue(), unifier);
-					mapToNonGroundAtoms.computeIfPresent(existingAtom, (a,n) -> n.substitute(mergedUnifier));
+					mapToNonGroundAtoms.computeIfPresent(existingAtom, (a, n) -> n.substitute(mergedUnifier));
 					// TODO: should this actually be done for ALL existing atoms ?!
 				}
 			}

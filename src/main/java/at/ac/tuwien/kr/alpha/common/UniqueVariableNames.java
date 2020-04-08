@@ -58,7 +58,7 @@ public class UniqueVariableNames {
 			if (variablesToOccurrences.containsKey(variable)) {
 				VariableTerm newVariable;
 				do {
-					newVariable = VariableTerm.getInstance(variable.toString() + "_" + (variablesToOccurrences.computeIfPresent(variable, (v,o) -> o+1)));
+					newVariable = VariableTerm.getInstance(variable.toString() + "_" + (variablesToOccurrences.computeIfPresent(variable, (v, o) -> o + 1)));
 				} while (variablesToOccurrences.containsKey(newVariable));
 				unifier.put(variable, newVariable);
 			} else {
