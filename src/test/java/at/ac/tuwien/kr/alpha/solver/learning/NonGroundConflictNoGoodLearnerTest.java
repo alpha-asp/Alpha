@@ -177,7 +177,7 @@ public class NonGroundConflictNoGoodLearnerTest {
 	/**
 	 * Tests non-ground learning on the following example: <br/>
 	 *     Nogood 1: { -(col(1,g), +(_R_("0", "{X->1,Col->g}") }, non-ground: { -(col(X,Col), +(_R_("0", (X,Col)) } <br/>
-	 *     Nogood 2: { -(col(0,g)), +(col(1,g)) }, non-ground: { -(col(Y,C)), +(col(X,Col)), +(Y=X-1) } <br/>
+	 *     Nogood 2: { -(col(0,g)), +(col(1,g)) }, non-ground: { -(col(Y,Col)), +(col(X,Col)), +(Y=X-1) } <br/>
 	 *     Nogood 3: { +(col(1,g)), +(col(0,g)) }, non-ground: { +(col(N,C)), +(col(M,C)), +(M<N) } <br/>
 	 * When nogood 3 is violated, it is first resolved with nogood 2, learning a nogood at the first UIP,
 	 * and then with nogood 1, learning another nogood at the second UIP.
@@ -209,6 +209,7 @@ public class NonGroundConflictNoGoodLearnerTest {
 		final Atom nonGroundAtomColYCol = new BasicAtom(predCol, varY, varCol);
 		final Atom nonGroundAtomColMC = new BasicAtom(predCol, varM, varC);
 		final Atom nonGroundAtomColNC = new BasicAtom(predCol, varN, varC);
+		final Atom nonGroundAtomColXC = new BasicAtom(predCol, varX, varC);
 		final Atom unrelated = new BasicAtom(predUnrelated, varX, varCol);
 
 		final Rule rule = new Rule(new DisjunctiveHead(singletonList(nonGroundAtomColXCol)), singletonList(unrelated.toLiteral()));
@@ -278,12 +279,14 @@ public class NonGroundConflictNoGoodLearnerTest {
 		assert conflictAnalysisResult.learnedNoGood != null;
 		assertEquals(expectedLearnedNoGood1, intArrayToLinkedHashSet(conflictAnalysisResult.learnedNoGood.asAntecedent().getReasonLiterals()));
 
-		final Literal nonGroundComparisonLiteralMEqualsNMinus1 = new ComparisonAtom(varM, ArithmeticTerm.getInstance(varN, MINUS, const1), EQ).toLiteral();
+		final Literal nonGroundComparisonLiteralMLessThanX = new ComparisonAtom(varM, varX, LT).toLiteral();
+		final Literal nonGroundComparisonLiteralMEqualsXMinus1 = new ComparisonAtom(varM, ArithmeticTerm.getInstance(varX, MINUS, const1), EQ).toLiteral();
 
 		final NoGoodGenerator.CollectedLiterals positiveCollectedLiteralsLearned1 = new NoGoodGenerator.CollectedLiterals(
 				new ArrayList<>(expectedLearnedNoGood1),
-				singletonList(nonGroundAtomColNC.toLiteral()),
-				asList(nonGroundComparisonLiteralMLessThanN, nonGroundComparisonLiteralMEqualsNMinus1),
+				singletonList(nonGroundAtomColXC.toLiteral()),
+				asList(nonGroundComparisonLiteralMLessThanX, nonGroundComparisonLiteralMEqualsXMinus1),
+				// TODO: comparison literals could be removed by learning algorithm because they involve variables that are not used anywhere else
 				emptyList()
 		);
 		final NoGoodGenerator.CollectedLiterals negativeCollectedLiteralsLearned1 = new NoGoodGenerator.CollectedLiterals();
@@ -299,14 +302,13 @@ public class NonGroundConflictNoGoodLearnerTest {
 		assertEquals(expectedLearnedNoGood2, intArrayToLinkedHashSet(learnedNoGood2.asAntecedent().getReasonLiterals()));
 
 		final Unifier ruleUnifier = new Unifier();
-		ruleUnifier.put(varX, varN);
 		ruleUnifier.put(varCol, varC);
 		final RuleAtom nonGroundAtomRenamedRule = nonGroundAtomR.substitute(ruleUnifier);
 
 		final NoGoodGenerator.CollectedLiterals positiveCollectedLiteralsLearned2 = new NoGoodGenerator.CollectedLiterals(
 				new ArrayList<>(expectedLearnedNoGood2),
 				singletonList(nonGroundAtomRenamedRule.toLiteral()),
-				asList(nonGroundComparisonLiteralMLessThanN, nonGroundComparisonLiteralMEqualsNMinus1),
+				asList(nonGroundComparisonLiteralMLessThanX, nonGroundComparisonLiteralMEqualsXMinus1),
 				emptyList()
 		);
 		final NoGoodGenerator.CollectedLiterals negativeCollectedLiteralsLearned2 = new NoGoodGenerator.CollectedLiterals();

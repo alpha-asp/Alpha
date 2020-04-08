@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.collectionToIntArray;
 import static at.ac.tuwien.kr.alpha.Util.intArrayToLinkedHashSet;
@@ -299,7 +300,7 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 			assert (impliedLiteral == atomToLiteral(FALSUM)) == mapToNonGroundAtoms.isEmpty(); // impliedLiteral is only FALSUM for violated nogood
 			if (!mapToNonGroundAtoms.isEmpty()) {
 				// if we already have atoms stored, we need to unify conflicting non-ground atoms:
-				final Map<Integer, Unifier> mapExistingAtomToConflictUnifier = new HashMap<>();
+				final  Unifier conflictUnifier = new Unifier();
 				for (int literal : antecedent) {
 					final Literal nonGroundLiteral = findNonGroundLiteral(literal, originalNoGood, nonGroundNoGood);
 					final Atom nonGroundAtom = nonGroundLiteral.getAtom();
@@ -313,17 +314,12 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 						// the current nogood uses two variable names for what should be the same variable.
 						// Therefore, additional unification may be necessary in the current nogood:
 						// all atoms that are substituted in the conflicting atom must also be substituted in the existing atom
-						final Unifier conflictUnifier = new Unifier();
 						conflictUnifier.unify(existingNonGroundAtom, nonGroundAtom);
-						mapExistingAtomToConflictUnifier.put(atomOf(literal), conflictUnifier);
 					}
 				}
-				for (Map.Entry<Integer, Unifier> existingAtomToConflictUnifier : mapExistingAtomToConflictUnifier.entrySet()) {
-					final int existingAtom = existingAtomToConflictUnifier.getKey();
-					final Unifier mergedUnifier = Unifier.mergeIntoLeft(existingAtomToConflictUnifier.getValue(), unifier);
-					mapToNonGroundAtoms.computeIfPresent(existingAtom, (a, n) -> n.substitute(mergedUnifier));
-					// TODO: should this actually be done for ALL existing atoms ?!
-				}
+				final Unifier mergedUnifier = Unifier.mergeIntoLeft(conflictUnifier, unifier);
+				mapToNonGroundAtoms.replaceAll((a, n) -> n.substitute(mergedUnifier));
+				additionalNonGroundLiterals = additionalNonGroundLiterals.stream().map(n -> n.substitute(mergedUnifier)).collect(Collectors.toCollection(LinkedHashSet::new));
 			}
 			for (int literal : antecedent) {
 				final Atom unifiedNonGroundAtom = findNonGroundLiteral(literal, originalNoGood, nonGroundNoGood).getAtom().substitute(unifier);
