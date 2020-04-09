@@ -117,13 +117,7 @@ public class Substitution {
 		if (termLeft == termRight) {
 			return true;
 		} else if (termLeft instanceof ConstantTerm) {
-			if (isRightTermGround) {
-				// Since right term is ground, both terms differ
-				return false;
-			} else {
-				throw new UnsupportedOperationException();
-				// TODO: substitute right term to unify with left term
-			}
+			return false;
 		} else if (termLeft instanceof VariableTerm) {
 			VariableTerm variableTermLeft = (VariableTerm)termLeft;
 			if (isRightTermGround) {
@@ -134,15 +128,9 @@ public class Substitution {
 					// Variable is already bound, return true if binding is the same as the current ground term.
 					return termRight == bound;
 				}
-
-				put(variableTermLeft, termRight);
-				return true;
-			} else {
-				assert termRight instanceof VariableTerm;
-				put(variableTermLeft, termRight); // see Unifier#put
-				// TODO is this right, or should we check if the variable is already bound?
-				return true;
 			}
+			put(variableTermLeft, termRight);
+			return true;
 		} else if (termLeft instanceof FunctionTerm && termRight instanceof FunctionTerm) {
 			// Both terms are function terms
 			FunctionTerm ftNonGround = (FunctionTerm) termLeft;

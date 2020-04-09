@@ -308,13 +308,20 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 					if (literal == negateLiteral(impliedLiteral)) {
 						// this is the literal used for resolution
 						assert existingNonGroundAtom != null;
-						unifier.unify(nonGroundAtom, existingNonGroundAtom);
+						if (!unifier.unify(nonGroundAtom, existingNonGroundAtom)) {
+							// try unification in other direction (this time with conflictUnifier, because this will be applied to original nogood):
+							if (!conflictUnifier.unify(existingNonGroundAtom, nonGroundAtom)) {
+								throw new IllegalArgumentException("Cannot unify existing non-ground atom " + existingNonGroundAtom + " with new atom " + nonGroundAtom);
+							}
+						}
 					} else if (existingNonGroundAtom != null) {
 						// this is another atom that already exists in the current nogood. It may be that because of this,
 						// the current nogood uses two variable names for what should be the same variable.
 						// Therefore, additional unification may be necessary in the current nogood:
 						// all atoms that are substituted in the conflicting atom must also be substituted in the existing atom
-						conflictUnifier.unify(existingNonGroundAtom, nonGroundAtom);
+						if (!conflictUnifier.unify(existingNonGroundAtom, nonGroundAtom)) {
+							throw new IllegalArgumentException("Cannot unify existing non-ground atom " + existingNonGroundAtom + " with conflicting atom " + nonGroundAtom);
+						}
 					}
 				}
 				final Unifier mergedUnifier = Unifier.mergeIntoLeft(conflictUnifier, unifier);

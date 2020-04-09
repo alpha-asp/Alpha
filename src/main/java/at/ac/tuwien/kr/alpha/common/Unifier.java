@@ -49,7 +49,13 @@ public class Unifier extends Substitution {
 		return this;
 	}
 
-	public void unify(Atom modifiableAtom, Atom unmodifiableAtom) {
+	/**
+	 * Unifies the given atoms if possible. Unification will only substitute variables that occur in {@code modifiableAtom}.
+	 * @param modifiableAtom an atom that can be modified by substitution
+	 * @param unmodifiableAtom an atom that cannot be modified by substitution
+	 * @return {@code true} iff unification was successful
+	 */
+	public boolean unify(Atom modifiableAtom, Atom unmodifiableAtom) {
 		if (modifiableAtom == null || unmodifiableAtom == null) {
 			throw new IllegalArgumentException("Atom must not be null.");
 		}
@@ -59,11 +65,11 @@ public class Unifier extends Substitution {
 		int i = 0;
 		for (Term modifiableTerm : modifiableAtom.getTerms()) {
 			if (!unifyTerms(modifiableTerm, unmodifiableAtom.getTerms().get(i), true)) {
-				throw new IllegalArgumentException("Atoms cannot be unified: " + modifiableAtom + ", " + unmodifiableAtom);
+				return false;
 			}
 			i++;
 		}
-
+		return true;
 	}
 
 	@Override
