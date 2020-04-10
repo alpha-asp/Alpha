@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2019 Siemens AG
+/*
+ * Copyright (c) 2017-2020 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,7 @@ public interface SolverMaintainingStatistics {
 	 */
 	int getNumberOfConflictsAfterClosing();
 
-	NoGoodCounter getNoGoodCounter();
+	NoGoodCounter<Integer> getNoGoodCounter();
 
 	default String getStatisticsString() {
 		return "g=" + getNumberOfChoices() + ", bt=" + getNumberOfBacktracks() + ", bj=" + getNumberOfBackjumps() + ", bt_within_bj="

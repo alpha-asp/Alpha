@@ -83,7 +83,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	private boolean didPropagate;
 	private boolean hasBinaryNoGoods;
 
-	private final NoGoodCounter counter = new NoGoodCounter();
+	private final NoGoodCounter<Integer> counter = new NoGoodCounter<>();
 
 	public NoGoodStoreAlphaRoaming(WritableAssignment assignment, boolean checksEnabled) {
 		this.assignment = assignment;
@@ -149,7 +149,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	}
 
 	@Override
-	public NoGoodCounter getNoGoodCounter() {
+	public NoGoodCounter<Integer> getNoGoodCounter() {
 		return counter;
 	}
 
@@ -425,13 +425,13 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 		return null;
 	}
 
-	private ConflictCause assignWeakComplement(final int literalIndex, final NoGoodInterface impliedBy, int decisionLevel) {
+	private ConflictCause assignWeakComplement(final int literalIndex, final NoGoodInterface<Integer> impliedBy, int decisionLevel) {
 		final int literal = impliedBy.getLiteral(literalIndex);
 		ThriceTruth truth = isNegated(literal) ? MBT : FALSE;
 		return assignTruth(atomOf(literal), truth, impliedBy.asAntecedent(), decisionLevel);
 	}
 
-	private ConflictCause assignStrongComplement(final NoGoodInterface impliedBy, int decisionLevel) {
+	private ConflictCause assignStrongComplement(final NoGoodInterface<Integer> impliedBy, int decisionLevel) {
 		return assignTruth(atomOf(impliedBy.getHead()), TRUE, impliedBy.asAntecedent(), decisionLevel);
 	}
 

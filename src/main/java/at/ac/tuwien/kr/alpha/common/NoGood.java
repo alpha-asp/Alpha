@@ -35,29 +35,36 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.*;
-import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.*;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.common.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.positiveLiteral;
+import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.INTERNAL;
+import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.LEARNT;
+import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.STATIC;
+import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.SUPPORT;
 
-public class NoGood implements NoGoodInterface, Comparable<NoGood> {
-	public static final int HEAD = 0;
+public class NoGood implements NoGoodInterface<Integer>, Comparable<NoGood> {
 	public static final NoGood UNSAT = new NoGood();
 
 	protected final int[] literals;
 	private final boolean head;
 	private final Type type;
+	private NonGroundNoGood nonGroundNoGood;
 
 	public NoGood(int... literals) {
 		this(STATIC, literals, false);
 	}
-	
+
 	public NoGood(Type type, int... literals) {
 		this(type, literals, false);
 	}
-	
+
 	private NoGood(Type type, int[] literals, boolean head) {
 		this.type = type;
 		this.head = head;
-		if (head && !isNegated(literals[0])) {
+		if (head && !isNegated(literals[HEAD])) {
 			throw oops("Head is not negative");
 		}
 
@@ -80,8 +87,9 @@ public class NoGood implements NoGoodInterface, Comparable<NoGood> {
 		this.literals = noGood.literals.clone();
 		this.head = noGood.head;
 		this.type = noGood.type;
+		this.nonGroundNoGood = noGood.nonGroundNoGood;
 	}
-	
+
 	public static NoGood learnt(int... literals) {
 		return new NoGood(LEARNT, literals);
 	}
@@ -93,7 +101,7 @@ public class NoGood implements NoGoodInterface, Comparable<NoGood> {
 	public static NoGood headFirstInternal(int... literals) {
 		return headFirst(INTERNAL, literals);
 	}
-	
+
 	public static NoGood headFirst(Type type, int... literals) {
 		return new NoGood(type, literals, true);
 	}
@@ -109,11 +117,11 @@ public class NoGood implements NoGoodInterface, Comparable<NoGood> {
 	public static NoGood fromConstraint(List<Integer> posLiterals, List<Integer> negLiterals) {
 		return new NoGood(addPosNeg(new int[posLiterals.size() + negLiterals.size()], posLiterals, negLiterals, 0));
 	}
-	
+
 	public static NoGood fromBody(List<Integer> posLiterals, List<Integer> negLiterals, int bodyRepresentingLiteral) {
 		return fromBody(STATIC, posLiterals, negLiterals, bodyRepresentingLiteral);
 	}
-	
+
 	public static NoGood fromBodyInternal(List<Integer> posLiterals, List<Integer> negLiterals, int bodyRepresentingLiteral) {
 		return fromBody(INTERNAL, posLiterals, negLiterals, bodyRepresentingLiteral);
 	}
@@ -144,6 +152,8 @@ public class NoGood implements NoGoodInterface, Comparable<NoGood> {
 	public Antecedent asAntecedent() {
 		return new Antecedent() {
 
+			private final NoGood originalNoGood = NoGood.this;
+
 			@Override
 			public int[] getReasonLiterals() {
 				return NoGood.this.literals; // Beware: returned array must not be modified!
@@ -155,6 +165,11 @@ public class NoGood implements NoGoodInterface, Comparable<NoGood> {
 
 			@Override
 			public void decreaseActivity() {
+			}
+
+			@Override
+			public NoGood getOriginalNoGood() {
+				return originalNoGood;
 			}
 		};
 	}
@@ -171,7 +186,7 @@ public class NoGood implements NoGoodInterface, Comparable<NoGood> {
 	}
 
 	@Override
-	public int getLiteral(int index) {
+	public Integer getLiteral(int index) {
 		return literals[index];
 	}
 
@@ -181,13 +196,16 @@ public class NoGood implements NoGoodInterface, Comparable<NoGood> {
 	}
 
 	@Override
-	public int getHead() {
-		return getLiteral(HEAD);
-	}
-
-	@Override
 	public Type getType() {
 		return type;
+	}
+
+	public NonGroundNoGood getNonGroundNoGood() {
+		return nonGroundNoGood;
+	}
+
+	public void setNonGroundNoGood(NonGroundNoGood nonGroundNoGood) {
+		this.nonGroundNoGood = nonGroundNoGood;
 	}
 
 	@Override

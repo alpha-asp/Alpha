@@ -35,13 +35,14 @@ import java.util.Iterator;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.literalToString;
 
-public final class WatchedNoGood implements NoGoodInterface, Antecedent {
+public final class WatchedNoGood implements NoGoodInterface<Integer>, Antecedent {
 	private int activity;
 	private final int[] literals;
 	private int alpha;
 	private int head;
 	private final Type type;
 	private boolean isLbdLessOrEqual2;
+	private final NoGood originalNoGood;
 
 	WatchedNoGood(NoGood noGood, int a, int b, int alpha) {
 		if (noGood.size() < 3) {
@@ -63,6 +64,7 @@ public final class WatchedNoGood implements NoGoodInterface, Antecedent {
 			swap(1, b);
 		}
 		this.type = noGood.getType();
+		this.originalNoGood = noGood;
 	}
 
 	private void checkPointers(int a, int b, int alpha) {
@@ -99,7 +101,7 @@ public final class WatchedNoGood implements NoGoodInterface, Antecedent {
 	}
 
 	@Override
-	public int getHead() {
+	public Integer getHead() {
 		return literals[head];
 	}
 
@@ -115,7 +117,7 @@ public final class WatchedNoGood implements NoGoodInterface, Antecedent {
 	}
 
 	@Override
-	public int getLiteral(int index) {
+	public Integer getLiteral(int index) {
 		return literals[index];
 	}
 
@@ -159,6 +161,11 @@ public final class WatchedNoGood implements NoGoodInterface, Antecedent {
 				return literals[i++];
 			}
 		};
+	}
+
+	@Override
+	public NoGood getOriginalNoGood() {
+		return originalNoGood;
 	}
 
 	@Override

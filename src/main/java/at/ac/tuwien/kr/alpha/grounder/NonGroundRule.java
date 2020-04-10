@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -32,6 +32,7 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,6 +54,7 @@ public class NonGroundRule {
 	private final List<Atom> bodyAtomsPositive;
 	private final List<Atom> bodyAtomsNegative;
 	private final Atom headAtom;
+	private final RuleAtom nonGroundRuleAtom;
 
 	final RuleGroundingOrders groundingOrder;
 
@@ -69,6 +71,7 @@ public class NonGroundRule {
 		this.bodyAtomsNegative = Collections.unmodifiableList(bodyAtomsNegative);
 
 		this.headAtom = headAtom;
+		this.nonGroundRuleAtom = new RuleAtom(this, new Substitution());
 
 		checkSafety();
 		this.groundingOrder = new RuleGroundingOrders(this);
@@ -162,5 +165,9 @@ public class NonGroundRule {
 
 	public Atom getHeadAtom() {
 		return headAtom;
+	}
+
+	public RuleAtom getNonGroundRuleAtom() {
+		return nonGroundRuleAtom;
 	}
 }
