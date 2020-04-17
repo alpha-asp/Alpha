@@ -102,7 +102,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final PerformanceLog performanceLog;
 
 	private final boolean conflictGeneralisationEnabled = true; // TODO: make parameterisable
-	
+	private static final int STOP_AFTER_BACKJUMPS = 1000; // TODO: make parameterisable
+
 	public DefaultSolver(AtomStore atomStore, Grounder grounder, NoGoodStore store, WritableAssignment assignment, Random random, SystemConfig config, HeuristicsConfiguration heuristicsConfiguration) {
 		super(atomStore, grounder);
 
@@ -185,7 +186,10 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				// TODO: The violatedNoGood should not be necessary here, but this requires major type changes in heuristics.
 				branchingHeuristic.violatedNoGood(violatedNoGood);
 				if (!afterAllAtomsAssigned) {
-					if (!learnBackjumpAddFromConflict(conflictCause)) {
+					if (getNumberOfBackjumps() >= STOP_AFTER_BACKJUMPS) {
+						LOGGER.info("Stopping conflict generalisation after {} conflicts", STOP_AFTER_BACKJUMPS);
+					}
+					if (getNumberOfBackjumps() >= STOP_AFTER_BACKJUMPS || !learnBackjumpAddFromConflict(conflictCause)) {
 						logStats();
 						return false;
 					}
