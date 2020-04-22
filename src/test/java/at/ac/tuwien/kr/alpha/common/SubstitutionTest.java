@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Rule;
+import at.ac.tuwien.kr.alpha.common.SubstitutionTestUtil;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
@@ -96,7 +97,7 @@ public class SubstitutionTest {
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
-		String printedString = NaiveGrounder.groundAndPrintRule(nonGroundRule, substitution);
+		String printedString = SubstitutionTestUtil.groundAndPrintRule(nonGroundRule, substitution);
 		assertEquals("x :- p(a, b), not q(a, b).", printedString);
 	}
 
@@ -130,7 +131,7 @@ public class SubstitutionTest {
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
-		String printedString = NaiveGrounder.groundLiteralToString(atom.toLiteral(!negated), substitution, true);
+		String printedString = SubstitutionTestUtil.groundLiteralToString(atom.toLiteral(!negated), substitution, true);
 		assertEquals((negated ? "not " : "") + "p(a, b)", printedString);
 	}
 
