@@ -30,6 +30,8 @@ package at.ac.tuwien.kr.alpha.grounder.parser;
 
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -47,8 +49,22 @@ public class ProgramPartParser {
 	private final ParseTreeVisitor visitor = new ParseTreeVisitor(Collections.emptyMap(), false);
 
 	public Term parseTerm(String s) {
-		final ASPCore2Parser parser = new ASPCore2Parser(new CommonTokenStream(new ASPCore2Lexer(CharStreams.fromString(s))));
+		final ASPCore2Parser parser = getASPCore2Parser(s);
 		return (Term)parse(parser.term());
+	}
+
+	public BasicAtom parseBasicAtom(String s) {
+		final ASPCore2Parser parser = getASPCore2Parser(s);
+		return (BasicAtom)parse(parser.classical_literal());
+	}
+
+	public Literal parseLiteral(String s) {
+		final ASPCore2Parser parser = getASPCore2Parser(s);
+		return (Literal)parse(parser.naf_literal());
+	}
+
+	private ASPCore2Parser getASPCore2Parser(String s) {
+		return new ASPCore2Parser(new CommonTokenStream(new ASPCore2Lexer(CharStreams.fromString(s))));
 	}
 
 	private Object parse(ParserRuleContext context) {
