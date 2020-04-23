@@ -176,6 +176,7 @@ public class NonGroundNoGood implements NoGoodInterface<Literal> {
 	 * Makes variable names more readable by:
 	 * <ul>
 	 *     <li>Substituting variable names containing an underscore by the part before the underscore, if this part alone is not already used</li>
+	 *     <li>Replacing different variable names with the same prefix by new variable names with the postfixes 1 and 2, e.g., H and H_1 become H1 and H2</li>
 	 * </ul>
 	 * @return a unifier that simplifies variable names
 	 */
@@ -186,9 +187,18 @@ public class NonGroundNoGood implements NoGoodInterface<Literal> {
 			final String variableName = variable.toString();
 			final int startOfPostfix = variableName.lastIndexOf('_');
 			if (startOfPostfix > 0) {
-				final VariableTerm variableWithoutPostfix = VariableTerm.getInstance(variableName.substring(0, startOfPostfix));
+				final String variableNameWithoutPostfix = variableName.substring(0, startOfPostfix);
+				final VariableTerm variableWithoutPostfix = VariableTerm.getInstance(variableNameWithoutPostfix);
 				if (!occurringVariables.contains(variableWithoutPostfix) && unifier.eval(variableWithoutPostfix) == null) {
 					unifier.put(variable, variableWithoutPostfix);
+					continue;
+				}
+				final VariableTerm variableWithNewPostfix1 = VariableTerm.getInstance(variableNameWithoutPostfix + 1);
+				final VariableTerm variableWithNewPostfix2 = VariableTerm.getInstance(variableNameWithoutPostfix + 2);
+				if (!occurringVariables.contains(variableWithNewPostfix1) && unifier.eval(variableWithNewPostfix1) == null &&
+						!occurringVariables.contains(variableWithNewPostfix2) && unifier.eval(variableWithNewPostfix2) == null) {
+					unifier.put(variableWithoutPostfix, variableWithNewPostfix1);
+					unifier.put(variable, variableWithNewPostfix2);
 				}
 			}
 		}
