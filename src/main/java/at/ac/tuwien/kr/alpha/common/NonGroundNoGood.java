@@ -172,6 +172,37 @@ public class NonGroundNoGood implements NoGoodInterface<Literal> {
 		return type;
 	}
 
+	/**
+	 * Makes variable names more readable by:
+	 * <ul>
+	 *     <li>Substituting variable names containing an underscore by the part before the underscore, if this part alone is not already used</li>
+	 * </ul>
+	 * @return a unifier that simplifies variable names
+	 */
+	public Unifier simplifyVariableNames() {
+		final Unifier unifier = new Unifier();
+		final Set<VariableTerm> occurringVariables = getOccurringVariables();
+		for (VariableTerm variable : occurringVariables) {
+			final String variableName = variable.toString();
+			final int startOfPostfix = variableName.lastIndexOf('_');
+			if (startOfPostfix > 0) {
+				final VariableTerm variableWithoutPostfix = VariableTerm.getInstance(variableName.substring(0, startOfPostfix));
+				if (!occurringVariables.contains(variableWithoutPostfix) && unifier.eval(variableWithoutPostfix) == null) {
+					unifier.put(variable, variableWithoutPostfix);
+				}
+			}
+		}
+		return unifier;
+	}
+
+	public NonGroundNoGood substitute(Substitution substitution) {
+		return new NonGroundNoGood(
+				this.type,
+				Arrays.stream(literals).map(l -> l.substitute(substitution)).collect(Collectors.toList()).toArray(new Literal[]{}),
+				this.head
+		);
+	}
+
 	@Override
 	public Iterator<Literal> iterator() {
 		return new Iterator<Literal>() {

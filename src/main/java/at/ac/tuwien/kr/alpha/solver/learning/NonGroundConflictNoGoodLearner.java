@@ -272,7 +272,8 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 				return false;
 			}
 		}
-		nonGroundNoGoods.add(learnedNonGroundNoGood);
+		final NonGroundNoGood simplifiedLearnedNoGood = learnedNonGroundNoGood.substitute(learnedNonGroundNoGood.simplifyVariableNames());
+		nonGroundNoGoods.add(simplifiedLearnedNoGood);
 		return true;
 	}
 
