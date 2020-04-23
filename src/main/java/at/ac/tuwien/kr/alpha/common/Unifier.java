@@ -1,6 +1,7 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
@@ -70,6 +71,41 @@ public class Unifier extends Substitution {
 			i++;
 		}
 		return true;
+	}
+
+	/**
+	 * Unifies the given non-ground nogoods if possible. Unification will only substitute variables that occur in {@code modifiableNonGroundNoGood}.
+	 * @param modifiableNonGroundNoGood a non-ground nogood that can be modified by substitution
+	 * @param unmodifiableNonGroundNoGood a non-ground nogood that cannot be modified by substitution
+	 * @return {@code true} iff unification was successful
+	 */
+	public boolean unify(NonGroundNoGood modifiableNonGroundNoGood, NonGroundNoGood unmodifiableNonGroundNoGood) {
+		if (modifiableNonGroundNoGood.hasHead() != unmodifiableNonGroundNoGood.hasHead()) {
+			return false;
+		}
+		final Literal[] modifiableLiterals = modifiableNonGroundNoGood.getSortedLiterals();
+		final Literal[] unmodifiableLiterals = unmodifiableNonGroundNoGood.getSortedLiterals();
+		if (modifiableLiterals.length != unmodifiableLiterals.length) {
+			return false;
+		}
+		for (int i = 0; i < modifiableLiterals.length; i++) {
+			final Literal modifiableLiteral = modifiableLiterals[i];
+			final Literal unmodifiableLiteral = unmodifiableLiterals[i];
+			if (modifiableLiteral.isNegated() != unmodifiableLiteral.isNegated()) {
+				return false;
+			}
+			if (!Objects.equals(modifiableLiteral.getPredicate(), unmodifiableLiteral.getPredicate())) {
+				return false;
+			}
+			if (!unify(modifiableLiteral.getAtom(), unmodifiableLiteral.getAtom())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static boolean canBeUnifiedInBothDirections(NonGroundNoGood nonGroundNoGood1, NonGroundNoGood nonGroundNoGood2) {
+		return new Unifier().unify(nonGroundNoGood2, nonGroundNoGood1) && new Unifier().unify(nonGroundNoGood1, nonGroundNoGood2);
 	}
 
 	@Override

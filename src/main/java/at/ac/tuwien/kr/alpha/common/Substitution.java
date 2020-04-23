@@ -113,6 +113,7 @@ public class Substitution {
 		} else if (termLeft instanceof ConstantTerm) {
 			return false;
 		} else if (termLeft instanceof VariableTerm) {
+			// TODO: what do do with anonymous variables?
 			VariableTerm variableTermLeft = (VariableTerm)termLeft;
 			if (isRightTermGround) {
 				// Left term is variable, bind it to the right term.

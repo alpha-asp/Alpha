@@ -136,6 +136,10 @@ public class NonGroundNoGood implements NoGoodInterface<Literal> {
 		return literals[index];
 	}
 
+	Literal[] getSortedLiterals() {
+		return sortedLiterals;
+	}
+
 	@Override
 	public boolean hasHead() {
 		return head;

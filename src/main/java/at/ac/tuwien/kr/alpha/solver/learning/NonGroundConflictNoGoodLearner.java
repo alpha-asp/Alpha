@@ -248,14 +248,31 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 		}
 		nonGroundNoGoodViolationCounter.computeIfPresent(violatedNonGroundNoGood, (n, c) -> c + 1);
 		if (learnedNonGroundNoGood != null) {
-			learnedOnFirstUIP.get(violatedNonGroundNoGood).add(learnedNonGroundNoGood);
+			rememberNonGroundNoGoodIfNotAlreadyPresent(learnedNonGroundNoGood, learnedOnFirstUIP.get(violatedNonGroundNoGood));
 		}
 		if (!additionalLearnedNonGroundNoGoods.isEmpty()) {
-			learnedOnLastUIP.get(violatedNonGroundNoGood).add(additionalLearnedNonGroundNoGoods.get(additionalLearnedNonGroundNoGoods.size() - 1));
+			rememberNonGroundNoGoodIfNotAlreadyPresent(additionalLearnedNonGroundNoGoods.get(additionalLearnedNonGroundNoGoods.size() - 1), learnedOnLastUIP.get(violatedNonGroundNoGood));
 			for (int i = 0; i < additionalLearnedNonGroundNoGoods.size() - 1; i++) {
-				learnedOnOtherUIPs.get(violatedNonGroundNoGood).add(additionalLearnedNonGroundNoGoods.get(i));
+				rememberNonGroundNoGoodIfNotAlreadyPresent(additionalLearnedNonGroundNoGoods.get(i), learnedOnOtherUIPs.get(violatedNonGroundNoGood));
 			}
 		}
+	}
+
+	/**
+	 * Adds {@code learnedNonGroundNoGood} to the set {@code nonGroundNoGoods} only if the set does not already contain
+	 * another nogood that is equivalent to the given one under unification.
+	 * @param learnedNonGroundNoGood the nogood to add
+	 * @param nonGroundNoGoods the set of existing nogoods
+	 * @return true iff the nogood is added
+	 */
+	private boolean rememberNonGroundNoGoodIfNotAlreadyPresent(NonGroundNoGood learnedNonGroundNoGood, Set<NonGroundNoGood> nonGroundNoGoods) {
+		for (NonGroundNoGood existingNoGood : nonGroundNoGoods) {
+			if (existingNoGood.equals(learnedNonGroundNoGood) || Unifier.canBeUnifiedInBothDirections(learnedNonGroundNoGood, existingNoGood)) {
+				return false;
+			}
+		}
+		nonGroundNoGoods.add(learnedNonGroundNoGood);
+		return true;
 	}
 
 	public void logLearnedNonGroundNoGoods() {
