@@ -46,7 +46,7 @@ import java.util.Collections;
  * atoms, terms and such.
  */
 public class ProgramPartParser {
-	private final ParseTreeVisitor visitor = new ParseTreeVisitor(Collections.emptyMap(), false);
+	private final ParseTreeVisitor visitor = new ParseTreeVisitor(Collections.emptyMap(), true);
 
 	public Term parseTerm(String s) {
 		final ASPCore2Parser parser = getASPCore2Parser(s);
