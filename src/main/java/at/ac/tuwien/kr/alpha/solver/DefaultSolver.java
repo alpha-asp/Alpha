@@ -609,7 +609,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	private void logLearnedNonGroundNoGoods() {
 		if (learner instanceof NonGroundConflictNoGoodLearner) {
-			((NonGroundConflictNoGoodLearner)learner).logLearnedNonGroundNoGoods();
+			((NonGroundConflictNoGoodLearner)learner).logMostEffectiveLearnedConstraints();
 		}
 	}
 }

@@ -25,6 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver.learning;
 
+import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
@@ -283,6 +284,24 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 			LOGGER.info("Learned on last UIP: {}", learnedOnLastUIP.get(violatedNonGroundNoGood));
 			LOGGER.info("Learned on other UIPs: {}", learnedOnOtherUIPs.get(violatedNonGroundNoGood));
 		}
+	}
+
+	public void logMostEffectiveLearnedConstraints() {
+		final NonGroundNoGood noGoodViolatedMostOften = getNoGoodViolatedMostOften();
+		LOGGER.info("Violated {} times: {}", nonGroundNoGoodViolationCounter.get(noGoodViolatedMostOften), noGoodViolatedMostOften);
+		for (NonGroundNoGood learnedNoGood : learnedOnFirstUIP.get(noGoodViolatedMostOften)) {
+			LOGGER.info("Learned on first UIP: {}", learnedNoGood.asConstraint());
+		}
+		for (NonGroundNoGood learnedNoGood : learnedOnLastUIP.get(noGoodViolatedMostOften)) {
+			LOGGER.info("Learned on last UIP: {}", learnedNoGood.asConstraint());
+		}
+		for (NonGroundNoGood learnedNoGood : learnedOnOtherUIPs.get(noGoodViolatedMostOften)) {
+			LOGGER.info("Learned on other UIPs: {}", learnedNoGood.asConstraint());
+		}
+	}
+
+	public NonGroundNoGood getNoGoodViolatedMostOften() {
+		return Util.getKeyWithMaximumValue(nonGroundNoGoodViolationCounter);
 	}
 
 	class GroundAndNonGroundNoGood {

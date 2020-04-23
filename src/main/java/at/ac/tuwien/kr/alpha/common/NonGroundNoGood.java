@@ -163,6 +163,10 @@ public class NonGroundNoGood implements NoGoodInterface<Literal> {
 		throw new UnsupportedOperationException("Non-ground nogood cannot be represented as an antecedent");
 	}
 
+	public Rule asConstraint() {
+		return new Rule(null, Arrays.asList(literals));
+	}
+
 	@Override
 	public Type getType() {
 		return type;

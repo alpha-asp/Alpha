@@ -34,6 +34,8 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -53,6 +55,10 @@ public class Util {
 
 	public static <K, U> Collector<Map.Entry<K, U>, ?, Map<K, U>> entriesToMap() {
 		return Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue);
+	}
+
+	public static <K, V extends Integer> K getKeyWithMaximumValue(Map<K, V> map) {
+		return Collections.max(map.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
 	}
 
 	public static <E> String join(String prefix, Iterable<E> iterable, String suffix) {
