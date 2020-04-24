@@ -31,6 +31,7 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
+import at.ac.tuwien.kr.alpha.common.IntIterator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.NoGoodInterface;
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -82,7 +83,7 @@ import static java.util.Collections.singletonList;
 
 /**
  * A semi-naive grounder.
- * Copyright (c) 2016-2019, the Alpha Team.
+ * Copyright (c) 2016-2020, the Alpha Team.
  */
 public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGrounder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NaiveGrounder.class);
@@ -698,7 +699,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	@Override
-	public void updateAssignment(Iterator<Integer> it) {
+	public void updateAssignment(IntIterator it) {
 		while (it.hasNext()) {
 			workingMemory.addInstance(atomStore.get(it.next()), true);
 		}
@@ -707,31 +708,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	@Override
 	public void forgetAssignment(int[] atomIds) {
 		throw new UnsupportedOperationException("Forgetting assignments is not implemented");
-	}
-
-	public static String groundAndPrintRule(NonGroundRule rule, Substitution substitution) {
-		StringBuilder ret = new StringBuilder();
-		if (!rule.isConstraint()) {
-			Atom groundHead = rule.getHeadAtom().substitute(substitution);
-			ret.append(groundHead.toString());
-		}
-		ret.append(" :- ");
-		boolean isFirst = true;
-		for (Atom bodyAtom : rule.getBodyAtomsPositive()) {
-			ret.append(groundLiteralToString(bodyAtom.toLiteral(), substitution, isFirst));
-			isFirst = false;
-		}
-		for (Atom bodyAtom : rule.getBodyAtomsNegative()) {
-			ret.append(groundLiteralToString(bodyAtom.toLiteral(false), substitution, isFirst));
-			isFirst = false;
-		}
-		ret.append(".");
-		return ret.toString();
-	}
-
-	static String groundLiteralToString(Literal literal, Substitution substitution, boolean isFirst) {
-		Literal groundLiteral = literal.substitute(substitution);
-		return  (isFirst ? "" : ", ") + groundLiteral.toString();
 	}
 
 	@Override

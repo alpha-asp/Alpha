@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -94,7 +94,7 @@ public interface AtomStore {
 	 * @param noGood the nogood to translate
 	 * @return the string representation of the NoGood.
 	 */
-	default <T extends NoGood> String noGoodToString(T noGood) {
+	default <T extends NoGoodInterface> String noGoodToString(T noGood) {
 		StringBuilder sb = new StringBuilder();
 
 		if (noGood.hasHead()) {

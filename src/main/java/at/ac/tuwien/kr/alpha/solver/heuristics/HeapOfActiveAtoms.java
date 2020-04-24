@@ -241,7 +241,9 @@ public class HeapOfActiveAtoms {
 
 	void setActivity(int atom, double newActivity) {
 		activityScores[atom] = newActivity;
-		LOGGER.trace("Activity of atom {} set to {}", atom, newActivity);
+		if (LOGGER.isTraceEnabled()) {
+			LOGGER.trace("Activity of atom {} set to {}", atom, newActivity);
+		}
 
 		if (newActivity > NORMALIZATION_THRESHOLD) {
 			normalizeActivityScores();

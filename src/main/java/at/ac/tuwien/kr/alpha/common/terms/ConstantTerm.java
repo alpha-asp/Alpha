@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * Copyright (c) 2016-2020, the Alpha Team.
  */
 public class ConstantTerm<T extends Comparable<T>> extends Term {
 	private static final Interner<ConstantTerm> INTERNER = new Interner<>();
@@ -67,7 +67,10 @@ public class ConstantTerm<T extends Comparable<T>> extends Term {
 			return false;
 		}
 
-		ConstantTerm that = (ConstantTerm) o;
+		ConstantTerm<?> that = (ConstantTerm<?>) o;
+		if (this.symbolic != that.symbolic) {
+			return false;
+		}
 
 		return object.equals(that.object);
 	}
@@ -103,7 +106,7 @@ public class ConstantTerm<T extends Comparable<T>> extends Term {
 			return super.compareTo(o);
 		}
 
-		ConstantTerm other = (ConstantTerm) o;
+		ConstantTerm<?> other = (ConstantTerm<?>) o;
 
 		// We will perform an unchecked cast.
 		// Because of type erasure, we cannot know the exact type
@@ -117,7 +120,7 @@ public class ConstantTerm<T extends Comparable<T>> extends Term {
 		// wrong if we have some bug that generates strange
 		// ConstantTerms at runtime, bypassing the check for T
 		// at compile-time.
-		if (other.object.getClass() == this.object.getClass()) {
+		if (other.object.getClass() == this.object.getClass() && other.symbolic == this.symbolic) {
 			return this.object.compareTo((T) other.object);
 		}
 

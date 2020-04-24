@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2019 Siemens AG
+/*
+ * Copyright (c) 2017-2020 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -38,23 +38,42 @@ import java.util.stream.Collectors;
 
 public final class BranchingHeuristicFactory {
 
+	/**
+	 * The available domain-independent heuristics.
+	 * Some are deprecated because they perform poorly and have not been improved for some time,
+	 * however the code is kept for now so that it stays compatible when interfaces are refactored.
+	 */
 	public enum Heuristic {
 		NAIVE,
 		BERKMIN,
 		BERKMINLITERAL,
+		@Deprecated
 		DD,
+		@Deprecated
 		DD_SUM,
+		@Deprecated
 		DD_AVG,
+		@Deprecated
 		DD_MAX,
+		@Deprecated
 		DD_MIN,
+		@Deprecated
 		DD_PYRO,
+		@Deprecated
 		GDD,
+		@Deprecated
 		GDD_SUM,
+		@Deprecated
 		GDD_AVG,
+		@Deprecated
 		GDD_MAX,
+		@Deprecated
 		GDD_MIN,
+		@Deprecated
 		GDD_PYRO,
+		@Deprecated
 		ALPHA_ACTIVE_RULE,
+		@Deprecated
 		ALPHA_HEAD_MBT,
 		VSIDS,
 		GDD_VSIDS,

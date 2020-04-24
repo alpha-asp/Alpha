@@ -29,12 +29,12 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.IntIterator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.structure.AtomChoiceRelation;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -65,7 +65,7 @@ public interface Grounder {
 	 * Updates the grounder with atoms assigned a positive truth value.
 	 * @param it an iterator over all newly assigned positive atoms.
 	 */
-	void updateAssignment(Iterator<Integer> it);
+	void updateAssignment(IntIterator it);
 
 	/**
 	 * Returns a set of new mappings from head atoms to {@link RuleAtom}s deriving it.

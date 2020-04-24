@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2018-2020, the Alpha Team.
+/**
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -25,71 +25,38 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.solver.Antecedent;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-public interface NoGoodInterface extends Iterable<Integer> {
+public class SubstitutionTestUtil {
 
-	/**
-	 * Returns the literal at the given index.
-	 * @param index the index position within the NoGood.
-	 * @return the literal at the index.
-	 */
-	int getLiteral(int index);
-
-	/**
-	 * Returns whether the NoGood has a head.
-	 * @return true if the NoGood has a head.
-	 */
-	boolean hasHead();
-
-	/**
-	 * Returns the head literal of the NoGood, if present.
-	 * @return the head literal if the NoGood has a head, otherwise an arbitrary integer.
-	 */
-	int getHead();
-
-	/**
-	 * Returns the size, i.e., number of literals, in the NoGood.
-	 * @return the size of the NoGood.
-	 */
-	int size();
-
-	default boolean isUnary() {
-		return size() == 1;
+	static String groundAndPrintRule(NonGroundRule rule, Substitution substitution) {
+		StringBuilder ret = new StringBuilder();
+		if (!rule.isConstraint()) {
+			Atom groundHead = rule.getHeadAtom().substitute(substitution);
+			ret.append(groundHead.toString());
+		}
+		ret.append(" :- ");
+		boolean isFirst = true;
+		for (Atom bodyAtom : rule.getBodyAtomsPositive()) {
+			ret.append(groundLiteralToString(bodyAtom.toLiteral(), substitution, isFirst));
+			isFirst = false;
+		}
+		for (Atom bodyAtom : rule.getBodyAtomsNegative()) {
+			ret.append(groundLiteralToString(bodyAtom.toLiteral(false), substitution, isFirst));
+			isFirst = false;
+		}
+		ret.append(".");
+		return ret.toString();
 	}
 
-	default boolean isBinary() {
-		return size() == 2;
-	}
-
-	Antecedent asAntecedent();
-
-	Type getType();
-
-	/**
-	 * The possible nogood types
-	 */
-	enum Type {
-		/**
-		 * Unremovable nogood from the input program
-		 */
-		STATIC,
-
-		/**
-		 * Removable support nogood from the input program
-		 */
-		SUPPORT,
-
-		/**
-		 * Removable nogood learnt from a conflict
-		 */
-		LEARNT,
-
-		/**
-		 * Nogood containing solver-internal atoms
-		 */
-		INTERNAL,
+	static String groundLiteralToString(Literal literal, Substitution substitution, boolean isFirst) {
+		Literal groundLiteral = literal.substitute(substitution);
+		return  (isFirst ? "" : ", ") + groundLiteral.toString();
 	}
 }
