@@ -137,8 +137,7 @@ public class RuleGroundingOrderTest {
 
 	private RuleGroundingOrders computeGroundingOrdersForRule(Program program, int ruleIndex) {
 		Rule rule = program.getRules().get(ruleIndex);
-		final NonGroundRule nonGroundRule1 = NonGroundRule.constructNonGroundRule(rule);
-		NonGroundRule nonGroundRule = nonGroundRule1;
+		final NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
 		RuleGroundingOrders rgo = new RuleGroundingOrders(nonGroundRule);
 		rgo.computeGroundingOrders();
 		return rgo;
