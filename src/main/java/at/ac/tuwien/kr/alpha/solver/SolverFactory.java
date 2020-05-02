@@ -44,7 +44,7 @@ public final class SolverFactory {
 		final boolean debugInternalChecks = config.isDebugInternalChecks();
 		final HeuristicsConfiguration heuristicsConfiguration = buildHeuristicsConfiguration(config);
 		final PhaseInitializerFactory.PhaseInitializer phaseInitializer =
-			PhaseInitializerFactory.getInstance(config.getPhaseInitializerName(), random);
+			PhaseInitializerFactory.getInstance(config.getPhaseInitializerName(), random, atomStore);
 		final WritableAssignment assignment = new TrailAssignment(atomStore, phaseInitializer, debugInternalChecks);
 
 		NoGoodStore store;

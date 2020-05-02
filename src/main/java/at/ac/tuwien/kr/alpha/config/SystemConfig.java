@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.config;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.PhaseInitializerFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,7 +62,7 @@ public class SystemConfig {
 	public static final String DEFAULT_GROUNDER_TOLERANCE_RULES = GrounderHeuristicsConfiguration.STRICT_STRING;
 	public static final boolean DEFAULT_GROUNDER_ACCUMULATOR_ENABLED = false;
 	public static final boolean DEFAULT_ENABLE_RESTARTS = false;
-	public static final String DEFAULT_PHASE_INITIALIZER = "random";
+	public static final String DEFAULT_PHASE_INITIALIZER = PhaseInitializerFactory.InitialPhase.RULESTRUEATOMSFALSE.name().toLowerCase();
 
 	private String grounderName = SystemConfig.DEFAULT_GROUNDER_NAME;
 	private String solverName = SystemConfig.DEFAULT_SOLVER_NAME;

@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.config;
 
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import at.ac.tuwien.kr.alpha.solver.heuristics.PhaseInitializerFactory;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -132,7 +133,7 @@ public class CommandLineParser {
 			+ SystemConfig.DEFAULT_ENABLE_RESTARTS + ")")
 		.build();
 	private static final Option OPT_INITIAL_PHASE = Option.builder("ph").longOpt("initialPhase").hasArg(true).argName("initializer")
-		.desc("set the initial phase [ alltrue | allfalse | random ] (default: " + SystemConfig.DEFAULT_PHASE_INITIALIZER + ")")
+		.desc("set the initial phase [ " + PhaseInitializerFactory.InitialPhase.listAllowedValues() + " ] (default: " + SystemConfig.DEFAULT_PHASE_INITIALIZER + ")")
 		.build();
 	//@formatter:on
 

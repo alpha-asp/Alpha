@@ -469,7 +469,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		if (hasPhaseSet[atom]) {
 			return phase[atom];
 		}
-		return phaseInitializer.getNextInitialPhase();
+		return phaseInitializer.getNextInitialPhase(atom);
 	}
 
 	@Override
