@@ -61,7 +61,7 @@ public class Util {
 		return join(prefix, iterable, E::toString, delimiter, suffix);
 	}
 
-	public static <E> String join(String prefix, Iterable<E> iterable, Function<E,String> toStringMethod, String delimiter, String suffix) {
+	public static <E> String join(String prefix, Iterable<E> iterable, Function<E, String> toStringMethod, String delimiter, String suffix) {
 		StringJoiner joiner = new StringJoiner(delimiter, prefix, suffix);
 		for (E element : iterable) {
 			joiner.add(toStringMethod.apply(element));
