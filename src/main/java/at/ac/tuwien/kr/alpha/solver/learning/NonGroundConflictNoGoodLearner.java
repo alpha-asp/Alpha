@@ -289,6 +289,10 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 
 	public void logMostEffectiveLearnedConstraints() {
 		final NonGroundNoGood noGoodViolatedMostOften = getNoGoodViolatedMostOften();
+		if (noGoodViolatedMostOften == null) {
+			LOGGER.info("No violated nogoods recorded.");
+			return;
+		}
 		LOGGER.info("Violated {} times: {}", nonGroundNoGoodViolationCounter.get(noGoodViolatedMostOften), noGoodViolatedMostOften);
 		for (NonGroundNoGood learnedNoGood : learnedOnFirstUIP.get(noGoodViolatedMostOften)) {
 			LOGGER.info("Learned on first UIP: {}", learnedNoGood.asConstraint());

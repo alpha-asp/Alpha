@@ -58,6 +58,9 @@ public class Util {
 	}
 
 	public static <K, V extends Integer> K getKeyWithMaximumValue(Map<K, V> map) {
+		if (map.isEmpty()) {
+			return null;
+		}
 		return Collections.max(map.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
 	}
 
