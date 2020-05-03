@@ -127,10 +127,8 @@ public class NoGoodGenerator {
 		// If the body of the rule contains negation, add choices.
 		if (!negLiterals.isEmpty()) {
 			result.addAll(choiceRecorder.generateChoiceNoGoods(posLiterals, negLiterals, bodyRepresentingLiteral));
-		}
 
-		// Record atom-choiceAtom relationships for rules that are choice points.
-		if (!negLiterals.isEmpty()) {
+			// Record atom-choiceAtom relationships for rules that are choice points.
 			atomChoiceRelation.growForMaxAtomId(atomStore.getMaxAtomId());
 			atomChoiceRelation.addRelation(headId, atomOf(bodyRepresentingLiteral));
 			for (Integer negLiteral : negLiterals) {

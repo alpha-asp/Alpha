@@ -117,6 +117,7 @@ public class ChoiceGrounder implements Grounder {
 		this.atomStore = atomStore;
 		this.filter = filter;
 		Arrays.asList(atomAA, atomBB, rule1, rule2, atomEnBR1, atomEnBR2, atomDisBR1, atomDisBR2).forEach(atomStore::putIfAbsent);
+		atomChoiceRelation.growForMaxAtomId(atomStore.getMaxAtomId());
 		atomChoiceRelation.addRelation(atomStore.get(atomAA), atomStore.get(rule1));
 		atomChoiceRelation.addRelation(atomStore.get(atomBB), atomStore.get(rule1));
 		atomChoiceRelation.addRelation(atomStore.get(atomBB), atomStore.get(rule2));

@@ -1,31 +1,41 @@
 package at.ac.tuwien.kr.alpha.grounder.structure;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
+
 /**
  * Stores and provides relationships between ordinary atoms and those that represent choice points.
+ * More specifically: relations between atoms and choice points (=body-representing atoms) influencing their truth
+ * values, and vice versa.
  *
  * Copyright (c) 2019, the Alpha Team.
  */
 public class AtomChoiceRelation {
-	private final ArrayList<ArrayList<Integer>> atomToChoiceAtoms = new ArrayList<>();
+	@SuppressWarnings("unchecked")
+	private ArrayList<Integer>[] atomToChoiceAtoms = new ArrayList[0];
 
 	public void addRelation(int atom, int bodyRepresentingAtom) {
-		while (atom > atomToChoiceAtoms.size() - 1) {
-			atomToChoiceAtoms.add(new ArrayList<>());
+		if (atomToChoiceAtoms[atom] == null) {
+			atomToChoiceAtoms[atom] = new ArrayList<>();
 		}
-		atomToChoiceAtoms.get(atom).add(bodyRepresentingAtom);
+		atomToChoiceAtoms[atom].add(bodyRepresentingAtom);
 	}
 
 	public List<Integer> getRelatedChoiceAtoms(int atom) {
-		return Collections.unmodifiableList(atomToChoiceAtoms.get(atom));
+		return Collections.unmodifiableList(atomToChoiceAtoms[atom]);
 	}
 
 	public void growForMaxAtomId(int maxAtomId) {
-		while (maxAtomId > atomToChoiceAtoms.size() - 1) {
-			atomToChoiceAtoms.add(new ArrayList<>());
+		if (maxAtomId >= atomToChoiceAtoms.length) {
+			int newCapacity = arrayGrowthSize(atomToChoiceAtoms.length);
+			if (newCapacity < maxAtomId + 1) {
+				newCapacity = maxAtomId + 1;
+			}
+			atomToChoiceAtoms = Arrays.copyOf(atomToChoiceAtoms, newCapacity);
 		}
 	}
 }
