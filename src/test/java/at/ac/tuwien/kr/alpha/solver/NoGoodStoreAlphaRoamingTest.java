@@ -1,7 +1,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.solver.heuristics.PhaseInitializerFactory;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -25,7 +24,7 @@ public class NoGoodStoreAlphaRoamingTest {
 	public NoGoodStoreAlphaRoamingTest() {
 		atomStore = new AtomStoreImpl();
 		AtomStoreTest.fillAtomStore(atomStore, 200);
-		assignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
+		assignment = new TrailAssignment(atomStore);
 		assignment.growForMaxAtomId();
 		store = new NoGoodStoreAlphaRoaming(assignment);
 	}

@@ -117,7 +117,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		assignmentsForChoicePosition = 0;
 	}
 
-	public TrailAssignment(AtomStore atomStore, PhaseInitializerFactory.PhaseInitializer phaseInitializer) {
+	public TrailAssignment(AtomStore atomStore) {
 		this(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue(), false);
 	}
 

@@ -39,7 +39,6 @@ import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
-import at.ac.tuwien.kr.alpha.solver.heuristics.PhaseInitializerFactory;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -85,7 +84,7 @@ public class NaiveGrounderTest {
 
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
-		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue()));
+		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		int litCNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("c", 0))), false);
 		int litB = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))));
 		assertExistsNoGoodContaining(noGoods.values(), litCNeg);
@@ -105,7 +104,7 @@ public class NaiveGrounderTest {
 
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
-		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue()));
+		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		int litANeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("a", 0))), false);
 		int litBNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))), false);
 		int litCNeg = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("c", 0))), false);
@@ -128,7 +127,7 @@ public class NaiveGrounderTest {
 
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
-		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue()));
+		Map<Integer, NoGood> noGoods = grounder.getNoGoods(new TrailAssignment(atomStore));
 		int litB = Literals.atomToLiteral(atomStore.get(new BasicAtom(Predicate.getInstance("b", 0))));
 		assertTrue(noGoods.containsValue(NoGood.fromConstraint(Collections.singletonList(litB), Collections.emptyList())));
 	}
@@ -195,7 +194,7 @@ public class NaiveGrounderTest {
 		nonGroundRule.groundingOrder.groundingOrders.put(startingLiteral, groundingOrder);
 
 		grounder.bootstrap();
-		TrailAssignment currentAssignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
+		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
 		final Substitution subst1 = Substitution.unify(startingLiteral, new Instance(ConstantTerm.getInstance(1)), new Substitution());
 		final NaiveGrounder.BindingResult bindingResult = grounder.getGroundInstantiations(nonGroundRule, groundingOrder, subst1, currentAssignment);
 
@@ -245,7 +244,7 @@ public class NaiveGrounderTest {
 	 */
 	private void testIfGrounderGroundsRule(Program program, int ruleID, Literal startingLiteral, int startingInstance, ThriceTruth bTruth, boolean expectNoGoods) {
 		AtomStore atomStore = new AtomStoreImpl();
-		TrailAssignment currentAssignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
+		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
 		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, p -> true, GrounderHeuristicsConfiguration.permissive(), true);
 
 		int b = atomStore.putIfAbsent(atom("b", 1));
@@ -347,7 +346,7 @@ public class NaiveGrounderTest {
 	 */
 	private void testPermissiveGrounderHeuristicTolerance(Program program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance, ThriceTruth[] truthsOfB, int arityOfB, boolean expectNoGoods, List<Integer> expectedNumbersOfUnassignedPositiveBodyAtoms) {
 		AtomStore atomStore = new AtomStoreImpl();
-		TrailAssignment currentAssignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
+		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
 		GrounderHeuristicsConfiguration heuristicConfiguration = GrounderHeuristicsConfiguration.getInstance(tolerance, tolerance);
 		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", program, atomStore, p -> true, heuristicConfiguration, true);
 
@@ -393,7 +392,7 @@ public class NaiveGrounderTest {
 	 * and using this temporary assignment to update the grounder's working memory.
 	 */
 	private void addAtomsToWorkingMemoryWithoutChangingTheAssignment(AtomStore atomStore, NaiveGrounder grounder, int[] atomIDs) {
-		TrailAssignment temporaryAssignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
+		TrailAssignment temporaryAssignment = new TrailAssignment(atomStore);
 		temporaryAssignment.growForMaxAtomId();
 		for (int b : atomIDs) {
 			temporaryAssignment.assign(b, TRUE);

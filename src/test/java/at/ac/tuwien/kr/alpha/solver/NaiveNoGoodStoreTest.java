@@ -1,7 +1,6 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.*;
-import at.ac.tuwien.kr.alpha.solver.heuristics.PhaseInitializerFactory;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -23,7 +22,7 @@ public class NaiveNoGoodStoreTest {
 
 	public NaiveNoGoodStoreTest() {
 		atomStore = new AtomStoreImpl();
-		assignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
+		assignment = new TrailAssignment(atomStore);
 		store = new NaiveNoGoodStore(assignment);
 	}
 

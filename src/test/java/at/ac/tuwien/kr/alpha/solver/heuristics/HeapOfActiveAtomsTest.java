@@ -55,7 +55,7 @@ public class HeapOfActiveAtomsTest {
 	@Before
 	public void setUp() {
 		atomStore = new AtomStoreImpl();
-		assignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
+		assignment = new TrailAssignment(atomStore);
 		noGoodStore = new NoGoodStoreAlphaRoaming(assignment);
 		ChoiceManager choiceManager = new PseudoChoiceManager(assignment, noGoodStore);
 		this.vsids = new VSIDS(assignment, choiceManager, MOMs.DEFAULT_STRATEGY);

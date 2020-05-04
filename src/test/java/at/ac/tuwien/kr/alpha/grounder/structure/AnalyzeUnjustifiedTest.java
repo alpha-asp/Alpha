@@ -39,7 +39,6 @@ import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
-import at.ac.tuwien.kr.alpha.solver.heuristics.PhaseInitializerFactory;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -68,7 +67,7 @@ public class AnalyzeUnjustifiedTest {
 		AtomStore atomStore = new AtomStoreImpl();
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore, true);
 		grounder.getNoGoods(null);
-		TrailAssignment assignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
+		TrailAssignment assignment = new TrailAssignment(atomStore);
 		int rId = atomStore.get(new BasicAtom(Predicate.getInstance("r", 0)));
 		int nrId = atomStore.get(new BasicAtom(Predicate.getInstance("nr", 0)));
 		assignment.growForMaxAtomId();
@@ -93,7 +92,7 @@ public class AnalyzeUnjustifiedTest {
 		AtomStore atomStore = new AtomStoreImpl();
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore, true);
 		grounder.getNoGoods(null);
-		TrailAssignment assignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
+		TrailAssignment assignment = new TrailAssignment(atomStore);
 		Atom p1 = parser.parse("p(1).").getFacts().get(0);
 		Atom r2 = parser.parse("r(2).").getFacts().get(0);
 		Atom s12 = parser.parse("s(1,2).").getFacts().get(0);
@@ -130,7 +129,7 @@ public class AnalyzeUnjustifiedTest {
 		AtomStore atomStore = new AtomStoreImpl();
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore, true);
 		grounder.getNoGoods(null);
-		TrailAssignment assignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
+		TrailAssignment assignment = new TrailAssignment(atomStore);
 		Atom qa = parser.parse("q(a).").getFacts().get(0);
 		Atom qb = parser.parse("q(b).").getFacts().get(0);
 		Atom qc = parser.parse("q(c).").getFacts().get(0);
@@ -186,7 +185,7 @@ public class AnalyzeUnjustifiedTest {
 		AtomStore atomStore = new AtomStoreImpl();
 		NaiveGrounder grounder = new NaiveGrounder(parsedProgram, atomStore, true);
 		grounder.getNoGoods(null);
-		TrailAssignment assignment = new TrailAssignment(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue());
+		TrailAssignment assignment = new TrailAssignment(atomStore);
 		int rId = atomStore.get(new BasicAtom(Predicate.getInstance("r", 0)));
 		int nrId = atomStore.get(new BasicAtom(Predicate.getInstance("nr", 0)));
 		assignment.growForMaxAtomId();
