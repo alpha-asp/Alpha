@@ -26,6 +26,9 @@ public class AtomChoiceRelation {
 	}
 
 	public List<Integer> getRelatedChoiceAtoms(int atom) {
+		if (atomToChoiceAtoms[atom] == null) {
+			return Collections.emptyList();
+		}
 		return Collections.unmodifiableList(atomToChoiceAtoms[atom]);
 	}
 
