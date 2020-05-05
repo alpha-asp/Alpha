@@ -119,7 +119,7 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 	}
 
 	@Override
-	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
+	public List<Substitution> getSatisfyingSubstitutions(Substitution partialSubstitution) {
 		List<Term> input = getAtom().getInput();
 		List<Term> substitutes = new ArrayList<>(input.size());
 
@@ -156,6 +156,23 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 				return this.buildSubstitutionsForOutputs(partialSubstitution, results);
 			}
 		}
+	}
+
+	/**
+	 * Checks whether this (negated) external literal is satisfied under the given
+	 * partial substitution.
+	 * Note that this method is only called on negated external literals that have
+	 * outputs. In that specific case, the literal itself does not bind any
+	 * variables, i.e. the literal is satisfied iff the output terms obtained
+	 * by evaluating the underlying external atom match the values to which the
+	 * respective output variables are bound in the partial substitution.
+	 * 
+	 * @param partialSubstitution
+	 * @param outputs
+	 * @return
+	 */
+	private boolean checkSatisfied(Substitution partialSubstitution, Set<List<ConstantTerm<?>>> outputs) {
+		return false;
 	}
 
 	private List<Substitution> buildSubstitutionsForOutputs(Substitution partialSubstitution, Set<List<ConstantTerm<?>>> outputs) {

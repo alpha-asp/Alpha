@@ -103,7 +103,7 @@ public class IntervalLiteral extends FixedInterpretationLiteral {
 	}
 
 	@Override
-	public List<Substitution> getSubstitutions(Substitution partialSubstitution) {
+	public List<Substitution> getSatisfyingSubstitutions(Substitution partialSubstitution) {
 		// Substitute variables occurring in the interval itself.
 		IntervalLiteral groundInterval = substitute(partialSubstitution);
 		// Generate all substitutions for the interval representing variable.
