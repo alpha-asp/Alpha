@@ -38,7 +38,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 // FIXME extend refactored version of ProgramTransformation as soon as PR #207 gets merged!
 public class ConstraintsToAssertionErrors {
 
-	private static final String ASSERTION_ERROR = "assertion_error";
+	public static final String ASSERTION_ERROR = "assertion_error";
 
 	public Program apply(Program inputProgram) {
 		List<Rule> inputRules = inputProgram.getRules();

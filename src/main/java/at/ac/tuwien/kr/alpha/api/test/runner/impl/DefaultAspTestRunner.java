@@ -31,14 +31,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.api.mapper.AnswerSetToObjectMapper;
 import at.ac.tuwien.kr.alpha.api.test.exception.TestExecutionException;
 import at.ac.tuwien.kr.alpha.api.test.result.TestCaseResult;
+import at.ac.tuwien.kr.alpha.api.test.result.impl.AnswerSetToAssertionErrorsMapper;
 import at.ac.tuwien.kr.alpha.api.test.result.impl.IncorrectAnswerSetsTestResult;
 import at.ac.tuwien.kr.alpha.api.test.runner.AspTestRunner;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ConstraintsToAssertionErrors;
+import at.ac.tuwien.kr.alpha.lang.test.AssertionError;
 import at.ac.tuwien.kr.alpha.lang.test.TestCase;
 import at.ac.tuwien.kr.alpha.lang.test.TestSuite;
 import at.ac.tuwien.kr.alpha.lang.test.TestSuiteResult;
@@ -52,6 +55,7 @@ public class DefaultAspTestRunner implements AspTestRunner {
 
 	private final Alpha alpha;
 	private ConstraintsToAssertionErrors constraintTransformer = new ConstraintsToAssertionErrors();
+	private AnswerSetToObjectMapper<List<AssertionError>> assertionErrorMapper = new AnswerSetToAssertionErrorsMapper();
 
 	public DefaultAspTestRunner(Alpha alpha) {
 		this.alpha = alpha;
@@ -83,7 +87,8 @@ public class DefaultAspTestRunner implements AspTestRunner {
 			if (verifierAnswers.size() != 1) {
 				throw new TestExecutionException(testCase, "Invalid number of answer sets for verifier: " + verifierAnswers.size());
 			}
-			// TODO map answer set to assertion errors!
+			List<AssertionError> failedAssertions = this.assertionErrorMapper.mapFromAnswerSet(as);
+			// TODO map assertion errors to failing answer sets!
 		}
 		return null;
 	}
