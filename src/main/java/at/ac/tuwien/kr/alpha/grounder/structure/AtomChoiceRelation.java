@@ -10,7 +10,7 @@ import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
 /**
  * Stores and provides relationships between ordinary atoms and those that represent choice points.
  * More specifically: relations between atoms and choice points (=body-representing atoms) influencing their truth
- * values, and vice versa.
+ * values. Moreover, each body-representing atom is in relation with itself.
  *
  * Copyright (c) 2019, the Alpha Team.
  */
@@ -23,6 +23,12 @@ public class AtomChoiceRelation {
 			atomToChoiceAtoms[atom] = new ArrayList<>();
 		}
 		atomToChoiceAtoms[atom].add(bodyRepresentingAtom);
+
+		// Ensure that each bodyRepresentingAtom is in relation with itself.
+		if (atomToChoiceAtoms[bodyRepresentingAtom] == null) {
+			atomToChoiceAtoms[bodyRepresentingAtom] = new ArrayList<>();
+			atomToChoiceAtoms[bodyRepresentingAtom].add(bodyRepresentingAtom);
+		}
 	}
 
 	public List<Integer> getRelatedChoiceAtoms(int atom) {
