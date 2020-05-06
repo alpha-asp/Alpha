@@ -70,7 +70,7 @@ public class InternalRule extends NormalRule {
 		super(head, body);
 		if (body.isEmpty()) {
 			throw new IllegalArgumentException(
-					"Empty bodies are not supported for InternalRule! (Head = " + head == null ? "NULL" : head.getAtom().toString() + ")");
+					"Empty bodies are not supported for InternalRule! (Head = " + (head == null ? "NULL" : head.getAtom().toString()) + ")");
 		}
 		this.ruleId = InternalRule.ID_GENERATOR.getNextId();
 
