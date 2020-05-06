@@ -74,7 +74,6 @@ public class InputProgram extends AbstractProgram<BasicRule> {
 		private InlineDirectives inlineDirectives = new InlineDirectives();
 
 		public Builder(InputProgram prog) {
-			this();
 			this.addRules(prog.getRules());
 			this.addFacts(prog.getFacts());
 			this.addInlineDirectives(prog.getInlineDirectives());
