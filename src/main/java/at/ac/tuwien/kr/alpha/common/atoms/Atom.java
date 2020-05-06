@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2019, the Alpha Team.
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -36,9 +36,6 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
- */
 public abstract class Atom implements Comparable<Atom> {
 
 	public abstract Predicate getPredicate();
