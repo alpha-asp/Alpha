@@ -16,6 +16,8 @@ import at.ac.tuwien.kr.alpha.api.externals.Externals;
 import at.ac.tuwien.kr.alpha.api.externals.stdlib.AspStandardLibrary;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 
 public class FixedInterpretationLiteralsTest {
@@ -63,7 +65,8 @@ public class FixedInterpretationLiteralsTest {
 			+ "negative_external_multioutput :- START = \"Graz\", END = \"Salzburg\", not &connection[train_network](START, END)."
 			+ "negative_external_multioutput_dontfire :- START = \"Klagenfurt\", END = \"Villach\", not &connection[train_network](START, END)."
 			+ "positive_external_multioutput :- START = \"Klagenfurt\", END = \"Villach\", &connection[train_network](START, END)."
-			+ "positive_external_multioutput_dontfire :- START = \"Graz\", END = \"Salzburg\", &connection[train_network](START, END).";
+			+ "positive_external_multioutput_dontfire :- START = \"Graz\", END = \"Salzburg\", &connection[train_network](START, END)."
+			+ "positive_external_binding_output(START, END) :- &connection[train_network](START, END).";
 
 	private Alpha alpha;
 	private Map<String, PredicateInterpretation> externals;
@@ -169,6 +172,20 @@ public class FixedInterpretationLiteralsTest {
 		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
 		Assert.assertFalse(answerSet.getPredicates().contains(Predicate.getInstance("positive_external_multioutput_dontfire", 0)));
+	}
+
+	@Test
+	public void positiveExternalBindingOutput() {
+		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
+		Assert.assertTrue(answer.isPresent());
+		AnswerSet answerSet = answer.get();
+		Predicate pred = Predicate.getInstance("positive_external_binding_output", 2);
+		Assert.assertTrue(answerSet.getPredicates().contains(pred));
+		Set<Atom> instances = answerSet.getPredicateInstances(pred);
+		Assert.assertEquals(3, instances.size());
+		Assert.assertTrue(instances.contains(new BasicAtom(pred, ConstantTerm.getInstance("Klagenfurt"), ConstantTerm.getInstance("Villach"))));
+		Assert.assertTrue(instances.contains(new BasicAtom(pred, ConstantTerm.getInstance("Klagenfurt"), ConstantTerm.getInstance("Graz"))));
+		Assert.assertTrue(instances.contains(new BasicAtom(pred, ConstantTerm.getInstance("Villach"), ConstantTerm.getInstance("Salzburg"))));
 	}
 
 }
