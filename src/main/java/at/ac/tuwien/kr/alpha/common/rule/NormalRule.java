@@ -10,8 +10,8 @@ import at.ac.tuwien.kr.alpha.common.rule.head.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 
 /**
- * A rule that has a normal head, i.e. just one head atom, no disjunction or choice heads allowed Currently, any constructs such as aggregates, intervals, etc.
- * in the rule body are allowed.
+ * A rule that has a normal head, i.e. just one head atom, no disjunction or choice heads allowed.
+ * Currently, any constructs such as aggregates, intervals, etc. in the rule body are allowed.
  * 
  * Copyright (c) 2019, the Alpha Team.
  */
