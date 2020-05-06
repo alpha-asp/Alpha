@@ -2,18 +2,24 @@ package at.ac.tuwien.kr.alpha.test.util;
 
 import static java.util.Collections.emptySet;
 
+import org.junit.Assert;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import org.junit.Assert;
-
 import at.ac.tuwien.kr.alpha.AnswerSetsParser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.AbstractProgram;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 public class TestUtils {
 
@@ -67,10 +73,28 @@ public class TestUtils {
 		TestUtils.assertAnswerSetsEqual(expectedAnswerSets, actual);
 	}
 
-	public static void assertFactsContainedInProgram(AbstractProgram<?> prog, BasicAtom... facts) {
-		for (BasicAtom fact : facts) {
-			prog.getFacts().contains(fact);
+	public static void assertFactsContainedInProgram(AbstractProgram<?> prog, Atom... facts) {
+		for (Atom fact : facts) {
+			Assert.assertTrue(prog.getFacts().contains(fact));
 		}
+	}
+
+	public static Atom basicAtomWithStringTerms(String predicate, String... terms) {
+		Predicate pred = Predicate.getInstance(predicate, terms.length);
+		List<Term> trms = new ArrayList<>();
+		for (String str : terms) {
+			trms.add(ConstantTerm.getInstance(str));
+		}
+		return new BasicAtom(pred, trms);
+	}
+
+	public static Atom basicAtomWithSymbolicTerms(String predicate, String... constantSymbols) {
+		Predicate pred = Predicate.getInstance(predicate, constantSymbols.length);
+		List<Term> trms = new ArrayList<>();
+		for (String str : constantSymbols) {
+			trms.add(ConstantTerm.getSymbolicInstance(str));
+		}
+		return new BasicAtom(pred, trms);
 	}
 
 }

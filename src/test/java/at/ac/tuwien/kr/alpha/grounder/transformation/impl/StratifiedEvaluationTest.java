@@ -43,7 +43,6 @@ import at.ac.tuwien.kr.alpha.api.externals.Externals;
 import at.ac.tuwien.kr.alpha.api.externals.Predicate;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.impl.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
@@ -62,7 +61,7 @@ public class StratifiedEvaluationTest {
 		NormalProgram normal = system.normalizeProgram(prg);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normal);
 		InternalProgram evaluated = new StratifiedEvaluation().apply(analyzed);
-		BasicAtom qOfB = BasicAtom.getInstanceWithSymbolicTerms("q", "b");
+		Atom qOfB = TestUtils.basicAtomWithSymbolicTerms("q", "b");
 		List<Atom> facts = evaluated.getFacts();
 		int numQOfB = 0;
 		for (Atom at : facts) {
@@ -81,7 +80,7 @@ public class StratifiedEvaluationTest {
 		NormalProgram normal = system.normalizeProgram(prg);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normal);
 		InternalProgram evaluated = new StratifiedEvaluation().apply(analyzed);
-		BasicAtom equal = BasicAtom.getInstanceWithSymbolicTerms("equal");
+		Atom equal = TestUtils.basicAtomWithSymbolicTerms("equal");
 		assertTrue(evaluated.getFacts().contains(equal));
 	}
 
@@ -145,7 +144,7 @@ public class StratifiedEvaluationTest {
 		NormalProgram normal = system.normalizeProgram(prg);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normal);
 		InternalProgram evaluated = new StratifiedEvaluation().apply(analyzed);
-		assertTrue(evaluated.getFacts().contains(BasicAtom.getInstanceWithSymbolicTerms("allThings")));
+		assertTrue(evaluated.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("allThings")));
 		Set<AnswerSet> answerSets = system.solve(evaluated).collect(Collectors.toSet());
 		TestUtils.assertAnswerSetsEqual("allThings, thing(1), thing(2), thing(3), chosenMaxThing, chosenSomething, chosenThing(3)", answerSets);
 	}

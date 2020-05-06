@@ -67,6 +67,7 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
+import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 
 public class AlphaTest {
 	private static int invocations;
@@ -415,7 +416,7 @@ public class AlphaTest {
 		NormalProgram normal = system.normalizeProgram(input);
 		InternalProgram preprocessed = system.performProgramPreprocessing(normal);
 		Assert.assertFalse("Preprocessed program contains fact derived from stratifiable rule, but shouldn't!",
-				preprocessed.getFacts().contains(BasicAtom.getInstanceWithSymbolicTerms("q", "a")));
+				preprocessed.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("q", "a")));
 	}
 
 	/**
@@ -430,7 +431,7 @@ public class AlphaTest {
 		NormalProgram normal = system.normalizeProgram(input);
 		InternalProgram preprocessed = system.performProgramPreprocessing(normal);
 		Assert.assertTrue("Preprocessed program does not contain fact derived from stratifiable rule, but should!",
-				preprocessed.getFacts().contains(BasicAtom.getInstanceWithSymbolicTerms("q", "a")));
+				preprocessed.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("q", "a")));
 	}
 
 	/**
@@ -439,7 +440,8 @@ public class AlphaTest {
 	@Test
 	public void problematicRun_3col_1119654162577372() throws IOException {
 		/*
-		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s default -e 1119654162577372 -n 200 -i
+		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s
+		 * default -e 1119654162577372 -n 200 -i
 		 * 3col-20-38.txt
 		 */
 		problematicRun("3col-20-38.txt", 1119654162577372L, 200);
@@ -451,7 +453,8 @@ public class AlphaTest {
 	@Test
 	public void problematicRun_3col_1119718541727902() throws IOException {
 		/*
-		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s default -e 1119718541727902 -n 200 -i
+		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s
+		 * default -e 1119718541727902 -n 200 -i
 		 * 3col-20-38.txt
 		 */
 		problematicRun("3col-20-38.txt", 1119718541727902L, 200);
@@ -463,7 +466,8 @@ public class AlphaTest {
 	@Test
 	public void problematicRun_vehicle_97598271567626() throws IOException {
 		/*
-		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s default -e 97598271567626 -n 2 -i
+		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s
+		 * default -e 97598271567626 -n 2 -i
 		 * vehicle_normal_small.asp
 		 */
 		problematicRun("vehicle_normal_small.asp", 1119718541727902L, 2);
@@ -475,7 +479,8 @@ public class AlphaTest {
 	@Test
 	public void problematicRun_3col_1119718541727902_sorted_400() throws IOException {
 		/*
-		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s default -sort -n 400 -i
+		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s
+		 * default -sort -n 400 -i
 		 * 3col-20-38.txt
 		 */
 		SystemConfig cfg = new SystemConfig();
