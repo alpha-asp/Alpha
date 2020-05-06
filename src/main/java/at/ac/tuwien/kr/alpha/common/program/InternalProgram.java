@@ -1,5 +1,7 @@
 package at.ac.tuwien.kr.alpha.common.program;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -8,8 +10,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
@@ -74,8 +74,7 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 		Map<Integer, InternalRule> retVal = new HashMap<>();
 		for (InternalRule rule : rules) {
 			this.rulesById.put(rule.getRuleId(), rule);
-			if (rule.getHeadAtom() != null) {
-				// rule is not a constraint, register the predicate it defines
+			if (!rule.isConstraint()) {
 				this.recordDefiningRule(rule.getHeadAtom().getPredicate(), rule);
 			}
 		}
