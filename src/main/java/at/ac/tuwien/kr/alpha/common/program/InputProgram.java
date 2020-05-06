@@ -33,9 +33,7 @@ import java.util.Collections;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.externals.Externals;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
@@ -119,17 +117,6 @@ public class InputProgram extends AbstractProgram<BasicRule> {
 		public InputProgram build() {
 			return new InputProgram(this.rules, this.facts, this.inlineDirectives);
 		}
-	}
-
-	public boolean containsAggregates() {
-		for (BasicRule r : this.getRules()) {
-			for (Literal l : r.getBody()) {
-				if (l instanceof AggregateLiteral) {
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 
 }
