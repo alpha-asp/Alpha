@@ -78,9 +78,7 @@ public class FixedInterpretationLiteralsTest {
 	@Test
 	public void positiveNumericComparison() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		if (!answer.isPresent()) {
-			throw new IllegalStateException("Test setup failed, no answer set!");
-		}
+		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
 		Assert.assertTrue(answerSet.getPredicates().contains(Predicate.getInstance("positive_numeric_comparison", 0)));
 	}
@@ -88,9 +86,7 @@ public class FixedInterpretationLiteralsTest {
 	@Test
 	public void negativeNumericComparison() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		if (!answer.isPresent()) {
-			throw new IllegalStateException("Test setup failed, no answer set!");
-		}
+		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
 		Assert.assertTrue(answerSet.getPredicates().contains(Predicate.getInstance("negative_numeric_comparison", 0)));
 	}
@@ -98,9 +94,7 @@ public class FixedInterpretationLiteralsTest {
 	@Test
 	public void positiveUnaryExternal() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		if (!answer.isPresent()) {
-			throw new IllegalStateException("Test setup failed, no answer set!");
-		}
+		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
 		Assert.assertTrue(answerSet.getPredicates().contains(Predicate.getInstance("positive_unary_external", 0)));
 	}
@@ -108,9 +102,7 @@ public class FixedInterpretationLiteralsTest {
 	@Test
 	public void negativeUnaryExternal() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		if (!answer.isPresent()) {
-			throw new IllegalStateException("Test setup failed, no answer set!");
-		}
+		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
 		Assert.assertTrue(answerSet.getPredicates().contains(Predicate.getInstance("negative_unary_external", 0)));
 	}
@@ -118,9 +110,7 @@ public class FixedInterpretationLiteralsTest {
 	@Test
 	public void positiveExternalWithOutput() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		if (!answer.isPresent()) {
-			throw new IllegalStateException("Test setup failed, no answer set!");
-		}
+		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
 		Assert.assertTrue(answerSet.getPredicates().contains(Predicate.getInstance("positive_external_with_output", 0)));
 	}
@@ -128,9 +118,7 @@ public class FixedInterpretationLiteralsTest {
 	@Test
 	public void positiveExternalWithOutputDontfire() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		if (!answer.isPresent()) {
-			throw new IllegalStateException("Test setup failed, no answer set!");
-		}
+		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
 		Assert.assertFalse(answerSet.getPredicates().contains(Predicate.getInstance("positive_external_with_output_dontfire", 0)));
 	}
@@ -138,9 +126,7 @@ public class FixedInterpretationLiteralsTest {
 	@Test
 	public void negativeExternalWithOutput() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		if (!answer.isPresent()) {
-			throw new IllegalStateException("Test setup failed, no answer set!");
-		}
+		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
 		Assert.assertTrue(answerSet.getPredicates().contains(Predicate.getInstance("negative_external_with_output", 0)));
 	}
@@ -148,9 +134,7 @@ public class FixedInterpretationLiteralsTest {
 	@Test
 	public void negativeExternalWithOutputDontfire() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		if (!answer.isPresent()) {
-			throw new IllegalStateException("Test setup failed, no answer set!");
-		}
+		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
 		Assert.assertFalse(answerSet.getPredicates().contains(Predicate.getInstance("negative_external_with_output_dontfire", 0)));
 	}
@@ -158,9 +142,7 @@ public class FixedInterpretationLiteralsTest {
 	@Test
 	public void negativeExternalMultioutput() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		if (!answer.isPresent()) {
-			throw new IllegalStateException("Test setup failed, no answer set!");
-		}
+		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
 		Assert.assertTrue(answerSet.getPredicates().contains(Predicate.getInstance("negative_external_multioutput", 0)));
 	}
@@ -168,9 +150,7 @@ public class FixedInterpretationLiteralsTest {
 	@Test
 	public void negativeExternalMultioutputDontfire() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		if (!answer.isPresent()) {
-			throw new IllegalStateException("Test setup failed, no answer set!");
-		}
+		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
 		Assert.assertFalse(answerSet.getPredicates().contains(Predicate.getInstance("negative_external_multioutput_dontfire", 0)));
 	}
@@ -178,9 +158,7 @@ public class FixedInterpretationLiteralsTest {
 	@Test
 	public void positiveExternalMultioutput() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		if (!answer.isPresent()) {
-			throw new IllegalStateException("Test setup failed, no answer set!");
-		}
+		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
 		Assert.assertTrue(answerSet.getPredicates().contains(Predicate.getInstance("positive_external_multioutput", 0)));
 	}
@@ -188,9 +166,7 @@ public class FixedInterpretationLiteralsTest {
 	@Test
 	public void positiveExternalMultioutputDontfire() {
 		Optional<AnswerSet> answer = this.alpha.solve(this.alpha.readProgramString(TEST_PROG, this.externals)).findFirst();
-		if (!answer.isPresent()) {
-			throw new IllegalStateException("Test setup failed, no answer set!");
-		}
+		Assert.assertTrue(answer.isPresent());
 		AnswerSet answerSet = answer.get();
 		Assert.assertFalse(answerSet.getPredicates().contains(Predicate.getInstance("positive_external_multioutput_dontfire", 0)));
 	}
