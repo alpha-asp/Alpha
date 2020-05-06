@@ -132,47 +132,54 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 			throw new NullPointerException("Predicate " + getPredicate().getName() + " returned null. It must return a Set.");
 		}
 
-		// determine ground substitutions of the literal
-		if (results.isEmpty()) {
-			// if the literal is negated and results are empty, the literal is "true",
-			// i.e. "not ATOM" holds because there are no instances of ATOM.
-			// communicate this by returning the partial substitution: since a negated
-			// external doesn't bind anything, it doesn't contribute to the full
-			// substitution of the rule body
-			if (this.isNegated()) {
-				List<Substitution> retVal = new ArrayList<>();
-				retVal.add(partialSubstitution);
-				return retVal;
-			} else {
-				return Collections.emptyList();
-			}
+		if (this.isNegated()) {
+			return this.checkNegatedLiteralSatisfied(results) ? Collections.singletonList(partialSubstitution) : Collections.emptyList();
 		} else {
-			if (this.isNegated()) {
-				List<Substitution> retVal = new ArrayList<>();
-				retVal.add(partialSubstitution);
-				return retVal;
-				// return Collections.emptyList();
-			} else {
-				return this.buildSubstitutionsForOutputs(partialSubstitution, results);
-			}
+			return this.buildSubstitutionsForOutputs(partialSubstitution, results);
 		}
 	}
 
 	/**
-	 * Checks whether this (negated) external literal is satisfied under the given
-	 * partial substitution.
-	 * Note that this method is only called on negated external literals that have
-	 * outputs. In that specific case, the literal itself does not bind any
-	 * variables, i.e. the literal is satisfied iff the output terms obtained
-	 * by evaluating the underlying external atom match the values to which the
-	 * respective output variables are bound in the partial substitution.
+	 * Checks whether this negated external literal is satisfied.
 	 * 
-	 * @param partialSubstitution
-	 * @param outputs
-	 * @return
+	 * Note that this method must only be called on negated external literals.
+	 * In that case, the literal itself does not bind any output variables,
+	 * i.e. the underlying atom is satisfied iff the output terms obtained by
+	 * evaluating the underlying external atom match the values to which
+	 * the respective output variables are bound. The result of this method assumes
+	 * that the literal is negated, i.e. for the underlying atom AT, it represents
+	 * the truth value !AT.
+	 * Furthermore, this method assumes that the output terms of the underlying atom
+	 * are {@link ConstantTerm}s, i.e. that the grounder's current partial
+	 * substitution has already been applied to them. That assumption is safe since
+	 * in case of a negated external literal, the output variables are always
+	 * non-binding.
+	 * 
+	 * @param outputs The term lists obtained from evaluating the external atom
+	 *                (i.e. calling the java method) encapsulated by this literal
+	 * @return true iff no list in output equals the external atom's output term
+	 *         list as substituted by the grounder, false otherwise
 	 */
-	private boolean checkSatisfied(Substitution partialSubstitution, Set<List<ConstantTerm<?>>> outputs) {
-		return false;
+	private boolean checkNegatedLiteralSatisfied(Set<List<ConstantTerm<?>>> outputs) {
+		List<Term> externalAtomOutTerms = this.getAtom().getOutput();
+		boolean outputMatches;
+		for (List<ConstantTerm<?>> output : outputs) {
+			outputMatches = true;
+			for (int i = 0; i < externalAtomOutTerms.size(); i++) {
+				if (!output.get(i).equals(externalAtomOutTerms.get(i))) {
+					outputMatches = false;
+					break;
+				}
+			}
+			if (outputMatches) {
+				// we found one term list where all terms match the ground output terms of the
+				// external atom, therefore the atom is true and the (negative) literal false.
+				return false;
+			}
+		}
+		// we checked all term list and none matches the ground output terms, therefore
+		// the external atom is false, making the literal true
+		return true;
 	}
 
 	private List<Substitution> buildSubstitutionsForOutputs(Substitution partialSubstitution, Set<List<ConstantTerm<?>>> outputs) {
