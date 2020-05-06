@@ -43,9 +43,10 @@ public final class GrounderFactory {
 		throw new IllegalArgumentException("Unknown grounder requested.");
 	}
 
-	public static Grounder getInstance(String name, InternalProgram program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, GrounderHeuristicsConfiguration heuristicsConfiguration,  boolean debugInternalChecks) {
+	public static Grounder getInstance(String name, InternalProgram program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter,
+			GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks) {
 		return getInstance(name, program, atomStore, filter, heuristicsConfiguration, debugInternalChecks, new Bridge[] {});
-	}	
+	}
 	
 	public static Grounder getInstance(String name, InternalProgram program, AtomStore atomStore, boolean debugInternalChecks) {
 		return getInstance(name, program, atomStore, InputConfig.DEFAULT_FILTER, new GrounderHeuristicsConfiguration(), debugInternalChecks);

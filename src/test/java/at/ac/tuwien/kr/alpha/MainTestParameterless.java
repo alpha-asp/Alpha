@@ -49,7 +49,7 @@ public class MainTestParameterless {
 	@Test
 	public void testWriteDepGraph() throws IOException {
 		File tmpFile = File.createTempFile("alphaTest", "depgraph.dot");
-		String[] args = new String[] {"-str", "a. b :- a.", "-dg", tmpFile.getAbsolutePath() };
+		String[] args = new String[] {"-str", "a. b :- a.", "-wdg", tmpFile.getAbsolutePath() };
 		PrintStream sysOut = System.out;
 		ByteArrayOutputStream newOut = new ByteArrayOutputStream();
 		System.setOut(new PrintStream(newOut));

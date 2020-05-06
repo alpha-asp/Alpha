@@ -152,14 +152,14 @@ public class CommandLineParserTest {
 	@Test
 	public void disableStratifiedEval() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig ctx = parser.parseCommandLine(new String[] {"-i", "someFile.asp", "-i", "someOtherFile.asp", "-nse"});
+		AlphaConfig ctx = parser.parseCommandLine(new String[] {"-i", "someFile.asp", "-i", "someOtherFile.asp", "-dse"});
 		Assert.assertFalse(ctx.getSystemConfig().isEvaluateStratifiedPart());
 	}
 	
 	@Test
 	public void disableStratifiedEvalLongOpt() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig ctx = parser.parseCommandLine(new String[] {"-i", "someFile.asp", "-i", "someOtherFile.asp", "--disable-stratified-eval"});
+		AlphaConfig ctx = parser.parseCommandLine(new String[] {"-i", "someFile.asp", "-i", "someOtherFile.asp", "--disableStratifiedEvaluation"});
 		Assert.assertFalse(ctx.getSystemConfig().isEvaluateStratifiedPart());
 	}
 

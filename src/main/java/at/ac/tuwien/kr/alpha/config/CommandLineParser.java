@@ -216,7 +216,7 @@ public class CommandLineParser {
 		 * below put invocations are used to "register" the handler methods for each commandline option
 		 */
 		// help is handled separately, therefore dummy handler
-		this.globalOptionHandlers.put(CommandLineParser.OPT_HELP.getOpt(), (o, c) -> {});
+		this.globalOptionHandlers.put(CommandLineParser.OPT_HELP.getOpt(), (o, c) -> { });
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER.getOpt(), this::handleGrounder);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_SOLVER.getOpt(), this::handleSolver);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NOGOOD_STORE.getOpt(), this::handleNogoodStore);
