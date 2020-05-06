@@ -133,7 +133,7 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 		}
 
 		if (this.isNegated()) {
-			return this.checkNegatedLiteralSatisfied(results) ? Collections.singletonList(partialSubstitution) : Collections.emptyList();
+			return this.isNegatedLiteralSatisfied(results) ? Collections.singletonList(partialSubstitution) : Collections.emptyList();
 		} else {
 			return this.buildSubstitutionsForOutputs(partialSubstitution, results);
 		}
@@ -160,7 +160,7 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 	 * @return true iff no list in output equals the external atom's output term
 	 *         list as substituted by the grounder, false otherwise
 	 */
-	private boolean checkNegatedLiteralSatisfied(Set<List<ConstantTerm<?>>> externalMethodResult) {
+	private boolean isNegatedLiteralSatisfied(Set<List<ConstantTerm<?>>> externalMethodResult) {
 		List<Term> externalAtomOutTerms = this.getAtom().getOutput();
 		boolean outputMatches;
 		for (List<ConstantTerm<?>> resultTerms : externalMethodResult) {
