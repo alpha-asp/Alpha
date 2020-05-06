@@ -31,6 +31,7 @@ import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.IntIterator;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.solver.heuristics.PhaseInitializerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,7 +119,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	}
 
 	public TrailAssignment(AtomStore atomStore) {
-		this(atomStore, PhaseInitializerFactory.getPhaseInitializerAllTrue(), false);
+		this(atomStore, PhaseInitializerFactory.getInstance(SystemConfig.DEFAULT_PHASE_INITIALIZER, null, atomStore), false);
 	}
 
 	@Override

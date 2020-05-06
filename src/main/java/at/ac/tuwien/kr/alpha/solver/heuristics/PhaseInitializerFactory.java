@@ -46,7 +46,7 @@ public abstract class PhaseInitializerFactory {
 		}
 	}
 
-	public static PhaseInitializer getPhaseInitializerAllTrue() {
+	private static PhaseInitializer getPhaseInitializerAllTrue() {
 		return new PhaseInitializer() {
 			@Override
 			public boolean getNextInitialPhase(int atom) {
