@@ -155,18 +155,18 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 	 * in case of a negated external literal, the output variables are always
 	 * non-binding.
 	 * 
-	 * @param outputs The term lists obtained from evaluating the external atom
+	 * @param externalMethodResult The term lists obtained from evaluating the external atom
 	 *                (i.e. calling the java method) encapsulated by this literal
 	 * @return true iff no list in output equals the external atom's output term
 	 *         list as substituted by the grounder, false otherwise
 	 */
-	private boolean checkNegatedLiteralSatisfied(Set<List<ConstantTerm<?>>> outputs) {
+	private boolean checkNegatedLiteralSatisfied(Set<List<ConstantTerm<?>>> externalMethodResult) {
 		List<Term> externalAtomOutTerms = this.getAtom().getOutput();
 		boolean outputMatches;
-		for (List<ConstantTerm<?>> output : outputs) {
+		for (List<ConstantTerm<?>> resultTerms : externalMethodResult) {
 			outputMatches = true;
 			for (int i = 0; i < externalAtomOutTerms.size(); i++) {
-				if (!output.get(i).equals(externalAtomOutTerms.get(i))) {
+				if (!resultTerms.get(i).equals(externalAtomOutTerms.get(i))) {
 					outputMatches = false;
 					break;
 				}
