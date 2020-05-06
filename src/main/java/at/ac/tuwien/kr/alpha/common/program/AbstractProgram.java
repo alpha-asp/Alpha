@@ -10,7 +10,7 @@ import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
 /**
- * The parent type for all kinds of program. Defines a program's basic structure (facts + rules + inlineDirectives)
+ * The parent type for all kinds of programs. Defines a program's basic structure (facts + rules + inlineDirectives)
  * 
  * @param <R> the type of rule a program permits. This needs to be determined by implementations based on which syntax constructs an implementation permits
  *        Copyright (c) 2019, the Alpha Team.
