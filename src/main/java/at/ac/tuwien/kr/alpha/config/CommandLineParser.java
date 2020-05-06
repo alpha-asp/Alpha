@@ -413,7 +413,7 @@ public class CommandLineParser {
 
 	private void handleWriteXlsx(Option opt, InputConfig cfg) {
 		cfg.setWriteAnswerSetsAsXlsx(true);
-		String outputPath = opt.getValue(InputConfig.DEFAULT_OUTFILE_PATH);
+		String outputPath = opt.getValue(InputConfig.DEFAULT_XLSX_OUTFILE_PATH);
 		cfg.setAnswerSetFileOutputPath(outputPath);
 	}
 
@@ -435,19 +435,19 @@ public class CommandLineParser {
 
 	private void handleWritePreprocessed(Option opt, InputConfig cfg) {
 		cfg.setWritePreprocessed(true);
-		String preprocessedPath = opt.getValue(InputConfig.DEFAULT_PREPROC_TARGET);
+		String preprocessedPath = opt.getValue(InputConfig.DEFAULT_PREPROC_TARGET_FILE);
 		cfg.setPreprocessedPath(preprocessedPath);
 	}
 
 	private void handleWriteDepgraph(Option opt, InputConfig cfg) {
 		cfg.setWriteDependencyGraph(true);
-		String depgraphPath = opt.getValue(InputConfig.DEFAULT_DEPGRAPH_TARGET);
+		String depgraphPath = opt.getValue(InputConfig.DEFAULT_DEPGRAPH_TARGET_FILE);
 		cfg.setDepgraphPath(depgraphPath);
 	}
 
 	private void handleWriteCompgraph(Option opt, InputConfig cfg) {
 		cfg.setWriteComponentGraph(true);
-		String compgraphPath = opt.getValue(InputConfig.DEFAULT_COMPGRAPH_TARGET);
+		String compgraphPath = opt.getValue(InputConfig.DEFAULT_COMPGRAPH_TARGET_FILE);
 		cfg.setCompgraphPath(compgraphPath);
 	}
 

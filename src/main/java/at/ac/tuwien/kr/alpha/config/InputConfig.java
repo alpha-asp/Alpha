@@ -16,13 +16,13 @@ public class InputConfig {
 	public static final boolean DEFAULT_LITERATE = false;
 	public static final int DEFAULT_NUM_ANSWER_SETS = 0;
 	public static final boolean DEFAULT_WRITE_DEPENDENCY_GRAPH = false;
-	public static final String DEFAULT_DEPGRAPH_TARGET = "depgraph.dot";
+	public static final String DEFAULT_DEPGRAPH_TARGET_FILE = "depgraph.dot";
 	public static final boolean DEFAULT_WRITE_COMPONENT_GRAPH = false;
-	public static final String DEFAULT_COMPGRAPH_TARGET = "compgraph.dot";
+	public static final String DEFAULT_COMPGRAPH_TARGET_FILE = "compgraph.dot";
 	public static final boolean DEFAULT_WRITE_PREPROCESSED_PROG = false;
-	public static final String DEFAULT_PREPROC_TARGET = "input.preproc.asp";
+	public static final String DEFAULT_PREPROC_TARGET_FILE = "input.preproc.asp";
 	public static final boolean DEFAULT_WRITE_XLSX = false;
-	public static final String DEFAULT_OUTFILE_PATH = "alphaAnswerSet"; // current directory, files named "alphaAnswerSet.{num}.{ext}"
+	public static final String DEFAULT_XLSX_OUTFILE_PATH = "alphaAnswerSet"; // current directory, files named "alphaAnswerSet.{num}.{ext}"
 
 	private List<String> aspStrings = new ArrayList<>();
 	private List<String> files = new ArrayList<>();
@@ -30,11 +30,11 @@ public class InputConfig {
 	private int numAnswerSets = InputConfig.DEFAULT_NUM_ANSWER_SETS;
 	private Set<String> desiredPredicates = new HashSet<>();
 	private boolean writeDependencyGraph = InputConfig.DEFAULT_WRITE_DEPENDENCY_GRAPH;
-	private String depgraphPath = InputConfig.DEFAULT_DEPGRAPH_TARGET;
+	private String depgraphPath = InputConfig.DEFAULT_DEPGRAPH_TARGET_FILE;
 	private boolean writeComponentGraph = InputConfig.DEFAULT_WRITE_COMPONENT_GRAPH;
-	private String compgraphPath = InputConfig.DEFAULT_COMPGRAPH_TARGET;
+	private String compgraphPath = InputConfig.DEFAULT_COMPGRAPH_TARGET_FILE;
 	private boolean writePreprocessed = InputConfig.DEFAULT_WRITE_PREPROCESSED_PROG;
-	private String preprocessedPath = InputConfig.DEFAULT_PREPROC_TARGET;
+	private String preprocessedPath = InputConfig.DEFAULT_PREPROC_TARGET_FILE;
 	// standard library externals are always loaded
 	private Map<String, PredicateInterpretation> predicateMethods = Externals.getStandardLibraryExternals();
 	private boolean writeAnswerSetsAsXlsx = InputConfig.DEFAULT_WRITE_XLSX;
