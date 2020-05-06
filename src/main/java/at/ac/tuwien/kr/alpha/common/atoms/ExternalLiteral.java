@@ -71,8 +71,7 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 
 	@Override
 	public Set<VariableTerm> getBindingVariables() {
-		// If the external atom is negative, then all variables of input and output are
-		// non-binding
+		// If the external atom is negative, then all variables of input and output are non-binding
 		// and there are no binding variables (like for ordinary atoms).
 		// If the external atom is positive, then variables of output are binding.
 
@@ -123,7 +122,8 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 		List<Term> input = getAtom().getInput();
 		List<Term> substitutes = new ArrayList<>(input.size());
 
-		// evaluate the external atom
+		// In preparation for evaluating the external atom, set the input values according
+		// to the partial substitution supplied by the grounder.
 		for (Term t : input) {
 			substitutes.add(t.substitute(partialSubstitution));
 		}
