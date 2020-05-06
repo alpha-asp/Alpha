@@ -12,9 +12,9 @@ import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 /**
  * An abstract representation of a rule with a specific type of @{link Head} (type parameter H)
  * 
- * @param <H> the type of head for this rule Copyright (c) 2019, the Alpha Team.
+ * @param <H> the type of head for this rule
  * 
- *        Copyright (c) 2017-2019, the Alpha Team.
+ * Copyright (c) 2017-2019, the Alpha Team.
  */
 public abstract class AbstractRule<H extends Head> {
 
