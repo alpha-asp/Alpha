@@ -106,7 +106,7 @@ public class InternalRule extends NormalRule {
 	}	
 	
 	public static InternalRule fromNormalRule(NormalRule rule) {
-		return new InternalRule(rule.isConstraint() ? null : new NormalHead(rule.getHead().getAtom()), new ArrayList<>(rule.getBody()));
+		return new InternalRule(rule.isConstraint() ? null : new NormalHead(rule.getHeadAtom()), new ArrayList<>(rule.getBody()));
 	}
 
 	/**
