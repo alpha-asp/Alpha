@@ -56,15 +56,16 @@ public class CommandLineParser {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CommandLineParser.class);
 
-	/*
-	 * Whenever a new command line option is added, perform the following steps: 1. Add it as a constant option below. 2.
-	 * Add the constant option into the
-	 * Options "CLI_OPTS" in the static initializer 3. Add a handler method for it and add the respective map entry in the
-	 * constructor with a method reference
-	 * to the handler.
-	 */
-	// "special", i.e. non-configuration options
 	//@formatter:off
+	/*
+	 * Whenever a new command line option is added, perform the following steps: 
+	 * 1. Add it as a constant option below. 
+	 * 2. Add the constant option into the Options "CLI_OPTS" in the static initializer.
+	 * 3. Add a handler method for it and add the respective map entry in initializeGlobalOptionHandlers 
+	 *    or initializeInputOptionHandlers with a method reference to the handler.
+	 */
+	
+	// "special", i.e. non-configuration options
 	private static final Option OPT_HELP = Option.builder("h").longOpt("help").hasArg(false).desc("shows this help").build();
 
 	// input-specific options
@@ -78,11 +79,11 @@ public class CommandLineParser {
 			.desc("provide the asp program as a string").build();
 	private static final Option OPT_LITERATE = Option.builder("l").longOpt("literate")
 			.desc("enable literate programming mode (default: " + InputConfig.DEFAULT_LITERATE + ")").build();
-	private static final Option OPT_WRITE_PREPROCESSED = Option.builder("pp").longOpt("write-preproc").hasArg(true).argName("target")
+	private static final Option OPT_WRITE_PREPROCESSED = Option.builder("wpp").longOpt("writePreprocessedProgram").hasArg(true).argName("target")
 			.desc("write the internal program that is passed into the solver after transformations to a file").build();
-	private static final Option OPT_WRITE_DEPGRAPH = Option.builder("dg").longOpt("depgraph").hasArg(true).argName("target")
+	private static final Option OPT_WRITE_DEPGRAPH = Option.builder("wdg").longOpt("writeDependencyGraph").hasArg(true).argName("target")
 			.desc("Write a dot file with the input program's dependency graph").build();
-	private static final Option OPT_WRITE_COMPGRAPH = Option.builder("cg").longOpt("compgraph").hasArg(true).argName("target")
+	private static final Option OPT_WRITE_COMPGRAPH = Option.builder("wcg").longOpt("writeComponentGraph").hasArg(true).argName("target")
 			.desc("Write a dot file with the input program's component graph").build();
 	private static final Option OPT_WRITE_XSLX = Option.builder("wx").longOpt("write-xlsx").hasArg(true).argName("path").type(String.class)
 			.desc("Write answer sets to excel files, i.e. xlsx workbooks (one workbook per answer set)").build();
@@ -121,9 +122,13 @@ public class CommandLineParser {
 	private static final Option OPT_NORMALIZATION_GRID = Option.builder("ng").longOpt("normalizationCountingGrid")
 			.desc("use counting grid normalization instead of sorting circuit for #count (default: " + SystemConfig.DEFAULT_USE_NORMALIZATION_GRID + ")")
 			.build();
-	private static final Option OPT_NO_EVAL_STRATIFIED = Option.builder("nse").longOpt("disable-stratified-eval").desc("Disable stratified evaluation").build();
+	private static final Option OPT_NO_EVAL_STRATIFIED = Option.builder("dse").longOpt("disableStratifiedEvaluation")
+			.desc("Disable stratified evaluation")
+			.build();
 	private static final Option OPT_NO_NOGOOD_DELETION = Option.builder("dnd").longOpt("disableNoGoodDeletion")
-			.desc("disable the deletion of (learned, little active) nogoods (default: " + SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION + ")").build();
+			.desc("disable the deletion of (learned, little active) nogoods (default: " 
+					+ SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION + ")")
+			.build();
 	private static final Option OPT_GROUNDER_TOLERANCE_CONSTRAINTS = Option.builder("gtc").longOpt("grounderToleranceConstraints")
 			.desc("grounder tolerance for constraints (default: " + SystemConfig.DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS + ")")
 			.hasArg().argName("tolerance")
@@ -133,7 +138,8 @@ public class CommandLineParser {
 			.hasArg().argName("tolerance")
 			.build();
 	private static final Option OPT_GROUNDER_ACCUMULATOR_ENABLED = Option.builder("acc").longOpt("enableAccumulator")
-			.desc("activates the accumulator grounding strategy by disabling removal of instances from grounder memory in certain cases (default: " + SystemConfig.DEFAULT_GROUNDER_ACCUMULATOR_ENABLED + ")")
+			.desc("activates the accumulator grounding strategy by disabling removal of instances from grounder memory in certain cases (default: " 
+					+ SystemConfig.DEFAULT_GROUNDER_ACCUMULATOR_ENABLED + ")")
 			.build();
 	//@formatter:on
 
@@ -188,10 +194,9 @@ public class CommandLineParser {
 
 	/**
 	 * Creates a new <code>CommandLineParser</code>. The abortAction described below is passed into the constructor
-	 * externally in order to avoid strongly
-	 * coupling this class to any other part of the application. Especially an abortAction - which likely will include some
-	 * call like System.exit({state}) -
-	 * should not be specified by utility classes themselves, but rather by the application's main class.
+	 * externally in order to avoid strongly coupling this class to any other part of the application. Especially an
+	 * abortAction - which likely will include some call like System.exit({state}) - should not be specified by utility
+	 * classes themselves, but rather by the application's main class.
 	 * 
 	 * @param cmdLineSyntax a string describing the basic call syntax for the application binary, e.g. "java -jar
 	 *                      somejar.jar"
@@ -211,7 +216,7 @@ public class CommandLineParser {
 		 * below put invocations are used to "register" the handler methods for each commandline option
 		 */
 		// help is handled separately, therefore dummy handler
-		this.globalOptionHandlers.put(CommandLineParser.OPT_HELP.getOpt(), (o, c) -> { });
+		this.globalOptionHandlers.put(CommandLineParser.OPT_HELP.getOpt(), (o, c) -> {});
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER.getOpt(), this::handleGrounder);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_SOLVER.getOpt(), this::handleSolver);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NOGOOD_STORE.getOpt(), this::handleNogoodStore);
@@ -227,7 +232,6 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_JUSTIFICATION.getOpt(), this::handleNoJustification);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NORMALIZATION_GRID.getOpt(), this::handleNormalizationGrid);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_EVAL_STRATIFIED.getOpt(), this::handleDisableStratifedEval);
-		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_NO_NOGOOD_DELETION.getOpt(), this::handleNoNoGoodDeletion);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS.getOpt(), this::handleGrounderToleranceConstraints);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES.getOpt(), this::handleGrounderToleranceRules);
