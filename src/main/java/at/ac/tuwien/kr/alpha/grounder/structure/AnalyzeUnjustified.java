@@ -2,6 +2,9 @@ package at.ac.tuwien.kr.alpha.grounder.structure;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -12,9 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -56,12 +56,13 @@ public class AnalyzeUnjustified {
 		if (!(atom instanceof BasicAtom)) {
 			throw oops("Starting atom must be a BasicAtom, but received: " + atom + " of type: " + atom.getClass());
 		}
+		//@formatter:off
 		// Calling code must make sure it is a BasicAtom and take precautions.
 		// Potential solutions:
 		// If atom instanceof RuleAtom and atom is MBT, then the corresponding rule body has a BasicAtom that is MBT.
 		// If atom instanceof ChoiceAtom and atom is MBT, then the corresponding rule body has a BasicAtom that is MBT.
-		// If atom instanceof RuleAtom and atom is FALSE, then this comes from a violated constraint in the end and the corresponding rule body can be taken as
-		// the single rule deriving the RuleAtom.
+		// If atom instanceof RuleAtom and atom is FALSE, then this comes from a violated constraint in the end and the corresponding rule body can be taken as the single rule deriving the RuleAtom.
+		//@formatter:on
 		assignedAtoms = new LinkedHashMap<>();
 		for (int i = 1; i <= atomStore.getMaxAtomId(); i++) {
 			ThriceTruth truth = currentAssignment.getTruth(i);
@@ -110,7 +111,8 @@ public class AnalyzeUnjustified {
 		// Construct set of all 'rules' such that head unifies with p.
 		List<RuleAndUnifier> rulesUnifyingWithP = rulesHeadUnifyingWith(p);
 		log("Rules unifying with {} are {}", p, rulesUnifyingWithP);
-		rulesLoop: for (RuleAndUnifier ruleUnifier : rulesUnifyingWithP) {
+		rulesLoop: 
+			for (RuleAndUnifier ruleUnifier : rulesUnifyingWithP) {
 			Unifier sigma = ruleUnifier.unifier;
 			List<Literal> bodyR = ruleUnifier.ruleBody;
 			Atom sigmaHr = ruleUnifier.originalHead.substitute(sigma);
@@ -217,7 +219,8 @@ public class AnalyzeUnjustified {
 
 			log("Checking atoms over predicate: {}", b.getPredicate());
 			AssignedAtomsIterator assignedAtomsOverPredicate = getAssignedAtomsOverPredicate(b.getPredicate());
-			atomLoop: while (assignedAtomsOverPredicate.hasNext()) {
+			atomLoop: 
+				while (assignedAtomsOverPredicate.hasNext()) {
 				Atom atom = assignedAtomsOverPredicate.next();
 				// Check that atom is justified/true.
 				log("Checking atom: {}", atom);
