@@ -65,7 +65,7 @@ public class GroundConflictNoGoodLearner {
 	 */
 	public int computeConflictFreeBackjumpingLevel(NoGood violatedNoGood) {
 		// If violatedNoGood is unary, backjump to decision level 0 if it can be satisfied.
-		if (violatedNoGood.size() == 1) {
+		if (violatedNoGood.isUnary()) {
 			int literal = violatedNoGood.getLiteral(0);
 			int literalDecisionLevel = assignment.getRealWeakDecisionLevel(atomOf(literal));
 			if (literalDecisionLevel > 0) {
