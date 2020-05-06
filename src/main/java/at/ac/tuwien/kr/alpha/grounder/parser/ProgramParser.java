@@ -1,9 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
-
 import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -12,6 +8,10 @@ import org.antlr.v4.runtime.DefaultErrorStrategy;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
 
 import at.ac.tuwien.kr.alpha.CustomErrorListener;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
@@ -47,11 +47,15 @@ public class ProgramParser {
 	}
 
 	public InputProgram parse(CharStream stream) throws IOException {
+		//@formatter:off
 		/*
-		 * // In order to require less memory: use unbuffered streams and avoid constructing a full parse tree. ASPCore2Lexer lexer = new ASPCore2Lexer(new
-		 * UnbufferedCharStream(is)); lexer.setTokenFactory(new CommonTokenFactory(true)); final ASPCore2Parser parser = new ASPCore2Parser(new
-		 * UnbufferedTokenStream<>(lexer)); parser.setBuildParseTree(false);
+		 * // In order to require less memory: use unbuffered streams and avoid constructing a full parse tree. 
+		 * ASPCore2Lexer lexer = new ASPCore2Lexer(new UnbufferedCharStream(is)); 
+		 * lexer.setTokenFactory(new CommonTokenFactory(true)); 
+		 * final ASPCore2Parser parser = new ASPCore2Parser(new UnbufferedTokenStream<>(lexer)); 
+		 * parser.setBuildParseTree(false);
 		 */
+		//@formatter:on
 		CommonTokenStream tokens = new CommonTokenStream(new ASPCore2Lexer(stream));
 		final ASPCore2Parser parser = new ASPCore2Parser(tokens);
 
