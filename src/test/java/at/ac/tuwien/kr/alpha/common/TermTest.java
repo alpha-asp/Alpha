@@ -4,6 +4,8 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.LinkedList;
@@ -20,7 +22,8 @@ public class TermTest {
 
 	@Test
 	public void testTermReferenceEquality() {
-		// Terms must have a unique representation so that reference comparison is sufficient to check
+		// Terms must have a unique representation so that reference comparison is
+		// sufficient to check
 		// whether two terms are equal.
 		ConstantTerm<?> ta1 = ConstantTerm.getInstance("a");
 		ConstantTerm<?> ta2 = ConstantTerm.getInstance("a");
@@ -65,5 +68,24 @@ public class TermTest {
 
 		assertTrue(cto.compareTo(ft) < 0);
 		assertTrue(ft.compareTo(cto) > 0);
+	}
+
+	@Test
+	public void testStringVsConstantSymbolEquality() {
+		String theString = "string";
+		ConstantTerm<String> stringConstant = ConstantTerm.getInstance(theString);
+		ConstantTerm<String> constantSymbol = ConstantTerm.getSymbolicInstance(theString);
+		// Reference equality must hold for both the string constant and the constant
+		// symbol.
+		Assert.assertTrue(stringConstant == ConstantTerm.getInstance(theString));
+		ConstantTerm<String> sameConstantSymbol = ConstantTerm.getSymbolicInstance(theString);
+		Assert.assertTrue(constantSymbol == sameConstantSymbol);
+		// Make sure both hashCode and equals understand that stringConstant and
+		// constantSymbol are NOT the same thing!
+		Assert.assertNotEquals(stringConstant.hashCode(), constantSymbol.hashCode());
+		Assert.assertNotEquals(stringConstant, constantSymbol);
+		// This also applies to compareTo - it must behave in sync with equals and
+		// hashCode, i.e. return a non-zero result for non-equal objects
+		Assert.assertNotEquals(0, stringConstant.compareTo(constantSymbol));
 	}
 }

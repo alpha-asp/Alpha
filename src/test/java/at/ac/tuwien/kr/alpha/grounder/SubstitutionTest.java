@@ -27,6 +27,13 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+
+import java.util.Arrays;
+
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
@@ -40,16 +47,8 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.junit.Test;
+import at.ac.tuwien.kr.alpha.test.util.SubstitutionTestUtil;
 
-import java.util.Arrays;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-/**
- * Copyright (c) 2016-2018, the Alpha Team.
- */
 public class SubstitutionTest {
 	static final ProgramParser PARSER = new ProgramParser();
 
@@ -98,7 +97,7 @@ public class SubstitutionTest {
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
-		String printedString = NaiveGrounder.groundAndPrintRule(nonGroundRule, substitution);
+		String printedString = SubstitutionTestUtil.groundAndPrintRule(nonGroundRule, substitution);
 		assertEquals("x :- p(a, b), not q(a, b).", printedString);
 	}
 
@@ -132,7 +131,7 @@ public class SubstitutionTest {
 		Substitution substitution = new Substitution();
 		substitution.unifyTerms(X, A);
 		substitution.unifyTerms(Y, B);
-		String printedString = NaiveGrounder.groundLiteralToString(atom.toLiteral(!negated), substitution, true);
+		String printedString = SubstitutionTestUtil.groundLiteralToString(atom.toLiteral(!negated), substitution, true);
 		assertEquals((negated ? "not " : "") + "p(a, b)", printedString);
 	}
 

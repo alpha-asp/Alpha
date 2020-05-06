@@ -95,6 +95,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private final Map<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
+	private final Map<InternalRule, HashSet<Substitution>> knownGroundingSubstitutions = new HashMap<>();
 	private final Map<Integer, InternalRule> knownNonGroundRules;
 
 	private ArrayList<InternalRule> fixedRules = new ArrayList<>();
@@ -658,31 +659,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	@Override
 	public void forgetAssignment(int[] atomIds) {
 		throw new UnsupportedOperationException("Forgetting assignments is not implemented");
-	}
-
-	public static String groundAndPrintRule(InternalRule rule, Substitution substitution) {
-		StringBuilder ret = new StringBuilder();
-		if (!rule.isConstraint()) {
-			Atom groundHead = rule.getHeadAtom().substitute(substitution);
-			ret.append(groundHead.toString());
-		}
-		ret.append(" :- ");
-		boolean isFirst = true;
-		for (Atom bodyAtom : rule.getBodyAtomsPositive()) {
-			ret.append(groundLiteralToString(bodyAtom.toLiteral(), substitution, isFirst));
-			isFirst = false;
-		}
-		for (Atom bodyAtom : rule.getBodyAtomsNegative()) {
-			ret.append(groundLiteralToString(bodyAtom.toLiteral(false), substitution, isFirst));
-			isFirst = false;
-		}
-		ret.append(".");
-		return ret.toString();
-	}
-
-	static String groundLiteralToString(Literal literal, Substitution substitution, boolean isFirst) {
-		Literal groundLiteral = literal.substitute(substitution);
-		return  (isFirst ? "" : ", ") + groundLiteral.toString();
 	}
 
 	@Override
