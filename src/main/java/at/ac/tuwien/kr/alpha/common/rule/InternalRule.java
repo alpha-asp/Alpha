@@ -52,11 +52,6 @@ import at.ac.tuwien.kr.alpha.grounder.Unifier;
 public class InternalRule extends NormalRule {
 
 	private static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
-	
-	@VisibleForTesting
-	public static void resetIdGenerator() {
-		InternalRule.ID_GENERATOR.resetGenerator();
-	}
 
 	private final int ruleId;
 
@@ -105,15 +100,11 @@ public class InternalRule extends NormalRule {
 		this.groundingOrders.computeGroundingOrders();
 	}
 
-	/**
-	 * Copy-constructor
-	 * 
-	 * @param rule the rule to copy
-	 */
-	public InternalRule(InternalRule rule) {
-		this(rule.isConstraint() ? null : new NormalHead(rule.getHead().getAtom()), new ArrayList<>(rule.getBody()));
-	}
-
+	@VisibleForTesting
+	public static void resetIdGenerator() {
+		InternalRule.ID_GENERATOR.resetGenerator();
+	}	
+	
 	public static InternalRule fromNormalRule(NormalRule rule) {
 		return new InternalRule(rule.isConstraint() ? null : new NormalHead(rule.getHead().getAtom()), new ArrayList<>(rule.getBody()));
 	}
@@ -142,7 +133,7 @@ public class InternalRule extends NormalRule {
 		Atom renamedHeadAtom = headAtom.substitute(variableReplacement);
 		ArrayList<Literal> renamedBody = new ArrayList<>(this.getBody().size());
 		for (Literal literal : this.getBody()) {
-			renamedBody.add((Literal) literal.substitute(variableReplacement));
+			renamedBody.add(literal.substitute(variableReplacement));
 		}
 		return new InternalRule(new NormalHead(renamedHeadAtom), renamedBody);
 	}
@@ -157,16 +148,25 @@ public class InternalRule extends NormalRule {
 
 	@Override
 	public String toString() {
-		return join(join((isConstraint() ? "" : this.getHeadAtom() + " ") + ":- ", this.bodyAtomsPositive, this.bodyAtomsNegative.size() > 0 ? ", not " : ""),
-				this.bodyAtomsNegative, ", not ", ".");
+		//@formatter:off
+		return join(
+				join(
+						(isConstraint() ? "" : this.getHeadAtom() + " ") + ":- ", 
+						this.bodyAtomsPositive, 
+						this.bodyAtomsNegative.size() > 0 ? ", not " : ""
+				),
+				this.bodyAtomsNegative, 
+				", not ", 
+				".");
+		//@formatter:on
 	}
 
 	public List<Atom> getBodyAtomsPositive() {
-		return Collections.unmodifiableList(this.bodyAtomsPositive);
+		return this.bodyAtomsPositive;
 	}
 
 	public List<Atom> getBodyAtomsNegative() {
-		return Collections.unmodifiableList(this.bodyAtomsNegative);
+		return this.bodyAtomsNegative;
 	}
 
 	public RuleGroundingOrders getGroundingOrders() {
