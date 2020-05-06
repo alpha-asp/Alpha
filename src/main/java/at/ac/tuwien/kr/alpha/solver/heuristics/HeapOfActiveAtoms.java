@@ -44,9 +44,11 @@ import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 /**
  * Manages a heap of atoms that are assigned an activity, such that the most active atom
  * resides at the top of the heap.
- * In contrast to standard heuristics like VSIDS, activities are not periodically decayed but
- * the increment added when increasing activities is constantly increased itself, which has the
+ * Activities are not periodically decayed but an increasing increment is added for each updated activity, which has the
  * same effect.
+ *
+ * The heap contains only (once-active) choice atoms, i.e., the heap may contain choice points that are currently
+ * inactive but once were active.
  *
  */
 public class HeapOfActiveAtoms {
@@ -57,7 +59,7 @@ public class HeapOfActiveAtoms {
 	static final double SCORE_EPSILON = 1E-100;
 
 	boolean[] incrementedActivityScores = new boolean[0];
-	boolean[] occursInHeap = new boolean[0];
+	private boolean[] occursInHeap = new boolean[0];	// Stores whether an atom is currently in the heap (or a left-over duplicate).
 	double[] activityScores = new double[0];
 	final PriorityQueue<Integer> heap = new PriorityQueue<>(new AtomActivityComparator().reversed());
 
@@ -215,7 +217,13 @@ public class HeapOfActiveAtoms {
 	 * Returns the atom with the highest activity score and removes it from the heap.
 	 */
 	Integer getMostActiveAtom() {
-		Integer mostActiveAtom = heap.poll();
+		Integer mostActiveAtom;
+		// Here we lazily remove atoms from the heap that were once added and had their activity increased
+		// (which creates a duplicate entry in the heap).
+		// Remove the topmost atom from the heap until non-duplicate one is obtained.
+		do {
+			mostActiveAtom = heap.poll();
+		} while (mostActiveAtom != null && !occursInHeap[mostActiveAtom]);
 		if (mostActiveAtom != null) {
 			occursInHeap[mostActiveAtom] = false;
 		}
@@ -249,10 +257,9 @@ public class HeapOfActiveAtoms {
 			normalizeActivityScores();
 		}
 
-		if (choiceManager.isActiveChoiceAtom(atom)) {
+		if (occursInHeap[atom]) {
 			numAddedToHeapByActivity++;
-			occursInHeap[atom] = true;
-			heap.add(atom); // ignores the fact that atom may already be in the heap for performance reasons (may be revised in future)
+			heap.add(atom); // For performance reason ignores that the atom may already be in the heap.
 		}
 	}
 
@@ -294,10 +301,7 @@ public class HeapOfActiveAtoms {
 
 		@Override
 		public void callbackOnChange(int atom) {
-			if (!occursInHeap[atom] && atom < activityScores.length) {
-				/* if atom has no activity score, probably the atom is still being buffered
-				   by DependencyDrivenVSIDSHeuristic and will get an initial activity
-				   when the buffer is ingested */
+			if (!occursInHeap[atom]) {
 				occursInHeap[atom] = true;
 				heap.add(atom);
 			}
