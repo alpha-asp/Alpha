@@ -14,9 +14,13 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 /**
- * Represents a ground-instance enumeration atom of form: enum(enumId, groundTerm, sequenceNo). The semantics of this is: if enum(A,T1, N1) and enum(A,T2,N2)
- * are both true and T1 != T2, then N1 != N2. Furthermore, If enum(A,T1,N1) is true with N1 > 0 then enum(A,T2,N1 - 1) is true for some T1 != T2 and both, T1
- * and T2, are ground instances the grounder encountered during the search so far.
+ * Represents a ground-instance enumeration atom of form:
+ * enum(enumId, groundTerm, sequenceNo).
+ * 
+ * The semantics of this is:
+ * if enum(A,T1, N1) and enum(A,T2,N2) are both true and T1 != T2, then N1 != N2.
+ * Furthermore, If enum(A,T1,N1) is true with N1 > 0 then enum(A,T2,N1 - 1) is true for some T1 != T2 and
+ * both, T1 and T2, are ground instances the grounder encountered during the search so far.
  *
  * Copyright (c) 2017, the Alpha Team.
  */
@@ -68,7 +72,8 @@ public class EnumerationAtom extends BasicAtom {
 	}
 
 	/**
-	 * Tests whether the given atom is true under a given substitution. An EnumerationAtom is true under a substitution iff, for the substituted atom the
+	 * Tests whether the given atom is true under a given substitution. An EnumerationAtom is true under a substitution iff,
+	 * for the substituted atom the
 	 * following holds true: ENUMERATIONS.get(atom.terms[0]).get(atom.terms[1]).equals(atom.terms[2])
 	 * 
 	 * @param atom
