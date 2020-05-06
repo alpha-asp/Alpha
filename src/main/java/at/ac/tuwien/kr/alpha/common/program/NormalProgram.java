@@ -9,7 +9,7 @@ import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
 /**
- * A program that only contains NormalRules
+ * A program that only contains NormalRules.
  * 
  * Copyright (c) 2019, the Alpha Team.
  */
