@@ -32,8 +32,8 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 
 	public InternalProgram(List<InternalRule> rules, List<Atom> facts) {
 		super(rules, facts, null);
-		this.analyzeFacts(facts);
-		this.analyzeRules(rules);
+		this.recordFacts(facts);
+		this.recordRules(rules);
 	}
 
 	protected static ImmutablePair<List<Atom>, List<InternalRule>> internalizeFactsAndRules(NormalProgram normalProgram) {
@@ -59,7 +59,7 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 		return new InternalProgram(factsAndRules.right, factsAndRules.left);
 	}
 
-	private void analyzeFacts(List<Atom> facts) {
+	private void recordFacts(List<Atom> facts) {
 		List<Instance> tmpInstances;
 		Predicate tmpPredicate;
 		for (Atom fact : facts) {
@@ -70,7 +70,7 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 		}
 	}
 
-	private Map<Integer, InternalRule> analyzeRules(List<InternalRule> rules) {
+	private Map<Integer, InternalRule> recordRules(List<InternalRule> rules) {
 		Map<Integer, InternalRule> retVal = new HashMap<>();
 		for (InternalRule rule : rules) {
 			this.rulesById.put(rule.getRuleId(), rule);
