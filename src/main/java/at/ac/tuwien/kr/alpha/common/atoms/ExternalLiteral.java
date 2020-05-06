@@ -157,7 +157,7 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 	 * 
 	 * @param externalMethodResult The term lists obtained from evaluating the external atom
 	 *                (i.e. calling the java method) encapsulated by this literal
-	 * @return true iff no list in output equals the external atom's output term
+	 * @return true iff no list in externalMethodResult equals the external atom's output term
 	 *         list as substituted by the grounder, false otherwise
 	 */
 	private boolean isNegatedLiteralSatisfied(Set<List<ConstantTerm<?>>> externalMethodResult) {
