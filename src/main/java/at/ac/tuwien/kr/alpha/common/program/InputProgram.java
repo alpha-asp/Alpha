@@ -66,8 +66,6 @@ public class InputProgram extends AbstractProgram<BasicRule> {
 
 	/**
 	 * Builder to be used instead of accumulate(), ensuring that an @{link AbstractProgram} is immutable
-	 * 
-	 * Copyright (c) 2019, the Alpha Team.
 	 */
 	public static class Builder {
 
