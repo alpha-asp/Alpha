@@ -25,7 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.grounder.transformation.impl;
+package at.ac.tuwien.kr.alpha.grounder.transformation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,13 +40,12 @@ import java.util.Map;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.program.impl.NormalProgram;
-import at.ac.tuwien.kr.alpha.common.rule.head.impl.NormalHead;
-import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
+import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
+import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
-import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 
 /**
  * Removes variable equalities from rules by replacing one variable with the other. Copyright (c) 2017-2019, the Alpha Team.

@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.util.Map;
 
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
 public class Programs {

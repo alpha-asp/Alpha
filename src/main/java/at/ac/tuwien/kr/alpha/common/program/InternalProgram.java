@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.common.program.impl;
+package at.ac.tuwien.kr.alpha.common.program;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,9 +13,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.program.AbstractProgram;
-import at.ac.tuwien.kr.alpha.common.rule.impl.InternalRule;
-import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
+import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
 import at.ac.tuwien.kr.alpha.grounder.FactIntervalEvaluator;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
 

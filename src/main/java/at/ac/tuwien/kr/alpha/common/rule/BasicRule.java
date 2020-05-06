@@ -25,12 +25,11 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.common.rule.impl;
+package at.ac.tuwien.kr.alpha.common.rule;
 
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.rule.AbstractRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 
 /**

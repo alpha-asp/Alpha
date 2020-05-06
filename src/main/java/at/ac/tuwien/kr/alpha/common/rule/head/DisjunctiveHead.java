@@ -1,7 +1,6 @@
-package at.ac.tuwien.kr.alpha.common.rule.head.impl;
+package at.ac.tuwien.kr.alpha.common.rule.head;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 
 import java.util.List;
 

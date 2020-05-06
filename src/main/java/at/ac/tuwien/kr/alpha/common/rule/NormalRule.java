@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.common.rule.impl;
+package at.ac.tuwien.kr.alpha.common.rule;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,9 +6,8 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.rule.AbstractRule;
-import at.ac.tuwien.kr.alpha.common.rule.head.impl.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.rule.head.impl.NormalHead;
+import at.ac.tuwien.kr.alpha.common.rule.head.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 
 /**
  * A rule that has a normal head, i.e. just one head atom, no disjunction or choice heads allowed Currently, any constructs such as aggregates, intervals, etc.

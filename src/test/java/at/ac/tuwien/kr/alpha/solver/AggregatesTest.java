@@ -32,13 +32,13 @@ import java.io.IOException;
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
-import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
-import at.ac.tuwien.kr.alpha.common.program.impl.NormalProgram;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.grounder.transformation.impl.CardinalityNormalization;
-import at.ac.tuwien.kr.alpha.grounder.transformation.impl.SumNormalization;
+import at.ac.tuwien.kr.alpha.grounder.transformation.CardinalityNormalization;
+import at.ac.tuwien.kr.alpha.grounder.transformation.SumNormalization;
 
 /**
  * Tests if correct answer sets for programs containing aggregates are computed.

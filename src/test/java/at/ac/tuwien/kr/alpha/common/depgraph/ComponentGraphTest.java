@@ -17,9 +17,9 @@ import java.util.Set;
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph.SCComponent;
-import at.ac.tuwien.kr.alpha.common.program.impl.AnalyzedProgram;
-import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
-import at.ac.tuwien.kr.alpha.common.program.impl.NormalProgram;
+import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 
 public class ComponentGraphTest {
 

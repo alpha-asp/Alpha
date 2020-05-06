@@ -13,11 +13,11 @@ import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.program.AbstractProgram;
-import at.ac.tuwien.kr.alpha.common.program.impl.InputProgram;
-import at.ac.tuwien.kr.alpha.common.program.impl.NormalProgram;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
+import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
+import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
-import at.ac.tuwien.kr.alpha.grounder.transformation.impl.ChoiceHeadToNormal;
-import at.ac.tuwien.kr.alpha.grounder.transformation.impl.IntervalTermToIntervalAtom;
 
 public class ProgramTransformationTest {
 

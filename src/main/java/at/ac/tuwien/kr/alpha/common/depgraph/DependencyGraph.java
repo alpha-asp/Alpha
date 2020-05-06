@@ -38,10 +38,10 @@ import java.util.Map;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.rule.impl.InternalRule;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 
 /**
- * Internal representation of an {@link at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram}'s dependency graph. The dependency graph tracks dependencies
+ * Internal representation of an {@link at.ac.tuwien.kr.alpha.common.program.InternalProgram}'s dependency graph. The dependency graph tracks dependencies
  * between rules of a program. Each {@link Node} of the graph represents a {@link Predicate} occurring in the program. A node has an incoming {@link Edge} for
  * every {@link Literal} in some rule body that depends on it, i.e. the predicate of the literal in question is the same as that of the node. The "sign" flag of
  * an {@link Edge} indicates whether the dependency is a positive or negative one, i.e. if the atom in question is preceded by a "not".

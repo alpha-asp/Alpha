@@ -34,14 +34,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.common.program.impl.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
+
+import java.util.Set;
 
 /**
  * Representation of an {@link InternalProgram}'s component graph, i.e. the directed acyclic graph resulting from condensing the program's
  * {@link DependencyGraph} into its strongly connected components. Needed in order to calculate stratifications from which an evaluation order for the
- * {@link at.ac.tuwien.kr.alpha.grounder.transformation.impl.StratifiedEvaluation} transformation can be derived.
+ * {@link at.ac.tuwien.kr.alpha.grounder.transformation.StratifiedEvaluation} transformation can be derived.
  * 
  * Copyright (c) 2019, the Alpha Team.
  */

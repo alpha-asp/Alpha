@@ -1,12 +1,11 @@
-package at.ac.tuwien.kr.alpha.common.program.impl;
+package at.ac.tuwien.kr.alpha.common.program;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.program.AbstractProgram;
-import at.ac.tuwien.kr.alpha.common.rule.impl.BasicRule;
-import at.ac.tuwien.kr.alpha.common.rule.impl.NormalRule;
+import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
+import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
 /**

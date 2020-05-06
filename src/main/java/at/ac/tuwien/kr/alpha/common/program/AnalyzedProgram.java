@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.common.program.impl;
+package at.ac.tuwien.kr.alpha.common.program;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -9,7 +9,7 @@ import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph;
 import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
 import at.ac.tuwien.kr.alpha.common.depgraph.SccResult;
 import at.ac.tuwien.kr.alpha.common.depgraph.StronglyConnectedComponentsHelper;
-import at.ac.tuwien.kr.alpha.common.rule.impl.InternalRule;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 
 public class AnalyzedProgram extends InternalProgram {
 
