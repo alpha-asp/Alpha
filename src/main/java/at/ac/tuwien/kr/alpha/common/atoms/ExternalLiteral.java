@@ -172,13 +172,13 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 				}
 			}
 			if (outputMatches) {
-				// we found one term list where all terms match the ground output terms of the
+				// We found one term list where all terms match the ground output terms of the
 				// external atom, therefore the atom is true and the (negative) literal false.
 				return false;
 			}
 		}
-		// we checked all term list and none matches the ground output terms, therefore
-		// the external atom is false, making the literal true
+		// We checked all term list and none matches the ground output terms, therefore
+		// the external atom is false, making the literal true.
 		return true;
 	}
 
