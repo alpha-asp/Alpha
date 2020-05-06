@@ -166,7 +166,7 @@ public class AspStandardLibraryTest {
 		for (AnswerSet as : answerSets) {
 			for (Atom atom : as.getPredicateInstances(Predicate.getInstance("resultstring", 1))) {
 				String resultstring = ((ConstantTerm<String>) atom.getTerms().get(0)).getObject();
-				LOGGER.info("ResultSttring is {}", resultstring);
+				LOGGER.debug("ResultString is {}", resultstring);
 				Assert.assertEquals(6, resultstring.length());
 				Assert.assertTrue(resultstring.contains("foo"));
 			}
