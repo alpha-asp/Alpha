@@ -99,21 +99,21 @@ public class AspStandardLibraryTest {
 		Assert.assertFalse(AspStandardLibrary.datetimeIsBefore(2015, 5, 13, 12, 1, 33, 2003, 1, 1, 0, 0, 1));
 		Assert.assertFalse(AspStandardLibrary.datetimeIsBefore(2022, 2, 22, 22, 22, 22, 2022, 2, 22, 22, 22, 22));
 	}
-	
+
 	@Test
 	public void datetimeEqual() {
 		Assert.assertTrue(AspStandardLibrary.datetimeIsEqual(1990, 2, 14, 15, 16, 17, 1990, 2, 14, 15, 16, 17));
 		Assert.assertFalse(AspStandardLibrary.datetimeIsEqual(2015, 5, 13, 12, 1, 33, 2003, 1, 1, 0, 0, 1));
-	}	
+	}
 
 	@Test
 	public void datetimeBeforeOrEqual() {
 		Assert.assertTrue(AspStandardLibrary.datetimeIsBeforeOrEqual(1990, 2, 14, 15, 16, 17, 1990, 3, 1, 0, 59, 1));
 		Assert.assertFalse(AspStandardLibrary.datetimeIsBeforeOrEqual(2015, 5, 13, 12, 1, 33, 2003, 1, 1, 0, 0, 1));
 		Assert.assertTrue(AspStandardLibrary.datetimeIsBeforeOrEqual(2022, 2, 22, 22, 22, 22, 2022, 2, 22, 22, 22, 22));
-		
+
 	}
-	
+
 	@Test
 	public void matchesRegex() {
 		Assert.assertTrue(AspStandardLibrary.stringMatchesRegex("Blaaaaa Blubbb!!", "Bla+ Blub+!!"));
@@ -162,6 +162,7 @@ public class AspStandardLibraryTest {
 		Alpha alpha = new Alpha();
 		Program prog = alpha.readProgram(InputConfig.forString(NEGATED_EXTERNAL_ASP));
 		Set<AnswerSet> answerSets = alpha.solve(prog).collect(Collectors.toSet());
+		Assert.assertEquals(31, answerSets.size());
 		// Verify every result string has length 6 and contains "foo"
 		for (AnswerSet as : answerSets) {
 			for (Atom atom : as.getPredicateInstances(Predicate.getInstance("resultstring", 1))) {
