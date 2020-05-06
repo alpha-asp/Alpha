@@ -28,8 +28,7 @@ public class FixedInterpretationLiteralsTest {
 	/**
 	 * Dummy method to test external atoms with more than one output term list.
 	 * Dummy input param which is not used exists solely to avoid producing an edge
-	 * case
-	 * where there is output, but no input
+	 * case where there is output, but no input
 	 */
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static Set<List<ConstantTerm<String>>> connection(String dummy) {
