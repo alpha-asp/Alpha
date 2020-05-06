@@ -147,25 +147,6 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		return node.getText();
 	}
 
-	/*protected CommonParsedObject aggregateResult(CommonParsedObject aggregate, CommonParsedObject nextResult) {
-		ListOfParsedObjects aggList;
-		if (aggregate instanceof ListOfParsedObjects) {
-			aggList = (ListOfParsedObjects) aggregate;
-			((ListOfParsedObjects) aggregate).add(nextResult);
-		} else {
-			aggList = new ListOfParsedObjects(new ArrayList<>());
-		}
-		if (aggregate != null) { // default result is null, ignore it
-			aggList.add(aggregate);
-		}
-		if (nextResult instanceof ListOfParsedObjects) {
-			aggList.addAll((ListOfParsedObjects) nextResult);
-		} else {
-			aggList.add(nextResult);
-		}
-		return aggList;
-	}*/
-
 	@Override
 	public InputProgram visitProgram(ASPCore2Parser.ProgramContext ctx) {
 		// program : statements? query?;
