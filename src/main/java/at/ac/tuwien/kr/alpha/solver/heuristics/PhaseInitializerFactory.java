@@ -31,7 +31,10 @@ public abstract class PhaseInitializerFactory {
 	}
 
 	public static PhaseInitializer getInstance(String phaseInitializerName, Random random, AtomStore atomStore) {
-		InitialPhase initialPhase = InitialPhase.valueOf(phaseInitializerName.toUpperCase());
+		return getInstance(InitialPhase.valueOf(phaseInitializerName.toUpperCase()), random, atomStore);
+	}
+
+	public static PhaseInitializer getInstance(InitialPhase initialPhase, Random random, AtomStore atomStore) {
 		switch (initialPhase) {
 			case ALLTRUE:
 				return getPhaseInitializerAllTrue();
@@ -42,7 +45,7 @@ public abstract class PhaseInitializerFactory {
 			case RULESTRUEATOMSFALSE:
 				return getPhaseInitializerRulesTrueRestFalse(atomStore);
 			default:
-				throw new IllegalArgumentException("Unknown phase initializer requested:" + phaseInitializerName);
+				throw new IllegalArgumentException("Unknown phase initializer requested:" + initialPhase.name());
 		}
 	}
 
