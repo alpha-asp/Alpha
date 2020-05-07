@@ -102,16 +102,16 @@ public class ChainedBranchingHeuristics implements BranchingHeuristic {
 		}
 	}
 
+	public BranchingHeuristic getFirstElement() {
+		return chain.get(0);
+	}
+
 	public BranchingHeuristic getLastElement() {
 		return chain.get(chain.size() - 1);
 	}
 	
 	public static ChainedBranchingHeuristics chainOf(BranchingHeuristic... branchingHeuristics) {
 		return new ChainedBranchingHeuristics(branchingHeuristics);
-	}
-
-	public BranchingHeuristic getFirstElement() {
-		return chain.get(0);
 	}
 
 	/**

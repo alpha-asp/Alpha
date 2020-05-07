@@ -176,8 +176,8 @@ public class VSIDSWithPhaseSaving implements ActivityBasedBranchingHeuristic {
 			}
 			if (choiceManager.isActiveChoiceAtom(mostActiveAtom)) {
 				if (maxActivity > activity) {
-					double lostActitivyNormalized = (maxActivity - activity) / heapOfActiveAtoms.getCurrentActivityIncrement();
-					activityDecrease += lostActitivyNormalized;
+					double lostActivityNormalized = (maxActivity - activity) / heapOfActiveAtoms.getCurrentActivityIncrement();
+					activityDecrease += lostActivityNormalized;
 				}
 				return mostActiveAtom;
 			}
