@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2017, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -44,7 +44,7 @@ public final class SolverFactory {
 		final boolean debugInternalChecks = config.isDebugInternalChecks();
 		final HeuristicsConfiguration heuristicsConfiguration = buildHeuristicsConfiguration(config);
 		final PhaseInitializerFactory.PhaseInitializer phaseInitializer =
-			PhaseInitializerFactory.getInstance(config.getPhaseInitializerName(), random, atomStore);
+			PhaseInitializerFactory.getInstance(config.getPhaseInitializer(), random, atomStore);
 		final WritableAssignment assignment = new TrailAssignment(atomStore, phaseInitializer, debugInternalChecks);
 
 		NoGoodStore store;
