@@ -52,7 +52,6 @@ import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -241,7 +240,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			}
 			choiceManager.backjump(backjumpLevel);
 			if (store.propagate() != null) {
-				throw  oops("Violated NoGood after backtracking.");
+				throw oops("Violated NoGood after backtracking.");
 			}
 		}
 		return true;
@@ -300,7 +299,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		}
 		ProgramAnalyzingGrounder analyzingGrounder = (ProgramAnalyzingGrounder) grounder;
 		// Justify one MBT assigned atom.
-		Integer atomToJustify = assignment.getBasicAtomAssignedMBT();
+		int atomToJustify = assignment.getBasicAtomAssignedMBT();
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Searching for justification of {} / {}", atomToJustify, atomStore.atomToString(atomToJustify));
 			LOGGER.debug("Assignment is (TRUE part only): {}", translate(assignment.getTrueAssignments()));
@@ -485,20 +484,26 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				continue;
 			}
 
-			final NoGood learnedNoGood = fixContradiction(entry, conflictCause);
-			if (learnedNoGood != null) {
-				noGoodsToAdd.addFirst(new AbstractMap.SimpleEntry<>(grounder.register(learnedNoGood), learnedNoGood));
+			if (!fixContradiction(entry, conflictCause)) {
+				return false;
 			}
 		}
 		return true;
 	}
 
-	private NoGood fixContradiction(Map.Entry<Integer, NoGood> noGoodEntry, ConflictCause conflictCause) {
+	/**
+	 * Attempts to fix a given conflict that arose from adding a nogood.
+	 * @param noGoodEntry the description of the NoGood that caused the conflict.
+	 * @param conflictCause a description of the cause of the conflict.
+	 * @return true if the contradiction could be resolved (by backjumping) and the NoGood was added.
+	 * 	   False otherwise, i.e., iff the program is UNSAT.
+	 */
+	private boolean fixContradiction(Map.Entry<Integer, NoGood> noGoodEntry, ConflictCause conflictCause) {
 		LOGGER.debug("Attempting to fix violation of {} caused by {}", noGoodEntry.getValue(), conflictCause);
 
 		GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictFromAddingNoGood(conflictCause.getAntecedent());
 		if (conflictAnalysisResult == UNSAT) {
-			return NoGood.UNSAT;
+			return false;
 		}
 		branchingHeuristic.analyzedConflict(conflictAnalysisResult);
 		if (conflictAnalysisResult.learnedNoGood != null) {
@@ -510,11 +515,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		// If NoGood was learned, add it to the store.
 		// Note that the learned NoGood may cause further conflicts, since propagation on lower decision levels is lazy,
 		// hence backtracking once might not be enough to remove the real conflict cause.
-		if (!addAndBackjumpIfNecessary(noGoodEntry.getKey(), noGoodEntry.getValue(), LBD_NO_VALUE)) {
-			return NoGood.UNSAT;
-		}
+		return addAndBackjumpIfNecessary(noGoodEntry.getKey(), noGoodEntry.getValue(), LBD_NO_VALUE);
 
-		return conflictAnalysisResult.learnedNoGood;
 	}
 
 	private boolean choose() {
