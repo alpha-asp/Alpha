@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2019, the Alpha Team.
+/*
+ * Copyright (c) 2019-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -62,7 +62,7 @@ public class SystemConfig {
 	public static final String DEFAULT_GROUNDER_TOLERANCE_RULES = GrounderHeuristicsConfiguration.STRICT_STRING;
 	public static final boolean DEFAULT_GROUNDER_ACCUMULATOR_ENABLED = false;
 	public static final boolean DEFAULT_ENABLE_RESTARTS = false;
-	public static final String DEFAULT_PHASE_INITIALIZER = PhaseInitializerFactory.InitialPhase.RULESTRUEATOMSFALSE.name().toLowerCase();
+	public static final PhaseInitializerFactory.InitialPhase DEFAULT_PHASE_INITIALIZER = PhaseInitializerFactory.InitialPhase.RULESTRUEATOMSFALSE;
 
 	private String grounderName = SystemConfig.DEFAULT_GROUNDER_NAME;
 	private String solverName = SystemConfig.DEFAULT_SOLVER_NAME;
@@ -83,7 +83,7 @@ public class SystemConfig {
 	private String grounderToleranceRules = DEFAULT_GROUNDER_TOLERANCE_RULES;
 	private boolean grounderAccumulatorEnabled = DEFAULT_GROUNDER_ACCUMULATOR_ENABLED;
 	private boolean areRestartsEnabled = SystemConfig.DEFAULT_ENABLE_RESTARTS;
-	private String phaseInitializer = SystemConfig.DEFAULT_PHASE_INITIALIZER;
+	private PhaseInitializerFactory.InitialPhase phaseInitializer = SystemConfig.DEFAULT_PHASE_INITIALIZER;
 
 	public String getGrounderName() {
 		return this.grounderName;
@@ -248,12 +248,16 @@ public class SystemConfig {
 		this.areRestartsEnabled = areRestartsEnabled;
 	}
 
-	public String getPhaseInitializerName() {
+	public PhaseInitializerFactory.InitialPhase getPhaseInitializer() {
 		return phaseInitializer;
 	}
 
-	public void  setPhaseInitializer(String phaseInitializer) {
+	public void setPhaseInitializer(PhaseInitializerFactory.InitialPhase phaseInitializer) {
 		this.phaseInitializer = phaseInitializer;
+	}
+
+	public void setPhaseInitializerName(String phaseInitializerName) {
+		this.phaseInitializer = PhaseInitializerFactory.InitialPhase.valueOf(phaseInitializerName.toUpperCase());
 	}
 
 }

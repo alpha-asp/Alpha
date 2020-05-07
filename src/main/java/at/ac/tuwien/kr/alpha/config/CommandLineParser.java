@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
@@ -426,7 +426,13 @@ public class CommandLineParser {
 		cfg.setRestartsEnabled(true);
 	}
 
-	private void handleInitialPhase(Option opt, SystemConfig cfg) {
-		cfg.setPhaseInitializer(opt.getValue(SystemConfig.DEFAULT_PHASE_INITIALIZER));
+	private void handleInitialPhase(Option opt, SystemConfig cfg) throws ParseException {
+		String initialPhase = opt.getValue(SystemConfig.DEFAULT_PHASE_INITIALIZER.name());
+		try {
+			cfg.setPhaseInitializerName(initialPhase);
+		} catch (IllegalArgumentException e) {
+			throw new ParseException("Unknown initial phase: " + initialPhase + ". Please try one of the following: "
+					+ PhaseInitializerFactory.InitialPhase.listAllowedValues());
+		}
 	}
 }
