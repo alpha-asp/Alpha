@@ -54,7 +54,26 @@ public class GroundConflictNoGoodLearner {
 	private final Assignment assignment;
 	private final AtomStore atomStore;
 
+	/**
+	 * Given a conflicting NoGood, computes a conflict-free backjumping level such that the given NoGood is not
+	 * violated.
+	 *
+	 * @param violatedNoGood the conflicting NoGood.
+	 * @return -1 if the violatedNoGood cannot be satisfied, otherwise
+	 * 	   0 if violatedNoGood is unary, and else
+	 * 	   the highest backjumping level such that the NoGood is no longer violated.
+	 */
 	public int computeConflictFreeBackjumpingLevel(NoGood violatedNoGood) {
+		// If violatedNoGood is unary, backjump to decision level 0 if it can be satisfied.
+		if (violatedNoGood.isUnary()) {
+			int literal = violatedNoGood.getLiteral(0);
+			int literalDecisionLevel = assignment.getRealWeakDecisionLevel(atomOf(literal));
+			if (literalDecisionLevel > 0) {
+				return 0;
+			} else {
+				return -1;
+			}
+		}
 		int highestDecisionLevel = -1;
 		int secondHighestDecisionLevel = -1;
 		int numAtomsInHighestLevel = 0;

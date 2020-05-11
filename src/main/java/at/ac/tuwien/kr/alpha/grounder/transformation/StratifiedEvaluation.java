@@ -30,11 +30,11 @@ import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph;
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph.SCComponent;
+import at.ac.tuwien.kr.alpha.common.depgraph.Node;
+import at.ac.tuwien.kr.alpha.common.depgraph.StratificationHelper;
 import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
-import at.ac.tuwien.kr.alpha.common.depgraph.Node;
-import at.ac.tuwien.kr.alpha.common.depgraph.StratificationHelper;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.IndexedInstanceStorage;
@@ -213,7 +213,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			// if the starting literal is a builtin or external, we don't have instances in working memory,
 			// but just get fixed substitutions and let bindNextAtomInRule do it's magic ;)
 			FixedInterpretationLiteral fixedInterpretationLiteral = (FixedInterpretationLiteral) startingLiteral;
-			for (Substitution fixedSubstitution : fixedInterpretationLiteral.getSubstitutions(partialStartSubstitution)) {
+			for (Substitution fixedSubstitution : fixedInterpretationLiteral.getSatisfyingSubstitutions(partialStartSubstitution)) {
 				LOGGER.debug("calling bindNextAtom, startingLiteral = {}", startingLiteral);
 				retVal.addAll(this.bindNextAtomInRule(rule, rule.getGroundingOrders().orderStartingFrom(startingLiteral), 0, fixedSubstitution));
 			}
@@ -277,7 +277,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		if (currentLiteral instanceof FixedInterpretationLiteral) {
 			// Generate all substitutions for the builtin/external/interval atom.
 			final List<Substitution> substitutions = ((FixedInterpretationLiteral) currentLiteral.substitute(partialSubstitution))
-					.getSubstitutions(partialSubstitution);
+					.getSatisfyingSubstitutions(partialSubstitution);
 
 			if (substitutions.isEmpty()) {
 				return emptyList();
@@ -380,7 +380,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 	private boolean isLiteralTrue(Literal lit, Substitution substitution) {
 		if (lit instanceof FixedInterpretationLiteral) {
-			return this.isFixedInterpretationLiteralTrue((FixedInterpretationLiteral) lit, substitution);
+			return this.isFixedInterpretationLiteralTrue((FixedInterpretationLiteral) lit.substitute(substitution), substitution);
 		}
 		if (lit instanceof EnumerationLiteral) {
 			return this.isEnumerationLiteralTrue((EnumerationLiteral) lit, substitution);
@@ -397,12 +397,11 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 	private boolean isFixedInterpretationLiteralTrue(FixedInterpretationLiteral lit, Substitution substitution) {
 		if (lit instanceof ExternalLiteral) {
-			boolean atomTrue = this.isExternalLiteralTrue((ExternalLiteral) lit, substitution);
-			return lit.isNegated() ? !atomTrue : atomTrue;
+			return this.isExternalLiteralTrue((ExternalLiteral) lit, substitution);
 		}
 		Set<VariableTerm> variables = lit.getOccurringVariables();
 		Substitution candidate = new Substitution(substitution);
-		List<Substitution> validSubstitutions = lit.getSubstitutions(substitution);
+		List<Substitution> validSubstitutions = lit.getSatisfyingSubstitutions(substitution);
 		if (validSubstitutions.isEmpty()) {
 			// even if lit is ground, an empty substitution must be here for the whole substitution to be valid
 			return false;
@@ -436,7 +435,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 				resultSubstitution.put(var, substitution.eval(var));
 			}
 		}
-		List<Substitution> validSubstitutions = lit.getSubstitutions(resultSubstitution);
+		List<Substitution> validSubstitutions = lit.getSatisfyingSubstitutions(resultSubstitution);
 		if (validSubstitutions.isEmpty()) {
 			// even if lit is ground, an empty substitution must be here for the whole substitution to be valid
 			return false;
@@ -444,7 +443,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		// now check that substitution matches one of the valid substitutions given by the external literal
 		Term candidateSubstitute;
 		Term validSubstitute;
-		boolean candidateValid = true;
+		boolean candidateValid;
 		for (Substitution valid : validSubstitutions) {
 			candidateValid = true;
 			for (VariableTerm var : lit.getOccurringVariables()) {
