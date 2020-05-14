@@ -342,6 +342,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return groundNogoods;
 	}
 
+	// FIXME interface into working memory s.t. "slice" (see modified) of WM can be passed into instantiator
 	@Override
 	public Map<Integer, NoGood> getNoGoods(Assignment currentAssignment) {
 		// In first call, prepare facts and ground rules.
