@@ -52,14 +52,16 @@ public class EnumerationAtom extends BasicAtom {
 
 	}
 
-	public void addEnumerationToSubstitution(Substitution substitution) {
+	public Substitution addEnumerationIndexToSubstitution(Substitution substitution) {
 		Term idTerm = getTerms().get(0).substitute(substitution);
 		Term enumerationTerm  = getTerms().get(1).substitute(substitution);
 		if (!enumerationTerm.isGround()) {
 			throw new RuntimeException("Enumeration term is not ground after substitution. Should not happen.");
 		}
 		Integer enumerationIndex = getEnumerationIndex(idTerm, enumerationTerm);
-		substitution.put((VariableTerm) getTerms().get(2), ConstantTerm.getInstance(enumerationIndex));
+		Substitution retVal = new Substitution(substitution);
+		retVal.put((VariableTerm) getTerms().get(2), ConstantTerm.getInstance(enumerationIndex));
+		return retVal;
 	}
 
 	@Override
