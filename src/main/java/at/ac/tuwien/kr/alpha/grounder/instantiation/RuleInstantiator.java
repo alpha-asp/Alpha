@@ -45,12 +45,17 @@ public class RuleInstantiator {
 			EnumerationLiteral enumerationLiteral = (EnumerationLiteral) lit;
 			substitutions = Collections.singletonList(enumerationLiteral.addEnumerationIndexToSubstitution(partialSubstitution));
 		} else {
-			//@formatter:off
-			// lit seems to be a basic literal, so its satisfiability w.r.t. partialSubstitution
-			// is decided based on knownInstances by the instantiationStrategy
-			substitutions = this.instantiationStrategy.acceptSubstitutedLiteral(lit, knownInstances) ? 
-					Collections.singletonList(partialSubstitution) : Collections.emptyList();
-			//@formatter:on
+			if (lit.isGround()) {
+				//@formatter:off
+				// lit seems to be a basic literal, so its satisfiability w.r.t. partialSubstitution
+				// is decided based on knownInstances by the instantiationStrategy
+				substitutions = this.instantiationStrategy.acceptSubstitutedLiteral(lit, knownInstances) ? 
+						Collections.singletonList(partialSubstitution) : Collections.emptyList();
+				//@formatter:on
+			} else {
+				// instantiate literal based on instantiation strategy
+				substitutions = this.instantiationStrategy.getAcceptedSubstitutions(lit, partialSubstitution, knownInstances);
+			}
 		}
 		return substitutions;
 	}
