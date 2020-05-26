@@ -327,13 +327,14 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	@Override
 	public ConflictCause assign(int atom, ThriceTruth value, Antecedent impliedBy, int decisionLevel) {
-		if (decisionLevel < getDecisionLevel()) {
+		ConflictCause conflictCause = assign(atom, value, impliedBy);
+		if (conflictCause == null && decisionLevel < getDecisionLevel()) {
 			outOfOrderLiterals.add(new OutOfOrderLiteral(atom, value, decisionLevel, impliedBy));
 			if (highestDecisionLevelContainingOutOfOrderLiterals < getDecisionLevel()) {
 				highestDecisionLevelContainingOutOfOrderLiterals = getDecisionLevel();
 			}
 		}
-		return assign(atom, value, impliedBy);
+		return conflictCause;
 	}
 
 	private boolean assignmentsConsistent(ThriceTruth oldTruth, ThriceTruth value) {

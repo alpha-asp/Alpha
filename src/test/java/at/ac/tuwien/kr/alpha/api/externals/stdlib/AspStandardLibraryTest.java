@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
@@ -17,6 +19,8 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 
 public class AspStandardLibraryTest {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(AspStandardLibrary.class);
 
 	//@formatter:off
 	private static final String STRINGSTUFF_ASP =
@@ -29,6 +33,19 @@ public class AspStandardLibraryTest {
 			+ ":- resultstring(S), &stdlib_string_length[S](LEN), LEN != 6."
 			+ "containsFoo(S) :- resultstring(S), &stdlib_string_matches_regex[S, \".*foo.*\"]."
 			+ ":- resultstring(S), not containsFoo(S)."
+			+ "has_resultstring :- resultstring(_)."
+			+ ":- not has_resultstring.";
+	
+	// same as stringstuff asp, but without the "containsFoo" intermediate predicate
+	private static final String NEGATED_EXTERNAL_ASP =
+			"string(\"bla\")."
+			+ "string(\"blubb\")."
+			+ "string(\"foo\")."
+			+ "string(\"bar\")."
+			+ "{ strcat(S1, S2) } :- string(S1), string(S2)."
+			+ "resultstring(SCAT) :- strcat(S1, S2), &stdlib_string_concat[S1, S2](SCAT)."
+			+ ":- resultstring(S), &stdlib_string_length[S](LEN), LEN != 6."
+			+ ":- resultstring(S), not &stdlib_string_matches_regex[S, \".*foo.*\"]."
 			+ "has_resultstring :- resultstring(_)."
 			+ ":- not has_resultstring.";
 	//@formatter:on
@@ -82,21 +99,21 @@ public class AspStandardLibraryTest {
 		Assert.assertFalse(AspStandardLibrary.datetimeIsBefore(2015, 5, 13, 12, 1, 33, 2003, 1, 1, 0, 0, 1));
 		Assert.assertFalse(AspStandardLibrary.datetimeIsBefore(2022, 2, 22, 22, 22, 22, 2022, 2, 22, 22, 22, 22));
 	}
-	
+
 	@Test
 	public void datetimeEqual() {
 		Assert.assertTrue(AspStandardLibrary.datetimeIsEqual(1990, 2, 14, 15, 16, 17, 1990, 2, 14, 15, 16, 17));
 		Assert.assertFalse(AspStandardLibrary.datetimeIsEqual(2015, 5, 13, 12, 1, 33, 2003, 1, 1, 0, 0, 1));
-	}	
+	}
 
 	@Test
 	public void datetimeBeforeOrEqual() {
 		Assert.assertTrue(AspStandardLibrary.datetimeIsBeforeOrEqual(1990, 2, 14, 15, 16, 17, 1990, 3, 1, 0, 59, 1));
 		Assert.assertFalse(AspStandardLibrary.datetimeIsBeforeOrEqual(2015, 5, 13, 12, 1, 33, 2003, 1, 1, 0, 0, 1));
 		Assert.assertTrue(AspStandardLibrary.datetimeIsBeforeOrEqual(2022, 2, 22, 22, 22, 22, 2022, 2, 22, 22, 22, 22));
-		
+
 	}
-	
+
 	@Test
 	public void matchesRegex() {
 		Assert.assertTrue(AspStandardLibrary.stringMatchesRegex("Blaaaaa Blubbb!!", "Bla+ Blub+!!"));
@@ -133,6 +150,24 @@ public class AspStandardLibraryTest {
 		for (AnswerSet as : answerSets) {
 			for (Atom atom : as.getPredicateInstances(Predicate.getInstance("resultstring", 1))) {
 				String resultstring = ((ConstantTerm<String>) atom.getTerms().get(0)).getObject();
+				Assert.assertEquals(6, resultstring.length());
+				Assert.assertTrue(resultstring.contains("foo"));
+			}
+		}
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void negatedExternal() throws IOException {
+		Alpha alpha = new Alpha();
+		Program prog = alpha.readProgram(InputConfig.forString(NEGATED_EXTERNAL_ASP));
+		Set<AnswerSet> answerSets = alpha.solve(prog).collect(Collectors.toSet());
+		Assert.assertEquals(31, answerSets.size());
+		// Verify every result string has length 6 and contains "foo"
+		for (AnswerSet as : answerSets) {
+			for (Atom atom : as.getPredicateInstances(Predicate.getInstance("resultstring", 1))) {
+				String resultstring = ((ConstantTerm<String>) atom.getTerms().get(0)).getObject();
+				LOGGER.debug("ResultString is {}", resultstring);
 				Assert.assertEquals(6, resultstring.length());
 				Assert.assertTrue(resultstring.contains("foo"));
 			}
