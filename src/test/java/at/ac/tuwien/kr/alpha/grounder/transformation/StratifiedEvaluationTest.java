@@ -34,6 +34,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -47,6 +48,7 @@ import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
+import at.ac.tuwien.kr.alpha.common.program.Programs;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.test.util.TestUtils;
@@ -193,6 +195,34 @@ public class StratifiedEvaluationTest {
 		InternalProgram evaluated = new StratifiedEvaluation().apply(analyzed);
 		assertTrue("Not all rules eliminated by stratified evaluation", evaluated.getRules().isEmpty());
 		assertEquals(57, evaluated.getFacts().size());
+	}
+
+	/**
+	 * Verifies correct handling of negated basic literals in StratifiedEvaluation.
+	 * For details, see comments in test program
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testNegatedLiteralInRecursiveRule() throws IOException {
+		//@formatter:off
+		String expectedAnswerSet = "basefact1(1), basefact2(1), max_value(10), min_value(1), "
+				+ "basefact1(9), basefact2(9), base(1), base(9), "
+				+ "inc_value(1), inc_value(2), inc_value(2), inc_value(3), "
+				+ "inc_value(4), inc_value(5), inc_value(6), inc_value(7), "
+				+ "inc_value(8)";
+		//@formatter:on
+		InputProgram prog = Programs.fromInputStream(
+				StratifiedEvaluationTest.class.getResourceAsStream("/partial-eval/recursive_w_negated_condition.asp"),
+				new HashMap<>());
+		Alpha systemStratified = new Alpha();
+		systemStratified.getConfig().setEvaluateStratifiedPart(true);
+		Set<AnswerSet> asStrat = systemStratified.solve(prog).collect(Collectors.toSet());
+		TestUtils.assertAnswerSetsEqual(expectedAnswerSet, asStrat);
+		Alpha systemNoStratEval = new Alpha();
+		systemNoStratEval.getConfig().setEvaluateStratifiedPart(false);
+		Set<AnswerSet> as = systemNoStratEval.solve(prog).collect(Collectors.toSet());
+		TestUtils.assertAnswerSetsEqual(expectedAnswerSet, as);
 	}
 
 }
