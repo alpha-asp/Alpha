@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.grounder.IndexedInstanceStorage;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationLiteral;
 
@@ -35,28 +34,35 @@ public class RuleInstantiator {
 	// Method contract: knownInstances is an instance storage containing all
 	// instances to consider when grounding given literal,
 	// supposed to be null for FixedInterpretationLiteral and EnumerationLiteral
-	public List<Substitution> instantiateLiteral(Literal lit, Substitution partialSubstitution, IndexedInstanceStorage knownInstances) {
+	public LiteralInstantiationResult instantiateLiteral(Literal lit, Substitution partialSubstitution, InstanceStorageView knownInstances) {
 		LOGGER.trace("Instantiating literal: {}", lit);
+		LiteralInstantiationResult retVal;
 		List<Substitution> substitutions;
 		if (lit instanceof FixedInterpretationLiteral) {
 			FixedInterpretationLiteral substitutedFixedInterpretationLiteral = (FixedInterpretationLiteral) lit.substitute(partialSubstitution);
+			// TODO check if we should push back
 			substitutions = substitutedFixedInterpretationLiteral.getSatisfyingSubstitutions(partialSubstitution);
+			retVal = substitutions.isEmpty() ? LiteralInstantiationResult.stopBinding() : LiteralInstantiationResult.continueBinding(substitutions);
 		} else if (lit instanceof EnumerationLiteral) {
 			EnumerationLiteral enumerationLiteral = (EnumerationLiteral) lit;
-			substitutions = Collections.singletonList(enumerationLiteral.addEnumerationIndexToSubstitution(partialSubstitution));
+			retVal = LiteralInstantiationResult.continueBinding(
+					Collections.singletonList(enumerationLiteral.addEnumerationIndexToSubstitution(partialSubstitution)));
 		} else {
-			if (lit.isGround()) {
+			Literal substitutedLiteral = lit.substitute(partialSubstitution);
+			if (substitutedLiteral.isGround()) {
 				//@formatter:off
 				// lit seems to be a basic literal, so its satisfiability w.r.t. partialSubstitution
 				// is decided based on knownInstances by the instantiationStrategy
-				substitutions = this.instantiationStrategy.acceptSubstitutedLiteral(lit, knownInstances) ? 
-						Collections.singletonList(partialSubstitution) : Collections.emptyList();
+				retVal = this.instantiationStrategy.acceptSubstitutedLiteral(substitutedLiteral, knownInstances) ? 
+						LiteralInstantiationResult.continueBinding(Collections.singletonList(partialSubstitution)) 
+						: LiteralInstantiationResult.stopBinding();
 				//@formatter:on
 			} else {
 				// instantiate literal based on instantiation strategy
-				substitutions = this.instantiationStrategy.getAcceptedSubstitutions(lit, partialSubstitution, knownInstances);
+				substitutions = this.instantiationStrategy.getAcceptedSubstitutions(substitutedLiteral, partialSubstitution, knownInstances);
+				retVal = substitutions.isEmpty() ? LiteralInstantiationResult.stopBinding() : LiteralInstantiationResult.continueBinding(substitutions);
 			}
 		}
-		return substitutions;
+		return retVal;
 	}
 }

@@ -21,10 +21,11 @@ public class InstantiationStrategyTest {
 				new BasicAtom(p, ConstantTerm.getSymbolicInstance("a")), true);
 		IndexedInstanceStorage instances = new IndexedInstanceStorage(p, true);
 		instances.addInstance(new Instance(ConstantTerm.getSymbolicInstance("a")));
-		Assert.assertTrue(strategy.acceptSubstitutedLiteral(positiveAcceptedLiteral, instances));
+		InstanceStorageView storageView = new BasicInstanceStorageView(instances);
+		Assert.assertTrue(strategy.acceptSubstitutedLiteral(positiveAcceptedLiteral, storageView));
 		Literal negativeAcceptedLiteral = new BasicLiteral(
 				new BasicAtom(p, ConstantTerm.getSymbolicInstance("b")), false);
-		Assert.assertTrue(strategy.acceptSubstitutedLiteral(negativeAcceptedLiteral, instances));
+		Assert.assertTrue(strategy.acceptSubstitutedLiteral(negativeAcceptedLiteral, storageView));
 	}
 
 	@Test
@@ -35,10 +36,11 @@ public class InstantiationStrategyTest {
 				new BasicAtom(p, ConstantTerm.getSymbolicInstance("b")), true);
 		IndexedInstanceStorage instances = new IndexedInstanceStorage(p, true);
 		instances.addInstance(new Instance(ConstantTerm.getSymbolicInstance("a")));
-		Assert.assertFalse(strategy.acceptSubstitutedLiteral(positiveRejectedLiteral, instances));
+		InstanceStorageView storageView = new BasicInstanceStorageView(instances);
+		Assert.assertFalse(strategy.acceptSubstitutedLiteral(positiveRejectedLiteral, storageView));
 		Literal negativeRejectedLiteral = new BasicLiteral(
 				new BasicAtom(p, ConstantTerm.getSymbolicInstance("a")), false);
-		Assert.assertFalse(strategy.acceptSubstitutedLiteral(negativeRejectedLiteral, instances));
+		Assert.assertFalse(strategy.acceptSubstitutedLiteral(negativeRejectedLiteral, storageView));
 	}
 
 }
