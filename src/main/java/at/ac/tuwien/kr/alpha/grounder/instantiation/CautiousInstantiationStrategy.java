@@ -17,8 +17,7 @@ public class CautiousInstantiationStrategy implements InstantiationStrategy {
 	 */
 	@Override
 	public boolean acceptSubstitutedLiteral(Literal lit, InstanceStorageView knownInstances) {
-		Instance refInstance = new Instance(lit.getTerms());
-		boolean instanceKnown = knownInstances.containsInstance(refInstance);
+		boolean instanceKnown = knownInstances.containsInstanceForAtom(lit.getAtom());
 		return lit.isNegated() ? (!instanceKnown) : instanceKnown;
 	}
 

@@ -5,23 +5,26 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.grounder.IndexedInstanceStorage;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
+import at.ac.tuwien.kr.alpha.grounder.WorkingMemory;
 
 public class BasicInstanceStorageView implements InstanceStorageView {
 
-	private final IndexedInstanceStorage instanceStorage;
+	private final WorkingMemory workingMemory;
 
-	public BasicInstanceStorageView(IndexedInstanceStorage instanceStorage) {
-		this.instanceStorage = instanceStorage;
+	public BasicInstanceStorageView(WorkingMemory workingMemory) {
+		this.workingMemory = workingMemory;
 	}
 
 	@Override
-	public boolean containsInstance(Instance instance) {
-		return this.instanceStorage.containsInstance(instance);
+	public boolean containsInstanceForAtom(Atom atom) {
+		IndexedInstanceStorage instanceStorage = this.workingMemory.get(atom, true);
+		return instanceStorage.containsInstance(Instance.fromAtom(atom));
 	}
 
 	@Override
 	public List<Instance> getInstancesFromPartiallyGroundAtom(Atom atom) {
-		return this.instanceStorage.getInstancesFromPartiallyGroundAtom(atom);
+		IndexedInstanceStorage instanceStorage = this.workingMemory.get(atom, true);
+		return instanceStorage.getInstancesFromPartiallyGroundAtom(atom);
 	}
 
 }

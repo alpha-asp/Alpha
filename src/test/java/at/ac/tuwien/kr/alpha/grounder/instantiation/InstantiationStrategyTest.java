@@ -8,8 +8,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.grounder.IndexedInstanceStorage;
-import at.ac.tuwien.kr.alpha.grounder.Instance;
+import at.ac.tuwien.kr.alpha.grounder.WorkingMemory;
 
 public class InstantiationStrategyTest {
 
@@ -19,9 +18,10 @@ public class InstantiationStrategyTest {
 		Predicate p = Predicate.getInstance("p", 1);
 		Literal positiveAcceptedLiteral = new BasicLiteral(
 				new BasicAtom(p, ConstantTerm.getSymbolicInstance("a")), true);
-		IndexedInstanceStorage instances = new IndexedInstanceStorage(p, true);
-		instances.addInstance(new Instance(ConstantTerm.getSymbolicInstance("a")));
-		InstanceStorageView storageView = new BasicInstanceStorageView(instances);
+		WorkingMemory workingMemory = new WorkingMemory();
+		workingMemory.initialize(p);
+		workingMemory.addInstance(new BasicAtom(p, ConstantTerm.getSymbolicInstance("a")), true);
+		InstanceStorageView storageView = new BasicInstanceStorageView(workingMemory);
 		Assert.assertTrue(strategy.acceptSubstitutedLiteral(positiveAcceptedLiteral, storageView));
 		Literal negativeAcceptedLiteral = new BasicLiteral(
 				new BasicAtom(p, ConstantTerm.getSymbolicInstance("b")), false);
@@ -34,9 +34,10 @@ public class InstantiationStrategyTest {
 		Predicate p = Predicate.getInstance("p", 1);
 		Literal positiveRejectedLiteral = new BasicLiteral(
 				new BasicAtom(p, ConstantTerm.getSymbolicInstance("b")), true);
-		IndexedInstanceStorage instances = new IndexedInstanceStorage(p, true);
-		instances.addInstance(new Instance(ConstantTerm.getSymbolicInstance("a")));
-		InstanceStorageView storageView = new BasicInstanceStorageView(instances);
+		WorkingMemory workingMemory = new WorkingMemory();
+		workingMemory.initialize(p);
+		workingMemory.addInstance(new BasicAtom(p, ConstantTerm.getSymbolicInstance("a")), true);
+		InstanceStorageView storageView = new BasicInstanceStorageView(workingMemory);
 		Assert.assertFalse(strategy.acceptSubstitutedLiteral(positiveRejectedLiteral, storageView));
 		Literal negativeRejectedLiteral = new BasicLiteral(
 				new BasicAtom(p, ConstantTerm.getSymbolicInstance("a")), false);

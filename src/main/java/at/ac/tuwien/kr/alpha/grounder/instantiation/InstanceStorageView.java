@@ -7,7 +7,7 @@ import at.ac.tuwien.kr.alpha.grounder.Instance;
 
 public interface InstanceStorageView {
 
-	boolean containsInstance(Instance instance);
+	boolean containsInstanceForAtom(Atom atom);
 
 	List<Instance> getInstancesFromPartiallyGroundAtom(Atom atom);
 
