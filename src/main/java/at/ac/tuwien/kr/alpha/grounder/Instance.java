@@ -26,7 +26,7 @@ public class Instance {
 	}
 
 	public static Instance fromAtom(Atom atom) {
-		if(!atom.isGround()) {
+		if (!atom.isGround()) {
 			throw Util.oops("Cannot create instance from non-ground atom " + atom.toString());
 		}
 		return new Instance(atom.getTerms());
