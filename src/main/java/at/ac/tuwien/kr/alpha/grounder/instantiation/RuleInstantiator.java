@@ -1,11 +1,12 @@
 package at.ac.tuwien.kr.alpha.grounder.instantiation;
 
-import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
@@ -13,6 +14,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationLiteral;
 import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalLiteral;
+import at.ac.tuwien.kr.alpha.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy.AssignmentStatus;
 
 /**
  * Provides ground instantiations for rules.
@@ -24,9 +26,11 @@ public class RuleInstantiator {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RuleInstantiator.class);
 
 	private final InstantiationStrategy instantiationStrategy;
+	private final boolean pushBackNonGroundNegatedLiterals;
 
-	public RuleInstantiator(InstantiationStrategy instantiationStrategy) {
+	public RuleInstantiator(InstantiationStrategy instantiationStrategy, boolean pushBackNonGroundNegatedLiterals) {
 		this.instantiationStrategy = instantiationStrategy;
+		this.pushBackNonGroundNegatedLiterals = pushBackNonGroundNegatedLiterals;
 	}
 
 	// FIXME we should find a global contract for when to call
@@ -75,7 +79,8 @@ public class RuleInstantiator {
 			retVal = LiteralInstantiationResult.pushBack();
 		} else {
 			substitutions = substitutedLiteral.getSatisfyingSubstitutions(partialSubstitution);
-			retVal = substitutions.isEmpty() ? LiteralInstantiationResult.stopBinding() : LiteralInstantiationResult.continueBinding(substitutions);
+			retVal = substitutions.isEmpty() ? LiteralInstantiationResult.stopBinding()
+					: LiteralInstantiationResult.continueBindingWithTrueSubstitutions(substitutions);
 		}
 		return retVal;
 	}
@@ -94,8 +99,7 @@ public class RuleInstantiator {
 	 */
 	private LiteralInstantiationResult instantiateEnumerationLiteral(EnumerationLiteral lit, Substitution partialSubstitution) {
 		LOGGER.trace("Instantiating EnumerationLiteral: {}", lit);
-		return LiteralInstantiationResult.continueBinding(
-				Collections.singletonList(lit.addEnumerationIndexToSubstitution(partialSubstitution)));
+		return LiteralInstantiationResult.continueBinding(lit.addEnumerationIndexToSubstitution(partialSubstitution), AssignmentStatus.TRUE);
 	}
 
 	/**
@@ -117,19 +121,31 @@ public class RuleInstantiator {
 	private LiteralInstantiationResult instantiateBasicLiteral(Literal lit, Substitution partialSubstitution, InstanceStorageView storageView) {
 		LOGGER.trace("Instantiating basic literal: {}", lit);
 		LiteralInstantiationResult retVal;
-		List<Substitution> substitutions;
+		List<ImmutablePair<Substitution, AssignmentStatus>> substitutions;
 		Literal substitutedLiteral = lit.substitute(partialSubstitution);
 		if (substitutedLiteral.isGround()) {
-			//@formatter:off
-			// Lit seems to be a basic literal, so its satisfiability w.r.t. partialSubstitution
-			// is decided based on knownInstances by the instantiationStrategy.
-			retVal = this.instantiationStrategy.acceptSubstitutedLiteral(substitutedLiteral, storageView) ? 
-					LiteralInstantiationResult.continueBinding(Collections.singletonList(partialSubstitution)) 
-					: LiteralInstantiationResult.stopBinding();
-			//@formatter:on
+			// Lit seems to be a basic literal, so its satisfiability w.r.t.
+			// partialSubstitution is decided based on knownInstances by the
+			// instantiationStrategy.
+			AssignmentStatus truthForLiteral = this.instantiationStrategy.getTruthForGroundLiteral(substitutedLiteral);
+			if (truthForLiteral == AssignmentStatus.FALSE) {
+				retVal = LiteralInstantiationResult.stopBinding();
+			} else {
+				retVal = LiteralInstantiationResult.continueBinding(partialSubstitution, truthForLiteral);
+			}
 		} else {
+			if (substitutedLiteral.isNegated()) {
+				if (this.pushBackNonGroundNegatedLiterals) {
+					return LiteralInstantiationResult.pushBack();
+				} else {
+					throw Util.oops("We got a non-ground literal which is negated, but are not allowed to push it back - should not happen!");
+				}
+			}
 			// Query instantiationStrategy for acceptable substitutions.
-			substitutions = this.instantiationStrategy.getAcceptedSubstitutions(substitutedLiteral, partialSubstitution, storageView);
+			// Note: getAcceptedSubstitutions will only give substitutions where the
+			// resulting ground atom is true or unassigned, false atoms are internally
+			// discarded
+			substitutions = this.instantiationStrategy.getAcceptedSubstitutions(substitutedLiteral, partialSubstitution);
 			retVal = substitutions.isEmpty() ? LiteralInstantiationResult.stopBinding() : LiteralInstantiationResult.continueBinding(substitutions);
 		}
 		return retVal;

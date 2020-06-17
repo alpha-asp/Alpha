@@ -28,7 +28,7 @@ public class RuleInstantiatorTest {
 		ComparisonAtom equalsThree = new ComparisonAtom(ConstantTerm.getInstance(3), VariableTerm.getInstance("THREE"), ComparisonOperator.EQ);
 		Literal lit = new ComparisonLiteral(equalsThree, true);
 		Substitution substitution = new Substitution();
-		RuleInstantiator instantiator = new RuleInstantiator(new CautiousInstantiationStrategy());
+		RuleInstantiator instantiator = new RuleInstantiator(new CautiousInstantiationStrategy(null), false);
 		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution, null);
 		Assert.assertEquals(LiteralInstantiationResult.Type.CONTINUE, result.getType());
 		List<Substitution> resultSubstitutions = result.getSubstitutions();

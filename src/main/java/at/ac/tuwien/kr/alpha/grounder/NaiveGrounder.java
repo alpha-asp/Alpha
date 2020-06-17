@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +70,8 @@ import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.BasicInstanceStorageView;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.CautiousInstantiationStrategy;
+import at.ac.tuwien.kr.alpha.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy;
+import at.ac.tuwien.kr.alpha.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy.AssignmentStatus;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.InstanceStorageView;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.InstantiationStrategy;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationResult;
@@ -120,6 +123,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 * grounder.
 	 */
 	private final RuleInstantiator ruleInstantiator;
+	private final DefaultLazyGroundingInstantiationStrategy instantiationStrategy;
 	// TODO might wanna have this as constructor param for instantiator,
 	// but might also make sense to have multiple views and pass the right one
 	// according to
@@ -160,7 +164,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 		// set up rule instantiator
 		// TODO set instantiation strategy properly!
-		this.ruleInstantiator = new RuleInstantiator(new CautiousInstantiationStrategy());
+		this.instantiationStrategy = new DefaultLazyGroundingInstantiationStrategy(this.workingMemory, this.atomStore);
+		this.ruleInstantiator = new RuleInstantiator(this.instantiationStrategy, true);
 		// TODO need an implementation that takes assignment into account
 		this.storageView = new BasicInstanceStorageView(this.workingMemory);
 	}
@@ -382,6 +387,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// In first call, prepare facts and ground rules.
 		final Map<Integer, NoGood> newNoGoods = fixedRules != null ? bootstrap() : new LinkedHashMap<>();
 
+		// Update instantiationStrategy with stale set and current assignment
+		this.instantiationStrategy.setStaleWorkingMemoryEntries(this.removeAfterObtainingNewNoGoods);
+		this.instantiationStrategy.setCurrentAssignment(currentAssignment);
+		
 		// Compute new ground rule (evaluate joins with newly changed atoms)
 		for (IndexedInstanceStorage modifiedWorkingMemory : workingMemory.modified()) {
 			// Skip predicates solely used in the solver which do not occur in rules.
@@ -596,18 +605,36 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			Substitution partialSubstitution, Assignment currentAssignment) {
 		BindingResult retVal;
 
-		boolean permissiveGrounderHeuristic = originalTolerance > 0;
 		Literal currentLiteral = groundingOrder.getLiteralAtOrderPosition(orderPosition);
 		if (currentLiteral == null) {
 			retVal = BindingResult.singleton(partialSubstitution, originalTolerance - remainingTolerance);
 		} else {
 			LiteralInstantiationResult instantiationResult = this.ruleInstantiator.instantiateLiteral(currentLiteral, partialSubstitution, this.storageView);
 			switch (instantiationResult.getType()) {
+				// TODO break continue case out into separate method!
 				case CONTINUE:
-					List<Substitution> substitutions = instantiationResult.getSubstitutions();
+					List<ImmutablePair<Substitution, AssignmentStatus>> substitutionInfos = instantiationResult.getSubstitutions();
+					int toleranceForNextRun;
+					AssignmentStatus assignmentStatus;
+					Substitution substitution;
 					retVal = new BindingResult();
-					for (Substitution substitution : substitutions) {
-						retVal.add(advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, substitution,
+					for (ImmutablePair<Substitution, AssignmentStatus> substitutionInfo : substitutionInfos) {
+						substitution = substitutionInfo.left;
+						assignmentStatus = substitutionInfo.right;
+						switch (assignmentStatus) {
+							case TRUE:
+								toleranceForNextRun = remainingTolerance;
+								break;
+							case UNASSIGNED:
+								toleranceForNextRun = remainingTolerance - 1;
+								break;
+							case FALSE:
+								throw Util.oops("Got an assignmentStatus FALSE for literal " + currentLiteral + " and substitution " + substitution
+										+ " - should not happen!");
+							default:
+								throw Util.oops("Got unsupported assignmentStatus " + assignmentStatus);
+						}
+						retVal.add(advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, toleranceForNextRun, substitution,
 								currentAssignment));
 					}
 					break;
