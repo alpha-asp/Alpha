@@ -41,7 +41,7 @@ public class RuleInstantiator {
 	// Method contract: knownInstances is an instance storage containing all
 	// instances to consider when grounding given literal,
 	// supposed to be null for FixedInterpretationLiteral and EnumerationLiteral
-	public LiteralInstantiationResult instantiateLiteral(Literal lit, Substitution partialSubstitution, InstanceStorageView knownInstances) {
+	public LiteralInstantiationResult instantiateLiteral(Literal lit, Substitution partialSubstitution) {
 		LOGGER.trace("Instantiating literal: {}", lit);
 		LiteralInstantiationResult retVal;
 		if (lit instanceof FixedInterpretationLiteral) {
@@ -53,7 +53,7 @@ public class RuleInstantiator {
 			// check is not performed since the assumption is that any literal that is no
 			// FixedInterpretationLiteral or EnumerationLiteral follows the semantics of a
 			// BasicLiteral even if it has another (currently not existing) type.
-			retVal = this.instantiateBasicLiteral(lit, partialSubstitution, knownInstances);
+			retVal = this.instantiateBasicLiteral(lit, partialSubstitution);
 		}
 		return retVal;
 	}
@@ -118,7 +118,7 @@ public class RuleInstantiator {
 	 * @param partialSubstitution
 	 * @param storageView
 	 */
-	private LiteralInstantiationResult instantiateBasicLiteral(Literal lit, Substitution partialSubstitution, InstanceStorageView storageView) {
+	private LiteralInstantiationResult instantiateBasicLiteral(Literal lit, Substitution partialSubstitution) {
 		LOGGER.trace("Instantiating basic literal: {}", lit);
 		LiteralInstantiationResult retVal;
 		List<ImmutablePair<Substitution, AssignmentStatus>> substitutions;

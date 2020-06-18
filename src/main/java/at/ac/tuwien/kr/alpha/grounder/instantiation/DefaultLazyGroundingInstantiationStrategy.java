@@ -28,14 +28,6 @@ public class DefaultLazyGroundingInstantiationStrategy implements InstantiationS
 		this.atomStore = atomStore;
 	}
 
-	public boolean acceptSubstitutedLiteral(Literal lit, InstanceStorageView knownInstances) {
-		if (lit.isNegated()) {
-			return true;
-		} else {
-			return knownInstances.containsInstanceForAtom(lit.getAtom());
-		}
-	}
-
 	@Override
 	public AssignmentStatus getTruthForGroundLiteral(Literal groundLiteral) {
 		if (groundLiteral.isNegated()) {

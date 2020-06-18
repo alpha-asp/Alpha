@@ -68,11 +68,8 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.grounder.instantiation.BasicInstanceStorageView;
-import at.ac.tuwien.kr.alpha.grounder.instantiation.CautiousInstantiationStrategy;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy.AssignmentStatus;
-import at.ac.tuwien.kr.alpha.grounder.instantiation.InstanceStorageView;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.InstantiationStrategy;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationResult;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.RuleInstantiator;
@@ -118,17 +115,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	/**
 	 * Handles instantiation of literals, i.e. supplies ground substitutions for
-	 * literals of non-ground rules according to the rules set out be the
-	 * {@link InstantiationStrategy} and {@link InstanceStorageView} used by this
-	 * grounder.
+	 * literals of non-ground rules according to the rules set by the
+	 * {@link InstantiationStrategy} used by this grounder.
 	 */
 	private final RuleInstantiator ruleInstantiator;
 	private final DefaultLazyGroundingInstantiationStrategy instantiationStrategy;
-	// TODO might wanna have this as constructor param for instantiator,
-	// but might also make sense to have multiple views and pass the right one
-	// according to
-	// call context....
-	private final InstanceStorageView storageView;
 
 	public NaiveGrounder(Program program, AtomStore atomStore, boolean debugInternalChecks, Bridge... bridges) {
 		this(program, atomStore, new GrounderHeuristicsConfiguration(), debugInternalChecks, bridges);
@@ -163,11 +154,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		this.debugInternalChecks = debugInternalChecks;
 
 		// set up rule instantiator
-		// TODO set instantiation strategy properly!
 		this.instantiationStrategy = new DefaultLazyGroundingInstantiationStrategy(this.workingMemory, this.atomStore);
 		this.ruleInstantiator = new RuleInstantiator(this.instantiationStrategy, true);
-		// TODO need an implementation that takes assignment into account
-		this.storageView = new BasicInstanceStorageView(this.workingMemory);
 	}
 
 	private void initializeFactsAndRules(Program program) {
@@ -609,7 +597,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		if (currentLiteral == null) {
 			retVal = BindingResult.singleton(partialSubstitution, originalTolerance - remainingTolerance);
 		} else {
-			LiteralInstantiationResult instantiationResult = this.ruleInstantiator.instantiateLiteral(currentLiteral, partialSubstitution, this.storageView);
+			LiteralInstantiationResult instantiationResult = this.ruleInstantiator.instantiateLiteral(currentLiteral, partialSubstitution);
 			switch (instantiationResult.getType()) {
 				// TODO break continue case out into separate method!
 				case CONTINUE:

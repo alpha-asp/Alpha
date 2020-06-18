@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha.grounder.instantiation;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -20,6 +21,7 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.WorkingMemory;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationLiteral;
+import at.ac.tuwien.kr.alpha.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy.AssignmentStatus;
 
 public class RuleInstantiatorTest {
 
@@ -29,11 +31,12 @@ public class RuleInstantiatorTest {
 		Literal lit = new ComparisonLiteral(equalsThree, true);
 		Substitution substitution = new Substitution();
 		RuleInstantiator instantiator = new RuleInstantiator(new CautiousInstantiationStrategy(null), false);
-		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution, null);
+		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution);
 		Assert.assertEquals(LiteralInstantiationResult.Type.CONTINUE, result.getType());
-		List<Substitution> resultSubstitutions = result.getSubstitutions();
+		List<ImmutablePair<Substitution, AssignmentStatus>> resultSubstitutions = result.getSubstitutions();
 		Assert.assertEquals(1, resultSubstitutions.size());
-		Substitution extendedSubstitution = resultSubstitutions.get(0);
+		Assert.assertEquals(AssignmentStatus.TRUE, resultSubstitutions.get(0).right);
+		Substitution extendedSubstitution = resultSubstitutions.get(0).left;
 		Assert.assertTrue(extendedSubstitution.isVariableSet(VariableTerm.getInstance("THREE")));
 		Assert.assertEquals(ConstantTerm.getInstance(3), extendedSubstitution.eval(VariableTerm.getInstance("THREE")));
 	}
@@ -45,8 +48,8 @@ public class RuleInstantiatorTest {
 		Substitution substitution = new Substitution();
 		substitution.put(VariableTerm.getInstance("FIVE"), ConstantTerm.getInstance(5));
 		substitution.put(VariableTerm.getInstance("THREE"), ConstantTerm.getInstance(3));
-		RuleInstantiator instantiator = new RuleInstantiator(new CautiousInstantiationStrategy());
-		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution, null);
+		RuleInstantiator instantiator = new RuleInstantiator(new CautiousInstantiationStrategy(null), false);
+		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution);
 		Assert.assertEquals(LiteralInstantiationResult.Type.STOP_BINDING, result.getType());
 	}
 
@@ -64,33 +67,34 @@ public class RuleInstantiatorTest {
 		Substitution substitution = new Substitution();
 		substitution.put(enumTerm, ConstantTerm.getSymbolicInstance("enum1"));
 		substitution.put(idTerm, ConstantTerm.getSymbolicInstance("someElement"));
-		RuleInstantiator instantiator = new RuleInstantiator(new CautiousInstantiationStrategy());
-		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution, null);
+		RuleInstantiator instantiator = new RuleInstantiator(new CautiousInstantiationStrategy(null), false);
+		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution);
 		Assert.assertEquals(LiteralInstantiationResult.Type.CONTINUE, result.getType());
-		List<Substitution> resultSubstitutions = result.getSubstitutions();
+		List<ImmutablePair<Substitution, AssignmentStatus>> resultSubstitutions = result.getSubstitutions();
 		Assert.assertEquals(1, resultSubstitutions.size());
-		Assert.assertTrue(resultSubstitutions.get(0).isVariableSet(indexTerm));
+		Assert.assertEquals(AssignmentStatus.TRUE, resultSubstitutions.get(0).right);
+		Assert.assertTrue(resultSubstitutions.get(0).left.isVariableSet(indexTerm));
 	}
 
 	@Test
 	public void cautiousVerifyPositiveGroundLiteralSatisfied() {
 		Predicate p = Predicate.getInstance("p", 2);
+		WorkingMemory workingMemory = new WorkingMemory();
+		workingMemory.initialize(p);
+		workingMemory.addInstance(new BasicAtom(p, ConstantTerm.getSymbolicInstance("x"), ConstantTerm.getSymbolicInstance("y")), true);
 		VariableTerm x = VariableTerm.getInstance("X");
 		VariableTerm y = VariableTerm.getInstance("Y");
 		Literal lit = new BasicLiteral(new BasicAtom(p, x, y), true);
 		Substitution substitution = new Substitution();
 		substitution.put(x, ConstantTerm.getSymbolicInstance("x"));
 		substitution.put(y, ConstantTerm.getSymbolicInstance("y"));
-		WorkingMemory workingMemory = new WorkingMemory();
-		workingMemory.initialize(p);
-		workingMemory.addInstance(new BasicAtom(p, ConstantTerm.getSymbolicInstance("x"), ConstantTerm.getSymbolicInstance("y")), true);
-		InstanceStorageView storageView = new BasicInstanceStorageView(workingMemory);
-		RuleInstantiator instantiator = new RuleInstantiator(new CautiousInstantiationStrategy());
-		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution, storageView);
+		RuleInstantiator instantiator = new RuleInstantiator(new CautiousInstantiationStrategy(workingMemory), false);
+		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution);
 		Assert.assertEquals(LiteralInstantiationResult.Type.CONTINUE, result.getType());
-		List<Substitution> substitutions = result.getSubstitutions();
+		List<ImmutablePair<Substitution, AssignmentStatus>> substitutions = result.getSubstitutions();
 		Assert.assertEquals(1, substitutions.size());
-		Substitution resultSubstitution = substitutions.get(0);
+		Assert.assertEquals(AssignmentStatus.TRUE, substitutions.get(0).right);
+		Substitution resultSubstitution = substitutions.get(0).left;
 		// with the given input substitution, lit is ground and satisfied,
 		// we expect the instantiator to verify that
 		Assert.assertEquals(substitution, resultSubstitution);
@@ -99,17 +103,16 @@ public class RuleInstantiatorTest {
 	@Test
 	public void cautiousVerifyPositiveGroundLiteralUnsatisfied() {
 		Predicate p = Predicate.getInstance("p", 2);
+		WorkingMemory workingMemory = new WorkingMemory();
+		workingMemory.initialize(p);
 		VariableTerm x = VariableTerm.getInstance("X");
 		VariableTerm y = VariableTerm.getInstance("Y");
 		Literal lit = new BasicLiteral(new BasicAtom(p, x, y), true);
 		Substitution substitution = new Substitution();
 		substitution.put(x, ConstantTerm.getSymbolicInstance("x"));
 		substitution.put(y, ConstantTerm.getSymbolicInstance("y"));
-		WorkingMemory workingMemory = new WorkingMemory();
-		workingMemory.initialize(p);
-		InstanceStorageView storageView = new BasicInstanceStorageView(workingMemory);
-		RuleInstantiator instantiator = new RuleInstantiator(new CautiousInstantiationStrategy());
-		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution, storageView);
+		RuleInstantiator instantiator = new RuleInstantiator(new CautiousInstantiationStrategy(workingMemory), false);
+		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution);
 		// with the given input substitution, lit is ground, but not satisfied,
 		// we expect the instantiator to verify that and return an empty list of
 		// substitutions
@@ -119,28 +122,28 @@ public class RuleInstantiatorTest {
 	@Test
 	public void cautiousInstantiatePositiveBasicLiteral() {
 		Predicate p = Predicate.getInstance("p", 2);
+		WorkingMemory workingMemory = new WorkingMemory();
+		workingMemory.initialize(p);
+		workingMemory.addInstance(new BasicAtom(p, ConstantTerm.getSymbolicInstance("x"), ConstantTerm.getSymbolicInstance("y")), true);
+		workingMemory.addInstance(new BasicAtom(p, ConstantTerm.getSymbolicInstance("x"), ConstantTerm.getSymbolicInstance("z")), true);
 		VariableTerm x = VariableTerm.getInstance("X");
 		VariableTerm y = VariableTerm.getInstance("Y");
 		Literal lit = new BasicLiteral(new BasicAtom(p, x, y), true);
 		Substitution substitution = new Substitution();
 		substitution.put(x, ConstantTerm.getSymbolicInstance("x"));
-		WorkingMemory workingMemory = new WorkingMemory();
-		workingMemory.initialize(p);
-		workingMemory.addInstance(new BasicAtom(p, ConstantTerm.getSymbolicInstance("x"), ConstantTerm.getSymbolicInstance("y")), true);
-		workingMemory.addInstance(new BasicAtom(p, ConstantTerm.getSymbolicInstance("x"), ConstantTerm.getSymbolicInstance("z")), true);
-		InstanceStorageView storageView = new BasicInstanceStorageView(workingMemory);
-		RuleInstantiator instantiator = new RuleInstantiator(new CautiousInstantiationStrategy());
-		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution, storageView);
+		RuleInstantiator instantiator = new RuleInstantiator(new CautiousInstantiationStrategy(workingMemory), false);
+		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution);
 		Assert.assertEquals(LiteralInstantiationResult.Type.CONTINUE, result.getType());
-		List<Substitution> substitutions = result.getSubstitutions();
+		List<ImmutablePair<Substitution, AssignmentStatus>> substitutions = result.getSubstitutions();
 		Assert.assertEquals(2, substitutions.size());
 		boolean ySubstituted = false;
 		boolean zSubstituted = false;
-		for (Substitution resultSubstitution : substitutions) {
-			Assert.assertTrue(resultSubstitution.isVariableSet(y));
-			if (resultSubstitution.eval(y).equals(ConstantTerm.getSymbolicInstance("y"))) {
+		for (ImmutablePair<Substitution, AssignmentStatus> resultSubstitution : substitutions) {
+			Assert.assertTrue(resultSubstitution.left.isVariableSet(y));
+			Assert.assertEquals(AssignmentStatus.TRUE, resultSubstitution.right);
+			if (resultSubstitution.left.eval(y).equals(ConstantTerm.getSymbolicInstance("y"))) {
 				ySubstituted = true;
-			} else if (resultSubstitution.eval(y).equals(ConstantTerm.getSymbolicInstance("z"))) {
+			} else if (resultSubstitution.left.eval(y).equals(ConstantTerm.getSymbolicInstance("z"))) {
 				zSubstituted = true;
 			} else {
 				Assert.fail("Invalid substitution for variable Y");
