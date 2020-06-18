@@ -38,7 +38,7 @@ public class DefaultLazyGroundingInstantiationStrategy implements InstantiationS
 		Atom atom = groundLiteral.getAtom();
 		IndexedInstanceStorage instanceStorage = this.workingMemory.get(atom, true);
 		if (!instanceStorage.containsInstance(Instance.fromAtom(atom))) {
-			return AssignmentStatus.FALSE;
+			return AssignmentStatus.UNASSIGNED;
 		} else {
 			return this.getTruthValueForAtom(atom);
 		}

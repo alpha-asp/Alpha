@@ -14,10 +14,10 @@
         </encoder>
     </appender>
     
-    <logger name="at.ac.tuwien.kr.alpha.grounder.NaiveGrounder" level="INFO"/>
+    <logger name="at.ac.tuwien.kr.alpha.grounder.NaiveGrounder" level="TRACE"/>
     <logger name="at.ac.tuwien.kr.alpha.solver" level="INFO"/>
     
-    <root level="DEBUG">
+    <root level="TRACE">
         <appender-ref ref="FILE" />
         <appender-ref ref="STDOUT" />
     </root>

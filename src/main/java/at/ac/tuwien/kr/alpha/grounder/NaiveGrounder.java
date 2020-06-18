@@ -368,8 +368,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return groundNogoods;
 	}
 
-	// FIXME interface into working memory s.t. "slice" (see modified) of WM can be
-	// passed into instantiator
 	@Override
 	public Map<Integer, NoGood> getNoGoods(Assignment currentAssignment) {
 		// In first call, prepare facts and ground rules.
@@ -592,15 +590,18 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private BindingResult bindNextAtomInRule(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance,
 			Substitution partialSubstitution, Assignment currentAssignment) {
 		BindingResult retVal;
-
+		
 		Literal currentLiteral = groundingOrder.getLiteralAtOrderPosition(orderPosition);
 		if (currentLiteral == null) {
+			LOGGER.trace("bindNextAtom - current literal is null, returning last substitution!");
 			retVal = BindingResult.singleton(partialSubstitution, originalTolerance - remainingTolerance);
 		} else {
+			LOGGER.trace("bindNextAtom - binding current literal {}", currentLiteral);
 			LiteralInstantiationResult instantiationResult = this.ruleInstantiator.instantiateLiteral(currentLiteral, partialSubstitution);
 			switch (instantiationResult.getType()) {
 				// TODO break continue case out into separate method!
 				case CONTINUE:
+					LOGGER.trace("bindNextAtom - got CONTINUE from rule instantiator");
 					List<ImmutablePair<Substitution, AssignmentStatus>> substitutionInfos = instantiationResult.getSubstitutions();
 					int toleranceForNextRun;
 					AssignmentStatus assignmentStatus;
@@ -627,10 +628,12 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 					}
 					break;
 				case PUSH_BACK:
+					LOGGER.trace("bindNextAtom - pushing back current literal");
 					retVal = pushBackAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution,
 							currentAssignment);
 					break;
 				case STOP_BINDING:
+					LOGGER.trace("bindNextAtom - stopping binding");
 					retVal = BindingResult.empty();
 					break;
 				default:
