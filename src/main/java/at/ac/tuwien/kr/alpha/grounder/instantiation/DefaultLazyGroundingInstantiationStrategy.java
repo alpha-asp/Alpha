@@ -94,6 +94,13 @@ public class DefaultLazyGroundingInstantiationStrategy implements InstantiationS
 	}
 
 	private AssignmentStatus getTruthValueForAtom(Atom atom) {
+		if (this.currentAssignment == null) {
+			// legitimate case, grounder may be in bootstrap and will call bindNextAtom with
+			// null assignment in that case
+			// Assumption: since the atom came from working memory and we must be in
+			// bootstrap here, we can assume for the atom to be true
+			return AssignmentStatus.TRUE;
+		}
 		// First, make sure that the Atom in question exists in the AtomStore
 		int atomId = this.atomStore.putIfAbsent(atom);
 		// newly obtained atomId might be higher than the maximum in the current
