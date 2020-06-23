@@ -481,6 +481,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		if (tolerance < 0) {
 			tolerance = Integer.MAX_VALUE;
 		}
+		if (groundingOrder.isGround()) {
+			// rules that are already ground don't need to be grounded
+			// note that partialSubstitution will be empty in that case
+			return BindingResult.singleton(partialSubstitution, 0);
+		}
 		BindingResult bindingResult = bindNextAtomInRule(groundingOrder, 0, tolerance, tolerance, partialSubstitution, currentAssignment);
 		if (LOGGER.isDebugEnabled()) {
 			for (int i = 0; i < bindingResult.size(); i++) {

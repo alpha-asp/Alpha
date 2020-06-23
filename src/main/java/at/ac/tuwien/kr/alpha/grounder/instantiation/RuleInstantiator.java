@@ -123,7 +123,9 @@ public class RuleInstantiator {
 		LiteralInstantiationResult retVal;
 		List<ImmutablePair<Substitution, AssignmentStatus>> substitutions;
 		Literal substitutedLiteral = lit.substitute(partialSubstitution);
+		LOGGER.trace("Substituted literal is {}", substitutedLiteral);
 		if (substitutedLiteral.isGround()) {
+			LOGGER.trace("Literal {} is already ground, checking truth", substitutedLiteral);
 			// Lit seems to be a basic literal, so its satisfiability w.r.t.
 			// partialSubstitution is decided based on knownInstances by the
 			// instantiationStrategy.
@@ -134,6 +136,7 @@ public class RuleInstantiator {
 				retVal = LiteralInstantiationResult.continueBinding(partialSubstitution, truthForLiteral);
 			}
 		} else {
+			LOGGER.trace("Handling non-ground literal {}", substitutedLiteral);
 			if (substitutedLiteral.isNegated()) {
 				if (this.pushBackNonGroundNegatedLiterals) {
 					return LiteralInstantiationResult.pushBack();
