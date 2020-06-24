@@ -483,11 +483,12 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 		// FIXME I believe we can't simply do that, thinking rule body must still go
 		// into atomStore or something..., Check this!
-		if (groundingOrder.isGround()) {
-			// rules that are already ground don't need to be grounded
-			// note that partialSubstitution will be empty in that case
-			return BindingResult.singleton(partialSubstitution, 0);
-		}
+		// FIXME fucking fixedInterpretationLiterals!
+//		if (groundingOrder.isGround()) {
+//			// rules that are already ground don't need to be grounded
+//			// note that partialSubstitution will be empty in that case
+//			return BindingResult.singleton(partialSubstitution, 0);
+//		}
 		BindingResult bindingResult = bindNextAtomInRule(groundingOrder, 0, tolerance, tolerance, partialSubstitution, currentAssignment);
 		if (LOGGER.isDebugEnabled()) {
 			for (int i = 0; i < bindingResult.size(); i++) {
