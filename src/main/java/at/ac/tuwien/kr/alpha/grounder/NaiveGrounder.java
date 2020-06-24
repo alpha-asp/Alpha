@@ -154,7 +154,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		this.debugInternalChecks = debugInternalChecks;
 
 		// set up rule instantiator
-		this.instantiationStrategy = new DefaultLazyGroundingInstantiationStrategy(this.workingMemory, this.atomStore);
+		this.instantiationStrategy = new DefaultLazyGroundingInstantiationStrategy(this.workingMemory, this.atomStore, this.factsFromProgram);
 		this.ruleInstantiator = new RuleInstantiator(this.instantiationStrategy, true);
 	}
 
@@ -483,11 +483,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 		// FIXME I believe we can't simply do that, thinking rule body must still go
 		// into atomStore or something..., Check this!
-//		if (groundingOrder.isGround()) {
-//			// rules that are already ground don't need to be grounded
-//			// note that partialSubstitution will be empty in that case
-//			return BindingResult.singleton(partialSubstitution, 0);
-//		}
+		if (groundingOrder.isGround()) {
+			// rules that are already ground don't need to be grounded
+			// note that partialSubstitution will be empty in that case
+			return BindingResult.singleton(partialSubstitution, 0);
+		}
 		BindingResult bindingResult = bindNextAtomInRule(groundingOrder, 0, tolerance, tolerance, partialSubstitution, currentAssignment);
 		if (LOGGER.isDebugEnabled()) {
 			for (int i = 0; i < bindingResult.size(); i++) {
@@ -596,14 +596,17 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	private BindingResult bindNextAtomInRule(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance,
 			Substitution partialSubstitution, Assignment currentAssignment) {
+		// FIXME needs a proper solution, but needed for now to make some unit tests
+		// work!
+		this.instantiationStrategy.setCurrentAssignment(currentAssignment);
 		BindingResult retVal;
-
 		Literal currentLiteral = groundingOrder.getLiteralAtOrderPosition(orderPosition);
 		if (currentLiteral == null) {
 			LOGGER.trace("bindNextAtom - current literal is null, returning last substitution!");
 			retVal = BindingResult.singleton(partialSubstitution, originalTolerance - remainingTolerance);
 		} else {
-			LOGGER.trace("bindNextAtom - binding current literal {}", currentLiteral);
+			LOGGER.trace("bindNextAtom - binding current literal {} with remaining tolerance {} and partial substitution {}", currentLiteral,
+					remainingTolerance, partialSubstitution);
 			LiteralInstantiationResult instantiationResult = this.ruleInstantiator.instantiateLiteral(currentLiteral, partialSubstitution);
 			switch (instantiationResult.getType()) {
 				// TODO break continue case out into separate method!
@@ -630,8 +633,14 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 							default:
 								throw Util.oops("Got unsupported assignmentStatus " + assignmentStatus);
 						}
-						retVal.add(advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, toleranceForNextRun, substitution,
-								currentAssignment));
+						if (toleranceForNextRun >= 0) {
+							LOGGER.trace("Advancing after binding literal {} with remaining tolerance {}", currentLiteral, toleranceForNextRun);
+							retVal.add(advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, toleranceForNextRun, substitution,
+									currentAssignment));
+						} else {
+							LOGGER.trace("bindNextAtom - Tolerance used up: current literal {}, partialSubstitution {} resultSubstitution", currentLiteral,
+									partialSubstitution, substitution);
+						}
 					}
 					break;
 				case PUSH_BACK:

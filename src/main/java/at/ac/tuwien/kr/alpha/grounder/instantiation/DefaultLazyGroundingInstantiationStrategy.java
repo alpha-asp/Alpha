@@ -3,11 +3,15 @@ package at.ac.tuwien.kr.alpha.grounder.instantiation;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
@@ -18,30 +22,54 @@ import at.ac.tuwien.kr.alpha.grounder.WorkingMemory;
 
 public class DefaultLazyGroundingInstantiationStrategy implements InstantiationStrategy {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultLazyGroundingInstantiationStrategy.class);
+
 	private WorkingMemory workingMemory;
 	private AtomStore atomStore;
 	private Assignment currentAssignment;
 	private LinkedHashSet<Atom> staleWorkingMemoryEntries;
+	private Map<Predicate, LinkedHashSet<Instance>> facts;
 
-	public DefaultLazyGroundingInstantiationStrategy(WorkingMemory workingMemory, AtomStore atomStore) {
+	public DefaultLazyGroundingInstantiationStrategy(WorkingMemory workingMemory, AtomStore atomStore,
+			Map<Predicate, LinkedHashSet<Instance>> facts) {
 		this.workingMemory = workingMemory;
 		this.atomStore = atomStore;
+		this.facts = facts;
+	}
+
+	private boolean isFact(Atom atom) {
+		if (this.facts.get(atom.getPredicate()) == null) {
+			return false;
+		} else {
+			return this.facts.get(atom.getPredicate()).contains(Instance.fromAtom(atom));
+		}
 	}
 
 	@Override
 	public AssignmentStatus getTruthForGroundLiteral(Literal groundLiteral) {
+		AssignmentStatus retVal;
 		if (groundLiteral.isNegated()) {
 			// In the context of this InstantiationStrategy, we consider negated literals
 			// to be always true
-			return AssignmentStatus.TRUE;
-		}
-		Atom atom = groundLiteral.getAtom();
-		IndexedInstanceStorage instanceStorage = this.workingMemory.get(atom, true);
-		if (!instanceStorage.containsInstance(Instance.fromAtom(atom))) {
-			return AssignmentStatus.UNASSIGNED;
+			retVal = AssignmentStatus.TRUE;
 		} else {
-			return this.getTruthValueForAtom(atom);
+			Atom atom = groundLiteral.getAtom();
+			if (this.isFact(atom)) {
+				retVal = AssignmentStatus.TRUE;
+			} else {
+				// "false" atoms may not exist in WM since they would have been removed in
+				// earlier iterations after generating nogoods
+				retVal = this.getTruthValueForAtom(atom);
+//				IndexedInstanceStorage instanceStorage = this.workingMemory.get(atom, true);
+//				if (!instanceStorage.containsInstance(Instance.fromAtom(atom))) {
+//					retVal = AssignmentStatus.UNASSIGNED;
+//				} else {
+//					retVal = this.getTruthValueForAtom(atom);
+//				}
+			}
 		}
+		LOGGER.trace("Got assignmentStatus = {} for literal {}", retVal, groundLiteral);
+		return retVal;
 	}
 
 	// Contract: lit is already substituted with partialSubstitution!
@@ -76,8 +104,11 @@ public class DefaultLazyGroundingInstantiationStrategy implements InstantiationS
 			// Now check that the resulting Atom is either true or unassigned
 			atomForCurrentInstance = new BasicAtom(atom.getPredicate(), atom.getTerms())
 					.substitute(currentInstanceSubstitution);
-			// TODO check if atom is a fact - if so, we're done here
-			truthForCurrentAtom = this.getTruthValueForAtom(atomForCurrentInstance);
+			if (this.isFact(atomForCurrentInstance)) {
+				truthForCurrentAtom = AssignmentStatus.TRUE;
+			} else {
+				truthForCurrentAtom = this.getTruthValueForAtom(atomForCurrentInstance);
+			}
 			switch (truthForCurrentAtom) {
 				case FALSE:
 					// Atom is assigned as false - discard it, move on to next instance
@@ -93,6 +124,10 @@ public class DefaultLazyGroundingInstantiationStrategy implements InstantiationS
 		return retVal;
 	}
 
+	// FIXME we also need to check assignment for atoms that do not exist in working
+	// memory... 4 realz?
+	// ... is that really necessary, or rather just an artefact from test case
+	// NaiveGrounderTest#testGroundingOfRuleSwitchedOffByFalsePositiveBody???
 	private AssignmentStatus getTruthValueForAtom(Atom atom) {
 		if (this.currentAssignment == null) {
 			// legitimate case, grounder may be in bootstrap and will call bindNextAtom with
