@@ -376,7 +376,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// Update instantiationStrategy with stale set and current assignment
 		this.instantiationStrategy.setStaleWorkingMemoryEntries(this.removeAfterObtainingNewNoGoods);
 		this.instantiationStrategy.setCurrentAssignment(currentAssignment);
-		
+
 		// Compute new ground rule (evaluate joins with newly changed atoms)
 		for (IndexedInstanceStorage modifiedWorkingMemory : workingMemory.modified()) {
 			// Skip predicates solely used in the solver which do not occur in rules.
@@ -481,11 +481,13 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		if (tolerance < 0) {
 			tolerance = Integer.MAX_VALUE;
 		}
-		if (groundingOrder.isGround()) {
-			// rules that are already ground don't need to be grounded
-			// note that partialSubstitution will be empty in that case
-			return BindingResult.singleton(partialSubstitution, 0);
-		}
+		// FIXME I believe we can't simply do that, thinking rule body must still go
+		// into atomStore or something..., Check this!
+//		if (groundingOrder.isGround()) {
+//			// rules that are already ground don't need to be grounded
+//			// note that partialSubstitution will be empty in that case
+//			return BindingResult.singleton(partialSubstitution, 0);
+//		}
 		BindingResult bindingResult = bindNextAtomInRule(groundingOrder, 0, tolerance, tolerance, partialSubstitution, currentAssignment);
 		if (LOGGER.isDebugEnabled()) {
 			for (int i = 0; i < bindingResult.size(); i++) {
@@ -595,7 +597,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private BindingResult bindNextAtomInRule(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance,
 			Substitution partialSubstitution, Assignment currentAssignment) {
 		BindingResult retVal;
-		
+
 		Literal currentLiteral = groundingOrder.getLiteralAtOrderPosition(orderPosition);
 		if (currentLiteral == null) {
 			LOGGER.trace("bindNextAtom - current literal is null, returning last substitution!");
@@ -638,8 +640,16 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 							currentAssignment);
 					break;
 				case STOP_BINDING:
-					LOGGER.trace("bindNextAtom - stopping binding");
-					retVal = BindingResult.empty();
+					LOGGER.trace("bindNextAtom - got STOP_BINDING from instantiator");
+					if (originalTolerance > 0) {
+						LOGGER.trace("bindNextAtom - got STOP_BINDING from instantiator, but working permissively, therefore pushing literal back");
+						// we have a permissive heuristic in use
+						retVal = pushBackAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution,
+								currentAssignment);
+					} else {
+						LOGGER.trace("bindNextAtom - got STOP_BINDING from instantiator");
+						retVal = BindingResult.empty();
+					}
 					break;
 				default:
 					throw Util.oops("Unhandled literal instantiation result type: " + instantiationResult.getType());

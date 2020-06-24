@@ -149,6 +149,7 @@ public class RuleInstantiator {
 			// resulting ground atom is true or unassigned, false atoms are internally
 			// discarded
 			substitutions = this.instantiationStrategy.getAcceptedSubstitutions(substitutedLiteral, partialSubstitution);
+			LOGGER.trace("Got {} substitutions from instantiation strategy for {}", substitutions.size(), substitutedLiteral);
 			retVal = substitutions.isEmpty() ? LiteralInstantiationResult.stopBinding() : LiteralInstantiationResult.continueBinding(substitutions);
 		}
 		return retVal;
