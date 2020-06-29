@@ -1,14 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.instantiation;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -19,6 +10,14 @@ import at.ac.tuwien.kr.alpha.grounder.IndexedInstanceStorage;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.WorkingMemory;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 
 public class DefaultLazyGroundingInstantiationStrategy implements InstantiationStrategy {
 
@@ -117,6 +116,10 @@ public class DefaultLazyGroundingInstantiationStrategy implements InstantiationS
 					// in the next grounder run
 					this.staleWorkingMemoryEntries.add(atomForCurrentInstance);
 					continue;
+				case UNASSIGNED:	// FIXME: check if correctly placed (avoids ignoring of re-added first-unassigned instances).
+					this.staleWorkingMemoryEntries.add(atomForCurrentInstance);
+					retVal.add(new ImmutablePair<>(currentInstanceSubstitution, truthForCurrentAtom));
+					break;
 				default:
 					retVal.add(new ImmutablePair<>(currentInstanceSubstitution, truthForCurrentAtom));
 			}
