@@ -284,4 +284,9 @@ public class NoGood implements NoGoodInterface, Comparable<NoGood> {
 
 		return sb.toString();
 	}
+	
+	// FOR DEBUGGING - write nogood as human-readable constraint
+	public Rule toConstraint(AtomStore atomStore) {
+		
+	}
 }
