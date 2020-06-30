@@ -494,6 +494,30 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return bindingResult;
 	}
 
+	private BindingResult continueBinding(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance,
+			Assignment currentAssignment, ImmutablePair<Substitution, AssignmentStatus> lastLiteralBindingResult) {
+		Substitution substitution = lastLiteralBindingResult.left;
+		AssignmentStatus lastBoundLiteralAssignmentStatus = lastLiteralBindingResult.right;
+		switch (lastBoundLiteralAssignmentStatus) {
+			case TRUE:
+				return advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, substitution, currentAssignment);
+			case UNASSIGNED:
+				// we had an unassigned atom - proceed with grounding if enough tolerance
+				// remains
+				int toleranceForNextRun = remainingTolerance - 1;
+				if (toleranceForNextRun >= 0) {
+					return advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, toleranceForNextRun, substitution, currentAssignment);
+				} else {
+					return BindingResult.empty();
+				}
+			case FALSE:
+				throw Util.oops("Got an assignmentStatus FALSE for literal " + groundingOrder.getLiteralAtOrderPosition(orderPosition) + " and substitution "
+						+ substitution + " - should not happen!");
+			default:
+				throw Util.oops("Got unsupported assignmentStatus " + lastBoundLiteralAssignmentStatus);
+		}
+	}
+
 	private BindingResult advanceAndBindNextAtomInRule(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance,
 			Substitution partialSubstitution, Assignment currentAssignment) {
 		groundingOrder.considerUntilCurrentEnd();
@@ -556,38 +580,13 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 					remainingTolerance, partialSubstitution);
 			LiteralInstantiationResult instantiationResult = this.ruleInstantiator.instantiateLiteral(currentLiteral, partialSubstitution);
 			switch (instantiationResult.getType()) {
-				// TODO break continue case out into separate method!
 				case CONTINUE:
 					LOGGER.trace("bindNextAtom - got CONTINUE from rule instantiator");
 					List<ImmutablePair<Substitution, AssignmentStatus>> substitutionInfos = instantiationResult.getSubstitutions();
-					int toleranceForNextRun;
-					AssignmentStatus assignmentStatus;
-					Substitution substitution;
 					retVal = new BindingResult();
 					for (ImmutablePair<Substitution, AssignmentStatus> substitutionInfo : substitutionInfos) {
-						substitution = substitutionInfo.left;
-						assignmentStatus = substitutionInfo.right;
-						switch (assignmentStatus) {
-							case TRUE:
-								toleranceForNextRun = remainingTolerance;
-								break;
-							case UNASSIGNED:
-								toleranceForNextRun = remainingTolerance - 1;
-								break;
-							case FALSE:
-								throw Util.oops("Got an assignmentStatus FALSE for literal " + currentLiteral + " and substitution " + substitution
-										+ " - should not happen!");
-							default:
-								throw Util.oops("Got unsupported assignmentStatus " + assignmentStatus);
-						}
-						if (toleranceForNextRun >= 0) {
-							LOGGER.trace("Advancing after binding literal {} with remaining tolerance {}", currentLiteral, toleranceForNextRun);
-							retVal.add(advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, toleranceForNextRun, substitution,
-									currentAssignment));
-						} else {
-							LOGGER.trace("bindNextAtom - Tolerance used up: current literal {}, partialSubstitution {} resultSubstitution", currentLiteral,
-									partialSubstitution, substitution);
-						}
+						retVal.add(this.continueBinding(groundingOrder, orderPosition, originalTolerance, remainingTolerance, currentAssignment,
+								substitutionInfo));
 					}
 					break;
 				case PUSH_BACK:
