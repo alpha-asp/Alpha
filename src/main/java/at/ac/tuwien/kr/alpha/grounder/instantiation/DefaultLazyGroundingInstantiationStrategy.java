@@ -59,6 +59,9 @@ public class DefaultLazyGroundingInstantiationStrategy implements InstantiationS
 				// "false" atoms may not exist in WM since they would have been removed in
 				// earlier iterations after generating nogoods
 				retVal = this.getTruthValueForAtom(atom);
+				if (retVal == AssignmentStatus.FALSE || retVal == AssignmentStatus.UNASSIGNED) {
+					this.staleWorkingMemoryEntries.add(atom);
+				}
 //				IndexedInstanceStorage instanceStorage = this.workingMemory.get(atom, true);
 //				if (!instanceStorage.containsInstance(Instance.fromAtom(atom))) {
 //					retVal = AssignmentStatus.UNASSIGNED;
@@ -116,7 +119,8 @@ public class DefaultLazyGroundingInstantiationStrategy implements InstantiationS
 					// in the next grounder run
 					this.staleWorkingMemoryEntries.add(atomForCurrentInstance);
 					continue;
-				case UNASSIGNED:	// FIXME: check if correctly placed (avoids ignoring of re-added first-unassigned instances).
+				case UNASSIGNED: // FIXME: check if correctly placed (avoids ignoring of re-added
+									// first-unassigned instances).
 					this.staleWorkingMemoryEntries.add(atomForCurrentInstance);
 					retVal.add(new ImmutablePair<>(currentInstanceSubstitution, truthForCurrentAtom));
 					break;

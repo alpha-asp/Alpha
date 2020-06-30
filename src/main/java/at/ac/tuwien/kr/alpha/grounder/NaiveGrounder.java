@@ -154,7 +154,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 		// set up rule instantiator
 		this.instantiationStrategy = new DefaultLazyGroundingInstantiationStrategy(this.workingMemory, this.atomStore, this.factsFromProgram);
-		this.ruleInstantiator = new RuleInstantiator(this.instantiationStrategy, true);
+		this.ruleInstantiator = new RuleInstantiator(this.instantiationStrategy, this.heuristicsConfiguration.isPermissive(false));
 	}
 
 	private void initializeFactsAndRules(Program program) {
@@ -398,7 +398,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				// Use the recently added instances from the modified working memory to
 				// construct an initial substitution
 				NonGroundRule nonGroundRule = firstBindingAtom.rule;
-
+				
 				// Generate substitutions from each recent instance.
 				for (Instance instance : modifiedWorkingMemory.getRecentlyAddedInstances()) {
 					// Check instance if it matches with the atom.
