@@ -620,11 +620,13 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			}
 		}
 
+		@Override
 		public boolean hasNext() {
 			advanceCursorToNextPositiveAssignment();
 			return newAssignmentsIterator < trailSize;
 		}
 
+		@Override
 		public int next() {
 			return atomOf(trail[newAssignmentsIterator++]);
 
