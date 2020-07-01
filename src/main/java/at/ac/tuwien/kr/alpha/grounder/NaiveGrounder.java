@@ -494,6 +494,28 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return bindingResult;
 	}
 
+	/**
+	 * Helper method used by
+	 * {@link NaiveGrounder#bindNextAtomInRule(RuleGroundingOrder, int, int, int, Substitution, Assignment)}.
+	 * 
+	 * Takes an <code>ImmutablePair</code> of a {@link Substitution} and an
+	 * accompanying {@link AssignmentStatus} and calls
+	 * <code>bindNextAtomInRule</code> for the next literal in the grounding order.
+	 * If the assignment status for the last bound literal was
+	 * {@link AssignmentStatus#UNASSIGNED}, the <code>remainingTolerance</code>
+	 * parameter is decreased by 1. If the remaining tolerance drops below zero,
+	 * this method returns an empty {@link BindingResult}.
+	 * 
+	 * @param groundingOrder
+	 * @param orderPosition
+	 * @param originalTolerance
+	 * @param remainingTolerance
+	 * @param currentAssignment
+	 * @param lastLiteralBindingResult
+	 * @return the result of calling bindNextAtomInRule on the next literal in th
+	 *         grounding order, or an empty binding result if remaining tolerance is
+	 *         less than zero
+	 */
 	private BindingResult continueBinding(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance,
 			Assignment currentAssignment, ImmutablePair<Substitution, AssignmentStatus> lastLiteralBindingResult) {
 		Substitution substitution = lastLiteralBindingResult.left;
