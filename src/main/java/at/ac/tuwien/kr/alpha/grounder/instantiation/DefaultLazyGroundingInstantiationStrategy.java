@@ -57,18 +57,7 @@ public class DefaultLazyGroundingInstantiationStrategy implements LiteralInstant
 			if (this.isFact(atom)) {
 				retVal = AssignmentStatus.TRUE;
 			} else {
-				// "false" atoms may not exist in WM since they would have been removed in
-				// earlier iterations after generating nogoods
 				retVal = this.getTruthValueForAtom(atom);
-				if (retVal == AssignmentStatus.FALSE || retVal == AssignmentStatus.UNASSIGNED) {
-					this.staleWorkingMemoryEntries.add(atom);
-				}
-//				IndexedInstanceStorage instanceStorage = this.workingMemory.get(atom, true);
-//				if (!instanceStorage.containsInstance(Instance.fromAtom(atom))) {
-//					retVal = AssignmentStatus.UNASSIGNED;
-//				} else {
-//					retVal = this.getTruthValueForAtom(atom);
-//				}
 			}
 		}
 		LOGGER.trace("Got assignmentStatus = {} for literal {}", retVal, groundLiteral);
@@ -112,22 +101,10 @@ public class DefaultLazyGroundingInstantiationStrategy implements LiteralInstant
 			} else {
 				truthForCurrentAtom = this.getTruthValueForAtom(atomForCurrentInstance);
 			}
-			switch (truthForCurrentAtom) {
-				case FALSE:
-					// Atom is assigned as false - discard it, move on to next instance
-					// Discarding from working memory is done in a lazy fashion:
-					// Add the atom to the stale set which will be worked off
-					// in the next grounder run
-					this.staleWorkingMemoryEntries.add(atomForCurrentInstance);
-					continue;
-				case UNASSIGNED: // FIXME: check if correctly placed (avoids ignoring of re-added
-									// first-unassigned instances).
-					this.staleWorkingMemoryEntries.add(atomForCurrentInstance);
-					retVal.add(new ImmutablePair<>(currentInstanceSubstitution, truthForCurrentAtom));
-					break;
-				default:
-					retVal.add(new ImmutablePair<>(currentInstanceSubstitution, truthForCurrentAtom));
+			if(truthForCurrentAtom == AssignmentStatus.FALSE) {
+				continue; // discard that instance
 			}
+			retVal.add(new ImmutablePair<>(currentInstanceSubstitution, truthForCurrentAtom));
 		}
 		return retVal;
 	}
@@ -137,23 +114,29 @@ public class DefaultLazyGroundingInstantiationStrategy implements LiteralInstant
 	// ... is that really necessary, or rather just an artefact from test case
 	// NaiveGrounderTest#testGroundingOfRuleSwitchedOffByFalsePositiveBody???
 	private AssignmentStatus getTruthValueForAtom(Atom atom) {
+		AssignmentStatus retVal;
 		if (this.currentAssignment == null) {
 			// legitimate case, grounder may be in bootstrap and will call bindNextAtom with
 			// null assignment in that case
 			// Assumption: since the atom came from working memory and we must be in
 			// bootstrap here, we can assume for the atom to be true
-			return AssignmentStatus.TRUE;
-		}
-		// First, make sure that the Atom in question exists in the AtomStore
-		int atomId = this.atomStore.putIfAbsent(atom);
-		// newly obtained atomId might be higher than the maximum in the current
-		// assignment, grow the assignment
-		this.currentAssignment.growForMaxAtomId();
-		if (currentAssignment.isAssigned(atomId)) {
-			return currentAssignment.getTruth(atomId).toBoolean() ? AssignmentStatus.TRUE : AssignmentStatus.FALSE;
+			retVal = AssignmentStatus.TRUE;
 		} else {
-			return AssignmentStatus.UNASSIGNED;
+			// First, make sure that the Atom in question exists in the AtomStore
+			int atomId = this.atomStore.putIfAbsent(atom);
+			// newly obtained atomId might be higher than the maximum in the current
+			// assignment, grow the assignment
+			this.currentAssignment.growForMaxAtomId();
+			if (currentAssignment.isAssigned(atomId)) {
+				retVal = currentAssignment.getTruth(atomId).toBoolean() ? AssignmentStatus.TRUE : AssignmentStatus.FALSE;
+			} else {
+				retVal = AssignmentStatus.UNASSIGNED;
+			}
 		}
+		if (retVal == AssignmentStatus.FALSE || retVal == AssignmentStatus.UNASSIGNED) {
+			this.staleWorkingMemoryEntries.add(atom);
+		}
+		return retVal;
 	}
 
 	public Assignment getCurrentAssignment() {
