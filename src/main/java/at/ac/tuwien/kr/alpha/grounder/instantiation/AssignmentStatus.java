@@ -25,11 +25,34 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.instantiation;
 
-
-// Not to be confused with ThriceTruth, only using this in order to be able to
-// distinguish between atoms that are true (or MBT) and ones that are unassigned
-// NOTE: Could use a Boolean and null for unassigned, but would be weird to read
-// for anyone not intimately familiar with the code
+/**
+ * Helper type to represent truth values as understood by a {@link Grounder} and
+ * {@link LiteralInstantiator}.
+ * 
+ * Note that this enum is not related in any way to {@link ThriceTruth} and
+ * mainly serves to have a clear mechanism to indicate that the truth value of
+ * an atom is not known at a given point in time (UNASSIGNED)
+ * 
+ * Copyright (c) 2020, the Alpha Team.
+ */
 public enum AssignmentStatus {
-	TRUE, FALSE, UNASSIGNED;
+
+	/**
+	 * True
+	 */
+	TRUE,
+
+	/**
+	 * False
+	 */
+	FALSE,
+
+	/**
+	 * Unassigned - indicates that at a given point in time, a
+	 * {@link LiteralInstantiationStrategy} can not determine whether a literal is
+	 * true or false. This is needed because some grounding strategies consider
+	 * UNASSIGNED atoms to be valid ground instances in order to be able to ground
+	 * larger parts of a program earlier on in the ground/solve cycle
+	 */
+	UNASSIGNED;
 }

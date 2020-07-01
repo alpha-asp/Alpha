@@ -429,7 +429,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 		}
 
-		removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
+		// clear rather than re-initialize, avoids having to pass a new list to instantiation strategy every time
+		removeAfterObtainingNewNoGoods.clear();
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Grounded NoGoods are:");
 			for (Map.Entry<Integer, NoGood> noGoodEntry : newNoGoods.entrySet()) {
