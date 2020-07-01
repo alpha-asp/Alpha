@@ -593,48 +593,55 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// FIXME needs a proper solution, but needed for now to make some unit tests
 		// work!
 		this.instantiationStrategy.setCurrentAssignment(currentAssignment);
-		BindingResult retVal;
 		Literal currentLiteral = groundingOrder.getLiteralAtOrderPosition(orderPosition);
 		if (currentLiteral == null) {
 			LOGGER.trace("bindNextAtom - current literal is null, returning last substitution!");
-			retVal = BindingResult.singleton(partialSubstitution, originalTolerance - remainingTolerance);
-		} else {
-			LOGGER.trace("bindNextAtom - binding current literal {} with remaining tolerance {} and partial substitution {}", currentLiteral,
-					remainingTolerance, partialSubstitution);
-			LiteralInstantiationResult instantiationResult = this.ruleInstantiator.instantiateLiteral(currentLiteral, partialSubstitution);
-			switch (instantiationResult.getType()) {
-				case CONTINUE:
-					LOGGER.trace("bindNextAtom - got CONTINUE from literal instantiator");
-					List<ImmutablePair<Substitution, AssignmentStatus>> substitutionInfos = instantiationResult.getSubstitutions();
-					retVal = new BindingResult();
-					for (ImmutablePair<Substitution, AssignmentStatus> substitutionInfo : substitutionInfos) {
-						retVal.add(this.continueBinding(groundingOrder, orderPosition, originalTolerance, remainingTolerance, currentAssignment,
-								substitutionInfo));
-					}
-					break;
-				case PUSH_BACK:
-					LOGGER.trace("bindNextAtom - pushing back current literal");
+			return BindingResult.singleton(partialSubstitution, originalTolerance - remainingTolerance);
+		}
+
+		LOGGER.trace("bindNextAtom - binding current literal {} with remaining tolerance {} and partial substitution {}", currentLiteral,
+				remainingTolerance, partialSubstitution);
+		LiteralInstantiationResult instantiationResult = this.ruleInstantiator.instantiateLiteral(currentLiteral, partialSubstitution);
+		return this.handleLiteralInstantiationResultAndContinueBinding(groundingOrder, orderPosition, originalTolerance, remainingTolerance,
+				partialSubstitution, currentAssignment, instantiationResult);
+	}
+
+	private BindingResult handleLiteralInstantiationResultAndContinueBinding(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance,
+			int remainingTolerance,
+			Substitution partialSubstitution, Assignment currentAssignment, LiteralInstantiationResult lastLiteralInstantiationResult) {
+		BindingResult retVal;
+		switch (lastLiteralInstantiationResult.getType()) {
+			case CONTINUE:
+				LOGGER.trace("bindNextAtom - got CONTINUE from literal instantiator");
+				List<ImmutablePair<Substitution, AssignmentStatus>> substitutionInfos = lastLiteralInstantiationResult.getSubstitutions();
+				retVal = new BindingResult();
+				for (ImmutablePair<Substitution, AssignmentStatus> substitutionInfo : substitutionInfos) {
+					retVal.add(this.continueBinding(groundingOrder, orderPosition, originalTolerance, remainingTolerance, currentAssignment,
+							substitutionInfo));
+				}
+				break;
+			case PUSH_BACK:
+				LOGGER.trace("bindNextAtom - pushing back current literal");
+				retVal = pushBackAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution,
+						currentAssignment);
+				break;
+			case MAYBE_PUSH_BACK:
+				LOGGER.trace("bindNextAtom - got MAYBE_PUSH_BACK");
+				if (originalTolerance > 0) {
+					// we have a permissive heuristic in use
 					retVal = pushBackAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution,
 							currentAssignment);
-					break;
-				case MAYBE_PUSH_BACK:
-					LOGGER.trace("bindNextAtom - got MAYBE_PUSH_BACK");
-					if (originalTolerance > 0) {
-						// we have a permissive heuristic in use
-						retVal = pushBackAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution,
-								currentAssignment);
-					} else {
-						LOGGER.trace("bindNextAtom - Cannot push back since tolerance is used up, stopping here!");
-						retVal = BindingResult.empty();
-					}
-					break;
-				case STOP_BINDING:
-					LOGGER.trace("bindNextAtom - got STOP_BINDING from instantiator");
+				} else {
+					LOGGER.trace("bindNextAtom - Cannot push back since tolerance is used up, stopping here!");
 					retVal = BindingResult.empty();
-					break;
-				default:
-					throw Util.oops("Unhandled literal instantiation result type: " + instantiationResult.getType());
-			}
+				}
+				break;
+			case STOP_BINDING:
+				LOGGER.trace("bindNextAtom - got STOP_BINDING from instantiator");
+				retVal = BindingResult.empty();
+				break;
+			default:
+				throw Util.oops("Unhandled literal instantiation result type: " + lastLiteralInstantiationResult.getType());
 		}
 		return retVal;
 	}
