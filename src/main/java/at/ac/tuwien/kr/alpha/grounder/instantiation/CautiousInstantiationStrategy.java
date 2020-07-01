@@ -1,16 +1,22 @@
 package at.ac.tuwien.kr.alpha.grounder.instantiation;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.WorkingMemory;
 
-public class CautiousInstantiationStrategy implements LiteralInstantiationStrategy {
+/**
+ * A very basic implementation of {@link AbstractLiteralInstantiationStrategy}
+ * that determines truth of an atom solely based on the atom's presence in a
+ * working memory. Atoms that have a corresponding positive instance in the
+ * working memory have {@link AssignmentStatus#TRUE}, all other atoms have
+ * {@link AssignmentStatus#FALSE}. A negated literal lit is true iff
+ * <code>getAssignmentStatusForAtom(lit.getAtom()) == AssignmentStatus.FALSE</code>,
+ * false otherwise
+ * 
+ * Copyright (c) 2020, the Alpha Team.
+ */
+public class CautiousInstantiationStrategy extends AbstractLiteralInstantiationStrategy {
 
 	private final WorkingMemory workingMemory;
 
@@ -19,34 +25,26 @@ public class CautiousInstantiationStrategy implements LiteralInstantiationStrate
 	}
 
 	@Override
-	public AssignmentStatus getTruthForGroundLiteral(Literal groundLiteral) {
-		boolean atomTruth;
-		if (!this.workingMemory.contains(groundLiteral.getPredicate())) {
-			atomTruth = false;
-		} else {
-			if (this.workingMemory.get(groundLiteral.getPredicate(), true).containsInstance(Instance.fromAtom(groundLiteral.getAtom()))) {
-				atomTruth = true;
-			} else {
-				atomTruth = false;
-			}
-		}
-		boolean litTruth = groundLiteral.isNegated() ? !atomTruth : atomTruth;
-		return litTruth ? AssignmentStatus.TRUE : AssignmentStatus.FALSE;
+	protected Iterable<Instance> computeCandidateInstances(Atom partiallyGroundAtom) {
+		return this.workingMemory.get(partiallyGroundAtom, true).getInstancesFromPartiallyGroundAtom(partiallyGroundAtom);
 	}
 
 	@Override
-	public List<ImmutablePair<Substitution, AssignmentStatus>> getAcceptedSubstitutions(Literal lit, Substitution partialSubstitution) {
-		if (lit.isNegated()) {
-			throw new UnsupportedOperationException("Cannot extend substitution for negated literal - literal should be ground already!");
+	protected AssignmentStatus getAssignmentStatusForAtom(Atom atom) {
+		return this.workingMemory.get(atom, true).containsInstance(Instance.fromAtom(atom)) ? AssignmentStatus.TRUE : AssignmentStatus.FALSE;
+	}
+
+	@Override
+	protected AssignmentStatus getAssignmentStatusForNegatedGroundLiteral(Literal negatedGroundLiteral) {
+		return this.getAssignmentStatusForAtom(negatedGroundLiteral.getAtom()) == AssignmentStatus.TRUE ? AssignmentStatus.FALSE : AssignmentStatus.TRUE;
+	}
+
+	@Override
+	protected boolean assignmentStatusAccepted(AssignmentStatus assignmentStatus) {
+		if (assignmentStatus == AssignmentStatus.TRUE) {
+			return true;
 		}
-		List<Instance> instances = this.workingMemory.get(lit).getInstancesFromPartiallyGroundAtom(lit.getAtom());
-		// could do this in a loop, but let's see what's faster...
-		List<ImmutablePair<Substitution, AssignmentStatus>> extendedSubstitutions = instances.stream().parallel()
-				.map((instance) -> Substitution.unify(lit.getAtom(), instance, new Substitution(partialSubstitution)))
-				.filter((unified) -> unified != null)
-				.map((substitution) -> new ImmutablePair<>(substitution, AssignmentStatus.TRUE))
-				.collect(Collectors.toList());
-		return extendedSubstitutions;
+		return false;
 	}
 
 }
