@@ -72,9 +72,9 @@ import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy.AssignmentStatus;
-import at.ac.tuwien.kr.alpha.grounder.instantiation.InstantiationStrategy;
+import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationStrategy;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationResult;
-import at.ac.tuwien.kr.alpha.grounder.instantiation.RuleInstantiator;
+import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiator;
 import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 import at.ac.tuwien.kr.alpha.grounder.transformation.CardinalityNormalization;
@@ -113,9 +113,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	/**
 	 * Handles instantiation of literals, i.e. supplies ground substitutions for
 	 * literals of non-ground rules according to the rules set by the
-	 * {@link InstantiationStrategy} used by this grounder.
+	 * {@link LiteralInstantiationStrategy} used by this grounder.
 	 */
-	private final RuleInstantiator ruleInstantiator;
+	private final LiteralInstantiator ruleInstantiator;
 	private final DefaultLazyGroundingInstantiationStrategy instantiationStrategy;
 
 	public NaiveGrounder(Program program, AtomStore atomStore, boolean debugInternalChecks, Bridge... bridges) {
@@ -152,7 +152,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 		// set up rule instantiator
 		this.instantiationStrategy = new DefaultLazyGroundingInstantiationStrategy(this.workingMemory, this.atomStore, this.factsFromProgram);
-		this.ruleInstantiator = new RuleInstantiator(this.instantiationStrategy, this.heuristicsConfiguration.isPermissive(false));
+		this.ruleInstantiator = new LiteralInstantiator(this.instantiationStrategy, this.heuristicsConfiguration.isPermissive(false));
 	}
 
 	private void initializeFactsAndRules(Program program) {
@@ -560,7 +560,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 * Computes ground substitutions for a literal based on a {@link RuleGroundingOrder} and a {@link Substitution}.
 	 * 
 	 * Computes ground substitutions for the literal at position <code>orderPosition</code> of <code>groundingOrder</code>
-	 * Actual substitutions are computed by this grounder's {@link RuleInstantiator}, {@link LiteralInstantiationResult}s are handled as follows:
+	 * Actual substitutions are computed by this grounder's {@link LiteralInstantiator}, {@link LiteralInstantiationResult}s are handled as follows:
 	 * <ul>
 	 * 	<li><pre>LiteralInstantiationResult.Type.CONTINUE</pre>: 
 	 * 		Recursively call <code>bindNextAtomInRule</code> for each generated substitution 

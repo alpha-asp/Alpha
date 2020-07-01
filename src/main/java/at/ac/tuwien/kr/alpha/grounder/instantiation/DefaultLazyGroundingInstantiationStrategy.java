@@ -19,7 +19,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-public class DefaultLazyGroundingInstantiationStrategy implements InstantiationStrategy {
+public class DefaultLazyGroundingInstantiationStrategy implements LiteralInstantiationStrategy {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultLazyGroundingInstantiationStrategy.class);
 

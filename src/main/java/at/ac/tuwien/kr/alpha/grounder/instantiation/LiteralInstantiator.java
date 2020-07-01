@@ -17,18 +17,20 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalLiteral;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy.AssignmentStatus;
 
 /**
- * Provides ground instantiations for rules.
+ * Provides ground instantiations for literals.
+ * 
+ * RuleInstantiator is intended to be used for grounding and other use cases where ground instantiations 
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
-public class RuleInstantiator {
+public class LiteralInstantiator {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(RuleInstantiator.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(LiteralInstantiator.class);
 
-	private final InstantiationStrategy instantiationStrategy;
+	private final LiteralInstantiationStrategy instantiationStrategy;
 	private final boolean pushBackNonGroundNegatedLiterals;
 
-	public RuleInstantiator(InstantiationStrategy instantiationStrategy, boolean pushBackNonGroundNegatedLiterals) {
+	public LiteralInstantiator(LiteralInstantiationStrategy instantiationStrategy, boolean pushBackNonGroundNegatedLiterals) {
 		this.instantiationStrategy = instantiationStrategy;
 		this.pushBackNonGroundNegatedLiterals = pushBackNonGroundNegatedLiterals;
 	}
@@ -107,10 +109,10 @@ public class RuleInstantiator {
 	 * {@link FixedInterpretationLiteral} or {@link EnumerationLiteral}.
 	 * If applying the given partial substitution to the literal already grounds the
 	 * literal, the resulting ground literal is verified based on this instantiators
-	 * {@link InstantiationStrategy}.
+	 * {@link LiteralInstantiationStrategy}.
 	 * If the literal is only partially ground after applying the partial
 	 * substitution, ground substitutions are looked up using the instantiators
-	 * {@link InstantiationStrategy}.
+	 * {@link LiteralInstantiationStrategy}.
 	 * This method assumes that the partial substitution has <emph>not</emph> been
 	 * applied to the passed literal.
 	 * 

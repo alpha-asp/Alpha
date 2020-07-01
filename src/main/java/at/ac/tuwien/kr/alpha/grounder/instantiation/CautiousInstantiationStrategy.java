@@ -11,7 +11,7 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.WorkingMemory;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy.AssignmentStatus;
 
-public class CautiousInstantiationStrategy implements InstantiationStrategy {
+public class CautiousInstantiationStrategy implements LiteralInstantiationStrategy {
 
 	private final WorkingMemory workingMemory;
 

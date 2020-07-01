@@ -30,7 +30,7 @@ public class RuleInstantiatorTest {
 		ComparisonAtom equalsThree = new ComparisonAtom(ConstantTerm.getInstance(3), VariableTerm.getInstance("THREE"), ComparisonOperator.EQ);
 		Literal lit = new ComparisonLiteral(equalsThree, true);
 		Substitution substitution = new Substitution();
-		RuleInstantiator instantiator = new RuleInstantiator(new CautiousInstantiationStrategy(null), false);
+		LiteralInstantiator instantiator = new LiteralInstantiator(new CautiousInstantiationStrategy(null), false);
 		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution);
 		Assert.assertEquals(LiteralInstantiationResult.Type.CONTINUE, result.getType());
 		List<ImmutablePair<Substitution, AssignmentStatus>> resultSubstitutions = result.getSubstitutions();
@@ -48,7 +48,7 @@ public class RuleInstantiatorTest {
 		Substitution substitution = new Substitution();
 		substitution.put(VariableTerm.getInstance("FIVE"), ConstantTerm.getInstance(5));
 		substitution.put(VariableTerm.getInstance("THREE"), ConstantTerm.getInstance(3));
-		RuleInstantiator instantiator = new RuleInstantiator(new CautiousInstantiationStrategy(null), false);
+		LiteralInstantiator instantiator = new LiteralInstantiator(new CautiousInstantiationStrategy(null), false);
 		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution);
 		Assert.assertEquals(LiteralInstantiationResult.Type.STOP_BINDING, result.getType());
 	}
@@ -67,7 +67,7 @@ public class RuleInstantiatorTest {
 		Substitution substitution = new Substitution();
 		substitution.put(enumTerm, ConstantTerm.getSymbolicInstance("enum1"));
 		substitution.put(idTerm, ConstantTerm.getSymbolicInstance("someElement"));
-		RuleInstantiator instantiator = new RuleInstantiator(new CautiousInstantiationStrategy(null), false);
+		LiteralInstantiator instantiator = new LiteralInstantiator(new CautiousInstantiationStrategy(null), false);
 		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution);
 		Assert.assertEquals(LiteralInstantiationResult.Type.CONTINUE, result.getType());
 		List<ImmutablePair<Substitution, AssignmentStatus>> resultSubstitutions = result.getSubstitutions();
@@ -88,7 +88,7 @@ public class RuleInstantiatorTest {
 		Substitution substitution = new Substitution();
 		substitution.put(x, ConstantTerm.getSymbolicInstance("x"));
 		substitution.put(y, ConstantTerm.getSymbolicInstance("y"));
-		RuleInstantiator instantiator = new RuleInstantiator(new CautiousInstantiationStrategy(workingMemory), false);
+		LiteralInstantiator instantiator = new LiteralInstantiator(new CautiousInstantiationStrategy(workingMemory), false);
 		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution);
 		Assert.assertEquals(LiteralInstantiationResult.Type.CONTINUE, result.getType());
 		List<ImmutablePair<Substitution, AssignmentStatus>> substitutions = result.getSubstitutions();
@@ -111,7 +111,7 @@ public class RuleInstantiatorTest {
 		Substitution substitution = new Substitution();
 		substitution.put(x, ConstantTerm.getSymbolicInstance("x"));
 		substitution.put(y, ConstantTerm.getSymbolicInstance("y"));
-		RuleInstantiator instantiator = new RuleInstantiator(new CautiousInstantiationStrategy(workingMemory), false);
+		LiteralInstantiator instantiator = new LiteralInstantiator(new CautiousInstantiationStrategy(workingMemory), false);
 		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution);
 		// with the given input substitution, lit is ground, but not satisfied,
 		// we expect the instantiator to verify that and return an empty list of
@@ -131,7 +131,7 @@ public class RuleInstantiatorTest {
 		Literal lit = new BasicLiteral(new BasicAtom(p, x, y), true);
 		Substitution substitution = new Substitution();
 		substitution.put(x, ConstantTerm.getSymbolicInstance("x"));
-		RuleInstantiator instantiator = new RuleInstantiator(new CautiousInstantiationStrategy(workingMemory), false);
+		LiteralInstantiator instantiator = new LiteralInstantiator(new CautiousInstantiationStrategy(workingMemory), false);
 		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution);
 		Assert.assertEquals(LiteralInstantiationResult.Type.CONTINUE, result.getType());
 		List<ImmutablePair<Substitution, AssignmentStatus>> substitutions = result.getSubstitutions();

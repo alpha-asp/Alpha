@@ -33,7 +33,7 @@ public class InstantiationStrategyTest {
 		WorkingMemory workingMemory = new WorkingMemory();
 		workingMemory.initialize(p);
 		workingMemory.addInstance(new BasicAtom(p, ConstantTerm.getSymbolicInstance("a")), true);
-		InstantiationStrategy strategy = new CautiousInstantiationStrategy(workingMemory);
+		LiteralInstantiationStrategy strategy = new CautiousInstantiationStrategy(workingMemory);
 		Literal positiveAcceptedLiteral = new BasicLiteral(
 				new BasicAtom(p, ConstantTerm.getSymbolicInstance("a")), true);
 		Assert.assertEquals(AssignmentStatus.TRUE, strategy.getTruthForGroundLiteral(positiveAcceptedLiteral));
@@ -48,7 +48,7 @@ public class InstantiationStrategyTest {
 		WorkingMemory workingMemory = new WorkingMemory();
 		workingMemory.initialize(p);
 		workingMemory.addInstance(new BasicAtom(p, ConstantTerm.getSymbolicInstance("a")), true);
-		InstantiationStrategy strategy = new CautiousInstantiationStrategy(workingMemory);
+		LiteralInstantiationStrategy strategy = new CautiousInstantiationStrategy(workingMemory);
 		Literal positiveRejectedLiteral = new BasicLiteral(
 				new BasicAtom(p, ConstantTerm.getSymbolicInstance("b")), true);
 		Assert.assertEquals(AssignmentStatus.FALSE, strategy.getTruthForGroundLiteral(positiveRejectedLiteral));
@@ -334,7 +334,7 @@ public class InstantiationStrategyTest {
 	 * 
 	 * In this case, the instantiation strategy has an assignment where q(a, b) is
 	 * assigned ThriceTruth.FALSE, so we expect an empty list from
-	 * {@link InstantiationStrategy#getAcceptedSubstitutions(Literal, Substitution)}.
+	 * {@link LiteralInstantiationStrategy#getAcceptedSubstitutions(Literal, Substitution)}.
 	 * Furthermore, we expect the atom q(a, b) to be added to the stale atom set.
 	 */
 	@Test
