@@ -96,11 +96,7 @@ public class DefaultLazyGroundingInstantiationStrategy implements LiteralInstant
 			// Now check that the resulting Atom is either true or unassigned
 			atomForCurrentInstance = new BasicAtom(atom.getPredicate(), atom.getTerms())
 					.substitute(currentInstanceSubstitution);
-			if (this.isFact(atomForCurrentInstance)) {
-				truthForCurrentAtom = AssignmentStatus.TRUE;
-			} else {
-				truthForCurrentAtom = this.getTruthValueForAtom(atomForCurrentInstance);
-			}
+			truthForCurrentAtom = this.getTruthValueForAtom(atomForCurrentInstance);
 			if (truthForCurrentAtom == AssignmentStatus.FALSE) {
 				continue; // discard that instance
 			}
@@ -122,15 +118,19 @@ public class DefaultLazyGroundingInstantiationStrategy implements LiteralInstant
 			// bootstrap here, we can assume for the atom to be true
 			retVal = AssignmentStatus.TRUE;
 		} else {
-			// First, make sure that the Atom in question exists in the AtomStore
-			int atomId = this.atomStore.putIfAbsent(atom);
-			// newly obtained atomId might be higher than the maximum in the current
-			// assignment, grow the assignment
-			this.currentAssignment.growForMaxAtomId();
-			if (currentAssignment.isAssigned(atomId)) {
-				retVal = currentAssignment.getTruth(atomId).toBoolean() ? AssignmentStatus.TRUE : AssignmentStatus.FALSE;
+			if (this.isFact(atom)) {
+				retVal = AssignmentStatus.TRUE;
 			} else {
-				retVal = AssignmentStatus.UNASSIGNED;
+				// First, make sure that the Atom in question exists in the AtomStore
+				int atomId = this.atomStore.putIfAbsent(atom);
+				// newly obtained atomId might be higher than the maximum in the current
+				// assignment, grow the assignment
+				this.currentAssignment.growForMaxAtomId();
+				if (currentAssignment.isAssigned(atomId)) {
+					retVal = currentAssignment.getTruth(atomId).toBoolean() ? AssignmentStatus.TRUE : AssignmentStatus.FALSE;
+				} else {
+					retVal = AssignmentStatus.UNASSIGNED;
+				}
 			}
 		}
 		if (retVal == AssignmentStatus.FALSE || retVal == AssignmentStatus.UNASSIGNED) {
