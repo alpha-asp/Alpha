@@ -70,10 +70,10 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.grounder.instantiation.AssignmentStatus;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy;
-import at.ac.tuwien.kr.alpha.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy.AssignmentStatus;
-import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationStrategy;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationResult;
+import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationStrategy;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiator;
 import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
@@ -83,6 +83,7 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.EnumerationRewriting;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.SumNormalization;
 import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
+import at.ac.tuwien.kr.alpha.solver.Solver;
 
 /**
  * A semi-naive grounder.

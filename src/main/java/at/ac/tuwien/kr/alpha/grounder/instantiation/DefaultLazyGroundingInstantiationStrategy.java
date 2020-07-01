@@ -1,5 +1,14 @@
 package at.ac.tuwien.kr.alpha.grounder.instantiation;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -10,14 +19,6 @@ import at.ac.tuwien.kr.alpha.grounder.IndexedInstanceStorage;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.WorkingMemory;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
 
 public class DefaultLazyGroundingInstantiationStrategy implements LiteralInstantiationStrategy {
 
@@ -169,14 +170,6 @@ public class DefaultLazyGroundingInstantiationStrategy implements LiteralInstant
 
 	public void setStaleWorkingMemoryEntries(LinkedHashSet<Atom> staleWorkingMemoryEntries) {
 		this.staleWorkingMemoryEntries = staleWorkingMemoryEntries;
-	}
-
-	// Not to be confused with ThriceTruth, only using this in order to be able to
-	// distinguish between atoms that are true (or MBT) and ones that are unassigned
-	// NOTE: Could use a Boolean and null for unassigned, but would be weird to read
-	// for anyone not intimately familiar with the code
-	public enum AssignmentStatus {
-		TRUE, FALSE, UNASSIGNED;
 	}
 
 }

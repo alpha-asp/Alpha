@@ -14,7 +14,6 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationLiteral;
 import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalLiteral;
-import at.ac.tuwien.kr.alpha.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy.AssignmentStatus;
 
 /**
  * Provides ground instantiations for literals.
