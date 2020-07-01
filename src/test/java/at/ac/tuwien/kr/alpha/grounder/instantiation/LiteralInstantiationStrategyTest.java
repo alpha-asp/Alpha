@@ -24,7 +24,7 @@ import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 
-public class InstantiationStrategyTest {
+public class LiteralInstantiationStrategyTest {
 
 	@Test
 	public void cautiousInstantiationAcceptLiteral() {
