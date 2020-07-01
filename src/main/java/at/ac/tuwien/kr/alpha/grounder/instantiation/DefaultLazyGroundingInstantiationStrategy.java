@@ -101,7 +101,7 @@ public class DefaultLazyGroundingInstantiationStrategy implements LiteralInstant
 			} else {
 				truthForCurrentAtom = this.getTruthValueForAtom(atomForCurrentInstance);
 			}
-			if(truthForCurrentAtom == AssignmentStatus.FALSE) {
+			if (truthForCurrentAtom == AssignmentStatus.FALSE) {
 				continue; // discard that instance
 			}
 			retVal.add(new ImmutablePair<>(currentInstanceSubstitution, truthForCurrentAtom));
