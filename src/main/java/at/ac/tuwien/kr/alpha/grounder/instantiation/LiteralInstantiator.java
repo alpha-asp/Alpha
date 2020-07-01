@@ -32,18 +32,35 @@ public class LiteralInstantiator {
 
 	private final LiteralInstantiationStrategy instantiationStrategy;
 
+	/**
+	 * Creates a new {@link LiteralInstantiator} with the given
+	 * {@link LiteralInstantiationStrategy}.
+	 * 
+	 * @param instantiationStrategy the instantiation strategy to use for this
+	 *                              instantiator
+	 */
 	public LiteralInstantiator(LiteralInstantiationStrategy instantiationStrategy) {
 		this.instantiationStrategy = instantiationStrategy;
 	}
 
-	// FIXME we should find a global contract for when to call
-	// "substitute(substitution)" on a literal
-
-	// TODO think about method name
-	// Method contract: literal is NOT substituted with given partialSubstitution
-	// Method contract: knownInstances is an instance storage containing all
-	// instances to consider when grounding given literal,
-	// supposed to be null for FixedInterpretationLiteral and EnumerationLiteral
+	/**
+	 * Instantiates a literal using an existing {@link Substitution} as starting
+	 * point.
+	 * 
+	 * This method is intended to be called as part of a larger rule instantiation
+	 * (i.e. grounding) workflow in order to find ground instantiations of literals,
+	 * i.e. extensions of the given partial substitution that yield useable ground
+	 * instances for the given literal. These substitutions (if any exist) are
+	 * wrapped together with some additional status information in a
+	 * {@link LiteralInstantiationResult}.
+	 * 
+	 * @param lit                 the literal for which to find substitutions that
+	 *                            yield ground instances
+	 * @param partialSubstitution a substitution that serves as a starting point.
+	 *                            May be empty.
+	 * @return a {@link LiteralInstantiationResult} containing ground substitutions
+	 *         - if any exist - along with some metadata for the grounder
+	 */
 	public LiteralInstantiationResult instantiateLiteral(Literal lit, Substitution partialSubstitution) {
 		LOGGER.trace("Instantiating literal: {}", lit);
 		LiteralInstantiationResult retVal;
