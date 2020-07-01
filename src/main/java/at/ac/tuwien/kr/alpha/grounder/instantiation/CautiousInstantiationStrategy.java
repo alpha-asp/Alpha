@@ -66,11 +66,7 @@ public class CautiousInstantiationStrategy extends AbstractLiteralInstantiationS
 
 	@Override
 	protected boolean assignmentStatusAccepted(AssignmentStatus assignmentStatus) {
-		if (assignmentStatus == AssignmentStatus.TRUE) {
-			return true;
-		} else {
-			return false;
-		}
+		return assignmentStatus == AssignmentStatus.TRUE ? true : false;
 	}
 
 }
