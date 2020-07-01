@@ -153,7 +153,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 		// set up rule instantiator
 		this.instantiationStrategy = new DefaultLazyGroundingInstantiationStrategy(this.workingMemory, this.atomStore, this.factsFromProgram);
-		this.ruleInstantiator = new LiteralInstantiator(this.instantiationStrategy, this.heuristicsConfiguration.isPermissive(false));
+		this.ruleInstantiator = new LiteralInstantiator(this.instantiationStrategy);
 	}
 
 	private void initializeFactsAndRules(Program program) {
@@ -604,7 +604,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			LiteralInstantiationResult instantiationResult = this.ruleInstantiator.instantiateLiteral(currentLiteral, partialSubstitution);
 			switch (instantiationResult.getType()) {
 				case CONTINUE:
-					LOGGER.trace("bindNextAtom - got CONTINUE from rule instantiator");
+					LOGGER.trace("bindNextAtom - got CONTINUE from literal instantiator");
 					List<ImmutablePair<Substitution, AssignmentStatus>> substitutionInfos = instantiationResult.getSubstitutions();
 					retVal = new BindingResult();
 					for (ImmutablePair<Substitution, AssignmentStatus> substitutionInfo : substitutionInfos) {
@@ -617,16 +617,20 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 					retVal = pushBackAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution,
 							currentAssignment);
 					break;
-				case STOP_BINDING:
+				case MAYBE_PUSH_BACK:
+					LOGGER.trace("bindNextAtom - got MAYBE_PUSH_BACK");
 					if (originalTolerance > 0) {
-						LOGGER.trace("bindNextAtom - got STOP_BINDING from instantiator, but working permissively, therefore pushing literal back");
 						// we have a permissive heuristic in use
 						retVal = pushBackAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution,
 								currentAssignment);
 					} else {
-						LOGGER.trace("bindNextAtom - got STOP_BINDING from instantiator");
+						LOGGER.trace("bindNextAtom - Cannot push back since tolerance is used up, stopping here!");
 						retVal = BindingResult.empty();
 					}
+					break;
+				case STOP_BINDING:
+					LOGGER.trace("bindNextAtom - got STOP_BINDING from instantiator");
+					retVal = BindingResult.empty();
 					break;
 				default:
 					throw Util.oops("Unhandled literal instantiation result type: " + instantiationResult.getType());

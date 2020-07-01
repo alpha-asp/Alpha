@@ -45,6 +45,10 @@ public class LiteralInstantiationResult {
 		return new LiteralInstantiationResult(Type.PUSH_BACK, Optional.empty());
 	}
 
+	public static LiteralInstantiationResult maybePushBack() {
+		return new LiteralInstantiationResult(Type.MAYBE_PUSH_BACK, Optional.empty());
+	}
+
 	public Type getType() {
 		return this.type;
 	}
@@ -57,6 +61,7 @@ public class LiteralInstantiationResult {
 	public static enum Type {
 		STOP_BINDING,
 		CONTINUE,
+		MAYBE_PUSH_BACK,
 		PUSH_BACK;
 	}
 }

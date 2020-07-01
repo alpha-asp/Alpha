@@ -6,7 +6,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
@@ -18,7 +17,12 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalLiteral;
 /**
  * Provides ground instantiations for literals.
  * 
- * RuleInstantiator is intended to be used for grounding and other use cases where ground instantiations 
+ * This class is intended to be used for grounding and other use cases where
+ * ground instantiations of literals need to be computed and serves as an
+ * abstraction layer to decouple the knowledge of how to groun literals from the
+ * overall (rule-)grounding workflow. The task of actually finding fitting
+ * ground substitutions is mostly delegated to a
+ * {@link LiteralInstantiationStrategy}
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
@@ -27,11 +31,9 @@ public class LiteralInstantiator {
 	private static final Logger LOGGER = LoggerFactory.getLogger(LiteralInstantiator.class);
 
 	private final LiteralInstantiationStrategy instantiationStrategy;
-	private final boolean pushBackNonGroundNegatedLiterals;
 
-	public LiteralInstantiator(LiteralInstantiationStrategy instantiationStrategy, boolean pushBackNonGroundNegatedLiterals) {
+	public LiteralInstantiator(LiteralInstantiationStrategy instantiationStrategy) {
 		this.instantiationStrategy = instantiationStrategy;
-		this.pushBackNonGroundNegatedLiterals = pushBackNonGroundNegatedLiterals;
 	}
 
 	// FIXME we should find a global contract for when to call
@@ -139,11 +141,7 @@ public class LiteralInstantiator {
 		} else {
 			LOGGER.trace("Handling non-ground literal {}", substitutedLiteral);
 			if (substitutedLiteral.isNegated()) {
-				if (this.pushBackNonGroundNegatedLiterals) {
-					return LiteralInstantiationResult.pushBack();
-				} else {
-					throw Util.oops("We got a non-ground literal which is negated, but are not allowed to push it back - should not happen!");
-				}
+				return LiteralInstantiationResult.maybePushBack();
 			}
 			// Query instantiationStrategy for acceptable substitutions.
 			// Note: getAcceptedSubstitutions will only give substitutions where the
@@ -151,7 +149,7 @@ public class LiteralInstantiator {
 			// discarded
 			substitutions = this.instantiationStrategy.getAcceptedSubstitutions(substitutedLiteral, partialSubstitution);
 			LOGGER.trace("Got {} substitutions from instantiation strategy for {}", substitutions.size(), substitutedLiteral);
-			retVal = substitutions.isEmpty() ? LiteralInstantiationResult.stopBinding() : LiteralInstantiationResult.continueBinding(substitutions);
+			retVal = substitutions.isEmpty() ? LiteralInstantiationResult.maybePushBack() : LiteralInstantiationResult.continueBinding(substitutions);
 		}
 		return retVal;
 	}
