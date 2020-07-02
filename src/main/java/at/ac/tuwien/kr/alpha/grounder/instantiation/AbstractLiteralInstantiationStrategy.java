@@ -69,7 +69,7 @@ public abstract class AbstractLiteralInstantiationStrategy implements LiteralIns
 	 * Potentially valid ground instances are obtained using {@link AbstractLiteralInstantiationStrategy#computeCandidateInstances(Atom)}, then
 	 * checked, such that each candidate instance has unifies with the given partial substitution and has a "valid" {@link AssignmentStatus},
 	 * where "validity" of an {@link AssignmentStatus} is determined using the abstract method
-	 * {@link AbstractLiteralInstantiationStrategy#assignmentStatusAccepted(AssignmentStatus)}
+	 * {@link AbstractLiteralInstantiationStrategy#assignmentStatusAccepted(AssignmentStatus)}.
 	 */
 	@Override
 	public final List<ImmutablePair<Substitution, AssignmentStatus>> getAcceptedSubstitutions(Literal lit, Substitution partialSubstitution) {

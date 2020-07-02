@@ -162,10 +162,6 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 		}
 	}
 
-	public Assignment getCurrentAssignment() {
-		return this.currentAssignment;
-	}
-
 	public void setCurrentAssignment(Assignment currentAssignment) {
 		this.currentAssignment = currentAssignment;
 	}
