@@ -25,6 +25,9 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.instantiation;
 
+import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+
 /**
  * Helper type to represent truth values as understood by a {@link Grounder} and {@link LiteralInstantiator}.
  * 
