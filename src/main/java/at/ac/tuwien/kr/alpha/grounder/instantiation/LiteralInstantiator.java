@@ -137,7 +137,6 @@ public class LiteralInstantiator {
 	 * 
 	 * @param lit
 	 * @param partialSubstitution
-	 * @param storageView
 	 */
 	private LiteralInstantiationResult instantiateBasicLiteral(Literal lit, Substitution partialSubstitution) {
 		LOGGER.trace("Instantiating basic literal: {}", lit);

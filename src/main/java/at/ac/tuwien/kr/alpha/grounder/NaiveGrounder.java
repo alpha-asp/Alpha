@@ -83,7 +83,6 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.EnumerationRewriting;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.SumNormalization;
 import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
-import at.ac.tuwien.kr.alpha.solver.Solver;
 
 /**
  * A semi-naive grounder.
@@ -492,7 +491,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	/**
-	 * Helper method used by {@link NaiveGrounder#bindNextAtomInRule(RuleGroundingOrder, int, int, int, Substitution, Assignment)}.
+	 * Helper method used by {@link NaiveGrounder#bindNextAtomInRule(RuleGroundingOrder, int, int, int, Substitution)}.
 	 * 
 	 * Takes an <code>ImmutablePair</code> of a {@link Substitution} and an accompanying {@link AssignmentStatus} and calls
 	 * <code>bindNextAtomInRule</code> for the next literal in the grounding order.
@@ -503,7 +502,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 * @param orderPosition
 	 * @param originalTolerance
 	 * @param remainingTolerance
-	 * @param currentAssignment
 	 * @param lastLiteralBindingResult
 	 * @return the result of calling bindNextAtomInRule on the next literal in the grounding order, or an empty binding result if remaining
 	 *         tolerance is less than zero
@@ -562,7 +560,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 * @param originalTolerance the original tolerance of the used grounding heuristic
 	 * @param remainingTolerance the remaining tolerance, determining if binding continues in the presence of substitutions based on unassigned atoms
 	 * @param partialSubstitution a substitution
-	 * @param currentAssignment the current assignment, representing the current truth values of atoms as assigned by the {@link Solver}
 	 * @return a {@link BindingResult} representing applicable ground substitutions for all literals after orderPosition in groundingOrder
 	 */
 	//@formatter:on
