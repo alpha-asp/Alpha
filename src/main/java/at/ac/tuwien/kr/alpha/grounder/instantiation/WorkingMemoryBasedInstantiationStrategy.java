@@ -63,7 +63,7 @@ public class WorkingMemoryBasedInstantiationStrategy extends AbstractLiteralInst
 
 	@Override
 	protected boolean assignmentStatusAccepted(AssignmentStatus assignmentStatus) {
-		return assignmentStatus == AssignmentStatus.TRUE ? true : false;
+		return assignmentStatus == AssignmentStatus.TRUE;
 	}
 
 }
