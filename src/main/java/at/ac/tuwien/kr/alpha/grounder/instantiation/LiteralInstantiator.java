@@ -42,12 +42,9 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalLiteral;
 /**
  * Provides ground instantiations for literals.
  * 
- * This class is intended to be used for grounding and other use cases where
- * ground instantiations of literals need to be computed and serves as an
- * abstraction layer to decouple the knowledge of how to groun literals from the
- * overall (rule-)grounding workflow. The task of actually finding fitting
- * ground substitutions is mostly delegated to a
- * {@link LiteralInstantiationStrategy}
+ * This class is intended to be used for grounding and other use cases where ground instantiations of literals need to be computed and
+ * serves as an abstraction layer to decouple the knowledge of how to groun literals from the overall (rule-)grounding workflow. The task of
+ * actually finding fitting ground substitutions is mostly delegated to a {@link LiteralInstantiationStrategy}.
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
@@ -58,33 +55,24 @@ public class LiteralInstantiator {
 	private final LiteralInstantiationStrategy instantiationStrategy;
 
 	/**
-	 * Creates a new {@link LiteralInstantiator} with the given
-	 * {@link LiteralInstantiationStrategy}.
+	 * Creates a new {@link LiteralInstantiator} with the given {@link LiteralInstantiationStrategy}.
 	 * 
-	 * @param instantiationStrategy the instantiation strategy to use for this
-	 *                              instantiator
+	 * @param instantiationStrategy the instantiation strategy to use for this instantiator
 	 */
 	public LiteralInstantiator(LiteralInstantiationStrategy instantiationStrategy) {
 		this.instantiationStrategy = instantiationStrategy;
 	}
 
 	/**
-	 * Instantiates a literal using an existing {@link Substitution} as starting
-	 * point.
+	 * Instantiates a literal using an existing {@link Substitution} as starting point.
 	 * 
-	 * This method is intended to be called as part of a larger rule instantiation
-	 * (i.e. grounding) workflow in order to find ground instantiations of literals,
-	 * i.e. extensions of the given partial substitution that yield useable ground
-	 * instances for the given literal. These substitutions (if any exist) are
-	 * wrapped together with some additional status information in a
-	 * {@link LiteralInstantiationResult}.
+	 * This method is intended to be called as part of a larger rule instantiation (i.e. grounding) workflow in order to find ground
+	 * instantiations of literals, i.e. extensions of the given partial substitution that yield useable ground instances for the given literal.
+	 * These substitutions (if any exist) are wrapped together with some additional status information in a {@link LiteralInstantiationResult}.
 	 * 
-	 * @param lit                 the literal for which to find substitutions that
-	 *                            yield ground instances
-	 * @param partialSubstitution a substitution that serves as a starting point.
-	 *                            May be empty.
-	 * @return a {@link LiteralInstantiationResult} containing ground substitutions
-	 *         - if any exist - along with some metadata for the grounder
+	 * @param lit                 the literal for which to find substitutions that yield ground instances
+	 * @param partialSubstitution a substitution that serves as a starting point. May be empty.
+	 * @return a {@link LiteralInstantiationResult} containing ground substitutions - if any exist - along with some metadata for the grounder
 	 */
 	public LiteralInstantiationResult instantiateLiteral(Literal lit, Substitution partialSubstitution) {
 		LOGGER.trace("Instantiating literal: {}", lit);
@@ -104,16 +92,12 @@ public class LiteralInstantiator {
 	}
 
 	/**
-	 * Calculates satisfying substitutions for a given
-	 * {@link FixedInterpretationLiteral} based on a partial substitution.
-	 * This method assumes that the partial substitution has <emph>not</emph> been
-	 * applied to the passed literal.
+	 * Calculates satisfying substitutions for a given {@link FixedInterpretationLiteral} based on a partial substitution. This method assumes
+	 * that the partial substitution has <emph>not</emph> been applied to the passed literal.
 	 * 
-	 * @param lit                 the (fixed interpretation) literal for which to
-	 *                            calculate substitutions
+	 * @param lit                 the (fixed interpretation) literal for which to calculate substitutions
 	 * @param partialSubstitution
-	 * @return a LiteralInstantiationResult representing the result of the search
-	 *         for substitutions
+	 * @return a LiteralInstantiationResult representing the result of the search for substitutions
 	 */
 	private LiteralInstantiationResult instantiateFixedInterpretationLiteral(FixedInterpretationLiteral lit, Substitution partialSubstitution) {
 		LOGGER.trace("Instantiating FixedInterpretationLiteral: {}", lit);
@@ -131,13 +115,10 @@ public class LiteralInstantiator {
 	}
 
 	/**
-	 * Calculates a substitution that adds an enumeration index (see
-	 * {@link EnumerationLiteral#addEnumerationIndexToSubstitution(Substitution)})
-	 * to the given partial substitution. Due to the special nature of enumeration
-	 * literals, this method will always return
-	 * {@link LiteralInstantiationResult.Type#CONTINUE} as its result type.
-	 * This method assumes that the partial substitution has <emph>not</emph> been
-	 * applied to the passed literal.
+	 * Calculates a substitution that adds an enumeration index (see {@link EnumerationLiteral#addEnumerationIndexToSubstitution(Substitution)})
+	 * to the given partial substitution. Due to the special nature of enumeration literals, this method will always return
+	 * {@link LiteralInstantiationResult.Type#CONTINUE} as its result type. This method assumes that the partial substitution has
+	 * <emph>not</emph> been applied to the passed literal.
 	 * 
 	 * @param lit                 an enumeration literal
 	 * @param partialSubstitution
@@ -148,16 +129,11 @@ public class LiteralInstantiator {
 	}
 
 	/**
-	 * Calculates substitutions for a given literal that is not a
-	 * {@link FixedInterpretationLiteral} or {@link EnumerationLiteral}.
-	 * If applying the given partial substitution to the literal already grounds the
-	 * literal, the resulting ground literal is verified based on this instantiators
-	 * {@link LiteralInstantiationStrategy}.
-	 * If the literal is only partially ground after applying the partial
-	 * substitution, ground substitutions are looked up using the instantiators
-	 * {@link LiteralInstantiationStrategy}.
-	 * This method assumes that the partial substitution has <emph>not</emph> been
-	 * applied to the passed literal.
+	 * Calculates substitutions for a given literal that is not a {@link FixedInterpretationLiteral} or {@link EnumerationLiteral}.
+	 * If applying the given partial substitution to the literal already grounds the literal, the resulting ground literal is verified based on
+	 * this instantiators {@link LiteralInstantiationStrategy}. If the literal is only partially ground after applying the partial substitution,
+	 * ground substitutions are looked up using the instantiators {@link LiteralInstantiationStrategy}. This method assumes that the partial
+	 * substitution has <emph>not</emph> been applied to the passed literal.
 	 * 
 	 * @param lit
 	 * @param partialSubstitution
@@ -197,24 +173,20 @@ public class LiteralInstantiator {
 	}
 
 	/**
-	 * Helper method for <code>instantiateLiteral</code> to determine whether a
-	 * {@link FixedInterpretationLiteral} may have substitutions later on and should
-	 * therefore be pushed back in the grounding order.
+	 * Helper method for <code>instantiateLiteral</code> to determine whether a {@link FixedInterpretationLiteral} may have substitutions later
+	 * on and should therefore be pushed back in the grounding order.
 	 * 
-	 * Any {@link FixedInterpretationLiteral} that does <emph>not</emph> fulfil any
-	 * of the following conditions is "pushed back" in the grounding order because
-	 * it cannot be used to generate substitutions now but maybe later:
+	 * Any {@link FixedInterpretationLiteral} that does <emph>not</emph> fulfil any of the following conditions is "pushed back" in the
+	 * grounding order because it cannot be used to generate substitutions now but maybe later:
 	 * <ul>
 	 * <li>the literal is ground</li>
-	 * <li>the literal is a {@link ComparisonLiteral} that is left-assigning or
-	 * right-assigning</li>
-	 * <li>the literal is an {@link IntervalLiteral} representing a ground interval
-	 * term</li>
+	 * <li>the literal is a {@link ComparisonLiteral} that is left-assigning or right-assigning</li>
+	 * <li>the literal is an {@link IntervalLiteral} representing a ground interval term</li>
 	 * <li>the literal is an {@link ExternalLiteral}.</li>
 	 * </ul>
 	 * 
-	 * @param lit a {@link FixedInterpretationLiteral} that is substituted with the
-	 *            partial substitution passed into <code>instantiateLiteral</code>
+	 * @param lit a {@link FixedInterpretationLiteral} that is substituted with the partial substitution passed into
+	 *            <code>instantiateLiteral</code>
 	 */
 	private boolean shouldPushBackFixedInterpretationLiteral(FixedInterpretationLiteral lit) {
 		return !(lit.isGround() ||

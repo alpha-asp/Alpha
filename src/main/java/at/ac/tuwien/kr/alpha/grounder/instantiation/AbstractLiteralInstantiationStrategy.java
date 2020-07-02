@@ -37,13 +37,10 @@ import at.ac.tuwien.kr.alpha.grounder.Instance;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 /**
- * Abstract base implementation of {@link LiteralInstantiationStrategy} that
- * outlines a basic workflow for
+ * Abstract base implementation of {@link LiteralInstantiationStrategy} that outlines a basic workflow for
  * {@link LiteralInstantiationStrategy#getTruthForGroundLiteral(Literal)} and
- * {@link LiteralInstantiationStrategy#getAcceptedSubstitutions(Literal, Substitution)}
- * while leaving details of when an atom is true and which
- * {@link AssignmentStatus}es to consider valid for
- * <code>getAcceptedSubstitutions</code> to implementations.
+ * {@link LiteralInstantiationStrategy#getAcceptedSubstitutions(Literal, Substitution)} while leaving details of when an atom is true and
+ * which {@link AssignmentStatus}es to consider valid for <code>getAcceptedSubstitutions</code> to implementations.
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
@@ -52,14 +49,10 @@ public abstract class AbstractLiteralInstantiationStrategy implements LiteralIns
 	/**
 	 * See {@link LiteralInstantiationStrategy#getTruthForGroundLiteral(Literal).
 	 * 
-	 * In general - since this code is used in a grounding context where negative
-	 * literals in rule bodies can be handled in different ways - the logic for
-	 * determining the {@link AssignmentStatus} of a negated literal is delegated to
-	 * the abstract method
-	 * {@link AbstractLiteralInstantiationStrategy#getAssignmentStatusForNegatedGroundLiteral(Literal)}.
-	 * The assignment status for positive literals is determined using the abstract
-	 * method
-	 * {@link AbstractLiteralInstantiationStrategy#getAssignmentStatusForAtom(Atom)}
+	 * In general - since this code is used in a grounding context where negative literals in rule bodies can be handled in different ways - the
+	 * logic for determining the {@link AssignmentStatus} of a negated literal is delegated to the abstract method
+	 * {@link AbstractLiteralInstantiationStrategy#getAssignmentStatusForNegatedGroundLiteral(Literal)}. The assignment status for positive
+	 * literals is determined using the abstract method {@link AbstractLiteralInstantiationStrategy#getAssignmentStatusForAtom(Atom)}
 	 */
 	@Override
 	public final AssignmentStatus getTruthForGroundLiteral(Literal groundLiteral) {
@@ -70,17 +63,12 @@ public abstract class AbstractLiteralInstantiationStrategy implements LiteralIns
 	}
 
 	/**
-	 * See
-	 * {@link LiteralInstantiationStrategy#getAcceptedSubstitutions(Literal, Substitution)}.
+	 * See {@link LiteralInstantiationStrategy#getAcceptedSubstitutions(Literal, Substitution)}.
 	 * 
-	 * A very general implementation of the basic steps needed to obtain ground
-	 * substitutions for a positive literal.
-	 * Potentially valid ground instances are obtained using
-	 * {@link AbstractLiteralInstantiationStrategy#computeCandidateInstances(Atom)},
-	 * then checked, such that each candidate instance has unifies with the given
-	 * partial substitution and has a "valid" {@link AssignmentStatus},
-	 * where "validity" of an {@link AssignmentStatus} is determined using the
-	 * abstract method
+	 * A very general implementation of the basic steps needed to obtain ground substitutions for a positive literal.
+	 * Potentially valid ground instances are obtained using {@link AbstractLiteralInstantiationStrategy#computeCandidateInstances(Atom)}, then
+	 * checked, such that each candidate instance has unifies with the given partial substitution and has a "valid" {@link AssignmentStatus},
+	 * where "validity" of an {@link AssignmentStatus} is determined using the abstract method
 	 * {@link AbstractLiteralInstantiationStrategy#assignmentStatusAccepted(AssignmentStatus)}
 	 */
 	@Override
@@ -91,26 +79,20 @@ public abstract class AbstractLiteralInstantiationStrategy implements LiteralIns
 	}
 
 	/**
-	 * Computes instances that are potentially valid ground instances of the given
-	 * partially-ground atom.
+	 * Computes instances that are potentially valid ground instances of the given partially-ground atom.
 	 * 
-	 * A candidate instance is a ground instance of the same predicate where all
-	 * terms that are ground in <code>partiallyGroundAtom</code> have the same
-	 * values in the candidate.
+	 * A candidate instance is a ground instance of the same predicate where all terms that are ground in <code>partiallyGroundAtom</code> have
+	 * the same values in the candidate.
 	 * 
-	 * @param partiallyGroundAtom a partially ground atom for which to find fitting
-	 *                            ground instances
+	 * @param partiallyGroundAtom a partially ground atom for which to find fitting ground instances
 	 * @return a list of candidate instances
 	 */
 	protected abstract Iterable<Instance> computeCandidateInstances(Atom partiallyGroundAtom);
 
 	/**
-	 * Based on a list of candidate instances (see
-	 * {@link AbstractLiteralInstantiationStrategy#computeCandidateInstances(Atom)}),
-	 * create a list of substitutions and assignment statuses such that each
-	 * substitution represents a valid (according to the implementation-specific
-	 * definition of this instantiation strategy) ground instance of
-	 * <code>atomToSubstitute</code>
+	 * Based on a list of candidate instances (see {@link AbstractLiteralInstantiationStrategy#computeCandidateInstances(Atom)}), create a list
+	 * of substitutions and assignment statuses such that each substitution represents a valid (according to the implementation-specific
+	 * definition of this instantiation strategy) ground instance of <code>atomToSubstitute</code>
 	 * 
 	 * @param atomToSubstitute
 	 * @param candidateInstances
@@ -123,7 +105,6 @@ public abstract class AbstractLiteralInstantiationStrategy implements LiteralIns
 		// Filter for only instances unifying with partialSubsitution,
 		// i.e. "where all joins work out".
 		Substitution currentInstanceSubstitution;
-		AssignmentStatus truthForCurrentAtom;
 		Atom atomForCurrentInstance;
 		for (Instance instance : candidateInstances) {
 			currentInstanceSubstitution = Substitution.unify(atomToSubstitute, instance, new Substitution(partialSubstitution));
@@ -137,13 +118,12 @@ public abstract class AbstractLiteralInstantiationStrategy implements LiteralIns
 			atomForCurrentInstance = new BasicAtom(atomToSubstitute.getPredicate(), atomToSubstitute.getTerms())
 					.substitute(currentInstanceSubstitution);
 			AssignmentStatus assignmentStatus = this.getAssignmentStatusForAtom(atomForCurrentInstance);
-			truthForCurrentAtom = this.getAssignmentStatusForAtom(atomForCurrentInstance);
 			if (!this.assignmentStatusAccepted(assignmentStatus)) {
 				// Atom has an assignment status deemed unacceptable by this instantiation
 				// strategy
 				continue;
 			}
-			retVal.add(new ImmutablePair<>(currentInstanceSubstitution, truthForCurrentAtom));
+			retVal.add(new ImmutablePair<>(currentInstanceSubstitution, assignmentStatus));
 		}
 		return retVal;
 	}

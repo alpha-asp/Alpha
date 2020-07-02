@@ -31,13 +31,10 @@ import at.ac.tuwien.kr.alpha.grounder.Instance;
 import at.ac.tuwien.kr.alpha.grounder.WorkingMemory;
 
 /**
- * A very basic implementation of {@link AbstractLiteralInstantiationStrategy}
- * that determines truth of an atom solely based on the atom's presence in a
- * working memory. Atoms that have a corresponding positive instance in the
- * working memory have {@link AssignmentStatus#TRUE}, all other atoms have
- * {@link AssignmentStatus#FALSE}. A negated literal lit is true iff
- * <code>getAssignmentStatusForAtom(lit.getAtom()) == AssignmentStatus.FALSE</code>,
- * false otherwise
+ * A very basic implementation of {@link AbstractLiteralInstantiationStrategy} that determines truth of an atom solely based on the atom's
+ * presence in a working memory. Atoms that have a corresponding positive instance in the working memory have {@link AssignmentStatus#TRUE},
+ * all other atoms have {@link AssignmentStatus#FALSE}. A negated literal lit is true iff
+ * <code>getAssignmentStatusForAtom(lit.getAtom()) == AssignmentStatus.FALSE</code>, false otherwise.
  * 
  * Copyright (c) 2020, the Alpha Team.
  */

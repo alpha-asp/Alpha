@@ -36,14 +36,11 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 /**
- * Representation of the result of instantiating, i.e. finding ground instances
- * for, a literal, as performed by
+ * Representation of the result of instantiating, i.e. finding ground instances for, a literal, as performed by
  * {@link LiteralInstantiator#instantiateLiteral(at.ac.tuwien.kr.alpha.common.atoms.Literal, Substitution)}.
  * 
- * A {@link LiteralInstantiationResult} bundles obtained ground substitutions -
- * or the lack thereof, if none exist for a given literal - together with status
- * information that can be used by a {@link Grounder} to determine how to
- * proceed when grounding a {@link Rule}.
+ * A {@link LiteralInstantiationResult} bundles obtained ground substitutions - or the lack thereof, if none exist for a given literal -
+ * together with status information that can be used by a {@link Grounder} to determine how to proceed when grounding a {@link Rule}.
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
@@ -56,9 +53,8 @@ public class LiteralInstantiationResult {
 	// use optional to ensure empty value is caught as early as possible
 
 	/**
-	 * Ground substitutions together with the {@link AssignmentStatus} of the last
-	 * literal bound to obtain the substitution. Empty for result types
-	 * STOP_BINDING, PUSH_BACK and MAYBE_PUSH_BACK.
+	 * Ground substitutions together with the {@link AssignmentStatus} of the last literal bound to obtain the substitution. Empty for result
+	 * types STOP_BINDING, PUSH_BACK and MAYBE_PUSH_BACK.
 	 */
 	private final Optional<List<ImmutablePair<Substitution, AssignmentStatus>>> substitutions;
 
@@ -106,9 +102,8 @@ public class LiteralInstantiationResult {
 	}
 
 	/**
-	 * Result type. Used by {@link Grounder}s to determine how to proceed grounding
-	 * a rule after instantiating the literal that yielded the respective
-	 * instantiation result.
+	 * Result type. Used by {@link Grounder}s to determine how to proceed grounding a rule after instantiating the literal that yielded the
+	 * respective instantiation result.
 	 * 
 	 * Copyright (c) 2020, the Alpha Team.
 	 */
@@ -125,16 +120,14 @@ public class LiteralInstantiationResult {
 		CONTINUE,
 
 		/**
-		 * Literal instantiation yielded no ground instances, but depending on the
-		 * specific workflow of the grounder, proceeding with another literal might yet
-		 * make sense. Grounder should decide whether to stop binding or push the
-		 * literal back in the overall grounding order.
+		 * Literal instantiation yielded no ground instances, but depending on the specific workflow of the grounder, proceeding with another
+		 * literal might yet make sense. Grounder should decide whether to stop binding or push the literal back in the overall grounding order.
 		 */
 		MAYBE_PUSH_BACK,
 
 		/**
-		 * Currently no ground instances, but proceeding with another literal might make
-		 * sense, opush the literal back in the overall grounding order.
+		 * Currently no ground instances, but proceeding with another literal might make sense, push the literal back in the overall grounding
+		 * order.
 		 */
 		PUSH_BACK;
 	}

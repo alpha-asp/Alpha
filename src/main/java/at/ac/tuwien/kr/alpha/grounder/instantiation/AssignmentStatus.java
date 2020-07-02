@@ -26,12 +26,10 @@
 package at.ac.tuwien.kr.alpha.grounder.instantiation;
 
 /**
- * Helper type to represent truth values as understood by a {@link Grounder} and
- * {@link LiteralInstantiator}.
+ * Helper type to represent truth values as understood by a {@link Grounder} and {@link LiteralInstantiator}.
  * 
- * Note that this enum is not related in any way to {@link ThriceTruth} and
- * mainly serves to have a clear mechanism to indicate that the truth value of
- * an atom is not known at a given point in time (UNASSIGNED)
+ * Note that this enum is not related in any way to {@link ThriceTruth} and mainly serves to have a clear mechanism to indicate that the
+ * truth value of an atom is not known at a given point in time (UNASSIGNED)
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
@@ -48,11 +46,9 @@ public enum AssignmentStatus {
 	FALSE,
 
 	/**
-	 * Unassigned - indicates that at a given point in time, a
-	 * {@link LiteralInstantiationStrategy} can not determine whether a literal is
-	 * true or false. This is needed because some grounding strategies consider
-	 * UNASSIGNED atoms to be valid ground instances in order to be able to ground
-	 * larger parts of a program earlier on in the ground/solve cycle
+	 * Unassigned - indicates that at a given point in time, a {@link LiteralInstantiationStrategy} can not determine whether a literal is true
+	 * or false. This is needed because some grounding strategies consider UNASSIGNED atoms to be valid ground instances in order to be able to
+	 * ground larger parts of a program earlier on in the ground/solve cycle
 	 */
 	UNASSIGNED;
 }

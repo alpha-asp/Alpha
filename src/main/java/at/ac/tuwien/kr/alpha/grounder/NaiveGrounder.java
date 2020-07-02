@@ -342,10 +342,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	/**
-	 * Prepares facts of the input program for joining and derives all NoGoods
-	 * representing ground rules. May only be called once.
-	 * 
-	 * @return
+	 * Prepares facts of the input program for joining and derives all NoGoods representing ground rules. May only be called once.
 	 */
 	HashMap<Integer, NoGood> bootstrap() {
 		final HashMap<Integer, NoGood> groundNogoods = new LinkedHashMap<>();
@@ -447,8 +444,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	/**
-	 * Grounds the given {@code nonGroundRule} by applying the given
-	 * {@code substitutions} and registers the nogoods generated during that
+	 * Grounds the given {@code nonGroundRule} by applying the given {@code substitutions} and registers the nogoods generated during that
 	 * process.
 	 *
 	 * @param nonGroundRule
@@ -456,8 +452,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 * @param substitutions
 	 *                      the substitutions to be applied
 	 * @param newNoGoods
-	 *                      a set of nogoods to which newly generated nogoods will
-	 *                      be added
+	 *                      a set of nogoods to which newly generated nogoods will be added
 	 */
 	private void groundAndRegister(final NonGroundRule nonGroundRule, final List<Substitution> substitutions, final Map<Integer, NoGood> newNoGoods) {
 		for (Substitution substitution : substitutions) {
@@ -497,16 +492,12 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	/**
-	 * Helper method used by
-	 * {@link NaiveGrounder#bindNextAtomInRule(RuleGroundingOrder, int, int, int, Substitution, Assignment)}.
+	 * Helper method used by {@link NaiveGrounder#bindNextAtomInRule(RuleGroundingOrder, int, int, int, Substitution, Assignment)}.
 	 * 
-	 * Takes an <code>ImmutablePair</code> of a {@link Substitution} and an
-	 * accompanying {@link AssignmentStatus} and calls
+	 * Takes an <code>ImmutablePair</code> of a {@link Substitution} and an accompanying {@link AssignmentStatus} and calls
 	 * <code>bindNextAtomInRule</code> for the next literal in the grounding order.
-	 * If the assignment status for the last bound literal was
-	 * {@link AssignmentStatus#UNASSIGNED}, the <code>remainingTolerance</code>
-	 * parameter is decreased by 1. If the remaining tolerance drops below zero,
-	 * this method returns an empty {@link BindingResult}.
+	 * If the assignment status for the last bound literal was {@link AssignmentStatus#UNASSIGNED}, the <code>remainingTolerance</code>
+	 * parameter is decreased by 1. If the remaining tolerance drops below zero, this method returns an empty {@link BindingResult}.
 	 * 
 	 * @param groundingOrder
 	 * @param orderPosition
@@ -514,9 +505,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	 * @param remainingTolerance
 	 * @param currentAssignment
 	 * @param lastLiteralBindingResult
-	 * @return the result of calling bindNextAtomInRule on the next literal in th
-	 *         grounding order, or an empty binding result if remaining tolerance is
-	 *         less than zero
+	 * @return the result of calling bindNextAtomInRule on the next literal in the grounding order, or an empty binding result if remaining
+	 *         tolerance is less than zero
 	 */
 	private BindingResult continueBinding(RuleGroundingOrder groundingOrder, int orderPosition, int originalTolerance, int remainingTolerance,
 			ImmutablePair<Substitution, AssignmentStatus> lastLiteralBindingResult) {
