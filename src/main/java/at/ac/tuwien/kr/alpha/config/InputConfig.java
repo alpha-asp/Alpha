@@ -23,6 +23,11 @@ public class InputConfig {
 	private boolean literate = InputConfig.DEFAULT_LITERATE;
 	private int numAnswerSets = InputConfig.DEFAULT_NUM_ANSWER_SETS;
 	private Set<String> desiredPredicates = new HashSet<>();
+	
+	/*
+	 * List of file paths referencing jar files containing external atom definitions
+	 */
+	private List<String> externalAtomLibraries = new ArrayList<>();
 	// standard library externals are always loaded
 	private Map<String, PredicateInterpretation> predicateMethods = Externals.getStandardLibraryExternals();
 	private boolean writeAnswerSetsAsXlsx = InputConfig.DEFAULT_WRITE_XLSX;
@@ -109,6 +114,14 @@ public class InputConfig {
 
 	public void setAnswerSetFileOutputPath(String answerSetFileOutputPath) {
 		this.answerSetFileOutputPath = answerSetFileOutputPath;
+	}
+
+	public List<String> getExternalAtomLibraries() {
+		return this.externalAtomLibraries;
+	}
+
+	public void setExternalAtomLibraries(List<String> externalAtomLibraries) {
+		this.externalAtomLibraries = externalAtomLibraries;
 	}
 
 }

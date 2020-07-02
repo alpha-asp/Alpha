@@ -55,13 +55,15 @@ public class CommandLineParser {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CommandLineParser.class);
 
 	/*
-	 * Line width when formatting usage  message
+	 * Line width when formatting usage message
 	 */
 	private static final int USAGE_MESSAGE_LINEWIDTH = 120;
-	
+
 	/*
-	 * Whenever a new command line option is added, perform the following steps: 1. Add it as a constant option below. 2. Add the constant option into the
-	 * Options "CLI_OPTS" in the static initializer 3. Add a handler method for it and add the respective map entry in the constructor with a method reference
+	 * Whenever a new command line option is added, perform the following steps: 1. Add it as a constant option below. 2. Add the constant
+	 * option into the
+	 * Options "CLI_OPTS" in the static initializer 3. Add a handler method for it and add the respective map entry in the constructor with a
+	 * method reference
 	 * to the handler.
 	 */
 	// "special", i.e. non-configuration options
@@ -81,7 +83,9 @@ public class CommandLineParser {
 			.desc("enable literate programming mode (default: " + InputConfig.DEFAULT_LITERATE + ")").build();
 	private static final Option OPT_WRITE_XSLX = Option.builder("wx").longOpt("write-xlsx").hasArg(true).argName("path").type(String.class)
 			.desc("Write answer sets to excel files, i.e. xlsx workbooks (one workbook per answer set)").build();
-
+	private static final Option OPT_EXTERNAL_ATOM_LIB = Option.builder("lib").longOpt("library").hasArg(true).argName("path").type(String.class)
+			.desc("JAR file containing external atom definitions, i.e. methods annotated as \"@Predicate\"").build();
+	
 	// general system-wide config
 	private static final Option OPT_GROUNDER = Option.builder("g").longOpt("grounder").hasArg(true).argName("grounder")
 			.desc("the grounder implementation to use (default: " + SystemConfig.DEFAULT_GROUNDER_NAME + ")").build();
@@ -148,6 +152,7 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_INPUT);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_ASPSTRING);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_WRITE_XSLX);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_EXTERNAL_ATOM_LIB);
 
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_SOLVER);
@@ -170,7 +175,8 @@ public class CommandLineParser {
 	}
 
 	/*
-	 * Below maps map commandline options to handler methods. If a new option is added, the appropriate put into the map must be added in the constructor
+	 * Below maps map commandline options to handler methods. If a new option is added, the appropriate put into the map must be added in the
+	 * constructor
 	 */
 	private final Map<String, CliOptionHandler<SystemConfig>> globalOptionHandlers = new HashMap<>();
 	private final Map<String, CliOptionHandler<InputConfig>> inputOptionHandlers = new HashMap<>();
@@ -178,18 +184,22 @@ public class CommandLineParser {
 	private String cmdSyntax;
 
 	/**
-	 * Creates a new <code>CommandLineParser</code>. The abortAction described below is passed into the constructor externally in order to avoid strongly
-	 * coupling this class to any other part of the application. Especially an abortAction - which likely will include some call like System.exit({state}) -
+	 * Creates a new <code>CommandLineParser</code>. The abortAction described below is passed into the constructor externally in order to avoid
+	 * strongly
+	 * coupling this class to any other part of the application. Especially an abortAction - which likely will include some call like
+	 * System.exit({state}) -
 	 * should not be specified by utility classes themselves, but rather by the application's main class.
 	 * 
 	 * @param cmdLineSyntax a string describing the basic call syntax for the application binary, e.g. "java -jar somejar.jar"
-	 * @param abortAction   a <code>Consumer<String></code> that is called when option parsing is aborted, as is the case when the "help" option is encountered.
+	 * @param abortAction   a <code>Consumer<String></code> that is called when option parsing is aborted, as is the case when the "help" option
+	 *                      is encountered.
 	 *                      It expects a string parameter, which is a message accompanying the abort
 	 */
 	public CommandLineParser(String cmdLineSyntax, Consumer<String> abortAction) {
 		this.cmdSyntax = cmdLineSyntax;
 		this.abortAction = abortAction;
 
+		//@formatter:off
 		/*
 		 * below put invocations are used to "register" the handler methods for each commandline option
 		 */
@@ -220,6 +230,8 @@ public class CommandLineParser {
 		this.inputOptionHandlers.put(CommandLineParser.OPT_ASPSTRING.getOpt(), this::handleAspString);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_LITERATE.getOpt(), this::handleLiterate);
 		this.inputOptionHandlers.put(CommandLineParser.OPT_WRITE_XSLX.getOpt(), this::handleWriteXlsx);
+		this.inputOptionHandlers.put(CommandLineParser.OPT_EXTERNAL_ATOM_LIB.getOpt(), this::handleExternalAtomLibPath);
+		//@formatter:on
 	}
 
 	public AlphaConfig parseCommandLine(String[] args) throws ParseException {
@@ -413,6 +425,10 @@ public class CommandLineParser {
 
 	private void handleGrounderNoInstanceRemoval(Option opt, SystemConfig cfg) {
 		cfg.setGrounderAccumulatorEnabled(true);
+	}
+
+	private void handleExternalAtomLibPath(Option opt, InputConfig cfg) {
+		cfg.getExternalAtomLibraries().add(opt.getValue());
 	}
 
 }
