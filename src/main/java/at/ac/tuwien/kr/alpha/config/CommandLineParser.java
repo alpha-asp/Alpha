@@ -55,6 +55,11 @@ public class CommandLineParser {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CommandLineParser.class);
 
 	/*
+	 * Line width when formatting usage  message
+	 */
+	private static final int USAGE_MESSAGE_LINEWIDTH = 120;
+	
+	/*
 	 * Whenever a new command line option is added, perform the following steps: 1. Add it as a constant option below. 2. Add the constant option into the
 	 * Options "CLI_OPTS" in the static initializer 3. Add a handler method for it and add the respective map entry in the constructor with a method reference
 	 * to the handler.
@@ -257,7 +262,7 @@ public class CommandLineParser {
 		// message into a string, therefore the ByteArrayOutputStream..
 		ByteArrayOutputStream helpBuffer = new ByteArrayOutputStream();
 		PrintWriter pw = new PrintWriter(helpBuffer);
-		formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, this.cmdSyntax, "", CommandLineParser.CLI_OPTS, HelpFormatter.DEFAULT_LEFT_PAD,
+		formatter.printHelp(pw, CommandLineParser.USAGE_MESSAGE_LINEWIDTH, this.cmdSyntax, "", CommandLineParser.CLI_OPTS, HelpFormatter.DEFAULT_LEFT_PAD,
 				HelpFormatter.DEFAULT_DESC_PAD, "");
 		pw.flush();
 		return helpBuffer.toString();
