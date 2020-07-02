@@ -38,11 +38,11 @@ import at.ac.tuwien.kr.alpha.grounder.WorkingMemory;
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
-public class CautiousInstantiationStrategy extends AbstractLiteralInstantiationStrategy {
+public class WorkingMemoryBasedInstantiationStrategy extends AbstractLiteralInstantiationStrategy {
 
 	private final WorkingMemory workingMemory;
 
-	public CautiousInstantiationStrategy(WorkingMemory workingMemory) {
+	public WorkingMemoryBasedInstantiationStrategy(WorkingMemory workingMemory) {
 		this.workingMemory = workingMemory;
 	}
 

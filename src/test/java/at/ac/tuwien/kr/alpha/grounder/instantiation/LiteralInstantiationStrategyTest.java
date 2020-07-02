@@ -32,7 +32,7 @@ public class LiteralInstantiationStrategyTest {
 		WorkingMemory workingMemory = new WorkingMemory();
 		workingMemory.initialize(p);
 		workingMemory.addInstance(new BasicAtom(p, ConstantTerm.getSymbolicInstance("a")), true);
-		LiteralInstantiationStrategy strategy = new CautiousInstantiationStrategy(workingMemory);
+		LiteralInstantiationStrategy strategy = new WorkingMemoryBasedInstantiationStrategy(workingMemory);
 		Literal positiveAcceptedLiteral = new BasicLiteral(
 				new BasicAtom(p, ConstantTerm.getSymbolicInstance("a")), true);
 		Assert.assertEquals(AssignmentStatus.TRUE, strategy.getTruthForGroundLiteral(positiveAcceptedLiteral));
@@ -47,7 +47,7 @@ public class LiteralInstantiationStrategyTest {
 		WorkingMemory workingMemory = new WorkingMemory();
 		workingMemory.initialize(p);
 		workingMemory.addInstance(new BasicAtom(p, ConstantTerm.getSymbolicInstance("a")), true);
-		LiteralInstantiationStrategy strategy = new CautiousInstantiationStrategy(workingMemory);
+		LiteralInstantiationStrategy strategy = new WorkingMemoryBasedInstantiationStrategy(workingMemory);
 		Literal positiveRejectedLiteral = new BasicLiteral(
 				new BasicAtom(p, ConstantTerm.getSymbolicInstance("b")), true);
 		Assert.assertEquals(AssignmentStatus.FALSE, strategy.getTruthForGroundLiteral(positiveRejectedLiteral));
