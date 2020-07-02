@@ -41,10 +41,10 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 public interface LiteralInstantiationStrategy {
 
 	/**
-	 * Computes the {@link AssignmentStatus} for the given {@link Literal} according to the rules of this {@link InstantiationStrategy}.
+	 * Computes the {@link AssignmentStatus} for the given {@link Literal} according to the rules of this {@link LiteralInstantiationStrategy}.
 	 * 
 	 * @param groundLiteral a ground {@link Literal} for which to compute an {@link AssignmentStatus}
-	 * @return the current {@link AssignmentStatus} for the given literal according to the rules of this {@link InstantiationStrategy}
+	 * @return the current {@link AssignmentStatus} for the given literal according to the rules of this {@link LiteralInstantiationStrategy}
 	 */
 	AssignmentStatus getTruthForGroundLiteral(Literal groundLiteral);
 
