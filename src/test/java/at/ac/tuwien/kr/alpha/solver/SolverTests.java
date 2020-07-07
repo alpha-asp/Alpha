@@ -225,30 +225,26 @@ public class SolverTests extends AbstractSolverTests {
 	
 	@Test
 	public void choiceProgramConstraintSimple() throws IOException {
-		assertAnswerSetsWithBase(
-				"fact(x).\n" + 
+		assertAnswerSet(
+				"fact(a).\n" + 
 				"choice(either, X) :- fact(X), not choice(or, X).\n" + 
 				"choice(or, X) :- fact(X), not choice(either, X).\n" + 
 				":- choice(or, X).",
 				
-				"fact(x)",
-				
-				"choice(either, x)"
+				"fact(a), choice(either, a)"
 		);
 	}
 	
 	@Test
 	public void choiceProgramConstraintSimple2() throws IOException {
-		assertAnswerSetsWithBase(
-				"fact(x).\n" + 
+		assertAnswerSet(
+				"fact(a).\n" + 
 				"desired(either).\n" + 
 				"choice(either, X) :- fact(X), not choice(or, X).\n" + 
 				"choice(or, X) :- fact(X), not choice(either, X).\n" + 
 				":- choice(C, X), not desired(C).",
 				
-				"fact(x), desired(either)",
-				
-				"choice(either, x)"
+				"fact(a), desired(either), choice(either, a)"
 		);
 	}
 	
