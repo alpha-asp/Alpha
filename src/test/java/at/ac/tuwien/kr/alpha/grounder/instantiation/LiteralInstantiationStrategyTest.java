@@ -73,7 +73,8 @@ public class LiteralInstantiationStrategyTest {
 		WorkingMemory workingMemory = new WorkingMemory();
 		LinkedHashSet<Atom> staleSet = new LinkedHashSet<>();
 		DefaultLazyGroundingInstantiationStrategy strategy = new DefaultLazyGroundingInstantiationStrategy(workingMemory, new AtomStoreImpl(),
-				Collections.emptyMap(), staleSet);
+				Collections.emptyMap());
+		strategy.setStaleWorkingMemoryEntries(staleSet);
 		strategy.setCurrentAssignment(null);
 		
 
@@ -102,7 +103,8 @@ public class LiteralInstantiationStrategyTest {
 		workingMemory.addInstance(new BasicAtom(q, ConstantTerm.getSymbolicInstance("a"), ConstantTerm.getSymbolicInstance("b")), true);
 		LinkedHashSet<Atom> staleSet = new LinkedHashSet<>();
 		DefaultLazyGroundingInstantiationStrategy strategy = new DefaultLazyGroundingInstantiationStrategy(workingMemory, new AtomStoreImpl(),
-				Collections.emptyMap(), staleSet);
+				Collections.emptyMap());
+		strategy.setStaleWorkingMemoryEntries(staleSet);
 		strategy.setCurrentAssignment(null);
 
 		List<ImmutablePair<Substitution, AssignmentStatus>> result = strategy.getAcceptedSubstitutions(new BasicLiteral(nonGroundAtom, true),
@@ -136,7 +138,8 @@ public class LiteralInstantiationStrategyTest {
 		WritableAssignment assignment = new TrailAssignment(atomStore);
 		LinkedHashSet<Atom> staleSet = new LinkedHashSet<>();
 		DefaultLazyGroundingInstantiationStrategy strategy = new DefaultLazyGroundingInstantiationStrategy(workingMemory, atomStore,
-				Collections.emptyMap(), staleSet);
+				Collections.emptyMap());
+		strategy.setStaleWorkingMemoryEntries(staleSet);
 		strategy.setCurrentAssignment(assignment);
 
 		AssignmentStatus assignmentStatus = strategy.getTruthForGroundLiteral(new BasicLiteral(pOfA, true));
@@ -168,7 +171,8 @@ public class LiteralInstantiationStrategyTest {
 		assignment.assign(atomStore.get(pOfA), ThriceTruth.FALSE);
 		LinkedHashSet<Atom> staleSet = new LinkedHashSet<>();
 		DefaultLazyGroundingInstantiationStrategy strategy = new DefaultLazyGroundingInstantiationStrategy(workingMemory, atomStore,
-				Collections.emptyMap(), staleSet);
+				Collections.emptyMap());
+		strategy.setStaleWorkingMemoryEntries(staleSet);
 		strategy.setCurrentAssignment(assignment);
 
 		AssignmentStatus assignmentStatus = strategy.getTruthForGroundLiteral(new BasicLiteral(pOfA, true));
@@ -200,7 +204,8 @@ public class LiteralInstantiationStrategyTest {
 		assignment.assign(atomStore.get(pOfA), ThriceTruth.TRUE);
 		LinkedHashSet<Atom> staleSet = new LinkedHashSet<>();
 		DefaultLazyGroundingInstantiationStrategy strategy = new DefaultLazyGroundingInstantiationStrategy(workingMemory, atomStore,
-				Collections.emptyMap(), staleSet);
+				Collections.emptyMap());
+		strategy.setStaleWorkingMemoryEntries(staleSet);
 		strategy.setCurrentAssignment(assignment);
 		
 		AssignmentStatus assignmentStatus = strategy.getTruthForGroundLiteral(new BasicLiteral(pOfA, true));
@@ -231,7 +236,8 @@ public class LiteralInstantiationStrategyTest {
 		assignment.assign(atomStore.get(pOfA), ThriceTruth.MBT);
 		LinkedHashSet<Atom> staleSet = new LinkedHashSet<>();
 		DefaultLazyGroundingInstantiationStrategy strategy = new DefaultLazyGroundingInstantiationStrategy(workingMemory, atomStore,
-				Collections.emptyMap(), staleSet);
+				Collections.emptyMap());
+		strategy.setStaleWorkingMemoryEntries(staleSet);
 		strategy.setCurrentAssignment(assignment);
 
 		AssignmentStatus assignmentStatus = strategy.getTruthForGroundLiteral(new BasicLiteral(pOfA, true));
@@ -262,7 +268,8 @@ public class LiteralInstantiationStrategyTest {
 		WritableAssignment assignment = new TrailAssignment(atomStore);
 		LinkedHashSet<Atom> staleSet = new LinkedHashSet<>();
 		DefaultLazyGroundingInstantiationStrategy strategy = new DefaultLazyGroundingInstantiationStrategy(workingMemory, atomStore,
-				Collections.emptyMap(), staleSet);
+				Collections.emptyMap());
+		strategy.setStaleWorkingMemoryEntries(staleSet);
 		strategy.setCurrentAssignment(assignment);
 
 		List<ImmutablePair<Substitution, AssignmentStatus>> result = strategy.getAcceptedSubstitutions(new BasicLiteral(nonGroundAtom, true),
@@ -304,7 +311,8 @@ public class LiteralInstantiationStrategyTest {
 		assignment.assign(atomStore.get(groundAtom), ThriceTruth.TRUE);
 		LinkedHashSet<Atom> staleSet = new LinkedHashSet<>();
 		DefaultLazyGroundingInstantiationStrategy strategy = new DefaultLazyGroundingInstantiationStrategy(workingMemory, atomStore,
-				Collections.emptyMap(), staleSet);
+				Collections.emptyMap());
+		strategy.setStaleWorkingMemoryEntries(staleSet);
 		strategy.setCurrentAssignment(assignment);
 
 		List<ImmutablePair<Substitution, AssignmentStatus>> result = strategy.getAcceptedSubstitutions(new BasicLiteral(nonGroundAtom, true),
@@ -344,7 +352,8 @@ public class LiteralInstantiationStrategyTest {
 		assignment.assign(atomStore.get(groundAtom), ThriceTruth.FALSE);
 		LinkedHashSet<Atom> staleSet = new LinkedHashSet<>();
 		DefaultLazyGroundingInstantiationStrategy strategy = new DefaultLazyGroundingInstantiationStrategy(workingMemory, atomStore,
-				Collections.emptyMap(), staleSet);
+				Collections.emptyMap());
+		strategy.setStaleWorkingMemoryEntries(staleSet);
 		strategy.setCurrentAssignment(assignment);
 
 		List<ImmutablePair<Substitution, AssignmentStatus>> result = strategy.getAcceptedSubstitutions(new BasicLiteral(nonGroundAtom, true),

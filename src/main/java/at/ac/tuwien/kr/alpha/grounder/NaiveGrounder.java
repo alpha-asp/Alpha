@@ -73,7 +73,6 @@ import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration
 import at.ac.tuwien.kr.alpha.grounder.instantiation.AssignmentStatus;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationResult;
-import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationStrategy;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiator;
 import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
@@ -149,8 +148,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 		// Initialize RuleInstantiator and instantiation strategy. Note that the instantiation strategy also needs the current assignment, which is
 		// set with every call of getGroundInstantiations.
-		this.instantiationStrategy = new DefaultLazyGroundingInstantiationStrategy(this.workingMemory, this.atomStore, this.factsFromProgram,
-				this.removeAfterObtainingNewNoGoods);
+		this.instantiationStrategy = new DefaultLazyGroundingInstantiationStrategy(this.workingMemory, this.atomStore, this.factsFromProgram);
+		this.instantiationStrategy.setStaleWorkingMemoryEntries(this.removeAfterObtainingNewNoGoods);
 		this.ruleInstantiator = new LiteralInstantiator(this.instantiationStrategy);
 	}
 
@@ -412,8 +411,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 		}
 
-		// clear rather than re-initialize, avoids having to pass a new list to instantiation strategy every time
-		removeAfterObtainingNewNoGoods.clear();
+		// Re-Initialize the stale working memory entries set and pass to instantiation strategy.
+		this.removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
+		this.instantiationStrategy.setStaleWorkingMemoryEntries(this.removeAfterObtainingNewNoGoods);
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Grounded NoGoods are:");
 			for (Map.Entry<Integer, NoGood> noGoodEntry : newNoGoods.entrySet()) {

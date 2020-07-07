@@ -71,11 +71,10 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 	private Map<Predicate, LinkedHashSet<Instance>> facts;
 
 	public DefaultLazyGroundingInstantiationStrategy(WorkingMemory workingMemory, AtomStore atomStore,
-			Map<Predicate, LinkedHashSet<Instance>> facts, LinkedHashSet<Atom> staleWorkingMemoryEntries) {
+			Map<Predicate, LinkedHashSet<Instance>> facts) {
 		this.workingMemory = workingMemory;
 		this.atomStore = atomStore;
 		this.facts = facts;
-		this.staleWorkingMemoryEntries = staleWorkingMemoryEntries;
 	}
 
 	@Override
@@ -165,4 +164,8 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 		this.currentAssignment = currentAssignment;
 	}
 
+	public void setStaleWorkingMemoryEntries(LinkedHashSet<Atom> staleWorkingMemoryEntries) {
+		this.staleWorkingMemoryEntries = staleWorkingMemoryEntries;
+	}
+	
 }
