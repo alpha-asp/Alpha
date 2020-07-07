@@ -52,9 +52,17 @@ public class EnumerationAtom extends BasicAtom {
 
 	}
 
+	/**
+	 * Based on a given substitution, substitutes the first two terms of this {@link EnumerationAtom} with the values from the substitution,
+	 * and returns a new substitution with all mappings from the input substitution plus a binding for the third term of the enum atom to the
+	 * integer index that is mapped to the first two terms in the internal <code>ENUMERATIONS</code> map.
+	 * 
+	 * @param substitution an input substitution which must provide ground terms for the first two terms of the enumeration atom
+	 * @return a new substitution where the third term of the enumeration aatom is bound to an integer
+	 */
 	public Substitution addEnumerationIndexToSubstitution(Substitution substitution) {
-		Term idTerm = getTerms().get(0).substitute(substitution);
-		Term enumerationTerm  = getTerms().get(1).substitute(substitution);
+		Term idTerm = this.getTerms().get(0).substitute(substitution);
+		Term enumerationTerm = this.getTerms().get(1).substitute(substitution);
 		if (!enumerationTerm.isGround()) {
 			throw new RuntimeException("Enumeration term is not ground after substitution. Should not happen.");
 		}
