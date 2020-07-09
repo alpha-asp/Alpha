@@ -98,7 +98,6 @@ public class LiteralInstantiationResult {
 		return this.type;
 	}
 
-	// unwrap the optional, if empty, exception will be thrown here
 	public List<ImmutablePair<Substitution, AssignmentStatus>> getSubstitutions() {
 		if (this.type != Type.CONTINUE) {
 			throw new UnsupportedOperationException("A LiteralInstantiationResult of type " + this.type + " does not have substitutions!");
