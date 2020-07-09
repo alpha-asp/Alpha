@@ -94,7 +94,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	private int assignmentsForChoicePosition;
 	private int mbtCount;
 	private boolean checksEnabled;
-	int replayCounter;
+	long replayCounter;
 
 	public TrailAssignment(AtomStore atomStore, boolean checksEnabled) {
 		this.checksEnabled = checksEnabled;
