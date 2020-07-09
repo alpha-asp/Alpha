@@ -113,12 +113,14 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 		}
 		AssignmentStatus retVal;
 		// First, make sure that the Atom in question exists in the AtomStore
-		int atomId = this.atomStore.putIfAbsent(atom);
-		// newly obtained atomId might be higher than the maximum in the current
-		// assignment, grow the assignment
-		this.currentAssignment.growForMaxAtomId();
-		if (currentAssignment.isAssigned(atomId)) {
-			retVal = currentAssignment.getTruth(atomId).toBoolean() ? AssignmentStatus.TRUE : AssignmentStatus.FALSE;
+		if (atomStore.contains(atom)) {
+			int atomId = this.atomStore.get(atom);
+			this.currentAssignment.growForMaxAtomId();
+			if (currentAssignment.isAssigned(atomId)) {
+				retVal = currentAssignment.getTruth(atomId).toBoolean() ? AssignmentStatus.TRUE : AssignmentStatus.FALSE;
+			} else {
+				retVal = AssignmentStatus.UNASSIGNED;
+			}
 		} else {
 			retVal = AssignmentStatus.UNASSIGNED;
 		}
@@ -167,5 +169,5 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 	public void setStaleWorkingMemoryEntries(LinkedHashSet<Atom> staleWorkingMemoryEntries) {
 		this.staleWorkingMemoryEntries = staleWorkingMemoryEntries;
 	}
-	
+
 }
