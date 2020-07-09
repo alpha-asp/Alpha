@@ -76,7 +76,7 @@ public class LiteralInstantiatorTest {
 	}
 
 	@Test
-	public void cautiousVerifyPositiveGroundLiteralSatisfied() {
+	public void workinMemoryBasedVerifyPositiveGroundLiteralSatisfied() {
 		Predicate p = Predicate.getInstance("p", 2);
 		WorkingMemory workingMemory = new WorkingMemory();
 		workingMemory.initialize(p);
@@ -94,13 +94,13 @@ public class LiteralInstantiatorTest {
 		Assert.assertEquals(1, substitutions.size());
 		Assert.assertEquals(AssignmentStatus.TRUE, substitutions.get(0).right);
 		Substitution resultSubstitution = substitutions.get(0).left;
-		// with the given input substitution, lit is ground and satisfied,
-		// we expect the instantiator to verify that
+		// With the given input substitution, lit is ground and satisfied -
+		// we expect the instantiator to verify that.
 		Assert.assertEquals(substitution, resultSubstitution);
 	}
 
 	@Test
-	public void cautiousVerifyPositiveGroundLiteralUnsatisfied() {
+	public void workingMemoryBasedVerifyPositiveGroundLiteralUnsatisfied() {
 		Predicate p = Predicate.getInstance("p", 2);
 		WorkingMemory workingMemory = new WorkingMemory();
 		workingMemory.initialize(p);
@@ -112,14 +112,14 @@ public class LiteralInstantiatorTest {
 		substitution.put(y, ConstantTerm.getSymbolicInstance("y"));
 		LiteralInstantiator instantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(workingMemory));
 		LiteralInstantiationResult result = instantiator.instantiateLiteral(lit, substitution);
-		// with the given input substitution, lit is ground, but not satisfied,
+		// With the given input substitution, lit is ground, but not satisfied -
 		// we expect the instantiator to verify that and return an empty list of
-		// substitutions
+		// substitutions.
 		Assert.assertEquals(LiteralInstantiationResult.Type.STOP_BINDING, result.getType());
 	}
 
 	@Test
-	public void cautiousInstantiatePositiveBasicLiteral() {
+	public void workingMemoryBasedInstantiatePositiveBasicLiteral() {
 		Predicate p = Predicate.getInstance("p", 2);
 		WorkingMemory workingMemory = new WorkingMemory();
 		workingMemory.initialize(p);

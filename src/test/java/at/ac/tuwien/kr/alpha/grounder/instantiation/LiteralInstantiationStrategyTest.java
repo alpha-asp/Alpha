@@ -27,7 +27,7 @@ import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 public class LiteralInstantiationStrategyTest {
 
 	@Test
-	public void cautiousInstantiationAcceptLiteral() {
+	public void workingMemoryBasedInstantiationAcceptLiteral() {
 		Predicate p = Predicate.getInstance("p", 1);
 		WorkingMemory workingMemory = new WorkingMemory();
 		workingMemory.initialize(p);
@@ -42,7 +42,7 @@ public class LiteralInstantiationStrategyTest {
 	}
 
 	@Test
-	public void cautiousInstantiationRejectLiteral() {
+	public void workingMemoryBasedInstantiationRejectLiteral() {
 		Predicate p = Predicate.getInstance("p", 1);
 		WorkingMemory workingMemory = new WorkingMemory();
 		workingMemory.initialize(p);
