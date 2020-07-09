@@ -51,7 +51,7 @@ import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
  * The working memory and the facts map are maintained by the grounder and are being read by
  * {@link DefaultLazyGroundingInstantiationStrategy} in order to determine {@link AssignmentStatus}es for atoms. The {@link AtomStore} is
  * maintained by {@link DefaultLazyGroundingInstantiationStrategy} in the sense that atoms created from newly encountered ground instances
- * are addedby the instantiation strategy. The {@link Assignment} reflects the {@link Solver}s "current view of the world". It is used by
+ * are added by the instantiation strategy. The {@link Assignment} reflects the {@link Solver}s "current view of the world". It is used by
  * {@link DefaultLazyGroundingInstantiationStrategy} to determine {@link AssignmentStatus}es for atoms.
  * 
  * A specialty of this implementation is that - since deletion of obsolete {@link Atom}s from {@link NaiveGrounder}s {@link WorkingMemory}
