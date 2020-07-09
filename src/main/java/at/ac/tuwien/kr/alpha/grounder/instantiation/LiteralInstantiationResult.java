@@ -27,7 +27,6 @@ package at.ac.tuwien.kr.alpha.grounder.instantiation;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -51,21 +50,23 @@ public class LiteralInstantiationResult {
 	 * Indicates how a {@link Grounder} should treat this result.
 	 */
 	private final Type type;
-	// use optional to ensure empty value is caught as early as possible
 
 	/**
 	 * Ground substitutions together with the {@link AssignmentStatus} of the last literal bound to obtain the substitution. Empty for result
 	 * types STOP_BINDING, PUSH_BACK and MAYBE_PUSH_BACK.
 	 */
-	private final Optional<List<ImmutablePair<Substitution, AssignmentStatus>>> substitutions;
+	private final List<ImmutablePair<Substitution, AssignmentStatus>> substitutions;
 
-	private LiteralInstantiationResult(Type type, Optional<List<ImmutablePair<Substitution, AssignmentStatus>>> substitutions) {
+	private LiteralInstantiationResult(Type type, List<ImmutablePair<Substitution, AssignmentStatus>> substitutions) {
+		if (type == Type.CONTINUE && substitutions == null) {
+			throw new UnsupportedOperationException("A LiteralInstantiationResult of type CONTINUE must have substitutions!");
+		}
 		this.type = type;
 		this.substitutions = substitutions;
 	}
 
 	public static LiteralInstantiationResult continueBinding(List<ImmutablePair<Substitution, AssignmentStatus>> substitutions) {
-		return new LiteralInstantiationResult(Type.CONTINUE, Optional.of(substitutions));
+		return new LiteralInstantiationResult(Type.CONTINUE, substitutions);
 	}
 
 	//@formatter:off
@@ -73,24 +74,24 @@ public class LiteralInstantiationResult {
 		List<ImmutablePair<Substitution, AssignmentStatus>> substitutionsWithAssignment = substitutions.stream()
 				.map((substitution) -> new ImmutablePair<>(substitution, AssignmentStatus.TRUE))
 				.collect(Collectors.toList());
-		return new LiteralInstantiationResult(Type.CONTINUE, Optional.of(substitutionsWithAssignment));
+		return new LiteralInstantiationResult(Type.CONTINUE, substitutionsWithAssignment);
 	}
 	//@formatter:on
 
 	public static LiteralInstantiationResult continueBinding(Substitution substitution, AssignmentStatus assignmentStatus) {
-		return new LiteralInstantiationResult(Type.CONTINUE, Optional.of(Collections.singletonList(new ImmutablePair<>(substitution, assignmentStatus))));
+		return new LiteralInstantiationResult(Type.CONTINUE, Collections.singletonList(new ImmutablePair<>(substitution, assignmentStatus)));
 	}
 
 	public static LiteralInstantiationResult stopBinding() {
-		return new LiteralInstantiationResult(Type.STOP_BINDING, Optional.empty());
+		return new LiteralInstantiationResult(Type.STOP_BINDING, null);
 	}
 
 	public static LiteralInstantiationResult pushBack() {
-		return new LiteralInstantiationResult(Type.PUSH_BACK, Optional.empty());
+		return new LiteralInstantiationResult(Type.PUSH_BACK, null);
 	}
 
 	public static LiteralInstantiationResult maybePushBack() {
-		return new LiteralInstantiationResult(Type.MAYBE_PUSH_BACK, Optional.empty());
+		return new LiteralInstantiationResult(Type.MAYBE_PUSH_BACK, null);
 	}
 
 	public Type getType() {
@@ -99,7 +100,10 @@ public class LiteralInstantiationResult {
 
 	// unwrap the optional, if empty, exception will be thrown here
 	public List<ImmutablePair<Substitution, AssignmentStatus>> getSubstitutions() {
-		return this.substitutions.get();
+		if (this.type != Type.CONTINUE) {
+			throw new UnsupportedOperationException("A LiteralInstantiationResult of type " + this.type + " does not have substitutions!");
+		}
+		return this.substitutions;
 	}
 
 	/**
