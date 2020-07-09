@@ -67,7 +67,7 @@ public abstract class AbstractLiteralInstantiationStrategy implements LiteralIns
 	 * 
 	 * A very general implementation of the basic steps needed to obtain ground substitutions for a positive literal.
 	 * Potentially valid ground instances are obtained using {@link AbstractLiteralInstantiationStrategy#computeCandidateInstances(Atom)}, then
-	 * checked, such that each candidate instance has unifies with the given partial substitution and has a "valid" {@link AssignmentStatus},
+	 * checked, such that each candidate instance unifies with the given partial substitution and has a "valid" {@link AssignmentStatus},
 	 * where "validity" of an {@link AssignmentStatus} is determined using the abstract method
 	 * {@link AbstractLiteralInstantiationStrategy#assignmentStatusAccepted(AssignmentStatus)}.
 	 */
@@ -114,13 +114,12 @@ public abstract class AbstractLiteralInstantiationStrategy implements LiteralIns
 				continue;
 			}
 			// At this point, we know that the substitution works out.
-			// Now check that the resulting Atom is either true or unassigned
+			// Now check whether the resulting Atom has an acceptable AssignmentStatus
 			atomForCurrentInstance = new BasicAtom(atomToSubstitute.getPredicate(), atomToSubstitute.getTerms())
 					.substitute(currentInstanceSubstitution);
 			AssignmentStatus assignmentStatus = this.getAssignmentStatusForAtom(atomForCurrentInstance);
 			if (!this.assignmentStatusAccepted(assignmentStatus)) {
-				// Atom has an assignment status deemed unacceptable by this instantiation
-				// strategy
+				// Atom has an assignment status deemed unacceptable by this instantiation strategy
 				continue;
 			}
 			retVal.add(new ImmutablePair<>(currentInstanceSubstitution, assignmentStatus));
