@@ -105,14 +105,14 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 	protected AssignmentStatus getAssignmentStatusForAtom(Atom atom) {
 		if (this.currentAssignment == null || this.isFact(atom)) {
 			// currentAssignment == null is a legitimate case, grounder may be in bootstrap
-			// and will call bindNextAtom with null assignment in that case
+			// and will call bindNextAtom with null assignment in that case.
 			// Assumption: since the atom came from working memory and we must be in
 			// bootstrap here, we can assume for the atom to be true (or atom is a fact
-			// anyway, in which case it's also true)
+			// anyway, in which case it's also true).
 			return AssignmentStatus.TRUE;
 		}
 		AssignmentStatus retVal;
-		// First, make sure that the Atom in question exists in the AtomStore
+		// First, make sure that the Atom in question exists in the AtomStore.
 		if (atomStore.contains(atom)) {
 			int atomId = this.atomStore.get(atom);
 			this.currentAssignment.growForMaxAtomId();
