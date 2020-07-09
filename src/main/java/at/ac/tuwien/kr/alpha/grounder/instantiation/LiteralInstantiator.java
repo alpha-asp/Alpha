@@ -43,7 +43,7 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalLiteral;
  * Provides ground instantiations for literals.
  * 
  * This class is intended to be used for grounding and other use cases where ground instantiations of literals need to be computed and
- * serves as an abstraction layer to decouple the knowledge of how to groun literals from the overall (rule-)grounding workflow. The task of
+ * serves as an abstraction layer to decouple the knowledge of how to ground literals from the overall (rule-)grounding workflow. The task of
  * actually finding fitting ground substitutions is mostly delegated to a {@link LiteralInstantiationStrategy}.
  * 
  * Copyright (c) 2020, the Alpha Team.
@@ -76,19 +76,17 @@ public class LiteralInstantiator {
 	 */
 	public LiteralInstantiationResult instantiateLiteral(Literal lit, Substitution partialSubstitution) {
 		LOGGER.trace("Instantiating literal: {}", lit);
-		LiteralInstantiationResult retVal;
 		if (lit instanceof FixedInterpretationLiteral) {
-			retVal = this.instantiateFixedInterpretationLiteral((FixedInterpretationLiteral) lit, partialSubstitution);
+			return this.instantiateFixedInterpretationLiteral((FixedInterpretationLiteral) lit, partialSubstitution);
 		} else if (lit instanceof EnumerationLiteral) {
-			retVal = this.instantiateEnumerationLiteral((EnumerationLiteral) lit, partialSubstitution);
+			return this.instantiateEnumerationLiteral((EnumerationLiteral) lit, partialSubstitution);
 		} else {
 			// Note: At this point we just assume lit to be a basic literal, actual type
 			// check is not performed since the assumption is that any literal that is no
 			// FixedInterpretationLiteral or EnumerationLiteral follows the semantics of a
 			// BasicLiteral even if it has another (currently not existing) type.
-			retVal = this.instantiateBasicLiteral(lit, partialSubstitution);
+			return this.instantiateBasicLiteral(lit, partialSubstitution);
 		}
-		return retVal;
 	}
 
 	/**
@@ -101,17 +99,15 @@ public class LiteralInstantiator {
 	 */
 	private LiteralInstantiationResult instantiateFixedInterpretationLiteral(FixedInterpretationLiteral lit, Substitution partialSubstitution) {
 		LOGGER.trace("Instantiating FixedInterpretationLiteral: {}", lit);
-		LiteralInstantiationResult retVal;
 		List<Substitution> substitutions;
 		FixedInterpretationLiteral substitutedLiteral = (FixedInterpretationLiteral) lit.substitute(partialSubstitution);
 		if (this.shouldPushBackFixedInterpretationLiteral(substitutedLiteral)) {
-			retVal = LiteralInstantiationResult.pushBack();
+			return LiteralInstantiationResult.pushBack();
 		} else {
 			substitutions = substitutedLiteral.getSatisfyingSubstitutions(partialSubstitution);
-			retVal = substitutions.isEmpty() ? LiteralInstantiationResult.stopBinding()
+			return substitutions.isEmpty() ? LiteralInstantiationResult.stopBinding()
 					: LiteralInstantiationResult.continueBindingWithTrueSubstitutions(substitutions);
 		}
-		return retVal;
 	}
 
 	/**
@@ -140,7 +136,6 @@ public class LiteralInstantiator {
 	 */
 	private LiteralInstantiationResult instantiateBasicLiteral(Literal lit, Substitution partialSubstitution) {
 		LOGGER.trace("Instantiating basic literal: {}", lit);
-		LiteralInstantiationResult retVal;
 		List<ImmutablePair<Substitution, AssignmentStatus>> substitutions;
 		Literal substitutedLiteral = lit.substitute(partialSubstitution);
 		LOGGER.trace("Substituted literal is {}", substitutedLiteral);
@@ -151,9 +146,9 @@ public class LiteralInstantiator {
 			// instantiationStrategy.
 			AssignmentStatus truthForLiteral = this.instantiationStrategy.getTruthForGroundLiteral(substitutedLiteral);
 			if (truthForLiteral == AssignmentStatus.FALSE) {
-				retVal = LiteralInstantiationResult.stopBinding();
+				return LiteralInstantiationResult.stopBinding();
 			} else {
-				retVal = LiteralInstantiationResult.continueBinding(partialSubstitution, truthForLiteral);
+				return LiteralInstantiationResult.continueBinding(partialSubstitution, truthForLiteral);
 			}
 		} else {
 			LOGGER.trace("Handling non-ground literal {}", substitutedLiteral);
@@ -163,12 +158,11 @@ public class LiteralInstantiator {
 			// Query instantiationStrategy for acceptable substitutions.
 			// Note: getAcceptedSubstitutions will only give substitutions where the
 			// resulting ground atom is true or unassigned, false atoms are internally
-			// discarded
+			// discarded.
 			substitutions = this.instantiationStrategy.getAcceptedSubstitutions(substitutedLiteral, partialSubstitution);
 			LOGGER.trace("Got {} substitutions from instantiation strategy for {}", substitutions.size(), substitutedLiteral);
-			retVal = substitutions.isEmpty() ? LiteralInstantiationResult.maybePushBack() : LiteralInstantiationResult.continueBinding(substitutions);
+			return substitutions.isEmpty() ? LiteralInstantiationResult.maybePushBack() : LiteralInstantiationResult.continueBinding(substitutions);
 		}
-		return retVal;
 	}
 
 	/**

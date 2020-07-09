@@ -365,3 +365,4 @@ public class LiteralInstantiationStrategyTest {
 	}
 
 }
+	
