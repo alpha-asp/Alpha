@@ -48,8 +48,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
@@ -451,7 +449,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return registry.register(noGood);
 	}
 
-	@VisibleForTesting // should be private, but needs to be visible to NaiveGrounderTest
+	// Ideally, this method should be private. It's only visible because NaiveGrounderTest needs to access it
 	BindingResult getGroundInstantiations(NonGroundRule rule, RuleGroundingOrder groundingOrder, Substitution partialSubstitution,
 			Assignment currentAssignment) {
 		int tolerance = heuristicsConfiguration.getTolerance(rule.isConstraint());
@@ -460,8 +458,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 
 		// Update instantiationStrategy with current assignment
-		// TODO actually the assignment could be an instance variable of the grounder
-		// (shared with solver)
+		// Note: Actually the assignment could be an instance variable of the grounder (shared with solver),
+		// but this would have a larger impact on grounder/solver communication design as a whole
 		this.instantiationStrategy.setCurrentAssignment(currentAssignment);
 		BindingResult bindingResult = bindNextAtomInRule(groundingOrder, 0, tolerance, tolerance, partialSubstitution);
 		if (LOGGER.isDebugEnabled()) {
@@ -500,8 +498,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			case TRUE:
 				return advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, substitution);
 			case UNASSIGNED:
-				// we had an unassigned atom - proceed with grounding if enough tolerance
-				// remains
+				// The last literal bound to obtain the current substitution has not been assigned a truth value by the solver yet. 
+				// If we still have enough tolerance, we can continue grounding nevertheless. 
 				int toleranceForNextRun = remainingTolerance - 1;
 				if (toleranceForNextRun >= 0) {
 					return advanceAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, toleranceForNextRun, substitution);
@@ -553,10 +551,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			Substitution partialSubstitution) {
 		Literal currentLiteral = groundingOrder.getLiteralAtOrderPosition(orderPosition);
 		if (currentLiteral == null) {
-			LOGGER.trace("bindNextAtom - current literal is null, returning last substitution!");
+			LOGGER.trace("No more literals found in grounding order, therefore stopping binding!");
 			return BindingResult.singleton(partialSubstitution, originalTolerance - remainingTolerance);
 		}
-		LOGGER.trace("bindNextAtom - binding current literal {} with remaining tolerance {} and partial substitution {}", currentLiteral,
+		LOGGER.trace("Binding current literal {} with remaining tolerance {} and partial substitution {}.", currentLiteral,
 				remainingTolerance, partialSubstitution);
 		LiteralInstantiationResult instantiationResult = this.ruleInstantiator.instantiateLiteral(currentLiteral, partialSubstitution);
 		return this.handleLiteralInstantiationResultAndContinueBinding(groundingOrder, orderPosition, originalTolerance, remainingTolerance,
@@ -598,8 +596,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		BindingResult retVal;
 		switch (lastLiteralInstantiationResult.getType()) {
 			case CONTINUE:
-				LOGGER.trace("bindNextAtom - got CONTINUE from literal instantiator");
 				List<ImmutablePair<Substitution, AssignmentStatus>> substitutionInfos = lastLiteralInstantiationResult.getSubstitutions();
+				LOGGER.trace("Literal instantiator yielded {} substitutions for last bound literal.", substitutionInfos.size());
 				retVal = new BindingResult();
 				for (ImmutablePair<Substitution, AssignmentStatus> substitutionInfo : substitutionInfos) {
 					retVal.add(this.continueBinding(groundingOrder, orderPosition, originalTolerance, remainingTolerance,
@@ -613,7 +611,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			case MAYBE_PUSH_BACK:
 				LOGGER.trace("bindNextAtom - got MAYBE_PUSH_BACK");
 				if (originalTolerance > 0) {
-					// we have a permissive heuristic in use
+					// This occurs when the grounder heuristic in use is a "permissive" one, 
+					// i.e. it is deemed acceptable to have ground rules where a number of body atoms are not yet assigned a truth value by the solver.
 					retVal = pushBackAndBindNextAtomInRule(groundingOrder, orderPosition, originalTolerance, remainingTolerance, partialSubstitution);
 				} else {
 					LOGGER.trace("bindNextAtom - Cannot push back since tolerance is used up, stopping here!");
