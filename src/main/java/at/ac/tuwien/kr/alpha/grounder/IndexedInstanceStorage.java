@@ -191,7 +191,7 @@ public class IndexedInstanceStorage {
 		return mostSelectiveTermPosition;
 	}
 
-	List<Instance> getInstancesFromPartiallyGroundAtom(Atom substitute) {
+	public List<Instance> getInstancesFromPartiallyGroundAtom(Atom substitute) {
 		// For selection of the instances, find ground term on which to select.
 		int firstGroundTermPosition = getMostSelectiveGroundTermPosition(substitute);
 		// Select matching instances, select all if no ground term was found.
