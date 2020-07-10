@@ -25,18 +25,17 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.instantiation;
 
+import at.ac.tuwien.kr.alpha.common.Rule;
+import at.ac.tuwien.kr.alpha.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
-import at.ac.tuwien.kr.alpha.common.Rule;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
-
 /**
- * Representation of the result of instantiating, i.e. finding ground instances for, a literal, as performed by
+ * Representation of the result of instantiating, i.e. finding ground instances for a literal, as performed by
  * {@link LiteralInstantiator#instantiateLiteral(at.ac.tuwien.kr.alpha.common.atoms.Literal, Substitution)}.
  * 
  * A {@link LiteralInstantiationResult} bundles obtained ground substitutions - or the lack thereof, if none exist for a given literal -
@@ -131,7 +130,8 @@ public class LiteralInstantiationResult {
 
 		/**
 		 * Currently no ground instances, but proceeding with another literal might make sense, push the literal back in the overall grounding
-		 * order.
+		 * order. This is used for {@link at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral}s that do not produce bindings, like a
+		 * comparision "X < Y" when one variable is not yet bound.
 		 */
 		PUSH_BACK;
 	}

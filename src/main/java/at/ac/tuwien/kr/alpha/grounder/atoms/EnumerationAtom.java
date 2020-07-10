@@ -57,8 +57,8 @@ public class EnumerationAtom extends BasicAtom {
 	 * and returns a new substitution with all mappings from the input substitution plus a binding for the third term of the enum atom to the
 	 * integer index that is mapped to the first two terms in the internal <code>ENUMERATIONS</code> map.
 	 * 
-	 * @param substitution an input substitution which must provide ground terms for the first two terms of the enumeration atom
-	 * @return a new substitution where the third term of the enumeration atom is bound to an integer
+	 * @param substitution an input substitution which must provide ground terms for the first two terms of the enumeration atom.
+	 * @return a new substitution where the third term of the enumeration atom is bound to an integer.
 	 */
 	public Substitution addEnumerationIndexToSubstitution(Substitution substitution) {
 		Term idTerm = this.getTerms().get(0).substitute(substitution);

@@ -1,12 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.instantiation;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.junit.Assert;
-import org.junit.Test;
-
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -21,6 +14,12 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.WorkingMemory;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationLiteral;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class LiteralInstantiatorTest {
 
@@ -76,7 +75,7 @@ public class LiteralInstantiatorTest {
 	}
 
 	@Test
-	public void workinMemoryBasedVerifyPositiveGroundLiteralSatisfied() {
+	public void workingMemoryBasedVerifyPositiveGroundLiteralSatisfied() {
 		Predicate p = Predicate.getInstance("p", 2);
 		WorkingMemory workingMemory = new WorkingMemory();
 		workingMemory.initialize(p);

@@ -27,27 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
@@ -80,6 +59,26 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.EnumerationRewriting;
 import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.SumNormalization;
 import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
 /**
  * A semi-naive grounder.
@@ -449,7 +448,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return registry.register(noGood);
 	}
 
-	// Ideally, this method should be private. It's only visible because NaiveGrounderTest needs to access it
+	// Ideally, this method should be private. It's only visible because NaiveGrounderTest needs to access it.
 	BindingResult getGroundInstantiations(NonGroundRule rule, RuleGroundingOrder groundingOrder, Substitution partialSubstitution,
 			Assignment currentAssignment) {
 		int tolerance = heuristicsConfiguration.getTolerance(rule.isConstraint());
@@ -457,9 +456,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			tolerance = Integer.MAX_VALUE;
 		}
 
-		// Update instantiationStrategy with current assignment
+		// Update instantiationStrategy with current assignment.
 		// Note: Actually the assignment could be an instance variable of the grounder (shared with solver),
-		// but this would have a larger impact on grounder/solver communication design as a whole
+		// but this would have a larger impact on grounder/solver communication design as a whole.
 		this.instantiationStrategy.setCurrentAssignment(currentAssignment);
 		BindingResult bindingResult = bindNextAtomInRule(groundingOrder, 0, tolerance, tolerance, partialSubstitution);
 		if (LOGGER.isDebugEnabled()) {
@@ -581,7 +580,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			case MAYBE_PUSH_BACK:
 				/*
 				 * Indicates that the rule instantiator could not find any substitutions for the current literal. If a permissive grounder heuristic is in
-				 * use, push the current literal to the end of the grounding order and proceed with the next one, otherwise return an empty BindingResult
+				 * use, push the current literal to the end of the grounding order and proceed with the next one, otherwise return an empty BindingResult.
 				 */
 				if (originalTolerance > 0) {
 					LOGGER.trace("No substitutions yielded by literal instantiator for literal {}, but using permissive heuristic, therefore pushing the literal back.", currentLiteral);
