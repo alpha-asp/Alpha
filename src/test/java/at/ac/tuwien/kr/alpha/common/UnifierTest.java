@@ -219,7 +219,7 @@ public class UnifierTest extends SubstitutionTest {
 		final Literal lit1 = PROGRAM_PART_PARSER.parseLiteral("a(X,Y)");
 		final Literal lit2 = PROGRAM_PART_PARSER.parseLiteral("b(X)");
 		final Literal lit3 = PROGRAM_PART_PARSER.parseLiteral("X < Y");
-        final Unifier substitution = new Unifier();
+		final Unifier substitution = new Unifier();
 		substitution.put(VariableTerm.getInstance("X"), VariableTerm.getInstance("X1"));
 		substitution.put(VariableTerm.getInstance("Y"), ConstantTerm.getInstance("y"));
 		final NonGroundNoGood nonGroundNoGood1 = new NonGroundNoGood(lit1, lit2, lit3);
