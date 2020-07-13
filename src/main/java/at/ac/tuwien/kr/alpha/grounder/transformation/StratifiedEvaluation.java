@@ -1,10 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,11 +34,9 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.IndexedInstanceStorage;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
-import at.ac.tuwien.kr.alpha.grounder.RuleGroundingOrder;
 import at.ac.tuwien.kr.alpha.grounder.RuleGroundingOrders;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.WorkingMemory;
-import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationLiteral;
 
 /**
@@ -148,8 +141,10 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	}
 
 	/**
-	 * To be called at the start of evaluateComponent. Adds all known instances of the predicates occurring in the given set of rules to the
-	 * "modifiedInLastEvaluationRun" map in order to "bootstrap" incremental grounding, i.e. making sure that those instances are taken into account for ground
+	 * To be called at the start of evaluateComponent. Adds all known instances of the predicates occurring in the given set
+	 * of rules to the
+	 * "modifiedInLastEvaluationRun" map in order to "bootstrap" incremental grounding, i.e. making sure that those
+	 * instances are taken into account for ground
 	 * substitutions by evaluateRule.
 	 */
 	private void prepareComponentEvaluation(Set<InternalRule> rulesToEvaluate) {
@@ -178,19 +173,13 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 	private void evaluateRule(InternalRule rule) {
 		LOGGER.debug("Evaluating rule {}", rule);
-		List<Substitution> groundSubstitutions = this.groundRule(rule);
-		boolean canRuleFire;
-		for (Substitution subst : groundSubstitutions) {
-			LOGGER.debug("Checking if rule can fire for substitution: {}", subst);
-			canRuleFire = this.canFire(rule, subst);
-			LOGGER.debug("canFire result = {}", canRuleFire);
-			if (canRuleFire) {
-				this.fireRule(rule, subst);
-			}
+		List<Substitution> satisfyingSubstitutions = this.calculateSatisfyingSubstitutionsForRule(rule);
+		for (Substitution subst : satisfyingSubstitutions) {
+			this.fireRule(rule, subst);
 		}
 	}
 
-	private List<Substitution> groundRule(InternalRule rule) {
+	private List<Substitution> calculateSatisfyingSubstitutionsForRule(InternalRule rule) {
 		LOGGER.debug("Grounding rule {}", rule);
 		RuleGroundingOrders groundingOrders = rule.getGroundingOrders();
 		List<Substitution> groundSubstitutions = new ArrayList<>(); // the actual full ground substitutions for the rule
@@ -263,100 +252,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		LOGGER.debug("Firing rule - got head atom: {}", newAtom);
 		this.workingMemory.addInstance(newAtom, true);
 	}
-
-	private List<Substitution> bindNextAtomInRule(InternalRule rule, RuleGroundingOrder groundingOrder, int orderPosition, Substitution partialSubstitution) {
-		LOGGER.debug("Starting bindNextAtom(\n\trule = {},\n\tgroundingOrder = {},\n\torderPosition = {},\n\tsubstitution = {})", rule,
-				StringUtils.join(groundingOrder, ", "), orderPosition, partialSubstitution);
-		Literal currentLiteral = groundingOrder.getLiteralAtOrderPosition(orderPosition);
-		if (currentLiteral == null) {
-			// we're at the end of the grounding order, no more literals to bind
-			return singletonList(partialSubstitution);
-		}
-		
-		Atom currentAtom = currentLiteral.getAtom();
-		if (currentLiteral instanceof FixedInterpretationLiteral) {
-			// Generate all substitutions for the builtin/external/interval atom.
-			final List<Substitution> substitutions = ((FixedInterpretationLiteral) currentLiteral.substitute(partialSubstitution))
-					.getSatisfyingSubstitutions(partialSubstitution);
-
-			if (substitutions.isEmpty()) {
-				return emptyList();
-			}
-
-			final List<Substitution> generatedSubstitutions = new ArrayList<>();
-			for (Substitution substitution : substitutions) {
-				// Continue grounding with each of the generated values.
-				generatedSubstitutions.addAll(bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, substitution));
-			}
-			return generatedSubstitutions;
-		}
-		if (currentAtom instanceof EnumerationAtom) {
-			// Get the enumeration value and add it to the current partialSubstitution.
-//			((EnumerationAtom) currentAtom).addEnumerationToSubstitution(partialSubstitution);
-			return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, partialSubstitution);
-		}
-
-		// check if partialVariableSubstitution already yields a ground atom
-		final Atom substitute = currentAtom.substitute(partialSubstitution);
-
-		if (substitute.isGround()) {
-			// Substituted atom is ground, in case it is positive, only ground if it also holds true
-			if (currentLiteral.isNegated()) {
-				// Atom occurs negated in the rule, continue grounding
-				return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, partialSubstitution);
-			}
-
-			if (this.stopBindingAtNonTruePositiveBody && !rule.isGround()
-					&& !this.workingMemory.get(currentAtom.getPredicate(), true).containsInstance(new Instance(substitute.getTerms()))) {
-				// Generate no variable substitution.
-				return emptyList();
-			}
-
-			// Check if atom is also assigned true.
-			final LinkedHashSet<Instance> instances = this.programFacts.get(substitute.getPredicate());
-			if (!(instances == null || !instances.contains(new Instance(substitute.getTerms())))) {
-				// Ground literal holds, continue finding a variable substitution.
-				return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, partialSubstitution);
-			}
-		}
-
-		// substituted atom contains variables
-		if (currentLiteral.isNegated()) {
-			throw oops("Current atom should be positive at this point but is not");
-		}
-
-		IndexedInstanceStorage storage = workingMemory.get(currentAtom.getPredicate(), true);
-		Collection<Instance> instances;
-		if (partialSubstitution.isEmpty()) {
-			if (currentLiteral.isGround()) {
-				instances = singletonList(new Instance(currentLiteral.getTerms()));
-			} else {
-				// No variables are bound, but first atom in the body became recently true, consider all instances now.
-				instances = storage.getAllInstances();
-			}
-		} else {
-			instances = storage.getInstancesFromPartiallyGroundAtom(substitute);
-		}
-
-		ArrayList<Substitution> generatedSubstitutions = new ArrayList<>();
-		for (Instance instance : instances) {
-			// Check each instance if it matches with the atom.
-			Substitution unified = Substitution.unify(substitute, instance, new Substitution(partialSubstitution));
-			if (unified == null) {
-				continue;
-			}
-			// Check if atom is also assigned true.
-			Atom substituteClone = new BasicAtom(substitute.getPredicate(), substitute.getTerms());
-			Atom substitutedAtom = substituteClone.substitute(unified);
-			if (!substitutedAtom.isGround()) {
-				throw oops("Grounded atom should be ground but is not");
-			}
-			List<Substitution> boundSubstitutions = bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, unified);
-			generatedSubstitutions.addAll(boundSubstitutions);
-		}
-
-		return generatedSubstitutions;
-	}
+	
 
 	private Set<InternalRule> getRulesToEvaluate(SCComponent comp) {
 		Set<InternalRule> retVal = new HashSet<>();
@@ -494,7 +390,8 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 				@Override
 				public boolean hasNext() {
 					if (ComponentEvaluationOrder.this.componentIterator == null) {
-						// can happen when there are actually no components, as is the case for empty programs or programs just consisting of facts
+						// can happen when there are actually no components, as is the case for empty programs or programs just consisting of
+						// facts
 						return false;
 					}
 					if (ComponentEvaluationOrder.this.componentIterator.hasNext()) {

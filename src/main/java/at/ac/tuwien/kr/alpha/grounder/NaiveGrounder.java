@@ -68,6 +68,7 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.AssignmentStatus;
+import at.ac.tuwien.kr.alpha.grounder.instantiation.BindingResult;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.DefaultLazyGroundingInstantiationStrategy;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationResult;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiator;
@@ -297,7 +298,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			// Generate NoGoods for all rules that have a fixed grounding.
 			RuleGroundingOrder groundingOrder = nonGroundRule.getGroundingOrders().getFixedGroundingOrder();
 			BindingResult bindingResult = getGroundInstantiations(nonGroundRule, groundingOrder, new Substitution(), null);
-			groundAndRegister(nonGroundRule, bindingResult.generatedSubstitutions, groundNogoods);
+			groundAndRegister(nonGroundRule, bindingResult.getGeneratedSubstitutions(), groundNogoods);
 		}
 
 		fixedRules = null;
@@ -347,7 +348,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 						currentAssignment
 					);
 
-					groundAndRegister(nonGroundRule, bindingResult.generatedSubstitutions, newNoGoods);
+					groundAndRegister(nonGroundRule, bindingResult.getGeneratedSubstitutions(), newNoGoods);
 				}
 			}
 
@@ -420,9 +421,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		BindingResult bindingResult = bindNextAtomInRule(groundingOrder, 0, tolerance, tolerance, partialSubstitution);
 		if (LOGGER.isDebugEnabled()) {
 			for (int i = 0; i < bindingResult.size(); i++) {
-				Integer numberOfUnassignedPositiveBodyAtoms = bindingResult.numbersOfUnassignedPositiveBodyAtoms.get(i);
+				Integer numberOfUnassignedPositiveBodyAtoms = bindingResult.getNumbersOfUnassignedPositiveBodyAtoms().get(i);
 				if (numberOfUnassignedPositiveBodyAtoms > 0) {
-					LOGGER.debug("Grounded rule in which {} positive atoms are still unassigned: {} (substitution: {})", numberOfUnassignedPositiveBodyAtoms, rule, bindingResult.generatedSubstitutions.get(i));
+					LOGGER.debug("Grounded rule in which {} positive atoms are still unassigned: {} (substitution: {})", numberOfUnassignedPositiveBodyAtoms, rule, bindingResult.getGeneratedSubstitutions().get(i));
 				}
 			}
 		}
@@ -637,37 +638,4 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 	}
 
-	/**
-	 * Contains substitutions produced for generating ground substitutions of a rule,
-	 * and for every substitution the number of positive body atoms still unassigned in the respective ground rule.
-	 */
-	static class BindingResult {
-		final List<Substitution> generatedSubstitutions = new ArrayList<>();
-		final List<Integer> numbersOfUnassignedPositiveBodyAtoms = new ArrayList<>();
-
-		void add(Substitution generatedSubstitution, int numberOfUnassignedPositiveBodyAtoms) {
-			this.generatedSubstitutions.add(generatedSubstitution);
-			this.numbersOfUnassignedPositiveBodyAtoms.add(numberOfUnassignedPositiveBodyAtoms);
-		}
-
-		void add(BindingResult otherBindingResult) {
-			this.generatedSubstitutions.addAll(otherBindingResult.generatedSubstitutions);
-			this.numbersOfUnassignedPositiveBodyAtoms.addAll(otherBindingResult.numbersOfUnassignedPositiveBodyAtoms);
-		}
-
-		int size() {
-			return generatedSubstitutions.size();
-		}
-
-		static BindingResult empty() {
-			return new BindingResult();
-		}
-
-		static BindingResult singleton(Substitution generatedSubstitution, int numberOfUnassignedPositiveBodyAtoms) {
-			BindingResult bindingResult = new BindingResult();
-			bindingResult.add(generatedSubstitution, numberOfUnassignedPositiveBodyAtoms);
-			return bindingResult;
-		}
-
-	}
 }
