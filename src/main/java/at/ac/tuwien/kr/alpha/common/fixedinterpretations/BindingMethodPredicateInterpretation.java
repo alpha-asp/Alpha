@@ -27,14 +27,15 @@
  */
 package at.ac.tuwien.kr.alpha.common.fixedinterpretations;
 
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
 import org.apache.commons.lang3.ClassUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
+
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 public class BindingMethodPredicateInterpretation implements BindingPredicateInterpretation {
 	private final Method method;
@@ -91,8 +92,8 @@ public class BindingMethodPredicateInterpretation implements BindingPredicateInt
 
 		try {
 			return (Set<List<ConstantTerm<?>>>) method.invoke(null, arguments);
-		} catch (IllegalAccessException | InvocationTargetException e) {
-			throw new RuntimeException(e);
+		} catch (IllegalAccessException | InvocationTargetException ex) {
+			throw new RuntimeException(ex.getMessage());
 		}
 	}
 }
