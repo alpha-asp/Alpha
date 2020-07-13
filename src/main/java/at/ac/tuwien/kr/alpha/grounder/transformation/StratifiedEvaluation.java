@@ -292,7 +292,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		}
 		if (currentAtom instanceof EnumerationAtom) {
 			// Get the enumeration value and add it to the current partialSubstitution.
-			((EnumerationAtom) currentAtom).addEnumerationToSubstitution(partialSubstitution);
+//			((EnumerationAtom) currentAtom).addEnumerationToSubstitution(partialSubstitution);
 			return bindNextAtomInRule(rule, groundingOrder, orderPosition + 1, partialSubstitution);
 		}
 
@@ -463,7 +463,8 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	}
 
 	private boolean isEnumerationLiteralTrue(EnumerationLiteral lit, Substitution subst) {
-		return EnumerationAtom.isTrueUnderSubstitution(lit.getAtom(), subst);
+//		return EnumerationAtom.isTrueUnderSubstitution(lit.getAtom(), subst);
+		return false;
 	}
 
 	private class ComponentEvaluationOrder implements Iterable<SCComponent> {

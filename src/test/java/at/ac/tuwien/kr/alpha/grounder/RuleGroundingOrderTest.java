@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2017-2019, the Alpha Team.
+/*
+ * Copyright (c) 2017-2020, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -27,7 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import static at.ac.tuwien.kr.alpha.TestUtil.literal;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -40,11 +39,15 @@ import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
 
 /**
  * Copyright (c) 2017-2019, the Alpha Team.
  */
 public class RuleGroundingOrderTest {
+
+	private static final ProgramPartParser PROGRAM_PART_PARSER = new ProgramPartParser();
+
 
 	@Test
 	public void groundingOrder() throws IOException {
@@ -140,9 +143,12 @@ public class RuleGroundingOrderTest {
 		system.getConfig().setEvaluateStratifiedPart(false);
 		InternalProgram internalPrg = system.performProgramPreprocessing(system.normalizeProgram(system.readProgramString(aspStr)));
 		RuleGroundingOrders rgo0 = computeGroundingOrdersForRule(internalPrg, 0);
-		assertTrue(2 <= rgo0.orderStartingFrom(literal("b", "X")).getPositionFromWhichAllVarsAreBound());
-		assertTrue(1 <= rgo0.orderStartingFrom(literal("c", "X", "Y")).getPositionFromWhichAllVarsAreBound());
-		assertTrue(1 <= rgo0.orderStartingFrom(literal("d", "X", "Z")).getPositionFromWhichAllVarsAreBound());
+final Literal litBX = PROGRAM_PART_PARSER.parseLiteral("b(X)");
+		final Literal litCXY = PROGRAM_PART_PARSER.parseLiteral("c(X,Y)");
+		final Literal litDXZ = PROGRAM_PART_PARSER.parseLiteral("d(X,Z)");
+		assertTrue(2 <= rgo0.orderStartingFrom(litBX).getPositionFromWhichAllVarsAreBound());
+		assertTrue(1 <= rgo0.orderStartingFrom(litCXY).getPositionFromWhichAllVarsAreBound());
+		assertTrue(1 <= rgo0.orderStartingFrom(litDXZ).getPositionFromWhichAllVarsAreBound());
 	}
 
 	private RuleGroundingOrders computeGroundingOrdersForRule(InternalProgram program, int ruleIndex) {

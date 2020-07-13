@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -29,29 +29,22 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
-
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParseTreeVisitor;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
 
 public class Substitution {
-	private static final ParseTreeVisitor VISITOR = new ParseTreeVisitor(Collections.emptyMap(), false);
+
+	private static final ProgramPartParser PROGRAM_PART_PARSER = new ProgramPartParser();
 
 	protected TreeMap<VariableTerm, Term> substitution;
 
@@ -157,7 +150,7 @@ public class Substitution {
 			throw oops("Right-hand term is not ground.");
 		}
 		Term alreadyAssigned = substitution.get(variableTerm);
-		if (alreadyAssigned != null && !alreadyAssigned.equals(groundTerm)) {
+		if (alreadyAssigned != null && alreadyAssigned != groundTerm) {
 			throw oops("Variable is already assigned to another term.");
 		}
 		// Note: We're destroying type information here.
@@ -204,22 +197,10 @@ public class Substitution {
 		for (String assignment : assignments) {
 			String keyVal[] = assignment.split("->");
 			VariableTerm variable = VariableTerm.getInstance(keyVal[0]);
-			Term assignedTerm = parseTerm(keyVal[1]);
+			Term assignedTerm = PROGRAM_PART_PARSER.parseTerm(keyVal[1]);
 			ret.put(variable, assignedTerm);
 		}
 		return ret;
-	}
-
-	private static Term parseTerm(String s) {
-		try {
-			final ASPCore2Parser parser = new ASPCore2Parser(new CommonTokenStream(new ASPCore2Lexer(CharStreams.fromString(s))));
-			return (Term) VISITOR.visit(parser.term());
-		} catch (RecognitionException | ParseCancellationException e) {
-			// If there were issues parsing the given string, we
-			// throw something that suggests that the input string
-			// is malformed.
-			throw new IllegalArgumentException("Could not parse term.", e);
-		}
 	}
 
 	@Override

@@ -94,7 +94,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	private int assignmentsForChoicePosition;
 	private int mbtCount;
 	private boolean checksEnabled;
-	int replayCounter;
+	long replayCounter;
 
 	public TrailAssignment(AtomStore atomStore, boolean checksEnabled) {
 		this.checksEnabled = checksEnabled;
@@ -620,11 +620,13 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			}
 		}
 
+		@Override
 		public boolean hasNext() {
 			advanceCursorToNextPositiveAssignment();
 			return newAssignmentsIterator < trailSize;
 		}
 
+		@Override
 		public int next() {
 			return atomOf(trail[newAssignmentsIterator++]);
 

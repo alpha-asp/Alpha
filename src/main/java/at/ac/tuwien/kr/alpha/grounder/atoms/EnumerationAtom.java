@@ -4,7 +4,6 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -56,43 +55,29 @@ public class EnumerationAtom extends BasicAtom {
 
 	}
 
-	public void addEnumerationToSubstitution(Substitution substitution) {
-		Term idTerm = getTerms().get(0).substitute(substitution);
-		Term enumerationTerm = getTerms().get(1).substitute(substitution);
+	/**
+	 * Based on a given substitution, substitutes the first two terms of this {@link EnumerationAtom} with the values from the substitution,
+	 * and returns a new substitution with all mappings from the input substitution plus a binding for the third term of the enum atom to the
+	 * integer index that is mapped to the first two terms in the internal <code>ENUMERATIONS</code> map.
+	 * 
+	 * @param substitution an input substitution which must provide ground terms for the first two terms of the enumeration atom.
+	 * @return a new substitution where the third term of the enumeration atom is bound to an integer.
+	 */
+	public Substitution addEnumerationIndexToSubstitution(Substitution substitution) {
+		Term idTerm = this.getTerms().get(0).substitute(substitution);
+		Term enumerationTerm = this.getTerms().get(1).substitute(substitution);
 		if (!enumerationTerm.isGround()) {
 			throw new RuntimeException("Enumeration term is not ground after substitution. Should not happen.");
 		}
 		Integer enumerationIndex = getEnumerationIndex(idTerm, enumerationTerm);
-		substitution.put((VariableTerm) getTerms().get(2), ConstantTerm.getInstance(enumerationIndex));
+		Substitution retVal = new Substitution(substitution);
+		retVal.put((VariableTerm) getTerms().get(2), ConstantTerm.getInstance(enumerationIndex));
+		return retVal;
 	}
 
 	@Override
 	public EnumerationAtom substitute(Substitution substitution) {
 		return new EnumerationAtom(super.substitute(substitution).getTerms());
-	}
-
-	/**
-	 * Tests whether the given atom is true under a given substitution. An EnumerationAtom is true under a substitution iff,
-	 * for the substituted atom the
-	 * following holds true: ENUMERATIONS.get(atom.terms[0]).get(atom.terms[1]).equals(atom.terms[2])
-	 * 
-	 * @param atom
-	 * @param subst
-	 * @return a boolean value indicating if the atom is true under the substitution
-	 */
-	public static boolean isTrueUnderSubstitution(EnumerationAtom atom, Substitution subst) {
-		Term idTerm = atom.getTerms().get(0).substitute(subst);
-		if (!ENUMERATIONS.containsKey(idTerm)) {
-			return false;
-		}
-		Map<Term, Integer> idxMappings = ENUMERATIONS.get(idTerm);
-		Term enumTerm = atom.getTerms().get(1).substitute(subst);
-		if (!idxMappings.containsKey(enumTerm)) {
-			return false;
-		}
-		Term idxTerm = atom.getTerms().get(2).substitute(subst);
-		Integer enumIdx = idxMappings.get(enumTerm);
-		return idxTerm.equals(ConstantTerm.getInstance(enumIdx));
 	}
 
 	@Override
