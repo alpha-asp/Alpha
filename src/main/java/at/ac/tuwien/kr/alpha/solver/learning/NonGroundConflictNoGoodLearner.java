@@ -296,17 +296,30 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 		return true;
 	}
 
-	public void logLearnedNonGroundNoGoods() {
-		LOGGER.info("LEARNED NON-GROUND NOGOODS:");
-		for (NonGroundNoGood violatedNonGroundNoGood : nonGroundNoGoodViolationCounter.keySet()) {
-			LOGGER.info("Violated {} times: {}", nonGroundNoGoodViolationCounter.get(violatedNonGroundNoGood), violatedNonGroundNoGood);
-			LOGGER.info("Learned on first UIP: {}", learnedOnFirstUIP.get(violatedNonGroundNoGood));
-			LOGGER.info("Learned on last UIP: {}", learnedOnLastUIP.get(violatedNonGroundNoGood));
-			LOGGER.info("Learned on other UIPs: {}", learnedOnOtherUIPs.get(violatedNonGroundNoGood));
+	public void logLearnedConstraints() {
+		LOGGER.info("LEARNED NON-GROUND CONSTRAINTS:");
+		List<Map.Entry<NonGroundNoGood,Integer>> nonGroundViolationCounterEntries = new ArrayList<>(nonGroundNoGoodViolationCounter.entrySet());
+		nonGroundViolationCounterEntries.sort(Map.Entry.<NonGroundNoGood,Integer>comparingByValue().reversed());
+		for (Map.Entry<NonGroundNoGood,Integer> nonGroundViolationCounterEntry : nonGroundViolationCounterEntries) {
+			final NonGroundNoGood violatedNonGroundNoGood = nonGroundViolationCounterEntry.getKey();
+			LOGGER.info("Violated {} times: {}", nonGroundViolationCounterEntry.getValue(), violatedNonGroundNoGood);
+			for (NonGroundNoGood learnedNoGood : learnedOnFirstUIP.get(violatedNonGroundNoGood)) {
+				LOGGER.info("Learned on first UIP: {}", learnedNoGood.asConstraint());
+			}
+			for (NonGroundNoGood learnedNoGood : learnedOnLastUIP.get(violatedNonGroundNoGood)) {
+				LOGGER.info("Learned on last UIP: {}", learnedNoGood.asConstraint());
+			}
+			for (NonGroundNoGood learnedNoGood : learnedOnOtherUIPs.get(violatedNonGroundNoGood)) {
+				LOGGER.info("Learned on other UIPs: {}", learnedNoGood.asConstraint());
+			}
+			for (NonGroundNoGood learnedNoGood : learnedOnNonUIPs.get(violatedNonGroundNoGood)) {
+				LOGGER.info("Learned on non-UIPs: {}", learnedNoGood.asConstraint());
+			}
 		}
 	}
 
 	public NonGroundNoGood getNoGoodViolatedMostOften() {
+		// TODO: if more than one nogood has been violated the same maximum number of times, only one of them is returned
 		return Util.getKeyWithMaximumValue(nonGroundNoGoodViolationCounter);
 	}
 
