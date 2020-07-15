@@ -48,6 +48,7 @@ public class ConflictAnalysisResult {
 	private List<NoGood> additionalLearnedNoGoods;
 	private NonGroundNoGood learnedNonGroundNoGood;
 	private List<NonGroundNoGood> additionalLearnedNonGroundNoGoods;
+	private NonGroundNoGood exceptionallyLearnedNonGroundNoGood;
 
 	private ConflictAnalysisResult() {
 		learnedNoGood = null;
@@ -117,6 +118,14 @@ public class ConflictAnalysisResult {
 
 	public NonGroundNoGood getLearnedNonGroundNoGood() {
 		return learnedNonGroundNoGood;
+	}
+
+	public void setLearnedNonGroundGoodFromNonUIP(NonGroundNoGood exceptionallyLearnedNonGroundNoGood) {
+		this.exceptionallyLearnedNonGroundNoGood = exceptionallyLearnedNonGroundNoGood;
+	}
+
+	public NonGroundNoGood getLearnedNonGroundGoodFromNonUIP() {
+		return exceptionallyLearnedNonGroundNoGood;
 	}
 
 	@Override

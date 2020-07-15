@@ -77,6 +77,7 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 	private Map<NonGroundNoGood, Set<NonGroundNoGood>> learnedOnFirstUIP = new HashMap<>();
 	private Map<NonGroundNoGood, Set<NonGroundNoGood>> learnedOnLastUIP = new HashMap<>();
 	private Map<NonGroundNoGood, Set<NonGroundNoGood>> learnedOnOtherUIPs = new HashMap<>();
+	private Map<NonGroundNoGood, Set<NonGroundNoGood>> learnedOnNonUIPs = new HashMap<>();
 
 	public NonGroundConflictNoGoodLearner(Assignment assignment, AtomStore atomStore, GroundConflictNoGoodLearner groundLearner) {
 		this.assignment = assignment;
@@ -123,11 +124,20 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 		NonGroundNoGood firstLearnedNonGroundNoGood = null;
 		List<NoGood> additionalLearnedNoGoods = new ArrayList<>();
 		List<NonGroundNoGood> additionalLearnedNonGroundNoGoods = new ArrayList<>();
+		NonGroundNoGood exceptionallyLearnedNonGroundNoGood = null;
 		GroundAndNonGroundNoGood currentNoGood = new GroundAndNonGroundNoGood(violatedNoGood);
+		boolean wasAbleToLearn = currentNoGood.canLearnNonGround;
+		NonGroundNoGood learntNonGroundNoGood = null;
 		while (makeOneResolutionStep(currentNoGood, trailWalker)) {
+			if (wasAbleToLearn && !currentNoGood.canLearnNonGround) {
+				// learn current non-ground nogood if we stopped being able to learn with the last resolution step (e.g., because no non-ground nogood is known for the last antecedent)
+				assert exceptionallyLearnedNonGroundNoGood == null;
+				exceptionallyLearnedNonGroundNoGood = learntNonGroundNoGood;
+			}
+			wasAbleToLearn = currentNoGood.canLearnNonGround;
+			learntNonGroundNoGood = currentNoGood.toNonGroundNoGood();
 			if (containsUIP(currentNoGood)) {
 				final NoGood learntNoGood = createLearntNoGood(currentNoGood);
-				final NonGroundNoGood learntNonGroundNoGood = currentNoGood.toNonGroundNoGood();
 				learntNoGood.setNonGroundNoGood(learntNonGroundNoGood);
 				if (firstLearnedNoGood == null) {
 					firstLearnedNoGood = learntNoGood;
@@ -153,6 +163,10 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 				analysisResult.addLearnedNoGoods(additionalLearnedNoGoods);
 				analysisResult.addLearnedNonGroundNoGoods(additionalLearnedNonGroundNoGoods);
 				LOGGER.info("Additionally learned non-ground nogoods: {}", additionalLearnedNonGroundNoGoods);
+			}
+			if (exceptionallyLearnedNonGroundNoGood != null) {
+				analysisResult.setLearnedNonGroundGoodFromNonUIP(exceptionallyLearnedNonGroundNoGood);
+				LOGGER.info("Non-ground nogood learned at non-UIP: {}", exceptionallyLearnedNonGroundNoGood);
 			}
 			countAndRememberLearnedNonGroundNoGoods(violatedNoGood, analysisResult);
 		}
@@ -241,11 +255,13 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 		}
 		final NonGroundNoGood learnedNonGroundNoGood = analysisResult.getLearnedNonGroundNoGood();
 		final List<NonGroundNoGood> additionalLearnedNonGroundNoGoods = analysisResult.getAdditionalLearnedNonGroundNoGoods();
+		final NonGroundNoGood learnedNonGroundGoodFromNonUIP = analysisResult.getLearnedNonGroundGoodFromNonUIP();
 		if (!nonGroundNoGoodViolationCounter.containsKey(violatedNonGroundNoGood)) {
 			nonGroundNoGoodViolationCounter.put(violatedNonGroundNoGood, 0);
 			learnedOnFirstUIP.put(violatedNonGroundNoGood, new HashSet<>());
 			learnedOnLastUIP.put(violatedNonGroundNoGood, new HashSet<>());
 			learnedOnOtherUIPs.put(violatedNonGroundNoGood, new HashSet<>());
+			learnedOnNonUIPs.put(violatedNonGroundNoGood, new HashSet<>());
 		}
 		nonGroundNoGoodViolationCounter.computeIfPresent(violatedNonGroundNoGood, (n, c) -> c + 1);
 		if (learnedNonGroundNoGood != null) {
@@ -256,6 +272,9 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 			for (int i = 0; i < additionalLearnedNonGroundNoGoods.size() - 1; i++) {
 				rememberNonGroundNoGoodIfNotAlreadyPresent(additionalLearnedNonGroundNoGoods.get(i), learnedOnOtherUIPs.get(violatedNonGroundNoGood));
 			}
+		}
+		if (learnedNonGroundGoodFromNonUIP != null) {
+			rememberNonGroundNoGoodIfNotAlreadyPresent(learnedNonGroundGoodFromNonUIP, learnedOnNonUIPs.get(violatedNonGroundNoGood));
 		}
 	}
 
@@ -284,28 +303,6 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 			LOGGER.info("Learned on first UIP: {}", learnedOnFirstUIP.get(violatedNonGroundNoGood));
 			LOGGER.info("Learned on last UIP: {}", learnedOnLastUIP.get(violatedNonGroundNoGood));
 			LOGGER.info("Learned on other UIPs: {}", learnedOnOtherUIPs.get(violatedNonGroundNoGood));
-		}
-	}
-
-	public void logMostEffectiveLearnedConstraints() {
-		final NonGroundNoGood noGoodViolatedMostOften = getNoGoodViolatedMostOften();
-		if (noGoodViolatedMostOften == null) {
-			LOGGER.info("No violated nogoods recorded.");
-			return;
-		}
-		LOGGER.info("Violated {} times: {}", nonGroundNoGoodViolationCounter.get(noGoodViolatedMostOften), noGoodViolatedMostOften);
-		if (learnedOnFirstUIP.get(noGoodViolatedMostOften).isEmpty()) {
-			logLearnedNonGroundNoGoods();
-			return;
-		}
-		for (NonGroundNoGood learnedNoGood : learnedOnFirstUIP.get(noGoodViolatedMostOften)) {
-			LOGGER.info("Learned on first UIP: {}", learnedNoGood.asConstraint());
-		}
-		for (NonGroundNoGood learnedNoGood : learnedOnLastUIP.get(noGoodViolatedMostOften)) {
-			LOGGER.info("Learned on last UIP: {}", learnedNoGood.asConstraint());
-		}
-		for (NonGroundNoGood learnedNoGood : learnedOnOtherUIPs.get(noGoodViolatedMostOften)) {
-			LOGGER.info("Learned on other UIPs: {}", learnedNoGood.asConstraint());
 		}
 	}
 
