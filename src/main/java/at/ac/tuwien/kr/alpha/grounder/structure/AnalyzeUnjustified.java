@@ -25,13 +25,15 @@ import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
 import at.ac.tuwien.kr.alpha.grounder.Unification;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 /**
- * Copyright (c) 2018, the Alpha Team.
+ * Copyright (c) 2018-2020, the Alpha Team.
  */
 public class AnalyzeUnjustified {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AnalyzeUnjustified.class);
@@ -111,8 +113,8 @@ public class AnalyzeUnjustified {
 		// Construct set of all 'rules' such that head unifies with p.
 		List<RuleAndUnifier> rulesUnifyingWithP = rulesHeadUnifyingWith(p);
 		log("Rules unifying with {} are {}", p, rulesUnifyingWithP);
-		rulesLoop: 
-			for (RuleAndUnifier ruleUnifier : rulesUnifyingWithP) {
+		rulesLoop:
+		for (RuleAndUnifier ruleUnifier : rulesUnifyingWithP) {
 			Unifier sigma = ruleUnifier.unifier;
 			List<Literal> bodyR = ruleUnifier.ruleBody;
 			Atom sigmaHr = ruleUnifier.originalHead.substitute(sigma);
@@ -219,8 +221,8 @@ public class AnalyzeUnjustified {
 
 			log("Checking atoms over predicate: {}", b.getPredicate());
 			AssignedAtomsIterator assignedAtomsOverPredicate = getAssignedAtomsOverPredicate(b.getPredicate());
-			atomLoop: 
-				while (assignedAtomsOverPredicate.hasNext()) {
+			atomLoop:
+			while (assignedAtomsOverPredicate.hasNext()) {
 				Atom atom = assignedAtomsOverPredicate.next();
 				// Check that atom is justified/true.
 				log("Checking atom: {}", atom);
@@ -241,10 +243,15 @@ public class AnalyzeUnjustified {
 				if (!bSigma.isGround()) {
 					throw oops("Resulting atom is not ground.");
 				}
+				Set<VariableTerm> variablesOccurringInSigma = sigma.getOccurringVariables();
 				if (Unification.instantiate(bSigmaY, bSigma) != null) {
 					for (Unifier sigmaN : vN) {
-						if (Unification.instantiate(b.substitute(sigmaN), bSigma) != null) {
-							log("Atom is excluded by: {}", sigmaN);
+						ArrayList<Term> occurringVariables = new ArrayList<>(variablesOccurringInSigma);
+						occurringVariables.addAll(sigmaN.getOccurringVariables());
+						BasicAtom genericAtom = new BasicAtom(Predicate.getInstance("_", occurringVariables.size(), true), occurringVariables);
+						Atom genericSubstituted = genericAtom.substitute(sigmaN).renameVariables("_analyzeTest");
+						if (Unification.instantiate(genericSubstituted, genericAtom.substitute(sigma)) != null) {
+							log("Atom {} is excluded by: {} via {}", genericSubstituted, sigmaN, sigma);
 							continue atomLoop;
 						}
 					}
@@ -324,11 +331,7 @@ public class AnalyzeUnjustified {
 
 		List<RuleAndUnifier> rulesWithUnifier = new ArrayList<>();
 		Predicate predicate = p.getPredicate();
-		// Check if literal is built-in with a fixed interpretation.
-		// if (p instanceof FixedInterpretationLiteral) {
-		if (p.isBuiltin()) {
-			return Collections.emptyList();
-		}
+		
 		ArrayList<FactOrNonGroundRule> definingRulesAndFacts = new ArrayList<>();
 		// Get facts over the same predicate.
 		LinkedHashSet<Instance> factInstances = factsFromProgram.get(predicate);
