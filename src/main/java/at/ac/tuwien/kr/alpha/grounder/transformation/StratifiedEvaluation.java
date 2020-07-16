@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,14 +15,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.ExternalLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph;
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph.SCComponent;
@@ -30,14 +28,15 @@ import at.ac.tuwien.kr.alpha.common.depgraph.StratificationHelper;
 import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.IndexedInstanceStorage;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
+import at.ac.tuwien.kr.alpha.grounder.RuleGroundingOrder;
 import at.ac.tuwien.kr.alpha.grounder.RuleGroundingOrders;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.WorkingMemory;
-import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationLiteral;
+import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationResult;
+import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiator;
+import at.ac.tuwien.kr.alpha.grounder.instantiation.WorkingMemoryBasedInstantiationStrategy;
 
 /**
  * Evaluates the stratifiable part (if any) of the given program
@@ -54,22 +53,20 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 	private WorkingMemory workingMemory = new WorkingMemory();
 	private Map<Predicate, HashSet<InternalRule>> predicateDefiningRules;
-	private Map<Predicate, LinkedHashSet<Instance>> programFacts;
 
 	private Map<Predicate, Set<Instance>> modifiedInLastEvaluationRun = new HashMap<>();
-
-	// context settings for bindNextAtom
-	private boolean stopBindingAtNonTruePositiveBody = true;
 
 	private Set<Atom> additionalFacts = new HashSet<>();
 	private Set<Integer> solvedRuleIds = new HashSet<>();
 
+	private LiteralInstantiator literalInstantiator;
+
 	@Override
 	public InternalProgram apply(AnalyzedProgram inputProgram) {
+		// Calculate a stratification and initialize working memory.
 		ComponentGraph componentGraph = inputProgram.getComponentGraph();
 		Map<Integer, List<SCComponent>> strata = this.stratificationHelper.calculateStratification(componentGraph);
 		this.predicateDefiningRules = inputProgram.getPredicateDefiningRules();
-		this.programFacts = inputProgram.getFactsByPredicate();
 		// set up list of atoms which are known to be true - we expand on this one
 		Map<Predicate, Set<Instance>> knownFacts = new LinkedHashMap<>(inputProgram.getFactsByPredicate());
 		for (Map.Entry<Predicate, Set<Instance>> entry : knownFacts.entrySet()) {
@@ -80,18 +77,22 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		for (InternalRule nonGroundRule : inputProgram.getRulesById().values()) {
 			// Create working memories for all predicates occurring in the rule
 			for (Predicate predicate : nonGroundRule.getOccurringPredicates()) {
-				workingMemory.initialize(predicate);
+				this.workingMemory.initialize(predicate);
 			}
 		}
 
 		this.workingMemory.reset();
 
+		// Set up literal instantiator.
+		this.literalInstantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(this.workingMemory));
+
+		// Evaluate the program part covered by the calculated stratification.
 		ComponentEvaluationOrder evaluationOrder = new ComponentEvaluationOrder(strata);
 		for (SCComponent currComponent : evaluationOrder) {
 			this.evaluateComponent(currComponent);
 		}
 
-		// build the resulting program
+		// Build the program resulting from evaluating the stratified part.
 		List<Atom> outputFacts = this.buildOutputFacts(inputProgram.getFacts(), this.additionalFacts);
 		List<InternalRule> outputRules = new ArrayList<>();
 		inputProgram.getRulesById().entrySet().stream().filter((entry) -> !this.solvedRuleIds.contains(entry.getKey()))
@@ -123,9 +124,9 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 				this.evaluateRule(r);
 			}
 			this.modifiedInLastEvaluationRun = new HashMap<>();
-			// since we're stratified we never have to backtrack, therefore just collect the added instances
+			// Since we're stratified we never have to backtrack, therefore just collect the added instances.
 			for (IndexedInstanceStorage instanceStorage : this.workingMemory.modified()) {
-				// NOTE: we're only dealing with positive instances
+				// NOTE: We're only dealing with positive instances.
 				addedInstances.putIfAbsent(instanceStorage.getPredicate(), new ArrayList<>());
 				addedInstances.get(instanceStorage.getPredicate()).addAll(instanceStorage.getRecentlyAddedInstances());
 				this.modifiedInLastEvaluationRun.putIfAbsent(instanceStorage.getPredicate(), new LinkedHashSet<>());
@@ -133,7 +134,8 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 				instanceStorage.markRecentlyAddedInstancesDone();
 
 			}
-		} while (!this.workingMemory.modified().isEmpty()); // if evaluation of rules doesn't modify the working memory we have a fixed point
+			// If evaluation of rules doesn't modify the working memory we have a fixed point.
+		} while (!this.workingMemory.modified().isEmpty());
 		LOGGER.debug("Evaluation done - reached a fixed point on component {}", comp);
 		this.addFactsToProgram(addedInstances);
 		rulesToEvaluate.forEach((rule) -> this.solvedRuleIds.add(rule.getRuleId()));
@@ -142,10 +144,8 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 	/**
 	 * To be called at the start of evaluateComponent. Adds all known instances of the predicates occurring in the given set
-	 * of rules to the
-	 * "modifiedInLastEvaluationRun" map in order to "bootstrap" incremental grounding, i.e. making sure that those
-	 * instances are taken into account for ground
-	 * substitutions by evaluateRule.
+	 * of rules to the "modifiedInLastEvaluationRun" map in order to "bootstrap" incremental grounding, i.e. making sure
+	 * that those instances are taken into account for ground substitutions by evaluateRule.
 	 */
 	private void prepareComponentEvaluation(Set<InternalRule> rulesToEvaluate) {
 		this.modifiedInLastEvaluationRun = new HashMap<>();
@@ -185,63 +185,64 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		List<Substitution> groundSubstitutions = new ArrayList<>(); // the actual full ground substitutions for the rule
 		LOGGER.debug("Is fixed rule? {}", rule.getGroundingOrders().fixedInstantiation());
 		if (groundingOrders.fixedInstantiation()) {
-			groundSubstitutions.addAll(this.bindNextAtomInRule(rule, groundingOrders.getFixedGroundingOrder(), 0, new Substitution()));
+			groundSubstitutions.addAll(this.calcSubstitutionsWithGroundingOrder(rule, groundingOrders.getFixedGroundingOrder()));
 		} else {
 			Collection<Literal> startingLiterals = groundingOrders.getStartingLiterals();
 			for (Literal lit : startingLiterals) {
-				groundSubstitutions.addAll(this.calcSubstitutionsForStartingLiteral(rule, lit));
+				groundSubstitutions.addAll(this.calcSubstitutionsWithGroundingOrder(rule, groundingOrders.orderStartingFrom(lit)));
 			}
 		}
 		return groundSubstitutions;
 	}
 
-	private List<Substitution> calcSubstitutionsForStartingLiteral(InternalRule rule, Literal startingLiteral) {
-		List<Substitution> retVal = new ArrayList<>();
-		Substitution partialStartSubstitution = new Substitution();
-		if (startingLiteral instanceof FixedInterpretationLiteral) {
-			// if the starting literal is a builtin or external, we don't have instances in working memory,
-			// but just get fixed substitutions and let bindNextAtomInRule do it's magic ;)
-			FixedInterpretationLiteral fixedInterpretationLiteral = (FixedInterpretationLiteral) startingLiteral;
-			for (Substitution fixedSubstitution : fixedInterpretationLiteral.getSatisfyingSubstitutions(partialStartSubstitution)) {
-				LOGGER.debug("calling bindNextAtom, startingLiteral = {}", startingLiteral);
-				retVal.addAll(this.bindNextAtomInRule(rule, rule.getGroundingOrders().orderStartingFrom(startingLiteral), 0, fixedSubstitution));
+	private List<Substitution> calcSubstitutionsWithGroundingOrder(InternalRule rule, RuleGroundingOrder groundingOrder) {
+		Literal startingLiteral = groundingOrder.getStartingLiteral();
+		List<Substitution> startingLiteralSubstitutions;
+		// In case of fixed grounding orders, the startingLiteral supplied by the grouding oder is null,
+		// so in that case start with an empty substitution, actual starting literal is the one at the first position of the
+		// grounding order.
+		if (startingLiteral != null) {
+			LiteralInstantiationResult startingLiteralInstantiationResult = this.literalInstantiator
+					.instantiateLiteral(startingLiteral, new Substitution());
+			if (startingLiteralInstantiationResult.getType() != LiteralInstantiationResult.Type.CONTINUE) {
+				return Collections.emptyList();
 			}
+			// Note that it is not necessary to check the assignment status for substitutions here,
+			// WorkingMemoryBasedInstantiationStrategy will never return substitutions based on unassigned Atoms.
+			startingLiteralSubstitutions = startingLiteralInstantiationResult.getSubstitutions().stream()
+					.map((pair) -> pair.left)
+					.collect(Collectors.toList());
 		} else {
-			Predicate predicate = startingLiteral.getPredicate();
-			if (!this.modifiedInLastEvaluationRun.containsKey(predicate)) {
-				return retVal;
-			}
-			Set<Instance> instances;
-			if (!this.workingMemory.contains(predicate)) {
-				LOGGER.debug("No instances for starting literal " + predicate.toString() + " in working memory!");
-			} else {
-				instances = this.modifiedInLastEvaluationRun.get(predicate);
-				for (Instance inst : instances) {
-					LOGGER.trace("Building substitutions for instance: {}", predicate.getName() + inst.toString());
-					partialStartSubstitution = Substitution.unify(startingLiteral, inst, new Substitution());
-					LOGGER.trace("Got partial substitution for instance: {}", partialStartSubstitution);
-					if (partialStartSubstitution == null) {
-						// continue at this point - when substitution is null it means there's no valid unifier, therefore move on
-						continue;
-					}
-					LOGGER.trace("calling bindNextAtom, startingLiteral = {}", startingLiteral);
-					List<Substitution> subs = this.bindNextAtomInRule(rule, rule.getGroundingOrders().orderStartingFrom(startingLiteral), 0,
-							partialStartSubstitution);
-					retVal.addAll(subs);
+			startingLiteralSubstitutions = new ArrayList<>();
+			startingLiteralSubstitutions.add(new Substitution());
+		}
+		// Iterate through the rest of the grounding order. Whenever instantiation of a Literal with a given substitution causes
+		// a result with a type other than CONTINUE, discard that substitution.
+		List<Substitution> currentSubstitutions = startingLiteralSubstitutions;
+		List<Substitution> updatedSubstitutions = new ArrayList<>();
+		Literal currentLiteral;
+		LiteralInstantiationResult currentLiteralResult;
+		List<Substitution> currentLiteralSubstitutions;
+		int orderPosition = 0;
+		while ((currentLiteral = groundingOrder.getLiteralAtOrderPosition(orderPosition)) != null) {
+			for (Substitution subst : currentSubstitutions) {
+				currentLiteralResult = this.literalInstantiator.instantiateLiteral(currentLiteral, subst);
+				if (currentLiteralResult.getType() == LiteralInstantiationResult.Type.CONTINUE) {
+					currentLiteralSubstitutions = currentLiteralResult.getSubstitutions().stream()
+							.map((pair) -> pair.left)
+							.collect(Collectors.toList());
+					updatedSubstitutions.addAll(currentLiteralSubstitutions);
 				}
 			}
+			if (updatedSubstitutions.isEmpty()) {
+				// In this case it doesn't make any sense to advance further in the grounding order.
+				return Collections.emptyList();
+			}
+			currentSubstitutions = updatedSubstitutions;
+			updatedSubstitutions = new ArrayList<>();
+			orderPosition++;
 		}
-		return retVal;
-	}
-
-	private boolean canFire(InternalRule rule, Substitution substitution) {
-		List<Literal> body = rule.getBody();
-		boolean bodyFulfilled = true;
-
-		for (Literal lit : body) {
-			bodyFulfilled &= this.isLiteralTrue(lit, substitution);
-		}
-		return bodyFulfilled;
+		return currentSubstitutions;
 	}
 
 	private void fireRule(InternalRule rule, Substitution substitution) {
@@ -252,7 +253,6 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		LOGGER.debug("Firing rule - got head atom: {}", newAtom);
 		this.workingMemory.addInstance(newAtom, true);
 	}
-	
 
 	private Set<InternalRule> getRulesToEvaluate(SCComponent comp) {
 		Set<InternalRule> retVal = new HashSet<>();
@@ -272,95 +272,6 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 				this.additionalFacts.add(new BasicAtom(entry.getKey(), inst.terms));
 			}
 		}
-	}
-
-	private boolean isLiteralTrue(Literal lit, Substitution substitution) {
-		if (lit instanceof FixedInterpretationLiteral) {
-			return this.isFixedInterpretationLiteralTrue((FixedInterpretationLiteral) lit.substitute(substitution), substitution);
-		}
-		if (lit instanceof EnumerationLiteral) {
-			return this.isEnumerationLiteralTrue((EnumerationLiteral) lit, substitution);
-		}
-		Literal groundLiteral = lit.substitute(substitution);
-		if (!groundLiteral.isGround()) {
-			throw Util.oops("Literal (" + groundLiteral.getClass().getSimpleName() + ")" + groundLiteral.toString() + " should be ground, but is not");
-		}
-		Atom at = groundLiteral.getAtom();
-		IndexedInstanceStorage positiveInstances = this.workingMemory.get(at, true);
-		boolean instanceKnown = positiveInstances.containsInstance(new Instance(at.getTerms()));
-		return lit.isNegated() ? (!instanceKnown) : instanceKnown;
-	}
-
-	private boolean isFixedInterpretationLiteralTrue(FixedInterpretationLiteral lit, Substitution substitution) {
-		if (lit instanceof ExternalLiteral) {
-			return this.isExternalLiteralTrue((ExternalLiteral) lit, substitution);
-		}
-		Set<VariableTerm> variables = lit.getOccurringVariables();
-		Substitution candidate = new Substitution(substitution);
-		List<Substitution> validSubstitutions = lit.getSatisfyingSubstitutions(substitution);
-		if (validSubstitutions.isEmpty()) {
-			// even if lit is ground, an empty substitution must be here for the whole substitution to be valid
-			return false;
-		}
-		Term candidateSubstitute;
-		Term validSubstitute;
-		boolean candidateValid = true;
-		for (Substitution valid : validSubstitutions) {
-			candidateValid = true;
-			for (VariableTerm var : variables) {
-				candidateSubstitute = candidate.eval(var);
-				validSubstitute = valid.eval(var);
-				candidateValid &= candidateSubstitute.equals(validSubstitute);
-			}
-			if (candidateValid) {
-				// if the given substitution matches one of the valid substitutions for the literal,
-				// the literal is true
-				return true;
-			}
-		}
-		// at this point, we checked all valid substitutions, but found none that matches the candidate
-		// --> literal is false
-		return false;
-	}
-
-	private boolean isExternalLiteralTrue(ExternalLiteral lit, Substitution substitution) {
-		ExternalAtom at = lit.getAtom();
-		Substitution resultSubstitution = new Substitution(); // we use this substitution to check for binding of output terms
-		for (VariableTerm var : substitution.getOccurringVariables()) {
-			if (!at.getOutput().contains(var)) { // add every binding other than output of the external to resultSubstitution
-				resultSubstitution.put(var, substitution.eval(var));
-			}
-		}
-		List<Substitution> validSubstitutions = lit.getSatisfyingSubstitutions(resultSubstitution);
-		if (validSubstitutions.isEmpty()) {
-			// even if lit is ground, an empty substitution must be here for the whole substitution to be valid
-			return false;
-		}
-		// now check that substitution matches one of the valid substitutions given by the external literal
-		Term candidateSubstitute;
-		Term validSubstitute;
-		boolean candidateValid;
-		for (Substitution valid : validSubstitutions) {
-			candidateValid = true;
-			for (VariableTerm var : lit.getOccurringVariables()) {
-				candidateSubstitute = substitution.eval(var);
-				validSubstitute = valid.eval(var);
-				candidateValid &= candidateSubstitute.equals(validSubstitute);
-			}
-			if (candidateValid) {
-				// if the given substitution matches one of the valid substitutions for the literal,
-				// the literal is true
-				return true;
-			}
-		}
-		// at this point, we checked all valid substitutions, but found none that matches the candidate
-		// --> literal is false
-		return false;
-	}
-
-	private boolean isEnumerationLiteralTrue(EnumerationLiteral lit, Substitution subst) {
-//		return EnumerationAtom.isTrueUnderSubstitution(lit.getAtom(), subst);
-		return false;
 	}
 
 	private class ComponentEvaluationOrder implements Iterable<SCComponent> {

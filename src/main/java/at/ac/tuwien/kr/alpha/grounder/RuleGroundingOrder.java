@@ -25,10 +25,11 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 
 /**
  * A grounding order computed by {@link RuleGroundingOrders} for a specific {@link InternalRule} and a specific starting literal.
@@ -122,6 +123,10 @@ public class RuleGroundingOrder {
 	
 	public void considerUntilCurrentEnd() {
 		this.stopBindingAtOrderPosition = this.otherLiterals.size();
+	}
+
+	public Literal getStartingLiteral() {
+		return this.startingLiteral;
 	}
 
 }
