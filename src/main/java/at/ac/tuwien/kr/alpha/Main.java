@@ -45,6 +45,8 @@ import java.util.stream.Stream;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AnswerSetFormatter;
+import at.ac.tuwien.kr.alpha.common.BasicAnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph;
 import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
 import at.ac.tuwien.kr.alpha.common.graphio.ComponentGraphWriter;
@@ -178,8 +180,9 @@ public class Main {
 		if (!alpha.getConfig().isQuiet()) {
 			AtomicInteger counter = new AtomicInteger(0);
 			final BiConsumer<Integer, AnswerSet> answerSetHandler;
+			final AnswerSetFormatter<String> fmt = new BasicAnswerSetFormatter(alpha.getConfig().getAtomSeparator());
 			BiConsumer<Integer, AnswerSet> stdoutPrinter = (n, as) -> {
-				System.out.println("Answer set " + Integer.toString(n) + ":" + System.lineSeparator() + as.toString());
+				System.out.println("Answer set " + Integer.toString(n) + ":" + System.lineSeparator() + fmt.format(as));
 			};
 			if (inputCfg.isWriteAnswerSetsAsXlsx()) {
 				BiConsumer<Integer, AnswerSet> xlsxWriter = new AnswerSetToXlsxWriter(inputCfg.getAnswerSetFileOutputPath());

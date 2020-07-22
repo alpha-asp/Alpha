@@ -33,6 +33,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,6 +142,10 @@ public class CommandLineParser {
 			.desc("activates the accumulator grounding strategy by disabling removal of instances from grounder memory in certain cases (default: " 
 					+ SystemConfig.DEFAULT_GROUNDER_ACCUMULATOR_ENABLED + ")")
 			.build();
+	private static final Option OPT_OUTPUT_ATOM_SEPARATOR = Option.builder("sep").longOpt("atomSeparator").hasArg(true).argName("separator")
+			.desc("a character (sequence) to use s separator for atoms in printed answer sets. (default: "
+					+ SystemConfig.DEFAULT_ATOM_SEPARATOR + ")")
+			.build();
 	//@formatter:on
 
 	private static final Options CLI_OPTS = new Options();
@@ -181,6 +186,7 @@ public class CommandLineParser {
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES);
 		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_GROUNDER_ACCUMULATOR_ENABLED);
+		CommandLineParser.CLI_OPTS.addOption(CommandLineParser.OPT_OUTPUT_ATOM_SEPARATOR);
 	}
 
 	/*
@@ -236,6 +242,7 @@ public class CommandLineParser {
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_CONSTRAINTS.getOpt(), this::handleGrounderToleranceConstraints);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_TOLERANCE_RULES.getOpt(), this::handleGrounderToleranceRules);
 		this.globalOptionHandlers.put(CommandLineParser.OPT_GROUNDER_ACCUMULATOR_ENABLED.getOpt(), this::handleGrounderNoInstanceRemoval);
+		this.globalOptionHandlers.put(CommandLineParser.OPT_OUTPUT_ATOM_SEPARATOR.getOpt(), this::handleAtomSeparator);
 	}
 
 	private void initializeInputOptionHandlers() {
@@ -469,4 +476,8 @@ public class CommandLineParser {
 		cfg.setGrounderAccumulatorEnabled(true);
 	}
 
+	private void handleAtomSeparator(Option opt, SystemConfig cfg) {
+		cfg.setAtomSeparator(StringEscapeUtils.unescapeJava(opt.getValue(SystemConfig.DEFAULT_ATOM_SEPARATOR)));
+	}
+	
 }
