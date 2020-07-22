@@ -182,23 +182,27 @@ public class NonGroundNoGood implements NoGoodInterface<Literal> {
 	 */
 	public Unifier simplifyVariableNames() {
 		final Unifier unifier = new Unifier();
-		final Set<VariableTerm> occurringVariables = getOccurringVariables();
-		for (VariableTerm variable : occurringVariables) {
+		final Set<VariableTerm> existingVariables = getOccurringVariables();
+		final Set<VariableTerm> allVariables = new HashSet<>(existingVariables);
+		for (VariableTerm variable : existingVariables) {
 			final String variableName = variable.toString();
 			final int startOfPostfix = variableName.lastIndexOf('_');
 			if (startOfPostfix > 0) {
 				final String variableNameWithoutPostfix = variableName.substring(0, startOfPostfix);
 				final VariableTerm variableWithoutPostfix = VariableTerm.getInstance(variableNameWithoutPostfix);
-				if (!occurringVariables.contains(variableWithoutPostfix) && unifier.eval(variableWithoutPostfix) == null) {
+				if (!allVariables.contains(variableWithoutPostfix) && unifier.eval(variableWithoutPostfix) == null) {
 					unifier.put(variable, variableWithoutPostfix);
+					allVariables.add(variableWithoutPostfix);
 					continue;
 				}
 				final VariableTerm variableWithNewPostfix1 = VariableTerm.getInstance(variableNameWithoutPostfix + 1);
 				final VariableTerm variableWithNewPostfix2 = VariableTerm.getInstance(variableNameWithoutPostfix + 2);
-				if (!occurringVariables.contains(variableWithNewPostfix1) && unifier.eval(variableWithNewPostfix1) == null &&
-						!occurringVariables.contains(variableWithNewPostfix2) && unifier.eval(variableWithNewPostfix2) == null) {
+				if (!allVariables.contains(variableWithNewPostfix1) && unifier.eval(variableWithNewPostfix1) == null &&
+						!allVariables.contains(variableWithNewPostfix2) && unifier.eval(variableWithNewPostfix2) == null) {
 					unifier.put(variableWithoutPostfix, variableWithNewPostfix1);
 					unifier.put(variable, variableWithNewPostfix2);
+					allVariables.add(variableWithNewPostfix1);
+					allVariables.add(variableWithNewPostfix2);
 				}
 			}
 		}
