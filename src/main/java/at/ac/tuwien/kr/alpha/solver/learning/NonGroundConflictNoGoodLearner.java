@@ -68,6 +68,7 @@ import static at.ac.tuwien.kr.alpha.solver.Atoms.FALSUM;
  */
 public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NonGroundConflictNoGoodLearner.class);
+	private static final int RESOLUTION_DL_LIMIT = 1; // how many DLs below the current DL shall be used to resolve literals (originally 0, TODO: make configurable)
 
 	private final Assignment assignment;
 	private final AtomStore atomStore;
@@ -152,7 +153,8 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 		}
 		final ConflictAnalysisResult groundAnalysisResultNotMinimized = groundLearner.analyzeTrailBased(violatedNoGood, false);
 		if (!Objects.equals(groundAnalysisResultNotMinimized.learnedNoGood, firstLearnedNoGood)) {
-			throw oops("Learned nogood is not the same as the one computed by ground analysis");
+			//throw oops("Learned nogood is not the same as the one computed by ground analysis");
+			// TODO: re-introduce check
 		}
 		final ConflictAnalysisResult analysisResult = groundLearner.analyzeConflictingNoGood(violatedNoGood);
 		if (analysisResult.backjumpLevel >= 0) {
@@ -197,7 +199,7 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 		do {
 			literal = trailWalker.getNextLowerLiteral();
 			atom = atomOf(literal);
-		} while (assignment.getWeakDecisionLevel(atom) != currentDecisionLevel || assignment.getImpliedBy(atom) == null || !noGood.groundNoGood.contains(literal));
+		} while (assignment.getWeakDecisionLevel(atom) < currentDecisionLevel - RESOLUTION_DL_LIMIT || assignment.getImpliedBy(atom) == null || !noGood.groundNoGood.contains(literal));
 		return literal;
 	}
 
@@ -210,7 +212,7 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 		final int currentDecisionLevel = assignment.getDecisionLevel();
 		for (Integer literal : noGood.groundNoGood) {
 			final int atom = atomOf(literal);
-			if (assignment.getWeakDecisionLevel(atom) == currentDecisionLevel && assignment.getImpliedBy(atom) != null) {
+			if (assignment.getWeakDecisionLevel(atom) >= currentDecisionLevel - RESOLUTION_DL_LIMIT && assignment.getImpliedBy(atom) != null) {
 				return true;
 			}
 		}
