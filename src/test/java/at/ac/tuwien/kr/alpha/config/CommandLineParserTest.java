@@ -110,7 +110,7 @@ public class CommandLineParserTest {
 	@Test(expected = ParseException.class)
 	public void replayWithNonNumericLiteral() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-rc", "\"1, 2, x\""});
+		parser.parseCommandLine(new String[]{"-str", "aString.", "-rc", "\"1, 2, x\""});
 	}
 
 	@Test
