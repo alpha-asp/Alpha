@@ -163,7 +163,7 @@ public class CommandLineParserTest {
 		Assert.assertFalse(ctx.getSystemConfig().isEvaluateStratifiedPart());
 	}
 
-@Test
+	@Test
 	public void atomSeparator() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
 		AlphaConfig cfg = parser.parseCommandLine(new String[] { "-str", "aString.", "-sep", "some-string" });
