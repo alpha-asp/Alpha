@@ -166,7 +166,7 @@ public class CommandLineParserTest {
 	@Test
 	public void atomSeparator() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig cfg = parser.parseCommandLine(new String[] { "-str", "aString.", "-sep", "some-string" });
+		AlphaConfig cfg = parser.parseCommandLine(new String[] {"-str", "aString.", "-sep", "some-string" });
 		assertEquals("some-string", cfg.getSystemConfig().getAtomSeparator());
 	}
 
