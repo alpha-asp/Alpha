@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -107,6 +108,25 @@ public class Unification {
 				if (!unifyTerms(leftTerm, rightTerm, currentSubstitution, keepLeftAsIs)) {
 					return false;
 				}
+			}
+			return true;
+		}
+		if (leftSubs instanceof ArithmeticTerm && rightSubs instanceof ArithmeticTerm) {
+			// ArithmeticTerms are similar to FunctionTerms, i.e. if the operator is the same and its subterms unify, the ArithmeticTerms unify.
+			final ArithmeticTerm leftArithmeticTerm = (ArithmeticTerm) leftSubs;
+			final ArithmeticTerm rightArithmeticTerm = (ArithmeticTerm) rightSubs;
+			if (!leftArithmeticTerm.getArithmeticOperator().equals(rightArithmeticTerm.getArithmeticOperator())) {
+				return false;
+			}
+			final Term leftTermLeftSubterm = leftArithmeticTerm.getLeft();
+			final Term rightTermLeftSubterm = rightArithmeticTerm.getLeft();
+			if (!unifyTerms(leftTermLeftSubterm, rightTermLeftSubterm, currentSubstitution, keepLeftAsIs)) {
+				return false;
+			}
+			final Term leftTermRightSubterm = leftArithmeticTerm.getRight();
+			final Term rightTermRightSubterm = rightArithmeticTerm.getRight();
+			if (!unifyTerms(leftTermRightSubterm, rightTermRightSubterm, currentSubstitution, keepLeftAsIs)) {
+				return false;
 			}
 			return true;
 		}
