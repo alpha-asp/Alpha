@@ -82,15 +82,11 @@ public class Alpha {
 		InputProgram tmpProg;
 		if (!cfg.getFiles().isEmpty()) {
 			tmpProg = this.readProgramFiles(cfg.isLiterate(), cfg.getPredicateMethods(), cfg.getFiles());
-			prgBuilder.addFacts(tmpProg.getFacts());
-			prgBuilder.addRules(tmpProg.getRules());
-			prgBuilder.addInlineDirectives(tmpProg.getInlineDirectives());
+			prgBuilder.accumulate(tmpProg);
 		}
 		if (!cfg.getAspStrings().isEmpty()) {
 			tmpProg = this.readProgramString(StringUtils.join(cfg.getAspStrings(), System.lineSeparator()), cfg.getPredicateMethods());
-			prgBuilder.addFacts(tmpProg.getFacts());
-			prgBuilder.addRules(tmpProg.getRules());
-			prgBuilder.addInlineDirectives(tmpProg.getInlineDirectives());
+			prgBuilder.accumulate(tmpProg);
 		}
 		return prgBuilder.build();
 	}
