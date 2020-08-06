@@ -105,7 +105,7 @@ public class AlphaTest {
 		Thingy a = new Thingy();
 		Thingy b = new Thingy();
 		List<Thingy> things = asList(a, b);
-		InputProgram program = InputProgram.builder().addExternalFacts(Thingy.class, things).build();
+		InputProgram program = InputProgram.builder().addFacts(Externals.asFacts(Thingy.class, things)).build();
 		Set<AnswerSet> actual = system.solve(program).collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("thingy").instance(a).instance(b).build()));
 		assertEquals(expected, actual);
