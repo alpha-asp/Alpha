@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AnswerSetFormatter;
-import at.ac.tuwien.kr.alpha.common.BasicAnswerSetFormatter;
+import at.ac.tuwien.kr.alpha.common.SimpleAnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.config.AlphaConfig;
 import at.ac.tuwien.kr.alpha.config.CommandLineParser;
@@ -104,7 +104,7 @@ public class Main {
 		if (!alpha.getConfig().isQuiet()) {
 			AtomicInteger counter = new AtomicInteger(0);
 			final BiConsumer<Integer, AnswerSet> answerSetHandler;
-			final AnswerSetFormatter<String> fmt = new BasicAnswerSetFormatter(alpha.getConfig().getAtomSeparator());
+			final AnswerSetFormatter<String> fmt = new SimpleAnswerSetFormatter(alpha.getConfig().getAtomSeparator());
 			BiConsumer<Integer, AnswerSet> stdoutPrinter = (n, as) -> {
 				System.out.println("Answer set " + Integer.toString(n) + ":" + System.lineSeparator() + fmt.format(as));
 			};

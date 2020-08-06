@@ -51,7 +51,7 @@ public class CommandLineParserTest {
 	public void help() throws ParseException {
 		StringBuilder bld = new StringBuilder();
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, (msg) -> bld.append(msg));
-		parser.parseCommandLine(new String[] {"-h" });
+		parser.parseCommandLine(new String[] {"-h"});
 		assertTrue(!(bld.toString().isEmpty()));
 	}
 
