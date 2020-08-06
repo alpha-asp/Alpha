@@ -53,6 +53,7 @@ import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationResult;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiator;
 import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
 import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
+import at.ac.tuwien.kr.alpha.grounder.transformation.ArithmeticTermsRewriting;
 import at.ac.tuwien.kr.alpha.grounder.transformation.CardinalityNormalization;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
 import at.ac.tuwien.kr.alpha.grounder.transformation.EnumerationRewriting;
@@ -250,6 +251,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		new SumNormalization().transform(program);
 		// Transform intervals.
 		new IntervalTermToIntervalAtom().transform(program);
+		// Rewrite ArithmeticTerms.
+		new ArithmeticTermsRewriting().transform(program);
 		// Remove variable equalities.
 		new VariableEqualityRemoval().transform(program);
 		// Transform enumeration atoms.
