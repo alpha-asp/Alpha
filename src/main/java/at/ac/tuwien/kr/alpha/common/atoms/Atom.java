@@ -120,15 +120,6 @@ public abstract class Atom implements Comparable<Atom> {
 		return 0;
 	}
 
-	/**
-	 * Returns whether this Atom is a builtin atom according to the ASP standard. This covers the atoms currently defined by {@link ComparisonAtom}.
-	 * 
-	 * @return true if this Atom is a comparison atom, false otherwise.
-	 */
-	public boolean isBuiltin() {
-		return false;
-	}
-
 	@Override
 	public abstract boolean equals(Object o);
 

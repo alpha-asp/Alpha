@@ -27,14 +27,14 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Represents a builtin atom according to the standard.
@@ -117,11 +117,6 @@ public class ComparisonAtom extends Atom implements VariableNormalizableAtom {
 	public ComparisonAtom normalizeVariables(String prefix, int counterStartingValue) {
 		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
 		return new ComparisonAtom(renamedTerms.get(0), renamedTerms.get(1), operator);
-	}
-
-	@Override
-	public boolean isBuiltin() {
-		return true;
 	}
 
 	@Override

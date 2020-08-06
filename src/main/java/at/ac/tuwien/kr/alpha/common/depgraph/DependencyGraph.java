@@ -37,6 +37,7 @@ import java.util.Map;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 
@@ -106,8 +107,8 @@ public final class DependencyGraph {
 				tmpHeadNode = this.handleRuleHead(rule);
 				for (Literal l : rule.getBody()) {
 					LOGGER.trace("Processing rule body literal: {}", l);
-					if (l.getAtom().isBuiltin()) {
-						LOGGER.trace("Ignoring builtin atom in literal {}", l);
+					if (l instanceof FixedInterpretationLiteral) {
+						LOGGER.trace("Ignoring FixedInterpretationLiteral {}", l);
 						continue;
 					}
 					this.handleRuleBodyLiteral(tmpHeadNode, l);
