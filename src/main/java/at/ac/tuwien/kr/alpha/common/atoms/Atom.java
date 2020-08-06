@@ -53,24 +53,6 @@ public abstract class Atom implements Comparable<Atom> {
 	public abstract boolean isGround();
 
 	/**
-	 * Set of all variables occurring in the Atom that are potentially binding
-	 * 
-	 * @return
-	 */
-	public Set<VariableTerm> getBindingVariables() {
-		return toLiteral().getBindingVariables();
-	}
-
-	/**
-	 * Set of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
-	 * 
-	 * @return
-	 */
-	public Set<VariableTerm> getNonBindingVariables() {
-		return toLiteral().getNonBindingVariables();
-	}
-
-	/**
 	 * Set of all variables occurring in the Atom
 	 */
 	public Set<VariableTerm> getOccurringVariables() {
