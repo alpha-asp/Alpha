@@ -107,9 +107,7 @@ public class Alpha {
 				stream = CharStreams.fromChannel(Util.streamToChannel(Util.literate(Files.lines(path))), 4096, CodingErrorAction.REPLACE, path.toString());
 			}
 			tmpProg = parser.parse(stream);
-			prgBuilder.addFacts(tmpProg.getFacts());
-			prgBuilder.addRules(tmpProg.getRules());
-			prgBuilder.addInlineDirectives(tmpProg.getInlineDirectives());
+			prgBuilder.accumulate(tmpProg);
 		}
 		return prgBuilder.build();
 	}
