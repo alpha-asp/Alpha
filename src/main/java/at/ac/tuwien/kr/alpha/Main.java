@@ -98,7 +98,11 @@ public class Main {
 
 		NormalProgram normalized = alpha.normalizeProgram(program);
 		InternalProgram preprocessed;
-		if (cfg.getInputConfig().isWriteDependencyGraph() || cfg.getInputConfig().isWriteComponentGraph()) {
+		InputConfig inputCfg = cfg.getInputConfig();
+		if (!(inputCfg.isWriteDependencyGraph() || inputCfg.isWriteComponentGraph())) {
+			LOGGER.debug("Not writing dependency or component graphs, starting preprocessing...");
+			preprocessed = alpha.performProgramPreprocessing(InternalProgram.fromNormalProgram(normalized));
+		} else {
 			LOGGER.debug("Performing program analysis in preparation for writing dependency and/or component graph file...");
 			AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalized);
 			if (cfg.getInputConfig().isWriteDependencyGraph()) {
@@ -108,9 +112,6 @@ public class Main {
 				Main.writeComponentGraph(analyzed.getComponentGraph(), cfg.getInputConfig().getCompgraphPath());
 			}
 			preprocessed = alpha.performProgramPreprocessing(analyzed);
-		} else {
-			LOGGER.debug("Not writing dependency or component graphs, starting preprocessing...");
-			preprocessed = alpha.performProgramPreprocessing(InternalProgram.fromNormalProgram(normalized));
 		}
 		if (cfg.getInputConfig().isWritePreprocessed()) {
 			Main.writeInternalProgram(preprocessed, cfg.getInputConfig().getPreprocessedPath());
