@@ -110,7 +110,7 @@ public class Main {
 			preprocessed = alpha.performProgramPreprocessing(analyzed);
 		} else {
 			LOGGER.debug("Not writing dependency or component graphs, starting preprocessing...");
-			preprocessed = alpha.performProgramPreprocessing(normalized);
+			preprocessed = alpha.performProgramPreprocessing(InternalProgram.fromNormalProgram(normalized));
 		}
 		if (cfg.getInputConfig().isWritePreprocessed()) {
 			Main.writeInternalProgram(preprocessed, cfg.getInputConfig().getPreprocessedPath());

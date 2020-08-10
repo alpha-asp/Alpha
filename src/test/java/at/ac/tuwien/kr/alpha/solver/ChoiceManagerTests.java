@@ -57,7 +57,7 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 		String testProgram = "h :- b1, b2, not b3, not b4.";
 		InputProgram parsedProgram = new ProgramParser().parse(testProgram);
 		NormalProgram normal = system.normalizeProgram(parsedProgram);
-		InternalProgram pa = system.performProgramPreprocessing(normal);
+		InternalProgram pa = InternalProgram.fromNormalProgram(normal);
 		this.atomStore = new AtomStoreImpl();
 		this.grounder = new NaiveGrounder(pa, atomStore, true);
 		WritableAssignment assignment = new TrailAssignment(atomStore);

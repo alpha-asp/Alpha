@@ -125,10 +125,6 @@ public class Alpha {
 		return new NormalizeProgramTransformation(this.config.isUseNormalizationGrid()).apply(program);
 	}
 
-	public InternalProgram performProgramPreprocessing(NormalProgram program) {
-		return this.performProgramPreprocessing(InternalProgram.fromNormalProgram(program));
-	}
-
 	public InternalProgram performProgramPreprocessing(InternalProgram program) {
 		LOGGER.debug("Preprocessing InternalProgram!");
 		InternalProgram retVal = program;
@@ -171,7 +167,7 @@ public class Alpha {
 	 * analysis aren't of interest
 	 */
 	public Stream<AnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
-		InternalProgram preprocessed = this.performProgramPreprocessing(program);
+		InternalProgram preprocessed = this.performProgramPreprocessing(InternalProgram.fromNormalProgram(program));
 		return this.solve(preprocessed, filter);
 	}
 

@@ -67,7 +67,7 @@ public class NoGoodGeneratorTest {
 				+ "q(a,b) :- not nq(a,b). " 
 				+ "nq(a,b) :- not q(a,b).");
 		NormalProgram normal = system.normalizeProgram(input);
-		InternalProgram program = system.performProgramPreprocessing(normal);
+		InternalProgram program = InternalProgram.fromNormalProgram(normal);
 
 		InternalRule rule = program.getRules().get(1);
 		AtomStore atomStore = new AtomStoreImpl();

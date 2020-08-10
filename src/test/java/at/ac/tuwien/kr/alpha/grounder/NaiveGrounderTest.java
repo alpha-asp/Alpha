@@ -95,7 +95,7 @@ public class NaiveGrounderTest {
 				+ "b :- not a. "
 				+ "c :- b.");
 		NormalProgram normal = system.normalizeProgram(program);
-		InternalProgram prog = system.performProgramPreprocessing(normal);
+		InternalProgram prog = system.performProgramPreprocessing(InternalProgram.fromNormalProgram(normal));
 		
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", prog, atomStore, true);
@@ -118,7 +118,7 @@ public class NaiveGrounderTest {
 				+ "c :- b. "
 				+ "d :- b, c. ");
 		NormalProgram normal = system.normalizeProgram(program);
-		InternalProgram prog = system.performProgramPreprocessing(normal);
+		InternalProgram prog = system.performProgramPreprocessing(InternalProgram.fromNormalProgram(normal));
 		
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", prog, atomStore, true);
@@ -144,7 +144,7 @@ public class NaiveGrounderTest {
 				+ "b :- not a. "
 				+ ":- b.");
 		NormalProgram normal = system.normalizeProgram(program);
-		InternalProgram prog = system.performProgramPreprocessing(normal);
+		InternalProgram prog = system.performProgramPreprocessing(InternalProgram.fromNormalProgram(normal));
 		
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance("naive", prog, atomStore, true);
@@ -207,7 +207,7 @@ public class NaiveGrounderTest {
 				+ "q2(X) :- something(X). ";
 		Alpha system  = new Alpha();
 		system.getConfig().setEvaluateStratifiedPart(false);
-		InternalProgram program = system.performProgramPreprocessing(
+		InternalProgram program = InternalProgram.fromNormalProgram(
 				system.normalizeProgram(
 						system.readProgramString(aspStr)
 						)
@@ -273,7 +273,7 @@ public class NaiveGrounderTest {
 	private void testIfGrounderGroundsRule(InputProgram program, int ruleID, Literal startingLiteral, int startingInstance, ThriceTruth bTruth, boolean expectNoGoods) {
 		Alpha system = new Alpha();
 		system.getConfig().setEvaluateStratifiedPart(false);
-		InternalProgram internalPrg = system.performProgramPreprocessing(system.normalizeProgram(program));
+		InternalProgram internalPrg = InternalProgram.fromNormalProgram(system.normalizeProgram(program));
 		AtomStore atomStore = new AtomStoreImpl();
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
 		NaiveGrounder grounder = (NaiveGrounder) GrounderFactory.getInstance("naive", internalPrg, atomStore, p -> true, GrounderHeuristicsConfiguration.permissive(), true);
@@ -378,7 +378,7 @@ public class NaiveGrounderTest {
 	private void testPermissiveGrounderHeuristicTolerance(InputProgram program, int ruleID, Literal startingLiteral, int startingInstance, int tolerance, ThriceTruth[] truthsOfB, int arityOfB, boolean expectNoGoods, List<Integer> expectedNumbersOfUnassignedPositiveBodyAtoms) {
 		Alpha system = new Alpha();
 		system.getConfig().setEvaluateStratifiedPart(false);
-		InternalProgram internalPrg = system.performProgramPreprocessing(system.normalizeProgram(program));
+		InternalProgram internalPrg = InternalProgram.fromNormalProgram(system.normalizeProgram(program));
 		AtomStore atomStore = new AtomStoreImpl();
 		TrailAssignment currentAssignment = new TrailAssignment(atomStore);
 		GrounderHeuristicsConfiguration heuristicConfiguration = GrounderHeuristicsConfiguration.getInstance(tolerance, tolerance);

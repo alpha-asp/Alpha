@@ -36,7 +36,7 @@ public class HanoiTowerDetailedTest {
 		programBuilder.accumulate(parser.parse(CharStreams.fromStream(baseProgStream)));
 		programBuilder.accumulate(parser.parse(CharStreams.fromStream(instanceStream)));
 		InputProgram prog = programBuilder.build();
-		InternalProgram preprocessed = alpha.performProgramPreprocessing(alpha.normalizeProgram(prog));
+		InternalProgram preprocessed = InternalProgram.fromNormalProgram(alpha.normalizeProgram(prog));
 		Optional<AnswerSet> solveResult = alpha.solve(preprocessed).findFirst();
 		Assert.assertTrue(solveResult.isPresent());
 	}

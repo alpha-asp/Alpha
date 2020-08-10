@@ -219,7 +219,7 @@ public abstract class AbstractSolverTests {
 		Alpha system = new Alpha(); // note that this might be a performance hit, we might wanna adapt how solvers are obtained here
 		AtomStore atomStore = new AtomStoreImpl();
 		NormalProgram normalized = system.normalizeProgram(program);
-		InternalProgram preprocessed = system.performProgramPreprocessing(normalized);
+		InternalProgram preprocessed = InternalProgram.fromNormalProgram(normalized);
 		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, preprocessed, atomStore, true));
 	}
 

@@ -70,7 +70,7 @@ public class AnalyzeUnjustifiedTest {
 			":- not p(5).";
 		InputProgram parsedProgram = parser.parse(program);
 		NormalProgram normal = system.normalizeProgram(parsedProgram);
-		InternalProgram pa = system.performProgramPreprocessing(normal);
+		InternalProgram pa = InternalProgram.fromNormalProgram(normal);
 		AtomStore atomStore = new AtomStoreImpl();
 		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore, true);
 		grounder.getNoGoods(null);
@@ -98,7 +98,7 @@ public class AnalyzeUnjustifiedTest {
 			":- not p(1).";
 		InputProgram parsedProgram = parser.parse(program);
 		NormalProgram normal = system.normalizeProgram(parsedProgram);
-		InternalProgram pa = system.performProgramPreprocessing(normal);
+		InternalProgram pa = InternalProgram.fromNormalProgram(normal);
 		AtomStore atomStore = new AtomStoreImpl();
 		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore, true);
 		grounder.getNoGoods(null);
@@ -138,7 +138,7 @@ public class AnalyzeUnjustifiedTest {
 			":- not p(c).";
 		InputProgram parsedProgram = parser.parse(program);
 		NormalProgram normal = system.normalizeProgram(parsedProgram);
-		InternalProgram pa = system.performProgramPreprocessing(normal);
+		InternalProgram pa = InternalProgram.fromNormalProgram(normal);
 		AtomStore atomStore = new AtomStoreImpl();
 		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore, true);
 		grounder.getNoGoods(null);
@@ -197,7 +197,7 @@ public class AnalyzeUnjustifiedTest {
 			":- not p(5).";
 		InputProgram parsedProgram = parser.parse(program);
 		NormalProgram normal = system.normalizeProgram(parsedProgram);
-		InternalProgram pa = system.performProgramPreprocessing(normal);
+		InternalProgram pa = InternalProgram.fromNormalProgram(normal);
 		AtomStore atomStore = new AtomStoreImpl();
 		NaiveGrounder grounder = new NaiveGrounder(pa, atomStore, true);
 		grounder.getNoGoods(null);

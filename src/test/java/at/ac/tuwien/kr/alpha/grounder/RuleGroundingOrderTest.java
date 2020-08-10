@@ -56,7 +56,7 @@ public class RuleGroundingOrderTest {
 				"p(a) :- b = a.";
 		Alpha system = new Alpha();
 		system.getConfig().setEvaluateStratifiedPart(false);
-		InternalProgram internalPrg = system.performProgramPreprocessing(system.normalizeProgram(system.readProgramString(aspStr)));
+		InternalProgram internalPrg = InternalProgram.fromNormalProgram(system.normalizeProgram(system.readProgramString(aspStr)));
 		InternalRule rule0 = internalPrg.getRules().get(0);
 		RuleGroundingOrders rgo0 = new RuleGroundingOrders(rule0);
 		rgo0.computeGroundingOrders();
@@ -78,7 +78,7 @@ public class RuleGroundingOrderTest {
 		String aspStr = "h(X,C) :- X = Y, Y = C .. 3, C = X.";
 		Alpha system = new Alpha();
 		system.getConfig().setEvaluateStratifiedPart(false);
-		InternalProgram internalPrg = system.performProgramPreprocessing(system.normalizeProgram(system.readProgramString(aspStr)));
+		InternalProgram internalPrg = InternalProgram.fromNormalProgram(system.normalizeProgram(system.readProgramString(aspStr)));
 		computeGroundingOrdersForRule(internalPrg, 0);
 	}
 	
@@ -87,7 +87,7 @@ public class RuleGroundingOrderTest {
 		String aspStr = "a :- b, not c.";
 		Alpha system = new Alpha();
 		system.getConfig().setEvaluateStratifiedPart(false);
-		InternalProgram internalPrg = system.performProgramPreprocessing(system.normalizeProgram(system.readProgramString(aspStr)));
+		InternalProgram internalPrg = InternalProgram.fromNormalProgram(system.normalizeProgram(system.readProgramString(aspStr)));
 		RuleGroundingOrders rgo0 = computeGroundingOrdersForRule(internalPrg, 0);
 		assertEquals(0, rgo0.getFixedGroundingOrder().getPositionFromWhichAllVarsAreBound());
 	}
@@ -97,7 +97,7 @@ public class RuleGroundingOrderTest {
 		String aspStr = "a(X) :- b(X), not c(X).";
 		Alpha system = new Alpha();
 		system.getConfig().setEvaluateStratifiedPart(false);
-		InternalProgram internalPrg = system.performProgramPreprocessing(system.normalizeProgram(system.readProgramString(aspStr)));
+		InternalProgram internalPrg = InternalProgram.fromNormalProgram(system.normalizeProgram(system.readProgramString(aspStr)));
 		RuleGroundingOrders rgo0 = computeGroundingOrdersForRule(internalPrg, 0);
 		assertEquals(1, rgo0.getStartingLiterals().size());
 		for (Literal startingLiteral : rgo0.getStartingLiterals()) {
@@ -110,7 +110,7 @@ public class RuleGroundingOrderTest {
 		String aspStr = "a(X) :- b(X), c(X), d(X), not e(X).";
 		Alpha system = new Alpha();
 		system.getConfig().setEvaluateStratifiedPart(false);
-		InternalProgram internalPrg = system.performProgramPreprocessing(system.normalizeProgram(system.readProgramString(aspStr)));
+		InternalProgram internalPrg = InternalProgram.fromNormalProgram(system.normalizeProgram(system.readProgramString(aspStr)));
 		RuleGroundingOrders rgo0 = computeGroundingOrdersForRule(internalPrg, 0);
 		assertEquals(3, rgo0.getStartingLiterals().size());
 		for (Literal startingLiteral : rgo0.getStartingLiterals()) {
@@ -123,7 +123,7 @@ public class RuleGroundingOrderTest {
 		String aspStr = "a(X) :- b(X), c(X), d(X), not e(X).";
 		Alpha system = new Alpha();
 		system.getConfig().setEvaluateStratifiedPart(false);
-		InternalProgram internalPrg = system.performProgramPreprocessing(system.normalizeProgram(system.readProgramString(aspStr)));
+		InternalProgram internalPrg = InternalProgram.fromNormalProgram(system.normalizeProgram(system.readProgramString(aspStr)));
 		RuleGroundingOrders rgo0 = computeGroundingOrdersForRule(internalPrg, 0);
 		assertEquals(3, rgo0.getStartingLiterals().size());
 		for (Literal startingLiteral : rgo0.getStartingLiterals()) {
@@ -141,7 +141,7 @@ public class RuleGroundingOrderTest {
 		String aspStr = "a(X) :- b(X), c(X,Y), d(X,Z), not e(X).";
 		Alpha system = new Alpha();
 		system.getConfig().setEvaluateStratifiedPart(false);
-		InternalProgram internalPrg = system.performProgramPreprocessing(system.normalizeProgram(system.readProgramString(aspStr)));
+		InternalProgram internalPrg = InternalProgram.fromNormalProgram(system.normalizeProgram(system.readProgramString(aspStr)));
 		RuleGroundingOrders rgo0 = computeGroundingOrdersForRule(internalPrg, 0);
 final Literal litBX = PROGRAM_PART_PARSER.parseLiteral("b(X)");
 		final Literal litCXY = PROGRAM_PART_PARSER.parseLiteral("c(X,Y)");

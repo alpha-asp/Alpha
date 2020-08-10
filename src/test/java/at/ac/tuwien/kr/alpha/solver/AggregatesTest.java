@@ -173,7 +173,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 		system.getConfig().setUseNormalizationGrid(this.useCountingGridNormalization());
 		AtomStore atomStore = new AtomStoreImpl();
 		NormalProgram normal = system.normalizeProgram(program);
-		InternalProgram preprocessed = system.performProgramPreprocessing(normal);
+		InternalProgram preprocessed = InternalProgram.fromNormalProgram(normal);
 		return super.getInstance(atomStore, GrounderFactory.getInstance(grounderName, preprocessed, atomStore, p->true, new GrounderHeuristicsConfiguration(), true));
 	}
 	
