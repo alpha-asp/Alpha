@@ -150,8 +150,7 @@ public class Alpha {
 
 	/**
 	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the program
-	 * analysis and normalization aren't of
-	 * interest
+	 * analysis and normalization aren't of interest
 	 */
 	public Stream<AnswerSet> solve(InputProgram program) {
 		return this.solve(program, InputConfig.DEFAULT_FILTER);
@@ -165,14 +164,6 @@ public class Alpha {
 	public Stream<AnswerSet> solve(InputProgram program, java.util.function.Predicate<Predicate> filter) {
 		NormalProgram normalized = this.normalizeProgram(program);
 		return this.solve(normalized, filter);
-	}
-
-	/**
-	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the program
-	 * analysis aren't of interest
-	 */
-	public Stream<AnswerSet> solve(NormalProgram program) {
-		return this.solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
 	/**
@@ -205,35 +196,6 @@ public class Alpha {
 	public Stream<AnswerSet> solve(InternalProgram program, java.util.function.Predicate<Predicate> filter) {
 		Stream<AnswerSet> retVal = this.prepareSolverFor(program, filter).stream();
 		return this.config.isSortAnswerSets() ? retVal.sorted() : retVal;
-	}
-
-	/**
-	 * Convenience method - overloaded version of prepareSolverFor({@link InternalProgram}) for cases where details of the
-	 * program analysis and program
-	 * normalization are not of interest
-	 * 
-	 * @param program a NormalProgram to solve
-	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
-	 */
-	public Solver prepareSolverFor(InputProgram program) {
-		NormalProgram normalized = this.normalizeProgram(program);
-		return this.prepareSolverFor(normalized, InputConfig.DEFAULT_FILTER);
-	}
-
-	/**
-	 * Convenience method - overloaded version of prepareSolverFor({@link InternalProgram}) for cases where details of the
-	 * program analysis are not of interest
-	 * 
-	 * @param program a NormalProgram to solve
-	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
-	 */
-	public Solver prepareSolverFor(NormalProgram program) {
-		return this.prepareSolverFor(program, InputConfig.DEFAULT_FILTER);
-	}
-
-	public Solver prepareSolverFor(NormalProgram normalized, java.util.function.Predicate<Predicate> filter) {
-		InternalProgram preprocessed = this.performProgramPreprocessing(normalized);
-		return this.prepareSolverFor(preprocessed, filter);
 	}
 
 	/**
