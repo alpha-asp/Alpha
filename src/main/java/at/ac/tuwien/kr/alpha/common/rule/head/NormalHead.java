@@ -13,7 +13,7 @@ public class NormalHead extends Head {
 		this.atom = atom;
 	}
 
-	// TODO ideally this should be inherited from Head, but need to check how to handle choiceHeads
+	// Note that at some point in the future it might make sense to have this method directly in Head
 	public boolean isGround() {
 		return this.atom.isGround();
 	}
