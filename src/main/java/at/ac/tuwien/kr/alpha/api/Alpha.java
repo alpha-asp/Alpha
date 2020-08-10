@@ -186,7 +186,7 @@ public class Alpha {
 	 * Solves the given program and filters answer sets based on the passed predicate
 	 * 
 	 * @param program an {@link InternalProgram} to solve
-	 * @param a       {@link Predicate} filtering {@at.ac.tuwien.kr.alpha.common.Predicate}s in the returned answer sets
+	 * @param filter       {@link Predicate} filtering {@at.ac.tuwien.kr.alpha.common.Predicate}s in the returned answer sets
 	 * @return a Stream of answer sets representing stable models of the given program
 	 */
 	public Stream<AnswerSet> solve(InternalProgram program, java.util.function.Predicate<Predicate> filter) {
