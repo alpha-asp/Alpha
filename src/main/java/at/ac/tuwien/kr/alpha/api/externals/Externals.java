@@ -59,7 +59,7 @@ public final class Externals {
 
 	/**
 	 * Returns a map of external definitions making up the "standard library" of
-	 * exterals that are always available in programs for Alpha.
+	 * externals that are always available in programs for Alpha.
 	 * This method scans all predicate-annotated methods in the package holding the
 	 * class {@link AspStandardLibrary}.
 	 */
@@ -130,6 +130,17 @@ public final class Externals {
 		return new SuppliedPredicateInterpretation(supplier);
 	}
 
+	/**
+	 * Converts a collection of objects to facts.
+	 * Every item in the collection is wrapped in a {@link ConstantTerm}, which is the argument of a unary predicate whose
+	 * symbol is the class name of the given class (i.e. the declared type of objects inside the collection), modified to
+	 * start with a lower-case letter.
+	 * 
+	 * @param <T>             the type of the objects to use as facts
+	 * @param classOfExtFacts the {@link Class} object of the value type
+	 * @param extFacts        a {@link Collection} of objects of type <code>classOfExtFacts</code>
+	 * @return a list of {@link Atom}s.
+	 */
 	public static <T extends Comparable<T>> List<Atom> asFacts(Class<T> classOfExtFacts, Collection<T> extFacts) {
 		// use Class<T> as parameter here, taking simple name from first element might not give desired result if it's a subtype
 		List<Atom> retVal = new ArrayList<>();
