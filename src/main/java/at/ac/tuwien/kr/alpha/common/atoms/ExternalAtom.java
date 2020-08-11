@@ -43,10 +43,22 @@ public class ExternalAtom extends Atom implements VariableNormalizableAtom {
 	private final List<Term> input;
 	private final List<Term> output;
 
-	protected Predicate predicate;
+	protected final Predicate predicate;
 	protected final PredicateInterpretation interpretation;
 
 	public ExternalAtom(Predicate predicate, PredicateInterpretation interpretation, List<Term> input, List<Term> output) {
+		if (predicate == null) {
+			throw new IllegalArgumentException("predicate must not be null!");
+		}
+		if (interpretation == null) {
+			throw new IllegalArgumentException("interpretation must not be null!");
+		}
+		if (input == null) {
+			throw new IllegalArgumentException("input must not be null!");
+		}
+		if (output == null) {
+			throw new IllegalArgumentException("output must not be null!");
+		}
 		this.predicate = predicate;
 		this.interpretation = interpretation;
 		this.input = input;
@@ -127,9 +139,9 @@ public class ExternalAtom extends Atom implements VariableNormalizableAtom {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((this.input == null) ? 0 : this.input.hashCode());
-		result = prime * result + ((this.output == null) ? 0 : this.output.hashCode());
-		result = prime * result + ((this.predicate == null) ? 0 : this.predicate.hashCode());
+		result = prime * result + this.input.hashCode();
+		result = prime * result + this.output.hashCode();
+		result = prime * result + this.predicate.hashCode();
 		return result;
 	}
 
@@ -145,25 +157,13 @@ public class ExternalAtom extends Atom implements VariableNormalizableAtom {
 			return false;
 		}
 		ExternalAtom other = (ExternalAtom) obj;
-		if (this.input == null) {
-			if (other.input != null) {
-				return false;
-			}
-		} else if (!this.input.equals(other.input)) {
+		if (!this.input.equals(other.input)) {
 			return false;
 		}
-		if (this.output == null) {
-			if (other.output != null) {
-				return false;
-			}
-		} else if (!this.output.equals(other.output)) {
+		if (!this.output.equals(other.output)) {
 			return false;
 		}
-		if (this.predicate == null) {
-			if (other.predicate != null) {
-				return false;
-			}
-		} else if (!this.predicate.equals(other.predicate)) {
+		if (!this.predicate.equals(other.predicate)) {
 			return false;
 		}
 		return true;
