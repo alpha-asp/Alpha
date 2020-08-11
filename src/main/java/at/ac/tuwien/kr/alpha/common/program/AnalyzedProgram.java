@@ -23,8 +23,8 @@ public class AnalyzedProgram extends InternalProgram {
 	}
 
 	public static AnalyzedProgram analyzeNormalProgram(NormalProgram prog) {
-		ImmutablePair<List<Atom>, List<InternalRule>> factsAndRules = InternalProgram.internalizeFactsAndRules(prog);
-		return new AnalyzedProgram(factsAndRules.right, factsAndRules.left);
+		ImmutablePair<List<InternalRule>, List<Atom>> rulesAndFacts = InternalProgram.internalizeRulesAndFacts(prog);
+		return new AnalyzedProgram(rulesAndFacts.left, rulesAndFacts.right);
 	}
 
 	private ComponentGraph buildComponentGraph(DependencyGraph depGraph) {

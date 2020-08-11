@@ -19,7 +19,8 @@ import at.ac.tuwien.kr.alpha.grounder.FactIntervalEvaluator;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
 
 /**
- * A program in the internal representation needed for grounder and solver, i.e.: rules must have normal heads, all aggregates must be rewritten, all intervals
+ * A program in the internal representation needed for grounder and solver, i.e.: rules must have normal heads, all
+ * aggregates must be rewritten, all intervals
  * must be preprocessed (into interval atoms), equality predicates must be rewritten
  * 
  * Copyright (c) 2017-2019, the Alpha Team.
@@ -36,7 +37,7 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 		this.recordRules(rules);
 	}
 
-	protected static ImmutablePair<List<Atom>, List<InternalRule>> internalizeFactsAndRules(NormalProgram normalProgram) {
+	protected static ImmutablePair<List<InternalRule>, List<Atom>> internalizeRulesAndFacts(NormalProgram normalProgram) {
 		List<InternalRule> internalRules = new ArrayList<>();
 		List<Atom> facts = new ArrayList<>(normalProgram.getFacts());
 		for (NormalRule r : normalProgram.getRules()) {
@@ -51,12 +52,12 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 				internalRules.add(InternalRule.fromNormalRule(r));
 			}
 		}
-		return new ImmutablePair<>(facts, internalRules);
+		return new ImmutablePair<>(internalRules, facts);
 	}
 
 	public static InternalProgram fromNormalProgram(NormalProgram normalProgram) {
-		ImmutablePair<List<Atom>, List<InternalRule>> factsAndRules = InternalProgram.internalizeFactsAndRules(normalProgram);
-		return new InternalProgram(factsAndRules.right, factsAndRules.left);
+		ImmutablePair<List<InternalRule>, List<Atom>> rulesAndFacts = InternalProgram.internalizeRulesAndFacts(normalProgram);
+		return new InternalProgram(rulesAndFacts.left, rulesAndFacts.right);
 	}
 
 	private void recordFacts(List<Atom> facts) {
