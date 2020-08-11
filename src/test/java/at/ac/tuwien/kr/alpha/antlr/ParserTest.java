@@ -41,6 +41,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import at.ac.tuwien.kr.alpha.Util;
@@ -85,16 +86,16 @@ public class ParserTest {
 		assertEquals("Program contains one fact.", 1, parsedProgram.getFacts().size());
 		assertEquals("Predicate name of fact is p.", "p", parsedProgram.getFacts().get(0).getPredicate().getName());
 		assertEquals("Fact has two terms.", 2, parsedProgram.getFacts().get(0).getPredicate().getArity());
-		assertEquals("First term is function term f.", "f", ((FunctionTerm)parsedProgram.getFacts().get(0).getTerms().get(0)).getSymbol());
-		assertEquals("Second term is function term g.", "g", ((FunctionTerm)parsedProgram.getFacts().get(0).getTerms().get(1)).getSymbol());
+		assertEquals("First term is function term f.", "f", ((FunctionTerm) parsedProgram.getFacts().get(0).getTerms().get(0)).getSymbol());
+		assertEquals("Second term is function term g.", "g", ((FunctionTerm) parsedProgram.getFacts().get(0).getTerms().get(1)).getSymbol());
 	}
 
 	@Test
 	public void parseSmallProgram() throws IOException {
 		InputProgram parsedProgram = parser.parse(
 				"a :- b, not d." + System.lineSeparator() +
-				"c(X) :- p(X,a,_), q(Xaa,xaa)." + System.lineSeparator() +
-				":- f(Y).");
+						"c(X) :- p(X,a,_), q(Xaa,xaa)." + System.lineSeparator() +
+						":- f(Y).");
 
 		assertEquals("Program contains three rules.", 3, parsedProgram.getRules().size());
 	}
@@ -122,7 +123,7 @@ public class ParserTest {
 		InputProgram parsedProgram = parser.parse("fact(2..5). p(X) :- q(a, 3 .. X).");
 		IntervalTerm factInterval = (IntervalTerm) parsedProgram.getFacts().get(0).getTerms().get(0);
 		assertTrue(factInterval.equals(IntervalTerm.getInstance(ConstantTerm.getInstance(2), ConstantTerm.getInstance(5))));
-		IntervalTerm bodyInterval = (IntervalTerm) ((Literal)parsedProgram.getRules().get(0).getBody().get(0)).getTerms().get(1);
+		IntervalTerm bodyInterval = (IntervalTerm) ((Literal) parsedProgram.getRules().get(0).getBody().stream().findFirst().get()).getTerms().get(1);
 		assertTrue(bodyInterval.equals(IntervalTerm.getInstance(ConstantTerm.getInstance(3), VariableTerm.getInstance("X"))));
 	}
 
@@ -157,12 +158,11 @@ public class ParserTest {
 	@Test
 	public void literate() throws IOException {
 		final ReadableByteChannel input = Util.streamToChannel(Util.literate(Stream.of(
-			"This is some description.",
-			"",
-			"    p(a).",
-			"",
-			"Test!"
-		)));
+				"This is some description.",
+				"",
+				"    p(a).",
+				"",
+				"Test!")));
 
 		final String actual = new ProgramParser().parse(CharStreams.fromChannel(input)).toString();
 		final String expected = "p(a)." + System.lineSeparator();
@@ -173,9 +173,9 @@ public class ParserTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testMalformedInputNotIgnored() {
 		String program = "foo(a) :- p(b).\n" +
-			"// rule :- q.\n" +
-			"r(1).\n" +
-			"r(2).\n";
+				"// rule :- q.\n" +
+				"r(1).\n" +
+				"r(2).\n";
 		parser.parse(program);
 	}
 
@@ -187,9 +187,9 @@ public class ParserTest {
 	@Test
 	public void parseEnumerationDirective() throws IOException {
 		InputProgram parsedProgram = parser.parse("p(a,1)." +
-			"# enumeration_predicate_is mune." +
-			"r(X) :- p(X), mune(X)." +
-			"p(b,2).");
+				"# enumeration_predicate_is mune." +
+				"r(X) :- p(X), mune(X)." +
+				"p(b,2).");
 		String directive = parsedProgram.getInlineDirectives().getDirectiveValue(InlineDirectives.DIRECTIVE.enum_predicate_is);
 		assertEquals("mune", directive);
 	}
@@ -197,15 +197,18 @@ public class ParserTest {
 	@Test
 	public void cardinalityAggregate() throws IOException {
 		InputProgram parsedProgram = parser.parse("num(K) :-  K <= #count {X,Y,Z : p(X,Y,Z) }, dom(K).");
-		Literal bodyElement = parsedProgram.getRules().get(0).getBody().get(0);
-		assertTrue(bodyElement instanceof AggregateLiteral);
+		Optional<Literal> optionalBodyElement = parsedProgram.getRules().get(0).getBody().stream().filter((lit) -> lit instanceof AggregateLiteral).findFirst();
+		assertTrue(optionalBodyElement.isPresent());
+		Literal bodyElement = optionalBodyElement.get();
 		AggregateLiteral parsedAggregate = (AggregateLiteral) bodyElement;
 		VariableTerm x = VariableTerm.getInstance("X");
 		VariableTerm y = VariableTerm.getInstance("Y");
 		VariableTerm z = VariableTerm.getInstance("Z");
 		List<Term> basicTerms = Arrays.asList(x, y, z);
-		AggregateAtom.AggregateElement aggregateElement = new AggregateAtom.AggregateElement(basicTerms, Collections.singletonList(new BasicAtom(Predicate.getInstance("p", 3), x, y, z).toLiteral()));
-		AggregateAtom expectedAggregate = new AggregateAtom(ComparisonOperator.LE, VariableTerm.getInstance("K"), null, null, AggregateAtom.AGGREGATEFUNCTION.COUNT, Collections.singletonList(aggregateElement));
+		AggregateAtom.AggregateElement aggregateElement = new AggregateAtom.AggregateElement(basicTerms,
+				Collections.singletonList(new BasicAtom(Predicate.getInstance("p", 3), x, y, z).toLiteral()));
+		AggregateAtom expectedAggregate = new AggregateAtom(ComparisonOperator.LE, VariableTerm.getInstance("K"), null, null,
+				AggregateAtom.AGGREGATEFUNCTION.COUNT, Collections.singletonList(aggregateElement));
 		assertEquals(expectedAggregate, parsedAggregate.getAtom());
 	}
 

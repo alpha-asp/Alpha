@@ -165,7 +165,7 @@ public class RuleGroundingOrders {
 	}
 
 	private void computeGroundingOrder(Literal startingLiteral) {
-		List<Literal> bodyLiterals = internalRule.getBody();
+		Set<Literal> bodyLiterals = internalRule.getBody();
 		HashSet<VariableTerm> boundVariables = new HashSet<>();
 		boundVariables.addAll(startingLiteral.getBindingVariables());
 		LinkedHashSet<Literal> remainingLiterals = new LinkedHashSet<>(bodyLiterals);

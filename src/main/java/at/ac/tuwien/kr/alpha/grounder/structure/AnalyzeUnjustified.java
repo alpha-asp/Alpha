@@ -116,7 +116,7 @@ public class AnalyzeUnjustified {
 		rulesLoop:
 		for (RuleAndUnifier ruleUnifier : rulesUnifyingWithP) {
 			Unifier sigma = ruleUnifier.unifier;
-			List<Literal> bodyR = ruleUnifier.ruleBody;
+			Set<Literal> bodyR = ruleUnifier.ruleBody;
 			Atom sigmaHr = ruleUnifier.originalHead.substitute(sigma);
 			log("Considering now: {}", ruleUnifier);
 			Set<Unifier> vN = new LinkedHashSet<>(x.getComplementSubstitutions());
@@ -349,7 +349,7 @@ public class AnalyzeUnjustified {
 		}
 		for (FactOrNonGroundRule factOrNonGroundRule : definingRulesAndFacts) {
 			boolean isNonGroundRule = factOrNonGroundRule.nonGroundRule != null;
-			List<Literal> renamedBody;
+			Set<Literal> renamedBody;
 			Atom headAtom;
 			if (isNonGroundRule) {
 				// First rename all variables in the rule.
@@ -362,7 +362,7 @@ public class AnalyzeUnjustified {
 			} else {
 				// Create atom and empty rule body out of instance.
 				headAtom = new BasicAtom(p.getPredicate(), factOrNonGroundRule.factInstance.terms);
-				renamedBody = Collections.emptyList();
+				renamedBody = Collections.emptySet();
 			}
 			// Unify rule head with literal to justify.
 			Unifier unifier = Unification.unifyAtoms(p, headAtom);
@@ -391,11 +391,11 @@ public class AnalyzeUnjustified {
 	}
 
 	private static class RuleAndUnifier {
-		final List<Literal> ruleBody;
+		final Set<Literal> ruleBody;
 		final Unifier unifier;
 		final Atom originalHead;
 
-		private RuleAndUnifier(List<Literal> ruleBody, Unifier unifier, Atom originalHead) {
+		private RuleAndUnifier(Set<Literal> ruleBody, Unifier unifier, Atom originalHead) {
 			this.ruleBody = ruleBody;
 			this.unifier = unifier;
 			this.originalHead = originalHead;

@@ -93,13 +93,13 @@ public class AtomsTest {
 	@Test
 	public void testIsExternalAtomGround() {
 		InputProgram p1 = parser.parse("a :- &isFoo[1].");
-		Atom ext1 = p1.getRules().get(0).getBody().get(0).getAtom();
+		Atom ext1 = p1.getRules().get(0).getBody().stream().findFirst().get().getAtom();
 		this.assertExternalAtomGround(ext1, true);
 		InputProgram p2 = parser.parse("a :- &isFoo[bar(1)].");
-		Atom ext2 = p2.getRules().get(0).getBody().get(0).getAtom();
+		Atom ext2 = p2.getRules().get(0).getBody().stream().findFirst().get().getAtom();
 		this.assertExternalAtomGround(ext2, true);
 		InputProgram p3 = parser.parse("a :- &isFoo[BLA].");
-		Atom ext3 = p3.getRules().get(0).getBody().get(0).getAtom();
+		Atom ext3 = p3.getRules().get(0).getBody().stream().findFirst().get().getAtom();
 		this.assertExternalAtomGround(ext3, false);
 	}
 
@@ -107,9 +107,9 @@ public class AtomsTest {
 	@SuppressWarnings("unlikely-arg-type")
 	public void testAreExternalAtomsEqual() {
 		InputProgram p1 = parser.parse("a :- &isFoo[1].");
-		Atom ext1 = p1.getRules().get(0).getBody().get(0).getAtom();
+		Atom ext1 = p1.getRules().get(0).getBody().stream().findFirst().get().getAtom();
 		InputProgram p2 = parser.parse("a :- &isFoo[1].");
-		Atom ext2 = p2.getRules().get(0).getBody().get(0).getAtom();
+		Atom ext2 = p2.getRules().get(0).getBody().stream().findFirst().get().getAtom();
 		Assert.assertEquals(ext1, ext2);
 		Assert.assertEquals(ext2, ext1);
 
@@ -121,7 +121,7 @@ public class AtomsTest {
 	@Test
 	public void testExternalHasOutput() {
 		InputProgram p = parser.parse("a:- &extWithOutput[1](OUT).");
-		Atom ext = p.getRules().get(0).getBody().get(0).getAtom();
+		Atom ext = p.getRules().get(0).getBody().stream().findFirst().get().getAtom();
 		this.assertExternalAtomGround(ext, false);
 		Assert.assertTrue(((ExternalAtom) ext).hasOutput());
 	}

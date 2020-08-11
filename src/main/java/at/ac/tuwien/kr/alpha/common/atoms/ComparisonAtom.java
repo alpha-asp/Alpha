@@ -47,7 +47,7 @@ public class ComparisonAtom extends Atom implements VariableNormalizableAtom {
 	private ComparisonAtom(List<Term> terms, ComparisonOperator operator) {
 		this.terms = terms;
 		this.operator = operator;
-		this.predicate = Predicate.getInstance(operator.toString(), 2);
+		this.predicate = operator.predicate();
 	}
 
 	public ComparisonAtom(Term term1, Term term2, ComparisonOperator operator) {
