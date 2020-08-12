@@ -3,6 +3,9 @@
 # https://docs.travis-ci.com/user/workers/container-based-infrastructure/#Routing-your-build-to-container-based-infrastructure
 sudo: true
 
+# https://docs.travis-ci.com/user/reference/linux/
+dist: focal
+
 language: java
 
 # We test against Java releases:
