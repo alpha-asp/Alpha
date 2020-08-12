@@ -27,12 +27,9 @@
  */
 package at.ac.tuwien.kr.alpha.common.rule;
 
-import static at.ac.tuwien.kr.alpha.Util.join;
-
 import com.google.common.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.Util;
@@ -55,8 +52,6 @@ public class InternalRule extends NormalRule {
 
 	private final int ruleId;
 
-	private final List<Atom> bodyAtomsPositive;
-	private final List<Atom> bodyAtomsNegative;
 	private final List<Predicate> occurringPredicates;
 
 	private final RuleGroundingOrders groundingOrders;
@@ -84,14 +79,6 @@ public class InternalRule extends NormalRule {
 			(literal.isNegated() ? neg : pos).add(literal.getAtom());
 			this.occurringPredicates.add(literal.getPredicate());
 		}
-
-		// Sort for better join order.
-		this.bodyAtomsPositive = Collections.unmodifiableList(pos);
-
-		// Since rule is safe, all variables in the negative body are already bound,
-		// i.e., joining them cannot degenerate into cross-product.
-		// Hence, there is no need to sort them.
-		this.bodyAtomsNegative = Collections.unmodifiableList(neg);
 
 		// not needed, done in AbstractRule! Leaving it commented out for future reference since this might actually be the proper place to put it
 		// this.checkSafety();
@@ -144,29 +131,6 @@ public class InternalRule extends NormalRule {
 	 */
 	public List<Predicate> getOccurringPredicates() {
 		return this.occurringPredicates;
-	}
-
-	@Override
-	public String toString() {
-		//@formatter:off
-		return join(
-				join(
-						(isConstraint() ? "" : this.getHeadAtom() + " ") + ":- ", 
-						this.bodyAtomsPositive, 
-						this.bodyAtomsNegative.size() > 0 ? ", not " : ""
-				),
-				this.bodyAtomsNegative, 
-				", not ", 
-				".");
-		//@formatter:on
-	}
-
-	public List<Atom> getBodyAtomsPositive() {
-		return this.bodyAtomsPositive;
-	}
-
-	public List<Atom> getBodyAtomsNegative() {
-		return this.bodyAtomsNegative;
 	}
 
 	public RuleGroundingOrders getGroundingOrders() {

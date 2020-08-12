@@ -200,8 +200,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			// Collect head and body variables.
 			HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.toLiteral().getBindingVariables());
 			HashSet<VariableTerm> occurringVariablesBody = new HashSet<>();
-			for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
-				occurringVariablesBody.addAll(atom.toLiteral().getBindingVariables());
+			for (Literal lit : nonGroundRule.getPositiveBody()) {
+				occurringVariablesBody.addAll(lit.getBindingVariables());
 			}
 			occurringVariablesBody.removeAll(occurringVariablesHead);
 

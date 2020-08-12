@@ -43,12 +43,8 @@ public class SubstitutionTestUtil {
 		}
 		ret.append(" :- ");
 		boolean isFirst = true;
-		for (Atom bodyAtom : rule.getBodyAtomsPositive()) {
-			ret.append(groundLiteralToString(bodyAtom.toLiteral(), substitution, isFirst));
-			isFirst = false;
-		}
-		for (Atom bodyAtom : rule.getBodyAtomsNegative()) {
-			ret.append(groundLiteralToString(bodyAtom.toLiteral(false), substitution, isFirst));
+		for (Literal lit : rule.getBody()) {
+			ret.append(groundLiteralToString(lit, substitution, isFirst));
 			isFirst = false;
 		}
 		ret.append(".");
@@ -57,6 +53,6 @@ public class SubstitutionTestUtil {
 
 	public static String groundLiteralToString(Literal literal, Substitution substitution, boolean isFirst) {
 		Literal groundLiteral = literal.substitute(substitution);
-		return  (isFirst ? "" : ", ") + groundLiteral.toString();
+		return (isFirst ? "" : ", ") + groundLiteral.toString();
 	}
 }

@@ -27,21 +27,29 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
-
-import java.util.*;
-
-import static at.ac.tuwien.kr.alpha.common.Literals.*;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 
 /**
  * Class to generate ground NoGoods out of non-ground rules and grounding substitutions.
@@ -132,8 +140,8 @@ public class NoGoodGenerator {
 
 	List<Integer> collectNegLiterals(final InternalRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> bodyLiteralsNegative = new ArrayList<>();
-		for (Atom atom : nonGroundRule.getBodyAtomsNegative()) {
-			Atom groundAtom = atom.substitute(substitution);
+		for (Literal lit : nonGroundRule.getNegativeBody()) {
+			Atom groundAtom = lit.getAtom().substitute(substitution);
 			
 			final Set<Instance> factInstances = factsFromProgram.get(groundAtom.getPredicate());
 
@@ -154,14 +162,15 @@ public class NoGoodGenerator {
 
 	private List<Integer> collectPosLiterals(final InternalRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> bodyLiteralsPositive = new ArrayList<>();
-		for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
-			if (atom.toLiteral() instanceof FixedInterpretationLiteral) {
+		for (Literal lit  : nonGroundRule.getPositiveBody()) {
+			if (lit instanceof FixedInterpretationLiteral) {
 				// TODO: conversion of atom to literal is ugly. NonGroundRule could manage atoms instead of literals, cf. FIXME there
 				// Atom has fixed interpretation, hence was checked earlier that it
 				// evaluates to true under the given substitution.
 				// FixedInterpretationAtoms need not be shown to the solver, skip it.
 				continue;
 			}
+			final Atom atom = lit.getAtom();
 			// Skip the special enumeration atom.
 			if (atom instanceof EnumerationAtom) {
 				continue;

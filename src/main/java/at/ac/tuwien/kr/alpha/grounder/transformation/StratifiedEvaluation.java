@@ -160,8 +160,8 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 				this.modifiedInLastEvaluationRun.get(tmpPredicate).addAll(tmpInstances.getAllInstances());
 			}
 			// register positive body instances
-			for (Atom a : rule.getBodyAtomsPositive()) {
-				tmpPredicate = a.getPredicate();
+			for (Literal lit : rule.getPositiveBody()) {
+				tmpPredicate = lit.getPredicate();
 				tmpInstances = this.workingMemory.get(tmpPredicate, true);
 				this.modifiedInLastEvaluationRun.putIfAbsent(tmpPredicate, new LinkedHashSet<>());
 				if (tmpInstances != null) {
