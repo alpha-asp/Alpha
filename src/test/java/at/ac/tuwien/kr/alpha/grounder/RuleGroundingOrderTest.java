@@ -35,12 +35,6 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
 import org.junit.Test;
 
-import static at.ac.tuwien.kr.alpha.TestUtil.literal;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import java.io.IOException;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;

@@ -27,8 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.antlr.AlphaASPLexer;
-import at.ac.tuwien.kr.alpha.antlr.AlphaASPParser;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -198,18 +196,6 @@ public class Substitution {
 			ret.put(variable, assignedTerm);
 		}
 		return ret;
-	}
-
-	private static Term parseTerm(String s) {
-		try {
-			final AlphaASPParser parser = new AlphaASPParser(new CommonTokenStream(new AlphaASPLexer(CharStreams.fromString(s))));
-			return (Term)VISITOR.visit(parser.term());
-		} catch (RecognitionException | ParseCancellationException e) {
-			// If there were issues parsing the given string, we
-			// throw something that suggests that the input string
-			// is malformed.
-			throw new IllegalArgumentException("Could not parse term.", e);
-		}
 	}
 
 	@Override

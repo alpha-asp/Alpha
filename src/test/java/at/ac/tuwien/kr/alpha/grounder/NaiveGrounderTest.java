@@ -32,10 +32,8 @@ import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.NoGoodCreator;
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.Rule;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -61,7 +59,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.TestUtil.atom;
-import static at.ac.tuwien.kr.alpha.TestUtil.literal;
 import static at.ac.tuwien.kr.alpha.Util.asSet;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static org.junit.Assert.assertEquals;
@@ -441,7 +438,7 @@ public class NaiveGrounderTest {
 
 	@Test
 	public void testGenerateHeuristicNoGoods() {
-		final Program program = PARSER.parse("{ a(0); a(1); a(2); a(3); a(4); a(5); a(6); a(7) }."
+		final Program program = PROGRAM_PARSER.parse("{ a(0); a(1); a(2); a(3); a(4); a(5); a(6); a(7) }."
 				+ "{ b(N) } :- a(N)."
 				+ "#heuristic b(1) : T a(0), MT a(1), M a(2), F a(3), not T a(4), not MT a(5), not M a(6), not F a(7). [3@2]");
 		final int expectedNumberOfHeuristicRule = 19;	//because there are 18 ground rules except the heuristic rule

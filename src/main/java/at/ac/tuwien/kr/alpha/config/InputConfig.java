@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.config;
 
+import at.ac.tuwien.kr.alpha.api.externals.Externals;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 
@@ -8,10 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import at.ac.tuwien.kr.alpha.api.externals.Externals;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 
 public class InputConfig {
 

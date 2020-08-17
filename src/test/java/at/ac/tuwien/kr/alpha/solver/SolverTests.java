@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2018, the Alpha Team.
+/*
+ * Copyright (c) 2016-2018, 2020, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -773,7 +773,7 @@ public class SolverTests extends AbstractSolverTests {
 		Program parsedProgram = parser.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp")));
 		parsedProgram.accumulate(parser.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "HanoiTower_instances", "simple.asp"))));
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", parsedProgram, atomStore, true);
+		Grounder grounder = GrounderFactory.getInstance("naive", parsedProgram, atomStore, heuristicsConfiguration, true);
 		SystemConfig config = new SystemConfig();
 		config.setSolverName("default");
 		config.setNogoodStoreName("alpharoaming");
@@ -785,7 +785,7 @@ public class SolverTests extends AbstractSolverTests {
 			433, 427, 442, 421, 415, 436, 409, 430, 397, 391, 424, 385, 379,
 			418, 373, 412, 406, 394, 388, 382, 245, 232, 208
 		));
-		Solver solver = SolverFactory.getInstance(config, atomStore, grounder);
+		Solver solver = SolverFactory.getInstance(config, atomStore, grounder, heuristicsConfiguration);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();
 		assertTrue(answerSet.isPresent());
 	}
