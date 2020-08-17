@@ -30,7 +30,6 @@ package at.ac.tuwien.kr.alpha.common;
 import at.ac.tuwien.kr.alpha.solver.Antecedent;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
-import java.util.Iterator;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
@@ -93,7 +92,7 @@ public interface Assignment {
 	 * Returns an iterator over all newly assigned atoms. New assignments are only returned once.
 	 * @return an iterator over all atoms newly assigned to TRUE or MBT.
 	 */
-	Iterator<Integer> getNewPositiveAssignmentsIterator();
+	IntIterator getNewPositiveAssignmentsIterator();
 
 	/**
 	 * Returns the new assignments to process.

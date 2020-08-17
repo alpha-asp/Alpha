@@ -46,7 +46,8 @@ import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
 
 /**
  * Conflict-driven learning on ground clauses.
- * Copyright (c) 2016-2019, the Alpha Team.
+ *
+ * Copyright (c) 2016-2020, the Alpha Team.
  */
 public class GroundConflictNoGoodLearner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(GroundConflictNoGoodLearner.class);
@@ -54,7 +55,26 @@ public class GroundConflictNoGoodLearner {
 	private final Assignment assignment;
 	private final AtomStore atomStore;
 
+	/**
+	 * Given a conflicting NoGood, computes a conflict-free backjumping level such that the given NoGood is not
+	 * violated.
+	 *
+	 * @param violatedNoGood the conflicting NoGood.
+	 * @return -1 if the violatedNoGood cannot be satisfied, otherwise
+	 * 	   0 if violatedNoGood is unary, and else
+	 * 	   the highest backjumping level such that the NoGood is no longer violated.
+	 */
 	public int computeConflictFreeBackjumpingLevel(NoGood violatedNoGood) {
+		// If violatedNoGood is unary, backjump to decision level 0 if it can be satisfied.
+		if (violatedNoGood.isUnary()) {
+			int literal = violatedNoGood.getLiteral(0);
+			int literalDecisionLevel = assignment.getRealWeakDecisionLevel(atomOf(literal));
+			if (literalDecisionLevel > 0) {
+				return 0;
+			} else {
+				return -1;
+			}
+		}
 		int highestDecisionLevel = -1;
 		int secondHighestDecisionLevel = -1;
 		int numAtomsInHighestLevel = 0;
@@ -229,11 +249,7 @@ public class GroundConflictNoGoodLearner {
 		// Add the 1UIP literal.
 		resolutionLiterals.add(atomToLiteral(nextAtom, assignment.getTruth(nextAtom).toBoolean()));
 
-		int[] learnedLiterals = new int[resolutionLiterals.size()];
-		int i = 0;
-		for (Integer resolutionLiteral : resolutionLiterals) {
-			learnedLiterals[i++] = resolutionLiteral;
-		}
+		int[] learnedLiterals = minimizeLearnedLiterals(resolutionLiterals, seenAtoms);
 
 		NoGood learnedNoGood = NoGoodCreator.learnt(learnedLiterals);
 		if (LOGGER.isTraceEnabled()) {
@@ -248,8 +264,41 @@ public class GroundConflictNoGoodLearner {
 				return ConflictAnalysisResult.UNSAT;
 			}
 		}
-		LOGGER.trace("Backjumping decision level: {}", backjumpingDecisionLevel);
+		if (LOGGER.isTraceEnabled()) {
+			LOGGER.trace("Backjumping decision level: {}", backjumpingDecisionLevel);
+		}
 		return new ConflictAnalysisResult(learnedNoGood, backjumpingDecisionLevel, resolutionAtoms, computeLBD(learnedLiterals));
+	}
+
+	private int[] minimizeLearnedLiterals(List<Integer> resolutionLiterals, Set<Integer> seenAtoms) {
+		int[] learnedLiterals = new int[resolutionLiterals.size()];
+		int i = 0;
+		// Do local clause minimization: if an implied literal has all its antecedents seen (i.e., in the clause already), it can be removed.
+		learnedLiteralsLoop:
+		for (Integer resolutionLiteral : resolutionLiterals) {
+			if (assignment.getWeakDecisionLevel(atomOf(resolutionLiteral)) == 0) {
+				// Skip literals from decision level 0.
+				continue;
+			}
+			Antecedent antecedent = assignment.getImpliedBy(atomOf(resolutionLiteral));
+			if (antecedent == null) {
+				// The resolutionLiteral is a decision, keep it.
+				learnedLiterals[i++] = resolutionLiteral;
+			} else {
+				for (int antecedentReasonLiteral : antecedent.getReasonLiterals()) {
+					// Only add current resolutionLiteral if at least one of its antecedents has not been seen already.
+					if (!seenAtoms.contains(atomOf(antecedentReasonLiteral))) {
+						learnedLiterals[i++] = resolutionLiteral;
+						continue learnedLiteralsLoop;
+					}
+				}
+			}
+		}
+		// Shrink array if we did not copy over all literals from resolutionLiterals.
+		if (i < resolutionLiterals.size()) {
+			learnedLiterals = Arrays.copyOf(learnedLiterals, i);
+		}
+		return learnedLiterals;
 	}
 
 	private int computeLBD(int[] literals) {

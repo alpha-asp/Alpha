@@ -27,6 +27,22 @@
  */
 package at.ac.tuwien.kr.alpha.antlr;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.nio.channels.ReadableByteChannel;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
+
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.junit.Assert;
+import org.junit.Test;
+
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.ChoiceHead;
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
@@ -37,6 +53,7 @@ import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.WeightAtLevel;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -76,7 +93,7 @@ import static org.junit.Assert.assertTrue;
 public class ParserTest {
 	private final ProgramParser parser = new ProgramParser();
 	private final HeuristicsConfiguration heuristicsConfiguration = new HeuristicsConfigurationBuilder().setRespectDomspecHeuristics(true).build();
-	
+
 	@Before
 	public void setUp() {
 		VariableTerm.ANONYMOUS_VARIABLE_COUNTER.resetGenerator();
@@ -236,7 +253,7 @@ public class ParserTest {
 		AggregateAtom expectedAggregate = new AggregateAtom(ComparisonOperator.LE, VariableTerm.getInstance("K"), null, null, AggregateAtom.AGGREGATEFUNCTION.COUNT, Collections.singletonList(aggregateElement));
 		assertEquals(expectedAggregate, parsedAggregate.getAtom());
 	}
-	
+
 	@Test
 	public void parseProgramWithHeuristicDirective_W() {
 		Program parsedProgram = parser.parse("c(X) :- p(X,a,_), q(Xaa,xaa). "
@@ -383,7 +400,7 @@ public class ParserTest {
 		parseProgramAndTransformHeuristicDirectives("holds(F,T) :- fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T). "
 				+ "#heuristic holds(F,T) : fluent(F), time(T), T > 0, lasttime(LT), not not_holds(F,T), holds(F,Tp1), Tp1=T2+1, LTp1mT=LT+1-T. [LTp1mT@1]");
 	}
-	
+
 	private void parseProgramAndTransformHeuristicDirectives(String input) {
 		Program program = parser.parse(input);
 		new HeuristicDirectiveToRule(heuristicsConfiguration).transform(program); // without transforming it to a rule, the safety of a heuristic directive is not checked currently
@@ -391,5 +408,15 @@ public class ParserTest {
 
 	private static HeuristicDirective getFirstHeuristicDirective(Program parsedProgram) {
 		return (HeuristicDirective) parsedProgram.getInlineDirectives().getDirectives().iterator().next();
+	}
+
+	@Test
+	public void stringWithEscapedQuotes() throws IOException {
+		CharStream stream = CharStreams.fromStream(ParserTest.class.getResourceAsStream("/escaped_quotes.asp"));
+		Program prog = parser.parse(stream);
+		Assert.assertEquals(1, prog.getFacts().size());
+		Atom stringAtom = prog.getFacts().get(0);
+		String stringWithQuotes = stringAtom.getTerms().get(0).toString();
+		Assert.assertEquals("\"a string with \"quotes\"\"", stringWithQuotes);
 	}
 }

@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -38,7 +38,7 @@ import static at.ac.tuwien.kr.alpha.common.Literals.isNegated;
 import static at.ac.tuwien.kr.alpha.common.Literals.positiveLiteral;
 import static at.ac.tuwien.kr.alpha.common.NoGoodInterface.Type.STATIC;
 
-public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<NoGood> {
+public class NoGood implements NoGoodInterface, Comparable<NoGood> {
 	public static final int HEAD = 0;
 	public static final NoGood UNSAT = new NoGood();
 
@@ -230,4 +230,5 @@ public class NoGood implements NoGoodInterface, Iterable<Integer>, Comparable<No
 
 		return sb.toString();
 	}
+
 }

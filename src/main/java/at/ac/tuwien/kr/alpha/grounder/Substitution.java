@@ -35,13 +35,8 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParseTreeVisitor;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
@@ -49,7 +44,8 @@ import java.util.TreeMap;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
 public class Substitution {
-	private static final ParseTreeVisitor VISITOR = new ParseTreeVisitor(Collections.emptyMap(), false);
+
+	private static final ProgramPartParser PROGRAM_PART_PARSER = new ProgramPartParser();
 
 	protected TreeMap<VariableTerm, Term> substitution;
 
@@ -198,7 +194,7 @@ public class Substitution {
 		for (String assignment : assignments) {
 			String keyVal[] = assignment.split("->");
 			VariableTerm variable = VariableTerm.getInstance(keyVal[0]);
-			Term assignedTerm = parseTerm(keyVal[1]);
+			Term assignedTerm = PROGRAM_PART_PARSER.parseTerm(keyVal[1]);
 			ret.put(variable, assignedTerm);
 		}
 		return ret;

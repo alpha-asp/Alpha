@@ -198,7 +198,7 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<Integer> it) {
+	public void updateAssignment(IntIterator it) {
 		// This test grounder reports all NoGoods immediately, irrespective of any assignment.
 	}
 

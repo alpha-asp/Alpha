@@ -37,6 +37,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static at.ac.tuwien.kr.alpha.Util.arrayGrowthSize;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
@@ -44,6 +45,7 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 /**
  * Manages influence of atoms on the activity of rule atoms (choice points).
  *
+ * Copyright (c) 2020, the Alpha Team.
  */
 public class ChoicePointInfluenceManager extends InfluenceManager {
 	
@@ -51,7 +53,8 @@ public class ChoicePointInfluenceManager extends InfluenceManager {
 	
 	// Active choice points and all atoms that influence a choice point (enabler, disabler, choice atom itself).
 	private final Set<ChoicePoint> activeChoicePoints = new LinkedHashSet<>();
-	private final Map<Integer, ChoicePoint> influencers = new HashMap<>();
+	private final Set<Integer> activeChoicePointsAtoms = new LinkedHashSet<>();
+	private ChoicePoint[] influencers = new ChoicePoint[0];
 
 	public ChoicePointInfluenceManager(WritableAssignment assignment) {
 		super(assignment);
@@ -72,7 +75,7 @@ public class ChoicePointInfluenceManager extends InfluenceManager {
 		if (atom == null) {
 			throw oops("Incomplete choice point description found (no atom)");
 		}
-		if (influencers.get(atom) != null) {
+		if (influencers[atom] != null) {
 			throw oops("Received choice information repeatedly");
 		}
 		Integer enabler = atomToEnabler.getValue();
@@ -84,15 +87,19 @@ public class ChoicePointInfluenceManager extends InfluenceManager {
 		assignment.registerCallbackOnChange(enabler);
 		assignment.registerCallbackOnChange(disabler);
 		ChoicePoint choicePoint = new ChoicePoint(atom, enabler, disabler);
-		influencers.put(atom, choicePoint);
-		influencers.put(enabler, choicePoint);
-		influencers.put(disabler, choicePoint);
+		influencers[atom] = choicePoint;
+		influencers[enabler] = choicePoint;
+		influencers[disabler] = choicePoint;
 		choicePoint.recomputeActive();
 	}
 
 	void checkActiveChoicePoints() {
 		HashSet<ChoicePoint> actualActiveChoicePoints = new HashSet<>();
-		for (ChoicePoint choicePoint : influencers.values()) {
+		for (int i = 0; i < influencers.length; i++) {
+			ChoicePoint choicePoint = influencers[i];
+			if (choicePoint == null) {
+				continue;
+			}
 			if (checkActiveChoicePoint(choicePoint)) {
 				actualActiveChoicePoints.add(choicePoint);
 			}
@@ -114,21 +121,40 @@ public class ChoicePointInfluenceManager extends InfluenceManager {
 	}
 
 	boolean isActive(int atom) {
-		ChoicePoint choicePoint = influencers.get(atom);
+		ChoicePoint choicePoint = influencers[atom];
 		return choicePoint != null && choicePoint.isActive && choicePoint.atom == atom;
 	}
 
 	boolean isAtomInfluenced(int atom) {
-		ChoicePoint choicePoint = influencers.get(atom);
+		ChoicePoint choicePoint = influencers[atom];
 		return choicePoint != null && choicePoint.atom == atom;
 	}
 
 	void callbackOnChanged(int atom) {
-		LOGGER.trace("Callback received on influencer atom: {}", atom);
-		ChoicePoint choicePoint = influencers.get(atom);
+		if (LOGGER.isTraceEnabled()) {
+			LOGGER.trace("Callback received on influencer atom: {}", atom);
+		}
+		ChoicePoint choicePoint = influencers[atom];
 		if (choicePoint != null) {
 			choicePoint.recomputeActive();
 		}
+	}
+
+	public void growForMaxAtomId(int maxAtomId) {
+		// Grow arrays only if needed.
+		if (influencers.length > maxAtomId) {
+			return;
+		}
+		// Grow to default size, except if bigger array is required due to maxAtomId.
+		int newCapacity = arrayGrowthSize(influencers.length);
+		if (newCapacity < maxAtomId + 1) {
+			newCapacity = maxAtomId + 1;
+		}
+		influencers = Arrays.copyOf(influencers, newCapacity);
+	}
+
+	void setActivityListener(ActivityListener listener) {
+		this.activityListener = listener;
 	}
 
 	private class ChoicePoint {

@@ -188,7 +188,7 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<Integer> it) {
+	public void updateAssignment(IntIterator it) {
 		while (it.hasNext()) {
 			currentTruthValues[it.next()] = 1;
 		}

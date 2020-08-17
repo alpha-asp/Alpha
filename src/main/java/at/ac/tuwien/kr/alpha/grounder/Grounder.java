@@ -30,12 +30,12 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.IntIterator;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -69,7 +69,7 @@ public interface Grounder {
 	 * Updates the grounder with atoms assigned a positive truth value.
 	 * @param it an iterator over all newly assigned positive atoms.
 	 */
-	void updateAssignment(Iterator<Integer> it);
+	void updateAssignment(IntIterator it);
 
 	/**
 	 * Returns new heuristic atoms and their enablers and disablers.

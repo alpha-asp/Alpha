@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2019-2020 Siemens AG
  * All rights reserved.
  * 
@@ -31,7 +31,6 @@ import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -68,14 +67,6 @@ public class TestUtil {
 			terms[i] = ConstantTerm.getInstance(termInts[i]);
 		}
 		return new BasicAtom(Predicate.getInstance(predicateName, terms.length), terms);
-	}
-
-	public static Literal literal(String predicateName, String... termStrings) {
-		return atom(predicateName, termStrings).toLiteral();
-	}
-
-	public static Literal literal(String predicateName, int... termInts) {
-		return atom(predicateName, termInts).toLiteral();
 	}
 	
 	public static void printNoGoods(AtomStore atomStore, Collection<NoGood> noGoods) {

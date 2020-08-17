@@ -243,6 +243,10 @@ public class ChoiceManager implements Checkable {
 		}
 	}
 
+	public void growForMaxAtomId(int maxAtomId) {
+		choicePointInfluenceManager.growForMaxAtomId(maxAtomId);
+	}
+
 	private void addHeadsToBodies(Map<Integer, Set<Integer>> headsToBodies) {
 		for (Entry<Integer, Set<Integer>> entry : headsToBodies.entrySet()) {
 			Integer head = entry.getKey();

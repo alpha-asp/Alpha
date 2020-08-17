@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.common.atoms.external;
+package at.ac.tuwien.kr.alpha.api.externals;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -10,9 +10,9 @@ import java.lang.annotation.Target;
  * external predicates at runtime.
  *
  * In order to have your method detected by Alpha, annotate it
- * with this annotation and call {@link Alpha#scan(String)}.
+ * with this annotation and call {@link Externals#scan}.
  *
- * @see Alpha#scan(String)
+ * @see Externals#scan
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

@@ -515,7 +515,7 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 		}
 		return visitWeight_at_level(ctx.weight_at_level());
 	}
-	
+
 	@Override
 	public WeightAtLevel visitWeight_at_level(Weight_at_levelContext ctx) {
 		// term (AT term)? (COMMA terms)?
@@ -574,7 +574,7 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 
 	@Override
 	public ConstantTerm<?> visitTerm_string(AlphaASPParser.Term_stringContext ctx) {
-		String quotedString = ctx.QUOTED_STRING().getText();
+		String quotedString = ctx.QUOTED_STRING().getText().replace("\\\"", "\"");
 		return ConstantTerm.getInstance(quotedString.substring(1, quotedString.length() - 1));
 	}
 
