@@ -28,15 +28,15 @@
 
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.antlr.AlphaASPLexer;
 import at.ac.tuwien.kr.alpha.antlr.AlphaASPParser;
-import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import java.util.Collections;
