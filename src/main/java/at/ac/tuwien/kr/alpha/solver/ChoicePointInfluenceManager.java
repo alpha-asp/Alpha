@@ -199,7 +199,6 @@ public class ChoicePointInfluenceManager extends InfluenceManager {
 			if (changed && activityListener != null) {
 				activityListener.callbackOnChanged(atom, isActive);
 			}
-			System.out.println("activeChoicePointsAtoms: " + activeChoicePointsAtoms);
 		}
 
 		@Override
