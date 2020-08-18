@@ -53,7 +53,6 @@ public class ChoicePointInfluenceManager extends InfluenceManager {
 	
 	// Active choice points and all atoms that influence a choice point (enabler, disabler, choice atom itself).
 	private final Set<ChoicePoint> activeChoicePoints = new LinkedHashSet<>();
-	private final Set<Integer> activeChoicePointsAtoms = new LinkedHashSet<>();
 	private ChoicePoint[] influencers = new ChoicePoint[0];
 
 	public ChoicePointInfluenceManager(WritableAssignment assignment) {
@@ -200,6 +199,7 @@ public class ChoicePointInfluenceManager extends InfluenceManager {
 			if (changed && activityListener != null) {
 				activityListener.callbackOnChanged(atom, isActive);
 			}
+			System.out.println("activeChoicePointsAtoms: " + activeChoicePointsAtoms);
 		}
 
 		@Override
