@@ -32,7 +32,6 @@ import com.google.common.annotations.VisibleForTesting;
 import java.util.ArrayList;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
@@ -103,9 +102,6 @@ public class InternalRule extends NormalRule {
 	 * @return
 	 */
 	public InternalRule renameVariables(String newVariablePostfix) {
-		if (!this.getHead().isNormal()) {
-			throw Util.oops("Trying to rename variables in not-normal rule.");
-		}
 		List<VariableTerm> occurringVariables = new ArrayList<>();
 		Atom headAtom = this.getHeadAtom();
 		occurringVariables.addAll(headAtom.getOccurringVariables());

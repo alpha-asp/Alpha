@@ -41,8 +41,7 @@ public abstract class AbstractRule<H extends Head> {
 
 		if (!this.isSafe()) {
 			// TODO: safety check needs to be adapted to solver what the solver actually understands. Will change in the future,
-			// adapt exception message
-			// accordingly.
+			// adapt exception message accordingly.
 			throw new RuntimeException("Encountered unsafe rule: " + toString() + System.lineSeparator()
 					+ "Notice: A rule is considered safe if all variables occurring in negative literals, builtin atoms, and the head of the rule also occur in some positive literal.");
 		}
@@ -57,7 +56,8 @@ public abstract class AbstractRule<H extends Head> {
 	 */
 	private boolean isSafe() {
 		// TODO: do the real check.
-		// Just a thought: Do we actually need this here? seems only relevant for NormalRule
+		// Note that - once a proper safety check is implemented - that check should probably be specific for each rule
+		// implementation, therefore this method should be "protected abstract" here and implemented in each subclass.
 		return true;
 		/*
 		 * Set<VariableTerm> positiveVariables = new HashSet<>(); Set<VariableTerm> builtinVariables = new HashSet<>();

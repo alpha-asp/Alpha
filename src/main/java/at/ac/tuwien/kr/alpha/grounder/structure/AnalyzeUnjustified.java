@@ -355,9 +355,6 @@ public class AnalyzeUnjustified {
 				// First rename all variables in the rule.
 				InternalRule rule = factOrNonGroundRule.nonGroundRule.renameVariables("_" + renamingCounter++);
 				renamedBody = rule.getBody();
-				if (!rule.getHead().isNormal()) {
-					throw oops("NonGroundRule has no normal head.");
-				}
 				headAtom = rule.getHeadAtom();
 			} else {
 				// Create atom and empty rule body out of instance.
