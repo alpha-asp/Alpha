@@ -158,7 +158,13 @@ public class Main {
 	 */
 	private static void writeInternalProgram(InternalProgram prg, String path) {
 		LOGGER.debug("Writing preprocessed program to {}", path);
-		try (PrintStream ps = new PrintStream(new File(path))) {
+		PrintStream ps = null;
+		try {
+			if (path.equals(InputConfig.PREPROC_STDOUT_PATH)) {
+				ps = System.out;
+			} else {
+				ps = new PrintStream(new File(path));
+			}
 			ps.println(prg.toString());
 		} catch (IOException ex) {
 			LOGGER.error("Failed writing preprocessed program file", ex);
@@ -166,7 +172,8 @@ public class Main {
 		}
 	}
 
-	private static void computeAndConsumeAnswerSets(Alpha alpha, InputConfig inputCfg, InternalProgram program) {
+	private static void computeAndConsumeAnswerSets(Alpha alpha, InputConfig inputCfg,
+			InternalProgram program) {
 		Solver solver = alpha.prepareSolverFor(program, inputCfg.getFilter());
 		Stream<AnswerSet> stream = solver.stream();
 		if (alpha.getConfig().isSortAnswerSets()) {

@@ -11,7 +11,7 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 
 public class InputConfig {
-
+	
 	public static final java.util.function.Predicate<Predicate> DEFAULT_FILTER = p -> true;
 	public static final boolean DEFAULT_LITERATE = false;
 	public static final int DEFAULT_NUM_ANSWER_SETS = 0;
@@ -21,6 +21,7 @@ public class InputConfig {
 	public static final String DEFAULT_COMPGRAPH_TARGET_FILE = "compgraph.dot";
 	public static final boolean DEFAULT_WRITE_PREPROCESSED_PROG = false;
 	public static final String DEFAULT_PREPROC_TARGET_FILE = "input.preproc.asp";
+	public static final String PREPROC_STDOUT_PATH = "--"; // indicator preprocessed program should be written to stdout
 	public static final boolean DEFAULT_WRITE_XLSX = false;
 	public static final String DEFAULT_XLSX_OUTFILE_PATH = "alphaAnswerSet"; // current directory, files named "alphaAnswerSet.{num}.{ext}"
 
