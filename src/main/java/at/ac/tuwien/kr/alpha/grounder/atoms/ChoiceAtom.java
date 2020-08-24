@@ -27,17 +27,17 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
+import static at.ac.tuwien.kr.alpha.Util.join;
+
+import java.util.Collections;
+import java.util.List;
+
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
-
-import java.util.Collections;
-import java.util.List;
-
-import static at.ac.tuwien.kr.alpha.Util.join;
 
 public class ChoiceAtom extends Atom {
 
@@ -97,10 +97,7 @@ public class ChoiceAtom extends Atom {
 
 	@Override
 	public Atom withTerms(List<Term> terms) {
-		if (terms.size() != 1) {
-			throw new UnsupportedOperationException("ChoiceAtom only supports one term!");
-		}
-		return new ChoiceAtom(this.predicate, terms.get(0));
+		throw new UnsupportedOperationException("Changing terms is not supported for ChoiceAtoms!");
 	}
 
 	@Override

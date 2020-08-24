@@ -106,7 +106,6 @@ public class ProgramParser {
 
 		// Construct internal program representation.
 		ParseTreeVisitor visitor = new ParseTreeVisitor(externals);
-		InputProgram retVal = visitor.translate(programContext);
-		return retVal;
+		return visitor.translate(programContext);
 	}
 }

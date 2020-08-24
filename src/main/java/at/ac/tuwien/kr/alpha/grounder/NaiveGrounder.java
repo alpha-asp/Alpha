@@ -86,7 +86,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final NogoodRegistry registry = new NogoodRegistry();
 	final NoGoodGenerator noGoodGenerator;
 	private final ChoiceRecorder choiceRecorder;
-	private final InternalProgram programAnalysis;
+	private final InternalProgram program;
 	private final AnalyzeUnjustified analyzeUnjustified;
 
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
@@ -119,18 +119,18 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		this.heuristicsConfiguration = heuristicsConfiguration;
 		LOGGER.debug("Grounder configuration: {}", heuristicsConfiguration);
 
-		this.programAnalysis = program;
+		this.program = program;
 
-		this.factsFromProgram = programAnalysis.getFactsByPredicate();
-		this.knownNonGroundRules = programAnalysis.getRulesById();
+		this.factsFromProgram = program.getFactsByPredicate();
+		this.knownNonGroundRules = program.getRulesById();
 
-		this.analyzeUnjustified = new AnalyzeUnjustified(this.programAnalysis, this.atomStore, this.factsFromProgram);
+		this.analyzeUnjustified = new AnalyzeUnjustified(this.program, this.atomStore, this.factsFromProgram);
 
 		this.initializeFactsAndRules();
 
 		final Set<InternalRule> uniqueGroundRulePerGroundHead = getRulesWithUniqueHead();
 		choiceRecorder = new ChoiceRecorder(atomStore);
-		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, programAnalysis, uniqueGroundRulePerGroundHead);
+		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, this.program, uniqueGroundRulePerGroundHead);
 		
 		this.debugInternalChecks = debugInternalChecks;
 
@@ -143,7 +143,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	private void initializeFactsAndRules() {
 		// initialize all facts
-		for (Atom fact : this.programAnalysis.getFacts()) {
+		for (Atom fact : this.program.getFacts()) {
 			final Predicate predicate = fact.getPredicate();
 
 			// Record predicate
@@ -156,7 +156,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		workingMemory.initialize(ChoiceAtom.ON);
 
 		// Initialize rules and constraints in working memory
-		for (InternalRule nonGroundRule : this.programAnalysis.getRulesById().values()) {
+		for (InternalRule nonGroundRule : this.program.getRulesById().values()) {
 			// Create working memories for all predicates occurring in the rule
 			for (Predicate predicate : nonGroundRule.getOccurringPredicates()) {
 				// FIXME: this also contains interval/builtin predicates that are not needed.
@@ -182,7 +182,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// Record all unique rule heads.
 		final Set<InternalRule> uniqueGroundRulePerGroundHead = new HashSet<>();
 
-		for (Map.Entry<Predicate, HashSet<InternalRule>> headDefiningRules : programAnalysis.getPredicateDefiningRules().entrySet()) {
+		for (Map.Entry<Predicate, HashSet<InternalRule>> headDefiningRules : this.program.getPredicateDefiningRules().entrySet()) {
 			if (headDefiningRules.getValue().size() != 1) {
 				continue;
 			}

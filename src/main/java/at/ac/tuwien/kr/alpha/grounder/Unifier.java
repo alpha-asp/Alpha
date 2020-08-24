@@ -54,7 +54,7 @@ public class Unifier extends Substitution {
 	 * @return the list of variables occurring somewhere in the unifier.
 	 */
 	@Override
-	public Set<VariableTerm> getOccurringVariables() {
+	public Set<VariableTerm> getMappedVariables() {
 		Set<VariableTerm> ret = new HashSet<>();
 		for (Map.Entry<VariableTerm, Term> substitution : substitution.entrySet()) {
 			ret.add(substitution.getKey());

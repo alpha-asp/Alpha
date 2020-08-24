@@ -165,7 +165,7 @@ public class Substitution {
 		return substitution.get(variable) != null;
 	}
 
-	public Set<VariableTerm> getOccurringVariables() {
+	public Set<VariableTerm> getMappedVariables() {
 		return this.substitution.keySet();
 	}
 

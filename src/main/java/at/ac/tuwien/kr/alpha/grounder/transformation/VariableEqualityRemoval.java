@@ -106,10 +106,6 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 			return rule;
 		}
 
-		if (!rule.isConstraint() && !rule.getHead().isNormal()) {
-			throw new UnsupportedOperationException("Cannot treat non-normal rule heads yet.");
-		}
-
 		List<Literal> rewrittenBody = new ArrayList<>(rule.getBody());
 		NormalHead rewrittenHead = rule.isConstraint() ? null : new NormalHead(rule.getHeadAtom());
 
