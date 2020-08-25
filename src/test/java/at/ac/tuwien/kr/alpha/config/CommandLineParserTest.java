@@ -58,15 +58,15 @@ public class CommandLineParserTest {
 	@Test
 	public void basicUsageWithFile() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig ctx = parser.parseCommandLine(new String[] {"-i", "someFile.asp", "-i", "someOtherFile.asp" });
-		assertEquals(Arrays.asList(new String[] {"someFile.asp", "someOtherFile.asp" }), ctx.getInputConfig().getFiles());
+		AlphaConfig ctx = parser.parseCommandLine(new String[] {"-i", "someFile.asp", "-i", "someOtherFile.asp"});
+		assertEquals(Arrays.asList(new String[] {"someFile.asp", "someOtherFile.asp"}), ctx.getInputConfig().getFiles());
 	}
 
 	@Test
 	public void basicUsageWithString() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig ctx = parser.parseCommandLine(new String[] {"-str", "b :- a.", "-str", "c :- a, b." });
-		assertEquals(Arrays.asList(new String[] {"b :- a.", "c :- a, b." }), ctx.getInputConfig().getAspStrings());
+		AlphaConfig ctx = parser.parseCommandLine(new String[] {"-str", "b :- a.", "-str", "c :- a, b."});
+		assertEquals(Arrays.asList(new String[] {"b :- a.", "c :- a, b."}), ctx.getInputConfig().getAspStrings());
 	}
 
 	@Test(expected = ParseException.class)
@@ -78,19 +78,19 @@ public class CommandLineParserTest {
 	@Test
 	public void moreThanOneInputSource() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		parser.parseCommandLine(new String[] {"-i", "a.b", "-i", "b.c", "-str", "aString." });
+		parser.parseCommandLine(new String[] {"-i", "a.b", "-i", "b.c", "-str", "aString."});
 	}
 
 	@Test(expected = ParseException.class)
 	public void invalidUsageMissingInputFlag() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		parser.parseCommandLine(new String[] {"-i", "a.b", "b.c" });
+		parser.parseCommandLine(new String[] {"-i", "a.b", "b.c"});
 	}
 
 	@Test
 	public void numAnswerSets() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig ctx = parser.parseCommandLine(new String[] {"-str", "aString.", "-n", "00435" });
+		AlphaConfig ctx = parser.parseCommandLine(new String[] {"-str", "aString.", "-n", "00435"});
 		assertEquals(435, ctx.getInputConfig().getNumAnswerSets());
 	}
 
@@ -103,55 +103,55 @@ public class CommandLineParserTest {
 	@Test
 	public void replay() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig alphaConfig = parser.parseCommandLine(new String[] {"-str", "aString.", "-rc", "\"1,2, 3\"" });
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[] {"-str", "aString.", "-rc", "\"1,2, 3\""});
 		assertEquals(Arrays.asList(1, 2, 3), alphaConfig.getAlphaConfig().getReplayChoices());
 	}
 
 	@Test(expected = ParseException.class)
 	public void replayWithNonNumericLiteral() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		parser.parseCommandLine(new String[] {"-str", "aString.", "-rc", "\"1, 2, x\"" });
+		parser.parseCommandLine(new String[] {"-str", "aString.", "-rc", "\"1, 2, x\""});
 	}
 
 	@Test
 	public void grounderToleranceConstraints_numeric() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig alphaConfig = parser.parseCommandLine(new String[] {"-str", "aString.", "-gtc", "-1" });
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[] {"-str", "aString.", "-gtc", "-1"});
 		assertEquals("-1", alphaConfig.getAlphaConfig().getGrounderToleranceConstraints());
 	}
 
 	@Test
 	public void grounderToleranceConstraints_string() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig alphaConfig = parser.parseCommandLine(new String[] {"-str", "aString.", "-gtc", "strict" });
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[] {"-str", "aString.", "-gtc", "strict"});
 		assertEquals("strict", alphaConfig.getAlphaConfig().getGrounderToleranceConstraints());
 	}
 
 	@Test
 	public void grounderToleranceRules_numeric() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig alphaConfig = parser.parseCommandLine(new String[] {"-str", "aString.", "-gtr", "1" });
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[] {"-str", "aString.", "-gtr", "1"});
 		assertEquals("1", alphaConfig.getAlphaConfig().getGrounderToleranceRules());
 	}
 
 	@Test
 	public void grounderToleranceRules_string() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig alphaConfig = parser.parseCommandLine(new String[] {"-str", "aString.", "-gtr", "permissive" });
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[] {"-str", "aString.", "-gtr", "permissive"});
 		assertEquals("permissive", alphaConfig.getAlphaConfig().getGrounderToleranceRules());
 	}
 
 	@Test
 	public void noInstanceRemoval() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig alphaConfig = parser.parseCommandLine(new String[] {"-str", "aString.", "-acc" });
+		AlphaConfig alphaConfig = parser.parseCommandLine(new String[] {"-str", "aString.", "-acc"});
 		assertTrue(alphaConfig.getAlphaConfig().isGrounderAccumulatorEnabled());
 	}
 
 	@Test
 	public void atomSeparator() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig cfg = parser.parseCommandLine(new String[] {"-str", "aString.", "-sep", "some-string" });
+		AlphaConfig cfg = parser.parseCommandLine(new String[] {"-str", "aString.", "-sep", "some-string"});
 		assertEquals("some-string", cfg.getAlphaConfig().getAtomSeparator());
 	}
 
