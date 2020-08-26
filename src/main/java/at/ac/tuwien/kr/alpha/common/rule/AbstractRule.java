@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.common.rule;
 
-import com.google.common.collect.Sets;
+import org.apache.commons.collections4.SetUtils;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -95,7 +95,7 @@ public abstract class AbstractRule<H extends Head> {
 	}
 
 	public Set<Literal> getBody() {
-		return Sets.union(this.bodyLiteralsPositive, this.bodyLiteralsNegative);
+		return SetUtils.union(this.bodyLiteralsPositive, this.bodyLiteralsNegative);
 	}
 
 	public Set<Literal> getPositiveBody() {
