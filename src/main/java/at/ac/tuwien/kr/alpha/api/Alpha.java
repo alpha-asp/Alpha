@@ -144,17 +144,16 @@ public class Alpha {
 	}
 
 	/**
-	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the program
-	 * analysis and normalization aren't of interest
+	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the
+	 * program analysis and normalization aren't of interest.
 	 */
 	public Stream<AnswerSet> solve(InputProgram program) {
 		return solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
 	/**
-	 * Convenience method - overloaded version of solve({@link InternalProgram}, {@link Predicate}) for cases where details
-	 * of the program analysis and
-	 * normalization aren't of interest
+	 * Convenience method - overloaded version of solve({@link InternalProgram}, {@link Predicate}) for cases where
+	 * details of the program analysis and normalization aren't of interest.
 	 */
 	public Stream<AnswerSet> solve(InputProgram program, java.util.function.Predicate<Predicate> filter) {
 		NormalProgram normalized = normalizeProgram(program);
@@ -162,8 +161,8 @@ public class Alpha {
 	}
 
 	/**
-	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the program
-	 * analysis aren't of interest
+	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the
+	 * program analysis aren't of interest.
 	 */
 	public Stream<AnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
 		InternalProgram preprocessed = performProgramPreprocessing(InternalProgram.fromNormalProgram(program));
@@ -172,7 +171,7 @@ public class Alpha {
 
 	/**
 	 * Overloaded version of solve({@link InternalProgram}, {@link Predicate}) that uses a default filter (accept
-	 * everything)
+	 * everything).
 	 * 
 	 * @param program the program to solve
 	 * @return a stream of answer sets
@@ -182,7 +181,7 @@ public class Alpha {
 	}
 
 	/**
-	 * Solves the given program and filters answer sets based on the passed predicate
+	 * Solves the given program and filters answer sets based on the passed predicate.
 	 * 
 	 * @param program an {@link InternalProgram} to solve
 	 * @param filter       {@link Predicate} filtering {@at.ac.tuwien.kr.alpha.common.Predicate}s in the returned answer sets
@@ -194,14 +193,13 @@ public class Alpha {
 	}
 
 	/**
-	 * Prepares a solver (and accompanying grounder) instance pre-loaded with the given program. Use this if the solver is
-	 * needed after reading answer sets
-	 * (e.g. for obtaining statistics)
+	 * Prepares a solver (and accompanying grounder) instance pre-loaded with the given program. Use this if the
+	 * solver is needed after reading answer sets (e.g. for obtaining statistics).
 	 * 
-	 * @param program the program to solve
-	 * @param filter  a (java util) predicate that filters (asp-)predicates which should be contained in the answer set
-	 *                stream from the solver
-	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
+	 * @param program the program to solve.
+	 * @param filter  a (java util) predicate that filters (asp-)predicates which should be contained in the answer
+	 *                set stream from the solver.
+	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program.
 	 */
 	public Solver prepareSolverFor(InternalProgram program, java.util.function.Predicate<Predicate> filter) {
 		String grounderName = config.getGrounderName();
