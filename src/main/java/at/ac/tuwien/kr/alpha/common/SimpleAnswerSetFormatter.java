@@ -7,11 +7,11 @@ import java.util.stream.Collectors;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 
-public class BasicAnswerSetFormatter implements AnswerSetFormatter<String> {
+public class SimpleAnswerSetFormatter implements AnswerSetFormatter<String> {
 
 	private final String atomSeparator;
 
-	public BasicAnswerSetFormatter(String atomSeparator) {
+	public SimpleAnswerSetFormatter(String atomSeparator) {
 		this.atomSeparator = atomSeparator;
 	}
 
