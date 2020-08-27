@@ -27,22 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.api;
 
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.nio.charset.CodingErrorAction;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -63,12 +47,27 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.NormalizeProgramTransformat
 import at.ac.tuwien.kr.alpha.grounder.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.charset.CodingErrorAction;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Alpha {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Alpha.class);
 
-	private SystemConfig config = new SystemConfig(); // config is initialized with default values
+	private SystemConfig config = new SystemConfig(); // The config is initialized with default values.
 
 	public Alpha(SystemConfig cfg) {
 		this.config = cfg;
@@ -81,18 +80,18 @@ public class Alpha {
 		InputProgram.Builder prgBuilder = InputProgram.builder();
 		InputProgram tmpProg;
 		if (!cfg.getFiles().isEmpty()) {
-			tmpProg = this.readProgramFiles(cfg.isLiterate(), cfg.getPredicateMethods(), cfg.getFiles());
+			tmpProg = readProgramFiles(cfg.isLiterate(), cfg.getPredicateMethods(), cfg.getFiles());
 			prgBuilder.accumulate(tmpProg);
 		}
 		if (!cfg.getAspStrings().isEmpty()) {
-			tmpProg = this.readProgramString(StringUtils.join(cfg.getAspStrings(), System.lineSeparator()), cfg.getPredicateMethods());
+			tmpProg = readProgramString(StringUtils.join(cfg.getAspStrings(), System.lineSeparator()), cfg.getPredicateMethods());
 			prgBuilder.accumulate(tmpProg);
 		}
 		return prgBuilder.build();
 	}
 
 	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException {
-		return this.readProgramFiles(literate, externals, paths.stream().map(Paths::get).collect(Collectors.toList()).toArray(new Path[] {}));
+		return readProgramFiles(literate, externals, paths.stream().map(Paths::get).collect(Collectors.toList()).toArray(new Path[] {}));
 	}
 
 	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
@@ -118,17 +117,17 @@ public class Alpha {
 	}
 
 	public InputProgram readProgramString(String aspString) {
-		return this.readProgramString(aspString, null);
+		return readProgramString(aspString, null);
 	}
 
 	public NormalProgram normalizeProgram(InputProgram program) {
-		return new NormalizeProgramTransformation(this.config.isUseNormalizationGrid()).apply(program);
+		return new NormalizeProgramTransformation(config.isUseNormalizationGrid()).apply(program);
 	}
 
 	public InternalProgram performProgramPreprocessing(InternalProgram program) {
 		LOGGER.debug("Preprocessing InternalProgram!");
 		InternalProgram retVal = program;
-		if (this.config.isEvaluateStratifiedPart()) {
+		if (config.isEvaluateStratifiedPart()) {
 			AnalyzedProgram analyzed = new AnalyzedProgram(program.getRules(), program.getFacts());
 			retVal = new StratifiedEvaluation().apply(analyzed);
 		}
@@ -138,7 +137,7 @@ public class Alpha {
 	public InternalProgram performProgramPreprocessing(AnalyzedProgram program) {
 		LOGGER.debug("Preprocessing AnalyzedProgram!");
 		InternalProgram retVal = program;
-		if (this.config.isEvaluateStratifiedPart()) {
+		if (config.isEvaluateStratifiedPart()) {
 			retVal = new StratifiedEvaluation().apply(program);
 		}
 		return retVal;
@@ -149,7 +148,7 @@ public class Alpha {
 	 * analysis and normalization aren't of interest
 	 */
 	public Stream<AnswerSet> solve(InputProgram program) {
-		return this.solve(program, InputConfig.DEFAULT_FILTER);
+		return solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
 	/**
@@ -158,8 +157,8 @@ public class Alpha {
 	 * normalization aren't of interest
 	 */
 	public Stream<AnswerSet> solve(InputProgram program, java.util.function.Predicate<Predicate> filter) {
-		NormalProgram normalized = this.normalizeProgram(program);
-		return this.solve(normalized, filter);
+		NormalProgram normalized = normalizeProgram(program);
+		return solve(normalized, filter);
 	}
 
 	/**
@@ -167,8 +166,8 @@ public class Alpha {
 	 * analysis aren't of interest
 	 */
 	public Stream<AnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
-		InternalProgram preprocessed = this.performProgramPreprocessing(InternalProgram.fromNormalProgram(program));
-		return this.solve(preprocessed, filter);
+		InternalProgram preprocessed = performProgramPreprocessing(InternalProgram.fromNormalProgram(program));
+		return solve(preprocessed, filter);
 	}
 
 	/**
@@ -179,7 +178,7 @@ public class Alpha {
 	 * @return a stream of answer sets
 	 */
 	public Stream<AnswerSet> solve(InternalProgram program) {
-		return this.solve(program, InputConfig.DEFAULT_FILTER);
+		return solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
 	/**
@@ -190,8 +189,8 @@ public class Alpha {
 	 * @return a Stream of answer sets representing stable models of the given program
 	 */
 	public Stream<AnswerSet> solve(InternalProgram program, java.util.function.Predicate<Predicate> filter) {
-		Stream<AnswerSet> retVal = this.prepareSolverFor(program, filter).stream();
-		return this.config.isSortAnswerSets() ? retVal.sorted() : retVal;
+		Stream<AnswerSet> retVal = prepareSolverFor(program, filter).stream();
+		return config.isSortAnswerSets() ? retVal.sorted() : retVal;
 	}
 
 	/**
@@ -205,21 +204,21 @@ public class Alpha {
 	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
 	 */
 	public Solver prepareSolverFor(InternalProgram program, java.util.function.Predicate<Predicate> filter) {
-		String grounderName = this.config.getGrounderName();
-		boolean doDebugChecks = this.config.isDebugInternalChecks();
+		String grounderName = config.getGrounderName();
+		boolean doDebugChecks = config.isDebugInternalChecks();
 
 		GrounderHeuristicsConfiguration grounderHeuristicConfiguration = GrounderHeuristicsConfiguration
-				.getInstance(this.config.getGrounderToleranceConstraints(), this.config.getGrounderToleranceRules());
-		grounderHeuristicConfiguration.setAccumulatorEnabled(this.config.isGrounderAccumulatorEnabled());
+				.getInstance(config.getGrounderToleranceConstraints(), config.getGrounderToleranceRules());
+		grounderHeuristicConfiguration.setAccumulatorEnabled(config.isGrounderAccumulatorEnabled());
 
 		AtomStore atomStore = new AtomStoreImpl();
 		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, grounderHeuristicConfiguration, doDebugChecks);
 
-		return SolverFactory.getInstance(this.config, atomStore, grounder);
+		return SolverFactory.getInstance(config, atomStore, grounder);
 	}
 
 	public SystemConfig getConfig() {
-		return this.config;
+		return config;
 	}
 
 	public void setConfig(SystemConfig config) {
