@@ -27,22 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import org.antlr.v4.runtime.RecognitionException;
-import org.apache.commons.cli.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.file.Paths;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AnswerSetFormatter;
@@ -60,6 +44,21 @@ import at.ac.tuwien.kr.alpha.config.CommandLineParser;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverMaintainingStatistics;
+import org.antlr.v4.runtime.RecognitionException;
+import org.apache.commons.cli.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Main entry point for Alpha.
@@ -153,12 +152,12 @@ public class Main {
 	/**
 	 * Writes the given {@link InternalProgram} to the destination passed as the second parameter
 	 * 
-	 * @param cg   the program to write
+	 * @param prg   the program to write
 	 * @param path the path to write the program to
 	 */
 	private static void writeInternalProgram(InternalProgram prg, String path) {
 		LOGGER.debug("Writing preprocessed program to {}", path);
-		PrintStream ps = null;
+		PrintStream ps;
 		try {
 			if (path.equals(InputConfig.PREPROC_STDOUT_PATH)) {
 				ps = System.out;
@@ -172,8 +171,7 @@ public class Main {
 		}
 	}
 
-	private static void computeAndConsumeAnswerSets(Alpha alpha, InputConfig inputCfg,
-			InternalProgram program) {
+	private static void computeAndConsumeAnswerSets(Alpha alpha, InputConfig inputCfg, InternalProgram program) {
 		Solver solver = alpha.prepareSolverFor(program, inputCfg.getFilter());
 		Stream<AnswerSet> stream = solver.stream();
 		if (alpha.getConfig().isSortAnswerSets()) {
