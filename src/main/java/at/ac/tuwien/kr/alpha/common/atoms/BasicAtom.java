@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2019, the Alpha Team.
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -27,19 +27,19 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import static at.ac.tuwien.kr.alpha.Util.join;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 /**
- * Copyright (c) 2016-2019, the Alpha Team.
+ * Represents ordinary ASP atoms.
  */
 public class BasicAtom extends Atom implements VariableNormalizableAtom {
 	private final Predicate predicate;
@@ -161,7 +161,7 @@ public class BasicAtom extends Atom implements VariableNormalizableAtom {
 
 	@Override
 	public Atom withTerms(List<Term> terms) {
-		return new BasicAtom(this.predicate, terms);
+		return new BasicAtom(predicate, terms);
 	}
 
 }
