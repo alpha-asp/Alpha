@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2019, the Alpha Team.
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -27,11 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.common.rule;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
@@ -41,9 +36,14 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.grounder.RuleGroundingOrders;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
+import com.google.common.annotations.VisibleForTesting;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Represents a normal rule or a constraint for the semi-naive grounder. A normal rule has one (or no if it's a constraint) atom in it's head.
+ * Represents a normal rule or a constraint for the semi-naive grounder.
+ * A normal rule has no head atom if it represents a constraint, otherwise it has one atom in its head.
  */
 public class InternalRule extends NormalRule {
 
@@ -78,9 +78,6 @@ public class InternalRule extends NormalRule {
 			(literal.isNegated() ? neg : pos).add(literal.getAtom());
 			this.occurringPredicates.add(literal.getPredicate());
 		}
-
-		// not needed, done in AbstractRule! Leaving it commented out for future reference since this might actually be the proper place to put it
-		// this.checkSafety();
 
 		this.groundingOrders = new RuleGroundingOrders(this);
 		this.groundingOrders.computeGroundingOrders();
@@ -122,8 +119,8 @@ public class InternalRule extends NormalRule {
 	}
 
 	/**
-	 *
-	 * @return a list of all ordinary predicates occurring in the rule (may contain duplicates, does not contain builtin atoms).
+	 * Returns the predicates occurring in this rule.
+	 * @return a list of all predicates occurring in the rule (may contain duplicates and builtin atoms).
 	 */
 	public List<Predicate> getOccurringPredicates() {
 		return this.occurringPredicates;
