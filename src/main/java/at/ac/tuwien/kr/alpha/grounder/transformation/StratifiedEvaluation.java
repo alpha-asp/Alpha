@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -34,6 +36,7 @@ import at.ac.tuwien.kr.alpha.grounder.RuleGroundingOrder;
 import at.ac.tuwien.kr.alpha.grounder.RuleGroundingOrders;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.WorkingMemory;
+import at.ac.tuwien.kr.alpha.grounder.instantiation.AssignmentStatus;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationResult;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiator;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.WorkingMemoryBasedInstantiationStrategy;
@@ -60,6 +63,10 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	private Set<Integer> solvedRuleIds = new HashSet<>();
 
 	private LiteralInstantiator literalInstantiator;
+
+	// TODO remove - debugging help only!
+	private TreeMap<InternalRule, Integer> ruleEvaluationCounts = new TreeMap<>((r1, r2) -> r1.toString().compareTo(r2.toString()));
+	private TreeMap<InternalRule, Integer> ruleSubstitutionCounts = new TreeMap<>((r1, r2) -> r1.toString().compareTo(r2.toString()));
 
 	@Override
 	public InternalProgram apply(AnalyzedProgram inputProgram) {
@@ -92,6 +99,9 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			this.evaluateComponent(currComponent);
 		}
 
+		// TODO remove, debugging help
+		this.dbgPrintCounts();
+		
 		// Build the program resulting from evaluating the stratified part.
 		List<Atom> outputFacts = this.buildOutputFacts(inputProgram.getFacts(), this.additionalFacts);
 		List<InternalRule> outputRules = new ArrayList<>();
@@ -101,6 +111,15 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		return retVal;
 	}
 
+	// TODO remove, debugging help
+	private void dbgPrintCounts() {
+		System.out.println("********** GROUNDING INFO ***********");
+		for(InternalRule rule : this.ruleEvaluationCounts.keySet()) {
+			System.out.println("Rule: " + rule + ", evaluations = " + this.ruleEvaluationCounts.get(rule) + ", non-unique-substitutions = " + this.ruleSubstitutionCounts.get(rule));
+		}
+		System.out.println("******* END OF GROUNDING INFO *******");
+	}
+	
 	// extra method is better visible in CPU traces when profiling
 	private List<Atom> buildOutputFacts(List<Atom> initialFacts, Set<Atom> newFacts) {
 		Set<Atom> atomSet = new LinkedHashSet<>(initialFacts);
@@ -174,6 +193,10 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	private void evaluateRule(InternalRule rule) {
 		LOGGER.debug("Evaluating rule {}", rule);
 		List<Substitution> satisfyingSubstitutions = this.calculateSatisfyingSubstitutionsForRule(rule);
+		this.ruleEvaluationCounts.putIfAbsent(rule, 0);
+		this.ruleEvaluationCounts.put(rule, this.ruleEvaluationCounts.get(rule) + 1);
+		this.ruleSubstitutionCounts.putIfAbsent(rule, 0);
+		this.ruleSubstitutionCounts.put(rule, this.ruleSubstitutionCounts.get(rule) + satisfyingSubstitutions.size());
 		for (Substitution subst : satisfyingSubstitutions) {
 			this.fireRule(rule, subst);
 		}
@@ -222,16 +245,14 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		List<Substitution> updatedSubstitutions = new ArrayList<>();
 		Literal currentLiteral;
 		LiteralInstantiationResult currentLiteralResult;
-		List<Substitution> currentLiteralSubstitutions;
 		int orderPosition = 0;
 		while ((currentLiteral = groundingOrder.getLiteralAtOrderPosition(orderPosition)) != null) {
 			for (Substitution subst : currentSubstitutions) {
 				currentLiteralResult = this.literalInstantiator.instantiateLiteral(currentLiteral, subst);
 				if (currentLiteralResult.getType() == LiteralInstantiationResult.Type.CONTINUE) {
-					currentLiteralSubstitutions = currentLiteralResult.getSubstitutions().stream()
-							.map((pair) -> pair.left)
-							.collect(Collectors.toList());
-					updatedSubstitutions.addAll(currentLiteralSubstitutions);
+					for (ImmutablePair<Substitution, AssignmentStatus> pair : currentLiteralResult.getSubstitutions()) {
+						updatedSubstitutions.add(pair.left);
+					}
 				}
 			}
 			if (updatedSubstitutions.isEmpty()) {
