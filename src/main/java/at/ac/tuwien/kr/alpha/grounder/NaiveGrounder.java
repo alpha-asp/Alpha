@@ -292,7 +292,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	// TODO remove, debugging help
 	private void dbgPrintCounts() {
 		System.out.println("********** GROUNDING INFO ***********");
-		for(InternalRule rule : this.ruleEvaluationCounts.keySet()) {
+		for (InternalRule rule : this.ruleEvaluationCounts.keySet()) {
 			System.out.println("Rule: " + rule + ", evaluations = " + this.ruleEvaluationCounts.get(rule) + ", non-unique-substitutions = " + this.ruleSubstitutionCounts.get(rule));
 		}
 		System.out.println("******* END OF GROUNDING INFO *******");

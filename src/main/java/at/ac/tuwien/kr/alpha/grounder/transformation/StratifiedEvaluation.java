@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,7 +102,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 		// TODO remove, debugging help
 		this.dbgPrintCounts();
-		
+
 		// Build the program resulting from evaluating the stratified part.
 		List<Atom> outputFacts = this.buildOutputFacts(inputProgram.getFacts(), this.additionalFacts);
 		List<InternalRule> outputRules = new ArrayList<>();
@@ -114,12 +115,13 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	// TODO remove, debugging help
 	private void dbgPrintCounts() {
 		System.out.println("********** GROUNDING INFO ***********");
-		for(InternalRule rule : this.ruleEvaluationCounts.keySet()) {
-			System.out.println("Rule: " + rule + ", evaluations = " + this.ruleEvaluationCounts.get(rule) + ", non-unique-substitutions = " + this.ruleSubstitutionCounts.get(rule));
+		for (InternalRule rule : this.ruleEvaluationCounts.keySet()) {
+			System.out.println("Rule: " + rule + ", evaluations = " + this.ruleEvaluationCounts.get(rule) + ", non-unique-substitutions = "
+					+ this.ruleSubstitutionCounts.get(rule));
 		}
 		System.out.println("******* END OF GROUNDING INFO *******");
 	}
-	
+
 	// extra method is better visible in CPU traces when profiling
 	private List<Atom> buildOutputFacts(List<Atom> initialFacts, Set<Atom> newFacts) {
 		Set<Atom> atomSet = new LinkedHashSet<>(initialFacts);
@@ -129,36 +131,47 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 	private void evaluateComponent(SCComponent comp) {
 		LOGGER.debug("Evaluating component {}", comp);
-		Set<InternalRule> rulesToEvaluate = this.getRulesToEvaluate(comp);
-		if (rulesToEvaluate.isEmpty()) {
+		ComponentEvaluationInfo evaluationInfo = this.getRulesToEvaluate(comp);
+		if (evaluationInfo.isEmpty()) {
 			LOGGER.debug("No rules to evaluate for component {}", comp);
 			return;
 		}
-		Map<Predicate, List<Instance>> addedInstances = new HashMap<>();
-		this.prepareComponentEvaluation(rulesToEvaluate);
-		do {
-			this.workingMemory.reset();
-			LOGGER.debug("Starting component evaluation run...");
-			for (InternalRule r : rulesToEvaluate) {
-				this.evaluateRule(r);
-			}
-			this.modifiedInLastEvaluationRun = new HashMap<>();
-			// Since we're stratified we never have to backtrack, therefore just collect the added instances.
-			for (IndexedInstanceStorage instanceStorage : this.workingMemory.modified()) {
-				// NOTE: We're only dealing with positive instances.
-				addedInstances.putIfAbsent(instanceStorage.getPredicate(), new ArrayList<>());
-				addedInstances.get(instanceStorage.getPredicate()).addAll(instanceStorage.getRecentlyAddedInstances());
-				this.modifiedInLastEvaluationRun.putIfAbsent(instanceStorage.getPredicate(), new LinkedHashSet<>());
-				this.modifiedInLastEvaluationRun.get(instanceStorage.getPredicate()).addAll(instanceStorage.getRecentlyAddedInstances());
-				instanceStorage.markRecentlyAddedInstancesDone();
-
-			}
-			// If evaluation of rules doesn't modify the working memory we have a fixed point.
-		} while (!this.workingMemory.modified().isEmpty());
+		this.prepareComponentEvaluation(SetUtils.union(evaluationInfo.nonRecursiveRules, evaluationInfo.recursiveRules));
+		// Rules outside of dependency cycles only need to be evaluated once.
+		if (!evaluationInfo.nonRecursiveRules.isEmpty()) {
+			this.addFactsToProgram(this.evaluateRules(evaluationInfo.nonRecursiveRules));
+		}
+		if (!evaluationInfo.recursiveRules.isEmpty()) {
+			do {
+				// Now do the rules that cyclically depend on each other,
+				// evaluate these until nothing new can be derived any more.
+				this.addFactsToProgram(this.evaluateRules(evaluationInfo.recursiveRules));
+				// If evaluation of rules doesn't modify the working memory we have a fixed point.
+			} while (!this.workingMemory.modified().isEmpty());
+		}
 		LOGGER.debug("Evaluation done - reached a fixed point on component {}", comp);
-		this.addFactsToProgram(addedInstances);
-		rulesToEvaluate.forEach((rule) -> this.solvedRuleIds.add(rule.getRuleId()));
-		LOGGER.debug("Finished adding program facts");
+		SetUtils.union(evaluationInfo.nonRecursiveRules, evaluationInfo.recursiveRules)
+				.forEach((rule) -> this.solvedRuleIds.add(rule.getRuleId()));
+	}
+
+	private Map<Predicate, List<Instance>> evaluateRules(Set<InternalRule> rules) {
+		Map<Predicate, List<Instance>> addedInstances = new HashMap<>();
+		this.workingMemory.reset();
+		LOGGER.debug("Starting component evaluation run...");
+		for (InternalRule r : rules) {
+			this.evaluateRule(r);
+		}
+		this.modifiedInLastEvaluationRun = new HashMap<>();
+		// Since we're stratified we never have to backtrack, therefore just collect the added instances.
+		for (IndexedInstanceStorage instanceStorage : this.workingMemory.modified()) {
+			// NOTE: We're only dealing with positive instances.
+			addedInstances.putIfAbsent(instanceStorage.getPredicate(), new ArrayList<>());
+			addedInstances.get(instanceStorage.getPredicate()).addAll(instanceStorage.getRecentlyAddedInstances());
+			this.modifiedInLastEvaluationRun.putIfAbsent(instanceStorage.getPredicate(), new LinkedHashSet<>());
+			this.modifiedInLastEvaluationRun.get(instanceStorage.getPredicate()).addAll(instanceStorage.getRecentlyAddedInstances());
+			instanceStorage.markRecentlyAddedInstancesDone();
+		}
+		return addedInstances;
 	}
 
 	/**
@@ -275,16 +288,33 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		this.workingMemory.addInstance(newAtom, true);
 	}
 
-	private Set<InternalRule> getRulesToEvaluate(SCComponent comp) {
-		Set<InternalRule> retVal = new HashSet<>();
-		HashSet<InternalRule> tmpPredicateRules;
+	private ComponentEvaluationInfo getRulesToEvaluate(SCComponent comp) {
+		Set<InternalRule> nonRecursiveRules = new HashSet<>();
+		Set<InternalRule> recursiveRules = new HashSet<>();
+		HashSet<InternalRule> definingRules;
+		Set<Predicate> headPredicates = new HashSet<>();
 		for (Node node : comp.getNodes()) {
-			tmpPredicateRules = this.predicateDefiningRules.get(node.getPredicate());
-			if (tmpPredicateRules != null) {
-				retVal.addAll(tmpPredicateRules);
+			headPredicates.add(node.getPredicate());
+		}
+		for (Predicate headPredicate : headPredicates) {
+			definingRules = this.predicateDefiningRules.get(headPredicate);
+			if (definingRules == null) {
+				// predicate only occurs in facts
+				continue;
+			}
+			for (InternalRule rule : definingRules) {
+				for (Literal lit : rule.getPositiveBody()) {
+					if (headPredicates.contains(lit.getPredicate())) {
+						// rule body contains a predicate that is defined in the same component,
+						// rule is therefore part of a dependency cycle and must be evaluated repeatedly
+						recursiveRules.add(rule);
+					} else {
+						nonRecursiveRules.add(rule);
+					}
+				}
 			}
 		}
-		return retVal;
+		return new ComponentEvaluationInfo(nonRecursiveRules, recursiveRules);
 	}
 
 	private void addFactsToProgram(Map<Predicate, List<Instance>> instances) {
@@ -344,6 +374,29 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 			};
 		}
+	}
+
+	/**
+	 * Internal helper class to group rules within an {@SCComponent} into rules that are recursive, i.e. part of some cyclic
+	 * dependency chain within that component, and non-recursive rules, i.e. rules where all body predicates occur in lower
+	 * strata. The reason for this grouping is that, when evaluating rules within a component, non-recursive rules only need
+	 * to be evaluated once, while recursive rules need to be evaluated until a fixed-point has been reached.
+	 * 
+	 * Copyright (c) 2020, the Alpha Team.
+	 */
+	private class ComponentEvaluationInfo {
+		final Set<InternalRule> nonRecursiveRules;
+		final Set<InternalRule> recursiveRules;
+
+		ComponentEvaluationInfo(Set<InternalRule> nonRecursive, Set<InternalRule> recursive) {
+			this.nonRecursiveRules = Collections.unmodifiableSet(nonRecursive);
+			this.recursiveRules = Collections.unmodifiableSet(recursive);
+		}
+
+		boolean isEmpty() {
+			return this.nonRecursiveRules.isEmpty() && this.recursiveRules.isEmpty();
+		}
+
 	}
 
 }
