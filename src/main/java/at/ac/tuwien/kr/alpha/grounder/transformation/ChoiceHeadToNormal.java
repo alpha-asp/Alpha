@@ -27,11 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -39,11 +34,15 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.ChoiceHead;
-import at.ac.tuwien.kr.alpha.common.rule.head.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.rule.head.Head;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Copyright (c) 2017-2018, the Alpha Team.
@@ -101,11 +100,11 @@ public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, Inpu
 				// Construct two guessing rules.
 				List<Literal> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithNegHead.add(new BasicAtom(head.getPredicate(), head.getTerms()).toLiteral(false));
-				additionalRules.add(new BasicRule(new DisjunctiveHead(Collections.singletonList(negHead)), guessingRuleBodyWithNegHead));
+				additionalRules.add(new BasicRule(new NormalHead(negHead), guessingRuleBodyWithNegHead));
 
 				List<Literal> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithHead.add(new BasicAtom(negPredicate, headTerms).toLiteral(false));
-				additionalRules.add(new BasicRule(new DisjunctiveHead(Collections.singletonList(head)), guessingRuleBodyWithHead));
+				additionalRules.add(new BasicRule(new NormalHead(head), guessingRuleBodyWithHead));
 
 				// TODO: when cardinality constraints are possible, process the boundaries by adding a constraint with a cardinality check.
 			}

@@ -27,26 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
-import static at.ac.tuwien.kr.alpha.Util.entry;
-import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
-import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.stream.Stream;
-
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
 import at.ac.tuwien.kr.alpha.common.Assignment;
@@ -60,8 +40,27 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
-import at.ac.tuwien.kr.alpha.common.rule.head.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.stream.Stream;
+
+import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
+import static at.ac.tuwien.kr.alpha.Util.entry;
+import static at.ac.tuwien.kr.alpha.common.NoGood.headFirst;
+import static at.ac.tuwien.kr.alpha.common.NoGoodTest.fromOldLiterals;
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 
 /**
  * Represents a small ASP program {@code { c :- a, b.  a.  b. }}.
@@ -91,7 +90,7 @@ public class DummyGrounder implements Grounder {
 	private static Atom atomAA = new BasicAtom(Predicate.getInstance("a", 0));
 	private static Atom atomBB = new BasicAtom(Predicate.getInstance("b", 0));
 	private static Atom atomCC = new BasicAtom(Predicate.getInstance("c", 0));
-	private static BasicRule ruleABC = new BasicRule(new DisjunctiveHead(Collections.singletonList(atomCC)), Arrays.asList(atomAA.toLiteral(), atomBB.toLiteral()));
+	private static BasicRule ruleABC = new BasicRule(new NormalHead(atomCC), Arrays.asList(atomAA.toLiteral(), atomBB.toLiteral()));
 	private static Atom rule1 = new RuleAtom(InternalRule.fromNormalRule(NormalRule.fromBasicRule(ruleABC)), new Substitution());
 	private Set<Integer> returnedNogoods = new HashSet<>();
 

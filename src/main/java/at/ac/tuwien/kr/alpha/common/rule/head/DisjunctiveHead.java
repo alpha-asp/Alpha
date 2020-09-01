@@ -20,15 +20,7 @@ public class DisjunctiveHead extends Head {
 	}
 
 	@Override
-	public boolean isNormal() {
-		return disjunctiveAtoms != null && disjunctiveAtoms.size() <= 1;
-	}
-
-	@Override
 	public String toString() {
-		if (isNormal()) {
-			return disjunctiveAtoms.get(0).toString();
-		}
 		return join("", disjunctiveAtoms, " | ", "");
 	}
 

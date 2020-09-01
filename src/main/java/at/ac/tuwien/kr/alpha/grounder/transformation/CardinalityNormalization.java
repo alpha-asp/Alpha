@@ -1,20 +1,12 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.common.rule.head.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -23,6 +15,13 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
 
 /**
  * Copyright (c) 2017-2020, the Alpha Team.
@@ -229,14 +228,14 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 				if (!globalVariables.isEmpty()) {
 					elementLiterals.addAll(rewrittenBody);
 				}
-				BasicRule inputRule = new BasicRule(new DisjunctiveHead(Collections.singletonList(inputHeadAtom)), elementLiterals);
+				BasicRule inputRule = new BasicRule(new NormalHead(inputHeadAtom), elementLiterals);
 				additionalRules.add(inputRule);
 			}
 
 			// Create lower bound for the aggregate.
 			BasicAtom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateSubstitution);
 			List<Literal> lowerBoundBody = rewrittenBody; // Note: this is only correct if no other aggregate occurs in the rule.
-			additionalRules.add(new BasicRule(new DisjunctiveHead(Collections.singletonList(lowerBoundHeadAtom)), lowerBoundBody));
+			additionalRules.add(new BasicRule(new NormalHead(lowerBoundHeadAtom), lowerBoundBody));
 
 		}
 		rewrittenBody.addAll(aggregateOutputAtoms);

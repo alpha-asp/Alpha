@@ -1,9 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -11,8 +7,11 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.common.rule.head.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.rule.head.Head;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -35,10 +34,10 @@ public class PredicateInternalizer {
 	private static BasicRule makePredicateInternal(BasicRule rule) {
 		Head newHead = null;
 		if (rule.getHead() != null) {
-			if (!rule.getHead().isNormal()) {
+			if (!(rule.getHead() instanceof NormalHead)) {
 				throw new UnsupportedOperationException("Cannot make predicates in rules internal whose head is not normal.");
 			}
-			newHead = new DisjunctiveHead(Collections.singletonList(makePredicateInternal(((DisjunctiveHead) rule.getHead()).disjunctiveAtoms.get(0))));
+			newHead = new NormalHead(makePredicateInternal(((NormalHead) rule.getHead()).getAtom()));
 		}
 		List<Literal> newBody = new ArrayList<>();
 		for (Literal bodyElement : rule.getBody()) {

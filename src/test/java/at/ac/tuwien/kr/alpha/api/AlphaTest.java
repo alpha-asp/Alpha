@@ -27,28 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.api;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import at.ac.tuwien.kr.alpha.AnswerSetsParser;
 import at.ac.tuwien.kr.alpha.api.externals.Externals;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
@@ -62,12 +40,32 @@ import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.common.rule.head.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.test.util.TestUtils;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class AlphaTest {
 	private static int invocations;
@@ -269,7 +267,7 @@ public class AlphaTest {
 		SubThingy thingy = new SubThingy();
 
 		BasicRule rule = new BasicRule(
-				new DisjunctiveHead(Collections.singletonList(new BasicAtom(Predicate.getInstance("p", 1), ConstantTerm.getInstance("x")))),
+				new NormalHead(new BasicAtom(Predicate.getInstance("p", 1), ConstantTerm.getInstance("x"))),
 				singletonList(new ExternalLiteral(new ExternalAtom(Predicate.getInstance("thinger", 1),
 						new MethodPredicateInterpretation(this.getClass().getMethod("thinger", Thingy.class)), singletonList(ConstantTerm.getInstance(thingy)),
 						emptyList()), true)));

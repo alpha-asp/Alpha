@@ -1,20 +1,11 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import static at.ac.tuwien.kr.alpha.grounder.transformation.PredicateInternalizer.makePredicatesInternal;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.common.rule.head.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
@@ -23,6 +14,13 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
+import static at.ac.tuwien.kr.alpha.grounder.transformation.PredicateInternalizer.makePredicatesInternal;
 
 /**
  * Rewrites #sum aggregates into normal rules. Note: Currently only in a restricted form. Copyright (c) 2018-2019, the Alpha Team.
@@ -179,7 +177,7 @@ public class SumNormalization extends ProgramTransformation<InputProgram, InputP
 				if (!globalVariables.isEmpty()) {
 					elementLiterals.addAll(rewrittenBody);
 				}
-				BasicRule inputRule = new BasicRule(new DisjunctiveHead(Collections.singletonList(inputHeadAtom)), elementLiterals);
+				BasicRule inputRule = new BasicRule(new NormalHead(inputHeadAtom), elementLiterals);
 				additionalRules.add(inputRule);
 			}
 

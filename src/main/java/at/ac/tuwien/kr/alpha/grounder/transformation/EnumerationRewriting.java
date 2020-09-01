@@ -1,12 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -14,9 +7,16 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.common.rule.head.DisjunctiveHead;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Rewrites the ordinary atom whose name is given in the input program by the enumeration directive #enum_atom_is into the special EnumerationAtom. Copyright
@@ -63,10 +63,10 @@ public class EnumerationRewriting extends ProgramTransformation<InputProgram, In
 		List<Literal> tmpLiterals;
 		List<BasicRule> rewrittenRules = new ArrayList<>();
 		for (BasicRule rule : srcRules) {
-			if (rule.getHead() != null && !rule.getHead().isNormal()) {
+			if (rule.getHead() != null && !(rule.getHead() instanceof NormalHead)) {
 				throw oops("Encountered rule whose head is not normal: " + rule);
 			}
-			if (rule.getHead() != null && ((DisjunctiveHead) rule.getHead()).disjunctiveAtoms.get(0).getPredicate().equals(enumPredicate)) {
+			if (rule.getHead() != null && ((NormalHead) rule.getHead()).getAtom().getPredicate().equals(enumPredicate)) {
 				throw oops("Atom declared as enumeration atom by directive occurs in head of the rule: " + rule);
 			}
 			tmpLiterals = new ArrayList<>(rule.getBody());
