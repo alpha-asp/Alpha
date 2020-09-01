@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -66,8 +65,8 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	private LiteralInstantiator literalInstantiator;
 
 	// TODO remove - debugging help only!
-	private TreeMap<InternalRule, Integer> ruleEvaluationCounts = new TreeMap<>((r1, r2) -> r1.toString().compareTo(r2.toString()));
-	private TreeMap<InternalRule, Integer> ruleSubstitutionCounts = new TreeMap<>((r1, r2) -> r1.toString().compareTo(r2.toString()));
+//	private TreeMap<InternalRule, Integer> ruleEvaluationCounts = new TreeMap<>((r1, r2) -> r1.toString().compareTo(r2.toString()));
+//	private TreeMap<InternalRule, Integer> ruleSubstitutionCounts = new TreeMap<>((r1, r2) -> r1.toString().compareTo(r2.toString()));
 
 	@Override
 	public InternalProgram apply(AnalyzedProgram inputProgram) {
@@ -101,7 +100,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		}
 
 		// TODO remove, debugging help
-		this.dbgPrintCounts();
+//		this.dbgPrintCounts();
 
 		// Build the program resulting from evaluating the stratified part.
 		List<Atom> outputFacts = this.buildOutputFacts(inputProgram.getFacts(), this.additionalFacts);
@@ -113,14 +112,14 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	}
 
 	// TODO remove, debugging help
-	private void dbgPrintCounts() {
-		System.out.println("********** GROUNDING INFO ***********");
-		for (InternalRule rule : this.ruleEvaluationCounts.keySet()) {
-			System.out.println("Rule: " + rule + ", evaluations = " + this.ruleEvaluationCounts.get(rule) + ", non-unique-substitutions = "
-					+ this.ruleSubstitutionCounts.get(rule));
-		}
-		System.out.println("******* END OF GROUNDING INFO *******");
-	}
+//	private void dbgPrintCounts() {
+//		System.out.println("********** GROUNDING INFO ***********");
+//		for (InternalRule rule : this.ruleEvaluationCounts.keySet()) {
+//			System.out.println("Rule: " + rule + ", evaluations = " + this.ruleEvaluationCounts.get(rule) + ", non-unique-substitutions = "
+//					+ this.ruleSubstitutionCounts.get(rule));
+//		}
+//		System.out.println("******* END OF GROUNDING INFO *******");
+//	}
 
 	// extra method is better visible in CPU traces when profiling
 	private List<Atom> buildOutputFacts(List<Atom> initialFacts, Set<Atom> newFacts) {
@@ -206,10 +205,11 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	private void evaluateRule(InternalRule rule) {
 		LOGGER.debug("Evaluating rule {}", rule);
 		List<Substitution> satisfyingSubstitutions = this.calculateSatisfyingSubstitutionsForRule(rule);
-		this.ruleEvaluationCounts.putIfAbsent(rule, 0);
-		this.ruleEvaluationCounts.put(rule, this.ruleEvaluationCounts.get(rule) + 1);
-		this.ruleSubstitutionCounts.putIfAbsent(rule, 0);
-		this.ruleSubstitutionCounts.put(rule, this.ruleSubstitutionCounts.get(rule) + satisfyingSubstitutions.size());
+		// TODO remove - debugging only
+//		this.ruleEvaluationCounts.putIfAbsent(rule, 0);
+//		this.ruleEvaluationCounts.put(rule, this.ruleEvaluationCounts.get(rule) + 1);
+//		this.ruleSubstitutionCounts.putIfAbsent(rule, 0);
+//		this.ruleSubstitutionCounts.put(rule, this.ruleSubstitutionCounts.get(rule) + satisfyingSubstitutions.size());
 		for (Substitution subst : satisfyingSubstitutions) {
 			this.fireRule(rule, subst);
 		}
