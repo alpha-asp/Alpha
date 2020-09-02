@@ -15,7 +15,9 @@ import java.util.List;
 
 /**
  *
- * Rewrites all predicates of a given Program such that they are internal and hence hidden from answer sets. Copyright (c) 2018, the Alpha Team.
+ * Rewrites all predicates of a given Program such that they are internal and hence hidden from answer sets.
+ *
+ * Copyright (c) 2018-2020, the Alpha Team.
  */
 public class PredicateInternalizer {
 

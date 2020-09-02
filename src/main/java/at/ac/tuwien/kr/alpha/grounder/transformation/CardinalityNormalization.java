@@ -89,25 +89,17 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 		//@formatter:on
 
 		// Connect/Rewrite every aggregate in each rule.
-		List<BasicRule> rewrittenRules = this.rewriteAggregates(inputProgram.getRules());
-//		ArrayList<BasicRule> additionalRules = new ArrayList<>();
-//		for (BasicRule rule : inputProgram.getRules()) {
-//			additionalRules.addAll(rewriteAggregates(rule));
-//		}
-//		// Leave program as-is if no aggregates occur.
-//		if (additionalRules.isEmpty()) {
-//			return inputProgram;
-//		}
+		List<BasicRule> rewrittenRules = rewriteAggregates(inputProgram.getRules());
+
 		String usedCardinalityEncoding = useSortingCircuitEncoding ? cardinalitySortingCircuit : cardinalityCountingGrid;
 		InputProgram cardinalityEncoding = PredicateInternalizer.makePredicatesInternal(new ProgramParser().parse(usedCardinalityEncoding));
-		// cardinalityEncoding.accumulate(additionalRules);
 		programBuilder.addRules(rewrittenRules);
 
 		// Add enumeration rule that uses the special EnumerationAtom.
-		// The enumeration rule is: "sorting_network_input_number(A, I) :- sorting_network_input(A, X), sorting_network_index(A,
-		// X, I)."
-		BasicRule tmpEnumRule = PredicateInternalizer.makePredicatesInternal(parse("sorting_network_input_number(A, I) :- sorting_network_input(A, X)."))
-				.getRules().get(0);
+		// The enumeration rule is: "sorting_network_input_number(A, I) :- sorting_network_input(A, X),
+		// sorting_network_index(A, X, I)."
+		BasicRule tmpEnumRule = PredicateInternalizer.makePredicatesInternal(parse(
+			"sorting_network_input_number(A, I) :- sorting_network_input(A, X).")).getRules().get(0);
 		EnumerationAtom enumerationAtom = new EnumerationAtom(parse("sorting_network_index(A, X, I).").getFacts().get(0).getTerms());
 		List<Literal> enumerationRuleBody = new ArrayList<>(tmpEnumRule.getBody());
 		enumerationRuleBody.add(enumerationAtom.toLiteral());
@@ -120,10 +112,10 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 	}
 
 	/**
-	 * Checks if rewriting of count aggregates is necessary for the given program, i.e. if such aggregates exist
+	 * Checks if rewriting of count aggregates is necessary for the given program, i.e. if such aggregates exist.
 	 * 
-	 * @param program the program
-	 * @return true if count aggregates occur, false otherwise
+	 * @param program the program.
+	 * @return true if count aggregates occur, false otherwise.
 	 */
 	private boolean rewritingNecessary(InputProgram program) {
 		for (BasicRule rule : program.getRules()) {
@@ -142,7 +134,7 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 	private List<BasicRule> rewriteAggregates(List<BasicRule> srcRules) {
 		List<BasicRule> retVal = new ArrayList<>();
 		for (BasicRule rule : srcRules) {
-			retVal.addAll(this.rewriteAggregatesInRule(rule));
+			retVal.addAll(rewriteAggregatesInRule(rule));
 		}
 		return retVal;
 	}
@@ -223,8 +215,8 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 				BasicAtom inputHeadAtom = aggregateInputAtom.substitute(elementSubstitution);
 				List<Literal> elementLiterals = new ArrayList<>(aggregateElement.getElementLiterals());
 
-				// If there are global variables used inside the aggregate, add original rule body (minus the aggregate itself) to input
-				// rule.
+				// If there are global variables used inside the aggregate, add original rule body
+				// (minus the aggregate itself) to input rule.
 				if (!globalVariables.isEmpty()) {
 					elementLiterals.addAll(rewrittenBody);
 				}
@@ -245,8 +237,8 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 	}
 
 	static Collection<Term> getGlobalVariables(List<Literal> ruleBody, AggregateAtom aggregateAtom) {
-		// Hacky way to get all global variables: take all variables inside the aggregate that occur also in the rest of the
-		// rule.
+		// Hacky way to get all global variables: take all variables inside the aggregate that occur also in the
+		// rest of the rule.
 		HashSet<Term> occurringVariables = new LinkedHashSet<>();
 		for (Literal element : ruleBody) {
 			if (element instanceof AggregateLiteral) {

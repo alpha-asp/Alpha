@@ -27,11 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
@@ -43,8 +38,15 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
- * Rewrites all interval terms in a rule into a new variable and an IntervalAtom. Copyright (c) 2017-2019, the Alpha Team.
+ * Rewrites all interval terms in a rule into a new variable and an IntervalAtom.
+ *
+ * Copyright (c) 2017-2019, the Alpha Team.
  */
 public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProgram, NormalProgram> {
 	private static final String INTERVAL_VARIABLE_PREFIX = "_Interval";

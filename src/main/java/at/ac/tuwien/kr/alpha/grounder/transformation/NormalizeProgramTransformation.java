@@ -7,7 +7,7 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 /**
  * Encapsulates all transformations necessary to transform a given program into a @{link NormalProgram} that is understood by Alpha internally
  * 
- * Copyright (c) 2019, the Alpha Team.
+ * Copyright (c) 2019-2020, the Alpha Team.
  */
 public class NormalizeProgramTransformation extends ProgramTransformation<InputProgram, NormalProgram> {
 
@@ -30,7 +30,7 @@ public class NormalizeProgramTransformation extends ProgramTransformation<InputP
 		tmpPrg = new EnumerationRewriting().apply(tmpPrg);
 		EnumerationAtom.resetEnumerations();
 
-		// construct the normal program
+		// Construct the normal program.
 		NormalProgram retVal = NormalProgram.fromInputProgram(tmpPrg);
 		// Transform intervals - CAUTION - this MUST come before VariableEqualityRemoval!
 		retVal = new IntervalTermToIntervalAtom().apply(retVal);
