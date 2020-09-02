@@ -45,7 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2020, the Alpha Team.
  */
 public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, InputProgram> {
 	private final static String PREDICATE_NEGATION_PREFIX = "_n";
@@ -109,7 +109,6 @@ public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, Inpu
 				// TODO: when cardinality constraints are possible, process the boundaries by adding a constraint with a cardinality check.
 			}
 		}
-		// inputProgram.getRules().addAll(additionalRules);
 		return programBuilder.addRules(srcRules).addRules(additionalRules).addFacts(inputProgram.getFacts())
 				.addInlineDirectives(inputProgram.getInlineDirectives()).build();
 	}
