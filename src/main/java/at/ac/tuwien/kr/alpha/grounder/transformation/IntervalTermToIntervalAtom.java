@@ -61,13 +61,16 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		Map<VariableTerm, IntervalTerm> intervalReplacements = new LinkedHashMap<>();
 
 		List<Literal> rewrittenBody = new ArrayList<>();
-		NormalHead rewrittenHead = rule.isConstraint() ? null : new NormalHead(rule.getHeadAtom());
 
 		for (Literal literal : rule.getBody()) {
 			rewrittenBody.add(rewriteLiteral(literal, intervalReplacements));
 		}
-		if (rewrittenHead != null) {
-			rewrittenHead = new NormalHead(rewriteLiteral(rule.getHeadAtom().toLiteral(), intervalReplacements).getAtom());
+		NormalHead rewrittenHead = rule.isConstraint() ? null :
+			new NormalHead(rewriteLiteral(rule.getHeadAtom().toLiteral(), intervalReplacements).getAtom());
+
+		// If intervalReplacements is empty, no IntervalTerms have been found, keep rule as is.
+		if (intervalReplacements.isEmpty()) {
+			return rule;
 		}
 
 		// Add new IntervalAtoms representing the interval specifications.
@@ -134,9 +137,20 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 
 	@Override
 	public NormalProgram apply(NormalProgram inputProgram) {
+		boolean didChange = false;
 		List<NormalRule> rewrittenRules = new ArrayList<>();
 		for (NormalRule rule : inputProgram.getRules()) {
-			rewrittenRules.add(rewriteIntervalSpecifications(rule));
+			NormalRule rewrittenRule = rewriteIntervalSpecifications(rule);
+			rewrittenRules.add(rewrittenRule);
+
+			// If no rewriting occurred, the output rule is the same as the input to the rewriting.
+			if (rewrittenRule != rule) {
+				didChange = true;
+			}
+		}
+		// Return original program if no rule was actually rewritten.
+		if (!didChange) {
+			return inputProgram;
 		}
 		return new NormalProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
 	}
