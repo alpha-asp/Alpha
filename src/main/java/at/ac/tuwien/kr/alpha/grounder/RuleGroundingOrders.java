@@ -127,7 +127,7 @@ public class RuleGroundingOrders {
 		}
 	}
 
-	public Collection<Literal> getStartingLiterals() {
+	public List<Literal> getStartingLiterals() {
 		return Collections.unmodifiableList(startingLiterals);
 	}
 
