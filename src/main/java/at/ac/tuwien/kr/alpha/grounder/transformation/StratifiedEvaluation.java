@@ -198,7 +198,8 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		RuleGroundingOrders groundingOrders = rule.getGroundingOrders();
 		List<Substitution> groundSubstitutions = new ArrayList<>(); // the actual full ground substitutions for the rule
 		LOGGER.debug("Is fixed rule? {}", rule.getGroundingOrders().fixedInstantiation());
-		if (groundingOrders.fixedInstantiation()) { // FIXME fixed instantiation handling is ugly AF
+		if (groundingOrders.fixedInstantiation()) { 
+			// Note: Representation of fixed grounding orders should be refactored in RuleGroundingOrders.
 			RuleGroundingOrder fixedGroundingOrder = groundingOrders.getFixedGroundingOrder();
 			groundSubstitutions.addAll(this.calcSubstitutionsWithGroundingOrder(rule, fixedGroundingOrder, 0,
 					Collections.singletonList(new Substitution())));

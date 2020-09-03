@@ -104,10 +104,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final LiteralInstantiator ruleInstantiator;
 	private final DefaultLazyGroundingInstantiationStrategy instantiationStrategy;
 
-	// TODO remove - debugging help only!
-//	private TreeMap<InternalRule, Integer> ruleEvaluationCounts = new TreeMap<>((r1, r2) -> r1.toString().compareTo(r2.toString()));
-//	private TreeMap<InternalRule, Integer> ruleSubstitutionCounts = new TreeMap<>((r1, r2) -> r1.toString().compareTo(r2.toString()));
-
 	public NaiveGrounder(InternalProgram program, AtomStore atomStore, boolean debugInternalChecks, Bridge... bridges) {
 		this(program, atomStore, new GrounderHeuristicsConfiguration(), debugInternalChecks, bridges);
 	}
@@ -282,20 +278,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			return BasicAnswerSet.EMPTY;
 		}
 		
-		// TODO remove, debugging help
-//		this.dbgPrintCounts();
-		
 		return new BasicAnswerSet(knownPredicates, predicateInstances);
 	}
-
-	// TODO remove, debugging help
-//	private void dbgPrintCounts() {
-//		System.out.println("********** GROUNDING INFO ***********");
-//		for (InternalRule rule : this.ruleEvaluationCounts.keySet()) {
-//			System.out.println("Rule: " + rule + ", evaluations = " + this.ruleEvaluationCounts.get(rule) + ", non-unique-substitutions = " + this.ruleSubstitutionCounts.get(rule));
-//		}
-//		System.out.println("******* END OF GROUNDING INFO *******");
-//	}	
 	
 	/**
 	 * Prepares facts of the input program for joining and derives all NoGoods representing ground rules. May only be called once.
