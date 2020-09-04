@@ -143,7 +143,7 @@ public class CommandLineParser {
 					+ SystemConfig.DEFAULT_GROUNDER_ACCUMULATOR_ENABLED + ")")
 			.build();
 	private static final Option OPT_OUTPUT_ATOM_SEPARATOR = Option.builder("sep").longOpt("atomSeparator").hasArg(true).argName("separator")
-			.desc("a character (sequence) to use s separator for atoms in printed answer sets. (default: "
+			.desc("a character (sequence) to use as separator for atoms in printed answer sets (default: "
 					+ SystemConfig.DEFAULT_ATOM_SEPARATOR + ")")
 			.build();
 	//@formatter:on

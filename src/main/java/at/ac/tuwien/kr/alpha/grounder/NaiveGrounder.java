@@ -104,7 +104,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final LiteralInstantiator ruleInstantiator;
 	private final DefaultLazyGroundingInstantiationStrategy instantiationStrategy;
 
-
 	public NaiveGrounder(InternalProgram program, AtomStore atomStore, boolean debugInternalChecks, Bridge... bridges) {
 		this(program, atomStore, new GrounderHeuristicsConfiguration(), debugInternalChecks, bridges);
 	}
@@ -278,10 +277,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		if (knownPredicates.isEmpty()) {
 			return BasicAnswerSet.EMPTY;
 		}
-
+		
 		return new BasicAnswerSet(knownPredicates, predicateInstances);
 	}
-
+	
 	/**
 	 * Prepares facts of the input program for joining and derives all NoGoods representing ground rules. May only be called once.
 	 * @return
@@ -427,6 +426,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				}
 			}
 		}
+//		this.ruleEvaluationCounts.putIfAbsent(rule, 0);
+//		this.ruleEvaluationCounts.put(rule, this.ruleEvaluationCounts.get(rule) + 1);
+//		this.ruleSubstitutionCounts.putIfAbsent(rule, 0);
+//		this.ruleSubstitutionCounts.put(rule, this.ruleSubstitutionCounts.get(rule) + bindingResult.size());
 		return bindingResult;
 	}
 
