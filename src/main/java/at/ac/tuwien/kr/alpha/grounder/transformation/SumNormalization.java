@@ -81,7 +81,7 @@ public class SumNormalization extends ProgramTransformation<InputProgram, InputP
 			for (Literal lit : rule.getBody()) {
 				if (lit instanceof AggregateLiteral) {
 					AggregateAtom aggregateAtom = ((AggregateLiteral) lit).getAtom();
-					if (aggregateAtom.getAggregatefunction() == AggregateAtom.AGGREGATEFUNCTION.SUM) {
+					if (aggregateAtom.getAggregatefunction() == AggregateAtom.AggregateFunctionSymbol.SUM) {
 						return true;
 					}
 				}
@@ -131,15 +131,15 @@ public class SumNormalization extends ProgramTransformation<InputProgram, InputP
 
 			// Check that aggregate is limited to what we currently can deal with.
 			if (aggregateLiteral.isNegated() || aggregateAtom.getUpperBoundOperator() != null
-					|| (aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.COUNT
-							&& aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.SUM)
+					|| (aggregateAtom.getAggregatefunction() != AggregateAtom.AggregateFunctionSymbol.COUNT
+							&& aggregateAtom.getAggregatefunction() != AggregateAtom.AggregateFunctionSymbol.SUM)
 					|| aggregatesInRule++ > 0) {
 				throw new UnsupportedOperationException(
 						"Only limited #count/#sum aggregates without upper bound are currently supported." + "No rule may have more than one aggregate.");
 			}
 
 			// Only treat sum aggregates.
-			if (aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.SUM) {
+			if (aggregateAtom.getAggregatefunction() != AggregateAtom.AggregateFunctionSymbol.SUM) {
 				continue;
 			}
 			// Remove aggregate from rule body.

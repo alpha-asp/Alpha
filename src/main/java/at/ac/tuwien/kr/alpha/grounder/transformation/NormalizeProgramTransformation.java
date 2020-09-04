@@ -23,9 +23,9 @@ public class NormalizeProgramTransformation extends ProgramTransformation<InputP
 		// Transform choice rules.
 		tmpPrg = new ChoiceHeadToNormal().apply(inputProgram);
 		// Transform cardinality aggregates.
-		tmpPrg = new CardinalityNormalization(!this.useNormalizationGrid).apply(tmpPrg);
-		// Transform sum aggregates.
-		tmpPrg = new SumNormalization().apply(tmpPrg);
+		// TODO do config properly
+		AggregateRewritingConfig aggCfg = new AggregateRewritingConfig(true);
+		tmpPrg = new AggregateRewriting(aggCfg).apply(tmpPrg);
 		// Transform enumeration atoms.
 		tmpPrg = new EnumerationRewriting().apply(tmpPrg);
 		EnumerationAtom.resetEnumerations();
