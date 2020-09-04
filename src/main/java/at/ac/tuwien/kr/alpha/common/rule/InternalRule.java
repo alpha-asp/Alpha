@@ -27,6 +27,11 @@
  */
 package at.ac.tuwien.kr.alpha.common.rule;
 
+import com.google.common.annotations.VisibleForTesting;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
@@ -36,10 +41,6 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.grounder.RuleGroundingOrders;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
-import com.google.common.annotations.VisibleForTesting;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Represents a normal rule or a constraint for the semi-naive grounder.
@@ -63,9 +64,6 @@ public class InternalRule extends NormalRule {
 		}
 		this.ruleId = InternalRule.ID_GENERATOR.getNextId();
 
-		final List<Atom> pos = new ArrayList<>(body.size() / 2);
-		final List<Atom> neg = new ArrayList<>(body.size() / 2);
-
 		this.occurringPredicates = new ArrayList<>();
 		if (!isConstraint()) {
 			this.occurringPredicates.add(this.getHeadAtom().getPredicate());
@@ -75,9 +73,12 @@ public class InternalRule extends NormalRule {
 			if (literal instanceof AggregateLiteral) {
 				throw new IllegalArgumentException("AggregateLiterals aren't supported in InternalRules! (lit: " + literal.toString() + ")");
 			}
-			(literal.isNegated() ? neg : pos).add(literal.getAtom());
 			this.occurringPredicates.add(literal.getPredicate());
 		}
+
+		// not needed, done in AbstractRule! Leaving it commented out for future reference since this might actually be the
+		// proper place to put it
+		// this.checkSafety();
 
 		this.groundingOrders = new RuleGroundingOrders(this);
 		this.groundingOrders.computeGroundingOrders();
@@ -86,14 +87,15 @@ public class InternalRule extends NormalRule {
 	@VisibleForTesting
 	public static void resetIdGenerator() {
 		InternalRule.ID_GENERATOR.resetGenerator();
-	}	
-	
+	}
+
 	public static InternalRule fromNormalRule(NormalRule rule) {
 		return new InternalRule(rule.isConstraint() ? null : new NormalHead(rule.getHeadAtom()), new ArrayList<>(rule.getBody()));
 	}
 
 	/**
-	 * Returns a new Rule that is equal to this one except that all variables are renamed to have the newVariablePostfix appended.
+	 * Returns a new Rule that is equal to this one except that all variables are renamed to have the newVariablePostfix
+	 * appended.
 	 * 
 	 * @param newVariablePostfix
 	 * @return
@@ -133,4 +135,5 @@ public class InternalRule extends NormalRule {
 	public int getRuleId() {
 		return this.ruleId;
 	}
+
 }
