@@ -1,22 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import org.apache.commons.collections4.SetUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -38,6 +21,22 @@ import at.ac.tuwien.kr.alpha.grounder.instantiation.AssignmentStatus;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationResult;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiator;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.WorkingMemoryBasedInstantiationStrategy;
+import org.apache.commons.collections4.SetUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Evaluates the stratifiable part (if any) of the given program
@@ -53,7 +52,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	private StratificationHelper stratificationHelper = new StratificationHelper();
 
 	private WorkingMemory workingMemory = new WorkingMemory();
-	private Map<Predicate, HashSet<InternalRule>> predicateDefiningRules;
+	private Map<Predicate, LinkedHashSet<InternalRule>> predicateDefiningRules;
 
 	private Map<Predicate, Set<Instance>> modifiedInLastEvaluationRun = new HashMap<>();
 
