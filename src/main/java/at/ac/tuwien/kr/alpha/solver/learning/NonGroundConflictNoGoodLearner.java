@@ -45,7 +45,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -152,10 +151,10 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 			}
 		}
 		final ConflictAnalysisResult groundAnalysisResultNotMinimized = groundLearner.analyzeTrailBased(violatedNoGood, false);
-		if (!Objects.equals(groundAnalysisResultNotMinimized.learnedNoGood, firstLearnedNoGood)) {
+//		if (!Objects.equals(groundAnalysisResultNotMinimized.learnedNoGood, firstLearnedNoGood)) {
 			//throw oops("Learned nogood is not the same as the one computed by ground analysis");
 			// TODO: re-introduce check
-		}
+//		}
 		final ConflictAnalysisResult analysisResult = groundLearner.analyzeConflictingNoGood(violatedNoGood);
 		if (analysisResult.backjumpLevel >= 0) {
 			// if backJumpLevel < 0, then problem is UNSAT (ground analysis result does additional checks for this)
@@ -300,9 +299,9 @@ public class NonGroundConflictNoGoodLearner implements ConflictNoGoodLearner {
 
 	public void logLearnedConstraints() {
 		LOGGER.info("LEARNED NON-GROUND CONSTRAINTS:");
-		List<Map.Entry<NonGroundNoGood,Integer>> nonGroundViolationCounterEntries = new ArrayList<>(nonGroundNoGoodViolationCounter.entrySet());
-		nonGroundViolationCounterEntries.sort(Map.Entry.<NonGroundNoGood,Integer>comparingByValue().reversed());
-		for (Map.Entry<NonGroundNoGood,Integer> nonGroundViolationCounterEntry : nonGroundViolationCounterEntries) {
+		List<Map.Entry<NonGroundNoGood, Integer>> nonGroundViolationCounterEntries = new ArrayList<>(nonGroundNoGoodViolationCounter.entrySet());
+		nonGroundViolationCounterEntries.sort(Map.Entry.<NonGroundNoGood, Integer>comparingByValue().reversed());
+		for (Map.Entry<NonGroundNoGood, Integer> nonGroundViolationCounterEntry : nonGroundViolationCounterEntries) {
 			final NonGroundNoGood violatedNonGroundNoGood = nonGroundViolationCounterEntry.getKey();
 			LOGGER.info("Violated {} times: {}", nonGroundViolationCounterEntry.getValue(), violatedNonGroundNoGood);
 			for (NonGroundNoGood learnedNoGood : learnedOnFirstUIP.get(violatedNonGroundNoGood)) {
