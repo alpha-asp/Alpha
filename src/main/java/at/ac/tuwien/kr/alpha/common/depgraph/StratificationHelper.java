@@ -25,6 +25,11 @@
  */
 package at.ac.tuwien.kr.alpha.common.depgraph;
 
+import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph.SCComponent;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,12 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph.SCComponent;
 
 /**
  * Helper class for finding stratifications on a given {@link ComponentGraph}.
@@ -102,7 +101,7 @@ public class StratificationHelper {
 		Map<Integer, Boolean> dependencies = comp.getDependencyIds();
 		int stratum = 0;
 		boolean canStratify = true;
-		SCComponent dep = null;
+		SCComponent dep;
 		if (comp.hasNegativeCycle()) {
 			// no need to check dependencies if we aren't stratifyable
 			this.markUnstratifyable(comp);

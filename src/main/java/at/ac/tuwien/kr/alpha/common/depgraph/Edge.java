@@ -34,7 +34,6 @@ public class Edge {
 
 	private final Node target;
 	private final boolean sign;
-	private final String label;
 
 	/**
 	 * Creates a new edge of a dependency graph. Read as "target depends on source" Sign indicates if the dependency is positive or negative (target node
@@ -46,7 +45,6 @@ public class Edge {
 	public Edge(Node target, boolean sign) {
 		this.target = target;
 		this.sign = sign;
-		this.label = sign ? "+" : "-";
 	}
 
 	@Override
@@ -60,24 +58,20 @@ public class Edge {
 
 	@Override
 	public int hashCode() {
-		return ("" + this.target.getPredicate().toString() + Boolean.toString(this.sign)).hashCode();
+		return ("" + target.getPredicate().toString() + sign).hashCode();
 	}
 
 	@Override
 	public String toString() {
-		return "(" + (this.sign ? "+" : "-") + ") ---> " + this.target.toString();
+		return "(" + (sign ? "+" : "-") + ") ---> " + target.toString();
 	}
 	
 	public Node getTarget() {
-		return this.target;
+		return target;
 	}
 
 	public boolean getSign() {
-		return this.sign;
-	}
-
-	public String getLabel() {
-		return this.label;
+		return sign;
 	}
 
 }

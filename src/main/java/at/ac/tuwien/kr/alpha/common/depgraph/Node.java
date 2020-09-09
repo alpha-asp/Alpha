@@ -28,21 +28,19 @@ package at.ac.tuwien.kr.alpha.common.depgraph;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 
 /**
- * A node in a dependency graph. One node references exactly one predicate. This means that all rule heads deriving the same predicate will be condensed into
- * the same graph node. In some cases this results in more "conservative" results in stratification analysis, where some rules will not be evaluated up-front,
- * although that would be possible.
+ * A node in a dependency graph. One node references exactly one predicate. This means that all rule heads deriving the
+ * same predicate will be condensed into the same graph node. In some cases this results in more "conservative" results
+ * in stratification analysis, where some rules will not be evaluated up-front, although that would be possible.
  * 
- * Copyright (c) 2017-2019, the Alpha Team.
+ * Copyright (c) 2017-2020, the Alpha Team.
  */
 public class Node {
 
 	private final Predicate predicate;
-	private final String label;
 	private final boolean isConstraint;
 
 	public Node(Predicate predicate, boolean isConstraint) {
 		this.predicate = predicate;
-		this.label = predicate.toString();
 		this.isConstraint = isConstraint;
 	}
 
@@ -64,29 +62,29 @@ public class Node {
 		if (!(o instanceof Node)) {
 			return false;
 		}
-		return this.predicate.equals(((Node) o).predicate);
+		return predicate.equals(((Node) o).predicate);
 	}
 
 	@Override
 	public int hashCode() {
-		return this.predicate.hashCode();
+		return predicate.hashCode();
 	}
 
 	@Override
 	public String toString() {
-		return "Node{" + this.predicate.toString() + "}";
+		return "Node{" + predicate.toString() + "}";
 	}
 
 	public String getLabel() {
-		return this.label;
+		return predicate.toString();
 	}
 
 	public Predicate getPredicate() {
-		return this.predicate;
+		return predicate;
 	}
 
 	public boolean isConstraint() {
-		return this.isConstraint;
+		return isConstraint;
 	}
 
 }

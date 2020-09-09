@@ -1,22 +1,5 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import org.apache.commons.collections4.SetUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -38,6 +21,22 @@ import at.ac.tuwien.kr.alpha.grounder.instantiation.AssignmentStatus;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationResult;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiator;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.WorkingMemoryBasedInstantiationStrategy;
+import org.apache.commons.collections4.SetUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Evaluates the stratifiable part (if any) of the given program
@@ -66,37 +65,37 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	public InternalProgram apply(AnalyzedProgram inputProgram) {
 		// Calculate a stratification and initialize working memory.
 		ComponentGraph componentGraph = inputProgram.getComponentGraph();
-		Map<Integer, List<SCComponent>> strata = this.stratificationHelper.calculateStratification(componentGraph);
-		this.predicateDefiningRules = inputProgram.getPredicateDefiningRules();
+		Map<Integer, List<SCComponent>> strata = stratificationHelper.calculateStratification(componentGraph);
+		predicateDefiningRules = inputProgram.getPredicateDefiningRules();
 		// set up list of atoms which are known to be true - we expand on this one
 		Map<Predicate, Set<Instance>> knownFacts = new LinkedHashMap<>(inputProgram.getFactsByPredicate());
 		for (Map.Entry<Predicate, Set<Instance>> entry : knownFacts.entrySet()) {
-			this.workingMemory.initialize(entry.getKey());
-			this.workingMemory.addInstances(entry.getKey(), true, entry.getValue());
+			workingMemory.initialize(entry.getKey());
+			workingMemory.addInstances(entry.getKey(), true, entry.getValue());
 		}
 
 		for (InternalRule nonGroundRule : inputProgram.getRulesById().values()) {
 			// Create working memories for all predicates occurring in the rule
 			for (Predicate predicate : nonGroundRule.getOccurringPredicates()) {
-				this.workingMemory.initialize(predicate);
+				workingMemory.initialize(predicate);
 			}
 		}
 
-		this.workingMemory.reset();
+		workingMemory.reset();
 
 		// Set up literal instantiator.
-		this.literalInstantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(this.workingMemory));
+		literalInstantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(workingMemory));
 
 		// Evaluate the program part covered by the calculated stratification.
 		ComponentEvaluationOrder evaluationOrder = new ComponentEvaluationOrder(strata);
 		for (SCComponent currComponent : evaluationOrder) {
-			this.evaluateComponent(currComponent);
+			evaluateComponent(currComponent);
 		}
 
 		// Build the program resulting from evaluating the stratified part.
-		List<Atom> outputFacts = this.buildOutputFacts(inputProgram.getFacts(), this.additionalFacts);
+		List<Atom> outputFacts = buildOutputFacts(inputProgram.getFacts(), additionalFacts);
 		List<InternalRule> outputRules = new ArrayList<>();
-		inputProgram.getRulesById().entrySet().stream().filter((entry) -> !this.solvedRuleIds.contains(entry.getKey()))
+		inputProgram.getRulesById().entrySet().stream().filter((entry) -> !solvedRuleIds.contains(entry.getKey()))
 				.forEach((entry) -> outputRules.add(entry.getValue()));
 		InternalProgram retVal = new InternalProgram(outputRules, outputFacts);
 		return retVal;
@@ -111,46 +110,46 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 	private void evaluateComponent(SCComponent comp) {
 		LOGGER.debug("Evaluating component {}", comp);
-		ComponentEvaluationInfo evaluationInfo = this.getRulesToEvaluate(comp);
+		ComponentEvaluationInfo evaluationInfo = getRulesToEvaluate(comp);
 		if (evaluationInfo.isEmpty()) {
 			LOGGER.debug("No rules to evaluate for component {}", comp);
 			return;
 		}
-		this.prepareComponentEvaluation(SetUtils.union(evaluationInfo.nonRecursiveRules, evaluationInfo.recursiveRules));
+		prepareComponentEvaluation(SetUtils.union(evaluationInfo.nonRecursiveRules, evaluationInfo.recursiveRules));
 		// Rules outside of dependency cycles only need to be evaluated once.
 		if (!evaluationInfo.nonRecursiveRules.isEmpty()) {
-			this.addFactsToProgram(this.evaluateRules(evaluationInfo.nonRecursiveRules, true));
+			addFactsToProgram(evaluateRules(evaluationInfo.nonRecursiveRules, true));
 		}
 		boolean isInitialRun = true;
 		if (!evaluationInfo.recursiveRules.isEmpty()) {
 			do {
 				// Now do the rules that cyclically depend on each other,
 				// evaluate these until nothing new can be derived any more.
-				this.addFactsToProgram(this.evaluateRules(evaluationInfo.recursiveRules, isInitialRun));
+				addFactsToProgram(evaluateRules(evaluationInfo.recursiveRules, isInitialRun));
 				isInitialRun = false;
 				// If evaluation of rules doesn't modify the working memory we have a fixed point.
-			} while (!this.workingMemory.modified().isEmpty());
+			} while (!workingMemory.modified().isEmpty());
 		}
 		LOGGER.debug("Evaluation done - reached a fixed point on component {}", comp);
 		SetUtils.union(evaluationInfo.nonRecursiveRules, evaluationInfo.recursiveRules)
-				.forEach((rule) -> this.solvedRuleIds.add(rule.getRuleId()));
+				.forEach((rule) -> solvedRuleIds.add(rule.getRuleId()));
 	}
 
 	private Map<Predicate, List<Instance>> evaluateRules(Set<InternalRule> rules, boolean isInitialRun) {
 		Map<Predicate, List<Instance>> addedInstances = new HashMap<>();
-		this.workingMemory.reset();
+		workingMemory.reset();
 		LOGGER.debug("Starting component evaluation run...");
 		for (InternalRule r : rules) {
-			this.evaluateRule(r, !isInitialRun);
+			evaluateRule(r, !isInitialRun);
 		}
-		this.modifiedInLastEvaluationRun = new HashMap<>();
+		modifiedInLastEvaluationRun = new HashMap<>();
 		// Since we're stratified we never have to backtrack, therefore just collect the added instances.
-		for (IndexedInstanceStorage instanceStorage : this.workingMemory.modified()) {
+		for (IndexedInstanceStorage instanceStorage : workingMemory.modified()) {
 			// NOTE: We're only dealing with positive instances.
 			addedInstances.putIfAbsent(instanceStorage.getPredicate(), new ArrayList<>());
 			addedInstances.get(instanceStorage.getPredicate()).addAll(instanceStorage.getRecentlyAddedInstances());
-			this.modifiedInLastEvaluationRun.putIfAbsent(instanceStorage.getPredicate(), new LinkedHashSet<>());
-			this.modifiedInLastEvaluationRun.get(instanceStorage.getPredicate()).addAll(instanceStorage.getRecentlyAddedInstances());
+			modifiedInLastEvaluationRun.putIfAbsent(instanceStorage.getPredicate(), new LinkedHashSet<>());
+			modifiedInLastEvaluationRun.get(instanceStorage.getPredicate()).addAll(instanceStorage.getRecentlyAddedInstances());
 			instanceStorage.markRecentlyAddedInstancesDone();
 		}
 		return addedInstances;
@@ -162,24 +161,24 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	 * that those instances are taken into account for ground substitutions by evaluateRule.
 	 */
 	private void prepareComponentEvaluation(Set<InternalRule> rulesToEvaluate) {
-		this.modifiedInLastEvaluationRun = new HashMap<>();
+		modifiedInLastEvaluationRun = new HashMap<>();
 		Predicate tmpPredicate;
 		IndexedInstanceStorage tmpInstances;
 		for (InternalRule rule : rulesToEvaluate) {
 			// register rule head instances
 			tmpPredicate = rule.getHeadAtom().getPredicate();
-			tmpInstances = this.workingMemory.get(tmpPredicate, true);
-			this.modifiedInLastEvaluationRun.putIfAbsent(tmpPredicate, new LinkedHashSet<>());
+			tmpInstances = workingMemory.get(tmpPredicate, true);
+			modifiedInLastEvaluationRun.putIfAbsent(tmpPredicate, new LinkedHashSet<>());
 			if (tmpInstances != null) {
-				this.modifiedInLastEvaluationRun.get(tmpPredicate).addAll(tmpInstances.getAllInstances());
+				modifiedInLastEvaluationRun.get(tmpPredicate).addAll(tmpInstances.getAllInstances());
 			}
 			// register positive body instances
 			for (Literal lit : rule.getPositiveBody()) {
 				tmpPredicate = lit.getPredicate();
-				tmpInstances = this.workingMemory.get(tmpPredicate, true);
-				this.modifiedInLastEvaluationRun.putIfAbsent(tmpPredicate, new LinkedHashSet<>());
+				tmpInstances = workingMemory.get(tmpPredicate, true);
+				modifiedInLastEvaluationRun.putIfAbsent(tmpPredicate, new LinkedHashSet<>());
 				if (tmpInstances != null) {
-					this.modifiedInLastEvaluationRun.get(tmpPredicate).addAll(tmpInstances.getAllInstances());
+					modifiedInLastEvaluationRun.get(tmpPredicate).addAll(tmpInstances.getAllInstances());
 				}
 			}
 		}
@@ -187,9 +186,9 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 	private void evaluateRule(InternalRule rule, boolean checkAllStartingLiterals) {
 		LOGGER.debug("Evaluating rule {}", rule);
-		List<Substitution> satisfyingSubstitutions = this.calculateSatisfyingSubstitutionsForRule(rule, checkAllStartingLiterals);
+		List<Substitution> satisfyingSubstitutions = calculateSatisfyingSubstitutionsForRule(rule, checkAllStartingLiterals);
 		for (Substitution subst : satisfyingSubstitutions) {
-			this.fireRule(rule, subst);
+			fireRule(rule, subst);
 		}
 	}
 
@@ -201,21 +200,21 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		if (groundingOrders.fixedInstantiation()) { 
 			// Note: Representation of fixed grounding orders should be refactored in RuleGroundingOrders.
 			RuleGroundingOrder fixedGroundingOrder = groundingOrders.getFixedGroundingOrder();
-			groundSubstitutions.addAll(this.calcSubstitutionsWithGroundingOrder(rule, fixedGroundingOrder, 0,
-					Collections.singletonList(new Substitution())));
+			groundSubstitutions.addAll(calcSubstitutionsWithGroundingOrder(fixedGroundingOrder,
+				Collections.singletonList(new Substitution())));
 		} else {
 			List<Literal> startingLiterals = groundingOrders.getStartingLiterals();
 			List<Substitution> substitutionsForStartingLiteral;
 			if (!checkAllStartingLiterals) {
 				// If we don't have to check all literals, i.e. we're in the first evaluation run, just use the first one
 				Literal lit = startingLiterals.get(0);
-				substitutionsForStartingLiteral = this.calcSubstitutionsWithGroundingOrder(rule, groundingOrders.orderStartingFrom(lit), 0,
-						this.substituteFromRecentlyAddedInstances(lit));
+				substitutionsForStartingLiteral = calcSubstitutionsWithGroundingOrder(groundingOrders.orderStartingFrom(lit),
+					substituteFromRecentlyAddedInstances(lit));
 				groundSubstitutions.addAll(substitutionsForStartingLiteral);
 			} else {
 				for (Literal lit : startingLiterals) {
-					substitutionsForStartingLiteral = this.calcSubstitutionsWithGroundingOrder(rule, groundingOrders.orderStartingFrom(lit), 0,
-							this.substituteFromRecentlyAddedInstances(lit));
+					substitutionsForStartingLiteral = calcSubstitutionsWithGroundingOrder(groundingOrders.orderStartingFrom(lit),
+						substituteFromRecentlyAddedInstances(lit));
 					groundSubstitutions.addAll(substitutionsForStartingLiteral);
 				}
 			}
@@ -226,7 +225,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	/**
 	 * Use this to find initial substitutions for a starting literal when grounding a rule.
 	 * In order to avoid finding the same ground instantiations of rules again, only look at
-	 * <code>this.modifiedInLastEvaluationRun</code> to obtain instances.
+	 * <code>modifiedInLastEvaluationRun</code> to obtain instances.
 	 * 
 	 * @param lit the literal to substitute
 	 * @return valid ground substitutions for the literal based on the recently added instances (i.e. instances derived in
@@ -234,7 +233,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	 */
 	private List<Substitution> substituteFromRecentlyAddedInstances(Literal lit) {
 		List<Substitution> retVal = new ArrayList<>();
-		Set<Instance> instances = this.modifiedInLastEvaluationRun.get(lit.getPredicate());
+		Set<Instance> instances = modifiedInLastEvaluationRun.get(lit.getPredicate());
 		if (instances == null) {
 			return Collections.emptyList();
 		}
@@ -248,8 +247,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		return retVal;
 	}
 
-	private List<Substitution> calcSubstitutionsWithGroundingOrder(InternalRule rule, RuleGroundingOrder groundingOrder, int startFromOrderPosition,
-			List<Substitution> startingSubstitutions) {
+	private List<Substitution> calcSubstitutionsWithGroundingOrder(RuleGroundingOrder groundingOrder, List<Substitution> startingSubstitutions) {
 		// Iterate through the grounding order starting at index startFromOrderPosition.
 		// Whenever instantiation of a Literal with a given substitution causes
 		// a result with a type other than CONTINUE, discard that substitution.
@@ -257,10 +255,10 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		List<Substitution> updatedSubstitutions = new ArrayList<>();
 		Literal currentLiteral;
 		LiteralInstantiationResult currentLiteralResult;
-		int curentOrderPosition = startFromOrderPosition;
+		int curentOrderPosition = 0;
 		while ((currentLiteral = groundingOrder.getLiteralAtOrderPosition(curentOrderPosition)) != null) {
 			for (Substitution subst : currentSubstitutions) {
-				currentLiteralResult = this.literalInstantiator.instantiateLiteral(currentLiteral, subst);
+				currentLiteralResult = literalInstantiator.instantiateLiteral(currentLiteral, subst);
 				if (currentLiteralResult.getType() == LiteralInstantiationResult.Type.CONTINUE) {
 					for (ImmutablePair<Substitution, AssignmentStatus> pair : currentLiteralResult.getSubstitutions()) {
 						updatedSubstitutions.add(pair.left);
@@ -284,7 +282,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			throw new IllegalStateException("Trying to fire rule " + rule.toString() + " with incompatible substitution " + substitution.toString());
 		}
 		LOGGER.debug("Firing rule - got head atom: {}", newAtom);
-		this.workingMemory.addInstance(newAtom, true);
+		workingMemory.addInstance(newAtom, true);
 	}
 
 	private ComponentEvaluationInfo getRulesToEvaluate(SCComponent comp) {
@@ -296,7 +294,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			headPredicates.add(node.getPredicate());
 		}
 		for (Predicate headPredicate : headPredicates) {
-			definingRules = this.predicateDefiningRules.get(headPredicate);
+			definingRules = predicateDefiningRules.get(headPredicate);
 			if (definingRules == null) {
 				// predicate only occurs in facts
 				continue;
@@ -319,28 +317,26 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	private void addFactsToProgram(Map<Predicate, List<Instance>> instances) {
 		for (Entry<Predicate, List<Instance>> entry : instances.entrySet()) {
 			for (Instance inst : entry.getValue()) {
-				this.additionalFacts.add(new BasicAtom(entry.getKey(), inst.terms));
+				additionalFacts.add(new BasicAtom(entry.getKey(), inst.terms));
 			}
 		}
 	}
 
 	private class ComponentEvaluationOrder implements Iterable<SCComponent> {
 
-		private Map<Integer, List<SCComponent>> stratification;
 		private Iterator<Entry<Integer, List<SCComponent>>> strataIterator;
 		private Iterator<SCComponent> componentIterator;
 
 		private ComponentEvaluationOrder(Map<Integer, List<SCComponent>> stratification) {
-			this.stratification = stratification;
-			this.strataIterator = this.stratification.entrySet().iterator();
-			this.startNextStratum();
+			strataIterator = stratification.entrySet().iterator();
+			startNextStratum();
 		}
 
 		private boolean startNextStratum() {
-			if (!this.strataIterator.hasNext()) {
+			if (!strataIterator.hasNext()) {
 				return false;
 			}
-			this.componentIterator = this.strataIterator.next().getValue().iterator();
+			componentIterator = strataIterator.next().getValue().iterator();
 			return true;
 		}
 
@@ -350,25 +346,25 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 				@Override
 				public boolean hasNext() {
-					if (ComponentEvaluationOrder.this.componentIterator == null) {
+					if (componentIterator == null) {
 						// can happen when there are actually no components, as is the case for empty programs or programs just consisting of
 						// facts
 						return false;
 					}
-					if (ComponentEvaluationOrder.this.componentIterator.hasNext()) {
+					if (componentIterator.hasNext()) {
 						return true;
 					} else {
-						if (!ComponentEvaluationOrder.this.startNextStratum()) {
+						if (!startNextStratum()) {
 							return false;
 						} else {
-							return this.hasNext();
+							return hasNext();
 						}
 					}
 				}
 
 				@Override
 				public SCComponent next() {
-					return ComponentEvaluationOrder.this.componentIterator.next();
+					return componentIterator.next();
 				}
 
 			};
@@ -388,12 +384,12 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		final Set<InternalRule> recursiveRules;
 
 		ComponentEvaluationInfo(Set<InternalRule> nonRecursive, Set<InternalRule> recursive) {
-			this.nonRecursiveRules = Collections.unmodifiableSet(nonRecursive);
-			this.recursiveRules = Collections.unmodifiableSet(recursive);
+			nonRecursiveRules = Collections.unmodifiableSet(nonRecursive);
+			recursiveRules = Collections.unmodifiableSet(recursive);
 		}
 
 		boolean isEmpty() {
-			return this.nonRecursiveRules.isEmpty() && this.recursiveRules.isEmpty();
+			return nonRecursiveRules.isEmpty() && recursiveRules.isEmpty();
 		}
 
 	}

@@ -34,25 +34,9 @@ import java.util.Map;
  * 
  * Copyright (c) 2019, the Alpha Team.
  */
-public class DfsResult {
+class DfsResult {
 
-	private Deque<Node> finishedNodes;
-	private Map<Node, List<Node>> depthFirstForest;
-
-	public Deque<Node> getFinishedNodes() {
-		return this.finishedNodes;
-	}
-
-	public void setFinishedNodes(Deque<Node> finishedNodes) {
-		this.finishedNodes = finishedNodes;
-	}
-
-	public Map<Node, List<Node>> getDepthFirstForest() {
-		return this.depthFirstForest;
-	}
-
-	public void setDepthFirstForest(Map<Node, List<Node>> depthFirstForest) {
-		this.depthFirstForest = depthFirstForest;
-	}
+	Deque<Node> finishedNodes;
+	Map<Node, List<Node>> depthFirstForest;
 
 }

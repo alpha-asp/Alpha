@@ -72,8 +72,8 @@ public class DepthFirstSearchHelper {
 				this.dfsVisit(tmp, graph);
 			}
 		}
-		retVal.setFinishedNodes(this.finishedNodes);
-		retVal.setDepthFirstForest(this.depthFirstForest);
+		retVal.finishedNodes = finishedNodes;
+		retVal.depthFirstForest = depthFirstForest;
 		return retVal;
 	}
 

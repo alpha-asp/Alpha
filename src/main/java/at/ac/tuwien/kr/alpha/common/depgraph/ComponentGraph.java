@@ -25,6 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.common.depgraph;
 
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -34,9 +35,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
-
 import java.util.Set;
 
 /**
@@ -148,8 +146,8 @@ public final class ComponentGraph {
 
 		private Builder(DependencyGraph dg, SccResult sccResult) {
 			this.depGraph = dg;
-			this.componentMap = sccResult.getStronglyConnectedComponents();
-			this.nodesByComponentId = sccResult.getNodesByComponentId();
+			this.componentMap = sccResult.stronglyConnectedComponents;
+			this.nodesByComponentId = sccResult.nodesByComponentId;
 		}
 
 		private ComponentGraph build() {

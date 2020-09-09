@@ -1,5 +1,13 @@
 package at.ac.tuwien.kr.alpha.common.depgraph;
 
+import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.graphio.DependencyGraphWriter;
+import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.test.util.DependencyGraphUtils;
 import org.antlr.v4.runtime.CharStreams;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -10,15 +18,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import at.ac.tuwien.kr.alpha.api.Alpha;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.graphio.DependencyGraphWriter;
-import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.test.util.DependencyGraphUtils;
 
 public class DependencyGraphTest {
 
@@ -221,8 +220,8 @@ public class DependencyGraphTest {
 
 		StronglyConnectedComponentsHelper componentHelper = new StronglyConnectedComponentsHelper();
 		SccResult sccResult = componentHelper.findStronglyConnectedComponents(dg);
-		Map<Node, Integer> nodesByComponent = sccResult.getNodesByComponentId();
-		Map<Integer, List<Node>> stronglyConnectedComponents = sccResult.getStronglyConnectedComponents();
+		Map<Node, Integer> nodesByComponent = sccResult.nodesByComponentId;
+		Map<Integer, List<Node>> stronglyConnectedComponents = sccResult.stronglyConnectedComponents;
 		Assert.assertEquals(8, stronglyConnectedComponents.size());
 
 		for (Map.Entry<Integer, List<Node>> sccEntry : stronglyConnectedComponents.entrySet()) {

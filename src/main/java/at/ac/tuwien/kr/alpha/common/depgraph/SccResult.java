@@ -33,20 +33,12 @@ import java.util.Map;
  */
 public class SccResult {
 
-	private final Map<Integer, List<Node>> stronglyConnectedComponents;
-	private final Map<Node, Integer> nodesByComponentId;
+	final Map<Integer, List<Node>> stronglyConnectedComponents;
+	final Map<Node, Integer> nodesByComponentId;
 
-	public SccResult(Map<Integer, List<Node>> components, Map<Node, Integer> nodesByComponentId) {
+	SccResult(Map<Integer, List<Node>> components, Map<Node, Integer> nodesByComponentId) {
 		this.stronglyConnectedComponents = components;
 		this.nodesByComponentId = nodesByComponentId;
-	}
-
-	public Map<Integer, List<Node>> getStronglyConnectedComponents() {
-		return this.stronglyConnectedComponents;
-	}
-
-	public Map<Node, Integer> getNodesByComponentId() {
-		return this.nodesByComponentId;
 	}
 
 }

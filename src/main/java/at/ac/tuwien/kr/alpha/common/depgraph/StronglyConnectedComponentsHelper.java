@@ -57,7 +57,7 @@ public class StronglyConnectedComponentsHelper {
 		this.reset();
 		DfsResult intermediateResult = this.dfsHelper.performDfs(dg.getAdjancencyMap());
 		Map<Node, List<Edge>> transposedNodes = this.transposeGraph(dg.getAdjancencyMap());
-		Deque<Node> finishedNodes = intermediateResult.getFinishedNodes();
+		Deque<Node> finishedNodes = intermediateResult.finishedNodes;
 		DfsResult finalResult = this.dfsHelper.performDfs(finishedNodes.descendingIterator(), transposedNodes);
 		Map<Integer, List<Node>> componentMap = this.extractComponents(finalResult);
 		return new SccResult(componentMap, this.nodesByComponentId);
@@ -67,9 +67,9 @@ public class StronglyConnectedComponentsHelper {
 		int componentCnt = 0;
 		Map<Integer, List<Node>> componentMap = new HashMap<>();
 		List<Node> tmpComponentMembers;
-		for (Node componentRoot : dfsResult.getDepthFirstForest().get(null)) {
+		for (Node componentRoot : dfsResult.depthFirstForest.get(null)) {
 			tmpComponentMembers = new ArrayList<>();
-			this.addComponentMembers(componentRoot, dfsResult.getDepthFirstForest(), tmpComponentMembers, componentCnt);
+			this.addComponentMembers(componentRoot, dfsResult.depthFirstForest, tmpComponentMembers, componentCnt);
 			componentMap.put(componentCnt, tmpComponentMembers);
 			componentCnt++;
 		}

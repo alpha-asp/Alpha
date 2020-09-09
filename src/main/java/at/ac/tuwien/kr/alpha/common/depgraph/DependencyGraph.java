@@ -25,6 +25,11 @@
  */
 package at.ac.tuwien.kr.alpha.common.depgraph;
 
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,12 +39,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 
 /**
  * Internal representation of an {@link at.ac.tuwien.kr.alpha.common.program.InternalProgram}'s dependency graph. The dependency graph tracks dependencies
@@ -79,10 +78,6 @@ public final class DependencyGraph {
 
 	public Map<Node, List<Edge>> getAdjancencyMap() {
 		return Collections.unmodifiableMap(this.adjacencyMap);
-	}
-
-	public Map<Predicate, Node> getNodesByPredicate() {
-		return Collections.unmodifiableMap(this.nodesByPredicate);
 	}
 
 	private static class Builder {
