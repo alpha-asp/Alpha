@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Stack;
 
 /**
  * Evaluates the stratifiable part (if any) of the given program
@@ -97,8 +98,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		List<InternalRule> outputRules = new ArrayList<>();
 		inputProgram.getRulesById().entrySet().stream().filter((entry) -> !solvedRuleIds.contains(entry.getKey()))
 				.forEach((entry) -> outputRules.add(entry.getValue()));
-		InternalProgram retVal = new InternalProgram(outputRules, outputFacts);
-		return retVal;
+		return new InternalProgram(outputRules, outputFacts);
 	}
 
 	// extra method is better visible in CPU traces when profiling
@@ -247,7 +247,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		return retVal;
 	}
 
-	private List<Substitution> calcSubstitutionsWithGroundingOrder(RuleGroundingOrder groundingOrder, List<Substitution> startingSubstitutions) {
+	private List<Substitution> calcSubstitutionsWithGroundingOrderOld(RuleGroundingOrder groundingOrder, List<Substitution> startingSubstitutions) {
 		// Iterate through the grounding order starting at index startFromOrderPosition.
 		// Whenever instantiation of a Literal with a given substitution causes
 		// a result with a type other than CONTINUE, discard that substitution.
@@ -274,6 +274,54 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			curentOrderPosition++;
 		}
 		return currentSubstitutions;
+	}
+
+	private List<Substitution> calcSubstitutionsWithGroundingOrder(RuleGroundingOrder groundingOrder, List<Substitution> startingSubstitutions) {
+		// Iterate through the grounding order starting at index startFromOrderPosition.
+		// Whenever instantiation of a Literal with a given substitution causes
+		// a result with a type other than CONTINUE, discard that substitution.
+
+		List<Substitution> fullSubstitutions = new ArrayList<>();
+		Stack<ArrayList<Substitution>> substitutionStack = new Stack<>();	// For speed, we really want ArrayLists on the stack.
+		if (startingSubstitutions instanceof ArrayList) {
+			substitutionStack.push((ArrayList<Substitution>) startingSubstitutions);
+		} else {
+			substitutionStack.push(new ArrayList<>(startingSubstitutions));	// Copy startingSubstitutions into ArrayList. Note: mostly happens for empty or singleton lists.
+		}
+		int currentOrderPosition = 0;
+		while (!substitutionStack.isEmpty()) {
+			List<Substitution> currentSubstitutions = substitutionStack.peek();
+			// If no more substitutions remain at current position, all have been processed, continue on next lower level.
+			if (currentSubstitutions.isEmpty()) {
+				substitutionStack.pop();
+				currentOrderPosition--;
+				continue;
+			}
+			// In case the full grounding order has been worked on, all current substitutions are full substitutions, add them to result.
+			Literal currentLiteral = groundingOrder.getLiteralAtOrderPosition(currentOrderPosition);
+			if (currentLiteral == null) {
+				fullSubstitutions.addAll(currentSubstitutions);
+				currentSubstitutions.clear();
+				// Continue on next lower level.
+				substitutionStack.pop();
+				currentOrderPosition--;
+				continue;
+			}
+			// Take one substitution from the top-list of the stack and try extending it.
+			Substitution currentSubstitution = currentSubstitutions.remove(currentSubstitutions.size() - 1);        // Work on last element (removing last element is O(1) for ArrayList).
+			LiteralInstantiationResult currentLiteralResult = literalInstantiator.instantiateLiteral(currentLiteral, currentSubstitution);
+			if (currentLiteralResult.getType() == LiteralInstantiationResult.Type.CONTINUE) {
+				// The currentSubstitution could be extended, push the extensions on the stack and continue working on them.
+				ArrayList<Substitution> furtheredSubstitutions = new ArrayList<>();
+				for (ImmutablePair<Substitution, AssignmentStatus> resultSubstitution : currentLiteralResult.getSubstitutions()) {
+					furtheredSubstitutions.add(resultSubstitution.left);
+				}
+				substitutionStack.push(furtheredSubstitutions);
+				// Continue work on the higher level.
+				currentOrderPosition++;
+			}
+		}
+		return fullSubstitutions;
 	}
 
 	private void fireRule(InternalRule rule, Substitution substitution) {
