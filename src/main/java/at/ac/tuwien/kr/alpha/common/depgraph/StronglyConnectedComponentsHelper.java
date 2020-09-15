@@ -43,7 +43,7 @@ public class StronglyConnectedComponentsHelper {
 	private Map<Node, Integer> nodesByComponentId;
 
 	private void reset() {
-		this.nodesByComponentId = new HashMap<>();
+		nodesByComponentId = new HashMap<>();
 	}
 
 	/**
@@ -54,42 +54,40 @@ public class StronglyConnectedComponentsHelper {
 	 * @return
 	 */
 	public SccResult findStronglyConnectedComponents(DependencyGraph dg) {
-		this.reset();
-		DfsResult intermediateResult = this.dfsHelper.performDfs(dg.getAdjancencyMap());
-		Map<Node, List<Edge>> transposedNodes = this.transposeGraph(dg.getAdjancencyMap());
+		reset();
+		DfsResult intermediateResult = dfsHelper.performDfs(dg.getAdjancencyMap());
+		Map<Node, List<Edge>> transposedNodes = transposeGraph(dg.getAdjancencyMap());
 		Deque<Node> finishedNodes = intermediateResult.finishedNodes;
-		DfsResult finalResult = this.dfsHelper.performDfs(finishedNodes.descendingIterator(), transposedNodes);
-		Map<Integer, List<Node>> componentMap = this.extractComponents(finalResult);
-		return new SccResult(componentMap, this.nodesByComponentId);
+		DfsResult finalResult = dfsHelper.performDfs(finishedNodes.descendingIterator(), transposedNodes);
+		List<List<Node>> componentMap = extractComponents(finalResult);
+		return new SccResult(componentMap, nodesByComponentId);
 	}
 
-	private Map<Integer, List<Node>> extractComponents(DfsResult dfsResult) {
-		int componentCnt = 0;
-		Map<Integer, List<Node>> componentMap = new HashMap<>();
+	private List<List<Node>> extractComponents(DfsResult dfsResult) {
+		List<List<Node>> componentMap = new ArrayList<>();
 		List<Node> tmpComponentMembers;
 		for (Node componentRoot : dfsResult.depthFirstForest.get(null)) {
 			tmpComponentMembers = new ArrayList<>();
-			this.addComponentMembers(componentRoot, dfsResult.depthFirstForest, tmpComponentMembers, componentCnt);
-			componentMap.put(componentCnt, tmpComponentMembers);
-			componentCnt++;
+			addComponentMembers(componentRoot, dfsResult.depthFirstForest, tmpComponentMembers, componentMap.size());
+			componentMap.add(tmpComponentMembers);
 		}
 		return componentMap;
 	}
 
 	private void addComponentMembers(Node depthFirstTreeNode, Map<Node, List<Node>> depthFirstForest, List<Node> componentMembers, int componentId) {
 		componentMembers.add(depthFirstTreeNode);
-		this.nodesByComponentId.put(depthFirstTreeNode, componentId);
+		nodesByComponentId.put(depthFirstTreeNode, componentId);
 		List<Node> children;
 		if ((children = depthFirstForest.get(depthFirstTreeNode)) == null) {
 			return;
 		}
 		for (Node n : children) {
-			this.addComponentMembers(n, depthFirstForest, componentMembers, componentId);
+			addComponentMembers(n, depthFirstForest, componentMembers, componentId);
 		}
 	}
 
 	/**
-	 * "Transposes" the given dependency graph, i.e. reverses the direction of each edge.
+	 * Transposes the given dependency graph, i.e. reverses the direction of each edge.
 	 */
 	private Map<Node, List<Edge>> transposeGraph(Map<Node, List<Edge>> graph) {
 		Map<Node, List<Edge>> transposed = new HashMap<>();

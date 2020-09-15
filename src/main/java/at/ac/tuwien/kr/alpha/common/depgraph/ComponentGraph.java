@@ -32,10 +32,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -47,10 +45,10 @@ import java.util.Set;
  */
 public final class ComponentGraph {
 
-	private final Map<Integer, SCComponent> components;
+	private final ArrayList<SCComponent> components;
 	private final List<SCComponent> entryPoints;
 
-	private ComponentGraph(Map<Integer, SCComponent> components, List<SCComponent> entryPoints) {
+	private ComponentGraph(ArrayList<SCComponent> components, List<SCComponent> entryPoints) {
 		this.components = components;
 		this.entryPoints = entryPoints;
 	}
@@ -67,8 +65,8 @@ public final class ComponentGraph {
 		return new ComponentGraph.Builder(dg, sccResult).build();
 	}
 
-	public Map<Integer, SCComponent> getComponents() {
-		return Collections.unmodifiableMap(components);
+	public List<SCComponent> getComponents() {
+		return Collections.unmodifiableList(components);
 	}
 
 	public List<SCComponent> getEntryPoints() {
@@ -140,10 +138,10 @@ public final class ComponentGraph {
 	private static class Builder {
 
 		private DependencyGraph depGraph;
-		private Map<Integer, List<Node>> componentMap;
+		private List<List<Node>> componentMap;
 		private Map<Node, Integer> nodesByComponentId;
-		private Map<Integer, SCComponent.Builder> componentBuilders = new LinkedHashMap<>();
-		private Map<Integer, SCComponent> components = new HashMap<>();
+		private ArrayList<SCComponent.Builder> componentBuilders = new ArrayList<>();
+		private ArrayList<SCComponent> components = new ArrayList<>();
 
 		private Builder(DependencyGraph dg, SccResult sccResult) {
 			this.depGraph = dg;
@@ -153,22 +151,23 @@ public final class ComponentGraph {
 
 		private ComponentGraph build() {
 			// Create a ComponentBuilder for each component.
-			for (Entry<Integer, List<Node>> entry : componentMap.entrySet()) {
-				componentBuilders.put(entry.getKey(), new SCComponent.Builder(entry.getKey(), entry.getValue()));
+			for (int i = 0; i < componentMap.size(); i++) {
+				componentBuilders.add(new SCComponent.Builder(i, componentMap.get(i)));
 			}
-			// Iterate and register each edge in every component.
-			for (Entry<Integer, SCComponent.Builder> entry : componentBuilders.entrySet()) {
-				for (Node node : entry.getValue().nodes) {
+			// Iterate and register each edge of every component.
+			for (int i = 0; i < componentBuilders.size(); i++) {
+				SCComponent.Builder builder = componentBuilders.get(i);
+				for (Node node : builder.nodes) {
 					for (Edge edge : depGraph.getAdjancencyMap().get(node)) {
-						registerEdge(entry.getKey(), edge);
+						registerEdge(i, edge);
 					}
 				}
 			}
 			// Build each component and identify starting components.
 			List<SCComponent> startingPoints = new ArrayList<>();
-			for (Entry<Integer, SCComponent.Builder> entry : componentBuilders.entrySet()) {
-				SCComponent tmpComponent = entry.getValue().build();
-				components.put(entry.getKey(), tmpComponent);
+			for (SCComponent.Builder builder : componentBuilders) {
+				SCComponent tmpComponent = builder.build();
+				components.add(tmpComponent);
 				// Component is starting if it has no dependencies.
 				if (tmpComponent.getDependencyIds().isEmpty()) {
 					startingPoints.add(tmpComponent);
