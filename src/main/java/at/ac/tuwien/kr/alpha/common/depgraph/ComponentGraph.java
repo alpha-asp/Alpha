@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -42,7 +43,7 @@ import java.util.Set;
  * {@link DependencyGraph} into its strongly connected components. Needed in order to calculate stratifications from which an evaluation order for the
  * {@link at.ac.tuwien.kr.alpha.grounder.transformation.StratifiedEvaluation} transformation can be derived.
  * 
- * Copyright (c) 2019, the Alpha Team.
+ * Copyright (c) 2019-2020, the Alpha Team.
  */
 public final class ComponentGraph {
 
@@ -55,23 +56,23 @@ public final class ComponentGraph {
 	}
 
 	/**
-	 * Creates a new {@link ComponentGraph} based on a dependency graph and an {@link SccResult} representing the result of calculating the dependency graph's
-	 * strongly connected components (SCCs)
+	 * Creates a new {@link ComponentGraph} based on a dependency graph and an {@link SccResult} representing the
+	 * result of calculating the dependency graph's strongly connected components (SCCs).
 	 * 
-	 * @param dg        the dependency graph backing this component graph
-	 * @param sccResult the SCC calculation result for the dependency graph in question
-	 * @return a new {@link ComponentGraph} representing the strongly connected components of the given dependency graph
+	 * @param dg        the dependency graph backing this component graph.
+	 * @param sccResult the SCC calculation result for the dependency graph in question.
+	 * @return a new {@link ComponentGraph} representing the strongly connected components of the given dependency graph.
 	 */
 	public static ComponentGraph buildComponentGraph(DependencyGraph dg, SccResult sccResult) {
 		return new ComponentGraph.Builder(dg, sccResult).build();
 	}
 
 	public Map<Integer, SCComponent> getComponents() {
-		return Collections.unmodifiableMap(this.components);
+		return Collections.unmodifiableMap(components);
 	}
 
 	public List<SCComponent> getEntryPoints() {
-		return Collections.unmodifiableList(this.entryPoints);
+		return Collections.unmodifiableList(entryPoints);
 	}
 
 	public static class SCComponent {
@@ -91,28 +92,28 @@ public final class ComponentGraph {
 		}
 
 		public Map<Integer, Boolean> getDependencyIds() {
-			return Collections.unmodifiableMap(this.dependencyIds);
+			return Collections.unmodifiableMap(dependencyIds);
 		}
 
 		public Set<Integer> getDependentIds() {
-			return Collections.unmodifiableSet(this.dependentIds);
+			return Collections.unmodifiableSet(dependentIds);
 		}
 
 		@Override
 		public String toString() {
-			return "SCComponent{" + StringUtils.join(this.nodes, ",") + "}";
+			return "SCComponent{" + StringUtils.join(nodes, ",") + "}";
 		}
 
 		public boolean hasNegativeCycle() {
-			return this.hasNegativeCycle;
+			return hasNegativeCycle;
 		}
 
 		public List<Node> getNodes() {
-			return this.nodes;
+			return nodes;
 		}
 
 		public int getId() {
-			return this.id;
+			return id;
 		}
 
 		private static class Builder {
@@ -129,7 +130,7 @@ public final class ComponentGraph {
 			}
 
 			private SCComponent build() {
-				return new SCComponent(this.id, this.nodes, this.dependencyIds, this.dependentIds, this.hasNegativeCycle);
+				return new SCComponent(id, nodes, dependencyIds, dependentIds, hasNegativeCycle);
 			}
 
 		}
@@ -141,7 +142,7 @@ public final class ComponentGraph {
 		private DependencyGraph depGraph;
 		private Map<Integer, List<Node>> componentMap;
 		private Map<Node, Integer> nodesByComponentId;
-		private Map<Integer, SCComponent.Builder> componentBuilders = new HashMap<>();
+		private Map<Integer, SCComponent.Builder> componentBuilders = new LinkedHashMap<>();
 		private Map<Integer, SCComponent> components = new HashMap<>();
 
 		private Builder(DependencyGraph dg, SccResult sccResult) {
@@ -151,43 +152,47 @@ public final class ComponentGraph {
 		}
 
 		private ComponentGraph build() {
-			for (Entry<Integer, List<Node>> entry : this.componentMap.entrySet()) {
-				this.componentBuilders.put(entry.getKey(), new SCComponent.Builder(entry.getKey(), entry.getValue()));
+			// Create a ComponentBuilder for each component.
+			for (Entry<Integer, List<Node>> entry : componentMap.entrySet()) {
+				componentBuilders.put(entry.getKey(), new SCComponent.Builder(entry.getKey(), entry.getValue()));
 			}
-			for (Entry<Integer, SCComponent.Builder> entry : this.componentBuilders.entrySet()) {
+			// Iterate and register each edge in every component.
+			for (Entry<Integer, SCComponent.Builder> entry : componentBuilders.entrySet()) {
 				for (Node node : entry.getValue().nodes) {
-					for (Edge edge : this.depGraph.getAdjancencyMap().get(node)) {
-						this.registerEdge(entry.getKey(), edge);
+					for (Edge edge : depGraph.getAdjancencyMap().get(node)) {
+						registerEdge(entry.getKey(), edge);
 					}
 				}
 			}
+			// Build each component and identify starting components.
 			List<SCComponent> startingPoints = new ArrayList<>();
-			SCComponent tmpComponent;
-			for (Entry<Integer, SCComponent.Builder> entry : this.componentBuilders.entrySet()) {
-				tmpComponent = entry.getValue().build();
-				this.components.put(entry.getKey(), tmpComponent);
+			for (Entry<Integer, SCComponent.Builder> entry : componentBuilders.entrySet()) {
+				SCComponent tmpComponent = entry.getValue().build();
+				components.put(entry.getKey(), tmpComponent);
+				// Component is starting if it has no dependencies.
 				if (tmpComponent.getDependencyIds().isEmpty()) {
 					startingPoints.add(tmpComponent);
 				}
 			}
-			return new ComponentGraph(this.components, startingPoints);
+			return new ComponentGraph(components, startingPoints);
 		}
 
 		private void registerEdge(int srcComponentId, Edge edge) {
-			int destComponentId = this.nodesByComponentId.get(edge.getTarget());
+			int destComponentId = nodesByComponentId.get(edge.getTarget());
 			if (srcComponentId == destComponentId) {
+				// Record negative self-loop.
 				if (!edge.getSign()) {
-					this.componentBuilders.get(srcComponentId).hasNegativeCycle = true;
+					componentBuilders.get(srcComponentId).hasNegativeCycle = true;
 				}
 			} else {
-				SCComponent.Builder srcComponentBld = this.componentBuilders.get(srcComponentId);
+				SCComponent.Builder srcComponentBld = componentBuilders.get(srcComponentId);
 				srcComponentBld.dependentIds.add(destComponentId);
-				SCComponent.Builder destComponentBld = this.componentBuilders.get(destComponentId);
+				SCComponent.Builder destComponentBld = componentBuilders.get(destComponentId);
 				boolean isPositiveDep = true;
 				if (destComponentBld.dependencyIds.containsKey(srcComponentId)) {
 					isPositiveDep = destComponentBld.dependencyIds.get(srcComponentId);
 				}
-				// if the dependency to srcComponent already is negative, it stays that way, otherwise determined by edge.sign
+				// If the dependency to srcComponent already is negative, it stays that way, otherwise it is determined by the edge's sign.
 				destComponentBld.dependencyIds.put(srcComponentId, isPositiveDep & edge.getSign());
 			}
 		}
