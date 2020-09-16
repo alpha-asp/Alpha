@@ -55,6 +55,7 @@ public class AggregateLiteralSplitting extends ProgramTransformation<InputProgra
 				for (BasicRule rewritten : splitAggregateLiteral(sourceRule, aggLit)) {
 					rewriteRule(rewritten, resultRules);
 				}
+				return;
 			}
 		}
 		if (!containsRewrittenAggregate) {
