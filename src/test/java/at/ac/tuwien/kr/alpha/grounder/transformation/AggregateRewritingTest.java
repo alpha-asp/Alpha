@@ -42,7 +42,7 @@ public class AggregateRewritingTest {
 	@Test
 	public void literalSplittingSinglePositiveLiteral() {
 		Alpha alpha = new Alpha();
-		ProgramTransformation<InputProgram, InputProgram> aggregateRewriting = new AggregateRewriting(null);
+		ProgramTransformation<InputProgram, InputProgram> aggregateRewriting = new AggregateLiteralSplitting();
 		InputProgram input = alpha.readProgramString(LITERAL_SPLITTING_POS1_ASP);
 		InputProgram rewritten = aggregateRewriting.apply(input);
 		BasicRule expectedRewrittenRule = RuleParser
@@ -54,7 +54,7 @@ public class AggregateRewritingTest {
 	@Test
 	public void literalSplittingMultiplePositiveLiterals() {
 		Alpha alpha = new Alpha();
-		ProgramTransformation<InputProgram, InputProgram> aggregateRewriting = new AggregateRewriting(null);
+		ProgramTransformation<InputProgram, InputProgram> aggregateRewriting = new AggregateLiteralSplitting();
 		InputProgram input = alpha.readProgramString(LITERAL_SPLITTING_POS2_ASP);
 		InputProgram rewritten = aggregateRewriting.apply(input);
 		BasicRule expectedRewrittenRule = RuleParser
@@ -66,7 +66,7 @@ public class AggregateRewritingTest {
 	@Test
 	public void literalSplittingSingleNegativeLiteral() {
 		Alpha alpha = new Alpha();
-		ProgramTransformation<InputProgram, InputProgram> aggregateRewriting = new AggregateRewriting(null);
+		ProgramTransformation<InputProgram, InputProgram> aggregateRewriting = new AggregateLiteralSplitting();
 		InputProgram input = alpha.readProgramString(LITERAL_SPLITTING_NEG1_ASP);
 		InputProgram rewritten = aggregateRewriting.apply(input);
 		BasicRule expectedRewrittenRule1 = RuleParser
@@ -81,7 +81,7 @@ public class AggregateRewritingTest {
 	@Test
 	public void literalSplittingMultipleNegativeLiterals() {
 		Alpha alpha = new Alpha();
-		ProgramTransformation<InputProgram, InputProgram> aggregateRewriting = new AggregateRewriting(null);
+		ProgramTransformation<InputProgram, InputProgram> aggregateRewriting = new AggregateLiteralSplitting();
 		InputProgram input = alpha.readProgramString(LITERAL_SPLITTING_NEG2_ASP);
 		InputProgram rewritten = aggregateRewriting.apply(input);
 		BasicRule expectedRewrittenRule1 = RuleParser
@@ -102,7 +102,7 @@ public class AggregateRewritingTest {
 	@Test
 	public void literalSplittingNegativeAndPositiveLiteral() {
 		Alpha alpha = new Alpha();
-		ProgramTransformation<InputProgram, InputProgram> aggregateRewriting = new AggregateRewriting(null);
+		ProgramTransformation<InputProgram, InputProgram> aggregateRewriting = new AggregateLiteralSplitting();
 		InputProgram input = alpha.readProgramString(LITERAL_SPLITTING_NEG_POS_ASP);
 		InputProgram rewritten = aggregateRewriting.apply(input);
 		BasicRule expectedRewrittenRule1 = RuleParser
@@ -112,6 +112,15 @@ public class AggregateRewritingTest {
 		TestUtils.assertProgramContainsRule(rewritten, expectedRewrittenRule1);
 		TestUtils.assertProgramContainsRule(rewritten, expectedRewrittenRule2);
 		Assert.assertEquals(2, rewritten.getRules().size());
+	}
+
+	@Test
+	public void operatorNormalizationSmokeTest() {
+		Alpha alpha = new Alpha();
+		ProgramTransformation<InputProgram, InputProgram> aggregateRewriting = new AggregateRewriting(null);
+		InputProgram input = alpha.readProgramString(LITERAL_SPLITTING_NEG_POS_ASP);
+		InputProgram rewritten = aggregateRewriting.apply(input);
+		System.out.println(rewritten);
 	}
 
 }

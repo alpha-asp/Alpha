@@ -25,7 +25,8 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	 */
 	@Override
 	public InputProgram apply(InputProgram inputProgram) {
-		AggregateLiteralSplitting operatorRewriting = new AggregateLiteralSplitting();
-		return operatorRewriting.apply(inputProgram);
+		AggregateLiteralSplitting literalSplitting = new AggregateLiteralSplitting();
+		AggregateOperatorNormalization operatorNormalization = new AggregateOperatorNormalization();
+		return literalSplitting.andThen(operatorNormalization).apply(inputProgram);
 	}
 }

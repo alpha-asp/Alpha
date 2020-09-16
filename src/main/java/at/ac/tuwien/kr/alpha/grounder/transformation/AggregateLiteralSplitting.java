@@ -29,6 +29,7 @@ import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
+// TODO AbstractRuleRewriting or sth...
 public class AggregateLiteralSplitting extends ProgramTransformation<InputProgram, InputProgram> {
 
 	@Override
