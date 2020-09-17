@@ -26,9 +26,10 @@
 package at.ac.tuwien.kr.alpha.common.depgraph;
 
 /**
- * An edge in a dependency graph.
+ * An edge in a dependency graph to be used in adjacency lists (i.e., only the target of the edge is recorded). Edges
+ * are labelled with a boolean sign indicating the polarity of the edge.
  * 
- * Copyright (c) 2019, the Alpha Team.
+ * Copyright (c) 2019-2020, the Alpha Team.
  */
 public class Edge {
 
@@ -36,11 +37,12 @@ public class Edge {
 	private final boolean sign;
 
 	/**
-	 * Creates a new edge of a dependency graph. Read as "target depends on source" Sign indicates if the dependency is positive or negative (target node
-	 * depends on default negated atom). NOTE: Working assumption is to treat strong negation as a positive dependency
+	 * Creates a new edge for a dependency graph. Read as "target depends on source". The sign indicates whether the
+	 * dependency is positive or negative (target node depends on default negated atom).
+	 * Note: working assumption is that strong negation is treated like a positive dependency.
 	 * 
-	 * @param target
-	 * @param sign
+	 * @param target the target node.
+	 * @param sign the polarity of the edge.
 	 */
 	public Edge(Node target, boolean sign) {
 		this.target = target;
