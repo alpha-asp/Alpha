@@ -35,21 +35,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class DepthFirstSearchHelper {
+/**
+ * Performs a depth-first search on a given graph.
+ * The algorithm follows the approach outlined in "Introduction to Algorithms, 3rd Edition" by Cormen et al.
+ */
+class DepthFirstSearchAlgorithm {
 
-	private Set<Node> discoveredNodes;
-	private Deque<Node> finishedNodes;
-	private Map<Node, List<Node>> depthFirstForest;
+	private Set<Node> discoveredNodes;	// The "gray" nodes that have been seen but not fully processed yet.
+	private Deque<Node> finishedNodes;	// The "black" nodes that have been processed.
+	private Map<Node, List<Node>> depthFirstReachable;	// Per node, all others that are reachable from it.
 
 	private void reset() {
-		this.discoveredNodes = new HashSet<>();
-		this.finishedNodes = new LinkedList<>();
-		this.depthFirstForest = new HashMap<>();
-		this.depthFirstForest.put(null, new ArrayList<>());
+		discoveredNodes = new HashSet<>();
+		finishedNodes = new LinkedList<>();
+		depthFirstReachable = new HashMap<>();
+		depthFirstReachable.put(null, new ArrayList<>());
 	}
 
 	public DfsResult performDfs(Map<Node, List<Edge>> graph) {
-		return this.performDfs(graph.keySet().iterator(), graph);
+		return performDfs(graph.keySet().iterator(), graph);
 	}
 
 	/**
@@ -57,41 +61,50 @@ public class DepthFirstSearchHelper {
 	 * "Introduction to Algortihms, 3rd Edition" by Cormen et al. 
 	 * Discovered nodes are "gray" and finished nodes "black", respectively, in the terminology used in the book.
 	 * 
-	 * @param nodeVisitIt an Iterator defining in which sequence nodes should be visited
-	 * @param graph       an adjacency map defining the dependency graph of an ASP program
-	 * @return a Set<Node> holding all finished nodes (i.e. all nodes at the end of the DFS run)
+	 * @param nodeVisitIt an Iterator over all nodes of the graph, defining in which sequence nodes should be
+	 *                    visited (i.e., nodeVisitIt yields all initially "white" nodes of the graph).
+	 * @param graph       an adjacency map defining the dependency graph of an ASP program.
+	 * @return a {@link DfsResult} holding all nodes in the sequence they were finished and per node all its
+	 *         depth-first reachable nodes.
 	 */
 	public DfsResult performDfs(Iterator<Node> nodeVisitIt, Map<Node, List<Edge>> graph) {
-		this.reset();
-		DfsResult retVal = new DfsResult();
-		Node tmp;
+		reset();
 		while (nodeVisitIt.hasNext()) {
-			tmp = nodeVisitIt.next();
-			if (!(this.discoveredNodes.contains(tmp) || this.finishedNodes.contains(tmp))) {
-				this.depthFirstForest.get(null).add(tmp);
-				this.dfsVisit(tmp, graph);
+			Node currentNode = nodeVisitIt.next();
+			if (!discoveredNodes.contains(currentNode)) {
+				depthFirstReachable.get(null).add(currentNode);
+				dfsVisit(currentNode, graph);
 			}
 		}
-		retVal.finishedNodes = finishedNodes;
-		retVal.depthFirstForest = depthFirstForest;
-		return retVal;
+		DfsResult dfsResult = new DfsResult();
+		dfsResult.finishedNodes = finishedNodes;
+		dfsResult.depthFirstReachable = depthFirstReachable;
+		return dfsResult;
 	}
 
 	private void dfsVisit(Node currNode, Map<Node, List<Edge>> graph) {
-		this.discoveredNodes.add(currNode);
-		Node tmpNeighbor;
-		for (Edge e : graph.get(currNode)) {
-			// progress to adjacent nodes
-			tmpNeighbor = e.getTarget();
-			if (!(this.discoveredNodes.contains(tmpNeighbor) || this.finishedNodes.contains(tmpNeighbor))) {
-				if (!this.depthFirstForest.containsKey(currNode)) {
-					this.depthFirstForest.put(currNode, new ArrayList<>());
+		discoveredNodes.add(currNode);
+		for (Edge edge : graph.get(currNode)) {
+			// Proceed with adjacent (i.e., deeper) nodes first.
+			Node tmpNeighbor = edge.getTarget();
+			if (!discoveredNodes.contains(tmpNeighbor)) {
+				if (!depthFirstReachable.containsKey(currNode)) {
+					depthFirstReachable.put(currNode, new ArrayList<>());
 				}
-				this.depthFirstForest.get(currNode).add(tmpNeighbor);
-				this.dfsVisit(tmpNeighbor, graph);
+				depthFirstReachable.get(currNode).add(tmpNeighbor);
+				dfsVisit(tmpNeighbor, graph);
 			}
 		}
-		this.finishedNodes.add(currNode);
+		finishedNodes.add(currNode);
 	}
 
+	/**
+	 * The result of a depth first search:
+	 * - a deque containing all nodes in their finishing order and
+	 * - per node all reachable other nodes.
+	 */
+	static class DfsResult {
+		Deque<Node> finishedNodes;
+		Map<Node, List<Node>> depthFirstReachable;
+	}
 }

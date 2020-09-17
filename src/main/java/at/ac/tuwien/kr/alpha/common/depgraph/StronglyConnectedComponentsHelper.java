@@ -38,7 +38,7 @@ import java.util.Map;
  */
 public class StronglyConnectedComponentsHelper {
 
-	private DepthFirstSearchHelper dfsHelper = new DepthFirstSearchHelper();
+	private DepthFirstSearchAlgorithm dfsHelper = new DepthFirstSearchAlgorithm();
 
 	private Map<Node, Integer> nodesByComponentId;
 
@@ -55,20 +55,20 @@ public class StronglyConnectedComponentsHelper {
 	 */
 	public SccResult findStronglyConnectedComponents(DependencyGraph dg) {
 		reset();
-		DfsResult intermediateResult = dfsHelper.performDfs(dg.getAdjancencyMap());
+		DepthFirstSearchAlgorithm.DfsResult intermediateResult = dfsHelper.performDfs(dg.getAdjancencyMap());
 		Map<Node, List<Edge>> transposedNodes = transposeGraph(dg.getAdjancencyMap());
 		Deque<Node> finishedNodes = intermediateResult.finishedNodes;
-		DfsResult finalResult = dfsHelper.performDfs(finishedNodes.descendingIterator(), transposedNodes);
+		DepthFirstSearchAlgorithm.DfsResult finalResult = dfsHelper.performDfs(finishedNodes.descendingIterator(), transposedNodes);
 		List<List<Node>> componentMap = extractComponents(finalResult);
 		return new SccResult(componentMap, nodesByComponentId);
 	}
 
-	private List<List<Node>> extractComponents(DfsResult dfsResult) {
+	private List<List<Node>> extractComponents(DepthFirstSearchAlgorithm.DfsResult dfsResult) {
 		List<List<Node>> componentMap = new ArrayList<>();
 		List<Node> tmpComponentMembers;
-		for (Node componentRoot : dfsResult.depthFirstForest.get(null)) {
+		for (Node componentRoot : dfsResult.depthFirstReachable.get(null)) {
 			tmpComponentMembers = new ArrayList<>();
-			addComponentMembers(componentRoot, dfsResult.depthFirstForest, tmpComponentMembers, componentMap.size());
+			addComponentMembers(componentRoot, dfsResult.depthFirstReachable, tmpComponentMembers, componentMap.size());
 			componentMap.add(tmpComponentMembers);
 		}
 		return componentMap;
