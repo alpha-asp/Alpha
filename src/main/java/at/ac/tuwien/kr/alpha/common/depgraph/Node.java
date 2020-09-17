@@ -37,24 +37,9 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 public class Node {
 
 	private final Predicate predicate;
-	private final boolean isConstraint;
-
-	public Node(Predicate predicate, boolean isConstraint) {
-		this.predicate = predicate;
-		this.isConstraint = isConstraint;
-	}
 
 	public Node(Predicate predicate) {
-		this(predicate, false);
-	}
-
-	/**
-	 * Copy-constructor - constructs a new node as a deep-copy of the passed node
-	 * 
-	 * @param original the node to copy
-	 */
-	public Node(Node original) {
-		this(original.predicate, original.isConstraint);
+		this.predicate = predicate;
 	}
 
 	@Override
@@ -82,9 +67,4 @@ public class Node {
 	public Predicate getPredicate() {
 		return predicate;
 	}
-
-	public boolean isConstraint() {
-		return isConstraint;
-	}
-
 }

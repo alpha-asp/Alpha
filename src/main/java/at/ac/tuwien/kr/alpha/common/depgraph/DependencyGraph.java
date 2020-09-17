@@ -117,7 +117,7 @@ public final class DependencyGraph {
 			Node headNode;
 			if (rule.isConstraint()) {
 				Predicate pred = generateConstraintDummyPredicate();
-				headNode = new Node(pred, true);
+				headNode = new Node(pred);
 				List<Edge> dependencies = new ArrayList<>();
 				dependencies.add(new Edge(headNode, false));
 				if (adjacentNodesMap.containsKey(headNode)) {
