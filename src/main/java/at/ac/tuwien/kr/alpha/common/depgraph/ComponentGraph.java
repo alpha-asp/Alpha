@@ -54,14 +54,14 @@ public final class ComponentGraph {
 	}
 
 	/**
-	 * Creates a new {@link ComponentGraph} based on a dependency graph and an {@link SccResult} representing the
+	 * Creates a new {@link ComponentGraph} based on a dependency graph and an {@link StronglyConnectedComponentsAlgorithm.SccResult} representing the
 	 * result of calculating the dependency graph's strongly connected components (SCCs).
 	 * 
 	 * @param dg        the dependency graph backing this component graph.
 	 * @param sccResult the SCC calculation result for the dependency graph in question.
 	 * @return a new {@link ComponentGraph} representing the strongly connected components of the given dependency graph.
 	 */
-	public static ComponentGraph buildComponentGraph(DependencyGraph dg, SccResult sccResult) {
+	public static ComponentGraph buildComponentGraph(DependencyGraph dg, StronglyConnectedComponentsAlgorithm.SccResult sccResult) {
 		return new ComponentGraph.Builder(dg, sccResult).build();
 	}
 
@@ -143,7 +143,7 @@ public final class ComponentGraph {
 		private ArrayList<SCComponent.Builder> componentBuilders = new ArrayList<>();
 		private ArrayList<SCComponent> components = new ArrayList<>();
 
-		private Builder(DependencyGraph dg, SccResult sccResult) {
+		private Builder(DependencyGraph dg, StronglyConnectedComponentsAlgorithm.SccResult sccResult) {
 			this.depGraph = dg;
 			this.componentMap = sccResult.stronglyConnectedComponents;
 			this.nodesByComponentId = sccResult.nodesByComponentId;

@@ -218,8 +218,7 @@ public class DependencyGraphTest {
 		Node y = dg.getNodeForPredicate(Predicate.getInstance("y", 0));
 		Node z = dg.getNodeForPredicate(Predicate.getInstance("z", 0));
 
-		StronglyConnectedComponentsHelper componentHelper = new StronglyConnectedComponentsHelper();
-		SccResult sccResult = componentHelper.findStronglyConnectedComponents(dg);
+		StronglyConnectedComponentsAlgorithm.SccResult sccResult = StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(dg);
 		Map<Node, Integer> nodesByComponent = sccResult.nodesByComponentId;
 		List<List<Node>> stronglyConnectedComponents = sccResult.stronglyConnectedComponents;
 		Assert.assertEquals(8, stronglyConnectedComponents.size());
