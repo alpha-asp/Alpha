@@ -1,5 +1,11 @@
 package at.ac.tuwien.kr.alpha.common.program;
 
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
+import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
+import at.ac.tuwien.kr.alpha.grounder.FactIntervalEvaluator;
+import at.ac.tuwien.kr.alpha.grounder.Instance;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.ArrayList;
@@ -10,13 +16,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
-import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
-import at.ac.tuwien.kr.alpha.grounder.FactIntervalEvaluator;
-import at.ac.tuwien.kr.alpha.grounder.Instance;
 
 /**
  * A program in the internal representation needed for grounder and solver, i.e.: rules must have normal heads, all
@@ -71,7 +70,7 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 		}
 	}
 
-	private Map<Integer, InternalRule> recordRules(List<InternalRule> rules) {
+	private void recordRules(List<InternalRule> rules) {
 		Map<Integer, InternalRule> retVal = new HashMap<>();
 		for (InternalRule rule : rules) {
 			this.rulesById.put(rule.getRuleId(), rule);
@@ -79,7 +78,6 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 				this.recordDefiningRule(rule.getHeadAtom().getPredicate(), rule);
 			}
 		}
-		return retVal;
 	}
 
 	private void recordDefiningRule(Predicate headPredicate, InternalRule rule) {

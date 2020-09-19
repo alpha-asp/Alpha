@@ -7,7 +7,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph;
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph.SCComponent;
 import at.ac.tuwien.kr.alpha.common.depgraph.Node;
-import at.ac.tuwien.kr.alpha.common.depgraph.StratificationHelper;
+import at.ac.tuwien.kr.alpha.common.depgraph.StratificationAlgorithm;
 import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
@@ -50,8 +50,6 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(StratifiedEvaluation.class);
 
-	private StratificationHelper stratificationHelper = new StratificationHelper();
-
 	private WorkingMemory workingMemory = new WorkingMemory();
 	private Map<Predicate, HashSet<InternalRule>> predicateDefiningRules;
 
@@ -66,7 +64,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	public InternalProgram apply(AnalyzedProgram inputProgram) {
 		// Calculate a stratification and initialize working memory.
 		ComponentGraph componentGraph = inputProgram.getComponentGraph();
-		Map<Integer, List<SCComponent>> strata = stratificationHelper.calculateStratification(componentGraph);
+		Map<Integer, List<SCComponent>> strata = StratificationAlgorithm.calculateStratification(componentGraph);
 		predicateDefiningRules = inputProgram.getPredicateDefiningRules();
 		// set up list of atoms which are known to be true - we expand on this one
 		Map<Predicate, Set<Instance>> knownFacts = new LinkedHashMap<>(inputProgram.getFactsByPredicate());

@@ -43,9 +43,9 @@ import java.util.Set;
  * 
  * Copyright (c) 2019, the Alpha Team.
  */
-public class StratificationHelper {
+public class StratificationAlgorithm {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(StratificationHelper.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(StratificationAlgorithm.class);
 
 	private ComponentGraph componentGraph;
 
@@ -54,11 +54,11 @@ public class StratificationHelper {
 
 	private Map<Integer, List<SCComponent>> strata;
 
-	private void reset() {
-		this.componentGraph = null;
-		this.componentStratifyability = new HashMap<>();
-		this.strataByComponentId = new HashMap<>();
-		this.strata = new HashMap<>();
+	private StratificationAlgorithm(ComponentGraph cg) {
+		componentGraph = cg;
+		componentStratifyability = new HashMap<>();
+		strataByComponentId = new HashMap<>();
+		strata = new HashMap<>();
 	}
 
 	/**
@@ -73,24 +73,27 @@ public class StratificationHelper {
 	 * @param cg the component graph to stratify
 	 * @return a map representing a valid stratification with respect to the criteria above, where the key is the zero-based index of the stratum
 	 */
-	public Map<Integer, List<SCComponent>> calculateStratification(ComponentGraph cg) {
-		this.reset();
-		this.componentGraph = cg;
+	public static Map<Integer, List<SCComponent>> calculateStratification(ComponentGraph cg) {
+		return new StratificationAlgorithm(cg).runStratification();
+	}
+
+
+	private Map<Integer, List<SCComponent>> runStratification() {
 		LOGGER.debug("Initial call to stratify with entry points!");
-		this.stratify(new HashSet<>(this.componentGraph.getEntryPoints()));
-		return this.strata;
+		stratify(new HashSet<>(componentGraph.getEntryPoints()));
+		return strata;
 	}
 
 	private void stratify(Set<SCComponent> currComponents) {
 		Set<SCComponent> nextComps = new HashSet<>();
 		LOGGER.debug("Starting stratify run - currComponents = {}", StringUtils.join(currComponents, ","));
 		for (SCComponent comp : currComponents) {
-			for (int nextComponentId : this.stratifyComponent(comp)) {
-				nextComps.add(this.componentGraph.getComponents().get(nextComponentId));
+			for (int nextComponentId : stratifyComponent(comp)) {
+				nextComps.add(componentGraph.getComponents().get(nextComponentId));
 			}
 		}
 		if (!nextComps.isEmpty()) {
-			this.stratify(nextComps);
+			stratify(nextComps);
 		} else {
 			LOGGER.debug("Stratification finished - no more components to work off!");
 		}
@@ -104,23 +107,23 @@ public class StratificationHelper {
 		SCComponent dep;
 		if (comp.hasNegativeCycle()) {
 			// no need to check dependencies if we aren't stratifyable
-			this.markUnstratifyable(comp);
+			markUnstratifyable(comp);
 			canStratify = false;
-		} else if (this.getStratumFor(comp) != null) {
+		} else if (getStratumFor(comp) != null) {
 			// component already has a stratum, i.e. we reached it via a different path first.
 			// no need to do anything further
 			canStratify = false;
 		} else {
 			for (Entry<Integer, Boolean> depEntry : dependencies.entrySet()) {
-				dep = this.componentGraph.getComponents().get(depEntry.getKey());
-				if (this.getStratumFor(dep) == null) {
+				dep = componentGraph.getComponents().get(depEntry.getKey());
+				if (getStratumFor(dep) == null) {
 					// NOT breaking out of loop here, need to make sure unstratifyability is propagated
 					canStratify = false;
-					if (this.isUnstratifyable(dep)) {
-						this.markUnstratifyable(comp);
+					if (isUnstratifyable(dep)) {
+						markUnstratifyable(comp);
 					}
 				} else {
-					stratum = (this.getStratumFor(dep) > stratum) ? this.getStratumFor(dep) : stratum;
+					stratum = (getStratumFor(dep) > stratum) ? getStratumFor(dep) : stratum;
 					if (depEntry.getValue().equals(false)) {
 						stratum++;
 					}
@@ -128,9 +131,9 @@ public class StratificationHelper {
 			}
 		}
 		if (canStratify) {
-			this.setStratumFor(comp, stratum);
+			setStratumFor(comp, stratum);
 		}
-		if (canStratify || this.isUnstratifyable(comp)) {
+		if (canStratify || isUnstratifyable(comp)) {
 			// set up dependent components for next step
 			// also do this for unstratifyable components since we need to propagate unstratifyability
 			// NOTE: this will lead to every node in the graph being explored
@@ -140,21 +143,21 @@ public class StratificationHelper {
 	}
 
 	private boolean isUnstratifyable(SCComponent comp) {
-		return Boolean.FALSE.equals(this.componentStratifyability.get(comp.getId()));
+		return Boolean.FALSE == componentStratifyability.get(comp.getId());
 	}
 
 	private void markUnstratifyable(SCComponent comp) {
-		this.componentStratifyability.put(comp.getId(), false);
+		componentStratifyability.put(comp.getId(), false);
 	}
 
 	private void setStratumFor(SCComponent comp, int stratum) {
-		this.strata.putIfAbsent(stratum, new ArrayList<>());
-		this.strata.get(stratum).add(comp);
-		this.strataByComponentId.put(comp.getId(), stratum);
+		strata.putIfAbsent(stratum, new ArrayList<>());
+		strata.get(stratum).add(comp);
+		strataByComponentId.put(comp.getId(), stratum);
 	}
 
 	private Integer getStratumFor(SCComponent comp) {
-		return this.strataByComponentId.get(comp.getId());
+		return strataByComponentId.get(comp.getId());
 	}
 
 }
