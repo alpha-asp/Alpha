@@ -16,8 +16,6 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 public abstract class AbstractAggregateTransformation extends ProgramTransformation<InputProgram, InputProgram> {
 
@@ -108,14 +106,7 @@ public abstract class AbstractAggregateTransformation extends ProgramTransformat
 		}
 
 		private BasicAtom buildAggregateOutputAtom(String aggregateId, AggregateAtom atom) {
-			List<Term> aggregateOutputTerms = new ArrayList<>();
-			if (atom.getLowerBoundTerm() != null) {
-				aggregateOutputTerms.add(atom.getLowerBoundTerm());
-			}
-			if (atom.getUpperBoundTerm() != null) {
-				aggregateOutputTerms.add(atom.getUpperBoundTerm());
-			}
-			return new BasicAtom(AGGREGATE_RESULT, ConstantTerm.getSymbolicInstance(aggregateId), FunctionTerm.getInstance("output", aggregateOutputTerms));
+			return new BasicAtom(AGGREGATE_RESULT, ConstantTerm.getSymbolicInstance(aggregateId), atom.getLowerBoundTerm());
 		}
 
 		public String getAggregateId(AggregateLiteral lit) {

@@ -27,6 +27,11 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	public InputProgram apply(InputProgram inputProgram) {
 		AggregateLiteralSplitting literalSplitting = new AggregateLiteralSplitting();
 		AggregateOperatorNormalization operatorNormalization = new AggregateOperatorNormalization();
-		return literalSplitting.andThen(operatorNormalization).apply(inputProgram);
+		AbstractAggregateTransformation bindingAggregateTransformation = new BindingAggregateTransformation();
+		InputProgram result = literalSplitting
+				.andThen(operatorNormalization)
+				.andThen(bindingAggregateTransformation)
+				.apply(inputProgram);
+		return result;
 	}
 }

@@ -62,6 +62,10 @@ public class AggregateRewritingTest {
 			"bla :- dom(X), not X > #count{N : thing(N)}.";
 	public static final String OPERATOR_NORMALIZATION_GE_NEG_ASP =
 			"bla :- dom(X), not X >= #count{N : thing(N)}.";
+	
+	public static final String COUNT_EQ_ASP = 
+			"thing(1..3)."
+			+ "cnt_things(X) :- X = #count{N : thing(N)}.";
 	//@formatter:on
 
 	@Test
@@ -240,6 +244,13 @@ public class AggregateRewritingTest {
 		assertAggregateBoundDecremented(sourceRule, rewrittenRule);
 	}
 
+	@Test
+	public void bindingAggregatesSmokeTest() {
+		Alpha alpha = new Alpha();
+		ProgramTransformation<InputProgram, InputProgram> aggregateRewriting = new AggregateRewriting(null);
+		System.out.println(aggregateRewriting.apply(alpha.readProgramString(COUNT_EQ_ASP)));
+	}
+
 	private static void assertOperatorNormalized(BasicRule rewrittenRule, ComparisonOperator expectedRewrittenOperator,
 			boolean expectedRewrittenLiteralPositive) {
 		AggregateLiteral rewrittenAggregate = null;
@@ -251,7 +262,6 @@ public class AggregateRewritingTest {
 		Assert.assertNotNull(rewrittenAggregate);
 		Assert.assertEquals(expectedRewrittenOperator, rewrittenAggregate.getAtom().getLowerBoundOperator());
 		Assert.assertTrue(expectedRewrittenLiteralPositive == !rewrittenAggregate.isNegated());
-
 	}
 
 	private static void assertAggregateBoundDecremented(BasicRule sourceRule, BasicRule rewrittenRule) {
