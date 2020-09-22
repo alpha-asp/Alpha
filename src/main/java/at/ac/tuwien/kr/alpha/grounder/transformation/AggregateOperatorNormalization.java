@@ -78,7 +78,7 @@ public class AggregateOperatorNormalization extends ProgramTransformation<InputP
 			switch (atom.getLowerBoundOperator()) {
 				case LT:
 					decrementedBound = VariableTerm.getAnonymousInstance();
-					retVal.add(new AggregateLiteral( 
+					retVal.add(new AggregateLiteral(
 							new AggregateAtom(
 									ComparisonOperator.LE, decrementedBound, null, null, atom.getAggregatefunction(), atom.getAggregateElements()),
 							!lit.isNegated()));
@@ -98,7 +98,7 @@ public class AggregateOperatorNormalization extends ProgramTransformation<InputP
 					break;
 				case GE:
 					decrementedBound = VariableTerm.getAnonymousInstance();
-					retVal.add(new AggregateLiteral( 
+					retVal.add(new AggregateLiteral(
 							new AggregateAtom(
 									ComparisonOperator.LE, decrementedBound, null, null, atom.getAggregatefunction(), atom.getAggregateElements()),
 							lit.isNegated()));

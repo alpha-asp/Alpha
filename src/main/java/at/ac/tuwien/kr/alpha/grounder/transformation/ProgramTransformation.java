@@ -16,10 +16,10 @@ public abstract class ProgramTransformation<I extends AbstractProgram<?>, O exte
 	 * @param nextTransform
 	 * @return
 	 */
-	public <O1 extends AbstractProgram<?>> ProgramTransformation<I, O1> andThen(ProgramTransformation<O, O1> nextTransform) {
-		return new ProgramTransformation<I, O1>() {
+	public <P extends AbstractProgram<?>> ProgramTransformation<I, P> andThen(ProgramTransformation<O, P> nextTransform) {
+		return new ProgramTransformation<I, P>() {
 			@Override
-			public O1 apply(I input) {
+			public P apply(I input) {
 				O intermediateResult = ProgramTransformation.this.apply(input);
 				return nextTransform.apply(intermediateResult);
 			}

@@ -91,7 +91,7 @@ public abstract class AbstractAggregateTransformation extends ProgramTransformat
 
 	public static class AggregateRewritingContext {
 
-		private int idCounter = 0;
+		private int idCounter;
 		private Map<AggregateLiteral, String> aggregateIds = new HashMap<>();
 		private Map<AggregateLiteral, BasicAtom> aggregateOutputAtoms = new HashMap<>();
 		private Map<AggregateLiteral, BasicRule> aggregateSourceRules = new HashMap<>();

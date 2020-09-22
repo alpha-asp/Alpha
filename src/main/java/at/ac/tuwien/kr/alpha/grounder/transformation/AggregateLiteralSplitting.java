@@ -51,7 +51,7 @@ public class AggregateLiteralSplitting extends ProgramTransformation<InputProgra
 		boolean containsRewrittenAggregate = false;
 		for (Literal lit : sourceRule.getBody()) {
 			AggregateLiteral aggLit;
-			if ((lit instanceof AggregateLiteral) && shouldRewrite((aggLit = (AggregateLiteral) lit))) {
+			if (lit instanceof AggregateLiteral && shouldRewrite(aggLit = (AggregateLiteral) lit)) {
 				containsRewrittenAggregate = true;
 				for (BasicRule rewritten : splitAggregateLiteral(sourceRule, aggLit)) {
 					rewriteRule(rewritten, resultRules);
