@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -64,7 +63,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	public InternalProgram apply(AnalyzedProgram inputProgram) {
 		// Calculate a stratification and initialize working memory.
 		ComponentGraph componentGraph = inputProgram.getComponentGraph();
-		Map<Integer, List<SCComponent>> strata = StratificationAlgorithm.calculateStratification(componentGraph);
+		List<SCComponent> strata = StratificationAlgorithm.calculateStratification(componentGraph);
 		predicateDefiningRules = inputProgram.getPredicateDefiningRules();
 		// set up list of atoms which are known to be true - we expand on this one
 		Map<Predicate, Set<Instance>> knownFacts = new LinkedHashMap<>(inputProgram.getFactsByPredicate());
@@ -86,8 +85,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		literalInstantiator = new LiteralInstantiator(new WorkingMemoryBasedInstantiationStrategy(workingMemory));
 
 		// Evaluate the program part covered by the calculated stratification.
-		ComponentEvaluationOrder evaluationOrder = new ComponentEvaluationOrder(strata);
-		for (SCComponent currComponent : evaluationOrder) {
+		for (SCComponent currComponent : strata) {
 			evaluateComponent(currComponent);
 		}
 
@@ -365,55 +363,6 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			for (Instance inst : entry.getValue()) {
 				additionalFacts.add(new BasicAtom(entry.getKey(), inst.terms));
 			}
-		}
-	}
-
-	private class ComponentEvaluationOrder implements Iterable<SCComponent> {
-
-		private Iterator<Entry<Integer, List<SCComponent>>> strataIterator;
-		private Iterator<SCComponent> componentIterator;
-
-		private ComponentEvaluationOrder(Map<Integer, List<SCComponent>> stratification) {
-			strataIterator = stratification.entrySet().iterator();
-			startNextStratum();
-		}
-
-		private boolean startNextStratum() {
-			if (!strataIterator.hasNext()) {
-				return false;
-			}
-			componentIterator = strataIterator.next().getValue().iterator();
-			return true;
-		}
-
-		@Override
-		public Iterator<SCComponent> iterator() {
-			return new Iterator<SCComponent>() {
-
-				@Override
-				public boolean hasNext() {
-					if (componentIterator == null) {
-						// can happen when there are actually no components, as is the case for empty programs or programs just consisting of
-						// facts
-						return false;
-					}
-					if (componentIterator.hasNext()) {
-						return true;
-					} else {
-						if (!startNextStratum()) {
-							return false;
-						} else {
-							return hasNext();
-						}
-					}
-				}
-
-				@Override
-				public SCComponent next() {
-					return componentIterator.next();
-				}
-
-			};
 		}
 	}
 

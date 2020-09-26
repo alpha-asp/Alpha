@@ -26,22 +26,16 @@
 package at.ac.tuwien.kr.alpha.common.depgraph;
 
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph.SCComponent;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 /**
- * Helper class for finding stratifications on a given {@link ComponentGraph}.
+ * Algorithm for finding a stratification of a given {@link ComponentGraph}.
  * 
- * Copyright (c) 2019, the Alpha Team.
+ * Copyright (c) 2019-2020, the Alpha Team.
  */
 public class StratificationAlgorithm {
 
@@ -49,115 +43,84 @@ public class StratificationAlgorithm {
 
 	private ComponentGraph componentGraph;
 
-	private Map<Integer, Integer> strataByComponentId;
-	private Map<Integer, Boolean> componentStratifyability;
+	private final boolean[] visitedComponents;		// Marks visited components.
+	private final boolean[] isUnstratifiableComponent;	// Marks those known to be not stratifiable (may be due to parent not being stratifiable).
+	private final SCComponent[] componentEvaluationSequence;	// Store the topological order of all components.
 
-	private Map<Integer, List<SCComponent>> strata;
+	private int doneComponents;
+	private int numComponents;
 
 	private StratificationAlgorithm(ComponentGraph cg) {
 		componentGraph = cg;
-		componentStratifyability = new HashMap<>();
-		strataByComponentId = new HashMap<>();
-		strata = new HashMap<>();
+		doneComponents = 0;
+		numComponents = cg.getComponents().size();
+		visitedComponents = new boolean[numComponents];
+		isUnstratifiableComponent = new boolean[numComponents];
+		componentEvaluationSequence = new SCComponent[numComponents];
 	}
 
 	/**
-	 * Calculates a stratification covering as much as possible (the maximal stratifiable part) of the given component graph, such that:
-	 * <p>
-	 * <ul>
-	 * <li>components depending only on facts (i.e. components with no dependencies) are on the lowest stratum
-	 * <li>every component within the stratification depends only on components that are also part of the stratification themselves
-	 * </ul>
-	 * <p>
-	 * 
-	 * @param cg the component graph to stratify
-	 * @return a map representing a valid stratification with respect to the criteria above, where the key is the zero-based index of the stratum
+	 * Calculates a stratification covering as much as possible (the maximal stratifiable part) of the given
+	 * component graph. It assigns each strongly-connected component its own stratum and returns a sequence of
+	 * all stratifiable components in topological order, i.e., if component A depends on component B then B occurs
+	 * earlier in the returned sequence.
+	 *
+	 * @param cg the graph of strongly-connected-components (that must be acyclic).
+	 * @return a list of all stratifiable components in the order that they can be evaluated.
 	 */
-	public static Map<Integer, List<SCComponent>> calculateStratification(ComponentGraph cg) {
+	public static List<SCComponent> calculateStratification(ComponentGraph cg) {
 		return new StratificationAlgorithm(cg).runStratification();
 	}
 
 
-	private Map<Integer, List<SCComponent>> runStratification() {
+	private List<SCComponent> runStratification() {
 		LOGGER.debug("Initial call to stratify with entry points!");
-		stratify(new HashSet<>(componentGraph.getEntryPoints()));
-		return strata;
-	}
 
-	private void stratify(Set<SCComponent> currComponents) {
-		Set<SCComponent> nextComps = new HashSet<>();
-		LOGGER.debug("Starting stratify run - currComponents = {}", StringUtils.join(currComponents, ","));
-		for (SCComponent comp : currComponents) {
-			for (int nextComponentId : stratifyComponent(comp)) {
-				nextComps.add(componentGraph.getComponents().get(nextComponentId));
+		// Compute topological order and mark unstratifiable components.
+		for (SCComponent component : componentGraph.getEntryPoints()) {
+			topoSort(component, false);
+		}
+
+		// Extract list of stratifiable components.
+		List<SCComponent> stratifiableComponentsSequence = new ArrayList<>();
+		for (SCComponent component : componentEvaluationSequence) {
+			if (!isUnstratifiableComponent[component.getId()]) {
+				stratifiableComponentsSequence.add(component);
 			}
 		}
-		if (!nextComps.isEmpty()) {
-			stratify(nextComps);
-		} else {
-			LOGGER.debug("Stratification finished - no more components to work off!");
-		}
+
+		return stratifiableComponentsSequence;
 	}
 
-	private Set<Integer> stratifyComponent(SCComponent comp) {
-		Set<Integer> retVal = new HashSet<>();
-		Map<Integer, Boolean> dependencies = comp.getDependencyIds();
-		int stratum = 0;
-		boolean canStratify = true;
-		SCComponent dep;
-		if (comp.hasNegativeCycle()) {
-			// no need to check dependencies if we aren't stratifyable
-			markUnstratifyable(comp);
-			canStratify = false;
-		} else if (getStratumFor(comp) != null) {
-			// component already has a stratum, i.e. we reached it via a different path first.
-			// no need to do anything further
-			canStratify = false;
-		} else {
-			for (Entry<Integer, Boolean> depEntry : dependencies.entrySet()) {
-				dep = componentGraph.getComponents().get(depEntry.getKey());
-				if (getStratumFor(dep) == null) {
-					// NOT breaking out of loop here, need to make sure unstratifyability is propagated
-					canStratify = false;
-					if (isUnstratifyable(dep)) {
-						markUnstratifyable(comp);
-					}
-				} else {
-					stratum = (getStratumFor(dep) > stratum) ? getStratumFor(dep) : stratum;
-					if (depEntry.getValue().equals(false)) {
-						stratum++;
-					}
-				}
+	private void topoSort(SCComponent component, boolean hasUnstratifiableParent) {
+		// We compute a topological ordering using a depth-first search where for any node its position in the
+		// topological ordering is the reverse of its finishing time (i.e., last-finishing node comes first).
+
+		int componentId = component.getId();
+
+		// If this component is marked unstratifiable, it was processed already, immediately return.
+		if (isUnstratifiableComponent[componentId]) {
+			return;
+		}
+
+		boolean isUnstratifiable = hasUnstratifiableParent || component.hasNegativeCycle();
+		isUnstratifiableComponent[componentId] = isUnstratifiable;
+
+		// Note: the input graph is a component graph, hence it is a DAG and has no cycles, thus we do not have
+		// to mark nodes as visited before descending to deeper nodes.
+
+		for (Integer dependentComponentId : component.getDependentIds()) {
+			// Descend if the lower node has not been visited yet or we need to propagate unstratifiable.
+			if (isUnstratifiable || !visitedComponents[dependentComponentId]) {
+				topoSort(componentGraph.getComponents().get(dependentComponentId), isUnstratifiable);
 			}
 		}
-		if (canStratify) {
-			setStratumFor(comp, stratum);
+
+		// Add current component in front of all others (if we are visiting for the first time).
+		if (!visitedComponents[componentId]) {
+			visitedComponents[componentId] = true;
+			doneComponents++;
+			componentEvaluationSequence[numComponents - doneComponents] = component;
 		}
-		if (canStratify || isUnstratifyable(comp)) {
-			// set up dependent components for next step
-			// also do this for unstratifyable components since we need to propagate unstratifyability
-			// NOTE: this will lead to every node in the graph being explored
-			retVal = comp.getDependentIds();
-		}
-		return retVal;
 	}
-
-	private boolean isUnstratifyable(SCComponent comp) {
-		return Boolean.FALSE == componentStratifyability.get(comp.getId());
-	}
-
-	private void markUnstratifyable(SCComponent comp) {
-		componentStratifyability.put(comp.getId(), false);
-	}
-
-	private void setStratumFor(SCComponent comp, int stratum) {
-		strata.putIfAbsent(stratum, new ArrayList<>());
-		strata.get(stratum).add(comp);
-		strataByComponentId.put(comp.getId(), stratum);
-	}
-
-	private Integer getStratumFor(SCComponent comp) {
-		return strataByComponentId.get(comp.getId());
-	}
-
 }
