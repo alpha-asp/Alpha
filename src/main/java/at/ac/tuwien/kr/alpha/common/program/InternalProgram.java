@@ -10,7 +10,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -22,7 +21,7 @@ import java.util.Map;
  * aggregates must be rewritten, all intervals
  * must be preprocessed (into interval atoms), equality predicates must be rewritten
  * 
- * Copyright (c) 2017-2019, the Alpha Team.
+ * Copyright (c) 2017-2020, the Alpha Team.
  */
 public class InternalProgram extends AbstractProgram<InternalRule> {
 
@@ -32,8 +31,8 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 
 	public InternalProgram(List<InternalRule> rules, List<Atom> facts) {
 		super(rules, facts, null);
-		this.recordFacts(facts);
-		this.recordRules(rules);
+		recordFacts(facts);
+		recordRules(rules);
 	}
 
 	protected static ImmutablePair<List<InternalRule>, List<Atom>> internalizeRulesAndFacts(NormalProgram normalProgram) {
@@ -65,36 +64,35 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 		for (Atom fact : facts) {
 			tmpInstances = FactIntervalEvaluator.constructFactInstances(fact);
 			tmpPredicate = fact.getPredicate();
-			this.factsByPredicate.putIfAbsent(tmpPredicate, new LinkedHashSet<>());
-			this.factsByPredicate.get(tmpPredicate).addAll(tmpInstances);
+			factsByPredicate.putIfAbsent(tmpPredicate, new LinkedHashSet<>());
+			factsByPredicate.get(tmpPredicate).addAll(tmpInstances);
 		}
 	}
 
 	private void recordRules(List<InternalRule> rules) {
-		Map<Integer, InternalRule> retVal = new HashMap<>();
 		for (InternalRule rule : rules) {
-			this.rulesById.put(rule.getRuleId(), rule);
+			rulesById.put(rule.getRuleId(), rule);
 			if (!rule.isConstraint()) {
-				this.recordDefiningRule(rule.getHeadAtom().getPredicate(), rule);
+				recordDefiningRule(rule.getHeadAtom().getPredicate(), rule);
 			}
 		}
 	}
 
 	private void recordDefiningRule(Predicate headPredicate, InternalRule rule) {
-		this.predicateDefiningRules.putIfAbsent(headPredicate, new HashSet<>());
-		this.predicateDefiningRules.get(headPredicate).add(rule);
+		predicateDefiningRules.putIfAbsent(headPredicate, new HashSet<>());
+		predicateDefiningRules.get(headPredicate).add(rule);
 	}
 
 	public Map<Predicate, HashSet<InternalRule>> getPredicateDefiningRules() {
-		return Collections.unmodifiableMap(this.predicateDefiningRules);
+		return Collections.unmodifiableMap(predicateDefiningRules);
 	}
 
 	public Map<Predicate, LinkedHashSet<Instance>> getFactsByPredicate() {
-		return Collections.unmodifiableMap(this.factsByPredicate);
+		return Collections.unmodifiableMap(factsByPredicate);
 	}
 
 	public Map<Integer, InternalRule> getRulesById() {
-		return Collections.unmodifiableMap(this.rulesById);
+		return Collections.unmodifiableMap(rulesById);
 	}
 
 }
