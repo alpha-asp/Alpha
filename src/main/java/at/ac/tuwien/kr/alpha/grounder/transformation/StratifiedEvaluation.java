@@ -154,7 +154,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	private void prepareComponentEvaluation(Set<InternalRule> rulesToEvaluate) {
 		modifiedInLastEvaluationRun = new HashMap<>();
 		for (InternalRule rule : rulesToEvaluate) {
-			// Register rule head instances
+			// Register rule head instances.
 			Predicate headPredicate = rule.getHeadAtom().getPredicate();
 			IndexedInstanceStorage headInstances = workingMemory.get(headPredicate, true);
 			modifiedInLastEvaluationRun.putIfAbsent(headPredicate, new LinkedHashSet<>());
@@ -184,29 +184,28 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	private List<Substitution> calculateSatisfyingSubstitutionsForRule(InternalRule rule, boolean checkAllStartingLiterals) {
 		LOGGER.debug("Grounding rule {}", rule);
 		RuleGroundingOrders groundingOrders = rule.getGroundingOrders();
-		List<Substitution> groundSubstitutions = new ArrayList<>(); // the actual full ground substitutions for the rule
+
+		// Treat rules with fixed instantiation first.
 		LOGGER.debug("Is fixed rule? {}", rule.getGroundingOrders().fixedInstantiation());
-		if (groundingOrders.fixedInstantiation()) { 
-			// Note: Representation of fixed grounding orders should be refactored in RuleGroundingOrders.
+		if (groundingOrders.fixedInstantiation()) {
 			RuleGroundingOrder fixedGroundingOrder = groundingOrders.getFixedGroundingOrder();
-			groundSubstitutions.addAll(calcSubstitutionsWithGroundingOrder(fixedGroundingOrder,
-				Collections.singletonList(new Substitution())));
-		} else {
-			List<Literal> startingLiterals = groundingOrders.getStartingLiterals();
-			List<Substitution> substitutionsForStartingLiteral;
-			if (!checkAllStartingLiterals) {
-				// If we don't have to check all literals, i.e. we're in the first evaluation run, just use the first one
-				Literal lit = startingLiterals.get(0);
-				substitutionsForStartingLiteral = calcSubstitutionsWithGroundingOrder(groundingOrders.orderStartingFrom(lit),
-					substituteFromRecentlyAddedInstances(lit));
-				groundSubstitutions.addAll(substitutionsForStartingLiteral);
-			} else {
-				for (Literal lit : startingLiterals) {
-					substitutionsForStartingLiteral = calcSubstitutionsWithGroundingOrder(groundingOrders.orderStartingFrom(lit),
-						substituteFromRecentlyAddedInstances(lit));
-					groundSubstitutions.addAll(substitutionsForStartingLiteral);
-				}
-			}
+			return calcSubstitutionsWithGroundingOrder(fixedGroundingOrder, Collections.singletonList(new Substitution()));
+		}
+
+		List<Literal> startingLiterals = groundingOrders.getStartingLiterals();
+		// Check only one starting literal if indicated by the parameter.
+		if (!checkAllStartingLiterals) {
+			// If this is the first evaluation run, it suffices to start from the first starting literal only.
+			Literal lit = startingLiterals.get(0);
+			return calcSubstitutionsWithGroundingOrder(groundingOrders.orderStartingFrom(lit), substituteFromRecentlyAddedInstances(lit));
+		}
+
+		// Ground from all starting literals.
+		List<Substitution> groundSubstitutions = new ArrayList<>();	// Collection of full ground substitutions for the given rule.
+		for (Literal lit : startingLiterals) {
+			List<Substitution> substitutionsForStartingLiteral = calcSubstitutionsWithGroundingOrder(groundingOrders.orderStartingFrom(lit),
+				substituteFromRecentlyAddedInstances(lit));
+			groundSubstitutions.addAll(substitutionsForStartingLiteral);
 		}
 		return groundSubstitutions;
 	}
@@ -236,11 +235,10 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	}
 
 	private List<Substitution> calcSubstitutionsWithGroundingOrder(RuleGroundingOrder groundingOrder, List<Substitution> startingSubstitutions) {
-		// Iterate through the grounding order starting at index startFromOrderPosition.
-		// Whenever instantiation of a Literal with a given substitution causes
-		// a result with a type other than CONTINUE, discard that substitution.
+		// Iterate through the grounding order and whenever instantiation of a Literal with a given substitution
+		// causes a result with a type other than CONTINUE, discard that substitution.
 
-		List<Substitution> fullSubstitutions = new ArrayList<>();
+		// Note that this function uses a stack of partial substitutions to simulate a recursive function.
 		Stack<ArrayList<Substitution>> substitutionStack = new Stack<>();	// For speed, we really want ArrayLists on the stack.
 		if (startingSubstitutions instanceof ArrayList) {
 			substitutionStack.push((ArrayList<Substitution>) startingSubstitutions);
@@ -248,6 +246,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			substitutionStack.push(new ArrayList<>(startingSubstitutions));	// Copy startingSubstitutions into ArrayList. Note: mostly happens for empty or singleton lists.
 		}
 		int currentOrderPosition = 0;
+		List<Substitution> fullSubstitutions = new ArrayList<>();
 		while (!substitutionStack.isEmpty()) {
 			List<Substitution> currentSubstitutions = substitutionStack.peek();
 			// If no more substitutions remain at current position, all have been processed, continue on next lower level.
