@@ -1,15 +1,17 @@
 package at.ac.tuwien.kr.alpha.test.util;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
 import at.ac.tuwien.kr.alpha.common.depgraph.Edge;
 import at.ac.tuwien.kr.alpha.common.depgraph.Node;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * 
- * Copyright (c) 2019, the Alpha Team.
+ * Copyright (c) 2019-2020, the Alpha Team.
  */
 public final class DependencyGraphUtils {
 
@@ -18,10 +20,10 @@ public final class DependencyGraphUtils {
 	}
 
 	public static boolean isReachableFrom(Node dest, Node src, DependencyGraph dg) {
-		return DependencyGraphUtils.isReachableFrom(dest, src, dg, new ArrayList<>());
+		return DependencyGraphUtils.isReachableFrom(dest, src, dg, new HashSet<>());
 	}
 
-	private static boolean isReachableFrom(Node dest, Node src, DependencyGraph dg, List<Node> discovered) {
+	private static boolean isReachableFrom(Node dest, Node src, DependencyGraph dg, Set<Node> discovered) {
 		List<Edge> outgoingEdges;
 		if (src.equals(dest)) {
 			return true;
@@ -30,7 +32,7 @@ public final class DependencyGraphUtils {
 			return false;
 		}
 		discovered.add(src);
-		// we wanna do BFS here, therefore use 2 loops
+		// Checking all edges first before descending deeper.
 		for (Edge edge : outgoingEdges) {
 			if (edge.getTarget().equals(dest)) {
 				return true;
@@ -38,7 +40,7 @@ public final class DependencyGraphUtils {
 		}
 		for (Edge tmp : outgoingEdges) {
 			if (discovered.contains(tmp.getTarget())) {
-				// cycle found
+				// Cycle found, do not descend deeper.
 				continue;
 			}
 			if (DependencyGraphUtils.isReachableFrom(dest, tmp.getTarget(), dg, discovered)) {
@@ -49,12 +51,12 @@ public final class DependencyGraphUtils {
 	}
 
 	/**
-	 * Checks whether the given nodes are strongly connected within the given dependency graph. Strongly connected means every node in the given list is
-	 * reachable from every other node in the list and vice versa.
+	 * Checks whether the given nodes are strongly connected within the given dependency graph. Strongly connected
+	 * means every node in the given list is reachable from every other node in the list and vice versa.
 	 * 
-	 * @param connectedNodes the nodes to check
-	 * @param dg             the dependency graph in which to check
-	 * @return true if the given nodes are strongly connected, false otherwise
+	 * @param connectedNodes the nodes to check.
+	 * @param dg             the dependency graph in which to check.
+	 * @return true if the given nodes are strongly connected, false otherwise.
 	 */
 	public static boolean areStronglyConnected(List<Node> connectedNodes, DependencyGraph dg) {
 		for (Node n1 : connectedNodes) {
@@ -71,18 +73,15 @@ public final class DependencyGraphUtils {
 		if (!DependencyGraphUtils.areStronglyConnected(componentNodes, dg)) {
 			return false;
 		}
-		// now check if the given set is maximal
-		List<Node> lst = new ArrayList<>();
-		for (Node n : componentNodes) {
-			lst.add(n);
-		}
+		// Check if the given set is maximal.
+		List<Node> lst = new ArrayList<>(componentNodes);
 		for (Node n : dg.getAdjancencyMap().keySet()) {
 			if (lst.contains(n)) {
 				continue;
 			}
 			lst.add(n);
 			if (DependencyGraphUtils.areStronglyConnected(lst, dg)) {
-				// not a strongly connected component if there is a bigger set which is strongly connected
+				// Not a strongly connected component if there is a bigger set which is strongly connected.
 				return false;
 			}
 		}

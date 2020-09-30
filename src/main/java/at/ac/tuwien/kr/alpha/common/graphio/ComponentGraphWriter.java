@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019, the Alpha Team.
+ * Copyright (c) 2019-2020, the Alpha Team.
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -43,11 +43,11 @@ public class ComponentGraphWriter {
 
 	public void writeAsDot(ComponentGraph graph, OutputStream out) {
 		PrintStream ps = new PrintStream(out);
-		this.startGraph(ps);
-		this.writeComponentsTable(ps, graph);
+		startGraph(ps);
+		writeComponentsTable(ps, graph);
 		ps.println();
-		this.writeGraph(ps, graph);
-		this.finishGraph(ps);
+		writeGraph(ps, graph);
+		finishGraph(ps);
 		ps.close();
 	}
 

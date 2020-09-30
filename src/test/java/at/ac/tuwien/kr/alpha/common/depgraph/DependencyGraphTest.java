@@ -2,19 +2,13 @@ package at.ac.tuwien.kr.alpha.common.depgraph;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.graphio.DependencyGraphWriter;
 import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.test.util.DependencyGraphUtils;
-import org.antlr.v4.runtime.CharStreams;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,19 +41,6 @@ public class DependencyGraphTest {
 			prgBuilder.append("\n");
 		}
 		return prgBuilder.toString();
-	}
-
-	@Test
-	@Ignore("Not a real test, rather a playground for local testing while changing stuff")
-	public void dependencyGraphSmokeTest() throws IOException {
-		Alpha system = new Alpha();
-		InputStream is = DependencyGraphTest.class.getResourceAsStream("/partial-eval/components-test.asp");
-		InputProgram p = new ProgramParser().parse(CharStreams.fromStream(is));
-		NormalProgram normalProg = system.normalizeProgram(p);
-		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
-		DependencyGraph dg = analyzed.getDependencyGraph();
-		DependencyGraphWriter dgw = new DependencyGraphWriter();
-		dgw.writeAsDotfile(dg, "/tmp/components-test.asp.dg.dot");
 	}
 
 	@Test
@@ -198,10 +179,21 @@ public class DependencyGraphTest {
 	}
 
 	@Test
-	public void stronglyConnectedComponentsMultipleComponentsTest() throws IOException {
+	public void stronglyConnectedComponentsMultipleComponentsTest() {
+		String inputProgram = "f0.\n" +
+			"f1.\n" +
+			"f2.\n" +
+			"f3.\n" +
+			"a :- f0, f1, not b.\n" +
+			"b :- f0, f1, not a.\n" +
+			"c :- f2, f3, not d.\n" +
+			"d :- f2, f3, not c.\n" +
+			"x :- a, c, y.\n" +
+			"y :- b, d, x.\n" +
+			"z :- x, y, z.";
+
 		Alpha system = new Alpha();
-		InputProgram prog = new ProgramParser()
-				.parse(CharStreams.fromStream(DependencyGraphTest.class.getResourceAsStream("/partial-eval/components-test.asp")));
+		InputProgram prog = system.readProgramString(inputProgram);
 		NormalProgram normalProg = system.normalizeProgram(prog);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normalProg);
 		DependencyGraph dg = analyzed.getDependencyGraph();
