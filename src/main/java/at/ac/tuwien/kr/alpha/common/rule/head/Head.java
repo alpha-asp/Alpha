@@ -6,8 +6,6 @@ package at.ac.tuwien.kr.alpha.common.rule.head;
  * Copyright (c) 2017-2019, the Alpha Team.
  */
 public abstract class Head {
-
-	public abstract boolean isNormal();
 	
 	@Override
 	public abstract String toString();

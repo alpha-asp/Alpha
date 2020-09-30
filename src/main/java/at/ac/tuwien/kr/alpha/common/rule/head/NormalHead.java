@@ -3,6 +3,7 @@ package at.ac.tuwien.kr.alpha.common.rule.head;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 
 /**
+ * Represents a normal head, i.e., a head that is an Atom.
  * Copyright (c) 2019, the Alpha Team.
  */
 public class NormalHead extends Head {
@@ -15,28 +16,23 @@ public class NormalHead extends Head {
 
 	// Note that at some point in the future it might make sense to have this method directly in Head
 	public boolean isGround() {
-		return this.atom.isGround();
-	}
-
-	@Override
-	public boolean isNormal() {
-		return true;
+		return atom.isGround();
 	}
 
 	public Atom getAtom() {
-		return this.atom;
+		return atom;
 	}
 
 	@Override
 	public String toString() {
-		return this.atom.toString();
+		return atom.toString();
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((this.atom == null) ? 0 : this.atom.hashCode());
+		result = prime * result + ((atom == null) ? 0 : atom.hashCode());
 		return result;
 	}
 

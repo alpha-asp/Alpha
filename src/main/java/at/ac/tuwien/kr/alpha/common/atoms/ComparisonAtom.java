@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2019, the Alpha Team.
+ * Copyright (c) 2017-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -27,17 +27,17 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
- * Represents a builtin atom according to the standard.
+ * Represents a builtin comparison atom according to the standard.
  */
 public class ComparisonAtom extends Atom implements VariableNormalizableAtom {
 	private final Predicate predicate;
@@ -121,7 +121,7 @@ public class ComparisonAtom extends Atom implements VariableNormalizableAtom {
 
 	@Override
 	public Atom withTerms(List<Term> terms) {
-		return new ComparisonAtom(terms, this.operator);
+		return new ComparisonAtom(terms, operator);
 	}
 
 }

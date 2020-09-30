@@ -25,15 +25,6 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.Collection;
-
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
@@ -45,6 +36,13 @@ import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.Collection;
+
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static org.junit.Assert.assertTrue;
 
 public class ChoiceManagerTests extends AbstractSolverTests {
 	private Grounder grounder;
@@ -52,17 +50,17 @@ public class ChoiceManagerTests extends AbstractSolverTests {
 	private AtomStore atomStore;
 
 	@Before
-	public void setUp() throws IOException {
+	public void setUp() {
 		Alpha system = new Alpha();
 		String testProgram = "h :- b1, b2, not b3, not b4.";
 		InputProgram parsedProgram = new ProgramParser().parse(testProgram);
-		NormalProgram normal = system.normalizeProgram(parsedProgram);
-		InternalProgram pa = InternalProgram.fromNormalProgram(normal);
-		this.atomStore = new AtomStoreImpl();
-		this.grounder = new NaiveGrounder(pa, atomStore, true);
+		NormalProgram normalProgram = system.normalizeProgram(parsedProgram);
+		InternalProgram internalProgram = InternalProgram.fromNormalProgram(normalProgram);
+		atomStore = new AtomStoreImpl();
+		grounder = new NaiveGrounder(internalProgram, atomStore, true);
 		WritableAssignment assignment = new TrailAssignment(atomStore);
 		NoGoodStore store = new NoGoodStoreAlphaRoaming(assignment);
-		this.choiceManager = new ChoiceManager(assignment, store);
+		choiceManager = new ChoiceManager(assignment, store);
 	}
 
 	@Test

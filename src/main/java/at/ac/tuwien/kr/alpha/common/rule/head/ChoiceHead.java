@@ -1,13 +1,13 @@
 package at.ac.tuwien.kr.alpha.common.rule.head;
 
-import static at.ac.tuwien.kr.alpha.Util.join;
-
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
+
+import java.util.List;
+
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 /**
  * Represents the head of a choice rule.
@@ -70,11 +70,6 @@ public class ChoiceHead extends Head {
 		this.lowerOp = lowerOp;
 		this.upperBound = upperBound;
 		this.upperOp = upperOp;
-	}
-
-	@Override
-	public boolean isNormal() {
-		return false;
 	}
 
 	@Override

@@ -1,4 +1,3 @@
-.
 _nred("1", N) :- node(N), not red(N).
 red(N) :- node(N), not _nred("1", N).
 _ngreen("1", N) :- node(N), not green(N).

@@ -1,13 +1,13 @@
 package at.ac.tuwien.kr.alpha.common.program;
 
-import java.util.Collections;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.rule.AbstractRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * The parent type for all kinds of programs. Defines a program's basic structure (facts + rules + inlineDirectives)
@@ -28,25 +28,25 @@ public abstract class AbstractProgram<R extends AbstractRule<? extends Head>> {
 	}
 
 	public List<R> getRules() {
-		return Collections.unmodifiableList(this.rules);
+		return Collections.unmodifiableList(rules);
 	}
 
 	public List<Atom> getFacts() {
-		return Collections.unmodifiableList(this.facts);
+		return Collections.unmodifiableList(facts);
 	}
 
 	public InlineDirectives getInlineDirectives() {
-		return this.inlineDirectives;
+		return inlineDirectives;
 	}
 
 	@Override
 	public String toString() {
 		final String ls = System.lineSeparator();
-		final String result = Util.join("", this.facts, "." + ls, "." + ls);
-		if (this.rules.isEmpty()) {
+		final String result = facts.isEmpty() ? "" : Util.join("", facts, "." + ls, "." + ls);
+		if (rules.isEmpty()) {
 			return result;
 		}
-		return Util.join(result, this.rules, ls, ls);
+		return Util.join(result, rules, ls, ls);
 	}
 
 }
