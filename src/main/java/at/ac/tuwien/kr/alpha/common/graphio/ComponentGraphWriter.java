@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019, the Alpha Team.
+ * Copyright (c) 2019-2020, the Alpha Team.
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -25,14 +25,14 @@
  */
 package at.ac.tuwien.kr.alpha.common.graphio;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph;
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph.SCComponent;
 import at.ac.tuwien.kr.alpha.common.depgraph.Node;
+
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.List;
+import java.util.Map.Entry;
 
 public class ComponentGraphWriter {
 
@@ -43,11 +43,11 @@ public class ComponentGraphWriter {
 
 	public void writeAsDot(ComponentGraph graph, OutputStream out) {
 		PrintStream ps = new PrintStream(out);
-		this.startGraph(ps);
-		this.writeComponentsTable(ps, graph);
+		startGraph(ps);
+		writeComponentsTable(ps, graph);
 		ps.println();
-		this.writeGraph(ps, graph);
-		this.finishGraph(ps);
+		writeGraph(ps, graph);
+		finishGraph(ps);
 		ps.close();
 	}
 
@@ -84,9 +84,9 @@ public class ComponentGraphWriter {
 	}
 
 	private void writeGraph(PrintStream ps, ComponentGraph cg) {
-		Map<Integer, SCComponent> components = cg.getComponents();
-		// write the node descriptors for the components
-		for (int componentId : components.keySet()) {
+		List<SCComponent> components = cg.getComponents();
+		// Write the node descriptors for the components.
+		for (int componentId = 0; componentId < components.size(); componentId++) {
 			ps.printf(NODE_FMT, componentId, componentId);
 			for (Entry<Integer, Boolean> dependency : components.get(componentId).getDependencyIds().entrySet()) {
 				ps.printf(EDGE_FMT, dependency.getKey(), componentId, dependency.getValue().equals(true) ? "+" : "-");

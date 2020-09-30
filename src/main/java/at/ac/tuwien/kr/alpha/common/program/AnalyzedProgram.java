@@ -3,8 +3,7 @@ package at.ac.tuwien.kr.alpha.common.program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph;
 import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
-import at.ac.tuwien.kr.alpha.common.depgraph.SccResult;
-import at.ac.tuwien.kr.alpha.common.depgraph.StronglyConnectedComponentsHelper;
+import at.ac.tuwien.kr.alpha.common.depgraph.StronglyConnectedComponentsAlgorithm;
 import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -33,8 +32,7 @@ public class AnalyzedProgram extends InternalProgram {
 	}
 
 	private ComponentGraph buildComponentGraph(DependencyGraph depGraph) {
-		StronglyConnectedComponentsHelper sccHelper = new StronglyConnectedComponentsHelper();
-		SccResult sccResult = sccHelper.findStronglyConnectedComponents(depGraph);
+		StronglyConnectedComponentsAlgorithm.SccResult sccResult = StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(depGraph);
 		return ComponentGraph.buildComponentGraph(depGraph, sccResult);
 	}
 

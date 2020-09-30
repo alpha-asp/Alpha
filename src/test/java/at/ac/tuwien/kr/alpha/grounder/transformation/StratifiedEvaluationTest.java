@@ -27,18 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import org.antlr.v4.runtime.CharStreams;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.externals.Externals;
 import at.ac.tuwien.kr.alpha.api.externals.Predicate;
@@ -50,8 +38,19 @@ import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.common.program.Programs;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
+import at.ac.tuwien.kr.alpha.grounder.Instance;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.test.util.TestUtils;
+import org.antlr.v4.runtime.CharStreams;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class StratifiedEvaluationTest {
 
@@ -63,10 +62,10 @@ public class StratifiedEvaluationTest {
 		NormalProgram normal = system.normalizeProgram(prg);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normal);
 		InternalProgram evaluated = new StratifiedEvaluation().apply(analyzed);
-		Atom qOfB = TestUtils.basicAtomWithSymbolicTerms("q", "b");
-		List<Atom> facts = evaluated.getFacts();
+		Instance qOfB = new Instance(TestUtils.basicAtomWithSymbolicTerms("q", "b").getTerms());
+		Set<Instance> facts = evaluated.getFactsByPredicate().get(at.ac.tuwien.kr.alpha.common.Predicate.getInstance("q", 1));
 		int numQOfB = 0;
-		for (Atom at : facts) {
+		for (Instance at : facts) {
 			if (at.equals(qOfB)) {
 				numQOfB++;
 			}
