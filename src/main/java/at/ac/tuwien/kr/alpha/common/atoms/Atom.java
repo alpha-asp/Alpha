@@ -27,15 +27,18 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import java.util.List;
-import java.util.Set;
-
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 
+import java.util.List;
+import java.util.Set;
+
+/**
+ * An Atom is the common superclass of all representations of ASP atoms used by Alpha.
+ */
 public abstract class Atom implements Comparable<Atom> {
 
 	public abstract Predicate getPredicate();
@@ -45,40 +48,46 @@ public abstract class Atom implements Comparable<Atom> {
 	/**
 	 * Creates a new Atom that represents this Atom, but has the given term list instead.
 	 * 
-	 * @param terms the terms to set
-	 * @return a new Atom with the given terms set
+	 * @param terms the terms to set.
+	 * @return a new Atom with the given terms set.
 	 */
 	public abstract Atom withTerms(List<Term> terms);
 
+	/**
+	 * Returns whether this atom is ground, i.e., variable-free.
+	 *
+	 * @return true iff the terms of this atom contain no {@link VariableTerm}.
+	 */
 	public abstract boolean isGround();
 
 	/**
-	 * Set of all variables occurring in the Atom
+	 * Returns the set of all variables occurring in the Atom.
 	 */
 	public Set<VariableTerm> getOccurringVariables() {
 		return toLiteral().getOccurringVariables();
 	}
 
 	/**
-	 * This method applies a substitution to a potentially non-substitute atom. The resulting atom may be non-substitute.
+	 * This method applies a substitution to the atom. Note that, depending on the atom and the substitution, the
+	 * resulting atom may still contain variables.
 	 * 
 	 * @param substitution the variable substitution to apply.
-	 * @return the atom resulting from the applying the substitution.
+	 * @return the atom resulting from the application of the substitution.
 	 */
 	public abstract Atom substitute(Substitution substitution);
 
 	/**
-	 * Creates a non-negated literal containing this atom
+	 * Creates a non-negated literal containing this atom.
 	 */
 	public Literal toLiteral() {
 		return toLiteral(true);
 	}
 
 	/**
-	 * Creates a literal containing this atom which will be negated if {@code positive} is {@code false}
+	 * Creates a literal containing this atom which will be negated if {@code positive} is {@code false}.
 	 * 
-	 * @param positive
-	 * @return
+	 * @param positive the polarity of the resulting literal.
+	 * @return a literal that is positive iff the given parameter is true.
 	 */
 	public abstract Literal toLiteral(boolean positive);
 

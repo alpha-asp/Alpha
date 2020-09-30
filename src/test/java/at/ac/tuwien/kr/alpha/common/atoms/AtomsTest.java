@@ -1,5 +1,11 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
+import at.ac.tuwien.kr.alpha.api.externals.Externals;
+import at.ac.tuwien.kr.alpha.api.externals.Predicate;
+import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,17 +16,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.api.externals.Externals;
-import at.ac.tuwien.kr.alpha.api.externals.Predicate;
-import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-
 /**
  * Test for basic functionality of various implementations of {@link Atom}.
  * 
- * Copyright (c) 2019, the Alpha Team.
+ * Copyright (c) 2019-2020, the Alpha Team.
  */
 public class AtomsTest {
 
@@ -30,7 +29,7 @@ public class AtomsTest {
 		Map<String, PredicateInterpretation> externals = new HashMap<>();
 		externals.put("isFoo", Externals.processPredicateMethod(AtomsTest.class.getMethod("isFoo", int.class)));
 		externals.put("extWithOutput", Externals.processPredicateMethod(AtomsTest.class.getMethod("extWithOutput", int.class)));
-		this.parser = new ProgramParser(externals);
+		parser = new ProgramParser(externals);
 	}
 
 	@Predicate
@@ -51,16 +50,16 @@ public class AtomsTest {
 	public void testIsBasicAtomGround() {
 		InputProgram p = parser.parse("bla(blubb, foo(bar)).");
 		Atom a = p.getFacts().get(0);
-		this.assertBasicAtomGround(a, true);
+		assertBasicAtomGround(a, true);
 		InputProgram p1 = parser.parse("foo(1, 2, 3, \"bar\").");
 		Atom a1 = p1.getFacts().get(0);
-		this.assertBasicAtomGround(a1, true);
+		assertBasicAtomGround(a1, true);
 		InputProgram p2 = parser.parse("foo(BAR).");
 		Atom a2 = p2.getFacts().get(0);
-		this.assertBasicAtomGround(a2, false);
+		assertBasicAtomGround(a2, false);
 		InputProgram p3 = parser.parse("foo(b, a, r(\"bla\", BLUBB)).");
 		Atom a3 = p3.getFacts().get(0);
-		this.assertBasicAtomGround(a3, false);
+		assertBasicAtomGround(a3, false);
 	}
 
 	@Test
@@ -94,13 +93,13 @@ public class AtomsTest {
 	public void testIsExternalAtomGround() {
 		InputProgram p1 = parser.parse("a :- &isFoo[1].");
 		Atom ext1 = p1.getRules().get(0).getBody().stream().findFirst().get().getAtom();
-		this.assertExternalAtomGround(ext1, true);
+		assertExternalAtomGround(ext1, true);
 		InputProgram p2 = parser.parse("a :- &isFoo[bar(1)].");
 		Atom ext2 = p2.getRules().get(0).getBody().stream().findFirst().get().getAtom();
-		this.assertExternalAtomGround(ext2, true);
+		assertExternalAtomGround(ext2, true);
 		InputProgram p3 = parser.parse("a :- &isFoo[BLA].");
 		Atom ext3 = p3.getRules().get(0).getBody().stream().findFirst().get().getAtom();
-		this.assertExternalAtomGround(ext3, false);
+		assertExternalAtomGround(ext3, false);
 	}
 
 	@Test
@@ -122,7 +121,7 @@ public class AtomsTest {
 	public void testExternalHasOutput() {
 		InputProgram p = parser.parse("a:- &extWithOutput[1](OUT).");
 		Atom ext = p.getRules().get(0).getBody().stream().findFirst().get().getAtom();
-		this.assertExternalAtomGround(ext, false);
+		assertExternalAtomGround(ext, false);
 		Assert.assertTrue(((ExternalAtom) ext).hasOutput());
 	}
 

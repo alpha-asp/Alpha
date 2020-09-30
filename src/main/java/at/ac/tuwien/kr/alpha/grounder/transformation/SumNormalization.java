@@ -1,20 +1,11 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import static at.ac.tuwien.kr.alpha.grounder.transformation.PredicateInternalizer.makePredicatesInternal;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.common.rule.head.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
@@ -24,8 +15,18 @@ import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
+import static at.ac.tuwien.kr.alpha.grounder.transformation.PredicateInternalizer.makePredicatesInternal;
+
 /**
- * Rewrites #sum aggregates into normal rules. Note: Currently only in a restricted form. Copyright (c) 2018-2019, the Alpha Team.
+ * Rewrites #sum aggregates into normal rules.
+ * Note: Currently only works for a restricted form.
+ *
+ * Copyright (c) 2018-2020, the Alpha Team.
  */
 public class SumNormalization extends ProgramTransformation<InputProgram, InputProgram> {
 
@@ -38,7 +39,7 @@ public class SumNormalization extends ProgramTransformation<InputProgram, InputP
 
 	@Override
 	public InputProgram apply(InputProgram inputProgram) {
-		if (!this.rewritingNecessary(inputProgram)) {
+		if (!rewritingNecessary(inputProgram)) {
 			return inputProgram;
 		}
 		String summationSubprogram = "interesting_number(R, 1..I1) :- input_number_with_first(R, I, _), I1 = I - 1.\n"
@@ -49,14 +50,13 @@ public class SumNormalization extends ProgramTransformation<InputProgram, InputP
 				+ "output(R, K) :- prefix_subset_sum(R, I1, S), I1 = I - 1, input_number_with_first(R, I, F), bound(R, K), K <= S + F.";
 
 		// Connect/Rewrite every aggregate in each rule.
-		List<BasicRule> rewrittenRules = this.rewriteAggregates(inputProgram.getRules());
+		List<BasicRule> rewrittenRules = rewriteAggregates(inputProgram.getRules());
 
 		InputProgram.Builder prgBuilder = InputProgram.builder();
 		prgBuilder.addFacts(inputProgram.getFacts());
 		InputProgram summationEncoding = makePredicatesInternal(new ProgramParser().parse(summationSubprogram));
 		prgBuilder.accumulate(summationEncoding);
 		prgBuilder.addRules(rewrittenRules);
-		// summationEncoding.accumulate(additionalRules);
 
 		// Add enumeration rule that uses the special EnumerationAtom.
 		// The enumeration rule is: "input_number_with_first(A, I, F) :- input_with_first(A, X, F), _index(A, X, I)."
@@ -71,10 +71,10 @@ public class SumNormalization extends ProgramTransformation<InputProgram, InputP
 	}
 
 	/**
-	 * Checks if rewriting of sum aggregates is necessary for the given program, i.e. if such aggregates exist
+	 * Checks if rewriting of sum aggregates is necessary for the given program, i.e. if such aggregates exist.
 	 * 
-	 * @param program the program
-	 * @return true if sum aggregates occur, false otherwise
+	 * @param program the program.
+	 * @return true if sum aggregates occur, false otherwise.
 	 */
 	private boolean rewritingNecessary(InputProgram program) {
 		for (BasicRule rule : program.getRules()) {
@@ -91,11 +91,11 @@ public class SumNormalization extends ProgramTransformation<InputProgram, InputP
 	}
 
 	private List<BasicRule> rewriteAggregates(List<BasicRule> srcRules) {
-		List<BasicRule> retVal = new ArrayList<>();
+		List<BasicRule> rewrittenRules = new ArrayList<>();
 		for (BasicRule rule : srcRules) {
-			retVal.addAll(this.rewriteAggregatesInRule(rule));
+			rewrittenRules.addAll(rewriteAggregatesInRule(rule));
 		}
-		return retVal;
+		return rewrittenRules;
 	}
 
 	private List<BasicRule> rewriteAggregatesInRule(BasicRule rule) {
@@ -110,13 +110,15 @@ public class SumNormalization extends ProgramTransformation<InputProgram, InputP
 		// bound(aggregate(1), 6).
 
 		// Create interface atoms to the aggregate encoding.
-		final BasicAtom aggregateOutputAtom = (BasicAtom) makePredicatesInternal(parse("output(aggregate(AGGREGATE_ID), LOWER_BOUND).")).getFacts().get(0);
-		final BasicAtom aggregateInputAtom = (BasicAtom) makePredicatesInternal(
-				parse("input_with_first(aggregate(AGGREGATE_ID), ELEMENT_TUPLE, FIRST_VARIABLE).")).getFacts().get(0);
-		final BasicAtom lowerBoundAtom = (BasicAtom) makePredicatesInternal(parse("bound(aggregate(AGGREGATE_ID), LOWER_BOUND).")).getFacts().get(0);
+		final BasicAtom aggregateOutputAtom = (BasicAtom) makePredicatesInternal(parse(
+			"output(aggregate(AGGREGATE_ID), LOWER_BOUND).")).getFacts().get(0);
+		final BasicAtom aggregateInputAtom = (BasicAtom) makePredicatesInternal(parse(
+			"input_with_first(aggregate(AGGREGATE_ID), ELEMENT_TUPLE, FIRST_VARIABLE).")).getFacts().get(0);
+		final BasicAtom lowerBoundAtom = (BasicAtom) makePredicatesInternal(parse(
+			"bound(aggregate(AGGREGATE_ID), LOWER_BOUND).")).getFacts().get(0);
 
 		ArrayList<Literal> aggregateOutputAtoms = new ArrayList<>();
-		int aggregatesInRule = 0; // Only needed for limited rewriting.
+		int aggregatesInRule = 0;	// Only needed for limited rewriting.
 		ArrayList<BasicRule> additionalRules = new ArrayList<>();
 
 		List<Literal> rewrittenBody = new ArrayList<>(rule.getBody());
@@ -132,10 +134,9 @@ public class SumNormalization extends ProgramTransformation<InputProgram, InputP
 			// Check that aggregate is limited to what we currently can deal with.
 			if (aggregateLiteral.isNegated() || aggregateAtom.getUpperBoundOperator() != null
 					|| (aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.COUNT
-							&& aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.SUM)
+						&& aggregateAtom.getAggregatefunction() != AggregateAtom.AGGREGATEFUNCTION.SUM)
 					|| aggregatesInRule++ > 0) {
-				throw new UnsupportedOperationException(
-						"Only limited #count/#sum aggregates without upper bound are currently supported." + "No rule may have more than one aggregate.");
+				throw new UnsupportedOperationException("Only limited #count/#sum aggregates without upper bound are currently supported." + "No rule may have more than one aggregate.");
 			}
 
 			// Only treat sum aggregates.
@@ -179,7 +180,7 @@ public class SumNormalization extends ProgramTransformation<InputProgram, InputP
 				if (!globalVariables.isEmpty()) {
 					elementLiterals.addAll(rewrittenBody);
 				}
-				BasicRule inputRule = new BasicRule(new DisjunctiveHead(Collections.singletonList(inputHeadAtom)), elementLiterals);
+				BasicRule inputRule = new BasicRule(new NormalHead(inputHeadAtom), elementLiterals);
 				additionalRules.add(inputRule);
 			}
 
@@ -188,9 +189,13 @@ public class SumNormalization extends ProgramTransformation<InputProgram, InputP
 			List<Literal> lowerBoundBody = rewrittenBody; // Note: this is only correct if no other aggregate occurs in the rule.
 			additionalRules.add(new BasicRule(new NormalHead(lowerBoundHeadAtom), lowerBoundBody));
 		}
-		rewrittenBody.addAll(aggregateOutputAtoms);
-		BasicRule rewrittenSrcRule = new BasicRule(rule.getHead(), rewrittenBody);
-		additionalRules.add(rewrittenSrcRule);
+		if (aggregatesInRule > 0) {
+			rewrittenBody.addAll(aggregateOutputAtoms);
+			additionalRules.add(new BasicRule(rule.getHead(), rewrittenBody));
+		} else {
+			// Return original rule if no aggregate occurs in it.
+			additionalRules.add(rule);
+		}
 		return additionalRules;
 	}
 }

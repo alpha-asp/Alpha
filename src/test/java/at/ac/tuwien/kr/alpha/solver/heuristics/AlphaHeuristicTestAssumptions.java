@@ -25,18 +25,6 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
@@ -51,6 +39,16 @@ import at.ac.tuwien.kr.alpha.solver.NaiveNoGoodStore;
 import at.ac.tuwien.kr.alpha.solver.TestableChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
 import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.Collection;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests assumptions made by {@link DependencyDrivenHeuristic} and other domain-independent heuristics.
@@ -67,7 +65,7 @@ public class AlphaHeuristicTestAssumptions {
 	private AtomStore atomStore;
 
 	@Before
-	public void setUp() throws IOException {
+	public void setUp() {
 		Alpha system = new Alpha();
 		String testProgram = ""
 				+ "b1."
@@ -77,11 +75,11 @@ public class AlphaHeuristicTestAssumptions {
 				+ "h :- b1, b2, not b3, not b4.";
 		InputProgram parsedProgram = new ProgramParser().parse(testProgram);
 		NormalProgram normal = system.normalizeProgram(parsedProgram);
-		InternalProgram pa = InternalProgram.fromNormalProgram(normal);
-		this.atomStore = new AtomStoreImpl();
-		this.grounder = new NaiveGrounder(pa, atomStore, true);
-		this.assignment = new TrailAssignment(atomStore);
-		this.choiceManager = new TestableChoiceManager(assignment, new NaiveNoGoodStore(assignment));
+		InternalProgram internalProgram = InternalProgram.fromNormalProgram(normal);
+		atomStore = new AtomStoreImpl();
+		grounder = new NaiveGrounder(internalProgram, atomStore, true);
+		assignment = new TrailAssignment(atomStore);
+		choiceManager = new TestableChoiceManager(assignment, new NaiveNoGoodStore(assignment));
 	}
 
 	@Test

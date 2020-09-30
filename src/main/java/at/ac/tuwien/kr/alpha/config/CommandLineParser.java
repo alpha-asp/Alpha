@@ -27,6 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha.config;
 
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -44,9 +46,6 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-
-import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
 
 /**
  * Parses given argument lists (as passed when Alpha is called from command line) into {@link SystemConfig}s and
@@ -81,7 +80,7 @@ public class CommandLineParser {
 	private static final Option OPT_LITERATE = Option.builder("l").longOpt("literate")
 			.desc("enable literate programming mode (default: " + InputConfig.DEFAULT_LITERATE + ")").build();
 	private static final Option OPT_WRITE_PREPROCESSED = Option.builder("wpp").longOpt("writePreprocessedProgram").hasArg(true).argName("target")
-			.desc("write the internal program that is passed into the solver after transformations to a file").build();
+			.desc("write the internal program that is passed into the solver after transformations to a file. Writing to STDOUT is possible by setting target to: " + InputConfig.PREPROC_STDOUT_PATH).build();
 	private static final Option OPT_WRITE_DEPGRAPH = Option.builder("wdg").longOpt("writeDependencyGraph").hasArg(true).argName("target")
 			.desc("Write a dot file with the input program's dependency graph").build();
 	private static final Option OPT_WRITE_COMPGRAPH = Option.builder("wcg").longOpt("writeComponentGraph").hasArg(true).argName("target")

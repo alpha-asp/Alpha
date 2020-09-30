@@ -27,21 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
-import static java.util.Collections.emptyList;
-
-import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.tree.TerminalNode;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
@@ -63,14 +48,28 @@ import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.ChoiceHead;
-import at.ac.tuwien.kr.alpha.common.rule.head.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.rule.head.Head;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import org.antlr.v4.runtime.RuleContext;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import static java.util.Collections.emptyList;
 
 /**
  * Copyright (c) 2016-2018, the Alpha Team.
@@ -157,11 +156,11 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		if (ctx.statements() == null) {
 			return InputProgram.EMPTY;
 		}
-		this.inlineDirectives = new InlineDirectives();
-		this.programBuilder = InputProgram.builder();
+		inlineDirectives = new InlineDirectives();
+		programBuilder = InputProgram.builder();
 		visitStatements(ctx.statements());
-		this.programBuilder.addInlineDirectives(this.inlineDirectives);
-		return this.programBuilder.build();
+		programBuilder.addInlineDirectives(inlineDirectives);
+		return programBuilder.build();
 	}
 
 	@Override
@@ -177,11 +176,11 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	public Object visitStatement_fact(ASPCore2Parser.Statement_factContext ctx) {
 		// head DOT
 		Head head = visitHead(ctx.head());
-		if (head.isNormal()) {
-			this.programBuilder.addFact(((DisjunctiveHead) head).disjunctiveAtoms.get(0));
+		if (head instanceof NormalHead) {
+			programBuilder.addFact(((NormalHead) head).getAtom());
 		} else {
 			// Treat facts with choice or disjunction in the head like a rule.
-			this.programBuilder.addRule(new BasicRule(head, emptyList()));
+			programBuilder.addRule(new BasicRule(head, emptyList()));
 		}
 		return null;
 	}
@@ -189,14 +188,14 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Object visitStatement_constraint(ASPCore2Parser.Statement_constraintContext ctx) {
 		// CONS body DOT
-		this.programBuilder.addRule(new BasicRule(null, visitBody(ctx.body())));
+		programBuilder.addRule(new BasicRule(null, visitBody(ctx.body())));
 		return null;
 	}
 
 	@Override
 	public Object visitStatement_rule(ASPCore2Parser.Statement_ruleContext ctx) {
 		// head CONS body DOT
-		this.programBuilder.addRule(new BasicRule(visitHead(ctx.head()), visitBody(ctx.body())));
+		programBuilder.addRule(new BasicRule(visitHead(ctx.head()), visitBody(ctx.body())));
 		return null;
 	}
 
@@ -220,7 +219,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		if (ctx.disjunction() != null) {
 			throw notSupported(ctx);
 		}
-		return new DisjunctiveHead(Collections.singletonList(visitClassical_literal(ctx.classical_literal())));
+		return new NormalHead(visitClassical_literal(ctx.classical_literal()));
 	}
 
 	@Override

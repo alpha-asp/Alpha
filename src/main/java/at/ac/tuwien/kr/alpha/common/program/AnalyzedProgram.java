@@ -9,6 +9,12 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.List;
 
+
+/**
+ * An {@link InternalProgram} with dependency information.
+ *
+ * Copyright (c) 2019-2020, the Alpha Team
+ */
 public class AnalyzedProgram extends InternalProgram {
 
 	private final DependencyGraph dependencyGraph;
@@ -16,8 +22,8 @@ public class AnalyzedProgram extends InternalProgram {
 
 	public AnalyzedProgram(List<InternalRule> rules, List<Atom> facts) {
 		super(rules, facts);
-		this.dependencyGraph = DependencyGraph.buildDependencyGraph(this.getRulesById());
-		this.componentGraph = this.buildComponentGraph(this.dependencyGraph);
+		dependencyGraph = DependencyGraph.buildDependencyGraph(getRulesById());
+		componentGraph = buildComponentGraph(dependencyGraph);
 	}
 
 	public static AnalyzedProgram analyzeNormalProgram(NormalProgram prog) {
@@ -31,11 +37,11 @@ public class AnalyzedProgram extends InternalProgram {
 	}
 
 	public ComponentGraph getComponentGraph() {
-		return this.componentGraph;
+		return componentGraph;
 	}
 
 	public DependencyGraph getDependencyGraph() {
-		return this.dependencyGraph;
+		return dependencyGraph;
 	}
 
 }

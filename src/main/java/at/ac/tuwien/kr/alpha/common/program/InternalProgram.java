@@ -10,7 +10,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -18,14 +17,14 @@ import java.util.Map;
 
 /**
  * A program in the internal representation needed for grounder and solver, i.e.: rules must have normal heads, all
- * aggregates must be rewritten, all intervals
- * must be preprocessed (into interval atoms), equality predicates must be rewritten
+ * aggregates must be rewritten, all intervals must be preprocessed (into interval atoms), and equality predicates must
+ * be rewritten.
  * 
  * Copyright (c) 2017-2020, the Alpha Team.
  */
 public class InternalProgram extends AbstractProgram<InternalRule> {
 
-	private final Map<Predicate, HashSet<InternalRule>> predicateDefiningRules = new LinkedHashMap<>();
+	private final Map<Predicate, LinkedHashSet<InternalRule>> predicateDefiningRules = new LinkedHashMap<>();
 	private final Map<Predicate, LinkedHashSet<Instance>> factsByPredicate = new LinkedHashMap<>();
 	private final Map<Integer, InternalRule> rulesById = new LinkedHashMap<>();
 
@@ -35,17 +34,15 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 		recordRules(rules);
 	}
 
-	protected static ImmutablePair<List<InternalRule>, List<Atom>> internalizeRulesAndFacts(NormalProgram normalProgram) {
+	static ImmutablePair<List<InternalRule>, List<Atom>> internalizeRulesAndFacts(NormalProgram normalProgram) {
 		List<InternalRule> internalRules = new ArrayList<>();
 		List<Atom> facts = new ArrayList<>(normalProgram.getFacts());
 		for (NormalRule r : normalProgram.getRules()) {
 			if (r.getBody().isEmpty()) {
 				if (!r.getHead().isGround()) {
-					throw new IllegalArgumentException(
-							"InternalProgram does not support non-ground rules with empty bodies! (Head = " + r.getHead().toString() + ")");
-				} else {
-					facts.add(r.getHeadAtom());
+					throw new IllegalArgumentException("InternalProgram does not support non-ground rules with empty bodies! (Head = " + r.getHead().toString() + ")");
 				}
+				facts.add(r.getHeadAtom());
 			} else {
 				internalRules.add(InternalRule.fromNormalRule(r));
 			}
@@ -59,11 +56,9 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 	}
 
 	private void recordFacts(List<Atom> facts) {
-		List<Instance> tmpInstances;
-		Predicate tmpPredicate;
 		for (Atom fact : facts) {
-			tmpInstances = FactIntervalEvaluator.constructFactInstances(fact);
-			tmpPredicate = fact.getPredicate();
+			List<Instance> tmpInstances = FactIntervalEvaluator.constructFactInstances(fact);
+			Predicate tmpPredicate = fact.getPredicate();
 			factsByPredicate.putIfAbsent(tmpPredicate, new LinkedHashSet<>());
 			factsByPredicate.get(tmpPredicate).addAll(tmpInstances);
 		}
@@ -79,11 +74,11 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 	}
 
 	private void recordDefiningRule(Predicate headPredicate, InternalRule rule) {
-		predicateDefiningRules.putIfAbsent(headPredicate, new HashSet<>());
+		predicateDefiningRules.putIfAbsent(headPredicate, new LinkedHashSet<>());
 		predicateDefiningRules.get(headPredicate).add(rule);
 	}
 
-	public Map<Predicate, HashSet<InternalRule>> getPredicateDefiningRules() {
+	public Map<Predicate, LinkedHashSet<InternalRule>> getPredicateDefiningRules() {
 		return Collections.unmodifiableMap(predicateDefiningRules);
 	}
 

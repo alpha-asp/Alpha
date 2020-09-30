@@ -25,10 +25,10 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.instantiation;
 
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 /**
  * Contains substitutions produced for generating ground substitutions of a rule,
@@ -40,13 +40,13 @@ public class BindingResult {
 	private final List<Integer> numbersOfUnassignedPositiveBodyAtoms = new ArrayList<>();
 
 	public void add(Substitution generatedSubstitution, int numberOfUnassignedPositiveBodyAtoms) {
-		this.generatedSubstitutions.add(generatedSubstitution);
-		this.numbersOfUnassignedPositiveBodyAtoms.add(numberOfUnassignedPositiveBodyAtoms);
+		generatedSubstitutions.add(generatedSubstitution);
+		numbersOfUnassignedPositiveBodyAtoms.add(numberOfUnassignedPositiveBodyAtoms);
 	}
 
 	public void add(BindingResult otherBindingResult) {
-		this.generatedSubstitutions.addAll(otherBindingResult.generatedSubstitutions);
-		this.numbersOfUnassignedPositiveBodyAtoms.addAll(otherBindingResult.numbersOfUnassignedPositiveBodyAtoms);
+		generatedSubstitutions.addAll(otherBindingResult.generatedSubstitutions);
+		numbersOfUnassignedPositiveBodyAtoms.addAll(otherBindingResult.numbersOfUnassignedPositiveBodyAtoms);
 	}
 
 	public int size() {
@@ -64,11 +64,11 @@ public class BindingResult {
 	}
 
 	public List<Substitution> getGeneratedSubstitutions() {
-		return this.generatedSubstitutions;
+		return generatedSubstitutions;
 	}
 
 	public List<Integer> getNumbersOfUnassignedPositiveBodyAtoms() {
-		return this.numbersOfUnassignedPositiveBodyAtoms;
+		return numbersOfUnassignedPositiveBodyAtoms;
 	}
 
 }

@@ -47,7 +47,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	private static final Logger LOGGER = LoggerFactory.getLogger(StratifiedEvaluation.class);
 
 	private WorkingMemory workingMemory = new WorkingMemory();
-	private Map<Predicate, HashSet<InternalRule>> predicateDefiningRules;
+	private Map<Predicate, LinkedHashSet<InternalRule>> predicateDefiningRules;
 
 	private Map<Predicate, Set<Instance>> modifiedInLastEvaluationRun = new HashMap<>();
 

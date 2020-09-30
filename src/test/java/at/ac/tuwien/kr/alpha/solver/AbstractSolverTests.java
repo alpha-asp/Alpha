@@ -27,24 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import static java.util.Collections.emptySet;
-
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -61,6 +43,21 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heurist
 import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 @RunWith(Parameterized.class)
 public abstract class AbstractSolverTests {
@@ -216,7 +213,7 @@ public abstract class AbstractSolverTests {
 	}
 
 	protected Solver getInstance(InputProgram program) {
-		Alpha system = new Alpha(); // note that this might be a performance hit, we might wanna adapt how solvers are obtained here
+		Alpha system = new Alpha();
 		AtomStore atomStore = new AtomStoreImpl();
 		NormalProgram normalized = system.normalizeProgram(program);
 		InternalProgram preprocessed = InternalProgram.fromNormalProgram(normalized);
@@ -247,27 +244,23 @@ public abstract class AbstractSolverTests {
 		return getInstance(program).collectSet();
 	}
 
-	protected void assertAnswerSets(String program, String... answerSets) throws IOException {
-		Set<AnswerSet> actualAnswerSets = emptySet();
-		actualAnswerSets = collectSet(program);
+	protected void assertAnswerSets(String program, String... answerSets) {
+		Set<AnswerSet> actualAnswerSets = collectSet(program);
 		TestUtils.assertAnswerSetsEqual(answerSets, actualAnswerSets);
 	}
 
-	protected void assertAnswerSet(String program, String answerSet) throws IOException {
-		Set<AnswerSet> actualAnswerSets = emptySet();
-		actualAnswerSets = collectSet(program);
+	protected void assertAnswerSet(String program, String answerSet) {
+		Set<AnswerSet> actualAnswerSets = collectSet(program);
 		TestUtils.assertAnswerSetsEqual(answerSet, actualAnswerSets);
 	}
 
-	protected void assertAnswerSetsWithBase(String program, String base, String... answerSets) throws IOException {
-		Set<AnswerSet> actualAnswerSets = emptySet();
-		actualAnswerSets = collectSet(program);
+	protected void assertAnswerSetsWithBase(String program, String base, String... answerSets) {
+		Set<AnswerSet> actualAnswerSets = collectSet(program);
 		TestUtils.assertAnswerSetsEqualWithBase(base, answerSets, actualAnswerSets);
 	}
 
-	protected void assertAnswerSets(String program, Set<AnswerSet> answerSets) throws IOException {
-		Set<AnswerSet> actualAnswerSets = emptySet();
-		actualAnswerSets = collectSet(program);
+	protected void assertAnswerSets(String program, Set<AnswerSet> answerSets) {
+		Set<AnswerSet> actualAnswerSets = collectSet(program);
 		TestUtils.assertAnswerSetsEqual(answerSets, actualAnswerSets);
 	}
 }
