@@ -40,7 +40,7 @@ import java.util.List;
 import static at.ac.tuwien.kr.alpha.Util.join;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
-public class AggregateAtom implements Atom {
+public class AggregateAtom extends Atom {
 
 	private final ComparisonOperator lowerBoundOperator;
 	private final Term lowerBoundTerm;
@@ -86,6 +86,11 @@ public class AggregateAtom implements Atom {
 		throw oops("Aggregate atom cannot report terms.");
 	}
 
+	@Override
+	public Atom withTerms(List<Term> terms) {
+		throw new UnsupportedOperationException("Editing term list is not supported for aggregate atoms!");
+	}
+	
 	@Override
 	public Predicate getPredicate() {
 		throw oops("Aggregate atom cannot report predicate.");
@@ -260,4 +265,5 @@ public class AggregateAtom implements Atom {
 			return join("", elementTerms, " : ") + join("", elementLiterals, "");
 		}
 	}
+	
 }

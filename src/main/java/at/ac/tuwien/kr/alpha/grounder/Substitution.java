@@ -37,6 +37,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
@@ -61,22 +62,22 @@ public class Substitution {
 	public Substitution(Substitution clone) {
 		this(new TreeMap<>(clone.substitution));
 	}
-	
-	static Substitution unify(Literal literal, Instance instance, Substitution substitution) {
+
+	public static Substitution unify(Literal literal, Instance instance, Substitution substitution) {
 		return unify(literal.getAtom(), instance, substitution);
 	}
 
 	/**
 	 * Computes the unifier of the atom and the instance and stores it in the variable substitution.
-	 * @param atom the body atom to unify
-	 * @param instance the ground instance
+	 * 
+	 * @param atom         the body atom to unify
+	 * @param instance     the ground instance
 	 * @param substitution if the atom does not unify, this is left unchanged.
 	 * @return true if the atom and the instance unify. False otherwise
 	 */
 	public static Substitution unify(Atom atom, Instance instance, Substitution substitution) {
 		for (int i = 0; i < instance.terms.size(); i++) {
-			if (instance.terms.get(i) == atom.getTerms().get(i) ||
-				substitution.unifyTerms(atom.getTerms().get(i), instance.terms.get(i))) {
+			if (instance.terms.get(i) == atom.getTerms().get(i) || substitution.unifyTerms(atom.getTerms().get(i), instance.terms.get(i))) {
 				continue;
 			}
 			return null;
@@ -86,6 +87,7 @@ public class Substitution {
 
 	/**
 	 * Checks if the left possible non-ground term unifies with the ground term.
+	 * 
 	 * @param termNonGround
 	 * @param termGround
 	 * @return
@@ -98,7 +100,7 @@ public class Substitution {
 			// Since right term is ground, both terms differ
 			return false;
 		} else if (termNonGround instanceof VariableTerm) {
-			VariableTerm variableTerm = (VariableTerm)termNonGround;
+			VariableTerm variableTerm = (VariableTerm) termNonGround;
 			// Left term is variable, bind it to the right term.
 			Term bound = eval(variableTerm);
 
@@ -134,8 +136,7 @@ public class Substitution {
 	}
 
 	/**
-	 * This method should be used to obtain the {@link Term} to be used in place of
-	 * a given {@link VariableTerm} under this substitution.
+	 * This method should be used to obtain the {@link Term} to be used in place of a given {@link VariableTerm} under this substitution.
 	 *
 	 * @param variableTerm the variable term to substitute, if possible
 	 * @return a constant term if the substitution contains the given variable, {@code null} otherwise.
@@ -162,6 +163,10 @@ public class Substitution {
 
 	public boolean isVariableSet(VariableTerm variable) {
 		return substitution.get(variable) != null;
+	}
+
+	public Set<VariableTerm> getMappedVariables() {
+		return substitution.keySet();
 	}
 
 	/**

@@ -27,32 +27,38 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
+import at.ac.tuwien.kr.alpha.common.rule.head.ChoiceHead;
+import at.ac.tuwien.kr.alpha.common.rule.head.Head;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2020, the Alpha Team.
  */
-public class ChoiceHeadToNormal implements ProgramTransformation {
+public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, InputProgram> {
 	private final static String PREDICATE_NEGATION_PREFIX = "_n";
 
 	@Override
-	public void transform(Program inputProgram) {
-		List<Rule> additionalRules = new ArrayList<>();
+	public InputProgram apply(InputProgram inputProgram) {
+		InputProgram.Builder programBuilder = InputProgram.builder();
+		List<BasicRule> additionalRules = new ArrayList<>();
 
-		Iterator<Rule> ruleIterator = inputProgram.getRules().iterator();
+		List<BasicRule> srcRules = new ArrayList<>(inputProgram.getRules());
+		Iterator<BasicRule> ruleIterator = srcRules.iterator();
 		while (ruleIterator.hasNext()) {
-			Rule rule = ruleIterator.next();
+			BasicRule rule = ruleIterator.next();
 
 			Head ruleHead = rule.getHead();
 			if (!(ruleHead instanceof ChoiceHead)) {
@@ -87,22 +93,24 @@ public class ChoiceHeadToNormal implements ProgramTransformation {
 
 				Predicate negPredicate = Predicate.getInstance(PREDICATE_NEGATION_PREFIX + headPredicate.getName(), headPredicate.getArity() + 1, true);
 				List<Term> headTerms = new ArrayList<>(head.getTerms());
-				headTerms.add(0, ConstantTerm.getInstance("1"));	// FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for classical negative atoms.
+				headTerms.add(0, ConstantTerm.getInstance("1")); // FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for
+																	// classical negative atoms.
 				Atom negHead = new BasicAtom(negPredicate, headTerms);
 
 				// Construct two guessing rules.
 				List<Literal> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithNegHead.add(new BasicAtom(head.getPredicate(), head.getTerms()).toLiteral(false));
-				additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(negHead)), guessingRuleBodyWithNegHead));
+				additionalRules.add(new BasicRule(new NormalHead(negHead), guessingRuleBodyWithNegHead));
 
 				List<Literal> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithHead.add(new BasicAtom(negPredicate, headTerms).toLiteral(false));
-				additionalRules.add(new Rule(new DisjunctiveHead(Collections.singletonList(head)), guessingRuleBodyWithHead));
+				additionalRules.add(new BasicRule(new NormalHead(head), guessingRuleBodyWithHead));
 
 				// TODO: when cardinality constraints are possible, process the boundaries by adding a constraint with a cardinality check.
 			}
 		}
-		inputProgram.getRules().addAll(additionalRules);
+		return programBuilder.addRules(srcRules).addRules(additionalRules).addFacts(inputProgram.getFacts())
+				.addInlineDirectives(inputProgram.getInlineDirectives()).build();
 	}
 
 	private static boolean containsIntervalTerms(Atom atom) {

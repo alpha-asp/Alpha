@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.common;
+package at.ac.tuwien.kr.alpha.common.rule.head;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 
@@ -20,15 +20,7 @@ public class DisjunctiveHead extends Head {
 	}
 
 	@Override
-	public boolean isNormal() {
-		return disjunctiveAtoms != null && disjunctiveAtoms.size() <= 1;
-	}
-
-	@Override
 	public String toString() {
-		if (isNormal()) {
-			return disjunctiveAtoms.get(0).toString();
-		}
 		return join("", disjunctiveAtoms, " | ", "");
 	}
 
@@ -37,6 +29,36 @@ public class DisjunctiveHead extends Head {
 			if (!atom.isGround()) {
 				return false;
 			}
+		}
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((this.disjunctiveAtoms == null) ? 0 : this.disjunctiveAtoms.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof DisjunctiveHead)) {
+			return false;
+		}
+		DisjunctiveHead other = (DisjunctiveHead) obj;
+		if (this.disjunctiveAtoms == null) {
+			if (other.disjunctiveAtoms != null) {
+				return false;
+			}
+		} else if (!this.disjunctiveAtoms.equals(other.disjunctiveAtoms)) {
+			return false;
 		}
 		return true;
 	}

@@ -25,26 +25,31 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
 /**
- * Tests {@link AbstractSolver} using some three-coloring test cases, as described in:
- * Lefèvre, Claire; Béatrix, Christopher; Stéphan, Igor; Garcia, Laurent (2017):
- * ASPeRiX, a first-order forward chaining approach for answer set computing.
- * In Theory and Practice of Logic Programming, pp. 1-45.
- * DOI: 10.1017/S1471068416000569
+ * Tests {@link AbstractSolver} using some three-coloring test cases, as described in: 
+ * Lefèvre, Claire; Béatrix, Christopher; Stéphan, Igor; Garcia, Laurent (2017): 
+ * ASPeRiX, a first-order forward chaining approach for answer set computing. 
+ * In Theory and Practice of Logic Programming, pp. 1-45. DOI:
+ * 10.1017/S1471068416000569
  */
 public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 	@Test(timeout = 3000)
@@ -154,14 +159,17 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 	}
 
 	private void testThreeColouring(int n, boolean shuffle, int seed) throws IOException {
-		Program program = new ProgramParser().parse("col(V,C) :- v(V), c(C), not ncol(V,C)." + "ncol(V,C) :- col(V,D), c(C), C != D." + ":- e(V,U), col(V,C), col(U,C).");
-		program.getFacts().addAll(createColors("1", "2", "3"));
-		program.getFacts().addAll(createVertices(n));
-		program.getFacts().addAll(createEdges(n, shuffle, seed));
+		InputProgram tmpPrg = new ProgramParser()
+				.parse("col(V,C) :- v(V), c(C), not ncol(V,C)." + "ncol(V,C) :- col(V,D), c(C), C != D." + ":- e(V,U), col(V,C), col(U,C).");
+		InputProgram.Builder prgBuilder = InputProgram.builder().accumulate(tmpPrg);
+		prgBuilder.addFacts(createColors("1", "2", "3"));
+		prgBuilder.addFacts(createVertices(n));
+		prgBuilder.addFacts(createEdges(n, shuffle, seed));
+		InputProgram program = prgBuilder.build();
 
 		Solver solver = getInstance(program);
 		Optional<AnswerSet> answerSet = solver.stream().findAny();
-		//System.out.println(answerSet);
+		// System.out.println(answerSet);
 		// TODO: check correctness of answer set
 	}
 
@@ -186,8 +194,7 @@ public class ThreeColouringTestWithRandom extends AbstractSolverTests {
 	/**
 	 * 
 	 * @param n
-	 * @param shuffle
-	 *          if true, the vertex indices are shuffled with the given seed
+	 * @param shuffle if true, the vertex indices are shuffled with the given seed
 	 * @param seed
 	 * @return
 	 */

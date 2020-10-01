@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2020, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -38,15 +38,27 @@ import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 
-public class ExternalAtom implements Atom, VariableNormalizableAtom {
+public class ExternalAtom extends Atom implements VariableNormalizableAtom {
 
 	private final List<Term> input;
 	private final List<Term> output;
 
-	protected Predicate predicate;
+	protected final Predicate predicate;
 	protected final PredicateInterpretation interpretation;
 
 	public ExternalAtom(Predicate predicate, PredicateInterpretation interpretation, List<Term> input, List<Term> output) {
+		if (predicate == null) {
+			throw new IllegalArgumentException("predicate must not be null!");
+		}
+		if (interpretation == null) {
+			throw new IllegalArgumentException("interpretation must not be null!");
+		}
+		if (input == null) {
+			throw new IllegalArgumentException("input must not be null!");
+		}
+		if (output == null) {
+			throw new IllegalArgumentException("output must not be null!");
+		}
 		this.predicate = predicate;
 		this.interpretation = interpretation;
 		this.input = input;
@@ -65,11 +77,11 @@ public class ExternalAtom implements Atom, VariableNormalizableAtom {
 	public PredicateInterpretation getInterpretation() {
 		return interpretation;
 	}
-	
+
 	public List<Term> getInput() {
 		return Collections.unmodifiableList(input);
 	}
-	
+
 	public List<Term> getOutput() {
 		return Collections.unmodifiableList(output);
 	}
@@ -81,23 +93,24 @@ public class ExternalAtom implements Atom, VariableNormalizableAtom {
 
 	@Override
 	public boolean isGround() {
-		return false;
+		for (Term t : input) {
+			if (!t.isGround()) {
+				return false;
+			}
+		}
+		for (Term t : output) {
+			if (!t.isGround()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override
 	public ExternalAtom substitute(Substitution substitution) {
-		return new ExternalAtom(
-			predicate,
-			interpretation,
-			input
-				.stream()
-				.map(t -> t.substitute(substitution))
-				.collect(Collectors.toList()),
-			output
-				.stream()
-				.map(t -> t.substitute(substitution))
-				.collect(Collectors.toList())
-		);
+		List<Term> substitutedInput = this.input.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
+		List<Term> substitutedOutput = this.output.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
+		return new ExternalAtom(predicate, interpretation, substitutedInput, substitutedOutput);
 	}
 
 	@Override
@@ -116,7 +129,46 @@ public class ExternalAtom implements Atom, VariableNormalizableAtom {
 		}
 		return result;
 	}
-	
+
+	@Override
+	public Atom withTerms(List<Term> terms) {
+		throw new UnsupportedOperationException("Editing term list is not supported for external atoms!");
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + this.input.hashCode();
+		result = prime * result + this.output.hashCode();
+		result = prime * result + this.predicate.hashCode();
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof ExternalAtom)) {
+			return false;
+		}
+		ExternalAtom other = (ExternalAtom) obj;
+		if (!this.input.equals(other.input)) {
+			return false;
+		}
+		if (!this.output.equals(other.output)) {
+			return false;
+		}
+		if (!this.predicate.equals(other.predicate)) {
+			return false;
+		}
+		return true;
+	}
+
 	@Override
 	public ExternalAtom normalizeVariables(String prefix, int counterStartingValue) {
 		List<Term> renamedInput = Term.renameTerms(this.input, prefix + "_IN_", counterStartingValue);

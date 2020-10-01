@@ -1,19 +1,19 @@
 /**
- * Copyright (c) 2016-2020, the Alpha Team.
+ * Copyright (c) 2019, the Alpha Team.
  * All rights reserved.
- *
+ * 
  * Additional changes made by Siemens.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *
+ * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,38 +25,21 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package at.ac.tuwien.kr.alpha.common.rule;
 
-package at.ac.tuwien.kr.alpha.common;
+import java.util.List;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 
-public class SubstitutionTestUtil {
+/**
+ * Represents a non-ground rule or a constraint. A @{link BasicRule} has a general {@link Head}, meaning both choice heads and disjunctive heads are permissible.
+ * This implementation represents a rule after being parsed from a given ASP program, but before being transformed into a @{link NormalRule}.
+ */
+public class BasicRule extends AbstractRule<Head> {
 
-	static String groundAndPrintRule(NonGroundRule rule, Substitution substitution) {
-		StringBuilder ret = new StringBuilder();
-		if (!rule.isConstraint()) {
-			Atom groundHead = rule.getHeadAtom().substitute(substitution);
-			ret.append(groundHead.toString());
-		}
-		ret.append(" :- ");
-		boolean isFirst = true;
-		for (Atom bodyAtom : rule.getBodyAtomsPositive()) {
-			ret.append(groundLiteralToString(bodyAtom.toLiteral(), substitution, isFirst));
-			isFirst = false;
-		}
-		for (Atom bodyAtom : rule.getBodyAtomsNegative()) {
-			ret.append(groundLiteralToString(bodyAtom.toLiteral(false), substitution, isFirst));
-			isFirst = false;
-		}
-		ret.append(".");
-		return ret.toString();
+	public BasicRule(Head head, List<Literal> body) {
+		super(head, body);
 	}
 
-	static String groundLiteralToString(Literal literal, Substitution substitution, boolean isFirst) {
-		Literal groundLiteral = literal.substitute(substitution);
-		return  (isFirst ? "" : ", ") + groundLiteral.toString();
-	}
 }
