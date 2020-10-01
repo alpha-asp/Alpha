@@ -1,5 +1,21 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import org.apache.commons.collections4.SetUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -21,21 +37,6 @@ import at.ac.tuwien.kr.alpha.grounder.instantiation.AssignmentStatus;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationResult;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiator;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.WorkingMemoryBasedInstantiationStrategy;
-import org.apache.commons.collections4.SetUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
 
 /**
  * Evaluates the stratifiable part of a given (analyzed) ASP program.
@@ -51,8 +52,8 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 	private Map<Predicate, Set<Instance>> modifiedInLastEvaluationRun = new HashMap<>();
 
-	private List<Atom> additionalFacts = new ArrayList<>();	// The additional facts derived by stratified evaluation. Note that it may contain duplicates.
-	private Set<Integer> solvedRuleIds = new HashSet<>();	// Set of rules that have been completely evaluated.
+	private List<Atom> additionalFacts = new ArrayList<>(); // The additional facts derived by stratified evaluation. Note that it may contain duplicates.
+	private Set<Integer> solvedRuleIds = new HashSet<>(); // Set of rules that have been completely evaluated.
 
 	private LiteralInstantiator literalInstantiator;
 
@@ -90,7 +91,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		}
 
 		// Build the program resulting from evaluating the stratified part.
-		additionalFacts.addAll(inputProgram.getFacts());	// Add original input facts to newly derived ones.
+		additionalFacts.addAll(inputProgram.getFacts()); // Add original input facts to newly derived ones.
 		List<InternalRule> outputRules = new ArrayList<>();
 		inputProgram.getRulesById().entrySet().stream().filter((entry) -> !solvedRuleIds.contains(entry.getKey()))
 				.forEach((entry) -> outputRules.add(entry.getValue()));
@@ -119,6 +120,17 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 				// evaluate these until nothing new can be derived any more.
 				evaluateRules(evaluationInfo.recursiveRules, isInitialRun);
 				isInitialRun = false;
+				modifiedInLastEvaluationRun = new HashMap<>();
+				// Since we are stratified we never have to backtrack, therefore just collect the added instances.
+				for (IndexedInstanceStorage instanceStorage : workingMemory.modified()) {
+					// Directly record all newly derived instances as additional facts.
+					for (Instance recentlyAddedInstance : instanceStorage.getRecentlyAddedInstances()) {
+						additionalFacts.add(new BasicAtom(instanceStorage.getPredicate(), recentlyAddedInstance.terms));
+					}
+					modifiedInLastEvaluationRun.putIfAbsent(instanceStorage.getPredicate(), new LinkedHashSet<>());
+					modifiedInLastEvaluationRun.get(instanceStorage.getPredicate()).addAll(instanceStorage.getRecentlyAddedInstances());
+					instanceStorage.markRecentlyAddedInstancesDone();
+				}
 				// If the evaluation of rules did not modify the working memory we have a fixed-point.
 			} while (!workingMemory.modified().isEmpty());
 		}
@@ -132,17 +144,6 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		LOGGER.debug("Starting component evaluation run...");
 		for (InternalRule r : rules) {
 			evaluateRule(r, !isInitialRun);
-		}
-		modifiedInLastEvaluationRun = new HashMap<>();
-		// Since we are stratified we never have to backtrack, therefore just collect the added instances.
-		for (IndexedInstanceStorage instanceStorage : workingMemory.modified()) {
-			// Directly record all newly derived instances as additional facts.
-			for (Instance recentlyAddedInstance : instanceStorage.getRecentlyAddedInstances()) {
-				additionalFacts.add(new BasicAtom(instanceStorage.getPredicate(), recentlyAddedInstance.terms));
-			}
-			modifiedInLastEvaluationRun.putIfAbsent(instanceStorage.getPredicate(), new LinkedHashSet<>());
-			modifiedInLastEvaluationRun.get(instanceStorage.getPredicate()).addAll(instanceStorage.getRecentlyAddedInstances());
-			instanceStorage.markRecentlyAddedInstancesDone();
 		}
 	}
 
@@ -201,10 +202,10 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		}
 
 		// Ground from all starting literals.
-		List<Substitution> groundSubstitutions = new ArrayList<>();	// Collection of full ground substitutions for the given rule.
+		List<Substitution> groundSubstitutions = new ArrayList<>(); // Collection of full ground substitutions for the given rule.
 		for (Literal lit : startingLiterals) {
 			List<Substitution> substitutionsForStartingLiteral = calcSubstitutionsWithGroundingOrder(groundingOrders.orderStartingFrom(lit),
-				substituteFromRecentlyAddedInstances(lit));
+					substituteFromRecentlyAddedInstances(lit));
 			groundSubstitutions.addAll(substitutionsForStartingLiteral);
 		}
 		return groundSubstitutions;
@@ -239,11 +240,12 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		// causes a result with a type other than CONTINUE, discard that substitution.
 
 		// Note that this function uses a stack of partial substitutions to simulate a recursive function.
-		Stack<ArrayList<Substitution>> substitutionStack = new Stack<>();	// For speed, we really want ArrayLists on the stack.
+		Stack<ArrayList<Substitution>> substitutionStack = new Stack<>(); // For speed, we really want ArrayLists on the stack.
 		if (startingSubstitutions instanceof ArrayList) {
 			substitutionStack.push((ArrayList<Substitution>) startingSubstitutions);
 		} else {
-			substitutionStack.push(new ArrayList<>(startingSubstitutions));	// Copy startingSubstitutions into ArrayList. Note: mostly happens for empty or singleton lists.
+			substitutionStack.push(new ArrayList<>(startingSubstitutions)); // Copy startingSubstitutions into ArrayList. Note: mostly happens for empty or
+																			// singleton lists.
 		}
 		int currentOrderPosition = 0;
 		List<Substitution> fullSubstitutions = new ArrayList<>();
@@ -255,7 +257,8 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 				currentOrderPosition--;
 				continue;
 			}
-			// In case the full grounding order has been worked on, all current substitutions are full substitutions, add them to result.
+			// In case the full grounding order has been worked on, all current substitutions are full substitutions, add them to
+			// result.
 			Literal currentLiteral = groundingOrder.getLiteralAtOrderPosition(currentOrderPosition);
 			if (currentLiteral == null) {
 				fullSubstitutions.addAll(currentSubstitutions);
@@ -266,7 +269,8 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 				continue;
 			}
 			// Take one substitution from the top-list of the stack and try extending it.
-			Substitution currentSubstitution = currentSubstitutions.remove(currentSubstitutions.size() - 1);        // Work on last element (removing last element is O(1) for ArrayList).
+			Substitution currentSubstitution = currentSubstitutions.remove(currentSubstitutions.size() - 1); // Work on last element (removing last element is
+																												// O(1) for ArrayList).
 			LiteralInstantiationResult currentLiteralResult = literalInstantiator.instantiateLiteral(currentLiteral, currentSubstitution);
 			if (currentLiteralResult.getType() == LiteralInstantiationResult.Type.CONTINUE) {
 				// The currentSubstitution could be extended, push the extensions on the stack and continue working on them.
@@ -300,24 +304,29 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		for (Node node : comp.getNodes()) {
 			headPredicates.add(node.getPredicate());
 		}
-		// Check each predicate whether its defining rules depend on some of the head predicates, i.e., whether there is a cycle.
+		// Check each predicate whether its defining rules depend on some of the head predicates, i.e., whether there is a
+		// cycle.
 		for (Predicate headPredicate : headPredicates) {
 			HashSet<InternalRule> definingRules = predicateDefiningRules.get(headPredicate);
 			if (definingRules == null) {
 				// Predicate only occurs in facts, skip.
 				continue;
 			}
-			// Note: here we assume that all rules defining a predicate belong to the same SCC component.
+			// Note: here we assume that all rules defining a predicate belong to the same SC component.
 			for (InternalRule rule : definingRules) {
+				boolean isRuleRecursive = false;
 				for (Literal lit : rule.getPositiveBody()) {
 					if (headPredicates.contains(lit.getPredicate())) {
 						// The rule body contains a predicate that is defined in the same
 						// component, the rule is therefore part of a cyclic dependency within
 						// this component.
-						recursiveRules.add(rule);
-					} else {
-						nonRecursiveRules.add(rule);
+						isRuleRecursive = true;
 					}
+				}
+				if (isRuleRecursive) {
+					recursiveRules.add(rule);
+				} else {
+					nonRecursiveRules.add(rule);
 				}
 			}
 		}
