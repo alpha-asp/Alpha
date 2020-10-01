@@ -107,17 +107,27 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			LOGGER.debug("No rules to evaluate for component {}", comp);
 			return;
 		}
-		prepareComponentEvaluation(SetUtils.union(evaluationInfo.nonRecursiveRules, evaluationInfo.recursiveRules));
 
 		// Rules outside of dependency cycles only need to be evaluated once.
 		if (!evaluationInfo.nonRecursiveRules.isEmpty()) {
+			prepareInitialEvaluation(evaluationInfo.nonRecursiveRules);
 			evaluateRules(evaluationInfo.nonRecursiveRules, true);
+			for (IndexedInstanceStorage instanceStorage : workingMemory.modified()) {
+				// Directly record all newly derived instances as additional facts.
+				for (Instance recentlyAddedInstance : instanceStorage.getRecentlyAddedInstances()) {
+					additionalFacts.add(new BasicAtom(instanceStorage.getPredicate(), recentlyAddedInstance.terms));
+				}
+				instanceStorage.markRecentlyAddedInstancesDone();
+			}
 		}
 		boolean isInitialRun = true;
 		if (!evaluationInfo.recursiveRules.isEmpty()) {
 			do {
 				// Now do the rules that cyclically depend on each other,
 				// evaluate these until nothing new can be derived any more.
+				if (isInitialRun) {
+					prepareInitialEvaluation(evaluationInfo.recursiveRules);
+				}
 				evaluateRules(evaluationInfo.recursiveRules, isInitialRun);
 				isInitialRun = false;
 				modifiedInLastEvaluationRun = new HashMap<>();
@@ -152,7 +162,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	 * of rules to the "modifiedInLastEvaluationRun" map in order to "bootstrap" incremental grounding, i.e. making sure
 	 * that those instances are taken into account for ground substitutions by evaluateRule.
 	 */
-	private void prepareComponentEvaluation(Set<InternalRule> rulesToEvaluate) {
+	private void prepareInitialEvaluation(Set<InternalRule> rulesToEvaluate) {
 		modifiedInLastEvaluationRun = new HashMap<>();
 		for (InternalRule rule : rulesToEvaluate) {
 			// Register rule head instances.
