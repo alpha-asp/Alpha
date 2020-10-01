@@ -1,13 +1,12 @@
 package at.ac.tuwien.kr.alpha.common.rule;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.rule.head.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A rule that has a normal head, i.e. just one head atom, no disjunction or choice heads allowed.
@@ -24,16 +23,10 @@ public class NormalRule extends AbstractRule<NormalHead> {
 	public static NormalRule fromBasicRule(BasicRule rule) {
 		Atom headAtom = null;
 		if (!rule.isConstraint()) {
-			if (!rule.getHead().isNormal()) {
-				throw Util.oops("Trying to construct a NormalRule from rule with non-normal head!");
+			if (!(rule.getHead() instanceof NormalHead)) {
+				throw Util.oops("Trying to construct a NormalRule from rule with non-normal head! Head type is: " + rule.getHead().getClass().getSimpleName());
 			}
-			if (rule.getHead() instanceof DisjunctiveHead) {
-				headAtom = ((DisjunctiveHead) rule.getHead()).disjunctiveAtoms.get(0);
-			} else if (rule.getHead() instanceof NormalHead) {
-				headAtom = ((NormalHead) rule.getHead()).getAtom();
-			} else {
-				throw Util.oops("Trying to construct a rule with unsuppported head type: " + rule.getHead().getClass().getSimpleName());
-			}
+			headAtom = ((NormalHead) rule.getHead()).getAtom();
 		}
 		return new NormalRule(headAtom != null ? new NormalHead(headAtom) : null, new ArrayList<>(rule.getBody()));
 	}

@@ -63,7 +63,7 @@ public class TestUtils {
 		TestUtils.assertAnswerSetsEqual(AnswerSetsParser.parse("{ " + expectedAnswerSet + " }"), actual);
 	}
 
-	public static void assertAnswerSetsEqualWithBase(String base, String[] expectedAnswerSets, Set<AnswerSet> actual) throws IOException {
+	public static void assertAnswerSetsEqualWithBase(String base, String[] expectedAnswerSets, Set<AnswerSet> actual) {
 		base = base.trim();
 		if (!base.endsWith(",")) {
 			base += ", ";

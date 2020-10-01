@@ -269,7 +269,7 @@ public class AlphaTest {
 		SubThingy thingy = new SubThingy();
 
 		BasicRule rule = new BasicRule(
-				new DisjunctiveHead(Collections.singletonList(new BasicAtom(Predicate.getInstance("p", 1), ConstantTerm.getInstance("x")))),
+				new NormalHead(new BasicAtom(Predicate.getInstance("p", 1), ConstantTerm.getInstance("x"))),
 				singletonList(new ExternalLiteral(new ExternalAtom(Predicate.getInstance("thinger", 1),
 						new MethodPredicateInterpretation(this.getClass().getMethod("thinger", Thingy.class)), singletonList(ConstantTerm.getInstance(thingy)),
 						emptyList()), true)));
@@ -390,7 +390,7 @@ public class AlphaTest {
 	}
 
 	/**
-	 * Verifies that filters are handled correctly (regression test case introduced when fixing issue #189)
+	 * Verifies that filters are handled correctly (regression test case introduced when fixing issue #189).
 	 */
 	@Test
 	public void filterTest() {
@@ -404,7 +404,7 @@ public class AlphaTest {
 	}
 
 	/**
-	 * Verifies that no stratified evaluation is performed up-front when disabled in config
+	 * Verifies that no stratified evaluation is performed up-front when disabled in config.
 	 */
 	@Test
 	public void disableStratifiedEvalTest() {
@@ -415,12 +415,12 @@ public class AlphaTest {
 		InputProgram input = system.readProgramString(progstr);
 		NormalProgram normal = system.normalizeProgram(input);
 		InternalProgram preprocessed = system.performProgramPreprocessing(InternalProgram.fromNormalProgram(normal));
-		Assert.assertFalse("Preprocessed program contains fact derived from stratifiable rule, but shouldn't!",
+		Assert.assertFalse("Preprocessed program contains fact derived from stratifiable rule, but should not!",
 				preprocessed.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("q", "a")));
 	}
 
 	/**
-	 * Verifies that stratified evaluation is performed up-front if not otherwise configured
+	 * Verifies that stratified evaluation is performed up-front if not otherwise configured.
 	 */
 	@Test
 	public void enableStratifiedEvalTest() {
@@ -453,8 +453,8 @@ public class AlphaTest {
 	@Test
 	public void problematicRun_3col_1119718541727902() throws IOException {
 		/*
-		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s
-		 * default -e 1119718541727902 -n 200 -i
+		 * NOTE: This was constructed from the following commandline invocation:
+		 * -DebugEnableInternalChecks -q -g naive -s default -e 1119718541727902 -n 200 -i
 		 * 3col-20-38.txt
 		 */
 		problematicRun("3col-20-38.txt", 1119718541727902L, 200);
@@ -466,9 +466,8 @@ public class AlphaTest {
 	@Test
 	public void problematicRun_vehicle_97598271567626() throws IOException {
 		/*
-		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s
-		 * default -e 97598271567626 -n 2 -i
-		 * vehicle_normal_small.asp
+		 * NOTE: This was constructed from the following commandline invocation:
+		 * -DebugEnableInternalChecks -q -g naive -s default -e 97598271567626 -n 2 -i vehicle_normal_small.asp
 		 */
 		problematicRun("vehicle_normal_small.asp", 1119718541727902L, 2);
 	}
@@ -479,9 +478,8 @@ public class AlphaTest {
 	@Test
 	public void problematicRun_3col_1119718541727902_sorted_400() throws IOException {
 		/*
-		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s
-		 * default -sort -n 400 -i
-		 * 3col-20-38.txt
+		 * NOTE: This was constructed from the following commandline invocation:
+		 * -DebugEnableInternalChecks -q -g naive -s default -sort -n 400 -i 3col-20-38.txt
 		 */
 		SystemConfig cfg = new SystemConfig();
 		cfg.setGrounderName("naive");

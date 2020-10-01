@@ -26,27 +26,27 @@
 package at.ac.tuwien.kr.alpha.common.depgraph;
 
 /**
- * An edge in a dependency graph.
+ * An edge in a dependency graph to be used in adjacency lists (i.e., only the target of the edge is recorded). Edges
+ * are labelled with a boolean sign indicating the polarity of the edge.
  * 
- * Copyright (c) 2019, the Alpha Team.
+ * Copyright (c) 2019-2020, the Alpha Team.
  */
 public class Edge {
 
 	private final Node target;
 	private final boolean sign;
-	private final String label;
 
 	/**
-	 * Creates a new edge of a dependency graph. Read as "target depends on source" Sign indicates if the dependency is positive or negative (target node
-	 * depends on default negated atom). NOTE: Working assumption is to treat strong negation as a positive dependency
+	 * Creates a new edge for a dependency graph. Read as "target depends on source". The sign indicates whether the
+	 * dependency is positive or negative (target node depends on default negated atom).
+	 * Note: working assumption is that strong negation is treated like a positive dependency.
 	 * 
-	 * @param target
-	 * @param sign
+	 * @param target the target node.
+	 * @param sign the polarity of the edge.
 	 */
 	public Edge(Node target, boolean sign) {
 		this.target = target;
 		this.sign = sign;
-		this.label = sign ? "+" : "-";
 	}
 
 	@Override
@@ -60,24 +60,20 @@ public class Edge {
 
 	@Override
 	public int hashCode() {
-		return ("" + this.target.getPredicate().toString() + Boolean.toString(this.sign)).hashCode();
+		return ("" + target.getPredicate().toString() + sign).hashCode();
 	}
 
 	@Override
 	public String toString() {
-		return "(" + (this.sign ? "+" : "-") + ") ---> " + this.target.toString();
+		return "(" + (sign ? "+" : "-") + ") ---> " + target.toString();
 	}
 	
 	public Node getTarget() {
-		return this.target;
+		return target;
 	}
 
 	public boolean getSign() {
-		return this.sign;
-	}
-
-	public String getLabel() {
-		return this.label;
+		return sign;
 	}
 
 }

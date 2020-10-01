@@ -27,27 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
@@ -73,9 +52,30 @@ import at.ac.tuwien.kr.alpha.grounder.instantiation.DefaultLazyGroundingInstanti
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationResult;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiator;
 import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
 /**
  * A semi-naive grounder.
+ *
  * Copyright (c) 2016-2020, the Alpha Team.
  */
 public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGrounder {
@@ -99,8 +99,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	private final GrounderHeuristicsConfiguration heuristicsConfiguration;
 
-	// Handles instantiation of literals, i.e. supplies ground substitutions for literals of non-ground rules according to the rules set by the
-	// LiteralInstantiationStrategy used by this grounder.
+	// Handles instantiation of literals, i.e. supplies ground substitutions for literals of non-ground rules
+	// according to the rules set by the LiteralInstantiationStrategy used by this grounder.
 	private final LiteralInstantiator ruleInstantiator;
 	private final DefaultLazyGroundingInstantiationStrategy instantiationStrategy;
 
@@ -133,16 +133,16 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		
 		this.debugInternalChecks = debugInternalChecks;
 
-		// Initialize RuleInstantiator and instantiation strategy. Note that the instantiation strategy also needs the current assignment, which is
-		// set with every call of getGroundInstantiations.
+		// Initialize RuleInstantiator and instantiation strategy. Note that the instantiation strategy also
+		// needs the current assignment, which is set with every call of getGroundInstantiations.
 		this.instantiationStrategy = new DefaultLazyGroundingInstantiationStrategy(this.workingMemory, this.atomStore, this.factsFromProgram);
 		this.instantiationStrategy.setStaleWorkingMemoryEntries(this.removeAfterObtainingNewNoGoods);
 		this.ruleInstantiator = new LiteralInstantiator(this.instantiationStrategy);
 	}
 
 	private void initializeFactsAndRules() {
-		// initialize all facts
-		for (Atom fact : this.program.getFacts()) {
+		// Initialize all facts.
+		for (Atom fact : program.getFacts()) {
 			final Predicate predicate = fact.getPredicate();
 
 			// Record predicate
@@ -154,16 +154,15 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		workingMemory.initialize(ChoiceAtom.OFF);
 		workingMemory.initialize(ChoiceAtom.ON);
 
-		// Initialize rules and constraints in working memory
-		for (InternalRule nonGroundRule : this.program.getRulesById().values()) {
-			// Create working memories for all predicates occurring in the rule
+		// Initialize rules and constraints in working memory.
+		for (InternalRule nonGroundRule : program.getRulesById().values()) {
+			// Create working memories for all predicates occurring in the rule.
 			for (Predicate predicate : nonGroundRule.getOccurringPredicates()) {
 				// FIXME: this also contains interval/builtin predicates that are not needed.
 				workingMemory.initialize(predicate);
 			}
 
-			// If the rule has fixed ground instantiations, it is not registered but
-			// grounded once like facts.
+			// If the rule has fixed ground instantiations, it is not registered but grounded once like facts.
 			if (nonGroundRule.getGroundingOrders().fixedInstantiation()) {
 				fixedRules.add(nonGroundRule);
 				continue;
@@ -181,7 +180,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// Record all unique rule heads.
 		final Set<InternalRule> uniqueGroundRulePerGroundHead = new HashSet<>();
 
-		for (Map.Entry<Predicate, HashSet<InternalRule>> headDefiningRules : this.program.getPredicateDefiningRules().entrySet()) {
+		for (Map.Entry<Predicate, LinkedHashSet<InternalRule>> headDefiningRules : program.getPredicateDefiningRules().entrySet()) {
 			if (headDefiningRules.getValue().size() != 1) {
 				continue;
 			}
@@ -357,7 +356,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 		workingMemory.reset();
 		for (Atom removeAtom : removeAfterObtainingNewNoGoods) {
-			final IndexedInstanceStorage storage = this.workingMemory.get(removeAtom, true);
+			final IndexedInstanceStorage storage = workingMemory.get(removeAtom, true);
 			Instance instance = new Instance(removeAtom.getTerms());
 			if (storage.containsInstance(instance)) {
 				// permissive grounder heuristics may attempt to remove instances that are not yet in the working memory
@@ -366,8 +365,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 
 		// Re-Initialize the stale working memory entries set and pass to instantiation strategy.
-		this.removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
-		this.instantiationStrategy.setStaleWorkingMemoryEntries(this.removeAfterObtainingNewNoGoods);
+		removeAfterObtainingNewNoGoods = new LinkedHashSet<>();
+		instantiationStrategy.setStaleWorkingMemoryEntries(removeAfterObtainingNewNoGoods);
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Grounded NoGoods are:");
 			for (Map.Entry<Integer, NoGood> noGoodEntry : newNoGoods.entrySet()) {
@@ -386,12 +385,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	/**
 	 * Grounds the given {@code nonGroundRule} by applying the given {@code substitutions} and registers the nogoods generated during that process.
 	 *
-	 * @param nonGroundRule
-	 *          the rule to be grounded
-	 * @param substitutions
-	 *          the substitutions to be applied
-	 * @param newNoGoods
-	 *          a set of nogoods to which newly generated nogoods will be added
+	 * @param nonGroundRule	the rule to be grounded.
+	 * @param substitutions	the substitutions to be applied.
+	 * @param newNoGoods	a set of nogoods to which newly generated nogoods will be added.
 	 */
 	private void groundAndRegister(final InternalRule nonGroundRule, final List<Substitution> substitutions, final Map<Integer, NoGood> newNoGoods) {
 		for (Substitution substitution : substitutions) {
@@ -416,7 +412,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// Update instantiationStrategy with current assignment.
 		// Note: Actually the assignment could be an instance variable of the grounder (shared with solver),
 		// but this would have a larger impact on grounder/solver communication design as a whole.
-		this.instantiationStrategy.setCurrentAssignment(currentAssignment);
+		instantiationStrategy.setCurrentAssignment(currentAssignment);
 		BindingResult bindingResult = bindNextAtomInRule(groundingOrder, 0, tolerance, tolerance, partialSubstitution);
 		if (LOGGER.isDebugEnabled()) {
 			for (int i = 0; i < bindingResult.size(); i++) {
@@ -426,10 +422,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				}
 			}
 		}
-//		this.ruleEvaluationCounts.putIfAbsent(rule, 0);
-//		this.ruleEvaluationCounts.put(rule, this.ruleEvaluationCounts.get(rule) + 1);
-//		this.ruleSubstitutionCounts.putIfAbsent(rule, 0);
-//		this.ruleSubstitutionCounts.put(rule, this.ruleSubstitutionCounts.get(rule) + bindingResult.size());
 		return bindingResult;
 	}
 
@@ -513,7 +505,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 		LOGGER.trace("Binding current literal {} with remaining tolerance {} and partial substitution {}.", currentLiteral,
 				remainingTolerance, partialSubstitution);
-		LiteralInstantiationResult instantiationResult = this.ruleInstantiator.instantiateLiteral(currentLiteral, partialSubstitution);
+		LiteralInstantiationResult instantiationResult = ruleInstantiator.instantiateLiteral(currentLiteral, partialSubstitution);
 		switch (instantiationResult.getType()) {
 			case CONTINUE:
 				/*

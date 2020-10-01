@@ -1,5 +1,8 @@
 package at.ac.tuwien.kr.alpha.common.rule;
 
+import at.ac.tuwien.kr.alpha.Util;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 import org.apache.commons.collections4.SetUtils;
 
 import java.util.Collections;
@@ -7,10 +10,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 
 /**
  * An abstract representation of a rule with a specific type of @{link Head} (type parameter H)
@@ -82,16 +81,16 @@ public abstract class AbstractRule<H extends Head> {
 	}
 
 	public boolean isConstraint() {
-		return this.head == null;
+		return head == null;
 	}
 
 	@Override
 	public String toString() {
-		return Util.join((isConstraint() ? "" : this.head.toString() + " ") + ":- ", this.getBody(), ".");
+		return Util.join((isConstraint() ? "" : head.toString() + " ") + ":- ", getBody(), ".");
 	}
 
 	public H getHead() {
-		return this.head;
+		return head;
 	}
 
 	public Set<Literal> getBody() {
@@ -108,7 +107,7 @@ public abstract class AbstractRule<H extends Head> {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.bodyLiteralsNegative, this.bodyLiteralsPositive, this.head);
+		return Objects.hash(bodyLiteralsNegative, bodyLiteralsPositive, head);
 	}
 
 	@Override

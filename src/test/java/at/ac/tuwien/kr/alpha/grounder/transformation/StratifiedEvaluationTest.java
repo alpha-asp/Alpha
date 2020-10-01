@@ -31,6 +31,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.antlr.v4.runtime.CharStreams;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -41,15 +42,18 @@ import java.util.stream.Collectors;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.externals.Externals;
-import at.ac.tuwien.kr.alpha.api.externals.Predicate;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.common.program.Programs;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
+import at.ac.tuwien.kr.alpha.grounder.Instance;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 
@@ -63,10 +67,10 @@ public class StratifiedEvaluationTest {
 		NormalProgram normal = system.normalizeProgram(prg);
 		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(normal);
 		InternalProgram evaluated = new StratifiedEvaluation().apply(analyzed);
-		Atom qOfB = TestUtils.basicAtomWithSymbolicTerms("q", "b");
-		List<Atom> facts = evaluated.getFacts();
+		Instance qOfB = new Instance(TestUtils.basicAtomWithSymbolicTerms("q", "b").getTerms());
+		Set<Instance> facts = evaluated.getFactsByPredicate().get(at.ac.tuwien.kr.alpha.common.Predicate.getInstance("q", 1));
 		int numQOfB = 0;
-		for (Atom at : facts) {
+		for (Instance at : facts) {
 			if (at.equals(qOfB)) {
 				numQOfB++;
 			}
@@ -163,7 +167,7 @@ public class StratifiedEvaluationTest {
 		TestUtils.assertAnswerSetsEqual("stuff(1), stuff(2), smallStuff(1)", answerSets);
 	}
 
-	@Predicate
+	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static boolean sayTrue(Object o) {
 		return true;
 	}
@@ -223,6 +227,50 @@ public class StratifiedEvaluationTest {
 		systemNoStratEval.getConfig().setEvaluateStratifiedPart(false);
 		Set<AnswerSet> as = systemNoStratEval.solve(prog).collect(Collectors.toSet());
 		TestUtils.assertAnswerSetsEqual(expectedAnswerSet, as);
+	}
+
+	@Test
+	public void testRecursiveRanking() {
+		//@formatter:off
+		String asp = "thing(a).\n" + 
+				"thing(b).\n" + 
+				"thing(c).\n" + 
+				"thing_before(a, b).\n" + 
+				"thing_before(b, c).\n" + 
+				"has_prev_thing(X) :- thing(X), thing_succ(_, X).\n" + 
+				"first_thing(X) :- thing(X), not has_prev_thing(X).\n" + 
+				"thing_not_succ(X, Y) :-\n" + 
+				"	thing(X),\n" + 
+				"	thing(Y),\n" + 
+				"	thing(INTM),\n" + 
+				"	thing_before(X, Y),\n" + 
+				"	thing_before(X, INTM),\n" + 
+				"	thing_before(INTM, X).\n" + 
+				"thing_succ(X, Y) :-\n" + 
+				"	thing(X),\n" + 
+				"	thing(Y),\n" + 
+				"	thing_before(X, Y),\n" + 
+				"	not thing_not_succ(X, Y).\n" + 
+				"thing_rank(X, 1) :- first_thing(X).\n" + 
+				"thing_rank(X, R) :-\n" + 
+				"	thing(X),\n" + 
+				"	thing_succ(Y, X),\n" + 
+				"	thing_rank(Y, K),\n" + 
+				"	R = K + 1.";
+		//@formatter:on
+		Alpha alpha = new Alpha();
+		InputProgram prog = alpha.readProgramString(asp);
+		AnalyzedProgram analyzed = AnalyzedProgram.analyzeNormalProgram(alpha.normalizeProgram(prog));
+		StratifiedEvaluation evaluation = new StratifiedEvaluation();
+		InternalProgram evaluated = evaluation.apply(analyzed);
+		Predicate rank = Predicate.getInstance("thing_rank", 2);
+		BasicAtom rank1 = new BasicAtom(rank, ConstantTerm.getSymbolicInstance("a"), ConstantTerm.getInstance(1));
+		BasicAtom rank2 = new BasicAtom(rank, ConstantTerm.getSymbolicInstance("b"), ConstantTerm.getInstance(2));
+		BasicAtom rank3 = new BasicAtom(rank, ConstantTerm.getSymbolicInstance("c"), ConstantTerm.getInstance(3));
+		List<Atom> evaluatedFacts = evaluated.getFacts();
+		Assert.assertTrue(evaluatedFacts.contains(rank1));
+		Assert.assertTrue(evaluatedFacts.contains(rank2));
+		Assert.assertTrue(evaluatedFacts.contains(rank3));
 	}
 
 }

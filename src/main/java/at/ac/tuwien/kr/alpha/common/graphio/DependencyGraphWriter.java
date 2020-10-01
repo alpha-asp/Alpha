@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019, the Alpha Team.
+ * Copyright (c) 2019-2020, the Alpha Team.
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -25,8 +25,10 @@
  */
 package at.ac.tuwien.kr.alpha.common.graphio;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
+import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
+import at.ac.tuwien.kr.alpha.common.depgraph.Edge;
+import at.ac.tuwien.kr.alpha.common.depgraph.Node;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.HashMap;
@@ -35,10 +37,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 
-import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
-import at.ac.tuwien.kr.alpha.common.depgraph.Edge;
-import at.ac.tuwien.kr.alpha.common.depgraph.Node;
-
 public class DependencyGraphWriter {
 
 	private static final String DEFAULT_GRAPH_HEADING = "digraph dependencyGraph";
@@ -46,25 +44,21 @@ public class DependencyGraphWriter {
 	private static final String DEFAULT_NODE_FORMAT = "n%d [label = \"%s\"]\n";
 	private static final String DEFAULT_EDGE_FORMAT = "n%d -> n%d [xlabel=\"%s\" labeldistance=0.1]\n";
 
-	public void writeAsDotfile(DependencyGraph graph, String path) throws IOException {
-		this.writeAsDot(graph, new FileOutputStream(path));
+	public void writeAsDot(DependencyGraph graph, OutputStream out) {
+		writeAsDot(graph.getAdjancencyMap(), out);
 	}
 
-	public void writeAsDot(DependencyGraph graph, OutputStream out) throws IOException {
-		this.writeAsDot(graph.getAdjancencyMap(), out);
-	}
-
-	public void writeAsDot(Map<Node, List<Edge>> graph, OutputStream out) throws IOException {
+	private void writeAsDot(Map<Node, List<Edge>> graph, OutputStream out) {
 		BiFunction<Node, Integer, String> nodeFormatter = this::buildNodeString;
-		this.writeAsDot(graph, out, nodeFormatter);
+		writeAsDot(graph, out, nodeFormatter);
 	}
 
-	private void writeAsDot(Map<Node, List<Edge>> graph, OutputStream out, BiFunction<Node, Integer, String> nodeFormatter) throws IOException {
+	private void writeAsDot(Map<Node, List<Edge>> graph, OutputStream out, BiFunction<Node, Integer, String> nodeFormatter) {
 		PrintStream ps = new PrintStream(out);
-		this.startGraph(ps);
+		startGraph(ps);
 
 		Set<Map.Entry<Node, List<Edge>>> graphDataEntries = graph.entrySet();
-		// first write all nodes
+		// First, write all nodes.
 		int nodeCnt = 0;
 		Map<Node, Integer> nodesToNumbers = new HashMap<>();
 		for (Map.Entry<Node, List<Edge>> entry : graphDataEntries) {
@@ -73,18 +67,16 @@ public class DependencyGraphWriter {
 			nodeCnt++;
 		}
 
-		// now, write edges
-		int fromNodeNum = -1;
-		int toNodeNum = -1;
+		// Second, write all edges.
 		for (Map.Entry<Node, List<Edge>> entry : graphDataEntries) {
-			fromNodeNum = nodesToNumbers.get(entry.getKey());
+			int fromNodeNum = nodesToNumbers.get(entry.getKey());
 			for (Edge edge : entry.getValue()) {
-				toNodeNum = nodesToNumbers.get(edge.getTarget());
+				int toNodeNum = nodesToNumbers.get(edge.getTarget());
 				ps.printf(DependencyGraphWriter.DEFAULT_EDGE_FORMAT, fromNodeNum, toNodeNum, edge.getSign() ? "+" : "-");
 			}
 		}
 
-		this.finishGraph(ps);
+		finishGraph(ps);
 		ps.close();
 	}
 

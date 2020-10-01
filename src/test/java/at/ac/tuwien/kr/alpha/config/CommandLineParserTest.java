@@ -27,15 +27,15 @@
  */
 package at.ac.tuwien.kr.alpha.config;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.apache.commons.cli.ParseException;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class CommandLineParserTest {
 
@@ -152,21 +152,21 @@ public class CommandLineParserTest {
 	@Test
 	public void disableStratifiedEval() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig ctx = parser.parseCommandLine(new String[] {"-i", "someFile.asp", "-i", "someOtherFile.asp", "-dse"});
+		AlphaConfig ctx = parser.parseCommandLine(new String[]{"-i", "someFile.asp", "-i", "someOtherFile.asp", "-dse"});
 		Assert.assertFalse(ctx.getSystemConfig().isEvaluateStratifiedPart());
 	}
 	
 	@Test
 	public void disableStratifiedEvalLongOpt() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig ctx = parser.parseCommandLine(new String[] {"-i", "someFile.asp", "-i", "someOtherFile.asp", "--disableStratifiedEvaluation"});
+		AlphaConfig ctx = parser.parseCommandLine(new String[]{"-i", "someFile.asp", "-i", "someOtherFile.asp", "--disableStratifiedEvaluation"});
 		Assert.assertFalse(ctx.getSystemConfig().isEvaluateStratifiedPart());
 	}
 
 	@Test
 	public void atomSeparator() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
-		AlphaConfig cfg = parser.parseCommandLine(new String[] {"-str", "aString.", "-sep", "some-string" });
+		AlphaConfig cfg = parser.parseCommandLine(new String[]{"-str", "aString.", "-sep", "some-string"});
 		assertEquals("some-string", cfg.getSystemConfig().getAtomSeparator());
 	}
 

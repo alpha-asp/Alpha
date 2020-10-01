@@ -25,18 +25,6 @@
  */
 package at.ac.tuwien.kr.alpha.api.externals;
 
-import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import at.ac.tuwien.kr.alpha.api.externals.stdlib.AspStandardLibrary;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
@@ -49,10 +37,21 @@ import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.SuppliedPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.UnaryPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import org.reflections.Reflections;
+import org.reflections.scanners.MethodAnnotationsScanner;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public final class Externals {
 
-	// private constructor since this is a utility class
+	// Private constructor since this is a utility class.
 	private Externals() {
 
 	}
@@ -142,10 +141,10 @@ public final class Externals {
 	 * @return a list of {@link Atom}s.
 	 */
 	public static <T extends Comparable<T>> List<Atom> asFacts(Class<T> classOfExtFacts, Collection<T> extFacts) {
-		// use Class<T> as parameter here, taking simple name from first element might not give desired result if it's a subtype
+		// Use Class<T> as parameter here, taking simple name from first element might not give desired result if it is a subtype.
 		List<Atom> retVal = new ArrayList<>();
 		String javaName = classOfExtFacts.getSimpleName();
-		String name = javaName.substring(0, 1).toLowerCase() + javaName.substring(1); // camel-cased, but starting with lower case letter
+		String name = javaName.substring(0, 1).toLowerCase() + javaName.substring(1); // Camel-cased, but starting with lower case letter.
 		for (T instance : extFacts) {
 			retVal.add(new BasicAtom(at.ac.tuwien.kr.alpha.common.Predicate.getInstance(name, 1), ConstantTerm.getInstance(instance)));
 		}

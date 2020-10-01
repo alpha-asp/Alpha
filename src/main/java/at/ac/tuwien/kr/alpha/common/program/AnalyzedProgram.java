@@ -1,16 +1,20 @@
 package at.ac.tuwien.kr.alpha.common.program;
 
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph;
+import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
+import at.ac.tuwien.kr.alpha.common.depgraph.StronglyConnectedComponentsAlgorithm;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph;
-import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
-import at.ac.tuwien.kr.alpha.common.depgraph.SccResult;
-import at.ac.tuwien.kr.alpha.common.depgraph.StronglyConnectedComponentsHelper;
-import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 
+/**
+ * An {@link InternalProgram} with dependency information.
+ *
+ * Copyright (c) 2019-2020, the Alpha Team
+ */
 public class AnalyzedProgram extends InternalProgram {
 
 	private final DependencyGraph dependencyGraph;
@@ -18,8 +22,8 @@ public class AnalyzedProgram extends InternalProgram {
 
 	public AnalyzedProgram(List<InternalRule> rules, List<Atom> facts) {
 		super(rules, facts);
-		this.dependencyGraph = DependencyGraph.buildDependencyGraph(this.getRulesById());
-		this.componentGraph = this.buildComponentGraph(this.dependencyGraph);
+		dependencyGraph = DependencyGraph.buildDependencyGraph(getRulesById());
+		componentGraph = buildComponentGraph(dependencyGraph);
 	}
 
 	public static AnalyzedProgram analyzeNormalProgram(NormalProgram prog) {
@@ -28,17 +32,16 @@ public class AnalyzedProgram extends InternalProgram {
 	}
 
 	private ComponentGraph buildComponentGraph(DependencyGraph depGraph) {
-		StronglyConnectedComponentsHelper sccHelper = new StronglyConnectedComponentsHelper();
-		SccResult sccResult = sccHelper.findStronglyConnectedComponents(depGraph);
+		StronglyConnectedComponentsAlgorithm.SccResult sccResult = StronglyConnectedComponentsAlgorithm.findStronglyConnectedComponents(depGraph);
 		return ComponentGraph.buildComponentGraph(depGraph, sccResult);
 	}
 
 	public ComponentGraph getComponentGraph() {
-		return this.componentGraph;
+		return componentGraph;
 	}
 
 	public DependencyGraph getDependencyGraph() {
-		return this.dependencyGraph;
+		return dependencyGraph;
 	}
 
 }

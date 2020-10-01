@@ -27,16 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
@@ -47,8 +37,20 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+
 /**
- * Removes variable equalities from rules by replacing one variable with the other. Copyright (c) 2017-2019, the Alpha Team.
+ * Removes variable equalities from rules by replacing one variable with the other.
+ *
+ * Copyright (c) 2017-2020, the Alpha Team.
  */
 public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram, NormalProgram> {
 
@@ -64,7 +66,6 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 	private NormalRule findAndReplaceVariableEquality(NormalRule rule) {
 		// Collect all equal variables.
 		HashMap<VariableTerm, HashSet<VariableTerm>> variableToEqualVariables = new LinkedHashMap<>();
-		// HashSet<Variable> equalVariables = new LinkedHashSet<>();
 		HashSet<Literal> equalitiesToRemove = new HashSet<>();
 		for (Literal bodyElement : rule.getBody()) {
 			if (!(bodyElement instanceof ComparisonLiteral)) {

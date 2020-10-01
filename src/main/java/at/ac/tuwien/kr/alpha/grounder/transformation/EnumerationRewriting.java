@@ -1,26 +1,27 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
+import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.common.rule.head.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
-import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
- * Rewrites the ordinary atom whose name is given in the input program by the enumeration directive #enum_atom_is into the special EnumerationAtom. Copyright
- * (c) 2017-2019, the Alpha Team.
+ * Rewrites the ordinary atom whose name is given in the input program by the enumeration directive #enum_atom_is into
+ * the special EnumerationAtom.
+ *
+ * Copyright (c) 2017-2020, the Alpha Team.
  */
 public class EnumerationRewriting extends ProgramTransformation<InputProgram, InputProgram> {
 
@@ -35,42 +36,34 @@ public class EnumerationRewriting extends ProgramTransformation<InputProgram, In
 		Predicate enumPredicate = Predicate.getInstance(enumDirective, 3);
 
 		InputProgram.Builder programBuilder = InputProgram.builder().addInlineDirectives(inputProgram.getInlineDirectives());
-		programBuilder.addFacts(this.rewriteFacts(inputProgram.getFacts(), enumPredicate));
+
+		checkFactsAreEnumerationFree(inputProgram.getFacts(), enumPredicate);
+		programBuilder.addFacts(inputProgram.getFacts());
 
 		List<BasicRule> srcRules = new ArrayList<>(inputProgram.getRules());
-		programBuilder.addRules(this.rewriteRules(srcRules, enumPredicate));
+		programBuilder.addRules(rewriteRules(srcRules, enumPredicate));
 		return programBuilder.build();
 	}
 
-	private List<Atom> rewriteFacts(List<Atom> srcFacts, Predicate enumPredicate) {
-		LinkedList<Atom> rewrittenFacts = new LinkedList<>();
-		List<Atom> untouchedFacts = new ArrayList<>(srcFacts);
-		Iterator<Atom> it = untouchedFacts.iterator();
-		while (it.hasNext()) {
-			Atom atom = it.next();
-			if (!atom.getPredicate().equals(enumPredicate)) {
-				continue;
+	private void checkFactsAreEnumerationFree(List<Atom> srcFacts, Predicate enumPredicate) {
+		for (Atom fact : srcFacts) {
+			if (fact.getPredicate().equals(enumPredicate)) {
+				throw oops("Atom declared as enumeration atom by directive occurs in a fact: " + fact);
 			}
-			it.remove();
-			rewrittenFacts.add(new BasicAtom(EnumerationAtom.ENUMERATION_PREDICATE, atom.getTerms()));
 		}
-		// now add all facts that weren't touched to the rewritten ones to get a list of all facts in program
-		rewrittenFacts.addAll(untouchedFacts);
-		return rewrittenFacts;
 	}
 
 	private List<BasicRule> rewriteRules(List<BasicRule> srcRules, Predicate enumPredicate) {
-		List<Literal> tmpLiterals;
 		List<BasicRule> rewrittenRules = new ArrayList<>();
 		for (BasicRule rule : srcRules) {
-			if (rule.getHead() != null && !rule.getHead().isNormal()) {
+			if (rule.getHead() != null && !(rule.getHead() instanceof NormalHead)) {
 				throw oops("Encountered rule whose head is not normal: " + rule);
 			}
-			if (rule.getHead() != null && ((DisjunctiveHead) rule.getHead()).disjunctiveAtoms.get(0).getPredicate().equals(enumPredicate)) {
+			if (rule.getHead() != null && ((NormalHead) rule.getHead()).getAtom().getPredicate().equals(enumPredicate)) {
 				throw oops("Atom declared as enumeration atom by directive occurs in head of the rule: " + rule);
 			}
-			tmpLiterals = new ArrayList<>(rule.getBody());
-			Iterator<Literal> rit = tmpLiterals.iterator();
+			List<Literal> modifiedBodyLiterals = new ArrayList<>(rule.getBody());
+			Iterator<Literal> rit = modifiedBodyLiterals.iterator();
 			LinkedList<Literal> rewrittenLiterals = new LinkedList<>();
 			while (rit.hasNext()) {
 				Literal literal = rit.next();
@@ -84,8 +77,8 @@ public class EnumerationRewriting extends ProgramTransformation<InputProgram, In
 				rit.remove();
 				rewrittenLiterals.add(new EnumerationAtom(basicLiteral.getAtom().getTerms()).toLiteral());
 			}
-			tmpLiterals.addAll(rewrittenLiterals);
-			rewrittenRules.add(new BasicRule(rule.getHead(), tmpLiterals));
+			modifiedBodyLiterals.addAll(rewrittenLiterals);
+			rewrittenRules.add(new BasicRule(rule.getHead(), modifiedBodyLiterals));
 		}
 		return rewrittenRules;
 	}
