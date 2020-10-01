@@ -38,8 +38,8 @@ public class ComponentGraphWriter {
 
 	private static final String GRAPH_HEADING = "digraph componentGraph";
 
-	private static final String NODE_FMT = "n%d [label = C%d]\n";
-	private static final String EDGE_FMT = "n%d -> n%d [xlabel=\"%s\" labeldistance=0.1]\n";
+	private static final String NODE_FMT = "n%d [label = C%d]%n";
+	private static final String EDGE_FMT = "n%d -> n%d [xlabel=\"%s\" labeldistance=0.1]%n";
 
 	public void writeAsDot(ComponentGraph graph, OutputStream out) {
 		PrintStream ps = new PrintStream(out);

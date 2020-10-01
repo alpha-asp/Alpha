@@ -41,8 +41,8 @@ public class DependencyGraphWriter {
 
 	private static final String DEFAULT_GRAPH_HEADING = "digraph dependencyGraph";
 
-	private static final String DEFAULT_NODE_FORMAT = "n%d [label = \"%s\"]\n";
-	private static final String DEFAULT_EDGE_FORMAT = "n%d -> n%d [xlabel=\"%s\" labeldistance=0.1]\n";
+	private static final String DEFAULT_NODE_FORMAT = "n%d [label = \"%s\"]%n";
+	private static final String DEFAULT_EDGE_FORMAT = "n%d -> n%d [xlabel=\"%s\" labeldistance=0.1]%n";
 
 	public void writeAsDot(DependencyGraph graph, OutputStream out) {
 		writeAsDot(graph.getAdjancencyMap(), out);
