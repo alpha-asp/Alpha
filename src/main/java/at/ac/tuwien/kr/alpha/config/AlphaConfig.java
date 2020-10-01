@@ -5,15 +5,15 @@ package at.ac.tuwien.kr.alpha.config;
  */
 public class AlphaConfig {
 
-	private SystemConfig alphaConfig;
+	private SystemConfig systemConfig;
 	private InputConfig inputConfig;
 
-	public SystemConfig getAlphaConfig() {
-		return this.alphaConfig;
+	public SystemConfig getSystemConfig() {
+		return this.systemConfig;
 	}
 
-	public void setAlphaConfig(SystemConfig alphaConfig) {
-		this.alphaConfig = alphaConfig;
+	public void setSystemConfig(SystemConfig alphaConfig) {
+		this.systemConfig = alphaConfig;
 	}
 
 	public InputConfig getInputConfig() {

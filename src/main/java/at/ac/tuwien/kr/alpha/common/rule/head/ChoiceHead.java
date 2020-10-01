@@ -1,15 +1,18 @@
-package at.ac.tuwien.kr.alpha.common;
+package at.ac.tuwien.kr.alpha.common.rule.head;
 
-import static at.ac.tuwien.kr.alpha.Util.join;
-
-import java.util.List;
-
+import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 
+import java.util.List;
+
+import static at.ac.tuwien.kr.alpha.Util.join;
+
 /**
  * Represents the head of a choice rule.
+ * 
+ * Copyright (c) 2017-2019, the Alpha Team.
  */
 public class ChoiceHead extends Head {
 	private final List<ChoiceElement> choiceElements;
@@ -70,11 +73,6 @@ public class ChoiceHead extends Head {
 	}
 
 	@Override
-	public boolean isNormal() {
-		return false;
-	}
-
-	@Override
 	public String toString() {
 		String result = "";
 
@@ -90,4 +88,59 @@ public class ChoiceHead extends Head {
 
 		return result;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((this.choiceElements == null) ? 0 : this.choiceElements.hashCode());
+		result = prime * result + ((this.lowerBound == null) ? 0 : this.lowerBound.hashCode());
+		result = prime * result + ((this.lowerOp == null) ? 0 : this.lowerOp.hashCode());
+		result = prime * result + ((this.upperBound == null) ? 0 : this.upperBound.hashCode());
+		result = prime * result + ((this.upperOp == null) ? 0 : this.upperOp.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof ChoiceHead)) {
+			return false;
+		}
+		ChoiceHead other = (ChoiceHead) obj;
+		if (this.choiceElements == null) {
+			if (other.choiceElements != null) {
+				return false;
+			}
+		} else if (!this.choiceElements.equals(other.choiceElements)) {
+			return false;
+		}
+		if (this.lowerBound == null) {
+			if (other.lowerBound != null) {
+				return false;
+			}
+		} else if (!this.lowerBound.equals(other.lowerBound)) {
+			return false;
+		}
+		if (this.lowerOp != other.lowerOp) {
+			return false;
+		}
+		if (this.upperBound == null) {
+			if (other.upperBound != null) {
+				return false;
+			}
+		} else if (!this.upperBound.equals(other.upperBound)) {
+			return false;
+		}
+		if (this.upperOp != other.upperOp) {
+			return false;
+		}
+		return true;
+	}
+
 }

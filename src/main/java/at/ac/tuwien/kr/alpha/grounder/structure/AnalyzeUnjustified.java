@@ -1,21 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder.structure;
 
-import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Rule;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.grounder.Instance;
-import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
-import at.ac.tuwien.kr.alpha.grounder.Unification;
-import at.ac.tuwien.kr.alpha.grounder.Unifier;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,20 +16,34 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.Instance;
+import at.ac.tuwien.kr.alpha.grounder.Unification;
+import at.ac.tuwien.kr.alpha.grounder.Unifier;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
 /**
  * Copyright (c) 2018-2020, the Alpha Team.
  */
 public class AnalyzeUnjustified {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AnalyzeUnjustified.class);
-	private final ProgramAnalysis programAnalysis;
+	private final InternalProgram programAnalysis;
 	private final AtomStore atomStore;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private int renamingCounter;
 	private int padDepth;
 
-	public AnalyzeUnjustified(ProgramAnalysis programAnalysis, AtomStore atomStore, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram) {
+	public AnalyzeUnjustified(InternalProgram programAnalysis, AtomStore atomStore, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram) {
 		this.programAnalysis = programAnalysis;
 		this.atomStore = atomStore;
 		this.factsFromProgram = factsFromProgram;
@@ -51,17 +51,20 @@ public class AnalyzeUnjustified {
 	}
 
 	private Map<Predicate, List<Atom>> assignedAtoms;
+
 	public Set<Literal> analyze(int atomToJustify, Assignment currentAssignment) {
 		padDepth = 0;
 		Atom atom = atomStore.get(atomToJustify);
 		if (!(atom instanceof BasicAtom)) {
 			throw oops("Starting atom must be a BasicAtom, but received: " + atom + " of type: " + atom.getClass());
 		}
+		//@formatter:off
 		// Calling code must make sure it is a BasicAtom and take precautions.
 		// Potential solutions:
 		// If atom instanceof RuleAtom and atom is MBT, then the corresponding rule body has a BasicAtom that is MBT.
 		// If atom instanceof ChoiceAtom and atom is MBT, then the corresponding rule body has a BasicAtom that is MBT.
 		// If atom instanceof RuleAtom and atom is FALSE, then this comes from a violated constraint in the end and the corresponding rule body can be taken as the single rule deriving the RuleAtom.
+		//@formatter:on
 		assignedAtoms = new LinkedHashMap<>();
 		for (int i = 1; i <= atomStore.getMaxAtomId(); i++) {
 			ThriceTruth truth = currentAssignment.getTruth(i);
@@ -113,7 +116,7 @@ public class AnalyzeUnjustified {
 		rulesLoop:
 		for (RuleAndUnifier ruleUnifier : rulesUnifyingWithP) {
 			Unifier sigma = ruleUnifier.unifier;
-			List<Literal> bodyR = ruleUnifier.ruleBody;
+			Set<Literal> bodyR = ruleUnifier.ruleBody;
 			Atom sigmaHr = ruleUnifier.originalHead.substitute(sigma);
 			log("Considering now: {}", ruleUnifier);
 			Set<Unifier> vN = new LinkedHashSet<>(x.getComplementSubstitutions());
@@ -240,11 +243,11 @@ public class AnalyzeUnjustified {
 				if (!bSigma.isGround()) {
 					throw oops("Resulting atom is not ground.");
 				}
-				List<Term> variablesOccurringInSigma = sigma.getOccurringVariables();
+				Set<VariableTerm> variablesOccurringInSigma = sigma.getMappedVariables();
 				if (Unification.instantiate(bSigmaY, bSigma) != null) {
 					for (Unifier sigmaN : vN) {
 						ArrayList<Term> occurringVariables = new ArrayList<>(variablesOccurringInSigma);
-						occurringVariables.addAll(sigmaN.getOccurringVariables());
+						occurringVariables.addAll(sigmaN.getMappedVariables());
 						BasicAtom genericAtom = new BasicAtom(Predicate.getInstance("_", occurringVariables.size(), true), occurringVariables);
 						Atom genericSubstituted = genericAtom.substitute(sigmaN).renameVariables("_analyzeTest");
 						if (Unification.instantiate(genericSubstituted, genericAtom.substitute(sigma)) != null) {
@@ -324,15 +327,11 @@ public class AnalyzeUnjustified {
 		}
 	}
 
-
 	private List<RuleAndUnifier> rulesHeadUnifyingWith(Atom p) {
 
 		List<RuleAndUnifier> rulesWithUnifier = new ArrayList<>();
 		Predicate predicate = p.getPredicate();
-		// Check if literal is built-in with a fixed interpretation.
-		if (p instanceof FixedInterpretationLiteral) {
-			return Collections.emptyList();
-		}
+		
 		ArrayList<FactOrNonGroundRule> definingRulesAndFacts = new ArrayList<>();
 		// Get facts over the same predicate.
 		LinkedHashSet<Instance> factInstances = factsFromProgram.get(predicate);
@@ -342,28 +341,25 @@ public class AnalyzeUnjustified {
 			}
 		}
 
-		HashSet<NonGroundRule> rulesDefiningPredicate = programAnalysis.getPredicateDefiningRules().get(predicate);
+		HashSet<InternalRule> rulesDefiningPredicate = programAnalysis.getPredicateDefiningRules().get(predicate);
 		if (rulesDefiningPredicate != null) {
-			for (NonGroundRule nonGroundRule : rulesDefiningPredicate) {
+			for (InternalRule nonGroundRule : rulesDefiningPredicate) {
 				definingRulesAndFacts.add(new FactOrNonGroundRule(nonGroundRule));
 			}
 		}
 		for (FactOrNonGroundRule factOrNonGroundRule : definingRulesAndFacts) {
 			boolean isNonGroundRule = factOrNonGroundRule.nonGroundRule != null;
-			List<Literal> renamedBody;
+			Set<Literal> renamedBody;
 			Atom headAtom;
 			if (isNonGroundRule) {
 				// First rename all variables in the rule.
-				Rule rule = factOrNonGroundRule.nonGroundRule.getRule().renameVariables("_" + renamingCounter++);
+				InternalRule rule = factOrNonGroundRule.nonGroundRule.renameVariables("_" + renamingCounter++);
 				renamedBody = rule.getBody();
-				if (!rule.getHead().isNormal()) {
-					throw oops("NonGroundRule has no normal head.");
-				}
-				headAtom = ((DisjunctiveHead) rule.getHead()).disjunctiveAtoms.get(0);
+				headAtom = rule.getHeadAtom();
 			} else {
 				// Create atom and empty rule body out of instance.
 				headAtom = new BasicAtom(p.getPredicate(), factOrNonGroundRule.factInstance.terms);
-				renamedBody = Collections.emptyList();
+				renamedBody = Collections.emptySet();
 			}
 			// Unify rule head with literal to justify.
 			Unifier unifier = Unification.unifyAtoms(p, headAtom);
@@ -392,11 +388,11 @@ public class AnalyzeUnjustified {
 	}
 
 	private static class RuleAndUnifier {
-		final List<Literal> ruleBody;
+		final Set<Literal> ruleBody;
 		final Unifier unifier;
 		final Atom originalHead;
 
-		private RuleAndUnifier(List<Literal> ruleBody, Unifier unifier, Atom originalHead) {
+		private RuleAndUnifier(Set<Literal> ruleBody, Unifier unifier, Atom originalHead) {
 			this.ruleBody = ruleBody;
 			this.unifier = unifier;
 			this.originalHead = originalHead;
@@ -410,14 +406,14 @@ public class AnalyzeUnjustified {
 
 	private static class FactOrNonGroundRule {
 		final Instance factInstance;
-		final NonGroundRule nonGroundRule;
+		final InternalRule nonGroundRule;
 
 		private FactOrNonGroundRule(Instance factInstance) {
 			this.factInstance = factInstance;
 			this.nonGroundRule = null;
 		}
 
-		private FactOrNonGroundRule(NonGroundRule nonGroundRule) {
+		private FactOrNonGroundRule(InternalRule nonGroundRule) {
 			this.nonGroundRule = nonGroundRule;
 			this.factInstance = null;
 		}
