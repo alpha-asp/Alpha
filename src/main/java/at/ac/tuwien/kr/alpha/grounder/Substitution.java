@@ -35,6 +35,7 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -45,6 +46,12 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 public class Substitution {
 
 	private static final ProgramPartParser PROGRAM_PART_PARSER = new ProgramPartParser();
+	public static final Substitution EMPTY_SUBSTITUTION = new Substitution() {
+		@Override
+		public <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term groundTerm) {
+			throw oops("Should not be called on EMPTY_SUBSTITUTION");
+		}
+	};
 
 	protected TreeMap<VariableTerm, Term> substitution;
 
@@ -68,6 +75,80 @@ public class Substitution {
 	}
 
 	/**
+	 * Helper class to lazily clone the input substitution of Substitution.unify.
+	 */
+	private static class UnificationHelper {
+		Substitution returnSubstitution;
+
+		Substitution unify(List<Term> termList, Instance instance, Substitution partialSubstitution) {
+			for (int i = 0; i < termList.size(); i++) {
+				if (termList.get(i) == instance.terms.get(i) ||
+					unifyTerms(termList.get(i), instance.terms.get(i), partialSubstitution)) {
+					continue;
+				}
+				return null;
+			}
+			if (returnSubstitution == null) {
+				// All terms unify but there was no need to assign a new variable, clone the input substitution now.
+				return new Substitution(partialSubstitution);
+			}
+			return returnSubstitution;
+		}
+
+		boolean unifyTerms(Term termNonGround, Term termGround, Substitution partialSubstitution) {
+			if (termNonGround == termGround) {
+				// Both terms are either the same constant or the same variable term
+				return true;
+			} else if (termNonGround instanceof ConstantTerm) {
+				// Since right term is ground, both terms differ
+				return false;
+			} else if (termNonGround instanceof VariableTerm) {
+				VariableTerm variableTerm = (VariableTerm) termNonGround;
+				// Left term is variable, bind it to the right term. Use original substitution if it has
+				// not been cloned yet.
+				Term bound = (returnSubstitution == null ? partialSubstitution : returnSubstitution).eval(variableTerm);
+				if (bound != null) {
+					// Variable is already bound, return true if binding is the same as the current ground term.
+					return termGround == bound;
+				}
+				// Record new variable binding.
+				if (returnSubstitution == null) {
+					// Clone substitution if it was not yet.
+					returnSubstitution = new Substitution(partialSubstitution);
+				}
+				returnSubstitution.put(variableTerm, termGround);
+				return true;
+			} else if (termNonGround instanceof FunctionTerm && termGround instanceof FunctionTerm) {
+				// Both terms are function terms
+				FunctionTerm ftNonGround = (FunctionTerm) termNonGround;
+				FunctionTerm ftGround = (FunctionTerm) termGround;
+
+				if (!(ftNonGround.getSymbol().equals(ftGround.getSymbol()))) {
+					return false;
+				}
+				if (ftNonGround.getTerms().size() != ftGround.getTerms().size()) {
+					return false;
+				}
+
+				// Iterate over all subterms of both function terms
+				for (int i = 0; i < ftNonGround.getTerms().size(); i++) {
+					if (!unifyTerms(ftNonGround.getTerms().get(i), ftGround.getTerms().get(i), partialSubstitution)) {
+						return false;
+					}
+				}
+
+				return true;
+			}
+			return false;
+		}
+	}
+
+	public static Substitution unify(Atom atom, Instance instance, Substitution substitution) {
+		return new UnificationHelper().unify(atom.getTerms(), instance, substitution);
+	}
+
+
+	/**
 	 * Computes the unifier of the atom and the instance and stores it in the variable substitution.
 	 * 
 	 * @param atom         the body atom to unify
@@ -75,7 +156,7 @@ public class Substitution {
 	 * @param substitution if the atom does not unify, this is left unchanged.
 	 * @return true if the atom and the instance unify. False otherwise
 	 */
-	public static Substitution unify(Atom atom, Instance instance, Substitution substitution) {
+	public static Substitution unifyOld(Atom atom, Instance instance, Substitution substitution) {
 		for (int i = 0; i < instance.terms.size(); i++) {
 			if (instance.terms.get(i) == atom.getTerms().get(i) || substitution.unifyTerms(atom.getTerms().get(i), instance.terms.get(i))) {
 				continue;
