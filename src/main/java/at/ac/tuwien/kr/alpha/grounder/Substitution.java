@@ -75,7 +75,7 @@ public class Substitution {
 	}
 
 	/**
-	 * Helper class to lazily clone the input substitution of Substitution.unify.
+	 * Helper class to lazily clone the input substitution of Substitution.unify only when needed.
 	 */
 	private static class UnificationHelper {
 		Substitution returnSubstitution;
@@ -89,8 +89,8 @@ public class Substitution {
 				return null;
 			}
 			if (returnSubstitution == null) {
-				// All terms unify but there was no need to assign a new variable, clone the input substitution now.
-				return new Substitution(partialSubstitution);
+				// All terms unify but there was no need to assign a new variable, return the input substitution.
+				return partialSubstitution;
 			}
 			return returnSubstitution;
 		}
@@ -143,35 +143,30 @@ public class Substitution {
 		}
 	}
 
+	/**
+	 * Computes the unifier of the (nonground) atom, a partial substitution for the atom, and a ground instance.
+	 * If unification succeeds the unifying substitution is returned. The partial substitution is left unchanged.
+	 *
+	 * @param atom         the (potentially nonground) atom to unify.
+	 * @param instance     the ground instance to unify with.
+	 * @param substitution the (partial) substitution for the atom. This is left unchanged in all cases.
+	 * @return null if the unification fails, otherwise it is a unifying substitution. If the parameter substitution
+	 * 	already is a unifier, it is returned. If the unifying substitution is an extension of the input
+	 * 	substitution, a new substitution will be returned.
+	 */
 	public static Substitution unify(Atom atom, Instance instance, Substitution substitution) {
 		return new UnificationHelper().unify(atom.getTerms(), instance, substitution);
 	}
 
 
 	/**
-	 * Computes the unifier of the atom and the instance and stores it in the variable substitution.
+	 * Checks if a (possibly non-ground) term unifies with a given ground term. Note that this method changes the
+	 * {@link Substitution} object such that it becomes the unifier (if possible).
 	 * 
-	 * @param atom         the body atom to unify
-	 * @param instance     the ground instance
-	 * @param substitution if the atom does not unify, this is left unchanged.
-	 * @return true if the atom and the instance unify. False otherwise
-	 */
-	public static Substitution unifyOld(Atom atom, Instance instance, Substitution substitution) {
-		for (int i = 0; i < instance.terms.size(); i++) {
-			if (instance.terms.get(i) == atom.getTerms().get(i) || substitution.unifyTerms(atom.getTerms().get(i), instance.terms.get(i))) {
-				continue;
-			}
-			return null;
-		}
-		return substitution;
-	}
-
-	/**
-	 * Checks if the left possible non-ground term unifies with the ground term.
-	 * 
-	 * @param termNonGround
-	 * @param termGround
-	 * @return
+	 * @param termNonGround the nonground term.
+	 * @param termGround the ground term.
+	 * @return true iff both terms unify. If yes, the unifier is available in the {@link Substitution} object this
+	 * 	method is called on.
 	 */
 	public boolean unifyTerms(Term termNonGround, Term termGround) {
 		if (termNonGround == termGround) {
@@ -273,10 +268,10 @@ public class Substitution {
 
 	public static Substitution fromString(String substitution) {
 		String bare = substitution.substring(1, substitution.length() - 1);
-		String assignments[] = bare.split(",");
+		String[] assignments = bare.split(",");
 		Substitution ret = new Substitution();
 		for (String assignment : assignments) {
-			String keyVal[] = assignment.split("->");
+			String[] keyVal = assignment.split("->");
 			VariableTerm variable = VariableTerm.getInstance(keyVal[0]);
 			Term assignedTerm = PROGRAM_PART_PARSER.parseTerm(keyVal[1]);
 			ret.put(variable, assignedTerm);
