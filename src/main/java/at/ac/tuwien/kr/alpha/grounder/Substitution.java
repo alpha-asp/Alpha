@@ -70,23 +70,21 @@ public class Substitution {
 		this(new TreeMap<>(clone.substitution));
 	}
 
-	public static Substitution unify(Literal literal, Instance instance, Substitution substitution) {
-		return unify(literal.getAtom(), instance, substitution);
+	public static Substitution specializeSubstitution(Literal literal, Instance instance, Substitution substitution) {
+		return specializeSubstitution(literal.getAtom(), instance, substitution);
 	}
 
 	/**
-	 * Helper class to lazily clone the input substitution of Substitution.unify only when needed.
+	 * Helper class to lazily clone the input substitution of Substitution.specializeSubstitution only when needed.
 	 */
-	private static class UnificationHelper {
+	private static class SpecializationHelper {
 		Substitution returnSubstitution;
 
 		Substitution unify(List<Term> termList, Instance instance, Substitution partialSubstitution) {
 			for (int i = 0; i < termList.size(); i++) {
-				if (termList.get(i) == instance.terms.get(i) ||
-					unifyTerms(termList.get(i), instance.terms.get(i), partialSubstitution)) {
-					continue;
+				if (!unifyTerms(termList.get(i), instance.terms.get(i), partialSubstitution)) {
+					return null;
 				}
-				return null;
 			}
 			if (returnSubstitution == null) {
 				// All terms unify but there was no need to assign a new variable, return the input substitution.
@@ -144,71 +142,21 @@ public class Substitution {
 	}
 
 	/**
-	 * Computes the unifier of the (nonground) atom, a partial substitution for the atom, and a ground instance.
-	 * If unification succeeds the unifying substitution is returned. The partial substitution is left unchanged.
+	 * Specializes a given substitution such that applying the specialized substitution on the given atom yields the
+	 * given instance (if such a specialized substitution exists). Computes the unifier of the (nonground) atom and
+	 * the given ground instance such that the unifier is an extension of the given partial substitution. If
+	 * specialization succeeds the unifying substitution is returned, if no such unifier exists null is returned. In
+	 * any case the partial substitution is left unchanged.
 	 *
 	 * @param atom         the (potentially nonground) atom to unify.
-	 * @param instance     the ground instance to unify with.
+	 * @param instance     the ground instance to unify the atom with.
 	 * @param substitution the (partial) substitution for the atom. This is left unchanged in all cases.
-	 * @return null if the unification fails, otherwise it is a unifying substitution. If the parameter substitution
-	 * 	already is a unifier, it is returned. If the unifying substitution is an extension of the input
-	 * 	substitution, a new substitution will be returned.
+	 * @return null if the unification/specialization fails, otherwise it is a unifying substitution. If the
+	 * 	parameter substitution already is a unifier, it is returned. If the unifying substitution is an
+	 * 	extension of the input substitution, a new substitution will be returned.
 	 */
-	public static Substitution unify(Atom atom, Instance instance, Substitution substitution) {
-		return new UnificationHelper().unify(atom.getTerms(), instance, substitution);
-	}
-
-
-	/**
-	 * Checks if a (possibly non-ground) term unifies with a given ground term. Note that this method changes the
-	 * {@link Substitution} object such that it becomes the unifier (if possible).
-	 * 
-	 * @param termNonGround the nonground term.
-	 * @param termGround the ground term.
-	 * @return true iff both terms unify. If yes, the unifier is available in the {@link Substitution} object this
-	 * 	method is called on.
-	 */
-	public boolean unifyTerms(Term termNonGround, Term termGround) {
-		if (termNonGround == termGround) {
-			// Both terms are either the same constant or the same variable term
-			return true;
-		} else if (termNonGround instanceof ConstantTerm) {
-			// Since right term is ground, both terms differ
-			return false;
-		} else if (termNonGround instanceof VariableTerm) {
-			VariableTerm variableTerm = (VariableTerm) termNonGround;
-			// Left term is variable, bind it to the right term.
-			Term bound = eval(variableTerm);
-
-			if (bound != null) {
-				// Variable is already bound, return true if binding is the same as the current ground term.
-				return termGround == bound;
-			}
-
-			substitution.put(variableTerm, termGround);
-			return true;
-		} else if (termNonGround instanceof FunctionTerm && termGround instanceof FunctionTerm) {
-			// Both terms are function terms
-			FunctionTerm ftNonGround = (FunctionTerm) termNonGround;
-			FunctionTerm ftGround = (FunctionTerm) termGround;
-
-			if (!(ftNonGround.getSymbol().equals(ftGround.getSymbol()))) {
-				return false;
-			}
-			if (ftNonGround.getTerms().size() != ftGround.getTerms().size()) {
-				return false;
-			}
-
-			// Iterate over all subterms of both function terms
-			for (int i = 0; i < ftNonGround.getTerms().size(); i++) {
-				if (!unifyTerms(ftNonGround.getTerms().get(i), ftGround.getTerms().get(i))) {
-					return false;
-				}
-			}
-
-			return true;
-		}
-		return false;
+	public static Substitution specializeSubstitution(Atom atom, Instance instance, Substitution substitution) {
+		return new SpecializationHelper().unify(atom.getTerms(), instance, substitution);
 	}
 
 	/**

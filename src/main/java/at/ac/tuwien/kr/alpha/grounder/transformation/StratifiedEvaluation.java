@@ -236,7 +236,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			return Collections.emptyList();
 		}
 		for (Instance instance : instances) {
-			Substitution unifyingSubstitution = Substitution.unify(lit, instance, Substitution.EMPTY_SUBSTITUTION);
+			Substitution unifyingSubstitution = Substitution.specializeSubstitution(lit, instance, Substitution.EMPTY_SUBSTITUTION);
 			if (unifyingSubstitution != null) {
 				retVal.add(unifyingSubstitution);
 			}
