@@ -78,7 +78,7 @@ public class Substitution {
 	 * Helper class to lazily clone the input substitution of Substitution.specializeSubstitution only when needed.
 	 */
 	private static class SpecializationHelper {
-		Substitution returnSubstitution;
+		Substitution updatedSubstitution;	// Is null for as long as the given partial substitution is not extended, afterwards holds the updated/extended/specialized substitution.
 
 		Substitution unify(List<Term> termList, Instance instance, Substitution partialSubstitution) {
 			for (int i = 0; i < termList.size(); i++) {
@@ -86,11 +86,11 @@ public class Substitution {
 					return null;
 				}
 			}
-			if (returnSubstitution == null) {
+			if (updatedSubstitution == null) {
 				// All terms unify but there was no need to assign a new variable, return the input substitution.
 				return partialSubstitution;
 			}
-			return returnSubstitution;
+			return updatedSubstitution;
 		}
 
 		boolean unifyTerms(Term termNonGround, Term termGround, Substitution partialSubstitution) {
@@ -104,17 +104,17 @@ public class Substitution {
 				VariableTerm variableTerm = (VariableTerm) termNonGround;
 				// Left term is variable, bind it to the right term. Use original substitution if it has
 				// not been cloned yet.
-				Term bound = (returnSubstitution == null ? partialSubstitution : returnSubstitution).eval(variableTerm);
+				Term bound = (updatedSubstitution == null ? partialSubstitution : updatedSubstitution).eval(variableTerm); // Get variable binding, either from input substitution if it has not been updated yet, or from the cloned/updated substitution.
 				if (bound != null) {
 					// Variable is already bound, return true if binding is the same as the current ground term.
 					return termGround == bound;
 				}
 				// Record new variable binding.
-				if (returnSubstitution == null) {
-					// Clone substitution if it was not yet.
-					returnSubstitution = new Substitution(partialSubstitution);
+				if (updatedSubstitution == null) {
+					// Clone substitution if it was not yet updated.
+					updatedSubstitution = new Substitution(partialSubstitution);
 				}
-				returnSubstitution.put(variableTerm, termGround);
+				updatedSubstitution.put(variableTerm, termGround);
 				return true;
 			} else if (termNonGround instanceof FunctionTerm && termGround instanceof FunctionTerm) {
 				// Both terms are function terms
