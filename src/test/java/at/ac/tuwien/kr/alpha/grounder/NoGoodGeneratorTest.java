@@ -56,7 +56,7 @@ public class NoGoodGeneratorTest {
 	private static final VariableTerm Y = VariableTerm.getInstance("Y");
 
 	/**
-	 * Calls {@link NoGoodGenerator#collectNegLiterals(NonGroundRule, Substitution)}, which puts the atom occurring
+	 * Calls {@link NoGoodGenerator#collectNegLiterals(InternalRule, Substitution)}, which puts the atom occurring
 	 * negatively in a rule into the atom store. It is then checked whether the atom in the atom store is positive.
 	 */
 	@Test
@@ -73,8 +73,8 @@ public class NoGoodGeneratorTest {
 		Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, true);
 		NoGoodGenerator noGoodGenerator = ((NaiveGrounder) grounder).noGoodGenerator;
 		Substitution substitution = new Substitution();
-		substitution.unifyTerms(X, A);
-		substitution.unifyTerms(Y, B);
+		substitution.put(X, A);
+		substitution.put(Y, B);
 		List<Integer> collectedNeg = noGoodGenerator.collectNegLiterals(rule, substitution);
 		assertEquals(1, collectedNeg.size());
 		String negAtomString = atomStore.atomToString(atomOf(collectedNeg.get(0)));
