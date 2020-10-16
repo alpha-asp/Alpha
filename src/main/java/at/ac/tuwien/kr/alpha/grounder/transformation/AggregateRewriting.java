@@ -3,6 +3,9 @@ package at.ac.tuwien.kr.alpha.grounder.transformation;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 
+// FIXME do proper internalizing of predicates
+// Internalize before stitching programs together (otherwise clashes!)
+// (maybe internalize on getInstance? in that case don't forget stuff that's parsed internally!)
 public class AggregateRewriting extends ProgramTransformation<InputProgram, InputProgram> {
 
 	public static final Predicate AGGREGATE_RESULT = Predicate.getInstance("_aggregate_result", 2);
@@ -28,10 +31,14 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 		AggregateLiteralSplitting literalSplitting = new AggregateLiteralSplitting();
 		AggregateOperatorNormalization operatorNormalization = new AggregateOperatorNormalization();
 		AbstractAggregateTransformation bindingAggregateTransformation = new BindingAggregateTransformation();
+		CardinalityNormalization cardinalityNormalization = new CardinalityNormalization(config.isUseSortingCircuitEncoding());
 		InputProgram result = literalSplitting
 				.andThen(operatorNormalization)
 				.andThen(bindingAggregateTransformation)
+				.andThen(cardinalityNormalization)
 				.apply(inputProgram);
+		// TODO remove, only for development testing!
+		System.out.println(result);
 		return result;
 	}
 }

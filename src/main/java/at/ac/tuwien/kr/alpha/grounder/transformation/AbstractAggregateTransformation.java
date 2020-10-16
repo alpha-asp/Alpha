@@ -19,8 +19,7 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 
 public abstract class AbstractAggregateTransformation extends ProgramTransformation<InputProgram, InputProgram> {
 
-	public static final Predicate AGGREGATE_RESULT = Predicate.getInstance("_aggregate_result", 2);
-	public static final Predicate AGGREGATE_ELEMENT_TUPLE = Predicate.getInstance("_aggregate_element_tuple", 3);
+	public static final Predicate AGGREGATE_RESULT = Predicate.getInstance("aggregate_result", 2);
 
 	@Override
 	public InputProgram apply(InputProgram program) {

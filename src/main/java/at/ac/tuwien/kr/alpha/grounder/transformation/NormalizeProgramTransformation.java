@@ -5,7 +5,8 @@ import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 
 /**
- * Encapsulates all transformations necessary to transform a given program into a @{link NormalProgram} that is understood by Alpha internally
+ * Encapsulates all transformations necessary to transform a given program into a @{link NormalProgram} that is
+ * understood by Alpha internally
  * 
  * Copyright (c) 2019-2020, the Alpha Team.
  */
@@ -29,6 +30,8 @@ public class NormalizeProgramTransformation extends ProgramTransformation<InputP
 		// Transform enumeration atoms.
 		tmpPrg = new EnumerationRewriting().apply(tmpPrg);
 		EnumerationAtom.resetEnumerations();
+		// TODO remove - only for dev testing!
+		System.out.println(tmpPrg);
 
 		// Construct the normal program.
 		NormalProgram retVal = NormalProgram.fromInputProgram(tmpPrg);
