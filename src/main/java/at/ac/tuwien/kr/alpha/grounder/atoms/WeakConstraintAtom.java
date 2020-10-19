@@ -47,7 +47,15 @@ public class WeakConstraintAtom extends Atom {
 		}
 		Term actualLevel = level != null ? level : ConstantTerm.getInstance(0);
 		List<Term> actualTermlist = termList != null ? termList : Collections.emptyList();
-		return new WeakConstraintAtom(weight, actualLevel, FunctionTerm.getInstance(TERMLISTSYMBOL,actualTermlist));
+		return new WeakConstraintAtom(weight, actualLevel, FunctionTerm.getInstance(TERMLISTSYMBOL, actualTermlist));
+	}
+
+	public Integer getWeight() {
+		return (Integer) ((ConstantTerm)weight).getObject();
+	}
+
+	public Integer getLevel() {
+		return (Integer) ((ConstantTerm)level).getObject();
 	}
 
 	private static boolean isIntegerOrVariable(Term term) {

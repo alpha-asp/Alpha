@@ -27,29 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToNegatedLiteral;
-import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
-import static at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
-import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Set;
-import java.util.function.Consumer;
-
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -71,6 +48,28 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.ChainedBranchingHeuristics;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.NaiveHeuristic;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToNegatedLiteral;
+import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
+import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
 
 /**
  * The new default solver employed in Alpha.
@@ -82,6 +81,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 
 	private final NoGoodStore store;
 	private final ChoiceManager choiceManager;
+	private final WeakConstraintsManager weakConstraintsManager;
 	private final WritableAssignment assignment;
 
 	private final GroundConflictNoGoodLearner learner;
@@ -103,6 +103,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		this.assignment = assignment;
 		this.store = store;
 		this.choiceManager = new ChoiceManager(assignment, store);
+		this.weakConstraintsManager = new WeakConstraintsManager(assignment);
 		this.learner = new GroundConflictNoGoodLearner(assignment, atomStore);
 		this.branchingHeuristic = chainFallbackHeuristic(grounder, assignment, random, heuristicsConfiguration);
 		this.disableJustifications = config.isDisableJustificationSearch();
@@ -134,6 +135,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				logStats();
 				return false;
 			}
+			weakConstraintsManager.addWeakConstraintsInformation(grounder.getWeakConstraintInformation());
 			initialize = false;
 		} else if (assignment.getDecisionLevel() == 0) {
 			logStats();
@@ -202,6 +204,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 					logStats();
 					return false;
 				}
+				weakConstraintsManager.addWeakConstraintsInformation(grounder.getWeakConstraintInformation());
 			} else if (choose()) {
 				LOGGER.debug("Did choice.");
 				didChange = true;

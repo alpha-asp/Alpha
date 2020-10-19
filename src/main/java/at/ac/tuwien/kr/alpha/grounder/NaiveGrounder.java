@@ -54,6 +54,7 @@ import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiator;
 import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,6 +87,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final NogoodRegistry registry = new NogoodRegistry();
 	final NoGoodGenerator noGoodGenerator;
 	private final ChoiceRecorder choiceRecorder;
+	private final WeakConstraintRecorder weakConstraintRecorder;
 	private final InternalProgram program;
 	private final AnalyzeUnjustified analyzeUnjustified;
 
@@ -129,7 +131,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 		final Set<InternalRule> uniqueGroundRulePerGroundHead = getRulesWithUniqueHead();
 		choiceRecorder = new ChoiceRecorder(atomStore);
-		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, this.program, uniqueGroundRulePerGroundHead);
+		weakConstraintRecorder = new WeakConstraintRecorder();
+		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, weakConstraintRecorder, factsFromProgram, this.program, uniqueGroundRulePerGroundHead);
 		
 		this.debugInternalChecks = debugInternalChecks;
 
@@ -559,6 +562,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	@Override
 	public Map<Integer, Set<Integer>> getHeadsToBodies() {
 		return choiceRecorder.getAndResetHeadsToBodies();
+	}
+
+	@Override
+	public List<Triple<Integer, Integer, Integer>> getWeakConstraintInformation() {
+		return weakConstraintRecorder.getAndResetWeakConstraintAtomWeightLevels();
 	}
 
 	@Override
