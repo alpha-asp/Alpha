@@ -5,7 +5,6 @@ import static java.util.Collections.emptySet;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;

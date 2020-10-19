@@ -1,15 +1,11 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 
 // FIXME do proper internalizing of predicates
 // Internalize before stitching programs together (otherwise clashes!)
 // (maybe internalize on getInstance? in that case don't forget stuff that's parsed internally!)
 public class AggregateRewriting extends ProgramTransformation<InputProgram, InputProgram> {
-
-	public static final Predicate AGGREGATE_RESULT = Predicate.getInstance("_aggregate_result", 2);
-	public static final Predicate AGGREGATE_ELEMENT_TUPLE = Predicate.getInstance("_aggregate_element_tuple", 3);
 
 	// TODO add a switch to control whether internal predicates should be internalized (debugging!)
 	private final AggregateRewritingConfig config;
