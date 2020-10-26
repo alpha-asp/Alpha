@@ -172,6 +172,11 @@ public class DummyGrounder implements Grounder {
 	}
 
 	@Override
+	public boolean inputProgramContainsWeakConstraints() {
+		return false;
+	}
+
+	@Override
 	public List<Triple<Integer, Integer, Integer>> getWeakConstraintInformation() {
 		return emptyList();
 	}

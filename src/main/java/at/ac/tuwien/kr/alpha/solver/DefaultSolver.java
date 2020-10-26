@@ -30,7 +30,9 @@ package at.ac.tuwien.kr.alpha.solver;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.WeightedAnswerSet;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
@@ -94,6 +96,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	private final boolean disableJustifications;
 	private boolean disableJustificationAfterClosing = true;	// Keep disabled for now, case not fully worked out yet.
 	private final boolean disableNoGoodDeletion;
+	private final boolean enableBranchAndBoundOptimization;
 
 	private final PerformanceLog performanceLog;
 	
@@ -103,11 +106,14 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		this.assignment = assignment;
 		this.store = store;
 		this.choiceManager = new ChoiceManager(assignment, store);
+		choiceManager.setChecksEnabled(config.isDebugInternalChecks());
 		this.weakConstraintsManager = new WeakConstraintsManager(assignment);
+		weakConstraintsManager.setChecksEnabled(config.isDebugInternalChecks());
 		this.learner = new GroundConflictNoGoodLearner(assignment, atomStore);
 		this.branchingHeuristic = chainFallbackHeuristic(grounder, assignment, random, heuristicsConfiguration);
 		this.disableJustifications = config.isDisableJustificationSearch();
 		this.disableNoGoodDeletion = config.isDisableNoGoodDeletion();
+		this.enableBranchAndBoundOptimization = grounder.inputProgramContainsWeakConstraints();
 		this.performanceLog = new PerformanceLog(choiceManager, (TrailAssignment) assignment, 1000);
 	}
 
@@ -135,7 +141,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				logStats();
 				return false;
 			}
-			weakConstraintsManager.addWeakConstraintsInformation(grounder.getWeakConstraintInformation());
+			if (enableBranchAndBoundOptimization) {
+				weakConstraintsManager.addWeakConstraintsInformation(grounder.getWeakConstraintInformation());
+			}
 			initialize = false;
 		} else if (assignment.getDecisionLevel() == 0) {
 			logStats();
@@ -192,6 +200,15 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 					}
 					afterAllAtomsAssigned = false;
 				}
+			} else if (enableBranchAndBoundOptimization && !weakConstraintsManager.isCurrentBetterThanBest()) {
+				// The solver is searching for optimal answer sets and the current assignment is worse than a previously found answer set.
+				NoGood excludingNoGood = weakConstraintsManager.generateExcludingNoGood();
+				Map<Integer, NoGood> obtained = new LinkedHashMap<>();
+				obtained.put(grounder.register(excludingNoGood), excludingNoGood);
+				if (!ingest(obtained)) {
+					logStats();
+					return false;
+				}
 			} else if (didChange) {
 				// Ask the grounder for new NoGoods, then propagate (again).
 				LOGGER.trace("Doing propagation step.");
@@ -214,6 +231,11 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			} else if (assignment.getMBTCount() == 0) {
 				// NOTE: If we would do optimization, we would now have a guaranteed upper bound.
 				AnswerSet as = translate(assignment.getTrueAssignments());
+				if (enableBranchAndBoundOptimization) {
+					// Enrich answer-set with weights information.
+					weakConstraintsManager.markCurrentWeightAsBestKnown();
+					as = new WeightedAnswerSet((BasicAnswerSet)as, weakConstraintsManager.getCurrentWeightAtLevels());
+				}
 				LOGGER.debug("Answer-Set found: {}", as);
 				action.accept(as);
 				logStats();

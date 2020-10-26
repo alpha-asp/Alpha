@@ -31,6 +31,7 @@ import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.common.SimpleAnswerSetFormatter;
+import at.ac.tuwien.kr.alpha.common.WeightedAnswerSet;
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph;
 import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
 import at.ac.tuwien.kr.alpha.common.graphio.ComponentGraphWriter;
@@ -188,7 +189,11 @@ public class Main {
 			final BiConsumer<Integer, AnswerSet> answerSetHandler;
 			final AnswerSetFormatter<String> fmt = new SimpleAnswerSetFormatter(alpha.getConfig().getAtomSeparator());
 			BiConsumer<Integer, AnswerSet> stdoutPrinter = (n, as) -> {
-				System.out.println("Answer set " + Integer.toString(n) + ":" + System.lineSeparator() + fmt.format(as));
+				System.out.println("Answer set " + n + ":" + System.lineSeparator() + fmt.format(as));
+				if (program.containsWeakConstraints()) {
+					// If weak constraints are presents, all answer sets are weighted.
+					System.out.println("Optimization: " + ((WeightedAnswerSet) as).getWeightsAsString());
+				}
 			};
 			if (inputCfg.isWriteAnswerSetsAsXlsx()) {
 				BiConsumer<Integer, AnswerSet> xlsxWriter = new AnswerSetToXlsxWriter(inputCfg.getAnswerSetFileOutputPath());
@@ -210,7 +215,12 @@ public class Main {
 					}
 				}
 			} else {
-				System.out.println("SATISFIABLE");
+				if (program.containsWeakConstraints() && counter.get() < limit) {
+					// Note: this ignores the case where n answer sets are requested and the n-th is the optimum. For this, a solver state is needed.
+					System.out.println("OPTIMUM FOUND");
+				} else {
+					System.out.println("SATISFIABLE");
+				}
 			}
 		} else {
 			// Note: Even though we are not consuming the result, we will still compute

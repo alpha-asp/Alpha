@@ -20,8 +20,8 @@ class AtomCallbackManager {
 	private AtomCallback[] atomCallbacks = new AtomCallback[0];
 
 	void recordCallback(int atom, AtomCallback atomCallback) {
-		if (atomCallbacks[atom] != null) {
-			throw oops("Recording callback for atom twice. Atom: " + atom);
+		if (atomCallbacks[atom] != null && !atomCallbacks[atom].equals(atomCallback)) {
+			throw oops("Recording different callbacks for one atom. Atom: " + atom);
 		}
 		atomCallbacks[atom] = atomCallback;
 	}

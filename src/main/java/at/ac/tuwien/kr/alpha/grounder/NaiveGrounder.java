@@ -560,6 +560,11 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	}
 
 	@Override
+	public boolean inputProgramContainsWeakConstraints() {
+		return program.containsWeakConstraints();
+	}
+
+	@Override
 	public Map<Integer, Set<Integer>> getHeadsToBodies() {
 		return choiceRecorder.getAndResetHeadsToBodies();
 	}

@@ -63,6 +63,12 @@ public interface Grounder {
 	Pair<Map<Integer, Integer>, Map<Integer, Integer>> getChoiceAtoms();
 
 	/**
+	 * States whether the input program given to the grounder contains weak constraints (which enables optimization).
+	 * @return true if the input program to the grounder contains weak constraints.
+	 */
+	boolean inputProgramContainsWeakConstraints();
+
+	/**
 	 * Returns the atomId of atoms representing weak constraint and the respective weight and level.
 	 * Must be preceeded by a call to getNoGoods().
 	 * @return a list of triples (atomId, weight, level) where atomId is the atom that becomes true whenever the

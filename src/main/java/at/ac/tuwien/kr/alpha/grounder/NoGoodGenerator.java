@@ -104,7 +104,7 @@ public class NoGoodGenerator {
 		if (groundHeadAtom instanceof WeakConstraintAtom) {
 			WeakConstraintAtom weakConstraintAtom = (WeakConstraintAtom) groundHeadAtom;
 			// Treat weak constraints: only generate nogood for the if-direction (body satisfied causes head to be true).
-			NoGood wcRule = NoGood.fromBodyInternal(posLiterals, negLiterals, headId);
+			NoGood wcRule = NoGood.fromBodyInternal(posLiterals, negLiterals, atomToLiteral(headId));
 			result.add(wcRule);
 
 			// Record weak constraint association.
