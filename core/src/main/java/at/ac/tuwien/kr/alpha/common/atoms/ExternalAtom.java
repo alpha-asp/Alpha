@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2017-2019, the Alpha Team.
  * All rights reserved.
- * 
+ * <p>
  * Additional changes made by Siemens.
- * 
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ * <p>
  * 1) Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 
+ * list of conditions and the following disclaimer.
+ * <p>
  * 2) Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- * 
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -27,26 +27,27 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import static at.ac.tuwien.kr.alpha.Util.join;
+import at.ac.tuwien.kr.alpha.common.PredicateImpl;
+import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import static at.ac.tuwien.kr.alpha.Util.join;
 
-public class ExternalAtom extends Atom implements VariableNormalizableAtom {
+public class ExternalAtom extends AtomImpl implements VariableNormalizableAtom {
 
-	private final List<Term> input;
-	private final List<Term> output;
+	private final List<? extends TermImpl> input;
+	private final List<? extends TermImpl> output;
 
-	protected final Predicate predicate;
+	protected final PredicateImpl predicate;
 	protected final PredicateInterpretation interpretation;
 
-	public ExternalAtom(Predicate predicate, PredicateInterpretation interpretation, List<Term> input, List<Term> output) {
+	public ExternalAtom(PredicateImpl predicate, PredicateInterpretation interpretation, List<? extends TermImpl> input, List<? extends TermImpl> output) {
 		if (predicate == null) {
 			throw new IllegalArgumentException("predicate must not be null!");
 		}
@@ -70,7 +71,7 @@ public class ExternalAtom extends Atom implements VariableNormalizableAtom {
 	}
 
 	@Override
-	public Predicate getPredicate() {
+	public PredicateImpl getPredicate() {
 		return predicate;
 	}
 
@@ -78,16 +79,16 @@ public class ExternalAtom extends Atom implements VariableNormalizableAtom {
 		return interpretation;
 	}
 
-	public List<Term> getInput() {
+	public List<? extends TermImpl> getInput() {
 		return Collections.unmodifiableList(input);
 	}
 
-	public List<Term> getOutput() {
+	public List<? extends TermImpl> getOutput() {
 		return Collections.unmodifiableList(output);
 	}
 
 	@Override
-	public List<Term> getTerms() {
+	public List<? extends TermImpl> getTerms() {
 		return input;
 	}
 
@@ -108,8 +109,8 @@ public class ExternalAtom extends Atom implements VariableNormalizableAtom {
 
 	@Override
 	public ExternalAtom substitute(Substitution substitution) {
-		List<Term> substitutedInput = this.input.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
-		List<Term> substitutedOutput = this.output.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
+		List<? extends TermImpl> substitutedInput = this.input.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
+		List<? extends TermImpl> substitutedOutput = this.output.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
 		return new ExternalAtom(predicate, interpretation, substitutedInput, substitutedOutput);
 	}
 
@@ -131,7 +132,7 @@ public class ExternalAtom extends Atom implements VariableNormalizableAtom {
 	}
 
 	@Override
-	public Atom withTerms(List<Term> terms) {
+	public AtomImpl withTerms(List<TermImpl> terms) {
 		throw new UnsupportedOperationException("Editing term list is not supported for external atoms!");
 	}
 
@@ -171,8 +172,8 @@ public class ExternalAtom extends Atom implements VariableNormalizableAtom {
 
 	@Override
 	public ExternalAtom normalizeVariables(String prefix, int counterStartingValue) {
-		List<Term> renamedInput = Term.renameTerms(this.input, prefix + "_IN_", counterStartingValue);
-		List<Term> renamedOutput = Term.renameTerms(this.output, prefix + "_OUT_", counterStartingValue);
+		List<? extends TermImpl> renamedInput = TermImpl.renameTerms(this.input, prefix + "_IN_", counterStartingValue);
+		List<? extends TermImpl> renamedOutput = TermImpl.renameTerms(this.output, prefix + "_OUT_", counterStartingValue);
 		return new ExternalAtom(this.predicate, this.interpretation, renamedInput, renamedOutput);
 	}
 

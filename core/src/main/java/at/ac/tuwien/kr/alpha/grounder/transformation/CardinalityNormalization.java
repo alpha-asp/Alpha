@@ -7,10 +7,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.common.terms.*;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
@@ -194,8 +191,8 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 				aggregateSubstitution.put(VariableTerm.getInstance("AGGREGATE_ID"), ConstantTerm.getInstance(aggregateCount));
 			} else {
 				// In case some variables are not local to the aggregate, add them to the aggregate identifier
-				ArrayList<Term> globalVariableTermlist = new ArrayList<>(globalVariables);
-				globalVariableTermlist.add(ConstantTerm.getInstance(aggregateCount));
+				ArrayList<? extends TermImpl> globalVariableTermlist = new ArrayList<>(globalVariables);
+				globalVariableTermlist.add(ConstantTermImpl.getInstance(aggregateCount));
 				aggregateSubstitution.put(VariableTerm.getInstance("AGGREGATE_ID"), FunctionTerm.getInstance("agg", globalVariableTermlist));
 			}
 			aggregateSubstitution.put(VariableTerm.getInstance("LOWER_BOUND"), aggregateAtom.getLowerBoundTerm());

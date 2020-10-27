@@ -27,8 +27,9 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.PredicateImpl;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Arrays;
@@ -41,9 +42,9 @@ import static at.ac.tuwien.kr.alpha.Util.join;
 /**
  * Represents ordinary ASP atoms.
  */
-public class BasicAtom extends Atom implements VariableNormalizableAtom {
-	private final Predicate predicate;
-	private final List<Term> terms;
+public class BasicAtom extends AtomImpl implements VariableNormalizableAtom {
+	private final PredicateImpl predicate;
+	private final List<? extends TermImpl> terms;
 	private final boolean ground;
 
 	/**
@@ -52,7 +53,7 @@ public class BasicAtom extends Atom implements VariableNormalizableAtom {
 	 * @param predicate
 	 * @param terms
 	 */
-	public BasicAtom(Predicate predicate, List<Term> terms) {
+	public BasicAtom(PredicateImpl predicate, List<? extends TermImpl> terms) {
 		this.predicate = predicate;
 		this.terms = terms;
 
@@ -67,21 +68,21 @@ public class BasicAtom extends Atom implements VariableNormalizableAtom {
 		this.ground = ground;
 	}
 
-	public BasicAtom(Predicate predicate, Term... terms) {
+	public BasicAtom(PredicateImpl predicate, TermImpl... terms) {
 		this(predicate, Arrays.asList(terms));
 	}
 
-	public BasicAtom(Predicate predicate) {
+	public BasicAtom(PredicateImpl predicate) {
 		this(predicate, Collections.emptyList());
 	}
 
 	@Override
-	public Predicate getPredicate() {
+	public PredicateImpl getPredicate() {
 		return predicate;
 	}
 
 	@Override
-	public List<Term> getTerms() {
+	public List<? extends TermImpl> getTerms() {
 		return terms;
 	}
 
@@ -99,12 +100,12 @@ public class BasicAtom extends Atom implements VariableNormalizableAtom {
 
 	@Override
 	public BasicAtom normalizeVariables(String prefix, int counterStartingValue) {
-		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
+		List<TermImpl> renamedTerms = TermImpl.renameTerms(terms, prefix, counterStartingValue);
 		return new BasicAtom(predicate, renamedTerms);
 	}
 
 	@Override
-	public BasicLiteral toLiteral(boolean positive) {
+	public LiteralImpl toLiteral(boolean positive) {
 		return new BasicLiteral(this, positive);
 	}
 
@@ -160,8 +161,7 @@ public class BasicAtom extends Atom implements VariableNormalizableAtom {
 	}
 
 	@Override
-	public Atom withTerms(List<Term> terms) {
+	public AtomImpl withTerms(List<TermImpl> terms) {
 		return new BasicAtom(predicate, terms);
 	}
-
 }

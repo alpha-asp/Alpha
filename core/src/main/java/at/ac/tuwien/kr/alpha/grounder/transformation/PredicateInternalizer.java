@@ -1,10 +1,8 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.PredicateImpl;
+import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.Head;
@@ -23,7 +21,7 @@ public class PredicateInternalizer {
 
 	static InputProgram makePredicatesInternal(InputProgram program) {
 		InputProgram.Builder prgBuilder = InputProgram.builder();
-		for (Atom atom : program.getFacts()) {
+		for (AtomImpl atom : program.getFacts()) {
 			prgBuilder.addFact(PredicateInternalizer.makePredicateInternal(atom));
 		}
 		for (BasicRule rule : program.getRules()) {
@@ -41,8 +39,8 @@ public class PredicateInternalizer {
 			}
 			newHead = new NormalHead(makePredicateInternal(((NormalHead) rule.getHead()).getAtom()));
 		}
-		List<Literal> newBody = new ArrayList<>();
-		for (Literal bodyElement : rule.getBody()) {
+		List<LiteralImpl> newBody = new ArrayList<>();
+		for (LiteralImpl bodyElement : rule.getBody()) {
 			// Only rewrite BasicAtoms.
 			if (bodyElement instanceof BasicLiteral) {
 				newBody.add(makePredicateInternal(bodyElement.getAtom()).toLiteral());
@@ -54,8 +52,8 @@ public class PredicateInternalizer {
 		return new BasicRule(newHead, newBody);
 	}
 
-	private static Atom makePredicateInternal(Atom atom) {
-		Predicate newInternalPredicate = Predicate.getInstance(atom.getPredicate().getName(), atom.getPredicate().getArity(), true);
+	private static AtomImpl makePredicateInternal(AtomImpl atom) {
+		PredicateImpl newInternalPredicate = PredicateImpl.getInstance(atom.getPredicate().getName(), atom.getPredicate().getArity(), true);
 		return new BasicAtom(newInternalPredicate, atom.getTerms());
 	}
 }

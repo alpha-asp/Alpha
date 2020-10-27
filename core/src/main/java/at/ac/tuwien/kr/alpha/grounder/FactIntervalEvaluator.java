@@ -1,10 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
+import at.ac.tuwien.kr.alpha.common.terms.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,17 +15,18 @@ public class FactIntervalEvaluator {
 
 	/**
 	 * Helper to construct Instances from a fact that may contain intervals.
+	 *
 	 * @param fact the fact potentially containing intervals.
 	 * @return all instances stemming from unfolding the intervals.
 	 */
-	public static List<Instance> constructFactInstances(Atom fact) {
+	public static List<Instance> constructFactInstances(AtomImpl fact) {
 		// Construct instance(s) from the fact.
 		int arity = fact.getPredicate().getArity();
-		Term[] currentTerms = new Term[arity];
+		TermImpl[] currentTerms = new TermImpl[arity];
 		boolean containsIntervals = false;
 		// Check if instance contains intervals at all.
 		for (int i = 0; i < arity; i++) {
-			Term term = fact.getTerms().get(i);
+			TermImpl term = fact.getTerms().get(i);
 			currentTerms[i] = term;
 			if (term instanceof IntervalTerm) {
 				containsIntervals = true;
@@ -45,7 +43,7 @@ public class FactIntervalEvaluator {
 		return unrollInstances(currentTerms, 0);
 	}
 
-	private static List<Instance> unrollInstances(Term[] currentTerms, int currentPosition) {
+	private static List<Instance> unrollInstances(TermImpl[] currentTerms, int currentPosition) {
 		if (currentPosition == currentTerms.length) {
 			return Collections.singletonList(new Instance(currentTerms));
 		}
@@ -60,8 +58,8 @@ public class FactIntervalEvaluator {
 		int upper = ((IntervalTerm) currentTerm).getUpperBound();
 
 		for (int i = lower; i <= upper; i++) {
-			Term[] clonedTerms = currentTerms.clone();
-			clonedTerms[currentPosition] = ConstantTerm.getInstance(i);
+			TermImpl[] clonedTerms = currentTerms.clone();
+			clonedTerms[currentPosition] = ConstantTermImpl.getInstance(i);
 			instances.addAll(unrollInstances(clonedTerms, currentPosition + 1));
 		}
 		return instances;

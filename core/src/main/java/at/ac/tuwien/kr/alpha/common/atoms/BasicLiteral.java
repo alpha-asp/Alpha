@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2017-2018, the Alpha Team.
  * All rights reserved.
- * 
+ * <p>
  * Additional changes made by Siemens.
- * 
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ * <p>
  * 1) Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- * 
+ * <p>
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * 
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -27,7 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
@@ -37,18 +37,18 @@ import java.util.Set;
 
 /**
  * Contains a potentially negated {@link BasicAtom}.
- * 
+ *
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public class BasicLiteral extends Literal {
-	
+public class BasicLiteral extends LiteralImpl {
+
 	public BasicLiteral(BasicAtom atom, boolean positive) {
 		super(atom, positive);
 	}
-	
+
 	@Override
 	public BasicAtom getAtom() {
-		return (BasicAtom)atom;
+		return (BasicAtom) atom;
 	}
 
 	/**
@@ -60,7 +60,7 @@ public class BasicLiteral extends Literal {
 	}
 
 	/**
-	 * @see Atom#substitute(Substitution)
+	 * @see AtomImpl#substitute(Substitution)
 	 */
 	@Override
 	public BasicLiteral substitute(Substitution substitution) {
@@ -69,7 +69,7 @@ public class BasicLiteral extends Literal {
 
 	/**
 	 * Set of all variables occurring in the Atom that are potentially binding, i.e., variables in positive atoms.
-	 * 
+	 *
 	 * @return
 	 */
 	@Override
@@ -79,7 +79,7 @@ public class BasicLiteral extends Literal {
 			return Collections.emptySet();
 		}
 		Set<VariableTerm> bindingVariables = new HashSet<>();
-		for (Term term : atom.getTerms()) {
+		for (TermImpl term : atom.getTerms()) {
 			bindingVariables.addAll(term.getOccurringVariables());
 		}
 		return bindingVariables;
@@ -87,7 +87,7 @@ public class BasicLiteral extends Literal {
 
 	/**
 	 * Set of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
-	 * 
+	 *
 	 * @return
 	 */
 	@Override
@@ -97,7 +97,7 @@ public class BasicLiteral extends Literal {
 			return Collections.emptySet();
 		}
 		Set<VariableTerm> nonbindingVariables = new HashSet<>();
-		for (Term term : atom.getTerms()) {
+		for (TermImpl term : atom.getTerms()) {
 			nonbindingVariables.addAll(term.getOccurringVariables());
 		}
 		return nonbindingVariables;

@@ -25,6 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.instantiation;
 
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.Collections;
@@ -37,7 +38,7 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 /**
  * Representation of the result of instantiating, i.e. finding ground instances for a literal, as performed by
- * {@link LiteralInstantiator#instantiateLiteral(at.ac.tuwien.kr.alpha.common.atoms.Literal, Substitution)}.
+ * {@link LiteralInstantiator#instantiateLiteral(Literal, Substitution)}.
  * 
  * A {@link LiteralInstantiationResult} bundles obtained ground substitutions - or the lack thereof, if none exist for a given literal -
  * together with status information that can be used by a {@link Grounder} to determine how to proceed when grounding an {@link InternalRule}.

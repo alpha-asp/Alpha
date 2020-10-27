@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.PredicateImpl;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
@@ -47,11 +47,11 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	private static final Logger LOGGER = LoggerFactory.getLogger(StratifiedEvaluation.class);
 
 	private WorkingMemory workingMemory = new WorkingMemory();
-	private Map<Predicate, LinkedHashSet<InternalRule>> predicateDefiningRules;
+	private Map<PredicateImpl, LinkedHashSet<InternalRule>> predicateDefiningRules;
 
-	private Map<Predicate, Set<Instance>> modifiedInLastEvaluationRun = new HashMap<>();
+	private Map<PredicateImpl, Set<Instance>> modifiedInLastEvaluationRun = new HashMap<>();
 
-	private List<Atom> additionalFacts = new ArrayList<>(); // The additional facts derived by stratified evaluation. Note that it may contain duplicates.
+	private List<? extends Atom> additionalFacts = new ArrayList<>(); // The additional facts derived by stratified evaluation. Note that it may contain duplicates.
 	private Set<Integer> solvedRuleIds = new HashSet<>(); // Set of rules that have been completely evaluated.
 
 	private LiteralInstantiator literalInstantiator;
@@ -66,15 +66,15 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		predicateDefiningRules = inputProgram.getPredicateDefiningRules();
 
 		// Set up list of atoms which are known to be true - these will be expand by the evaluation.
-		Map<Predicate, Set<Instance>> knownFacts = new LinkedHashMap<>(inputProgram.getFactsByPredicate());
-		for (Map.Entry<Predicate, Set<Instance>> entry : knownFacts.entrySet()) {
+		Map<PredicateImpl, Set<Instance>> knownFacts = new LinkedHashMap<>(inputProgram.getFactsByPredicate());
+		for (Map.Entry<PredicateImpl, Set<Instance>> entry : knownFacts.entrySet()) {
 			workingMemory.initialize(entry.getKey());
 			workingMemory.addInstances(entry.getKey(), true, entry.getValue());
 		}
 
 		// Create working memories for all predicates occurring in each rule.
 		for (InternalRule nonGroundRule : inputProgram.getRulesById().values()) {
-			for (Predicate predicate : nonGroundRule.getOccurringPredicates()) {
+			for (PredicateImpl predicate : nonGroundRule.getOccurringPredicates()) {
 				workingMemory.initialize(predicate);
 			}
 		}
@@ -165,7 +165,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		modifiedInLastEvaluationRun = new HashMap<>();
 		for (InternalRule rule : rulesToEvaluate) {
 			// Register rule head instances.
-			Predicate headPredicate = rule.getHeadAtom().getPredicate();
+			PredicateImpl headPredicate = rule.getHeadAtom().getPredicate();
 			IndexedInstanceStorage headInstances = workingMemory.get(headPredicate, true);
 			modifiedInLastEvaluationRun.putIfAbsent(headPredicate, new LinkedHashSet<>());
 			if (headInstances != null) {
@@ -173,7 +173,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			}
 			// Register positive body literal instances.
 			for (Literal lit : rule.getPositiveBody()) {
-				Predicate bodyPredicate = lit.getPredicate();
+				PredicateImpl bodyPredicate = lit.getPredicate();
 				IndexedInstanceStorage bodyInstances = workingMemory.get(bodyPredicate, true);
 				modifiedInLastEvaluationRun.putIfAbsent(bodyPredicate, new LinkedHashSet<>());
 				if (bodyInstances != null) {
@@ -309,13 +309,13 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		Set<InternalRule> recursiveRules = new HashSet<>();
 
 		// Collect all predicates occurring in heads of rules of the given component.
-		Set<Predicate> headPredicates = new HashSet<>();
+		Set<PredicateImpl> headPredicates = new HashSet<>();
 		for (Node node : comp.getNodes()) {
 			headPredicates.add(node.getPredicate());
 		}
 		// Check each predicate whether its defining rules depend on some of the head predicates, i.e., whether there is a
 		// cycle.
-		for (Predicate headPredicate : headPredicates) {
+		for (PredicateImpl headPredicate : headPredicates) {
 			HashSet<InternalRule> definingRules = predicateDefiningRules.get(headPredicate);
 			if (definingRules == null) {
 				// Predicate only occurs in facts, skip.

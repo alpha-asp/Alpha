@@ -28,14 +28,13 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.LiteralImpl;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.common.terms.*;
 import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 
 import java.util.ArrayList;
@@ -60,9 +59,9 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		// Collect all intervals and replace them with variables.
 		Map<VariableTerm, IntervalTerm> intervalReplacements = new LinkedHashMap<>();
 
-		List<Literal> rewrittenBody = new ArrayList<>();
+		List<LiteralImpl> rewrittenBody = new ArrayList<>();
 
-		for (Literal literal : rule.getBody()) {
+		for (LiteralImpl literal : rule.getBody()) {
 			rewrittenBody.add(rewriteLiteral(literal, intervalReplacements));
 		}
 		NormalHead rewrittenHead = rule.isConstraint() ? null :
@@ -83,9 +82,9 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 	/**
 	 * Replaces every IntervalTerm by a new variable and returns a mapping of the replaced VariableTerm -> IntervalTerm.
 	 */
-	private static Literal rewriteLiteral(Literal lit, Map<VariableTerm, IntervalTerm> intervalReplacement) {
-		Atom atom = lit.getAtom();
-		List<Term> termList = new ArrayList<>(atom.getTerms());
+	private static LiteralImpl rewriteLiteral(LiteralImpl lit, Map<VariableTerm, IntervalTerm> intervalReplacement) {
+		AtomImpl atom = lit.getAtom();
+		List<TermImpl> termList = new ArrayList<>(atom.getTerms());
 		boolean didChange = false;
 		for (int i = 0; i < termList.size(); i++) {
 			Term term = termList.get(i);
@@ -103,7 +102,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 			}
 		}
 		if (didChange) {
-			Atom rewrittenAtom = atom.withTerms(termList);
+			AtomImpl rewrittenAtom = atom.withTerms(termList);
 			return lit.isNegated() ? rewrittenAtom.toLiteral().negate() : rewrittenAtom.toLiteral();
 		}
 		return lit;

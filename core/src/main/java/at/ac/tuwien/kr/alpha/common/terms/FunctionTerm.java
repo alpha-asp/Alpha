@@ -10,14 +10,14 @@ import static at.ac.tuwien.kr.alpha.Util.join;
 /**
  * Copyright (c) 2016-2017, the Alpha Team.
  */
-public class FunctionTerm extends Term {
+public class FunctionTerm extends TermImpl {
 	private static final Interner<FunctionTerm> INTERNER = new Interner<>();
 
 	private final String symbol;
-	private final List<Term> terms;
+	private final List<? extends TermImpl> terms;
 	private final boolean ground;
 
-	private FunctionTerm(String symbol, List<Term> terms) {
+	private FunctionTerm(String symbol, List<? extends TermImpl> terms) {
 		if (symbol == null) {
 			throw new IllegalArgumentException();
 		}
@@ -35,15 +35,15 @@ public class FunctionTerm extends Term {
 		this.ground = ground;
 	}
 
-	public static FunctionTerm getInstance(String functionSymbol, List<Term> termList) {
+	public static FunctionTerm getInstance(String functionSymbol, List<? extends TermImpl> termList) {
 		return INTERNER.intern(new FunctionTerm(functionSymbol, termList));
 	}
 
-	public static FunctionTerm getInstance(String functionSymbol, Term... terms) {
+	public static FunctionTerm getInstance(String functionSymbol, TermImpl... terms) {
 		return getInstance(functionSymbol, Arrays.asList(terms));
 	}
 
-	public List<Term> getTerms() {
+	public List<? extends TermImpl> getTerms() {
 		return terms;
 	}
 
@@ -59,7 +59,7 @@ public class FunctionTerm extends Term {
 	@Override
 	public List<VariableTerm> getOccurringVariables() {
 		LinkedList<VariableTerm> vars = new LinkedList<>();
-		for (Term term : terms) {
+		for (TermImpl term : terms) {
 			vars.addAll(term.getOccurringVariables());
 		}
 		return vars;
@@ -67,8 +67,8 @@ public class FunctionTerm extends Term {
 
 	@Override
 	public FunctionTerm substitute(Substitution substitution) {
-		List<Term> groundTermList = new ArrayList<>(terms.size());
-		for (Term term : terms) {
+		List<TermImpl> groundTermList = new ArrayList<>(terms.size());
+		for (TermImpl term : terms) {
 			groundTermList.add(term.substitute(substitution));
 		}
 		return FunctionTerm.getInstance(symbol, groundTermList);
@@ -138,18 +138,18 @@ public class FunctionTerm extends Term {
 	}
 
 	@Override
-	public Term renameVariables(String renamePrefix) {
-		ArrayList<Term> renamedTerms = new ArrayList<>(terms.size());
-		for (Term term : terms) {
+	public TermImpl renameVariables(String renamePrefix) {
+		List<TermImpl> renamedTerms = new ArrayList<>(terms.size());
+		for (TermImpl term : terms) {
 			renamedTerms.add(term.renameVariables(renamePrefix));
 		}
 		return FunctionTerm.getInstance(symbol, renamedTerms);
 	}
 
 	@Override
-	public Term normalizeVariables(String renamePrefix, RenameCounter counter) {
-		List<Term> normalizedTerms = new ArrayList<>(terms.size());
-		for (Term term : terms) {
+	public TermImpl normalizeVariables(String renamePrefix, RenameCounter counter) {
+		List<TermImpl> normalizedTerms = new ArrayList<>(terms.size());
+		for (TermImpl term : terms) {
 			normalizedTerms.add(term.normalizeVariables(renamePrefix, counter));
 		}
 		return FunctionTerm.getInstance(symbol, normalizedTerms);

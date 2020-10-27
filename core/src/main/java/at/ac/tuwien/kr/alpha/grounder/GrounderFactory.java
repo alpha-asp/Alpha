@@ -28,14 +28,14 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.PredicateImpl;
 import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 
 public final class GrounderFactory {
-	public static Grounder getInstance(String name, InternalProgram program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, Bridge... bridges) {
+	public static Grounder getInstance(String name, InternalProgram program, AtomStore atomStore, java.util.function.Predicate<PredicateImpl> filter, GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks, Bridge... bridges) {
 		switch (name.toLowerCase()) {
 			case "naive":
 				return new NaiveGrounder(program, atomStore, filter, heuristicsConfiguration, debugInternalChecks, bridges);
@@ -43,7 +43,7 @@ public final class GrounderFactory {
 		throw new IllegalArgumentException("Unknown grounder requested.");
 	}
 
-	public static Grounder getInstance(String name, InternalProgram program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter,
+	public static Grounder getInstance(String name, InternalProgram program, AtomStore atomStore, java.util.function.Predicate<PredicateImpl> filter,
 			GrounderHeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks) {
 		return getInstance(name, program, atomStore, filter, heuristicsConfiguration, debugInternalChecks, new Bridge[] {});
 	}

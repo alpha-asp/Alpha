@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * Copyright (c) 2018, the Alpha Team.
  */
-public class AggregateLiteral extends Literal {
+public class AggregateLiteral extends LiteralImpl {
 	public AggregateLiteral(AggregateAtom atom, boolean positive) {
 		super(atom, positive);
 	}
@@ -27,7 +27,7 @@ public class AggregateLiteral extends Literal {
 	}
 
 	/**
-	 * @see Atom#substitute(Substitution)
+	 * @see AtomImpl#substitute(Substitution)
 	 */
 	@Override
 	public AggregateLiteral substitute(Substitution substitution) {

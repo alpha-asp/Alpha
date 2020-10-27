@@ -33,7 +33,7 @@ public enum ComparisonOperator {
 		throw oops("Unknown binary operator encountered, cannot negate it");
 	}
 	
-	public Predicate predicate() {
-		return Predicate.getInstance(this.asString, 2);
+	public PredicateImpl predicate() {
+		return PredicateImpl.getInstance(this.asString, 2);
 	}
 }

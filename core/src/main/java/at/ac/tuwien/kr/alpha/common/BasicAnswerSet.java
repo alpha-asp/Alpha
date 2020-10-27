@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 
 import java.util.Iterator;
@@ -16,16 +17,16 @@ import static java.util.Collections.emptySortedSet;
 public class BasicAnswerSet implements AnswerSet {
 	public static final BasicAnswerSet EMPTY = new BasicAnswerSet(emptySortedSet(), emptyMap());
 
-	private final SortedSet<Predicate> predicates;
-	private final Map<Predicate, SortedSet<Atom>> predicateInstances;
+	private final SortedSet<PredicateImpl> predicates;
+	private final Map<PredicateImpl, SortedSet<Atom>> predicateInstances;
 
-	public BasicAnswerSet(SortedSet<Predicate> predicates, Map<Predicate, SortedSet<Atom>> predicateInstances) {
+	public BasicAnswerSet(SortedSet<PredicateImpl> predicates, Map<PredicateImpl, SortedSet<Atom>> predicateInstances) {
 		this.predicates = predicates;
 		this.predicateInstances = predicateInstances;
 	}
 
 	@Override
-	public SortedSet<Predicate> getPredicates() {
+	public SortedSet<? extends Predicate> getPredicates() {
 		return predicates;
 	}
 
@@ -46,7 +47,7 @@ public class BasicAnswerSet implements AnswerSet {
 		}
 
 		final StringBuilder sb = new StringBuilder("{ ");
-		for (Iterator<Predicate> iterator = predicates.iterator(); iterator.hasNext();) {
+		for (Iterator<PredicateImpl> iterator = predicates.iterator(); iterator.hasNext();) {
 			Predicate predicate = iterator.next();
 			Set<Atom> instances = getPredicateInstances(predicate);
 
@@ -91,5 +92,25 @@ public class BasicAnswerSet implements AnswerSet {
 	@Override
 	public int hashCode() {
 		return  31 * predicates.hashCode() + predicateInstances.hashCode();
+	}
+
+	@Override
+	public int compareTo(AnswerSet other) {
+		final SortedSet<Predicate> predicates = this.getPredicates();
+		int result = Util.compareSortedSets(predicates, other.getPredicates());
+
+		if (result != 0) {
+			return result;
+		}
+
+		for (Predicate predicate : predicates) {
+			result = Util.compareSortedSets(this.getPredicateInstances(predicate), other.getPredicateInstances(predicate));
+
+			if (result != 0) {
+				return result;
+			}
+		}
+
+		return 0;
 	}
 }

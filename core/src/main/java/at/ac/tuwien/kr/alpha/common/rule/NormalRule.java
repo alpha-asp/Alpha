@@ -1,8 +1,9 @@
 package at.ac.tuwien.kr.alpha.common.rule;
 
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.LiteralImpl;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 
 import java.util.ArrayList;
@@ -16,12 +17,12 @@ import java.util.List;
  */
 public class NormalRule extends AbstractRule<NormalHead> {
 
-	public NormalRule(NormalHead head, List<Literal> body) {
+	public NormalRule(NormalHead head, List<LiteralImpl> body) {
 		super(head, body);
 	}
 
 	public static NormalRule fromBasicRule(BasicRule rule) {
-		Atom headAtom = null;
+		AtomImpl headAtom = null;
 		if (!rule.isConstraint()) {
 			if (!(rule.getHead() instanceof NormalHead)) {
 				throw Util.oops("Trying to construct a NormalRule from rule with non-normal head! Head type is: " + rule.getHead().getClass().getSimpleName());
@@ -43,7 +44,7 @@ public class NormalRule extends AbstractRule<NormalHead> {
 		return true;
 	}
 
-	public Atom getHeadAtom() {
+	public AtomImpl getHeadAtom() {
 		return this.isConstraint() ? null : this.getHead().getAtom();
 	}
 

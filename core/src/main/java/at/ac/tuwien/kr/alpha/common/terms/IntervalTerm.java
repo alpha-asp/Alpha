@@ -13,17 +13,17 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  * An IntervalTerm is a meta-term and the grounder must replace it with its corresponding set of facts or rules.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class IntervalTerm extends Term {
+public class IntervalTerm extends TermImpl {
 	private static final Interner<IntervalTerm> INTERNER = new Interner<>();
-	private final Term lowerBoundTerm;
-	private final Term upperBoundTerm;
+	private final TermImpl lowerBoundTerm;
+	private final TermImpl upperBoundTerm;
 
 	private final int lowerBound;
 	private final int upperBound;
 
 	private final boolean ground;
 
-	private IntervalTerm(Term lowerBound, Term upperBound) {
+	private IntervalTerm(TermImpl lowerBound, TermImpl upperBound) {
 		if (lowerBound == null || upperBound == null) {
 			throw new IllegalArgumentException();
 		}
@@ -42,7 +42,7 @@ public class IntervalTerm extends Term {
 		}
 	}
 
-	public static IntervalTerm getInstance(Term lowerBound, Term upperBound) {
+	public static IntervalTerm getInstance(TermImpl lowerBound, TermImpl upperBound) {
 		return INTERNER.intern(new IntervalTerm(lowerBound, upperBound));
 	}
 
@@ -119,12 +119,12 @@ public class IntervalTerm extends Term {
 	}
 
 	@Override
-	public Term renameVariables(String renamePrefix) {
+	public TermImpl renameVariables(String renamePrefix) {
 		return new IntervalTerm(lowerBoundTerm.renameVariables(renamePrefix), upperBoundTerm.renameVariables(renamePrefix));
 	}
 
 	@Override
-	public Term normalizeVariables(String renamePrefix, RenameCounter counter) {
+	public TermImpl normalizeVariables(String renamePrefix, RenameCounter counter) {
 		return IntervalTerm.getInstance(
 			lowerBoundTerm.normalizeVariables(renamePrefix, counter),
 			upperBoundTerm.normalizeVariables(renamePrefix, counter));

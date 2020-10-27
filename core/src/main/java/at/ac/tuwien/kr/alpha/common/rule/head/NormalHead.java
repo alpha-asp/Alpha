@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.common.rule.head;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
 
 /**
  * Represents a normal head, i.e., a head that is an Atom.
@@ -8,9 +8,9 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
  */
 public class NormalHead extends Head {
 
-	private final Atom atom;
+	private final AtomImpl atom;
 
-	public NormalHead(Atom atom) {
+	public NormalHead(AtomImpl atom) {
 		this.atom = atom;
 	}
 
@@ -19,7 +19,7 @@ public class NormalHead extends Head {
 		return atom.isGround();
 	}
 
-	public Atom getAtom() {
+	public AtomImpl getAtom() {
 		return atom;
 	}
 

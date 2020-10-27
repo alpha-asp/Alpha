@@ -26,7 +26,7 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimationStrategy;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 
 import java.util.Random;
@@ -46,11 +46,11 @@ import java.util.Random;
  */
 public class DependencyDrivenVSIDS extends VSIDS {
 
-	public DependencyDrivenVSIDS(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, Random random, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
+	public DependencyDrivenVSIDS(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, Random random, BinaryNoGoodPropagationEstimationStrategy momsStrategy) {
 		super(assignment, choiceManager, new HeapOfActiveChoicePoints(decayPeriod, decayFactor, choiceManager), momsStrategy);
 	}
 
-	public DependencyDrivenVSIDS(Assignment assignment, ChoiceManager choiceManager, Random random, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
+	public DependencyDrivenVSIDS(Assignment assignment, ChoiceManager choiceManager, Random random, BinaryNoGoodPropagationEstimationStrategy momsStrategy) {
 		this(assignment, choiceManager, DEFAULT_DECAY_PERIOD, DEFAULT_DECAY_FACTOR, random, momsStrategy);
 	}
 	

@@ -27,12 +27,10 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.common.terms.*;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
 
 import java.util.List;
@@ -48,14 +46,14 @@ public class Substitution {
 	private static final ProgramPartParser PROGRAM_PART_PARSER = new ProgramPartParser();
 	public static final Substitution EMPTY_SUBSTITUTION = new Substitution() {
 		@Override
-		public <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term groundTerm) {
+		public <T extends Comparable<T>> Term put(VariableTerm variableTerm, TermImpl groundTerm) {
 			throw oops("Should not be called on EMPTY_SUBSTITUTION");
 		}
 	};
 
-	protected TreeMap<VariableTerm, Term> substitution;
+	protected TreeMap<VariableTerm, TermImpl> substitution;
 
-	private Substitution(TreeMap<VariableTerm, Term> substitution) {
+	private Substitution(TreeMap<VariableTerm, TermImpl> substitution) {
 		if (substitution == null) {
 			throw oops("Substitution is null.");
 		}
@@ -80,7 +78,7 @@ public class Substitution {
 	private static class SpecializationHelper {
 		Substitution updatedSubstitution;	// Is null for as long as the given partial substitution is not extended, afterwards holds the updated/extended/specialized substitution.
 
-		Substitution unify(List<Term> termList, Instance instance, Substitution partialSubstitution) {
+		Substitution unify(List<? extends Term> termList, Instance instance, Substitution partialSubstitution) {
 			for (int i = 0; i < termList.size(); i++) {
 				if (!unifyTerms(termList.get(i), instance.terms.get(i), partialSubstitution)) {
 					return null;
@@ -93,7 +91,7 @@ public class Substitution {
 			return updatedSubstitution;
 		}
 
-		boolean unifyTerms(Term termNonGround, Term termGround, Substitution partialSubstitution) {
+		boolean unifyTerms(Term termNonGround, TermImpl termGround, Substitution partialSubstitution) {
 			if (termNonGround == termGround) {
 				// Both terms are either the same constant or the same variable term
 				return true;
@@ -160,16 +158,16 @@ public class Substitution {
 	}
 
 	/**
-	 * This method should be used to obtain the {@link Term} to be used in place of a given {@link VariableTerm} under this substitution.
+	 * This method should be used to obtain the {@link TermImpl} to be used in place of a given {@link VariableTerm} under this substitution.
 	 *
 	 * @param variableTerm the variable term to substitute, if possible
 	 * @return a constant term if the substitution contains the given variable, {@code null} otherwise.
 	 */
-	public Term eval(VariableTerm variableTerm) {
+	public TermImpl eval(VariableTerm variableTerm) {
 		return this.substitution.get(variableTerm);
 	}
 
-	public <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term groundTerm) {
+	public <T extends Comparable<T>> Term put(VariableTerm variableTerm, TermImpl groundTerm) {
 		if (!groundTerm.isGround()) {
 			throw oops("Right-hand term is not ground.");
 		}
@@ -202,7 +200,7 @@ public class Substitution {
 	public String toString() {
 		final StringBuilder ret = new StringBuilder("{");
 		boolean isFirst = true;
-		for (Map.Entry<VariableTerm, Term> e : substitution.entrySet()) {
+		for (Map.Entry<VariableTerm, TermImpl> e : substitution.entrySet()) {
 			if (isFirst) {
 				isFirst = false;
 			} else {
@@ -221,7 +219,7 @@ public class Substitution {
 		for (String assignment : assignments) {
 			String[] keyVal = assignment.split("->");
 			VariableTerm variable = VariableTerm.getInstance(keyVal[0]);
-			Term assignedTerm = PROGRAM_PART_PARSER.parseTerm(keyVal[1]);
+			TermImpl assignedTerm = PROGRAM_PART_PARSER.parseTerm(keyVal[1]);
 			ret.put(variable, assignedTerm);
 		}
 		return ret;

@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.LiteralImpl;
 import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 
 /**
@@ -37,12 +38,12 @@ import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 public class RuleGroundingOrder {
 
 	private Literal startingLiteral;
-	private List<Literal> otherLiterals;
+	private List<LiteralImpl> otherLiterals;
 	private int positionLastVarBound;
 	private int stopBindingAtOrderPosition;
 	private final boolean ground;
 	
-	RuleGroundingOrder(Literal startingLiteral, List<Literal> otherLiterals, int positionLastVarBound, boolean isGround) {
+	RuleGroundingOrder(Literal startingLiteral, List<LiteralImpl> otherLiterals, int positionLastVarBound, boolean isGround) {
 		super();
 		this.startingLiteral = startingLiteral;
 		this.otherLiterals = otherLiterals;
@@ -66,7 +67,7 @@ public class RuleGroundingOrder {
 	 * @param orderPosition zero-based index into list of literals except the starting literal
 	 * @return the literal at the given position, or {@code null} if it is already known that this literal is not able to yield new bindings
 	 */
-	public Literal getLiteralAtOrderPosition(int orderPosition) {
+	public LiteralImpl getLiteralAtOrderPosition(int orderPosition) {
 		if (orderPosition >= stopBindingAtOrderPosition) {
 			return null;
 		}

@@ -27,13 +27,12 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 
@@ -107,7 +106,7 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 			return rule;
 		}
 
-		List<Literal> rewrittenBody = new ArrayList<>(rule.getBody());
+		List<LiteralImpl> rewrittenBody = new ArrayList<>(rule.getBody());
 		NormalHead rewrittenHead = rule.isConstraint() ? null : new NormalHead(rule.getHeadAtom());
 
 		// Use substitution for actual replacement.
@@ -122,22 +121,22 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 			replacementSubstitution.put(variableToReplace, replacementVariable);
 		}
 		// Replace/Substitute in each literal every term where one of the common variables occurs.
-		Iterator<Literal> bodyIterator = rewrittenBody.iterator();
+		Iterator<LiteralImpl> bodyIterator = rewrittenBody.iterator();
 		while (bodyIterator.hasNext()) {
-			Literal literal = bodyIterator.next();
+			LiteralImpl literal = bodyIterator.next();
 			if (equalitiesToRemove.contains(literal)) {
 				bodyIterator.remove();
 			}
 			for (int i = 0; i < literal.getTerms().size(); i++) {
-				Term replaced = literal.getTerms().get(i).substitute(replacementSubstitution);
+				TermImpl replaced = literal.getTerms().get(i).substitute(replacementSubstitution);
 				literal.getTerms().set(i, replaced);
 			}
 		}
 		// Replace variables in head.
 		if (rewrittenHead != null) {
-			Atom headAtom = rewrittenHead.getAtom();
+			AtomImpl headAtom = rewrittenHead.getAtom();
 			for (int i = 0; i < headAtom.getTerms().size(); i++) {
-				Term replaced = headAtom.getTerms().get(i).substitute(replacementSubstitution);
+				TermImpl replaced = headAtom.getTerms().get(i).substitute(replacementSubstitution);
 				headAtom.getTerms().set(i, replaced);
 			}
 		}

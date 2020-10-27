@@ -26,7 +26,7 @@
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
-import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation.Strategy;
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimationStrategy;
 
 /**
  * The well-known MOMs (Maximum Occurrences in clauses of Minimum size) heuristic
@@ -34,17 +34,17 @@ import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation.Strategy;
  * This implementation is inspired by the MOMs implementation in <a href="https://github.com/potassco/clasp">clasp</a>
  * but differs from it in several ways, e.g.:
  * <ul>
- * 	<li>The default strategy is {@link Strategy#CountBinaryWatches}, not {@link Strategy#BinaryNoGoodPropagation}.</li>
- * 	<li>{@link Strategy#BinaryNoGoodPropagation} does not do only one iteration of propagation, but exhaustive propagation.</li>
+ * 	<li>The default strategy is {@link BinaryNoGoodPropagationEstimationStrategy#CountBinaryWatches}, not {@link BinaryNoGoodPropagationEstimationStrategy#BinaryNoGoodPropagation}.</li>
+ * 	<li>{@link BinaryNoGoodPropagationEstimationStrategy#BinaryNoGoodPropagation} does not do only one iteration of propagation, but exhaustive propagation.</li>
  * </ul>
  *
  */
 public class MOMs {
 	
-	static final Strategy DEFAULT_STRATEGY = Strategy.CountBinaryWatches;
+	static final BinaryNoGoodPropagationEstimationStrategy DEFAULT_STRATEGY = BinaryNoGoodPropagationEstimationStrategy.CountBinaryWatches;
 	
 	private BinaryNoGoodPropagationEstimation bnpEstimation;
-	private Strategy strategy = DEFAULT_STRATEGY;
+	private BinaryNoGoodPropagationEstimationStrategy strategy = DEFAULT_STRATEGY;
 
 	public MOMs(BinaryNoGoodPropagationEstimation bnpEstimation) {
 		super();
@@ -61,7 +61,7 @@ public class MOMs {
 		return ((s1 * s2) << 10) + s1 + s2;
 	}
 
-	public void setStrategy(Strategy strategy) {
+	public void setStrategy(BinaryNoGoodPropagationEstimationStrategy strategy) {
 		this.strategy = strategy != null ? strategy : DEFAULT_STRATEGY;
 	}
 

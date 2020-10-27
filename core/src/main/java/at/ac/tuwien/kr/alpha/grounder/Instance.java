@@ -6,8 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 
 /**
  * An instance is a positional association of terms, e.g., representing a variable substitution, or a ground instance of
@@ -15,17 +16,17 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class Instance {
-	public final List<Term> terms;
+	public final List<? extends TermImpl> terms;
 
-	public Instance(Term... terms) {
+	public Instance(TermImpl... terms) {
 		this(Arrays.asList(terms));
 	}
 
-	public Instance(List<Term> terms) {
+	public Instance(List<? extends TermImpl> terms) {
 		this.terms = terms;
 	}
 
-	public static Instance fromAtom(Atom atom) {
+	public static Instance fromAtom(AtomImpl atom) {
 		if (!atom.isGround()) {
 			throw Util.oops("Cannot create instance from non-ground atom " + atom.toString());
 		}

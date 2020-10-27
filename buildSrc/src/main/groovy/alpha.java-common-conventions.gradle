@@ -45,7 +45,7 @@ checkstyle {
 }
 
 compileJava {
-	options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+	options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation" << "-Xmaxerrs" << "1000"
 }
 
 compileTestJava {

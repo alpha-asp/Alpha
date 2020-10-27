@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.common.program;
 
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
 import at.ac.tuwien.kr.alpha.common.rule.AbstractRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
@@ -11,17 +11,17 @@ import java.util.List;
 
 /**
  * The parent type for all kinds of programs. Defines a program's basic structure (facts + rules + inlineDirectives)
- * 
+ *
  * @param <R> the type of rule a program permits. This needs to be determined by implementations based on which syntax constructs an implementation permits
- *        Copyright (c) 2019, the Alpha Team.
+ *            Copyright (c) 2019, the Alpha Team.
  */
 public abstract class AbstractProgram<R extends AbstractRule<? extends Head>> {
 
 	private final List<R> rules;
-	private final List<Atom> facts;
+	private final List<? extends AtomImpl> facts;
 	private final InlineDirectives inlineDirectives;
 
-	public AbstractProgram(List<R> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
+	public AbstractProgram(List<R> rules, List<? extends AtomImpl> facts, InlineDirectives inlineDirectives) {
 		this.rules = rules;
 		this.facts = facts;
 		this.inlineDirectives = inlineDirectives;
@@ -31,7 +31,7 @@ public abstract class AbstractProgram<R extends AbstractRule<? extends Head>> {
 		return Collections.unmodifiableList(rules);
 	}
 
-	public List<Atom> getFacts() {
+	public List<? extends AtomImpl> getFacts() {
 		return Collections.unmodifiableList(facts);
 	}
 

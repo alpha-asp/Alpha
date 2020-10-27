@@ -42,7 +42,7 @@ public class SuppliedPredicateInterpretation implements BindingPredicateInterpre
 	}
 
 	@Override
-	public Set<List<ConstantTerm<?>>> evaluate(List<Term> terms) {
+	public Set<List<ConstantTerm<?>>> evaluate(List<? extends Term> terms) {
 		if (!terms.isEmpty()) {
 			throw new IllegalArgumentException("Can only be used without any arguments.");
 		}

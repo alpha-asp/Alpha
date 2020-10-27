@@ -816,7 +816,7 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	}
 
 	@Override
-	public int estimate(int atom, boolean truth, Strategy strategy) {
+	public int estimate(int atom, boolean truth, BinaryNoGoodPropagationEstimationStrategy strategy) {
 		switch (strategy) {
 			case BinaryNoGoodPropagation:
 				if (hasBinaryNoGoods) {

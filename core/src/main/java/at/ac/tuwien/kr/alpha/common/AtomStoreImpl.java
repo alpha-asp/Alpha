@@ -28,6 +28,7 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
 import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.solver.AtomCounter;
@@ -56,7 +57,7 @@ public class AtomStoreImpl implements AtomStore {
 	}
 
 	@Override
-	public int putIfAbsent(Atom groundAtom) {
+	public int putIfAbsent(AtomImpl groundAtom) {
 		if (!groundAtom.isGround()) {
 			throw new IllegalArgumentException("Atom must be ground: " + groundAtom);
 		}
@@ -111,7 +112,7 @@ public class AtomStoreImpl implements AtomStore {
 	}
 
 	@Override
-	public Atom get(int atom) {
+	public AtomImpl get(int atom) {
 		try {
 			return atomIdsToInternalBasicAtoms.get(atom);
 		} catch (IndexOutOfBoundsException e) {

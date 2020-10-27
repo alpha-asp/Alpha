@@ -3,7 +3,9 @@ package at.ac.tuwien.kr.alpha.common;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTermImpl;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -14,10 +16,10 @@ import static java.util.Collections.singletonList;
 public class AnswerSetBuilder {
 	private boolean firstInstance = true;
 	private String predicateSymbol;
-	private Predicate predicate;
-	private SortedSet<Predicate> predicates = new TreeSet<>();
+	private PredicateImpl predicate;
+	private SortedSet<PredicateImpl> predicates = new TreeSet<>();
 	private SortedSet<Atom> instances = new TreeSet<>();
-	private Map<Predicate, SortedSet<Atom>> predicateInstances = new HashMap<>();
+	private Map<PredicateImpl, SortedSet<Atom>> predicateInstances = new HashMap<>();
 
 	public AnswerSetBuilder() {
 	}
@@ -35,7 +37,7 @@ public class AnswerSetBuilder {
 
 	private void flush() {
 		if (firstInstance) {
-			predicate = Predicate.getInstance(predicateSymbol, 0);
+			predicate = PredicateImpl.getInstance(predicateSymbol, 0);
 			predicates.add(predicate);
 			predicateInstances.put(predicate, new TreeSet<>(singletonList(new BasicAtom(predicate))));
 		} else {
@@ -63,15 +65,15 @@ public class AnswerSetBuilder {
 	public final <T extends Comparable<T>> AnswerSetBuilder instance(final T... terms) {
 		if (firstInstance) {
 			firstInstance = false;
-			predicate = Predicate.getInstance(predicateSymbol, terms.length);
+			predicate = PredicateImpl.getInstance(predicateSymbol, terms.length);
 			predicates.add(predicate);
 		}
 
 		// Note that usage of terms does not pollute the heap,
 		// since we are only reading, not writing.
-		List<Term> termList = Stream
+		List<TermImpl> termList = Stream
 			.of(terms)
-			.map(ConstantTerm::getInstance)
+			.map(ConstantTermImpl::getInstance)
 			.collect(Collectors.toList());
 
 		instances.add(new BasicAtom(predicate, termList));
@@ -81,11 +83,11 @@ public class AnswerSetBuilder {
 	public AnswerSetBuilder symbolicInstance(String... terms) {
 		if (firstInstance) {
 			firstInstance = false;
-			predicate = Predicate.getInstance(predicateSymbol, terms.length);
+			predicate = PredicateImpl.getInstance(predicateSymbol, terms.length);
 			predicates.add(predicate);
 		}
 
-		List<Term> termList = Stream.of(terms).map(ConstantTerm::getSymbolicInstance).collect(Collectors.toList());
+		List<TermImpl> termList = Stream.of(terms).map(ConstantTermImpl::getSymbolicInstance).collect(Collectors.toList());
 		instances.add(new BasicAtom(predicate, termList));
 		return this;
 	}

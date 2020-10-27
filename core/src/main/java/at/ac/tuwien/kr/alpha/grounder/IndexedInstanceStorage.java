@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.PredicateImpl;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 
@@ -47,7 +47,7 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
  * Copyright (c) 2016-2020, the Alpha Team.
  */
 public class IndexedInstanceStorage {
-	private final Predicate predicate;
+	private final PredicateImpl predicate;
 	private final boolean positive;
 
 	/**
@@ -62,7 +62,7 @@ public class IndexedInstanceStorage {
 
 	private final ArrayList<Instance> recentlyAddedInstances = new ArrayList<>();
 
-	public IndexedInstanceStorage(Predicate predicate, boolean positive) {
+	public IndexedInstanceStorage(PredicateImpl predicate, boolean positive) {
 		this.predicate = predicate;
 		this.positive = positive;
 
@@ -72,7 +72,7 @@ public class IndexedInstanceStorage {
 		}
 	}
 
-	public Predicate getPredicate() {
+	public PredicateImpl getPredicate() {
 		return predicate;
 	}
 

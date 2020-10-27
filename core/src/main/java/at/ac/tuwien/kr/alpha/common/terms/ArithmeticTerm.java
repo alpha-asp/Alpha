@@ -39,23 +39,23 @@ import java.util.List;
  * This class represents an arithmetic expression occurring as a term.
  * Copyright (c) 2017-2019, the Alpha Team.
  */
-public class ArithmeticTerm extends Term {
+public class ArithmeticTerm extends TermImpl {
 	private static final Interner<ArithmeticTerm> INTERNER = new Interner<>();
-	protected final Term left;
+	protected final TermImpl left;
 	private final ArithmeticOperator arithmeticOperator;
-	private final Term right;
+	private final TermImpl right;
 
-	private ArithmeticTerm(Term left, ArithmeticOperator arithmeticOperator, Term right) {
+	private ArithmeticTerm(TermImpl left, ArithmeticOperator arithmeticOperator, TermImpl right) {
 		this.left = left;
 		this.arithmeticOperator = arithmeticOperator;
 		this.right = right;
 	}
 
-	public static Term getInstance(Term left, ArithmeticOperator arithmeticOperator, Term right) {
+	public static TermImpl getInstance(TermImpl left, ArithmeticOperator arithmeticOperator, TermImpl right) {
 		// Evaluate ground arithmetic terms immediately and return result.
 		if (left.isGround() && right.isGround()) {
 			Integer result = new ArithmeticTerm(left, arithmeticOperator, right).evaluateExpression();
-			return ConstantTerm.getInstance(result);
+			return ConstantTermImpl.getInstance(result);
 		}
 		return INTERNER.intern(new ArithmeticTerm(left, arithmeticOperator, right));
 	}
@@ -74,19 +74,19 @@ public class ArithmeticTerm extends Term {
 	}
 
 	@Override
-	public Term substitute(Substitution substitution) {
+	public TermImpl substitute(Substitution substitution) {
 		return getInstance(left.substitute(substitution), arithmeticOperator, right.substitute(substitution));
 	}
 
 	@Override
-	public Term renameVariables(String renamePrefix) {
+	public TermImpl renameVariables(String renamePrefix) {
 		return getInstance(left.renameVariables(renamePrefix), arithmeticOperator, right.renameVariables(renamePrefix));
 	}
 
 	@Override
-	public Term normalizeVariables(String renamePrefix, RenameCounter counter) {
-		Term normalizedLeft = left.normalizeVariables(renamePrefix, counter);
-		Term normalizedRight = right.normalizeVariables(renamePrefix, counter);
+	public TermImpl normalizeVariables(String renamePrefix, RenameCounter counter) {
+		TermImpl normalizedLeft = left.normalizeVariables(renamePrefix, counter);
+		TermImpl normalizedRight = right.normalizeVariables(renamePrefix, counter);
 		return ArithmeticTerm.getInstance(normalizedLeft, arithmeticOperator, normalizedRight);
 
 	}
@@ -100,9 +100,9 @@ public class ArithmeticTerm extends Term {
 
 	private static Integer evaluateGroundTermHelper(Term term) {
 		if (term instanceof ConstantTerm
-			&& ((ConstantTerm<?>) term).getObject() instanceof Integer) {
+			&& ((ConstantTermImpl<?>) term).getObject() instanceof Integer) {
 			// Extract integer from the constant.
-			return (Integer) ((ConstantTerm<?>) term).getObject();
+			return (Integer) ((ConstantTermImpl<?>) term).getObject();
 		} else if (term instanceof ArithmeticTerm) {
 			return ((ArithmeticTerm) term).evaluateExpression();
 		} else {
@@ -196,16 +196,16 @@ public class ArithmeticTerm extends Term {
 
 	public static class MinusTerm extends ArithmeticTerm {
 
-		private MinusTerm(Term term) {
+		private MinusTerm(TermImpl term) {
 			super(term, null, null);
 		}
 
 
-		public static Term getInstance(Term term) {
+		public static TermImpl getInstance(TermImpl term) {
 			// Evaluate ground arithmetic terms immediately and return result.
 			if (term.isGround()) {
 				Integer result = evaluateGroundTermHelper(term) * -1;
-				return ConstantTerm.getInstance(result);
+				return ConstantTermImpl.getInstance(result);
 			}
 			return INTERNER.intern(new MinusTerm(term));
 		}
@@ -226,18 +226,18 @@ public class ArithmeticTerm extends Term {
 		}
 
 		@Override
-		public Term substitute(Substitution substitution) {
+		public TermImpl substitute(Substitution substitution) {
 			return getInstance(left.substitute(substitution));
 		}
 
 		@Override
-		public Term renameVariables(String renamePrefix) {
+		public TermImpl renameVariables(String renamePrefix) {
 			return getInstance(left.renameVariables(renamePrefix));
 		}
 		
 		@Override
-		public Term normalizeVariables(String renamePrefix, RenameCounter counter) {
-			Term normalizedLeft = left.normalizeVariables(renamePrefix, counter);
+		public TermImpl normalizeVariables(String renamePrefix, RenameCounter counter) {
+			TermImpl normalizedLeft = left.normalizeVariables(renamePrefix, counter);
 			return MinusTerm.getInstance(normalizedLeft);
 		}
 

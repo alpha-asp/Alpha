@@ -27,7 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.common.SimpleAnswerSetFormatter;
@@ -79,7 +78,7 @@ public class Main {
 			Main.exitWithMessage(commandLineParser.getUsageMessage(), 1);
 		}
 
-		Alpha alpha = new Alpha(cfg.getSystemConfig());
+		AlphaImpl alpha = new AlphaImpl(cfg.getSystemConfig());
 
 		InputProgram program = null;
 		try {
@@ -171,7 +170,7 @@ public class Main {
 		}
 	}
 
-	private static void computeAndConsumeAnswerSets(Alpha alpha, InputConfig inputCfg, InternalProgram program) {
+	private static void computeAndConsumeAnswerSets(AlphaImpl alpha, InputConfig inputCfg, InternalProgram program) {
 		Solver solver = alpha.prepareSolverFor(program, inputCfg.getFilter());
 		Stream<AnswerSet> stream = solver.stream();
 		if (alpha.getConfig().isSortAnswerSets()) {

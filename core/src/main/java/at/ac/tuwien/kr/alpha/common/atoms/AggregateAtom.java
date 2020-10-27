@@ -28,8 +28,9 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.PredicateImpl;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
@@ -40,16 +41,16 @@ import java.util.List;
 import static at.ac.tuwien.kr.alpha.Util.join;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
-public class AggregateAtom extends Atom {
+public class AggregateAtom extends AtomImpl {
 
 	private final ComparisonOperator lowerBoundOperator;
-	private final Term lowerBoundTerm;
+	private final TermImpl lowerBoundTerm;
 	private final ComparisonOperator upperBoundOperator;
 	private final Term upperBoundTerm;
 	private final AGGREGATEFUNCTION aggregatefunction;
 	private final List<AggregateElement> aggregateElements;
 
-	public AggregateAtom(ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, ComparisonOperator upperBoundOperator, Term upperBoundTerm, AGGREGATEFUNCTION aggregatefunction, List<AggregateElement> aggregateElements) {
+	public AggregateAtom(ComparisonOperator lowerBoundOperator, TermImpl lowerBoundTerm, ComparisonOperator upperBoundOperator, Term upperBoundTerm, AGGREGATEFUNCTION aggregatefunction, List<AggregateElement> aggregateElements) {
 		this.lowerBoundOperator = lowerBoundOperator;
 		this.lowerBoundTerm = lowerBoundTerm;
 		this.upperBoundOperator = upperBoundOperator;
@@ -82,17 +83,17 @@ public class AggregateAtom extends Atom {
 	}
 
 	@Override
-	public List<Term> getTerms() {
+	public List<? extends TermImpl> getTerms() {
 		throw oops("Aggregate atom cannot report terms.");
 	}
 
 	@Override
-	public Atom withTerms(List<Term> terms) {
+	public AtomImpl withTerms(List<TermImpl> terms) {
 		throw new UnsupportedOperationException("Editing term list is not supported for aggregate atoms!");
 	}
 	
 	@Override
-	public Predicate getPredicate() {
+	public PredicateImpl getPredicate() {
 		throw oops("Aggregate atom cannot report predicate.");
 	}
 
@@ -164,7 +165,7 @@ public class AggregateAtom extends Atom {
 		return lowerBoundOperator;
 	}
 
-	public Term getLowerBoundTerm() {
+	public TermImpl getLowerBoundTerm() {
 		return lowerBoundTerm;
 	}
 
@@ -193,9 +194,9 @@ public class AggregateAtom extends Atom {
 
 	public static class AggregateElement {
 		final List<Term> elementTerms;
-		final List<Literal> elementLiterals;
+		final List<LiteralImpl> elementLiterals;
 
-		public AggregateElement(List<Term> elementTerms, List<Literal> elementLiterals) {
+		public AggregateElement(List<Term> elementTerms, List<LiteralImpl> elementLiterals) {
 			this.elementTerms = elementTerms;
 			this.elementLiterals = elementLiterals;
 		}
@@ -204,7 +205,7 @@ public class AggregateAtom extends Atom {
 			return elementTerms;
 		}
 
-		public List<Literal> getElementLiterals() {
+		public List<LiteralImpl> getElementLiterals() {
 			return elementLiterals;
 		}
 
@@ -229,7 +230,7 @@ public class AggregateAtom extends Atom {
 					occurringVariables.add((VariableTerm) term);
 				}
 			}
-			for (Literal literal : elementLiterals) {
+			for (LiteralImpl literal : elementLiterals) {
 				occurringVariables.addAll(literal.getBindingVariables());
 				occurringVariables.addAll(literal.getNonBindingVariables());
 			}

@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.PredicateImpl;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
@@ -33,7 +33,7 @@ public class EnumerationRewriting extends ProgramTransformation<InputProgram, In
 			// Directive not set, nothing to rewrite.
 			return inputProgram;
 		}
-		Predicate enumPredicate = Predicate.getInstance(enumDirective, 3);
+		PredicateImpl enumPredicate = PredicateImpl.getInstance(enumDirective, 3);
 
 		InputProgram.Builder programBuilder = InputProgram.builder().addInlineDirectives(inputProgram.getInlineDirectives());
 
@@ -45,7 +45,7 @@ public class EnumerationRewriting extends ProgramTransformation<InputProgram, In
 		return programBuilder.build();
 	}
 
-	private void checkFactsAreEnumerationFree(List<Atom> srcFacts, Predicate enumPredicate) {
+	private void checkFactsAreEnumerationFree(List<Atom> srcFacts, PredicateImpl enumPredicate) {
 		for (Atom fact : srcFacts) {
 			if (fact.getPredicate().equals(enumPredicate)) {
 				throw oops("Atom declared as enumeration atom by directive occurs in a fact: " + fact);
@@ -53,7 +53,7 @@ public class EnumerationRewriting extends ProgramTransformation<InputProgram, In
 		}
 	}
 
-	private List<BasicRule> rewriteRules(List<BasicRule> srcRules, Predicate enumPredicate) {
+	private List<BasicRule> rewriteRules(List<BasicRule> srcRules, PredicateImpl enumPredicate) {
 		List<BasicRule> rewrittenRules = new ArrayList<>();
 		for (BasicRule rule : srcRules) {
 			if (rule.getHead() != null && !(rule.getHead() instanceof NormalHead)) {

@@ -1,8 +1,9 @@
 package at.ac.tuwien.kr.alpha.common.rule.head;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.LiteralImpl;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 import java.util.List;
@@ -24,10 +25,10 @@ public class ChoiceHead extends Head {
 	private final ComparisonOperator upperOp;
 
 	public static class ChoiceElement {
-		public final Atom choiceAtom;
-		public final List<Literal> conditionLiterals;
+		public final AtomImpl choiceAtom;
+		public final List<LiteralImpl> conditionLiterals;
 
-		public ChoiceElement(Atom choiceAtom, List<Literal> conditionLiterals) {
+		public ChoiceElement(AtomImpl choiceAtom, List<LiteralImpl> conditionLiterals) {
 			this.choiceAtom = choiceAtom;
 			this.conditionLiterals = conditionLiterals;
 		}

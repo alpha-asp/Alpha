@@ -27,25 +27,28 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.PredicateImpl;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.LiteralImpl;
 import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static at.ac.tuwien.kr.alpha.common.terms.ConstantTerm.getInstance;
+import static at.ac.tuwien.kr.alpha.common.terms.ConstantTermImpl.getInstance;
 
 /**
  * Atoms corresponding to rule bodies use this predicate, first term is rule number,
  * second is a term containing variable substitutions.
  */
-public class RuleAtom extends Atom {
-	public static final Predicate PREDICATE = Predicate.getInstance("_R_", 2, true, true);
+public class RuleAtom extends AtomImpl {
+	public static final PredicateImpl PREDICATE = PredicateImpl.getInstance("_R_", 2, true, true);
 
 	private final List<ConstantTerm<String>> terms;
 
@@ -66,12 +69,12 @@ public class RuleAtom extends Atom {
 	}
 
 	@Override
-	public Predicate getPredicate() {
+	public PredicateImpl getPredicate() {
 		return PREDICATE;
 	}
 
 	@Override
-	public List<Term> getTerms() {
+	public List<? extends TermImpl> getTerms() {
 		return Arrays.asList(terms.get(0), terms.get(1));
 	}
 
@@ -82,12 +85,12 @@ public class RuleAtom extends Atom {
 	}
 	
 	@Override
-	public Literal toLiteral(boolean positive) {
+	public LiteralImpl toLiteral(boolean positive) {
 		throw new UnsupportedOperationException("RuleAtom cannot be literalized");
 	}
 
 	@Override
-	public Atom substitute(Substitution substitution) {
+	public AtomImpl substitute(Substitution substitution) {
 		return this;
 	}
 
@@ -116,7 +119,7 @@ public class RuleAtom extends Atom {
 	}
 
 	@Override
-	public Atom withTerms(List<Term> terms) {
+	public AtomImpl withTerms(List<TermImpl> terms) {
 		throw new UnsupportedOperationException("RuleAtoms do not support setting of terms!");
 	}
 }

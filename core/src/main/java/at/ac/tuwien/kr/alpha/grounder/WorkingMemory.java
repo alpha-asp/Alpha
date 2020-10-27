@@ -34,19 +34,19 @@ import java.util.Set;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.PredicateImpl;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 
 public class WorkingMemory {
-	protected HashMap<Predicate, ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage>> workingMemory = new HashMap<>();
+	protected HashMap<PredicateImpl, ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage>> workingMemory = new HashMap<>();
 	private HashSet<IndexedInstanceStorage> modifiedWorkingMemories = new LinkedHashSet<>();
 
-	public boolean contains(Predicate predicate) {
+	public boolean contains(PredicateImpl predicate) {
 		return workingMemory.containsKey(predicate);
 	}
 
-	public void initialize(Predicate predicate) {
+	public void initialize(PredicateImpl predicate) {
 		if (workingMemory.containsKey(predicate)) {
 			return;
 		}
@@ -70,7 +70,7 @@ public class WorkingMemory {
 		return get(atom.getPredicate(), value);
 	}
 
-	public IndexedInstanceStorage get(Predicate predicate, boolean value) {
+	public IndexedInstanceStorage get(PredicateImpl predicate, boolean value) {
 		ImmutablePair<IndexedInstanceStorage, IndexedInstanceStorage> pair = workingMemory.get(predicate);
 		if (value) {
 			return pair.getLeft();
@@ -83,7 +83,7 @@ public class WorkingMemory {
 		addInstance(atom.getPredicate(), value, new Instance(atom.getTerms()));
 	}
 
-	public void addInstance(Predicate predicate, boolean value, Instance instance) {
+	public void addInstance(PredicateImpl predicate, boolean value, Instance instance) {
 		IndexedInstanceStorage storage = get(predicate, value);
 
 		if (!storage.containsInstance(instance)) {
@@ -92,7 +92,7 @@ public class WorkingMemory {
 		}
 	}
 
-	public void addInstances(Predicate predicate, boolean value, Iterable<Instance> instances) {
+	public void addInstances(PredicateImpl predicate, boolean value, Iterable<Instance> instances) {
 		IndexedInstanceStorage storage = get(predicate, value);
 
 		for (Instance instance : instances) {

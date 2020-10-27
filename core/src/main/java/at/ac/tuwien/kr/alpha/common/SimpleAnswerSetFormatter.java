@@ -18,7 +18,7 @@ public class SimpleAnswerSetFormatter implements AnswerSetFormatter<String> {
 	@Override
 	public String format(AnswerSet answerSet) {
 		List<String> predicateInstanceStrings = new ArrayList<>();
-		for (Predicate p : answerSet.getPredicates()) {
+		for (PredicateImpl p : answerSet.getPredicates()) {
 			SortedSet<Atom> instances;
 			if ((instances = answerSet.getPredicateInstances(p)) == null || instances.isEmpty()) {
 				predicateInstanceStrings.add(p.getName());

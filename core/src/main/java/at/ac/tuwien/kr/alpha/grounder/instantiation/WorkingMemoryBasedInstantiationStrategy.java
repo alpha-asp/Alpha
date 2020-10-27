@@ -26,6 +26,7 @@
 package at.ac.tuwien.kr.alpha.grounder.instantiation;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
 import at.ac.tuwien.kr.alpha.grounder.WorkingMemory;
@@ -52,7 +53,7 @@ public class WorkingMemoryBasedInstantiationStrategy extends AbstractLiteralInst
 	}
 
 	@Override
-	protected AssignmentStatus getAssignmentStatusForAtom(Atom atom) {
+	protected AssignmentStatus getAssignmentStatusForAtom(AtomImpl atom) {
 		return this.workingMemory.get(atom, true).containsInstance(Instance.fromAtom(atom)) ? AssignmentStatus.TRUE : AssignmentStatus.FALSE;
 	}
 

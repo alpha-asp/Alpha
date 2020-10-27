@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
 /**
@@ -65,7 +66,7 @@ public class Unifier extends Substitution {
 
 
 	@Override
-	public <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term term) {
+	public <T extends Comparable<T>> Term put(VariableTerm variableTerm, TermImpl term) {
 		// If term is not ground, store it for right-hand side reverse-lookup.
 		if (!term.isGround()) {
 			for (VariableTerm rightHandVariable : term.getOccurringVariables()) {
@@ -82,7 +83,7 @@ public class Unifier extends Substitution {
 			// Replace all occurrences on the right-hand side with the just-assigned term.
 			for (VariableTerm rightHandOccurrence : rightHandOccurrences) {
 				// Substitute the right hand where this assigned variable occurs with the new value and store it.
-				Term previousRightHand = substitution.get(rightHandOccurrence);
+				TermImpl previousRightHand = substitution.get(rightHandOccurrence);
 				if (previousRightHand == null) {
 					// Variable does not occur on the lef-hand side, skip.
 					continue;
@@ -108,7 +109,7 @@ public class Unifier extends Substitution {
 		Unifier ret = new Unifier(left);
 		for (Map.Entry<VariableTerm, Term> mapping : right.substitution.entrySet()) {
 			VariableTerm variable = mapping.getKey();
-			Term term = mapping.getValue();
+			TermImpl term = mapping.getValue();
 			// If variable is unset, simply add.
 			if (!ret.isVariableSet(variable)) {
 				ret.put(variable, term);

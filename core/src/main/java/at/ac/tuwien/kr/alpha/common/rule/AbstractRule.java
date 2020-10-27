@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.common.rule;
 
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.LiteralImpl;
 import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 import org.apache.commons.collections4.SetUtils;
 
@@ -21,14 +22,14 @@ import java.util.Set;
 public abstract class AbstractRule<H extends Head> {
 
 	private final H head;
-	private final Set<Literal> bodyLiteralsPositive;
-	private final Set<Literal> bodyLiteralsNegative;
+	private final Set<LiteralImpl> bodyLiteralsPositive;
+	private final Set<LiteralImpl> bodyLiteralsNegative;
 
-	public AbstractRule(H head, List<Literal> body) {
+	public AbstractRule(H head, List<LiteralImpl> body) {
 		this.head = head;
-		Set<Literal> positiveBody = new LinkedHashSet<>();
-		Set<Literal> negativeBody = new LinkedHashSet<>();
-		for (Literal bodyLiteral : body) {
+		Set<LiteralImpl> positiveBody = new LinkedHashSet<>();
+		Set<LiteralImpl> negativeBody = new LinkedHashSet<>();
+		for (LiteralImpl bodyLiteral : body) {
 			if (bodyLiteral.isNegated()) {
 				negativeBody.add(bodyLiteral);
 			} else {
@@ -93,15 +94,15 @@ public abstract class AbstractRule<H extends Head> {
 		return head;
 	}
 
-	public Set<Literal> getBody() {
+	public Set<LiteralImpl> getBody() {
 		return SetUtils.union(this.bodyLiteralsPositive, this.bodyLiteralsNegative);
 	}
 
-	public Set<Literal> getPositiveBody() {
+	public Set<LiteralImpl> getPositiveBody() {
 		return this.bodyLiteralsPositive;
 	}
 
-	public Set<Literal> getNegativeBody() {
+	public Set<LiteralImpl> getNegativeBody() {
 		return this.bodyLiteralsNegative;
 	}
 

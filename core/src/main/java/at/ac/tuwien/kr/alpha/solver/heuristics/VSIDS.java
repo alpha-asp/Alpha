@@ -27,7 +27,7 @@ package at.ac.tuwien.kr.alpha.solver.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation;
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimationStrategy;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.heuristics.activity.BodyActivityProvider;
@@ -86,18 +86,18 @@ public class VSIDS implements ActivityBasedBranchingHeuristic {
 	 */
 	protected final MultiValuedMap<Integer, Integer> headToBodies = new HashSetValuedHashMap<>();
 
-	protected VSIDS(Assignment assignment, ChoiceManager choiceManager, HeapOfActiveAtoms heapOfActiveAtoms, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
+	protected VSIDS(Assignment assignment, ChoiceManager choiceManager, HeapOfActiveAtoms heapOfActiveAtoms, BinaryNoGoodPropagationEstimationStrategy momsStrategy) {
 		this.assignment = assignment;
 		this.choiceManager = choiceManager;
 		this.heapOfActiveAtoms = heapOfActiveAtoms;
 		this.heapOfActiveAtoms.setMOMsStrategy(momsStrategy);
 	}
 
-	public VSIDS(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
+	public VSIDS(Assignment assignment, ChoiceManager choiceManager, int decayPeriod, double decayFactor, BinaryNoGoodPropagationEstimationStrategy momsStrategy) {
 		this(assignment, choiceManager, new HeapOfActiveAtoms(decayPeriod, decayFactor, choiceManager),  momsStrategy);
 	}
 
-	public VSIDS(Assignment assignment, ChoiceManager choiceManager, BinaryNoGoodPropagationEstimation.Strategy momsStrategy) {
+	public VSIDS(Assignment assignment, ChoiceManager choiceManager, BinaryNoGoodPropagationEstimationStrategy momsStrategy) {
 		this(assignment, choiceManager, DEFAULT_DECAY_PERIOD, DEFAULT_DECAY_FACTOR,  momsStrategy);
 	}
 

@@ -25,8 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
-import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimation.Strategy;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimationStrategy;
 
 import java.util.List;
 
@@ -36,14 +35,14 @@ import java.util.List;
 public class HeuristicsConfiguration {
 	
 	private Heuristic heuristic;
-	private Strategy momsStrategy;
+	private BinaryNoGoodPropagationEstimationStrategy momsStrategy;
 	private List<Integer> replayChoices;
 	/**
 	 * @param heuristic
 	 * @param momsStrategy
 	 * @param replayChoices
 	 */
-	public HeuristicsConfiguration(Heuristic heuristic, Strategy momsStrategy, List<Integer> replayChoices) {
+	public HeuristicsConfiguration(Heuristic heuristic, BinaryNoGoodPropagationEstimationStrategy momsStrategy, List<Integer> replayChoices) {
 		super();
 		this.heuristic = heuristic;
 		this.momsStrategy = momsStrategy;
@@ -67,14 +66,14 @@ public class HeuristicsConfiguration {
 	/**
 	 * @return the momsStrategy
 	 */
-	public Strategy getMomsStrategy() {
+	public BinaryNoGoodPropagationEstimationStrategy getMomsStrategy() {
 		return momsStrategy;
 	}
 
 	/**
 	 * @param momsStrategy the momsStrategy to set
 	 */
-	public void setMomsStrategy(Strategy momsStrategy) {
+	public void setMomsStrategy(BinaryNoGoodPropagationEstimationStrategy momsStrategy) {
 		this.momsStrategy = momsStrategy;
 	}
 	

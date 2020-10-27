@@ -95,7 +95,7 @@ public class AnswerSetToWorkbookMapper implements AnswerSetToObjectMapper<Workbo
 			rownum = sheet.getLastRowNum() + 1;
 		}
 		Row atomRow = sheet.createRow(rownum);
-		List<Term> terms = atom.getTerms();
+		List<? extends Term> terms = atom.getTerms();
 		Cell currCell;
 		if (terms.isEmpty()) {
 			// 0-arity atom

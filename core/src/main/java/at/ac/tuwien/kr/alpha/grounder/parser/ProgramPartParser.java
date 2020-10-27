@@ -32,7 +32,7 @@ import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -48,9 +48,9 @@ import java.util.Collections;
 public class ProgramPartParser {
 	private final ParseTreeVisitor visitor = new ParseTreeVisitor(Collections.emptyMap(), true);
 
-	public Term parseTerm(String s) {
+	public TermImpl parseTerm(String s) {
 		final ASPCore2Parser parser = getASPCore2Parser(s);
-		return (Term)parse(parser.term());
+		return (TermImpl)parse(parser.term());
 	}
 
 	public BasicAtom parseBasicAtom(String s) {
