@@ -1,11 +1,5 @@
-# Route our builds to Travis CI's Container Based
-# Infrastructure for shorter queue times.
-# https://docs.travis-ci.com/user/workers/container-based-infrastructure/#Routing-your-build-to-container-based-infrastructure
-sudo: true
-
-# https://docs.travis-ci.com/user/reference/linux/
+os: linux
 dist: focal
-
 language: java
 
 # We test against Java releases:
@@ -14,20 +8,26 @@ language: java
 #    - with LTS and in "Premier Support" phase
 #    OR
 #    - not succeeded by any other release
+# No Oracle JDK >11, see
+# https://blogs.oracle.com/java-platform-group/oracle-jdk-releases-for-java-11-and-later
 # https://www.oracle.com/technetwork/java/java-se-support-roadmap.html
 # https://docs.travis-ci.com/user/languages/java#Testing-Against-Multiple-JDKs
-jdk:
-  # LTS and in "Premier Support" as of 2019-03 (until 2022-03)
-  - openjdk8
-  # - oraclejdk8 # Removed due to not being supported on Ubuntu xenial
-  # LTS and in "Premier Support" as of 2019-03 (until 2023-09)
-  - openjdk11
-  - oraclejdk11
-  # Not succeeded as of 2020-10. Scheduled to be succeeded by
-  # Java 16 in 2021-03, see http://openjdk.java.net/projects/jdk/16/
-  - openjdk15
-  # No Oracle JDK >11, see
-  # https://blogs.oracle.com/java-platform-group/oracle-jdk-releases-for-java-11-and-later
+# https://docs.travis-ci.com/user/reference/linux/
+jobs:
+  include:
+    - dist: trusty
+      # LTS and in "Premier Support" as of 2019-03 (until 2022-03)
+      jdk: oraclejdk8
+    - dist: xenial
+      # LTS and in "Premier Support" as of 2019-03 (until 2022-03)
+      jdk: openjdk8
+    - dist: focal
+      # LTS and in "Premier Support" as of 2019-03 (until 2023-09)
+      jdk: openjdk11
+    - dist: focal
+      # Not succeeded as of 2020-10. Scheduled to be succeeded by
+      # Java 16 in 2021-03, see http://openjdk.java.net/projects/jdk/16/
+      jdk: openjdk15
 
 # As of 2016-06 Travis CI is running an outdated
 # version of Gradle, so this workaround fetches
