@@ -27,6 +27,27 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
@@ -52,26 +73,6 @@ import at.ac.tuwien.kr.alpha.grounder.instantiation.DefaultLazyGroundingInstanti
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationResult;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiator;
 import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import static at.ac.tuwien.kr.alpha.Util.oops;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
 /**
  * A semi-naive grounder.
@@ -234,10 +235,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			final Atom atom = atomStore.get(trueAtom);
 			Predicate predicate = atom.getPredicate();
 
-			// Skip atoms over internal predicates.
-			if (predicate.isInternal()) {
-				continue;
-			}
+//			// Skip atoms over internal predicates.
+//			if (predicate.isInternal()) {
+//				continue;
+//			}
 
 			// Skip filtered predicates.
 			if (!filter.test(predicate)) {
@@ -254,9 +255,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		for (Map.Entry<Predicate, LinkedHashSet<Instance>> facts : factsFromProgram.entrySet()) {
 			Predicate factPredicate = facts.getKey();
 			// Skip atoms over internal predicates.
-			if (factPredicate.isInternal()) {
-				continue;
-			}
+//			if (factPredicate.isInternal()) {
+//				continue;
+//			}
 			// Skip filtered predicates.
 			if (!filter.test(factPredicate)) {
 				continue;

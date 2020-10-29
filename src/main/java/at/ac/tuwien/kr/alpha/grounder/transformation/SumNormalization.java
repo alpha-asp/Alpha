@@ -54,6 +54,7 @@ public class SumNormalization extends ProgramTransformation<InputProgram, InputP
 
 		InputProgram.Builder prgBuilder = InputProgram.builder();
 		prgBuilder.addFacts(inputProgram.getFacts());
+		prgBuilder.addInlineDirectives(inputProgram.getInlineDirectives());
 		InputProgram summationEncoding = makePredicatesInternal(new ProgramParser().parse(summationSubprogram));
 		prgBuilder.accumulate(summationEncoding);
 		prgBuilder.addRules(rewrittenRules);
@@ -176,7 +177,8 @@ public class SumNormalization extends ProgramTransformation<InputProgram, InputP
 				BasicAtom inputHeadAtom = aggregateInputAtom.substitute(elementUnifier);
 				List<Literal> elementLiterals = new ArrayList<>(aggregateElement.getElementLiterals());
 
-				// If there are global variables used inside the aggregate, add original rule body (minus the aggregate itself) to input rule.
+				// If there are global variables used inside the aggregate, add original rule body (minus the aggregate itself) to input
+				// rule.
 				if (!globalVariables.isEmpty()) {
 					elementLiterals.addAll(rewrittenBody);
 				}

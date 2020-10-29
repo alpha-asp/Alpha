@@ -28,10 +28,12 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 		AggregateOperatorNormalization operatorNormalization = new AggregateOperatorNormalization();
 		AbstractAggregateTransformation bindingAggregateTransformation = new BindingAggregateTransformation();
 		CardinalityNormalization cardinalityNormalization = new CardinalityNormalization(config.isUseSortingCircuitEncoding());
+		SumNormalization sumNormalization = new SumNormalization();
 		InputProgram result = literalSplitting
 				.andThen(operatorNormalization)
 				.andThen(bindingAggregateTransformation)
 				.andThen(cardinalityNormalization)
+				.andThen(sumNormalization)
 				.apply(inputProgram);
 		// TODO remove, only for development testing!
 		System.out.println(result);
