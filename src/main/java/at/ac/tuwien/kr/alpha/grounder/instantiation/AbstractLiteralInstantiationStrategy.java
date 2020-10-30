@@ -105,7 +105,7 @@ public abstract class AbstractLiteralInstantiationStrategy implements LiteralIns
 		Substitution currentInstanceSubstitution;
 		Atom atomForCurrentInstance;
 		for (Instance instance : candidateInstances) {
-			currentInstanceSubstitution = Substitution.unify(atomToSubstitute, instance, new Substitution(partialSubstitution));
+			currentInstanceSubstitution = Substitution.specializeSubstitution(atomToSubstitute, instance, partialSubstitution);
 			if (currentInstanceSubstitution == null) {
 				// Instance does not unify with partialSubstitution, move on to the next instance.
 				continue;

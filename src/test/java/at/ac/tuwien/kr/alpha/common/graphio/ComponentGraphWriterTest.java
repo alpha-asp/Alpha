@@ -1,15 +1,15 @@
 package at.ac.tuwien.kr.alpha.common.graphio;
 
+import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph;
+import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 
-import at.ac.tuwien.kr.alpha.api.Alpha;
-import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph;
-import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
-
 public class ComponentGraphWriterTest {
+	private static final String LS = System.lineSeparator();
 
 	@Test
 	public void smokeTest() {
@@ -17,39 +17,39 @@ public class ComponentGraphWriterTest {
 		// (which would be a lot of work), just test correct dot code generation
 		// for one component graph that has all possible "special" node constellations,
 		// i.e. positive and negative dependencies, cycle through negation, constraints.
-		String asp = "p(X) :- q(X), r(X).\n" +
-				"s(X) :- p(X), q(X), not r(X).\n" +
-				"t(X) :- p(X), not u(X).\n" +
-				"u(X) :- p(X), not t(X).\n" +
+		String asp = "p(X) :- q(X), r(X)." + LS +
+				"s(X) :- p(X), q(X), not r(X)." + LS +
+				"t(X) :- p(X), not u(X)." + LS +
+				"u(X) :- p(X), not t(X)." + LS +
 				":- p(X), not q(X), not r(X).";
-		String expectedGraph = "digraph componentGraph\n" +
-				"{\n" +
-				"splines=false;\n" +
-				"ranksep=4.0;\n" +
-				"label = <\n" +
-				"	<table border = '1' cellborder = '0'>\n" +
-				"		<tr><td>Component Id</td><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td></tr>\n" +
-				"		<tr><td>Predicates</td><td>q/1<br/></td><td>r/1<br/></td><td>p/1<br/></td><td>[constr_1]/0<br/></td><td>t/1<br/>u/1<br/></td><td>s/1<br/></td></tr>\n"
+		String expectedGraph = "digraph componentGraph" + LS +
+				"{" + LS +
+				"splines=false;" + LS +
+				"ranksep=4.0;" + LS +
+				"label = <" + LS +
+				"	<table border = '1' cellborder = '0'>" + LS +
+				"		<tr><td>Component Id</td><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td></tr>" + LS +
+				"		<tr><td>Predicates</td><td>q/1<br/></td><td>r/1<br/></td><td>p/1<br/></td><td>[constr_1]/0<br/></td><td>t/1<br/>u/1<br/></td><td>s/1<br/></td></tr>" + LS
 				+
-				"	</table>\n" +
-				">\n" +
-				"\n" +
-				"n0 [label = C0]\n" +
-				"n1 [label = C1]\n" +
-				"n2 [label = C2]\n" +
-				"n0 -> n2 [xlabel=\"+\" labeldistance=0.1]\n" +
-				"n1 -> n2 [xlabel=\"+\" labeldistance=0.1]\n" +
-				"n3 [label = C3]\n" +
-				"n0 -> n3 [xlabel=\"-\" labeldistance=0.1]\n" +
-				"n1 -> n3 [xlabel=\"-\" labeldistance=0.1]\n" +
-				"n2 -> n3 [xlabel=\"+\" labeldistance=0.1]\n" +
-				"n4 [label = C4]\n" +
-				"n2 -> n4 [xlabel=\"+\" labeldistance=0.1]\n" +
-				"n5 [label = C5]\n" +
-				"n0 -> n5 [xlabel=\"+\" labeldistance=0.1]\n" +
-				"n1 -> n5 [xlabel=\"-\" labeldistance=0.1]\n" +
-				"n2 -> n5 [xlabel=\"+\" labeldistance=0.1]\n" +
-				"}\n";
+				"	</table>" + LS +
+				">" + LS +
+				"" + LS +
+				"n0 [label = C0]" + LS +
+				"n1 [label = C1]" + LS +
+				"n2 [label = C2]" + LS +
+				"n0 -> n2 [xlabel=\"+\" labeldistance=0.1]" + LS +
+				"n1 -> n2 [xlabel=\"+\" labeldistance=0.1]" + LS +
+				"n3 [label = C3]" + LS +
+				"n0 -> n3 [xlabel=\"-\" labeldistance=0.1]" + LS +
+				"n1 -> n3 [xlabel=\"-\" labeldistance=0.1]" + LS +
+				"n2 -> n3 [xlabel=\"+\" labeldistance=0.1]" + LS +
+				"n4 [label = C4]" + LS +
+				"n2 -> n4 [xlabel=\"+\" labeldistance=0.1]" + LS +
+				"n5 [label = C5]" + LS +
+				"n0 -> n5 [xlabel=\"+\" labeldistance=0.1]" + LS +
+				"n1 -> n5 [xlabel=\"-\" labeldistance=0.1]" + LS +
+				"n2 -> n5 [xlabel=\"+\" labeldistance=0.1]" + LS +
+				"}" + LS;
 		Alpha alpha = new Alpha();
 		AnalyzedProgram prog = AnalyzedProgram.analyzeNormalProgram(
 				alpha.normalizeProgram(alpha.readProgramString(asp)));

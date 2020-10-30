@@ -334,7 +334,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				for (Instance instance : modifiedWorkingMemory.getRecentlyAddedInstances()) {
 					// Check instance if it matches with the atom.
 
-					final Substitution unifier = Substitution.unify(firstBindingAtom.startingLiteral, instance, new Substitution());
+					final Substitution unifier = Substitution.specializeSubstitution(firstBindingAtom.startingLiteral, instance, Substitution.EMPTY_SUBSTITUTION);
 
 					if (unifier == null) {
 						continue;
