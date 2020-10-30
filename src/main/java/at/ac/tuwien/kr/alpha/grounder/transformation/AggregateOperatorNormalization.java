@@ -6,6 +6,7 @@ import java.util.List;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
@@ -17,7 +18,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
  * Transforms an {@link InputProgram} such that, for all aggregate (body-)literals, only the comparison operators "="
  * and "<=" are used.
  * 
- * Rewriting is done using the following equivalences:
+ * Rewriting of "#count" and "#sum" aggregates is done using the following equivalences:
  * <ul>
  * <li><code>X < #aggr{...}</code> == <code>XP <= #aggr{...}, XP = X - 1</code></li>
  * <li><code>X != #aggr{...}</code> == <code>not X = #aggr{...}</code></li>
@@ -28,6 +29,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
  * <li><code>not X > #aggr{...}</code> == <code>X <= #aggr{...}</code></li>
  * <li><code>not X >= #aggr{...}</code> == <code>XP <= #aggr{...}, XP = X - 1</code></li>
  * </ul>
+ * Operators for "#min" and "#max" aggregates are not rewritten.
  * 
  * Note that input programs must only contain aggregate literals of form <code>VAR OP #aggr{...}</code>, i.e. with only
  * a left term and operator. When preprocessing programs, apply this transformation AFTER
@@ -65,6 +67,10 @@ public class AggregateOperatorNormalization extends ProgramTransformation<InputP
 
 	private List<Literal> rewriteAggregateOperator(AggregateLiteral lit) {
 		AggregateAtom atom = lit.getAtom();
+		if (lit.getAtom().getAggregatefunction() == AggregateFunctionSymbol.MIN || lit.getAtom().getAggregatefunction() == AggregateFunctionSymbol.MAX) {
+			// No operator normalization needed for #min/#max aggregates
+			return Collections.singletonList(lit);
+		}
 		if (atom.getLowerBoundOperator() == ComparisonOperator.EQ || atom.getLowerBoundOperator() == ComparisonOperator.LE) {
 			// Nothing to do for operator "=" or "<=".
 			return Collections.singletonList(lit);
