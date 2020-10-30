@@ -86,8 +86,6 @@ public class BindingAggregateTransformation extends AbstractAggregateTransformat
 		InlineDirectives directives = new InlineDirectives();
 		directives.addDirective(DIRECTIVE.enum_predicate_is, ELEMENT_TUPLE_ORDINAL.getName());
 		InputProgram aggregateEncoding = new InputProgram(aggregateEncodingRules, aggregateFacts, directives);
-		// TODO remove this, for development testing only!
-		System.out.println(aggregateEncoding);
 		return aggregateEncoding;
 	}
 

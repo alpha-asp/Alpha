@@ -35,8 +35,6 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 				.andThen(cardinalityNormalization)
 				.andThen(sumNormalization)
 				.apply(inputProgram);
-		// TODO remove, only for development testing!
-		System.out.println(result);
 		return result;
 	}
 }

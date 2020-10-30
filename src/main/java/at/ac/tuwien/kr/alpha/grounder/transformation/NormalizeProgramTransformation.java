@@ -30,8 +30,6 @@ public class NormalizeProgramTransformation extends ProgramTransformation<InputP
 		// Transform enumeration atoms.
 		tmpPrg = new EnumerationRewriting().apply(tmpPrg);
 		EnumerationAtom.resetEnumerations();
-		// TODO remove - only for dev testing!
-		System.out.println(tmpPrg);
 
 		// Construct the normal program.
 		NormalProgram retVal = NormalProgram.fromInputProgram(tmpPrg);

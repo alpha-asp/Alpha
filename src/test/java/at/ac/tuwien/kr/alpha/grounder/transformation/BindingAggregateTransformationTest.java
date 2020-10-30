@@ -33,13 +33,13 @@ public class BindingAggregateTransformationTest {
 		BasicRule expectedAggregateResultRule = RuleParser
 				.parse("cnt_things(X) :- aggregate_result(count_1, X).");
 		BasicRule expectedEqualityRule = RuleParser
-				.parse("aggregate_result(AGGREGATE_ID, VAL) :- aggregate(AGGREGATE_ID), leq_value(AGGREGATE_ID, VAL), not leq_value(AGGREGATE_ID, NEXTVAL), NEXTVAL = VAL + 1.");
+				.parse("aggregate_result(AGGREGATE_ID, VAL) :- aggregate(AGGREGATE_ID), leq_aggregate(AGGREGATE_ID, VAL), not leq_aggregate(AGGREGATE_ID, NEXTVAL), NEXTVAL = VAL + 1.");
 		BasicRule expectedElementTupleRule = RuleParser
-				.parse("aggregate_element_tuple(count_1, tuple(N)) :- thing(N).");
+				.parse("cnt_element_tuple(count_1, tuple(N)) :- thing(N).");
 		BasicRule expectedCandidateRule = RuleParser
-				.parse("cnt_candidate(AGGREGATE_ID, I) :- aggregate(AGGREGATE_ID), aggregate_element_tuple(AGGREGATE_ID, TUPLE), element_tuple_ordinal(AGGREGATE_ID, TUPLE, I).");
+				.parse("cnt_candidate(AGGREGATE_ID, I) :- aggregate(AGGREGATE_ID), cnt_element_tuple(AGGREGATE_ID, TUPLE), element_tuple_ordinal(AGGREGATE_ID, TUPLE, I).");
 		BasicRule expectedValueRule = RuleParser
-				.parse("leq_value(count_1, CNT) :- cnt_candidate(count_1, CNT), CNT <= #count{N : thing(N)}.");
+				.parse("leq_aggregate(count_1, CNT) :- cnt_candidate(count_1, CNT), CNT <= #count{N : thing(N)}.");
 		TestUtils.assertProgramContainsRule(rewritten, expectedAggregateResultRule);
 		TestUtils.assertProgramContainsRule(rewritten, expectedEqualityRule);
 		TestUtils.assertProgramContainsRule(rewritten, expectedElementTupleRule);
@@ -59,17 +59,17 @@ public class BindingAggregateTransformationTest {
 		BasicRule expectedAggregateResultRule = RuleParser
 				.parse("cnt_things(X, Y) :- aggregate_result(count_1, X), aggregate_result(count_2, Y).");
 		BasicRule expectedEqualityRule = RuleParser
-				.parse("aggregate_result(AGGREGATE_ID, VAL) :- aggregate(AGGREGATE_ID), leq_value(AGGREGATE_ID, VAL), not leq_value(AGGREGATE_ID, NEXTVAL), NEXTVAL = VAL + 1.");
+				.parse("aggregate_result(AGGREGATE_ID, VAL) :- aggregate(AGGREGATE_ID), leq_aggregate(AGGREGATE_ID, VAL), not leq_aggregate(AGGREGATE_ID, NEXTVAL), NEXTVAL = VAL + 1.");
 		BasicRule expectedElementNTupleRule = RuleParser
-				.parse("aggregate_element_tuple(count_1, tuple(N)) :- thing1(N).");
+				.parse("cnt_element_tuple(count_1, tuple(N)) :- thing1(N).");
 		BasicRule expectedElementKTupleRule = RuleParser
-				.parse("aggregate_element_tuple(count_2, tuple(K)) :- thing2(K).");
+				.parse("cnt_element_tuple(count_2, tuple(K)) :- thing2(K).");
 		BasicRule expectedCandidateRule = RuleParser
-				.parse("cnt_candidate(AGGREGATE_ID, I) :- aggregate(AGGREGATE_ID), aggregate_element_tuple(AGGREGATE_ID, TUPLE), element_tuple_ordinal(AGGREGATE_ID, TUPLE, I).");
+				.parse("cnt_candidate(AGGREGATE_ID, I) :- aggregate(AGGREGATE_ID), cnt_element_tuple(AGGREGATE_ID, TUPLE), element_tuple_ordinal(AGGREGATE_ID, TUPLE, I).");
 		BasicRule expectedValueRule1 = RuleParser
-				.parse("leq_value(count_1, CNT) :- cnt_candidate(count_1, CNT), CNT <= #count{N : thing1(N)}.");
+				.parse("leq_aggregate(count_1, CNT) :- cnt_candidate(count_1, CNT), CNT <= #count{N : thing1(N)}.");
 		BasicRule expectedValueRule2 = RuleParser
-				.parse("leq_value(count_2, CNT) :- cnt_candidate(count_2, CNT), CNT <= #count{K : thing2(K)}.");
+				.parse("leq_aggregate(count_2, CNT) :- cnt_candidate(count_2, CNT), CNT <= #count{K : thing2(K)}.");
 		TestUtils.assertProgramContainsRule(rewritten, expectedAggregateResultRule);
 		TestUtils.assertProgramContainsRule(rewritten, expectedEqualityRule);
 		TestUtils.assertProgramContainsRule(rewritten, expectedElementNTupleRule);

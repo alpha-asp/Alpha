@@ -23,8 +23,11 @@ public abstract class AbstractAggregateTransformation extends ProgramTransformat
 
 	@Override
 	public InputProgram apply(InputProgram program) {
-		// create a "indices" of aggregate literals and their occurrences in rules
+		// create an "index" of aggregate literals and their occurrences in rules
 		AggregateRewritingContext ctx = this.buildRewritingContext(program);
+		if (ctx.numAggregatesToRewrite() == 0) {
+			return program;
+		}
 		// replace aggregate literals in rule bodies with rewritten versions
 		List<BasicRule> rewrittenRules = this.rewriteAggregateLiterals(ctx, program);
 		// add additional rules for aggregate evaluation (specific for each type of aggregate)
@@ -118,6 +121,10 @@ public abstract class AbstractAggregateTransformation extends ProgramTransformat
 
 		public Set<AggregateLiteral> getLiteralsToRewrite() {
 			return Collections.unmodifiableSet(this.aggregateIds.keySet());
+		}
+
+		public int numAggregatesToRewrite() {
+			return this.idCounter;
 		}
 	}
 
