@@ -8,11 +8,11 @@ import java.util.Map;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.RestrictedAggregateAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.RestrictedAggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -43,10 +43,10 @@ public abstract class AbstractAggregateTransformation extends ProgramTransformat
 	// TODO context should be built externally!
 	private AggregateRewritingContext buildRewritingContext(InputProgram program) {
 		AggregateRewritingContext ctx = new AggregateRewritingContext();
-		AggregateLiteral aggLit;
+		RestrictedAggregateLiteral aggLit;
 		for (BasicRule rule : program.getRules()) {
 			for (Literal lit : rule.getBody()) {
-				if (lit instanceof AggregateLiteral && this.shouldHandle(aggLit = (AggregateLiteral) lit)) {
+				if (lit instanceof RestrictedAggregateLiteral && this.shouldHandle(aggLit = (RestrictedAggregateLiteral) lit)) {
 					ctx.registerAggregateLiteral(aggLit, rule);
 				}
 			}
@@ -60,7 +60,7 @@ public abstract class AbstractAggregateTransformation extends ProgramTransformat
 		for (BasicRule rule : input.getRules()) {
 			boolean hasAggregate = false;
 			for (Literal lit : rule.getBody()) {
-				if (lit instanceof AggregateLiteral) {
+				if (lit instanceof RestrictedAggregateLiteral) {
 					hasAggregate = true;
 					break;
 				}
@@ -75,8 +75,8 @@ public abstract class AbstractAggregateTransformation extends ProgramTransformat
 	private BasicRule rewriteAggregateLiterals(AggregateRewritingContext ctx, BasicRule rule) {
 		List<Literal> rewrittenBody = new ArrayList<>();
 		for (Literal lit : rule.getBody()) {
-			if (lit instanceof AggregateLiteral && ctx.getLiteralsToRewrite().contains((AggregateLiteral) lit)) {
-				BasicAtom aggregateOutputAtom = ctx.getAggregateOutputAtom((AggregateLiteral) lit);
+			if (lit instanceof RestrictedAggregateLiteral && ctx.getLiteralsToRewrite().contains((RestrictedAggregateLiteral) lit)) {
+				BasicAtom aggregateOutputAtom = ctx.getAggregateOutputAtom((RestrictedAggregateLiteral) lit);
 				rewrittenBody.add(new BasicLiteral(aggregateOutputAtom, !lit.isNegated()));
 			} else {
 				rewrittenBody.add(lit);
@@ -85,41 +85,41 @@ public abstract class AbstractAggregateTransformation extends ProgramTransformat
 		return new BasicRule(rule.getHead(), rewrittenBody);
 	}
 
-	protected abstract boolean shouldHandle(AggregateLiteral lit);
+	protected abstract boolean shouldHandle(RestrictedAggregateLiteral lit);
 
 	protected abstract InputProgram encodeAggregates(AggregateRewritingContext ctx);
 
 	public static class AggregateRewritingContext {
 
 		private int idCounter;
-		private Map<AggregateLiteral, String> aggregateIds = new HashMap<>();
-		private Map<AggregateLiteral, BasicAtom> aggregateOutputAtoms = new HashMap<>();
-		private Map<AggregateLiteral, BasicRule> aggregateSourceRules = new HashMap<>();
+		private Map<RestrictedAggregateLiteral, String> aggregateIds = new HashMap<>();
+		private Map<RestrictedAggregateLiteral, BasicAtom> aggregateOutputAtoms = new HashMap<>();
+		private Map<RestrictedAggregateLiteral, BasicRule> aggregateSourceRules = new HashMap<>();
 
-		public void registerAggregateLiteral(AggregateLiteral lit, BasicRule source) {
+		public void registerAggregateLiteral(RestrictedAggregateLiteral lit, BasicRule source) {
 			if (this.aggregateIds.containsKey(lit)) {
 				return;
 			}
-			AggregateAtom atom = lit.getAtom();
+			RestrictedAggregateAtom atom = lit.getAtom();
 			String id = atom.getAggregatefunction().toString().toLowerCase() + "_" + (++this.idCounter);
 			this.aggregateIds.put(lit, id);
 			this.aggregateOutputAtoms.put(lit, this.buildAggregateOutputAtom(id, atom));
 			this.aggregateSourceRules.put(lit, source);
 		}
 
-		private BasicAtom buildAggregateOutputAtom(String aggregateId, AggregateAtom atom) {
+		private BasicAtom buildAggregateOutputAtom(String aggregateId, RestrictedAggregateAtom atom) {
 			return new BasicAtom(AGGREGATE_RESULT, ConstantTerm.getSymbolicInstance(aggregateId), atom.getLowerBoundTerm());
 		}
 
-		public String getAggregateId(AggregateLiteral lit) {
+		public String getAggregateId(RestrictedAggregateLiteral lit) {
 			return this.aggregateIds.get(lit);
 		}
 
-		public BasicAtom getAggregateOutputAtom(AggregateLiteral lit) {
+		public BasicAtom getAggregateOutputAtom(RestrictedAggregateLiteral lit) {
 			return this.aggregateOutputAtoms.get(lit);
 		}
 
-		public Set<AggregateLiteral> getLiteralsToRewrite() {
+		public Set<RestrictedAggregateLiteral> getLiteralsToRewrite() {
 			return Collections.unmodifiableSet(this.aggregateIds.keySet());
 		}
 

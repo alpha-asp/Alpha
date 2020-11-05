@@ -4,7 +4,7 @@ public class AggregateRewritingConfig {
 
 	private final boolean useSortingCircuitEncoding;
 
-	// TODO shoud be builder
+	// TODO should be builder
 	public AggregateRewritingConfig(boolean useSortingCircuit) {
 		this.useSortingCircuitEncoding = useSortingCircuit;
 	}

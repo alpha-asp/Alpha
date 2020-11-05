@@ -4,12 +4,13 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.atoms.RestrictedAggregateAtom;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 
 /**
@@ -29,19 +30,14 @@ import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
-// TODO AbstractRuleRewriting or sth...
-public class AggregateLiteralSplitting extends ProgramTransformation<InputProgram, InputProgram> {
+public class AggregateLiteralSplitting implements Function<BasicRule, List<BasicRule>> {
 
 	@Override
-	public InputProgram apply(InputProgram inputProgram) {
-		List<BasicRule> rewrittenRules = new ArrayList<>();
-		for (BasicRule rule : inputProgram.getRules()) {
-			rewrittenRules.addAll(handleRule(rule));
-		}
-		return new InputProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+	public List<BasicRule> apply(BasicRule rule) {
+		return rewriteRule(rule);
 	}
 
-	private List<BasicRule> handleRule(BasicRule rule) {
+	private List<BasicRule> rewriteRule(BasicRule rule) {
 		List<BasicRule> retVal = new ArrayList<>();
 		rewriteRule(rule, retVal);
 		return retVal;
@@ -64,8 +60,7 @@ public class AggregateLiteralSplitting extends ProgramTransformation<InputProgra
 		}
 	}
 
-	// @Override
-	protected boolean shouldRewrite(AggregateLiteral lit) {
+	private boolean shouldRewrite(AggregateLiteral lit) {
 		return lit.getAtom().getLowerBoundTerm() != null && lit.getAtom().getUpperBoundTerm() != null;
 	}
 
@@ -76,7 +71,7 @@ public class AggregateLiteralSplitting extends ProgramTransformation<InputProgra
 				remainingBody.add(lit);
 			}
 		});
-		ImmutablePair<AggregateAtom, AggregateAtom> normalizedAtoms = splitCombinedAggregateAtom(aggLit.getAtom());
+		ImmutablePair<RestrictedAggregateAtom, RestrictedAggregateAtom> normalizedAtoms = splitCombinedAggregateAtom(aggLit.getAtom());
 		List<BasicRule> retVal = new ArrayList<>();
 		if (aggLit.isNegated()) {
 			List<Literal> leftRuleBody = new ArrayList<>(remainingBody);
@@ -94,10 +89,10 @@ public class AggregateLiteralSplitting extends ProgramTransformation<InputProgra
 		return retVal;
 	}
 
-	private ImmutablePair<AggregateAtom, AggregateAtom> splitCombinedAggregateAtom(AggregateAtom atom) {
-		AggregateAtom leftHandAtom = new AggregateAtom(atom.getLowerBoundOperator(), atom.getLowerBoundTerm(), null, null, atom.getAggregatefunction(),
+	private ImmutablePair<RestrictedAggregateAtom, RestrictedAggregateAtom> splitCombinedAggregateAtom(AggregateAtom atom) {
+		RestrictedAggregateAtom leftHandAtom = new RestrictedAggregateAtom(atom.getLowerBoundOperator(), atom.getLowerBoundTerm(), atom.getAggregatefunction(),
 				atom.getAggregateElements());
-		AggregateAtom rightHandAtom = new AggregateAtom(switchOperands(atom.getUpperBoundOperator()), atom.getUpperBoundTerm(), null, null,
+		RestrictedAggregateAtom rightHandAtom = new RestrictedAggregateAtom(switchOperands(atom.getUpperBoundOperator()), atom.getUpperBoundTerm(),
 				atom.getAggregatefunction(), atom.getAggregateElements());
 		return new ImmutablePair<>(leftHandAtom, rightHandAtom);
 	}

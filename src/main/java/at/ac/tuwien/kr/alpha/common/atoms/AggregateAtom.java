@@ -88,7 +88,7 @@ public class AggregateAtom extends Atom {
 	}
 
 	@Override
-	public Atom withTerms(List<Term> terms) {
+	public AggregateAtom withTerms(List<Term> terms) {
 		throw new UnsupportedOperationException("Editing term list is not supported for aggregate atoms!");
 	}
 	
@@ -111,7 +111,7 @@ public class AggregateAtom extends Atom {
 
 	@Override
 	public AggregateAtom substitute(Substitution substitution) {
-		return null;
+		throw new UnsupportedOperationException("Cannot apply substitution to AggregateAtom!");
 	}
 
 	@Override

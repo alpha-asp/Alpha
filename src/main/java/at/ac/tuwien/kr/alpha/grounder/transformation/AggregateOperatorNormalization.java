@@ -3,12 +3,13 @@ package at.ac.tuwien.kr.alpha.grounder.transformation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.RestrictedAggregateAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.RestrictedAggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.Terms;
@@ -38,16 +39,22 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
  * Copyright (c) 2020, the Alpha Team.
  */
 // TODO introduce type "NormalizedAggregateLiteral" or something
-public class AggregateOperatorNormalization extends ProgramTransformation<InputProgram, InputProgram> {
+public class AggregateOperatorNormalization implements Function<BasicRule, BasicRule> {
 
 	@Override
-	public InputProgram apply(InputProgram inputProgram) {
-		List<BasicRule> rewrittenRules = new ArrayList<>();
-		for (BasicRule rule : inputProgram.getRules()) {
-			rewrittenRules.add(handleRule(rule));
-		}
-		return new InputProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+	public BasicRule apply(BasicRule t) {
+		// TODO Auto-generated method stub
+		return null;
 	}
+	
+//	@Override
+//	public InputProgram apply(InputProgram inputProgram) {
+//		List<BasicRule> rewrittenRules = new ArrayList<>();
+//		for (BasicRule rule : inputProgram.getRules()) {
+//			rewrittenRules.add(handleRule(rule));
+//		}
+//		return new InputProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+//	}
 
 	private BasicRule handleRule(BasicRule rule) {
 		List<Literal> rewrittenBody = new ArrayList<>();
@@ -58,15 +65,15 @@ public class AggregateOperatorNormalization extends ProgramTransformation<InputP
 	}
 
 	private List<Literal> rewriteLiteral(Literal lit) {
-		if (lit instanceof AggregateLiteral) {
-			return rewriteAggregateOperator((AggregateLiteral) lit);
+		if (lit instanceof RestrictedAggregateLiteral) {
+			return rewriteAggregateOperator((RestrictedAggregateLiteral) lit);
 		} else {
 			return Collections.singletonList(lit);
 		}
 	}
 
-	private List<Literal> rewriteAggregateOperator(AggregateLiteral lit) {
-		AggregateAtom atom = lit.getAtom();
+	private List<Literal> rewriteAggregateOperator(RestrictedAggregateLiteral lit) {
+		RestrictedAggregateAtom atom = lit.getAtom();
 		if (lit.getAtom().getAggregatefunction() == AggregateFunctionSymbol.MIN || lit.getAtom().getAggregatefunction() == AggregateFunctionSymbol.MAX) {
 			// No operator normalization needed for #min/#max aggregates
 			return Collections.singletonList(lit);
@@ -80,29 +87,29 @@ public class AggregateOperatorNormalization extends ProgramTransformation<InputP
 			switch (atom.getLowerBoundOperator()) {
 				case LT:
 					decrementedBound = VariableTerm.getAnonymousInstance();
-					retVal.add(new AggregateLiteral(
-							new AggregateAtom(
-									ComparisonOperator.LE, decrementedBound, null, null, atom.getAggregatefunction(), atom.getAggregateElements()),
+					retVal.add(new RestrictedAggregateLiteral(
+							new RestrictedAggregateAtom(
+									ComparisonOperator.LE, decrementedBound, atom.getAggregatefunction(), atom.getAggregateElements()),
 							!lit.isNegated()));
 					retVal.add(Terms.decrementTerm(atom.getLowerBoundTerm(), decrementedBound));
 					break;
 				case NE:
-					retVal.add(new AggregateLiteral(
-							new AggregateAtom(
-									ComparisonOperator.EQ, atom.getLowerBoundTerm(), null, null, atom.getAggregatefunction(), atom.getAggregateElements()),
+					retVal.add(new RestrictedAggregateLiteral(
+							new RestrictedAggregateAtom(
+									ComparisonOperator.EQ, atom.getLowerBoundTerm(), atom.getAggregatefunction(), atom.getAggregateElements()),
 							lit.isNegated()));
 					break;
 				case GT:
-					retVal.add(new AggregateLiteral(
-							new AggregateAtom(
-									ComparisonOperator.LE, atom.getLowerBoundTerm(), null, null, atom.getAggregatefunction(), atom.getAggregateElements()),
+					retVal.add(new RestrictedAggregateLiteral(
+							new RestrictedAggregateAtom(
+									ComparisonOperator.LE, atom.getLowerBoundTerm(), atom.getAggregatefunction(), atom.getAggregateElements()),
 							lit.isNegated()));
 					break;
 				case GE:
 					decrementedBound = VariableTerm.getAnonymousInstance();
-					retVal.add(new AggregateLiteral(
-							new AggregateAtom(
-									ComparisonOperator.LE, decrementedBound, null, null, atom.getAggregatefunction(), atom.getAggregateElements()),
+					retVal.add(new RestrictedAggregateLiteral(
+							new RestrictedAggregateAtom(
+									ComparisonOperator.LE, decrementedBound, atom.getAggregatefunction(), atom.getAggregateElements()),
 							lit.isNegated()));
 					retVal.add(Terms.decrementTerm(atom.getLowerBoundTerm(), decrementedBound));
 					break;

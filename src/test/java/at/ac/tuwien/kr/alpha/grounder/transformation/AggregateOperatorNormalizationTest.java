@@ -17,6 +17,7 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.test.util.RuleParser;
 import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 
+// TODO adapt to restricted aggregate literals!
 public class AggregateOperatorNormalizationTest {
 
 	//@formatter:off

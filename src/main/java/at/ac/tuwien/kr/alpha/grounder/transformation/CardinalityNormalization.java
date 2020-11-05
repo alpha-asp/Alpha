@@ -1,9 +1,17 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.RestrictedAggregateAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.RestrictedAggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
@@ -15,13 +23,6 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
 
 /**
  * Copyright (c) 2017-2020, the Alpha Team.
@@ -120,8 +121,8 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 	private boolean rewritingNecessary(InputProgram program) {
 		for (BasicRule rule : program.getRules()) {
 			for (Literal lit : rule.getBody()) {
-				if (lit instanceof AggregateLiteral) {
-					AggregateAtom aggregateAtom = ((AggregateLiteral) lit).getAtom();
+				if (lit instanceof RestrictedAggregateLiteral) {
+					RestrictedAggregateAtom aggregateAtom = ((RestrictedAggregateLiteral) lit).getAtom();
 					if (aggregateAtom.getAggregatefunction() == AggregateAtom.AggregateFunctionSymbol.COUNT) {
 						return true;
 					}
@@ -164,17 +165,16 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 		for (Iterator<Literal> iterator = rewrittenBody.iterator(); iterator.hasNext();) {
 			Literal bodyElement = iterator.next();
 			// Skip non-aggregates.
-			if (!(bodyElement instanceof AggregateLiteral)) {
+			if (!(bodyElement instanceof RestrictedAggregateLiteral)) {
 				continue;
 			}
-			AggregateLiteral aggregateLiteral = (AggregateLiteral) bodyElement;
-			AggregateAtom aggregateAtom = aggregateLiteral.getAtom();
+			RestrictedAggregateLiteral aggregateLiteral = (RestrictedAggregateLiteral) bodyElement;
+			RestrictedAggregateAtom aggregateAtom = aggregateLiteral.getAtom();
 
 			// Check that aggregate is limited to what we currently can deal with.
-			if (aggregateLiteral.isNegated() || aggregateAtom.getUpperBoundOperator() != null
-					|| (aggregateAtom.getAggregatefunction() != AggregateAtom.AggregateFunctionSymbol.COUNT
+			if (aggregateLiteral.isNegated() || (aggregateAtom.getAggregatefunction() != AggregateAtom.AggregateFunctionSymbol.COUNT
 							&& aggregateAtom.getAggregatefunction() != AggregateAtom.AggregateFunctionSymbol.SUM)
-					|| aggregatesInRule++ > 0) {
+					|| aggregatesInRule++ > 0) { // FIXME do counter elsewhere! remove check here, we can do multiple aggregates
 				throw new UnsupportedOperationException(
 						"Only limited #count/#sum aggregates without upper bound are currently supported." + "No rule may have more than one aggregate.");
 			}
@@ -236,12 +236,12 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 		return additionalRules;
 	}
 
-	static Collection<Term> getGlobalVariables(List<Literal> ruleBody, AggregateAtom aggregateAtom) {
+	static Collection<Term> getGlobalVariables(List<Literal> ruleBody, RestrictedAggregateAtom aggregateAtom) {
 		// Hacky way to get all global variables: take all variables inside the aggregate that occur also in the
 		// rest of the rule.
 		HashSet<Term> occurringVariables = new LinkedHashSet<>();
 		for (Literal element : ruleBody) {
-			if (element instanceof AggregateLiteral) {
+			if (element instanceof RestrictedAggregateLiteral) {
 				continue;
 			}
 			occurringVariables.addAll(element.getBindingVariables());
