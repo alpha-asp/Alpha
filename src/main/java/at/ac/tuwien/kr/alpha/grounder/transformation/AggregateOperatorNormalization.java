@@ -3,7 +3,6 @@ package at.ac.tuwien.kr.alpha.grounder.transformation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
@@ -38,25 +37,13 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
-// TODO introduce type "NormalizedAggregateLiteral" or something
-public class AggregateOperatorNormalization implements Function<BasicRule, BasicRule> {
+public final class AggregateOperatorNormalization {
 
-	@Override
-	public BasicRule apply(BasicRule t) {
-		// TODO Auto-generated method stub
-		return null;
+	private AggregateOperatorNormalization() {
+		throw new UnsupportedOperationException("Utility class - cannot instantiate!");
 	}
-	
-//	@Override
-//	public InputProgram apply(InputProgram inputProgram) {
-//		List<BasicRule> rewrittenRules = new ArrayList<>();
-//		for (BasicRule rule : inputProgram.getRules()) {
-//			rewrittenRules.add(handleRule(rule));
-//		}
-//		return new InputProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
-//	}
 
-	private BasicRule handleRule(BasicRule rule) {
+	public static BasicRule normalize(BasicRule rule) {
 		List<Literal> rewrittenBody = new ArrayList<>();
 		for (Literal lit : rule.getBody()) {
 			rewrittenBody.addAll(rewriteLiteral(lit));
@@ -64,7 +51,7 @@ public class AggregateOperatorNormalization implements Function<BasicRule, Basic
 		return new BasicRule(rule.getHead(), rewrittenBody);
 	}
 
-	private List<Literal> rewriteLiteral(Literal lit) {
+	private static List<Literal> rewriteLiteral(Literal lit) {
 		if (lit instanceof RestrictedAggregateLiteral) {
 			return rewriteAggregateOperator((RestrictedAggregateLiteral) lit);
 		} else {
@@ -72,7 +59,7 @@ public class AggregateOperatorNormalization implements Function<BasicRule, Basic
 		}
 	}
 
-	private List<Literal> rewriteAggregateOperator(RestrictedAggregateLiteral lit) {
+	private static List<Literal> rewriteAggregateOperator(RestrictedAggregateLiteral lit) {
 		RestrictedAggregateAtom atom = lit.getAtom();
 		if (lit.getAtom().getAggregatefunction() == AggregateFunctionSymbol.MIN || lit.getAtom().getAggregatefunction() == AggregateFunctionSymbol.MAX) {
 			// No operator normalization needed for #min/#max aggregates

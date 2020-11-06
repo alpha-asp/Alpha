@@ -4,7 +4,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
@@ -30,20 +29,19 @@ import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
-public class AggregateLiteralSplitting implements Function<BasicRule, List<BasicRule>> {
+public final class AggregateLiteralSplitting {
 
-	@Override
-	public List<BasicRule> apply(BasicRule rule) {
-		return rewriteRule(rule);
+	private AggregateLiteralSplitting() {
+		throw new UnsupportedOperationException("Utility class - cannot instantiate!");
 	}
 
-	private List<BasicRule> rewriteRule(BasicRule rule) {
+	public static List<BasicRule> split(BasicRule rule) {
 		List<BasicRule> retVal = new ArrayList<>();
 		rewriteRule(rule, retVal);
 		return retVal;
 	}
 
-	private void rewriteRule(BasicRule sourceRule, List<BasicRule> resultRules) {
+	private static void rewriteRule(BasicRule sourceRule, List<BasicRule> resultRules) {
 		boolean containsRewrittenAggregate = false;
 		for (Literal lit : sourceRule.getBody()) {
 			AggregateLiteral aggLit;
@@ -60,11 +58,11 @@ public class AggregateLiteralSplitting implements Function<BasicRule, List<Basic
 		}
 	}
 
-	private boolean shouldRewrite(AggregateLiteral lit) {
+	private static boolean shouldRewrite(AggregateLiteral lit) {
 		return lit.getAtom().getLowerBoundTerm() != null && lit.getAtom().getUpperBoundTerm() != null;
 	}
 
-	private List<BasicRule> splitAggregateLiteral(BasicRule sourceRule, AggregateLiteral aggLit) {
+	private static List<BasicRule> splitAggregateLiteral(BasicRule sourceRule, AggregateLiteral aggLit) {
 		List<Literal> remainingBody = new ArrayList<>();
 		sourceRule.getBody().forEach((lit) -> {
 			if (lit != aggLit) {
@@ -89,7 +87,7 @@ public class AggregateLiteralSplitting implements Function<BasicRule, List<Basic
 		return retVal;
 	}
 
-	private ImmutablePair<RestrictedAggregateAtom, RestrictedAggregateAtom> splitCombinedAggregateAtom(AggregateAtom atom) {
+	private static ImmutablePair<RestrictedAggregateAtom, RestrictedAggregateAtom> splitCombinedAggregateAtom(AggregateAtom atom) {
 		RestrictedAggregateAtom leftHandAtom = new RestrictedAggregateAtom(atom.getLowerBoundOperator(), atom.getLowerBoundTerm(), atom.getAggregatefunction(),
 				atom.getAggregateElements());
 		RestrictedAggregateAtom rightHandAtom = new RestrictedAggregateAtom(switchOperands(atom.getUpperBoundOperator()), atom.getUpperBoundTerm(),

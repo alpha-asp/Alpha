@@ -90,6 +90,11 @@ public final class RestrictedAggregateAtom extends Atom {
 	}
 
 	@Override
+	public String toString() {
+		return this.atom.toString();
+	}
+	
+	@Override
 	public boolean equals(Object o) {
 		return this.atom.equals(o);
 	}
@@ -98,5 +103,5 @@ public final class RestrictedAggregateAtom extends Atom {
 	public int hashCode() {
 		return this.atom.hashCode();
 	}
-
+	
 }
