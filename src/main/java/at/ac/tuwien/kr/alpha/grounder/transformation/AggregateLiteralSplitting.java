@@ -9,7 +9,6 @@ import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.atoms.RestrictedAggregateAtom;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 
 /**
@@ -69,7 +68,7 @@ public final class AggregateLiteralSplitting {
 				remainingBody.add(lit);
 			}
 		});
-		ImmutablePair<RestrictedAggregateAtom, RestrictedAggregateAtom> normalizedAtoms = splitCombinedAggregateAtom(aggLit.getAtom());
+		ImmutablePair<AggregateAtom, AggregateAtom> normalizedAtoms = splitCombinedAggregateAtom(aggLit.getAtom());
 		List<BasicRule> retVal = new ArrayList<>();
 		if (aggLit.isNegated()) {
 			List<Literal> leftRuleBody = new ArrayList<>(remainingBody);
@@ -87,10 +86,10 @@ public final class AggregateLiteralSplitting {
 		return retVal;
 	}
 
-	private static ImmutablePair<RestrictedAggregateAtom, RestrictedAggregateAtom> splitCombinedAggregateAtom(AggregateAtom atom) {
-		RestrictedAggregateAtom leftHandAtom = new RestrictedAggregateAtom(atom.getLowerBoundOperator(), atom.getLowerBoundTerm(), atom.getAggregatefunction(),
+	private static ImmutablePair<AggregateAtom, AggregateAtom> splitCombinedAggregateAtom(AggregateAtom atom) {
+		AggregateAtom leftHandAtom = new AggregateAtom(atom.getLowerBoundOperator(), atom.getLowerBoundTerm(), atom.getAggregatefunction(),
 				atom.getAggregateElements());
-		RestrictedAggregateAtom rightHandAtom = new RestrictedAggregateAtom(switchOperands(atom.getUpperBoundOperator()), atom.getUpperBoundTerm(),
+		AggregateAtom rightHandAtom = new AggregateAtom(switchOperands(atom.getUpperBoundOperator()), atom.getUpperBoundTerm(),
 				atom.getAggregatefunction(), atom.getAggregateElements());
 		return new ImmutablePair<>(leftHandAtom, rightHandAtom);
 	}

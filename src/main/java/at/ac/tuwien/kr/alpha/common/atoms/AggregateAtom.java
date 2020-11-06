@@ -56,10 +56,10 @@ public class AggregateAtom extends Atom {
 		this.upperBoundTerm = upperBoundTerm;
 		this.aggregatefunction = aggregatefunction;
 		this.aggregateElements = aggregateElements;
-		// TODO rework based on actually supported stuff
-//		if (upperBoundOperator != null || lowerBoundOperator != ComparisonOperator.LE || lowerBoundTerm == null) {
-//			throw new UnsupportedOperationException("Aggregate construct not yet supported: " + this);
-//		}
+	}
+	
+	public AggregateAtom(ComparisonOperator lowerBoundOperator, Term lowerBoundTerm, AggregateFunctionSymbol aggregatefunction, List<AggregateElement> aggregateElements) {
+		this(lowerBoundOperator, lowerBoundTerm, null, null, aggregatefunction, aggregateElements);
 	}
 
 	@Override

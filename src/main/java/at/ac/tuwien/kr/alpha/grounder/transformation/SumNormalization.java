@@ -8,10 +8,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.atoms.RestrictedAggregateAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.RestrictedAggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
@@ -82,8 +81,8 @@ public class SumNormalization extends ProgramTransformation<InputProgram, InputP
 	private boolean rewritingNecessary(InputProgram program) {
 		for (BasicRule rule : program.getRules()) {
 			for (Literal lit : rule.getBody()) {
-				if (lit instanceof RestrictedAggregateLiteral) {
-					RestrictedAggregateAtom aggregateAtom = ((RestrictedAggregateLiteral) lit).getAtom();
+				if (lit instanceof AggregateLiteral) {
+					AggregateAtom aggregateAtom = ((AggregateLiteral) lit).getAtom();
 					if (aggregateAtom.getAggregatefunction() == AggregateAtom.AggregateFunctionSymbol.SUM) {
 						return true;
 					}
@@ -126,11 +125,11 @@ public class SumNormalization extends ProgramTransformation<InputProgram, InputP
 		for (Iterator<Literal> iterator = rewrittenBody.iterator(); iterator.hasNext();) {
 			Literal bodyElement = iterator.next();
 			// Skip non-aggregates.
-			if (!(bodyElement instanceof RestrictedAggregateLiteral)) {
+			if (!(bodyElement instanceof AggregateLiteral)) {
 				continue;
 			}
-			RestrictedAggregateLiteral aggregateLiteral = (RestrictedAggregateLiteral) bodyElement;
-			RestrictedAggregateAtom aggregateAtom = aggregateLiteral.getAtom();
+			AggregateLiteral aggregateLiteral = (AggregateLiteral) bodyElement;
+			AggregateAtom aggregateAtom = aggregateLiteral.getAtom();
 
 			// Check that aggregate is limited to what we currently can deal with.
 			if (aggregateLiteral.isNegated()

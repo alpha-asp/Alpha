@@ -14,8 +14,6 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.atoms.RestrictedAggregateAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.RestrictedAggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
@@ -114,7 +112,7 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 			}
 		}
 		List<Atom> aggregateFacts = new ArrayList<>();
-		for (RestrictedAggregateLiteral lit : ctx.getLiteralsToRewrite()) {
+		for (AggregateLiteral lit : ctx.getLiteralsToRewrite()) {
 			aggregateFacts.add(new BasicAtom(AGGREGATE, ConstantTerm.getSymbolicInstance(ctx.getAggregateId(lit))));
 		}
 		List<BasicRule> aggregateEncodingRules = new ArrayList<>();
@@ -137,7 +135,7 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 		return countRewriting.andThen(sumRewriting).apply(resultProgram);
 	}
 
-	private List<BasicRule> encodeAggregateFunction(AggregateFunctionSymbol func, Set<RestrictedAggregateLiteral> literals, AggregateRewritingContext ctx) {
+	private List<BasicRule> encodeAggregateFunction(AggregateFunctionSymbol func, Set<AggregateLiteral> literals, AggregateRewritingContext ctx) {
 		switch (func) {
 			case COUNT:
 				return encodeCountAggregate(literals, ctx);
@@ -152,9 +150,9 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 		}
 	}
 
-	private List<BasicRule> encodeCountAggregate(Set<RestrictedAggregateLiteral> literals, AggregateRewritingContext ctx) {
+	private List<BasicRule> encodeCountAggregate(Set<AggregateLiteral> literals, AggregateRewritingContext ctx) {
 		List<BasicRule> retVal = new ArrayList<>();
-		for (RestrictedAggregateLiteral countAggregate : literals) {
+		for (AggregateLiteral countAggregate : literals) {
 			for (AggregateElement element : countAggregate.getAtom().getAggregateElements()) {
 				retVal.add(buildCountElementTupleRule(ctx.getAggregateId(countAggregate), element));
 			}
@@ -166,9 +164,9 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 		return retVal;
 	}
 
-	private List<BasicRule> encodeSumAggregate(Set<RestrictedAggregateLiteral> literals, AggregateRewritingContext ctx) {
+	private List<BasicRule> encodeSumAggregate(Set<AggregateLiteral> literals, AggregateRewritingContext ctx) {
 		List<BasicRule> retVal = new ArrayList<>();
-		for (RestrictedAggregateLiteral sumAggregate : literals) {
+		for (AggregateLiteral sumAggregate : literals) {
 			for (AggregateElement element : sumAggregate.getAtom().getAggregateElements()) {
 				retVal.add(buildSumElementTupleRule(ctx.getAggregateId(sumAggregate), element));
 			}
@@ -180,9 +178,9 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 		return retVal;
 	}
 
-	private List<BasicRule> encodeMinAggregate(Set<RestrictedAggregateLiteral> literals, AggregateRewritingContext ctx) {
+	private List<BasicRule> encodeMinAggregate(Set<AggregateLiteral> literals, AggregateRewritingContext ctx) {
 		List<BasicRule> retVal = new ArrayList<>();
-		for (RestrictedAggregateLiteral minAggregate : literals) {
+		for (AggregateLiteral minAggregate : literals) {
 			for (AggregateElement element : minAggregate.getAtom().getAggregateElements()) {
 				retVal.add(buildOrderedElementTupleRule(ctx.getAggregateId(minAggregate), element));
 			}
@@ -193,9 +191,9 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 		return retVal;
 	}
 
-	private List<BasicRule> encodeMaxAggregate(Set<RestrictedAggregateLiteral> literals, AggregateRewritingContext ctx) {
+	private List<BasicRule> encodeMaxAggregate(Set<AggregateLiteral> literals, AggregateRewritingContext ctx) {
 		List<BasicRule> retVal = new ArrayList<>();
-		for (RestrictedAggregateLiteral maxAggregate : literals) {
+		for (AggregateLiteral maxAggregate : literals) {
 			for (AggregateElement element : maxAggregate.getAtom().getAggregateElements()) {
 				retVal.add(buildOrderedElementTupleRule(ctx.getAggregateId(maxAggregate), element));
 			}
@@ -237,22 +235,22 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 		return new BasicRule(new NormalHead(headAtom), element.getElementLiterals());
 	}
 
-	private BasicRule buildCntLeqRule(RestrictedAggregateLiteral countEq, String countEqId) {
+	private BasicRule buildCntLeqRule(AggregateLiteral countEq, String countEqId) {
 		VariableTerm cnt = VariableTerm.getInstance("CNT");
 		Atom headAtom = new BasicAtom(LEQ_AGGREGATE, ConstantTerm.getSymbolicInstance(countEqId), cnt);
-		RestrictedAggregateAtom sourceAggregate = countEq.getAtom();
+		AggregateAtom sourceAggregate = countEq.getAtom();
 		Literal valueLeqCnt = new AggregateLiteral(
 				new AggregateAtom(ComparisonOperator.LE, cnt, null, null, AggregateFunctionSymbol.COUNT, sourceAggregate.getAggregateElements()), true);
 		Literal valueIsCandidate = new BasicLiteral(new BasicAtom(CNT_CANDIDATE, ConstantTerm.getSymbolicInstance(countEqId), cnt), true);
 		return BasicRule.getInstance(new NormalHead(headAtom), valueLeqCnt, valueIsCandidate);
 	}
 
-	private BasicRule buildSumLeqRule(RestrictedAggregateLiteral sumEq, String sumEqId) {
+	private BasicRule buildSumLeqRule(AggregateLiteral sumEq, String sumEqId) {
 		VariableTerm sum = VariableTerm.getInstance("SUM");
 		Atom headAtom = new BasicAtom(LEQ_AGGREGATE, ConstantTerm.getSymbolicInstance(sumEqId), sum);
-		RestrictedAggregateAtom sourceAggregate = sumEq.getAtom();
-		Literal valueLeqSum = new RestrictedAggregateLiteral(
-				new RestrictedAggregateAtom(ComparisonOperator.LE, sum, AggregateFunctionSymbol.SUM, sourceAggregate.getAggregateElements()), true);
+		AggregateAtom sourceAggregate = sumEq.getAtom();
+		Literal valueLeqSum = new AggregateLiteral(
+				new AggregateAtom(ComparisonOperator.LE, sum, AggregateFunctionSymbol.SUM, sourceAggregate.getAggregateElements()), true);
 		Literal valueIsCandidate = new BasicLiteral(new BasicAtom(SUM_CANDIDATE, ConstantTerm.getSymbolicInstance(sumEqId), sum), true);
 		return BasicRule.getInstance(new NormalHead(headAtom), valueLeqSum, valueIsCandidate);
 	}
@@ -271,8 +269,8 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	private static BasicRule insertAggregatePlaceholders(AggregateRewritingContext ctx, BasicRule rule) {
 		List<Literal> rewrittenBody = new ArrayList<>();
 		for (Literal lit : rule.getBody()) {
-			if (lit instanceof RestrictedAggregateLiteral && ctx.getLiteralsToRewrite().contains((RestrictedAggregateLiteral) lit)) {
-				BasicAtom aggregateOutputAtom = ctx.getAggregateOutputAtom((RestrictedAggregateLiteral) lit);
+			if (lit instanceof AggregateLiteral && ctx.getLiteralsToRewrite().contains((AggregateLiteral) lit)) {
+				BasicAtom aggregateOutputAtom = ctx.getAggregateOutputAtom((AggregateLiteral) lit);
 				rewrittenBody.add(new BasicLiteral(aggregateOutputAtom, !lit.isNegated()));
 			} else {
 				rewrittenBody.add(lit);
