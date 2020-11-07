@@ -73,7 +73,6 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 			"sorting_network_v(R,I,D) :- sorting_network_v(R,I,D1), D1=D-1, sorting_network_pass(I,D), sorting_network_dh(R,D).\n" +
 			"sorting_network_output(R,K) :- sorting_network_bound(R,K), sorting_network_v(R,K,D), sorting_network_done(N,D), K<=N.\n" +
 			"sorting_network_output(R,K) :- sorting_network_bound(R,K), K<=0.\n" +
-
 			"sorting_network_span_project(I) :- sorting_network_span(_,I).\n" +
 			"sorting_network_part(P) :- sorting_network_span_project(I), Im1=I-1, sorting_network_log2(Im1,P1), P=P1+1.\n" +
 			"sorting_network_lvl(1,1,1) :- sorting_network_part(1).\n" +

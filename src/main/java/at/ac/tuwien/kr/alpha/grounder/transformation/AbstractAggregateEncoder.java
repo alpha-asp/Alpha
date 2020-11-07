@@ -6,8 +6,8 @@ import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
+import at.ac.tuwien.kr.alpha.grounder.transformation.AggregateRewritingContext.AggregateInfo;
 
 public abstract class AbstractAggregateEncoder {
 
@@ -21,24 +21,24 @@ public abstract class AbstractAggregateEncoder {
 	// TODO prefix ALL predicate names on which an aggregate result depends including the result itself with aggregate
 	// id to ensure stratifiability of individual aggregate literal encodings
 	public List<BasicRule> encodeAggregateLiterals(AggregateRewritingContext ctx) {
-		Set<AggregateLiteral> literalsToEncode = ctx.getAggregateFunctionsToRewrite().get(this.aggregateFunctionToEncode);
+		Set<String> aggregatesToEncode = ctx.getAggregateFunctionsToRewrite().get(this.aggregateFunctionToEncode);
 		List<BasicRule> aggregateEncodingRules = new ArrayList<>();
-		for (AggregateLiteral literalToEncode : literalsToEncode) {
-			aggregateEncodingRules.addAll(encodeAggregateLiteral(literalToEncode, ctx));
+		for (String aggregateToEncode : aggregatesToEncode) {
+			aggregateEncodingRules.addAll(encodeAggregateLiteral(ctx.getAggregateInfo(aggregateToEncode), ctx));
 		}
 		return aggregateEncodingRules;
 	}
 
-	public List<BasicRule> encodeAggregateLiteral(AggregateLiteral literalToEncode, AggregateRewritingContext ctx) {
+	public List<BasicRule> encodeAggregateLiteral(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx) {
 		List<BasicRule> literalEncodingRules = new ArrayList<>();
-		literalEncodingRules.addAll(encodeAggregateResult(literalToEncode, ctx));
-		for (AggregateElement elementToEncode : literalToEncode.getAtom().getAggregateElements()) {
-			literalEncodingRules.add(encodeAggregateElement(ctx.getAggregateId(literalToEncode), elementToEncode));
+		literalEncodingRules.addAll(encodeAggregateResult(aggregateToEncode, ctx));
+		for (AggregateElement elementToEncode : aggregateToEncode.getLiteral().getAtom().getAggregateElements()) {
+			literalEncodingRules.add(encodeAggregateElement(aggregateToEncode.getId(), elementToEncode));
 		}
 		return literalEncodingRules;
 	}
 
-	protected abstract List<BasicRule> encodeAggregateResult(AggregateLiteral lit, AggregateRewritingContext ctx);
+	protected abstract List<BasicRule> encodeAggregateResult(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx);
 
 	protected abstract BasicRule encodeAggregateElement(String aggregateId, AggregateElement element);
 

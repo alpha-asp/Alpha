@@ -2,6 +2,7 @@ package at.ac.tuwien.kr.alpha.grounder.transformation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
@@ -25,6 +26,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives.DIRECTIVE;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.grounder.transformation.AggregateRewritingContext.AggregateInfo;
 
 // FIXME do proper internalizing of predicates
 // Internalize before stitching programs together (otherwise clashes!)
@@ -104,17 +106,13 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 			for (BasicRule splitRule : AggregateLiteralSplitting.split(inputRule)) {
 				BasicRule operatorNormalizedRule = AggregateOperatorNormalization.normalize(splitRule);
 				boolean hasAggregate = ctx.registerRule(operatorNormalizedRule);
-				if (hasAggregate) {
-					outputRules.add(insertAggregatePlaceholders(ctx, operatorNormalizedRule));
-				} else {
+				// Only keep rules without aggregates. The ones with aggregates are registered in the context and taken care of later
+				if (!hasAggregate) {
 					outputRules.add(operatorNormalizedRule);
 				}
 			}
 		}
-		List<Atom> aggregateFacts = new ArrayList<>();
-		for (AggregateLiteral lit : ctx.getLiteralsToRewrite()) {
-			aggregateFacts.add(new BasicAtom(AGGREGATE, ConstantTerm.getSymbolicInstance(ctx.getAggregateId(lit))));
-		}
+		outputRules.addAll(rewriteRulesWithAggregates(ctx));
 		List<BasicRule> aggregateEncodingRules = new ArrayList<>();
 		for (AggregateFunctionSymbol func : ctx.getAggregateFunctionsToRewrite().keySet()) {
 			aggregateEncodingRules.addAll(encodeAggregateFunction(func, ctx.getAggregateFunctionsToRewrite().get(func), ctx));
@@ -263,20 +261,25 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 		return parser.parse(String.format("aggregate_result(%s, M) :- max_element_tuple(%s, tuple(M)).", aggregateId, aggregateId)).getRules().get(0);
 	}
 
-	// Transforms (restricted) aggregate literals of format "VAR1 OP #AGG_FN{...}" into literals of format
-	// "_aggregate_result(AGG_ID,
-	// output(VAR1, VAR2))".
-	private static BasicRule insertAggregatePlaceholders(AggregateRewritingContext ctx, BasicRule rule) {
-		List<Literal> rewrittenBody = new ArrayList<>();
-		for (Literal lit : rule.getBody()) {
-			if (lit instanceof AggregateLiteral && ctx.getLiteralsToRewrite().contains((AggregateLiteral) lit)) {
-				BasicAtom aggregateOutputAtom = ctx.getAggregateOutputAtom((AggregateLiteral) lit);
-				rewrittenBody.add(new BasicLiteral(aggregateOutputAtom, !lit.isNegated()));
-			} else {
-				rewrittenBody.add(lit);
+	// Transforms (restricted) aggregate literals of format "VAR OP #AGG_FN{...}" into literals of format
+	// "<result_predicate>(VAR)".
+	private static List<BasicRule> rewriteRulesWithAggregates(AggregateRewritingContext ctx) {
+		List<BasicRule> rewrittenRules = new ArrayList<>();
+		for (BasicRule rule : ctx.getRulesToRewrite()) {
+			List<Literal> rewrittenBody = new ArrayList<>();
+			Map<AggregateLiteral, String> aggregatesInRule = ctx.getAggregatesInRule(rule);
+			for (Literal lit : rule.getBody()) {
+				if (lit instanceof AggregateLiteral) {
+					String aggregateId = aggregatesInRule.get((AggregateLiteral) lit);
+					AggregateInfo aggregateInfo = ctx.getAggregateInfo(aggregateId);
+					rewrittenBody.add(new BasicLiteral(aggregateInfo.getOutputAtom(), !lit.isNegated()));
+				} else {
+					rewrittenBody.add(lit);
+				}
 			}
+			rewrittenRules.add(new BasicRule(rule.getHead(), rewrittenBody));
 		}
-		return new BasicRule(rule.getHead(), rewrittenBody);
+		return rewrittenRules;
 	}
 
 }

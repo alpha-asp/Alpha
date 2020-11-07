@@ -1,13 +1,11 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
-
-public class CountLessOrEqualDelegateAggregateEncoder extends CountLessOrEqualAggregateEncoder {
+// TODO do this via decorator pattern on top of any encoder!
+public class CountLessOrEqualDelegateAggregateEncoder extends CountLessOrEqualSortingGridEncoder {
 
 	private final String elementEncodingDelegateId;
 
 	protected CountLessOrEqualDelegateAggregateEncoder(String elementEncodingDelegateId) {
-		super(AggregateFunctionSymbol.COUNT);
 		this.elementEncodingDelegateId = elementEncodingDelegateId;
 	}
 
