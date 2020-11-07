@@ -119,6 +119,10 @@ public final class AggregateRewritingContext {
 		return Collections.unmodifiableMap(this.rulesWithAggregates.get(rule));
 	}
 
+	public Set<Literal> getDependencies(String aggregateId) {
+		return this.dependenciesById.get(aggregateId);
+	}
+
 	public int numAggregatesToRewrite() {
 		return this.idCounter;
 	}

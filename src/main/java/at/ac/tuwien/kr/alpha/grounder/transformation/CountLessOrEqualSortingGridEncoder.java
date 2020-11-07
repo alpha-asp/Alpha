@@ -1,13 +1,20 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import org.apache.commons.collections4.ListUtils;
 import org.stringtemplate.v4.ST;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.AggregateRewritingContext.AggregateInfo;
 
@@ -72,13 +79,16 @@ public class CountLessOrEqualSortingGridEncoder extends AbstractAggregateEncoder
 	@Override
 	protected List<BasicRule> encodeAggregateResult(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx) {
 		String aggregateId = aggregateToEncode.getId();
+		AggregateLiteral lit = aggregateToEncode.getLiteral();
 		ST encodingTemplate = new ST(CNT_LE_ENCODING);
 		encodingTemplate.add("aggregate_result", aggregateToEncode.getOutputAtom().getPredicate().getName());
 		encodingTemplate.add("aggregate_id", aggregateId);
 		encodingTemplate.add("enumeration", aggregateId + "_enum");
 		String resultEncodingAsp = encodingTemplate.render();
 		InputProgram resultEncoding = new EnumerationRewriting().apply(parser.parse(resultEncodingAsp));
-		return resultEncoding.getRules();
+		BasicAtom sortingNetworkBound = new BasicAtom(Predicate.getInstance(aggregateId + "_sorting_network_bound", 1), lit.getAtom().getLowerBoundTerm());
+		BasicRule sortingNetworkBoundRule = new BasicRule(new NormalHead(sortingNetworkBound), new ArrayList<>(ctx.getDependencies(aggregateId)));
+		return ListUtils.union(resultEncoding.getRules(), Collections.singletonList(sortingNetworkBoundRule));
 	}
 
 	@Override
