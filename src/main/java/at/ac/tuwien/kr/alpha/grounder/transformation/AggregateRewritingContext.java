@@ -1,37 +1,54 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import org.stringtemplate.v4.ST;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 
 public class AggregateRewritingContext {
+
+	private static final ST AGGREGATE_RESULT_TEMPLATE = new ST("<id>_result");
 
 	private int idCounter;
 	private Map<AggregateLiteral, String> aggregateIds = new HashMap<>();
 	private Map<AggregateLiteral, BasicAtom> aggregateOutputAtoms = new HashMap<>();
 	private Map<AggregateFunctionSymbol, Set<AggregateLiteral>> aggregateFunctionsToRewrite = new HashMap<>();
 
+	public AggregateRewritingContext() {
+	}
+
+	public AggregateRewritingContext(AggregateRewritingContext ctx) {
+		this.idCounter = ctx.idCounter;
+		this.aggregateIds = new HashMap<>(ctx.aggregateIds);
+		this.aggregateOutputAtoms = new HashMap<>(ctx.aggregateOutputAtoms);
+		this.aggregateFunctionsToRewrite = new HashMap<>();
+		for (Map.Entry<AggregateFunctionSymbol, Set<AggregateLiteral>> entry : ctx.aggregateFunctionsToRewrite.entrySet()) {
+			this.aggregateFunctionsToRewrite.put(entry.getKey(), new HashSet<>(entry.getValue()));
+		}
+	}
+
 	public boolean registerRule(BasicRule rule) {
 		for (Literal lit : rule.getBody()) {
 			if (lit instanceof AggregateLiteral) {
-				this.registerAggregateLiteral((AggregateLiteral) lit, rule);
+				this.registerAggregateLiteral((AggregateLiteral) lit);
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public void registerAggregateLiteral(AggregateLiteral lit, BasicRule source) {
+	public void registerAggregateLiteral(AggregateLiteral lit) {
 		if (this.aggregateIds.containsKey(lit)) {
 			return;
 		}
@@ -44,7 +61,8 @@ public class AggregateRewritingContext {
 	}
 
 	private BasicAtom buildAggregateOutputAtom(String aggregateId, AggregateAtom atom) {
-		return new BasicAtom(AggregateRewriting.AGGREGATE_RESULT, ConstantTerm.getSymbolicInstance(aggregateId), atom.getLowerBoundTerm());
+		String outputPredicateName = new ST(AGGREGATE_RESULT_TEMPLATE).add("id", aggregateId).render();
+		return new BasicAtom(Predicate.getInstance(outputPredicateName, 1), atom.getLowerBoundTerm());
 	}
 
 	public String getAggregateId(AggregateLiteral lit) {

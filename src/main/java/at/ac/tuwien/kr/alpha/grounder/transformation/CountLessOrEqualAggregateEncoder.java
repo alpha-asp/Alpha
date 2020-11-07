@@ -4,16 +4,17 @@ import java.util.List;
 
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 
-public class CountAggregateEncoder extends AbstractAggregateEncoder {
+public class CountLessOrEqualAggregateEncoder extends AbstractAggregateEncoder {
 
-	public CountAggregateEncoder() {
-		super(AggregateFunctionSymbol.COUNT);
+	protected CountLessOrEqualAggregateEncoder(AggregateFunctionSymbol aggregateFunctionToEncode) {
+		super(aggregateFunctionToEncode);
 	}
 
 	@Override
-	protected List<BasicRule> encodeAggregateResult(String aggregateId) {
+	protected List<BasicRule> encodeAggregateResult(AggregateLiteral lit, AggregateRewritingContext ctx) {
 		// TODO Auto-generated method stub
 		return null;
 	}

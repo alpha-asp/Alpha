@@ -24,15 +24,21 @@ public abstract class AbstractAggregateEncoder {
 		Set<AggregateLiteral> literalsToEncode = ctx.getAggregateFunctionsToRewrite().get(this.aggregateFunctionToEncode);
 		List<BasicRule> aggregateEncodingRules = new ArrayList<>();
 		for (AggregateLiteral literalToEncode : literalsToEncode) {
-			aggregateEncodingRules.addAll(encodeAggregateResult(ctx.getAggregateId(literalToEncode)));
-			for (AggregateElement elementToEncode : literalToEncode.getAtom().getAggregateElements()) {
-				aggregateEncodingRules.add(encodeAggregateElement(ctx.getAggregateId(literalToEncode), elementToEncode));
-			}
+			aggregateEncodingRules.addAll(encodeAggregateLiteral(literalToEncode, ctx));
 		}
 		return aggregateEncodingRules;
 	}
 
-	protected abstract List<BasicRule> encodeAggregateResult(String aggregateId);
+	public List<BasicRule> encodeAggregateLiteral(AggregateLiteral literalToEncode, AggregateRewritingContext ctx) {
+		List<BasicRule> literalEncodingRules = new ArrayList<>();
+		literalEncodingRules.addAll(encodeAggregateResult(literalToEncode, ctx));
+		for (AggregateElement elementToEncode : literalToEncode.getAtom().getAggregateElements()) {
+			literalEncodingRules.add(encodeAggregateElement(ctx.getAggregateId(literalToEncode), elementToEncode));
+		}
+		return literalEncodingRules;
+	}
+
+	protected abstract List<BasicRule> encodeAggregateResult(AggregateLiteral lit, AggregateRewritingContext ctx);
 
 	protected abstract BasicRule encodeAggregateElement(String aggregateId, AggregateElement element);
 
