@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.stringtemplate.v4.ST;
 
 import java.util.Collections;
@@ -8,6 +9,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
@@ -23,7 +25,7 @@ public final class AggregateRewritingContext {
 	private int idCounter;
 	private Map<String, AggregateInfo> aggregatesById = new HashMap<>();
 	private Map<String, Set<Literal>> dependenciesById = new HashMap<>();
-	private Map<AggregateFunctionSymbol, Set<String>> aggregateFunctionsToRewrite = new HashMap<>();
+	private Map<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<String>> aggregateFunctionsToRewrite = new HashMap<>();
 	// Since theoretically an aggregate literal could occur in several rules in different context,
 	// we need to keep track of the rules aggregate literals occur in.
 	private Map<BasicRule, Map<AggregateLiteral, String>> rulesWithAggregates = new HashMap<>();
@@ -39,7 +41,7 @@ public final class AggregateRewritingContext {
 			this.dependenciesById.put(entry.getKey(), new HashSet<>(entry.getValue()));
 		}
 		this.aggregateFunctionsToRewrite = new HashMap<>();
-		for (Map.Entry<AggregateFunctionSymbol, Set<String>> entry : ctx.aggregateFunctionsToRewrite.entrySet()) {
+		for (Map.Entry<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<String>> entry : ctx.aggregateFunctionsToRewrite.entrySet()) {
 			this.aggregateFunctionsToRewrite.put(entry.getKey(), new HashSet<>(entry.getValue()));
 		}
 		for (Map.Entry<BasicRule, Map<AggregateLiteral, String>> entry : ctx.rulesWithAggregates.entrySet()) {
@@ -97,8 +99,8 @@ public final class AggregateRewritingContext {
 		String id = atom.getAggregatefunction().toString().toLowerCase() + "_" + (++this.idCounter);
 		AggregateInfo info = new AggregateInfo(id, lit, this.buildAggregateOutputAtom(id, atom));
 		this.aggregatesById.put(id, info);
-		this.aggregateFunctionsToRewrite.putIfAbsent(atom.getAggregatefunction(), new HashSet<>());
-		this.aggregateFunctionsToRewrite.get(atom.getAggregatefunction()).add(id);
+		this.aggregateFunctionsToRewrite.putIfAbsent(new ImmutablePair<>(atom.getAggregatefunction(), atom.getLowerBoundOperator()), new HashSet<>());
+		this.aggregateFunctionsToRewrite.get(new ImmutablePair<>(atom.getAggregatefunction(), atom.getLowerBoundOperator())).add(id);
 		return id;
 	}
 
@@ -127,7 +129,7 @@ public final class AggregateRewritingContext {
 		return this.idCounter;
 	}
 
-	public Map<AggregateFunctionSymbol, Set<String>> getAggregateFunctionsToRewrite() {
+	public Map<ImmutablePair<AggregateFunctionSymbol, ComparisonOperator>, Set<String>> getAggregateFunctionsToRewrite() {
 		return Collections.unmodifiableMap(this.aggregateFunctionsToRewrite);
 	}
 

@@ -11,10 +11,13 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.AggregateRewritingContext.AggregateInfo;
 
@@ -23,7 +26,6 @@ public class CountLessOrEqualSortingGridEncoder extends AbstractAggregateEncoder
 	//@formatter:off
 	private static final String PHI = "N = (I - 1) / S - ((I - 1) / S / B) * B, S = 2 ** (P - L), B = 2 ** L";
 	private static final ST CNT_LE_ENCODING = new ST(
-			// FIXME we need to get the body for sorting_network_bound rule from somewhere! (do via context, ... dependencies??)
 			"#enumeration_predicate_is <enumeration>." +
 			// Assign indices to element tuples
 			"<aggregate_id>_sorting_network_input_number(I) :- <aggregate_id>_sorting_network_input(X), <enumeration>(<aggregate_id>, X, I)." +
@@ -93,8 +95,10 @@ public class CountLessOrEqualSortingGridEncoder extends AbstractAggregateEncoder
 
 	@Override
 	protected BasicRule encodeAggregateElement(String aggregateId, AggregateElement element) {
-		// TODO Auto-generated method stub
-		return null;
+		Predicate headPredicate = Predicate.getInstance(aggregateId + "_sorting_network_input", 1);
+		FunctionTerm elementTuple = FunctionTerm.getInstance("tuple", element.getElementTerms()); // TODO make these symbols available via method calls
+		Atom headAtom = new BasicAtom(headPredicate, ConstantTerm.getSymbolicInstance(aggregateId), elementTuple);
+		return new BasicRule(new NormalHead(headAtom), element.getElementLiterals());
 	}
 
 }

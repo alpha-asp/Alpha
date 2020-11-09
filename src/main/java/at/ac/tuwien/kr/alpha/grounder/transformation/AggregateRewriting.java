@@ -1,30 +1,19 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.Terms;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
-import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives.DIRECTIVE;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.AggregateRewritingContext.AggregateInfo;
 
@@ -86,6 +75,9 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	// TODO add a switch to control whether internal predicates should be internalized (debugging!)
 	private final AggregateRewritingConfig config;
 
+	private final AbstractAggregateEncoder countEqualsEncoder = new CountEqualsAggregateEncoder();
+	private final AbstractAggregateEncoder countLessOrEqualSortingGridEncoder = new CountLessOrEqualSortingGridEncoder();
+
 	public AggregateRewriting(AggregateRewritingConfig config) {
 		this.config = config;
 	}
@@ -113,153 +105,150 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 			}
 		}
 		outputRules.addAll(rewriteRulesWithAggregates(ctx));
-		List<BasicRule> aggregateEncodingRules = new ArrayList<>();
-		for (AggregateFunctionSymbol func : ctx.getAggregateFunctionsToRewrite().keySet()) {
-			aggregateEncodingRules.addAll(encodeAggregateFunction(func, ctx.getAggregateFunctionsToRewrite().get(func), ctx));
+		for (ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> func : ctx.getAggregateFunctionsToRewrite().keySet()) {
+			// aggregateEncodingRules.addAll(encodeAggregateFunction(func, ctx.getAggregateFunctionsToRewrite().get(func), ctx));
+			AbstractAggregateEncoder encoder = getEncoderForAggregateFunction(func.left, func.right);
+			outputRules.addAll(encoder.encodeAggregateLiterals(ctx)); // TODO internalize aggregate encoding predicates (do in encoders!)
 		}
-		InlineDirectives aggregateEncodingDirectives = new InlineDirectives();
-		aggregateEncodingDirectives.addDirective(DIRECTIVE.enum_predicate_is, ELEMENT_TUPLE_ORDINAL.getName());
-		InputProgram resultProgram = InputProgram.builder()
-				.addFacts(inputProgram.getFacts())
-				.addFacts(aggregateFacts)
-				.addRules(outputRules)
-				.addInlineDirectives(inputProgram.getInlineDirectives())
-				.addRules(aggregateEncodingRules)
-				.addInlineDirectives(aggregateEncodingDirectives)
-				.build();
-		// FIXME add these transforms to general aggregate compilation
-		CardinalityNormalization countRewriting = new CardinalityNormalization();
-		SumNormalization sumRewriting = new SumNormalization();
-		return countRewriting.andThen(sumRewriting).apply(resultProgram);
+		return new InputProgram(outputRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
 	}
 
-	private List<BasicRule> encodeAggregateFunction(AggregateFunctionSymbol func, Set<AggregateLiteral> literals, AggregateRewritingContext ctx) {
-		switch (func) {
+	private AbstractAggregateEncoder getEncoderForAggregateFunction(AggregateFunctionSymbol function, ComparisonOperator operator) {
+		switch (function) {
 			case COUNT:
-				return encodeCountAggregate(literals, ctx);
-			case SUM:
-				return encodeSumAggregate(literals, ctx);
-			case MIN:
-				return encodeMinAggregate(literals, ctx);
-			case MAX:
-				return encodeMaxAggregate(literals, ctx);
+				if (operator == ComparisonOperator.EQ) {
+					return countEqualsEncoder;
+				} else if (operator == ComparisonOperator.LE) {
+					return countLessOrEqualSortingGridEncoder;
+				} else {
+					throw new UnsupportedOperationException("No fitting encoder for aggregate function " + function + "and operator " + operator + "!");
+				}
 			default:
-				throw new UnsupportedOperationException();
+				// TODO encoders for SUM, MIN, MAX
+				throw new UnsupportedOperationException("Not yet implemented!");
 		}
 	}
-
-	private List<BasicRule> encodeCountAggregate(Set<AggregateLiteral> literals, AggregateRewritingContext ctx) {
-		List<BasicRule> retVal = new ArrayList<>();
-		for (AggregateLiteral countAggregate : literals) {
-			for (AggregateElement element : countAggregate.getAtom().getAggregateElements()) {
-				retVal.add(buildCountElementTupleRule(ctx.getAggregateId(countAggregate), element));
-			}
-			retVal.add(buildCntLeqRule(countAggregate, ctx.getAggregateId(countAggregate)));
-		}
-		InputProgram candidateRulePrg = parser.parse(CNT_CANDIDATE_RULE);
-		retVal.add(candidateRulePrg.getRules().get(0));
-		retVal.add(buildEqualityRule());
-		return retVal;
-	}
-
-	private List<BasicRule> encodeSumAggregate(Set<AggregateLiteral> literals, AggregateRewritingContext ctx) {
-		List<BasicRule> retVal = new ArrayList<>();
-		for (AggregateLiteral sumAggregate : literals) {
-			for (AggregateElement element : sumAggregate.getAtom().getAggregateElements()) {
-				retVal.add(buildSumElementTupleRule(ctx.getAggregateId(sumAggregate), element));
-			}
-			retVal.add(buildSumLeqRule(sumAggregate, ctx.getAggregateId(sumAggregate)));
-		}
-		InputProgram candidateGenerationPrg = parser.parse(SUM_CANDIDATE_PROG);
-		retVal.addAll(candidateGenerationPrg.getRules());
-		retVal.add(buildEqualityRule());
-		return retVal;
-	}
-
-	private List<BasicRule> encodeMinAggregate(Set<AggregateLiteral> literals, AggregateRewritingContext ctx) {
-		List<BasicRule> retVal = new ArrayList<>();
-		for (AggregateLiteral minAggregate : literals) {
-			for (AggregateElement element : minAggregate.getAtom().getAggregateElements()) {
-				retVal.add(buildOrderedElementTupleRule(ctx.getAggregateId(minAggregate), element));
-			}
-			retVal.add(buildMinAggregateResultRule(ctx.getAggregateId(minAggregate)));
-		}
-		InputProgram minElementSearchPrg = parser.parse(MIN_ELEMENT_SEARCH_PROG);
-		retVal.addAll(minElementSearchPrg.getRules());
-		return retVal;
-	}
-
-	private List<BasicRule> encodeMaxAggregate(Set<AggregateLiteral> literals, AggregateRewritingContext ctx) {
-		List<BasicRule> retVal = new ArrayList<>();
-		for (AggregateLiteral maxAggregate : literals) {
-			for (AggregateElement element : maxAggregate.getAtom().getAggregateElements()) {
-				retVal.add(buildOrderedElementTupleRule(ctx.getAggregateId(maxAggregate), element));
-			}
-			retVal.add(buildMaxAggregateResultRule(ctx.getAggregateId(maxAggregate)));
-		}
-		InputProgram maxElementSearchPrg = parser.parse(MAX_ELEMENT_SEARCH_PROG);
-		retVal.addAll(maxElementSearchPrg.getRules());
-		return retVal;
-	}
-
-	private BasicRule buildEqualityRule() {
-		VariableTerm aggregateIdVar = VariableTerm.getInstance("AGGREGATE_ID");
-		VariableTerm valueVar = VariableTerm.getInstance("VAL");
-		VariableTerm nextValVar = VariableTerm.getInstance("NEXTVAL");
-		Atom headAtom = new BasicAtom(AGGREGATE_RESULT, aggregateIdVar, valueVar);
-		Literal leqValue = new BasicLiteral(new BasicAtom(LEQ_AGGREGATE, aggregateIdVar, valueVar), true);
-		Literal notLeqNextval = new BasicLiteral(new BasicAtom(LEQ_AGGREGATE, aggregateIdVar, nextValVar), false);
-		Literal bindNextval = Terms.incrementTerm(valueVar, nextValVar);
-		Literal bindAggregateId = new BasicLiteral(new BasicAtom(AGGREGATE, aggregateIdVar), true);
-		return BasicRule.getInstance(new NormalHead(headAtom), leqValue, notLeqNextval, bindNextval, bindAggregateId);
-	}
-
-	private BasicRule buildCountElementTupleRule(String aggregateId, AggregateElement element) {
-		FunctionTerm elementTuple = FunctionTerm.getInstance(ELEMENT_TUPLE_FN_SYM, element.getElementTerms());
-		Atom headAtom = new BasicAtom(CNT_ELEMENT_TUPLE, ConstantTerm.getSymbolicInstance(aggregateId), elementTuple);
-		return new BasicRule(new NormalHead(headAtom), element.getElementLiterals());
-	}
-
-	private BasicRule buildSumElementTupleRule(String aggregateId, AggregateElement element) {
-		FunctionTerm elementTuple = FunctionTerm.getInstance(ELEMENT_TUPLE_FN_SYM, element.getElementTerms());
-		Term sumTerm = element.getElementTerms().get(0);
-		Atom headAtom = new BasicAtom(SUM_ELEMENT_TUPLE, ConstantTerm.getSymbolicInstance(aggregateId), elementTuple, sumTerm);
-		return new BasicRule(new NormalHead(headAtom), element.getElementLiterals());
-	}
-
-	private BasicRule buildOrderedElementTupleRule(String aggregateId, AggregateElement element) {
-		FunctionTerm elementTuple = FunctionTerm.getInstance(ELEMENT_TUPLE_FN_SYM, element.getElementTerms());
-		Atom headAtom = new BasicAtom(MINMAX_ELEMENT_TUPLE, ConstantTerm.getSymbolicInstance(aggregateId), elementTuple);
-		return new BasicRule(new NormalHead(headAtom), element.getElementLiterals());
-	}
-
-	private BasicRule buildCntLeqRule(AggregateLiteral countEq, String countEqId) {
-		VariableTerm cnt = VariableTerm.getInstance("CNT");
-		Atom headAtom = new BasicAtom(LEQ_AGGREGATE, ConstantTerm.getSymbolicInstance(countEqId), cnt);
-		AggregateAtom sourceAggregate = countEq.getAtom();
-		Literal valueLeqCnt = new AggregateLiteral(
-				new AggregateAtom(ComparisonOperator.LE, cnt, null, null, AggregateFunctionSymbol.COUNT, sourceAggregate.getAggregateElements()), true);
-		Literal valueIsCandidate = new BasicLiteral(new BasicAtom(CNT_CANDIDATE, ConstantTerm.getSymbolicInstance(countEqId), cnt), true);
-		return BasicRule.getInstance(new NormalHead(headAtom), valueLeqCnt, valueIsCandidate);
-	}
-
-	private BasicRule buildSumLeqRule(AggregateLiteral sumEq, String sumEqId) {
-		VariableTerm sum = VariableTerm.getInstance("SUM");
-		Atom headAtom = new BasicAtom(LEQ_AGGREGATE, ConstantTerm.getSymbolicInstance(sumEqId), sum);
-		AggregateAtom sourceAggregate = sumEq.getAtom();
-		Literal valueLeqSum = new AggregateLiteral(
-				new AggregateAtom(ComparisonOperator.LE, sum, AggregateFunctionSymbol.SUM, sourceAggregate.getAggregateElements()), true);
-		Literal valueIsCandidate = new BasicLiteral(new BasicAtom(SUM_CANDIDATE, ConstantTerm.getSymbolicInstance(sumEqId), sum), true);
-		return BasicRule.getInstance(new NormalHead(headAtom), valueLeqSum, valueIsCandidate);
-	}
-
-	private BasicRule buildMinAggregateResultRule(String aggregateId) {
-		return parser.parse(String.format("aggregate_result(%s, M) :- min_element_tuple(%s, tuple(M)).", aggregateId, aggregateId)).getRules().get(0);
-	}
-
-	private BasicRule buildMaxAggregateResultRule(String aggregateId) {
-		return parser.parse(String.format("aggregate_result(%s, M) :- max_element_tuple(%s, tuple(M)).", aggregateId, aggregateId)).getRules().get(0);
-	}
+	/*
+	 * private List<BasicRule> encodeCountAggregate(Set<AggregateLiteral> literals, AggregateRewritingContext ctx) {
+	 * List<BasicRule> retVal = new ArrayList<>();
+	 * for (AggregateLiteral countAggregate : literals) {
+	 * for (AggregateElement element : countAggregate.getAtom().getAggregateElements()) {
+	 * retVal.add(buildCountElementTupleRule(ctx.getAggregateId(countAggregate), element));
+	 * }
+	 * retVal.add(buildCntLeqRule(countAggregate, ctx.getAggregateId(countAggregate)));
+	 * }
+	 * InputProgram candidateRulePrg = parser.parse(CNT_CANDIDATE_RULE);
+	 * retVal.add(candidateRulePrg.getRules().get(0));
+	 * retVal.add(buildEqualityRule());
+	 * return retVal;
+	 * }
+	 * 
+	 * private List<BasicRule> encodeSumAggregate(Set<AggregateLiteral> literals, AggregateRewritingContext ctx) {
+	 * List<BasicRule> retVal = new ArrayList<>();
+	 * for (AggregateLiteral sumAggregate : literals) {
+	 * for (AggregateElement element : sumAggregate.getAtom().getAggregateElements()) {
+	 * retVal.add(buildSumElementTupleRule(ctx.getAggregateId(sumAggregate), element));
+	 * }
+	 * retVal.add(buildSumLeqRule(sumAggregate, ctx.getAggregateId(sumAggregate)));
+	 * }
+	 * InputProgram candidateGenerationPrg = parser.parse(SUM_CANDIDATE_PROG);
+	 * retVal.addAll(candidateGenerationPrg.getRules());
+	 * retVal.add(buildEqualityRule());
+	 * return retVal;
+	 * }
+	 * 
+	 * private List<BasicRule> encodeMinAggregate(Set<AggregateLiteral> literals, AggregateRewritingContext ctx) {
+	 * List<BasicRule> retVal = new ArrayList<>();
+	 * for (AggregateLiteral minAggregate : literals) {
+	 * for (AggregateElement element : minAggregate.getAtom().getAggregateElements()) {
+	 * retVal.add(buildOrderedElementTupleRule(ctx.getAggregateId(minAggregate), element));
+	 * }
+	 * retVal.add(buildMinAggregateResultRule(ctx.getAggregateId(minAggregate)));
+	 * }
+	 * InputProgram minElementSearchPrg = parser.parse(MIN_ELEMENT_SEARCH_PROG);
+	 * retVal.addAll(minElementSearchPrg.getRules());
+	 * return retVal;
+	 * }
+	 * 
+	 * private List<BasicRule> encodeMaxAggregate(Set<AggregateLiteral> literals, AggregateRewritingContext ctx) {
+	 * List<BasicRule> retVal = new ArrayList<>();
+	 * for (AggregateLiteral maxAggregate : literals) {
+	 * for (AggregateElement element : maxAggregate.getAtom().getAggregateElements()) {
+	 * retVal.add(buildOrderedElementTupleRule(ctx.getAggregateId(maxAggregate), element));
+	 * }
+	 * retVal.add(buildMaxAggregateResultRule(ctx.getAggregateId(maxAggregate)));
+	 * }
+	 * InputProgram maxElementSearchPrg = parser.parse(MAX_ELEMENT_SEARCH_PROG);
+	 * retVal.addAll(maxElementSearchPrg.getRules());
+	 * return retVal;
+	 * }
+	 * 
+	 * private BasicRule buildEqualityRule() {
+	 * VariableTerm aggregateIdVar = VariableTerm.getInstance("AGGREGATE_ID");
+	 * VariableTerm valueVar = VariableTerm.getInstance("VAL");
+	 * VariableTerm nextValVar = VariableTerm.getInstance("NEXTVAL");
+	 * Atom headAtom = new BasicAtom(AGGREGATE_RESULT, aggregateIdVar, valueVar);
+	 * Literal leqValue = new BasicLiteral(new BasicAtom(LEQ_AGGREGATE, aggregateIdVar, valueVar), true);
+	 * Literal notLeqNextval = new BasicLiteral(new BasicAtom(LEQ_AGGREGATE, aggregateIdVar, nextValVar), false);
+	 * Literal bindNextval = Terms.incrementTerm(valueVar, nextValVar);
+	 * Literal bindAggregateId = new BasicLiteral(new BasicAtom(AGGREGATE, aggregateIdVar), true);
+	 * return BasicRule.getInstance(new NormalHead(headAtom), leqValue, notLeqNextval, bindNextval, bindAggregateId);
+	 * }
+	 * 
+	 * private BasicRule buildCountElementTupleRule(String aggregateId, AggregateElement element) {
+	 * FunctionTerm elementTuple = FunctionTerm.getInstance(ELEMENT_TUPLE_FN_SYM, element.getElementTerms());
+	 * Atom headAtom = new BasicAtom(CNT_ELEMENT_TUPLE, ConstantTerm.getSymbolicInstance(aggregateId), elementTuple);
+	 * return new BasicRule(new NormalHead(headAtom), element.getElementLiterals());
+	 * }
+	 * 
+	 * private BasicRule buildSumElementTupleRule(String aggregateId, AggregateElement element) {
+	 * FunctionTerm elementTuple = FunctionTerm.getInstance(ELEMENT_TUPLE_FN_SYM, element.getElementTerms());
+	 * Term sumTerm = element.getElementTerms().get(0);
+	 * Atom headAtom = new BasicAtom(SUM_ELEMENT_TUPLE, ConstantTerm.getSymbolicInstance(aggregateId), elementTuple,
+	 * sumTerm);
+	 * return new BasicRule(new NormalHead(headAtom), element.getElementLiterals());
+	 * }
+	 * 
+	 * private BasicRule buildOrderedElementTupleRule(String aggregateId, AggregateElement element) {
+	 * FunctionTerm elementTuple = FunctionTerm.getInstance(ELEMENT_TUPLE_FN_SYM, element.getElementTerms());
+	 * Atom headAtom = new BasicAtom(MINMAX_ELEMENT_TUPLE, ConstantTerm.getSymbolicInstance(aggregateId), elementTuple);
+	 * return new BasicRule(new NormalHead(headAtom), element.getElementLiterals());
+	 * }
+	 * 
+	 * private BasicRule buildCntLeqRule(AggregateLiteral countEq, String countEqId) {
+	 * VariableTerm cnt = VariableTerm.getInstance("CNT");
+	 * Atom headAtom = new BasicAtom(LEQ_AGGREGATE, ConstantTerm.getSymbolicInstance(countEqId), cnt);
+	 * AggregateAtom sourceAggregate = countEq.getAtom();
+	 * Literal valueLeqCnt = new AggregateLiteral(
+	 * new AggregateAtom(ComparisonOperator.LE, cnt, null, null, AggregateFunctionSymbol.COUNT,
+	 * sourceAggregate.getAggregateElements()), true);
+	 * Literal valueIsCandidate = new BasicLiteral(new BasicAtom(CNT_CANDIDATE, ConstantTerm.getSymbolicInstance(countEqId),
+	 * cnt), true);
+	 * return BasicRule.getInstance(new NormalHead(headAtom), valueLeqCnt, valueIsCandidate);
+	 * }
+	 * 
+	 * private BasicRule buildSumLeqRule(AggregateLiteral sumEq, String sumEqId) {
+	 * VariableTerm sum = VariableTerm.getInstance("SUM");
+	 * Atom headAtom = new BasicAtom(LEQ_AGGREGATE, ConstantTerm.getSymbolicInstance(sumEqId), sum);
+	 * AggregateAtom sourceAggregate = sumEq.getAtom();
+	 * Literal valueLeqSum = new AggregateLiteral(
+	 * new AggregateAtom(ComparisonOperator.LE, sum, AggregateFunctionSymbol.SUM, sourceAggregate.getAggregateElements()),
+	 * true);
+	 * Literal valueIsCandidate = new BasicLiteral(new BasicAtom(SUM_CANDIDATE, ConstantTerm.getSymbolicInstance(sumEqId),
+	 * sum), true);
+	 * return BasicRule.getInstance(new NormalHead(headAtom), valueLeqSum, valueIsCandidate);
+	 * }
+	 * 
+	 * private BasicRule buildMinAggregateResultRule(String aggregateId) {
+	 * return parser.parse(String.format("aggregate_result(%s, M) :- min_element_tuple(%s, tuple(M)).", aggregateId,
+	 * aggregateId)).getRules().get(0);
+	 * }
+	 * 
+	 * private BasicRule buildMaxAggregateResultRule(String aggregateId) {
+	 * return parser.parse(String.format("aggregate_result(%s, M) :- max_element_tuple(%s, tuple(M)).", aggregateId,
+	 * aggregateId)).getRules().get(0);
+	 * }
+	 */
 
 	// Transforms (restricted) aggregate literals of format "VAR OP #AGG_FN{...}" into literals of format
 	// "<result_predicate>(VAR)".
