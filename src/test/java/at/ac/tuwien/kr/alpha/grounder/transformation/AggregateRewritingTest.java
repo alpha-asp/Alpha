@@ -1,5 +1,19 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+
 public class AggregateRewritingTest {
 
 	//@formatter:off
@@ -9,9 +23,38 @@ public class AggregateRewritingTest {
 	private static final String CNT_MULTIPLE_AGGREGATES_ASP = 
 			"thing1(1..3). thing2(1..3)."
 			+ "cnt_things(X, Y) :- X = #count{N : thing1(N)}, Y = #count{K : thing2(K)}.";
-	//@formatter:on
 	
-	//FIXME
+	private static final String CNT_LE1_ASP = 
+			"thing(75..76)."
+			+ "candidate(2..4)."
+			+ "cnt_le(N) :- N <= #count{X : thing(X)}, candidate(N).";
+	//@formatter:on
+
+	@Test
+	public void countLeSimple() {
+		Alpha alpha = new Alpha();
+		alpha.getConfig().setEvaluateStratifiedPart(false);
+		InputProgram input = alpha.readProgramString(CNT_LE1_ASP);
+		NormalProgram normalized = alpha.normalizeProgram(input);
+		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
+		Assert.assertEquals(1, answerSets.size());
+		AnswerSet answerSet = answerSets.get(0);
+		Predicate thing = Predicate.getInstance("thing", 1);
+		Predicate candidate = Predicate.getInstance("candidate", 1);
+		Predicate cntLe = Predicate.getInstance("cnt_le", 1);
+
+		Assert.assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(75))));
+		Assert.assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(76))));
+
+		Assert.assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(2))));
+		Assert.assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(3))));
+		Assert.assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(4))));
+
+		Assert.assertTrue(answerSet.getPredicates().contains(cntLe));
+		Assert.assertTrue(answerSet.getPredicateInstances(cntLe).contains(new BasicAtom(cntLe, ConstantTerm.getInstance(2))));
+	}
+
+	// FIXME
 //	@Test
 //	public void countSimple() {
 //		Alpha alpha = new Alpha();
@@ -37,8 +80,8 @@ public class AggregateRewritingTest {
 //		Atom aggregateFact = new BasicAtom(Predicate.getInstance("aggregate", 1), ConstantTerm.getSymbolicInstance("count_1"));
 //		Assert.assertTrue(rewritten.getFacts().contains(aggregateFact));
 //	}
-	
-	//FIXME
+
+	// FIXME
 //	@Test
 //	public void countMultipleAggregates() {
 //		Alpha alpha = new Alpha();

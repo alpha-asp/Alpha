@@ -108,7 +108,7 @@ public final class AggregateRewritingContext {
 
 	private BasicAtom buildAggregateOutputAtom(String aggregateId, AggregateAtom atom) {
 		String outputPredicateName = new ST(AGGREGATE_RESULT_TEMPLATE).add("id", aggregateId).render();
-		return new BasicAtom(Predicate.getInstance(outputPredicateName, 1), atom.getLowerBoundTerm());
+		return new BasicAtom(Predicate.getInstance(outputPredicateName, 1, true), atom.getLowerBoundTerm());
 	}
 
 	public AggregateInfo getAggregateInfo(String aggregateId) {

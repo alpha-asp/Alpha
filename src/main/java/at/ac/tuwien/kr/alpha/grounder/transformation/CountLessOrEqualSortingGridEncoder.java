@@ -6,7 +6,6 @@ import org.stringtemplate.v4.ST;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
@@ -20,6 +19,7 @@ import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.AggregateRewritingContext.AggregateInfo;
 
@@ -51,7 +51,7 @@ public class CountLessOrEqualSortingGridEncoder extends AbstractAggregateEncoder
 			+ "$aggregate_id$_sorting_network_bound(K), $aggregate_id$_sorting_network_v(K,D), "
 			+ "$aggregate_id$_sorting_network_done(N,D), K<=N.\n" +
 			"$aggregate_result$(K) :- $aggregate_id$_sorting_network_bound(K), K<=0.\n" +
-			"$aggregate_id$_sorting_network_span_project(I) :- $aggregate_id$_sorting_network_span(_,I).\n" +
+			"$aggregate_id$_sorting_network_span_project(I) :- $aggregate_id$_sorting_network_span(I).\n" +
 			"$aggregate_id$_sorting_network_part(P) :- "
 			+ "$aggregate_id$_sorting_network_span_project(I), Im1=I-1, $aggregate_id$_sorting_network_log2(Im1,P1), P=P1+1.\n" +
 			"$aggregate_id$_sorting_network_lvl(1,1,1) :- $aggregate_id$_sorting_network_part(1).\n" +
@@ -82,7 +82,7 @@ public class CountLessOrEqualSortingGridEncoder extends AbstractAggregateEncoder
 	}
 
 	@Override
-	protected List<BasicRule> encodeAggregateResult(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx) {
+	protected InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx) {
 		String aggregateId = aggregateToEncode.getId();
 		AggregateLiteral lit = aggregateToEncode.getLiteral();
 		ST encodingTemplate = new ST(CNT_LE_ENCODING);
@@ -93,7 +93,8 @@ public class CountLessOrEqualSortingGridEncoder extends AbstractAggregateEncoder
 		InputProgram resultEncoding = new EnumerationRewriting().apply(parser.parse(resultEncodingAsp));
 		BasicAtom sortingNetworkBound = new BasicAtom(Predicate.getInstance(aggregateId + "_sorting_network_bound", 1), lit.getAtom().getLowerBoundTerm());
 		BasicRule sortingNetworkBoundRule = new BasicRule(new NormalHead(sortingNetworkBound), new ArrayList<>(ctx.getDependencies(aggregateId)));
-		return ListUtils.union(resultEncoding.getRules(), Collections.singletonList(sortingNetworkBoundRule));
+		return new InputProgram(ListUtils.union(resultEncoding.getRules(), Collections.singletonList(sortingNetworkBoundRule)), resultEncoding.getFacts(),
+				new InlineDirectives());
 	}
 
 	@Override

@@ -1,11 +1,9 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.SetUtils;
 import org.stringtemplate.v4.ST;
 
 import java.util.Collections;
-import java.util.List;
 
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
@@ -28,7 +26,7 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.AggregateRewritingContext.A
 public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 
 	private static final String ELEMENT_TUPLE_FUNCTION_SYMBOL = "tuple";
-	
+
 	//@formatter:off
 	private static final ST CNT_EQ_LITERAL_ENCODING = Util.aspStringTemplate(
 				"#enumeration_predicate_is $enumeration$."
@@ -44,7 +42,7 @@ public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 	}
 
 	@Override
-	protected List<BasicRule> encodeAggregateResult(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx) {
+	protected InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx) {
 		String aggregateId = aggregateToEncode.getId();
 		AggregateLiteral lit = aggregateToEncode.getLiteral();
 		AggregateAtom sourceAtom = lit.getAtom();
@@ -62,7 +60,7 @@ public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 		// The encoder won't encode AggregateElements of the newly created literal separately but alias them
 		// with the element encoding predicates for the original literal.
 		AbstractAggregateEncoder candidateLeqEncoder = new CountLessOrEqualDelegateAggregateEncoder(aggregateId);
-		List<BasicRule> candidateLeqEncoding = candidateLeqEncoder
+		InputProgram candidateLeqEncoding = candidateLeqEncoder
 				.encodeAggregateLiteral(candidateLeqCountCtx.getAggregateInfo(candidateLeqCntId), candidateLeqCountCtx);
 		// Create a fresh template to make sure attributes are empty at each call to encodeAggregateResult.
 		ST encodingTemplate = new ST(CNT_EQ_LITERAL_ENCODING);
@@ -77,7 +75,7 @@ public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 		encodingTemplate.add("aggregate_id", aggregateId);
 		String resultEncodingAsp = encodingTemplate.render();
 		InputProgram resultEncoding = new EnumerationRewriting().apply(parser.parse(resultEncodingAsp));
-		return ListUtils.union(resultEncoding.getRules(), candidateLeqEncoding);
+		return InputProgram.builder(resultEncoding).accumulate(candidateLeqEncoding).build();
 	}
 
 	@Override

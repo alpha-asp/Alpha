@@ -17,9 +17,6 @@ import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.AggregateRewritingContext.AggregateInfo;
 
-// FIXME do proper internalizing of predicates
-// Internalize before stitching programs together (otherwise clashes!)
-// (maybe internalize on getInstance? in that case don't forget stuff that's parsed internally!)
 public class AggregateRewriting extends ProgramTransformation<InputProgram, InputProgram> {
 
 	public static final Predicate AGGREGATE_RESULT = Predicate.getInstance("aggregate_result", 2);
@@ -72,7 +69,6 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 
 	private final ProgramParser parser = new ProgramParser();
 
-	// TODO add a switch to control whether internal predicates should be internalized (debugging!)
 	private final AggregateRewritingConfig config;
 
 	private final AbstractAggregateEncoder countEqualsEncoder = new CountEqualsAggregateEncoder();
@@ -105,13 +101,14 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 			}
 		}
 		outputRules.addAll(rewriteRulesWithAggregates(ctx));
+		InputProgram.Builder resultBuilder = InputProgram.builder().addRules(outputRules).addFacts(inputProgram.getFacts())
+				.addInlineDirectives(inputProgram.getInlineDirectives());
 		for (ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> func : ctx.getAggregateFunctionsToRewrite().keySet()) {
 			// aggregateEncodingRules.addAll(encodeAggregateFunction(func, ctx.getAggregateFunctionsToRewrite().get(func), ctx));
 			AbstractAggregateEncoder encoder = getEncoderForAggregateFunction(func.left, func.right);
-			outputRules.addAll(encoder.encodeAggregateLiterals(ctx, ctx.getAggregateFunctionsToRewrite().get(func))); // TODO internalize aggregate encoding
-																														// predicates (do in abstract encoder!)
+			resultBuilder.accumulate(encoder.encodeAggregateLiterals(ctx, ctx.getAggregateFunctionsToRewrite().get(func)));
 		}
-		return new InputProgram(outputRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
+		return resultBuilder.build();
 	}
 
 	private AbstractAggregateEncoder getEncoderForAggregateFunction(AggregateFunctionSymbol function, ComparisonOperator operator) {

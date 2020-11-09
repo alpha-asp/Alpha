@@ -1,5 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import org.apache.commons.collections4.ListUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -8,7 +10,9 @@ import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.transformation.AggregateRewritingContext.AggregateInfo;
 
 public abstract class AbstractAggregateEncoder {
@@ -21,18 +25,15 @@ public abstract class AbstractAggregateEncoder {
 		this.acceptedOperators = acceptedOperators;
 	}
 
-	// TODO rule builder and/or StringTemplate? leaning towards StringTemplate
-	// TODO prefix ALL predicate names on which an aggregate result depends including the result itself with aggregate
-	// id to ensure stratifiability of individual aggregate literal encodings
-	public List<BasicRule> encodeAggregateLiterals(AggregateRewritingContext ctx, Set<String> aggregateIdsToEncode) {
-		List<BasicRule> aggregateEncodingRules = new ArrayList<>();
+	public InputProgram encodeAggregateLiterals(AggregateRewritingContext ctx, Set<String> aggregateIdsToEncode) {
+		InputProgram.Builder programBuilder = InputProgram.builder();
 		for (String aggregateId : aggregateIdsToEncode) {
-			aggregateEncodingRules.addAll(encodeAggregateLiteral(ctx.getAggregateInfo(aggregateId), ctx));
+			programBuilder.accumulate(encodeAggregateLiteral(ctx.getAggregateInfo(aggregateId), ctx));
 		}
-		return aggregateEncodingRules;
+		return programBuilder.build();
 	}
 
-	public List<BasicRule> encodeAggregateLiteral(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx) {
+	public InputProgram encodeAggregateLiteral(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx) {
 		AggregateLiteral literalToEncode = aggregateToEncode.getLiteral();
 		if (literalToEncode.getAtom().getAggregatefunction() != this.aggregateFunctionToEncode) {
 			throw new IllegalArgumentException(
@@ -42,20 +43,19 @@ public abstract class AbstractAggregateEncoder {
 			throw new IllegalArgumentException("Encoder " + this.getClass().getSimpleName() + " cannot encode aggregate function "
 					+ literalToEncode.getAtom().getAggregatefunction() + " with operator " + literalToEncode.getAtom().getLowerBoundOperator());
 		}
-		List<BasicRule> literalEncodingRules = new ArrayList<>();
-		List<BasicRule> resultEncoding = encodeAggregateResult(aggregateToEncode, ctx);
-		for (BasicRule rule : resultEncoding) {
-			literalEncodingRules.add(PredicateInternalizer.makePrefixedPredicatesInternal(rule, aggregateToEncode.getId()));
-		}
+		String aggregateId = aggregateToEncode.getId();
+		InputProgram literalEncoding = PredicateInternalizer.makePrefixedPredicatesInternal(encodeAggregateResult(aggregateToEncode, ctx), aggregateId);
+		// InputProgram literalEncoding = encodeAggregateResult(aggregateToEncode, ctx);
+		List<BasicRule> elementEncodingRules = new ArrayList<>();
 		for (AggregateElement elementToEncode : literalToEncode.getAtom().getAggregateElements()) {
-			literalEncodingRules.add(PredicateInternalizer.makePrefixedPredicatesInternal(encodeAggregateElement(aggregateToEncode.getId(), elementToEncode),
-					aggregateToEncode.getId()));
+			elementEncodingRules.add(PredicateInternalizer.makePrefixedPredicatesInternal(encodeAggregateElement(aggregateId, elementToEncode),
+					aggregateId));
+//			elementEncodingRules.add(encodeAggregateElement(aggregateId, elementToEncode));
 		}
-
-		return literalEncodingRules;
+		return new InputProgram(ListUtils.union(literalEncoding.getRules(), elementEncodingRules), literalEncoding.getFacts(), new InlineDirectives());
 	}
 
-	protected abstract List<BasicRule> encodeAggregateResult(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx);
+	protected abstract InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx);
 
 	protected abstract BasicRule encodeAggregateElement(String aggregateId, AggregateElement element);
 
