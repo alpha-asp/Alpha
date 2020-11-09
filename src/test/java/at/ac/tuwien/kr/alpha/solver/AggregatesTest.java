@@ -25,6 +25,10 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import org.junit.Test;
+
+import java.io.IOException;
+
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
@@ -35,9 +39,6 @@ import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.transformation.CardinalityNormalization;
 import at.ac.tuwien.kr.alpha.grounder.transformation.SumNormalization;
-import org.junit.Test;
-
-import java.io.IOException;
 
 /**
  * Tests if correct answer sets for programs containing aggregates are computed.
@@ -48,10 +49,17 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	private static final String LS = System.lineSeparator();
 	
 	@Test
-	public void testAggregate_Count_Ground_Positive() throws IOException {
+	public void testAggregate_CountLe_Ground_Positive() throws IOException {
 		String program = "a." + LS
 				+ "b :- 1 <= #count { 1 : a }.";
 		assertAnswerSet(program, "a,b");
+	}
+	
+	@Test
+	public void testAggregate_CountEq_SingleElement_Positive() throws IOException {
+		String program = "thing(1..3)."
+				+ "cnt_things(N) :- N = #count{X : thing(X)}.";
+		assertAnswerSet(program, "thing(1), thing(2), thing(3), cnt_things(3)");
 	}
 	
 	@Test

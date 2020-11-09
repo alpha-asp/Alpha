@@ -85,6 +85,8 @@ public final class AggregateRewritingContext {
 		}
 		// Register the rule itself, along with aggregates occurring within it
 		this.rulesWithAggregates.put(rule, idsByLiteral);
+		// Register the dependencies of the respective aggregate literals
+		this.dependenciesById.putAll(dependeciesByAggregateId);
 		return true;
 	}
 

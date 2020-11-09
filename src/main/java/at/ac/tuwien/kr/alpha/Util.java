@@ -27,6 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha;
 
+import org.stringtemplate.v4.ST;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
@@ -118,4 +120,13 @@ public class Util {
 		return oldSize + (oldSize >> 1);
 	}
 	
+	/**
+	 * Creates a stringtemplate (see {@link ST}) intended for rendering to ASP code from a given string.
+	 * The template uses "$" as attribute delimiter.
+	 * @param template the template string
+	 * @return an ST that is initialized with the given template string
+	 */
+	public static ST aspStringTemplate(String template) {
+		return new ST(template, '$', '$');
+	}
 }

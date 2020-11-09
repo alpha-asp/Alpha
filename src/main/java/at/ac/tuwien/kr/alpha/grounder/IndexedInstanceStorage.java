@@ -116,7 +116,7 @@ public class IndexedInstanceStorage {
 	public void addInstance(Instance instance) {
 		if (instance.terms.size() != predicate.getArity()) {
 			throw new RuntimeException("Instance length does not match arity of IndexedInstanceStorage: " +
-				"instance size: " + instance.terms.size()
+				" instance size: " + instance.terms.size()
 				+ "IndexedInstanceStorage: " + this);
 		}
 		instances.add(instance);

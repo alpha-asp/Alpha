@@ -1,11 +1,13 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.collections4.SetUtils;
 import org.stringtemplate.v4.ST;
 
 import java.util.Collections;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
@@ -26,19 +28,19 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.AggregateRewritingContext.A
 public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 
 	private static final String ELEMENT_TUPLE_FUNCTION_SYMBOL = "tuple";
-
+	
 	//@formatter:off
-	private static final ST CNT_EQ_LITERAL_ENCODING = new ST(
-				"#enumeration_predicate_is <enumeration>."
-				+ "<aggregate_result>(VAL) :- <leq>(VAL), not <leq>(NEXTVAL), NEXTVAL = VAL + 1."
-				+ "<leq>(<value_var>) :- <value_leq_cnt_lit>, <cnt_candidate_lit>."
-				+ "<cnt_candidate>(ORDINAL) :- <element_tuple>(TUPLE), <enumeration>(<aggregate_id>, TUPLE, ORDINAL).");
+	private static final ST CNT_EQ_LITERAL_ENCODING = Util.aspStringTemplate(
+				"#enumeration_predicate_is $enumeration$."
+				+ "$aggregate_result$(VAL) :- $leq$(VAL), not $leq$(NEXTVAL), NEXTVAL = VAL + 1."
+				+ "$leq$($value_var$) :- $value_leq_cnt_lit$, $cnt_candidate_lit$."
+				+ "$cnt_candidate$(ORDINAL) :- $element_tuple$(TUPLE), $enumeration$($aggregate_id$, TUPLE, ORDINAL).");
 	//@formatter:on
 
 	private final ProgramParser parser = new ProgramParser();
 
 	public CountEqualsAggregateEncoder() {
-		super(AggregateFunctionSymbol.COUNT);
+		super(AggregateFunctionSymbol.COUNT, SetUtils.hashSet(ComparisonOperator.EQ));
 	}
 
 	@Override

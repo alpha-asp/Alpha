@@ -108,7 +108,8 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 		for (ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> func : ctx.getAggregateFunctionsToRewrite().keySet()) {
 			// aggregateEncodingRules.addAll(encodeAggregateFunction(func, ctx.getAggregateFunctionsToRewrite().get(func), ctx));
 			AbstractAggregateEncoder encoder = getEncoderForAggregateFunction(func.left, func.right);
-			outputRules.addAll(encoder.encodeAggregateLiterals(ctx)); // TODO internalize aggregate encoding predicates (do in encoders!)
+			outputRules.addAll(encoder.encodeAggregateLiterals(ctx, ctx.getAggregateFunctionsToRewrite().get(func))); // TODO internalize aggregate encoding
+																														// predicates (do in abstract encoder!)
 		}
 		return new InputProgram(outputRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
 	}

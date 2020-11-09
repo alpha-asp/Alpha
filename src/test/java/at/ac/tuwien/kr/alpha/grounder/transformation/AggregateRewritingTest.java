@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-public class BindingAggregateTransformationTest {
+public class AggregateRewritingTest {
 
 	//@formatter:off
 	private static final String CNT_SIMPLE_ASP = 
