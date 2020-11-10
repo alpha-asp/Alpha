@@ -7,18 +7,24 @@ import java.util.List;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.transformation.AggregateRewritingContext.AggregateInfo;
 
 public abstract class AbstractAggregateEncoder {
 
+	private static final String ELEMENT_TUPLE_FUNCTION_SYMBOL = "tuple";
+	
 	private final AggregateFunctionSymbol aggregateFunctionToEncode;
 	private final Set<ComparisonOperator> acceptedOperators;
 
@@ -75,7 +81,16 @@ public abstract class AbstractAggregateEncoder {
 	 * @param ctx
 	 * @return
 	 */
-	// TODO generalize further, this is structurally identical for everything but sums!
-	protected abstract Atom buildElementRuleHead(String aggregateId, AggregateElement element, AggregateRewritingContext ctx);
+	protected Atom buildElementRuleHead(String aggregateId, AggregateElement element, AggregateRewritingContext ctx) {
+		Predicate headPredicate = Predicate.getInstance(this.getElementTuplePredicateSymbol(aggregateId), 2);
+		AggregateInfo aggregate = ctx.getAggregateInfo(aggregateId);
+		Term aggregateArguments = aggregate.getAggregateArguments();
+		FunctionTerm elementTuple = FunctionTerm.getInstance(ELEMENT_TUPLE_FUNCTION_SYMBOL, element.getElementTerms());
+		return new BasicAtom(headPredicate, aggregateArguments, elementTuple);
+	}
+	
+	protected String getElementTuplePredicateSymbol(String aggregate_id) {
+		return aggregate_id + "_element_tuple";
+	}
 
 }

@@ -10,16 +10,12 @@ import java.util.Collections;
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.AggregateRewritingContext.AggregateInfo;
@@ -36,7 +32,7 @@ public class CountLessOrEqualSortingGridEncoder extends AbstractAggregateEncoder
 			+ "$aggregate_id$_sorting_network_bound(ARGS, K), $aggregate_id$_sorting_network_v(ARGS, K, D), "
 			+ "$aggregate_id$_sorting_network_done(N, D), K<=N." +
 			// Assign indices to element tuples
-			"$aggregate_id$_sorting_network_input_number(ARGS, I) :- $aggregate_id$_sorting_network_input(ARGS, X), $enumeration$(ARGS, X, I)." +
+			"$aggregate_id$_sorting_network_input_number(ARGS, I) :- $element_tuple$(ARGS, X), $enumeration$(ARGS, X, I)." +
 			// Sorting network encoding
 			"$aggregate_id$_sorting_network_span(ARGS, I) :- $aggregate_id$_sorting_network_input_number(ARGS, I)." +
 			"$aggregate_id$_sorting_network_span(ARGS, Im1) :- $aggregate_id$_sorting_network_span(ARGS, I), 1<I, Im1 = I-1." +
@@ -91,6 +87,7 @@ public class CountLessOrEqualSortingGridEncoder extends AbstractAggregateEncoder
 		encodingTemplate.add("aggregate_result", aggregateToEncode.getOutputAtom().getPredicate().getName());
 		encodingTemplate.add("aggregate_id", aggregateId);
 		encodingTemplate.add("enumeration", aggregateId + "_enum");
+		encodingTemplate.add("element_tuple", this.getElementTuplePredicateSymbol(aggregateId));
 		String resultEncodingAsp = encodingTemplate.render();
 		InputProgram resultEncoding = new EnumerationRewriting().apply(parser.parse(resultEncodingAsp));
 		BasicAtom sortingNetworkBound = new BasicAtom(Predicate.getInstance(aggregateId + "_sorting_network_bound", 2),
@@ -98,14 +95,6 @@ public class CountLessOrEqualSortingGridEncoder extends AbstractAggregateEncoder
 		BasicRule sortingNetworkBoundRule = new BasicRule(new NormalHead(sortingNetworkBound), new ArrayList<>(ctx.getDependencies(aggregateId)));
 		return new InputProgram(ListUtils.union(resultEncoding.getRules(), Collections.singletonList(sortingNetworkBoundRule)), resultEncoding.getFacts(),
 				new InlineDirectives());
-	}
-
-	@Override
-	protected Atom buildElementRuleHead(String aggregateId, AggregateElement element, AggregateRewritingContext ctx) {
-		Predicate headPredicate = Predicate.getInstance(aggregateId + "_sorting_network_input", 2);
-		Term aggregateArguments = ctx.getAggregateInfo(aggregateId).getAggregateArguments();
-		FunctionTerm elementTuple = FunctionTerm.getInstance("tuple", element.getElementTerms());
-		return new BasicAtom(headPredicate, aggregateArguments, elementTuple);
 	}
 
 }

@@ -9,22 +9,16 @@ import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.AggregateRewritingContext.AggregateInfo;
 
 public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
-
-	private static final String ELEMENT_TUPLE_FUNCTION_SYMBOL = "tuple";
 
 	//@formatter:off
 	private static final ST CNT_EQ_LITERAL_ENCODING = Util.aspStringTemplate(
@@ -71,21 +65,13 @@ public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 		encodingTemplate.add("value_var", valueVar.toString());
 		encodingTemplate.add("value_leq_cnt_lit", candidateLeqCountCtx.getAggregateInfo(candidateLeqCntId).getOutputAtom().toString());
 		encodingTemplate.add("cnt_candidate_lit", cntCandidate.toString());
-		encodingTemplate.add("element_tuple", aggregateId + "_element_tuple");
+		encodingTemplate.add("element_tuple", this.getElementTuplePredicateSymbol(aggregateId));
 		encodingTemplate.add("enumeration", aggregateId + "_enum");
 		encodingTemplate.add("aggregate_arguments", aggregateToEncode.getAggregateArguments());
 		String resultEncodingAsp = encodingTemplate.render();
 		InputProgram resultEncoding = PredicateInternalizer.makePrefixedPredicatesInternal(new EnumerationRewriting().apply(parser.parse(resultEncodingAsp)),
 				candidateLeqCntId);
 		return InputProgram.builder(resultEncoding).accumulate(candidateLeqEncoding).build();
-	}
-
-	@Override
-	protected Atom buildElementRuleHead(String aggregateId, AggregateElement element, AggregateRewritingContext ctx) {
-		AggregateInfo aggregate = ctx.getAggregateInfo(aggregateId);
-		Term aggregateArguments = aggregate.getAggregateArguments();
-		FunctionTerm elementTuple = FunctionTerm.getInstance(ELEMENT_TUPLE_FUNCTION_SYMBOL, element.getElementTerms());
-		return new BasicAtom(Predicate.getInstance(aggregateId + "_element_tuple", 2), aggregateArguments, elementTuple);
 	}
 
 }

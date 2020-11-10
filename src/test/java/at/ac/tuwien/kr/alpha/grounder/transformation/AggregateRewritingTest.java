@@ -54,7 +54,7 @@ public class AggregateRewritingTest {
 		Alpha alpha = new Alpha();
 		InputProgram input = alpha.readProgramString(CNT_LE1_ASP);
 		NormalProgram normalized = alpha.normalizeProgram(input);
-		// System.out.println(normalized);
+		//System.out.println(normalized);
 		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
 		Assert.assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
@@ -62,7 +62,7 @@ public class AggregateRewritingTest {
 		Predicate candidate = Predicate.getInstance("candidate", 1);
 		Predicate cntLe = Predicate.getInstance("cnt_le", 1);
 
-		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
+		//System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
 		Assert.assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(75))));
 		Assert.assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(76))));
