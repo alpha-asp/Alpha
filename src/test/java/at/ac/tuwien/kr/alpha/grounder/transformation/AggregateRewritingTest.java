@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.SimpleAnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
@@ -81,14 +82,14 @@ public class AggregateRewritingTest {
 		alpha.getConfig().setEvaluateStratifiedPart(false);
 		InputProgram input = alpha.readProgramString(CNT_EQ1_ASP);
 		NormalProgram normalized = alpha.normalizeProgram(input);
-		// System.out.println(normalized);
+		System.out.println(normalized);
 		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
 		Assert.assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate thing = Predicate.getInstance("thing", 1);
 		Predicate cntThings = Predicate.getInstance("cnt_things", 1);
 
-		// System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
+		System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
 		Assert.assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(4))));
 		Assert.assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(5))));

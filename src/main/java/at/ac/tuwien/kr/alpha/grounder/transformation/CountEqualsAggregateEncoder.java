@@ -21,6 +21,7 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.AggregateRewritingContext.A
 public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 
 	//@formatter:off
+	// TODO look into also delegating to cnt_candidate from underlying sorting grid encoder
 	private static final ST CNT_EQ_LITERAL_ENCODING = Util.aspStringTemplate(
 				"#enumeration_predicate_is $enumeration$."
 				+ "$aggregate_result$(ARGS, VAL) :- $leq$(ARGS, VAL), not $leq$(ARGS, NEXTVAL), NEXTVAL = VAL + 1."
@@ -29,6 +30,8 @@ public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 	//@formatter:on
 
 	private final ProgramParser parser = new ProgramParser();
+	// TODO only use sorting grid if conf'ed, maybe create an encoder factory...
+	private final AbstractAggregateEncoder countLeDelegateEncoder = new CountLessOrEqualSortingGridEncoder();
 
 	public CountEqualsAggregateEncoder() {
 		super(AggregateFunctionSymbol.COUNT, SetUtils.hashSet(ComparisonOperator.EQ));
@@ -54,7 +57,7 @@ public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 		String candidateLeqCntId = candidateLeqCountCtx.registerAggregateLiteral(candidateLeqCount, Collections.singleton(cntCandidate));
 		// The encoder won't encode AggregateElements of the newly created literal separately but alias them
 		// with the element encoding predicates for the original literal.
-		AbstractAggregateEncoder candidateLeqEncoder = new CountLessOrEqualDelegateAggregateEncoder(aggregateId);
+		AbstractAggregateEncoder candidateLeqEncoder = new ElementRuleDelegatingEncoder(aggregateId, this.countLeDelegateEncoder);
 		InputProgram candidateLeqEncoding = candidateLeqEncoder
 				.encodeAggregateLiteral(candidateLeqCountCtx.getAggregateInfo(candidateLeqCntId), candidateLeqCountCtx);
 		// Create a fresh template to make sure attributes are empty at each call to encodeAggregateResult.

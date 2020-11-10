@@ -93,4 +93,12 @@ public abstract class AbstractAggregateEncoder {
 		return aggregate_id + "_element_tuple";
 	}
 
+	public AggregateFunctionSymbol getAggregateFunctionToEncode() {
+		return this.aggregateFunctionToEncode;
+	}
+
+	public Set<ComparisonOperator> getAcceptedOperators() {
+		return this.acceptedOperators;
+	}
+
 }
