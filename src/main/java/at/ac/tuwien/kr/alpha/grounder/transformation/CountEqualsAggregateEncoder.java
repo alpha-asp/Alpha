@@ -64,7 +64,7 @@ public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 				.encodeAggregateLiteral(candidateLeqCountCtx.getAggregateInfo(candidateLeqCntId), candidateLeqCountCtx);
 		// Create a fresh template to make sure attributes are empty at each call to encodeAggregateResult.
 		ST encodingTemplate = new ST(CNT_EQ_LITERAL_ENCODING);
-		encodingTemplate.add("aggregate_result", aggregateToEncode.getLiteral().getPredicate().getName());
+		encodingTemplate.add("aggregate_result", aggregateToEncode.getOutputAtom().getPredicate().getName());
 		encodingTemplate.add("leq", aggregateId + "_leq");
 		encodingTemplate.add("cnt_candidate", cntCandidatePredicateSymbol);
 		encodingTemplate.add("value_var", valueVar.toString());
@@ -74,7 +74,8 @@ public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 		encodingTemplate.add("enumeration", aggregateId + "_enum");
 		encodingTemplate.add("aggregate_id", aggregateId);
 		String resultEncodingAsp = encodingTemplate.render();
-		InputProgram resultEncoding = new EnumerationRewriting().apply(parser.parse(resultEncodingAsp));
+		InputProgram resultEncoding = PredicateInternalizer.makePrefixedPredicatesInternal(new EnumerationRewriting().apply(parser.parse(resultEncodingAsp)),
+				candidateLeqCntId);
 		return InputProgram.builder(resultEncoding).accumulate(candidateLeqEncoding).build();
 	}
 

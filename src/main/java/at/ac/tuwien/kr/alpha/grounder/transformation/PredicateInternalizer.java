@@ -67,7 +67,7 @@ public class PredicateInternalizer {
 			// Only rewrite BasicAtoms.
 			if (bodyElement instanceof BasicLiteral) {
 				if (bodyElement.getAtom().getPredicate().getName().startsWith(prefix)) {
-					newBody.add(makePredicateInternal(bodyElement.getAtom()).toLiteral());
+					newBody.add(makePredicateInternal(bodyElement.getAtom()).toLiteral(!bodyElement.isNegated()));
 				} else {
 					newBody.add(bodyElement);
 				}
@@ -91,7 +91,7 @@ public class PredicateInternalizer {
 		for (Literal bodyElement : rule.getBody()) {
 			// Only rewrite BasicAtoms.
 			if (bodyElement instanceof BasicLiteral) {
-				newBody.add(makePredicateInternal(bodyElement.getAtom()).toLiteral());
+				newBody.add(makePredicateInternal(bodyElement.getAtom()).toLiteral(!bodyElement.isNegated()));
 			} else {
 				// Keep other body element as is.
 				newBody.add(bodyElement);
