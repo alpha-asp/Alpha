@@ -10,8 +10,10 @@ import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.transformation.AggregateRewritingContext.AggregateInfo;
 
@@ -48,7 +50,7 @@ public abstract class AbstractAggregateEncoder {
 		// InputProgram literalEncoding = encodeAggregateResult(aggregateToEncode, ctx);
 		List<BasicRule> elementEncodingRules = new ArrayList<>();
 		for (AggregateElement elementToEncode : literalToEncode.getAtom().getAggregateElements()) {
-			elementEncodingRules.add(PredicateInternalizer.makePrefixedPredicatesInternal(encodeAggregateElement(aggregateId, elementToEncode),
+			elementEncodingRules.add(PredicateInternalizer.makePrefixedPredicatesInternal(encodeAggregateElement(aggregateId, elementToEncode, ctx),
 					aggregateId));
 //			elementEncodingRules.add(encodeAggregateElement(aggregateId, elementToEncode));
 		}
@@ -57,6 +59,23 @@ public abstract class AbstractAggregateEncoder {
 
 	protected abstract InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx);
 
-	protected abstract BasicRule encodeAggregateElement(String aggregateId, AggregateElement element);
+	protected BasicRule encodeAggregateElement(String aggregateId, AggregateElement element, AggregateRewritingContext ctx) {
+		Atom headAtom = buildElementRuleHead(aggregateId, element, ctx);
+		return new BasicRule(new NormalHead(headAtom), ListUtils.union(element.getElementLiterals(), new ArrayList<>(ctx.getDependencies(aggregateId))));
+	}
+
+	/**
+	 * Builds a the head atom for an aggregate element encoding rule of form
+	 * <code>HEAD :- $element_literals$, $aggregate_dependencies$</code>, e.g.
+	 * <code>count_1_element_tuple(count_1_args(Y), X) :- p(X, Y), q(Y)</code> for the rule body
+	 * <code>N = #count{X : p(X, Y)}, q(Y)</code>.
+	 * 
+	 * @param aggregateId
+	 * @param element
+	 * @param ctx
+	 * @return
+	 */
+	// TODO generalize further, this is structurally identical for everything but sums!
+	protected abstract Atom buildElementRuleHead(String aggregateId, AggregateElement element, AggregateRewritingContext ctx);
 
 }

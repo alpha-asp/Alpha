@@ -16,9 +16,8 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.AggregateRewritingContext.AggregateInfo;
@@ -30,9 +29,9 @@ public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 	//@formatter:off
 	private static final ST CNT_EQ_LITERAL_ENCODING = Util.aspStringTemplate(
 				"#enumeration_predicate_is $enumeration$."
-				+ "$aggregate_result$(VAL) :- $leq$(VAL), not $leq$(NEXTVAL), NEXTVAL = VAL + 1."
-				+ "$leq$($value_var$) :- $value_leq_cnt_lit$, $cnt_candidate_lit$."
-				+ "$cnt_candidate$(ORDINAL) :- $element_tuple$(TUPLE), $enumeration$($aggregate_id$, TUPLE, ORDINAL).");
+				+ "$aggregate_result$(ARGS, VAL) :- $leq$(ARGS, VAL), not $leq$(ARGS, NEXTVAL), NEXTVAL = VAL + 1."
+				+ "$leq$($aggregate_arguments$, $value_var$) :- $value_leq_cnt_lit$, $cnt_candidate_lit$."
+				+ "$cnt_candidate$(ARGS, ORDINAL) :- $element_tuple$(ARGS, TUPLE), $enumeration$(ARGS, TUPLE, ORDINAL).");
 	//@formatter:on
 
 	private final ProgramParser parser = new ProgramParser();
@@ -42,6 +41,7 @@ public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 	}
 
 	@Override
+	// TODO look into generalizing this!
 	protected InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx) {
 		String aggregateId = aggregateToEncode.getId();
 		AggregateLiteral lit = aggregateToEncode.getLiteral();
@@ -51,7 +51,8 @@ public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 		AggregateLiteral candidateLeqCount = new AggregateLiteral(
 				new AggregateAtom(ComparisonOperator.LE, valueVar, AggregateFunctionSymbol.COUNT, sourceAtom.getAggregateElements()), true);
 		String cntCandidatePredicateSymbol = aggregateId + "_candidate";
-		BasicLiteral cntCandidate = new BasicLiteral(new BasicAtom(Predicate.getInstance(cntCandidatePredicateSymbol, 1), valueVar), true);
+		BasicLiteral cntCandidate = new BasicLiteral(
+				new BasicAtom(Predicate.getInstance(cntCandidatePredicateSymbol, 2), aggregateToEncode.getAggregateArguments(), valueVar), true);
 		// Create an encoder for the newly built " <= #count{..}" literal and rewrite it.
 		// Note that the literal itself is not written into the encoding of the original literal,
 		// but only its substitute "aggregate result" literal.
@@ -72,7 +73,7 @@ public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 		encodingTemplate.add("cnt_candidate_lit", cntCandidate.toString());
 		encodingTemplate.add("element_tuple", aggregateId + "_element_tuple");
 		encodingTemplate.add("enumeration", aggregateId + "_enum");
-		encodingTemplate.add("aggregate_id", aggregateId);
+		encodingTemplate.add("aggregate_arguments", aggregateToEncode.getAggregateArguments());
 		String resultEncodingAsp = encodingTemplate.render();
 		InputProgram resultEncoding = PredicateInternalizer.makePrefixedPredicatesInternal(new EnumerationRewriting().apply(parser.parse(resultEncodingAsp)),
 				candidateLeqCntId);
@@ -80,10 +81,11 @@ public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 	}
 
 	@Override
-	protected BasicRule encodeAggregateElement(String aggregateId, AggregateElement element) {
+	protected Atom buildElementRuleHead(String aggregateId, AggregateElement element, AggregateRewritingContext ctx) {
+		AggregateInfo aggregate = ctx.getAggregateInfo(aggregateId);
+		Term aggregateArguments = aggregate.getAggregateArguments();
 		FunctionTerm elementTuple = FunctionTerm.getInstance(ELEMENT_TUPLE_FUNCTION_SYMBOL, element.getElementTerms());
-		Atom headAtom = new BasicAtom(Predicate.getInstance(aggregateId + "_element_tuple", 1), elementTuple);
-		return new BasicRule(new NormalHead(headAtom), element.getElementLiterals());
+		return new BasicAtom(Predicate.getInstance(aggregateId + "_element_tuple", 2), aggregateArguments, elementTuple);
 	}
 
 }
