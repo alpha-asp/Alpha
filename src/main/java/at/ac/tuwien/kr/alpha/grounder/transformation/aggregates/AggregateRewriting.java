@@ -14,15 +14,12 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 
 public class AggregateRewriting extends ProgramTransformation<InputProgram, InputProgram> {
 
 	public static final Predicate AGGREGATE_RESULT = Predicate.getInstance("aggregate_result", 2);
-	private static final Predicate AGGREGATE = Predicate.getInstance("aggregate", 1);
-	private static final Predicate LEQ_AGGREGATE = Predicate.getInstance("leq_aggregate", 2);
 
 	private static final Predicate CNT_CANDIDATE = Predicate.getInstance("cnt_candidate", 2);
 	private static final Predicate SUM_CANDIDATE = Predicate.getInstance("sum_candidate", 2);
@@ -30,12 +27,6 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	private static final Predicate SUM_ELEMENT_TUPLE = Predicate.getInstance("sum_element_tuple", 3);
 	private static final Predicate MINMAX_ELEMENT_TUPLE = Predicate.getInstance("minmax_element_tuple", 2);
 	private static final Predicate ELEMENT_TUPLE_ORDINAL = Predicate.getInstance("element_tuple_ordinal", 3);
-
-	private static final String ELEMENT_TUPLE_FN_SYM = "tuple";
-
-	private static final String CNT_CANDIDATE_RULE = String.format(
-			"%s(AGGREGATE_ID, I) :- %s(AGGREGATE_ID), %s(AGGREGATE_ID, TUPLE), %s(AGGREGATE_ID, TUPLE, I).",
-			CNT_CANDIDATE.getName(), AGGREGATE.getName(), CNT_ELEMENT_TUPLE.getName(), ELEMENT_TUPLE_ORDINAL.getName());
 
 	//@formatter:off
 	// TODO can we get around hardcoded predicate names here??
@@ -52,23 +43,7 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 			+ "sum_at_idx_candidate(SUM_ID, I, CSUM) :- sum_element_at_index(SUM_ID, VAL, I), sum_at_idx_candidate(SUM_ID, IPREV, PSUM), IPREV = I - 1, CSUM = PSUM + VAL."
 			// Project indices away, we only need candidate values for variable binding.
 			+ "sum_candidate(SUM_ID, CSUM) :- sum_at_idx_candidate(SUM_ID, _, CSUM).";
-	
-	private static final String MIN_ELEMENT_SEARCH_PROG =
-			"element_tuple_less_than(AGGREGATE_ID, LESS, THAN) :- "
-			+ "aggregate(AGGREGATE_ID), minmax_element_tuple(AGGREGATE_ID, LESS), minmax_element_tuple(AGGREGATE_ID, THAN), LESS < THAN."
-			+ "element_tuple_has_smaller(AGGREGATE_ID, TPL) :- element_tuple_less_than(AGGREGATE_ID, _, TPL)."
-			+ "min_element_tuple(AGGREGATE_ID, MIN) :- "
-			+ "aggregate(AGGREGATE_ID), minmax_element_tuple(AGGREGATE_ID, MIN), not element_tuple_has_smaller(AGGREGATE_ID, MIN).";
-	
-	private static final String MAX_ELEMENT_SEARCH_PROG = 
-			"element_tuple_less_than(AGGREGATE_ID, LESS, THAN) :- "
-			+ "aggregate(AGGREGATE_ID), minmax_element_tuple(AGGREGATE_ID, LESS), minmax_element_tuple(AGGREGATE_ID, THAN), LESS < THAN."
-			+ "element_tuple_has_greater(AGGREGATE_ID, TPL) :- element_tuple_less_than(AGGREGATE_ID, TPL, _)."
-			+ "max_element_tuple(AGGREGATE_ID, MAX) :- "
-			+ "aggregate(AGGREGATE_ID), minmax_element_tuple(AGGREGATE_ID, MAX), not element_tuple_has_greater(AGGREGATE_ID, MAX).";
 	//@formatter:on
-
-	private final ProgramParser parser = new ProgramParser();
 
 	private final AggregateRewritingConfig config;
 
@@ -123,8 +98,13 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 				} else {
 					throw new UnsupportedOperationException("No fitting encoder for aggregate function " + function + "and operator " + operator + "!");
 				}
+			case MIN:
+			case MAX:
+				// TODO min/max encoder currently only does "X = max...", need to add additional result rule with operator, or do source
+				// rule rewriting differently!
+				return new MinMaxAggregateEncoder(function);
 			default:
-				// TODO encoders for SUM, MIN, MAX
+				// TODO encoder for SUM
 				throw new UnsupportedOperationException("Not yet implemented!");
 		}
 	}
