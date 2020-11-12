@@ -6,6 +6,7 @@ import org.junit.Test;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateLiteralSplitting;
 import at.ac.tuwien.kr.alpha.test.util.RuleParser;
 
 public class AggregateLiteralSplittingTest {

@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.grounder.transformation;
+package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -15,7 +15,8 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.grounder.transformation.AggregateRewritingContext.AggregateInfo;
+import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 
 public class AggregateRewriting extends ProgramTransformation<InputProgram, InputProgram> {
 
@@ -87,6 +88,7 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	 * - Sum normalization: rewrite #sum expressions
 	 */
 	@Override
+	// TODO prefix all variables generated in aggregate processing with some internal "_AGG" or something
 	public InputProgram apply(InputProgram inputProgram) {
 		AggregateRewritingContext ctx = new AggregateRewritingContext();
 		List<BasicRule> outputRules = new ArrayList<>();

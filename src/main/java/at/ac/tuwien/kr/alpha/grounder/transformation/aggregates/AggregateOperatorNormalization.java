@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.grounder.transformation;
+package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,7 +33,7 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
  * 
  * Note that input programs must only contain aggregate literals of form <code>VAR OP #aggr{...}</code>, i.e. with only
  * a left term and operator. When preprocessing programs, apply this transformation AFTER
- * {@link at.ac.tuwien.kr.alpha.grounder.transformation.AggregateLiteralSplitting}.
+ * {@link at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateLiteralSplitting}.
  * 
  * Copyright (c) 2020, the Alpha Team.
  */
