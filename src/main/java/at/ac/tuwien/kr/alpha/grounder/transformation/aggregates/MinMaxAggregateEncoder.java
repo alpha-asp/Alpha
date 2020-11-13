@@ -6,6 +6,7 @@ import org.stringtemplate.v4.ST;
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
@@ -22,20 +23,27 @@ public class MinMaxAggregateEncoder extends AbstractAggregateEncoder {
 			"$id$_element_tuple_less_than(ARGS, LESS, THAN) :- " +
 			"	$id$_element_tuple(ARGS, LESS), $id$_element_tuple(ARGS, THAN), LESS < THAN.";
 	
+	/**
+	 * If the literal to encode binds a variable (e.g. "X = #min{...}", "Y = #max{...}"), use this template for the result rule of the aggregate encoding.
+	 */
+	private static final ST BINDING_LITERAL_RESULT_RULE = Util.aspStringTemplate(
+			"$aggregate_result$(ARGS, M) :- $id$_$agg_func$_element_tuple(ARGS, M).");
+	
+	private static final ST NONBINDING_LITERAL_RESULT_RULE = Util.aspStringTemplate(
+			"$aggregate_result$($args$, $cmp_term$) :- $cmp_term$ $cmp_op$ AGG_VAL, $id$_$agg_func$_element_tuple($args$, AGG_VAL), $dependencies;separator=\", \"$.");
+	
 	private static final ST MAX_LITERAL_ENCODING = Util.aspStringTemplate(
 			MINMAX_ELEMENT_ORDERING +
 			"$id$_element_tuple_has_greater(ARGS, TPL) :- $id$_element_tuple_less_than(ARGS, TPL, _)." +
 			"$id$_max_element_tuple(ARGS, MAX) :- " +
-			"	$id$_element_tuple(ARGS, MAX), not $id$_element_tuple_has_greater(ARGS, MAX)." +
-			"$aggregate_result$(ARGS, MAX) :- $id$_max_element_tuple(ARGS, MAX)."
+			"	$id$_element_tuple(ARGS, MAX), not $id$_element_tuple_has_greater(ARGS, MAX)."
 			);
 	
 	private static final ST MIN_LITERAL_ENCODING = Util.aspStringTemplate(
 			MINMAX_ELEMENT_ORDERING + 
 			"$id$_element_tuple_has_smaller(ARGS, TPL) :- $id$_element_tuple_less_than(ARGS, _, TPL)." +
 			"$id$_min_element_tuple(ARGS, MIN) :- " +
-			"	$id$_element_tuple(ARGS, MIN), not $id$_element_tuple_has_smaller(ARGS, MIN)." +
-			"$aggregate_result$(ARGS, MIN) :- $id$_min_element_tuple(ARGS, MIN)."
+			"	$id$_element_tuple(ARGS, MIN), not $id$_element_tuple_has_smaller(ARGS, MIN)."
 			);
 	//@formatter:on
 
@@ -61,9 +69,28 @@ public class MinMaxAggregateEncoder extends AbstractAggregateEncoder {
 		}
 		String id = aggregateToEncode.getId();
 		String resultName = aggregateToEncode.getOutputAtom().getPredicate().getName();
+		AggregateAtom atom = aggregateToEncode.getLiteral().getAtom();
+		ComparisonOperator cmpOp = atom.getLowerBoundOperator();
+		ST resultRuleTemplate = null;
+		if (cmpOp == ComparisonOperator.EQ) {
+			// aggregate to encode binds a variable, use appropriate result rule
+			resultRuleTemplate = new ST(BINDING_LITERAL_RESULT_RULE);
+		} else {
+			// aggregate encoding needs to compare aggregate value with another variable
+			resultRuleTemplate = new ST(NONBINDING_LITERAL_RESULT_RULE);
+			resultRuleTemplate.add("args", aggregateToEncode.getAggregateArguments());
+			// TODO here we could have a problem if the term is a weirdly named variable (e.g. "AGG_VAL") -> "internalize" the name!
+			resultRuleTemplate.add("cmp_term", atom.getLowerBoundTerm());
+			resultRuleTemplate.add("cmp_op", cmpOp);
+			resultRuleTemplate.add("dependencies", ctx.getDependencies(aggregateToEncode.getId()));
+
+		}
+		resultRuleTemplate.add("agg_func", atom.getAggregatefunction().toString().toLowerCase());
+		resultRuleTemplate.add("id", id);
+		resultRuleTemplate.add("aggregate_result", resultName);
 		encodingTemplate.add("id", id);
 		encodingTemplate.add("aggregate_result", resultName);
-		return parser.parse(encodingTemplate.render());
+		return parser.parse(encodingTemplate.render() + resultRuleTemplate.render());
 	}
 
 	@Override

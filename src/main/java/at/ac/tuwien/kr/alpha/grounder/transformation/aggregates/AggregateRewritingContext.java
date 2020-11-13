@@ -336,7 +336,7 @@ public final class AggregateRewritingContext {
 		}
 
 		/**
-		 * nullCalculates a set of global variables for the given {@link AggregateLiteral} based on a specific set of literals
+		 * Calculates a set of global variables for the given {@link AggregateLiteral} based on a specific set of literals
 		 * ("scope"). A variable is "global" if it occurs inside an {@link AggregateElement} of the given literal AND is a
 		 * binding or non-binding variable of at least one literal of the scope set. Note that, since {@link AggregateLiteral}s
 		 * cannot know their non-binding variables by themselves, this method only looks at the lower bound term of aggregate

@@ -27,6 +27,11 @@ public class AggregateRewritingTest {
 	private static final String CNT_EQ1_ASP =
 			"thing(4..6)."
 			+ "cnt_things(N) :- N = #count{X : thing(X)}.";
+	// Smoke-test case for non-binding min aggregate
+	private static final String MIN_GT1_ASP =
+			"thing(4). thing(7). thing(13). thing(3). "
+			+ "acceptable(8). acceptable(10). acceptable(5). "
+			+ "greater_min_acceptable(T) :- thing(T), T > #min{ A : acceptable(A) }.";
 	
 	// Basic ASP representation of a triangular undirected graph, used across multiple test cases
 	private static final String TEST_GRAPH_ASP = 
@@ -147,4 +152,22 @@ public class AggregateRewritingTest {
 				.contains(new BasicAtom(maxDegreeVertices, ConstantTerm.getSymbolicInstance("g1"), ConstantTerm.getInstance(2), ConstantTerm.getInstance(3))));
 	}
 
+	@Test
+	public void greaterMin() {
+		Alpha alpha = new Alpha();
+		InputProgram input = alpha.readProgramString(MIN_GT1_ASP);
+		NormalProgram normalized = alpha.normalizeProgram(input);
+		System.out.println(normalized);
+		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
+		Assert.assertEquals(1, answerSets.size());
+		AnswerSet answerSet = answerSets.get(0);
+		Predicate greaterMin = Predicate.getInstance("greater_min_acceptable", 1);
+
+		System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
+
+		Assert.assertTrue(answerSet.getPredicates().contains(greaterMin));
+		Assert.assertTrue(answerSet.getPredicateInstances(greaterMin).contains(new BasicAtom(greaterMin, ConstantTerm.getInstance(7))));
+		Assert.assertTrue(answerSet.getPredicateInstances(greaterMin).contains(new BasicAtom(greaterMin, ConstantTerm.getInstance(13))));
+	}
+	
 }
