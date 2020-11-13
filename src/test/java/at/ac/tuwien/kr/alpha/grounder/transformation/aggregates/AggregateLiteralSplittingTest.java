@@ -6,7 +6,6 @@ import org.junit.Test;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateLiteralSplitting;
 import at.ac.tuwien.kr.alpha.test.util.RuleParser;
 
 public class AggregateLiteralSplittingTest {
@@ -99,17 +98,17 @@ public class AggregateLiteralSplittingTest {
 		boolean rule2Ok = false;
 		boolean rule3Ok = false;
 		boolean rule4Ok = false;
-		for(BasicRule rewrittenRule : rewritten) {
-			if(rewrittenRule.equals(expectedRewrittenRule1)) {
+		for (BasicRule rewrittenRule : rewritten) {
+			if (rewrittenRule.equals(expectedRewrittenRule1)) {
 				rule1Ok = true;
 			}
-			if(rewrittenRule.equals(expectedRewrittenRule2)) {
+			if (rewrittenRule.equals(expectedRewrittenRule2)) {
 				rule2Ok = true;
 			}
-			if(rewrittenRule.equals(expectedRewrittenRule3)) {
+			if (rewrittenRule.equals(expectedRewrittenRule3)) {
 				rule3Ok = true;
 			}
-			if(rewrittenRule.equals(expectedRewrittenRule4)) {
+			if (rewrittenRule.equals(expectedRewrittenRule4)) {
 				rule4Ok = true;
 			}
 		}
@@ -130,11 +129,11 @@ public class AggregateLiteralSplittingTest {
 		Assert.assertEquals(2, rewritten.size());
 		boolean rule1Ok = false;
 		boolean rule2Ok = false;
-		for(BasicRule rewrittenRule : rewritten) {
-			if(rewrittenRule.equals(expectedRewrittenRule1)) {
+		for (BasicRule rewrittenRule : rewritten) {
+			if (rewrittenRule.equals(expectedRewrittenRule1)) {
 				rule1Ok = true;
 			}
-			if(rewrittenRule.equals(expectedRewrittenRule2)) {
+			if (rewrittenRule.equals(expectedRewrittenRule2)) {
 				rule2Ok = true;
 			}
 		}

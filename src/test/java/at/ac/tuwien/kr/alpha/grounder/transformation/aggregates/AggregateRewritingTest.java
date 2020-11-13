@@ -51,9 +51,9 @@ public class AggregateRewritingTest {
 			+ "    D = #count{ VN : graph_edge(G, e(V, VN)); VN : graph_edge(G, e(VN, V)) }.";
 	private static final String NUM_MAX_DEGREE_VERTICES_ASP = VERTEX_DEGREE_ASP
 			+ "graph_max_degree_vertices(G, DMAX, N) :-"
-		    + "	   graph(G),"
-		    + "	   DMAX = #max{ DV : graph_vertex_degree(G, V, DV)},"
-		    + "    N = #count{ V : graph_vertex_degree(G, V, DMAX)}.";
+			+ "	   graph(G),"
+			+ "	   DMAX = #max{ DV : graph_vertex_degree(G, V, DV)},"
+			+ "    N = #count{ V : graph_vertex_degree(G, V, DMAX)}.";
 	//@formatter:on
 
 	@Test

@@ -48,9 +48,9 @@ public class AggregateRewritingContextTest {
 			+ "    graph_vertex(G, V),"
 			+ "    D = #count{ VN : graph_edge(G, e(V, VN)); VN : graph_edge(G, e(VN, V)) }."
 			+ "graph_max_degree_vertices(G, DMAX, N) :-"
-		    + "	   graph(G),"
-		    + "	   DMAX = #max{ DV : graph_vertex_degree(G, V, DV)},"
-		    + "    N = #count{ V : graph_vertex_degree(G, V, DMAX)}.";
+			+ "	   graph(G),"
+			+ "	   DMAX = #max{ DV : graph_vertex_degree(G, V, DV)},"
+			+ "    N = #count{ V : graph_vertex_degree(G, V, DMAX)}.";
 	//@formatter:on
 
 	private static final AggregateRewritingContext rewritingContextForAspString(String asp) {
@@ -104,43 +104,43 @@ public class AggregateRewritingContextTest {
 		Assert.assertEquals(2, cntEqIds.size());
 		Assert.assertEquals(1, maxEqIds.size());
 		Predicate<AggregateInfo> vertexDegreeCount = (info) -> {
-			if(info.getLiteral().getAtom().getAggregateElements().size() != 2) {
+			if (info.getLiteral().getAtom().getAggregateElements().size() != 2) {
 				return false;
 			}
 			Set<VariableTerm> globalVars = info.getGlobalVariables();
-			if(globalVars.size() != 2) {
+			if (globalVars.size() != 2) {
 				return false;
 			}
-			if(!globalVars.contains(VariableTerm.getInstance("G"))) {
+			if (!globalVars.contains(VariableTerm.getInstance("G"))) {
 				return false;
 			}
-			if(!globalVars.contains(VariableTerm.getInstance("V"))) {
+			if (!globalVars.contains(VariableTerm.getInstance("V"))) {
 				return false;
 			}
 			return true;
 		};
 		Predicate<AggregateInfo> maxDegreeVerticesCount = (info) -> {
-			if(info.getLiteral().getAtom().getAggregateElements().size() != 1) {
+			if (info.getLiteral().getAtom().getAggregateElements().size() != 1) {
 				return false;
 			}
 			Set<VariableTerm> globalVars = info.getGlobalVariables();
-			if(globalVars.size() != 2) {
+			if (globalVars.size() != 2) {
 				return false;
 			}
-			if(!globalVars.contains(VariableTerm.getInstance("G"))) {
+			if (!globalVars.contains(VariableTerm.getInstance("G"))) {
 				return false;
 			}
-			if(!globalVars.contains(VariableTerm.getInstance("DMAX"))) {
+			if (!globalVars.contains(VariableTerm.getInstance("DMAX"))) {
 				return false;
 			}
 			return true;
 		};
 		boolean verifiedDegreeCount = false;
 		boolean verifiedMaxDegreeVerticesCount = false;
-		for(String id : cntEqIds) {
-			if(vertexDegreeCount.test(ctx.getAggregateInfo(id))) {
+		for (String id : cntEqIds) {
+			if (vertexDegreeCount.test(ctx.getAggregateInfo(id))) {
 				verifiedDegreeCount = true;
-			} else if(maxDegreeVerticesCount.test(ctx.getAggregateInfo(id))) {
+			} else if (maxDegreeVerticesCount.test(ctx.getAggregateInfo(id))) {
 				verifiedMaxDegreeVerticesCount = true;
 			}
 		}

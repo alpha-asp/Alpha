@@ -10,7 +10,6 @@ import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm.ArithmeticOperator;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateOperatorNormalization;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.test.util.RuleParser;
@@ -138,6 +137,5 @@ public class AggregateOperatorNormalizationTest {
 		Assert.assertEquals(ConstantTerm.getInstance(1), decrementTerm.getRight());
 		Assert.assertEquals(sourceAggregate.getAtom().getLowerBoundTerm(), decrementTerm.getLeft());
 	}
-	
-	
+
 }

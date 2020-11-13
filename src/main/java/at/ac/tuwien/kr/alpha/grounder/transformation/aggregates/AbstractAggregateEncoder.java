@@ -90,8 +90,8 @@ public abstract class AbstractAggregateEncoder {
 		return new BasicAtom(headPredicate, aggregateArguments, elementTuple);
 	}
 	
-	protected String getElementTuplePredicateSymbol(String aggregate_id) {
-		return aggregate_id + "_element_tuple";
+	protected String getElementTuplePredicateSymbol(String aggregateId) {
+		return aggregateId + "_element_tuple";
 	}
 
 	public AggregateFunctionSymbol getAggregateFunctionToEncode() {
