@@ -35,7 +35,7 @@ public class SumLessOrEqualEncoder extends AbstractAggregateEncoder {
 			+ "$id$_prefix_subset_sum(ARGS, 0, 0) :- $id$_input_number_with_first(ARGS, _, _)."
 			+ "$id$_prefix_subset_sum(ARGS, I, S) :- $id$_prefix_subset_sum(ARGS, I1, S), I1 = I - 1, $id$_interesting_number(ARGS, I)."
 			+ "$id$_prefix_subset_sum(ARGS, I, SF) :- $id$_prefix_subset_sum(ARGS, I1, S), I1 = I - 1, SF = S + F, "
-			+ "		$id$_input_number_with_first(ARGS, I, F), bound(ARGS, K), SF < K."
+			+ "		$id$_input_number_with_first(ARGS, I, F), $id$_bound(ARGS, K), SF < K."
 			+ "$aggregate_result$(ARGS, K) :- $id$_bound(ARGS, K), K <= 0."
 			+ "$aggregate_result$(ARGS, K) :- $id$_prefix_subset_sum(ARGS, I1, S), I1 = I - 1, $id$_input_number_with_first(ARGS, I, F), "
 			+ "		$id$_bound(ARGS, K), K <= S + F.");
@@ -71,7 +71,7 @@ public class SumLessOrEqualEncoder extends AbstractAggregateEncoder {
 		AggregateInfo aggregate = ctx.getAggregateInfo(aggregateId);
 		Term aggregateArguments = aggregate.getAggregateArguments();
 		FunctionTerm elementTuple = FunctionTerm.getInstance(AbstractAggregateEncoder.ELEMENT_TUPLE_FUNCTION_SYMBOL, element.getElementTerms());
-		return new BasicAtom(headPredicate, aggregateArguments, element.getElementTerms().get(0), elementTuple);
+		return new BasicAtom(headPredicate, aggregateArguments, elementTuple, element.getElementTerms().get(0));
 	}
 
 }
