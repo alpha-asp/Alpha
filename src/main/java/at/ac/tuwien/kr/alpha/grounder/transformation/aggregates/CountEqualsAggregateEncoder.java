@@ -55,7 +55,7 @@ public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 		// Create an encoder for the newly built " <= #count{..}" literal and rewrite it.
 		// Note that the literal itself is not written into the encoding of the original literal,
 		// but only its substitute "aggregate result" literal.
-		AggregateRewritingContext candidateLeqCountCtx = new AggregateRewritingContext(ctx);
+		AggregateRewritingContext candidateLeqCountCtx = AggregateRewritingContext.createChildContext(ctx);
 		String candidateLeqCntId = candidateLeqCountCtx.registerAggregateLiteral(candidateLeqCount, Collections.singleton(cntCandidate));
 		// The encoder won't encode AggregateElements of the newly created literal separately but alias them
 		// with the element encoding predicates for the original literal.
