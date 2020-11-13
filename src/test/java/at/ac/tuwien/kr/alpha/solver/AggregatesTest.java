@@ -37,8 +37,6 @@ import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.CardinalityNormalization;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.SumNormalization;
 
 /**
  * Tests if correct answer sets for programs containing aggregates are computed.

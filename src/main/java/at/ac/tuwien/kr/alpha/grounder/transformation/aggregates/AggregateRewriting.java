@@ -15,6 +15,12 @@ import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.AbstractAggregateEncoder;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.CountEqualsAggregateEncoder;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.CountLessOrEqualSortingGridEncoder;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.MinMaxAggregateEncoder;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.SumEqualsAggregateEncoder;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.SumLessOrEqualEncoder;
 
 public class AggregateRewriting extends ProgramTransformation<InputProgram, InputProgram> {
 
