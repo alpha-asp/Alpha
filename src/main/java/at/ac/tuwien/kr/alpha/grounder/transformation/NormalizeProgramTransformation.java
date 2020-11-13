@@ -38,6 +38,8 @@ public class NormalizeProgramTransformation extends ProgramTransformation<InputP
 		// Transform intervals - CAUTION - this MUST come before VariableEqualityRemoval!
 		retVal = new IntervalTermToIntervalAtom().apply(retVal);
 		// Remove variable equalities.
+		// TODO move this up, needs to happen before aggregate rewriting! (do we need to do this twice in case any subsequent
+		// transformation produces such equalitites?)
 		retVal = new VariableEqualityRemoval().apply(retVal);
 		return retVal;
 	}

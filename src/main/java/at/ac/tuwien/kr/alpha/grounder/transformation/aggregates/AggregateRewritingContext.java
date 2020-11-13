@@ -20,6 +20,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -77,63 +78,51 @@ public final class AggregateRewritingContext {
 		return new AggregateRewritingContext(ctx);
 	}
 
+	/**
+	 * Registers a rule that potentially contains one or more {@link AggregateLiteral}s with this context.
+	 * In case aggregates are found in the rule, global variables and dependencies of the aggregate are calculated and the
+	 * aggregate literal is stored in the rewriting context along with a reference to the rule it occurs in
+	 * 
+	 * @param rule
+	 * @return true if the given rule contains one or more aggregate literals, false otherwise
+	 */
 	public boolean registerRule(BasicRule rule) {
-		// Keep track of aggregates in the rule so we get the dependencies right in rules with more than one aggregate.
-		Map<String, Set<Literal>> dependeciesByAggregateId = new HashMap<>();
-		Map<AggregateLiteral, String> idsByLiteral = new HashMap<>();
-		// Do a first iteration to find and register all aggregates.
-		boolean aggregateFound = false;
-		for (Literal lit : rule.getBody()) {
-			if (lit instanceof AggregateLiteral) {
-				AggregateLiteral aggregateLiteral = (AggregateLiteral) lit;
-				Set<Literal> bodyWithoutLit = SetUtils.difference(rule.getBody(), Collections.singleton(aggregateLiteral));
-				Set<VariableTerm> globalVars = RuleAnalysis.findGlobalVariablesForAggregate(aggregateLiteral, bodyWithoutLit);
-				String aggregateId = this.internalRegisterAggregateLiteral((AggregateLiteral) lit, globalVars);
-				dependeciesByAggregateId.put(aggregateId, new HashSet<>());
-				idsByLiteral.put((AggregateLiteral) lit, aggregateId);
-				aggregateFound = true;
-			}
-		}
-		if (!aggregateFound) {
+		RuleAnalysis ruleAnalysis = RuleAnalysis.analyzeRule(rule);
+		if (ruleAnalysis.globalVariablesPerAggregate.isEmpty()) {
+			// no aggregates found
 			return false;
 		}
-		// Now collect the dependencies (i.e. the rest of the rule body) for each aggregate literal.
-		for (Literal lit : rule.getBody()) {
-			if (lit instanceof AggregateLiteral) {
-				// Add the rewritten literal as dependency to all aggregate literals other than lit itself.
-				for (String id : dependeciesByAggregateId.keySet()) {
-					if (id.equals(idsByLiteral.get((AggregateLiteral) lit))) {
-						continue;
-					}
-					dependeciesByAggregateId.get(id)
-							.add(this.aggregatesById.get(idsByLiteral.get((AggregateLiteral) lit)).outputAtom.toLiteral(!lit.isNegated()));
-				}
-			} else {
-				// Add the literal as dependency to all aggregate literals
-				for (String id : dependeciesByAggregateId.keySet()) {
-					dependeciesByAggregateId.get(id).add(lit);
+		Map<AggregateLiteral, String> idsPerLiteral = new HashMap<>();
+		// Do initial registration of each aggregate literal and keep the ids.
+		for (Map.Entry<AggregateLiteral, Set<VariableTerm>> entry : ruleAnalysis.globalVariablesPerAggregate.entrySet()) {
+			String id = this.internalRegisterAggregateLiteral(entry.getKey(), entry.getValue());
+			idsPerLiteral.put(entry.getKey(), id);
+		}
+		// Now go through dependencies and replace the actual aggregate literals with their rewritten versions
+		for (Map.Entry<AggregateLiteral, Set<Literal>> entry : ruleAnalysis.dependenciesPerAggregate.entrySet()) {
+			Set<Literal> rewrittenDependencies = new HashSet<>();
+			for (Literal dependency : entry.getValue()) {
+				if (dependency instanceof AggregateLiteral) {
+					AggregateInfo dependencyInfo = this.getAggregateInfo(idsPerLiteral.get((AggregateLiteral) dependency));
+					rewrittenDependencies.add(new BasicLiteral(dependencyInfo.getOutputAtom(), !dependency.isNegated()));
+				} else {
+					rewrittenDependencies.add(dependency);
 				}
 			}
+			this.dependenciesById.put(idsPerLiteral.get(entry.getKey()), rewrittenDependencies);
 		}
-		// Register the rule itself, along with aggregates occurring within it
-		this.rulesWithAggregates.put(rule, idsByLiteral);
-		// Register the dependencies of the respective aggregate literals
-		this.dependenciesById.putAll(dependeciesByAggregateId);
+		this.rulesWithAggregates.put(rule, idsPerLiteral);
 		return true;
 	}
 
-	private Map<String, Set<Literal>> calculateDependenciesOfAggregates(Set<Literal> ruleBody, Map<AggregateLiteral, String> aggregatesInBody) {
-		Map<String, Set<Literal>> retVal = new HashMap<>();
-		for (Map.Entry<AggregateLiteral, String> aggregateEntry : aggregatesInBody.entrySet()) {
-			retVal.put(aggregateEntry.getValue(), calculateDependenciesOfAggregate(aggregateEntry.getValue(), ruleBody, aggregatesInBody));
-		}
-		return retVal;
-	}
-
-	private Set<Literal> calculateDependenciesOfAggregate(String aggregateId, Set<Literal> body, Map<AggregateLiteral, String> aggregatesInBody) {
-		return null;
-	}
-
+	/**
+	 * Registers an {@link AggregateLiteral} to this rewriting context. Callers are responsibly for making sure the
+	 * dependency set (i.e. all literals binding non-binding variables of the aggregate) is complete and correct.
+	 * 
+	 * @param lit
+	 * @param dependencies
+	 * @return the unique id assigned to the given literal (within this context and all child contexts)
+	 */
 	public String registerAggregateLiteral(AggregateLiteral lit, Set<Literal> dependencies) {
 		String id = this.internalRegisterAggregateLiteral(lit, RuleAnalysis.findGlobalVariablesForAggregate(lit, dependencies));
 		this.dependenciesById.put(id, dependencies);
