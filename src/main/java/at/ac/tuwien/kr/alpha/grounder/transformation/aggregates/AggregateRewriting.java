@@ -231,7 +231,7 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	 */
 
 	// Transforms (restricted) aggregate literals of format "VAR OP #AGG_FN{...}" into literals of format
-	// "<result_predicate>(VAR)".
+	// "<result_predicate>(ARGS, VAR)" where ARGS is a function term wrapping the aggregate's global variables.
 	private static List<BasicRule> rewriteRulesWithAggregates(AggregateRewritingContext ctx) {
 		List<BasicRule> rewrittenRules = new ArrayList<>();
 		for (BasicRule rule : ctx.getRulesToRewrite()) {

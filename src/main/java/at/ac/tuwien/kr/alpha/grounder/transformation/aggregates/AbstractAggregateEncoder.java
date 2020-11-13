@@ -24,7 +24,7 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewriti
 
 public abstract class AbstractAggregateEncoder {
 
-	private static final String ELEMENT_TUPLE_FUNCTION_SYMBOL = "tuple";
+	protected static final String ELEMENT_TUPLE_FUNCTION_SYMBOL = "tuple";
 	
 	private final AggregateFunctionSymbol aggregateFunctionToEncode;
 	private final Set<ComparisonOperator> acceptedOperators;
