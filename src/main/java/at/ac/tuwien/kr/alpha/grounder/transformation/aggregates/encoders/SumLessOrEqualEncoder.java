@@ -10,23 +10,18 @@ import java.util.Collections;
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateElement;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.EnumerationRewriting;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 
-public class SumLessOrEqualEncoder extends AbstractAggregateEncoder {
+public class SumLessOrEqualEncoder extends AbstractSumEncoder {
 
 	//@formatter:off
 	private static final ST SUM_LE_ENCODING = Util.aspStringTemplate(
@@ -45,7 +40,7 @@ public class SumLessOrEqualEncoder extends AbstractAggregateEncoder {
 	private final ProgramParser parser = new ProgramParser();
 
 	public SumLessOrEqualEncoder() {
-		super(AggregateFunctionSymbol.SUM, SetUtils.hashSet(ComparisonOperator.LE));
+		super(SetUtils.hashSet(ComparisonOperator.LE));
 	}
 
 	@Override
@@ -64,15 +59,6 @@ public class SumLessOrEqualEncoder extends AbstractAggregateEncoder {
 		BasicRule sumBoundRule = new BasicRule(new NormalHead(sumBound), new ArrayList<>(ctx.getDependencies(aggregateId)));
 		return new InputProgram(ListUtils.union(resultEncoding.getRules(), Collections.singletonList(sumBoundRule)), resultEncoding.getFacts(),
 				new InlineDirectives());
-	}
-
-	@Override
-	protected Atom buildElementRuleHead(String aggregateId, AggregateElement element, AggregateRewritingContext ctx) {
-		Predicate headPredicate = Predicate.getInstance(this.getElementTuplePredicateSymbol(aggregateId), 3);
-		AggregateInfo aggregate = ctx.getAggregateInfo(aggregateId);
-		Term aggregateArguments = aggregate.getAggregateArguments();
-		FunctionTerm elementTuple = FunctionTerm.getInstance(AbstractAggregateEncoder.ELEMENT_TUPLE_FUNCTION_SYMBOL, element.getElementTerms());
-		return new BasicAtom(headPredicate, aggregateArguments, elementTuple, element.getElementTerms().get(0));
 	}
 
 }

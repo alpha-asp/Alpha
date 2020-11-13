@@ -19,16 +19,17 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.Abstrac
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.CountEqualsAggregateEncoder;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.CountLessOrEqualSortingGridEncoder;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.MinMaxAggregateEncoder;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.SumEqualsAggregateEncoder;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.SumEqualsEncoder;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.SumLessOrEqualEncoder;
 
 public class AggregateRewriting extends ProgramTransformation<InputProgram, InputProgram> {
 
+	// TODO don't forget counting grid!
 	private final AggregateRewritingConfig config;
 
 	private final AbstractAggregateEncoder countEqualsEncoder = new CountEqualsAggregateEncoder();
 	private final AbstractAggregateEncoder countLessOrEqualSortingGridEncoder = new CountLessOrEqualSortingGridEncoder();
-	private final AbstractAggregateEncoder sumEqualsEncoder = new SumEqualsAggregateEncoder();
+	private final AbstractAggregateEncoder sumEqualsEncoder = new SumEqualsEncoder();
 	private final AbstractAggregateEncoder sumLessOrEqualsEncoder = new SumLessOrEqualEncoder();
 	private final AbstractAggregateEncoder minEncoder = new MinMaxAggregateEncoder(AggregateFunctionSymbol.MIN);
 	private final AbstractAggregateEncoder maxEncoder = new MinMaxAggregateEncoder(AggregateFunctionSymbol.MAX);

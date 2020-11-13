@@ -9,15 +9,11 @@ import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateElement;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.EnumerationRewriting;
@@ -25,7 +21,7 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.PredicateInternalizer;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 
-public class SumEqualsAggregateEncoder extends AbstractAggregateEncoder {
+public class SumEqualsEncoder extends AbstractSumEncoder {
 
 	//@formatter:off
 	// TODO look into also delegating to cnt_candidate from underlying sorting grid encoder
@@ -48,8 +44,8 @@ public class SumEqualsAggregateEncoder extends AbstractAggregateEncoder {
 
 	private final ProgramParser parser = new ProgramParser();
 
-	public SumEqualsAggregateEncoder() {
-		super(AggregateFunctionSymbol.SUM, SetUtils.hashSet(ComparisonOperator.EQ));
+	public SumEqualsEncoder() {
+		super(SetUtils.hashSet(ComparisonOperator.EQ));
 	}
 
 	@Override
@@ -91,15 +87,6 @@ public class SumEqualsAggregateEncoder extends AbstractAggregateEncoder {
 		InputProgram resultEncoding = PredicateInternalizer.makePrefixedPredicatesInternal(new EnumerationRewriting().apply(parser.parse(resultEncodingAsp)),
 				candidateLeqSumId);
 		return InputProgram.builder(resultEncoding).accumulate(candidateLeqEncoding).build();
-	}
-
-	@Override
-	protected Atom buildElementRuleHead(String aggregateId, AggregateElement element, AggregateRewritingContext ctx) {
-		Predicate headPredicate = Predicate.getInstance(this.getElementTuplePredicateSymbol(aggregateId), 3);
-		AggregateInfo aggregate = ctx.getAggregateInfo(aggregateId);
-		Term aggregateArguments = aggregate.getAggregateArguments();
-		FunctionTerm elementTuple = FunctionTerm.getInstance(AbstractAggregateEncoder.ELEMENT_TUPLE_FUNCTION_SYMBOL, element.getElementTerms());
-		return new BasicAtom(headPredicate, aggregateArguments, elementTuple, element.getElementTerms().get(0));
 	}
 
 }
