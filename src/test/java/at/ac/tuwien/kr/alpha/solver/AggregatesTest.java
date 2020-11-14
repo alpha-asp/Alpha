@@ -38,32 +38,33 @@ import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration
 
 /**
  * Tests if correct answer sets for programs containing aggregates are computed.
- * Only aggregates known to by syntactically supported by {@link CardinalityNormalization} or {@link SumNormalization} are currently tested.
+ * Only aggregates known to by syntactically supported by {@link CardinalityNormalization} or {@link SumNormalization}
+ * are currently tested.
  */
 public abstract class AggregatesTest extends AbstractSolverTests {
 
 	private static final String LS = System.lineSeparator();
-	
+
 	@Test
 	public void aggregateCountLeGroundPositive() {
 		String program = "a." + LS
 				+ "b :- 1 <= #count { 1 : a }.";
 		assertAnswerSet(program, "a,b");
 	}
-	
+
 	@Test
 	public void aggregateCountEqSingleElementPositive() {
 		String program = "thing(1..3)."
 				+ "cnt_things(N) :- N = #count{X : thing(X)}.";
 		assertAnswerSet(program, "thing(1), thing(2), thing(3), cnt_things(3)");
 	}
-	
+
 	@Test
 	public void aggregateCountEqEmptySetPositive() {
 		String program = "cnt_things(N) :- N = #count{X : thing(X)}.";
 		assertAnswerSet(program, "cnt_things(0)");
 	}
-	
+
 	@Test
 	public void aggregateCountLeEmptySetPositive() {
 		String program = "zero_leq_cnt :- 0 <= #count{X : thing(X)}.";
@@ -75,13 +76,70 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 		String program = "sum_things(S) :- S = #sum{X : thing(X)}.";
 		assertAnswerSet(program, "sum_things(0)");
 	}
-	
+
 	@Test
 	public void aggregateSumLeEmptySetPositive() {
 		String program = "zero_leq_sum :- 0 <= #sum{X : thing(X)}.";
 		assertAnswerSet(program, "zero_leq_sum");
-	}	
+	}
+
+	@Test
+	public void aggregateCountLeWithChoicePositive() {
+		String program = "potential_thing(1..4). "
+				+ "{ thing(N) : potential_thing(N)}."
+				+ "two_things_chosen :- thing(N1), thing(N2), N1 != N2."
+				+ "three_things_chosen :- thing(N1), thing(N2), thing(N3), N1 != N2, N1 != N3, N2 != N3."
+				+ ":- not two_things_chosen."
+				+ ":- three_things_chosen."
+				+ "two_leq_cnt :- 2 <= #count{ X : thing(X) }.";
+		assertAnswerSetsWithBase(program,
+				"potential_thing(1), potential_thing(2), potential_thing(3), potential_thing(4), two_things_chosen, two_leq_cnt",
+				"thing(1), thing(2)",
+				"thing(1), thing(3)",
+				"thing(1), thing(4)",
+				"thing(2), thing(3)",
+				"thing(2), thing(4)",
+				"thing(3), thing(4)");
+	}
 	
+	@Test
+	public void aggregateCountEqWithChoicePositive() {
+		String program = "potential_thing(1..4). "
+				+ "{ thing(N) : potential_thing(N)}."
+				+ "two_things_chosen :- thing(N1), thing(N2), N1 != N2."
+				+ "three_things_chosen :- thing(N1), thing(N2), thing(N3), N1 != N2, N1 != N3, N2 != N3."
+				+ ":- not two_things_chosen."
+				+ ":- three_things_chosen."
+				+ "cnt_things(CNT) :- CNT = #count{ X : thing(X) }.";
+		assertAnswerSetsWithBase(program,
+				"potential_thing(1), potential_thing(2), potential_thing(3), potential_thing(4), two_things_chosen, cnt_things(2)",
+				"thing(1), thing(2)",
+				"thing(1), thing(3)",
+				"thing(1), thing(4)",
+				"thing(2), thing(3)",
+				"thing(2), thing(4)",
+				"thing(3), thing(4)");
+	}
+	
+	@Test
+	public void aggregateSumEqWithChoicePositive() {
+		String program = "potential_thing(1..4). "
+				+ "{ thing(N) : potential_thing(N)}."
+				+ "two_things_chosen :- thing(N1), thing(N2), N1 != N2."
+				+ "three_things_chosen :- thing(N1), thing(N2), thing(N3), N1 != N2, N1 != N3, N2 != N3."
+				+ ":- not two_things_chosen."
+				+ ":- three_things_chosen."
+				+ "sum_things(SUM) :- SUM = #sum{ X : thing(X) }.";
+		assertAnswerSetsWithBase(program,
+				"potential_thing(1), potential_thing(2), potential_thing(3), potential_thing(4), two_things_chosen",
+				"thing(1), thing(2), sum_things(3)",
+				"thing(1), thing(3), sum_things(4)",
+				"thing(1), thing(4), sum_things(5)",
+				"thing(2), thing(3), sum_things(5)",
+				"thing(2), thing(4), sum_things(6)",
+				"thing(3), thing(4), sum_things(7)");
+	}
+
 	@Test
 	public void aggregateCountGroundNegative() {
 		String program = "{a}." + LS
@@ -89,7 +147,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				+ "c :- 1 <= #count { 1 : a }.";
 		assertAnswerSets(program, "a,c", "b");
 	}
-	
+
 	@Test
 	public void aggregateCountNonGroundPositive() {
 		String program = "n(1..3)." + LS
@@ -100,7 +158,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				"", "x(1)", "x(2)", "x(3)", "x(1), x(2)", "x(1), x(3)",
 				"x(2), x(3)", "x(1), x(2), x(3), ok");
 	}
-	
+
 	@Test
 	public void aggregateCountNonGroundLowerAndUpper() {
 		String program = "n(1..3)." + LS
@@ -114,14 +172,14 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				"", "x(1)", "x(2)", "x(3)", "x(1), x(2), ok", "x(1), x(3), ok",
 				"x(2), x(3), ok", "x(1), x(2), x(3), exceedsMax");
 	}
-	
+
 	@Test
 	public void aggregateSumGroundLower() {
 		String program = "a." + LS
 				+ "b :- 5 <= #sum { 2 : a; 3 }.";
 		assertAnswerSet(program, "a,b");
 	}
-	
+
 	@Test
 	public void aggregateSumNonGroundLowerAndUpper() {
 		String program = "n(1..3)." + LS
@@ -135,7 +193,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				"", "x(1)", "x(2)", "x(3), ok", "x(1), x(2), ok", "x(1), x(3), ok",
 				"x(2), x(3), exceedsMax", "x(1), x(2), x(3), exceedsMax");
 	}
-	
+
 	@Test
 	public void aggregateSumNonGroundLower() {
 		String program = "n(1..3)." + LS
@@ -147,10 +205,10 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				"", "x(1)", "x(2)", "x(3), ok", "x(1), x(2), ok", "x(1), x(3), ok",
 				"x(2), x(3), ok", "x(1), x(2), x(3), ok");
 	}
-	
+
 	@Test
 	public void aggregateSumComputed() {
-		ignoreTestForNaiveSolver();	// Do not run this test case with the naive solver.
+		ignoreTestForNaiveSolver(); // Do not run this test case with the naive solver.
 		String program = "n(1..3)." + LS
 				+ "{x(N)} :- n(N)." + LS
 				+ "potential_sum(0..6)." + LS
@@ -167,7 +225,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				"x(2), x(3), min(0), min(1), min(2), min(3), min(4), min(5), sum(5)",
 				"x(1), x(2), x(3), min(0), min(1), min(2), min(3), min(4), min(5), min(6), sum(6)");
 	}
-	
+
 	@Test
 	public void aggregateCountGlobalVariable() {
 		String program = "box(1..2)." + LS
@@ -178,7 +236,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 		assertAnswerSetsWithBase(program, "box(1), box(2), in(1,1), in(1,2), in(2,2)",
 				"full(2)");
 	}
-	
+
 	@Test
 	public void aggregateSumGlobalVariable() {
 		String program = "box(1..2)." + LS
@@ -190,7 +248,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 		assertAnswerSetsWithBase(program, "box(1), box(2), item_size(1,1), item_size(2,2), in(1,1), in(1,2), in(2,2)",
 				"full(2)");
 	}
-	
+
 	@Override
 	protected Solver getInstance(InputProgram program) {
 		Alpha system = new Alpha();
@@ -198,9 +256,10 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 		AtomStore atomStore = new AtomStoreImpl();
 		NormalProgram normal = system.normalizeProgram(program);
 		InternalProgram preprocessed = InternalProgram.fromNormalProgram(normal);
-		return super.getInstance(atomStore, GrounderFactory.getInstance(grounderName, preprocessed, atomStore, p->true, new GrounderHeuristicsConfiguration(), true));
+		return super.getInstance(atomStore,
+				GrounderFactory.getInstance(grounderName, preprocessed, atomStore, p -> true, new GrounderHeuristicsConfiguration(), true));
 	}
-	
+
 	protected abstract boolean useCountingGridNormalization();
 
 }

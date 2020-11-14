@@ -13,9 +13,8 @@ public final class CountEncoder extends StringtemplateBasedAggregateEncoder {
 			SumEncoder.class.getResource("/stringtemplates/aggregate-encodings.stg"));
 
 	private static final ST CNT_LE_SORTING_GRID_TEMPLATE = AGGREGATE_ENCODINGS.getInstanceOf("cnt_le_sorting_grid");
-	private static final ST CNT_EQ_SORTING_GRID_TEMPLATE = AGGREGATE_ENCODINGS.getInstanceOf("cnt_eq_sorting_grid");
+	private static final ST CNT_EQ_TEMPLATE = AGGREGATE_ENCODINGS.getInstanceOf("cnt_eq");
 	private static final ST CNT_LE_COUNTING_GRID_TEMPLATE = AGGREGATE_ENCODINGS.getInstanceOf("cnt_le_counting_grid");
-	private static final ST CNT_EQ_COUNTING_GRID_TEMPLATE = AGGREGATE_ENCODINGS.getInstanceOf("cnt_eq_counting_grid");
 
 	private CountEncoder(ComparisonOperator acceptedOperator, ST encodingTemplate) {
 		super(AggregateFunctionSymbol.COUNT, acceptedOperator, encodingTemplate);
@@ -26,7 +25,7 @@ public final class CountEncoder extends StringtemplateBasedAggregateEncoder {
 	}
 
 	public static CountEncoder buildCountEqualsEncoder(boolean useSortingGrid) {
-		return new CountEncoder(ComparisonOperator.EQ, useSortingGrid ? CNT_EQ_SORTING_GRID_TEMPLATE : CNT_EQ_COUNTING_GRID_TEMPLATE);
+		return new CountEncoder(ComparisonOperator.EQ, CNT_EQ_TEMPLATE);
 	}
 
 }

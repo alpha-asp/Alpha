@@ -1,23 +1,22 @@
 delimiters "$", "$"
 
-cnt_eq_sorting_grid (id, result_predicate, element_tuple) ::= <<
-	$! Include "cnt_le_sorting_grid" as a subtemplate !$
-	$cnt_le_sorting_grid(id,{$id$_cnt_le_result},element_tuple)$
+cnt_eq(id, result_predicate, element_tuple) ::= <<
+	#enumeration_predicate_is enum.
+	$! Input Numbers !$
+	$id$_input_number(ARGS, IDX) :- $element_tuple$(ARGS, TPL), enum(ARGS, TPL, IDX).
 
-	$! We basically want to enumerate all element tuples - use sorting_network_input_number as bound !$
-	$id$_bound(ARGS, I) :- $id$_sorting_network_input_number(ARGS, I).
+	$!Fallback rule - even if no input number exists, the count is still zero!$
+	$id$_sum(ARGS, 0, 0)    :- $id$_bound(ARGS, _).
 
-	$result_predicate$(ARGS, CNT) :- $id$_cnt_le_result(ARGS, CNT), not $id$_cnt_le_result(ARGS, CNT_NEXT), CNT_NEXT = CNT + 1.
->>
+	$id$_span(ARGS, 1..I1) :- I1 = I-1, $id$_input_number(ARGS, I).
+	$id$_sum(ARGS, 0, 0)    :- $id$_input_number(ARGS, _).
+	$id$_sum(ARGS, I, S)    :- $id$_sum(ARGS, I1, S), I1 = I-1, $id$_span(ARGS, I).
+	$id$_sum(ARGS, I, S1)   :- $id$_sum(ARGS, I1, S), S1 = S+1, I1 = I-1, $id$_input_number(ARGS, I).
 
-cnt_eq_counting_grid (id, result_predicate, element_tuple) ::= <<
-	$! Include "cnt_le_counting_grid" as a subtemplate !$
-	$cnt_le_counting_grid(id,{$id$_cnt_le_result},element_tuple)$
-
-	$! We basically want to enumerate all element tuples - use sorting_network_input_number as bound !$
-	$id$_bound(ARGS, I) :- $id$_sorting_network_input_number(ARGS, I).
-
-	$result_predicate$(ARGS, CNT) :- $id$_cnt_le_result(ARGS, CNT), not $id$_cnt_le_result(ARGS, CNT_NEXT), CNT_NEXT = CNT + 1.
+	$!We want to find the maximum value that is still less or equal the actual count in oter to find the exact count!$
+	$id$_sum_less_than(ARGS, LESS, THAN) :- $id$_sum(ARGS, _, LESS), $id$_sum(ARGS, _, THAN), LESS < THAN.
+	$id$_sum_has_greater(ARGS, NUM) :- $id$_sum_less_than(ARGS, NUM, _).
+	$result_predicate$(ARGS, CNT) :- $id$_sum(ARGS, _, CNT), not $id$_sum_has_greater(ARGS, CNT).
 >>
 
 /*
