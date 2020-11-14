@@ -4,6 +4,7 @@ import org.apache.commons.collections4.ListUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
@@ -26,7 +27,7 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewriti
 public abstract class AbstractAggregateEncoder {
 
 	protected static final String ELEMENT_TUPLE_FUNCTION_SYMBOL = "tuple";
-	
+
 	private final AggregateFunctionSymbol aggregateFunctionToEncode;
 	private final Set<ComparisonOperator> acceptedOperators;
 
@@ -58,18 +59,22 @@ public abstract class AbstractAggregateEncoder {
 		// InputProgram literalEncoding = encodeAggregateResult(aggregateToEncode, ctx);
 		List<BasicRule> elementEncodingRules = new ArrayList<>();
 		for (AggregateElement elementToEncode : literalToEncode.getAtom().getAggregateElements()) {
-			elementEncodingRules.add(PredicateInternalizer.makePrefixedPredicatesInternal(encodeAggregateElement(aggregateId, elementToEncode, ctx),
-					aggregateId));
-//			elementEncodingRules.add(encodeAggregateElement(aggregateId, elementToEncode));
+			Optional<BasicRule> elementRule = encodeAggregateElement(aggregateId, elementToEncode, ctx);
+			if (elementRule.isPresent()) {
+				elementEncodingRules.add(PredicateInternalizer.makePrefixedPredicatesInternal(elementRule.get(), aggregateId));
+			}
 		}
 		return new InputProgram(ListUtils.union(literalEncoding.getRules(), elementEncodingRules), literalEncoding.getFacts(), new InlineDirectives());
 	}
 
 	protected abstract InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx);
 
-	protected BasicRule encodeAggregateElement(String aggregateId, AggregateElement element, AggregateRewritingContext ctx) {
+	// TODO document this! We're building signatures around edge cases here after all...
+	protected Optional<BasicRule> encodeAggregateElement(String aggregateId, AggregateElement element, AggregateRewritingContext ctx) {
 		Atom headAtom = buildElementRuleHead(aggregateId, element, ctx);
-		return new BasicRule(new NormalHead(headAtom), ListUtils.union(element.getElementLiterals(), new ArrayList<>(ctx.getDependencies(aggregateId))));
+		return Optional.of(
+				new BasicRule(new NormalHead(headAtom),
+						ListUtils.union(element.getElementLiterals(), new ArrayList<>(ctx.getDependencies(aggregateId)))));
 	}
 
 	/**
@@ -90,7 +95,7 @@ public abstract class AbstractAggregateEncoder {
 		FunctionTerm elementTuple = FunctionTerm.getInstance(ELEMENT_TUPLE_FUNCTION_SYMBOL, element.getElementTerms());
 		return new BasicAtom(headPredicate, aggregateArguments, elementTuple);
 	}
-	
+
 	protected String getElementTuplePredicateSymbol(String aggregateId) {
 		return aggregateId + "_element_tuple";
 	}

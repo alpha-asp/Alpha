@@ -33,8 +33,6 @@ public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 	//@formatter:on
 
 	private final ProgramParser parser = new ProgramParser();
-	// TODO only use sorting grid if conf'ed, maybe create an encoder factory...
-	private final AbstractAggregateEncoder countLeDelegateEncoder = new CountLessOrEqualSortingGridEncoder();
 
 	public CountEqualsAggregateEncoder() {
 		super(AggregateFunctionSymbol.COUNT, SetUtils.hashSet(ComparisonOperator.EQ));
@@ -51,8 +49,9 @@ public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 		AggregateLiteral candidateLeqCount = new AggregateLiteral(
 				new AggregateAtom(ComparisonOperator.LE, valueVar, AggregateFunctionSymbol.COUNT, sourceAtom.getAggregateElements()), true);
 		String cntCandidatePredicateSymbol = aggregateId + "_candidate";
-		BasicLiteral cntCandidate = new BasicLiteral(
-				new BasicAtom(Predicate.getInstance(cntCandidatePredicateSymbol, 2), aggregateToEncode.getAggregateArguments(), valueVar), true);
+		Predicate candidatePredicate = Predicate.getInstance(cntCandidatePredicateSymbol, 2);
+		BasicAtom cntCandidateAtom = new BasicAtom(candidatePredicate, aggregateToEncode.getAggregateArguments(), valueVar);
+		BasicLiteral cntCandidate = new BasicLiteral(cntCandidateAtom, true);
 		// Create an encoder for the newly built " <= #count{..}" literal and rewrite it.
 		// Note that the literal itself is not written into the encoding of the original literal,
 		// but only its substitute "aggregate result" literal.
@@ -60,7 +59,7 @@ public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 		String candidateLeqCntId = candidateLeqCountCtx.registerAggregateLiteral(candidateLeqCount, Collections.singleton(cntCandidate));
 		// The encoder won't encode AggregateElements of the newly created literal separately but alias them
 		// with the element encoding predicates for the original literal.
-		AbstractAggregateEncoder candidateLeqEncoder = new ElementRuleDelegatingEncoder(aggregateId, this.countLeDelegateEncoder);
+		AbstractAggregateEncoder candidateLeqEncoder = CountLessOrEqualSortingGridEncoder.createEmbeddedEncoder(cntCandidateAtom);
 		InputProgram candidateLeqEncoding = candidateLeqEncoder
 				.encodeAggregateLiteral(candidateLeqCountCtx.getAggregateInfo(candidateLeqCntId), candidateLeqCountCtx);
 		// Create a fresh template to make sure attributes are empty at each call to encodeAggregateResult.
