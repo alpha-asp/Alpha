@@ -27,8 +27,6 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import org.junit.Test;
 
-import java.io.IOException;
-
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
@@ -47,45 +45,45 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	private static final String LS = System.lineSeparator();
 	
 	@Test
-	public void testAggregate_CountLe_Ground_Positive() throws IOException {
+	public void aggregateCountLeGroundPositive() {
 		String program = "a." + LS
 				+ "b :- 1 <= #count { 1 : a }.";
 		assertAnswerSet(program, "a,b");
 	}
 	
 	@Test
-	public void testAggregate_CountEq_SingleElement_Positive() throws IOException {
+	public void aggregateCountEqSingleElementPositive() {
 		String program = "thing(1..3)."
 				+ "cnt_things(N) :- N = #count{X : thing(X)}.";
 		assertAnswerSet(program, "thing(1), thing(2), thing(3), cnt_things(3)");
 	}
 	
 	@Test
-	public void testAggregate_CountEq_EmptySet_Positive() throws IOException {
+	public void aggregateCountEqEmptySetPositive() {
 		String program = "cnt_things(N) :- N = #count{X : thing(X)}.";
 		assertAnswerSet(program, "cnt_things(0)");
 	}
 	
 	@Test
-	public void testAggregate_CountLe_EmptySet_Positive() throws IOException {
+	public void aggregateCountLeEmptySetPositive() {
 		String program = "zero_leq_cnt :- 0 <= #count{X : thing(X)}.";
 		assertAnswerSet(program, "zero_leq_cnt");
 	}
 
 	@Test
-	public void testAggregate_SumEq_EmptySet_Positive() throws IOException {
+	public void aggregateSumEqEmptySetPositive() {
 		String program = "sum_things(S) :- S = #sum{X : thing(X)}.";
 		assertAnswerSet(program, "sum_things(0)");
 	}
 	
 	@Test
-	public void testAggregate_SumLe_EmptySet_Positive() throws IOException {
+	public void aggregateSumLeEmptySetPositive() {
 		String program = "zero_leq_sum :- 0 <= #sum{X : thing(X)}.";
 		assertAnswerSet(program, "zero_leq_sum");
 	}	
 	
 	@Test
-	public void testAggregate_Count_Ground_Negative() throws IOException {
+	public void aggregateCountGroundNegative() {
 		String program = "{a}." + LS
 				+ "b :- not c." + LS
 				+ "c :- 1 <= #count { 1 : a }.";
@@ -93,7 +91,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	}
 	
 	@Test
-	public void testAggregate_Count_NonGround_Positive() throws IOException {
+	public void aggregateCountNonGroundPositive() {
 		String program = "n(1..3)." + LS
 				+ "{x(N)} :- n(N)." + LS
 				+ "min(3)." + LS
@@ -104,7 +102,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	}
 	
 	@Test
-	public void testAggregate_Count_NonGround_LowerAndUpper() throws IOException {
+	public void aggregateCountNonGroundLowerAndUpper() {
 		String program = "n(1..3)." + LS
 				+ "{x(N)} :- n(N)." + LS
 				+ "min(2)." + LS
@@ -118,14 +116,14 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	}
 	
 	@Test
-	public void testAggregate_Sum_Ground_Lower() throws IOException {
+	public void aggregateSumGroundLower() {
 		String program = "a." + LS
 				+ "b :- 5 <= #sum { 2 : a; 3 }.";
 		assertAnswerSet(program, "a,b");
 	}
 	
 	@Test
-	public void testAggregate_Sum_NonGround_LowerAndUpper() throws IOException {
+	public void aggregateSumNonGroundLowerAndUpper() {
 		String program = "n(1..3)." + LS
 				+ "{x(N)} :- n(N)." + LS
 				+ "min(3)." + LS
@@ -139,7 +137,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	}
 	
 	@Test
-	public void testAggregate_Sum_NonGround_Lower() throws IOException {
+	public void aggregateSumNonGroundLower() {
 		String program = "n(1..3)." + LS
 				+ "{x(N)} :- n(N)." + LS
 				+ "min(3)." + LS
@@ -150,11 +148,8 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				"x(2), x(3), ok", "x(1), x(2), x(3), ok");
 	}
 	
-	/**
-	 * TODO: Currently it is a bit tedious to compute sums. Support for equality comparison of aggregates, e.g. {@code sum(S) :- S = #sum { N : n(N), x(N) }.} is still lacking.
-	 */
 	@Test
-	public void testAggregate_Sum_Computed() throws IOException {
+	public void aggregateSumComputed() {
 		ignoreTestForNaiveSolver();	// Do not run this test case with the naive solver.
 		String program = "n(1..3)." + LS
 				+ "{x(N)} :- n(N)." + LS
@@ -174,7 +169,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	}
 	
 	@Test
-	public void testAggregate_Count_GlobalVariable() throws IOException {
+	public void aggregateCountGlobalVariable() {
 		String program = "box(1..2)." + LS
 				+ "in(1,1)." + LS
 				+ "in(1,2)." + LS
@@ -185,7 +180,7 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	}
 	
 	@Test
-	public void testAggregate_Sum_GlobalVariable() throws IOException {
+	public void aggregateSumGlobalVariable() {
 		String program = "box(1..2)." + LS
 				+ "item_size(I,I) :- I=1..2." + LS
 				+ "in(1,1)." + LS
