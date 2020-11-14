@@ -61,6 +61,30 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	}
 	
 	@Test
+	public void testAggregate_CountEq_EmptySet_Positive() throws IOException {
+		String program = "cnt_things(N) :- N = #count{X : thing(X)}.";
+		assertAnswerSet(program, "cnt_things(0)");
+	}
+	
+	@Test
+	public void testAggregate_CountLe_EmptySet_Positive() throws IOException {
+		String program = "zero_leq_cnt :- 0 <= #count{X : thing(X)}.";
+		assertAnswerSet(program, "zero_leq_cnt");
+	}
+
+	@Test
+	public void testAggregate_SumEq_EmptySet_Positive() throws IOException {
+		String program = "sum_things(S) :- S = #sum{X : thing(X)}.";
+		assertAnswerSet(program, "sum_things(0)");
+	}
+	
+	@Test
+	public void testAggregate_SumLe_EmptySet_Positive() throws IOException {
+		String program = "zero_leq_sum :- 0 <= #sum{X : thing(X)}.";
+		assertAnswerSet(program, "zero_leq_sum");
+	}	
+	
+	@Test
 	public void testAggregate_Count_Ground_Negative() throws IOException {
 		String program = "{a}." + LS
 				+ "b :- not c." + LS

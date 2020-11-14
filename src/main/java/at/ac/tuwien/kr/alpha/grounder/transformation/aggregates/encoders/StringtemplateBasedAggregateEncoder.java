@@ -13,6 +13,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.EnumerationRewriting;
@@ -40,7 +41,7 @@ public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggreg
 	@Override
 	protected InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx) {
 		String aggregateId = aggregateToEncode.getId();
-		
+
 		// Generate encoding
 		ST coreEncodingTemplate = new ST(this.encodingTemplate);
 		coreEncodingTemplate.add("result_predicate", aggregateToEncode.getOutputAtom().getPredicate().getName());
@@ -51,14 +52,25 @@ public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggreg
 		// Create the basic program
 		InputProgram coreEncoding = new EnumerationRewriting().apply(parser.parse(coreEncodingAsp));
 
+		BasicRule boundRule = null;
 		if (this.needsBoundRule) {
-			BasicRule boundRule = this.buildBoundRule(aggregateToEncode, ctx);
+			boundRule = this.buildBoundRule(aggregateToEncode, ctx);
 			// Combine core encoding and bound rule
-			return new InputProgram(ListUtils.union(coreEncoding.getRules(), Collections.singletonList(boundRule)), coreEncoding.getFacts(),
-					new InlineDirectives());
 		} else {
-			return coreEncoding;
+			/*
+			 * Even if we don't have to create a bound rule because the aggregate encoding generates its own candidate values,
+			 * we still generate a rule deriving zero as a bound, so that sums and counts over empty sets correctly return 0.
+			 */
+			boundRule = this.buildZeroBoundRule(aggregateToEncode, ctx);
 		}
+		return new InputProgram(ListUtils.union(coreEncoding.getRules(), Collections.singletonList(boundRule)), coreEncoding.getFacts(),
+				new InlineDirectives());
+	}
+
+	private BasicRule buildZeroBoundRule(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx) {
+		BasicAtom bound = new BasicAtom(Predicate.getInstance(aggregateToEncode.getId() + "_bound", 2),
+				aggregateToEncode.getAggregateArguments(), ConstantTerm.getInstance(0));
+		return new BasicRule(new NormalHead(bound), new ArrayList<>(ctx.getDependencies(aggregateToEncode.getId())));
 	}
 
 	private BasicRule buildBoundRule(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx) {
