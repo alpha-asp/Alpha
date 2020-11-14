@@ -69,8 +69,9 @@ public class AggregateRewritingTest {
 	//@formatter:on
 
 	@Test
-	public void countLeSimple() {
+	public void countLeSortingGridSimple() {
 		Alpha alpha = new Alpha();
+		alpha.getConfig().setEvaluateStratifiedPart(false);
 		InputProgram input = alpha.readProgramString(CNT_LE1_ASP);
 		NormalProgram normalized = alpha.normalizeProgram(input);
 		//System.out.println(normalized);
@@ -95,7 +96,7 @@ public class AggregateRewritingTest {
 	}
 
 	@Test
-	public void countEqSimple() {
+	public void countEqSortingGridSimple() {
 		Alpha alpha = new Alpha();
 		alpha.getConfig().setEvaluateStratifiedPart(false);
 		InputProgram input = alpha.readProgramString(CNT_EQ1_ASP);
@@ -117,6 +118,58 @@ public class AggregateRewritingTest {
 		Assert.assertTrue(answerSet.getPredicateInstances(cntThings).contains(new BasicAtom(cntThings, ConstantTerm.getInstance(3))));
 	}
 
+	@Test
+	public void countLeCountingGridSimple() {
+		Alpha alpha = new Alpha();
+		alpha.getConfig().setEvaluateStratifiedPart(false);
+		alpha.getConfig().setUseNormalizationGrid(true);
+		InputProgram input = alpha.readProgramString(CNT_LE1_ASP);
+		NormalProgram normalized = alpha.normalizeProgram(input);
+		//System.out.println(normalized);
+		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
+		Assert.assertEquals(1, answerSets.size());
+		AnswerSet answerSet = answerSets.get(0);
+		Predicate thing = Predicate.getInstance("thing", 1);
+		Predicate candidate = Predicate.getInstance("candidate", 1);
+		Predicate cntLe = Predicate.getInstance("cnt_le", 1);
+
+		//System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
+
+		Assert.assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(75))));
+		Assert.assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(76))));
+
+		Assert.assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(2))));
+		Assert.assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(3))));
+		Assert.assertTrue(answerSet.getPredicateInstances(candidate).contains(new BasicAtom(candidate, ConstantTerm.getInstance(4))));
+
+		Assert.assertTrue(answerSet.getPredicates().contains(cntLe));
+		Assert.assertTrue(answerSet.getPredicateInstances(cntLe).contains(new BasicAtom(cntLe, ConstantTerm.getInstance(2))));
+	}
+
+	@Test
+	public void countEqCountingGridSimple() {
+		Alpha alpha = new Alpha();
+		alpha.getConfig().setEvaluateStratifiedPart(false);
+		alpha.getConfig().setUseNormalizationGrid(true);
+		InputProgram input = alpha.readProgramString(CNT_EQ1_ASP);
+		NormalProgram normalized = alpha.normalizeProgram(input);
+		//System.out.println(normalized);
+		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
+		Assert.assertEquals(1, answerSets.size());
+		AnswerSet answerSet = answerSets.get(0);
+		Predicate thing = Predicate.getInstance("thing", 1);
+		Predicate cntThings = Predicate.getInstance("cnt_things", 1);
+
+		//System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
+
+		Assert.assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(4))));
+		Assert.assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(5))));
+		Assert.assertTrue(answerSet.getPredicateInstances(thing).contains(new BasicAtom(thing, ConstantTerm.getInstance(6))));
+
+		Assert.assertTrue(answerSet.getPredicates().contains(cntThings));
+		Assert.assertTrue(answerSet.getPredicateInstances(cntThings).contains(new BasicAtom(cntThings, ConstantTerm.getInstance(3))));
+	}	
+	
 	@Test
 	public void countEqGlobalVars() {
 		Alpha alpha = new Alpha();

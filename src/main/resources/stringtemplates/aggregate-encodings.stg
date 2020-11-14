@@ -10,6 +10,16 @@ cnt_eq_sorting_grid (id, result_predicate, element_tuple) ::= <<
 	$result_predicate$(ARGS, CNT) :- $id$_cnt_le_result(ARGS, CNT), not $id$_cnt_le_result(ARGS, CNT_NEXT), CNT_NEXT = CNT + 1.
 >>
 
+cnt_eq_counting_grid (id, result_predicate, element_tuple) ::= <<
+	$! Include "cnt_le_counting_grid" as a subtemplate !$
+	$cnt_le_counting_grid(id,{$id$_cnt_le_result},element_tuple)$
+
+	$! We basically want to enumerate all element tuples - use sorting_network_input_number as bound !$
+	$id$_bound(ARGS, I) :- $id$_sorting_network_input_number(ARGS, I).
+
+	$result_predicate$(ARGS, CNT) :- $id$_cnt_le_result(ARGS, CNT), not $id$_cnt_le_result(ARGS, CNT_NEXT), CNT_NEXT = CNT + 1.
+>>
+
 /*
  * The core (i.e. input-independent) part of a sorting-network based ASP encoding for an aggregate literal of the form "X <= #count{...}".
  * For an aggregate literal of form "K <= #count{ N : p(N); N : q(N)}", an encoding needs to provide rules that map each aggregate element
@@ -85,6 +95,19 @@ cnt_le_sorting_grid (id, result_predicate, element_tuple) ::= <<
 	$id$_sorting_network_done(N,D) :- $id$_sorting_network_log2(N,P), $id$_sorting_network_lvl(P,P,D).
 
 	$id$_sorting_network_log2(Ip2, I) :- Ip2 = 2 ** I, I = 0..30.
+>>
+
+cnt_le_counting_grid (id, result_predicate, element_tuple) ::= <<
+	#enumeration_predicate_is enum.
+
+	$! Sorting network input !$
+	$id$_sorting_network_input_number(ARGS, IDX) :- $element_tuple$(ARGS, TPL), enum(ARGS, TPL, IDX).
+
+	$id$_span(ARGS, 1..I1) :- I1 = I-1, $id$_sorting_network_input_number(ARGS, I).
+	$id$_sum(ARGS, 0, 0)    :- $id$_sorting_network_input_number(ARGS, _).
+	$id$_sum(ARGS, I, S)    :- $id$_sum(ARGS, I1, S), I1 = I-1, $id$_span(ARGS, I).
+	$id$_sum(ARGS, I, S1)   :- $id$_sum(ARGS, I1, S), S1 = S+1, I1 = I-1, $id$_sorting_network_input_number(ARGS, I), $id$_bound(ARGS, K), S < K.
+	$result_predicate$(ARGS, K) :- $id$_bound(ARGS, K), K <= S, $id$_sum(ARGS, _, S).
 >>
 
 /*
