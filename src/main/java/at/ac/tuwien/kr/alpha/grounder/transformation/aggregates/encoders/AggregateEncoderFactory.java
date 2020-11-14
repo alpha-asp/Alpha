@@ -1,5 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders;
 
+import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
+
 public class AggregateEncoderFactory {
 
 	private final boolean encodeCountUsingSortingCircuit;
@@ -13,7 +15,11 @@ public class AggregateEncoderFactory {
 	}
 
 	public AbstractAggregateEncoder buildCountLessOrEqualEncoder() {
-		return new CountLessOrEqualEncoder();
+		return CountEncoder.buildCountLessOrEqualEncoder(this.encodeCountUsingSortingCircuit);
+	}
+
+	public AbstractAggregateEncoder buildCountEqualsEncoder() {
+		return CountEncoder.buildCountEqualsEncoder(this.encodeCountUsingSortingCircuit);
 	}
 
 	public AbstractAggregateEncoder buildSumLessOrEqualEncoder() {
@@ -22,6 +28,14 @@ public class AggregateEncoderFactory {
 
 	public AbstractAggregateEncoder buildSumEqualsEncoder() {
 		return SumEncoder.buildSumEqualsEncoder();
+	}
+
+	public AbstractAggregateEncoder buildMinEncoder() {
+		return new MinMaxEncoder(AggregateFunctionSymbol.MIN);
+	}
+
+	public AbstractAggregateEncoder buildMaxEncoder() {
+		return new MinMaxEncoder(AggregateFunctionSymbol.MAX);
 	}
 
 }
