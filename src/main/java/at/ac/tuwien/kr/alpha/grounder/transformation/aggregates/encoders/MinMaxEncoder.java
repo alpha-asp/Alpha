@@ -17,7 +17,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 
-public class MinMaxAggregateEncoder extends AbstractAggregateEncoder {
+public class MinMaxEncoder extends AbstractAggregateEncoder {
 
 	//@formatter:off
 	private static final String MINMAX_ELEMENT_ORDERING =
@@ -50,7 +50,7 @@ public class MinMaxAggregateEncoder extends AbstractAggregateEncoder {
 
 	private final ProgramParser parser = new ProgramParser();
 
-	public MinMaxAggregateEncoder(AggregateFunctionSymbol func) {
+	public MinMaxEncoder(AggregateFunctionSymbol func) {
 		super(func, SetUtils.hashSet(ComparisonOperator.values()));
 		if (!(func == AggregateFunctionSymbol.MAX || func == AggregateFunctionSymbol.MIN)) {
 			throw new IllegalArgumentException("Encoder " + this.getClass().getSimpleName() + " can only encode min/max aggregates!");

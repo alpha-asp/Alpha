@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.SimpleAnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
@@ -35,6 +36,10 @@ public class AggregateRewritingTest {
 	private static final String SUM_EQ1_ASP =
 			"thing(2). thing(4). thing(6)."
 			+ "sum_things(S) :- S = #sum{K : thing(K)}.";
+	// Smoke-test case for "X = #sum{...}" aggregate
+	private static final String SUM_LE1_ASP =
+			"thing(2). thing(4). thing(6). bound(11)."
+			+ "bound_le_sum(B) :- B <= #sum{K : thing(K)}, bound(B).";
 	
 	// Basic ASP representation of a triangular undirected graph, used across multiple test cases
 	private static final String TEST_GRAPH_ASP = 
@@ -181,16 +186,34 @@ public class AggregateRewritingTest {
 		alpha.getConfig().setEvaluateStratifiedPart(false);
 		InputProgram input = alpha.readProgramString(SUM_EQ1_ASP);
 		NormalProgram normalized = alpha.normalizeProgram(input);
-		//System.out.println(normalized);
+		System.out.println(normalized);
 		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
 		Assert.assertEquals(1, answerSets.size());
 		AnswerSet answerSet = answerSets.get(0);
 		Predicate sumThings = Predicate.getInstance("sum_things", 1);
 
-		//System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
+		System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
 
 		Assert.assertTrue(answerSet.getPredicates().contains(sumThings));
 		Assert.assertTrue(answerSet.getPredicateInstances(sumThings).contains(new BasicAtom(sumThings, ConstantTerm.getInstance(12))));
 	}
+
+	@Test
+	public void sumLessOrEqual1() {
+		Alpha alpha = new Alpha();
+		alpha.getConfig().setEvaluateStratifiedPart(false);
+		InputProgram input = alpha.readProgramString(SUM_LE1_ASP);
+		NormalProgram normalized = alpha.normalizeProgram(input);
+		System.out.println(normalized);
+		List<AnswerSet> answerSets = alpha.solve(normalized, (p) -> true).collect(Collectors.toList());
+		Assert.assertEquals(1, answerSets.size());
+		AnswerSet answerSet = answerSets.get(0);
+		Predicate boundLe = Predicate.getInstance("bound_le_sum", 1);
+
+		System.out.println(new SimpleAnswerSetFormatter("\n").format(answerSet));
+
+		Assert.assertTrue(answerSet.getPredicates().contains(boundLe));
+		Assert.assertTrue(answerSet.getPredicateInstances(boundLe).contains(new BasicAtom(boundLe, ConstantTerm.getInstance(11))));
+	}	
 
 }

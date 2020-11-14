@@ -1,0 +1,119 @@
+delimiters "$", "$"
+
+/*
+ * The core (i.e. input-independent) part of a sorting-network based ASP encoding for an aggregate literal of the form "X <= #count{...}".
+ * For an aggregate literal of form "K <= #count{ N : p(N); N : q(N)}", an encoding needs to provide rules that map each aggregate element
+ * to ground instances of a candidate predicate "$candidate$/2" whose first argument is a funtion term wrapping global variables of the original aggregate literal.
+ * E.g. "sorting_network_candidate(ARGS, IDX) :- element_tuple(ARGS, tuple(X)), _Enumeration(ARGS, tuple(X), I).",
+ * where "element_tuple" could be defined as "element_tuple(ARGS, tuple(X)) :- p(X)".
+ * Furthermore, code using this encoding needs to provide a rules deriving a "bound" predicate that works as an upper bound for the sorting network,
+ * i.e. binds the variable that is compared with the aggregate. When rewriting rules, the body of the bound rule should hold all literals binding
+ * any variables on which the original aggregate literal depends, e.g. "bound(ARGS, K) :- atom_binding_k(K), something_binding_args(ARGS)."
+ *
+ * The rules deriving the aggregate result predicate in this encoding fire if and only if the original aggregate literal is true.
+ */
+count_le_sorting_grid (id, candidate, result_predicate )::= <<
+	% aggregate result rule
+	$result_predicate$(ARGS, K) :- $id$_bound(ARGS, K), K<=0.
+	$result_predicate$(ARGS, K) :- $id$_bound(ARGS, K), $id$_sorting_network_v(ARGS, K, D), $id$_sorting_network_done(N, D), K<=N.
+
+	% Sorting network encoding
+	$id$_sorting_network_span(ARGS, I) :- $candidate$(ARGS, I).
+	$id$_sorting_network_span(ARGS, Im1) :- $id$_sorting_network_span(ARGS, I), 1<I, Im1 = I-1.
+
+	$id$_sorting_network_v(ARGS, I, D) :- $candidate$(ARGS, I), D=0.
+
+	$id$_sorting_network_v(ARGS, I, D) :-
+		$id$_sorting_network_v(ARGS, I, D1), D1=D-1, $id$_sorting_network_comp(I, _, D),
+		$id$_sorting_network_dh(ARGS, D).
+
+	$id$_sorting_network_v(ARGS, I, D) :-
+		$id$_sorting_network_v(ARGS, J, D1), D1=D-1,
+		$id$_sorting_network_comp(I, J, D), $id$_sorting_network_dh(ARGS, D).
+
+	$id$_sorting_network_v(ARGS, J, D) :-
+		$id$_sorting_network_v(ARGS, I, D1), D1=D-1,
+		$id$_sorting_network_comp(I, J, D), $id$_sorting_network_dh(ARGS, D),
+		$id$_sorting_network_v(ARGS, J, D1).
+
+	$id$_sorting_network_v(ARGS, I, D) :-
+	 	$id$_sorting_network_v(ARGS, I, D1), D1=D-1,
+	 	$id$_sorting_network_pass(I, D), $id$_sorting_network_dh(ARGS, D).
+
+	$id$_sorting_network_span_project(I) :- $id$_sorting_network_span(_, I).
+
+	$id$_sorting_network_part(P) :- $id$_sorting_network_span_project(I), Im1=I-1, $id$_sorting_network_log2(Im1, P1), P=P1+1.
+
+	$id$_sorting_network_lvl(1,1,1) :- $id$_sorting_network_part(1).
+	$id$_sorting_network_lvl(L,P1,DL) :-
+		$id$_sorting_network_lvl(P,P,D), P1=P+1, $id$_sorting_network_part(P1), L=1..P1, DL=D+L.
+
+	$id$_sorting_network_comp(I,J,D) :-
+		$id$_sorting_network_lvl(1,P,D), $id$_sorting_network_span_project(I), I<J, J=((I-1)^(2**(P-1)))+1.
+
+	$id$_sorting_network_comp(I,J,D) :-
+		$id$_sorting_network_lvl(L,P,D), $id$_sorting_network_span_project(I),
+		J=I+S, 1<L, N!=0, N!=B-1, N \ 2 = 1, N = (I - 1) / S - ((I - 1) / S / B) * B, S = 2 ** (P - L), B = 2 ** L.
+
+	$id$_sorting_network_pass(I,D) :-
+		$id$_sorting_network_lvl(L,P,D), $id$_sorting_network_span_project(I),
+		1<L, N=0, N = (I - 1) / S - ((I - 1) / S / B) * B, S = 2 ** (P - L), B = 2 ** L.
+
+	$id$_sorting_network_pass(I,D) :-
+		$id$_sorting_network_lvl(L,P,D), $id$_sorting_network_span_project(I),
+		1<L, N=B-1, N = (I - 1) / S - ((I - 1) / S / B) * B, S = 2 ** (P - L), B = 2 ** L.
+
+	$id$_sorting_network_dh(ARGS, 1..D) :-
+		$id$_sorting_network_span(ARGS, N1), N1=N+1, $id$_sorting_network_done(N,_), N2=N*2, $id$_sorting_network_done(N2,D).
+
+	$id$_sorting_network_done(1,0).
+	$id$_sorting_network_done(N,D) :- $id$_sorting_network_log2(N,P), $id$_sorting_network_lvl(P,P,D).
+
+	$id$_sorting_network_log2(Ip2, I) :- Ip2 = 2 ** I, I = 0..30.
+>>
+
+/*
+ * Core (i.e. input-independent) part of an ASP encoding for aggregate literals of form "X <= #sum{...}".
+ * For an aggregate literal of form "K <= #sum{ N : p(N); N : q(N)}", an encoding needs to provide rules that map each aggregate element
+ * to ground instances of a candidate predicate "$candidate$/3" where the first argument is a funtion term wrapping global variables of the
+ * original aggregate literal, the second an (enumeration-)index of the tuple in question, and the third term the value to sum up.
+ * E.g. "summated_value(ARGS, IDX, VAL) :- element_tuple(ARGS, tuple(X), VAL), _Enumeration(ARGS, tuple(X), IDX).",
+ * where "element_tuple" could be defined as "element_tuple(ARGS, tuple(VAL), VAL) :- p(VAL)".
+ * Furthermore, code using this encoding needs to provide a rules deriving a "bound" predicate that works as an upper bound for the summation program,
+ * i.e. binds the variable that is compared with the aggregate. When rewriting rules, the body of the bound rule should hold all literals binding
+ * any variables on which the original aggregate literal depends, e.g. "bound(ARGS, K) :- atom_binding_k(K), something_binding_args(ARGS)."
+ *
+ * The rules deriving the aggregate result predicate in this encoding fire if and only if the original aggregate literal is true.
+ */
+sum_le(id, result_predicate, element_tuple) ::= <<
+	#enumeration_predicate_is enum.
+	% We have found a result when either the bound is LEQ zero of we have a candidate that, added to an intermediate sum exceeds the bound
+	$result_predicate$(ARGS, K) :- $id$_bound(ARGS, K), K <= 0.
+	$result_predicate$(ARGS, K) :- $id$_prefix_subset_sum(ARGS, I1, S), I1 = I - 1, $id$_input_value(ARGS, I, F), $id$_bound(ARGS, K), K <= S + F.
+
+	$id$_input_value(ARGS, IDX, VAL) :- $element_tuple$(ARGS, TPL, VAL), enum(ARGS, TPL, IDX).
+
+	% Calculate intermediate sums. Each tuple can be TRUE or FALSE, i.e. contribute zero or its value to the sum.
+	$id$_interesting_number(ARGS, 1..I1) :- $id$_input_value(ARGS, I, _), I1 = I - 1.
+	$id$_prefix_subset_sum(ARGS, 0, 0) :- $id$_input_value(ARGS, _, _).
+	$id$_prefix_subset_sum(ARGS, I, S) :- $id$_prefix_subset_sum(ARGS, I1, S), I1 = I - 1, $id$_interesting_number(ARGS, I).
+	$id$_prefix_subset_sum(ARGS, I, SF) :- $id$_prefix_subset_sum(ARGS, I1, S), I1 = I - 1, SF = S + F, $id$_input_value(ARGS, I, F), $id$_bound(ARGS, K), SF < K.
+>>
+
+// ONLY programmatic addition: element tuple rule!!
+sum_eq(id, result_predicate, element_tuple) ::= <<
+	#enumeration_predicate_is enum.
+	$result_predicate$(ARGS, VAL) :- $id$_value_leq(ARGS, VAL), not $id$_value_leq(ARGS, NEXTVAL), NEXTVAL = VAL + 1.
+	$id$_value_leq(ARGS, VAL) :- $id$_subsum_result(ARGS, VAL), $id$_result_candidate(ARGS, VAL).
+	$id$_sum_element_at_index(ARGS, VAL, IDX) :- $element_tuple$(ARGS, TPL, VAL), enum(ARGS, TPL, IDX).
+	$id$_sum_element_index(ARGS, 1..IDX) :- $id$_sum_element_at_index(ARGS, _, MAX_IDX), IDX = MAX_IDX - 1.
+	$id$_sum_at_idx_candidate(ARGS, 0, 0) :- $id$_sum_element_at_index(ARGS, _, _).
+	$id$_sum_at_idx_candidate(ARGS, I, CSUM) :- $id$_sum_element_index(ARGS, I), $id$_sum_at_idx_candidate(ARGS, IPREV, CSUM), IPREV = I - 1.
+	$id$_sum_at_idx_candidate(ARGS, I, CSUM) :- $id$_sum_element_at_index(ARGS, VAL, I), $id$_sum_at_idx_candidate(ARGS, IPREV, PSUM), IPREV = I - 1, CSUM = PSUM + VAL.
+	$id$_result_candidate(ARGS, CSUM) :- $id$_sum_at_idx_candidate(ARGS, _, CSUM).
+
+	$id$_bound(ARGS, B) :- $id$_result_candidate(ARGS, B).
+	$id$_prefix_subset_sum(ARGS, I, S) :- $id$_sum_at_idx_candidate(ARGS, I, S).
+	$id$_subsum_result(ARGS, K) :- $id$_bound(ARGS, K), K <= 0.
+	$id$_subsum_result(ARGS, K) :- $id$_prefix_subset_sum(ARGS, I1, S), I1 = I - 1, $id$_sum_element_at_index(ARGS, I, F), $id$_bound(ARGS, K), K <= S + F.
+>>

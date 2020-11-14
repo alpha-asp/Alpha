@@ -21,7 +21,7 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.PredicateInternalizer;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 
-public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
+public class CountEqualsEncoder extends AbstractAggregateEncoder {
 
 	//@formatter:off
 	// TODO look into also delegating to cnt_candidate from underlying sorting grid encoder
@@ -34,7 +34,7 @@ public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 
 	private final ProgramParser parser = new ProgramParser();
 
-	public CountEqualsAggregateEncoder() {
+	public CountEqualsEncoder() {
 		super(AggregateFunctionSymbol.COUNT, SetUtils.hashSet(ComparisonOperator.EQ));
 	}
 
@@ -59,7 +59,7 @@ public class CountEqualsAggregateEncoder extends AbstractAggregateEncoder {
 		String candidateLeqCntId = candidateLeqCountCtx.registerAggregateLiteral(candidateLeqCount, Collections.singleton(cntCandidate));
 		// The encoder won't encode AggregateElements of the newly created literal separately but alias them
 		// with the element encoding predicates for the original literal.
-		AbstractAggregateEncoder candidateLeqEncoder = CountLessOrEqualSortingGridEncoder.createEmbeddedEncoder(cntCandidateAtom);
+		AbstractAggregateEncoder candidateLeqEncoder = CountLessOrEqualSortingGridEncoderOld.createEmbeddedEncoder(cntCandidateAtom);
 		InputProgram candidateLeqEncoding = candidateLeqEncoder
 				.encodeAggregateLiteral(candidateLeqCountCtx.getAggregateInfo(candidateLeqCntId), candidateLeqCountCtx);
 		// Create a fresh template to make sure attributes are empty at each call to encodeAggregateResult.

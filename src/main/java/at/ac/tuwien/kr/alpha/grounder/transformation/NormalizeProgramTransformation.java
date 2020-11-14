@@ -4,7 +4,6 @@ import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewriting;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingConfig;
 
 /**
  * Encapsulates all transformations necessary to transform a given program into a @{link NormalProgram} that is
@@ -26,9 +25,7 @@ public class NormalizeProgramTransformation extends ProgramTransformation<InputP
 		// Transform choice rules.
 		tmpPrg = new ChoiceHeadToNormal().apply(inputProgram);
 		// Transform cardinality aggregates.
-		// TODO do config properly
-		AggregateRewritingConfig aggCfg = new AggregateRewritingConfig(true);
-		tmpPrg = new AggregateRewriting(aggCfg).apply(tmpPrg);
+		tmpPrg = new AggregateRewriting(!useNormalizationGrid).apply(tmpPrg);
 		// Transform enumeration atoms.
 		tmpPrg = new EnumerationRewriting().apply(tmpPrg);
 		EnumerationAtom.resetEnumerations();

@@ -16,26 +16,26 @@ import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.AbstractAggregateEncoder;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.CountEqualsAggregateEncoder;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.CountLessOrEqualSortingGridEncoder;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.MinMaxAggregateEncoder;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.SumEqualsEncoder;
-import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.SumLessOrEqualEncoder;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.AggregateEncoderFactory;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.CountEqualsEncoder;
+import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.MinMaxEncoder;
 
 public class AggregateRewriting extends ProgramTransformation<InputProgram, InputProgram> {
 
-	// TODO don't forget counting grid!
-	private final AggregateRewritingConfig config;
+	private final AggregateEncoderFactory encoderFactory;
 
-	private final AbstractAggregateEncoder countEqualsEncoder = new CountEqualsAggregateEncoder();
-	private final AbstractAggregateEncoder countLessOrEqualSortingGridEncoder = new CountLessOrEqualSortingGridEncoder();
-	private final AbstractAggregateEncoder sumEqualsEncoder = new SumEqualsEncoder();
-	private final AbstractAggregateEncoder sumLessOrEqualsEncoder = new SumLessOrEqualEncoder();
-	private final AbstractAggregateEncoder minEncoder = new MinMaxAggregateEncoder(AggregateFunctionSymbol.MIN);
-	private final AbstractAggregateEncoder maxEncoder = new MinMaxAggregateEncoder(AggregateFunctionSymbol.MAX);
+	private final AbstractAggregateEncoder countEqualsEncoder = new CountEqualsEncoder();
+	private final AbstractAggregateEncoder countLessOrEqualSortingGridEncoder;
+	private final AbstractAggregateEncoder sumEqualsEncoder;
+	private final AbstractAggregateEncoder sumLessOrEqualEncoder;
+	private final AbstractAggregateEncoder minEncoder = new MinMaxEncoder(AggregateFunctionSymbol.MIN);
+	private final AbstractAggregateEncoder maxEncoder = new MinMaxEncoder(AggregateFunctionSymbol.MAX);
 
-	public AggregateRewriting(AggregateRewritingConfig config) {
-		this.config = config;
+	public AggregateRewriting(boolean useSortingCircuit) {
+		this.encoderFactory = new AggregateEncoderFactory(useSortingCircuit);
+		this.countLessOrEqualSortingGridEncoder = this.encoderFactory.buildCountLessOrEqualEncoder();
+		this.sumLessOrEqualEncoder = this.encoderFactory.buildSumLessOrEqualEncoder();
+		this.sumEqualsEncoder = this.encoderFactory.buildSumEqualsEncoder();
 	}
 
 	/**
@@ -90,7 +90,7 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 				if (operator == ComparisonOperator.EQ) {
 					return sumEqualsEncoder;
 				} else if (operator == ComparisonOperator.LE) {
-					return sumLessOrEqualsEncoder;
+					return sumLessOrEqualEncoder;
 				} else {
 					throw new UnsupportedOperationException("No fitting encoder for aggregate function " + function + "and operator " + operator + "!");
 				}

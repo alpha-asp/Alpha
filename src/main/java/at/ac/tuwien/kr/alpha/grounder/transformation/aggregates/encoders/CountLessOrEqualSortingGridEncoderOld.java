@@ -26,7 +26,7 @@ import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 
-public class CountLessOrEqualSortingGridEncoder extends AbstractAggregateEncoder {
+public class CountLessOrEqualSortingGridEncoderOld extends AbstractAggregateEncoder {
 
 	//@formatter:off
 	private static final String PHI = "N = (I - 1) / S - ((I - 1) / S / B) * B, S = 2 ** (P - L), B = 2 ** L";
@@ -85,20 +85,20 @@ public class CountLessOrEqualSortingGridEncoder extends AbstractAggregateEncoder
 	private final boolean isEmbeddedEncoder;
 	private final BasicAtom inputNumberSource;
 
-	public CountLessOrEqualSortingGridEncoder() {
+	public CountLessOrEqualSortingGridEncoderOld() {
 		super(AggregateFunctionSymbol.COUNT, SetUtils.hashSet(ComparisonOperator.LE));
 		this.isEmbeddedEncoder = false;
 		this.inputNumberSource = null;
 	}
 
-	private CountLessOrEqualSortingGridEncoder(BasicAtom inputNumberSource) {
+	private CountLessOrEqualSortingGridEncoderOld(BasicAtom inputNumberSource) {
 		super(AggregateFunctionSymbol.COUNT, SetUtils.hashSet(ComparisonOperator.LE));
 		this.isEmbeddedEncoder = true;
 		this.inputNumberSource = inputNumberSource;
 	}
 
 	/**
-	 * Creates a new {@link CountLessOrEqualSortingGridEncoder} that will use the given predicate as source for its
+	 * Creates a new {@link CountLessOrEqualSortingGridEncoderOld} that will use the given predicate as source for its
 	 * "sorting_network_input_number" atom. E.g. Creating an embedded encoder with input number source "p/2" will
 	 * result in the rule "sorting_network_input_number(ARGS, I) :- p(ARGS, I)." in the final aggregate encoding. Callers
 	 * need to make sure that the given predicate has arity 2 and that one variable represents the aggregate arguments (i.e.
@@ -109,11 +109,11 @@ public class CountLessOrEqualSortingGridEncoder extends AbstractAggregateEncoder
 	 * @param inputNumberSource
 	 * @return
 	 */
-	public static CountLessOrEqualSortingGridEncoder createEmbeddedEncoder(BasicAtom inputNumberSource) {
+	public static CountLessOrEqualSortingGridEncoderOld createEmbeddedEncoder(BasicAtom inputNumberSource) {
 		if (inputNumberSource.getPredicate().getArity() != 2) {
 			throw new IllegalArgumentException("Can only use binary predicate atoms as source for sorting network input numbers!");
 		}
-		return new CountLessOrEqualSortingGridEncoder(inputNumberSource);
+		return new CountLessOrEqualSortingGridEncoderOld(inputNumberSource);
 	}
 
 	@Override
