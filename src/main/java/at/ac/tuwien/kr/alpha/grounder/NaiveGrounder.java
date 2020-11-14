@@ -236,10 +236,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			Predicate predicate = atom.getPredicate();
 
 			// Skip atoms over internal predicates.
-			// TODO
-//			if (predicate.isInternal()) {
-//				continue;
-//			}
+			if (predicate.isInternal()) {
+				continue;
+			}
 
 			// Skip filtered predicates.
 			if (!filter.test(predicate)) {
@@ -256,10 +255,9 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		for (Map.Entry<Predicate, LinkedHashSet<Instance>> facts : factsFromProgram.entrySet()) {
 			Predicate factPredicate = facts.getKey();
 			// Skip atoms over internal predicates.
-			// TODO
-//			if (factPredicate.isInternal()) {
-//				continue;
-//			}
+			if (factPredicate.isInternal()) {
+				continue;
+			}
 			// Skip filtered predicates.
 			if (!filter.test(factPredicate)) {
 				continue;

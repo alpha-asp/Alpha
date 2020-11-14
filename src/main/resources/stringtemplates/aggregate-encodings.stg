@@ -87,45 +87,34 @@ count_le_sorting_grid (id, candidate, result_predicate )::= <<
  */
 sum_le(id, result_predicate, element_tuple) ::= <<
 	#enumeration_predicate_is enum.
-	% We have found a result when either the bound is LEQ zero of we have a candidate that, added to an intermediate sum exceeds the bound
+	$! We have found a result when either the bound is LEQ zero or we have a candidate that, added to an intermediate sum exceeds the bound !$
 	$result_predicate$(ARGS, K) :- $id$_bound(ARGS, K), K <= 0.
-	$result_predicate$(ARGS, K) :- $id$_prefix_subset_sum(ARGS, I1, S), I1 = I - 1, $id$_input_value(ARGS, I, F), $id$_bound(ARGS, K), K <= S + F.
+	$result_predicate$(ARGS, K) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, $id$_input_value_at_index(ARGS, F, I), $id$_bound(ARGS, K), K <= S + F.
 
-	$id$_input_value(ARGS, IDX, VAL) :- $element_tuple$(ARGS, TPL, VAL), enum(ARGS, TPL, IDX).
+	$id$_input_value_at_index(ARGS, VAL, IDX) :- $element_tuple$(ARGS, TPL, VAL), enum(ARGS, TPL, IDX).
 
-	% Calculate intermediate sums. Each tuple can be TRUE or FALSE, i.e. contribute zero or its value to the sum.
-	$id$_interesting_number(ARGS, 1..I1) :- $id$_input_value(ARGS, I, _), I1 = I - 1.
-	$id$_prefix_subset_sum(ARGS, 0, 0) :- $id$_input_value(ARGS, _, _).
-	$id$_prefix_subset_sum(ARGS, I, S) :- $id$_prefix_subset_sum(ARGS, I1, S), I1 = I - 1, $id$_interesting_number(ARGS, I).
-	$id$_prefix_subset_sum(ARGS, I, SF) :- $id$_prefix_subset_sum(ARGS, I1, S), I1 = I - 1, SF = S + F, $id$_input_value(ARGS, I, F), $id$_bound(ARGS, K), SF < K.
+	$! Calculate intermediate sums. Each tuple can be true or false, i.e. contribute zero or its value to the sum. !$
+	$id$_interesting_index(ARGS, 1..I1) :- $id$_input_value_at_index(ARGS, _, I), I1 = I - 1.
+	$id$_partial_sum_at_index(ARGS, 0, 0) :- $id$_input_value_at_index(ARGS, _, _).
+	$id$_partial_sum_at_index(ARGS, S, I) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, $id$_interesting_index(ARGS, I).
+	$id$_partial_sum_at_index(ARGS, SF, I) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, SF = S + F, $id$_input_value_at_index(ARGS, F, I), $id$_bound(ARGS, K), SF < K.
 >>
 
 // ONLY programmatic addition: element tuple rule!!
 sum_eq(id, result_predicate, element_tuple) ::= <<
 	#enumeration_predicate_is enum.
-	$result_predicate$(ARGS, VAL) :- $id$_value_leq(ARGS, VAL), not $id$_value_leq(ARGS, NEXTVAL), NEXTVAL = VAL + 1.
-	$id$_value_leq(ARGS, VAL) :- $id$_subsum_result(ARGS, VAL), $id$_result_candidate(ARGS, VAL).
 
-	$id$_sum_element_at_index(ARGS, VAL, IDX) :- $element_tuple$(ARGS, TPL, VAL), enum(ARGS, TPL, IDX).
+	$! The first term of each aggregate element goes into the sum !$
+	$id$_input_value_at_index(ARGS, VAL, IDX) :- $element_tuple$(ARGS, TPL, VAL), enum(ARGS, TPL, IDX).
 
-	$id$_sum_element_check_index(ARGS, 1..IDX) :- $id$_sum_element_at_index(ARGS, _, MAX_IDX), IDX = MAX_IDX - 1.
-	$id$_sum_at_idx_candidate(ARGS, 0, 0) :- $id$_sum_element_at_index(ARGS, _, _).
-	$id$_sum_at_idx_candidate(ARGS, I, CSUM) :- $id$_sum_element_check_index(ARGS, I), $id$_sum_at_idx_candidate(ARGS, IPREV, CSUM), IPREV = I - 1.
-	$id$_sum_at_idx_candidate(ARGS, I, CSUM) :-
-		$id$_sum_element_check_index(ARGS, I),
-		$id$_sum_element_at_index(ARGS, VAL, I),
-		$id$_sum_at_idx_candidate(ARGS, IPREV, PSUM),
-		IPREV = I - 1,
-		CSUM = PSUM + VAL,
-		$id$_bound(ARGS, BOUND), CSUM < BOUND.
+	$! Calculate intermediate sums. Each tuple can be true or false, i.e. contribute zero or its value to the sum. !$
+	$id$_interesting_index(ARGS, 1..I1) :- $id$_input_value_at_index(ARGS, _, I), I1 = I - 1.
+	$id$_partial_sum_at_index(ARGS, 0, 0) :- $id$_input_value_at_index(ARGS, _, _).
+	$id$_partial_sum_at_index(ARGS, S, I) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, $id$_interesting_index(ARGS, I).
+	$id$_partial_sum_at_index(ARGS, SF, I) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, SF = S + F, $id$_input_value_at_index(ARGS, F, I).
 
-	$id$_result_candidate(ARGS, CSUM) :- $id$_sum_at_idx_candidate(ARGS, _, CSUM).
-	$id$_result_candidate(ARGS, NEXT_SUM) :-
-		$id$_sum_at_idx_candidate(ARGS, CURR_IDX, CSUM),
-		$id$_sum_element_at_index(ARGS, VAL, NEXT_IDX), NEXT_IDX = CURR_IDX + 1, NEXT_SUM = CSUM + VAL.
-	$id$_result_candidate(ARGS, CSUM_INC) :- $id$_result_candidate(ARGS, CSUM), CSUM_INC = CSUM + 1.
-
-	$id$_bound(ARGS, B) :- $id$_result_candidate(ARGS, B).
-	$id$_subsum_result(ARGS, K) :- $id$_bound(ARGS, K), K <= 0.
-	$id$_subsum_result(ARGS, K) :- $id$_sum_at_idx_candidate(ARGS, PREV_IDX, LAST_SUM), PREV_IDX = IDX - 1, $id$_sum_element_at_index(ARGS, VAL, IDX), $id$_bound(ARGS, K), K <= LAST_SUM + VAL.
+	$! Now find the maximum partial sum, which is the real sum !$
+	$id$_partial_sum_less_than(ARGS, LESS, THAN) :- $id$_partial_sum_at_index(ARGS, LESS, _), $id$_partial_sum_at_index(ARGS, THAN, _), LESS < THAN.
+	$id$_partial_sum_has_greater(ARGS, P_SUM) :- $id$_partial_sum_less_than(ARGS, P_SUM, _).
+	$result_predicate$(ARGS, SUM) :- $id$_partial_sum_less_than(ARGS, _, SUM), not $id$_partial_sum_has_greater(ARGS, SUM).
 >>
