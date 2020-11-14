@@ -105,15 +105,27 @@ sum_eq(id, result_predicate, element_tuple) ::= <<
 	#enumeration_predicate_is enum.
 	$result_predicate$(ARGS, VAL) :- $id$_value_leq(ARGS, VAL), not $id$_value_leq(ARGS, NEXTVAL), NEXTVAL = VAL + 1.
 	$id$_value_leq(ARGS, VAL) :- $id$_subsum_result(ARGS, VAL), $id$_result_candidate(ARGS, VAL).
+
 	$id$_sum_element_at_index(ARGS, VAL, IDX) :- $element_tuple$(ARGS, TPL, VAL), enum(ARGS, TPL, IDX).
-	$id$_sum_element_index(ARGS, 1..IDX) :- $id$_sum_element_at_index(ARGS, _, MAX_IDX), IDX = MAX_IDX - 1.
+
+	$id$_sum_element_check_index(ARGS, 1..IDX) :- $id$_sum_element_at_index(ARGS, _, MAX_IDX), IDX = MAX_IDX - 1.
 	$id$_sum_at_idx_candidate(ARGS, 0, 0) :- $id$_sum_element_at_index(ARGS, _, _).
-	$id$_sum_at_idx_candidate(ARGS, I, CSUM) :- $id$_sum_element_index(ARGS, I), $id$_sum_at_idx_candidate(ARGS, IPREV, CSUM), IPREV = I - 1.
-	$id$_sum_at_idx_candidate(ARGS, I, CSUM) :- $id$_sum_element_at_index(ARGS, VAL, I), $id$_sum_at_idx_candidate(ARGS, IPREV, PSUM), IPREV = I - 1, CSUM = PSUM + VAL.
+	$id$_sum_at_idx_candidate(ARGS, I, CSUM) :- $id$_sum_element_check_index(ARGS, I), $id$_sum_at_idx_candidate(ARGS, IPREV, CSUM), IPREV = I - 1.
+	$id$_sum_at_idx_candidate(ARGS, I, CSUM) :-
+		$id$_sum_element_check_index(ARGS, I),
+		$id$_sum_element_at_index(ARGS, VAL, I),
+		$id$_sum_at_idx_candidate(ARGS, IPREV, PSUM),
+		IPREV = I - 1,
+		CSUM = PSUM + VAL,
+		$id$_bound(ARGS, BOUND), CSUM < BOUND.
+
 	$id$_result_candidate(ARGS, CSUM) :- $id$_sum_at_idx_candidate(ARGS, _, CSUM).
+	$id$_result_candidate(ARGS, NEXT_SUM) :-
+		$id$_sum_at_idx_candidate(ARGS, CURR_IDX, CSUM),
+		$id$_sum_element_at_index(ARGS, VAL, NEXT_IDX), NEXT_IDX = CURR_IDX + 1, NEXT_SUM = CSUM + VAL.
+	$id$_result_candidate(ARGS, CSUM_INC) :- $id$_result_candidate(ARGS, CSUM), CSUM_INC = CSUM + 1.
 
 	$id$_bound(ARGS, B) :- $id$_result_candidate(ARGS, B).
-	$id$_prefix_subset_sum(ARGS, I, S) :- $id$_sum_at_idx_candidate(ARGS, I, S).
 	$id$_subsum_result(ARGS, K) :- $id$_bound(ARGS, K), K <= 0.
-	$id$_subsum_result(ARGS, K) :- $id$_prefix_subset_sum(ARGS, I1, S), I1 = I - 1, $id$_sum_element_at_index(ARGS, I, F), $id$_bound(ARGS, K), K <= S + F.
+	$id$_subsum_result(ARGS, K) :- $id$_sum_at_idx_candidate(ARGS, PREV_IDX, LAST_SUM), PREV_IDX = IDX - 1, $id$_sum_element_at_index(ARGS, VAL, IDX), $id$_bound(ARGS, K), K <= LAST_SUM + VAL.
 >>
