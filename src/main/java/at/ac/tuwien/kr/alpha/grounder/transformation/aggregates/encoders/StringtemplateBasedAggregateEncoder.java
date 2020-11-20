@@ -20,6 +20,16 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.EnumerationRewriting;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 
+/**
+ * Abstract base class for aggregate encoders making use of stringtemplates in their rewriting workflow.
+ * The base implementation encodes the core (i.e. aggregate element-independent) part of an aggregate literal's encoding
+ * by way of rendering a stringtemplate that is expected to have the arguments: "id" (the aggregate id to encode),
+ * "result_predicate" (the symbol of the predicate by which the respective predicate got replaced in it's source rule),
+ * "element_tuple" (the predicate name for tuples to aggregate over) and "bound" (the predicate name of the bound atom
+ * to use in the encoding).
+ * 
+ * Copyright (c) 2020, the Alpha Team.
+ */
 public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggregateEncoder {
 
 	private final ProgramParser parser = new ProgramParser();
@@ -34,7 +44,7 @@ public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggreg
 		} else if (acceptedOperator == ComparisonOperator.LE) {
 			this.needsBoundRule = true;
 		} else {
-			throw new IllegalArgumentException("This encoder is incompatible with comparision operator: " + acceptedOperator);
+			throw new IllegalArgumentException("This encoder is incompatible with comparison operator: " + acceptedOperator);
 		}
 	}
 
@@ -42,20 +52,14 @@ public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggreg
 	protected InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx) {
 		String aggregateId = aggregateToEncode.getId();
 
-		// Generate encoding
-		ST coreEncodingTemplate = new ST(this.encodingTemplate);
-		coreEncodingTemplate.add("result_predicate", aggregateToEncode.getOutputAtom().getPredicate().getName());
-		coreEncodingTemplate.add("id", aggregateId);
-		coreEncodingTemplate.add("element_tuple", this.getElementTuplePredicateSymbol(aggregateId));
-		String coreEncodingAsp = coreEncodingTemplate.render();
-
-		// Create the basic program
-		InputProgram coreEncoding = new EnumerationRewriting().apply(parser.parse(coreEncodingAsp));
-
+		/*
+		 * Create a rule deriving a "bound" value for the core aggregate encoding.
+		 * The bound is (in case of encodings for "<=" comparisons) the value that should be tested for being a lower bound, or
+		 * else zero.
+		 */
 		BasicRule boundRule = null;
 		if (this.needsBoundRule) {
 			boundRule = this.buildBoundRule(aggregateToEncode, ctx);
-			// Combine core encoding and bound rule
 		} else {
 			/*
 			 * Even if we don't have to create a bound rule because the aggregate encoding generates its own candidate values,
@@ -63,18 +67,35 @@ public abstract class StringtemplateBasedAggregateEncoder extends AbstractAggreg
 			 */
 			boundRule = this.buildZeroBoundRule(aggregateToEncode, ctx);
 		}
+
+		// Generate encoding
+		ST coreEncodingTemplate = new ST(this.encodingTemplate);
+		coreEncodingTemplate.add("result_predicate", aggregateToEncode.getOutputAtom().getPredicate().getName());
+		coreEncodingTemplate.add("id", aggregateId);
+		coreEncodingTemplate.add("element_tuple", this.getElementTuplePredicateSymbol(aggregateId));
+		coreEncodingTemplate.add("bound", this.getBoundPredicateName(aggregateId));
+		String coreEncodingAsp = coreEncodingTemplate.render();
+
+		// Create the basic program
+		InputProgram coreEncoding = new EnumerationRewriting().apply(parser.parse(coreEncodingAsp));
+
+		// Add the programatically created bound rule and return
 		return new InputProgram(ListUtils.union(coreEncoding.getRules(), Collections.singletonList(boundRule)), coreEncoding.getFacts(),
 				new InlineDirectives());
 	}
 
+	private String getBoundPredicateName(String aggregateId) {
+		return aggregateId + "_bound";
+	}
+
 	private BasicRule buildZeroBoundRule(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx) {
-		BasicAtom bound = new BasicAtom(Predicate.getInstance(aggregateToEncode.getId() + "_bound", 2),
+		BasicAtom bound = new BasicAtom(Predicate.getInstance(getBoundPredicateName(aggregateToEncode.getId()), 2),
 				aggregateToEncode.getAggregateArguments(), ConstantTerm.getInstance(0));
 		return new BasicRule(new NormalHead(bound), new ArrayList<>(ctx.getDependencies(aggregateToEncode.getId())));
 	}
 
 	private BasicRule buildBoundRule(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx) {
-		BasicAtom bound = new BasicAtom(Predicate.getInstance(aggregateToEncode.getId() + "_bound", 2),
+		BasicAtom bound = new BasicAtom(Predicate.getInstance(getBoundPredicateName(aggregateToEncode.getId()), 2),
 				aggregateToEncode.getAggregateArguments(), aggregateToEncode.getLiteral().getAtom().getLowerBoundTerm());
 		return new BasicRule(new NormalHead(bound), new ArrayList<>(ctx.getDependencies(aggregateToEncode.getId())));
 	}

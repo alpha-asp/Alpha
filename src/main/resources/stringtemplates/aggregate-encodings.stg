@@ -1,12 +1,12 @@
 delimiters "$", "$"
 
-cnt_eq(id, result_predicate, element_tuple) ::= <<
+cnt_eq(id, result_predicate, element_tuple, bound) ::= <<
 	#enumeration_predicate_is enum.
 	$! Input Numbers !$
 	$id$_input_number(ARGS, IDX) :- $element_tuple$(ARGS, TPL), enum(ARGS, TPL, IDX).
 
 	$!Fallback rule - even if no input number exists, the count is still zero!$
-	$id$_sum(ARGS, 0, 0)    :- $id$_bound(ARGS, _).
+	$id$_sum(ARGS, 0, 0)    :- $bound$(ARGS, _).
 
 	$id$_span(ARGS, 1..I1) :- I1 = I-1, $id$_input_number(ARGS, I).
 	$id$_sum(ARGS, 0, 0)    :- $id$_input_number(ARGS, _).
@@ -31,12 +31,12 @@ cnt_eq(id, result_predicate, element_tuple) ::= <<
  *
  * The rules deriving the aggregate result predicate in this encoding fire if and only if the original aggregate literal is true.
  */
-cnt_le_sorting_grid (id, result_predicate, element_tuple) ::= <<
+cnt_le_sorting_grid (id, result_predicate, element_tuple, bound) ::= <<
 	#enumeration_predicate_is enum.
 
 	$! aggregate result rule !$
-	$result_predicate$(ARGS, K) :- $id$_bound(ARGS, K), K<=0.
-	$result_predicate$(ARGS, K) :- $id$_bound(ARGS, K), $id$_sorting_network_v(ARGS, K, D), $id$_sorting_network_done(N, D), K<=N.
+	$result_predicate$(ARGS, K) :- $bound$(ARGS, K), K<=0.
+	$result_predicate$(ARGS, K) :- $bound$(ARGS, K), $id$_sorting_network_v(ARGS, K, D), $id$_sorting_network_done(N, D), K<=N.
 
 	$! Sorting network input !$
 	$id$_sorting_network_input_number(ARGS, IDX) :- $element_tuple$(ARGS, TPL), enum(ARGS, TPL, IDX).
@@ -96,20 +96,20 @@ cnt_le_sorting_grid (id, result_predicate, element_tuple) ::= <<
 	$id$_sorting_network_log2(Ip2, I) :- Ip2 = 2 ** I, I = 0..30.
 >>
 
-cnt_le_counting_grid (id, result_predicate, element_tuple) ::= <<
+cnt_le_counting_grid (id, result_predicate, element_tuple, bound) ::= <<
 	#enumeration_predicate_is enum.
 
 	$! Sorting network input !$
 	$id$_sorting_network_input_number(ARGS, IDX) :- $element_tuple$(ARGS, TPL), enum(ARGS, TPL, IDX).
 
 	$!Fallback rule - even if no input number exists, the count is still zero!$
-	$id$_sum(ARGS, 0, 0)    :- $id$_bound(ARGS, _).
+	$id$_sum(ARGS, 0, 0)    :- $bound$(ARGS, _).
 
 	$id$_span(ARGS, 1..I1) :- I1 = I-1, $id$_sorting_network_input_number(ARGS, I).
 	$id$_sum(ARGS, 0, 0)    :- $id$_sorting_network_input_number(ARGS, _).
 	$id$_sum(ARGS, I, S)    :- $id$_sum(ARGS, I1, S), I1 = I-1, $id$_span(ARGS, I).
-	$id$_sum(ARGS, I, S1)   :- $id$_sum(ARGS, I1, S), S1 = S+1, I1 = I-1, $id$_sorting_network_input_number(ARGS, I), $id$_bound(ARGS, K), S < K.
-	$result_predicate$(ARGS, K) :- $id$_bound(ARGS, K), K <= S, $id$_sum(ARGS, _, S).
+	$id$_sum(ARGS, I, S1)   :- $id$_sum(ARGS, I1, S), S1 = S+1, I1 = I-1, $id$_sorting_network_input_number(ARGS, I), $bound$(ARGS, K), S < K.
+	$result_predicate$(ARGS, K) :- $bound$(ARGS, K), K <= S, $id$_sum(ARGS, _, S).
 >>
 
 /*
@@ -125,11 +125,11 @@ cnt_le_counting_grid (id, result_predicate, element_tuple) ::= <<
  *
  * The rules deriving the aggregate result predicate in this encoding fire if and only if the original aggregate literal is true.
  */
-sum_le(id, result_predicate, element_tuple) ::= <<
+sum_le(id, result_predicate, element_tuple, bound) ::= <<
 	#enumeration_predicate_is enum.
 	$! We have found a result when either the bound is LEQ zero or we have a candidate that, added to an intermediate sum exceeds the bound !$
-	$result_predicate$(ARGS, K) :- $id$_bound(ARGS, K), K <= 0.
-	$result_predicate$(ARGS, K) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, $id$_input_value_at_index(ARGS, F, I), $id$_bound(ARGS, K), K <= S + F.
+	$result_predicate$(ARGS, K) :- $bound$(ARGS, K), K <= 0.
+	$result_predicate$(ARGS, K) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, $id$_input_value_at_index(ARGS, F, I), $bound$(ARGS, K), K <= S + F.
 
 	$id$_input_value_at_index(ARGS, VAL, IDX) :- $element_tuple$(ARGS, TPL, VAL), enum(ARGS, TPL, IDX).
 
@@ -137,10 +137,10 @@ sum_le(id, result_predicate, element_tuple) ::= <<
 	$id$_interesting_index(ARGS, 1..I1) :- $id$_input_value_at_index(ARGS, _, I), I1 = I - 1.
 	$id$_partial_sum_at_index(ARGS, 0, 0) :- $id$_input_value_at_index(ARGS, _, _).
 	$id$_partial_sum_at_index(ARGS, S, I) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, $id$_interesting_index(ARGS, I).
-	$id$_partial_sum_at_index(ARGS, SF, I) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, SF = S + F, $id$_input_value_at_index(ARGS, F, I), $id$_bound(ARGS, K), SF < K.
+	$id$_partial_sum_at_index(ARGS, SF, I) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, SF = S + F, $id$_input_value_at_index(ARGS, F, I), $bound$(ARGS, K), SF < K.
 >>
 
-sum_eq(id, result_predicate, element_tuple) ::= <<
+sum_eq(id, result_predicate, element_tuple, bound) ::= <<
 	#enumeration_predicate_is enum.
 
 	$! The first term of each aggregate element goes into the sum !$
@@ -153,7 +153,7 @@ sum_eq(id, result_predicate, element_tuple) ::= <<
 	$id$_partial_sum_at_index(ARGS, SF, I) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, SF = S + F, $id$_input_value_at_index(ARGS, F, I).
 
 	$!Fallback rule - even if no element tuple exists, the sum is still zero!$
-	$id$_partial_sum_at_index(ARGS, 0, 0) :- $id$_bound(ARGS, _).
+	$id$_partial_sum_at_index(ARGS, 0, 0) :- $bound$(ARGS, _).
 
 	$! Now find the maximum partial sum, which is the real sum !$
 	$id$_partial_sum_less_than(ARGS, LESS, THAN) :- $id$_partial_sum_at_index(ARGS, LESS, _), $id$_partial_sum_at_index(ARGS, THAN, _), LESS < THAN.
