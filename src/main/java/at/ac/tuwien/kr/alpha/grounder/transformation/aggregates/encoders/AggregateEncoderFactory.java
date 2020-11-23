@@ -2,6 +2,9 @@ package at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders;
 
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom.AggregateFunctionSymbol;
 
+/**
+ * Copyright (c) 2020, the Alpha Team.
+ */
 public class AggregateEncoderFactory {
 
 	private final boolean encodeCountUsingSortingCircuit;

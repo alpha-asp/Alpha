@@ -18,6 +18,11 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewriti
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.AbstractAggregateEncoder;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.encoders.AggregateEncoderFactory;
 
+/**
+ * Rewrites {@link AggregateLiteral}s in programs to semantically equivalent, aggregate-free sub-programs.
+ * 
+ * Copyright (c) 2020, the Alpha Team.
+ */
 public class AggregateRewriting extends ProgramTransformation<InputProgram, InputProgram> {
 
 	private final AggregateEncoderFactory encoderFactory;
@@ -29,6 +34,12 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	private final AbstractAggregateEncoder minEncoder;
 	private final AbstractAggregateEncoder maxEncoder;
 
+	/**
+	 * Creates a new {@link AggregateRewriting} transformation.
+	 * 
+	 * @param useSortingCircuit if true, literals of form "X <= #count{...}" will be rewritten using a sorting grid-based
+	 *                          encoding.
+	 */
 	public AggregateRewriting(boolean useSortingCircuit) {
 		this.encoderFactory = new AggregateEncoderFactory(useSortingCircuit);
 		this.countLessOrEqualSortingGridEncoder = this.encoderFactory.buildCountLessOrEqualEncoder();
@@ -40,31 +51,39 @@ public class AggregateRewriting extends ProgramTransformation<InputProgram, Inpu
 	}
 
 	/**
-	 * Transformation steps:
-	 * - Preprocessing: build a "symbol table", assigning an ID to each distinct aggregate literal
-	 * - Bounds normalization: everything to "left-associative" expressions with one operator
-	 * - Operator normalization: everything to expressions of form "RESULT LEQ #agg{...}"
-	 * - Cardinality normalization: rewrite #count expressions
-	 * - Sum normalization: rewrite #sum expressions
+	 * Rewrites all {@link AggregateLiteral}s in the given program.
+	 * The transformation workflow is split into a preprocessing- and an encoding phase.
+	 * During preprocessing, all aggregate literals with two comparison operators are split into two aggregate literals with
+	 * only a "lower bound" term and operator. After literal splitting, operators are normalized, i.e. all "count" and "sum"
+	 * literals are rewritten to use either "<=" or "=" as comparison operator.
+	 * 
+	 * Rules containing {@link AggregateLiteral}s are registered in an {@link AggregateRewritingContext} during
+	 * preprocessing. After preprocessing, for each rule in the context, aggregate literals in the rule body are substituted
+	 * with normal literals of form "$id$_aggregate_result(...)". For each literal substituted this way, a set of rules
+	 * deriving the result literal is added that is semantically equivalent to the replaced aggregate literal.
 	 */
 	@Override
-	// TODO prefix all variables generated in aggregate processing with some internal "_AGG" or something
+	// Note: Ideally, all variables introduced by AggregateRewriting should be prefixed "_AGG" or something.
 	public InputProgram apply(InputProgram inputProgram) {
 		AggregateRewritingContext ctx = new AggregateRewritingContext();
 		List<BasicRule> outputRules = new ArrayList<>();
 		for (BasicRule inputRule : inputProgram.getRules()) {
+			// Split literals with two operators.
 			for (BasicRule splitRule : AggregateLiteralSplitting.split(inputRule)) {
+				// Normalize operators on aggregate literals after splitting.
 				BasicRule operatorNormalizedRule = AggregateOperatorNormalization.normalize(splitRule);
 				boolean hasAggregate = ctx.registerRule(operatorNormalizedRule);
-				// Only keep rules without aggregates. The ones with aggregates are registered in the context and taken care of later
+				// Only keep rules without aggregates. The ones with aggregates are registered in the context and taken care of later.
 				if (!hasAggregate) {
 					outputRules.add(operatorNormalizedRule);
 				}
 			}
 		}
+		// Substitute AggregateLiterals with generated result literals.
 		outputRules.addAll(rewriteRulesWithAggregates(ctx));
 		InputProgram.Builder resultBuilder = InputProgram.builder().addRules(outputRules).addFacts(inputProgram.getFacts())
 				.addInlineDirectives(inputProgram.getInlineDirectives());
+		// Add sub-programs deriving respective aggregate literals.
 		for (ImmutablePair<AggregateFunctionSymbol, ComparisonOperator> func : ctx.getAggregateFunctionsToRewrite().keySet()) {
 			AbstractAggregateEncoder encoder = getEncoderForAggregateFunction(func.left, func.right);
 			resultBuilder.accumulate(encoder.encodeAggregateLiterals(ctx, ctx.getAggregateFunctionsToRewrite().get(func)));

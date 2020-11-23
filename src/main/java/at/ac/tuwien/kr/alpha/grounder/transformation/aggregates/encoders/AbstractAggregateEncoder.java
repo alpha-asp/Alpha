@@ -4,7 +4,6 @@ import org.apache.commons.collections4.ListUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
@@ -24,6 +23,12 @@ import at.ac.tuwien.kr.alpha.grounder.transformation.PredicateInternalizer;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext;
 import at.ac.tuwien.kr.alpha.grounder.transformation.aggregates.AggregateRewritingContext.AggregateInfo;
 
+/**
+ * Abstract base class for aggregate encoders. An aggregate encoder provides an encoding for a given aggregate literal,
+ * i.e. it creates an ASP program that is semantically equivalent to the given literal.
+ * 
+ * Copyright (c) 2020, the Alpha Team.
+ */
 public abstract class AbstractAggregateEncoder {
 
 	protected static final String ELEMENT_TUPLE_FUNCTION_SYMBOL = "tuple";
@@ -36,6 +41,13 @@ public abstract class AbstractAggregateEncoder {
 		this.acceptedOperators = acceptedOperators;
 	}
 
+	/**
+	 * Encodes all aggregate literals in the given {@link AggregateRewritingContext} referenced by the given Ids.
+	 * 
+	 * @param ctx
+	 * @param aggregateIdsToEncode
+	 * @return
+	 */
 	public InputProgram encodeAggregateLiterals(AggregateRewritingContext ctx, Set<String> aggregateIdsToEncode) {
 		InputProgram.Builder programBuilder = InputProgram.builder();
 		for (String aggregateId : aggregateIdsToEncode) {
@@ -44,6 +56,13 @@ public abstract class AbstractAggregateEncoder {
 		return programBuilder.build();
 	}
 
+	/**
+	 * Encodes the aggregate literal referenced by the given {@link AggregateInfo}.
+	 * 
+	 * @param aggregateToEncode
+	 * @param ctx
+	 * @return
+	 */
 	public InputProgram encodeAggregateLiteral(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx) {
 		AggregateLiteral literalToEncode = aggregateToEncode.getLiteral();
 		if (literalToEncode.getAtom().getAggregatefunction() != this.aggregateFunctionToEncode) {
@@ -56,25 +75,29 @@ public abstract class AbstractAggregateEncoder {
 		}
 		String aggregateId = aggregateToEncode.getId();
 		InputProgram literalEncoding = PredicateInternalizer.makePrefixedPredicatesInternal(encodeAggregateResult(aggregateToEncode, ctx), aggregateId);
-		// InputProgram literalEncoding = encodeAggregateResult(aggregateToEncode, ctx);
 		List<BasicRule> elementEncodingRules = new ArrayList<>();
 		for (AggregateElement elementToEncode : literalToEncode.getAtom().getAggregateElements()) {
-			Optional<BasicRule> elementRule = encodeAggregateElement(aggregateId, elementToEncode, ctx);
-			if (elementRule.isPresent()) {
-				elementEncodingRules.add(PredicateInternalizer.makePrefixedPredicatesInternal(elementRule.get(), aggregateId));
-			}
+			BasicRule elementRule = encodeAggregateElement(aggregateId, elementToEncode, ctx);
+			elementEncodingRules.add(PredicateInternalizer.makePrefixedPredicatesInternal(elementRule, aggregateId));
 		}
 		return new InputProgram(ListUtils.union(literalEncoding.getRules(), elementEncodingRules), literalEncoding.getFacts(), new InlineDirectives());
 	}
 
+	/**
+	 * Encodes the "core" logic of an aggregate literal, i.e. rules that work on element tuples. Element tuples are derived
+	 * by each aggregate element (see {@link AbstractAggregateEncoder#encodeAggregateElement}) and represent the values that
+	 * are being aggregated.
+	 * 
+	 * @param aggregateToEncode
+	 * @param ctx
+	 * @return
+	 */
 	protected abstract InputProgram encodeAggregateResult(AggregateInfo aggregateToEncode, AggregateRewritingContext ctx);
 
-	// TODO document this! We're building signatures around edge cases here after all...
-	protected Optional<BasicRule> encodeAggregateElement(String aggregateId, AggregateElement element, AggregateRewritingContext ctx) {
+	protected BasicRule encodeAggregateElement(String aggregateId, AggregateElement element, AggregateRewritingContext ctx) {
 		Atom headAtom = buildElementRuleHead(aggregateId, element, ctx);
-		return Optional.of(
-				new BasicRule(new NormalHead(headAtom),
-						ListUtils.union(element.getElementLiterals(), new ArrayList<>(ctx.getDependencies(aggregateId)))));
+		return new BasicRule(new NormalHead(headAtom),
+				ListUtils.union(element.getElementLiterals(), new ArrayList<>(ctx.getDependencies(aggregateId))));
 	}
 
 	/**

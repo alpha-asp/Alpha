@@ -1,6 +1,19 @@
 delimiters "$", "$"
-
-cnt_eq(id, result_predicate, element_tuple, bound) ::= <<
+/**
+ * The core (i.e. input-independent) part of an ASP encoding for an aggregate literal of the form "X = #count{...}".
+ * Arguments:
+ * - id: a unique identifier of the aggregate literal to encode.
+ * - result_predicate: the name of the predicate that is used to replace the rewritten aggregate in the input program.
+ *   Must be unique to each encoded literal (ideally contains the aggregate's id).
+ * - element_tuple: The predicate name used for tuples over which this encoding aggregates over.
+ *   Must be unique to each encoded literal (ideally contains the aggregate's id).
+ * - bound: The predicate name used for the "bound" in the encoding.
+ *   Note that in this case the value of the bound is not of interest, and it is purely used as a fallback in order to be able
+ *   to derive a count of zero when counting an empty set and no other rule can fire.
+ *
+ * Callers must ensure that rules deriving element tuples and bounds used by this encoding are in place.
+ */
+cnt_eq (id, result_predicate, element_tuple, bound )::=<<
 	#enumeration_predicate_is enum.
 	$! Input Numbers !$
 	$id$_input_number(ARGS, IDX) :- $element_tuple$(ARGS, TPL), enum(ARGS, TPL, IDX).
@@ -19,7 +32,7 @@ cnt_eq(id, result_predicate, element_tuple, bound) ::= <<
 	$result_predicate$(ARGS, CNT) :- $id$_sum(ARGS, _, CNT), not $id$_sum_has_greater(ARGS, CNT).
 >>
 
-/*
+/**
  * The core (i.e. input-independent) part of a sorting-network based ASP encoding for an aggregate literal of the form "X <= #count{...}".
  * For an aggregate literal of form "K <= #count{ N : p(N); N : q(N)}", an encoding needs to provide rules that map each aggregate element
  * to ground instances of a candidate predicate "$candidate$/2" whose first argument is a funtion term wrapping global variables of the original aggregate literal.
@@ -31,7 +44,7 @@ cnt_eq(id, result_predicate, element_tuple, bound) ::= <<
  *
  * The rules deriving the aggregate result predicate in this encoding fire if and only if the original aggregate literal is true.
  */
-cnt_le_sorting_grid (id, result_predicate, element_tuple, bound) ::= <<
+cnt_le_sorting_grid (id, result_predicate, element_tuple, bound )::=<<
 	#enumeration_predicate_is enum.
 
 	$! aggregate result rule !$
@@ -96,7 +109,19 @@ cnt_le_sorting_grid (id, result_predicate, element_tuple, bound) ::= <<
 	$id$_sorting_network_log2(Ip2, I) :- Ip2 = 2 ** I, I = 0..30.
 >>
 
-cnt_le_counting_grid (id, result_predicate, element_tuple, bound) ::= <<
+/**
+ * The core (i.e. input-independent) part of an ASP encoding for an aggregate literal of the form "X <= #count{...}".
+ * Arguments:
+ * - id: a unique identifier of the aggregate literal to encode.
+ * - result_predicate: the name of the predicate that is used to replace the rewritten aggregate in the input program.
+ *   Must be unique to each encoded literal (ideally contains the aggregate's id).
+ * - element_tuple: The predicate name used for tuples over which this encoding aggregates over.
+ *   Must be unique to each encoded literal (ideally contains the aggregate's id).
+ * - bound: The predicate name used for the "bound", i.e. the value that is tested for being a lower bound of the aggregate.
+ *
+ * Callers must ensure that rules deriving element tuples and bounds used by this encoding are in place.
+ **/
+cnt_le_counting_grid (id, result_predicate, element_tuple, bound )::=<<
 	#enumeration_predicate_is enum.
 
 	$! Sorting network input !$
@@ -112,7 +137,7 @@ cnt_le_counting_grid (id, result_predicate, element_tuple, bound) ::= <<
 	$result_predicate$(ARGS, K) :- $bound$(ARGS, K), K <= S, $id$_sum(ARGS, _, S).
 >>
 
-/*
+/**
  * Core (i.e. input-independent) part of an ASP encoding for aggregate literals of form "X <= #sum{...}".
  * For an aggregate literal of form "K <= #sum{ N : p(N); N : q(N)}", an encoding needs to provide rules that map each aggregate element
  * to ground instances of a candidate predicate "$candidate$/3" where the first argument is a funtion term wrapping global variables of the
@@ -125,7 +150,7 @@ cnt_le_counting_grid (id, result_predicate, element_tuple, bound) ::= <<
  *
  * The rules deriving the aggregate result predicate in this encoding fire if and only if the original aggregate literal is true.
  */
-sum_le(id, result_predicate, element_tuple, bound) ::= <<
+sum_le (id, result_predicate, element_tuple, bound )::=<<
 	#enumeration_predicate_is enum.
 	$! We have found a result when either the bound is LEQ zero or we have a candidate that, added to an intermediate sum exceeds the bound !$
 	$result_predicate$(ARGS, K) :- $bound$(ARGS, K), K <= 0.
@@ -140,7 +165,21 @@ sum_le(id, result_predicate, element_tuple, bound) ::= <<
 	$id$_partial_sum_at_index(ARGS, SF, I) :- $id$_partial_sum_at_index(ARGS, S, I1), I1 = I - 1, SF = S + F, $id$_input_value_at_index(ARGS, F, I), $bound$(ARGS, K), SF < K.
 >>
 
-sum_eq(id, result_predicate, element_tuple, bound) ::= <<
+/**
+ * The core (i.e. input-independent) part of an ASP encoding for an aggregate literal of the form "X = #sum{...}".
+ * Arguments:
+ * - id: a unique identifier of the aggregate literal to encode.
+ * - result_predicate: the name of the predicate that is used to replace the rewritten aggregate in the input program.
+ *   Must be unique to each encoded literal (ideally contains the aggregate's id).
+ * - element_tuple: The predicate name used for tuples over which this encoding aggregates over.
+ *   Must be unique to each encoded literal (ideally contains the aggregate's id).
+ * - bound: The predicate name used for the "bound" in the encoding.
+ *   Note that in this case the value of the bound is not of interest, and it is purely used as a fallback in order to be able
+ *   to derive a count of zero when counting an empty set and no other rule can fire.
+ *
+ * Callers must ensure that rules deriving element tuples and bounds used by this encoding are in place.
+ **/
+sum_eq (id, result_predicate, element_tuple, bound )::=<<
 	#enumeration_predicate_is enum.
 
 	$! The first term of each aggregate element goes into the sum !$

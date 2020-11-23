@@ -80,7 +80,8 @@ public class MinMaxEncoder extends AbstractAggregateEncoder {
 			// aggregate encoding needs to compare aggregate value with another variable
 			resultRuleTemplate = new ST(NONBINDING_LITERAL_RESULT_RULE);
 			resultRuleTemplate.add("args", aggregateToEncode.getAggregateArguments());
-			// TODO here we could have a problem if the term is a weirdly named variable (e.g. "AGG_VAL") -> "internalize" the name!
+			// Note: here we could have a problem if the term is a weirdly named variable (e.g. "AGG_VAL").
+			// Ideally, we'd use "internalized", i.e. somehow prefixed "_AGGR_..." etc
 			resultRuleTemplate.add("cmp_term", atom.getLowerBoundTerm());
 			resultRuleTemplate.add("cmp_op", cmpOp);
 			resultRuleTemplate.add("dependencies", ctx.getDependencies(aggregateToEncode.getId()));
