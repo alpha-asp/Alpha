@@ -57,10 +57,12 @@ public class SystemConfig {
 	public static final boolean DEFAULT_SORT_ANSWER_SETS = false;
 	public static final boolean DEFAULT_IGNORE_DOMSPEC_HEURISTICS = false;
 	public static final List<Integer> DEFAULT_REPLAY_CHOICES = Collections.emptyList();
+	public static final boolean DEFAULT_STRATIFIED_EVALUATION = true;
 	public static final boolean DEFAULT_DISABLE_NOGOOD_DELETION = false;
 	public static final String DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS = GrounderHeuristicsConfiguration.STRICT_STRING;
 	public static final String DEFAULT_GROUNDER_TOLERANCE_RULES = GrounderHeuristicsConfiguration.STRICT_STRING;
 	public static final boolean DEFAULT_GROUNDER_ACCUMULATOR_ENABLED = false;
+	public static final String DEFAULT_ATOM_SEPARATOR = ", ";
 
 	private String grounderName = SystemConfig.DEFAULT_GROUNDER_NAME;
 	private String solverName = SystemConfig.DEFAULT_SOLVER_NAME;
@@ -77,10 +79,12 @@ public class SystemConfig {
 	private boolean sortAnswerSets = SystemConfig.DEFAULT_SORT_ANSWER_SETS;
 	private boolean ignoreDomspecHeuristics = SystemConfig.DEFAULT_IGNORE_DOMSPEC_HEURISTICS;
 	private List<Integer> replayChoices = SystemConfig.DEFAULT_REPLAY_CHOICES;
+	private boolean evaluateStratifiedPart = SystemConfig.DEFAULT_STRATIFIED_EVALUATION;
 	private boolean disableNoGoodDeletion = SystemConfig.DEFAULT_DISABLE_NOGOOD_DELETION;
 	private String grounderToleranceConstraints = DEFAULT_GROUNDER_TOLERANCE_CONSTRAINTS;
 	private String grounderToleranceRules = DEFAULT_GROUNDER_TOLERANCE_RULES;
 	private boolean grounderAccumulatorEnabled = DEFAULT_GROUNDER_ACCUMULATOR_ENABLED;
+	private String atomSeparator = DEFAULT_ATOM_SEPARATOR;
 
 	public String getGrounderName() {
 		return this.grounderName;
@@ -214,6 +218,14 @@ public class SystemConfig {
 		this.replayChoices = Arrays.stream(replayChoices.split(",")).map(String::trim).map(Integer::valueOf).collect(Collectors.toList());
 	}
 
+	public boolean isEvaluateStratifiedPart() {
+		return this.evaluateStratifiedPart;
+	}
+
+	public void setEvaluateStratifiedPart(boolean evaluateStratifiedPart) {
+		this.evaluateStratifiedPart = evaluateStratifiedPart;
+	}
+
 	public boolean isDisableNoGoodDeletion() {
 		return this.disableNoGoodDeletion;
 	}
@@ -244,5 +256,13 @@ public class SystemConfig {
 
 	public void setGrounderAccumulatorEnabled(boolean grounderAccumulatorEnabled) {
 		this.grounderAccumulatorEnabled = grounderAccumulatorEnabled;
+	}
+
+	public String getAtomSeparator() {
+		return this.atomSeparator;
+	}
+
+	public void setAtomSeparator(String atomSeparator) {
+		this.atomSeparator = atomSeparator;
 	}
 }

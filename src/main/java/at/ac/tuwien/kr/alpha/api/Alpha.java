@@ -32,8 +32,11 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
@@ -41,6 +44,8 @@ import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.grounder.transformation.NormalizeProgramTransformation;
+import at.ac.tuwien.kr.alpha.grounder.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.solver.Solver;
 import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
@@ -48,18 +53,24 @@ import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.CodingErrorAction;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Alpha {
 
-	private SystemConfig config = new SystemConfig(); // config is initialized with default values
+	private static final Logger LOGGER = LoggerFactory.getLogger(Alpha.class);
+
+	private SystemConfig config = new SystemConfig(); // The config is initialized with default values.
 
 	public Alpha(SystemConfig cfg) {
 		this.config = cfg;
@@ -68,59 +79,144 @@ public class Alpha {
 	public Alpha() {
 	}
 
-	public Program readProgram(InputConfig cfg) throws IOException {
-		Program retVal = new Program();
+	public InputProgram readProgram(InputConfig cfg) throws IOException {
+		InputProgram.Builder prgBuilder = InputProgram.builder();
+		InputProgram tmpProg;
 		if (!cfg.getFiles().isEmpty()) {
-			retVal.accumulate(this.readProgramFiles(cfg.isLiterate(), cfg.getPredicateMethods(), cfg.getFiles()));
+			tmpProg = readProgramFiles(cfg.isLiterate(), cfg.getPredicateMethods(), cfg.getFiles());
+			prgBuilder.accumulate(tmpProg);
 		}
 		if (!cfg.getAspStrings().isEmpty()) {
-			retVal.accumulate(this.readProgramString(StringUtils.join(cfg.getAspStrings(), System.lineSeparator()), cfg.getPredicateMethods()));
+			tmpProg = readProgramString(StringUtils.join(cfg.getAspStrings(), System.lineSeparator()), cfg.getPredicateMethods());
+			prgBuilder.accumulate(tmpProg);
 		}
-		return retVal;
+		return prgBuilder.build();
 	}
 
-	public Program readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException {
+	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException {
+		return readProgramFiles(literate, externals, paths.stream().map(Paths::get).collect(Collectors.toList()).toArray(new Path[] {}));
+	}
+
+	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
 		ProgramParser parser = new ProgramParser(externals);
-		Program retVal = new Program();
-		for (String fileName : paths) {
+		InputProgram.Builder prgBuilder = InputProgram.builder();
+		InputProgram tmpProg;
+		for (Path path : paths) {
 			CharStream stream;
 			if (!literate) {
-				stream = CharStreams.fromFileName(fileName);
+				stream = CharStreams.fromPath(path);
 			} else {
-				stream = CharStreams.fromChannel(Util.streamToChannel(Util.literate(Files.lines(Paths.get(fileName)))), 4096, CodingErrorAction.REPLACE,
-						fileName);
+				stream = CharStreams.fromChannel(Util.streamToChannel(Util.literate(Files.lines(path))), 4096, CodingErrorAction.REPLACE, path.toString());
 			}
-			retVal.accumulate(parser.parse(stream));
+			tmpProg = parser.parse(stream);
+			prgBuilder.accumulate(tmpProg);
 		}
-		return retVal;
+		return prgBuilder.build();
 	}
 
-	public Program readProgramString(String aspString, Map<String, PredicateInterpretation> externals) {
+	public InputProgram readProgramString(String aspString, Map<String, PredicateInterpretation> externals) {
 		ProgramParser parser = new ProgramParser(externals);
 		return parser.parse(aspString);
 	}
 
+	public InputProgram readProgramString(String aspString) {
+		return readProgramString(aspString, null);
+	}
+
+	public NormalProgram normalizeProgram(InputProgram program) {
+		return new NormalizeProgramTransformation(config.isUseNormalizationGrid()).apply(program);
+	}
+
+	public InternalProgram performProgramPreprocessing(InternalProgram program) {
+		LOGGER.debug("Preprocessing InternalProgram!");
+		InternalProgram retVal = program;
+		if (config.isEvaluateStratifiedPart()) {
+			AnalyzedProgram analyzed = new AnalyzedProgram(program.getRules(), program.getFacts());
+			retVal = new StratifiedEvaluation().apply(analyzed);
+		}
+		return retVal;
+	}
+
+	public InternalProgram performProgramPreprocessing(AnalyzedProgram program) {
+		LOGGER.debug("Preprocessing AnalyzedProgram!");
+		InternalProgram retVal = program;
+		if (config.isEvaluateStratifiedPart()) {
+			retVal = new StratifiedEvaluation().apply(program);
+		}
+		return retVal;
+	}
+
 	/**
-	 * Prepares a solver (and accompanying grounder) instance pre-loaded with the given program. Use this if the solver is needed after reading answer sets
-	 * (e.g. for obtaining statistics)
+	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the
+	 * program analysis and normalization aren't of interest.
+	 */
+	public Stream<AnswerSet> solve(InputProgram program) {
+		return solve(program, InputConfig.DEFAULT_FILTER);
+	}
+
+	/**
+	 * Convenience method - overloaded version of solve({@link InternalProgram}, {@link Predicate}) for cases where
+	 * details of the program analysis and normalization aren't of interest.
+	 */
+	public Stream<AnswerSet> solve(InputProgram program, java.util.function.Predicate<Predicate> filter) {
+		NormalProgram normalized = normalizeProgram(program);
+		return solve(normalized, filter);
+	}
+
+	/**
+	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the
+	 * program analysis aren't of interest.
+	 */
+	public Stream<AnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
+		InternalProgram preprocessed = performProgramPreprocessing(InternalProgram.fromNormalProgram(program));
+		return solve(preprocessed, filter);
+	}
+
+	/**
+	 * Overloaded version of solve({@link InternalProgram}, {@link Predicate}) that uses a default filter (accept
+	 * everything).
 	 * 
 	 * @param program the program to solve
-	 * @param filter  a (java util) predicate that filters (asp-)predicates which should be contained in the answer set stream from the solver
-	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program
+	 * @return a stream of answer sets
 	 */
-	public Solver prepareSolverFor(Program program, java.util.function.Predicate<Predicate> filter) {
-		String grounderName = this.config.getGrounderName();
-		boolean doDebugChecks = this.config.isDebugInternalChecks();
+	public Stream<AnswerSet> solve(InternalProgram program) {
+		return solve(program, InputConfig.DEFAULT_FILTER);
+	}
+
+	/**
+	 * Solves the given program and filters answer sets based on the passed predicate.
+	 *
+	 * @param program an {@link InternalProgram} to solve
+	 * @param filter       {@link Predicate} filtering {@at.ac.tuwien.kr.alpha.common.Predicate}s in the returned answer sets
+	 * @return a Stream of answer sets representing stable models of the given program
+	 */
+	public Stream<AnswerSet> solve(InternalProgram program, java.util.function.Predicate<Predicate> filter) {
+		Stream<AnswerSet> retVal = prepareSolverFor(program, filter).stream();
+		return config.isSortAnswerSets() ? retVal.sorted() : retVal;
+	}
+
+	/**
+	 * Prepares a solver (and accompanying grounder) instance pre-loaded with the given program. Use this if the
+	 * solver is needed after reading answer sets (e.g. for obtaining statistics).
+	 *
+	 * @param program the program to solve.
+	 * @param filter  a (java util) predicate that filters (asp-)predicates which should be contained in the answer
+	 *                set stream from the solver.
+	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program.
+	 */
+	public Solver prepareSolverFor(InternalProgram program, java.util.function.Predicate<Predicate> filter) {
+		String grounderName = config.getGrounderName();
+		boolean doDebugChecks = config.isDebugInternalChecks();
 
 		GrounderHeuristicsConfiguration grounderHeuristicConfiguration = GrounderHeuristicsConfiguration
-				.getInstance(this.config.getGrounderToleranceConstraints(), this.config.getGrounderToleranceRules());
-		grounderHeuristicConfiguration.setAccumulatorEnabled(this.config.isGrounderAccumulatorEnabled());
+				.getInstance(config.getGrounderToleranceConstraints(), config.getGrounderToleranceRules());
+		grounderHeuristicConfiguration.setAccumulatorEnabled(config.isGrounderAccumulatorEnabled());
 
 		AtomStore atomStore = new AtomStoreImpl();
 		HeuristicsConfiguration heuristicsConfiguration = buildHeuristicsConfiguration(program);
 		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, heuristicsConfiguration, filter, grounderHeuristicConfiguration, doDebugChecks);
 
-		return SolverFactory.getInstance(this.config, atomStore, grounder, heuristicsConfiguration);
+		return SolverFactory.getInstance(config, atomStore, grounder, heuristicsConfiguration);
 	}
 
 	private HeuristicsConfiguration buildHeuristicsConfiguration(Program program) {
@@ -132,21 +228,8 @@ public class Alpha {
 		return heuristicsConfigurationBuilder.build();
 	}
 
-	public Solver prepareSolverFor(Program program) {
-		return this.prepareSolverFor(program, InputConfig.DEFAULT_FILTER);
-	}
-
-	public Stream<AnswerSet> solve(Program program, java.util.function.Predicate<Predicate> filter) {
-		Stream<AnswerSet> retVal = this.prepareSolverFor(program, filter).stream();
-		return this.config.isSortAnswerSets() ? retVal.sorted() : retVal;
-	}
-
-	public Stream<AnswerSet> solve(Program program) {
-		return this.solve(program, InputConfig.DEFAULT_FILTER);
-	}
-
 	public SystemConfig getConfig() {
-		return this.config;
+		return config;
 	}
 
 	public void setConfig(SystemConfig config) {

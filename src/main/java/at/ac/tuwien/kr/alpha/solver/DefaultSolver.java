@@ -27,6 +27,29 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToNegatedLiteral;
+import static at.ac.tuwien.kr.alpha.solver.NoGoodStore.LBD_NO_VALUE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
+import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Set;
+import java.util.function.Consumer;
+
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
@@ -37,10 +60,10 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 import at.ac.tuwien.kr.alpha.grounder.ProgramAnalyzingGrounder;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
@@ -259,7 +282,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			}
 			choiceManager.backjump(backjumpLevel);
 			if (store.propagate() != null) {
-				throw oops("Violated NoGood after backtracking.");
+				throw  oops("Violated NoGood after backtracking.");
 			}
 		}
 		return true;
@@ -387,12 +410,11 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			// For RuleAtoms in toJustify the corresponding ground body contains BasicAtoms that have been assigned FALSE in the closing.
 			// First, translate RuleAtom back to NonGroundRule + Substitution.
 			String ruleId = (String) ((ConstantTerm<?>)atom.getTerms().get(0)).getObject();
-			NonGroundRule nonGroundRule = analyzingGrounder.getNonGroundRule(Integer.parseInt(ruleId));
+			InternalRule nonGroundRule = analyzingGrounder.getNonGroundRule(Integer.parseInt(ruleId));
 			String substitution = (String) ((ConstantTerm<?>)atom.getTerms().get(1)).getObject();
 			Substitution groundingSubstitution = Substitution.fromString(substitution);
-			Rule rule = nonGroundRule.getRule();
 			// Find ground literals in the body that have been assigned false and justify those.
-			for (Literal bodyLiteral : rule.getBody()) {
+			for (Literal bodyLiteral : nonGroundRule.getBody()) {
 				Atom groundAtom = bodyLiteral.getAtom().substitute(groundingSubstitution);
 				if (groundAtom instanceof ComparisonAtom || analyzingGrounder.isFact(groundAtom)) {
 					// Facts and ComparisonAtoms are always true, no justification needed.

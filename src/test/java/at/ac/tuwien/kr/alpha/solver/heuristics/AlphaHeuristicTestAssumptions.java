@@ -25,10 +25,13 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
@@ -39,7 +42,6 @@ import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -62,18 +64,21 @@ public class AlphaHeuristicTestAssumptions {
 	private AtomStore atomStore;
 
 	@Before
-	public void setUp() throws IOException {
+	public void setUp() {
+		Alpha system = new Alpha();
 		String testProgram = ""
 				+ "b1."
 				+ "b2."
 				+ "{b3}."
 				+ "{b4}."
 				+ "h :- b1, b2, not b3, not b4.";
-		Program parsedProgram = new ProgramParser().parse(testProgram);
-		this.atomStore = new AtomStoreImpl();
-		this.grounder = new NaiveGrounder(parsedProgram, atomStore, heuristicsConfiguration, true);
-		this.assignment = new TrailAssignment(atomStore);
-		this.choiceManager = new TestableChoiceManager(assignment, new NaiveNoGoodStore(assignment));
+		InputProgram parsedProgram = new ProgramParser().parse(testProgram);
+		NormalProgram normal = system.normalizeProgram(parsedProgram);
+		InternalProgram internalProgram = InternalProgram.fromNormalProgram(normal);
+		atomStore = new AtomStoreImpl();
+		grounder = new NaiveGrounder(internalProgram, atomStore, heuristicsConfiguration, true);
+		assignment = new TrailAssignment(atomStore);
+		choiceManager = new TestableChoiceManager(assignment, new NaiveNoGoodStore(assignment));
 	}
 
 	@Test

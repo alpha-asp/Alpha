@@ -27,25 +27,10 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.AnswerSetsParser;
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
-import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
-import junit.framework.TestCase;
+import static java.util.Collections.singleton;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.antlr.v4.runtime.CharStreams;
 import org.junit.Test;
 
@@ -59,9 +44,24 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 
-import static java.util.Collections.singleton;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import at.ac.tuwien.kr.alpha.AnswerSetsParser;
+import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
+import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import junit.framework.TestCase;
 
 public class SolverTests extends AbstractSolverTests {
 	private static class Thingy implements Comparable<Thingy> {
@@ -82,7 +82,7 @@ public class SolverTests extends AbstractSolverTests {
 
 		final Atom fact = new BasicAtom(Predicate.getInstance("foo", 1), ConstantTerm.getInstance(thingy));
 
-		final Program program = new Program(
+		final InputProgram program = new InputProgram(
 			Collections.emptyList(),
 			Collections.singletonList(fact),
 			new InlineDirectives()
@@ -770,10 +770,11 @@ public class SolverTests extends AbstractSolverTests {
 	@Test
 	public void testLearnedUnaryNoGoodCausingOutOfOrderLiteralsConflict() throws IOException {
 		final ProgramParser parser = new ProgramParser();
-		Program parsedProgram = parser.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp")));
-		parsedProgram.accumulate(parser.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "HanoiTower_instances", "simple.asp"))));
-		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance("naive", parsedProgram, atomStore, heuristicsConfiguration, true);
+		InputProgram.Builder bld = InputProgram.builder();
+		bld.accumulate(parser.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "HanoiTower_Alpha.asp"))));
+		bld.accumulate(parser.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "HanoiTower_instances", "simple.asp"))));
+		InputProgram parsedProgram = bld.build();
+
 		SystemConfig config = new SystemConfig();
 		config.setSolverName("default");
 		config.setNogoodStoreName("alpharoaming");
@@ -781,12 +782,13 @@ public class SolverTests extends AbstractSolverTests {
 		config.setBranchingHeuristic(BranchingHeuristicFactory.Heuristic.valueOf("VSIDS"));
 		config.setDebugInternalChecks(true);
 		config.setDisableJustificationSearch(false);
+		config.setEvaluateStratifiedPart(false);
 		config.setReplayChoices(Arrays.asList(21, 26, 36, 56, 91, 96, 285, 166, 101, 290, 106, 451, 445, 439, 448,
 			433, 427, 442, 421, 415, 436, 409, 430, 397, 391, 424, 385, 379,
 			418, 373, 412, 406, 394, 388, 382, 245, 232, 208
 		));
-		Solver solver = SolverFactory.getInstance(config, atomStore, grounder, heuristicsConfiguration);
-		Optional<AnswerSet> answerSet = solver.stream().findFirst();
+		Alpha alpha = new Alpha(config);
+		Optional<AnswerSet> answerSet = alpha.solve(parsedProgram).findFirst();
 		assertTrue(answerSet.isPresent());
 	}
 
@@ -802,4 +804,5 @@ public class SolverTests extends AbstractSolverTests {
 		AtomStore atomStore = new AtomStoreImpl();
 		TestCase.assertEquals(ChoiceGrounder.EXPECTED, getInstance(atomStore, new ChoiceGrounder(atomStore)).collectSet());
 	}
+
 }

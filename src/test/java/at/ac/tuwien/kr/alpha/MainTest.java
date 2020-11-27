@@ -57,9 +57,9 @@ public class MainTest {
 	public String[] argv;
 
 	/**
-	 * Temporarily redirects System.err and System.out while running the solver from
-	 * the main entry point with the given parameters. Warning: this test is fragile
-	 * and may require adaptions if printing is changed anywhere in Alpha.
+	 * Temporarily redirects System.err and System.out while running the solver from the main entry point with the
+	 * given parameters.
+	 * Warning: this test is fragile and may require adaptions if printing is changed anywhere in Alpha.
 	 */
 	@Test
 	public void test() {
@@ -70,7 +70,7 @@ public class MainTest {
 		System.setOut(sysOut);
 		assertTrue(newOut.toString().contains("{ b, p(a) }"));
 	}
-	
+
 	@Test
 	public void filterTest() {
 		PrintStream sysOut = System.out;
@@ -83,12 +83,5 @@ public class MainTest {
 		System.setOut(sysOut);
 		assertTrue(newOut.toString().contains("{ b }"));
 	}
-
-// Made obsolete by refactoring - now covered by CommandLineParserTest#numAnswerSets
-//	@Test
-//	public void testGetRequestedNumberOfAnswerSets() {
-//		main(argv);
-//		assertEquals(expectedRequestedNumberOfAnswerSets(), getRequestedNumberOfAnswerSets());
-//	}
 
 }

@@ -27,6 +27,12 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
+import org.antlr.v4.runtime.BailErrorStrategy;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.DefaultErrorStrategy;
+import org.antlr.v4.runtime.RecognitionException;
 import at.ac.tuwien.kr.alpha.CustomErrorListener;
 import at.ac.tuwien.kr.alpha.antlr.AlphaASPLexer;
 import at.ac.tuwien.kr.alpha.antlr.AlphaASPParser;
@@ -45,6 +51,12 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
+import at.ac.tuwien.kr.alpha.CustomErrorListener;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
+import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
+import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+
 public class ProgramParser {
 	private final Map<String, PredicateInterpretation> externals;
 
@@ -56,7 +68,7 @@ public class ProgramParser {
 		this(Collections.emptyMap());
 	}
 
-	public Program parse(String s) {
+	public InputProgram parse(String s) {
 		try {
 			return parse(CharStreams.fromString(s));
 		} catch (IOException e) {
@@ -72,17 +84,17 @@ public class ProgramParser {
 		}
 	}
 
-	public Program parse(CharStream stream) throws IOException {
+	public InputProgram parse(CharStream stream) throws IOException {
+		//@formatter:off
 		/*
-		// In order to require less memory: use unbuffered streams and avoid constructing a full parse tree.
-		AlphaASPLexer lexer = new AlphaASPLexer(new UnbufferedCharStream(is));
-		lexer.setTokenFactory(new CommonTokenFactory(true));
-		final AlphaASPParser parser = new AlphaASPParser(new UnbufferedTokenStream<>(lexer));
-		parser.setBuildParseTree(false);
-		*/
-		CommonTokenStream tokens = new CommonTokenStream(
-			new AlphaASPLexer(stream)
-		);
+		 * // In order to require less memory: use unbuffered streams and avoid constructing a full parse tree.
+		 * ASPCore2Lexer lexer = new ASPCore2Lexer(new UnbufferedCharStream(is));
+		 * lexer.setTokenFactory(new CommonTokenFactory(true));
+		 * final ASPCore2Parser parser = new ASPCore2Parser(new UnbufferedTokenStream<>(lexer));
+		 * parser.setBuildParseTree(false);
+		 */
+		//@formatter:on
+		CommonTokenStream tokens = new CommonTokenStream(new AlphaASPLexer(stream));
 		final AlphaASPParser parser = new AlphaASPParser(tokens);
 
 		// Try SLL parsing mode (faster but may terminate incorrectly).

@@ -1,19 +1,19 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2019, the Alpha Team.
  * All rights reserved.
- *
+ * 
  * Additional changes made by Siemens.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1) Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *
+ * 
  * 2) Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,52 +25,21 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.common;
+package at.ac.tuwien.kr.alpha.common.rule;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-
-import java.util.Arrays;
 import java.util.List;
 
-import static at.ac.tuwien.kr.alpha.Util.join;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Represents a non-ground rule or a constraint. A @{link BasicRule} has a general {@link Head}, meaning both choice heads and disjunctive heads are permissible.
+ * This implementation represents a rule after being parsed from a given ASP program, but before being transformed into a @{link NormalRule}.
  */
-public class DisjunctiveHead extends Head {
-	public final List<Atom> disjunctiveAtoms;
+public class BasicRule extends AbstractRule<Head> {
 
-	public DisjunctiveHead(List<Atom> disjunctiveAtoms) {
-		this.disjunctiveAtoms = disjunctiveAtoms;
-		if (disjunctiveAtoms != null && disjunctiveAtoms.size() > 1) {
-			throw new UnsupportedOperationException("Disjunction in rule heads is not yet supported");
-		}
-	}
-	
-	public DisjunctiveHead(Atom singletonHead) {
-		this(Arrays.asList(singletonHead));
-	}
-
-	@Override
-	public boolean isNormal() {
-		return disjunctiveAtoms != null && disjunctiveAtoms.size() <= 1;
-	}
-
-	@Override
-	public String toString() {
-		if (isNormal()) {
-			return disjunctiveAtoms.get(0).toString();
-		}
-		return join("", disjunctiveAtoms, " | ", "");
-	}
-
-	public boolean isGround() {
-		for (Atom atom : disjunctiveAtoms) {
-			if (!atom.isGround()) {
-				return false;
-			}
-		}
-		return true;
+	public BasicRule(Head head, List<Literal> body) {
+		super(head, body);
 	}
 
 }

@@ -1,5 +1,10 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
+
+import java.util.HashMap;
+import java.util.List;
+
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
@@ -7,16 +12,14 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.HashMap;
-import java.util.List;
-
-import static at.ac.tuwien.kr.alpha.Util.oops;
-
 /**
- * Represents a ground-instance enumeration atom of form: enum(enumId, groundTerm, sequenceNo).
- * The semantics of this is: if enum(A,T1, N1) and enum(A,T2,N2) are both true and T1 != T2, then N1 != N2.
- * Furthermore, If enum(A,T1,N1) is true with N1 > 0 then enum(A,T2,N1 - 1) is true for some T1 != T2
- * and both, T1 and T2, are ground instances the grounder encountered during the search so far.
+ * Represents a ground-instance enumeration atom of form:
+ * enum(enumId, groundTerm, sequenceNo).
+ * 
+ * The semantics of this is:
+ * if enum(A,T1, N1) and enum(A,T2,N2) are both true and T1 != T2, then N1 != N2.
+ * Furthermore, If enum(A,T1,N1) is true with N1 > 0 then enum(A,T2,N1 - 1) is true for some T1 != T2 and
+ * both, T1 and T2, are ground instances the grounder encountered during the search so far.
  *
  * Copyright (c) 2017, the Alpha Team.
  */

@@ -31,13 +31,18 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Test;
+
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+
 public class ProgramTest {
 
 	public static final String LS = System.lineSeparator();
 
 	@Test
 	public void testToString() {
-		Program parsedProgram = new ProgramParser().parse(
+		InputProgram parsedProgram = new ProgramParser().parse(
 				"#heuristic q(X) : p(X). [X@2]" + LS +
 					"p(a)." + LS +
 					"q(X) :- p(X)." + LS +

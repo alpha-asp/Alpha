@@ -27,6 +27,19 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
@@ -35,6 +48,9 @@ import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
@@ -61,10 +77,10 @@ public class NoGoodGenerator {
 	private final AtomStore atomStore;
 	private final ChoiceRecorder choiceRecorder;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
-	private final ProgramAnalysis programAnalysis;
-	private final Set<NonGroundRule> uniqueGroundRulePerGroundHead;
+	private final InternalProgram programAnalysis;
+	private final Set<InternalRule> uniqueGroundRulePerGroundHead;
 
-	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, ProgramAnalysis programAnalysis, Set<NonGroundRule> uniqueGroundRulePerGroundHead) {
+	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, InternalProgram programAnalysis, Set<InternalRule> uniqueGroundRulePerGroundHead) {
 		this.atomStore = atomStore;
 		this.choiceRecorder = recorder;
 		this.factsFromProgram = factsFromProgram;
@@ -82,7 +98,7 @@ public class NoGoodGenerator {
 	 *          Assumption: atoms with fixed interpretation evaluate to true under the substitution.
 	 * @return a list of the NoGoods corresponding to the ground rule.
 	 */
-	Collection<NoGood> generateNoGoodsFromGroundSubstitution(final NonGroundRule nonGroundRule, final Substitution substitution) {
+	Collection<NoGood> generateNoGoodsFromGroundSubstitution(final InternalRule nonGroundRule, final Substitution substitution) {
 		final boolean isHeuristicRule = nonGroundRule.getHeadAtom() instanceof HeuristicAtom;
 		final Set<Atom> collectedFacts = isHeuristicRule ? new HashSet<>() : null;
 		final List<Integer> posLiterals = collectPosLiterals(nonGroundRule, substitution, collectedFacts);
@@ -162,10 +178,10 @@ public class NoGoodGenerator {
 		return result;
 	}
 
-	List<Integer> collectNegLiterals(final NonGroundRule nonGroundRule, final Substitution substitution) {
+	List<Integer> collectNegLiterals(final InternalRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> bodyLiteralsNegative = new ArrayList<>();
-		for (Atom atom : nonGroundRule.getBodyAtomsNegative()) {
-			Atom groundAtom = atom.substitute(substitution);
+		for (Literal lit : nonGroundRule.getNegativeBody()) {
+			Atom groundAtom = lit.getAtom().substitute(substitution);
 			
 			final Set<Instance> factInstances = factsFromProgram.get(groundAtom.getPredicate());
 
@@ -184,16 +200,17 @@ public class NoGoodGenerator {
 		return bodyLiteralsNegative;
 	}
 
-	private List<Integer> collectPosLiterals(final NonGroundRule nonGroundRule, final Substitution substitution, final Collection<Atom> collectFacts) {
+	private List<Integer> collectPosLiterals(final InternalRule nonGroundRule, final Substitution substitution, final Collection<Atom> collectFacts) {
 		final List<Integer> bodyLiteralsPositive = new ArrayList<>();
-		for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
-			if (atom.toLiteral() instanceof FixedInterpretationLiteral) {
+		for (Literal lit  : nonGroundRule.getPositiveBody()) {
+			if (lit instanceof FixedInterpretationLiteral) {
 				// TODO: conversion of atom to literal is ugly. NonGroundRule could manage atoms instead of literals, cf. FIXME there
 				// Atom has fixed interpretation, hence was checked earlier that it
 				// evaluates to true under the given substitution.
 				// FixedInterpretationAtoms need not be shown to the solver, skip it.
 				continue;
 			}
+			final Atom atom = lit.getAtom();
 			// Skip the special enumeration atom.
 			if (atom instanceof EnumerationAtom) {
 				continue;
@@ -223,7 +240,7 @@ public class NoGoodGenerator {
 	}
 
 	private boolean existsRuleWithPredicateInHead(final Predicate predicate) {
-		final HashSet<NonGroundRule> definingRules = programAnalysis.getPredicateDefiningRules().get(predicate);
+		final HashSet<InternalRule> definingRules = programAnalysis.getPredicateDefiningRules().get(predicate);
 		return definingRules != null && !definingRules.isEmpty();
 	}
 }

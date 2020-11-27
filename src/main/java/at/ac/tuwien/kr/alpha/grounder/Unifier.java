@@ -1,14 +1,16 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
 /**
  * A variable substitution allowing variables to occur on the right-hand side. Chains of variable substitutions are
@@ -51,8 +53,9 @@ public class Unifier extends Substitution {
 	 * Returns a list of all variables occurring in that unifier, i.e., variables that are mapped and those that occur (nested) in the right-hand side of the unifier.
 	 * @return the list of variables occurring somewhere in the unifier.
 	 */
-	public List<Term> getOccurringVariables() {
-		ArrayList<Term> ret = new ArrayList<>();
+	@Override
+	public Set<VariableTerm> getMappedVariables() {
+		Set<VariableTerm> ret = new HashSet<>();
 		for (Map.Entry<VariableTerm, Term> substitution : substitution.entrySet()) {
 			ret.add(substitution.getKey());
 			ret.addAll(substitution.getValue().getOccurringVariables());
@@ -61,6 +64,7 @@ public class Unifier extends Substitution {
 	}
 
 
+	@Override
 	public <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term term) {
 		// If term is not ground, store it for right-hand side reverse-lookup.
 		if (!term.isGround()) {

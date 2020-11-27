@@ -26,23 +26,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package at.ac.tuwien.kr.alpha.common;
+package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.junit.Test;
-
-import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 
@@ -82,83 +75,7 @@ public class UnifierTest extends SubstitutionTest {
 
 	private BasicAtom parseAtom(String atom) {
 		ProgramParser programParser = new ProgramParser();
-		Program program = programParser.parse(atom + ".");
+		InputProgram program = programParser.parse(atom + ".");
 		return (BasicAtom) program.getFacts().get(0);
-	}
-
-	@Test
-	public void unifyTermsSimpleBinding() throws Exception {
-		Substitution substitution = new Unifier();
-		substitution.unifyTerms(Y, A);
-		assertEquals(A, substitution.eval(Y));
-	}
-
-	@Test
-	public void unifyTermsFunctionTermBinding() throws Exception {
-		Substitution substitution = new Unifier();
-		substitution.put(Y, A);
-
-		FunctionTerm groundFunctionTerm = FunctionTerm.getInstance("f", B, C);
-		Term nongroundFunctionTerm = FunctionTerm.getInstance("f", B, X);
-
-		substitution.unifyTerms(nongroundFunctionTerm, groundFunctionTerm);
-
-		assertEquals(C, substitution.eval(X));
-		assertEquals(A, substitution.eval(Y));
-	}
-
-	@Test
-	public void substitutePositiveBasicAtom() {
-		substituteBasicAtomLiteral(false);
-	}
-
-	@Test
-	public void substituteNegativeBasicAtom() {
-		substituteBasicAtomLiteral(true);
-	}
-
-	@Test
-	public void groundAndPrintRule() {
-		Rule rule = PARSER.parse("x :- p(X,Y), not q(X,Y).").getRules().get(0);
-		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
-		Substitution substitution = new Unifier();
-		substitution.unifyTerms(X, A);
-		substitution.unifyTerms(Y, B);
-		String printedString = SubstitutionTestUtil.groundAndPrintRule(nonGroundRule, substitution);
-		assertEquals("x :- p(a, b), not q(a, b).", printedString);
-	}
-
-	private void substituteBasicAtomLiteral(boolean negated) {
-		Predicate p = Predicate.getInstance("p", 2);
-		BasicAtom atom = new BasicAtom(p, Arrays.asList(X, Y));
-		Literal literal = new BasicLiteral(atom, !negated);
-		Substitution substitution = new Unifier();
-		substitution.unifyTerms(X, A);
-		substitution.unifyTerms(Y, B);
-		literal = literal.substitute(substitution);
-		assertEquals(p, literal.getPredicate());
-		assertEquals(A, literal.getTerms().get(0));
-		assertEquals(B, literal.getTerms().get(1));
-		assertEquals(negated, literal.isNegated());
-	}
-
-	@Test
-	public void groundLiteralToString_PositiveBasicAtom() {
-		groundLiteralToString(false);
-	}
-
-	@Test
-	public void groundLiteralToString_NegativeBasicAtom() {
-		groundLiteralToString(true);
-	}
-
-	private void groundLiteralToString(boolean negated) {
-		Predicate p = Predicate.getInstance("p", 2);
-		BasicAtom atom = new BasicAtom(p, Arrays.asList(X, Y));
-		Substitution substitution = new Unifier();
-		substitution.unifyTerms(X, A);
-		substitution.unifyTerms(Y, B);
-		String printedString = SubstitutionTestUtil.groundLiteralToString(atom.toLiteral(!negated), substitution, true);
-		assertEquals((negated ? "not " : "") + "p(a, b)", printedString);
 	}
 }

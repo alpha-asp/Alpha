@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -32,21 +32,24 @@ import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Represents ordinary ASP atoms.
  */
-public class BasicAtom implements Atom, VariableNormalizableAtom {
+public class BasicAtom extends Atom implements VariableNormalizableAtom {
 	private final Predicate predicate;
 	private final List<Term> terms;
 	private final boolean ground;
 
 	/**
 	 * Creates a positive BasicAtom over predicate and terms.
+	 * 
 	 * @param predicate
 	 * @param terms
 	 */
@@ -91,8 +94,14 @@ public class BasicAtom implements Atom, VariableNormalizableAtom {
 	@Override
 	public BasicAtom substitute(Substitution substitution) {
 		return new BasicAtom(predicate, terms.stream()
-			.map(t -> t.substitute(substitution))
-			.collect(Collectors.toList()));
+				.map(t -> t.substitute(substitution))
+				.collect(Collectors.toList()));
+	}
+
+	@Override
+	public BasicAtom normalizeVariables(String prefix, int counterStartingValue) {
+		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
+		return new BasicAtom(predicate, renamedTerms);
 	}
 
 	@Override
@@ -155,11 +164,10 @@ public class BasicAtom implements Atom, VariableNormalizableAtom {
 	public int hashCode() {
 		return 31 * predicate.hashCode() + terms.hashCode();
 	}
-	
+
 	@Override
-	public Atom normalizeVariables(String prefix, int counterStartingValue) {
-		List<Term> renamedTerms = Term.renameTerms(this.getTerms(), prefix, counterStartingValue);
-		return new BasicAtom(this.getPredicate(), renamedTerms);
+	public Atom withTerms(List<Term> terms) {
+		return new BasicAtom(predicate, terms);
 	}
-	
+
 }

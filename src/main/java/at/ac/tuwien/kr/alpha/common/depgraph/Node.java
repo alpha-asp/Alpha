@@ -1,8 +1,6 @@
 /**
- * Copyright (c) 2016-2020, the Alpha Team.
+ * Copyright (c) 2019, the Alpha Team.
  * All rights reserved.
- *
- * Additional changes made by Siemens.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,38 +23,48 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package at.ac.tuwien.kr.alpha.common.depgraph;
 
-package at.ac.tuwien.kr.alpha.common;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+/**
+ * A node in a dependency graph. One node references exactly one predicate. This means that all rule heads deriving the
+ * same predicate will be condensed into the same graph node. In some cases this results in more "conservative" results
+ * in stratification analysis, where some rules will not be evaluated up-front, although that would be possible.
+ * 
+ * Copyright (c) 2017-2020, the Alpha Team.
+ */
+public class Node {
 
-public class SubstitutionTestUtil {
+	private final Predicate predicate;
 
-	static String groundAndPrintRule(NonGroundRule rule, Substitution substitution) {
-		StringBuilder ret = new StringBuilder();
-		if (!rule.isConstraint()) {
-			Atom groundHead = rule.getHeadAtom().substitute(substitution);
-			ret.append(groundHead.toString());
-		}
-		ret.append(" :- ");
-		boolean isFirst = true;
-		for (Atom bodyAtom : rule.getBodyAtomsPositive()) {
-			ret.append(groundLiteralToString(bodyAtom.toLiteral(), substitution, isFirst));
-			isFirst = false;
-		}
-		for (Atom bodyAtom : rule.getBodyAtomsNegative()) {
-			ret.append(groundLiteralToString(bodyAtom.toLiteral(false), substitution, isFirst));
-			isFirst = false;
-		}
-		ret.append(".");
-		return ret.toString();
+	public Node(Predicate predicate) {
+		this.predicate = predicate;
 	}
 
-	static String groundLiteralToString(Literal literal, Substitution substitution, boolean isFirst) {
-		Literal groundLiteral = literal.substitute(substitution);
-		return  (isFirst ? "" : ", ") + groundLiteral.toString();
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof Node)) {
+			return false;
+		}
+		return predicate.equals(((Node) o).predicate);
+	}
+
+	@Override
+	public int hashCode() {
+		return predicate.hashCode();
+	}
+
+	@Override
+	public String toString() {
+		return "Node{" + predicate.toString() + "}";
+	}
+
+	public String getLabel() {
+		return predicate.toString();
+	}
+
+	public Predicate getPredicate() {
+		return predicate;
 	}
 }

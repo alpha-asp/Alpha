@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -39,72 +39,68 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * An Atom is the common superclass of all representations of ASP atoms used by Alpha.
  */
-public interface Atom extends Comparable<Atom>, Substitutable<Atom> {
-	
-	Predicate getPredicate();
+public abstract class Atom implements Comparable<Atom>, Substitutable<Atom> {
 
-	List<Term> getTerms();
+	public abstract Predicate getPredicate();
 
-	boolean isGround();
+	public abstract List<Term> getTerms();
 
 	/**
-	 * Set of all variables occurring in the Atom that are potentially binding
+	 * Creates a new Atom that represents this Atom, but has the given term list instead.
 	 * 
-	 * @return
+	 * @param terms the terms to set.
+	 * @return a new Atom with the given terms set.
 	 */
-	default Set<VariableTerm> getBindingVariables() {
-		return toLiteral().getBindingVariables();
-	}
+	public abstract Atom withTerms(List<Term> terms);
 
 	/**
-	 * Set of all variables occurring in the Atom that are never binding, not even in positive atoms, e.g., variables in intervals or built-in atoms.
-	 * 
-	 * @return
+	 * Returns whether this atom is ground, i.e., variable-free.
+	 *
+	 * @return true iff the terms of this atom contain no {@link VariableTerm}.
 	 */
-	default Set<VariableTerm> getNonBindingVariables() {
-		return toLiteral().getNonBindingVariables();
-	}
+	public abstract boolean isGround();
 
 	/**
-	 * Set of all variables occurring in the Atom
+	 * Returns the set of all variables occurring in the Atom.
 	 */
-	default Set<VariableTerm> getOccurringVariables() {
+	public Set<VariableTerm> getOccurringVariables() {
 		return toLiteral().getOccurringVariables();
 	}
 
 	/**
-	 * This method applies a substitution to a potentially non-substitute atom. The resulting atom may be non-substitute.
+	 * This method applies a substitution to the atom. Note that, depending on the atom and the substitution, the
+	 * resulting atom may still contain variables.
 	 * 
 	 * @param substitution the variable substitution to apply.
-	 * @return the atom resulting from the applying the substitution.
+	 * @return the atom resulting from the application of the substitution.
 	 */
-	Atom substitute(Substitution substitution);
+	public abstract Atom substitute(Substitution substitution);
 
 	/**
-	 * Creates a non-negated literal containing this atom
+	 * Creates a non-negated literal containing this atom.
 	 */
-	default Literal toLiteral() {
+	public Literal toLiteral() {
 		return toLiteral(true);
 	}
 
 	/**
-	 * Creates a literal containing this atom which will be negated if {@code positive} is {@code false}
+	 * Creates a literal containing this atom which will be negated if {@code positive} is {@code false}.
 	 * 
-	 * @param positive
-	 * @return
+	 * @param positive the polarity of the resulting literal.
+	 * @return a literal that is positive iff the given parameter is true.
 	 */
-	Literal toLiteral(boolean positive);
-	
+	public abstract Literal toLiteral(boolean positive);
+
 	/**
 	 * Converts this atom to a function term (which is needed if the atom is to be nested in another term)
 	 */
-	default FunctionTerm toFunctionTerm() {
+	public FunctionTerm toFunctionTerm() {
 		throw new UnsupportedOperationException(this + " cannot be converted to a function term.");
 	}
 
-	default Atom renameVariables(String newVariablePrefix) {
+	public Atom renameVariables(String newVariablePrefix) {
 		Unifier renamingSubstitution = new Unifier();
 		int counter = 0;
 		for (VariableTerm variable : getOccurringVariables()) {
@@ -114,7 +110,7 @@ public interface Atom extends Comparable<Atom>, Substitutable<Atom> {
 	}
 
 	@Override
-	default int compareTo(Atom o) {
+	public int compareTo(Atom o) {
 		if (o == null) {
 			return 1;
 		}
@@ -141,5 +137,11 @@ public interface Atom extends Comparable<Atom>, Substitutable<Atom> {
 
 		return 0;
 	}
+
+	@Override
+	public abstract boolean equals(Object o);
+
+	@Override
+	public abstract int hashCode();
 
 }

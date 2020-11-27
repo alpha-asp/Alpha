@@ -1,0 +1,6 @@
+_nred("1", N) :- node(N), not red(N).
+red(N) :- node(N), not _nred("1", N).
+_ngreen("1", N) :- node(N), not green(N).
+green(N) :- node(N), not _ngreen("1", N).
+_nblue("1", N) :- node(N), not blue(N).
+blue(N) :- node(N), not _nblue("1", N).

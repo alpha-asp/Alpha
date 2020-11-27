@@ -25,17 +25,20 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.Rule;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
+import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
 /**
- * Tests {@link Rule#toString()} and {@link NonGroundRule#toString()}.
+ * Tests {@link BasicRule#toString()} and {@link InternalRule#toString()}.
  */
 public class RuleToStringTest {
 	private final ProgramParser parser = new ProgramParser();
@@ -81,7 +84,7 @@ public class RuleToStringTest {
 	}
 
 	private void parseSingleRuleAndCheckToString(String rule) {
-		Rule parsedRule = parseSingleRule(rule);
+		BasicRule parsedRule = parseSingleRule(rule);
 		assertEquals(rule, parsedRule.toString());
 	}
 
@@ -90,13 +93,13 @@ public class RuleToStringTest {
 	}
 
 	private void constructNonGroundRuleAndCheckToString(String textualRule, String expectedToString) {
-		NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(parseSingleRule(textualRule));
+		InternalRule nonGroundRule = InternalRule.fromNormalRule(NormalRule.fromBasicRule(parseSingleRule(textualRule)));
 		assertEquals(expectedToString, nonGroundRule.toString());
 	}
 
-	private Rule parseSingleRule(String rule) {
-		Program program = parser.parse(rule);
-		List<Rule> rules = program.getRules();
+	private BasicRule parseSingleRule(String rule) {
+		InputProgram program = parser.parse(rule);
+		List<BasicRule> rules = program.getRules();
 		assertEquals("Number of rules", 1, rules.size());
 		return rules.get(0);
 	}
