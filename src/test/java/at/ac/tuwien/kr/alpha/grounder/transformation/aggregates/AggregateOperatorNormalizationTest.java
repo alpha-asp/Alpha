@@ -48,7 +48,7 @@ public class AggregateOperatorNormalizationTest {
 		BasicRule inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_LT_POS_ASP);
 		BasicRule rewritten = AggregateOperatorNormalization.normalize(inputRule);
 		assertOperatorNormalized(rewritten, ComparisonOperator.LE, true);
-		assertAggregateBoundDecremented(inputRule, rewritten);
+		assertAggregateBoundIncremented(inputRule, rewritten);
 	}
 
 	@Test
@@ -64,7 +64,7 @@ public class AggregateOperatorNormalizationTest {
 		BasicRule inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_GE_POS_ASP);
 		BasicRule rewritten = AggregateOperatorNormalization.normalize(inputRule);
 		assertOperatorNormalized(rewritten, ComparisonOperator.LE, false);
-		assertAggregateBoundDecremented(inputRule, rewritten);
+		assertAggregateBoundIncremented(inputRule, rewritten);
 	}
 
 	@Test
@@ -72,7 +72,7 @@ public class AggregateOperatorNormalizationTest {
 		BasicRule inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_LT_NEG_ASP);
 		BasicRule rewritten = AggregateOperatorNormalization.normalize(inputRule);
 		assertOperatorNormalized(rewritten, ComparisonOperator.LE, false);
-		assertAggregateBoundDecremented(inputRule, rewritten);
+		assertAggregateBoundIncremented(inputRule, rewritten);
 	}
 
 	@Test
@@ -96,7 +96,7 @@ public class AggregateOperatorNormalizationTest {
 		BasicRule inputRule = RuleParser.parse(OPERATOR_NORMALIZATION_GE_NEG_ASP);
 		BasicRule rewritten = AggregateOperatorNormalization.normalize(inputRule);
 		assertOperatorNormalized(rewritten, ComparisonOperator.LE, true);
-		assertAggregateBoundDecremented(inputRule, rewritten);
+		assertAggregateBoundIncremented(inputRule, rewritten);
 	}
 
 	private static void assertOperatorNormalized(BasicRule rewrittenRule, ComparisonOperator expectedRewrittenOperator,
@@ -112,7 +112,7 @@ public class AggregateOperatorNormalizationTest {
 		Assert.assertTrue(expectedRewrittenLiteralPositive == !rewrittenAggregate.isNegated());
 	}
 
-	private static void assertAggregateBoundDecremented(BasicRule sourceRule, BasicRule rewrittenRule) {
+	private static void assertAggregateBoundIncremented(BasicRule sourceRule, BasicRule rewrittenRule) {
 		AggregateLiteral sourceAggregate = null;
 		for (Literal lit : sourceRule.getBody()) {
 			if (lit instanceof AggregateLiteral) {
@@ -132,10 +132,10 @@ public class AggregateOperatorNormalizationTest {
 		Assert.assertEquals(addedComparisonLiteral.getAtom().getTerms().get(0), rewrittenAggregate.getAtom().getLowerBoundTerm());
 		Term comparisonRightHandTerm = addedComparisonLiteral.getAtom().getTerms().get(1);
 		Assert.assertTrue(comparisonRightHandTerm instanceof ArithmeticTerm);
-		ArithmeticTerm decrementTerm = (ArithmeticTerm) comparisonRightHandTerm;
-		Assert.assertEquals(ArithmeticOperator.MINUS, decrementTerm.getArithmeticOperator());
-		Assert.assertEquals(ConstantTerm.getInstance(1), decrementTerm.getRight());
-		Assert.assertEquals(sourceAggregate.getAtom().getLowerBoundTerm(), decrementTerm.getLeft());
+		ArithmeticTerm incrementTerm = (ArithmeticTerm) comparisonRightHandTerm;
+		Assert.assertEquals(ArithmeticOperator.PLUS, incrementTerm.getArithmeticOperator());
+		Assert.assertEquals(ConstantTerm.getInstance(1), incrementTerm.getRight());
+		Assert.assertEquals(sourceAggregate.getAtom().getLowerBoundTerm(), incrementTerm.getLeft());
 	}
 
 }

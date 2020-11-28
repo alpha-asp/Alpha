@@ -20,14 +20,14 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
  * 
  * Rewriting of "#count" and "#sum" aggregates is done using the following equivalences:
  * <ul>
- * <li><code>X < #aggr{...}</code> == <code>XP <= #aggr{...}, XP = X - 1</code></li>
+ * <li><code>X < #aggr{...}</code> == <code>XP <= #aggr{...}, XP = X + 1</code></li>
  * <li><code>X != #aggr{...}</code> == <code>not X = #aggr{...}</code></li>
  * <li><code>X > #aggr{...}</code> == <code>not X <= #aggr{...}</code></li>
- * <li><code>X >= #aggr{...}</code> == <code>not XP <= #aggr{...}, XP = X - 1</code></li>
- * <li><code>not X < #aggr{...}</code> == <code>not XP <= #aggr{...}, XP = X - 1</code></li>
+ * <li><code>X >= #aggr{...}</code> == <code>not XP <= #aggr{...}, XP = X + 1</code></li>
+ * <li><code>not X < #aggr{...}</code> == <code>not XP <= #aggr{...}, XP = X + 1</code></li>
  * <li><code>not X != #aggr{...}</code> == <code>X = #aggr{...}</code></li>
  * <li><code>not X > #aggr{...}</code> == <code>X <= #aggr{...}</code></li>
- * <li><code>not X >= #aggr{...}</code> == <code>XP <= #aggr{...}, XP = X - 1</code></li>
+ * <li><code>not X >= #aggr{...}</code> == <code>XP <= #aggr{...}, XP = X + 1</code></li>
  * </ul>
  * Operators for "#min" and "#max" aggregates are not rewritten.
  * 
@@ -78,7 +78,7 @@ public final class AggregateOperatorNormalization {
 							new AggregateAtom(
 									ComparisonOperator.LE, decrementedBound, atom.getAggregatefunction(), atom.getAggregateElements()),
 							!lit.isNegated()));
-					retVal.add(Terms.decrementTerm(atom.getLowerBoundTerm(), decrementedBound));
+					retVal.add(Terms.incrementTerm(atom.getLowerBoundTerm(), decrementedBound));
 					break;
 				case NE:
 					retVal.add(new AggregateLiteral(
@@ -98,7 +98,7 @@ public final class AggregateOperatorNormalization {
 							new AggregateAtom(
 									ComparisonOperator.LE, decrementedBound, atom.getAggregatefunction(), atom.getAggregateElements()),
 							lit.isNegated()));
-					retVal.add(Terms.decrementTerm(atom.getLowerBoundTerm(), decrementedBound));
+					retVal.add(Terms.incrementTerm(atom.getLowerBoundTerm(), decrementedBound));
 					break;
 				default:
 					throw new IllegalStateException("No operator rewriting logic available for literal: " + lit);

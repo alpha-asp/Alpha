@@ -139,6 +139,25 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				"thing(2), thing(4), sum_things(6)",
 				"thing(3), thing(4), sum_things(7)");
 	}
+	
+	@Test
+	public void aggregateSumBetweenNegative() {
+		String program = "potential_thing(1..4). "
+				+ "{ thing(N) : potential_thing(N)}."
+				+ "two_things_chosen :- thing(N1), thing(N2), N1 != N2."
+				+ "three_things_chosen :- thing(N1), thing(N2), thing(N3), N1 != N2, N1 != N3, N2 != N3."
+				+ ":- not two_things_chosen."
+				+ ":- three_things_chosen."
+				+ "sum_not_five :- not 4 < #sum{ X : thing(X) } < 6."
+				+ ":- not sum_not_five."
+				+ "sum_things(SUM) :- SUM = #sum{ X : thing(X) }.";
+		assertAnswerSetsWithBase(program,
+				"potential_thing(1), potential_thing(2), potential_thing(3), potential_thing(4), two_things_chosen, sum_not_five",
+				"thing(1), thing(2), sum_things(3)",
+				"thing(1), thing(3), sum_things(4)",
+				"thing(2), thing(4), sum_things(6)",
+				"thing(3), thing(4), sum_things(7)");		
+	}
 
 	@Test
 	public void aggregateCountGroundNegative() {
