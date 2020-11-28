@@ -27,15 +27,14 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import org.apache.commons.collections4.SetUtils;
-
-import java.util.List;
-import java.util.Set;
-
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import org.apache.commons.collections4.SetUtils;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * A potentially negated {@link Atom}
@@ -106,7 +105,7 @@ public abstract class Literal {
 		if (this == o) {
 			return true;
 		}
-		if (o == null || !(o instanceof Literal)) {
+		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
 
