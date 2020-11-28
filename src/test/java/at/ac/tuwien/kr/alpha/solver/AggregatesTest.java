@@ -158,6 +158,20 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 				"thing(2), thing(4), sum_things(6)",
 				"thing(3), thing(4), sum_things(7)");		
 	}
+	
+	@Test
+	public void aggregateMaxNegative() {
+		String program = "potential_thing(1..4). "
+				+ "{ thing(N) : potential_thing(N) }."
+				+ "one_chosen :- thing(_)."
+				+ ":- not one_chosen."
+				+ ":- thing(N1), thing(N2), N1 != N2."
+				+ "max_chosen :- thing(X), not X < #max{M : potential_thing(M)}."
+				+ ":- not max_chosen.";
+		assertAnswerSetsWithBase(program,
+				"",
+				"potential_thing(1), potential_thing(2), potential_thing(3), potential_thing(4), one_chosen, max_chosen, thing(4)");	
+	}
 
 	@Test
 	public void aggregateCountGroundNegative() {
