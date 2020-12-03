@@ -469,7 +469,9 @@ public class NaiveGrounderTest {
 		final Program program = PROGRAM_PARSER.parse("{ a(0); a(1); a(2); a(3); a(4); a(5); a(6); a(7) }."
 				+ "{ b(N) } :- a(N)."
 				+ "#heuristic b(1) : T a(0), MT a(1), M a(2), F a(3), not T a(4), not MT a(5), not M a(6), not F a(7). [3@2]");
-		final int expectedNumberOfHeuristicRule = 19;	//because there are 18 ground rules except the heuristic rule
+		final int expectedNumberOfHeuristicRule = 18;	//because there are 18 ground rules except the heuristic rule, and rule IDs start with 0
+		final NormalProgram normalProgram = system.normalizeProgram(inputProgram);
+		final InternalProgram internalProgram = InternalProgram.fromNormalProgram(normalProgram);
 
 		final AtomStore atomStore = new AtomStoreImpl();
 		final Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true);
