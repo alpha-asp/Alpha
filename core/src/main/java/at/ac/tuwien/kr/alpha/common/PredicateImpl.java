@@ -4,6 +4,7 @@ package at.ac.tuwien.kr.alpha.common;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class PredicateImpl implements Comparable<Predicate>, Predicate {
+	
 	private static final Interner<PredicateImpl> INTERNER = new Interner<>();
 
 	private final String name;
