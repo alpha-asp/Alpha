@@ -27,15 +27,33 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.*;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
+import at.ac.tuwien.kr.alpha.common.IntIterator;
+import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
+import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Stream;
 
 import static at.ac.tuwien.kr.alpha.Util.entriesToMap;
@@ -94,10 +112,10 @@ public class ChoiceGrounder implements Grounder {
 	).collect(entriesToMap());
 	private static Atom atomAA = new BasicAtom(Predicate.getInstance("aa", 0));
 	private static Atom atomBB = new BasicAtom(Predicate.getInstance("bb", 0));
-	private static Rule ruleAA = new Rule(new DisjunctiveHead(Collections.singletonList(atomAA)), Collections.singletonList(new BasicAtom(Predicate.getInstance("bb", 0)).toLiteral(false)));
-	private static Rule ruleBB = new Rule(new DisjunctiveHead(Collections.singletonList(atomBB)), Collections.singletonList(new BasicAtom(Predicate.getInstance("aa", 0)).toLiteral(false)));
-	private static Atom rule1 = new RuleAtom(NonGroundRule.constructNonGroundRule(ruleAA), new Substitution());
-	private static Atom rule2 = new RuleAtom(NonGroundRule.constructNonGroundRule(ruleBB), new Substitution());
+	private static BasicRule ruleAA = new BasicRule(new NormalHead(atomAA), Collections.singletonList(new BasicAtom(Predicate.getInstance("bb", 0)).toLiteral(false)));
+	private static BasicRule ruleBB = new BasicRule(new NormalHead(atomBB), Collections.singletonList(new BasicAtom(Predicate.getInstance("aa", 0)).toLiteral(false)));
+	private static Atom rule1 = new RuleAtom(InternalRule.fromNormalRule(NormalRule.fromBasicRule(ruleAA)), new Substitution());
+	private static Atom rule2 = new RuleAtom(InternalRule.fromNormalRule(NormalRule.fromBasicRule(ruleBB)), new Substitution());
 	private static Atom atomEnBR1 = ChoiceAtom.on(1);
 	private static Atom atomEnBR2 = ChoiceAtom.on(2);
 	private static Atom atomDisBR1 = ChoiceAtom.off(3);
@@ -171,7 +189,7 @@ public class ChoiceGrounder implements Grounder {
 	}
 
 	@Override
-	public void updateAssignment(Iterator<Integer> it) {
+	public void updateAssignment(IntIterator it) {
 		// This test grounder reports all NoGoods immediately, irrespective of any assignment.
 	}
 

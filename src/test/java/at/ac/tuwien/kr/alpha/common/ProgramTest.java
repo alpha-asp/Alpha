@@ -25,16 +25,18 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
 public class ProgramTest {
 	
 	@Test
 	public void testToString() {
-		Program parsedProgram = new ProgramParser().parse(
+		InputProgram parsedProgram = new ProgramParser().parse(
 				"p(a)." + System.lineSeparator() +
 					"q(X) :- p(X)." + System.lineSeparator() +
 					"p(b).");

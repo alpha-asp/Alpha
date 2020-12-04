@@ -31,19 +31,24 @@ import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.AtomStoreTest;
+import at.ac.tuwien.kr.alpha.common.IntIterator;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
-import static org.junit.Assert.*;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
- * Copyright (c) 2018, the Alpha Team.
+ * Copyright (c) 2018-2020, the Alpha Team.
  */
 public class TrailAssignmentTest {
 	private final TrailAssignment assignment;
@@ -163,7 +168,7 @@ public class TrailAssignmentTest {
 
 	@Test
 	public void newAssignmentsIteratorAndBacktracking() throws Exception {
-		Iterator<Integer> newAssignmentsIterator;
+		IntIterator newAssignmentsIterator;
 
 		assignment.assign(1, MBT);
 		assignment.choose(2, MBT);
@@ -186,7 +191,7 @@ public class TrailAssignmentTest {
 
 	@Test
 	public void newAssignmentsIteratorLowerDecisionLevelAndBacktracking() throws Exception {
-		Iterator<Integer> newAssignmentsIterator;
+		IntIterator newAssignmentsIterator;
 
 		assignment.choose(1, MBT);
 		assignment.choose(2, MBT);
@@ -248,5 +253,8 @@ public class TrailAssignmentTest {
 		assignment.choose(1, TRUE);
 		assertEquals(3, assignment.getNumberOfAssignedAtoms());
 		assertEquals(1, assignment.getNumberOfAtomsAssignedSinceLastDecision());
+		assignment.assign(5, MBT);
+		assignment.assign(5, TRUE);
+		assertEquals(2, assignment.getNumberOfAtomsAssignedSinceLastDecision());
 	}
 }

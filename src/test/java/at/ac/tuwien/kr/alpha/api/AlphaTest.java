@@ -27,6 +27,38 @@
  */
 package at.ac.tuwien.kr.alpha.api;
 
+import at.ac.tuwien.kr.alpha.AnswerSetsParser;
+import at.ac.tuwien.kr.alpha.api.externals.Externals;
+import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.ExternalLiteral;
+import at.ac.tuwien.kr.alpha.common.fixedinterpretations.MethodPredicateInterpretation;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
+import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.config.InputConfig;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
+import at.ac.tuwien.kr.alpha.test.util.TestUtils;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
@@ -35,51 +67,21 @@ import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.junit.Ignore;
-import org.junit.Test;
-
-import at.ac.tuwien.kr.alpha.AnswerSetsParser;
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.AnswerSetBuilder;
-import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.Rule;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.ExternalLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.external.ExternalAtoms;
-import at.ac.tuwien.kr.alpha.common.fixedinterpretations.MethodPredicateInterpretation;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.config.InputConfig;
-import at.ac.tuwien.kr.alpha.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
-
 public class AlphaTest {
 	private static int invocations;
 
-	@at.ac.tuwien.kr.alpha.common.atoms.external.Predicate
+	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static boolean isOne(int term) {
 		invocations++;
 		return term == 1;
 	}
 
-	@at.ac.tuwien.kr.alpha.common.atoms.external.Predicate
+	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static boolean isFoo(Integer a) {
 		return a == 0xF00;
 	}
 
-	@at.ac.tuwien.kr.alpha.common.atoms.external.Predicate
+	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static boolean thinger(Thingy thingy) {
 		return true;
 	}
@@ -88,8 +90,8 @@ public class AlphaTest {
 	public void withExternal() throws Exception {
 		Alpha alpha = new Alpha();
 		InputConfig inputCfg = InputConfig.forString("a :- &isOne[1].");
-		inputCfg.addPredicateMethod("isOne", ExternalAtoms.processPredicateMethod(this.getClass().getMethod("isOne", int.class)));
-		Program program = alpha.readProgram(inputCfg);
+		inputCfg.addPredicateMethod("isOne", Externals.processPredicateMethod(this.getClass().getMethod("isOne", int.class)));
+		InputProgram program = alpha.readProgram(inputCfg);
 		Set<AnswerSet> actual = alpha.solve(program).collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
@@ -98,11 +100,10 @@ public class AlphaTest {
 	@Test
 	public void addsFacts() throws Exception {
 		Alpha system = new Alpha();
-		Program program = new Program();
 		Thingy a = new Thingy();
 		Thingy b = new Thingy();
 		List<Thingy> things = asList(a, b);
-		program.withExternalFacts(things);
+		InputProgram program = InputProgram.builder().addFacts(Externals.asFacts(Thingy.class, things)).build();
 		Set<AnswerSet> actual = system.solve(program).collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("thingy").instance(a).instance(b).build()));
 		assertEquals(expected, actual);
@@ -112,7 +113,7 @@ public class AlphaTest {
 	public void withExternalTypeConflict() throws Exception {
 		Alpha system = new Alpha();
 		InputConfig inputCfg = InputConfig.forString("a :- &isFoo[\"adsfnfdsf\"].");
-		inputCfg.addPredicateMethod("isFoo", ExternalAtoms.processPredicateMethod(this.getClass().getMethod("isFoo", Integer.class)));
+		inputCfg.addPredicateMethod("isFoo", Externals.processPredicateMethod(this.getClass().getMethod("isFoo", Integer.class)));
 		Set<AnswerSet> actual = system.solve(system.readProgram(inputCfg)).collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
@@ -122,8 +123,8 @@ public class AlphaTest {
 	public void smallGraph() throws Exception {
 		Alpha system = new Alpha();
 		InputConfig inputCfg = InputConfig.forString("node(1). node(2). node(3). a :- &connected[1,2].");
-		inputCfg.addPredicateMethod("connected", ExternalAtoms.processPredicate((Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3)));
-		Program program = system.readProgram(inputCfg);
+		inputCfg.addPredicateMethod("connected", Externals.processPredicate((Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3)));
+		InputProgram program = system.readProgram(inputCfg);
 
 		Set<AnswerSet> actual = system.solve(program).collect(Collectors.toSet());
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ a, node(1), node(2), node(3) }");
@@ -135,9 +136,9 @@ public class AlphaTest {
 		Alpha system = new Alpha();
 		InputConfig inputCfg = InputConfig.forString("node(1). node(2). outgoing13(X) :- node(X), &getLargeGraphEdges(13,X).");
 		inputCfg.addPredicateMethod("getLargeGraphEdges",
-				ExternalAtoms.processPredicate(() -> new HashSet<>(asList(asList(ConstantTerm.getInstance(1), ConstantTerm.getInstance(2)),
+				Externals.processPredicate(() -> new HashSet<>(asList(asList(ConstantTerm.getInstance(1), ConstantTerm.getInstance(2)),
 						asList(ConstantTerm.getInstance(2), ConstantTerm.getInstance(1)), asList(ConstantTerm.getInstance(13), ConstantTerm.getInstance(1))))));
-		Program program = system.readProgram(inputCfg);
+		InputProgram program = system.readProgram(inputCfg);
 		Set<AnswerSet> actual = system.solve(program).collect(Collectors.toSet());
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ node(1), node(2), outgoing13(1) }");
 		assertEquals(expected, actual);
@@ -147,15 +148,15 @@ public class AlphaTest {
 	public void supplier() throws Exception {
 		Alpha system = new Alpha();
 		InputConfig cfg = InputConfig.forString("node(1). a :- &bestNode(X), node(X).");
-		cfg.addPredicateMethod("bestNode", ExternalAtoms.processPredicate(() -> singleton(singletonList(ConstantTerm.getInstance(1)))));
-		Program prog = system.readProgram(cfg);
+		cfg.addPredicateMethod("bestNode", Externals.processPredicate(() -> singleton(singletonList(ConstantTerm.getInstance(1)))));
+		InputProgram prog = system.readProgram(cfg);
 
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ node(1), a }");
 		Set<AnswerSet> actual = system.solve(prog).collect(Collectors.toSet());
 		assertEquals(expected, actual);
 	}
 
-	@at.ac.tuwien.kr.alpha.common.atoms.external.Predicate
+	@at.ac.tuwien.kr.alpha.api.externals.Predicate
 	public static Set<List<ConstantTerm<?>>> bestNode() {
 		return singleton(singletonList(ConstantTerm.getInstance(1)));
 	}
@@ -164,8 +165,8 @@ public class AlphaTest {
 	public void noInput() throws Exception {
 		Alpha system = new Alpha();
 		InputConfig cfg = InputConfig.forString("node(1). a :- &bestNode(X), node(X).");
-		cfg.addPredicateMethod("bestNode", ExternalAtoms.processPredicateMethod(this.getClass().getMethod("bestNode")));
-		Program prog = system.readProgram(cfg);
+		cfg.addPredicateMethod("bestNode", Externals.processPredicateMethod(this.getClass().getMethod("bestNode")));
+		InputProgram prog = system.readProgram(cfg);
 
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ node(1), a }");
 		Set<AnswerSet> actual = system.solve(prog).collect(Collectors.toSet());
@@ -176,8 +177,8 @@ public class AlphaTest {
 	public void smallGraphWithWrongType() throws Exception {
 		Alpha system = new Alpha();
 		InputConfig cfg = InputConfig.forString("a :- &connected[\"hello\",2].");
-		cfg.addPredicateMethod("connected", ExternalAtoms.processPredicate((Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3)));
-		Program prog = system.readProgram(cfg);
+		cfg.addPredicateMethod("connected", Externals.processPredicate((Integer a, Integer b) -> (a == 1 && b == 2) || (b == 2 || b == 3)));
+		InputProgram prog = system.readProgram(cfg);
 
 		system.solve(prog).collect(Collectors.toSet());
 	}
@@ -201,8 +202,8 @@ public class AlphaTest {
 	public void smallGraphNoNeighbors() throws Exception {
 		Alpha system = new Alpha();
 		InputConfig cfg = InputConfig.forString("noNeighbors(2) :- not &neighbors[2].");
-		cfg.addPredicateMethod("neighbors", ExternalAtoms.processPredicateMethod(this.getClass().getMethod("neighbors", int.class)));
-		Program prog = system.readProgram(cfg);
+		cfg.addPredicateMethod("neighbors", Externals.processPredicateMethod(this.getClass().getMethod("neighbors", int.class)));
+		InputProgram prog = system.readProgram(cfg);
 
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ noNeighbors(2) }");
 		Set<AnswerSet> actual = system.solve(prog).collect(Collectors.toSet());
@@ -213,8 +214,8 @@ public class AlphaTest {
 	public void smallGraphCoolNode() throws Exception {
 		Alpha system = new Alpha();
 		InputConfig cfg = InputConfig.forString("node(1..2). in(X) :- node(X), &coolNode[X].");
-		cfg.addPredicateMethod("coolNode", ExternalAtoms.processPredicateMethod(this.getClass().getMethod("coolNode", int.class)));
-		Program prog = system.readProgram(cfg);
+		cfg.addPredicateMethod("coolNode", Externals.processPredicateMethod(this.getClass().getMethod("coolNode", int.class)));
+		InputProgram prog = system.readProgram(cfg);
 
 		Set<AnswerSet> actual = system.solve(prog).collect(Collectors.toSet());
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ in(1), node(1), node(2) }");
@@ -225,8 +226,8 @@ public class AlphaTest {
 	public void smallGraphSingleNeighbor() throws Exception {
 		Alpha system = new Alpha();
 		InputConfig cfg = InputConfig.forString("node(1..3). in(1,X) :- &neighbors[1](X), node(X).");
-		cfg.addPredicateMethod("neighbors", ExternalAtoms.processPredicateMethod(this.getClass().getMethod("neighbors", int.class)));
-		Program prog = system.readProgram(cfg);
+		cfg.addPredicateMethod("neighbors", Externals.processPredicateMethod(this.getClass().getMethod("neighbors", int.class)));
+		InputProgram prog = system.readProgram(cfg);
 
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ in(1,2), in(1,3), node(1), node(2), node(3) }");
 		Set<AnswerSet> actual = system.solve(prog).collect(Collectors.toSet());
@@ -238,8 +239,8 @@ public class AlphaTest {
 	public void smallGraphSingleNeighborNoTerm() throws Exception {
 		Alpha system = new Alpha();
 		InputConfig cfg = InputConfig.forString("success :- &neighbors[1], not &neighbors[2].");
-		cfg.addPredicateMethod("neighbors", ExternalAtoms.processPredicateMethod(this.getClass().getMethod("neighbors", int.class)));
-		Program prog = system.readProgram(cfg);
+		cfg.addPredicateMethod("neighbors", Externals.processPredicateMethod(this.getClass().getMethod("neighbors", int.class)));
+		InputProgram prog = system.readProgram(cfg);
 
 		Set<AnswerSet> expected = AnswerSetsParser.parse("{ success }");
 		Set<AnswerSet> actual = system.solve(prog).collect(Collectors.toSet());
@@ -265,14 +266,15 @@ public class AlphaTest {
 	public void withExternalSubtype() throws Exception {
 		SubThingy thingy = new SubThingy();
 
-		Rule rule = new Rule(new DisjunctiveHead(Collections.singletonList(new BasicAtom(Predicate.getInstance("p", 1), ConstantTerm.getInstance("x")))),
+		BasicRule rule = new BasicRule(
+				new NormalHead(new BasicAtom(Predicate.getInstance("p", 1), ConstantTerm.getInstance("x"))),
 				singletonList(new ExternalLiteral(new ExternalAtom(Predicate.getInstance("thinger", 1),
 						new MethodPredicateInterpretation(this.getClass().getMethod("thinger", Thingy.class)), singletonList(ConstantTerm.getInstance(thingy)),
 						emptyList()), true)));
 
 		Alpha system = new Alpha();
 
-		Program prog = new Program(singletonList(rule), emptyList(), new InlineDirectives());
+		InputProgram prog = new InputProgram(singletonList(rule), emptyList(), new InlineDirectives());
 
 		Set<AnswerSet> actual = system.solve(prog).collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("p").instance("x").build()));
@@ -283,20 +285,32 @@ public class AlphaTest {
 	public void withExternalViaAnnotation() throws Exception {
 		Alpha system = new Alpha();
 		InputConfig cfg = InputConfig.forString("a :- &isOne[1].");
-		cfg.setPredicateMethods(ExternalAtoms.scan(this.getClass().getPackage().getName()));
-		Program prog = system.readProgram(cfg);
+		cfg.addPredicateMethods(Externals.scan(this.getClass()));
+		InputProgram prog = system.readProgram(cfg);
 
 		Set<AnswerSet> actual = system.solve(prog).collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
 		assertEquals(expected, actual);
 	}
 
+	/**
+	 * Externals may only be scanned once per implementation.
+	 * If at the time of a scan, the name of an external is already registered,
+	 * an exception is thrown.
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void errorDuplicateExternal() throws Exception {
+		InputConfig cfg = InputConfig.forString("someString.");
+		cfg.addPredicateMethods(Externals.scan(this.getClass()));
+		cfg.addPredicateMethods(Externals.scan(this.getClass()));
+	}
+
 	@Test
 	public void withNativeExternal() throws Exception {
 		Alpha system = new Alpha();
 		InputConfig cfg = InputConfig.forString("a :- &isTwo[2].");
-		cfg.addPredicateMethod("isTwo", ExternalAtoms.processPredicate((Integer t) -> t == 2));
-		Program prog = system.readProgram(cfg);
+		cfg.addPredicateMethod("isTwo", Externals.processPredicate((Integer t) -> t == 2));
+		InputProgram prog = system.readProgram(cfg);
 
 		Set<AnswerSet> actual = system.solve(prog).collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").build()));
@@ -308,8 +322,8 @@ public class AlphaTest {
 	public void withExternalInvocationCounted1() throws Exception {
 		Alpha system = new Alpha();
 		InputConfig cfg = InputConfig.forString("a :- &isOne[1], &isOne[1].");
-		cfg.addPredicateMethod("isOne", ExternalAtoms.processPredicateMethod(this.getClass().getMethod("isOne", int.class)));
-		Program prog = system.readProgram(cfg);
+		cfg.addPredicateMethod("isOne", Externals.processPredicateMethod(this.getClass().getMethod("isOne", int.class)));
+		InputProgram prog = system.readProgram(cfg);
 
 		int before = invocations;
 		Set<AnswerSet> actual = system.solve(prog).collect(Collectors.toSet());
@@ -326,8 +340,8 @@ public class AlphaTest {
 	public void withExternalInvocationCounted2() throws Exception {
 		Alpha system = new Alpha();
 		InputConfig cfg = InputConfig.forString("a. b :- &isOne[1], &isOne[2].");
-		cfg.addPredicateMethod("isOne", ExternalAtoms.processPredicateMethod(this.getClass().getMethod("isOne", int.class)));
-		Program prog = system.readProgram(cfg);
+		cfg.addPredicateMethod("isOne", Externals.processPredicateMethod(this.getClass().getMethod("isOne", int.class)));
+		InputProgram prog = system.readProgram(cfg);
 
 		int before = invocations;
 		Set<AnswerSet> actual = system.solve(prog).collect(Collectors.toSet());
@@ -344,8 +358,8 @@ public class AlphaTest {
 	public void withExternalInvocationCounted3() throws Exception {
 		Alpha system = new Alpha();
 		InputConfig cfg = InputConfig.forString("a :- &isOne[1], not &isOne[2].");
-		cfg.addPredicateMethod("isOne", ExternalAtoms.processPredicateMethod(this.getClass().getMethod("isOne", int.class)));
-		Program prog = system.readProgram(cfg);
+		cfg.addPredicateMethod("isOne", Externals.processPredicateMethod(this.getClass().getMethod("isOne", int.class)));
+		InputProgram prog = system.readProgram(cfg);
 
 		int before = invocations;
 		Set<AnswerSet> actual = system.solve(prog).collect(Collectors.toSet());
@@ -374,17 +388,48 @@ public class AlphaTest {
 	}
 
 	/**
-	 * Verifies that filters are handled correctly (regression test case introduced when fixing issue #189)
+	 * Verifies that filters are handled correctly (regression test case introduced when fixing issue #189).
 	 */
 	@Test
 	public void filterTest() {
 		String progstr = "a. b. c. d :- c. e(a, b) :- d.";
 		Alpha system = new Alpha();
-		Program prog = system.readProgramString(progstr, null);
+		InputProgram prog = system.readProgramString(progstr, null);
 		Set<AnswerSet> actual = system.solve(prog, (p) -> p.equals(Predicate.getInstance("a", 0)) || p.equals(Predicate.getInstance("e", 2)))
 				.collect(Collectors.toSet());
 		Set<AnswerSet> expected = new HashSet<>(singletonList(new AnswerSetBuilder().predicate("a").predicate("e").symbolicInstance("a", "b").build()));
 		assertEquals(expected, actual);
+	}
+
+	/**
+	 * Verifies that no stratified evaluation is performed up-front when disabled in config.
+	 */
+	@Test
+	public void disableStratifiedEvalTest() {
+		String progstr = "p(a). q(X) :- p(X).";
+		SystemConfig cfg = new SystemConfig();
+		cfg.setEvaluateStratifiedPart(false);
+		Alpha system = new Alpha(cfg);
+		InputProgram input = system.readProgramString(progstr);
+		NormalProgram normal = system.normalizeProgram(input);
+		InternalProgram preprocessed = system.performProgramPreprocessing(InternalProgram.fromNormalProgram(normal));
+		Assert.assertFalse("Preprocessed program contains fact derived from stratifiable rule, but should not!",
+				preprocessed.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("q", "a")));
+	}
+
+	/**
+	 * Verifies that stratified evaluation is performed up-front if not otherwise configured.
+	 */
+	@Test
+	public void enableStratifiedEvalTest() {
+		String progstr = "p(a). q(X) :- p(X).";
+		SystemConfig cfg = new SystemConfig();
+		Alpha system = new Alpha(cfg);
+		InputProgram input = system.readProgramString(progstr);
+		NormalProgram normal = system.normalizeProgram(input);
+		InternalProgram preprocessed = system.performProgramPreprocessing(InternalProgram.fromNormalProgram(normal));
+		Assert.assertTrue("Preprocessed program does not contain fact derived from stratifiable rule, but should!",
+				preprocessed.getFacts().contains(TestUtils.basicAtomWithSymbolicTerms("q", "a")));
 	}
 
 	/**
@@ -393,7 +438,8 @@ public class AlphaTest {
 	@Test
 	public void problematicRun_3col_1119654162577372() throws IOException {
 		/*
-		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s default -e 1119654162577372 -n 200 -i
+		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s
+		 * default -e 1119654162577372 -n 200 -i
 		 * 3col-20-38.txt
 		 */
 		problematicRun("3col-20-38.txt", 1119654162577372L, 200);
@@ -405,7 +451,8 @@ public class AlphaTest {
 	@Test
 	public void problematicRun_3col_1119718541727902() throws IOException {
 		/*
-		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s default -e 1119718541727902 -n 200 -i
+		 * NOTE: This was constructed from the following commandline invocation:
+		 * -DebugEnableInternalChecks -q -g naive -s default -e 1119718541727902 -n 200 -i
 		 * 3col-20-38.txt
 		 */
 		problematicRun("3col-20-38.txt", 1119718541727902L, 200);
@@ -417,8 +464,8 @@ public class AlphaTest {
 	@Test
 	public void problematicRun_vehicle_97598271567626() throws IOException {
 		/*
-		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s default -e 97598271567626 -n 2 -i
-		 * vehicle_normal_small.asp
+		 * NOTE: This was constructed from the following commandline invocation:
+		 * -DebugEnableInternalChecks -q -g naive -s default -e 97598271567626 -n 2 -i vehicle_normal_small.asp
 		 */
 		problematicRun("vehicle_normal_small.asp", 1119718541727902L, 2);
 	}
@@ -429,8 +476,8 @@ public class AlphaTest {
 	@Test
 	public void problematicRun_3col_1119718541727902_sorted_400() throws IOException {
 		/*
-		 * NOTE: This was constructed from the following commandline invocation: -DebugEnableInternalChecks -q -g naive -s default -sort -n 400 -i
-		 * 3col-20-38.txt
+		 * NOTE: This was constructed from the following commandline invocation:
+		 * -DebugEnableInternalChecks -q -g naive -s default -sort -n 400 -i 3col-20-38.txt
 		 */
 		SystemConfig cfg = new SystemConfig();
 		cfg.setGrounderName("naive");
@@ -445,7 +492,7 @@ public class AlphaTest {
 		List<String> files = new ArrayList<>();
 		files.add(path.toString());
 		inputCfg.setFiles(files);
-		Program prog = system.readProgram(inputCfg);
+		InputProgram prog = system.readProgram(inputCfg);
 
 		assertFalse(system.solve(prog).sorted().limit(400).collect(Collectors.toList()).isEmpty());
 	}
@@ -463,7 +510,7 @@ public class AlphaTest {
 		List<String> files = new ArrayList<>();
 		files.add(base.resolve(program).toString());
 		inputCfg.setFiles(files);
-		Program prog = system.readProgram(inputCfg);
+		InputProgram prog = system.readProgram(inputCfg);
 		assertFalse(system.solve(prog).limit(limit).collect(Collectors.toList()).isEmpty());
 	}
 }

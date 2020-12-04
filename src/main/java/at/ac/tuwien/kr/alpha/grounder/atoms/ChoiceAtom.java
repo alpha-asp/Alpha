@@ -27,6 +27,11 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
+import static at.ac.tuwien.kr.alpha.Util.join;
+
+import java.util.Collections;
+import java.util.List;
+
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
@@ -34,12 +39,8 @@ import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-import java.util.Collections;
-import java.util.List;
+public class ChoiceAtom extends Atom {
 
-import static at.ac.tuwien.kr.alpha.Util.join;
-
-public class ChoiceAtom implements Atom {
 	public static final Predicate ON = Predicate.getInstance("ChoiceOn", 1, true, true);
 	public static final Predicate OFF = Predicate.getInstance("ChoiceOff", 1, true, true);
 
@@ -92,5 +93,48 @@ public class ChoiceAtom implements Atom {
 	@Override
 	public String toString() {
 		return join(predicate.getName() + "(", terms, ")");
+	}
+
+	@Override
+	public Atom withTerms(List<Term> terms) {
+		throw new UnsupportedOperationException("Changing terms is not supported for ChoiceAtoms!");
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((this.predicate == null) ? 0 : this.predicate.hashCode());
+		result = prime * result + ((this.terms == null) ? 0 : this.terms.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof ChoiceAtom)) {
+			return false;
+		}
+		ChoiceAtom other = (ChoiceAtom) obj;
+		if (this.predicate == null) {
+			if (other.predicate != null) {
+				return false;
+			}
+		} else if (!this.predicate.equals(other.predicate)) {
+			return false;
+		}
+		if (this.terms == null) {
+			if (other.terms != null) {
+				return false;
+			}
+		} else if (!this.terms.equals(other.terms)) {
+			return false;
+		}
+		return true;
 	}
 }

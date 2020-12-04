@@ -60,4 +60,5 @@ public class AggregateLiteral extends Literal {
 		}
 		return null;
 	}
+
 }

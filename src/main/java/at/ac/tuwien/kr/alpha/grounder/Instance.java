@@ -1,11 +1,13 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.terms.Term;
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static at.ac.tuwien.kr.alpha.Util.join;
+import at.ac.tuwien.kr.alpha.Util;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 /**
  * An instance is a positional association of terms, e.g., representing a variable substitution, or a ground instance of
@@ -23,6 +25,13 @@ public class Instance {
 		this.terms = terms;
 	}
 
+	public static Instance fromAtom(Atom atom) {
+		if (!atom.isGround()) {
+			throw Util.oops("Cannot create instance from non-ground atom " + atom.toString());
+		}
+		return new Instance(atom.getTerms());
+	}
+	
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {

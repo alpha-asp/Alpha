@@ -91,11 +91,9 @@ public class OmigaBenchmarksTest extends AbstractSolverTests {
 	}
 
 	private void test(String folder, String aspFileName) throws IOException {
-		CharStream programInputStream = CharStreams.fromPath(
-			Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName)
-		);
+		CharStream programInputStream = CharStreams.fromPath(Paths.get("benchmarks", "omiga", "omiga-testcases", folder, aspFileName));
 		Optional<AnswerSet> answerSet = getInstance(programInputStream).stream().findFirst();
-		//System.out.println(answerSet);
+		// System.out.println(answerSet);
 		// TODO: check correctness of answer set
 	}
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -37,9 +37,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Represents a builtin atom according to the standard.
+ * Represents a builtin comparison atom according to the standard.
  */
-public class ComparisonAtom implements Atom, VariableNormalizableAtom {
+public class ComparisonAtom extends Atom implements VariableNormalizableAtom {
 	private final Predicate predicate;
 	final ComparisonOperator operator;
 	private final List<Term> terms;
@@ -47,7 +47,7 @@ public class ComparisonAtom implements Atom, VariableNormalizableAtom {
 	private ComparisonAtom(List<Term> terms, ComparisonOperator operator) {
 		this.terms = terms;
 		this.operator = operator;
-		this.predicate = Predicate.getInstance(operator.toString(), 2);
+		this.predicate = operator.predicate();
 	}
 
 	public ComparisonAtom(Term term1, Term term2, ComparisonOperator operator) {
@@ -117,6 +117,11 @@ public class ComparisonAtom implements Atom, VariableNormalizableAtom {
 	public ComparisonAtom normalizeVariables(String prefix, int counterStartingValue) {
 		List<Term> renamedTerms = Term.renameTerms(terms, prefix, counterStartingValue);
 		return new ComparisonAtom(renamedTerms.get(0), renamedTerms.get(1), operator);
+	}
+
+	@Override
+	public Atom withTerms(List<Term> terms) {
+		return new ComparisonAtom(terms, operator);
 	}
 
 }

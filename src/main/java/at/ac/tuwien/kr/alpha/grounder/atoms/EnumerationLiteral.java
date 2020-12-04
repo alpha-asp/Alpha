@@ -52,4 +52,8 @@ public class EnumerationLiteral extends BasicLiteral {
 		return ret;
 
 	}
+	
+	public Substitution addEnumerationIndexToSubstitution(Substitution partialSubstitution) {
+		return this.getAtom().addEnumerationIndexToSubstitution(partialSubstitution);
+	}
 }

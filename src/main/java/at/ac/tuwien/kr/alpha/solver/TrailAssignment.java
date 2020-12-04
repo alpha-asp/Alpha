@@ -29,6 +29,7 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.IntIterator;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,11 +46,11 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.*;
  * An implementation of Assignment using a trail (of literals) and arrays as underlying structures for storing
  * assignments.
  *
- * Copyright (c) 2018-2019, the Alpha Team.
+ * Copyright (c) 2018-2020, the Alpha Team.
  */
 public class TrailAssignment implements WritableAssignment, Checkable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TrailAssignment.class);
-	public static final Antecedent CLOSING_INDICATOR_ANTECEDENT = new Antecedent() {
+	static final Antecedent CLOSING_INDICATOR_ANTECEDENT = new Antecedent() {
 		int[] literals = new int[0];
 
 		@Override
@@ -83,7 +84,8 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	private boolean[] callbackUponChange;
 	private ArrayList<OutOfOrderLiteral> outOfOrderLiterals = new ArrayList<>();
 	private int highestDecisionLevelContainingOutOfOrderLiterals;
-	private ArrayList<Integer> trail = new ArrayList<>();
+	private int[] trail = new int[0];
+	private int trailSize;
 	private ArrayList<Integer> trailIndicesOfDecisionLevels = new ArrayList<>();
 
 	private int nextPositionInTrail;
@@ -92,7 +94,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	private int assignmentsForChoicePosition;
 	private int mbtCount;
 	private boolean checksEnabled;
-	int replayCounter;
+	long replayCounter;
 
 	public TrailAssignment(AtomStore atomStore, boolean checksEnabled) {
 		this.checksEnabled = checksEnabled;
@@ -121,7 +123,8 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		Arrays.fill(callbackUponChange, false);
 		outOfOrderLiterals = new ArrayList<>();
 		highestDecisionLevelContainingOutOfOrderLiterals = 0;
-		trail = new ArrayList<>();
+		Arrays.fill(trail, 0);
+		trailSize = 0;
 		trailIndicesOfDecisionLevels = new ArrayList<>();
 		trailIndicesOfDecisionLevels.add(0);
 		nextPositionInTrail = 0;
@@ -189,7 +192,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		return lowestDecisionLevel;
 	}
 
-	public int getOutOfOrderStrongDecisionLevel(int atom) {
+	int getOutOfOrderStrongDecisionLevel(int atom) {
 		int lowestDecisionLevel = Integer.MAX_VALUE;
 		for (OutOfOrderLiteral outOfOrderLiteral : outOfOrderLiterals) {
 			if (outOfOrderLiteral.atom == atom && outOfOrderLiteral.value == TRUE && outOfOrderLiteral.decisionLevel < lowestDecisionLevel) {
@@ -199,7 +202,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		return lowestDecisionLevel;
 	}
 
-	private void informCallback(Integer atom) {
+	private void informCallback(int atom) {
 		if (callbackUponChange[atom]) {
 			choiceManagerCallback.callbackOnChanged(atom);
 		}
@@ -208,9 +211,8 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	private void removeLastDecisionLevel() {
 		// Remove all atoms recorded in the highest decision level.
 		int start = trailIndicesOfDecisionLevels.get(getDecisionLevel());
-		ListIterator<Integer> backtrackIterator = trail.listIterator(start);
-		while (backtrackIterator.hasNext()) {
-			int backtrackAtom = atomOf(backtrackIterator.next());
+		for (int i = start; i < trailSize; i++) {
+			int backtrackAtom = atomOf(trail[i]); //atomOf(backtrackIterator.next());
 			// Skip already backtracked atoms.
 			if (getTruth(backtrackAtom) == null) {
 				continue;
@@ -232,13 +234,8 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 			informCallback(backtrackAtom);
 		}
 		// Remove atoms from trail.
-		while (trail.size() > start) {
-			trail.remove(trail.size() - 1);
-		}
+		trailSize = start;
 		trailIndicesOfDecisionLevels.remove(trailIndicesOfDecisionLevels.size() - 1);
-
-		int trailCurrentIndex = trail.size();
-		int trailPrevIndex = trailIndicesOfDecisionLevels.size() < 1  ? 0 : trailIndicesOfDecisionLevels.get(trailIndicesOfDecisionLevels.size() - 1);
 	}
 
 	private void replayOutOfOrderLiterals() {
@@ -258,7 +255,9 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 				}
 			}
 			replayCounter += outOfOrderLiterals.size();
-			LOGGER.trace("Replay list contained {} literals, {} were again assigned. Overall replays: {}.", outOfOrderLiterals.size(), k, replayCounter);
+			if (LOGGER.isTraceEnabled()) {
+				LOGGER.trace("Replay list contained {} literals, {} were again assigned. Overall replays: {}.", outOfOrderLiterals.size(), k, replayCounter);
+			}
 			// Remove remaining entries from k onwards.
 			while (outOfOrderLiterals.size() > k) {
 				outOfOrderLiterals.remove(outOfOrderLiterals.size() - 1);
@@ -268,10 +267,10 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	}
 
 	private void resetTrailPointersAndReplayOutOfOrderLiterals() {
-		nextPositionInTrail = Math.min(nextPositionInTrail, trail.size());
-		newAssignmentsPositionInTrail = Math.min(newAssignmentsPositionInTrail, trail.size());
-		newAssignmentsIterator = Math.min(newAssignmentsIterator, trail.size());
-		assignmentsForChoicePosition = Math.min(assignmentsForChoicePosition, trail.size());
+		nextPositionInTrail = Math.min(nextPositionInTrail, trailSize);
+		newAssignmentsPositionInTrail = Math.min(newAssignmentsPositionInTrail, trailSize);
+		newAssignmentsIterator = Math.min(newAssignmentsIterator, trailSize);
+		assignmentsForChoicePosition = Math.min(assignmentsForChoicePosition, trailSize);
 		replayOutOfOrderLiterals();
 		if (checksEnabled) {
 			runInternalChecks();
@@ -303,14 +302,14 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		if (checksEnabled) {
 			runInternalChecks();
 		}
-		trailIndicesOfDecisionLevels.add(trail.size());
+		trailIndicesOfDecisionLevels.add(trailSize);
 		return assign(atom, value, null);
 	}
 
 	@Override
 	public ConflictCause assign(int atom, ThriceTruth value, Antecedent impliedBy) {
 		ConflictCause conflictCause = assignWithTrail(atom, value, impliedBy);
-		if (conflictCause != null) {
+		if (conflictCause != null && LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Assign is conflicting: atom: {}, value: {}, impliedBy: {}.", atom, value, impliedBy);
 		}
 		return conflictCause;
@@ -318,13 +317,14 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	@Override
 	public ConflictCause assign(int atom, ThriceTruth value, Antecedent impliedBy, int decisionLevel) {
-		if (decisionLevel < getDecisionLevel()) {
+		ConflictCause conflictCause = assign(atom, value, impliedBy);
+		if (conflictCause == null && decisionLevel < getDecisionLevel()) {
 			outOfOrderLiterals.add(new OutOfOrderLiteral(atom, value, decisionLevel, impliedBy));
 			if (highestDecisionLevelContainingOutOfOrderLiterals < getDecisionLevel()) {
 				highestDecisionLevelContainingOutOfOrderLiterals = getDecisionLevel();
 			}
 		}
-		return assign(atom, value, impliedBy);
+		return conflictCause;
 	}
 
 	private boolean assignmentsConsistent(ThriceTruth oldTruth, ThriceTruth value) {
@@ -350,7 +350,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		// If the atom currently is not assigned, simply record the assignment.
 		final ThriceTruth currentTruth = getTruth(atom);
 		if (currentTruth == null) {
-			trail.add(atomToLiteral(atom, value.toBoolean()));
+			trail[trailSize++] = atomToLiteral(atom, value.toBoolean());
 			values[atom] = (getDecisionLevel() << 2) | translateTruth(value);
 			this.impliedBy[atom] = impliedBy;
 			// Adjust MBT counter.
@@ -373,6 +373,10 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		if (!assignmentsConsistent(currentTruth, value)) {
 			// Assignments are inconsistent, prepare the reason.
 			// Due to the conflict, the impliedBy NoGood is not the recorded one but the one this method is invoked with.stems from this assignment.
+			if (impliedBy instanceof ShallowAntecedent) {
+				// Instantiate Antecedent in case it is a shallow one for binary nogoods.
+				return new ConflictCause(((ShallowAntecedent) impliedBy).instantiateAntecedent(atomToLiteral(atom, !value.toBoolean())));
+			}
 			return new ConflictCause(impliedBy);
 		}
 		if (value == TRUE && currentTruth != MBT) {
@@ -383,7 +387,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		// There is nothing to do except if MBT becomes TRUE.
 		if (currentTruth == MBT && value == TRUE) {
 			// Record new truth value but keep weak decision level unchanged.
-			trail.add(atomToLiteral(atom, true));
+			trail[trailSize++] = atomToLiteral(atom, true);
 			values[atom] = (getWeakDecisionLevel(atom) << 2) | translateTruth(TRUE);
 			// Record strong decision level.
 			strongDecisionLevels[atom] = getDecisionLevel();
@@ -442,7 +446,12 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 	@Override
 	public Antecedent getImpliedBy(int atom) {
-		return impliedBy[atom];
+		Antecedent antecedent = impliedBy[atom];
+		// Check if the Antecedent is a shallow one from binary nogoods, in this case instantiate it to a full Antecedent.
+		if (antecedent instanceof ShallowAntecedent) {
+			return ((ShallowAntecedent) antecedent).instantiateAntecedent(atomToLiteral(atom, !getTruth(atom).toBoolean()));
+		}
+		return antecedent;
 	}
 
 	@Override
@@ -534,6 +543,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		Arrays.fill(strongDecisionLevels, oldLength, strongDecisionLevels.length, -1);
 		impliedBy = Arrays.copyOf(impliedBy, newCapacity);
 		callbackUponChange = Arrays.copyOf(callbackUponChange, newCapacity);
+		trail = Arrays.copyOf(trail, newCapacity * 2);	// Trail has at most 2 assignments (MBT+TRUE) for each atom.
 	}
 
 	public int getNumberOfAssignedAtoms() {
@@ -550,8 +560,8 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	public int getNumberOfAtomsAssignedSinceLastDecision() {
 		Set<Integer> newlyAssignedAtoms = new HashSet<>();
 		int trailIndex = trailIndicesOfDecisionLevels.get(getDecisionLevel());
-		for (; trailIndex < trail.size(); trailIndex++) {
-			newlyAssignedAtoms.add(atomOf(trail.get(trailIndex)));
+		for (; trailIndex < trailSize; trailIndex++) {
+			newlyAssignedAtoms.add(atomOf(trail[trailIndex]));
 		}
 		return newlyAssignedAtoms.size();
 	}
@@ -598,11 +608,11 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		this.checksEnabled = checksEnabled;
 	}
 
-	private class AssignmentIterator implements Iterator<Integer> {
+	private class AssignmentIterator implements IntIterator {
 
 		private void advanceCursorToNextPositiveAssignment() {
-			while (newAssignmentsIterator < trail.size()) {
-				ThriceTruth truth = getTruth(atomOf(trail.get(newAssignmentsIterator)));
+			while (newAssignmentsIterator < trailSize) {
+				ThriceTruth truth = getTruth(atomOf(trail[newAssignmentsIterator]));
 				if (truth != null && truth.toBoolean()) {
 					return;
 				}
@@ -613,12 +623,12 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		@Override
 		public boolean hasNext() {
 			advanceCursorToNextPositiveAssignment();
-			return newAssignmentsIterator < trail.size();
+			return newAssignmentsIterator < trailSize;
 		}
 
 		@Override
-		public Integer next() {
-			return atomOf(trail.get(newAssignmentsIterator++));
+		public int next() {
+			return atomOf(trail[newAssignmentsIterator++]);
 
 		}
 	}
@@ -646,7 +656,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 		@Override
 		public int peek() {
-			return atomOf(trail.get(nextPositionInTrail));
+			return atomOf(trail[nextPositionInTrail]);
 		}
 
 		@Override
@@ -658,7 +668,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 
 		@Override
 		public boolean isEmpty() {
-			return nextPositionInTrail >= trail.size();
+			return nextPositionInTrail >= trailSize;
 		}
 	}
 
@@ -671,17 +681,18 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 		int trailPos;
 
 		TrailBackwardsWalker() {
-			trailPos = trail.size();
+			trailPos = trailSize;
 		}
 
 		public int getNextLowerLiteral() {
-			return trail.get(--trailPos);
+			return trail[--trailPos];
 		}
 
 		@Override
 		public String toString() {
 			StringBuilder sb = new StringBuilder("[");
-			for (Integer literalOnTrail : trail) {
+			for (int i = 0; i < trailSize; i++) {
+				int literalOnTrail = trail[i];
 				sb.append(isPositive(literalOnTrail) ? "+" + atomOf(literalOnTrail) : "-" + atomOf(literalOnTrail));
 				sb.append("@");
 				sb.append(TrailAssignment.this.getWeakDecisionLevel(atomOf(literalOnTrail)));

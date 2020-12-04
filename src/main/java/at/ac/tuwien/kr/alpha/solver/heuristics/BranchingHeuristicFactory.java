@@ -37,6 +37,11 @@ import java.util.stream.Collectors;
 
 public final class BranchingHeuristicFactory {
 
+	/**
+	 * The available domain-independent heuristics.
+	 * Some are deprecated because they perform poorly and have not been improved for some time,
+	 * however the code is kept for now so that it stays compatible when interfaces are refactored.
+	 */
 	public enum Heuristic {
 		NAIVE,
 		BERKMIN,
