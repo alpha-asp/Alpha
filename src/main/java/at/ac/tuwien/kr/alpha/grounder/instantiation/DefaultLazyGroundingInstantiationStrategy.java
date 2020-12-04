@@ -69,7 +69,7 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 	private Assignment currentAssignment;
 	private LinkedHashSet<Atom> staleWorkingMemoryEntries;
 	private Map<Predicate, LinkedHashSet<Instance>> facts;
-	private boolean accumulatorEnabled = false;
+	private boolean accumulatorEnabled;
 
 	public DefaultLazyGroundingInstantiationStrategy(WorkingMemory workingMemory, AtomStore atomStore,
 			Map<Predicate, LinkedHashSet<Instance>> facts, boolean accumulator) {
