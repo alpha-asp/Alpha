@@ -60,7 +60,7 @@ import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.toSig
  * 	<code>_h(3, 2, true, b(1), condpos(t(a(0)), tm(a(1)), m(a(2)), f(a(3))), condneg(t(a(4)), tm(a(5)), m(a(6)), f(a(7))))</code>
  *
  */
-public class HeuristicAtom implements Atom {
+public class HeuristicAtom extends Atom {
 	public static final Predicate PREDICATE = Predicate.getInstance("_h", 6, true);
 	private static final String FUNCTION_POSITIVE_CONDITION = "condpos";
 	private static final String FUNCTION_NEGATIVE_CONDITION = "condneg";
@@ -108,6 +108,11 @@ public class HeuristicAtom implements Atom {
 				positiveCondition,
 				negativeCondition
 		);
+	}
+
+	@Override
+	public ChoiceAtom withTerms(List<Term> terms) {
+		throw new UnsupportedOperationException("Changing terms is not supported for HeuristicAtoms!");
 	}
 
 	@Override

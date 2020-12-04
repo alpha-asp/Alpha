@@ -42,7 +42,6 @@ import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.grounder.transformation.NormalizeProgramTransformation;
 import at.ac.tuwien.kr.alpha.grounder.transformation.StratifiedEvaluation;
@@ -124,7 +123,7 @@ public class Alpha {
 	}
 
 	public NormalProgram normalizeProgram(InputProgram program) {
-		return new NormalizeProgramTransformation(config.isUseNormalizationGrid()).apply(program);
+		return new NormalizeProgramTransformation(config.isUseNormalizationGrid(), config.isIgnoreDomspecHeuristics()).apply(program);
 	}
 
 	public InternalProgram performProgramPreprocessing(InternalProgram program) {
@@ -219,11 +218,13 @@ public class Alpha {
 		return SolverFactory.getInstance(config, atomStore, grounder, heuristicsConfiguration);
 	}
 
-	private HeuristicsConfiguration buildHeuristicsConfiguration(Program program) {
+	private HeuristicsConfiguration buildHeuristicsConfiguration(InternalProgram program) {
 		HeuristicsConfigurationBuilder heuristicsConfigurationBuilder = HeuristicsConfiguration.builder();
 		heuristicsConfigurationBuilder.setHeuristic(this.config.getBranchingHeuristic());
 		heuristicsConfigurationBuilder.setMomsStrategy(this.config.getMomsStrategy());
-		heuristicsConfigurationBuilder.setRespectDomspecHeuristics(!this.config.isIgnoreDomspecHeuristics() && program.getInlineDirectives().hasDirectives(InlineDirectives.DIRECTIVE.heuristic));
+		// TODO: can we recognize if the program contains heuristic directives at this point, or are they already compiled away?
+		// heuristicsConfigurationBuilder.setRespectDomspecHeuristics(!this.config.isIgnoreDomspecHeuristics() && program.getInlineDirectives().hasDirectives(InlineDirectives.DIRECTIVE.heuristic));
+		heuristicsConfigurationBuilder.setRespectDomspecHeuristics(!this.config.isIgnoreDomspecHeuristics());
 		heuristicsConfigurationBuilder.setReplayChoices(this.config.getReplayChoices());
 		return heuristicsConfigurationBuilder.build();
 	}

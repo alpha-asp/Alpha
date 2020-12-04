@@ -27,19 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
@@ -54,7 +41,6 @@ import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
-import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -148,7 +134,7 @@ public class NoGoodGenerator {
 		return result;
 	}
 
-	private Collection<NoGood> generateNoGoodsForNonConstraintNonHeuristicRule(NonGroundRule nonGroundRule, List<Integer> posLiterals, List<Integer> negLiterals, Atom groundHeadAtom, int bodyRepresentingAtom) {
+	private Collection<NoGood> generateNoGoodsForNonConstraintNonHeuristicRule(InternalRule internalRule, List<Integer> posLiterals, List<Integer> negLiterals, Atom groundHeadAtom, int bodyRepresentingAtom) {
 		final List<NoGood> result = new ArrayList<>();
 		final int headId = atomStore.putIfAbsent(groundHeadAtom);
 		final int headLiteral = atomToLiteral(headId);
@@ -167,7 +153,7 @@ public class NoGoodGenerator {
 		}
 
 		// If the rule head is unique, add support.
-		if (uniqueGroundRulePerGroundHead.contains(nonGroundRule)) {
+		if (uniqueGroundRulePerGroundHead.contains(internalRule)) {
 			result.add(NoGoodCreator.support(headLiteral, bodyRepresentingLiteral));
 		}
 

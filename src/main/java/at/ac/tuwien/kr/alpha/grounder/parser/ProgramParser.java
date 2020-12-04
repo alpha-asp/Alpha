@@ -27,17 +27,11 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.parser;
 
-import org.antlr.v4.runtime.BailErrorStrategy;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.DefaultErrorStrategy;
-import org.antlr.v4.runtime.RecognitionException;
 import at.ac.tuwien.kr.alpha.CustomErrorListener;
 import at.ac.tuwien.kr.alpha.antlr.AlphaASPLexer;
 import at.ac.tuwien.kr.alpha.antlr.AlphaASPParser;
-import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -50,12 +44,6 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
-
-import at.ac.tuwien.kr.alpha.CustomErrorListener;
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
-import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 
 public class ProgramParser {
 	private final Map<String, PredicateInterpretation> externals;

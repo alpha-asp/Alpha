@@ -27,8 +27,8 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
@@ -105,11 +105,13 @@ public class HouseTest extends AbstractSolverTests {
 	}
 
 	private void testHouse(String instanceId) throws IOException {
-		Program parsedProgram = parser
+
+		InputProgram parsedProgram = parser
 				.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "House", "house_alpha_2020-02-21.asp")));
-		parsedProgram
-				.accumulate(parser.parse(CharStreams
-						.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "House", "instances_alpha", instanceId + ".edb"))));
+		parsedProgram = InputProgram.builder(parsedProgram).accumulate(
+				parser.parse(CharStreams
+						.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "House", "instances_alpha", instanceId + ".edb"))))
+				.build();
 
 		Solver solver = getInstance(parsedProgram);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();

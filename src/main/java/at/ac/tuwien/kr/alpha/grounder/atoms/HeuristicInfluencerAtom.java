@@ -28,8 +28,8 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
@@ -42,16 +42,12 @@ import static at.ac.tuwien.kr.alpha.Util.join;
 import static at.ac.tuwien.kr.alpha.common.heuristics.HeuristicSignSetUtil.toName;
 import static java.util.Arrays.asList;
 
-public class HeuristicInfluencerAtom implements Atom {
+public class HeuristicInfluencerAtom extends BasicAtom {
 	public static final Predicate ON = Predicate.getInstance("HeuOn", 2, true);
 	public static final Predicate OFF = Predicate.getInstance("HeuOff", 2, true);
 
-	private final Predicate predicate;
-	private final List<Term> terms;
-
 	private HeuristicInfluencerAtom(Predicate predicate, Term heuristicID, Term signSetName) {
-		this.predicate = predicate;
-		this.terms = asList(heuristicID, signSetName);
+		super(predicate, asList(heuristicID, signSetName));
 	}
 
 	private HeuristicInfluencerAtom(Predicate predicate, int id, String signSetName) {
@@ -81,18 +77,23 @@ public class HeuristicInfluencerAtom implements Atom {
 	}
 
 	@Override
+	public ChoiceAtom withTerms(List<Term> terms) {
+		throw new UnsupportedOperationException("Changing terms is not supported for HeuristicInfluencerAtoms!");
+	}
+
+	@Override
 	public boolean isGround() {
 		// NOTE: Term is a ConstantTerm, which is ground by definition.
 		return true;
 	}
 	
 	@Override
-	public Literal toLiteral(boolean negated) {
+	public BasicLiteral toLiteral(boolean negated) {
 		throw new UnsupportedOperationException(this.getClass().getName() + " cannot be literalized");
 	}
 
 	@Override
-	public Atom substitute(Substitution substitution) {
+	public HeuristicInfluencerAtom substitute(Substitution substitution) {
 		return this;
 	}
 

@@ -27,11 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
-import static at.ac.tuwien.kr.alpha.Util.join;
-
-import java.util.Collections;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
@@ -40,6 +35,9 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Collections;
+import java.util.List;
+
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 public class ChoiceAtom extends BasicAtom {
 	public static final Predicate ON = Predicate.getInstance("ChoiceOn", 1, true, true);
@@ -83,7 +81,7 @@ public class ChoiceAtom extends BasicAtom {
 	}
 
 	@Override
-	public Atom withTerms(List<Term> terms) {
+	public ChoiceAtom withTerms(List<Term> terms) {
 		throw new UnsupportedOperationException("Changing terms is not supported for ChoiceAtoms!");
 	}
 

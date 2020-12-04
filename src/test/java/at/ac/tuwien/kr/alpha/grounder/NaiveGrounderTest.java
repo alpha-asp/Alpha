@@ -29,12 +29,9 @@ import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.NoGoodCreator;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
@@ -466,7 +463,8 @@ public class NaiveGrounderTest {
 
 	@Test
 	public void testGenerateHeuristicNoGoods() {
-		final Program program = PROGRAM_PARSER.parse("{ a(0); a(1); a(2); a(3); a(4); a(5); a(6); a(7) }."
+		final Alpha system = new Alpha();
+		final InputProgram inputProgram = PROGRAM_PARSER.parse("{ a(0); a(1); a(2); a(3); a(4); a(5); a(6); a(7) }."
 				+ "{ b(N) } :- a(N)."
 				+ "#heuristic b(1) : T a(0), MT a(1), M a(2), F a(3), not T a(4), not MT a(5), not M a(6), not F a(7). [3@2]");
 		final int expectedNumberOfHeuristicRule = 18;	//because there are 18 ground rules except the heuristic rule, and rule IDs start with 0
@@ -474,12 +472,11 @@ public class NaiveGrounderTest {
 		final InternalProgram internalProgram = InternalProgram.fromNormalProgram(normalProgram);
 
 		final AtomStore atomStore = new AtomStoreImpl();
-		final Grounder grounder = GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true);
+		final Grounder grounder = GrounderFactory.getInstance("naive", internalProgram, atomStore, heuristicsConfiguration, true);
 		final NoGoodGenerator noGoodGenerator = ((NaiveGrounder)grounder).noGoodGenerator;
-		final Rule rule = findHeuristicRule(program.getRules());
+		final InternalRule rule = findHeuristicRule(internalProgram.getRules());
 		assert rule != null;
-		final NonGroundRule nonGroundRule = NonGroundRule.constructNonGroundRule(rule);
-		final Set<NoGood> generatedNoGoods = new HashSet<>(noGoodGenerator.generateNoGoodsFromGroundSubstitution(nonGroundRule, new Substitution()));
+		final Set<NoGood> generatedNoGoods = new HashSet<>(noGoodGenerator.generateNoGoodsFromGroundSubstitution(rule, new Substitution()));
 		assertEquals(10, generatedNoGoods.size());
 		final Set<String> noGoodsToString = generatedNoGoods.stream().map(atomStore::noGoodToString).collect(Collectors.toSet());
 		assertEquals(asSet(
@@ -496,9 +493,9 @@ public class NaiveGrounderTest {
 		), noGoodsToString);
 	}
 
-	private Rule findHeuristicRule(List<Rule> rules) {
-		for (Rule rule : rules) {
-			if (rule.getHead() instanceof DisjunctiveHead && ((DisjunctiveHead)rule.getHead()).disjunctiveAtoms.get(0) instanceof HeuristicAtom) {
+	private InternalRule findHeuristicRule(List<InternalRule> rules) {
+		for (InternalRule rule : rules) {
+			if (rule.getHead().getAtom() instanceof HeuristicAtom) {
 				return rule;
 			}
 		}

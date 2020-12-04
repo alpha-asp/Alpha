@@ -25,7 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfigurationBuilder;
@@ -42,41 +42,41 @@ public class HeuristicDirectiveToRuleTest {
 	
 	@Test
 	public void testPositiveDirectiveWithBodyWeightAndLevel() {
-		Program program = parser.parse("a(1)."
+		InputProgram program = parser.parse("a(1)."
 				+ "{ b(N) } :- a(N)."
 				+ "#heuristic b(N) : a(N). [N@2]");
-		
-		new HeuristicDirectiveToRule(heuristicsConfiguration).transform(program);
+
+		program = new HeuristicDirectiveToRule(heuristicsConfiguration).apply(program);
 		assertEquals("_h(N, 2, true, b(N), condpos(tm(a(N))), condneg) :- a(N).", program.getRules().get(program.getRules().size() - 1).toString());
 	}
 	
 	@Test
 	public void testNegativeDirectiveWithBodyWeightAndLevel() {
-		Program program = parser.parse("a(1)."
+		InputProgram program = parser.parse("a(1)."
 				+ "{ b(N) } :- a(N)."
 				+ "#heuristic F b(N) : T a(N), not F b(N). [N@2]");
-		
-		new HeuristicDirectiveToRule(heuristicsConfiguration).transform(program);
+
+		program = new HeuristicDirectiveToRule(heuristicsConfiguration).apply(program);
 		assertEquals("_h(N, 2, false, b(N), condpos(t(a(N))), condneg(f(b(N)))) :- a(N).", program.getRules().get(program.getRules().size() - 1).toString());
 	}
 
 	@Test
 	public void testPositiveComparisonAtom() {
-		Program program = parser.parse("a(1). a(2)."
+		InputProgram program = parser.parse("a(1). a(2)."
 				+ "{ b(N) } :- a(N)."
 				+ "#heuristic F b(N) : T a(N), Nm1 = N - 1, not F b(Nm1). [N@2]");
 
-		new HeuristicDirectiveToRule(heuristicsConfiguration).transform(program);
+		program = new HeuristicDirectiveToRule(heuristicsConfiguration).apply(program);
 		assertEquals("_h(N, 2, false, b(N), condpos(t(a(N))), condneg(f(b(Nm1)))) :- a(N), Nm1 = N - 1.", program.getRules().get(program.getRules().size() - 1).toString());
 	}
 
 	@Test
 	public void testNegativeComparisonAtom() {
-		Program program = parser.parse("a(1). a(2)."
+		InputProgram program = parser.parse("a(1). a(2)."
 				+ "{ b(N) } :- a(N)."
 				+ "#heuristic F b(N) : T a(N), T b(M), not N < M. [N@2]");
 
-		new HeuristicDirectiveToRule(heuristicsConfiguration).transform(program);
+		program = new HeuristicDirectiveToRule(heuristicsConfiguration).apply(program);
 		assertEquals("_h(N, 2, false, b(N), condpos(t(a(N)), t(b(M))), condneg) :- a(N), b(M), not N < M.", program.getRules().get(program.getRules().size() - 1).toString());
 	}
 

@@ -34,33 +34,11 @@ import at.ac.tuwien.kr.alpha.antlr.AlphaASPParser.Weight_annotationContext;
 import at.ac.tuwien.kr.alpha.antlr.AlphaASPParser.Weight_at_levelContext;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
-import at.ac.tuwien.kr.alpha.common.ChoiceHead;
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
 import at.ac.tuwien.kr.alpha.common.EnumerationDirective;
-import at.ac.tuwien.kr.alpha.common.Head;
 import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.WeightAtLevel;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.ExternalLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
@@ -75,14 +53,6 @@ import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveAtom;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveBody;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveLiteral;
-import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives.DIRECTIVE;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.ChoiceHead;
@@ -94,21 +64,14 @@ import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives.DIRECTIVE;
+import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -646,22 +609,12 @@ public class ParseTreeVisitor extends AlphaASPBaseVisitor<Object> {
 	}
 
 	@Override
-	public IntervalTerm visitTerm_interval(ASPCore2Parser.Term_intervalContext ctx) {
-		// interval : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE);
-		ASPCore2Parser.IntervalContext ictx = ctx.interval();
-		String lowerText = ictx.lower.getText();
-		String upperText = ictx.upper.getText();
-		Term lower = ictx.lower.getType() == ASPCore2Lexer.NUMBER ? ConstantTerm.getInstance(Integer.parseInt(lowerText)) : VariableTerm.getInstance(lowerText);
-		Term upper = ictx.upper.getType() == ASPCore2Lexer.NUMBER ? ConstantTerm.getInstance(Integer.parseInt(upperText)) : VariableTerm.getInstance(upperText);
-	}
-
-	@Override
 	public Object visitDirective_heuristic(Directive_heuristicContext ctx) {
 		// directive_heuristic : SHARP 'heuristic' heuristic_head_atom (heuristic_body)? DOT heuristic_weight_annotation?;
 		final HeuristicDirectiveAtom head = visitHeuristic_head_atom(ctx.heuristic_head_atom());
 		final HeuristicDirectiveBody body = visitHeuristic_body(ctx.heuristic_body());
 		final WeightAtLevel weightAtLevel = visitHeuristic_weight_annotation(ctx.heuristic_weight_annotation());
-		inputProgram.getInlineDirectives().addDirective(DIRECTIVE.heuristic, new HeuristicDirective(head, body, weightAtLevel));
+		inlineDirectives.addDirective(DIRECTIVE.heuristic, new HeuristicDirective(head, body, weightAtLevel));
 		return null;
 	}
 

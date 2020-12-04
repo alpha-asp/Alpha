@@ -38,7 +38,7 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 		List<InternalRule> internalRules = new ArrayList<>();
 		List<Atom> facts = new ArrayList<>(normalProgram.getFacts());
 		for (NormalRule r : normalProgram.getRules()) {
-			if (r.getBody().isEmpty()) {
+			if (r.getBody().isEmpty() && !r.isHeuristicRule()) {
 				if (!r.getHead().isGround()) {
 					throw new IllegalArgumentException("InternalProgram does not support non-ground rules with empty bodies! (Head = " + r.getHead().toString() + ")");
 				}
@@ -67,7 +67,7 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 	private void recordRules(List<InternalRule> rules) {
 		for (InternalRule rule : rules) {
 			rulesById.put(rule.getRuleId(), rule);
-			if (!rule.isConstraint()) {
+			if (!rule.isConstraint() && !rule.isHeuristicRule()) {
 				recordDefiningRule(rule.getHeadAtom().getPredicate(), rule);
 			}
 		}

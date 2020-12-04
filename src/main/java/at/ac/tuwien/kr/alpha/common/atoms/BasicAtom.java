@@ -43,8 +43,8 @@ import static at.ac.tuwien.kr.alpha.Util.join;
  * Represents ordinary ASP atoms.
  */
 public class BasicAtom extends Atom implements VariableNormalizableAtom {
-	private final Predicate predicate;
-	private final List<Term> terms;
+	protected final Predicate predicate;
+	protected final List<Term> terms;
 	private final boolean ground;
 
 	/**

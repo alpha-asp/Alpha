@@ -27,9 +27,9 @@ package at.ac.tuwien.kr.alpha.grounder.transformation;
 
 import at.ac.tuwien.kr.alpha.common.Directive;
 import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
-import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveAtom;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveBody;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 
@@ -49,20 +49,29 @@ import static at.ac.tuwien.kr.alpha.Util.asSet;
  * Any-sign conditions in a negative heuristic condition can be eliminated by replacing the heuristic literal
  * by two new heuristic literals, one in which TMF is replaced by TM and one in which TMF is replaced by F.
  */
-public class HeuristicDirectiveEliminateAnySignConditions implements ProgramTransformation {
+public class HeuristicDirectiveEliminateAnySignConditions extends ProgramTransformation<InputProgram, InputProgram> {
 
 	public static final Set<ThriceTruth> SET_ALL_SIGNS = asSet(ThriceTruth.values());
 	public static final Set<ThriceTruth> SET_TM = asSet(ThriceTruth.TRUE, ThriceTruth.MBT);
 	public static final Set<ThriceTruth> SET_F = asSet(ThriceTruth.FALSE);
 
 	@Override
-	public void transform(Program inputProgram) {
+	public InputProgram apply(InputProgram inputProgram) {
 		Collection<Directive> heuristicDirectives = inputProgram.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
-		if (heuristicDirectives != null) {
-			Queue<HeuristicDirective> queue = toQueue(heuristicDirectives);
-			List<Directive> transformedDirectives = transformDirectives(queue);
-			inputProgram.getInlineDirectives().replaceDirectives(InlineDirectives.DIRECTIVE.heuristic, transformedDirectives);
+		if (heuristicDirectives == null) {
+			return inputProgram;
 		}
+
+		Queue<HeuristicDirective> queue = toQueue(heuristicDirectives);
+		List<Directive> transformedDirectives = transformDirectives(queue);
+
+		final InlineDirectives copiedDirectives = new InlineDirectives();
+		copiedDirectives.accumulate(inputProgram.getInlineDirectives());
+		copiedDirectives.replaceDirectives(InlineDirectives.DIRECTIVE.heuristic, transformedDirectives);
+		final InputProgram.Builder prgBuilder = InputProgram.builder().addFacts(inputProgram.getFacts()).addRules(inputProgram.getRules());
+		prgBuilder.addInlineDirectives(copiedDirectives);
+
+		return prgBuilder.build();
 	}
 
 	private static List<Directive> transformDirectives(Queue<HeuristicDirective> queue) {

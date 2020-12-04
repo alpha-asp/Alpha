@@ -44,7 +44,6 @@ import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.atoms.ChoiceAtom;
-import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicInfluencerAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
@@ -56,15 +55,6 @@ import at.ac.tuwien.kr.alpha.grounder.instantiation.DefaultLazyGroundingInstanti
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationResult;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiator;
 import at.ac.tuwien.kr.alpha.grounder.structure.AnalyzeUnjustified;
-import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
-import at.ac.tuwien.kr.alpha.grounder.transformation.CardinalityNormalization;
-import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
-import at.ac.tuwien.kr.alpha.grounder.transformation.EnumerationRewriting;
-import at.ac.tuwien.kr.alpha.grounder.transformation.HeuristicDirectiveEliminateAnySignConditions;
-import at.ac.tuwien.kr.alpha.grounder.transformation.HeuristicDirectiveToRule;
-import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
-import at.ac.tuwien.kr.alpha.grounder.transformation.SumNormalization;
-import at.ac.tuwien.kr.alpha.grounder.transformation.VariableEqualityRemoval;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -198,9 +188,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// Record all unique rule heads.
 		final Set<InternalRule> uniqueGroundRulePerGroundHead = new HashSet<>();
 
-		predicates: for (Map.Entry<Predicate, LinkedHashSet<InternalRule>> headDefiningRules : program.getPredicateDefiningRules().entrySet()) {
-			final HashSet<NonGroundRule> rules = headDefiningRules.getValue();
-			if (rules.size() != 1 && !areAllRulesGround(rules)) {
+		for (Map.Entry<Predicate, LinkedHashSet<InternalRule>> headDefiningRules : program.getPredicateDefiningRules().entrySet()) {
+			if (headDefiningRules.getValue().size() != 1) {
 				continue;
 			}
 
@@ -208,24 +197,23 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			// Check that all variables of the body also occur in the head (otherwise grounding is not unique).
 			Atom headAtom = nonGroundRule.getHeadAtom();
 
-				// Rule is not guaranteed unique if there are facts for it.
-				HashSet<Instance> potentialFacts = factsFromProgram.get(headAtom.getPredicate());
+			// Rule is not guaranteed unique if there are facts for it.
+			HashSet<Instance> potentialFacts = factsFromProgram.get(headAtom.getPredicate());
 			if (potentialFacts != null && !potentialFacts.isEmpty()) {
-					continue;
-				}
+				continue;
+			}
 
-				// Collect head and body variables.
-				HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.toLiteral().getBindingVariables());
-				HashSet<VariableTerm> occurringVariablesBody = new HashSet<>();
-				for (Literal lit : nonGroundRule.getPositiveBody()) {
-					occurringVariablesBody.addAll(lit.getBindingVariables());
-				}
-				occurringVariablesBody.removeAll(occurringVariablesHead);
+			// Collect head and body variables.
+			HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.toLiteral().getBindingVariables());
+			HashSet<VariableTerm> occurringVariablesBody = new HashSet<>();
+			for (Literal lit : nonGroundRule.getPositiveBody()) {
+				occurringVariablesBody.addAll(lit.getBindingVariables());
+			}
+			occurringVariablesBody.removeAll(occurringVariablesHead);
 
-				// Check if ever body variables occurs in the head.
-				if (occurringVariablesBody.isEmpty()) {
-					uniqueGroundRulePerGroundHead.add(nonGroundRule);
-				}
+			// Check if ever body variables occurs in the head.
+			if (occurringVariablesBody.isEmpty()) {
+				uniqueGroundRulePerGroundHead.add(nonGroundRule);
 			}
 		}
 		return uniqueGroundRulePerGroundHead;
@@ -315,8 +303,19 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		for (InternalRule nonGroundRule : fixedRules) {
 			// Generate NoGoods for all rules that have a fixed grounding.
 			RuleGroundingOrder groundingOrder = nonGroundRule.getGroundingOrders().getFixedGroundingOrder();
-			BindingResult bindingResult = getGroundInstantiations(nonGroundRule, groundingOrder, new Substitution(), null);
-			groundAndRegister(nonGroundRule, bindingResult.getGeneratedSubstitutions(), groundNogoods);
+
+			List<Substitution> substitutions;
+			if (groundingOrder != null) {
+				BindingResult bindingResult = getGroundInstantiations(nonGroundRule, groundingOrder, new Substitution(), null);
+				substitutions = bindingResult.getGeneratedSubstitutions();
+			} else {
+				// groundingOrder may be null only if body of rewritten heuristic rule is empty
+				if (!nonGroundRule.isHeuristicRule()) {
+					throw oops("Non-heuristic NonGroundRule without grounding order: " + nonGroundRule);
+				}
+				substitutions = singletonList(new Substitution());
+			}
+			groundAndRegister(nonGroundRule, substitutions, groundNogoods);
 		}
 
 		fixedRules = null;
@@ -605,26 +604,6 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	@Override
 	public AtomStore getAtomStore() {
 		return this.atomStore;
-	}
-
-	public static String groundAndPrintRule(NonGroundRule rule, Substitution substitution) {
-		StringBuilder ret = new StringBuilder();
-		if (!rule.isConstraint()) {
-			Atom groundHead = rule.getHeadAtom().substitute(substitution);
-			ret.append(groundHead.toString());
-		}
-		ret.append(" :- ");
-		boolean isFirst = true;
-		for (Atom bodyAtom : rule.getBodyAtomsPositive()) {
-			ret.append(groundLiteralToString(bodyAtom.toLiteral(), substitution, isFirst));
-			isFirst = false;
-		}
-		for (Atom bodyAtom : rule.getBodyAtomsNegative()) {
-			ret.append(groundLiteralToString(bodyAtom.toLiteral(false), substitution, isFirst));
-			isFirst = false;
-		}
-		ret.append(".");
-		return ret.toString();
 	}
 
 	static String groundLiteralToString(Literal literal, Substitution substitution, boolean isFirst) {

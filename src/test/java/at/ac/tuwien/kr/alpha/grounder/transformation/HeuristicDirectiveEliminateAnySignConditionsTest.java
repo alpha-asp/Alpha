@@ -27,7 +27,7 @@ package at.ac.tuwien.kr.alpha.grounder.transformation;
 
 import at.ac.tuwien.kr.alpha.common.Directive;
 import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
-import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
@@ -52,14 +52,14 @@ public class HeuristicDirectiveEliminateAnySignConditionsTest {
 
 	@Test
 	public void testPositiveAnySignCondition() {
-		Program program = parser.parse("a(1)."
+		InputProgram program = parser.parse("a(1)."
 				+ "{ b(N) } :- a(N)."
 				+ "#heuristic b(N) : FMT a(N). [N@2]");
 
 		final Collection<Directive> directivesBeforeTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
 		assertEquals(1, directivesBeforeTransformation.size());
 		final HeuristicDirective originalHeuristicDirective = (HeuristicDirective) directivesBeforeTransformation.iterator().next();
-		new HeuristicDirectiveEliminateAnySignConditions().transform(program);
+		program = new HeuristicDirectiveEliminateAnySignConditions().apply(program);
 		final Collection<Directive> directivesAfterTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
 		assertEquals(2, directivesAfterTransformation.size());
 		final Set<Set<ThriceTruth>> newSignSets = new HashSet<>();
@@ -75,14 +75,14 @@ public class HeuristicDirectiveEliminateAnySignConditionsTest {
 
 	@Test
 	public void testNegativeAnySignCondition() {
-		Program program = parser.parse("a(1)."
+		InputProgram program = parser.parse("a(1)."
 				+ "{ b(N) } :- a(N)."
 				+ "#heuristic b(N) : a(N), not FTM b(N). [N@2]");
 
 		final Collection<Directive> directivesBeforeTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
 		assertEquals(1, directivesBeforeTransformation.size());
 		final HeuristicDirective originalHeuristicDirective = (HeuristicDirective) directivesBeforeTransformation.iterator().next();
-		new HeuristicDirectiveEliminateAnySignConditions().transform(program);
+		program = new HeuristicDirectiveEliminateAnySignConditions().apply(program);
 
 		final Collection<Directive> directivesAfterTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
 		assertEquals(1, directivesAfterTransformation.size());
@@ -98,27 +98,27 @@ public class HeuristicDirectiveEliminateAnySignConditionsTest {
 
 	@Test
 	public void testMultiplePositiveAnySignConditions() {
-		Program program = parser.parse("a(1). a(2)."
+		InputProgram program = parser.parse("a(1). a(2)."
 				+ "{ b(N) } :- a(N)."
 				+ "#heuristic b(N) : FMT a(N), FMT a(Nm1), Nm1=N-1. [N@2]");
 
 		final Collection<Directive> directivesBeforeTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
 		assertEquals(1, directivesBeforeTransformation.size());
 		final HeuristicDirective originalHeuristicDirective = (HeuristicDirective) directivesBeforeTransformation.iterator().next();
-		new HeuristicDirectiveEliminateAnySignConditions().transform(program);
+		program = new HeuristicDirectiveEliminateAnySignConditions().apply(program);
 		final Collection<Directive> directivesAfterTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
 		assertEquals(4, directivesAfterTransformation.size());
 	}
 
 	@Test
 	public void testMultipleNegativeAnySignConditions() {
-		Program program = parser.parse("a(1). a(2)."
+		InputProgram program = parser.parse("a(1). a(2)."
 				+ "{ b(N) } :- a(N)."
 				+ "#heuristic b(N) : a(N), not FTM b(N), not FTM b(Nm1), Nm1=N-1. [N@2]");
 
 		final Collection<Directive> directivesBeforeTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
 		assertEquals(1, directivesBeforeTransformation.size());
-		new HeuristicDirectiveEliminateAnySignConditions().transform(program);
+		program = new HeuristicDirectiveEliminateAnySignConditions().apply(program);
 
 		final Collection<Directive> directivesAfterTransformation = program.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
 		assertEquals(1, directivesAfterTransformation.size());

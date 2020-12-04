@@ -25,11 +25,14 @@
  */
 package at.ac.tuwien.kr.alpha.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
@@ -70,7 +73,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_SameLevel() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"a :- not b." + LS +
 				"b :- not a." + LS +
 				"#heuristic a : not b. [2@1]" + LS +
@@ -80,7 +83,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_SameLevel_HeadsF() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"a :- not b." + LS +
 						"b :- not a." + LS +
 						"#heuristic F a : not b. [2@1]" + LS +
@@ -90,7 +93,7 @@ public class DomainSpecificHeuristicsTest {
 	
 	@Test
 	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_SameLevel_EmptyCondition() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"a :- not b." + LS +
 				"b :- not a." + LS +
 				"#heuristic a. [2@1]" + LS +
@@ -100,7 +103,7 @@ public class DomainSpecificHeuristicsTest {
 	
 	@Test
 	public void testSimpleGroundHeuristicProgram_HeuristicDirective_TwoDirectivesForSameHead() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"a :- not b." + LS +
 				"b :- not a." + LS +
 				"#heuristic a : not b. [3@1]" + LS +
@@ -111,7 +114,7 @@ public class DomainSpecificHeuristicsTest {
 	
 	@Test
 	public void testSimpleNonGroundHeuristicProgram_HeuristicDirective_AB_SameLevel() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"n(1)." + LS +
 				"a(N) :- n(N), not b(N)." + LS +
 				"b(N) :- n(N), not a(N)." + LS +
@@ -122,7 +125,7 @@ public class DomainSpecificHeuristicsTest {
 	
 	@Test
 	public void testSimpleNonGroundHeuristicProgram_HeuristicDirective_AB_OnlyFactsInCondition() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"n(1)." + LS +
 				"a(N) :- n(N), not b(N)." + LS +
 				"b(N) :- n(N), not a(N)." + LS +
@@ -133,7 +136,7 @@ public class DomainSpecificHeuristicsTest {
 	
 	@Test
 	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_DominatingLevel() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"a :- not b." + LS +
 				"b :- not a." + LS +
 				"#heuristic a : not b. [1@2]" + LS +
@@ -143,7 +146,7 @@ public class DomainSpecificHeuristicsTest {
 	
 	@Test
 	public void testSimpleNonGroundHeuristicProgram_HeuristicDirective_AB_DominatingLevel() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"n(1)." + LS +
 				"a(N) :- n(N), not b(N)." + LS +
 				"b(N) :- n(N), not a(N)." + LS +
@@ -154,7 +157,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testSimpleGroundHeuristicProgram_HeuristicDirective_BA_SameLevel() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"a :- not b." + LS +
 				"b :- not a." + LS +
 				"#heuristic a : not b. [1@1]" + LS +
@@ -164,7 +167,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testSimpleNonGroundHeuristicProgram_HeuristicDirective_BA_SameLevel() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"n(1)." + LS +
 				"a(N) :- n(N), not b(N)." + LS +
 				"b(N) :- n(N), not a(N)." + LS +
@@ -175,7 +178,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testSimpleGroundHeuristicProgram_HeuristicDirective_BA_DominatingLevel() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"a :- not b." + LS +
 				"b :- not a." + LS +
 				"#heuristic a : not b. [2@1]" + LS +
@@ -185,7 +188,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testSimpleNonGroundHeuristicProgram_HeuristicDirective_BA_DominatingLevel() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"n(1)." + LS +
 				"a(N) :- n(N), not b(N)." + LS +
 				"b(N) :- n(N), not a(N)." + LS +
@@ -196,7 +199,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testSimpleGroundHeuristicProgram_HeuristicDirective_SimpleChoiceGenerator_NegativeLiteral() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"c :- not nc." + LS +
 				"nc :- not c." + LS +
 				"a :- not b." + LS +
@@ -209,7 +212,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testSimpleNonGroundHeuristicProgram_HeuristicDirective_SimpleChoiceGenerator_NegativeLiteral() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"n(1)." + LS +
 				"c(N) :- n(N), not nc(N)." + LS +
 				"nc(N) :- n(N), not c(N)." + LS +
@@ -223,7 +226,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testSimpleGroundHeuristicProgram_HeuristicDirective_SimpleChoiceGenerator_PositiveLiteral() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"c :- not nc." + LS +
 				"nc :- not c." + LS +
 				"a :- not b." + LS +
@@ -236,7 +239,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testSimpleNonGroundHeuristicProgram_HeuristicDirective_SimpleChoiceGenerator_PositiveLiteral() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"n(1)." + LS +
 				"c(N) :- n(N), not nc(N)." + LS +
 				"nc(N) :- n(N), not c(N)." + LS +
@@ -250,7 +253,7 @@ public class DomainSpecificHeuristicsTest {
 	
 	@Test
 	public void testSimpleHeuristicProgram_HeuristicDirective_SimpleNonGroundArithmetics() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"n(2)." + LS +
 				"a :- n(N), not b." + LS +
 				"b :- not a." + LS +
@@ -261,7 +264,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testTwoHeuristicsWithSameHeadAndPriority() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"a :- not b." + LS +
 						"b :- not a." + LS +
 						"#heuristic a : not b. [2@1]" + LS +
@@ -271,7 +274,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testTwoHeuristicsOneWithoutRule() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"a :- not b." + LS +
 						"b :- not a." + LS +
 						"#heuristic a : not b. [2@1]" + LS +
@@ -285,7 +288,8 @@ public class DomainSpecificHeuristicsTest {
 	 */
 	@Test
 	public void testHeuristicApplicableAfterBackjump() {
-		Program program = parser.parse(
+		final Alpha system = new Alpha();
+		InputProgram inputProgram = parser.parse(
 			"comUnit(1)." + LS +
 				"comUnit(2)." + LS +
 				"maxUnit(2)." + LS +
@@ -315,7 +319,9 @@ public class DomainSpecificHeuristicsTest {
 				":- partnerunits(U,P1), partnerunits(U,P2), partnerunits(U,P3), P1<P2, P2<P3."
 		);
 
-		Solver solver = SolverFactory.getInstance(systemConfig, atomStore, GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true), heuristicsConfiguration);
+		final NormalProgram normalProgram = system.normalizeProgram(inputProgram);
+		final InternalProgram internalProgram = InternalProgram.fromNormalProgram(normalProgram);
+		Solver solver = SolverFactory.getInstance(systemConfig, atomStore, GrounderFactory.getInstance("naive", internalProgram, atomStore, heuristicsConfiguration, true), heuristicsConfiguration);
 		solver.stream().limit(1).collect(Collectors.toList()).get(0);
 		DefaultSolver defaultSolver = (DefaultSolver) solver;
 		assertTrue("No backjumps done", defaultSolver.getNumberOfBackjumps() > 0);
@@ -341,7 +347,8 @@ public class DomainSpecificHeuristicsTest {
 	 */
 	@Test
 	public void testExampleFromPaper() {
-		final Program program = parser.parse(
+		final Alpha system = new Alpha();
+		final InputProgram inputProgram = parser.parse(
 				"{ a(2); a(4); a(6); a(8); a(5) }." +
 						"#heuristic a(5). [1]" +
 						"#heuristic a(4) : not a(5). [2]" +
@@ -349,7 +356,9 @@ public class DomainSpecificHeuristicsTest {
 						"#heuristic a(6) : F a(5), T a(4). [2]"
 		);
 
-		final Solver solver = SolverFactory.getInstance(systemConfig, atomStore, GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true), heuristicsConfiguration);
+		final NormalProgram normalProgram = system.normalizeProgram(inputProgram);
+		final InternalProgram internalProgram = InternalProgram.fromNormalProgram(normalProgram);
+		final Solver solver = SolverFactory.getInstance(systemConfig, atomStore, GrounderFactory.getInstance("naive", internalProgram, atomStore, heuristicsConfiguration, true), heuristicsConfiguration);
 		final AnswerSet answerSet = solver.stream().limit(1).collect(Collectors.toList()).get(0);
 		final List<BasicAtom> atomsExpectedInAnswerSet = Arrays.asList(atom("a", 4), atom("a", 6));
 		final List<BasicAtom> atomsNotExpectedInAnswerSet = Collections.singletonList(atom("a", 5));
@@ -373,7 +382,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_PositiveAnySignCondition_aF() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"{a}." + LS +
 						"{b}." + LS +
 						"#heuristic F a. [2@1]" + LS +
@@ -383,7 +392,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_PositiveAnySignCondition_aT() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"{a}." + LS +
 						"{b}." + LS +
 						"#heuristic T a. [2@1]" + LS +
@@ -393,7 +402,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_NegativeAnySignCondition_HeadF() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"{a}." + LS +
 						"#heuristic F a : not FMT a.");
 		solveAndAssertAnswerSets(program, "{}", "{ a }");
@@ -401,7 +410,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_NegativeAnySignCondition_HeadT() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"{a}." + LS +
 						"#heuristic T a : not FMT a.");
 		solveAndAssertAnswerSets(program, "{ a }", "{}");
@@ -409,7 +418,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testSimpleGroundHeuristicProgram_MultipleTAtomsInPositiveCondition_NotApplicable() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"{a}." + LS +
 						"{b}." + LS +
 						"c :- not d." + LS +
@@ -423,7 +432,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testSimpleGroundHeuristicProgram_MultipleTAtomsInPositiveCondition_Applicable() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"{a}." + LS +
 						"{b}." + LS +
 						"c :- not d." + LS +
@@ -437,7 +446,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testSimpleGroundHeuristicProgram_MultipleFAtomsInPositiveCondition_NotApplicable() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"{a}." + LS +
 						"{b}." + LS +
 						"c :- not d." + LS +
@@ -451,7 +460,7 @@ public class DomainSpecificHeuristicsTest {
 
 	@Test
 	public void testSimpleGroundHeuristicProgram_MultipleFAtomsInPositiveCondition_Applicable() {
-		Program program = parser.parse(
+		InputProgram program = parser.parse(
 				"{a}." + LS +
 						"{b}." + LS +
 						"c :- not d." + LS +
@@ -463,13 +472,16 @@ public class DomainSpecificHeuristicsTest {
 		solveAndAssertAnswerSets(program, 1, "{ c }");
 	}
 
-	private void solveAndAssertAnswerSets(Program program, String... expectedAnswerSets) {
+	private void solveAndAssertAnswerSets(InputProgram program, String... expectedAnswerSets) {
 		solveAndAssertAnswerSets(program, Integer.MAX_VALUE, expectedAnswerSets);
 	}
 
-	private void solveAndAssertAnswerSets(Program program, int limit, String... expectedAnswerSets) {
+	private void solveAndAssertAnswerSets(InputProgram inputProgram, int limit, String... expectedAnswerSets) {
+		final Alpha system = new Alpha();
+		final NormalProgram normalProgram = system.normalizeProgram(inputProgram);
+		final InternalProgram internalProgram = InternalProgram.fromNormalProgram(normalProgram);
 		HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(Heuristic.NAIVE).build();
-		Solver solver = SolverFactory.getInstance(systemConfig, atomStore, GrounderFactory.getInstance("naive", program, atomStore, heuristicsConfiguration, true), heuristicsConfiguration);
+		Solver solver = SolverFactory.getInstance(systemConfig, atomStore, GrounderFactory.getInstance("naive", internalProgram, atomStore, heuristicsConfiguration, true), heuristicsConfiguration);
 		assertEquals(Arrays.asList(expectedAnswerSets), solver.stream().limit(limit).map(AnswerSet::toString).collect(Collectors.toList()));
 	}
 

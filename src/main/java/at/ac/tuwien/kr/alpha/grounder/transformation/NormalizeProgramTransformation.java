@@ -11,10 +11,12 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
  */
 public class NormalizeProgramTransformation extends ProgramTransformation<InputProgram, NormalProgram> {
 
-	private boolean useNormalizationGrid;
+	private final boolean useNormalizationGrid;
+	private final boolean ignoreDomspecHeuristics;
 
-	public NormalizeProgramTransformation(boolean useNormalizationGrid) {
+	public NormalizeProgramTransformation(boolean useNormalizationGrid, boolean ignoreDomspecHeuristics) {
 		this.useNormalizationGrid = useNormalizationGrid;
+		this.ignoreDomspecHeuristics = ignoreDomspecHeuristics;
 	}
 
 	@Override
@@ -22,6 +24,10 @@ public class NormalizeProgramTransformation extends ProgramTransformation<InputP
 		InputProgram tmpPrg;
 		// Transform choice rules.
 		tmpPrg = new ChoiceHeadToNormal().apply(inputProgram);
+		// Eliminate any-sign conditions from heuristic directives.
+		tmpPrg = new HeuristicDirectiveEliminateAnySignConditions().apply(tmpPrg);
+		// Translate heuristic directives to rules.
+		tmpPrg = new HeuristicDirectiveToRule(!this.ignoreDomspecHeuristics).apply(tmpPrg);
 		// Transform cardinality aggregates.
 		tmpPrg = new CardinalityNormalization(!this.useNormalizationGrid).apply(tmpPrg);
 		// Transform sum aggregates.

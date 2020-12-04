@@ -27,8 +27,8 @@ package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Program;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.antlr.v4.runtime.CharStreams;
@@ -79,11 +79,12 @@ public class PartnerUnitsTest extends AbstractSolverTests {
 	}
 	
 	private void testPartnerUnits_generated(String instanceId) throws IOException {
-		Program parsedProgram = parser
+		InputProgram parsedProgram = parser
 				.parse(CharStreams.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "PartnerUnits", "pup.alpha_heu_20200220.asp")));
-		parsedProgram
+		parsedProgram = InputProgram.builder(parsedProgram)
 				.accumulate(parser.parse(CharStreams
-						.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "PartnerUnits", "instances", "generated", instanceId))));
+						.fromPath(Paths.get("src", "test", "resources", "DomainHeuristics", "PartnerUnits", "instances", "generated", instanceId))))
+		.build();
 
 		Solver solver = getInstance(parsedProgram);
 		Optional<AnswerSet> answerSet = solver.stream().findFirst();

@@ -26,11 +26,11 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
 import at.ac.tuwien.kr.alpha.common.Directive;
-import at.ac.tuwien.kr.alpha.common.DisjunctiveHead;
-import at.ac.tuwien.kr.alpha.common.Head;
 import at.ac.tuwien.kr.alpha.common.HeuristicDirective;
-import at.ac.tuwien.kr.alpha.common.Program;
-import at.ac.tuwien.kr.alpha.common.Rule;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
+import at.ac.tuwien.kr.alpha.common.rule.head.Head;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.solver.heuristics.HeuristicsConfiguration;
@@ -39,39 +39,51 @@ import java.util.Collection;
 import java.util.Iterator;
 
 /**
- * Converts all {@link HeuristicDirective}s to {@link Rule}s if
+ * Converts all {@link HeuristicDirective}s to {@link BasicRule}s if
  * {@link HeuristicsConfiguration#isRespectDomspecHeuristics()} is {@code true},
  * otherwise removes all heuristic directives.
  */
-public class HeuristicDirectiveToRule implements ProgramTransformation {
+public class HeuristicDirectiveToRule extends ProgramTransformation<InputProgram, InputProgram> {
 
-	private final HeuristicsConfiguration heuristicsConfiguration;
+	private final boolean respectDomspecHeuristics;
 
 	public HeuristicDirectiveToRule(HeuristicsConfiguration heuristicsConfiguration) {
-		this.heuristicsConfiguration = heuristicsConfiguration;
+		this.respectDomspecHeuristics = heuristicsConfiguration.isRespectDomspecHeuristics();
+	}
+
+	public HeuristicDirectiveToRule(boolean respectDomspecHeuristics) {
+		this.respectDomspecHeuristics = respectDomspecHeuristics;
 	}
 
 	@Override
-	public void transform(Program inputProgram) {
+	public InputProgram apply(InputProgram inputProgram) {
 		Collection<Directive> heuristicDirectives = inputProgram.getInlineDirectives().getDirectives(InlineDirectives.DIRECTIVE.heuristic);
 		if (heuristicDirectives == null) {
-			return;
+			return inputProgram;
 		}
-		if (heuristicsConfiguration.isRespectDomspecHeuristics()) {
+
+		final InputProgram.Builder prgBuilder = InputProgram.builder().addFacts(inputProgram.getFacts()).addRules(inputProgram.getRules());
+		final InlineDirectives copiedDirectives = new InlineDirectives();
+		copiedDirectives.accumulate(inputProgram.getInlineDirectives());
+
+		if (respectDomspecHeuristics) {
 			Iterator<Directive> directivesIterator = heuristicDirectives.iterator();
 			while (directivesIterator.hasNext()) {
 				Directive directive = directivesIterator.next();
-				transformAndAddToProgram((HeuristicDirective) directive, inputProgram);
+				transformAndAddToProgram((HeuristicDirective) directive, prgBuilder);
 				directivesIterator.remove();
 			}
 		} else {
-			heuristicDirectives.clear();
+			copiedDirectives.getDirectives(InlineDirectives.DIRECTIVE.heuristic).clear();
 		}
+		prgBuilder.addInlineDirectives(copiedDirectives);
+
+		return prgBuilder.build();
 	}
 
-	private void transformAndAddToProgram(HeuristicDirective heuristicDirective, Program program) {
-		final Head head = new DisjunctiveHead(HeuristicAtom.fromHeuristicDirective(heuristicDirective));
-		final Rule rule = new Rule(head, heuristicDirective.getBody().toReducedRuleBody());
-		program.getRules().add(rule);
+	private void transformAndAddToProgram(HeuristicDirective heuristicDirective, InputProgram.Builder prgBuilder) {
+		final Head head = new NormalHead(HeuristicAtom.fromHeuristicDirective(heuristicDirective));
+		final BasicRule rule = new BasicRule(head, heuristicDirective.getBody().toReducedRuleBody());
+		prgBuilder.addRule(rule);
 	}
 }

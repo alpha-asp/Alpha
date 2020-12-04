@@ -175,7 +175,7 @@ public class CommandLineParserTest {
 	public void ignoreDomspecHeuristics() throws ParseException {
 		CommandLineParser parser = new CommandLineParser(DEFAULT_COMMAND_LINE, DEFAULT_ABORT_ACTION);
 		AlphaConfig alphaConfig = parser.parseCommandLine(new String[]{"-str", "aString.", "-ids"});
-		assertTrue(alphaConfig.getAlphaConfig().isIgnoreDomspecHeuristics());
+		assertTrue(alphaConfig.getSystemConfig().isIgnoreDomspecHeuristics());
 	}
 
 }

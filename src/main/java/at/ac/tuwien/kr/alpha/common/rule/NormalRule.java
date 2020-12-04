@@ -4,6 +4,7 @@ import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
+import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,10 @@ public class NormalRule extends AbstractRule<NormalHead> {
 
 	public Atom getHeadAtom() {
 		return this.isConstraint() ? null : this.getHead().getAtom();
+	}
+
+	public boolean isHeuristicRule() {
+		return getHeadAtom() instanceof HeuristicAtom;
 	}
 
 }

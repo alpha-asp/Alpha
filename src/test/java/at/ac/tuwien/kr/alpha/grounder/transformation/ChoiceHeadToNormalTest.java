@@ -25,7 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.junit.Test;
 
@@ -39,9 +39,9 @@ public class ChoiceHeadToNormalTest {
 	
 	@Test
 	public void testNumberOfRulesAfterTransformationEqualsTwo() {
-		Program program = parser.parse("n(1..2). "
+		InputProgram program = parser.parse("n(1..2). "
 				+ "{ x(N) } :- n(N).");
-		new ChoiceHeadToNormal().transform(program);
+		program = new ChoiceHeadToNormal().apply(program);
 		assertEquals(2, program.getRules().size());
 	}
 

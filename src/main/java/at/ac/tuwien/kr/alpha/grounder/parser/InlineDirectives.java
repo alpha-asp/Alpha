@@ -37,7 +37,7 @@ import java.util.Map;
 
 /**
  * Stores directives appearing in the ASP program. Each directive starts with # and ends with .
- * Copyright (c) 2017, the Alpha Team.
+ * Copyright (c) 2017-2020, the Alpha Team.
  */
 public class InlineDirectives {
 

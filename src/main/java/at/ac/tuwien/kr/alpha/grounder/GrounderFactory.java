@@ -39,13 +39,9 @@ public final class GrounderFactory {
 	public static Grounder getInstance(String name, InternalProgram program, AtomStore atomStore, HeuristicsConfiguration heuristicsConfiguration, java.util.function.Predicate<Predicate> filter, GrounderHeuristicsConfiguration grounderHeuristicsConfiguration, boolean debugInternalChecks, Bridge... bridges) {
 		switch (name.toLowerCase()) {
 			case "naive":
-				return new NaiveGrounder(program, atomStore, filter, grounderHeuristicsConfiguration, debugInternalChecks, bridges);
+				return new NaiveGrounder(program, atomStore, heuristicsConfiguration, filter, grounderHeuristicsConfiguration, debugInternalChecks, bridges);
 		}
 		throw new IllegalArgumentException("Unknown grounder requested.");
-	}
-
-	public static Grounder getInstance(String name, InternalProgram program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, GrounderHeuristicsConfiguration grounderHeuristicsConfiguration, boolean debugInternalChecks) {
-		return getInstance(name, program, atomStore, filter, heuristicsConfiguration, false, debugInternalChecks, new Bridge[] {});
 	}
 
 	public static Grounder getInstance(String name, InternalProgram program, AtomStore atomStore, HeuristicsConfiguration heuristicsConfiguration, boolean debugInternalChecks) {

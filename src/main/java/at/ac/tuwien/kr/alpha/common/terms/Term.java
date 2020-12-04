@@ -34,8 +34,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
-
 //@formatter:off
 /**
  * Common representation of Terms. Terms are constructed such that each term is represented by a unique object, hence

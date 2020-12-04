@@ -25,16 +25,12 @@
  */
 package at.ac.tuwien.kr.alpha.common;
 
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 
 public class ProgramTest {
 
@@ -57,30 +53,30 @@ public class ProgramTest {
 
 	@Test
 	public void testHeuristicDefaultWeight() {
-		Program parsedProgram = new ProgramParser().parse(
+		InputProgram parsedProgram = new ProgramParser().parse(
 				"#heuristic q(X) : p(X).");
 		assertEquals(ConstantTerm.getInstance(0), ((HeuristicDirective)parsedProgram.getInlineDirectives().getDirectives().iterator().next()).getWeightAtLevel().getWeight());
 	}
 
 	@Test
 	public void testHeuristicDefaultLevel() {
-		Program parsedProgram = new ProgramParser().parse(
+		InputProgram parsedProgram = new ProgramParser().parse(
 				"#heuristic q(X) : p(X).");
 		assertEquals(ConstantTerm.getInstance(0), ((HeuristicDirective)parsedProgram.getInlineDirectives().getDirectives().iterator().next()).getWeightAtLevel().getLevel());
 	}
 
 	@Test
 	public void testAccumulation() {
-		Program program1 = new ProgramParser().parse(
+		InputProgram program1 = new ProgramParser().parse(
 				"a." + LS +
 				"b :- a, not c." + LS +
 				"#heuristic b : not c. [1@2]"
 		);
-		Program program2 = new ProgramParser().parse(
+		InputProgram program2 = new ProgramParser().parse(
 			"c :- a, not b." + LS +
 				"#heuristic c : not b. [2@3]"
 		);
-		program1.accumulate(program2);
+		program1 = InputProgram.builder(program1).accumulate(program2).build();
 		assertEquals(1, program1.getFacts().size());
 		assertEquals(2, program1.getRules().size());
 		assertEquals(2, program1.getInlineDirectives().getDirectives().size());

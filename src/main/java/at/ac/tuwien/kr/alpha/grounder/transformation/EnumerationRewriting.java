@@ -1,5 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import at.ac.tuwien.kr.alpha.common.EnumerationDirective;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
