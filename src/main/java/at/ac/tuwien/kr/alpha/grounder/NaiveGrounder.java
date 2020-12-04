@@ -213,10 +213,10 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return uniqueGroundRulePerGroundHead;
 	}
 
-	private boolean areAllRulesGround(Collection<NonGroundRule> rules) {
+	private boolean areAllRulesGround(Collection<InternalRule> rules) {
 		boolean allGround = true;
-		for (NonGroundRule nonGroundRule : rules) {
-			if (!nonGroundRule.getRule().isGround()) {
+		for (InternalRule internalRule : rules) {
+			if (!internalRule.isGround()) {
 				allGround = false;
 				break;
 			}
