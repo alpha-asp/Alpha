@@ -188,35 +188,48 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		// Record all unique rule heads.
 		final Set<InternalRule> uniqueGroundRulePerGroundHead = new HashSet<>();
 
-		for (Map.Entry<Predicate, LinkedHashSet<InternalRule>> headDefiningRules : program.getPredicateDefiningRules().entrySet()) {
-			if (headDefiningRules.getValue().size() != 1) {
+		predicates: for (Map.Entry<Predicate, LinkedHashSet<InternalRule>> headDefiningRules : program.getPredicateDefiningRules().entrySet()) {
+			final LinkedHashSet<InternalRule> rules = headDefiningRules.getValue();
+			if (rules.size() != 1 && !areAllRulesGround(rules)) {
 				continue;
 			}
 
-			InternalRule nonGroundRule = headDefiningRules.getValue().iterator().next();
-			// Check that all variables of the body also occur in the head (otherwise grounding is not unique).
-			Atom headAtom = nonGroundRule.getHeadAtom();
+			rules: for (InternalRule nonGroundRule : rules) {
+				// Check that all variables of the body also occur in the head (otherwise grounding is not unique).
+				Atom headAtom = nonGroundRule.getHeadAtom();
 
-			// Rule is not guaranteed unique if there are facts for it.
-			HashSet<Instance> potentialFacts = factsFromProgram.get(headAtom.getPredicate());
-			if (potentialFacts != null && !potentialFacts.isEmpty()) {
-				continue;
-			}
+				// Rule is not guaranteed unique if there are facts for it.
+				HashSet<Instance> potentialFacts = factsFromProgram.get(headAtom.getPredicate());
+				if (potentialFacts != null && !potentialFacts.isEmpty()) {
+					continue;
+				}
 
-			// Collect head and body variables.
-			HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.toLiteral().getBindingVariables());
-			HashSet<VariableTerm> occurringVariablesBody = new HashSet<>();
-			for (Literal lit : nonGroundRule.getPositiveBody()) {
-				occurringVariablesBody.addAll(lit.getBindingVariables());
-			}
-			occurringVariablesBody.removeAll(occurringVariablesHead);
+				// Collect head and body variables.
+				HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.toLiteral().getBindingVariables());
+				HashSet<VariableTerm> occurringVariablesBody = new HashSet<>();
+				for (Literal lit : nonGroundRule.getPositiveBody()) {
+					occurringVariablesBody.addAll(lit.getBindingVariables());
+				}
+				occurringVariablesBody.removeAll(occurringVariablesHead);
 
-			// Check if ever body variables occurs in the head.
-			if (occurringVariablesBody.isEmpty()) {
-				uniqueGroundRulePerGroundHead.add(nonGroundRule);
+				// Check if ever body variables occurs in the head.
+				if (occurringVariablesBody.isEmpty()) {
+					uniqueGroundRulePerGroundHead.add(nonGroundRule);
+				}
 			}
 		}
 		return uniqueGroundRulePerGroundHead;
+	}
+
+	private boolean areAllRulesGround(Collection<InternalRule> rules) {
+		boolean allGround = true;
+		for (InternalRule internalRule : rules) {
+			if (!internalRule.isGround()) {
+				allGround = false;
+				break;
+			}
+		}
+		return allGround;
 	}
 
 	/**

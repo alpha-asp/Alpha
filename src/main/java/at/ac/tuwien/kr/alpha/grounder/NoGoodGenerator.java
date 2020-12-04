@@ -28,7 +28,6 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.NoGoodCreator;
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -138,7 +137,7 @@ public class NoGoodGenerator {
 		final List<NoGood> result = new ArrayList<>();
 		final int headId = atomStore.putIfAbsent(groundHeadAtom);
 		final int headLiteral = atomToLiteral(headId);
-		final int bodyRepresentingLiteral = Literals.atomToLiteral(bodyRepresentingAtom);
+		final int bodyRepresentingLiteral = atomToLiteral(bodyRepresentingAtom);
 
 		choiceRecorder.addHeadToBody(headId, bodyRepresentingAtom);
 		// Create a nogood for the head.
