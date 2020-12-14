@@ -54,6 +54,11 @@ cnt_le_sorting_grid (id, result_predicate, element_tuple, bound )::=<<
 	$! Sorting network input !$
 	$id$_sorting_network_input_number(ARGS, IDX) :- $element_tuple$(ARGS, TPL), enum(ARGS, TPL, IDX).
 
+	$! include sorting network core encoding !$
+	$sorting_grid_core(id=id)$
+>>
+
+sorting_grid_core (id)::=<<
 	$! Sorting network encoding !$
 	$id$_sorting_network_span(ARGS, I) :- $id$_sorting_network_input_number(ARGS, I).
 	$id$_sorting_network_span(ARGS, Im1) :- $id$_sorting_network_span(ARGS, I), 1<I, Im1 = I-1.
@@ -108,6 +113,7 @@ cnt_le_sorting_grid (id, result_predicate, element_tuple, bound )::=<<
 
 	$id$_sorting_network_log2(Ip2, I) :- Ip2 = 2 ** I, I = 0..30.
 >>
+
 
 /**
  * The core (i.e. input-independent) part of an ASP encoding for an aggregate literal of the form "X <= #count{...}".
