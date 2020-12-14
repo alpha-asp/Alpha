@@ -27,11 +27,11 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
-import at.ac.tuwien.kr.alpha.common.PredicateImpl;
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.atoms.LiteralImpl;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -47,8 +47,8 @@ import static at.ac.tuwien.kr.alpha.common.terms.ConstantTermImpl.getInstance;
  * Atoms corresponding to rule bodies use this predicate, first term is rule number,
  * second is a term containing variable substitutions.
  */
-public class RuleAtom extends AtomImpl {
-	public static final PredicateImpl PREDICATE = PredicateImpl.getInstance("_R_", 2, true, true);
+public class RuleAtom extends CoreAtom {
+	public static final CorePredicate PREDICATE = CorePredicate.getInstance("_R_", 2, true, true);
 
 	private final List<ConstantTerm<String>> terms;
 
@@ -69,7 +69,7 @@ public class RuleAtom extends AtomImpl {
 	}
 
 	@Override
-	public PredicateImpl getPredicate() {
+	public CorePredicate getPredicate() {
 		return PREDICATE;
 	}
 
@@ -85,12 +85,12 @@ public class RuleAtom extends AtomImpl {
 	}
 	
 	@Override
-	public LiteralImpl toLiteral(boolean positive) {
+	public CoreLiteral toLiteral(boolean positive) {
 		throw new UnsupportedOperationException("RuleAtom cannot be literalized");
 	}
 
 	@Override
-	public AtomImpl substitute(Substitution substitution) {
+	public CoreAtom substitute(Substitution substitution) {
 		return this;
 	}
 
@@ -119,7 +119,7 @@ public class RuleAtom extends AtomImpl {
 	}
 
 	@Override
-	public AtomImpl withTerms(List<TermImpl> terms) {
+	public CoreAtom withTerms(List<TermImpl> terms) {
 		throw new UnsupportedOperationException("RuleAtoms do not support setting of terms!");
 	}
 }

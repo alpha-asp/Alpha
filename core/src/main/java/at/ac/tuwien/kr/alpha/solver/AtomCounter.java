@@ -26,7 +26,7 @@
 package at.ac.tuwien.kr.alpha.solver;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Counts the number of ground atoms stored for each type (i.e., subclass of {@link AtomImpl}.
+ * Counts the number of ground atoms stored for each type (i.e., subclass of {@link CoreAtom}.
  * For every atom, only the counter for one class (the most specific one) is incremented,
  * not the counters for more general classes of which the atom is also an instance.
  */
@@ -43,7 +43,7 @@ public class AtomCounter {
 
 	private final Map<Class<? extends Atom>, Integer> countByType = new HashMap<>();
 
-	public void add(AtomImpl atom) {
+	public void add(CoreAtom atom) {
 		countByType.compute(atom.getClass(), (k, v) -> (v == null) ? 1 : v + 1);
 	}
 

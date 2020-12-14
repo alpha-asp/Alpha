@@ -56,7 +56,7 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 	}
 
 	/**
-	 * @see AtomImpl#substitute(Substitution)
+	 * @see CoreAtom#substitute(Substitution)
 	 */
 	@Override
 	public ExternalLiteral substitute(Substitution substitution) {

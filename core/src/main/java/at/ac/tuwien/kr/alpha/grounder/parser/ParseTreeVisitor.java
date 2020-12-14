@@ -33,7 +33,7 @@ import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.BasicAnswerSet;
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.PredicateImpl;
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
@@ -99,11 +99,11 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 
 	@Override
 	public AnswerSet visitAnswer_set(ASPCore2Parser.Answer_setContext ctx) {
-		SortedSet<PredicateImpl> predicates = new TreeSet<>();
-		Map<PredicateImpl, SortedSet<Atom>> predicateInstances = new TreeMap<>();
+		SortedSet<CorePredicate> predicates = new TreeSet<>();
+		Map<CorePredicate, SortedSet<CoreAtom>> predicateInstances = new TreeMap<>();
 
 		for (ASPCore2Parser.Classical_literalContext classicalLiteralContext : ctx.classical_literal()) {
-			AtomImpl atom = visitClassical_literal(classicalLiteralContext);
+			CoreAtom atom = visitClassical_literal(classicalLiteralContext);
 
 			predicates.add(atom.getPredicate());
 			predicateInstances.compute(atom.getPredicate(), (k, v) -> {
@@ -252,9 +252,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public List<LiteralImpl> visitNaf_literals(ASPCore2Parser.Naf_literalsContext ctx) {
+	public List<CoreLiteral> visitNaf_literals(ASPCore2Parser.Naf_literalsContext ctx) {
 		// naf_literals : naf_literal (COMMA naf_literals)?;
-		List<LiteralImpl> literals;
+		List<CoreLiteral> literals;
 		if (ctx.naf_literals() != null) {
 			literals = visitNaf_literals(ctx.naf_literals());
 		} else {
@@ -272,13 +272,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public List<LiteralImpl> visitBody(ASPCore2Parser.BodyContext ctx) {
+	public List<CoreLiteral> visitBody(ASPCore2Parser.BodyContext ctx) {
 		// body : ( naf_literal | aggregate ) (COMMA body)?;
 		if (ctx == null) {
 			return emptyList();
 		}
 
-		final List<LiteralImpl> literals = new ArrayList<>();
+		final List<CoreLiteral> literals = new ArrayList<>();
 		do {
 			if (ctx.naf_literal() != null) {
 				literals.add(visitNaf_literal(ctx.naf_literal()));
@@ -427,7 +427,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public LiteralImpl visitNaf_literal(ASPCore2Parser.Naf_literalContext ctx) {
+	public CoreLiteral visitNaf_literal(ASPCore2Parser.Naf_literalContext ctx) {
 		// naf_literal : NAF? (external_atom | classical_literal | builtin_atom);
 		boolean isCurrentLiteralNegated = ctx.NAF() != null;
 		if (ctx.builtin_atom() != null) {
@@ -448,7 +448,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		}
 
 		final List<? extends TermImpl> terms = visitTerms(ctx.terms());
-		return new BasicAtom(PredicateImpl.getInstance(ctx.ID().getText(), terms.size()), terms);
+		return new BasicAtom(CorePredicate.getInstance(ctx.ID().getText(), terms.size()), terms);
 	}
 
 	@Override
@@ -529,7 +529,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		List<? extends TermImpl> outputTerms = visitTerms(ctx.output);
 
 		return new ExternalAtom(
-			PredicateImpl.getInstance(predicateName, outputTerms.size()),
+			CorePredicate.getInstance(predicateName, outputTerms.size()),
 			interpretation,
 			visitTerms(ctx.input),
 			outputTerms

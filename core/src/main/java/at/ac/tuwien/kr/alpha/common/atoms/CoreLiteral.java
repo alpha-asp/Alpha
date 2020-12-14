@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018, the Alpha Team.
+ * Copyright (c) 2017-2020, the Alpha Team.
  * All rights reserved.
  * <p>
  * Additional changes made by Siemens.
@@ -27,7 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.PredicateImpl;
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
@@ -37,34 +37,31 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * A potentially negated {@link AtomImpl}
+ * A potentially negated {@link CoreAtom}
  *
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public abstract class LiteralImpl implements Literal {
+public abstract class CoreLiteral {
 
-	protected final AtomImpl atom;
+	protected final CoreAtom atom;
 	protected final boolean positive;
 
-	public LiteralImpl(AtomImpl atom, boolean positive) {
+	public CoreLiteral(CoreAtom atom, boolean positive) {
 		this.atom = atom;
 		this.positive = positive;
 	}
 
-	@Override
-	public AtomImpl getAtom() {
+	public CoreAtom getAtom() {
 		return atom;
 	}
 
-	@Override
 	public boolean isNegated() {
 		return !positive;
 	}
 
-	@Override
-	public abstract LiteralImpl negate();
+	public abstract CoreLiteral negate();
 
-	public abstract LiteralImpl substitute(Substitution substitution);
+	public abstract CoreLiteral substitute(Substitution substitution);
 
 	public abstract Set<VariableTerm> getBindingVariables();
 
@@ -78,25 +75,22 @@ public abstract class LiteralImpl implements Literal {
 	}
 
 	/**
-	 * @see AtomImpl#getPredicate()
+	 * @see CoreAtom#getPredicate()
 	 */
-	@Override
-	public PredicateImpl getPredicate() {
+	public CorePredicate getPredicate() {
 		return atom.getPredicate();
 	}
 
 	/**
-	 * @see AtomImpl#getTerms()
+	 * @see CoreAtom#getTerms()
 	 */
-	@Override
 	public List<? extends TermImpl> getTerms() {
 		return atom.getTerms();
 	}
 
 	/**
-	 * @see AtomImpl#isGround()
+	 * @see CoreAtom#isGround()
 	 */
-	@Override
 	public boolean isGround() {
 		return atom.isGround();
 	}
@@ -115,7 +109,7 @@ public abstract class LiteralImpl implements Literal {
 			return false;
 		}
 
-		LiteralImpl that = (LiteralImpl) o;
+		CoreLiteral that = (CoreLiteral) o;
 
 		return atom.equals(that.atom) && positive == that.positive;
 	}

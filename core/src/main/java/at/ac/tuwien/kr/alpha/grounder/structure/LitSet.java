@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder.structure;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.VariableNormalizableAtom;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.grounder.Unification;
@@ -17,14 +17,14 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  * Copyright (c) 2018, the Alpha Team.
  */
 public class LitSet {
-	private final AtomImpl atom;
+	private final CoreAtom atom;
 	private final Set<Unifier> complementSubstitutions;
 	private final int hashCode;
-	private final AtomImpl normalizedLiteral;
+	private final CoreAtom normalizedLiteral;
 	private final Set<Unifier> normalizedSubstitutions;
 	private static int litSetCounter = 1;
 
-	LitSet(AtomImpl atom, Set<Unifier> complementSubstitutions) {
+	LitSet(CoreAtom atom, Set<Unifier> complementSubstitutions) {
 		this.atom = atom.renameVariables("_AS" + litSetCounter++);
 		this.complementSubstitutions = new HashSet<>();
 		for (Unifier complementSubstitution : complementSubstitutions) {
@@ -49,8 +49,8 @@ public class LitSet {
 	 * @param normalizedAtom
 	 * @return
 	 */
-	private Unifier normalizeSubstitution(AtomImpl originalAtom, Unifier substitution, AtomImpl normalizedAtom) {
-		AtomImpl substitutedLiteral = originalAtom.substitute(substitution);
+	private Unifier normalizeSubstitution(CoreAtom originalAtom, Unifier substitution, CoreAtom normalizedAtom) {
+		CoreAtom substitutedLiteral = originalAtom.substitute(substitution);
 		return Unification.instantiate(normalizedAtom, substitutedLiteral);
 	}
 
@@ -67,7 +67,7 @@ public class LitSet {
 		return false;
 	}
 
-	public AtomImpl getAtom() {
+	public CoreAtom getAtom() {
 		return atom;
 	}
 
@@ -119,7 +119,7 @@ public class LitSet {
 		return result;
 	}
 
-	private AtomImpl computeNormalized(Atom atom, String prefix) {
+	private CoreAtom computeNormalized(Atom atom, String prefix) {
 		if (atom instanceof VariableNormalizableAtom) {
 			return ((VariableNormalizableAtom) atom).normalizeVariables(prefix, 0);
 		} else {
@@ -134,7 +134,7 @@ public class LitSet {
 			// Unifier may still contain variables in the right-hand side, those have to be normalized, too.
 			Atom appliedSub = normalizedLiteral.substitute(preNormalizedSubstitution);
 			// Apply substitution and normalize all remaining variables, i.e., those appearing at the right-hand side of the substitution.
-			AtomImpl normalized = computeNormalized(appliedSub, "_X");
+			CoreAtom normalized = computeNormalized(appliedSub, "_X");
 			// Compute final substitution from normalized atom to the one where also variables are normalized.
 			Unifier normalizedSubstitution = new Unifier(Unification.instantiate(normalizedLiteral, normalized));
 			ret.add(normalizedSubstitution);

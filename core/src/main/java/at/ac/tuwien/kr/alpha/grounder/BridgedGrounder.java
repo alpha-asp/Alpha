@@ -1,18 +1,18 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.Assignment;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.PredicateImpl;
-import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
-import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
-
 import java.util.HashSet;
 import java.util.Set;
+
+import at.ac.tuwien.kr.alpha.common.Assignment;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
+import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 
 public abstract class BridgedGrounder extends AbstractGrounder {
 	protected final Bridge[] bridges;
 
-	protected BridgedGrounder(java.util.function.Predicate<PredicateImpl> filter, Bridge... bridges) {
+	protected BridgedGrounder(java.util.function.Predicate<CorePredicate> filter, Bridge... bridges) {
 		super(filter);
 		this.bridges = bridges;
 	}

@@ -1,13 +1,12 @@
 package at.ac.tuwien.kr.alpha.common.rule;
 
-import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.atoms.LiteralImpl;
-import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import at.ac.tuwien.kr.alpha.Util;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreLiteral;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
 
 /**
  * A rule that has a normal head, i.e. just one head atom, no disjunction or choice heads allowed.
@@ -17,12 +16,12 @@ import java.util.List;
  */
 public class NormalRule extends AbstractRule<NormalHead> {
 
-	public NormalRule(NormalHead head, List<LiteralImpl> body) {
+	public NormalRule(NormalHead head, List<CoreLiteral> body) {
 		super(head, body);
 	}
 
 	public static NormalRule fromBasicRule(BasicRule rule) {
-		AtomImpl headAtom = null;
+		CoreAtom headAtom = null;
 		if (!rule.isConstraint()) {
 			if (!(rule.getHead() instanceof NormalHead)) {
 				throw Util.oops("Trying to construct a NormalRule from rule with non-normal head! Head type is: " + rule.getHead().getClass().getSimpleName());
@@ -36,7 +35,7 @@ public class NormalRule extends AbstractRule<NormalHead> {
 		if (!isConstraint() && !this.getHead().isGround()) {
 			return false;
 		}
-		for (Literal bodyElement : this.getBody()) {
+		for (CoreLiteral bodyElement : this.getBody()) {
 			if (!bodyElement.isGround()) {
 				return false;
 			}
@@ -44,7 +43,7 @@ public class NormalRule extends AbstractRule<NormalHead> {
 		return true;
 	}
 
-	public AtomImpl getHeadAtom() {
+	public CoreAtom getHeadAtom() {
 		return this.isConstraint() ? null : this.getHead().getAtom();
 	}
 

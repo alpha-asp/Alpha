@@ -33,9 +33,9 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 import java.util.Arrays;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.common.PredicateImpl;
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.VariableNormalizableAtom;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -54,8 +54,8 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
  * 
  * Copyright (c) 2017, the Alpha Team.
  */
-public class IntervalAtom extends AtomImpl implements VariableNormalizableAtom {
-	private static final PredicateImpl PREDICATE = PredicateImpl.getInstance("_interval", 2, true);
+public class IntervalAtom extends CoreAtom implements VariableNormalizableAtom {
+	private static final CorePredicate PREDICATE = CorePredicate.getInstance("_interval", 2, true);
 
 	private final List<Term> terms;
 
@@ -64,7 +64,7 @@ public class IntervalAtom extends AtomImpl implements VariableNormalizableAtom {
 	}
 
 	@Override
-	public PredicateImpl getPredicate() {
+	public CorePredicate getPredicate() {
 		return PREDICATE;
 	}
 
@@ -132,7 +132,7 @@ public class IntervalAtom extends AtomImpl implements VariableNormalizableAtom {
 	}
 
 	@Override
-	public AtomImpl withTerms(List<TermImpl> terms) {
+	public CoreAtom withTerms(List<TermImpl> terms) {
 		throw new UnsupportedOperationException("IntervalAtoms do not support setting of terms!");
 	}
 }

@@ -1,16 +1,16 @@
 package at.ac.tuwien.kr.alpha.common.rule;
 
-import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.atoms.LiteralImpl;
-import at.ac.tuwien.kr.alpha.common.rule.head.Head;
-import org.apache.commons.collections4.SetUtils;
-
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import org.apache.commons.collections4.SetUtils;
+
+import at.ac.tuwien.kr.alpha.Util;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreLiteral;
+import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 
 /**
  * An abstract representation of a rule with a specific type of @{link Head} (type parameter H)
@@ -22,14 +22,14 @@ import java.util.Set;
 public abstract class AbstractRule<H extends Head> {
 
 	private final H head;
-	private final Set<LiteralImpl> bodyLiteralsPositive;
-	private final Set<LiteralImpl> bodyLiteralsNegative;
+	private final Set<CoreLiteral> bodyLiteralsPositive;
+	private final Set<CoreLiteral> bodyLiteralsNegative;
 
-	public AbstractRule(H head, List<LiteralImpl> body) {
+	public AbstractRule(H head, List<CoreLiteral> body) {
 		this.head = head;
-		Set<LiteralImpl> positiveBody = new LinkedHashSet<>();
-		Set<LiteralImpl> negativeBody = new LinkedHashSet<>();
-		for (LiteralImpl bodyLiteral : body) {
+		Set<CoreLiteral> positiveBody = new LinkedHashSet<>();
+		Set<CoreLiteral> negativeBody = new LinkedHashSet<>();
+		for (CoreLiteral bodyLiteral : body) {
 			if (bodyLiteral.isNegated()) {
 				negativeBody.add(bodyLiteral);
 			} else {
@@ -94,15 +94,15 @@ public abstract class AbstractRule<H extends Head> {
 		return head;
 	}
 
-	public Set<LiteralImpl> getBody() {
+	public Set<CoreLiteral> getBody() {
 		return SetUtils.union(this.bodyLiteralsPositive, this.bodyLiteralsNegative);
 	}
 
-	public Set<LiteralImpl> getPositiveBody() {
+	public Set<CoreLiteral> getPositiveBody() {
 		return this.bodyLiteralsPositive;
 	}
 
-	public Set<LiteralImpl> getNegativeBody() {
+	public Set<CoreLiteral> getNegativeBody() {
 		return this.bodyLiteralsNegative;
 	}
 

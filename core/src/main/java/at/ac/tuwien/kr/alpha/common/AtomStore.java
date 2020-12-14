@@ -28,7 +28,7 @@
 package at.ac.tuwien.kr.alpha.common;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.solver.AtomCounter;
 
 import java.util.Iterator;
@@ -59,14 +59,14 @@ public interface AtomStore {
 	 * @param atom the atom to translate.
 	 * @return the Atom object represented by the int.
 	 */
-	AtomImpl get(int atom);
+	CoreAtom get(int atom);
 
 	/**
 	 * Translates an atom represented as Atom object into an int.
 	 * @param atom the Atom object to translate.
 	 * @return the int representing the Atom object.
 	 */
-	int get(Atom atom);
+	int get(CoreAtom atom);
 
 	/**
 	 * If the given ground atom is not already stored, associates it with a new integer (ID) and stores it, else
@@ -75,14 +75,14 @@ public interface AtomStore {
 	 * @param groundAtom the ground atom to look up in the store.
 	 * @return the integer ID of the ground atom, possibly newly assigned.
 	 */
-	int putIfAbsent(AtomImpl groundAtom);
+	int putIfAbsent(CoreAtom groundAtom);
 
 	/**
 	 * Returns whether the given ground atom is known to the AtomStore.
 	 * @param groundAtom the ground atom to test.
 	 * @return true if the ground atom is already associated an integer ID.
 	 */
-	boolean contains(Atom groundAtom);
+	boolean contains(CoreAtom groundAtom);
 
 	String atomToString(int atom);
 

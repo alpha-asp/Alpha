@@ -134,7 +134,8 @@ public final class Externals {
 		String javaName = classOfExtFacts.getSimpleName();
 		String name = javaName.substring(0, 1).toLowerCase() + javaName.substring(1); // Camel-cased, but starting with lower case letter.
 		for (T instance : extFacts) {
-			retVal.add(new BasicAtom(at.ac.tuwien.kr.alpha.common.PredicateImpl.getInstance(name, 1), ConstantTermImpl.getInstance(instance)));
+			// TODO use properly wrapped BasicAtoms here
+			retVal.add(new BasicAtom(at.ac.tuwien.kr.alpha.common.CorePredicate.getInstance(name, 1), ConstantTermImpl.getInstance(instance)));
 		}
 		return retVal;
 	}

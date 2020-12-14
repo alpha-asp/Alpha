@@ -28,7 +28,7 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.PredicateImpl;
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
@@ -40,8 +40,8 @@ import java.util.stream.Collectors;
 /**
  * Represents a builtin comparison atom according to the standard.
  */
-public class ComparisonAtom extends AtomImpl implements VariableNormalizableAtom {
-	private final PredicateImpl predicate;
+public class ComparisonAtom extends CoreAtom implements VariableNormalizableAtom {
+	private final CorePredicate predicate;
 	final ComparisonOperator operator;
 	private final List<TermImpl> terms;
 
@@ -56,7 +56,7 @@ public class ComparisonAtom extends AtomImpl implements VariableNormalizableAtom
 	}
 
 	@Override
-	public PredicateImpl getPredicate() {
+	public CorePredicate getPredicate() {
 		return predicate;
 	}
 
@@ -121,7 +121,7 @@ public class ComparisonAtom extends AtomImpl implements VariableNormalizableAtom
 	}
 
 	@Override
-	public AtomImpl withTerms(List<TermImpl> terms) {
+	public CoreAtom withTerms(List<TermImpl> terms) {
 		return new ComparisonAtom(terms, operator);
 	}
 

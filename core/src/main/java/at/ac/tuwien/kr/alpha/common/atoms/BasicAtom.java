@@ -27,7 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.PredicateImpl;
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
@@ -42,8 +42,8 @@ import static at.ac.tuwien.kr.alpha.Util.join;
 /**
  * Represents ordinary ASP atoms.
  */
-public class BasicAtom extends AtomImpl implements VariableNormalizableAtom {
-	private final PredicateImpl predicate;
+public class BasicAtom extends CoreAtom implements VariableNormalizableAtom {
+	private final CorePredicate predicate;
 	private final List<? extends TermImpl> terms;
 	private final boolean ground;
 
@@ -53,7 +53,7 @@ public class BasicAtom extends AtomImpl implements VariableNormalizableAtom {
 	 * @param predicate
 	 * @param terms
 	 */
-	public BasicAtom(PredicateImpl predicate, List<? extends TermImpl> terms) {
+	public BasicAtom(CorePredicate predicate, List<? extends TermImpl> terms) {
 		this.predicate = predicate;
 		this.terms = terms;
 
@@ -68,16 +68,16 @@ public class BasicAtom extends AtomImpl implements VariableNormalizableAtom {
 		this.ground = ground;
 	}
 
-	public BasicAtom(PredicateImpl predicate, TermImpl... terms) {
+	public BasicAtom(CorePredicate predicate, TermImpl... terms) {
 		this(predicate, Arrays.asList(terms));
 	}
 
-	public BasicAtom(PredicateImpl predicate) {
+	public BasicAtom(CorePredicate predicate) {
 		this(predicate, Collections.emptyList());
 	}
 
 	@Override
-	public PredicateImpl getPredicate() {
+	public CorePredicate getPredicate() {
 		return predicate;
 	}
 
@@ -105,7 +105,7 @@ public class BasicAtom extends AtomImpl implements VariableNormalizableAtom {
 	}
 
 	@Override
-	public LiteralImpl toLiteral(boolean positive) {
+	public CoreLiteral toLiteral(boolean positive) {
 		return new BasicLiteral(this, positive);
 	}
 
@@ -120,7 +120,7 @@ public class BasicAtom extends AtomImpl implements VariableNormalizableAtom {
 	}
 
 	@Override
-	public int compareTo(Atom o) {
+	public int compareTo(CoreAtom o) {
 		if (this.terms.size() != o.getTerms().size()) {
 			return this.terms.size() - o.getTerms().size();
 		}
@@ -161,7 +161,7 @@ public class BasicAtom extends AtomImpl implements VariableNormalizableAtom {
 	}
 
 	@Override
-	public AtomImpl withTerms(List<TermImpl> terms) {
+	public CoreAtom withTerms(List<TermImpl> terms) {
 		return new BasicAtom(predicate, terms);
 	}
 }

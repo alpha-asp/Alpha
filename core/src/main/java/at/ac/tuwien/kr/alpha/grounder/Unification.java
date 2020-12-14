@@ -28,7 +28,7 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -42,7 +42,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  */
 public class Unification {
 
-	public static Unifier unifyAtoms(AtomImpl left, AtomImpl right) {
+	public static Unifier unifyAtoms(CoreAtom left, CoreAtom right) {
 		return unifyAtoms(left, right, false);
 	}
 
@@ -52,11 +52,11 @@ public class Unification {
 	 * @param specific the specific Atom.
 	 * @return a Unifier sigma such that specific == general.substitute(sigma), returns null if no such sigma exists.
 	 */
-	public static Unifier instantiate(AtomImpl general, AtomImpl specific) {
+	public static Unifier instantiate(CoreAtom general, CoreAtom specific) {
 		return unifyAtoms(specific, general, true);
 	}
 
-	private static Unifier unifyAtoms(AtomImpl left, AtomImpl right, boolean keepLeftAsIs) {
+	private static Unifier unifyAtoms(CoreAtom left, CoreAtom right, boolean keepLeftAsIs) {
 		Set<VariableTerm> leftOccurringVariables = left.getOccurringVariables();
 		Set<VariableTerm> rightOccurringVaribles = right.getOccurringVariables();
 		boolean leftSmaller = leftOccurringVariables.size() < rightOccurringVaribles.size();

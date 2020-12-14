@@ -28,7 +28,7 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.PredicateImpl;
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -41,7 +41,7 @@ import java.util.List;
 import static at.ac.tuwien.kr.alpha.Util.join;
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
-public class AggregateAtom extends AtomImpl {
+public class AggregateAtom extends CoreAtom {
 
 	private final ComparisonOperator lowerBoundOperator;
 	private final TermImpl lowerBoundTerm;
@@ -88,12 +88,12 @@ public class AggregateAtom extends AtomImpl {
 	}
 
 	@Override
-	public AtomImpl withTerms(List<TermImpl> terms) {
+	public CoreAtom withTerms(List<TermImpl> terms) {
 		throw new UnsupportedOperationException("Editing term list is not supported for aggregate atoms!");
 	}
 	
 	@Override
-	public PredicateImpl getPredicate() {
+	public CorePredicate getPredicate() {
 		throw oops("Aggregate atom cannot report predicate.");
 	}
 
@@ -194,9 +194,9 @@ public class AggregateAtom extends AtomImpl {
 
 	public static class AggregateElement {
 		final List<Term> elementTerms;
-		final List<LiteralImpl> elementLiterals;
+		final List<CoreLiteral> elementLiterals;
 
-		public AggregateElement(List<Term> elementTerms, List<LiteralImpl> elementLiterals) {
+		public AggregateElement(List<Term> elementTerms, List<CoreLiteral> elementLiterals) {
 			this.elementTerms = elementTerms;
 			this.elementLiterals = elementLiterals;
 		}
@@ -205,7 +205,7 @@ public class AggregateAtom extends AtomImpl {
 			return elementTerms;
 		}
 
-		public List<LiteralImpl> getElementLiterals() {
+		public List<CoreLiteral> getElementLiterals() {
 			return elementLiterals;
 		}
 
@@ -215,7 +215,7 @@ public class AggregateAtom extends AtomImpl {
 					return false;
 				}
 			}
-			for (Literal elementLiteral : elementLiterals) {
+			for (CoreLiteral elementLiteral : elementLiterals) {
 				if (!elementLiteral.isGround()) {
 					return false;
 				}
@@ -230,7 +230,7 @@ public class AggregateAtom extends AtomImpl {
 					occurringVariables.add((VariableTerm) term);
 				}
 			}
-			for (LiteralImpl literal : elementLiterals) {
+			for (CoreLiteral literal : elementLiterals) {
 				occurringVariables.addAll(literal.getBindingVariables());
 				occurringVariables.addAll(literal.getNonBindingVariables());
 			}

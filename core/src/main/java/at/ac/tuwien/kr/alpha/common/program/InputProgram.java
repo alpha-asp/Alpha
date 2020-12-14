@@ -28,7 +28,7 @@
 package at.ac.tuwien.kr.alpha.common.program;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 
@@ -45,7 +45,7 @@ public class InputProgram extends AbstractProgram<BasicRule> implements Program 
 
 	public static final InputProgram EMPTY = new InputProgram(Collections.emptyList(), Collections.emptyList(), new InlineDirectives());
 
-	public InputProgram(List<BasicRule> rules, List<? extends AtomImpl> facts, InlineDirectives inlineDirectives) {
+	public InputProgram(List<BasicRule> rules, List<? extends CoreAtom> facts, InlineDirectives inlineDirectives) {
 		super(rules, facts, inlineDirectives);
 	}
 
@@ -67,7 +67,7 @@ public class InputProgram extends AbstractProgram<BasicRule> implements Program 
 	public static class Builder {
 
 		private List<BasicRule> rules = new ArrayList<>();
-		private List<AtomImpl> facts = new ArrayList<>();
+		private List<CoreAtom> facts = new ArrayList<>();
 		private InlineDirectives inlineDirectives = new InlineDirectives();
 
 		public Builder(InputProgram prog) {
@@ -90,12 +90,12 @@ public class InputProgram extends AbstractProgram<BasicRule> implements Program 
 			return this;
 		}
 
-		public Builder addFacts(List<? extends AtomImpl> facts) {
+		public Builder addFacts(List<? extends CoreAtom> facts) {
 			this.facts.addAll(facts);
 			return this;
 		}
 
-		public Builder addFact(AtomImpl fact) {
+		public Builder addFact(CoreAtom fact) {
 			this.facts.add(fact);
 			return this;
 		}

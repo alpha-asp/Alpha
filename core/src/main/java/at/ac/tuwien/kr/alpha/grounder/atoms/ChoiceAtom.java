@@ -32,29 +32,28 @@ import static at.ac.tuwien.kr.alpha.Util.join;
 import java.util.Collections;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.common.PredicateImpl;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
-public class ChoiceAtom extends AtomImpl {
+public class ChoiceAtom extends CoreAtom {
 
-	public static final PredicateImpl ON = PredicateImpl.getInstance("ChoiceOn", 1, true, true);
-	public static final PredicateImpl OFF = PredicateImpl.getInstance("ChoiceOff", 1, true, true);
+	public static final CorePredicate ON = CorePredicate.getInstance("ChoiceOn", 1, true, true);
+	public static final CorePredicate OFF = CorePredicate.getInstance("ChoiceOff", 1, true, true);
 
-	private final PredicateImpl predicate;
+	private final CorePredicate predicate;
 	private final List<Term> terms;
 
-	private ChoiceAtom(PredicateImpl predicate, Term term) {
+	private ChoiceAtom(CorePredicate predicate, Term term) {
 		this.predicate = predicate;
 		this.terms = Collections.singletonList(term);
 	}
 
-	private ChoiceAtom(PredicateImpl predicate, int id) {
+	private ChoiceAtom(CorePredicate predicate, int id) {
 		this(predicate, ConstantTerm.getInstance(Integer.toString(id)));
 	}
 
@@ -67,7 +66,7 @@ public class ChoiceAtom extends AtomImpl {
 	}
 
 	@Override
-	public PredicateImpl getPredicate() {
+	public CorePredicate getPredicate() {
 		return predicate;
 	}
 
@@ -83,12 +82,12 @@ public class ChoiceAtom extends AtomImpl {
 	}
 
 	@Override
-	public Literal toLiteral(boolean negated) {
+	public CoreLiteral toLiteral(boolean negated) {
 		throw new UnsupportedOperationException("ChoiceAtom cannot be literalized");
 	}
 
 	@Override
-	public AtomImpl substitute(Substitution substitution) {
+	public CoreAtom substitute(Substitution substitution) {
 		return this;
 	}
 
@@ -98,7 +97,7 @@ public class ChoiceAtom extends AtomImpl {
 	}
 
 	@Override
-	public AtomImpl withTerms(List<TermImpl> terms) {
+	public CoreAtom withTerms(List<TermImpl> terms) {
 		throw new UnsupportedOperationException("Changing terms is not supported for ChoiceAtoms!");
 	}
 

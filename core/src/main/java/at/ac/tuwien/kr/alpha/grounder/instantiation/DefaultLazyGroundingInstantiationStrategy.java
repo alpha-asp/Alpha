@@ -31,10 +31,10 @@ import java.util.Map;
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.PredicateImpl;
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.grounder.IndexedInstanceStorage;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
 import at.ac.tuwien.kr.alpha.grounder.NaiveGrounder;
@@ -46,7 +46,8 @@ import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
  * Implementation of {@link AbstractLiteralInstantiationStrategy} designed for use in {@link NaiveGrounder}.
  * 
  * The instantiation strategy shares a {@link WorkingMemory}, an {@link AtomStore}, an {@link Assignment}, a {@link Map} of atoms that were
- * facts of the currently grounded program, as well as a list of {@link AtomImpl}s that should be lazily deleted from the working memory, with
+ * facts of the currently grounded program, as well as a list of {@link CoreAtom}s that should be lazily deleted from the working memory,
+ * with
  * the grounder.
  * 
  * The working memory and the facts map are maintained by the grounder and are being read by
@@ -55,10 +56,12 @@ import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
  * are added by the instantiation strategy. The {@link Assignment} reflects the {@link Solver}s "current view of the world". It is used by
  * {@link DefaultLazyGroundingInstantiationStrategy} to determine {@link AssignmentStatus}es for atoms.
  * 
- * A specialty of this implementation is that - since deletion of obsolete {@link AtomImpl}s from {@link NaiveGrounder}s {@link WorkingMemory}
+ * A specialty of this implementation is that - since deletion of obsolete {@link CoreAtom}s from {@link NaiveGrounder}s
+ * {@link WorkingMemory}
  * happens lazily (i.e. at the end of each run of {@link NaiveGrounder#getNoGoods(Assignment)}) - it maintains a set of "stale" atoms that
  * is shared with the grounder. Specifically, whenever {@link DefaultLazyGroundingInstantiationStrategy#getAssignmentStatusForAtom(Atom)}
- * determines that an {@link AtomImpl} is {@link AssignmentStatus#UNASSIGNED} or {@link AssignmentStatus#FALSE}, that {@link AtomImpl} is added to
+ * determines that an {@link CoreAtom} is {@link AssignmentStatus#UNASSIGNED} or {@link AssignmentStatus#FALSE}, that {@link CoreAtom} is
+ * added to
  * the stale atom set, which in turn is processed by the grounder, which then deletes the respective atoms from the working memory.
  * 
  * Copyright (c) 2020, the Alpha Team.
@@ -68,25 +71,25 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 	private WorkingMemory workingMemory;
 	private AtomStore atomStore;
 	private Assignment currentAssignment;
-	private LinkedHashSet<AtomImpl> staleWorkingMemoryEntries;
-	private Map<PredicateImpl, LinkedHashSet<Instance>> facts;
+	private LinkedHashSet<CoreAtom> staleWorkingMemoryEntries;
+	private Map<CorePredicate, LinkedHashSet<Instance>> facts;
 
 	public DefaultLazyGroundingInstantiationStrategy(WorkingMemory workingMemory, AtomStore atomStore,
-			Map<PredicateImpl, LinkedHashSet<Instance>> facts) {
+			Map<CorePredicate, LinkedHashSet<Instance>> facts) {
 		this.workingMemory = workingMemory;
 		this.atomStore = atomStore;
 		this.facts = facts;
 	}
 
 	@Override
-	protected Iterable<Instance> computeCandidateInstances(Atom partiallyGroundAtom) {
+	protected Iterable<Instance> computeCandidateInstances(CoreAtom partiallyGroundAtom) {
 		IndexedInstanceStorage instanceStorage = this.workingMemory.get(partiallyGroundAtom, true);
 		return instanceStorage.getInstancesFromPartiallyGroundAtom(partiallyGroundAtom);
 	}
 
 	//@formatter:off
 	/**
-	 * Computes the {@link AssignmentStatus} for a given {@link AtomImpl} a.
+	 * Computes the {@link AssignmentStatus} for a given {@link CoreAtom} a.
 	 * 
 	 * The atom a is {@link AssignmentStatus#TRUE} iff
 	 * <ul>
@@ -98,12 +101,12 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 	 * An atom is {@link AssignmentStatus#UNASSIGNED} iff it has no {@link ThriceTruth} assigned to it in the current assignment.
 	 * An atom is {@link AssignmentStatus#FALSE} iff it is assigned {@link ThriceTruth#FALSE} in the current assignment by the {@link Solver}.
 	 * 
-	 * Whenever an {@link AtomImpl} is found to be UNASSIGNED or FALSE,
-	 * that {@link AtomImpl} is added to the stale atom set for later deletion from working memory by the grounder.
+	 * Whenever an {@link CoreAtom} is found to be UNASSIGNED or FALSE,
+	 * that {@link CoreAtom} is added to the stale atom set for later deletion from working memory by the grounder.
 	 */
 	//@formatter:on
 	@Override
-	protected AssignmentStatus getAssignmentStatusForAtom(AtomImpl atom) {
+	protected AssignmentStatus getAssignmentStatusForAtom(CoreAtom atom) {
 		if (this.currentAssignment == null || this.isFact(atom)) {
 			// currentAssignment == null is a legitimate case, grounder may be in bootstrap
 			// and will call bindNextAtom with null assignment in that case.
@@ -131,7 +134,7 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 		return retVal;
 	}
 
-	private boolean isFact(AtomImpl atom) {
+	private boolean isFact(CoreAtom atom) {
 		if (this.facts.get(atom.getPredicate()) == null) {
 			return false;
 		} else {
@@ -140,7 +143,7 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 	}
 
 	@Override
-	protected AssignmentStatus getAssignmentStatusForNegatedGroundLiteral(Literal negatedGroundLiteral) {
+	protected AssignmentStatus getAssignmentStatusForNegatedGroundLiteral(CoreLiteral negatedGroundLiteral) {
 		return AssignmentStatus.TRUE;
 	}
 
@@ -167,7 +170,7 @@ public class DefaultLazyGroundingInstantiationStrategy extends AbstractLiteralIn
 		this.currentAssignment = currentAssignment;
 	}
 
-	public void setStaleWorkingMemoryEntries(LinkedHashSet<AtomImpl> staleWorkingMemoryEntries) {
+	public void setStaleWorkingMemoryEntries(LinkedHashSet<CoreAtom> staleWorkingMemoryEntries) {
 		this.staleWorkingMemoryEntries = staleWorkingMemoryEntries;
 	}
 

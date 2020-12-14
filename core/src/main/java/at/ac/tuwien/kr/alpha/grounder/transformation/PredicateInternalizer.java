@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.PredicateImpl;
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
@@ -21,7 +21,7 @@ public class PredicateInternalizer {
 
 	static InputProgram makePredicatesInternal(InputProgram program) {
 		InputProgram.Builder prgBuilder = InputProgram.builder();
-		for (AtomImpl atom : program.getFacts()) {
+		for (CoreAtom atom : program.getFacts()) {
 			prgBuilder.addFact(PredicateInternalizer.makePredicateInternal(atom));
 		}
 		for (BasicRule rule : program.getRules()) {
@@ -39,8 +39,8 @@ public class PredicateInternalizer {
 			}
 			newHead = new NormalHead(makePredicateInternal(((NormalHead) rule.getHead()).getAtom()));
 		}
-		List<LiteralImpl> newBody = new ArrayList<>();
-		for (LiteralImpl bodyElement : rule.getBody()) {
+		List<CoreLiteral> newBody = new ArrayList<>();
+		for (CoreLiteral bodyElement : rule.getBody()) {
 			// Only rewrite BasicAtoms.
 			if (bodyElement instanceof BasicLiteral) {
 				newBody.add(makePredicateInternal(bodyElement.getAtom()).toLiteral());
@@ -52,8 +52,8 @@ public class PredicateInternalizer {
 		return new BasicRule(newHead, newBody);
 	}
 
-	private static AtomImpl makePredicateInternal(AtomImpl atom) {
-		PredicateImpl newInternalPredicate = PredicateImpl.getInstance(atom.getPredicate().getName(), atom.getPredicate().getArity(), true);
+	private static CoreAtom makePredicateInternal(CoreAtom atom) {
+		CorePredicate newInternalPredicate = CorePredicate.getInstance(atom.getPredicate().getName(), atom.getPredicate().getArity(), true);
 		return new BasicAtom(newInternalPredicate, atom.getTerms());
 	}
 }

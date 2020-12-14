@@ -28,9 +28,9 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.atoms.LiteralImpl;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
@@ -59,9 +59,9 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		// Collect all intervals and replace them with variables.
 		Map<VariableTerm, IntervalTerm> intervalReplacements = new LinkedHashMap<>();
 
-		List<LiteralImpl> rewrittenBody = new ArrayList<>();
+		List<CoreLiteral> rewrittenBody = new ArrayList<>();
 
-		for (LiteralImpl literal : rule.getBody()) {
+		for (CoreLiteral literal : rule.getBody()) {
 			rewrittenBody.add(rewriteLiteral(literal, intervalReplacements));
 		}
 		NormalHead rewrittenHead = rule.isConstraint() ? null :
@@ -82,8 +82,8 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 	/**
 	 * Replaces every IntervalTerm by a new variable and returns a mapping of the replaced VariableTerm -> IntervalTerm.
 	 */
-	private static LiteralImpl rewriteLiteral(LiteralImpl lit, Map<VariableTerm, IntervalTerm> intervalReplacement) {
-		AtomImpl atom = lit.getAtom();
+	private static CoreLiteral rewriteLiteral(CoreLiteral lit, Map<VariableTerm, IntervalTerm> intervalReplacement) {
+		CoreAtom atom = lit.getAtom();
 		List<TermImpl> termList = new ArrayList<>(atom.getTerms());
 		boolean didChange = false;
 		for (int i = 0; i < termList.size(); i++) {
@@ -102,7 +102,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 			}
 		}
 		if (didChange) {
-			AtomImpl rewrittenAtom = atom.withTerms(termList);
+			CoreAtom rewrittenAtom = atom.withTerms(termList);
 			return lit.isNegated() ? rewrittenAtom.toLiteral().negate() : rewrittenAtom.toLiteral();
 		}
 		return lit;

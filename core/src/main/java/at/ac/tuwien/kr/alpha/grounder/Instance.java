@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 
@@ -26,7 +26,7 @@ public class Instance {
 		this.terms = terms;
 	}
 
-	public static Instance fromAtom(AtomImpl atom) {
+	public static Instance fromAtom(CoreAtom atom) {
 		if (!atom.isGround()) {
 			throw Util.oops("Cannot create instance from non-ground atom " + atom.toString());
 		}

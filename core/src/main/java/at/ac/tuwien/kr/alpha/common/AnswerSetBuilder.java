@@ -16,10 +16,10 @@ import static java.util.Collections.singletonList;
 public class AnswerSetBuilder {
 	private boolean firstInstance = true;
 	private String predicateSymbol;
-	private PredicateImpl predicate;
-	private SortedSet<PredicateImpl> predicates = new TreeSet<>();
+	private CorePredicate predicate;
+	private SortedSet<CorePredicate> predicates = new TreeSet<>();
 	private SortedSet<Atom> instances = new TreeSet<>();
-	private Map<PredicateImpl, SortedSet<Atom>> predicateInstances = new HashMap<>();
+	private Map<CorePredicate, SortedSet<Atom>> predicateInstances = new HashMap<>();
 
 	public AnswerSetBuilder() {
 	}
@@ -37,7 +37,7 @@ public class AnswerSetBuilder {
 
 	private void flush() {
 		if (firstInstance) {
-			predicate = PredicateImpl.getInstance(predicateSymbol, 0);
+			predicate = CorePredicate.getInstance(predicateSymbol, 0);
 			predicates.add(predicate);
 			predicateInstances.put(predicate, new TreeSet<>(singletonList(new BasicAtom(predicate))));
 		} else {
@@ -65,7 +65,7 @@ public class AnswerSetBuilder {
 	public final <T extends Comparable<T>> AnswerSetBuilder instance(final T... terms) {
 		if (firstInstance) {
 			firstInstance = false;
-			predicate = PredicateImpl.getInstance(predicateSymbol, terms.length);
+			predicate = CorePredicate.getInstance(predicateSymbol, terms.length);
 			predicates.add(predicate);
 		}
 
@@ -83,7 +83,7 @@ public class AnswerSetBuilder {
 	public AnswerSetBuilder symbolicInstance(String... terms) {
 		if (firstInstance) {
 			firstInstance = false;
-			predicate = PredicateImpl.getInstance(predicateSymbol, terms.length);
+			predicate = CorePredicate.getInstance(predicateSymbol, terms.length);
 			predicates.add(predicate);
 		}
 

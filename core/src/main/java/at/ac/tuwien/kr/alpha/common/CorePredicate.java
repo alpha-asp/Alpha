@@ -1,34 +1,36 @@
 package at.ac.tuwien.kr.alpha.common;
 
 /**
- * Copyright (c) 2016, the Alpha Team.
+ * A predicate as used by the Alpha solver internally.
+ * 
+ * Copyright (c) 2016-2020, the Alpha Team.
  */
-public class PredicateImpl implements Comparable<Predicate>, Predicate {
+public class CorePredicate implements Comparable<CorePredicate> {
 	
-	private static final Interner<PredicateImpl> INTERNER = new Interner<>();
+	private static final Interner<CorePredicate> INTERNER = new Interner<>();
 
 	private final String name;
 	private final int arity;
 	private final boolean internal;
 	private final boolean solverInternal;
 
-	protected PredicateImpl(String name, int arity, boolean internal, boolean solverInternal) {
+	protected CorePredicate(String name, int arity, boolean internal, boolean solverInternal) {
 		this.name = name;
 		this.arity = arity;
 		this.internal = internal;
 		this.solverInternal = solverInternal;
 	}
 
-	public static PredicateImpl getInstance(String symbol, int arity) {
+	public static CorePredicate getInstance(String symbol, int arity) {
 		return getInstance(symbol, arity, false, false);
 	}
 
-	public static PredicateImpl getInstance(String symbol, int arity, boolean internal) {
+	public static CorePredicate getInstance(String symbol, int arity, boolean internal) {
 		return getInstance(symbol, arity, internal, false);
 	}
 
-	public static PredicateImpl getInstance(String symbol, int arity, boolean internal, boolean solverInternal) {
-		return INTERNER.intern(new PredicateImpl(symbol, arity, internal, solverInternal));
+	public static CorePredicate getInstance(String symbol, int arity, boolean internal, boolean solverInternal) {
+		return INTERNER.intern(new CorePredicate(symbol, arity, internal, solverInternal));
 	}
 
 	@Override
@@ -45,11 +47,11 @@ public class PredicateImpl implements Comparable<Predicate>, Predicate {
 			return true;
 		}
 
-		if (!(o instanceof PredicateImpl)) {
+		if (!(o instanceof CorePredicate)) {
 			return false;
 		}
 
-		PredicateImpl predicate = (PredicateImpl) o;
+		CorePredicate predicate = (CorePredicate) o;
 
 		if (arity != predicate.arity) {
 			return false;
@@ -80,7 +82,7 @@ public class PredicateImpl implements Comparable<Predicate>, Predicate {
 	}
 
 	@Override
-	public int compareTo(Predicate other) {
+	public int compareTo(CorePredicate other) {
 		int result = getName().compareTo(other.getName());
 
 		if (result != 0) {

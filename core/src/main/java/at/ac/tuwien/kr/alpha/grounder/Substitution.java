@@ -27,11 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.*;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 import java.util.List;
 import java.util.Map;
@@ -39,7 +35,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreLiteral;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
 
 public class Substitution {
 
@@ -68,7 +71,7 @@ public class Substitution {
 		this(new TreeMap<>(clone.substitution));
 	}
 
-	public static Substitution specializeSubstitution(Literal literal, Instance instance, Substitution substitution) {
+	public static Substitution specializeSubstitution(CoreLiteral literal, Instance instance, Substitution substitution) {
 		return specializeSubstitution(literal.getAtom(), instance, substitution);
 	}
 
@@ -153,7 +156,7 @@ public class Substitution {
 	 * 	parameter substitution already is a unifier, it is returned. If the unifying substitution is an
 	 * 	extension of the input substitution, a new substitution will be returned.
 	 */
-	public static Substitution specializeSubstitution(Atom atom, Instance instance, Substitution substitution) {
+	public static Substitution specializeSubstitution(CoreAtom atom, Instance instance, Substitution substitution) {
 		return new SpecializationHelper().unify(atom.getTerms(), instance, substitution);
 	}
 

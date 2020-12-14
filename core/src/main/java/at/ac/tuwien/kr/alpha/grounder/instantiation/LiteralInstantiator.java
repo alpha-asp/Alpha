@@ -70,7 +70,7 @@ public class LiteralInstantiator {
 	 * @param partialSubstitution a substitution that serves as a starting point. May be empty.
 	 * @return a {@link LiteralInstantiationResult} containing ground substitutions - if any exist - along with some metadata for the grounder
 	 */
-	public LiteralInstantiationResult instantiateLiteral(LiteralImpl lit, Substitution partialSubstitution) {
+	public LiteralInstantiationResult instantiateLiteral(CoreLiteral lit, Substitution partialSubstitution) {
 		LOGGER.trace("Instantiating literal: {}", lit);
 		if (lit instanceof FixedInterpretationLiteral) {
 			return this.instantiateFixedInterpretationLiteral((FixedInterpretationLiteral) lit, partialSubstitution);
@@ -130,10 +130,10 @@ public class LiteralInstantiator {
 	 * @param lit
 	 * @param partialSubstitution
 	 */
-	private LiteralInstantiationResult instantiateBasicLiteral(LiteralImpl lit, Substitution partialSubstitution) {
+	private LiteralInstantiationResult instantiateBasicLiteral(CoreLiteral lit, Substitution partialSubstitution) {
 		LOGGER.trace("Instantiating basic literal: {}", lit);
 		List<ImmutablePair<Substitution, AssignmentStatus>> substitutions;
-		LiteralImpl substitutedLiteral = lit.substitute(partialSubstitution);
+		CoreLiteral substitutedLiteral = lit.substitute(partialSubstitution);
 		LOGGER.trace("Substituted literal is {}", substitutedLiteral);
 		if (substitutedLiteral.isGround()) {
 			LOGGER.trace("Literal {} is already ground, checking truth", substitutedLiteral);

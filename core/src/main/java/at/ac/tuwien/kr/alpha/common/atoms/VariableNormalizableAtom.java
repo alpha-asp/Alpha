@@ -15,6 +15,6 @@ public interface VariableNormalizableAtom {
 	 * @return the Atom where all variables are renamed and enumerated
 	 *         left-to-right.
 	 */
-	AtomImpl normalizeVariables(String prefix, int counterStartingValue);
+	CoreAtom normalizeVariables(String prefix, int counterStartingValue);
 	
 }

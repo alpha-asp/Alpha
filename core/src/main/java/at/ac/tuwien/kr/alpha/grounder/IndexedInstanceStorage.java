@@ -36,8 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.common.PredicateImpl;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 
 /**
@@ -47,7 +47,7 @@ import at.ac.tuwien.kr.alpha.common.terms.Term;
  * Copyright (c) 2016-2020, the Alpha Team.
  */
 public class IndexedInstanceStorage {
-	private final PredicateImpl predicate;
+	private final CorePredicate predicate;
 	private final boolean positive;
 
 	/**
@@ -62,7 +62,7 @@ public class IndexedInstanceStorage {
 
 	private final ArrayList<Instance> recentlyAddedInstances = new ArrayList<>();
 
-	public IndexedInstanceStorage(PredicateImpl predicate, boolean positive) {
+	public IndexedInstanceStorage(CorePredicate predicate, boolean positive) {
 		this.predicate = predicate;
 		this.positive = positive;
 
@@ -72,7 +72,7 @@ public class IndexedInstanceStorage {
 		}
 	}
 
-	public PredicateImpl getPredicate() {
+	public CorePredicate getPredicate() {
 		return predicate;
 	}
 
@@ -83,7 +83,7 @@ public class IndexedInstanceStorage {
 	public void addIndexPosition(int position) {
 		if (position < 0 || position > predicate.getArity() - 1) {
 			throw new RuntimeException("Requested to create indices for attribute out of range." +
-				"IndexedInstanceStorage: " + this + "  requested indices position: " + position);
+					"IndexedInstanceStorage: " + this + "  requested indices position: " + position);
 		}
 		// Add index
 		indices.set(position, new LinkedHashMap<>());
@@ -99,13 +99,14 @@ public class IndexedInstanceStorage {
 	public void removeIndexPosition(int position) {
 		if (position < 0 || position > predicate.getArity() - 1) {
 			throw new RuntimeException("Requested to create indices for attribute out of range." +
-				"IndexedInstanceStorage: " + this + "  requested indices position: " + position);
+					"IndexedInstanceStorage: " + this + "  requested indices position: " + position);
 		}
 		indices.set(position, null);
 	}
 
 	/**
 	 * Returns whether an instance is already contained in the storage.
+	 * 
 	 * @param instance the instance to check for containment.
 	 * @return true if the instance is already contained in the storage.
 	 */
@@ -116,8 +117,8 @@ public class IndexedInstanceStorage {
 	public void addInstance(Instance instance) {
 		if (instance.terms.size() != predicate.getArity()) {
 			throw new RuntimeException("Instance length does not match arity of IndexedInstanceStorage: " +
-				"instance size: " + instance.terms.size()
-				+ "IndexedInstanceStorage: " + this);
+					"instance size: " + instance.terms.size()
+					+ "IndexedInstanceStorage: " + this);
 		}
 		instances.add(instance);
 		recentlyAddedInstances.add(instance);
@@ -129,7 +130,7 @@ public class IndexedInstanceStorage {
 			}
 			posIndex.putIfAbsent(instance.terms.get(i), new ArrayList<>());
 			ArrayList<Instance> matchingInstancesAtPos = posIndex.get(instance.terms.get(i));
-			matchingInstancesAtPos.add(instance);	// Add instance
+			matchingInstancesAtPos.add(instance); // Add instance
 		}
 	}
 
@@ -145,7 +146,7 @@ public class IndexedInstanceStorage {
 				continue;
 			}
 			ArrayList<Instance> matchingInstancesAtPos = posIndex.get(instance.terms.get(i));
-			matchingInstancesAtPos.remove(instance);	// Remove instance
+			matchingInstancesAtPos.remove(instance); // Remove instance
 
 			// If there are no more instances having the term at the current position,
 			// remove the entry from the hash.
@@ -163,6 +164,7 @@ public class IndexedInstanceStorage {
 	/**
 	 * Returns a list of all instances having the given term at the given position. Returns null if no such
 	 * instances exist.
+	 * 
 	 * @param term
 	 * @param position
 	 * @return
@@ -176,8 +178,7 @@ public class IndexedInstanceStorage {
 		return matchingInstances == null ? Collections.emptyList() : matchingInstances;
 	}
 
-
-	private int getMostSelectiveGroundTermPosition(Atom atom) {
+	private int getMostSelectiveGroundTermPosition(CoreAtom atom) {
 		int smallestNumberOfInstances = Integer.MAX_VALUE;
 		int mostSelectiveTermPosition = -1;
 		for (int i = 0; i < atom.getTerms().size(); i++) {
@@ -198,7 +199,7 @@ public class IndexedInstanceStorage {
 		return mostSelectiveTermPosition;
 	}
 
-	public List<Instance> getInstancesFromPartiallyGroundAtom(Atom substitute) {
+	public List<Instance> getInstancesFromPartiallyGroundAtom(CoreAtom substitute) {
 		// For selection of the instances, find ground term on which to select.
 		int firstGroundTermPosition = getMostSelectiveGroundTermPosition(substitute);
 		// Select matching instances, select all if no ground term was found.

@@ -27,7 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.PredicateImpl;
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
@@ -39,15 +39,15 @@ import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.Util.join;
 
-public class ExternalAtom extends AtomImpl implements VariableNormalizableAtom {
+public class ExternalAtom extends CoreAtom implements VariableNormalizableAtom {
 
 	private final List<? extends TermImpl> input;
 	private final List<? extends TermImpl> output;
 
-	protected final PredicateImpl predicate;
+	protected final CorePredicate predicate;
 	protected final PredicateInterpretation interpretation;
 
-	public ExternalAtom(PredicateImpl predicate, PredicateInterpretation interpretation, List<? extends TermImpl> input, List<? extends TermImpl> output) {
+	public ExternalAtom(CorePredicate predicate, PredicateInterpretation interpretation, List<? extends TermImpl> input, List<? extends TermImpl> output) {
 		if (predicate == null) {
 			throw new IllegalArgumentException("predicate must not be null!");
 		}
@@ -71,7 +71,7 @@ public class ExternalAtom extends AtomImpl implements VariableNormalizableAtom {
 	}
 
 	@Override
-	public PredicateImpl getPredicate() {
+	public CorePredicate getPredicate() {
 		return predicate;
 	}
 
@@ -132,7 +132,7 @@ public class ExternalAtom extends AtomImpl implements VariableNormalizableAtom {
 	}
 
 	@Override
-	public AtomImpl withTerms(List<TermImpl> terms) {
+	public CoreAtom withTerms(List<TermImpl> terms) {
 		throw new UnsupportedOperationException("Editing term list is not supported for external atoms!");
 	}
 

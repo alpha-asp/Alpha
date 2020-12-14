@@ -2,7 +2,7 @@ package at.ac.tuwien.kr.alpha.grounder.structure;
 
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.PredicateImpl;
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
@@ -26,22 +26,22 @@ public class AnalyzeUnjustified {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AnalyzeUnjustified.class);
 	private final InternalProgram programAnalysis;
 	private final AtomStore atomStore;
-	private final Map<PredicateImpl, LinkedHashSet<Instance>> factsFromProgram;
+	private final Map<CorePredicate, LinkedHashSet<Instance>> factsFromProgram;
 	private int renamingCounter;
 	private int padDepth;
 
-	public AnalyzeUnjustified(InternalProgram programAnalysis, AtomStore atomStore, Map<PredicateImpl, LinkedHashSet<Instance>> factsFromProgram) {
+	public AnalyzeUnjustified(InternalProgram programAnalysis, AtomStore atomStore, Map<CorePredicate, LinkedHashSet<Instance>> factsFromProgram) {
 		this.programAnalysis = programAnalysis;
 		this.atomStore = atomStore;
 		this.factsFromProgram = factsFromProgram;
 		padDepth = 0;
 	}
 
-	private Map<PredicateImpl, List<AtomImpl>> assignedAtoms;
+	private Map<CorePredicate, List<CoreAtom>> assignedAtoms;
 
 	public Set<Literal> analyze(int atomToJustify, Assignment currentAssignment) {
 		padDepth = 0;
-		AtomImpl atom = atomStore.get(atomToJustify);
+		CoreAtom atom = atomStore.get(atomToJustify);
 		if (!(atom instanceof BasicAtom)) {
 			throw oops("Starting atom must be a BasicAtom, but received: " + atom + " of type: " + atom.getClass());
 		}
@@ -58,7 +58,7 @@ public class AnalyzeUnjustified {
 			if (truth == null) {
 				continue;
 			}
-			AtomImpl assignedAtom = atomStore.get(i);
+			CoreAtom assignedAtom = atomStore.get(i);
 			assignedAtoms.putIfAbsent(assignedAtom.getPredicate(), new ArrayList<>());
 			assignedAtoms.get(assignedAtom.getPredicate()).add(assignedAtom);
 		}
@@ -93,7 +93,7 @@ public class AnalyzeUnjustified {
 	private ReturnExplainUnjust explainUnjust(LitSet x, Assignment currentAssignment) {
 		padDepth += 2;
 		log("Begin explainUnjust(): {}", x);
-		AtomImpl p = x.getAtom();
+		CoreAtom p = x.getAtom();
 
 		ReturnExplainUnjust ret = new ReturnExplainUnjust();
 
@@ -103,8 +103,8 @@ public class AnalyzeUnjustified {
 		rulesLoop:
 		for (RuleAndUnifier ruleUnifier : rulesUnifyingWithP) {
 			Unifier sigma = ruleUnifier.unifier;
-			Set<LiteralImpl> bodyR = ruleUnifier.ruleBody;
-			AtomImpl sigmaHr = ruleUnifier.originalHead.substitute(sigma);
+			Set<CoreLiteral> bodyR = ruleUnifier.ruleBody;
+			CoreAtom sigmaHr = ruleUnifier.originalHead.substitute(sigma);
 			log("Considering now: {}", ruleUnifier);
 			Set<Unifier> vN = new LinkedHashSet<>(x.getComplementSubstitutions());
 			for (Unifier sigmaN : vN) {
@@ -125,15 +125,15 @@ public class AnalyzeUnjustified {
 			log("Adapting N to N'. Original N is {}", vN);
 			log("Adapted N' is {}", vNp);
 			log("Searching for falsified negated literals in the body: {}", bodyR);
-			for (LiteralImpl lit : bodyR) {
+			for (CoreLiteral lit : bodyR) {
 				if (!lit.isNegated()) {
 					continue;
 				}
-				AtomImpl lb = lit.getAtom().substitute(sigma);
+				CoreAtom lb = lit.getAtom().substitute(sigma);
 				log("Found: {}, searching falsifying ground instances of {} (with unifier from the head) now.", lit, lb);
 				AssignedAtomsIterator assignedAtomsOverPredicate = getAssignedAtomsOverPredicate(lb.getPredicate());
 				while (assignedAtomsOverPredicate.hasNext()) {
-					AtomImpl lg = assignedAtomsOverPredicate.next();
+					CoreAtom lg = assignedAtomsOverPredicate.next();
 					log("Considering: {}", lg);
 					if (atomStore.contains(lg)) {
 						int atomId = atomStore.get(lg);
@@ -167,8 +167,8 @@ public class AnalyzeUnjustified {
 				}
 
 			}
-			List<LiteralImpl> bodyPos = new ArrayList<>();
-			for (LiteralImpl literal : bodyR) {
+			List<CoreLiteral> bodyPos = new ArrayList<>();
+			for (CoreLiteral literal : bodyR) {
 				if (!literal.isNegated()) {
 					bodyPos.add(literal);
 				}
@@ -181,7 +181,7 @@ public class AnalyzeUnjustified {
 		return ret;
 	}
 
-	private Set<LitSet> unjustCover(List<LiteralImpl> vB, Set<Unifier> vY, Set<Unifier> vN, Assignment currentAssignment) {
+	private Set<LitSet> unjustCover(List<CoreLiteral> vB, Set<Unifier> vY, Set<Unifier> vN, Assignment currentAssignment) {
 		padDepth += 2;
 		log("Begin UnjustCoverFixed()");
 		log("Finding unjustified body literals in: {} / {} excluded {}", vB, vY, vN);
@@ -199,10 +199,10 @@ public class AnalyzeUnjustified {
 				break;
 			}
 		}
-		AtomImpl b = vB.get(chosenLiteralPos).getAtom();
+		CoreAtom b = vB.get(chosenLiteralPos).getAtom();
 		log("Picked literal from body is: {}", b);
 		for (Unifier sigmaY : vY) {
-			AtomImpl bSigmaY = b.substitute(sigmaY);
+			CoreAtom bSigmaY = b.substitute(sigmaY);
 			log("Treating substitution for: {}", bSigmaY);
 			Set<Unifier> vYp = new LinkedHashSet<>();
 
@@ -210,7 +210,7 @@ public class AnalyzeUnjustified {
 			AssignedAtomsIterator assignedAtomsOverPredicate = getAssignedAtomsOverPredicate(b.getPredicate());
 			atomLoop:
 			while (assignedAtomsOverPredicate.hasNext()) {
-				AtomImpl atom = assignedAtomsOverPredicate.next();
+				CoreAtom atom = assignedAtomsOverPredicate.next();
 				// Check that atom is justified/true.
 				log("Checking atom: {}", atom);
 				if (atomStore.contains(atom)) {
@@ -226,7 +226,7 @@ public class AnalyzeUnjustified {
 					continue;
 				}
 
-				AtomImpl bSigma = b.substitute(sigma);
+				CoreAtom bSigma = b.substitute(sigma);
 				if (!bSigma.isGround()) {
 					throw oops("Resulting atom is not ground.");
 				}
@@ -235,8 +235,8 @@ public class AnalyzeUnjustified {
 					for (Unifier sigmaN : vN) {
 						ArrayList<TermImpl> occurringVariables = new ArrayList<>(variablesOccurringInSigma);
 						occurringVariables.addAll(sigmaN.getMappedVariables());
-						BasicAtom genericAtom = new BasicAtom(PredicateImpl.getInstance("_", occurringVariables.size(), true), occurringVariables);
-						AtomImpl genericSubstituted = genericAtom.substitute(sigmaN).renameVariables("_analyzeTest");
+						BasicAtom genericAtom = new BasicAtom(CorePredicate.getInstance("_", occurringVariables.size(), true), occurringVariables);
+						CoreAtom genericSubstituted = genericAtom.substitute(sigmaN).renameVariables("_analyzeTest");
 						if (Unification.instantiate(genericSubstituted, genericAtom.substitute(sigma)) != null) {
 							log("Atom {} is excluded by: {} via {}", genericSubstituted, sigmaN, sigma);
 							continue atomLoop;
@@ -259,7 +259,7 @@ public class AnalyzeUnjustified {
 			} else {
 				log("Generated LitSet covers nothing. Ignoring: {}", toJustify);
 			}
-			ArrayList<LiteralImpl> newB = new ArrayList<>(vB);
+			ArrayList<CoreLiteral> newB = new ArrayList<>(vB);
 			newB.remove(chosenLiteralPos);
 			ret.addAll(unjustCover(newB, vYp, vN, currentAssignment));
 			log("Literal set(s) to treat: {}", ret);
@@ -278,20 +278,20 @@ public class AnalyzeUnjustified {
 		return sb.toString();
 	}
 
-	private AssignedAtomsIterator getAssignedAtomsOverPredicate(PredicateImpl predicate) {
+	private AssignedAtomsIterator getAssignedAtomsOverPredicate(CorePredicate predicate) {
 		// Find more substitutions, consider currentAssignment.
-		List<AtomImpl> assignedAtoms = this.assignedAtoms.get(predicate);
+		List<CoreAtom> assignedAtoms = this.assignedAtoms.get(predicate);
 		// Consider instances from facts.
 		LinkedHashSet<Instance> factsOverPredicate = factsFromProgram.get(predicate);
 		return new AssignedAtomsIterator(predicate, assignedAtoms, factsOverPredicate);
 	}
 
-	private static class AssignedAtomsIterator implements Iterator<AtomImpl> {
-		private final PredicateImpl predicate;
-		private final Iterator<AtomImpl> assignedAtomsIterator;
+	private static class AssignedAtomsIterator implements Iterator<CoreAtom> {
+		private final CorePredicate predicate;
+		private final Iterator<CoreAtom> assignedAtomsIterator;
 		private final Iterator<Instance> factsIterator;
 
-		public AssignedAtomsIterator(PredicateImpl predicate, List<AtomImpl> assignedAtoms, Set<Instance> facts) {
+		public AssignedAtomsIterator(CorePredicate predicate, List<CoreAtom> assignedAtoms, Set<Instance> facts) {
 			this.predicate = predicate;
 			this.assignedAtomsIterator = assignedAtoms == null ? Collections.emptyIterator() : assignedAtoms.iterator();
 			this.factsIterator = facts == null ? Collections.emptyIterator() : facts.iterator();
@@ -303,7 +303,7 @@ public class AnalyzeUnjustified {
 		}
 
 		@Override
-		public AtomImpl next() {
+		public CoreAtom next() {
 			if (assignedAtomsIterator.hasNext()) {
 				return assignedAtomsIterator.next();
 			}
@@ -314,10 +314,10 @@ public class AnalyzeUnjustified {
 		}
 	}
 
-	private List<RuleAndUnifier> rulesHeadUnifyingWith(AtomImpl p) {
+	private List<RuleAndUnifier> rulesHeadUnifyingWith(CoreAtom p) {
 
 		List<RuleAndUnifier> rulesWithUnifier = new ArrayList<>();
-		PredicateImpl predicate = p.getPredicate();
+		CorePredicate predicate = p.getPredicate();
 
 		ArrayList<FactOrNonGroundRule> definingRulesAndFacts = new ArrayList<>();
 		// Get facts over the same predicate.
@@ -336,8 +336,8 @@ public class AnalyzeUnjustified {
 		}
 		for (FactOrNonGroundRule factOrNonGroundRule : definingRulesAndFacts) {
 			boolean isNonGroundRule = factOrNonGroundRule.nonGroundRule != null;
-			Set<LiteralImpl> renamedBody;
-			AtomImpl headAtom;
+			Set<CoreLiteral> renamedBody;
+			CoreAtom headAtom;
 			if (isNonGroundRule) {
 				// First rename all variables in the rule.
 				InternalRule rule = factOrNonGroundRule.nonGroundRule.renameVariables("_" + renamingCounter++);
@@ -375,11 +375,11 @@ public class AnalyzeUnjustified {
 	}
 
 	private static class RuleAndUnifier {
-		final Set<LiteralImpl> ruleBody;
+		final Set<CoreLiteral> ruleBody;
 		final Unifier unifier;
-		final AtomImpl originalHead;
+		final CoreAtom originalHead;
 
-		private RuleAndUnifier(Set<LiteralImpl> ruleBody, Unifier unifier, AtomImpl originalHead) {
+		private RuleAndUnifier(Set<CoreLiteral> ruleBody, Unifier unifier, CoreAtom originalHead) {
 			this.ruleBody = ruleBody;
 			this.unifier = unifier;
 			this.originalHead = originalHead;

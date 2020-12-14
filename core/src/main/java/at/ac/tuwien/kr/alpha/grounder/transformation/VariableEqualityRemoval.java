@@ -106,7 +106,7 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 			return rule;
 		}
 
-		List<LiteralImpl> rewrittenBody = new ArrayList<>(rule.getBody());
+		List<CoreLiteral> rewrittenBody = new ArrayList<>(rule.getBody());
 		NormalHead rewrittenHead = rule.isConstraint() ? null : new NormalHead(rule.getHeadAtom());
 
 		// Use substitution for actual replacement.
@@ -121,9 +121,9 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 			replacementSubstitution.put(variableToReplace, replacementVariable);
 		}
 		// Replace/Substitute in each literal every term where one of the common variables occurs.
-		Iterator<LiteralImpl> bodyIterator = rewrittenBody.iterator();
+		Iterator<CoreLiteral> bodyIterator = rewrittenBody.iterator();
 		while (bodyIterator.hasNext()) {
-			LiteralImpl literal = bodyIterator.next();
+			CoreLiteral literal = bodyIterator.next();
 			if (equalitiesToRemove.contains(literal)) {
 				bodyIterator.remove();
 			}
@@ -134,7 +134,7 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 		}
 		// Replace variables in head.
 		if (rewrittenHead != null) {
-			AtomImpl headAtom = rewrittenHead.getAtom();
+			CoreAtom headAtom = rewrittenHead.getAtom();
 			for (int i = 0; i < headAtom.getTerms().size(); i++) {
 				TermImpl replaced = headAtom.getTerms().get(i).substitute(replacementSubstitution);
 				headAtom.getTerms().set(i, replaced);

@@ -67,7 +67,7 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 	}
 
 	/**
-	 * @see AtomImpl#substitute(Substitution)
+	 * @see CoreAtom#substitute(Substitution)
 	 */
 	@Override
 	public ComparisonLiteral substitute(Substitution substitution) {

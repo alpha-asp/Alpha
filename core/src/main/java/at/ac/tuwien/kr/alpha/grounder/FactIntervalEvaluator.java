@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.common.terms.*;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ public class FactIntervalEvaluator {
 	 * @param fact the fact potentially containing intervals.
 	 * @return all instances stemming from unfolding the intervals.
 	 */
-	public static List<Instance> constructFactInstances(AtomImpl fact) {
+	public static List<Instance> constructFactInstances(CoreAtom fact) {
 		// Construct instance(s) from the fact.
 		int arity = fact.getPredicate().getArity();
 		TermImpl[] currentTerms = new TermImpl[arity];

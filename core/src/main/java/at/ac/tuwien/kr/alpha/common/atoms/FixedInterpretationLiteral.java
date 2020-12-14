@@ -38,9 +38,9 @@ import java.util.List;
  * atoms.
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public abstract class FixedInterpretationLiteral extends LiteralImpl {
+public abstract class FixedInterpretationLiteral extends CoreLiteral {
 
-	public FixedInterpretationLiteral(AtomImpl atom, boolean positive) {
+	public FixedInterpretationLiteral(CoreAtom atom, boolean positive) {
 		super(atom, positive);
 	}
 

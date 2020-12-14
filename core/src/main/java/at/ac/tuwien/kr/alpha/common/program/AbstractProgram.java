@@ -1,7 +1,7 @@
 package at.ac.tuwien.kr.alpha.common.program;
 
 import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.common.rule.AbstractRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
@@ -18,10 +18,10 @@ import java.util.List;
 public abstract class AbstractProgram<R extends AbstractRule<? extends Head>> {
 
 	private final List<R> rules;
-	private final List<? extends AtomImpl> facts;
+	private final List<? extends CoreAtom> facts;
 	private final InlineDirectives inlineDirectives;
 
-	public AbstractProgram(List<R> rules, List<? extends AtomImpl> facts, InlineDirectives inlineDirectives) {
+	public AbstractProgram(List<R> rules, List<? extends CoreAtom> facts, InlineDirectives inlineDirectives) {
 		this.rules = rules;
 		this.facts = facts;
 		this.inlineDirectives = inlineDirectives;
@@ -31,7 +31,7 @@ public abstract class AbstractProgram<R extends AbstractRule<? extends Head>> {
 		return Collections.unmodifiableList(rules);
 	}
 
-	public List<? extends AtomImpl> getFacts() {
+	public List<? extends CoreAtom> getFacts() {
 		return Collections.unmodifiableList(facts);
 	}
 

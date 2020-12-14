@@ -27,7 +27,7 @@ package at.ac.tuwien.kr.alpha.grounder.instantiation;
 
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.common.atoms.LiteralImpl;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreLiteral;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
@@ -47,7 +47,7 @@ public interface LiteralInstantiationStrategy {
 	 * @param groundLiteral a ground {@link Literal} for which to compute an {@link AssignmentStatus}
 	 * @return the current {@link AssignmentStatus} for the given literal according to the rules of this {@link LiteralInstantiationStrategy}
 	 */
-	AssignmentStatus getTruthForGroundLiteral(LiteralImpl groundLiteral);
+	AssignmentStatus getTruthForGroundLiteral(CoreLiteral groundLiteral);
 
 	/**
 	 * Computes {@link Substitution}s that yield ground instances for a given literal and starting substitution along with the
@@ -60,6 +60,6 @@ public interface LiteralInstantiationStrategy {
 	 * @param partialSubstitution a (possibly empty) substitution to use as a starting point
 	 * @return a list of substitutions along with the assignment status of the respective ground atoms
 	 */
-	List<ImmutablePair<Substitution, AssignmentStatus>> getAcceptedSubstitutions(LiteralImpl lit, Substitution partialSubstitution);
+	List<ImmutablePair<Substitution, AssignmentStatus>> getAcceptedSubstitutions(CoreLiteral lit, Substitution partialSubstitution);
 
 }

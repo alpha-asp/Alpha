@@ -27,21 +27,20 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.PredicateImpl;
+import java.util.List;
+import java.util.Set;
+
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 
-import java.util.List;
-import java.util.Set;
-
 /**
  * An Atom is the common superclass of all representations of ASP atoms used by Alpha.
  */
-public abstract class AtomImpl implements Atom {
+public abstract class CoreAtom implements Comparable<CoreAtom>{
 
 	/**
 	 * Creates a new Atom that represents this Atom, but has the given term list instead.
@@ -49,7 +48,7 @@ public abstract class AtomImpl implements Atom {
 	 * @param terms the terms to set.
 	 * @return a new Atom with the given terms set.
 	 */
-	public abstract AtomImpl withTerms(List<TermImpl> terms);
+	public abstract CoreAtom withTerms(List<TermImpl> terms);
 
 	/**
 	 * Returns the set of all variables occurring in the Atom.
@@ -65,26 +64,29 @@ public abstract class AtomImpl implements Atom {
 	 * @param substitution the variable substitution to apply.
 	 * @return the atom resulting from the application of the substitution.
 	 */
-	public abstract AtomImpl substitute(Substitution substitution);
+	public abstract CoreAtom substitute(Substitution substitution);
 
-	@Override
 	public abstract List<? extends TermImpl> getTerms();
 
-	@Override
-	public abstract PredicateImpl getPredicate();
+	public abstract CorePredicate getPredicate();
 
+	/**
+	 * Returns whether this atom is ground, i.e., variable-free.
+	 *
+	 * @return true iff the terms of this atom contain no {@link VariableTerm}.
+	 */
+	public abstract boolean isGround();	
+	
 	/**
 	 * Creates a non-negated literal containing this atom.
 	 */
-	@Override
-	public LiteralImpl toLiteral() {
+	public CoreLiteral toLiteral() {
 		return toLiteral(true);
 	}
 
-	@Override
-	public abstract LiteralImpl toLiteral(boolean positive);
+	public abstract CoreLiteral toLiteral(boolean positive);
 
-	public AtomImpl renameVariables(String newVariablePrefix) {
+	public CoreAtom renameVariables(String newVariablePrefix) {
 		Unifier renamingSubstitution = new Unifier();
 		int counter = 0;
 		for (VariableTerm variable : getOccurringVariables()) {
@@ -94,7 +96,7 @@ public abstract class AtomImpl implements Atom {
 	}
 
 	@Override
-	public int compareTo(Atom o) {
+	public int compareTo(CoreAtom o) {
 		if (o == null) {
 			return 1;
 		}

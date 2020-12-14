@@ -29,8 +29,7 @@ package at.ac.tuwien.kr.alpha.common.rule;
 
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.atoms.LiteralImpl;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.common.rule.head.Head;
 
 /**
@@ -39,7 +38,7 @@ import at.ac.tuwien.kr.alpha.common.rule.head.Head;
  */
 public class BasicRule extends AbstractRule<Head> {
 
-	public BasicRule(Head head, List<LiteralImpl> body) {
+	public BasicRule(Head head, List<CoreLiteral> body) {
 		super(head, body);
 	}
 

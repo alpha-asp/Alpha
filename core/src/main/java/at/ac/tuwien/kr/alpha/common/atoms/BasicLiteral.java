@@ -40,7 +40,7 @@ import java.util.Set;
  *
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public class BasicLiteral extends LiteralImpl {
+public class BasicLiteral extends CoreLiteral {
 
 	public BasicLiteral(BasicAtom atom, boolean positive) {
 		super(atom, positive);
@@ -60,7 +60,7 @@ public class BasicLiteral extends LiteralImpl {
 	}
 
 	/**
-	 * @see AtomImpl#substitute(Substitution)
+	 * @see CoreAtom#substitute(Substitution)
 	 */
 	@Override
 	public BasicLiteral substitute(Substitution substitution) {

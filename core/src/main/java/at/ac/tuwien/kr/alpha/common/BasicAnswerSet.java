@@ -14,13 +14,14 @@ import static java.util.Collections.emptySortedSet;
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
+// TODO bring this into public non-core API by using something like an "answer-set-view"
 public class BasicAnswerSet implements AnswerSet {
 	public static final BasicAnswerSet EMPTY = new BasicAnswerSet(emptySortedSet(), emptyMap());
 
-	private final SortedSet<PredicateImpl> predicates;
-	private final Map<PredicateImpl, SortedSet<Atom>> predicateInstances;
+	private final SortedSet<CorePredicate> predicates;
+	private final Map<CorePredicate, SortedSet<Atom>> predicateInstances;
 
-	public BasicAnswerSet(SortedSet<PredicateImpl> predicates, Map<PredicateImpl, SortedSet<Atom>> predicateInstances) {
+	public BasicAnswerSet(SortedSet<CorePredicate> predicates, Map<CorePredicate, SortedSet<Atom>> predicateInstances) {
 		this.predicates = predicates;
 		this.predicateInstances = predicateInstances;
 	}
@@ -47,7 +48,7 @@ public class BasicAnswerSet implements AnswerSet {
 		}
 
 		final StringBuilder sb = new StringBuilder("{ ");
-		for (Iterator<PredicateImpl> iterator = predicates.iterator(); iterator.hasNext();) {
+		for (Iterator<CorePredicate> iterator = predicates.iterator(); iterator.hasNext();) {
 			Predicate predicate = iterator.next();
 			Set<Atom> instances = getPredicateInstances(predicate);
 

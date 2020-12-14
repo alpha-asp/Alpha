@@ -5,7 +5,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 import java.util.HashMap;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.common.PredicateImpl;
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
@@ -24,7 +24,7 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
  * Copyright (c) 2017, the Alpha Team.
  */
 public class EnumerationAtom extends BasicAtom {
-	public static final PredicateImpl ENUMERATION_PREDICATE = PredicateImpl.getInstance("_Enumeration", 3);
+	public static final CorePredicate ENUMERATION_PREDICATE = CorePredicate.getInstance("_Enumeration", 3);
 	private static final HashMap<Term, HashMap<Term, Integer>> ENUMERATIONS = new HashMap<>();
 
 	public EnumerationAtom(List<Term> terms) {

@@ -27,7 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.PredicateImpl;
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
@@ -76,8 +76,8 @@ public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, Inpu
 				// Create two guessing rules for each choiceElement.
 
 				// Construct common body to both rules.
-				AtomImpl head = choiceElement.choiceAtom;
-				List<LiteralImpl> ruleBody = new ArrayList<>(rule.getBody());
+				CoreAtom head = choiceElement.choiceAtom;
+				List<CoreLiteral> ruleBody = new ArrayList<>(rule.getBody());
 				ruleBody.addAll(choiceElement.conditionLiterals);
 
 				if (containsIntervalTerms(head)) {
@@ -85,20 +85,20 @@ public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, Inpu
 				}
 
 				// Construct head atom for the choice.
-				PredicateImpl headPredicate = head.getPredicate();
+				CorePredicate headPredicate = head.getPredicate();
 
-				PredicateImpl negPredicate = PredicateImpl.getInstance(PREDICATE_NEGATION_PREFIX + headPredicate.getName(), headPredicate.getArity() + 1, true);
+				CorePredicate negPredicate = CorePredicate.getInstance(PREDICATE_NEGATION_PREFIX + headPredicate.getName(), headPredicate.getArity() + 1, true);
 				List<TermImpl> headTerms = new ArrayList<>(head.getTerms());
 				headTerms.add(0, ConstantTermImpl.getInstance("1")); // FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for
 																	// classical negative atoms.
-				AtomImpl negHead = new BasicAtom(negPredicate, headTerms);
+				CoreAtom negHead = new BasicAtom(negPredicate, headTerms);
 
 				// Construct two guessing rules.
-				List<LiteralImpl> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
+				List<CoreLiteral> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithNegHead.add(new BasicAtom(head.getPredicate(), head.getTerms()).toLiteral(false));
 				additionalRules.add(new BasicRule(new NormalHead(negHead), guessingRuleBodyWithNegHead));
 
-				List<LiteralImpl> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
+				List<CoreLiteral> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithHead.add(new BasicAtom(negPredicate, headTerms).toLiteral(false));
 				additionalRules.add(new BasicRule(new NormalHead(head), guessingRuleBodyWithHead));
 
@@ -109,7 +109,7 @@ public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, Inpu
 				.addInlineDirectives(inputProgram.getInlineDirectives()).build();
 	}
 
-	private static boolean containsIntervalTerms(Atom atom) {
+	private static boolean containsIntervalTerms(CoreAtom atom) {
 		for (Term term : atom.getTerms()) {
 			if (IntervalTerm.termContainsIntervalTerm(term)) {
 				return true;

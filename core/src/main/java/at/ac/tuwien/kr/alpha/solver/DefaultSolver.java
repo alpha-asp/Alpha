@@ -370,8 +370,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			String substitution = (String) ((ConstantTermImpl<?>)atom.getTerms().get(1)).getObject();
 			Substitution groundingSubstitution = Substitution.fromString(substitution);
 			// Find ground literals in the body that have been assigned false and justify those.
-			for (LiteralImpl bodyLiteral : nonGroundRule.getBody()) {
-				AtomImpl groundAtom = bodyLiteral.getAtom().substitute(groundingSubstitution);
+			for (CoreLiteral bodyLiteral : nonGroundRule.getBody()) {
+				CoreAtom groundAtom = bodyLiteral.getAtom().substitute(groundingSubstitution);
 				if (groundAtom instanceof ComparisonAtom || analyzingGrounder.isFact(groundAtom)) {
 					// Facts and ComparisonAtoms are always true, no justification needed.
 					continue;

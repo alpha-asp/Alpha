@@ -1,8 +1,8 @@
 package at.ac.tuwien.kr.alpha.common.program;
 
-import at.ac.tuwien.kr.alpha.common.PredicateImpl;
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.AtomImpl;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
 import at.ac.tuwien.kr.alpha.grounder.FactIntervalEvaluator;
@@ -20,19 +20,19 @@ import java.util.*;
  */
 public class InternalProgram extends AbstractProgram<InternalRule> {
 
-	private final Map<PredicateImpl, LinkedHashSet<InternalRule>> predicateDefiningRules = new LinkedHashMap<>();
-	private final Map<PredicateImpl, LinkedHashSet<Instance>> factsByPredicate = new LinkedHashMap<>();
+	private final Map<CorePredicate, LinkedHashSet<InternalRule>> predicateDefiningRules = new LinkedHashMap<>();
+	private final Map<CorePredicate, LinkedHashSet<Instance>> factsByPredicate = new LinkedHashMap<>();
 	private final Map<Integer, InternalRule> rulesById = new LinkedHashMap<>();
 
-	public InternalProgram(List<InternalRule> rules, List<? extends AtomImpl> facts) {
+	public InternalProgram(List<InternalRule> rules, List<? extends CoreAtom> facts) {
 		super(rules, facts, null);
 		recordFacts(facts);
 		recordRules(rules);
 	}
 
-	static ImmutablePair<List<InternalRule>, List<? extends AtomImpl>> internalizeRulesAndFacts(NormalProgram normalProgram) {
+	static ImmutablePair<List<InternalRule>, List<? extends CoreAtom>> internalizeRulesAndFacts(NormalProgram normalProgram) {
 		List<InternalRule> internalRules = new ArrayList<>();
-		List<AtomImpl> facts = new ArrayList<>(normalProgram.getFacts());
+		List<CoreAtom> facts = new ArrayList<>(normalProgram.getFacts());
 		for (NormalRule r : normalProgram.getRules()) {
 			if (r.getBody().isEmpty()) {
 				if (!r.getHead().isGround()) {
@@ -47,14 +47,14 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 	}
 
 	public static InternalProgram fromNormalProgram(NormalProgram normalProgram) {
-		ImmutablePair<List<InternalRule>, List<? extends AtomImpl>> rulesAndFacts = InternalProgram.internalizeRulesAndFacts(normalProgram);
+		ImmutablePair<List<InternalRule>, List<? extends CoreAtom>> rulesAndFacts = InternalProgram.internalizeRulesAndFacts(normalProgram);
 		return new InternalProgram(rulesAndFacts.left, rulesAndFacts.right);
 	}
 
-	private void recordFacts(List<? extends AtomImpl> facts) {
-		for (AtomImpl fact : facts) {
+	private void recordFacts(List<? extends CoreAtom> facts) {
+		for (CoreAtom fact : facts) {
 			List<Instance> tmpInstances = FactIntervalEvaluator.constructFactInstances(fact);
-			PredicateImpl tmpPredicate = fact.getPredicate();
+			CorePredicate tmpPredicate = fact.getPredicate();
 			factsByPredicate.putIfAbsent(tmpPredicate, new LinkedHashSet<>());
 			factsByPredicate.get(tmpPredicate).addAll(tmpInstances);
 		}
@@ -69,16 +69,16 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 		}
 	}
 
-	private void recordDefiningRule(PredicateImpl headPredicate, InternalRule rule) {
+	private void recordDefiningRule(CorePredicate headPredicate, InternalRule rule) {
 		predicateDefiningRules.putIfAbsent(headPredicate, new LinkedHashSet<>());
 		predicateDefiningRules.get(headPredicate).add(rule);
 	}
 
-	public Map<PredicateImpl, LinkedHashSet<InternalRule>> getPredicateDefiningRules() {
+	public Map<CorePredicate, LinkedHashSet<InternalRule>> getPredicateDefiningRules() {
 		return Collections.unmodifiableMap(predicateDefiningRules);
 	}
 
-	public Map<PredicateImpl, LinkedHashSet<Instance>> getFactsByPredicate() {
+	public Map<CorePredicate, LinkedHashSet<Instance>> getFactsByPredicate() {
 		return Collections.unmodifiableMap(factsByPredicate);
 	}
 
