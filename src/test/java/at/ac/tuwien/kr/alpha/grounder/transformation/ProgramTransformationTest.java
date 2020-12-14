@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.grounder;
+package at.ac.tuwien.kr.alpha.grounder.transformation;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.util.function.Function;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.api.externals.Externals;
 import at.ac.tuwien.kr.alpha.common.program.AbstractProgram;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
@@ -47,7 +48,7 @@ public class ProgramTransformationTest {
 		try {
 			String inputCode = ProgramTransformationTest.readTestResource(resourceSet + ".in");
 			String expectedResult = ProgramTransformationTest.readTestResource(resourceSet + ".out");
-			InputProgram inputProg = this.alpha.readProgramString(inputCode);
+			InputProgram inputProg = this.alpha.readProgramString(inputCode, Externals.scan(ProgramTransformationTest.class));
 			I transformInput = prepareFunc.apply(inputProg);
 			String beforeTransformProg = transformInput.toString();
 			O transformedProg = transform.apply(transformInput);
@@ -67,6 +68,22 @@ public class ProgramTransformationTest {
 	@Test
 	public void intervalTermToIntervalAtomSimpleTest() {
 		this.genericTransformationTest(this.intervalRewriting, NormalProgram::fromInputProgram, "interval.1");
+	}
+
+	@Test
+	public void intervalTermToIntervalAtomExternalAtomTest() {
+		this.genericTransformationTest(this.intervalRewriting, NormalProgram::fromInputProgram, "interval-external_atom");
+	}
+	
+	@Test
+	public void intervalTermToIntervalAtomComparisonAtomTest() {
+		this.genericTransformationTest(this.intervalRewriting, NormalProgram::fromInputProgram, "interval-comparison_atom");
+	}	
+	
+	@at.ac.tuwien.kr.alpha.api.externals.Predicate(name = "say_true")
+	public static boolean sayTrue(int val) {
+		// dummy method so we can have an external in the transformation test
+		return true;
 	}
 
 }

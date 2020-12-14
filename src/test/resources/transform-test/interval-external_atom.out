@@ -1,0 +1,1 @@
+p(X) :- q(X), &say_true[_Interval0], VAL = 10, _interval(1..VAL, _Interval0).
