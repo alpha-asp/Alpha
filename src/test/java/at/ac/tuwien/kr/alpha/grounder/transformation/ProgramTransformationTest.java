@@ -1,24 +1,21 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.function.Function;
 
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.api.externals.Externals;
 import at.ac.tuwien.kr.alpha.common.program.AbstractProgram;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
-import at.ac.tuwien.kr.alpha.grounder.transformation.ChoiceHeadToNormal;
-import at.ac.tuwien.kr.alpha.grounder.transformation.IntervalTermToIntervalAtom;
-import at.ac.tuwien.kr.alpha.grounder.transformation.ProgramTransformation;
 
 public class ProgramTransformationTest {
 
@@ -74,12 +71,12 @@ public class ProgramTransformationTest {
 	public void intervalTermToIntervalAtomExternalAtomTest() {
 		this.genericTransformationTest(this.intervalRewriting, NormalProgram::fromInputProgram, "interval-external_atom");
 	}
-	
+
 	@Test
 	public void intervalTermToIntervalAtomComparisonAtomTest() {
 		this.genericTransformationTest(this.intervalRewriting, NormalProgram::fromInputProgram, "interval-comparison_atom");
-	}	
-	
+	}
+
 	@at.ac.tuwien.kr.alpha.api.externals.Predicate(name = "say_true")
 	public static boolean sayTrue(int val) {
 		// dummy method so we can have an external in the transformation test
