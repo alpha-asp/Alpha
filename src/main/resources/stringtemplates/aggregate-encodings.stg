@@ -15,21 +15,27 @@ delimiters "$", "$"
  */
 cnt_eq (id, result_predicate, element_tuple, bound )::=<<
 	#enumeration_predicate_is enum.
-	$! Input Numbers !$
-	$id$_input_number(ARGS, IDX) :- $element_tuple$(ARGS, TPL), enum(ARGS, TPL, IDX).
 
-	$!Fallback rule - even if no input number exists, the count is still zero!$
-	$id$_sum(ARGS, 0, 0)    :- $bound$(ARGS, _).
+	$! Every ordinal of a counted value is a candidate value for the final count !$
+	$! Since we need to check every value from 1 up to the maximum index, use intervals here !$
+	$id$_cnt_candidate(ARGS, 1..ORD) :- $element_tuple$(ARGS, TPL), enum(ARGS, TPL, ORD).
 
-	$id$_span(ARGS, 1..I1) :- I1 = I-1, $id$_input_number(ARGS, I).
-	$id$_sum(ARGS, 0, 0)    :- $id$_input_number(ARGS, _).
-	$id$_sum(ARGS, I, S)    :- $id$_sum(ARGS, I1, S), I1 = I-1, $id$_span(ARGS, I).
-	$id$_sum(ARGS, I, S1)   :- $id$_sum(ARGS, I1, S), S1 = S+1, I1 = I-1, $id$_input_number(ARGS, I).
+	$! Input Numbers - Every ordinal for which the mapped atom is actually true is an input number to the sorting grid !$
+	$id$_sorting_network_input_number(ARGS, NUM) :- $element_tuple$(ARGS, TPL), enum(ARGS, TPL, NUM).
 
-	$!We want to find the maximum value that is still less or equal the actual count in oter to find the exact count!$
-	$id$_sum_less_than(ARGS, LESS, THAN) :- $id$_sum(ARGS, _, LESS), $id$_sum(ARGS, _, THAN), LESS < THAN.
-	$id$_sum_has_greater(ARGS, NUM) :- $id$_sum_less_than(ARGS, NUM, _).
-	$result_predicate$(ARGS, CNT) :- $id$_sum(ARGS, _, CNT), not $id$_sum_has_greater(ARGS, CNT).
+	$! Every Candidate is a bound for the sorting network !$
+	$bound$(ARGS, VAL) :- $id$_cnt_candidate(ARGS, VAL), VAL != 0.
+	$! Special case - derive that 0 is a candidate from the "default fallback" bound. Need to do this in order to get the ARGS tuple for the candidate !$
+	$id$_cnt_candidate(ARGS, 0) :- $bound$(ARGS, 0).
+
+	$! sorting grid result !$
+	$id$_sorting_grid_result(ARGS, K) :- $bound$(ARGS, K), K<=0.
+	$id$_sorting_grid_result(ARGS, K) :- $bound$(ARGS, K), $id$_sorting_network_v(ARGS, K, D), $id$_sorting_network_done(N, D), K<=N.
+
+	$result_predicate$(ARGS, CNT) :- $id$_cnt_candidate(ARGS, CNT), $id$_sorting_grid_result(ARGS, CNT), not $id$_sorting_grid_result(ARGS, CNT + 1).
+
+	$! include sorting network core encoding !$
+	$sorting_grid_core(id=id)$
 >>
 
 /**
