@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2017-2020, the Alpha Team.
  * All rights reserved.
  *
@@ -27,16 +27,20 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import at.ac.tuwien.kr.alpha.AnswerSetsParser;
+import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.program.InputProgram;
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
+import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory.Heuristic;
+import at.ac.tuwien.kr.alpha.test.util.TestUtils;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.antlr.v4.runtime.CharStream;
@@ -48,19 +52,27 @@ import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.StringJoiner;
-
-import static java.util.Collections.emptySet;
-import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public abstract class AbstractSolverTests {
+
+	private static final String[] NON_DEPRECATED_HEURISTICS_NAMES;
+	static {
+		final List<String> nonDeprecatedHeuristicsNames = new ArrayList<>();
+		for (Field field : Heuristic.class.getFields()) {
+			if (field.getAnnotation(Deprecated.class) == null) {
+				nonDeprecatedHeuristicsNames.add(field.getName());
+			}
+		}
+		NON_DEPRECATED_HEURISTICS_NAMES = nonDeprecatedHeuristicsNames.toArray(new String[]{});
+	}
+
 	private final ProgramParser parser = new ProgramParser();
 
 	/**
@@ -105,7 +117,7 @@ public abstract class AbstractSolverTests {
 		String[] solvers = getProperty("solvers", ci ? "default,naive" : "default");
 		String[] grounders = getProperty("grounders", "naive");
 		String[] stores = getProperty("stores", ci ? "alpharoaming,naive" : "alpharoaming");
-		String[] heuristics = getProperty("heuristics", ci ? "ALL" : "NAIVE,VSIDS");
+		String[] heuristics = getProperty("heuristics", ci ? "NON_DEPRECATED" : "NAIVE,VSIDS");
 		String[] gtcValues = getProperty("grounderToleranceConstraints", "strict,permissive");
 		String[] gtrValues = getProperty("grounderToleranceRules", "strict");
 		String[] dirValues = getProperty("disableInstanceRemoval", ci ? "false,true" : "false");
@@ -118,6 +130,10 @@ public abstract class AbstractSolverTests {
 			for (BranchingHeuristicFactory.Heuristic heuristic : values) {
 				heuristics[i++] = heuristic.toString();
 			}
+		}
+		// "NON_DEPRECATED" is a magic value that will be expanded to contain all non-deprecated heuristics.
+		if ("NON_DEPRECATED".equals(heuristics[0])) {
+			heuristics = NON_DEPRECATED_HEURISTICS_NAMES;
 		}
 
 		// NOTE:
@@ -195,9 +211,12 @@ public abstract class AbstractSolverTests {
 		return config;
 	}
 
-	protected Solver getInstance(Program program) {
+	protected Solver getInstance(InputProgram program) {
+		Alpha system = new Alpha();
 		AtomStore atomStore = new AtomStoreImpl();
-		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, program, atomStore, true));
+		NormalProgram normalized = system.normalizeProgram(program);
+		InternalProgram preprocessed = InternalProgram.fromNormalProgram(normalized);
+		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, preprocessed, atomStore, true));
 	}
 
 	protected Solver getInstance(String program) {
@@ -216,7 +235,7 @@ public abstract class AbstractSolverTests {
 		return getInstance(program).collectSet();
 	}
 
-	protected Set<AnswerSet> collectSet(Program program) {
+	protected Set<AnswerSet> collectSet(InputProgram program) {
 		return getInstance(program).collectSet();
 	}
 
@@ -224,52 +243,23 @@ public abstract class AbstractSolverTests {
 		return getInstance(program).collectSet();
 	}
 
-	protected void assertAnswerSets(String program, String... answerSets) throws IOException {
-		if (answerSets.length == 0) {
-			assertAnswerSets(program, emptySet());
-			return;
-		}
-
-		StringJoiner joiner = new StringJoiner("} {", "{", "}");
-		Arrays.stream(answerSets).forEach(joiner::add);
-		assertAnswerSets(program, AnswerSetsParser.parse(joiner.toString()));
+	protected void assertAnswerSets(String program, String... answerSets) {
+		Set<AnswerSet> actualAnswerSets = collectSet(program);
+		TestUtils.assertAnswerSetsEqual(answerSets, actualAnswerSets);
 	}
 
-	protected void assertAnswerSet(String program, String answerSet) throws IOException {
-		assertAnswerSets(program, AnswerSetsParser.parse("{ " + answerSet + " }"));
+	protected void assertAnswerSet(String program, String answerSet) {
+		Set<AnswerSet> actualAnswerSets = collectSet(program);
+		TestUtils.assertAnswerSetsEqual(answerSet, actualAnswerSets);
 	}
 
-	protected void assertAnswerSetsWithBase(String program, String base, String... answerSets) throws IOException {
-		base = base.trim();
-		if (!base.endsWith(",")) {
-			base += ", ";
-		}
-
-		for (int i = 0; i < answerSets.length; i++) {
-			answerSets[i] = base + answerSets[i];
-			// Remove trailing ",".
-			answerSets[i] = answerSets[i].trim();
-			if (answerSets[i].endsWith(",")) {
-				answerSets[i] = answerSets[i].substring(0, answerSets[i].length() - 1);
-			}
-		}
-
-		assertAnswerSets(program, answerSets);
+	protected void assertAnswerSetsWithBase(String program, String base, String... answerSets) {
+		Set<AnswerSet> actualAnswerSets = collectSet(program);
+		TestUtils.assertAnswerSetsEqualWithBase(base, answerSets, actualAnswerSets);
 	}
 
-	protected void assertAnswerSets(String program, Set<AnswerSet> answerSets) throws IOException {
-		Set<AnswerSet> actualAnswerSets = emptySet();
-		try {
-			actualAnswerSets = collectSet(program);
-			assertEquals(answerSets, actualAnswerSets);
-		} catch (AssertionError e) {
-			Set<AnswerSet> expectedMinusActual = new LinkedHashSet<>(answerSets);
-			expectedMinusActual.removeAll(actualAnswerSets);
-			Set<AnswerSet> actualMinusExpected = new LinkedHashSet<>(actualAnswerSets);
-			actualMinusExpected.removeAll(answerSets);
-			String setDiffs = "Expected and computed answer sets do not agree, differences are:\nExpected \\ Actual:\n" + expectedMinusActual + "\nActual \\ Expected:\n" + actualMinusExpected;
-			throw new AssertionError(setDiffs + e.getMessage(), e);
-		}
-
+	protected void assertAnswerSets(String program, Set<AnswerSet> answerSets) {
+		Set<AnswerSet> actualAnswerSets = collectSet(program);
+		TestUtils.assertAnswerSetsEqual(answerSets, actualAnswerSets);
 	}
 }

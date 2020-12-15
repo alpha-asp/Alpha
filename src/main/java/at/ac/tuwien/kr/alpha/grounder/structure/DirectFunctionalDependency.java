@@ -2,10 +2,10 @@ package at.ac.tuwien.kr.alpha.grounder.structure;
 
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationLiteral;
@@ -24,7 +24,7 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Provides support for direct functional dependencies to be used in completions. Also includes an algorithm to identify
- * and create DirectFunctionalDependencies for a {@link NonGroundRule}.
+ * and create DirectFunctionalDependencies for a {@link at.ac.tuwien.kr.alpha.common.rule.InternalRule}.
  *
  * Copyright (c) 2020, the Alpha Team.
  */
@@ -44,7 +44,7 @@ public class DirectFunctionalDependency {
 		Substitution extendedSubstitution = substitution;
 		for (Literal literal : evaluationOrder) {
 			if (literal instanceof ComparisonLiteral) {
-				extendedSubstitution = ((ComparisonLiteral) literal).getSubstitutions(extendedSubstitution).get(0);
+				extendedSubstitution = ((ComparisonLiteral) literal).getSatisfyingSubstitutions(extendedSubstitution).get(0);
 			} else if (literal instanceof EnumerationLiteral) {
 				EnumerationAtom enumerationAtom = (EnumerationAtom) literal.getAtom();
 				Term identifier = enumerationAtom.getTerms().get(0).substitute(extendedSubstitution);
@@ -54,17 +54,18 @@ public class DirectFunctionalDependency {
 				// Distinguish between the two possible FDs for EnumerationLiterals.
 				if (identifier.isGround() && term.isGround()) {
 					// FD is (A,X) -> I.
-					enumerationAtom.addEnumerationToSubstitution(extendedSubstitution);
+					enumerationAtom.addEnumerationIndexToSubstitution(extendedSubstitution);
 				} else if (identifier.isGround() && index.isGround() && !term.isGround()) {
 					// FD is (A,I) -> X
 					Term groundedTerm = enumerationAtom.getTermWithIndex(identifier, (Integer) ((ConstantTerm) index).getObject());
 					// Unify the obtained ground term with the non-ground one to extend the substitution.
-					Substitution unifyTestSubstitution = new Substitution(extendedSubstitution);
-					if (unifyTestSubstitution.unifyTerms(term, groundedTerm)) {
+					extendedSubstitution.put((VariableTerm)term, groundedTerm);
+					/*Substitution unifyTestSubstitution = new Substitution(extendedSubstitution);
+					if (unifyTestSubstitution.unifyTerms(term, groundedTerm)) {	// TODO: we need the internal unification of terms again.
 						extendedSubstitution = unifyTestSubstitution;
 					} else {
 						throw oops("Substitution from EnumerationLiteral does not unify with given functional dependency: " + literal);
-					}
+					}*/
 				} else {
 					throw oops("Recorded functional dependency for EnumerationLiteral has unexpected properties: " + literal);
 				}
@@ -76,9 +77,9 @@ public class DirectFunctionalDependency {
 		return extendedSubstitution;
 	}
 
-	public static DirectFunctionalDependency computeDirectFunctionalDependencies(NonGroundRule nonGroundRule) {
+	public static DirectFunctionalDependency computeDirectFunctionalDependencies(InternalRule nonGroundRule) {
 		Set<VariableTerm> knownVariables = new LinkedHashSet<>(nonGroundRule.getHeadAtom().getOccurringVariables());
-		List<Literal> remainingBodyLiterals = new LinkedList<>(nonGroundRule.getRule().getBody());
+		List<Literal> remainingBodyLiterals = new LinkedList<>(nonGroundRule.getBody());
 		DirectFunctionalDependency directFunctionalDependency = new DirectFunctionalDependency();
 		boolean didChange;
 		do {
@@ -133,7 +134,7 @@ public class DirectFunctionalDependency {
 		} while (didChange);
 		// Collect all variables occurring in the rule.
 		Set<VariableTerm> variablesOccurringInRule = new HashSet<>();
-		for (Literal literal : nonGroundRule.getRule().getBody()) {
+		for (Literal literal : nonGroundRule.getBody()) {
 			variablesOccurringInRule.addAll(literal.getOccurringVariables());
 		}
 		variablesOccurringInRule.removeAll(knownVariables);

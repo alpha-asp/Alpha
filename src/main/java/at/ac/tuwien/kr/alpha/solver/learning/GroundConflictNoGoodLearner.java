@@ -54,7 +54,26 @@ public class GroundConflictNoGoodLearner {
 	private final Assignment assignment;
 	private final AtomStore atomStore;
 
+	/**
+	 * Given a conflicting NoGood, computes a conflict-free backjumping level such that the given NoGood is not
+	 * violated.
+	 *
+	 * @param violatedNoGood the conflicting NoGood.
+	 * @return -1 if the violatedNoGood cannot be satisfied, otherwise
+	 * 	   0 if violatedNoGood is unary, and else
+	 * 	   the highest backjumping level such that the NoGood is no longer violated.
+	 */
 	public int computeConflictFreeBackjumpingLevel(NoGood violatedNoGood) {
+		// If violatedNoGood is unary, backjump to decision level 0 if it can be satisfied.
+		if (violatedNoGood.isUnary()) {
+			int literal = violatedNoGood.getLiteral(0);
+			int literalDecisionLevel = assignment.getRealWeakDecisionLevel(atomOf(literal));
+			if (literalDecisionLevel > 0) {
+				return 0;
+			} else {
+				return -1;
+			}
+		}
 		int highestDecisionLevel = -1;
 		int secondHighestDecisionLevel = -1;
 		int numAtomsInHighestLevel = 0;
@@ -229,6 +248,28 @@ public class GroundConflictNoGoodLearner {
 		// Add the 1UIP literal.
 		resolutionLiterals.add(atomToLiteral(nextAtom, assignment.getTruth(nextAtom).toBoolean()));
 
+		int[] learnedLiterals = minimizeLearnedLiterals(resolutionLiterals, seenAtoms);
+
+		NoGood learnedNoGood = NoGood.learnt(learnedLiterals);
+		if (LOGGER.isTraceEnabled()) {
+			LOGGER.trace("Learned NoGood is: {}", atomStore.noGoodToString(learnedNoGood));
+		}
+
+		int backjumpingDecisionLevel = computeBackjumpingDecisionLevel(learnedNoGood);
+		if (backjumpingDecisionLevel < 0) {
+			// Due to out-of-order assigned literals, the learned nogood may be not assigning.
+			backjumpingDecisionLevel = computeConflictFreeBackjumpingLevel(learnedNoGood);
+			if (backjumpingDecisionLevel < 0) {
+				return ConflictAnalysisResult.UNSAT;
+			}
+		}
+		if (LOGGER.isTraceEnabled()) {
+			LOGGER.trace("Backjumping decision level: {}", backjumpingDecisionLevel);
+		}
+		return new ConflictAnalysisResult(learnedNoGood, backjumpingDecisionLevel, resolutionAtoms, computeLBD(learnedLiterals));
+	}
+
+	private int[] minimizeLearnedLiterals(List<Integer> resolutionLiterals, Set<Integer> seenAtoms) {
 		int[] learnedLiterals = new int[resolutionLiterals.size()];
 		int i = 0;
 		// Do local clause minimization: if an implied literal has all its antecedents seen (i.e., in the clause already), it can be removed.
@@ -250,32 +291,13 @@ public class GroundConflictNoGoodLearner {
 						continue learnedLiteralsLoop;
 					}
 				}
-				// Debug: don't delete anything.
-				//learnedLiterals[i++] = resolutionLiteral;
 			}
 		}
 		// Shrink array if we did not copy over all literals from resolutionLiterals.
 		if (i < resolutionLiterals.size()) {
 			learnedLiterals = Arrays.copyOf(learnedLiterals, i);
 		}
-
-		NoGood learnedNoGood = NoGood.learnt(learnedLiterals);
-		if (LOGGER.isTraceEnabled()) {
-			LOGGER.trace("Learned NoGood is: {}", atomStore.noGoodToString(learnedNoGood));
-		}
-
-		int backjumpingDecisionLevel = computeBackjumpingDecisionLevel(learnedNoGood);
-		if (backjumpingDecisionLevel < 0) {
-			// Due to out-of-order assigned literals, the learned nogood may be not assigning.
-			backjumpingDecisionLevel = computeConflictFreeBackjumpingLevel(learnedNoGood);
-			if (backjumpingDecisionLevel < 0) {
-				return ConflictAnalysisResult.UNSAT;
-			}
-		}
-		if (LOGGER.isTraceEnabled()) {
-			LOGGER.trace("Backjumping decision level: {}", backjumpingDecisionLevel);
-		}
-		return new ConflictAnalysisResult(learnedNoGood, backjumpingDecisionLevel, resolutionAtoms, computeLBD(learnedLiterals));
+		return learnedLiterals;
 	}
 
 	private int computeLBD(int[] literals) {

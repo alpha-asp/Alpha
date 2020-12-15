@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -194,15 +194,20 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 	@Override
 	public ConflictCause add(int id, NoGood noGood, int lbd) {
 		LOGGER.trace("Adding {}", noGood);
-		counter.add(noGood);
 
+		final ConflictCause conflictCause;
 		if (noGood.isUnary()) {
-			return addUnary(noGood);
+			conflictCause = addUnary(noGood);
 		} else if (noGood.isBinary()) {
-			return addAndWatchBinary(noGood);
+			conflictCause = addAndWatchBinary(noGood);
 		} else {
-			return addAndWatch(noGood, lbd);
+			conflictCause = addAndWatch(noGood, lbd);
 		}
+
+		if (conflictCause == null) {
+			counter.add(noGood);
+		}
+		return conflictCause;
 	}
 
 	public ConflictCause add(int id, NoGood noGood) {
@@ -413,12 +418,11 @@ public class NoGoodStoreAlphaRoaming implements NoGoodStore, BinaryNoGoodPropaga
 			return new ConflictCause(noGood.asAntecedent());
 		}
 
-		ConflictCause conflictCause = binaryWatches[a].add(noGood);
-		if (conflictCause != null) {
-			return conflictCause;
-		}
+		// The above violation check guarantees that adding (and propagation on other literal) results in no conflict.
+		binaryWatches[a].add(noGood);
+		binaryWatches[b].add(noGood);
 		hasBinaryNoGoods = true;
-		return binaryWatches[b].add(noGood);
+		return null;
 	}
 
 	private ConflictCause assignWeakComplement(final int literalIndex, final NoGoodInterface impliedBy, int decisionLevel) {

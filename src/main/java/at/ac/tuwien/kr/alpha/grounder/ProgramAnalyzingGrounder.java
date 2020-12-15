@@ -4,6 +4,7 @@ import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 
 import java.util.List;
 import java.util.Set;
@@ -29,11 +30,11 @@ public interface ProgramAnalyzingGrounder extends Grounder {
 	boolean isFact(Atom atom);
 
 	/**
-	 * Returns the NonGroundRule identified by the given id.
+	 * Returns the {@link InternalRule} identified by the given id.
 	 * @param ruleId the id of the rule.
-	 * @return the corresponding NonGroundRule.
+	 * @return the corresponding {@link InternalRule}.
 	 */
-	NonGroundRule getNonGroundRule(Integer ruleId);
+	InternalRule getNonGroundRule(Integer ruleId);
 
 	/**
 	 * Computes the completion of the given atom and grounds rules deriving it, if that is possible.

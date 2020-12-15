@@ -2,7 +2,8 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,17 +45,17 @@ public class CompletionGenerator {
 		}
 	}
 
-	private final ProgramAnalysis programAnalysis;
+	private final InternalProgram programAnalysis;
 	private final Map<Atom, PartialCompletion> partiallyCompletedCompletions = new HashMap<>();
 	private final CompletionConfiguration completionConfiguration;
 	private HashSet<Integer> newlyCompletedAtoms = new HashSet<>();
 
-	CompletionGenerator(ProgramAnalysis programAnalysis, CompletionConfiguration completionConfiguration) {
+	CompletionGenerator(InternalProgram programAnalysis, CompletionConfiguration completionConfiguration) {
 		this.programAnalysis = programAnalysis;
 		this.completionConfiguration = completionConfiguration;
 	}
 
-	List<NoGood> generateCompletionNoGoods(NonGroundRule nonGroundRule, Atom groundedHeadAtom, int headLiteral, int bodyRepresentingLiteral) {
+	List<NoGood> generateCompletionNoGoods(InternalRule nonGroundRule, Atom groundedHeadAtom, int headLiteral, int bodyRepresentingLiteral) {
 		if (!completionConfiguration.isCompletionEnabled()) {
 			return Collections.emptyList();
 		}
@@ -64,7 +65,7 @@ public class CompletionGenerator {
 
 		// Rule is fully non-projective at this point.
 
-		Set<NonGroundRule> rulesDerivingSameHead = programAnalysis.getRulesUnifyingWithGroundHead(groundedHeadAtom);
+		Set<InternalRule> rulesDerivingSameHead = programAnalysis.getRulesUnifyingWithGroundHead(groundedHeadAtom);
 		if (rulesDerivingSameHead.size() == 1) {
 			// Rule has unique-head predicate property.
 			newlyCompletedAtoms.add(atomOf(headLiteral));

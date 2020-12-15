@@ -31,16 +31,15 @@ import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.Rule;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.CompletionConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.grounder.NonGroundRule;
 import at.ac.tuwien.kr.alpha.grounder.ProgramAnalyzingGrounder;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
@@ -53,7 +52,6 @@ import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -409,14 +407,13 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				continue;
 			}
 			// For RuleAtoms in toJustify the corresponding ground body contains BasicAtoms that have been assigned FALSE in the closing.
-			// First, translate RuleAtom back to NonGroundRule + Substitution.
+			// First, translate RuleAtom back to InternalRule + Substitution.
 			String ruleId = (String) ((ConstantTerm<?>)atom.getTerms().get(0)).getObject();
-			NonGroundRule nonGroundRule = analyzingGrounder.getNonGroundRule(Integer.parseInt(ruleId));
+			InternalRule nonGroundRule = analyzingGrounder.getNonGroundRule(Integer.parseInt(ruleId));
 			String substitution = (String) ((ConstantTerm<?>)atom.getTerms().get(1)).getObject();
 			Substitution groundingSubstitution = Substitution.fromString(substitution);
-			Rule rule = nonGroundRule.getRule();
 			// Find ground literals in the body that have been assigned false and justify those.
-			for (Literal bodyLiteral : rule.getBody()) {
+			for (Literal bodyLiteral : nonGroundRule.getBody()) {
 				Atom groundAtom = bodyLiteral.getAtom().substitute(groundingSubstitution);
 				if (groundAtom instanceof ComparisonAtom || analyzingGrounder.isFact(groundAtom)) {
 					// Facts and ComparisonAtoms are always true, no justification needed.
@@ -542,20 +539,26 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				continue;
 			}
 
-			final NoGood learnedNoGood = fixContradiction(entry, conflictCause);
-			if (learnedNoGood != null) {
-				noGoodsToAdd.addFirst(new AbstractMap.SimpleEntry<>(grounder.register(learnedNoGood), learnedNoGood));
+			if (!fixContradiction(entry, conflictCause)) {
+				return false;
 			}
 		}
 		return true;
 	}
 
-	private NoGood fixContradiction(Map.Entry<Integer, NoGood> noGoodEntry, ConflictCause conflictCause) {
+	/**
+	 * Attempts to fix a given conflict that arose from adding a nogood.
+	 * @param noGoodEntry the description of the NoGood that caused the conflict.
+	 * @param conflictCause a description of the cause of the conflict.
+	 * @return true if the contradiction could be resolved (by backjumping) and the NoGood was added.
+	 * 	   False otherwise, i.e., iff the program is UNSAT.
+	 */
+	private boolean fixContradiction(Map.Entry<Integer, NoGood> noGoodEntry, ConflictCause conflictCause) {
 		LOGGER.debug("Attempting to fix violation of {} caused by {}", noGoodEntry.getValue(), conflictCause);
 
 		GroundConflictNoGoodLearner.ConflictAnalysisResult conflictAnalysisResult = learner.analyzeConflictFromAddingNoGood(conflictCause.getAntecedent());
 		if (conflictAnalysisResult == UNSAT) {
-			return NoGood.UNSAT;
+			return false;
 		}
 		branchingHeuristic.analyzedConflict(conflictAnalysisResult);
 		if (conflictAnalysisResult.learnedNoGood != null) {
@@ -567,11 +570,8 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		// If NoGood was learned, add it to the store.
 		// Note that the learned NoGood may cause further conflicts, since propagation on lower decision levels is lazy,
 		// hence backtracking once might not be enough to remove the real conflict cause.
-		if (!addAndBackjumpIfNecessary(noGoodEntry.getKey(), noGoodEntry.getValue(), LBD_NO_VALUE)) {
-			return NoGood.UNSAT;
-		}
+		return addAndBackjumpIfNecessary(noGoodEntry.getKey(), noGoodEntry.getValue(), LBD_NO_VALUE);
 
-		return conflictAnalysisResult.learnedNoGood;
 	}
 
 	private boolean choose() {

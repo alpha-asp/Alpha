@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2019, the Alpha Team.
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -29,25 +29,25 @@ package at.ac.tuwien.kr.alpha.grounder;
 
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.Program;
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 
 public final class GrounderFactory {
-	public static Grounder getInstance(String name, Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, GrounderHeuristicsConfiguration heuristicsConfiguration, CompletionConfiguration completionConfiguration, boolean useCountingGridNormalization, boolean debugInternalChecks, Bridge... bridges) {
+	public static Grounder getInstance(String name, InternalProgram program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, GrounderHeuristicsConfiguration heuristicsConfiguration, CompletionConfiguration completionConfiguration, boolean debugInternalChecks, Bridge... bridges) {
 		switch (name.toLowerCase()) {
 			case "naive":
-				return new NaiveGrounder(program, atomStore, filter, heuristicsConfiguration, useCountingGridNormalization, debugInternalChecks, completionConfiguration, bridges);
+				return new NaiveGrounder(program, atomStore, filter, heuristicsConfiguration, debugInternalChecks, completionConfiguration, bridges);
 		}
 		throw new IllegalArgumentException("Unknown grounder requested.");
 	}
 
-	public static Grounder getInstance(String name, Program program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, GrounderHeuristicsConfiguration heuristicsConfiguration, CompletionConfiguration completionConfiguration, boolean debugInternalChecks) {
-		return getInstance(name, program, atomStore, filter, heuristicsConfiguration, completionConfiguration, false, debugInternalChecks);
+	public static Grounder getInstance(String name, InternalProgram program, AtomStore atomStore, java.util.function.Predicate<Predicate> filter, GrounderHeuristicsConfiguration heuristicsConfiguration, CompletionConfiguration completionConfiguration, boolean debugInternalChecks) {
+		return getInstance(name, program, atomStore, filter, heuristicsConfiguration, completionConfiguration, debugInternalChecks, new Bridge[] {});
 	}
 
-	public static Grounder getInstance(String name, Program program, AtomStore atomStore, boolean debugInternalChecks) {
-		return getInstance(name, program, atomStore, InputConfig.DEFAULT_FILTER, new GrounderHeuristicsConfiguration(), new CompletionConfiguration(), false, debugInternalChecks);
+	public static Grounder getInstance(String name, InternalProgram program, AtomStore atomStore, boolean debugInternalChecks) {
+		return getInstance(name, program, atomStore, InputConfig.DEFAULT_FILTER, new GrounderHeuristicsConfiguration(), new CompletionConfiguration(), debugInternalChecks);
 	}
 }

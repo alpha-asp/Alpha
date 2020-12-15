@@ -100,3 +100,5 @@ gradle-app.setting
 /junit.log
 .idea/modules/*.iml
 *.tokens
+/.dbeaver
+/Scripts

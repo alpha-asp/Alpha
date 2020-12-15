@@ -6,6 +6,9 @@
         </encoder>
     </appender>
     
+    <logger name="at.ac.tuwien.kr.alpha.grounder.NaiveGrounder" level="INFO"/>
+    <logger name="at.ac.tuwien.kr.alpha.solver" level="INFO"/>
+    
     <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>

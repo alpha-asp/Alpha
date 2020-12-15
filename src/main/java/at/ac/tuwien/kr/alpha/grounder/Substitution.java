@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -27,29 +27,31 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
-import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.parser.ParseTreeVisitor;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
+import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
 public class Substitution {
-	private static final ParseTreeVisitor VISITOR = new ParseTreeVisitor(Collections.emptyMap(), false);
+
+	private static final ProgramPartParser PROGRAM_PART_PARSER = new ProgramPartParser();
+	public static final Substitution EMPTY_SUBSTITUTION = new Substitution() {
+		@Override
+		public <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term groundTerm) {
+			throw oops("Should not be called on EMPTY_SUBSTITUTION");
+		}
+	};
 
 	protected TreeMap<VariableTerm, Term> substitution;
 
@@ -67,81 +69,98 @@ public class Substitution {
 	public Substitution(Substitution clone) {
 		this(new TreeMap<>(clone.substitution));
 	}
-	
-	static Substitution unify(Literal literal, Instance instance, Substitution substitution) {
-		return unify(literal.getAtom(), instance, substitution);
+
+	public static Substitution specializeSubstitution(Literal literal, Instance instance, Substitution substitution) {
+		return specializeSubstitution(literal.getAtom(), instance, substitution);
 	}
 
 	/**
-	 * Computes the unifier of the atom and the instance and stores it in the variable substitution.
-	 * @param atom the body atom to unify
-	 * @param instance the ground instance
-	 * @param substitution if the atom does not unify, this is left unchanged.
-	 * @return true if the atom and the instance unify. False otherwise
+	 * Helper class to lazily clone the input substitution of Substitution.specializeSubstitution only when needed.
 	 */
-	public static Substitution unify(Atom atom, Instance instance, Substitution substitution) {
-		for (int i = 0; i < instance.terms.size(); i++) {
-			if (instance.terms.get(i) == atom.getTerms().get(i) ||
-				substitution.unifyTerms(atom.getTerms().get(i), instance.terms.get(i))) {
-				continue;
-			}
-			return null;
-		}
-		return substitution;
-	}
+	private static class SpecializationHelper {
+		Substitution updatedSubstitution;	// Is null for as long as the given partial substitution is not extended, afterwards holds the updated/extended/specialized substitution.
 
-	/**
-	 * Checks if the left possible non-ground term unifies with the ground term.
-	 * @param termNonGround
-	 * @param termGround
-	 * @return
-	 */
-	public boolean unifyTerms(Term termNonGround, Term termGround) {
-		if (termNonGround == termGround) {
-			// Both terms are either the same constant or the same variable term
-			return true;
-		} else if (termNonGround instanceof ConstantTerm) {
-			// Since right term is ground, both terms differ
-			return false;
-		} else if (termNonGround instanceof VariableTerm) {
-			VariableTerm variableTerm = (VariableTerm)termNonGround;
-			// Left term is variable, bind it to the right term.
-			Term bound = eval(variableTerm);
-
-			if (bound != null) {
-				// Variable is already bound, return true if binding is the same as the current ground term.
-				return termGround == bound;
-			}
-
-			substitution.put(variableTerm, termGround);
-			return true;
-		} else if (termNonGround instanceof FunctionTerm && termGround instanceof FunctionTerm) {
-			// Both terms are function terms
-			FunctionTerm ftNonGround = (FunctionTerm) termNonGround;
-			FunctionTerm ftGround = (FunctionTerm) termGround;
-
-			if (!(ftNonGround.getSymbol().equals(ftGround.getSymbol()))) {
-				return false;
-			}
-			if (ftNonGround.getTerms().size() != ftGround.getTerms().size()) {
-				return false;
-			}
-
-			// Iterate over all subterms of both function terms
-			for (int i = 0; i < ftNonGround.getTerms().size(); i++) {
-				if (!unifyTerms(ftNonGround.getTerms().get(i), ftGround.getTerms().get(i))) {
-					return false;
+		Substitution unify(List<Term> termList, Instance instance, Substitution partialSubstitution) {
+			for (int i = 0; i < termList.size(); i++) {
+				if (!unifyTerms(termList.get(i), instance.terms.get(i), partialSubstitution)) {
+					return null;
 				}
 			}
-
-			return true;
+			if (updatedSubstitution == null) {
+				// All terms unify but there was no need to assign a new variable, return the input substitution.
+				return partialSubstitution;
+			}
+			return updatedSubstitution;
 		}
-		return false;
+
+		boolean unifyTerms(Term termNonGround, Term termGround, Substitution partialSubstitution) {
+			if (termNonGround == termGround) {
+				// Both terms are either the same constant or the same variable term
+				return true;
+			} else if (termNonGround instanceof ConstantTerm) {
+				// Since right term is ground, both terms differ
+				return false;
+			} else if (termNonGround instanceof VariableTerm) {
+				VariableTerm variableTerm = (VariableTerm) termNonGround;
+				// Left term is variable, bind it to the right term. Use original substitution if it has
+				// not been cloned yet.
+				Term bound = (updatedSubstitution == null ? partialSubstitution : updatedSubstitution).eval(variableTerm); // Get variable binding, either from input substitution if it has not been updated yet, or from the cloned/updated substitution.
+				if (bound != null) {
+					// Variable is already bound, return true if binding is the same as the current ground term.
+					return termGround == bound;
+				}
+				// Record new variable binding.
+				if (updatedSubstitution == null) {
+					// Clone substitution if it was not yet updated.
+					updatedSubstitution = new Substitution(partialSubstitution);
+				}
+				updatedSubstitution.put(variableTerm, termGround);
+				return true;
+			} else if (termNonGround instanceof FunctionTerm && termGround instanceof FunctionTerm) {
+				// Both terms are function terms
+				FunctionTerm ftNonGround = (FunctionTerm) termNonGround;
+				FunctionTerm ftGround = (FunctionTerm) termGround;
+
+				if (!(ftNonGround.getSymbol().equals(ftGround.getSymbol()))) {
+					return false;
+				}
+				if (ftNonGround.getTerms().size() != ftGround.getTerms().size()) {
+					return false;
+				}
+
+				// Iterate over all subterms of both function terms
+				for (int i = 0; i < ftNonGround.getTerms().size(); i++) {
+					if (!unifyTerms(ftNonGround.getTerms().get(i), ftGround.getTerms().get(i), partialSubstitution)) {
+						return false;
+					}
+				}
+
+				return true;
+			}
+			return false;
+		}
 	}
 
 	/**
-	 * This method should be used to obtain the {@link Term} to be used in place of
-	 * a given {@link VariableTerm} under this substitution.
+	 * Specializes a given substitution such that applying the specialized substitution on the given atom yields the
+	 * given instance (if such a specialized substitution exists). Computes the unifier of the (nonground) atom and
+	 * the given ground instance such that the unifier is an extension of the given partial substitution. If
+	 * specialization succeeds the unifying substitution is returned, if no such unifier exists null is returned. In
+	 * any case the partial substitution is left unchanged.
+	 *
+	 * @param atom         the (potentially nonground) atom to unify.
+	 * @param instance     the ground instance to unify the atom with.
+	 * @param substitution the (partial) substitution for the atom. This is left unchanged in all cases.
+	 * @return null if the unification/specialization fails, otherwise it is a unifying substitution. If the
+	 * 	parameter substitution already is a unifier, it is returned. If the unifying substitution is an
+	 * 	extension of the input substitution, a new substitution will be returned.
+	 */
+	public static Substitution specializeSubstitution(Atom atom, Instance instance, Substitution substitution) {
+		return new SpecializationHelper().unify(atom.getTerms(), instance, substitution);
+	}
+
+	/**
+	 * This method should be used to obtain the {@link Term} to be used in place of a given {@link VariableTerm} under this substitution.
 	 *
 	 * @param variableTerm the variable term to substitute, if possible
 	 * @return a constant term if the substitution contains the given variable, {@code null} otherwise.
@@ -170,6 +189,10 @@ public class Substitution {
 		return substitution.get(variable) != null;
 	}
 
+	public Set<VariableTerm> getMappedVariables() {
+		return substitution.keySet();
+	}
+
 	/**
 	 * Prints the variable substitution in a uniform way (sorted by variable names).
 	 *
@@ -193,27 +216,15 @@ public class Substitution {
 
 	public static Substitution fromString(String substitution) {
 		String bare = substitution.substring(1, substitution.length() - 1);
-		String assignments[] = bare.split(",");
+		String[] assignments = bare.split(",");
 		Substitution ret = new Substitution();
 		for (String assignment : assignments) {
-			String keyVal[] = assignment.split("->");
+			String[] keyVal = assignment.split("->");
 			VariableTerm variable = VariableTerm.getInstance(keyVal[0]);
-			Term assignedTerm = parseTerm(keyVal[1]);
+			Term assignedTerm = PROGRAM_PART_PARSER.parseTerm(keyVal[1]);
 			ret.put(variable, assignedTerm);
 		}
 		return ret;
-	}
-
-	private static Term parseTerm(String s) {
-		try {
-			final ASPCore2Parser parser = new ASPCore2Parser(new CommonTokenStream(new ASPCore2Lexer(CharStreams.fromString(s))));
-			return (Term)VISITOR.visit(parser.term());
-		} catch (RecognitionException | ParseCancellationException e) {
-			// If there were issues parsing the given string, we
-			// throw something that suggests that the input string
-			// is malformed.
-			throw new IllegalArgumentException("Could not parse term.", e);
-		}
 	}
 
 	@Override

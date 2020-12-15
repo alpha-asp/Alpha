@@ -34,10 +34,12 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
-import at.ac.tuwien.kr.alpha.grounder.structure.ProgramAnalysis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,10 +66,10 @@ public class NoGoodGenerator {
 	private final AtomStore atomStore;
 	private final ChoiceRecorder choiceRecorder;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
-	private final ProgramAnalysis programAnalysis;
+	private final InternalProgram programAnalysis;
 	private final CompletionGenerator completionGenerator;
 
-	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, ProgramAnalysis programAnalysis, CompletionConfiguration completionConfiguration) {
+	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, InternalProgram programAnalysis, CompletionConfiguration completionConfiguration) {
 		this.atomStore = atomStore;
 		this.choiceRecorder = recorder;
 		this.factsFromProgram = factsFromProgram;
@@ -93,7 +95,7 @@ public class NoGoodGenerator {
 	 *                                         false (depending on the value of ignoreIfUnsatisfiable.
 	 * @return a list of the NoGoods corresponding to the ground rule.
 	 */
-	List<NoGood> generateNoGoodsFromGroundSubstitution(final NonGroundRule nonGroundRule, final Substitution substitution, boolean ignoreIfUnsatisfiable, boolean checkFixedInterpretationLiterals) {
+	List<NoGood> generateNoGoodsFromGroundSubstitution(final InternalRule nonGroundRule, final Substitution substitution, boolean ignoreIfUnsatisfiable, boolean checkFixedInterpretationLiterals) {
 		final List<Integer> posLiterals = collectPosLiterals(nonGroundRule, substitution, checkFixedInterpretationLiterals);
 		final List<Integer> negLiterals = collectNegLiterals(nonGroundRule, substitution, checkFixedInterpretationLiterals);
 
@@ -166,19 +168,20 @@ public class NoGoodGenerator {
 		return result;
 	}
 
-	List<Integer> collectNegLiterals(final NonGroundRule nonGroundRule, final Substitution substitution, boolean checkFixedInterpretationLiterals) {
+	List<Integer> collectNegLiterals(final InternalRule nonGroundRule, final Substitution substitution, boolean checkFixedInterpretationLiterals) {
 		final List<Integer> bodyLiteralsNegative = new ArrayList<>();
-		for (Atom atom : nonGroundRule.getBodyAtomsNegative()) {
+		for (Literal lit : nonGroundRule.getNegativeBody()) {
+			Atom atom = lit.getAtom();
 			// TODO: if checkFixedInterpretationLiterals is true, the atom must be checked if it comes from a FixedInterpretationLiteral.
 			// TODO: current types do not allow this check! Workaround enumerates all known Atom types inside a FixedInterpretationLiteral.
 			if (atom instanceof ComparisonAtom || atom instanceof ExternalAtom || atom instanceof IntervalAtom) {
-				final List<Substitution> substitutions = ((FixedInterpretationLiteral)atom.toLiteral(false)).getSubstitutions(substitution);
+				final List<Substitution> substitutions = ((FixedInterpretationLiteral)lit).getSatisfyingSubstitutions(substitution);
 				if (substitutions.isEmpty()) {
 					return null;
 				}
 			}
 
-			Atom groundAtom = atom.substitute(substitution);
+			Atom groundAtom = lit.getAtom().substitute(substitution);
 			
 			final Set<Instance> factInstances = factsFromProgram.get(groundAtom.getPredicate());
 
@@ -197,18 +200,17 @@ public class NoGoodGenerator {
 		return bodyLiteralsNegative;
 	}
 
-	private List<Integer> collectPosLiterals(final NonGroundRule nonGroundRule, final Substitution substitution, boolean checkFixedInterpretationLiterals) {
+	private List<Integer> collectPosLiterals(final InternalRule nonGroundRule, final Substitution substitution, boolean checkFixedInterpretationLiterals) {
 		final List<Integer> bodyLiteralsPositive = new ArrayList<>();
-		for (Atom atom : nonGroundRule.getBodyAtomsPositive()) {
-			if (atom.toLiteral() instanceof FixedInterpretationLiteral) {
-				// TODO: conversion of atom to literal is ugly. NonGroundRule could manage atoms instead of literals, cf. FIXME there
+		for (Literal lit  : nonGroundRule.getPositiveBody()) {
+			if (lit instanceof FixedInterpretationLiteral) {
 				if (!checkFixedInterpretationLiterals) {
 					// Atom has fixed interpretation, hence was checked earlier that it
 					// evaluates to true under the given substitution.
 					// FixedInterpretationAtoms need not be shown to the solver, skip it.
 					continue;
 				}
-				final List<Substitution> substitutions = ((FixedInterpretationLiteral)atom.toLiteral()).getSubstitutions(substitution);
+				final List<Substitution> substitutions = ((FixedInterpretationLiteral)lit).getSatisfyingSubstitutions(substitution);
 				if (substitutions.isEmpty()) {
 					// This FixedInterpretationLiteral is not satisfied by the ground substitution we have, the rule cannot fire.
 					return null;
@@ -216,6 +218,7 @@ public class NoGoodGenerator {
 				// FixedInterpretationLiteral has substitutions, i.e., it is satisfied by the ground substitution, continue with next atom.
 				continue;
 			}
+			final Atom atom = lit.getAtom();
 			// Skip the special enumeration atom.
 			if (atom instanceof EnumerationAtom) {
 				continue;
@@ -242,7 +245,7 @@ public class NoGoodGenerator {
 	}
 
 	private boolean existsRuleWithPredicateInHead(final Predicate predicate) {
-		final HashSet<NonGroundRule> definingRules = programAnalysis.getPredicateDefiningRules().get(predicate);
+		final HashSet<InternalRule> definingRules = programAnalysis.getPredicateDefiningRules().get(predicate);
 		return definingRules != null && !definingRules.isEmpty();
 	}
 

@@ -17,7 +17,7 @@
     <logger name="at.ac.tuwien.kr.alpha.grounder.NaiveGrounder" level="INFO"/>
     <logger name="at.ac.tuwien.kr.alpha.solver" level="INFO"/>
     
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="FILE" />
         <appender-ref ref="STDOUT" />
     </root>
