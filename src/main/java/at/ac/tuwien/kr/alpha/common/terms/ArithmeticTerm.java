@@ -66,6 +66,18 @@ public class ArithmeticTerm extends Term {
 		return left.isGround() && right.isGround();
 	}
 
+	public Term getLeft() {
+		return left;
+	}
+
+	public Term getRight() {
+		return right;
+	}
+
+	public ArithmeticOperator getArithmeticOperator() {
+		return arithmeticOperator;
+	}
+
 	@Override
 	public List<VariableTerm> getOccurringVariables() {
 		LinkedHashSet<VariableTerm> occurringVariables = new LinkedHashSet<>(left.getOccurringVariables());
@@ -191,6 +203,20 @@ public class ArithmeticTerm extends Term {
 					throw new RuntimeException("Unknown arithmetic operator encountered.");
 
 			}
+		}
+
+		public ArithmeticOperator inverseOperator() {
+			switch (this) {
+				case PLUS:
+					return MINUS;
+				case MINUS:
+					return PLUS;
+				case TIMES:
+					return DIV;
+				case DIV:
+					return TIMES;
+			}
+			return null;
 		}
 	}
 

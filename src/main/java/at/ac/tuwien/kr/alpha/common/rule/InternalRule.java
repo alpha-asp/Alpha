@@ -27,11 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.common.rule;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
@@ -41,6 +36,14 @@ import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.grounder.RuleGroundingOrders;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
+import at.ac.tuwien.kr.alpha.grounder.structure.DirectFunctionalDependency;
+import com.google.common.annotations.VisibleForTesting;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
+import static at.ac.tuwien.kr.alpha.grounder.structure.DirectFunctionalDependency.computeDirectFunctionalDependencies;
 
 /**
  * Represents a normal rule or a constraint for the semi-naive grounder.
@@ -55,6 +58,8 @@ public class InternalRule extends NormalRule {
 	private final List<Predicate> occurringPredicates;
 
 	private final RuleGroundingOrders groundingOrders;
+	private final boolean isNonProjective;
+	private final DirectFunctionalDependency functionalDependency;
 
 	public InternalRule(NormalHead head, List<Literal> body) {
 		super(head, body);
@@ -76,12 +81,28 @@ public class InternalRule extends NormalRule {
 			this.occurringPredicates.add(literal.getPredicate());
 		}
 
+		this.isNonProjective = getHeadAtom() != null && checkIsNonProjective();
+		this.functionalDependency = getHeadAtom() == null ? null : computeDirectFunctionalDependencies(this);
+
 		// not needed, done in AbstractRule! Leaving it commented out for future reference since this might actually be the
 		// proper place to put it
 		// this.checkSafety();
 
 		this.groundingOrders = new RuleGroundingOrders(this);
 		this.groundingOrders.computeGroundingOrders();
+	}
+
+	private boolean checkIsNonProjective() {
+		// Collect head and body variables.
+		HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(getHeadAtom().getOccurringVariables());
+		HashSet<VariableTerm> occurringVariablesBody = new HashSet<>();
+		for (Literal literal : getBody()) {
+			occurringVariablesBody.addAll(literal.getBindingVariables());
+		}
+		// Check that all variables of the body also occur in the head (otherwise grounding is not unique).
+		occurringVariablesBody.removeAll(occurringVariablesHead);
+		// Check if ever body variables occurs in the head.
+		return occurringVariablesBody.isEmpty();
 	}
 
 	@VisibleForTesting
@@ -134,6 +155,18 @@ public class InternalRule extends NormalRule {
 
 	public int getRuleId() {
 		return this.ruleId;
+	}
+
+	public boolean isNonProjective() {
+		return isNonProjective;
+	}
+
+	public boolean isFunctionallyDependent() {
+		return functionalDependency != null;
+	}
+
+	public DirectFunctionalDependency getFunctionalDependency() {
+		return functionalDependency;
 	}
 
 }

@@ -27,11 +27,21 @@
  */
 package at.ac.tuwien.kr.alpha.grounder;
 
-import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
+import at.ac.tuwien.kr.alpha.common.AtomStore;
+import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.atoms.Atom;
+import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.ExternalAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
+import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
+import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,34 +50,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.NoGood;
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
-import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
-import at.ac.tuwien.kr.alpha.grounder.atoms.EnumerationAtom;
-import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
+import static at.ac.tuwien.kr.alpha.common.Literals.negateLiteral;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 
 /**
  * Class to generate ground NoGoods out of non-ground rules and grounding substitutions.
  * Copyright (c) 2017-2018, the Alpha Team.
  */
 public class NoGoodGenerator {
+	private static final Logger LOGGER = LoggerFactory.getLogger(NoGoodGenerator.class);
+
 	private final AtomStore atomStore;
 	private final ChoiceRecorder choiceRecorder;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private final InternalProgram programAnalysis;
-	private final Set<InternalRule> uniqueGroundRulePerGroundHead;
+	private final CompletionGenerator completionGenerator;
 
-	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, InternalProgram programAnalysis, Set<InternalRule> uniqueGroundRulePerGroundHead) {
+	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, InternalProgram programAnalysis, CompletionConfiguration completionConfiguration) {
 		this.atomStore = atomStore;
 		this.choiceRecorder = recorder;
 		this.factsFromProgram = factsFromProgram;
 		this.programAnalysis = programAnalysis;
-		this.uniqueGroundRulePerGroundHead = uniqueGroundRulePerGroundHead;
+		completionGenerator = new CompletionGenerator(programAnalysis, completionConfiguration);
 	}
 
 	/**
@@ -78,14 +85,27 @@ public class NoGoodGenerator {
 	 * @param substitution
 	 *          the grounding substitution, i.e., applying substitution to nonGroundRule results in a ground rule.
 	 *          Assumption: atoms with fixed interpretation evaluate to true under the substitution.
+	 * @param ignoreIfUnsatisfiable return no NoGoods if the nonGroundRule can never fire; in case this is false and
+	 *                              nonGroundRule has a head, NoGoods are generated such that:
+	 *                              a) the body representing atom implies the head atom, and
+	 *                              b) the body representing atom must be false.
+	 * @param checkFixedInterpretationLiterals if true, {@link FixedInterpretationLiteral}s occurring in the rule
+	 *                                         body are again evaluated and if one such literal evaluates to false,
+	 *                                         the rule is either ignored or the body representing atom is fixed to
+	 *                                         false (depending on the value of ignoreIfUnsatisfiable.
 	 * @return a list of the NoGoods corresponding to the ground rule.
 	 */
-	List<NoGood> generateNoGoodsFromGroundSubstitution(final InternalRule nonGroundRule, final Substitution substitution) {
-		final List<Integer> posLiterals = collectPosLiterals(nonGroundRule, substitution);
-		final List<Integer> negLiterals = collectNegLiterals(nonGroundRule, substitution);
+	List<NoGood> generateNoGoodsFromGroundSubstitution(final InternalRule nonGroundRule, final Substitution substitution, boolean ignoreIfUnsatisfiable, boolean checkFixedInterpretationLiterals) {
+		final List<Integer> posLiterals = collectPosLiterals(nonGroundRule, substitution, checkFixedInterpretationLiterals);
+		final List<Integer> negLiterals = collectNegLiterals(nonGroundRule, substitution, checkFixedInterpretationLiterals);
 
+		boolean ruleCannotFire = false;
 		if (posLiterals == null || negLiterals == null) {
-			return emptyList();
+			if (ignoreIfUnsatisfiable || nonGroundRule.isConstraint()) {
+				return emptyList();
+			}
+			// The nonGroundRule has a head and cannot fire.
+			ruleCannotFire = true;
 		}
 
 		// A constraint is represented by exactly one nogood.
@@ -117,30 +137,50 @@ public class NoGoodGenerator {
 		// Create a nogood for the head.
 		result.add(NoGood.headFirst(negateLiteral(headLiteral), bodyRepresentingLiteral));
 
-		final NoGood ruleBody = NoGood.fromBody(posLiterals, negLiterals, bodyRepresentingLiteral);
-		result.add(ruleBody);
+		if (ruleCannotFire) {
+			// If the rule cannot fire, its body representing literal is always false, add unary NoGood expressing this.
+			result.add(new NoGood(bodyRepresentingLiteral));
+		} else {
+			// Rule can in principle fire, establish iff between body literals and bodyRepresentingLiteral.
+			final NoGood ruleBody = NoGood.fromBody(posLiterals, negLiterals, bodyRepresentingLiteral);
+			result.add(ruleBody);
 
-		// Nogoods such that the atom representing the body is true iff the body is true.
-		for (int j = 1; j < ruleBody.size(); j++) {
-			result.add(new NoGood(bodyRepresentingLiteral, negateLiteral(ruleBody.getLiteral(j))));
+			// Nogoods such that the atom representing the body is true iff the body is true.
+			for (int j = 1; j < ruleBody.size(); j++) {
+				result.add(new NoGood(bodyRepresentingLiteral, negateLiteral(ruleBody.getLiteral(j))));
+			}
 		}
 
-		// If the rule head is unique, add support.
-		if (uniqueGroundRulePerGroundHead.contains(nonGroundRule)) {
-			result.add(NoGood.support(headLiteral, bodyRepresentingLiteral));
+		// Generate and add completion NoGoods if possible.
+		List<NoGood> completionNogoods = completionGenerator.generateCompletionNoGoods(nonGroundRule, groundHeadAtom, headLiteral, bodyRepresentingLiteral);
+		if (LOGGER.isTraceEnabled()) {
+			for (NoGood completionNogood : completionNogoods) {
+				LOGGER.trace(atomStore.noGoodToString(completionNogood));
+			}
 		}
+		result.addAll(completionNogoods);
 
 		// If the body of the rule contains negation, add choices.
-		if (!negLiterals.isEmpty()) {
+		if (!ruleCannotFire && !negLiterals.isEmpty()) {
 			result.addAll(choiceRecorder.generateChoiceNoGoods(posLiterals, negLiterals, bodyRepresentingLiteral));
 		}
 
 		return result;
 	}
 
-	List<Integer> collectNegLiterals(final InternalRule nonGroundRule, final Substitution substitution) {
+	List<Integer> collectNegLiterals(final InternalRule nonGroundRule, final Substitution substitution, boolean checkFixedInterpretationLiterals) {
 		final List<Integer> bodyLiteralsNegative = new ArrayList<>();
 		for (Literal lit : nonGroundRule.getNegativeBody()) {
+			Atom atom = lit.getAtom();
+			// TODO: if checkFixedInterpretationLiterals is true, the atom must be checked if it comes from a FixedInterpretationLiteral.
+			// TODO: current types do not allow this check! Workaround enumerates all known Atom types inside a FixedInterpretationLiteral.
+			if (atom instanceof ComparisonAtom || atom instanceof ExternalAtom || atom instanceof IntervalAtom) {
+				final List<Substitution> substitutions = ((FixedInterpretationLiteral)lit).getSatisfyingSubstitutions(substitution);
+				if (substitutions.isEmpty()) {
+					return null;
+				}
+			}
+
 			Atom groundAtom = lit.getAtom().substitute(substitution);
 			
 			final Set<Instance> factInstances = factsFromProgram.get(groundAtom.getPredicate());
@@ -160,14 +200,22 @@ public class NoGoodGenerator {
 		return bodyLiteralsNegative;
 	}
 
-	private List<Integer> collectPosLiterals(final InternalRule nonGroundRule, final Substitution substitution) {
+	private List<Integer> collectPosLiterals(final InternalRule nonGroundRule, final Substitution substitution, boolean checkFixedInterpretationLiterals) {
 		final List<Integer> bodyLiteralsPositive = new ArrayList<>();
 		for (Literal lit  : nonGroundRule.getPositiveBody()) {
 			if (lit instanceof FixedInterpretationLiteral) {
-				// TODO: conversion of atom to literal is ugly. NonGroundRule could manage atoms instead of literals, cf. FIXME there
-				// Atom has fixed interpretation, hence was checked earlier that it
-				// evaluates to true under the given substitution.
-				// FixedInterpretationAtoms need not be shown to the solver, skip it.
+				if (!checkFixedInterpretationLiterals) {
+					// Atom has fixed interpretation, hence was checked earlier that it
+					// evaluates to true under the given substitution.
+					// FixedInterpretationAtoms need not be shown to the solver, skip it.
+					continue;
+				}
+				final List<Substitution> substitutions = ((FixedInterpretationLiteral)lit).getSatisfyingSubstitutions(substitution);
+				if (substitutions.isEmpty()) {
+					// This FixedInterpretationLiteral is not satisfied by the ground substitution we have, the rule cannot fire.
+					return null;
+				}
+				// FixedInterpretationLiteral has substitutions, i.e., it is satisfied by the ground substitution, continue with next atom.
 				continue;
 			}
 			final Atom atom = lit.getAtom();
@@ -199,5 +247,9 @@ public class NoGoodGenerator {
 	private boolean existsRuleWithPredicateInHead(final Predicate predicate) {
 		final HashSet<InternalRule> definingRules = programAnalysis.getPredicateDefiningRules().get(predicate);
 		return definingRules != null && !definingRules.isEmpty();
+	}
+
+	CompletionGenerator getCompletionGenerator() {
+		return completionGenerator;
 	}
 }

@@ -208,7 +208,6 @@ public abstract class AbstractSolverTests {
 		config.setSeed(seed);
 		config.setBranchingHeuristic(heuristic);
 		config.setDebugInternalChecks(checks);
-		config.setDisableJustificationSearch(false);
 		return config;
 	}
 

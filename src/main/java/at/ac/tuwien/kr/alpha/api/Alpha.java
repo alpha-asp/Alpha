@@ -182,7 +182,7 @@ public class Alpha {
 
 	/**
 	 * Solves the given program and filters answer sets based on the passed predicate.
-	 * 
+	 *
 	 * @param program an {@link InternalProgram} to solve
 	 * @param filter       {@link Predicate} filtering {@at.ac.tuwien.kr.alpha.common.Predicate}s in the returned answer sets
 	 * @return a Stream of answer sets representing stable models of the given program
@@ -195,7 +195,7 @@ public class Alpha {
 	/**
 	 * Prepares a solver (and accompanying grounder) instance pre-loaded with the given program. Use this if the
 	 * solver is needed after reading answer sets (e.g. for obtaining statistics).
-	 * 
+	 *
 	 * @param program the program to solve.
 	 * @param filter  a (java util) predicate that filters (asp-)predicates which should be contained in the answer
 	 *                set stream from the solver.
@@ -210,7 +210,7 @@ public class Alpha {
 		grounderHeuristicConfiguration.setAccumulatorEnabled(config.isGrounderAccumulatorEnabled());
 
 		AtomStore atomStore = new AtomStoreImpl();
-		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, grounderHeuristicConfiguration, doDebugChecks);
+		Grounder grounder = GrounderFactory.getInstance(grounderName, program, atomStore, filter, grounderHeuristicConfiguration, this.config.getCompletionConfiguration(), doDebugChecks);
 
 		return SolverFactory.getInstance(config, atomStore, grounder);
 	}

@@ -56,14 +56,15 @@ public class NoGoodGeneratorTest {
 	private static final VariableTerm Y = VariableTerm.getInstance("Y");
 
 	/**
-	 * Calls {@link NoGoodGenerator#collectNegLiterals(InternalRule, Substitution)}, which puts the atom occurring
-	 * negatively in a rule into the atom store. It is then checked whether the atom in the atom store is positive.
+	 * Calls {@link NoGoodGenerator#collectNegLiterals(InternalRule, Substitution, boolean)},
+	 * which puts the atom occurring negatively in a rule into the atom store.
+	 * It is then checked whether the atom in the atom store is positive.
 	 */
 	@Test
 	public void collectNeg_ContainsOnlyPositiveLiterals() {
 		Alpha system = new Alpha();
-		InputProgram input = PARSER.parse("p(a,b). " 
-				+ "q(a,b) :- not nq(a,b). " 
+		InputProgram input = PARSER.parse("p(a,b). "
+				+ "q(a,b) :- not nq(a,b). "
 				+ "nq(a,b) :- not q(a,b).");
 		NormalProgram normal = system.normalizeProgram(input);
 		InternalProgram program = InternalProgram.fromNormalProgram(normal);
@@ -75,7 +76,7 @@ public class NoGoodGeneratorTest {
 		Substitution substitution = new Substitution();
 		substitution.put(X, A);
 		substitution.put(Y, B);
-		List<Integer> collectedNeg = noGoodGenerator.collectNegLiterals(rule, substitution);
+		List<Integer> collectedNeg = noGoodGenerator.collectNegLiterals(rule, substitution, false);
 		assertEquals(1, collectedNeg.size());
 		String negAtomString = atomStore.atomToString(atomOf(collectedNeg.get(0)));
 		assertEquals("q(a, b)", negAtomString);

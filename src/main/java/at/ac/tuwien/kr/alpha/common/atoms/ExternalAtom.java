@@ -27,16 +27,16 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import static at.ac.tuwien.kr.alpha.Util.join;
+import at.ac.tuwien.kr.alpha.common.Predicate;
+import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import static at.ac.tuwien.kr.alpha.Util.join;
 
 public class ExternalAtom extends Atom implements VariableNormalizableAtom {
 

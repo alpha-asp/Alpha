@@ -27,23 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
-import static java.util.Collections.singleton;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import org.antlr.v4.runtime.CharStreams;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
-
 import at.ac.tuwien.kr.alpha.AnswerSetsParser;
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
@@ -57,11 +40,28 @@ import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.ChoiceGrounder;
+import at.ac.tuwien.kr.alpha.grounder.CompletionConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.DummyGrounder;
 import at.ac.tuwien.kr.alpha.grounder.parser.InlineDirectives;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
 import at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristicFactory;
 import junit.framework.TestCase;
+import org.antlr.v4.runtime.CharStreams;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.SortedSet;
+
+import static java.util.Collections.singleton;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class SolverTests extends AbstractSolverTests {
 	private static class Thingy implements Comparable<Thingy> {
@@ -781,7 +781,7 @@ public class SolverTests extends AbstractSolverTests {
 		config.setSeed(0);
 		config.setBranchingHeuristic(BranchingHeuristicFactory.Heuristic.valueOf("VSIDS"));
 		config.setDebugInternalChecks(true);
-		config.setDisableJustificationSearch(false);
+		config.getCompletionConfiguration().setStrategy(CompletionConfiguration.Strategy.OnlyJustification);
 		config.setEvaluateStratifiedPart(false);
 		config.setReplayChoices(Arrays.asList(21, 26, 36, 56, 91, 96, 285, 166, 101, 290, 106, 451, 445, 439, 448,
 			433, 427, 442, 421, 415, 436, 409, 430, 397, 391, 424, 385, 379,
