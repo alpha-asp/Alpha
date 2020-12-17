@@ -90,15 +90,25 @@ public class DomainSpecificHeuristicsTest {
 						"#heuristic F b : not a. [1@1]");
 		solveAndAssertAnswerSets(program, "{ b }", "{ a }");
 	}
-	
+
 	@Test
-	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_SameLevel_EmptyCondition() {
+	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_SameLevel_EmptyCondition1() {
 		InputProgram program = parser.parse(
 				"a :- not b." + LS +
-				"b :- not a." + LS +
-				"#heuristic a. [2@1]" + LS +
-				"#heuristic b. [1@1]");
+						"b :- not a." + LS +
+						"#heuristic a. [2@1]" + LS +
+						"#heuristic b. [1@1]");
 		solveAndAssertAnswerSets(program, "{ a }", "{ b }");
+	}
+
+	@Test
+	public void testSimpleGroundHeuristicProgram_HeuristicDirective_AB_SameLevel_EmptyCondition2() {
+		InputProgram program = parser.parse(
+				"a :- not b." + LS +
+						"b :- not a." + LS +
+						"#heuristic a. [1@1]" + LS +
+						"#heuristic b. [2@1]");
+		solveAndAssertAnswerSets(program, "{ b }", "{ a }");
 	}
 	
 	@Test
