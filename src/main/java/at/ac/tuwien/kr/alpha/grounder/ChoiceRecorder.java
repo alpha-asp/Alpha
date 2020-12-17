@@ -34,6 +34,7 @@ import at.ac.tuwien.kr.alpha.common.NoGoodCreator;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveAtom;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
+import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.HeuristicInfluencerAtom;
 import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
@@ -133,14 +134,22 @@ public class ChoiceRecorder {
 		return noGoods;
 	}
 
-	public Collection<NoGood> generateHeuristicNoGoods(HeuristicAtom groundHeuristicAtom, final int bodyRepresentingAtom, final int headId, Set<Atom> collectedFacts) {
+	public Collection<NoGood> generateHeuristicNoGoods(HeuristicAtom groundHeuristicAtom, final RuleAtom bodyAtom, final int headId, InternalProgram program) {
 		// Obtain an ID for this new heuristic.
 		final int heuristicId = ID_GENERATOR.getNextId();
 		final Integer[][] influencers = new Integer[2][4]; // dim 1: [on,off], dim 2: [T,TM,M,F]
 
-		final List<NoGood> noGoods = generateHeuristicNoGoodsForPositiveCondition(groundHeuristicAtom, heuristicId, collectedFacts, influencers);
-		noGoods.addAll(generateHeuristicNoGoodsForNegativeCondition(groundHeuristicAtom, heuristicId, collectedFacts, influencers));
+		final List<NoGood> noGoods = generateHeuristicNoGoodsForPositiveCondition(groundHeuristicAtom, heuristicId, program, influencers);
+		if (noGoods == null) {
+			return null;  // heuristic can never be applicable
+		}
+		final List<NoGood> noGoodsForNegativeCondition = generateHeuristicNoGoodsForNegativeCondition(groundHeuristicAtom, heuristicId, program, influencers);
+		if (noGoodsForNegativeCondition == null) {
+			return null;  // heuristic can never be applicable
+		}
+		noGoods.addAll(noGoodsForNegativeCondition);
 
+		final int bodyRepresentingAtom = atomStore.putIfAbsent(bodyAtom);
 		newHeuristicAtoms.getLeft().put(bodyRepresentingAtom, influencers[IDX_ON]);
 		newHeuristicAtoms.getRight().put(bodyRepresentingAtom, influencers[IDX_OFF]);
 
@@ -151,15 +160,29 @@ public class ChoiceRecorder {
 		return noGoods;
 	}
 
-	private List<NoGood> generateHeuristicNoGoodsForPositiveCondition(HeuristicAtom groundHeuristicAtom, int heuristicId, Set<Atom> collectedFacts, Integer[][] influencers) {
+	private List<NoGood> generateHeuristicNoGoodsForPositiveCondition(HeuristicAtom groundHeuristicAtom, int heuristicId, InternalProgram program, Integer[][] influencers) {
 		final List<NoGood> noGoods = new ArrayList<>();
 		final Map<Integer, Set<Atom>> positiveAtomsBySignSet = new HashMap<>(NUM_SIGN_SETS);
 		for (HeuristicDirectiveAtom heuristicDirectiveAtom : groundHeuristicAtom.getOriginalPositiveCondition()) {
 			final Atom atom = heuristicDirectiveAtom.getAtom();
 			final Set<ThriceTruth> signSet = heuristicDirectiveAtom.getSigns();
 
-			if (collectedFacts.contains(atom)) {
-				continue; // TODO: special handling if "wrong" sign (s.t. heuristic can never fire)
+			if (program.getFactsByPredicate().isFact(atom)) {
+				if (signSet.contains(ThriceTruth.TRUE) || signSet.contains(ThriceTruth.MBT)) {
+					continue; // literal is always satisfied
+				}
+				if (signSet.contains(ThriceTruth.FALSE)) {
+					return null; // heuristic is never applicable
+				}
+			}
+
+			if (!program.existsRuleWithPredicateInHead(atom.getPredicate())) {
+				if (signSet.contains(ThriceTruth.TRUE) || signSet.contains(ThriceTruth.MBT)) {
+					return null; // heuristic is never applicable
+				}
+				if (signSet.contains(ThriceTruth.FALSE)) {
+					continue; // literal is always satisfied
+				}
 			}
 
 			final int idxSignSet = getIndex(signSet);
@@ -178,14 +201,28 @@ public class ChoiceRecorder {
 		return noGoods;
 	}
 
-	private List<NoGood> generateHeuristicNoGoodsForNegativeCondition(HeuristicAtom groundHeuristicAtom, int heuristicId, Set<Atom> collectedFacts, Integer[][] influencers) {
+	private List<NoGood> generateHeuristicNoGoodsForNegativeCondition(HeuristicAtom groundHeuristicAtom, int heuristicId, InternalProgram program, Integer[][] influencers) {
 		final List<NoGood> noGoods = new ArrayList<>();
 		for (HeuristicDirectiveAtom heuristicDirectiveAtom : groundHeuristicAtom.getOriginalNegativeCondition()) {
 			final Atom atom = heuristicDirectiveAtom.getAtom();
 			final Set<ThriceTruth> signSet = heuristicDirectiveAtom.getSigns();
 
-			if (collectedFacts.contains(atom)) {
-				continue; // TODO: special handling if "wrong" sign (s.t. heuristic can never fire)
+			if (program.getFactsByPredicate().isFact(atom)) {
+				if (signSet.contains(ThriceTruth.TRUE) || signSet.contains(ThriceTruth.MBT)) {
+					return null; // heuristic is never applicable
+				}
+				if (signSet.contains(ThriceTruth.FALSE)) {
+					continue; // literal is always satisfied
+				}
+			}
+
+			if (!program.existsRuleWithPredicateInHead(atom.getPredicate())) {
+				if (signSet.contains(ThriceTruth.TRUE) || signSet.contains(ThriceTruth.MBT)) {
+					continue; // literal is always satisfied
+				}
+				if (signSet.contains(ThriceTruth.FALSE)) {
+					return null; // heuristic is never applicable
+				}
 			}
 
 			final boolean inNegativeBody = true;

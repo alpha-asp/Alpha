@@ -30,7 +30,6 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.NoGoodCreator;
-import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
@@ -43,10 +42,7 @@ import at.ac.tuwien.kr.alpha.grounder.atoms.RuleAtom;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.common.Literals.atomToLiteral;
@@ -61,15 +57,13 @@ import static java.util.Collections.singletonList;
 public class NoGoodGenerator {
 	private final AtomStore atomStore;
 	private final ChoiceRecorder choiceRecorder;
-	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
-	private final InternalProgram programAnalysis;
+	private final InternalProgram program;
 	private final Set<InternalRule> uniqueGroundRulePerGroundHead;
 
-	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, InternalProgram programAnalysis, Set<InternalRule> uniqueGroundRulePerGroundHead) {
+	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, InternalProgram program, Set<InternalRule> uniqueGroundRulePerGroundHead) {
 		this.atomStore = atomStore;
 		this.choiceRecorder = recorder;
-		this.factsFromProgram = factsFromProgram;
-		this.programAnalysis = programAnalysis;
+		this.program = program;
 		this.uniqueGroundRulePerGroundHead = uniqueGroundRulePerGroundHead;
 	}
 
@@ -85,8 +79,7 @@ public class NoGoodGenerator {
 	 */
 	Collection<NoGood> generateNoGoodsFromGroundSubstitution(final InternalRule nonGroundRule, final Substitution substitution) {
 		final boolean isHeuristicRule = nonGroundRule.getHeadAtom() instanceof HeuristicAtom;
-		final Set<Atom> collectedFacts = isHeuristicRule ? new HashSet<>() : null;
-		final List<Integer> posLiterals = collectPosLiterals(nonGroundRule, substitution, collectedFacts);
+		final List<Integer> posLiterals = collectPosLiterals(nonGroundRule, substitution);
 		final List<Integer> negLiterals = collectNegLiterals(nonGroundRule, substitution);
 
 		if (posLiterals == null || negLiterals == null) {
@@ -110,20 +103,23 @@ public class NoGoodGenerator {
 			return emptyList();
 		}
 
-		final int bodyRepresentingAtom = atomStore.putIfAbsent(bodyAtom);
-
 		if (isHeuristicRule) {
-			return generateNoGoodsForHeuristicRule((HeuristicAtom) groundHeadAtom, bodyRepresentingAtom, collectedFacts);
+			return generateNoGoodsForHeuristicRule((HeuristicAtom) groundHeadAtom, bodyAtom);
 		} else {
-			return generateNoGoodsForNonConstraintNonHeuristicRule(nonGroundRule, posLiterals, negLiterals, groundHeadAtom, bodyRepresentingAtom);
+			return generateNoGoodsForNonConstraintNonHeuristicRule(nonGroundRule, posLiterals, negLiterals, groundHeadAtom, bodyAtom);
 		}
 	}
 
-	private Collection<NoGood> generateNoGoodsForHeuristicRule(HeuristicAtom groundHeadAtom, int bodyRepresentingAtom, Set<Atom> collectedFacts) {
+	private Collection<NoGood> generateNoGoodsForHeuristicRule(HeuristicAtom groundHeadAtom, RuleAtom bodyAtom) {
 		BasicAtom groundHeuristicHead = groundHeadAtom.getHeadAtom().toAtom();
 		final int heuristicHeadId = atomStore.putIfAbsent(groundHeuristicHead);
 
-		final List<NoGood> result = new ArrayList<>(choiceRecorder.generateHeuristicNoGoods(groundHeadAtom, bodyRepresentingAtom, heuristicHeadId, collectedFacts));
+		final Collection<NoGood> heuristicNoGoods = choiceRecorder.generateHeuristicNoGoods(groundHeadAtom, bodyAtom, heuristicHeadId, program);
+		if (heuristicNoGoods == null) {
+			return emptyList(); // heuristic can never be applicable
+		}
+		final List<NoGood> result = new ArrayList<>(heuristicNoGoods);
+		final int bodyRepresentingAtom = atomStore.get(bodyAtom);
 
 		// if the head of the heuristic directive is assigned, the body of the heuristic rule shall also be assigned s.t. it is not applicable anymore:
 		boolean heuristicSign = groundHeadAtom.getHeadSign().toBoolean();
@@ -133,11 +129,12 @@ public class NoGoodGenerator {
 		return result;
 	}
 
-	private Collection<NoGood> generateNoGoodsForNonConstraintNonHeuristicRule(InternalRule internalRule, List<Integer> posLiterals, List<Integer> negLiterals, Atom groundHeadAtom, int bodyRepresentingAtom) {
+	private Collection<NoGood> generateNoGoodsForNonConstraintNonHeuristicRule(InternalRule internalRule, List<Integer> posLiterals, List<Integer> negLiterals, Atom groundHeadAtom, RuleAtom bodyAtom) {
 		final List<NoGood> result = new ArrayList<>();
+		final int bodyRepresentingAtom = atomStore.putIfAbsent(bodyAtom);
+		final int bodyRepresentingLiteral = atomToLiteral(bodyRepresentingAtom);
 		final int headId = atomStore.putIfAbsent(groundHeadAtom);
 		final int headLiteral = atomToLiteral(headId);
-		final int bodyRepresentingLiteral = atomToLiteral(bodyRepresentingAtom);
 
 		choiceRecorder.addHeadToBody(headId, bodyRepresentingAtom);
 		// Create a nogood for the head.
@@ -167,15 +164,13 @@ public class NoGoodGenerator {
 		final List<Integer> bodyLiteralsNegative = new ArrayList<>();
 		for (Literal lit : nonGroundRule.getNegativeBody()) {
 			Atom groundAtom = lit.getAtom().substitute(substitution);
-			
-			final Set<Instance> factInstances = factsFromProgram.get(groundAtom.getPredicate());
 
-			if (factInstances != null && factInstances.contains(new Instance(groundAtom.getTerms()))) {
+			if (program.getFactsByPredicate().isFact(groundAtom)) {
 				// Negative atom that is always true encountered, skip whole rule as it will never fire.
 				return null;
 			}
 
-			if (!existsRuleWithPredicateInHead(groundAtom.getPredicate())) {
+			if (!program.existsRuleWithPredicateInHead(groundAtom.getPredicate())) {
 				// Negative atom is no fact and no rule defines it, it is always false, skip it.
 				continue;
 			}
@@ -185,7 +180,7 @@ public class NoGoodGenerator {
 		return bodyLiteralsNegative;
 	}
 
-	private List<Integer> collectPosLiterals(final InternalRule nonGroundRule, final Substitution substitution, final Collection<Atom> collectFacts) {
+	private List<Integer> collectPosLiterals(final InternalRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> bodyLiteralsPositive = new ArrayList<>();
 		for (Literal lit  : nonGroundRule.getPositiveBody()) {
 			if (lit instanceof FixedInterpretationLiteral) {
@@ -205,16 +200,12 @@ public class NoGoodGenerator {
 
 			// Consider facts to eliminate ground atoms from the generated nogoods that are always true
 			// and eliminate nogoods that are always satisfied due to facts.
-			Set<Instance> factInstances = factsFromProgram.get(groundAtom.getPredicate());
-			if (factInstances != null && factInstances.contains(new Instance(groundAtom.getTerms()))) {
-				if (collectFacts != null) {
-					collectFacts.add(groundAtom);
-				}
+			if (program.getFactsByPredicate().isFact(groundAtom)) {
 				// Skip positive atoms that are always true.
 				continue;
 			}
 
-			if (!existsRuleWithPredicateInHead(groundAtom.getPredicate())) {
+			if (!program.existsRuleWithPredicateInHead(groundAtom.getPredicate())) {
 				// Atom is no fact and no rule defines it, it cannot be derived (i.e., is always false), skip whole rule as it will never fire.
 				return null;
 			}
@@ -222,10 +213,5 @@ public class NoGoodGenerator {
 			bodyLiteralsPositive.add(atomToLiteral(atomStore.putIfAbsent(groundAtom)));
 		}
 		return bodyLiteralsPositive;
-	}
-
-	private boolean existsRuleWithPredicateInHead(final Predicate predicate) {
-		final HashSet<InternalRule> definingRules = programAnalysis.getPredicateDefiningRules().get(predicate);
-		return definingRules != null && !definingRules.isEmpty();
 	}
 }

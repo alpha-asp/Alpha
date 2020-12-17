@@ -27,22 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.structure;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.Predicate;
@@ -58,22 +42,35 @@ import at.ac.tuwien.kr.alpha.grounder.Instance;
 import at.ac.tuwien.kr.alpha.grounder.Unification;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
+
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * Copyright (c) 2018-2020, the Alpha Team.
  */
 public class AnalyzeUnjustified {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AnalyzeUnjustified.class);
-	private final InternalProgram programAnalysis;
+	private final InternalProgram program;
 	private final AtomStore atomStore;
-	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private int renamingCounter;
 	private int padDepth;
 
-	public AnalyzeUnjustified(InternalProgram programAnalysis, AtomStore atomStore, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram) {
-		this.programAnalysis = programAnalysis;
+	public AnalyzeUnjustified(InternalProgram program, AtomStore atomStore) {
+		this.program = program;
 		this.atomStore = atomStore;
-		this.factsFromProgram = factsFromProgram;
 		padDepth = 0;
 	}
 
@@ -322,7 +319,7 @@ public class AnalyzeUnjustified {
 		// Find more substitutions, consider currentAssignment.
 		List<Atom> assignedAtoms = this.assignedAtoms.get(predicate);
 		// Consider instances from facts.
-		LinkedHashSet<Instance> factsOverPredicate = factsFromProgram.get(predicate);
+		Set<Instance> factsOverPredicate = program.getFactsByPredicate().get(predicate);
 		return new AssignedAtomsIterator(predicate, assignedAtoms, factsOverPredicate);
 	}
 
@@ -334,7 +331,7 @@ public class AnalyzeUnjustified {
 		AssignedAtomsIterator(Predicate predicate, List<Atom> assignedAtoms, Set<Instance> facts) {
 			this.predicate = predicate;
 			this.assignedAtomsIterator = assignedAtoms == null ? Collections.emptyIterator() : assignedAtoms.iterator();
-			this.factsIterator = facts == null ? Collections.emptyIterator() : facts.iterator();
+			this.factsIterator = facts.iterator();
 		}
 
 		@Override
@@ -361,14 +358,12 @@ public class AnalyzeUnjustified {
 
 		ArrayList<FactOrNonGroundRule> definingRulesAndFacts = new ArrayList<>();
 		// Get facts over the same predicate.
-		LinkedHashSet<Instance> factInstances = factsFromProgram.get(predicate);
-		if (factInstances != null) {
-			for (Instance factInstance : factInstances) {
-				definingRulesAndFacts.add(new FactOrNonGroundRule(factInstance));
-			}
+		Set<Instance> factInstances = program.getFactsByPredicate().get(predicate);
+		for (Instance factInstance : factInstances) {
+			definingRulesAndFacts.add(new FactOrNonGroundRule(factInstance));
 		}
 
-		HashSet<InternalRule> rulesDefiningPredicate = programAnalysis.getPredicateDefiningRules().get(predicate);
+		HashSet<InternalRule> rulesDefiningPredicate = program.getPredicateDefiningRules().get(predicate);
 		if (rulesDefiningPredicate != null) {
 			for (InternalRule nonGroundRule : rulesDefiningPredicate) {
 				definingRulesAndFacts.add(new FactOrNonGroundRule(nonGroundRule));

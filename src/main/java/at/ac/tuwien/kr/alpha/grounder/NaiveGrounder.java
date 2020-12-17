@@ -40,6 +40,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
+import at.ac.tuwien.kr.alpha.common.program.Facts;
 import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
@@ -94,7 +95,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	private final InternalProgram program;
 	private final AnalyzeUnjustified analyzeUnjustified;
 
-	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
+	private final Facts factsFromProgram;
 	private final Map<IndexedInstanceStorage, ArrayList<FirstBindingAtom>> rulesUsingPredicateWorkingMemory = new HashMap<>();
 	private final Map<Integer, InternalRule> knownNonGroundRules;
 
@@ -124,23 +125,21 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		LOGGER.debug("Grounder configuration: {}", heuristicsConfiguration);
 
 		this.program = program;
-
 		this.factsFromProgram = program.getFactsByPredicate();
 		this.knownNonGroundRules = program.getRulesById();
-
-		this.analyzeUnjustified = new AnalyzeUnjustified(this.program, this.atomStore, this.factsFromProgram);
+		this.analyzeUnjustified = new AnalyzeUnjustified(this.program, this.atomStore);
 
 		this.initializeFactsAndRules();
 
 		final Set<InternalRule> uniqueGroundRulePerGroundHead = getRulesWithUniqueHead();
 		choiceRecorder = new ChoiceRecorder(atomStore);
-		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, factsFromProgram, this.program, uniqueGroundRulePerGroundHead);
+		noGoodGenerator = new NoGoodGenerator(atomStore, choiceRecorder, this.program, uniqueGroundRulePerGroundHead);
 
 		this.debugInternalChecks = debugInternalChecks;
 
 		// Initialize RuleInstantiator and instantiation strategy. Note that the instantiation strategy also
 		// needs the current assignment, which is set with every call of getGroundInstantiations.
-		this.instantiationStrategy = new DefaultLazyGroundingInstantiationStrategy(this.workingMemory, this.atomStore, this.factsFromProgram);
+		this.instantiationStrategy = new DefaultLazyGroundingInstantiationStrategy(this.workingMemory, this.atomStore, this.program.getFactsByPredicate());
 		this.instantiationStrategy.setStaleWorkingMemoryEntries(this.removeAfterObtainingNewNoGoods);
 		this.ruleInstantiator = new LiteralInstantiator(this.instantiationStrategy);
 	}
@@ -199,8 +198,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 				Atom headAtom = nonGroundRule.getHeadAtom();
 
 				// Rule is not guaranteed unique if there are facts for it.
-				HashSet<Instance> potentialFacts = factsFromProgram.get(headAtom.getPredicate());
-				if (potentialFacts != null && !potentialFacts.isEmpty()) {
+				Set<Instance> potentialFacts = factsFromProgram.get(headAtom.getPredicate());
+				if (!potentialFacts.isEmpty()) {
 					continue;
 				}
 
@@ -272,7 +271,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		}
 
 		// Add true atoms from facts.
-		for (Map.Entry<Predicate, LinkedHashSet<Instance>> facts : factsFromProgram.entrySet()) {
+		for (Map.Entry<Predicate, ? extends Set<Instance>> facts : factsFromProgram.entrySet()) {
 			Predicate factPredicate = facts.getKey();
 			// Skip atoms over internal predicates.
 			if (factPredicate.isInternal()) {
@@ -308,7 +307,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 	protected HashMap<Integer, NoGood> bootstrap() {
 		final HashMap<Integer, NoGood> groundNogoods = new LinkedHashMap<>();
 
-		for (Predicate predicate : factsFromProgram.keySet()) {
+		for (Predicate predicate : factsFromProgram.getPredicates()) {
 			// Instead of generating NoGoods, add instance to working memories directly.
 			workingMemory.addInstances(predicate, true, factsFromProgram.get(predicate));
 		}
@@ -631,11 +630,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 	@Override
 	public boolean isFact(Atom atom) {
-		LinkedHashSet<Instance> instances = factsFromProgram.get(atom.getPredicate());
-		if (instances == null) {
-			return false;
-		}
-		return instances.contains(new Instance(atom.getTerms()));
+		return program.getFactsByPredicate().isFact(atom);
 	}
 
 	@Override
@@ -647,8 +642,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			if (literal.isNegated()) {
 				continue;
 			}
-			LinkedHashSet<Instance> factsOverPredicate = factsFromProgram.get(literal.getPredicate());
-			if (factsOverPredicate != null && factsOverPredicate.contains(new Instance(literal.getAtom().getTerms()))) {
+			if (isFact(literal.getAtom())) {
 				iterator.remove();
 			}
 		}

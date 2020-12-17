@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  * 
@@ -37,6 +37,8 @@ import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.grounder.RuleGroundingOrders;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
 import com.google.common.annotations.VisibleForTesting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +48,7 @@ import java.util.List;
  * A normal rule has no head atom if it represents a constraint, otherwise it has one atom in its head.
  */
 public class InternalRule extends NormalRule {
+	private static final Logger LOGGER = LoggerFactory.getLogger(InternalRule.class);
 
 	private static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
 
@@ -62,6 +65,7 @@ public class InternalRule extends NormalRule {
 					"Empty bodies are not supported for InternalRule! (Head = " + (head == null ? "NULL" : head.getAtom().toString()) + ")");
 		}
 		this.ruleId = InternalRule.ID_GENERATOR.getNextId();
+		LOGGER.debug("Rule #{}: {}", this.ruleId, this.toString());
 
 		this.occurringPredicates = new ArrayList<>();
 		if (!isConstraint()) {
