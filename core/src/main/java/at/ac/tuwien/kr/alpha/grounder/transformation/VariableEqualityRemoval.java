@@ -27,15 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.atoms.*;
-import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
-import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
-import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.Unifier;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,6 +36,16 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+
+import at.ac.tuwien.kr.alpha.common.atoms.ComparisonLiteral;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreLiteral;
+import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
+import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.Unifier;
 
 /**
  * Removes variable equalities from rules by replacing one variable with the other.
@@ -65,8 +66,8 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 	private NormalRule findAndReplaceVariableEquality(NormalRule rule) {
 		// Collect all equal variables.
 		HashMap<VariableTerm, HashSet<VariableTerm>> variableToEqualVariables = new LinkedHashMap<>();
-		HashSet<Literal> equalitiesToRemove = new HashSet<>();
-		for (Literal bodyElement : rule.getBody()) {
+		HashSet<CoreLiteral> equalitiesToRemove = new HashSet<>();
+		for (CoreLiteral bodyElement : rule.getBody()) {
 			if (!(bodyElement instanceof ComparisonLiteral)) {
 				continue;
 			}
@@ -128,7 +129,7 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 				bodyIterator.remove();
 			}
 			for (int i = 0; i < literal.getTerms().size(); i++) {
-				TermImpl replaced = literal.getTerms().get(i).substitute(replacementSubstitution);
+				CoreTerm replaced = literal.getTerms().get(i).substitute(replacementSubstitution);
 				literal.getTerms().set(i, replaced);
 			}
 		}
@@ -136,7 +137,7 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 		if (rewrittenHead != null) {
 			CoreAtom headAtom = rewrittenHead.getAtom();
 			for (int i = 0; i < headAtom.getTerms().size(); i++) {
-				TermImpl replaced = headAtom.getTerms().get(i).substitute(replacementSubstitution);
+				CoreTerm replaced = headAtom.getTerms().get(i).substitute(replacementSubstitution);
 				headAtom.getTerms().set(i, replaced);
 			}
 		}

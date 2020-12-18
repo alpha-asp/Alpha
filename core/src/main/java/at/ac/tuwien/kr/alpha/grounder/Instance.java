@@ -7,8 +7,7 @@ import java.util.List;
 
 import at.ac.tuwien.kr.alpha.Util;
 import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
 
 /**
  * An instance is a positional association of terms, e.g., representing a variable substitution, or a ground instance of
@@ -16,13 +15,13 @@ import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
  * Copyright (c) 2016, the Alpha Team.
  */
 public class Instance {
-	public final List<? extends TermImpl> terms;
+	public final List<CoreTerm> terms;
 
-	public Instance(TermImpl... terms) {
+	public Instance(CoreTerm... terms) {
 		this(Arrays.asList(terms));
 	}
 
-	public Instance(List<? extends TermImpl> terms) {
+	public Instance(List<CoreTerm> terms) {
 		this.terms = terms;
 	}
 

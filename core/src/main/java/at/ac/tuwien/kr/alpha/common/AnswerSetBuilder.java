@@ -3,9 +3,9 @@ package at.ac.tuwien.kr.alpha.common;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTermImpl;
+import at.ac.tuwien.kr.alpha.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -71,9 +71,9 @@ public class AnswerSetBuilder {
 
 		// Note that usage of terms does not pollute the heap,
 		// since we are only reading, not writing.
-		List<TermImpl> termList = Stream
+		List<CoreTerm> termList = Stream
 			.of(terms)
-			.map(ConstantTermImpl::getInstance)
+			.map(CoreConstantTerm::getInstance)
 			.collect(Collectors.toList());
 
 		instances.add(new BasicAtom(predicate, termList));
@@ -87,7 +87,7 @@ public class AnswerSetBuilder {
 			predicates.add(predicate);
 		}
 
-		List<TermImpl> termList = Stream.of(terms).map(ConstantTermImpl::getSymbolicInstance).collect(Collectors.toList());
+		List<CoreTerm> termList = Stream.of(terms).map(CoreConstantTerm::getSymbolicInstance).collect(Collectors.toList());
 		instances.add(new BasicAtom(predicate, termList));
 		return this;
 	}

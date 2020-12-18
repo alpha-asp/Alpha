@@ -27,20 +27,21 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.atoms.CoreLiteral;
-import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
-import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
-import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
-import at.ac.tuwien.kr.alpha.common.terms.*;
-import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreLiteral;
+import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
+import at.ac.tuwien.kr.alpha.common.rule.NormalRule;
+import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.atoms.IntervalAtom;
 
 /**
  * Rewrites all interval terms in a rule into a new variable and an IntervalAtom.
@@ -84,10 +85,10 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 	 */
 	private static CoreLiteral rewriteLiteral(CoreLiteral lit, Map<VariableTerm, IntervalTerm> intervalReplacement) {
 		CoreAtom atom = lit.getAtom();
-		List<TermImpl> termList = new ArrayList<>(atom.getTerms());
+		List<CoreTerm> termList = new ArrayList<>(atom.getTerms());
 		boolean didChange = false;
 		for (int i = 0; i < termList.size(); i++) {
-			Term term = termList.get(i);
+			CoreTerm term = termList.get(i);
 			if (term instanceof IntervalTerm) {
 				VariableTerm replacementVariable = VariableTerm.getInstance(INTERVAL_VARIABLE_PREFIX + intervalReplacement.size());
 				intervalReplacement.put(replacementVariable, (IntervalTerm) term);
@@ -109,10 +110,10 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 	}
 
 	private static FunctionTerm rewriteFunctionTerm(FunctionTerm functionTerm, Map<VariableTerm, IntervalTerm> intervalReplacement) {
-		List<Term> termList = new ArrayList<>(functionTerm.getTerms());
+		List<CoreTerm> termList = new ArrayList<>(functionTerm.getTerms());
 		boolean didChange = false;
 		for (int i = 0; i < termList.size(); i++) {
-			Term term = termList.get(i);
+			CoreTerm term = termList.get(i);
 			if (term instanceof IntervalTerm) {
 				VariableTerm replacementVariable = VariableTerm.getInstance("_Interval" + intervalReplacement.size());
 				intervalReplacement.put(replacementVariable, (IntervalTerm) term);

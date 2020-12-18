@@ -30,7 +30,7 @@ import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.*;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTermImpl;
+import at.ac.tuwien.kr.alpha.common.terms.CoreConstantTerm;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 
@@ -135,7 +135,7 @@ public final class Externals {
 		String name = javaName.substring(0, 1).toLowerCase() + javaName.substring(1); // Camel-cased, but starting with lower case letter.
 		for (T instance : extFacts) {
 			// TODO use properly wrapped BasicAtoms here
-			retVal.add(new BasicAtom(at.ac.tuwien.kr.alpha.common.CorePredicate.getInstance(name, 1), ConstantTermImpl.getInstance(instance)));
+			retVal.add(new BasicAtom(at.ac.tuwien.kr.alpha.common.CorePredicate.getInstance(name, 1), CoreConstantTerm.getInstance(instance)));
 		}
 		return retVal;
 	}

@@ -1,9 +1,25 @@
 package at.ac.tuwien.kr.alpha.grounder.transformation;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+
+import org.apache.commons.collections4.SetUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import at.ac.tuwien.kr.alpha.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph;
 import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph.SCComponent;
 import at.ac.tuwien.kr.alpha.common.depgraph.Node;
@@ -21,21 +37,6 @@ import at.ac.tuwien.kr.alpha.grounder.instantiation.AssignmentStatus;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiationResult;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.LiteralInstantiator;
 import at.ac.tuwien.kr.alpha.grounder.instantiation.WorkingMemoryBasedInstantiationStrategy;
-import org.apache.commons.collections4.SetUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
 
 /**
  * Evaluates the stratifiable part of a given (analyzed) ASP program.
@@ -51,7 +52,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 	private Map<CorePredicate, Set<Instance>> modifiedInLastEvaluationRun = new HashMap<>();
 
-	private List<? extends Atom> additionalFacts = new ArrayList<>(); // The additional facts derived by stratified evaluation. Note that it may contain duplicates.
+	private List<CoreAtom> additionalFacts = new ArrayList<>(); // The additional facts derived by stratified evaluation. Note that it may contain duplicates.
 	private Set<Integer> solvedRuleIds = new HashSet<>(); // Set of rules that have been completely evaluated.
 
 	private LiteralInstantiator literalInstantiator;
@@ -172,7 +173,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 				modifiedInLastEvaluationRun.get(headPredicate).addAll(headInstances.getAllInstances());
 			}
 			// Register positive body literal instances.
-			for (Literal lit : rule.getPositiveBody()) {
+			for (CoreLiteral lit : rule.getPositiveBody()) {
 				CorePredicate bodyPredicate = lit.getPredicate();
 				IndexedInstanceStorage bodyInstances = workingMemory.get(bodyPredicate, true);
 				modifiedInLastEvaluationRun.putIfAbsent(bodyPredicate, new LinkedHashSet<>());
@@ -202,17 +203,17 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			return calcSubstitutionsWithGroundingOrder(fixedGroundingOrder, Collections.singletonList(new Substitution()));
 		}
 
-		List<Literal> startingLiterals = groundingOrders.getStartingLiterals();
+		List<CoreLiteral> startingLiterals = groundingOrders.getStartingLiterals();
 		// Check only one starting literal if indicated by the parameter.
 		if (!checkAllStartingLiterals) {
 			// If this is the first evaluation run, it suffices to start from the first starting literal only.
-			Literal lit = startingLiterals.get(0);
+			CoreLiteral lit = startingLiterals.get(0);
 			return calcSubstitutionsWithGroundingOrder(groundingOrders.orderStartingFrom(lit), substituteFromRecentlyAddedInstances(lit));
 		}
 
 		// Ground from all starting literals.
 		List<Substitution> groundSubstitutions = new ArrayList<>(); // Collection of full ground substitutions for the given rule.
-		for (Literal lit : startingLiterals) {
+		for (CoreLiteral lit : startingLiterals) {
 			List<Substitution> substitutionsForStartingLiteral = calcSubstitutionsWithGroundingOrder(groundingOrders.orderStartingFrom(lit),
 					substituteFromRecentlyAddedInstances(lit));
 			groundSubstitutions.addAll(substitutionsForStartingLiteral);
@@ -229,7 +230,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	 * @return valid ground substitutions for the literal based on the recently added instances (i.e. instances derived in
 	 *         the last evaluation run).
 	 */
-	private List<Substitution> substituteFromRecentlyAddedInstances(Literal lit) {
+	private List<Substitution> substituteFromRecentlyAddedInstances(CoreLiteral lit) {
 		List<Substitution> retVal = new ArrayList<>();
 		Set<Instance> instances = modifiedInLastEvaluationRun.get(lit.getPredicate());
 		if (instances == null) {
@@ -268,7 +269,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			}
 			// In case the full grounding order has been worked on, all current substitutions are full substitutions, add them to
 			// result.
-			Literal currentLiteral = groundingOrder.getLiteralAtOrderPosition(currentOrderPosition);
+			CoreLiteral currentLiteral = groundingOrder.getLiteralAtOrderPosition(currentOrderPosition);
 			if (currentLiteral == null) {
 				fullSubstitutions.addAll(currentSubstitutions);
 				currentSubstitutions.clear();
@@ -296,7 +297,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	}
 
 	private void fireRule(InternalRule rule, Substitution substitution) {
-		Atom newAtom = rule.getHeadAtom().substitute(substitution);
+		CoreAtom newAtom = rule.getHeadAtom().substitute(substitution);
 		if (!newAtom.isGround()) {
 			throw new IllegalStateException("Trying to fire rule " + rule.toString() + " with incompatible substitution " + substitution.toString());
 		}
@@ -324,7 +325,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 			// Note: here we assume that all rules defining a predicate belong to the same SC component.
 			for (InternalRule rule : definingRules) {
 				boolean isRuleRecursive = false;
-				for (Literal lit : rule.getPositiveBody()) {
+				for (CoreLiteral lit : rule.getPositiveBody()) {
 					if (headPredicates.contains(lit.getPredicate())) {
 						// The rule body contains a predicate that is defined in the same
 						// component, the rule is therefore part of a cyclic dependency within

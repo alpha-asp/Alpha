@@ -38,7 +38,7 @@ import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
 
 /**
  * A storage for instances with a certain arity, where each position of the instance can be indexed.
@@ -58,7 +58,7 @@ public class IndexedInstanceStorage {
 	/**
 	 * For each position, a mapping of termIds to list of instances with this termId at the corresponding position
 	 */
-	private final ArrayList<HashMap<Term, ArrayList<Instance>>> indices = new ArrayList<>();
+	private final ArrayList<HashMap<CoreTerm, ArrayList<Instance>>> indices = new ArrayList<>();
 
 	private final ArrayList<Instance> recentlyAddedInstances = new ArrayList<>();
 
@@ -124,7 +124,7 @@ public class IndexedInstanceStorage {
 		recentlyAddedInstances.add(instance);
 		// Add instance to all indices.
 		for (int i = 0; i < indices.size(); i++) {
-			HashMap<Term, ArrayList<Instance>> posIndex = indices.get(i);
+			HashMap<CoreTerm, ArrayList<Instance>> posIndex = indices.get(i);
 			if (posIndex == null) {
 				continue;
 			}
@@ -141,7 +141,7 @@ public class IndexedInstanceStorage {
 		}
 		// Remove from all indices
 		for (int i = 0; i < indices.size(); i++) {
-			HashMap<Term, ArrayList<Instance>> posIndex = indices.get(i);
+			HashMap<CoreTerm, ArrayList<Instance>> posIndex = indices.get(i);
 			if (posIndex == null) {
 				continue;
 			}
@@ -169,8 +169,8 @@ public class IndexedInstanceStorage {
 	 * @param position
 	 * @return
 	 */
-	public List<Instance> getInstancesMatchingAtPosition(Term term, int position) {
-		Map<Term, ArrayList<Instance>> indexForPosition = indices.get(position);
+	public List<Instance> getInstancesMatchingAtPosition(CoreTerm term, int position) {
+		Map<CoreTerm, ArrayList<Instance>> indexForPosition = indices.get(position);
 		if (indexForPosition == null) {
 			throw new RuntimeException("IndexedInstanceStorage queried for position " + position + " which is not indexed.");
 		}
@@ -182,7 +182,7 @@ public class IndexedInstanceStorage {
 		int smallestNumberOfInstances = Integer.MAX_VALUE;
 		int mostSelectiveTermPosition = -1;
 		for (int i = 0; i < atom.getTerms().size(); i++) {
-			Term testTerm = atom.getTerms().get(i);
+			CoreTerm testTerm = atom.getTerms().get(i);
 			if (testTerm.isGround()) {
 				ArrayList<Instance> instancesMatchingTest = indices.get(i).get(testTerm);
 				if (instancesMatchingTest == null) {
@@ -204,7 +204,7 @@ public class IndexedInstanceStorage {
 		int firstGroundTermPosition = getMostSelectiveGroundTermPosition(substitute);
 		// Select matching instances, select all if no ground term was found.
 		if (firstGroundTermPosition != -1) {
-			Term firstGroundTerm = substitute.getTerms().get(firstGroundTermPosition);
+			CoreTerm firstGroundTerm = substitute.getTerms().get(firstGroundTermPosition);
 			return getInstancesMatchingAtPosition(firstGroundTerm, firstGroundTermPosition);
 		} else {
 			return new ArrayList<>(getAllInstances());

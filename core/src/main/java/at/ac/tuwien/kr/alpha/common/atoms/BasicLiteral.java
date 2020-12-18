@@ -27,7 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
@@ -79,7 +79,7 @@ public class BasicLiteral extends CoreLiteral {
 			return Collections.emptySet();
 		}
 		Set<VariableTerm> bindingVariables = new HashSet<>();
-		for (TermImpl term : atom.getTerms()) {
+		for (CoreTerm term : atom.getTerms()) {
 			bindingVariables.addAll(term.getOccurringVariables());
 		}
 		return bindingVariables;
@@ -97,7 +97,7 @@ public class BasicLiteral extends CoreLiteral {
 			return Collections.emptySet();
 		}
 		Set<VariableTerm> nonbindingVariables = new HashSet<>();
-		for (TermImpl term : atom.getTerms()) {
+		for (CoreTerm term : atom.getTerms()) {
 			nonbindingVariables.addAll(term.getOccurringVariables());
 		}
 		return nonbindingVariables;

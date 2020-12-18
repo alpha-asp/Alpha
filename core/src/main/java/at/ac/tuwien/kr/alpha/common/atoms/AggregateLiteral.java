@@ -1,12 +1,12 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
-
 import java.util.HashSet;
 import java.util.Set;
+
+import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 /**
  * Copyright (c) 2018, the Alpha Team.
@@ -53,7 +53,7 @@ public class AggregateLiteral extends CoreLiteral {
 		throw new UnsupportedOperationException();
 	}
 
-	private static VariableTerm boundBindingVariable(ComparisonOperator op, Term bound, boolean positive) {
+	private static VariableTerm boundBindingVariable(ComparisonOperator op, CoreTerm bound, boolean positive) {
 		boolean isNormalizedEquality = op == ComparisonOperator.EQ && positive || op == ComparisonOperator.NE && !positive;
 		if (isNormalizedEquality &&  bound instanceof VariableTerm) {
 			return (VariableTerm) bound;

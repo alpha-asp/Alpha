@@ -10,14 +10,14 @@ import static at.ac.tuwien.kr.alpha.Util.join;
 /**
  * Copyright (c) 2016-2017, the Alpha Team.
  */
-public class FunctionTerm extends TermImpl {
+public class FunctionTerm extends CoreTerm {
 	private static final Interner<FunctionTerm> INTERNER = new Interner<>();
 
 	private final String symbol;
-	private final List<? extends TermImpl> terms;
+	private final List<? extends CoreTerm> terms;
 	private final boolean ground;
 
-	private FunctionTerm(String symbol, List<? extends TermImpl> terms) {
+	private FunctionTerm(String symbol, List<? extends CoreTerm> terms) {
 		if (symbol == null) {
 			throw new IllegalArgumentException();
 		}
@@ -26,7 +26,7 @@ public class FunctionTerm extends TermImpl {
 		this.terms = Collections.unmodifiableList(terms);
 
 		boolean ground = true;
-		for (Term term : terms) {
+		for (CoreTerm term : terms) {
 			if (!term.isGround()) {
 				ground = false;
 				break;
@@ -35,15 +35,15 @@ public class FunctionTerm extends TermImpl {
 		this.ground = ground;
 	}
 
-	public static FunctionTerm getInstance(String functionSymbol, List<? extends TermImpl> termList) {
+	public static FunctionTerm getInstance(String functionSymbol, List<? extends CoreTerm> termList) {
 		return INTERNER.intern(new FunctionTerm(functionSymbol, termList));
 	}
 
-	public static FunctionTerm getInstance(String functionSymbol, TermImpl... terms) {
+	public static FunctionTerm getInstance(String functionSymbol, CoreTerm... terms) {
 		return getInstance(functionSymbol, Arrays.asList(terms));
 	}
 
-	public List<? extends TermImpl> getTerms() {
+	public List<? extends CoreTerm> getTerms() {
 		return terms;
 	}
 
@@ -59,7 +59,7 @@ public class FunctionTerm extends TermImpl {
 	@Override
 	public List<VariableTerm> getOccurringVariables() {
 		LinkedList<VariableTerm> vars = new LinkedList<>();
-		for (TermImpl term : terms) {
+		for (CoreTerm term : terms) {
 			vars.addAll(term.getOccurringVariables());
 		}
 		return vars;
@@ -67,8 +67,8 @@ public class FunctionTerm extends TermImpl {
 
 	@Override
 	public FunctionTerm substitute(Substitution substitution) {
-		List<TermImpl> groundTermList = new ArrayList<>(terms.size());
-		for (TermImpl term : terms) {
+		List<CoreTerm> groundTermList = new ArrayList<>(terms.size());
+		for (CoreTerm term : terms) {
 			groundTermList.add(term.substitute(substitution));
 		}
 		return FunctionTerm.getInstance(symbol, groundTermList);
@@ -106,7 +106,7 @@ public class FunctionTerm extends TermImpl {
 	}
 
 	@Override
-	public int compareTo(Term o) {
+	public int compareTo(CoreTerm o) {
 		if (this == o) {
 			return 0;
 		}
@@ -138,18 +138,18 @@ public class FunctionTerm extends TermImpl {
 	}
 
 	@Override
-	public TermImpl renameVariables(String renamePrefix) {
-		List<TermImpl> renamedTerms = new ArrayList<>(terms.size());
-		for (TermImpl term : terms) {
+	public CoreTerm renameVariables(String renamePrefix) {
+		List<CoreTerm> renamedTerms = new ArrayList<>(terms.size());
+		for (CoreTerm term : terms) {
 			renamedTerms.add(term.renameVariables(renamePrefix));
 		}
 		return FunctionTerm.getInstance(symbol, renamedTerms);
 	}
 
 	@Override
-	public TermImpl normalizeVariables(String renamePrefix, RenameCounter counter) {
-		List<TermImpl> normalizedTerms = new ArrayList<>(terms.size());
-		for (TermImpl term : terms) {
+	public CoreTerm normalizeVariables(String renamePrefix, RenameCounter counter) {
+		List<CoreTerm> normalizedTerms = new ArrayList<>(terms.size());
+		for (CoreTerm term : terms) {
 			normalizedTerms.add(term.normalizeVariables(renamePrefix, counter));
 		}
 		return FunctionTerm.getInstance(symbol, normalizedTerms);

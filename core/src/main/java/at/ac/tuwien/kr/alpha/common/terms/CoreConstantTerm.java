@@ -9,25 +9,25 @@ import java.util.List;
 /**
  * Copyright (c) 2016-2020, the Alpha Team.
  */
-public class ConstantTermImpl<T extends Comparable<T>> extends TermImpl implements ConstantTerm<T> {
-	private static final Interner<ConstantTermImpl<?>> INTERNER = new Interner<>();
+public class CoreConstantTerm<T extends Comparable<T>> extends CoreTerm {
+	private static final Interner<CoreConstantTerm<?>> INTERNER = new Interner<>();
 
 	private final T object;
 	private final boolean symbolic;
 
-	private ConstantTermImpl(T object, boolean symbolic) {
+	private CoreConstantTerm(T object, boolean symbolic) {
 		this.object = object;
 		this.symbolic = symbolic;
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T extends Comparable<T>> ConstantTermImpl<T> getInstance(T symbol) {
-		return (ConstantTermImpl<T>) INTERNER.intern(new ConstantTermImpl<>(symbol, false));
+	public static <T extends Comparable<T>> CoreConstantTerm<T> getInstance(T symbol) {
+		return (CoreConstantTerm<T>) INTERNER.intern(new CoreConstantTerm<>(symbol, false));
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T extends Comparable<T>> ConstantTermImpl<T> getSymbolicInstance(String symbol) {
-		return (ConstantTermImpl<T>) INTERNER.intern(new ConstantTermImpl<>(symbol, true));
+	public static <T extends Comparable<T>> CoreConstantTerm<T> getSymbolicInstance(String symbol) {
+		return (CoreConstantTerm<T>) INTERNER.intern(new CoreConstantTerm<>(symbol, true));
 	}
 
 	@Override
@@ -41,7 +41,7 @@ public class ConstantTermImpl<T extends Comparable<T>> extends TermImpl implemen
 	}
 
 	@Override
-	public TermImpl substitute(Substitution substitution) {
+	public CoreTerm substitute(Substitution substitution) {
 		return this;
 	}
 
@@ -67,7 +67,7 @@ public class ConstantTermImpl<T extends Comparable<T>> extends TermImpl implemen
 			return false;
 		}
 
-		ConstantTermImpl<?> that = (ConstantTermImpl<?>) o;
+		CoreConstantTerm<?> that = (CoreConstantTerm<?>) o;
 		if (this.symbolic != that.symbolic) {
 			return false;
 		}
@@ -86,7 +86,7 @@ public class ConstantTermImpl<T extends Comparable<T>> extends TermImpl implemen
 	 * Establishes "priority" for ordering of constant terms depending on the type
 	 * of the corresponding object according to ASP-Core-2.03c.
 	 */
-	private static final int priority(final Class<?> clazz, ConstantTermImpl<?> term) {
+	private static final int priority(final Class<?> clazz, CoreConstantTerm<?> term) {
 		if (clazz.equals(Integer.class)) {
 			return 1;
 		} else if (clazz.equals(String.class)) {
@@ -97,16 +97,16 @@ public class ConstantTermImpl<T extends Comparable<T>> extends TermImpl implemen
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public int compareTo(Term o) {
+	public int compareTo(CoreTerm o) {
 		if (this == o) {
 			return 0;
 		}
 
-		if (!(o instanceof ConstantTermImpl)) {
+		if (!(o instanceof CoreConstantTerm)) {
 			return super.compareTo(o);
 		}
 
-		ConstantTermImpl<?> other = (ConstantTermImpl<?>) o;
+		CoreConstantTerm<?> other = (CoreConstantTerm<?>) o;
 
 		// We will perform an unchecked cast.
 		// Because of type erasure, we cannot know the exact type
@@ -138,13 +138,13 @@ public class ConstantTermImpl<T extends Comparable<T>> extends TermImpl implemen
 	}
 
 	@Override
-	public TermImpl renameVariables(String renamePrefix) {
+	public CoreTerm renameVariables(String renamePrefix) {
 		// Constant contains no variables, hence stays the same.
 		return this;
 	}
 
 	@Override
-	public TermImpl normalizeVariables(String renamePrefix, RenameCounter counter) {
+	public CoreTerm normalizeVariables(String renamePrefix, RenameCounter counter) {
 		return this;
 	}
 

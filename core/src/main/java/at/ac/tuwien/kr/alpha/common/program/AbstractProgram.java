@@ -18,10 +18,10 @@ import java.util.List;
 public abstract class AbstractProgram<R extends AbstractRule<? extends Head>> {
 
 	private final List<R> rules;
-	private final List<? extends CoreAtom> facts;
+	private final List<CoreAtom> facts;
 	private final InlineDirectives inlineDirectives;
 
-	public AbstractProgram(List<R> rules, List<? extends CoreAtom> facts, InlineDirectives inlineDirectives) {
+	public AbstractProgram(List<R> rules, List<CoreAtom> facts, InlineDirectives inlineDirectives) {
 		this.rules = rules;
 		this.facts = facts;
 		this.inlineDirectives = inlineDirectives;
@@ -31,7 +31,7 @@ public abstract class AbstractProgram<R extends AbstractRule<? extends Head>> {
 		return Collections.unmodifiableList(rules);
 	}
 
-	public List<? extends CoreAtom> getFacts() {
+	public List<CoreAtom> getFacts() {
 		return Collections.unmodifiableList(facts);
 	}
 

@@ -27,30 +27,29 @@
  */
 package at.ac.tuwien.kr.alpha.common.atoms;
 
-import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import static at.ac.tuwien.kr.alpha.Util.join;
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import static at.ac.tuwien.kr.alpha.Util.join;
-import static at.ac.tuwien.kr.alpha.Util.oops;
+import at.ac.tuwien.kr.alpha.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 public class AggregateAtom extends CoreAtom {
 
 	private final ComparisonOperator lowerBoundOperator;
-	private final TermImpl lowerBoundTerm;
+	private final CoreTerm lowerBoundTerm;
 	private final ComparisonOperator upperBoundOperator;
-	private final Term upperBoundTerm;
+	private final CoreTerm upperBoundTerm;
 	private final AGGREGATEFUNCTION aggregatefunction;
 	private final List<AggregateElement> aggregateElements;
 
-	public AggregateAtom(ComparisonOperator lowerBoundOperator, TermImpl lowerBoundTerm, ComparisonOperator upperBoundOperator, Term upperBoundTerm, AGGREGATEFUNCTION aggregatefunction, List<AggregateElement> aggregateElements) {
+	public AggregateAtom(ComparisonOperator lowerBoundOperator, CoreTerm lowerBoundTerm, ComparisonOperator upperBoundOperator, CoreTerm upperBoundTerm, AGGREGATEFUNCTION aggregatefunction, List<AggregateElement> aggregateElements) {
 		this.lowerBoundOperator = lowerBoundOperator;
 		this.lowerBoundTerm = lowerBoundTerm;
 		this.upperBoundOperator = upperBoundOperator;
@@ -83,12 +82,12 @@ public class AggregateAtom extends CoreAtom {
 	}
 
 	@Override
-	public List<? extends TermImpl> getTerms() {
+	public List<CoreTerm> getTerms() {
 		throw oops("Aggregate atom cannot report terms.");
 	}
 
 	@Override
-	public CoreAtom withTerms(List<TermImpl> terms) {
+	public CoreAtom withTerms(List<CoreTerm> terms) {
 		throw new UnsupportedOperationException("Editing term list is not supported for aggregate atoms!");
 	}
 	
@@ -165,7 +164,7 @@ public class AggregateAtom extends CoreAtom {
 		return lowerBoundOperator;
 	}
 
-	public TermImpl getLowerBoundTerm() {
+	public CoreTerm getLowerBoundTerm() {
 		return lowerBoundTerm;
 	}
 
@@ -173,7 +172,7 @@ public class AggregateAtom extends CoreAtom {
 		return upperBoundOperator;
 	}
 
-	public Term getUpperBoundTerm() {
+	public CoreTerm getUpperBoundTerm() {
 		return upperBoundTerm;
 	}
 
@@ -193,15 +192,15 @@ public class AggregateAtom extends CoreAtom {
 	}
 
 	public static class AggregateElement {
-		final List<Term> elementTerms;
+		final List<CoreTerm> elementTerms;
 		final List<CoreLiteral> elementLiterals;
 
-		public AggregateElement(List<Term> elementTerms, List<CoreLiteral> elementLiterals) {
+		public AggregateElement(List<CoreTerm> elementTerms, List<CoreLiteral> elementLiterals) {
 			this.elementTerms = elementTerms;
 			this.elementLiterals = elementLiterals;
 		}
 
-		public List<Term> getElementTerms() {
+		public List<CoreTerm> getElementTerms() {
 			return elementTerms;
 		}
 
@@ -210,7 +209,7 @@ public class AggregateAtom extends CoreAtom {
 		}
 
 		public boolean isGround() {
-			for (Term elementTerm : elementTerms) {
+			for (CoreTerm elementTerm : elementTerms) {
 				if (!elementTerm.isGround()) {
 					return false;
 				}
@@ -225,7 +224,7 @@ public class AggregateAtom extends CoreAtom {
 
 		public List<VariableTerm> getOccurringVariables() {
 			List<VariableTerm> occurringVariables = new LinkedList<>();
-			for (Term term : elementTerms) {
+			for (CoreTerm term : elementTerms) {
 				if (term instanceof VariableTerm) {
 					occurringVariables.add((VariableTerm) term);
 				}

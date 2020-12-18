@@ -7,8 +7,8 @@ import java.util.List;
 
 import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
@@ -25,9 +25,9 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
  */
 public class EnumerationAtom extends BasicAtom {
 	public static final CorePredicate ENUMERATION_PREDICATE = CorePredicate.getInstance("_Enumeration", 3);
-	private static final HashMap<Term, HashMap<Term, Integer>> ENUMERATIONS = new HashMap<>();
+	private static final HashMap<CoreTerm, HashMap<CoreTerm, Integer>> ENUMERATIONS = new HashMap<>();
 
-	public EnumerationAtom(List<Term> terms) {
+	public EnumerationAtom(List<CoreTerm> terms) {
 		super(ENUMERATION_PREDICATE, terms);
 		if (terms.size() != 3) {
 			throw new RuntimeException("EnumerationAtom must have arity three. Given terms are of wrong size: " + terms);
@@ -41,9 +41,9 @@ public class EnumerationAtom extends BasicAtom {
 		ENUMERATIONS.clear();
 	}
 
-	private Integer getEnumerationIndex(Term identifier, Term enumerationTerm) {
+	private Integer getEnumerationIndex(CoreTerm identifier, CoreTerm enumerationTerm) {
 		ENUMERATIONS.putIfAbsent(identifier, new HashMap<>());
-		HashMap<Term, Integer> enumeratedTerms = ENUMERATIONS.get(identifier);
+		HashMap<CoreTerm, Integer> enumeratedTerms = ENUMERATIONS.get(identifier);
 		Integer assignedInteger = enumeratedTerms.get(enumerationTerm);
 		if (assignedInteger == null) {
 			int enumerationIndex = enumeratedTerms.size() + 1;
@@ -64,14 +64,14 @@ public class EnumerationAtom extends BasicAtom {
 	 * @return a new substitution where the third term of the enumeration atom is bound to an integer.
 	 */
 	public Substitution addEnumerationIndexToSubstitution(Substitution substitution) {
-		Term idTerm = this.getTerms().get(0).substitute(substitution);
-		Term enumerationTerm = this.getTerms().get(1).substitute(substitution);
+		CoreTerm idTerm = this.getTerms().get(0).substitute(substitution);
+		CoreTerm enumerationTerm = this.getTerms().get(1).substitute(substitution);
 		if (!enumerationTerm.isGround()) {
 			throw new RuntimeException("Enumeration term is not ground after substitution. Should not happen.");
 		}
 		Integer enumerationIndex = getEnumerationIndex(idTerm, enumerationTerm);
 		Substitution retVal = new Substitution(substitution);
-		retVal.put((VariableTerm) getTerms().get(2), ConstantTerm.getInstance(enumerationIndex));
+		retVal.put((VariableTerm) getTerms().get(2), CoreConstantTerm.getInstance(enumerationIndex));
 		return retVal;
 	}
 

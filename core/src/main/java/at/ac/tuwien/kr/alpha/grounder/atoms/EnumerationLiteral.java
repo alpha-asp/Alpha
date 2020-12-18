@@ -1,13 +1,13 @@
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
-import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import at.ac.tuwien.kr.alpha.common.atoms.BasicLiteral;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 /**
  * Copyright (c) 2018, the Alpha Team.
@@ -41,8 +41,8 @@ public class EnumerationLiteral extends BasicLiteral {
 	@Override
 	public Set<VariableTerm> getNonBindingVariables() {
 		Set<VariableTerm> ret = new HashSet<>(2);
-		Term idTerm = getTerms().get(0);
-		Term enumTerm = getTerms().get(1);
+		CoreTerm idTerm = getTerms().get(0);
+		CoreTerm enumTerm = getTerms().get(1);
 		if (idTerm instanceof VariableTerm) {
 			ret.add((VariableTerm) idTerm);
 		}

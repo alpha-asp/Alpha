@@ -6,7 +6,7 @@ import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.atoms.*;
 import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
-import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Instance;
 import at.ac.tuwien.kr.alpha.grounder.Unification;
@@ -39,7 +39,7 @@ public class AnalyzeUnjustified {
 
 	private Map<CorePredicate, List<CoreAtom>> assignedAtoms;
 
-	public Set<Literal> analyze(int atomToJustify, Assignment currentAssignment) {
+	public Set<CoreLiteral> analyze(int atomToJustify, Assignment currentAssignment) {
 		padDepth = 0;
 		CoreAtom atom = atomStore.get(atomToJustify);
 		if (!(atom instanceof BasicAtom)) {
@@ -65,9 +65,9 @@ public class AnalyzeUnjustified {
 		return analyze((BasicAtom) atom, currentAssignment);
 	}
 
-	private Set<Literal> analyze(BasicAtom atom, Assignment currentAssignment) {
+	private Set<CoreLiteral> analyze(BasicAtom atom, Assignment currentAssignment) {
 		log(pad("Starting analyze, current assignment is: {}"), currentAssignment);
-		LinkedHashSet<Literal> vL = new LinkedHashSet<>();
+		LinkedHashSet<CoreLiteral> vL = new LinkedHashSet<>();
 		LinkedHashSet<LitSet> vToDo = new LinkedHashSet<>(Collections.singleton(new LitSet(atom, new LinkedHashSet<>())));
 		LinkedHashSet<LitSet> vDone = new LinkedHashSet<>();
 		while (!vToDo.isEmpty()) {
@@ -233,7 +233,7 @@ public class AnalyzeUnjustified {
 				Set<VariableTerm> variablesOccurringInSigma = sigma.getMappedVariables();
 				if (Unification.instantiate(bSigmaY, bSigma) != null) {
 					for (Unifier sigmaN : vN) {
-						ArrayList<TermImpl> occurringVariables = new ArrayList<>(variablesOccurringInSigma);
+						ArrayList<CoreTerm> occurringVariables = new ArrayList<>(variablesOccurringInSigma);
 						occurringVariables.addAll(sigmaN.getMappedVariables());
 						BasicAtom genericAtom = new BasicAtom(CorePredicate.getInstance("_", occurringVariables.size(), true), occurringVariables);
 						CoreAtom genericSubstituted = genericAtom.substitute(sigmaN).renameVariables("_analyzeTest");
@@ -365,7 +365,7 @@ public class AnalyzeUnjustified {
 	}
 
 	private static class ReturnExplainUnjust {
-		Set<Literal> vL;
+		Set<CoreLiteral> vL;
 		Set<LitSet> vToDo;
 
 		ReturnExplainUnjust() {

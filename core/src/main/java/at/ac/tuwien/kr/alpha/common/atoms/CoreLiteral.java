@@ -28,7 +28,7 @@
 package at.ac.tuwien.kr.alpha.common.atoms;
 
 import at.ac.tuwien.kr.alpha.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import org.apache.commons.collections4.SetUtils;
@@ -84,7 +84,7 @@ public abstract class CoreLiteral {
 	/**
 	 * @see CoreAtom#getTerms()
 	 */
-	public List<? extends TermImpl> getTerms() {
+	public List<CoreTerm> getTerms() {
 		return atom.getTerms();
 	}
 

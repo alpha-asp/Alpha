@@ -36,11 +36,6 @@ import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
 import static at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
 
-import at.ac.tuwien.kr.alpha.common.atoms.*;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTermImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -52,12 +47,19 @@ import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import at.ac.tuwien.kr.alpha.common.AnswerSet;
 import at.ac.tuwien.kr.alpha.common.Assignment;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.NoGood;
+import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.ComparisonAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.grounder.ProgramAnalyzingGrounder;
@@ -302,7 +304,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			LOGGER.debug("Searching for justification of {} / {}", atomToJustify, atomStore.atomToString(atomToJustify));
 			LOGGER.debug("Assignment is (TRUE part only): {}", translate(assignment.getTrueAssignments()));
 		}
-		Set<Literal> reasonsForUnjustified = analyzingGrounder.justifyAtom(atomToJustify, assignment);
+		Set<CoreLiteral> reasonsForUnjustified = analyzingGrounder.justifyAtom(atomToJustify, assignment);
 		NoGood noGood = noGoodFromJustificationReasons(atomToJustify, reasonsForUnjustified);
 
 
@@ -318,12 +320,12 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		return true;
 	}
 
-	private NoGood noGoodFromJustificationReasons(int atomToJustify, Set<Literal> reasonsForUnjustified) {
+	private NoGood noGoodFromJustificationReasons(int atomToJustify, Set<CoreLiteral> reasonsForUnjustified) {
 		// Turn the justification into a NoGood.
 		int[] reasons = new int[reasonsForUnjustified.size() + 1];
 		reasons[0] = atomToLiteral(atomToJustify);
 		int arrpos = 1;
-		for (Literal literal : reasonsForUnjustified) {
+		for (CoreLiteral literal : reasonsForUnjustified) {
 			reasons[arrpos++] = atomToLiteral(atomStore.get(literal.getAtom()), !literal.isNegated());
 		}
 		return NoGood.learnt(reasons);
@@ -354,7 +356,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		ArrayList<Integer> ruleAtomReplacements = new ArrayList<>();
 		while (toJustifyIterator.hasNext()) {
 			Integer literal = toJustifyIterator.next();
-			Atom atom = atomStore.get(atomOf(literal));
+			CoreAtom atom = atomStore.get(atomOf(literal));
 			if (atom instanceof BasicAtom) {
 				continue;
 			}
@@ -365,9 +367,9 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			}
 			// For RuleAtoms in toJustify the corresponding ground body contains BasicAtoms that have been assigned FALSE in the closing.
 			// First, translate RuleAtom back to NonGroundRule + Substitution.
-			String ruleId = (String) ((ConstantTermImpl<?>)atom.getTerms().get(0)).getObject();
+			String ruleId = (String) ((CoreConstantTerm<?>)atom.getTerms().get(0)).getObject();
 			InternalRule nonGroundRule = analyzingGrounder.getNonGroundRule(Integer.parseInt(ruleId));
-			String substitution = (String) ((ConstantTermImpl<?>)atom.getTerms().get(1)).getObject();
+			String substitution = (String) ((CoreConstantTerm<?>)atom.getTerms().get(1)).getObject();
 			Substitution groundingSubstitution = Substitution.fromString(substitution);
 			// Find ground literals in the body that have been assigned false and justify those.
 			for (CoreLiteral bodyLiteral : nonGroundRule.getBody()) {
@@ -388,7 +390,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		toJustify.addAll(ruleAtomReplacements);
 		for (Integer literalToJustify : toJustify) {
 			LOGGER.debug("Searching for justification(s) of {} / {}", toJustify, atomStore.atomToString(atomOf(literalToJustify)));
-			Set<Literal> reasonsForUnjustified = analyzingGrounder.justifyAtom(atomOf(literalToJustify), assignment);
+			Set<CoreLiteral> reasonsForUnjustified = analyzingGrounder.justifyAtom(atomOf(literalToJustify), assignment);
 			NoGood noGood = noGoodFromJustificationReasons(atomOf(literalToJustify), reasonsForUnjustified);
 			int noGoodID = grounder.register(noGood);
 			obtained.put(noGoodID, noGood);

@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Copyright (c) 2016-2017, the Alpha Team.
  */
-public class VariableTerm extends TermImpl {
+public class VariableTerm extends CoreTerm {
 	private static final Interner<VariableTerm> INTERNER = new Interner<>();
 
 	private static final String ANONYMOUS_VARIABLE_PREFIX = "_";
@@ -41,8 +41,8 @@ public class VariableTerm extends TermImpl {
 	}
 
 	@Override
-	public TermImpl substitute(Substitution substitution) {
-		TermImpl groundTerm = substitution.eval(this);
+	public CoreTerm substitute(Substitution substitution) {
+		CoreTerm groundTerm = substitution.eval(this);
 		if (groundTerm == null) {
 			// If variable is not substituted, keep term as is.
 			return this;
@@ -76,7 +76,7 @@ public class VariableTerm extends TermImpl {
 	}
 
 	@Override
-	public int compareTo(Term o) {
+	public int compareTo(CoreTerm o) {
 		if (this == o) {
 			return 0;
 		}
@@ -90,12 +90,12 @@ public class VariableTerm extends TermImpl {
 	}
 
 	@Override
-	public TermImpl renameVariables(String renamePrefix) {
+	public CoreTerm renameVariables(String renamePrefix) {
 		return VariableTerm.getInstance(renamePrefix + variableName);
 	}
 
 	@Override
-	public TermImpl normalizeVariables(String renamePrefix, RenameCounter counter) {
+	public CoreTerm normalizeVariables(String renamePrefix, RenameCounter counter) {
 		VariableTerm renamedThis = counter.renamedVariables.get(this);
 		if (renamedThis != null) {
 			return renamedThis;

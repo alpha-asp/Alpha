@@ -11,15 +11,13 @@ import at.ac.tuwien.kr.alpha.common.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.CoreLiteral;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.rule.BasicRule;
 import at.ac.tuwien.kr.alpha.common.rule.head.NormalHead;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTermImpl;
+import at.ac.tuwien.kr.alpha.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
@@ -192,13 +190,13 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 			// Prepare aggregate parameters.
 			aggregateCount++;
 			Substitution aggregateSubstitution = new Unifier();
-			Collection<Term> globalVariables = getGlobalVariables(rewrittenBody, aggregateAtom);
+			Collection<CoreTerm> globalVariables = getGlobalVariables(rewrittenBody, aggregateAtom);
 			if (globalVariables.isEmpty()) {
-				aggregateSubstitution.put(VariableTerm.getInstance("AGGREGATE_ID"), ConstantTerm.getInstance(aggregateCount));
+				aggregateSubstitution.put(VariableTerm.getInstance("AGGREGATE_ID"), CoreConstantTerm.getInstance(aggregateCount));
 			} else {
 				// In case some variables are not local to the aggregate, add them to the aggregate identifier
-				ArrayList<? extends TermImpl> globalVariableTermlist = new ArrayList<>(globalVariables);
-				globalVariableTermlist.add(ConstantTermImpl.getInstance(aggregateCount));
+				ArrayList<CoreTerm> globalVariableTermlist = new ArrayList<>(globalVariables);
+				globalVariableTermlist.add(CoreConstantTerm.getInstance(aggregateCount));
 				aggregateSubstitution.put(VariableTerm.getInstance("AGGREGATE_ID"), FunctionTerm.getInstance("agg", globalVariableTermlist));
 			}
 			aggregateSubstitution.put(VariableTerm.getInstance("LOWER_BOUND"), aggregateAtom.getLowerBoundTerm());
@@ -209,7 +207,7 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 			// Create input to sorting network from aggregate elements.
 			for (AggregateAtom.AggregateElement aggregateElement : aggregateAtom.getAggregateElements()) {
 				// Prepare element substitution.
-				List<Term> elementTerms = aggregateElement.getElementTerms();
+				List<CoreTerm> elementTerms = aggregateElement.getElementTerms();
 				FunctionTerm elementTuple = FunctionTerm.getInstance("element_tuple", elementTerms);
 				Substitution elementSubstitution = new Unifier(aggregateSubstitution);
 				elementSubstitution.put(VariableTerm.getInstance("ELEMENT_TUPLE"), elementTuple);
@@ -239,10 +237,10 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 		return additionalRules;
 	}
 
-	static Collection<Term> getGlobalVariables(List<CoreLiteral> ruleBody, AggregateAtom aggregateAtom) {
+	static Collection<CoreTerm> getGlobalVariables(List<CoreLiteral> ruleBody, AggregateAtom aggregateAtom) {
 		// Hacky way to get all global variables: take all variables inside the aggregate that occur also in the
 		// rest of the rule.
-		HashSet<Term> occurringVariables = new LinkedHashSet<>();
+		HashSet<CoreTerm> occurringVariables = new LinkedHashSet<>();
 		for (CoreLiteral element : ruleBody) {
 			if (element instanceof AggregateLiteral) {
 				continue;
@@ -250,8 +248,8 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 			occurringVariables.addAll(element.getBindingVariables());
 			occurringVariables.addAll(element.getNonBindingVariables());
 		}
-		LinkedHashSet<Term> globalVariables = new LinkedHashSet<>();
-		for (Term aggVariable : aggregateAtom.getAggregateVariables()) {
+		LinkedHashSet<CoreTerm> globalVariables = new LinkedHashSet<>();
+		for (CoreTerm aggVariable : aggregateAtom.getAggregateVariables()) {
 			if (occurringVariables.contains(aggVariable)) {
 				globalVariables.add(aggVariable);
 			}

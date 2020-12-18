@@ -30,7 +30,7 @@ package at.ac.tuwien.kr.alpha.grounder;
 import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 
 import java.util.Set;
@@ -72,8 +72,8 @@ public class Unification {
 			return null;
 		}
 		for (int i = 0; i < left.getPredicate().getArity(); i++) {
-			final TermImpl leftTerm = left.getTerms().get(i);
-			final TermImpl rightTerm = right.getTerms().get(i);
+			final CoreTerm leftTerm = left.getTerms().get(i);
+			final CoreTerm rightTerm = right.getTerms().get(i);
 			if (!unifyTerms(leftTerm, rightTerm, mgu, keepLeftAsIs)) {
 				return null;
 			}
@@ -81,9 +81,9 @@ public class Unification {
 		return mgu;
 	}
 
-	private static boolean unifyTerms(TermImpl left, TermImpl right, Unifier currentSubstitution, boolean keepLeftAsIs) {
-		final TermImpl leftSubs = left.substitute(currentSubstitution);
-		final TermImpl rightSubs = right.substitute(currentSubstitution);
+	private static boolean unifyTerms(CoreTerm left, CoreTerm right, Unifier currentSubstitution, boolean keepLeftAsIs) {
+		final CoreTerm leftSubs = left.substitute(currentSubstitution);
+		final CoreTerm rightSubs = right.substitute(currentSubstitution);
 		if (leftSubs == rightSubs) {
 			return true;
 		}
@@ -103,8 +103,8 @@ public class Unification {
 				return false;
 			}
 			for (int i = 0; i < leftFunction.getTerms().size(); i++) {
-				final TermImpl leftTerm = leftFunction.getTerms().get(i);
-				final TermImpl rightTerm = rightFunction.getTerms().get(i);
+				final CoreTerm leftTerm = leftFunction.getTerms().get(i);
+				final CoreTerm rightTerm = rightFunction.getTerms().get(i);
 				if (!unifyTerms(leftTerm, rightTerm, currentSubstitution, keepLeftAsIs)) {
 					return false;
 				}

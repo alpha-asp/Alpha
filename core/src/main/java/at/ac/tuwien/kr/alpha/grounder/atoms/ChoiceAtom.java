@@ -35,9 +35,8 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.CoreLiteral;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
+import at.ac.tuwien.kr.alpha.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 public class ChoiceAtom extends CoreAtom {
@@ -46,15 +45,15 @@ public class ChoiceAtom extends CoreAtom {
 	public static final CorePredicate OFF = CorePredicate.getInstance("ChoiceOff", 1, true, true);
 
 	private final CorePredicate predicate;
-	private final List<Term> terms;
+	private final List<CoreTerm> terms;
 
-	private ChoiceAtom(CorePredicate predicate, Term term) {
+	private ChoiceAtom(CorePredicate predicate, CoreTerm term) {
 		this.predicate = predicate;
 		this.terms = Collections.singletonList(term);
 	}
 
 	private ChoiceAtom(CorePredicate predicate, int id) {
-		this(predicate, ConstantTerm.getInstance(Integer.toString(id)));
+		this(predicate, CoreConstantTerm.getInstance(Integer.toString(id)));
 	}
 
 	public static ChoiceAtom on(int id) {
@@ -71,7 +70,7 @@ public class ChoiceAtom extends CoreAtom {
 	}
 
 	@Override
-	public List<Term> getTerms() {
+	public List<CoreTerm> getTerms() {
 		return terms;
 	}
 
@@ -97,7 +96,7 @@ public class ChoiceAtom extends CoreAtom {
 	}
 
 	@Override
-	public CoreAtom withTerms(List<TermImpl> terms) {
+	public CoreAtom withTerms(List<CoreTerm> terms) {
 		throw new UnsupportedOperationException("Changing terms is not supported for ChoiceAtoms!");
 	}
 

@@ -88,8 +88,8 @@ public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, Inpu
 				CorePredicate headPredicate = head.getPredicate();
 
 				CorePredicate negPredicate = CorePredicate.getInstance(PREDICATE_NEGATION_PREFIX + headPredicate.getName(), headPredicate.getArity() + 1, true);
-				List<TermImpl> headTerms = new ArrayList<>(head.getTerms());
-				headTerms.add(0, ConstantTermImpl.getInstance("1")); // FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for
+				List<CoreTerm> headTerms = new ArrayList<>(head.getTerms());
+				headTerms.add(0, CoreConstantTerm.getInstance("1")); // FIXME: when introducing classical negation, this is 1 for classical positive atoms and 0 for
 																	// classical negative atoms.
 				CoreAtom negHead = new BasicAtom(negPredicate, headTerms);
 
@@ -110,7 +110,7 @@ public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, Inpu
 	}
 
 	private static boolean containsIntervalTerms(CoreAtom atom) {
-		for (Term term : atom.getTerms()) {
+		for (CoreTerm term : atom.getTerms()) {
 			if (IntervalTerm.termContainsIntervalTerm(term)) {
 				return true;
 			}

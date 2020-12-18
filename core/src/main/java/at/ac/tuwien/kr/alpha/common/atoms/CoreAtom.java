@@ -31,8 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.grounder.Unifier;
@@ -48,7 +47,7 @@ public abstract class CoreAtom implements Comparable<CoreAtom>{
 	 * @param terms the terms to set.
 	 * @return a new Atom with the given terms set.
 	 */
-	public abstract CoreAtom withTerms(List<TermImpl> terms);
+	public abstract CoreAtom withTerms(List<CoreTerm> terms);
 
 	/**
 	 * Returns the set of all variables occurring in the Atom.
@@ -66,7 +65,7 @@ public abstract class CoreAtom implements Comparable<CoreAtom>{
 	 */
 	public abstract CoreAtom substitute(Substitution substitution);
 
-	public abstract List<? extends TermImpl> getTerms();
+	public abstract List<CoreTerm> getTerms();
 
 	public abstract CorePredicate getPredicate();
 
@@ -101,8 +100,8 @@ public abstract class CoreAtom implements Comparable<CoreAtom>{
 			return 1;
 		}
 
-		final List<? extends TermImpl> aTerms = this.getTerms();
-		final List<? extends Term> bTerms = o.getTerms();
+		final List<? extends CoreTerm> aTerms = this.getTerms();
+		final List<? extends CoreTerm> bTerms = o.getTerms();
 
 		if (aTerms.size() != bTerms.size()) {
 			return Integer.compare(aTerms.size(), bTerms.size());

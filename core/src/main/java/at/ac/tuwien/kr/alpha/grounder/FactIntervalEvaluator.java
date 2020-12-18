@@ -22,11 +22,11 @@ public class FactIntervalEvaluator {
 	public static List<Instance> constructFactInstances(CoreAtom fact) {
 		// Construct instance(s) from the fact.
 		int arity = fact.getPredicate().getArity();
-		TermImpl[] currentTerms = new TermImpl[arity];
+		CoreTerm[] currentTerms = new CoreTerm[arity];
 		boolean containsIntervals = false;
 		// Check if instance contains intervals at all.
 		for (int i = 0; i < arity; i++) {
-			TermImpl term = fact.getTerms().get(i);
+			CoreTerm term = fact.getTerms().get(i);
 			currentTerms[i] = term;
 			if (term instanceof IntervalTerm) {
 				containsIntervals = true;
@@ -43,11 +43,11 @@ public class FactIntervalEvaluator {
 		return unrollInstances(currentTerms, 0);
 	}
 
-	private static List<Instance> unrollInstances(TermImpl[] currentTerms, int currentPosition) {
+	private static List<Instance> unrollInstances(CoreTerm[] currentTerms, int currentPosition) {
 		if (currentPosition == currentTerms.length) {
 			return Collections.singletonList(new Instance(currentTerms));
 		}
-		Term currentTerm = currentTerms[currentPosition];
+		CoreTerm currentTerm = currentTerms[currentPosition];
 		if (!(currentTerm instanceof IntervalTerm)) {
 			return unrollInstances(currentTerms, currentPosition + 1);
 		}
@@ -58,8 +58,8 @@ public class FactIntervalEvaluator {
 		int upper = ((IntervalTerm) currentTerm).getUpperBound();
 
 		for (int i = lower; i <= upper; i++) {
-			TermImpl[] clonedTerms = currentTerms.clone();
-			clonedTerms[currentPosition] = ConstantTermImpl.getInstance(i);
+			CoreTerm[] clonedTerms = currentTerms.clone();
+			clonedTerms[currentPosition] = CoreConstantTerm.getInstance(i);
 			instances.addAll(unrollInstances(clonedTerms, currentPosition + 1));
 		}
 		return instances;

@@ -38,9 +38,8 @@ import java.util.TreeMap;
 import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.grounder.parser.ProgramPartParser;
 
@@ -49,14 +48,14 @@ public class Substitution {
 	private static final ProgramPartParser PROGRAM_PART_PARSER = new ProgramPartParser();
 	public static final Substitution EMPTY_SUBSTITUTION = new Substitution() {
 		@Override
-		public <T extends Comparable<T>> Term put(VariableTerm variableTerm, TermImpl groundTerm) {
+		public <T extends Comparable<T>> CoreTerm put(VariableTerm variableTerm, CoreTerm groundTerm) {
 			throw oops("Should not be called on EMPTY_SUBSTITUTION");
 		}
 	};
 
-	protected TreeMap<VariableTerm, TermImpl> substitution;
+	protected TreeMap<VariableTerm, CoreTerm> substitution;
 
-	private Substitution(TreeMap<VariableTerm, TermImpl> substitution) {
+	private Substitution(TreeMap<VariableTerm, CoreTerm> substitution) {
 		if (substitution == null) {
 			throw oops("Substitution is null.");
 		}
@@ -81,7 +80,7 @@ public class Substitution {
 	private static class SpecializationHelper {
 		Substitution updatedSubstitution;	// Is null for as long as the given partial substitution is not extended, afterwards holds the updated/extended/specialized substitution.
 
-		Substitution unify(List<? extends Term> termList, Instance instance, Substitution partialSubstitution) {
+		Substitution unify(List<? extends CoreTerm> termList, Instance instance, Substitution partialSubstitution) {
 			for (int i = 0; i < termList.size(); i++) {
 				if (!unifyTerms(termList.get(i), instance.terms.get(i), partialSubstitution)) {
 					return null;
@@ -94,7 +93,7 @@ public class Substitution {
 			return updatedSubstitution;
 		}
 
-		boolean unifyTerms(Term termNonGround, TermImpl termGround, Substitution partialSubstitution) {
+		boolean unifyTerms(CoreTerm termNonGround, CoreTerm termGround, Substitution partialSubstitution) {
 			if (termNonGround == termGround) {
 				// Both terms are either the same constant or the same variable term
 				return true;
@@ -105,7 +104,7 @@ public class Substitution {
 				VariableTerm variableTerm = (VariableTerm) termNonGround;
 				// Left term is variable, bind it to the right term. Use original substitution if it has
 				// not been cloned yet.
-				Term bound = (updatedSubstitution == null ? partialSubstitution : updatedSubstitution).eval(variableTerm); // Get variable binding, either from input substitution if it has not been updated yet, or from the cloned/updated substitution.
+				CoreTerm bound = (updatedSubstitution == null ? partialSubstitution : updatedSubstitution).eval(variableTerm); // Get variable binding, either from input substitution if it has not been updated yet, or from the cloned/updated substitution.
 				if (bound != null) {
 					// Variable is already bound, return true if binding is the same as the current ground term.
 					return termGround == bound;
@@ -161,20 +160,20 @@ public class Substitution {
 	}
 
 	/**
-	 * This method should be used to obtain the {@link TermImpl} to be used in place of a given {@link VariableTerm} under this substitution.
+	 * This method should be used to obtain the {@link CoreTerm} to be used in place of a given {@link VariableTerm} under this substitution.
 	 *
 	 * @param variableTerm the variable term to substitute, if possible
 	 * @return a constant term if the substitution contains the given variable, {@code null} otherwise.
 	 */
-	public TermImpl eval(VariableTerm variableTerm) {
+	public CoreTerm eval(VariableTerm variableTerm) {
 		return this.substitution.get(variableTerm);
 	}
 
-	public <T extends Comparable<T>> Term put(VariableTerm variableTerm, TermImpl groundTerm) {
+	public <T extends Comparable<T>> CoreTerm put(VariableTerm variableTerm, CoreTerm groundTerm) {
 		if (!groundTerm.isGround()) {
 			throw oops("Right-hand term is not ground.");
 		}
-		Term alreadyAssigned = substitution.get(variableTerm);
+		CoreTerm alreadyAssigned = substitution.get(variableTerm);
 		if (alreadyAssigned != null && alreadyAssigned != groundTerm) {
 			throw oops("Variable is already assigned to another term.");
 		}
@@ -203,7 +202,7 @@ public class Substitution {
 	public String toString() {
 		final StringBuilder ret = new StringBuilder("{");
 		boolean isFirst = true;
-		for (Map.Entry<VariableTerm, TermImpl> e : substitution.entrySet()) {
+		for (Map.Entry<VariableTerm, CoreTerm> e : substitution.entrySet()) {
 			if (isFirst) {
 				isFirst = false;
 			} else {
@@ -222,7 +221,7 @@ public class Substitution {
 		for (String assignment : assignments) {
 			String[] keyVal = assignment.split("->");
 			VariableTerm variable = VariableTerm.getInstance(keyVal[0]);
-			TermImpl assignedTerm = PROGRAM_PART_PARSER.parseTerm(keyVal[1]);
+			CoreTerm assignedTerm = PROGRAM_PART_PARSER.parseTerm(keyVal[1]);
 			ret.put(variable, assignedTerm);
 		}
 		return ret;

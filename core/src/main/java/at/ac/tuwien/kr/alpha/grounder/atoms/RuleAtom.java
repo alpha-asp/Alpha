@@ -27,21 +27,18 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
-import at.ac.tuwien.kr.alpha.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.atoms.CoreLiteral;
-import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import static at.ac.tuwien.kr.alpha.common.terms.CoreConstantTerm.getInstance;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static at.ac.tuwien.kr.alpha.common.terms.ConstantTermImpl.getInstance;
+import at.ac.tuwien.kr.alpha.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreLiteral;
+import at.ac.tuwien.kr.alpha.common.rule.InternalRule;
+import at.ac.tuwien.kr.alpha.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 /**
  * Atoms corresponding to rule bodies use this predicate, first term is rule number,
@@ -50,9 +47,9 @@ import static at.ac.tuwien.kr.alpha.common.terms.ConstantTermImpl.getInstance;
 public class RuleAtom extends CoreAtom {
 	public static final CorePredicate PREDICATE = CorePredicate.getInstance("_R_", 2, true, true);
 
-	private final List<ConstantTerm<String>> terms;
+	private final List<CoreConstantTerm<String>> terms;
 
-	private RuleAtom(List<ConstantTerm<String>> terms) {
+	private RuleAtom(List<CoreConstantTerm<String>> terms) {
 		if (terms.size() != 2) {
 			throw new IllegalArgumentException();
 		}
@@ -74,7 +71,7 @@ public class RuleAtom extends CoreAtom {
 	}
 
 	@Override
-	public List<? extends TermImpl> getTerms() {
+	public List<CoreTerm> getTerms() {
 		return Arrays.asList(terms.get(0), terms.get(1));
 	}
 
@@ -119,7 +116,7 @@ public class RuleAtom extends CoreAtom {
 	}
 
 	@Override
-	public CoreAtom withTerms(List<TermImpl> terms) {
+	public CoreAtom withTerms(List<CoreTerm> terms) {
 		throw new UnsupportedOperationException("RuleAtoms do not support setting of terms!");
 	}
 }

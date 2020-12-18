@@ -34,12 +34,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
 import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.common.atoms.VariableNormalizableAtom;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.TermImpl;
 import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 /**
@@ -57,9 +55,9 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
 public class IntervalAtom extends CoreAtom implements VariableNormalizableAtom {
 	private static final CorePredicate PREDICATE = CorePredicate.getInstance("_interval", 2, true);
 
-	private final List<Term> terms;
+	private final List<CoreTerm> terms;
 
-	public IntervalAtom(IntervalTerm intervalTerm, Term intervalRepresentingVariable) {
+	public IntervalAtom(IntervalTerm intervalTerm, CoreTerm intervalRepresentingVariable) {
 		this.terms = Arrays.asList(intervalTerm, intervalRepresentingVariable);
 	}
 
@@ -69,13 +67,13 @@ public class IntervalAtom extends CoreAtom implements VariableNormalizableAtom {
 	}
 
 	@Override
-	public List<Term> getTerms() {
+	public List<CoreTerm> getTerms() {
 		return terms;
 	}
 
 	@Override
 	public boolean isGround() {
-		for (Term t : this.terms) {
+		for (CoreTerm t : this.terms) {
 			if (!t.isGround()) {
 				return false;
 			}
@@ -127,12 +125,12 @@ public class IntervalAtom extends CoreAtom implements VariableNormalizableAtom {
 
 	@Override
 	public IntervalAtom normalizeVariables(String prefix, int counterStartingValue) {
-		List<Term> renamedTerms = TermImpl.renameTerms(terms, prefix, counterStartingValue);
+		List<CoreTerm> renamedTerms = CoreTerm.renameTerms(terms, prefix, counterStartingValue);
 		return new IntervalAtom((IntervalTerm) renamedTerms.get(0), renamedTerms.get(1));
 	}
 
 	@Override
-	public CoreAtom withTerms(List<TermImpl> terms) {
+	public CoreAtom withTerms(List<CoreTerm> terms) {
 		throw new UnsupportedOperationException("IntervalAtoms do not support setting of terms!");
 	}
 }

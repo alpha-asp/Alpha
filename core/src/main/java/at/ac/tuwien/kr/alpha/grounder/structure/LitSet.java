@@ -1,17 +1,16 @@
 package at.ac.tuwien.kr.alpha.grounder.structure;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.common.atoms.VariableNormalizableAtom;
-import at.ac.tuwien.kr.alpha.grounder.Unifier;
-import at.ac.tuwien.kr.alpha.grounder.Unification;
+import static at.ac.tuwien.kr.alpha.Util.oops;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import static at.ac.tuwien.kr.alpha.Util.oops;
+import at.ac.tuwien.kr.alpha.common.atoms.CoreAtom;
+import at.ac.tuwien.kr.alpha.common.atoms.VariableNormalizableAtom;
+import at.ac.tuwien.kr.alpha.grounder.Unification;
+import at.ac.tuwien.kr.alpha.grounder.Unifier;
 
 /**
  * Copyright (c) 2018, the Alpha Team.
@@ -119,7 +118,7 @@ public class LitSet {
 		return result;
 	}
 
-	private CoreAtom computeNormalized(Atom atom, String prefix) {
+	private CoreAtom computeNormalized(CoreAtom atom, String prefix) {
 		if (atom instanceof VariableNormalizableAtom) {
 			return ((VariableNormalizableAtom) atom).normalizeVariables(prefix, 0);
 		} else {
@@ -132,7 +131,7 @@ public class LitSet {
 		for (Unifier substitution : complementSubstitutions) {
 			Unifier preNormalizedSubstitution = normalizeSubstitution(atom, substitution, normalizedLiteral);
 			// Unifier may still contain variables in the right-hand side, those have to be normalized, too.
-			Atom appliedSub = normalizedLiteral.substitute(preNormalizedSubstitution);
+			CoreAtom appliedSub = normalizedLiteral.substitute(preNormalizedSubstitution);
 			// Apply substitution and normalize all remaining variables, i.e., those appearing at the right-hand side of the substitution.
 			CoreAtom normalized = computeNormalized(appliedSub, "_X");
 			// Compute final substitution from normalized atom to the one where also variables are normalized.

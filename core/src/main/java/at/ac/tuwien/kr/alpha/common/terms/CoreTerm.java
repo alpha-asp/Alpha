@@ -31,7 +31,7 @@ import at.ac.tuwien.kr.alpha.grounder.Substitution;
  * Copyright (c) 2016-2020, the Alpha Team.
  */
 //@formatter:on
-public abstract class TermImpl implements Term {
+public abstract class CoreTerm implements Comparable<CoreTerm> {
 
 	public abstract List<VariableTerm> getOccurringVariables();
 
@@ -41,9 +41,9 @@ public abstract class TermImpl implements Term {
 	 * @param substitution the variable substitution to apply.
 	 * @return the non-substitute term where all variable substitutions have been applied.
 	 */
-	public abstract TermImpl substitute(Substitution substitution);
+	public abstract CoreTerm substitute(Substitution substitution);
 
-	private static int priority(Term term) {
+	private static int priority(CoreTerm term) {
 		final Class<?> clazz = term.getClass();
 		if (clazz.equals(ConstantTerm.class)) {
 			return 1;
@@ -56,19 +56,21 @@ public abstract class TermImpl implements Term {
 	}
 
 	@Override
-	public int compareTo(Term o) {
+	public int compareTo(CoreTerm o) {
 		return o == null ? 1 : Integer.compare(priority(this), priority(o));
 	}
 
+	public abstract boolean isGround();
+	
 	/**
 	 * Rename all variables occurring in this Term by prefixing their name.
 	 * 
 	 * @param renamePrefix the name to prefix all occurring variables.
 	 * @return the term with all variables renamed.
 	 */
-	public abstract TermImpl renameVariables(String renamePrefix);
+	public abstract CoreTerm renameVariables(String renamePrefix);
 
-	public abstract TermImpl normalizeVariables(String renamePrefix, RenameCounter counter);
+	public abstract CoreTerm normalizeVariables(String renamePrefix, RenameCounter counter);
 
 	public static class RenameCounter {
 		int counter;
@@ -80,10 +82,10 @@ public abstract class TermImpl implements Term {
 		}
 	}
 
-	public static List<TermImpl> renameTerms(List<? extends TermImpl> terms, String prefix, int counterStartingValue) {
-		List<TermImpl> renamedTerms = new ArrayList<>(terms.size());
-		TermImpl.RenameCounter renameCounter = new TermImpl.RenameCounter(counterStartingValue);
-		for (TermImpl term : terms) {
+	public static List<CoreTerm> renameTerms(List<? extends CoreTerm> terms, String prefix, int counterStartingValue) {
+		List<CoreTerm> renamedTerms = new ArrayList<>(terms.size());
+		CoreTerm.RenameCounter renameCounter = new CoreTerm.RenameCounter(counterStartingValue);
+		for (CoreTerm term : terms) {
 			renamedTerms.add(term.normalizeVariables(prefix, renameCounter));
 		}
 		return renamedTerms;

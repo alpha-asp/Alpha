@@ -27,18 +27,20 @@
  */
 package at.ac.tuwien.kr.alpha.grounder.atoms;
 
-import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
-import com.google.common.collect.Sets;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
+import com.google.common.collect.Sets;
+
+import at.ac.tuwien.kr.alpha.common.atoms.FixedInterpretationLiteral;
+import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.grounder.Substitution;
 
 /**
  * @see IntervalAtom
@@ -61,26 +63,26 @@ public class IntervalLiteral extends FixedInterpretationLiteral {
 
 	private List<Substitution> getIntervalSubstitutions(Substitution partialSubstitution) {
 		List<Substitution> substitutions = new ArrayList<>();
-		List<Term> terms = getTerms();
-		Term intervalRepresentingVariable = terms.get(1);
+		List<CoreTerm> terms = getTerms();
+		CoreTerm intervalRepresentingVariable = terms.get(1);
 		IntervalTerm intervalTerm = (IntervalTerm) terms.get(0);
 		// Check whether intervalRepresentingVariable is bound already.
 		if (intervalRepresentingVariable instanceof VariableTerm) {
 			// Still a variable, generate all elements in the interval.
 			for (int i = intervalTerm.getLowerBound(); i <= intervalTerm.getUpperBound(); i++) {
 				Substitution ith = new Substitution(partialSubstitution);
-				ith.put((VariableTerm) intervalRepresentingVariable, ConstantTerm.getInstance(i));
+				ith.put((VariableTerm) intervalRepresentingVariable, CoreConstantTerm.getInstance(i));
 				substitutions.add(ith);
 			}
 			return substitutions;
 		} else {
 			// The intervalRepresentingVariable is bound already, check if it is in the interval.
 			if (!(intervalRepresentingVariable instanceof ConstantTerm)
-				|| !(((ConstantTerm<?>) intervalRepresentingVariable).getObject() instanceof Integer)) {
+				|| !(((CoreConstantTerm<?>) intervalRepresentingVariable).getObject() instanceof Integer)) {
 				// Term is not bound to an integer constant, not in the interval.
 				return Collections.emptyList();
 			}
-			Integer integer = (Integer) ((ConstantTerm<?>) intervalRepresentingVariable).getObject();
+			Integer integer = (Integer) ((CoreConstantTerm<?>) intervalRepresentingVariable).getObject();
 			if (intervalTerm.getLowerBound() <= integer && integer <= intervalTerm.getUpperBound()) {
 				return Collections.singletonList(partialSubstitution);
 			}
@@ -90,7 +92,7 @@ public class IntervalLiteral extends FixedInterpretationLiteral {
 
 	@Override
 	public Set<VariableTerm> getBindingVariables() {
-		Term term = getTerms().get(1);
+		CoreTerm term = getTerms().get(1);
 		if (term instanceof VariableTerm) {
 			return Collections.singleton((VariableTerm) term);
 		}

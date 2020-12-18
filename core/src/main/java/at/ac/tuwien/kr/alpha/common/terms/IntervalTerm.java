@@ -13,17 +13,17 @@ import static at.ac.tuwien.kr.alpha.Util.oops;
  * An IntervalTerm is a meta-term and the grounder must replace it with its corresponding set of facts or rules.
  * Copyright (c) 2017, the Alpha Team.
  */
-public class IntervalTerm extends TermImpl {
+public class IntervalTerm extends CoreTerm {
 	private static final Interner<IntervalTerm> INTERNER = new Interner<>();
-	private final TermImpl lowerBoundTerm;
-	private final TermImpl upperBoundTerm;
+	private final CoreTerm lowerBoundTerm;
+	private final CoreTerm upperBoundTerm;
 
 	private final int lowerBound;
 	private final int upperBound;
 
 	private final boolean ground;
 
-	private IntervalTerm(TermImpl lowerBound, TermImpl upperBound) {
+	private IntervalTerm(CoreTerm lowerBound, CoreTerm upperBound) {
 		if (lowerBound == null || upperBound == null) {
 			throw new IllegalArgumentException();
 		}
@@ -42,7 +42,7 @@ public class IntervalTerm extends TermImpl {
 		}
 	}
 
-	public static IntervalTerm getInstance(TermImpl lowerBound, TermImpl upperBound) {
+	public static IntervalTerm getInstance(CoreTerm lowerBound, CoreTerm upperBound) {
 		return INTERNER.intern(new IntervalTerm(lowerBound, upperBound));
 	}
 
@@ -114,17 +114,17 @@ public class IntervalTerm extends TermImpl {
 	}
 
 	@Override
-	public int compareTo(Term o) {
+	public int compareTo(CoreTerm o) {
 		throw new UnsupportedOperationException("Intervals cannot be compared.");
 	}
 
 	@Override
-	public TermImpl renameVariables(String renamePrefix) {
+	public CoreTerm renameVariables(String renamePrefix) {
 		return new IntervalTerm(lowerBoundTerm.renameVariables(renamePrefix), upperBoundTerm.renameVariables(renamePrefix));
 	}
 
 	@Override
-	public TermImpl normalizeVariables(String renamePrefix, RenameCounter counter) {
+	public CoreTerm normalizeVariables(String renamePrefix, RenameCounter counter) {
 		return IntervalTerm.getInstance(
 			lowerBoundTerm.normalizeVariables(renamePrefix, counter),
 			upperBoundTerm.normalizeVariables(renamePrefix, counter));
@@ -135,7 +135,7 @@ public class IntervalTerm extends TermImpl {
 	 * @param term the term to test
 	 * @return true iff an IntervalTerm occurs in term.
 	 */
-	public static boolean termContainsIntervalTerm(Term term) {
+	public static boolean termContainsIntervalTerm(CoreTerm term) {
 		if (term instanceof IntervalTerm) {
 			return true;
 		} else if (term instanceof FunctionTerm) {
@@ -147,7 +147,7 @@ public class IntervalTerm extends TermImpl {
 
 	public static boolean functionTermContainsIntervals(FunctionTerm functionTerm) {
 		// Test whether a function term contains an interval term (recursively).
-		for (Term term : functionTerm.getTerms()) {
+		for (CoreTerm term : functionTerm.getTerms()) {
 			if (term instanceof IntervalTerm) {
 				return true;
 			}

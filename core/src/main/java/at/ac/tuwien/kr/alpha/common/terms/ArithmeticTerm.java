@@ -39,23 +39,23 @@ import java.util.List;
  * This class represents an arithmetic expression occurring as a term.
  * Copyright (c) 2017-2019, the Alpha Team.
  */
-public class ArithmeticTerm extends TermImpl {
+public class ArithmeticTerm extends CoreTerm {
 	private static final Interner<ArithmeticTerm> INTERNER = new Interner<>();
-	protected final TermImpl left;
+	protected final CoreTerm left;
 	private final ArithmeticOperator arithmeticOperator;
-	private final TermImpl right;
+	private final CoreTerm right;
 
-	private ArithmeticTerm(TermImpl left, ArithmeticOperator arithmeticOperator, TermImpl right) {
+	private ArithmeticTerm(CoreTerm left, ArithmeticOperator arithmeticOperator, CoreTerm right) {
 		this.left = left;
 		this.arithmeticOperator = arithmeticOperator;
 		this.right = right;
 	}
 
-	public static TermImpl getInstance(TermImpl left, ArithmeticOperator arithmeticOperator, TermImpl right) {
+	public static CoreTerm getInstance(CoreTerm left, ArithmeticOperator arithmeticOperator, CoreTerm right) {
 		// Evaluate ground arithmetic terms immediately and return result.
 		if (left.isGround() && right.isGround()) {
 			Integer result = new ArithmeticTerm(left, arithmeticOperator, right).evaluateExpression();
-			return ConstantTermImpl.getInstance(result);
+			return CoreConstantTerm.getInstance(result);
 		}
 		return INTERNER.intern(new ArithmeticTerm(left, arithmeticOperator, right));
 	}
@@ -74,35 +74,35 @@ public class ArithmeticTerm extends TermImpl {
 	}
 
 	@Override
-	public TermImpl substitute(Substitution substitution) {
+	public CoreTerm substitute(Substitution substitution) {
 		return getInstance(left.substitute(substitution), arithmeticOperator, right.substitute(substitution));
 	}
 
 	@Override
-	public TermImpl renameVariables(String renamePrefix) {
+	public CoreTerm renameVariables(String renamePrefix) {
 		return getInstance(left.renameVariables(renamePrefix), arithmeticOperator, right.renameVariables(renamePrefix));
 	}
 
 	@Override
-	public TermImpl normalizeVariables(String renamePrefix, RenameCounter counter) {
-		TermImpl normalizedLeft = left.normalizeVariables(renamePrefix, counter);
-		TermImpl normalizedRight = right.normalizeVariables(renamePrefix, counter);
+	public CoreTerm normalizeVariables(String renamePrefix, RenameCounter counter) {
+		CoreTerm normalizedLeft = left.normalizeVariables(renamePrefix, counter);
+		CoreTerm normalizedRight = right.normalizeVariables(renamePrefix, counter);
 		return ArithmeticTerm.getInstance(normalizedLeft, arithmeticOperator, normalizedRight);
 
 	}
 
-	public static Integer evaluateGroundTerm(Term term) {
+	public static Integer evaluateGroundTerm(CoreTerm term) {
 		if (!term.isGround()) {
 			throw new RuntimeException("Cannot evaluate arithmetic term since it is not ground: " + term);
 		}
 		return evaluateGroundTermHelper(term);
 	}
 
-	private static Integer evaluateGroundTermHelper(Term term) {
-		if (term instanceof ConstantTerm
-			&& ((ConstantTermImpl<?>) term).getObject() instanceof Integer) {
+	private static Integer evaluateGroundTermHelper(CoreTerm term) {
+		if (term instanceof CoreConstantTerm
+			&& ((CoreConstantTerm<?>) term).getObject() instanceof Integer) {
 			// Extract integer from the constant.
-			return (Integer) ((ConstantTermImpl<?>) term).getObject();
+			return (Integer) ((CoreConstantTerm<?>) term).getObject();
 		} else if (term instanceof ArithmeticTerm) {
 			return ((ArithmeticTerm) term).evaluateExpression();
 		} else {
@@ -196,16 +196,16 @@ public class ArithmeticTerm extends TermImpl {
 
 	public static class MinusTerm extends ArithmeticTerm {
 
-		private MinusTerm(TermImpl term) {
+		private MinusTerm(CoreTerm term) {
 			super(term, null, null);
 		}
 
 
-		public static TermImpl getInstance(TermImpl term) {
+		public static CoreTerm getInstance(CoreTerm term) {
 			// Evaluate ground arithmetic terms immediately and return result.
 			if (term.isGround()) {
 				Integer result = evaluateGroundTermHelper(term) * -1;
-				return ConstantTermImpl.getInstance(result);
+				return CoreConstantTerm.getInstance(result);
 			}
 			return INTERNER.intern(new MinusTerm(term));
 		}
@@ -226,18 +226,18 @@ public class ArithmeticTerm extends TermImpl {
 		}
 
 		@Override
-		public TermImpl substitute(Substitution substitution) {
+		public CoreTerm substitute(Substitution substitution) {
 			return getInstance(left.substitute(substitution));
 		}
 
 		@Override
-		public TermImpl renameVariables(String renamePrefix) {
+		public CoreTerm renameVariables(String renamePrefix) {
 			return getInstance(left.renameVariables(renamePrefix));
 		}
 		
 		@Override
-		public TermImpl normalizeVariables(String renamePrefix, RenameCounter counter) {
-			TermImpl normalizedLeft = left.normalizeVariables(renamePrefix, counter);
+		public CoreTerm normalizeVariables(String renamePrefix, RenameCounter counter) {
+			CoreTerm normalizedLeft = left.normalizeVariables(renamePrefix, counter);
 			return MinusTerm.getInstance(normalizedLeft);
 		}
 
