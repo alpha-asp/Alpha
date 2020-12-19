@@ -43,27 +43,27 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.ac.tuwien.kr.alpha.Util;
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.AtomStore;
-import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
-import at.ac.tuwien.kr.alpha.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
-import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
 import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.config.SystemConfig;
-import at.ac.tuwien.kr.alpha.grounder.Grounder;
-import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
+import at.ac.tuwien.kr.alpha.core.common.CoreAnswerSet;
+import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
+import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
+import at.ac.tuwien.kr.alpha.core.programs.NormalProgram;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
+import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
+import at.ac.tuwien.kr.alpha.core.solver.Solver;
+import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
+import at.ac.tuwien.kr.alpha.core.util.Util;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
-import at.ac.tuwien.kr.alpha.grounder.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.grounder.transformation.NormalizeProgramTransformation;
-import at.ac.tuwien.kr.alpha.grounder.transformation.StratifiedEvaluation;
-import at.ac.tuwien.kr.alpha.solver.Solver;
-import at.ac.tuwien.kr.alpha.solver.SolverFactory;
 
 public class AlphaImpl {
 
@@ -149,7 +149,7 @@ public class AlphaImpl {
 	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the
 	 * program analysis and normalization aren't of interest.
 	 */
-	public Stream<AnswerSet> solve(InputProgram program) {
+	public Stream<CoreAnswerSet> solve(InputProgram program) {
 		return solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
@@ -157,7 +157,7 @@ public class AlphaImpl {
 	 * Convenience method - overloaded version of solve({@link InternalProgram}, {@link Predicate}) for cases where
 	 * details of the program analysis and normalization aren't of interest.
 	 */
-	public Stream<AnswerSet> solve(InputProgram program, java.util.function.Predicate<Predicate> filter) {
+	public Stream<CoreAnswerSet> solve(InputProgram program, java.util.function.Predicate<Predicate> filter) {
 		NormalProgram normalized = normalizeProgram(program);
 		return solve(normalized, filter);
 	}
@@ -166,7 +166,7 @@ public class AlphaImpl {
 	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the
 	 * program analysis aren't of interest.
 	 */
-	public Stream<AnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
+	public Stream<CoreAnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
 		InternalProgram preprocessed = performProgramPreprocessing(InternalProgram.fromNormalProgram(program));
 		return solve(preprocessed, filter);
 	}
@@ -178,7 +178,7 @@ public class AlphaImpl {
 	 * @param program the program to solve
 	 * @return a stream of answer sets
 	 */
-	public Stream<AnswerSet> solve(InternalProgram program) {
+	public Stream<CoreAnswerSet> solve(InternalProgram program) {
 		return solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
@@ -189,8 +189,8 @@ public class AlphaImpl {
 	 * @param filter       {@link Predicate} filtering {@at.ac.tuwien.kr.alpha.common.Predicate}s in the returned answer sets
 	 * @return a Stream of answer sets representing stable models of the given program
 	 */
-	public Stream<AnswerSet> solve(InternalProgram program, java.util.function.Predicate<CorePredicate> filter) {
-		Stream<AnswerSet> retVal = prepareSolverFor(program, filter).stream();
+	public Stream<CoreAnswerSet> solve(InternalProgram program, java.util.function.Predicate<CorePredicate> filter) {
+		Stream<CoreAnswerSet> retVal = prepareSolverFor(program, filter).stream();
 		return config.isSortAnswerSets() ? retVal.sorted() : retVal;
 	}
 

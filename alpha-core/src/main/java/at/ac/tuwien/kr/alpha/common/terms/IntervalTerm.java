@@ -1,12 +1,12 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
-import at.ac.tuwien.kr.alpha.common.Interner;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.core.common.Interner;
+import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+
+import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
 
 import java.util.LinkedList;
 import java.util.List;
-
-import static at.ac.tuwien.kr.alpha.Util.oops;
 
 /**
  * An IntervalTerm represents the shorthand notation for a set of rules where all elements in this interval occur once, e.g., fact(2..5).

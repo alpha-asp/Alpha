@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 //@formatter:off
 /**
@@ -45,7 +45,7 @@ public abstract class CoreTerm implements Comparable<CoreTerm> {
 
 	private static int priority(CoreTerm term) {
 		final Class<?> clazz = term.getClass();
-		if (clazz.equals(ConstantTerm.class)) {
+		if (clazz.equals(CoreConstantTerm.class)) {
 			return 1;
 		} else if (clazz.equals(FunctionTerm.class)) {
 			return 2;

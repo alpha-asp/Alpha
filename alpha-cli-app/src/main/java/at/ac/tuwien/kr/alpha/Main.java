@@ -27,27 +27,6 @@
  */
 package at.ac.tuwien.kr.alpha;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
-import at.ac.tuwien.kr.alpha.common.AnswerSetFormatter;
-import at.ac.tuwien.kr.alpha.common.SimpleAnswerSetFormatter;
-import at.ac.tuwien.kr.alpha.common.depgraph.ComponentGraph;
-import at.ac.tuwien.kr.alpha.common.depgraph.DependencyGraph;
-import at.ac.tuwien.kr.alpha.common.graphio.ComponentGraphWriter;
-import at.ac.tuwien.kr.alpha.common.graphio.DependencyGraphWriter;
-import at.ac.tuwien.kr.alpha.common.program.AnalyzedProgram;
-import at.ac.tuwien.kr.alpha.common.program.InputProgram;
-import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
-import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
-import at.ac.tuwien.kr.alpha.config.AlphaConfig;
-import at.ac.tuwien.kr.alpha.config.CommandLineParser;
-import at.ac.tuwien.kr.alpha.config.InputConfig;
-import at.ac.tuwien.kr.alpha.solver.Solver;
-import at.ac.tuwien.kr.alpha.solver.SolverMaintainingStatistics;
-import org.antlr.v4.runtime.RecognitionException;
-import org.apache.commons.cli.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -58,6 +37,28 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.antlr.v4.runtime.RecognitionException;
+import org.apache.commons.cli.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import at.ac.tuwien.kr.alpha.app.ComponentGraphWriter;
+import at.ac.tuwien.kr.alpha.app.DependencyGraphWriter;
+import at.ac.tuwien.kr.alpha.config.AlphaConfig;
+import at.ac.tuwien.kr.alpha.config.CommandLineParser;
+import at.ac.tuwien.kr.alpha.config.InputConfig;
+import at.ac.tuwien.kr.alpha.core.common.AnswerSetFormatter;
+import at.ac.tuwien.kr.alpha.core.common.CoreAnswerSet;
+import at.ac.tuwien.kr.alpha.core.common.SimpleAnswerSetFormatter;
+import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph;
+import at.ac.tuwien.kr.alpha.core.depgraph.DependencyGraph;
+import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
+import at.ac.tuwien.kr.alpha.core.programs.NormalProgram;
+import at.ac.tuwien.kr.alpha.core.solver.Solver;
+import at.ac.tuwien.kr.alpha.core.solver.SolverMaintainingStatistics;
 
 /**
  * Main entry point for Alpha.
@@ -172,7 +173,7 @@ public class Main {
 
 	private static void computeAndConsumeAnswerSets(AlphaImpl alpha, InputConfig inputCfg, InternalProgram program) {
 		Solver solver = alpha.prepareSolverFor(program, inputCfg.getFilter());
-		Stream<AnswerSet> stream = solver.stream();
+		Stream<CoreAnswerSet> stream = solver.stream();
 		if (alpha.getConfig().isSortAnswerSets()) {
 			stream = stream.sorted();
 		}
@@ -184,13 +185,13 @@ public class Main {
 
 		if (!alpha.getConfig().isQuiet()) {
 			AtomicInteger counter = new AtomicInteger(0);
-			final BiConsumer<Integer, AnswerSet> answerSetHandler;
+			final BiConsumer<Integer, CoreAnswerSet> answerSetHandler;
 			final AnswerSetFormatter<String> fmt = new SimpleAnswerSetFormatter(alpha.getConfig().getAtomSeparator());
-			BiConsumer<Integer, AnswerSet> stdoutPrinter = (n, as) -> {
+			BiConsumer<Integer, CoreAnswerSet> stdoutPrinter = (n, as) -> {
 				System.out.println("Answer set " + Integer.toString(n) + ":" + System.lineSeparator() + fmt.format(as));
 			};
 			if (inputCfg.isWriteAnswerSetsAsXlsx()) {
-				BiConsumer<Integer, AnswerSet> xlsxWriter = new AnswerSetToXlsxWriter(inputCfg.getAnswerSetFileOutputPath());
+				BiConsumer<Integer, CoreAnswerSet> xlsxWriter = new AnswerSetToXlsxWriter(inputCfg.getAnswerSetFileOutputPath());
 				answerSetHandler = stdoutPrinter.andThen(xlsxWriter);
 			} else {
 				answerSetHandler = stdoutPrinter;

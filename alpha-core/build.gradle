@@ -20,6 +20,8 @@ configurations {
 
 dependencies {
 
+	api project(":alpha-api")
+
     // We need to give the ANTLR Plugin a hint.
     antlr group: 'org.antlr', name: 'antlr4', version: "${antlrVersion}"
 

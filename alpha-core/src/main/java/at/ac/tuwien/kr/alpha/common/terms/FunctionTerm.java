@@ -1,11 +1,11 @@
 package at.ac.tuwien.kr.alpha.common.terms;
 
-import at.ac.tuwien.kr.alpha.common.Interner;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.core.common.Interner;
+import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+
+import static at.ac.tuwien.kr.alpha.core.util.Util.join;
 
 import java.util.*;
-
-import static at.ac.tuwien.kr.alpha.Util.join;
 
 /**
  * Copyright (c) 2016-2017, the Alpha Team.

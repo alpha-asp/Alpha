@@ -16,9 +16,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import at.ac.tuwien.kr.alpha.api.mapper.AnswerSetToObjectMapper;
 import at.ac.tuwien.kr.alpha.api.mapper.AnswerSetToWorkbookMapper;
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.core.common.CoreAnswerSet;
 
-public class AnswerSetToXlsxWriter implements BiConsumer<Integer, AnswerSet> {
+public class AnswerSetToXlsxWriter implements BiConsumer<Integer, CoreAnswerSet> {
 
 	private String targetBasePath;
 	private AnswerSetToObjectMapper<Workbook> answerSetMapper;
@@ -29,7 +29,7 @@ public class AnswerSetToXlsxWriter implements BiConsumer<Integer, AnswerSet> {
 	}
 
 	@Override
-	public void accept(Integer num, AnswerSet as) {
+	public void accept(Integer num, CoreAnswerSet as) {
 		try {
 			Path outputPath = Paths.get(this.targetBasePath + "." + num + ".xlsx");
 			OutputStream os = Files.newOutputStream(outputPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
