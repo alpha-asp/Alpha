@@ -25,7 +25,7 @@
  */
 package at.ac.tuwien.kr.alpha.api.mapper;
 
-import at.ac.tuwien.kr.alpha.common.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
 
 /**
  * Copyright (c) 2020, the Alpha Team.

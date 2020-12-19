@@ -27,9 +27,9 @@
  */
 package at.ac.tuwien.kr.alpha.core.common.fixedinterpretations;
 
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-
 import java.util.List;
+
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 
 public class BinaryPredicateInterpretation<T, U> extends NonBindingPredicateInterpretation {
 	private final java.util.function.BiPredicate<T, U> predicate;

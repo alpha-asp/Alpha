@@ -27,14 +27,14 @@
  */
 package at.ac.tuwien.kr.alpha.core.atoms;
 
-import static at.ac.tuwien.kr.alpha.common.terms.CoreConstantTerm.getInstance;
+import static at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm.getInstance;
 
 import java.util.Arrays;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 

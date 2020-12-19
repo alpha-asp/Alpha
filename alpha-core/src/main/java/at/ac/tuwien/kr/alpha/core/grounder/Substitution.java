@@ -35,12 +35,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
-import at.ac.tuwien.kr.alpha.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramPartParser;
 
 public class Substitution {

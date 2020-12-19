@@ -10,10 +10,10 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import at.ac.tuwien.kr.alpha.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 
 public class AnswerSetBuilder {
 	private boolean firstInstance = true;

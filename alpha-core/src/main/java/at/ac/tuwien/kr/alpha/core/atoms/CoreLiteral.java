@@ -27,9 +27,9 @@
  */
 package at.ac.tuwien.kr.alpha.core.atoms;
 
-import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 import org.apache.commons.collections4.SetUtils;

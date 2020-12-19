@@ -31,10 +31,10 @@ import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
 
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
 
 /**
  * Copyright (c) 2017, the Alpha Team.

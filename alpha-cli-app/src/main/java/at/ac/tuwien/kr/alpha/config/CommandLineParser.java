@@ -27,8 +27,12 @@
  */
 package at.ac.tuwien.kr.alpha.config;
 
-import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimationStrategy;
-import at.ac.tuwien.kr.alpha.solver.heuristics.Heuristic;
+import at.ac.tuwien.kr.alpha.api.config.AlphaConfig;
+import at.ac.tuwien.kr.alpha.api.config.InputConfig;
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.api.solver.BinaryNoGoodPropagationEstimationStrategy;
+import at.ac.tuwien.kr.alpha.api.solver.heuristics.Heuristic;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;

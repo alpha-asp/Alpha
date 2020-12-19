@@ -25,8 +25,8 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.api.solver.BinaryNoGoodPropagationEstimationStrategy;
 import at.ac.tuwien.kr.alpha.core.solver.BinaryNoGoodPropagationEstimation;
-import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimationStrategy;
 
 /**
  * The well-known MOMs (Maximum Occurrences in clauses of Minimum size) heuristic

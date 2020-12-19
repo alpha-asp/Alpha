@@ -34,10 +34,10 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-import at.ac.tuwien.kr.alpha.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 /**

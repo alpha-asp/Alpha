@@ -5,10 +5,10 @@ import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
 import java.util.HashMap;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 /**

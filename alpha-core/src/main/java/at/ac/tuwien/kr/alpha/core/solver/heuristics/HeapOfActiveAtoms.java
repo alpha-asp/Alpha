@@ -25,12 +25,12 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.api.solver.BinaryNoGoodPropagationEstimationStrategy;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type;
 import at.ac.tuwien.kr.alpha.core.solver.BinaryNoGoodPropagationEstimation;
 import at.ac.tuwien.kr.alpha.core.solver.ChoiceInfluenceManager;
 import at.ac.tuwien.kr.alpha.core.solver.ChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimationStrategy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

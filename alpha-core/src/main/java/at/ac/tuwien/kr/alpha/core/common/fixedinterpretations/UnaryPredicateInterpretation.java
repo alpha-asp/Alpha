@@ -27,9 +27,9 @@
  */
 package at.ac.tuwien.kr.alpha.core.common.fixedinterpretations;
 
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-
 import java.util.List;
+
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 
 public class UnaryPredicateInterpretation<T> extends NonBindingPredicateInterpretation {
 	private final java.util.function.Predicate<T> predicate;

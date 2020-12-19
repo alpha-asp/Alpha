@@ -33,9 +33,9 @@ import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
 import java.util.Arrays;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 /**

@@ -27,9 +27,9 @@
  */
 package at.ac.tuwien.kr.alpha.core.common.fixedinterpretations;
 
-import at.ac.tuwien.kr.alpha.common.fixedinterpretations.BindingPredicateInterpretation;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.Term;
+import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.BindingPredicateInterpretation;
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
 
 import java.util.List;
 import java.util.Set;

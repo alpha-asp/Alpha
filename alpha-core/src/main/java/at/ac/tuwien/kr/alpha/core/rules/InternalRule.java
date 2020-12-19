@@ -32,11 +32,11 @@ import java.util.List;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingOrders;
 import at.ac.tuwien.kr.alpha.core.grounder.Unifier;

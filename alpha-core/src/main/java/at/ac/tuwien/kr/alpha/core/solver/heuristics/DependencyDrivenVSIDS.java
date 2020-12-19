@@ -25,9 +25,9 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
+import at.ac.tuwien.kr.alpha.api.solver.BinaryNoGoodPropagationEstimationStrategy;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.solver.ChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.BinaryNoGoodPropagationEstimationStrategy;
 
 import java.util.Random;
 

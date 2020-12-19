@@ -27,7 +27,7 @@
  */
 package at.ac.tuwien.kr.alpha.core.atoms;
 
-import static at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm.evaluateGroundTerm;
+import static at.ac.tuwien.kr.alpha.core.common.terms.ArithmeticTerm.evaluateGroundTerm;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,12 +35,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import at.ac.tuwien.kr.alpha.common.atoms.Literal;
-import at.ac.tuwien.kr.alpha.common.terms.ArithmeticTerm;
-import at.ac.tuwien.kr.alpha.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.core.common.terms.ArithmeticTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 /**

@@ -4,10 +4,10 @@ import static at.ac.tuwien.kr.alpha.core.util.Util.join;
 
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperator;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 
 /**
  * Represents the head of a choice rule.

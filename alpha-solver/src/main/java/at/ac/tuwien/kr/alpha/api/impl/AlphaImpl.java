@@ -43,10 +43,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.ac.tuwien.kr.alpha.common.Predicate;
-import at.ac.tuwien.kr.alpha.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.config.InputConfig;
-import at.ac.tuwien.kr.alpha.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.api.config.InputConfig;
+import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
+import at.ac.tuwien.kr.alpha.api.grounder.heuristics.GrounderHeuristicsConfiguration;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.core.api.PublicToCoreApiMapper;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.CoreAnswerSet;
@@ -63,9 +66,8 @@ import at.ac.tuwien.kr.alpha.core.programs.transformation.StratifiedEvaluation;
 import at.ac.tuwien.kr.alpha.core.solver.Solver;
 import at.ac.tuwien.kr.alpha.core.solver.SolverFactory;
 import at.ac.tuwien.kr.alpha.core.util.Util;
-import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 
-public class AlphaImpl {
+public class AlphaImpl implements Alpha {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlphaImpl.class);
 
@@ -168,7 +170,7 @@ public class AlphaImpl {
 	 */
 	public Stream<CoreAnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
 		InternalProgram preprocessed = performProgramPreprocessing(InternalProgram.fromNormalProgram(program));
-		return solve(preprocessed, filter);
+		return solve(preprocessed, PublicToCoreApiMapper.mapPredicateFilter(filter));
 	}
 
 	/**
@@ -179,14 +181,14 @@ public class AlphaImpl {
 	 * @return a stream of answer sets
 	 */
 	public Stream<CoreAnswerSet> solve(InternalProgram program) {
-		return solve(program, InputConfig.DEFAULT_FILTER);
+		return solve(program, PublicToCoreApiMapper.mapPredicateFilter(InputConfig.DEFAULT_FILTER));
 	}
 
 	/**
 	 * Solves the given program and filters answer sets based on the passed predicate.
 	 * 
 	 * @param program an {@link InternalProgram} to solve
-	 * @param filter       {@link Predicate} filtering {@at.ac.tuwien.kr.alpha.common.Predicate}s in the returned answer sets
+	 * @param filter  {@link Predicate} filtering {@at.ac.tuwien.kr.alpha.common.Predicate}s in the returned answer sets
 	 * @return a Stream of answer sets representing stable models of the given program
 	 */
 	public Stream<CoreAnswerSet> solve(InternalProgram program, java.util.function.Predicate<CorePredicate> filter) {

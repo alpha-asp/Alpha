@@ -1,7 +1,11 @@
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import at.ac.tuwien.kr.alpha.common.terms.*;
+import at.ac.tuwien.kr.alpha.api.terms.*;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.IntervalTerm;
 
 import java.util.ArrayList;
 import java.util.Collections;

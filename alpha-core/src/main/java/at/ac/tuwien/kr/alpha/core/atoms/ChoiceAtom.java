@@ -32,9 +32,9 @@ import static at.ac.tuwien.kr.alpha.core.util.Util.join;
 import java.util.Collections;
 import java.util.List;
 
-import at.ac.tuwien.kr.alpha.common.terms.CoreConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 public class ChoiceAtom extends CoreAtom {

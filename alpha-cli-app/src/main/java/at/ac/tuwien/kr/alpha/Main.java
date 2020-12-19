@@ -43,11 +43,13 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.api.config.AlphaConfig;
+import at.ac.tuwien.kr.alpha.api.config.InputConfig;
+import at.ac.tuwien.kr.alpha.api.impl.AlphaImpl;
 import at.ac.tuwien.kr.alpha.app.ComponentGraphWriter;
 import at.ac.tuwien.kr.alpha.app.DependencyGraphWriter;
-import at.ac.tuwien.kr.alpha.config.AlphaConfig;
 import at.ac.tuwien.kr.alpha.config.CommandLineParser;
-import at.ac.tuwien.kr.alpha.config.InputConfig;
 import at.ac.tuwien.kr.alpha.core.common.AnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.core.common.CoreAnswerSet;
 import at.ac.tuwien.kr.alpha.core.common.SimpleAnswerSetFormatter;
@@ -79,7 +81,7 @@ public class Main {
 			Main.exitWithMessage(commandLineParser.getUsageMessage(), 1);
 		}
 
-		AlphaImpl alpha = new AlphaImpl(cfg.getSystemConfig());
+		Alpha alpha = new AlphaImpl(cfg.getSystemConfig());
 
 		InputProgram program = null;
 		try {
@@ -152,7 +154,7 @@ public class Main {
 	/**
 	 * Writes the given {@link InternalProgram} to the destination passed as the second parameter
 	 * 
-	 * @param prg   the program to write
+	 * @param prg  the program to write
 	 * @param path the path to write the program to
 	 */
 	private static void writeInternalProgram(InternalProgram prg, String path) {

@@ -25,11 +25,10 @@
  */
 package at.ac.tuwien.kr.alpha.core.externals;
 
+import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.*;
 import at.ac.tuwien.kr.alpha.api.externals.Predicate;
-import at.ac.tuwien.kr.alpha.common.atoms.Atom;
-import at.ac.tuwien.kr.alpha.common.fixedinterpretations.*;
-import at.ac.tuwien.kr.alpha.common.terms.ConstantTerm;
-import at.ac.tuwien.kr.alpha.common.terms.CoreConstantTerm;
+import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.BinaryPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.BindingMethodPredicateInterpretation;
@@ -38,6 +37,7 @@ import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.LongPredicateInter
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.MethodPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.SuppliedPredicateInterpretation;
 import at.ac.tuwien.kr.alpha.core.common.fixedinterpretations.UnaryPredicateInterpretation;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
