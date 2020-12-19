@@ -1,0 +1,15 @@
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- Reference at http://logback.qos.ch/manual/layouts.html#conversionWord -->
+            <pattern>%5relative %.-1level %20.20logger %msg %n</pattern>
+        </encoder>
+    </appender>
+    
+    <logger name="at.ac.tuwien.kr.alpha.grounder.NaiveGrounder" level="INFO"/>
+    <logger name="at.ac.tuwien.kr.alpha.solver" level="INFO"/>
+    
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>

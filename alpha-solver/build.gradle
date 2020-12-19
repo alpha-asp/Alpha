@@ -1,0 +1,10 @@
+plugins {
+    id 'alpha.java-library-conventions'
+}
+
+dependencies {
+	
+	api project(":alpha-api")
+	implementation project(":alpha-core")
+}
+

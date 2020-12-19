@@ -1,0 +1,40 @@
+plugins {
+    id 'alpha.java-application-conventions'
+}
+
+dependencies {
+    implementation project(':alpha-core')
+    implementation project(':alpha-api')
+
+    implementation group: 'commons-cli',        name: 'commons-cli',          version: '1.3.1'
+}
+
+def mainClassName = 'at.ac.tuwien.kr.alpha.Main'
+
+application {
+    mainClass = mainClassName
+}
+
+task bundledJar(type: Jar) {
+	manifest {
+		attributes 'Main-Class': mainClassName
+	}
+
+	from {
+		configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+	}
+
+	archiveFileName = "${project.name}-bundled.jar"
+	
+	/*
+	 * In order to make sure we don't overwrite NOTICE and LICENSE files coming from dependency
+	 * jars with each other, number them while copying
+	 */
+	int i = 1
+	rename { name -> (name.equals("NOTICE.txt") || name.equals("NOTICE")) ? "NOTICE." + (i++) + ".txt" :  null }
+
+	int j = 1
+	rename { name -> (name.equals("LICENSE.txt") || name.equals("LICENSE")) ? "LICENSE." + (j++) + ".txt" : null }
+
+	with jar
+}
