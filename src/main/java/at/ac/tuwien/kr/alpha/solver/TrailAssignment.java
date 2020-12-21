@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -517,7 +517,7 @@ public class TrailAssignment implements WritableAssignment, Checkable {
 	public boolean closeUnassignedAtoms() {
 		boolean didAssign = false;
 		for (int i = 1; i <= atomStore.getMaxAtomId(); i++) {
-			if (!isAssigned(i)) {
+			if (!isAssigned(i) && !atomStore.isExemptFromClosing(i)) {
 				assign(i, FALSE, CLOSING_INDICATOR_ANTECEDENT);
 				didAssign = true;
 			}

@@ -119,7 +119,7 @@ public class NoGoodGenerator {
 			return emptyList(); // heuristic can never be applicable
 		}
 		final List<NoGood> result = new ArrayList<>(heuristicNoGoods);
-		final int bodyRepresentingAtom = atomStore.get(bodyAtom);
+		final int bodyRepresentingAtom = atomStore.putIfAbsent(bodyAtom, true);
 
 		// if the head of the heuristic directive is assigned, the body of the heuristic rule shall also be assigned s.t. it is not applicable anymore:
 		boolean heuristicSign = groundHeadAtom.getHeadSign().toBoolean();

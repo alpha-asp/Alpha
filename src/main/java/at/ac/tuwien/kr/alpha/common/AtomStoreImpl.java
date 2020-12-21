@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2019, the Alpha Team.
+/*
+ * Copyright (c) 2016-2020, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -34,8 +34,10 @@ import at.ac.tuwien.kr.alpha.solver.AtomCounter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.Util.oops;
 
@@ -47,6 +49,7 @@ public class AtomStoreImpl implements AtomStore {
 	private final Map<Atom, Integer> predicateInstancesToAtomIds = new HashMap<>();
 	private final IntIdGenerator atomIdGenerator = new IntIdGenerator(1);
 	private final AtomCounter atomCounter = new AtomCounter();
+	private final Set<Integer> atomsExemptFromClosing = new HashSet<>();
 
 	private final List<Integer> releasedAtomIds = new ArrayList<>();	// contains atomIds ready to be garbage collected if necessary.
 
@@ -71,6 +74,20 @@ public class AtomStoreImpl implements AtomStore {
 		}
 
 		return id;
+	}
+
+	@Override
+	public int putIfAbsent(Atom groundAtom, boolean exemptFromClosing) {
+		final int atomId = putIfAbsent(groundAtom);
+		if (exemptFromClosing) {
+			atomsExemptFromClosing.add(atomId);
+		}
+		return atomId;
+	}
+
+	@Override
+	public boolean isExemptFromClosing(int atomId) {
+		return atomsExemptFromClosing.contains(atomId);
 	}
 
 	@Override
