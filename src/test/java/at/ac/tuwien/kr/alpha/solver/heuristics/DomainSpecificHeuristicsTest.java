@@ -482,17 +482,36 @@ public class DomainSpecificHeuristicsTest {
 		solveAndAssertAnswerSets(program, 1, "{ c }");
 	}
 
+	@Test
+	public void testNegativeHeuristicWithTwoApplicableRules() {
+		InputProgram program = parser.parse(
+				"{a}." + LS +
+				"{b}." + LS +
+				"h :- not a." + LS +
+				"h :- not b." + LS +
+				"#heuristic F h."
+		);
+		solveAndAssertAnswerSets(program, 1, 2, "{ a, b }");
+	}
+
 	private void solveAndAssertAnswerSets(InputProgram program, String... expectedAnswerSets) {
 		solveAndAssertAnswerSets(program, Integer.MAX_VALUE, expectedAnswerSets);
 	}
 
 	private void solveAndAssertAnswerSets(InputProgram inputProgram, int limit, String... expectedAnswerSets) {
+		solveAndAssertAnswerSets(inputProgram, limit, null, expectedAnswerSets);
+	}
+
+	private void solveAndAssertAnswerSets(InputProgram inputProgram, int limit, Integer expectedNumberOfDomainSpecificChoices, String... expectedAnswerSets) {
 		final Alpha system = new Alpha();
 		final NormalProgram normalProgram = system.normalizeProgram(inputProgram);
 		final InternalProgram internalProgram = InternalProgram.fromNormalProgram(normalProgram);
 		HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(Heuristic.NAIVE).build();
 		Solver solver = SolverFactory.getInstance(systemConfig, atomStore, GrounderFactory.getInstance("naive", internalProgram, atomStore, heuristicsConfiguration, true), heuristicsConfiguration);
 		assertEquals(Arrays.asList(expectedAnswerSets), solver.stream().limit(limit).map(AnswerSet::toString).collect(Collectors.toList()));
+		if (expectedNumberOfDomainSpecificChoices != null){
+			assertEquals(expectedNumberOfDomainSpecificChoices, ((DefaultSolver) solver).getNumberOfChoicesPerBranchingHeuristic().get(DomainSpecific.class.getSimpleName()));
+		}
 	}
 
 	private SystemConfig buildSystemConfig() {
