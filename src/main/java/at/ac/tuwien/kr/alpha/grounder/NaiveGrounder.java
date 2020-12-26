@@ -189,7 +189,7 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 
 		predicates: for (Map.Entry<Predicate, LinkedHashSet<InternalRule>> headDefiningRules : program.getPredicateDefiningRules().entrySet()) {
 			final LinkedHashSet<InternalRule> rules = headDefiningRules.getValue();
-			if (rules.size() != 1 && !areAllRulesGround(rules)) {
+			if (rules.size() != 1 && !areAllRulesGroundWithUniqueHeads(rules)) {
 				continue;
 			}
 
@@ -220,15 +220,21 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 		return uniqueGroundRulePerGroundHead;
 	}
 
-	private boolean areAllRulesGround(Collection<InternalRule> rules) {
-		boolean allGround = true;
+	private boolean
+	areAllRulesGroundWithUniqueHeads(Collection<InternalRule> rules) {
+		// FIXME: will be superseded by #283 (cf. #226)
+		Set<Atom> headAtoms = new HashSet<>();
 		for (InternalRule internalRule : rules) {
 			if (!internalRule.isGround()) {
-				allGround = false;
-				break;
+				return false;
 			}
+			final Atom headAtom = internalRule.getHeadAtom();
+			if (headAtoms.contains(headAtom)) {
+				return false;
+			}
+			headAtoms.add(headAtom);
 		}
-		return allGround;
+		return true;
 	}
 
 	/**
