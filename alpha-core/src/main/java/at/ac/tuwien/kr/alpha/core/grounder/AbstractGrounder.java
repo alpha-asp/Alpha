@@ -1,14 +1,14 @@
 package at.ac.tuwien.kr.alpha.core.grounder;
 
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
 public abstract class AbstractGrounder implements Grounder {
-	protected final java.util.function.Predicate<CorePredicate> filter;
+	protected final java.util.function.Predicate<Predicate> filter;
 
-	protected AbstractGrounder(java.util.function.Predicate<CorePredicate> filter) {
+	protected AbstractGrounder(java.util.function.Predicate<Predicate> filter) {
 		this.filter = filter;
 	}
 

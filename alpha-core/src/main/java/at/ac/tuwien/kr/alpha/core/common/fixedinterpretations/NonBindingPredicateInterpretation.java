@@ -51,7 +51,7 @@ public abstract class NonBindingPredicateInterpretation implements PredicateInte
 	}
 
 	@Override
-	public Set<List<ConstantTerm<?>>> evaluate(List<? extends Term> terms) {
+	public Set<List<ConstantTerm<?>>> evaluate(List<Term> terms) {
 		if (terms.size() != arity) {
 			throw new IllegalArgumentException("Exactly " + arity + " term(s) required.");
 		}

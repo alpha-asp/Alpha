@@ -44,16 +44,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.config.InputConfig;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
-import at.ac.tuwien.kr.alpha.core.api.PublicToCoreApiMapper;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.CoreAnswerSet;
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParser;
@@ -151,7 +150,7 @@ public class AlphaImpl implements Alpha {
 	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the
 	 * program analysis and normalization aren't of interest.
 	 */
-	public Stream<CoreAnswerSet> solve(InputProgram program) {
+	public Stream<AnswerSet> solve(InputProgram program) {
 		return solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
@@ -159,7 +158,7 @@ public class AlphaImpl implements Alpha {
 	 * Convenience method - overloaded version of solve({@link InternalProgram}, {@link Predicate}) for cases where
 	 * details of the program analysis and normalization aren't of interest.
 	 */
-	public Stream<CoreAnswerSet> solve(InputProgram program, java.util.function.Predicate<Predicate> filter) {
+	public Stream<AnswerSet> solve(InputProgram program, java.util.function.Predicate<Predicate> filter) {
 		NormalProgram normalized = normalizeProgram(program);
 		return solve(normalized, filter);
 	}
@@ -168,9 +167,9 @@ public class AlphaImpl implements Alpha {
 	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the
 	 * program analysis aren't of interest.
 	 */
-	public Stream<CoreAnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
+	public Stream<AnswerSet> solve(NormalProgram program, java.util.function.Predicate<Predicate> filter) {
 		InternalProgram preprocessed = performProgramPreprocessing(InternalProgram.fromNormalProgram(program));
-		return solve(preprocessed, PublicToCoreApiMapper.mapPredicateFilter(filter));
+		return solve(preprocessed, filter);
 	}
 
 	/**
@@ -180,8 +179,8 @@ public class AlphaImpl implements Alpha {
 	 * @param program the program to solve
 	 * @return a stream of answer sets
 	 */
-	public Stream<CoreAnswerSet> solve(InternalProgram program) {
-		return solve(program, PublicToCoreApiMapper.mapPredicateFilter(InputConfig.DEFAULT_FILTER));
+	public Stream<AnswerSet> solve(InternalProgram program) {
+		return solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
 	/**
@@ -191,8 +190,8 @@ public class AlphaImpl implements Alpha {
 	 * @param filter  {@link Predicate} filtering {@at.ac.tuwien.kr.alpha.common.Predicate}s in the returned answer sets
 	 * @return a Stream of answer sets representing stable models of the given program
 	 */
-	public Stream<CoreAnswerSet> solve(InternalProgram program, java.util.function.Predicate<CorePredicate> filter) {
-		Stream<CoreAnswerSet> retVal = prepareSolverFor(program, filter).stream();
+	public Stream<AnswerSet> solve(InternalProgram program, java.util.function.Predicate<Predicate> filter) {
+		Stream<AnswerSet> retVal = prepareSolverFor(program, filter).stream();
 		return config.isSortAnswerSets() ? retVal.sorted() : retVal;
 	}
 
@@ -205,7 +204,7 @@ public class AlphaImpl implements Alpha {
 	 *                set stream from the solver.
 	 * @return a solver (and accompanying grounder) instance pre-loaded with the given program.
 	 */
-	public Solver prepareSolverFor(InternalProgram program, java.util.function.Predicate<CorePredicate> filter) {
+	public Solver prepareSolverFor(InternalProgram program, java.util.function.Predicate<Predicate> filter) {
 		String grounderName = config.getGrounderName();
 		boolean doDebugChecks = config.isDebugInternalChecks();
 

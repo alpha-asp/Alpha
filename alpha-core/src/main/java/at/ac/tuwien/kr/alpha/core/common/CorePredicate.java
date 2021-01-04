@@ -1,11 +1,13 @@
 package at.ac.tuwien.kr.alpha.core.common;
 
+import at.ac.tuwien.kr.alpha.api.program.Predicate;
+
 /**
  * A predicate as used by the Alpha solver internally.
  * 
  * Copyright (c) 2016-2020, the Alpha Team.
  */
-public class CorePredicate implements Comparable<CorePredicate> {
+public class CorePredicate implements Predicate {
 	
 	private static final Interner<CorePredicate> INTERNER = new Interner<>();
 
@@ -82,20 +84,11 @@ public class CorePredicate implements Comparable<CorePredicate> {
 	}
 
 	@Override
-	public int compareTo(CorePredicate other) {
-		int result = getName().compareTo(other.getName());
-
-		if (result != 0) {
-			return result;
-		}
-
-		return Integer.compare(getArity(), other.getArity());
-	}
-
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public int getArity() {
 		return arity;
 	}

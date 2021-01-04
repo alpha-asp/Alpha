@@ -27,27 +27,26 @@
  */
 package at.ac.tuwien.kr.alpha.core.atoms;
 
-import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
-import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.terms.Term;
-
 import static at.ac.tuwien.kr.alpha.core.util.Util.join;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
+import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
+import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
+import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+
 public class ExternalAtom extends CoreAtom implements VariableNormalizableAtom {
 
-	private final List<? extends CoreTerm> input;
-	private final List<? extends CoreTerm> output;
+	private final List<CoreTerm> input;
+	private final List<CoreTerm> output;
 
 	protected final CorePredicate predicate;
 	protected final PredicateInterpretation interpretation;
 
-	public ExternalAtom(CorePredicate predicate, PredicateInterpretation interpretation, List<? extends CoreTerm> input, List<? extends CoreTerm> output) {
+	public ExternalAtom(CorePredicate predicate, PredicateInterpretation interpretation, List<CoreTerm> input, List<CoreTerm> output) {
 		if (predicate == null) {
 			throw new IllegalArgumentException("predicate must not be null!");
 		}
@@ -79,16 +78,16 @@ public class ExternalAtom extends CoreAtom implements VariableNormalizableAtom {
 		return interpretation;
 	}
 
-	public List<? extends CoreTerm> getInput() {
+	public List<CoreTerm> getInput() {
 		return Collections.unmodifiableList(input);
 	}
 
-	public List<? extends CoreTerm> getOutput() {
+	public List<CoreTerm> getOutput() {
 		return Collections.unmodifiableList(output);
 	}
 
 	@Override
-	public List<? extends CoreTerm> getTerms() {
+	public List<CoreTerm> getTerms() {
 		return input;
 	}
 
@@ -109,8 +108,8 @@ public class ExternalAtom extends CoreAtom implements VariableNormalizableAtom {
 
 	@Override
 	public ExternalAtom substitute(Substitution substitution) {
-		List<? extends CoreTerm> substitutedInput = this.input.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
-		List<? extends CoreTerm> substitutedOutput = this.output.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
+		List<CoreTerm> substitutedInput = this.input.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
+		List<CoreTerm> substitutedOutput = this.output.stream().map(t -> t.substitute(substitution)).collect(Collectors.toList());
 		return new ExternalAtom(predicate, interpretation, substitutedInput, substitutedOutput);
 	}
 
@@ -172,8 +171,8 @@ public class ExternalAtom extends CoreAtom implements VariableNormalizableAtom {
 
 	@Override
 	public ExternalAtom normalizeVariables(String prefix, int counterStartingValue) {
-		List<? extends CoreTerm> renamedInput = CoreTerm.renameTerms(this.input, prefix + "_IN_", counterStartingValue);
-		List<? extends CoreTerm> renamedOutput = CoreTerm.renameTerms(this.output, prefix + "_OUT_", counterStartingValue);
+		List<CoreTerm> renamedInput = CoreTerm.renameTerms(this.input, prefix + "_IN_", counterStartingValue);
+		List<CoreTerm> renamedOutput = CoreTerm.renameTerms(this.output, prefix + "_OUT_", counterStartingValue);
 		return new ExternalAtom(this.predicate, this.interpretation, renamedInput, renamedOutput);
 	}
 

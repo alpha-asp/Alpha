@@ -8,7 +8,7 @@ import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 public interface Atom extends Comparable<Atom> {
 	Predicate getPredicate();
 
-	List<? extends Term> getTerms();
+	List<Term> getTerms();
 
 	/**
 	 * Returns whether this atom is ground, i.e., variable-free.

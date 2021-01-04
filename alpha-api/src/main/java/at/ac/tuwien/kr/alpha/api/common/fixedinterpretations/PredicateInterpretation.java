@@ -42,5 +42,5 @@ public interface PredicateInterpretation {
 
 	String EVALUATE_RETURN_TYPE_NAME_PREFIX = Set.class.getName() + "<" + List.class.getName() + "<" + ConstantTerm.class.getName();
 
-	Set<List<? extends ConstantTerm<?>>> evaluate(List<? extends Term> terms);
+	Set<List<ConstantTerm<?>>> evaluate(List<Term> terms);
 }

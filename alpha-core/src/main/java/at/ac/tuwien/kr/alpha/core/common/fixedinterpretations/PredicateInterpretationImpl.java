@@ -9,5 +9,5 @@ import at.ac.tuwien.kr.alpha.api.terms.Term;
 
 public interface PredicateInterpretationImpl extends PredicateInterpretation {
 	@Override
-	Set<List<? extends ConstantTerm<?>>> evaluate(List<? extends Term> terms);
+	Set<List<ConstantTerm<?>>> evaluate(List<Term> terms);
 }

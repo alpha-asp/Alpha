@@ -52,7 +52,7 @@ public class BindingMethodPredicateInterpretation implements BindingPredicateInt
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public Set<List<ConstantTerm<?>>> evaluate(List<? extends Term> terms) {
+	public Set<List<ConstantTerm<?>>> evaluate(List<Term> terms) {
 		if (terms.size() != method.getParameterCount()) {
 			throw new IllegalArgumentException(
 					"Parameter count mismatch when calling " + method.getName() + ". " +
