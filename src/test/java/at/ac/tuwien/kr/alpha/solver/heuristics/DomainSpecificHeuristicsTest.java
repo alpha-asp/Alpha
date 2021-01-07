@@ -491,7 +491,8 @@ public class DomainSpecificHeuristicsTest {
 				"h :- not b." + LS +
 				"#heuristic F h."
 		);
-		solveAndAssertAnswerSets(program, 1, 2, "{ a, b }");
+		solveAndAssertAnswerSets(program, 1, 1, "{ a, b }");
+		// 1 domain-specific choice is expected because currently, DomainSpecific assigns F directly to the head
 	}
 
 	@Test

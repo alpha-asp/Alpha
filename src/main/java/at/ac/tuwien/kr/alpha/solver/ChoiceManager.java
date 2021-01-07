@@ -150,7 +150,13 @@ public class ChoiceManager implements Checkable {
 			choiceManagerStatistics.incrementChoices();
 		}
 
-		if (assignment.choose(choice.getAtom(), choice.getValue()) != null) {
+		final int atom = choice.getAtom();
+		ThriceTruth value = ThriceTruth.valueOf(choice.getValue());
+		if (choice.isBacktracked() && value == ThriceTruth.TRUE && !isAtomChoice(atom)) {
+			// when backtracking from assigning F to a non-body-representing atom, we may only choose MBT now
+			value = ThriceTruth.MBT;
+		}
+		if (assignment.choose(atom, value) != null) {
 			throw oops("Picked choice is incompatible with current assignment");
 		}
 		LOGGER.debug("Choice {} is {}@{}", choiceManagerStatistics.getChoices(), choice, assignment.getDecisionLevel());
