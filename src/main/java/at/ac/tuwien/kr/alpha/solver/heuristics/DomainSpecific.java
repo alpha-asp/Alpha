@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Siemens AG
+ * Copyright (c) 2018-2021 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
+import static at.ac.tuwien.kr.alpha.Util.oops;
 import static at.ac.tuwien.kr.alpha.common.Literals.atomOf;
 
 /**
@@ -92,7 +93,6 @@ public class DomainSpecific implements BranchingHeuristic {
 
 		HeuristicDirectiveValues currentValues;
 		int chosenLiteral = DEFAULT_CHOICE_LITERAL;
-		int discardedBecauseHeadAssigned = 0;
 		int discardedBecauseNoBody = 0;
 		while ((currentValues = heuristicsStore.poll()) != null) {
 			if (assignment.isUnassignedOrMBT(currentValues.getHeadAtomId())) {
@@ -105,10 +105,9 @@ public class DomainSpecific implements BranchingHeuristic {
 					discardedBecauseNoBody++;
 				}
 			} else {
-				discardedBecauseHeadAssigned++;
+				throw oops("Heuristic chosen whose head is already assigned");
 			}
 		}
-		LOGGER.debug("{} HeuristicDirectiveValues discarded because head already assigned", discardedBecauseHeadAssigned);
 		LOGGER.debug("{} HeuristicDirectiveValues discarded because no active body found", discardedBecauseNoBody);
 
 		return chosenLiteral;

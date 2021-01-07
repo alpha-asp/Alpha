@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2020, the Alpha Team.
+ * Copyright (c) 2017-2021, the Alpha Team.
  * All rights reserved.
  * 
  * Additional changes made by Siemens.
@@ -118,15 +118,7 @@ public class NoGoodGenerator {
 		if (heuristicNoGoods == null) {
 			return emptyList(); // heuristic can never be applicable
 		}
-		final List<NoGood> result = new ArrayList<>(heuristicNoGoods);
-		final int bodyRepresentingAtom = atomStore.putIfAbsent(bodyAtom, true);
-
-		// if the head of the heuristic directive is assigned, the body of the heuristic rule shall also be assigned s.t. it is not applicable anymore:
-		boolean heuristicSign = groundHeadAtom.getHeadSign().toBoolean();
-		result.add(NoGoodCreator.headFirstInternal(atomToLiteral(bodyRepresentingAtom, false), atomToLiteral(heuristicHeadId, heuristicSign)));
-		result.add(NoGoodCreator.internal(atomToLiteral(bodyRepresentingAtom,  true), atomToLiteral(heuristicHeadId, !heuristicSign)));
-
-		return result;
+		return new ArrayList<>(heuristicNoGoods);
 	}
 
 	private Collection<NoGood> generateNoGoodsForNonConstraintNonHeuristicRule(InternalRule internalRule, List<Integer> posLiterals, List<Integer> negLiterals, Atom groundHeadAtom, RuleAtom bodyAtom) {

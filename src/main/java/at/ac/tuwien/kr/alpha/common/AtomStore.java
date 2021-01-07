@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020, the Alpha Team.
+ * Copyright (c) 2016-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -76,8 +76,6 @@ public interface AtomStore {
 	 */
 	int putIfAbsent(Atom groundAtom);
 
-	int putIfAbsent(Atom groundAtom, boolean exemptFromClosing);
-
 	/**
 	 * Returns whether the given ground atom is known to the AtomStore.
 	 * @param groundAtom the ground atom to test.
@@ -118,6 +116,4 @@ public interface AtomStore {
 	}
 
 	AtomCounter getAtomCounter();
-
-	boolean isExemptFromClosing(int atomId);
 }

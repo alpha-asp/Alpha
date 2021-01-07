@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Siemens AG
+ * Copyright (c) 2018-2021 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -492,6 +492,22 @@ public class DomainSpecificHeuristicsTest {
 				"#heuristic F h."
 		);
 		solveAndAssertAnswerSets(program, 1, 2, "{ a, b }");
+	}
+
+	@Test
+	public void testInapplicableHeuristicBecauseHeadAlreadyAssigned() {
+		InputProgram program = parser.parse(
+				"{a}." + LS +
+				"{b}." + LS +
+				"{c}." + LS +
+				"a :- not c." + LS +
+				"#heuristic T a. [3]" + LS +
+				"#heuristic F a. [2]" + LS +
+				"#heuristic T b. [1]" + LS +
+				"#heuristic F c. [0]"
+		);
+		solveAndAssertAnswerSets(program, 1, 2, "{ a, b }");
+		// 2 domain-specific choices are expected because the heuristics for F a and F c are disabled because their heads are assigned before the heuristic could step in
 	}
 
 	private void solveAndAssertAnswerSets(InputProgram program, String... expectedAnswerSets) {

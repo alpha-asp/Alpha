@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2020, the Alpha Team.
+ * Copyright (c) 2017-2021, the Alpha Team.
  * All rights reserved.
  *
  * Additional changes made by Siemens.
@@ -234,7 +234,7 @@ public class ChoiceManager implements Checkable {
 
 	void addHeuristicInformation(Pair<Map<Integer, Integer[]>, Map<Integer, Integer[]>> heuristicAtoms, Map<Integer, HeuristicDirectiveValues> heuristicValues) {
 		addInformation(heuristicValues);
-		heuristicInfluenceManager.addInformation(heuristicAtoms);
+		heuristicInfluenceManager.addInformation(heuristicAtoms, heuristicValues);
 	}
 
 	private void addInformation(Map<Integer, HeuristicDirectiveValues> heuristicValues) {
