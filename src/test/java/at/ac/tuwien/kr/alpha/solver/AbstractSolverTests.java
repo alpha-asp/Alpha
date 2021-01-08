@@ -71,7 +71,7 @@ public abstract class AbstractSolverTests {
 				nonDeprecatedHeuristicsNames.add(field.getName());
 			}
 		}
-		NON_DEPRECATED_HEURISTICS_NAMES = nonDeprecatedHeuristicsNames.toArray(new String[]{});
+		NON_DEPRECATED_HEURISTICS_NAMES = nonDeprecatedHeuristicsNames.toArray(new String[] {});
 	}
 
 	private final ProgramParser parser = new ProgramParser();
@@ -110,7 +110,7 @@ public abstract class AbstractSolverTests {
 		return System.getProperty("test." + subKey, def).split(",");
 	}
 
-	@Parameters(name = "{0}/{1}/{2}/{3}/seed={4}/checks={5}/gtc={6}/gtr={7}/dir={8}")
+	@Parameters(name = "{0}/{1}/{2}/{3}/seed={4}/checks={5}/gtc={6}/gtr={7}/dir={8}/evaluateStratified={9}")
 	public static Collection<Object[]> parameters() {
 		// Check whether we are running in a CI environment.
 		boolean ci = Boolean.valueOf(System.getenv("CI"));
@@ -122,6 +122,7 @@ public abstract class AbstractSolverTests {
 		String[] gtcValues = getProperty("grounderToleranceConstraints", "strict,permissive");
 		String[] gtrValues = getProperty("grounderToleranceRules", "strict");
 		String[] dirValues = getProperty("disableInstanceRemoval", ci ? "false,true" : "false");
+		String[] evaluateStratifiedValues = getProperty("evaluateStratified", "false,true");
 
 		// "ALL" is a magic value that will be expanded to contain all heuristics.
 		if ("ALL".equals(heuristics[0])) {
@@ -157,9 +158,12 @@ public abstract class AbstractSolverTests {
 						for (String gtc : gtcValues) {
 							for (String gtr : gtrValues) {
 								for (String dir : dirValues) {
-									factories.add(new Object[]{
-											solver, grounder, store, HeuristicsConfiguration.builder().setHeuristic(BranchingHeuristicFactory.Heuristic.valueOf(heuristic)).build(), seed, checks, gtc, gtr, Boolean.valueOf(dir)
-									});
+									for (String evaluateStratified : evaluateStratifiedValues) {
+										factories.add(new Object[] {
+												solver, grounder, store, HeuristicsConfiguration.builder().setHeuristic(BranchingHeuristicFactory.Heuristic.valueOf(heuristic)).build(), seed, checks, gtc, gtr,
+												Boolean.valueOf(dir), Boolean.valueOf(evaluateStratified)
+										});
+									}
 								}
 							}
 						}
@@ -198,11 +202,17 @@ public abstract class AbstractSolverTests {
 	@Parameter(8)
 	public boolean disableInstanceRemoval;
 
+	/**
+	 * Determines whether the {@link Alpha} returned by <code>getInstance</code> is configured to evaluate the stratified part up-front.
+	 */
+	@Parameter(9)
+	public boolean evaluateStratifiedPart;
+
 	protected Solver getInstance(AtomStore atomStore, Grounder grounder) {
 		return SolverFactory.getInstance(buildSystemConfig(), atomStore, grounder, heuristicsConfiguration);
 	}
 
-	private SystemConfig buildSystemConfig() {
+	protected SystemConfig buildSystemConfig() {
 		SystemConfig config = new SystemConfig();
 		config.setSolverName(solverName);
 		config.setNogoodStoreName(storeName);
@@ -210,6 +220,7 @@ public abstract class AbstractSolverTests {
 		config.setBranchingHeuristic(heuristicsConfiguration.getHeuristic());
 		config.setDebugInternalChecks(checks);
 		config.setDisableJustificationSearch(false);
+		config.setEvaluateStratifiedPart(evaluateStratifiedPart);
 		return config;
 	}
 
@@ -217,7 +228,7 @@ public abstract class AbstractSolverTests {
 		Alpha system = new Alpha();
 		AtomStore atomStore = new AtomStoreImpl();
 		NormalProgram normalized = system.normalizeProgram(program);
-		InternalProgram preprocessed = InternalProgram.fromNormalProgram(normalized);
+		InternalProgram preprocessed = system.performProgramPreprocessing(InternalProgram.fromNormalProgram(normalized));
 		return getInstance(atomStore, GrounderFactory.getInstance(grounderName, preprocessed, atomStore, heuristicsConfiguration, true));
 	}
 

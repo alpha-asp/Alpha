@@ -25,19 +25,21 @@
  */
 package at.ac.tuwien.kr.alpha.solver;
 
+import java.io.IOException;
+
+import org.junit.Test;
+
 import at.ac.tuwien.kr.alpha.api.Alpha;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.program.InputProgram;
 import at.ac.tuwien.kr.alpha.common.program.InternalProgram;
 import at.ac.tuwien.kr.alpha.common.program.NormalProgram;
+import at.ac.tuwien.kr.alpha.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.grounder.GrounderFactory;
 import at.ac.tuwien.kr.alpha.grounder.heuristics.GrounderHeuristicsConfiguration;
 import at.ac.tuwien.kr.alpha.grounder.transformation.CardinalityNormalization;
 import at.ac.tuwien.kr.alpha.grounder.transformation.SumNormalization;
-import org.junit.Test;
-
-import java.io.IOException;
 
 /**
  * Tests if correct answer sets for programs containing aggregates are computed.
@@ -168,8 +170,9 @@ public abstract class AggregatesTest extends AbstractSolverTests {
 	
 	@Override
 	protected Solver getInstance(InputProgram program) {
-		Alpha system = new Alpha();
-		system.getConfig().setUseNormalizationGrid(useCountingGridNormalization());
+		SystemConfig config = this.buildSystemConfig();
+		config.setUseNormalizationGrid(useCountingGridNormalization());
+		Alpha system = new Alpha(config);
 		AtomStore atomStore = new AtomStoreImpl();
 		NormalProgram normal = system.normalizeProgram(program);
 		InternalProgram preprocessed = InternalProgram.fromNormalProgram(normal);
