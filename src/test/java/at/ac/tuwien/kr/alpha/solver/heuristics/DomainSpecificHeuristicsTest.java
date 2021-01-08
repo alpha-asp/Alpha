@@ -526,7 +526,7 @@ public class DomainSpecificHeuristicsTest {
 		HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(Heuristic.NAIVE).build();
 		Solver solver = SolverFactory.getInstance(systemConfig, atomStore, GrounderFactory.getInstance("naive", internalProgram, atomStore, heuristicsConfiguration, true), heuristicsConfiguration);
 		assertEquals(Arrays.asList(expectedAnswerSets), solver.stream().limit(limit).map(AnswerSet::toString).collect(Collectors.toList()));
-		if (expectedNumberOfDomainSpecificChoices != null){
+		if (expectedNumberOfDomainSpecificChoices != null) {
 			assertEquals(expectedNumberOfDomainSpecificChoices, ((DefaultSolver) solver).getNumberOfChoicesPerBranchingHeuristic().get(DomainSpecific.class.getSimpleName()));
 		}
 	}
