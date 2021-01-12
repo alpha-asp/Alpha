@@ -482,7 +482,7 @@ public class DomainSpecificHeuristicsTest {
 		solveAndAssertAnswerSets(program, 1, "{ c }");
 	}
 
-	@Test
+	@Test(expected = UnsupportedOperationException.class)
 	public void testNegativeHeuristicWithTwoApplicableRules() {
 		InputProgram program = parser.parse(
 				"{a}." + LS +
@@ -491,7 +491,8 @@ public class DomainSpecificHeuristicsTest {
 				"h :- not b." + LS +
 				"#heuristic F h."
 		);
-		solveAndAssertAnswerSets(program, 1, 2, "{ a, b }");
+		final Solver solver = getSolver(program);
+		final List<AnswerSet> answerSets = solver.stream().collect(Collectors.toList());
 	}
 
 	@Test
@@ -500,13 +501,13 @@ public class DomainSpecificHeuristicsTest {
 				"{a}." + LS +
 				"{b}." + LS +
 				"{c}." + LS +
-				"a :- not c." + LS +
+				"c :- a." + LS +
 				"#heuristic T a. [3]" + LS +
 				"#heuristic F a. [2]" + LS +
 				"#heuristic T b. [1]" + LS +
-				"#heuristic F c. [0]"
+				"#heuristic T c. [0]"
 		);
-		solveAndAssertAnswerSets(program, 1, 2, "{ a, b }");
+		solveAndAssertAnswerSets(program, 1, 2, "{ a, b, c }");
 		// 2 domain-specific choices are expected because the heuristics for F a and F c are disabled because their heads are assigned before the heuristic could step in
 	}
 
@@ -519,15 +520,20 @@ public class DomainSpecificHeuristicsTest {
 	}
 
 	private void solveAndAssertAnswerSets(InputProgram inputProgram, int limit, Integer expectedNumberOfDomainSpecificChoices, String... expectedAnswerSets) {
-		final Alpha system = new Alpha();
-		final NormalProgram normalProgram = system.normalizeProgram(inputProgram);
-		final InternalProgram internalProgram = InternalProgram.fromNormalProgram(normalProgram);
-		HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(Heuristic.NAIVE).build();
-		Solver solver = SolverFactory.getInstance(systemConfig, atomStore, GrounderFactory.getInstance("naive", internalProgram, atomStore, heuristicsConfiguration, true), heuristicsConfiguration);
-		assertEquals(Arrays.asList(expectedAnswerSets), solver.stream().limit(limit).map(AnswerSet::toString).collect(Collectors.toList()));
+		final Solver solver = getSolver(inputProgram);
+		final List<String> computedAnswerSets = solver.stream().limit(limit).map(AnswerSet::toString).collect(Collectors.toList());
+		assertEquals(Arrays.asList(expectedAnswerSets), computedAnswerSets);
 		if (expectedNumberOfDomainSpecificChoices != null) {
 			assertEquals(expectedNumberOfDomainSpecificChoices, ((DefaultSolver) solver).getNumberOfChoicesPerBranchingHeuristic().get(DomainSpecific.class.getSimpleName()));
 		}
+	}
+
+	private Solver getSolver(InputProgram inputProgram) {
+		final Alpha system = new Alpha();
+		final NormalProgram normalProgram = system.normalizeProgram(inputProgram);
+		final InternalProgram internalProgram = InternalProgram.fromNormalProgram(normalProgram);
+		final HeuristicsConfiguration heuristicsConfiguration = HeuristicsConfiguration.builder().setHeuristic(Heuristic.NAIVE).build();
+		return SolverFactory.getInstance(systemConfig, atomStore, GrounderFactory.getInstance("naive", internalProgram, atomStore, heuristicsConfiguration, true), heuristicsConfiguration);
 	}
 
 	private SystemConfig buildSystemConfig() {
