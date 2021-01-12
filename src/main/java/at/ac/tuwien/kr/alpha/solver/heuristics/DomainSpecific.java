@@ -31,7 +31,6 @@ import at.ac.tuwien.kr.alpha.common.Literals;
 import at.ac.tuwien.kr.alpha.common.NoGood;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
 import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import at.ac.tuwien.kr.alpha.solver.heuristics.domspec.DomainSpecificHeuristicsStore;
 import at.ac.tuwien.kr.alpha.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult;
 import org.slf4j.Logger;
@@ -97,9 +96,9 @@ public class DomainSpecific implements BranchingHeuristic {
 		int discardedBecauseNoBody = 0;
 		while ((currentValues = heuristicsStore.poll()) != null) {
 			if (assignment.isUnassignedOrMBT(currentValues.getHeadAtomId())) {
-				Optional<Integer> literal = chooseLiteralForValues(currentValues);
-				if (literal.isPresent()) {
-					chosenLiteral = literal.get();
+				Optional<Integer> body = chooseLiteralForValues(currentValues);
+				if (body.isPresent()) {
+					chosenLiteral = body.get();
 					break;
 				} else {
 					LOGGER.warn("Ground heuristic directive with head {} not applicable because no active rule can derive it.", currentValues.getGroundHeadAtom());
@@ -115,10 +114,6 @@ public class DomainSpecific implements BranchingHeuristic {
 	}
 
 	private Optional<Integer> chooseLiteralForValues(HeuristicDirectiveValues values) {
-		if (values.getSign() == ThriceTruth.FALSE) {
-			// when assigning F, assign it to the head atom directly instead of choosing a body
-			return Optional.of(Literals.atomToLiteral(values.getHeadAtomId(), false));
-		}
 		Set<Integer> activeChoiceAtomsDerivingHead = choiceManager.getActiveChoiceAtomsDerivingHead(values.getHeadAtomId());
 		int atom;
 		if (activeChoiceAtomsDerivingHead.isEmpty()) {
