@@ -123,7 +123,7 @@ public class DomainSpecific implements BranchingHeuristic {
 		} else {
 			throw new UnsupportedOperationException("Atom " + values.getGroundHeadAtom() + " chosen by domain-specific heuristic is the head of more than one applicable rule.");
 		}
-		return Optional.of(Literals.atomToLiteral(atom, values.getSign().toBoolean())); // TODO: ThriceTruth sign?
+		return Optional.of(Literals.atomToLiteral(atom, values.getSign()));
 	}
 	
 	@Override

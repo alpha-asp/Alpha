@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Siemens AG
+ * Copyright (c) 2018-2021 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -45,9 +45,9 @@ public class HeuristicDirectiveValues {
 	private final BasicAtom groundHeadAtom;
 	private final int weight;
 	private final int level;
-	private final ThriceTruth sign;
+	private final boolean sign;
 
-	public HeuristicDirectiveValues(int headAtomId, BasicAtom groundHeadAtom, int weight, int level, ThriceTruth sign) {
+	public HeuristicDirectiveValues(int headAtomId, BasicAtom groundHeadAtom, int weight, int level, boolean sign) {
 		this.headAtomId = headAtomId;
 		this.groundHeadAtom = groundHeadAtom;
 		this.weight = weight;
@@ -63,7 +63,7 @@ public class HeuristicDirectiveValues {
 		return groundHeadAtom;
 	}
 
-	public ThriceTruth getSign() {
+	public boolean getSign() {
 		return sign;
 	}
 
@@ -90,7 +90,7 @@ public class HeuristicDirectiveValues {
 
 	@Override
 	public String toString() {
-		return String.format(sign + " %d [%d@%d]", headAtomId, weight, level);
+		return String.format(ThriceTruth.valueOf(sign) + " %d [%d@%d]", headAtomId, weight, level);
 	}
 
 	/**
@@ -103,7 +103,7 @@ public class HeuristicDirectiveValues {
 	public static HeuristicDirectiveValues fromHeuristicAtom(HeuristicAtom groundHeuristicAtom, int headAtomId) {
 		WeightAtLevel weightAtLevel = groundHeuristicAtom.getWeightAtLevel();
 		BasicAtom groundHeuristicHead = groundHeuristicAtom.getHeadAtom().toAtom();
-		return new HeuristicDirectiveValues(headAtomId, groundHeuristicHead, ((ConstantTerm<Integer>)weightAtLevel.getWeight()).getObject(), ((ConstantTerm<Integer>)weightAtLevel.getLevel()).getObject(), groundHeuristicAtom.getHeadSign());
+		return new HeuristicDirectiveValues(headAtomId, groundHeuristicHead, ((ConstantTerm<Integer>)weightAtLevel.getWeight()).getObject(), ((ConstantTerm<Integer>)weightAtLevel.getLevel()).getObject(), groundHeuristicAtom.getHeadSign().toBoolean());
 	}
 	
 	public static class PriorityComparator implements Comparator<HeuristicDirectiveValues> {
@@ -118,7 +118,7 @@ public class HeuristicDirectiveValues {
 				difference = v1.headAtomId - v2.headAtomId;
 			}
 			if (difference == 0) {
-				difference = v1.sign.ordinal() - v2.sign.ordinal();
+				difference = Boolean.compare(v1.sign, v2.sign);
 			}
 			return difference;
 		}

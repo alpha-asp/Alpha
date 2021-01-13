@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2020 Siemens AG
+ * Copyright (c) 2019-2021 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,6 @@ import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static org.junit.Assert.assertNull;
 
 /**
@@ -58,7 +57,7 @@ public class EmptyDomainSpecificHeuristicsStoreTest {
 	}
 
 	private HeuristicDirectiveValues info(int atom, int weight, int level) {
-		return new HeuristicDirectiveValues(atom, null, weight, level, TRUE);
+		return new HeuristicDirectiveValues(atom, null, weight, level, true);
 	}
 
 }

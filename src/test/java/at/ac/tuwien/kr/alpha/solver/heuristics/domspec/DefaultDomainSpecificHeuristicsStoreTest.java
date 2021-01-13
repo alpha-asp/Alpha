@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Siemens AG
+ * Copyright (c) 2018-2021 Siemens AG
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,23 +28,14 @@ package at.ac.tuwien.kr.alpha.solver.heuristics.domspec;
 import at.ac.tuwien.kr.alpha.common.AtomStore;
 import at.ac.tuwien.kr.alpha.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.common.heuristics.HeuristicDirectiveValues;
-import at.ac.tuwien.kr.alpha.solver.ChoiceManager;
+import at.ac.tuwien.kr.alpha.solver.*;
 import at.ac.tuwien.kr.alpha.solver.InfluenceManager.ActivityListener;
-import at.ac.tuwien.kr.alpha.solver.NaiveNoGoodStore;
-import at.ac.tuwien.kr.alpha.solver.NoGoodStore;
-import at.ac.tuwien.kr.alpha.solver.TrailAssignment;
-import at.ac.tuwien.kr.alpha.solver.WritableAssignment;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -127,7 +118,7 @@ public class DefaultDomainSpecificHeuristicsStoreTest {
 	}
 
 	private HeuristicDirectiveValues info(int atom, int weight, int level) {
-		return new HeuristicDirectiveValues(atom, null, weight, level, TRUE);
+		return new HeuristicDirectiveValues(atom, null, weight, level, true);
 	}
 
 	private List<HeuristicDirectiveValues> listHeuristicsOrderedByDecreasingPriority() {

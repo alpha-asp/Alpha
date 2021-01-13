@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2020 Siemens AG
+ * Copyright (c) 2019-2021 Siemens AG
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,11 +27,8 @@ package at.ac.tuwien.kr.alpha.common.heuristics;
 
 import at.ac.tuwien.kr.alpha.common.Predicate;
 import at.ac.tuwien.kr.alpha.common.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.solver.ThriceTruth;
 import org.junit.Test;
 
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.FALSE;
-import static at.ac.tuwien.kr.alpha.solver.ThriceTruth.TRUE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -48,7 +45,7 @@ public class PriorityComparatorTest {
 		final int headAtomId = 1;
 		final int weight = 10;
 		final int level = 5;
-		final ThriceTruth sign = TRUE;
+		final boolean sign = true;
 		HeuristicDirectiveValues v1 = new HeuristicDirectiveValues(headAtomId, headAtom, weight, level, sign);
 		HeuristicDirectiveValues v2 = new HeuristicDirectiveValues(headAtomId, headAtom, weight, level, sign);
 		assertEquals(0, comparator.compare(v1, v2));
@@ -62,7 +59,7 @@ public class PriorityComparatorTest {
 		final int weight1 = 10;
 		final int weight2 = 11;
 		final int level = 5;
-		final ThriceTruth sign = TRUE;
+		final boolean sign = true;
 		HeuristicDirectiveValues v1 = new HeuristicDirectiveValues(headAtomId, headAtom, weight1, level, sign);
 		HeuristicDirectiveValues v2 = new HeuristicDirectiveValues(headAtomId, headAtom, weight2, level, sign);
 		assertTrue(comparator.compare(v1, v2) < 0);
@@ -76,7 +73,7 @@ public class PriorityComparatorTest {
 		final int weight = 10;
 		final int level1 = 5;
 		final int level2 = 10;
-		final ThriceTruth sign = TRUE;
+		final boolean sign = true;
 		HeuristicDirectiveValues v1 = new HeuristicDirectiveValues(headAtomId, headAtom, weight, level1, sign);
 		HeuristicDirectiveValues v2 = new HeuristicDirectiveValues(headAtomId, headAtom, weight, level2, sign);
 		assertTrue(comparator.compare(v1, v2) < 0);
@@ -89,12 +86,12 @@ public class PriorityComparatorTest {
 		final int headAtomId = 1;
 		final int weight = 10;
 		final int level = 5;
-		final ThriceTruth sign1 = FALSE;
-		final ThriceTruth sign2 = TRUE;
+		final boolean sign1 = false;
+		final boolean sign2 = true;
 		HeuristicDirectiveValues v1 = new HeuristicDirectiveValues(headAtomId, headAtom, weight, level, sign1);
 		HeuristicDirectiveValues v2 = new HeuristicDirectiveValues(headAtomId, headAtom, weight, level, sign2);
-		assertTrue(comparator.compare(v1, v2) > 0);
-		assertTrue(comparator.compare(v2, v1) < 0);
+		assertTrue(comparator.compare(v1, v2) < 0);
+		assertTrue(comparator.compare(v2, v1) > 0);
 	}
 
 	@Test
@@ -105,7 +102,7 @@ public class PriorityComparatorTest {
 		final int headAtomId2 = 2;
 		final int weight = 10;
 		final int level = 5;
-		final ThriceTruth sign = TRUE;
+		final boolean sign = true;
 		HeuristicDirectiveValues v1 = new HeuristicDirectiveValues(headAtomId1, headAtom1, weight, level, sign);
 		HeuristicDirectiveValues v2 = new HeuristicDirectiveValues(headAtomId2, headAtom2, weight, level, sign);
 		assertTrue(comparator.compare(v1, v2) < 0);
