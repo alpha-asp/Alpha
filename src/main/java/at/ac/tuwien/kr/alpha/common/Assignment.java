@@ -192,6 +192,11 @@ public interface Assignment {
 	int getNumberOfAtomsAssignedSinceLastDecision();
 
 	/**
+	 * @return the number of active choice points
+	 */
+	int getNumberOfActiveChoicePoints();
+
+	/**
 	 * Obtain a BasicAtom that is currently assigned MBT (but not TRUE).
 	 * @return some BasicAtom that is assigned MBT.
 	 */

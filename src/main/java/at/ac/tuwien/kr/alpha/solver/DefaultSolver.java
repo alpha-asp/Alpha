@@ -544,10 +544,12 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 		choiceManager.addHeuristicInformation(grounder.getHeuristicAtoms(), grounder.getHeuristicValues());
 		choiceManager.updateAssignments();
 
+		if (assignment.getNumberOfActiveChoicePoints() == 0) {
+			return false;
+		}
+
 		// Hint: for custom heuristics, evaluate them here and pick a value if the heuristics suggests one.
-
 		int literal;
-
 		if ((literal = branchingHeuristic.chooseLiteral()) == DEFAULT_CHOICE_LITERAL) {
 			LOGGER.debug("No choices!");
 			return false;

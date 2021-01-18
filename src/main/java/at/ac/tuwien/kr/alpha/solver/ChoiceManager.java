@@ -279,6 +279,13 @@ public class ChoiceManager implements Checkable {
 		return choicePointInfluenceManager.getNextActiveAtomOrDefault(DEFAULT_CHOICE_ATOM);
 	}
 
+	/**
+	 * @return the number of active choice points
+	 */
+	public int getNumberOfActiveChoicePoints() {
+		return choicePointInfluenceManager.activeChoicePointsAtoms.size();
+	}
+
 	public boolean isAtomChoice(int atom) {
 		return choicePointInfluenceManager.isAtomInfluenced(atom);
 	}
