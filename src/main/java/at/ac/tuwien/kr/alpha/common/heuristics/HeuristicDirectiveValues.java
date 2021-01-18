@@ -63,6 +63,14 @@ public class HeuristicDirectiveValues {
 		return groundHeadAtom;
 	}
 
+	public int getWeight() {
+		return weight;
+	}
+
+	public int getLevel() {
+		return level;
+	}
+
 	public boolean getSign() {
 		return sign;
 	}
