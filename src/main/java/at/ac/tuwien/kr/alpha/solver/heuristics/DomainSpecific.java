@@ -99,7 +99,7 @@ public class DomainSpecific implements BranchingHeuristic {
 				Optional<Integer> body = chooseLiteralForValues(currentValues);
 				if (body.isPresent()) {
 					chosenLiteral = body.get();
-					LOGGER.info(String.format("Weight of chosen heuristic: %d@%d", currentValues.getWeight(), currentValues.getLevel()));
+					LOGGER.debug(String.format("Weight of chosen heuristic: %d@%d", currentValues.getWeight(), currentValues.getLevel()));
 					break;
 				} else {
 					LOGGER.warn("Ground heuristic directive with head {} not applicable because no active rule can derive it.", currentValues.getGroundHeadAtom());
