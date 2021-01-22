@@ -56,7 +56,7 @@ import at.ac.tuwien.kr.alpha.core.common.SimpleAnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph;
 import at.ac.tuwien.kr.alpha.core.depgraph.DependencyGraph;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.core.solver.Solver;
@@ -83,7 +83,7 @@ public class Main {
 
 		Alpha alpha = new AlphaImpl(cfg.getSystemConfig());
 
-		InputProgram program = null;
+		InputProgramImpl program = null;
 		try {
 			program = alpha.readProgram(cfg.getInputConfig());
 		} catch (RecognitionException e) {

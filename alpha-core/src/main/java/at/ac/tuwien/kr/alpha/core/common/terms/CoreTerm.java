@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 //@formatter:off
@@ -32,7 +33,7 @@ import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
  * Copyright (c) 2016-2020, the Alpha Team.
  */
 //@formatter:on
-public abstract class CoreTerm implements Comparable<CoreTerm> {
+public abstract class CoreTerm implements Term {
 
 	public abstract List<VariableTerm> getOccurringVariables();
 
@@ -57,12 +58,12 @@ public abstract class CoreTerm implements Comparable<CoreTerm> {
 	}
 
 	@Override
-	public int compareTo(CoreTerm o) {
+	public int compareTo(Term o) {
 		return o == null ? 1 : Integer.compare(priority(this), priority(o));
 	}
 
 	public abstract boolean isGround();
-	
+
 	/**
 	 * Rename all variables occurring in this Term by prefixing their name.
 	 * 

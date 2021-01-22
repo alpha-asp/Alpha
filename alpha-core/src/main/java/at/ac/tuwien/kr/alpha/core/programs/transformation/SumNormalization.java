@@ -17,10 +17,10 @@ import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.Unifier;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
  * Rewrites #sum aggregates into normal rules.
@@ -28,17 +28,17 @@ import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHead;
  *
  * Copyright (c) 2018-2020, the Alpha Team.
  */
-public class SumNormalization extends ProgramTransformation<InputProgram, InputProgram> {
+public class SumNormalization extends ProgramTransformation<InputProgramImpl, InputProgramImpl> {
 
 	private int aggregateCount;
-	private ProgramParser parser = new ProgramParser();
+	private ProgramParserImpl parser = new ProgramParserImpl();
 
-	private InputProgram parse(String program) {
+	private InputProgramImpl parse(String program) {
 		return parser.parse(program);
 	}
 
 	@Override
-	public InputProgram apply(InputProgram inputProgram) {
+	public InputProgramImpl apply(InputProgramImpl inputProgram) {
 		if (!rewritingNecessary(inputProgram)) {
 			return inputProgram;
 		}
@@ -52,9 +52,9 @@ public class SumNormalization extends ProgramTransformation<InputProgram, InputP
 		// Connect/Rewrite every aggregate in each rule.
 		List<BasicRule> rewrittenRules = rewriteAggregates(inputProgram.getRules());
 
-		InputProgram.Builder prgBuilder = InputProgram.builder();
+		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder();
 		prgBuilder.addFacts(inputProgram.getFacts());
-		InputProgram summationEncoding = makePredicatesInternal(new ProgramParser().parse(summationSubprogram));
+		InputProgramImpl summationEncoding = makePredicatesInternal(new ProgramParserImpl().parse(summationSubprogram));
 		prgBuilder.accumulate(summationEncoding);
 		prgBuilder.addRules(rewrittenRules);
 
@@ -76,7 +76,7 @@ public class SumNormalization extends ProgramTransformation<InputProgram, InputP
 	 * @param program the program.
 	 * @return true if sum aggregates occur, false otherwise.
 	 */
-	private boolean rewritingNecessary(InputProgram program) {
+	private boolean rewritingNecessary(InputProgramImpl program) {
 		for (BasicRule rule : program.getRules()) {
 			for (CoreLiteral lit : rule.getBody()) {
 				if (lit instanceof AggregateLiteral) {
@@ -180,14 +180,14 @@ public class SumNormalization extends ProgramTransformation<InputProgram, InputP
 				if (!globalVariables.isEmpty()) {
 					elementLiterals.addAll(rewrittenBody);
 				}
-				BasicRule inputRule = new BasicRule(new NormalHead(inputHeadAtom), elementLiterals);
+				BasicRule inputRule = new BasicRule(new NormalHeadImpl(inputHeadAtom), elementLiterals);
 				additionalRules.add(inputRule);
 			}
 
 			// Create lower bound for the aggregate.
 			BasicAtom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateUnifier);
 			List<CoreLiteral> lowerBoundBody = rewrittenBody; // Note: this is only correct if no other aggregate occurs in the rule.
-			additionalRules.add(new BasicRule(new NormalHead(lowerBoundHeadAtom), lowerBoundBody));
+			additionalRules.add(new BasicRule(new NormalHeadImpl(lowerBoundHeadAtom), lowerBoundBody));
 		}
 		if (aggregatesInRule > 0) {
 			rewrittenBody.addAll(aggregateOutputAtoms);

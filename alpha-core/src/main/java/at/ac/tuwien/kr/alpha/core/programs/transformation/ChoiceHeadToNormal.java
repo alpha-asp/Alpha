@@ -36,11 +36,11 @@ import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 import at.ac.tuwien.kr.alpha.core.rules.heads.ChoiceHead;
 import at.ac.tuwien.kr.alpha.core.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -49,12 +49,12 @@ import java.util.List;
 /**
  * Copyright (c) 2017-2020, the Alpha Team.
  */
-public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, InputProgram> {
+public class ChoiceHeadToNormal extends ProgramTransformation<InputProgramImpl, InputProgramImpl> {
 	private final static String PREDICATE_NEGATION_PREFIX = "_n";
 
 	@Override
-	public InputProgram apply(InputProgram inputProgram) {
-		InputProgram.Builder programBuilder = InputProgram.builder();
+	public InputProgramImpl apply(InputProgramImpl inputProgram) {
+		InputProgramImpl.Builder programBuilder = InputProgramImpl.builder();
 		List<BasicRule> additionalRules = new ArrayList<>();
 
 		List<BasicRule> srcRules = new ArrayList<>(inputProgram.getRules());
@@ -102,11 +102,11 @@ public class ChoiceHeadToNormal extends ProgramTransformation<InputProgram, Inpu
 				// Construct two guessing rules.
 				List<CoreLiteral> guessingRuleBodyWithNegHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithNegHead.add(new BasicAtom(head.getPredicate(), head.getTerms()).toLiteral(false));
-				additionalRules.add(new BasicRule(new NormalHead(negHead), guessingRuleBodyWithNegHead));
+				additionalRules.add(new BasicRule(new NormalHeadImpl(negHead), guessingRuleBodyWithNegHead));
 
 				List<CoreLiteral> guessingRuleBodyWithHead = new ArrayList<>(ruleBody);
 				guessingRuleBodyWithHead.add(new BasicAtom(negPredicate, headTerms).toLiteral(false));
-				additionalRules.add(new BasicRule(new NormalHead(head), guessingRuleBodyWithHead));
+				additionalRules.add(new BasicRule(new NormalHeadImpl(head), guessingRuleBodyWithHead));
 
 				// TODO: when cardinality constraints are possible, process the boundaries by adding a constraint with a cardinality check.
 			}

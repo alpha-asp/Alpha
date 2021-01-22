@@ -8,10 +8,10 @@ import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 import at.ac.tuwien.kr.alpha.core.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
  *
@@ -21,8 +21,8 @@ import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHead;
  */
 public class PredicateInternalizer {
 
-	static InputProgram makePredicatesInternal(InputProgram program) {
-		InputProgram.Builder prgBuilder = InputProgram.builder();
+	static InputProgramImpl makePredicatesInternal(InputProgramImpl program) {
+		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder();
 		for (CoreAtom atom : program.getFacts()) {
 			prgBuilder.addFact(PredicateInternalizer.makePredicateInternal(atom));
 		}
@@ -36,10 +36,10 @@ public class PredicateInternalizer {
 	private static BasicRule makePredicateInternal(BasicRule rule) {
 		Head newHead = null;
 		if (rule.getHead() != null) {
-			if (!(rule.getHead() instanceof NormalHead)) {
+			if (!(rule.getHead() instanceof NormalHeadImpl)) {
 				throw new UnsupportedOperationException("Cannot make predicates in rules internal whose head is not normal.");
 			}
-			newHead = new NormalHead(makePredicateInternal(((NormalHead) rule.getHead()).getAtom()));
+			newHead = new NormalHeadImpl(makePredicateInternal(((NormalHeadImpl) rule.getHead()).getAtom()));
 		}
 		List<CoreLiteral> newBody = new ArrayList<>();
 		for (CoreLiteral bodyElement : rule.getBody()) {

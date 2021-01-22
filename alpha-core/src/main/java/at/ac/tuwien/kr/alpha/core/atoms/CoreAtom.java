@@ -30,6 +30,7 @@ package at.ac.tuwien.kr.alpha.core.atoms;
 import java.util.List;
 import java.util.Set;
 
+import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
@@ -39,7 +40,7 @@ import at.ac.tuwien.kr.alpha.core.grounder.Unifier;
 /**
  * An Atom is the common superclass of all representations of ASP atoms used by Alpha.
  */
-public abstract class CoreAtom implements Comparable<CoreAtom>{
+public abstract class CoreAtom implements Atom, Comparable<CoreAtom> {
 
 	/**
 	 * Creates a new Atom that represents this Atom, but has the given term list instead.
@@ -74,8 +75,8 @@ public abstract class CoreAtom implements Comparable<CoreAtom>{
 	 *
 	 * @return true iff the terms of this atom contain no {@link VariableTerm}.
 	 */
-	public abstract boolean isGround();	
-	
+	public abstract boolean isGround();
+
 	/**
 	 * Creates a non-negated literal containing this atom.
 	 */

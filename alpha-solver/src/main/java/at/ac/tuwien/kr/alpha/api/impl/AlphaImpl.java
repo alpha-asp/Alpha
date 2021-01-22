@@ -55,9 +55,9 @@ import at.ac.tuwien.kr.alpha.core.common.AtomStoreImpl;
 import at.ac.tuwien.kr.alpha.core.common.CoreAnswerSet;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.GrounderFactory;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.core.programs.transformation.NormalizeProgramTransformation;
@@ -79,9 +79,9 @@ public class AlphaImpl implements Alpha {
 	public AlphaImpl() {
 	}
 
-	public InputProgram readProgram(InputConfig cfg) throws IOException {
-		InputProgram.Builder prgBuilder = InputProgram.builder();
-		InputProgram tmpProg;
+	public InputProgramImpl readProgram(InputConfig cfg) throws IOException {
+		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder();
+		InputProgramImpl tmpProg;
 		if (!cfg.getFiles().isEmpty()) {
 			tmpProg = readProgramFiles(cfg.isLiterate(), cfg.getPredicateMethods(), cfg.getFiles());
 			prgBuilder.accumulate(tmpProg);
@@ -93,14 +93,14 @@ public class AlphaImpl implements Alpha {
 		return prgBuilder.build();
 	}
 
-	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException {
+	public InputProgramImpl readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException {
 		return readProgramFiles(literate, externals, paths.stream().map(Paths::get).collect(Collectors.toList()).toArray(new Path[] {}));
 	}
 
-	public InputProgram readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
-		ProgramParser parser = new ProgramParser(externals);
-		InputProgram.Builder prgBuilder = InputProgram.builder();
-		InputProgram tmpProg;
+	public InputProgramImpl readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
+		ProgramParserImpl parser = new ProgramParserImpl(externals);
+		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder();
+		InputProgramImpl tmpProg;
 		for (Path path : paths) {
 			CharStream stream;
 			if (!literate) {
@@ -114,16 +114,16 @@ public class AlphaImpl implements Alpha {
 		return prgBuilder.build();
 	}
 
-	public InputProgram readProgramString(String aspString, Map<String, PredicateInterpretation> externals) {
-		ProgramParser parser = new ProgramParser(externals);
+	public InputProgramImpl readProgramString(String aspString, Map<String, PredicateInterpretation> externals) {
+		ProgramParserImpl parser = new ProgramParserImpl(externals);
 		return parser.parse(aspString);
 	}
 
-	public InputProgram readProgramString(String aspString) {
+	public InputProgramImpl readProgramString(String aspString) {
 		return readProgramString(aspString, null);
 	}
 
-	public NormalProgram normalizeProgram(InputProgram program) {
+	public NormalProgram normalizeProgram(InputProgramImpl program) {
 		return new NormalizeProgramTransformation(config.isUseNormalizationGrid()).apply(program);
 	}
 
@@ -150,7 +150,7 @@ public class AlphaImpl implements Alpha {
 	 * Convenience method - overloaded version of solve({@link InternalProgram}) for cases where details of the
 	 * program analysis and normalization aren't of interest.
 	 */
-	public Stream<AnswerSet> solve(InputProgram program) {
+	public Stream<AnswerSet> solve(InputProgramImpl program) {
 		return solve(program, InputConfig.DEFAULT_FILTER);
 	}
 
@@ -158,7 +158,7 @@ public class AlphaImpl implements Alpha {
 	 * Convenience method - overloaded version of solve({@link InternalProgram}, {@link Predicate}) for cases where
 	 * details of the program analysis and normalization aren't of interest.
 	 */
-	public Stream<AnswerSet> solve(InputProgram program, java.util.function.Predicate<Predicate> filter) {
+	public Stream<AnswerSet> solve(InputProgramImpl program, java.util.function.Predicate<Predicate> filter) {
 		NormalProgram normalized = normalizeProgram(program);
 		return solve(normalized, filter);
 	}

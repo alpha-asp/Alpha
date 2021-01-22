@@ -1,25 +1,29 @@
 package at.ac.tuwien.kr.alpha.core.rules.heads;
 
+import java.util.Optional;
+
+import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
 
 /**
  * Represents a normal head, i.e., a head that is an Atom.
  * Copyright (c) 2019, the Alpha Team.
  */
-public class NormalHead extends Head {
+public class NormalHeadImpl implements NormalHead {
 
-	private final CoreAtom atom;
+	private final Optional<CoreAtom> atom;
 
-	public NormalHead(CoreAtom atom) {
+	public NormalHeadImpl(Optional<CoreAtom> atom) {
 		this.atom = atom;
 	}
 
 	// Note that at some point in the future it might make sense to have this method directly in Head
 	public boolean isGround() {
-		return atom.isGround();
+		// return atom.isGround(); TODO
+		return false;
 	}
 
-	public CoreAtom getAtom() {
+	public Optional<CoreAtom> getAtom() {
 		return atom;
 	}
 
@@ -44,10 +48,10 @@ public class NormalHead extends Head {
 		if (obj == null) {
 			return false;
 		}
-		if (!(obj instanceof NormalHead)) {
+		if (!(obj instanceof NormalHeadImpl)) {
 			return false;
 		}
-		NormalHead other = (NormalHead) obj;
+		NormalHeadImpl other = (NormalHeadImpl) obj;
 		if (this.atom == null) {
 			if (other.atom != null) {
 				return false;

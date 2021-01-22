@@ -43,7 +43,7 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 import java.util.Collections;
 
 /**
- * A parser that, in contrast to {@link ProgramParser}, does not parse full programs but only program parts like
+ * A parser that, in contrast to {@link ProgramParserImpl}, does not parse full programs but only program parts like
  * atoms, terms and such.
  */
 public class ProgramPartParser {

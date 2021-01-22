@@ -27,22 +27,23 @@
  */
 package at.ac.tuwien.kr.alpha.core.atoms;
 
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.collections4.SetUtils;
+
+import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
-
-import org.apache.commons.collections4.SetUtils;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * A potentially negated {@link CoreAtom}
  *
  * Copyright (c) 2017-2018, the Alpha Team.
  */
-public abstract class CoreLiteral {
+public abstract class CoreLiteral implements Literal {
 
 	protected final CoreAtom atom;
 	protected final boolean positive;

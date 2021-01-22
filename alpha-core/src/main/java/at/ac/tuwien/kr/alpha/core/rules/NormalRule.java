@@ -5,7 +5,7 @@ import java.util.List;
 
 import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 import at.ac.tuwien.kr.alpha.core.util.Util;
 
 /**
@@ -14,21 +14,21 @@ import at.ac.tuwien.kr.alpha.core.util.Util;
  * 
  * Copyright (c) 2019, the Alpha Team.
  */
-public class NormalRule extends AbstractRule<NormalHead> {
+public class NormalRule extends AbstractRule<NormalHeadImpl> {
 
-	public NormalRule(NormalHead head, List<CoreLiteral> body) {
+	public NormalRule(NormalHeadImpl head, List<CoreLiteral> body) {
 		super(head, body);
 	}
 
 	public static NormalRule fromBasicRule(BasicRule rule) {
 		CoreAtom headAtom = null;
 		if (!rule.isConstraint()) {
-			if (!(rule.getHead() instanceof NormalHead)) {
+			if (!(rule.getHead() instanceof NormalHeadImpl)) {
 				throw Util.oops("Trying to construct a NormalRule from rule with non-normal head! Head type is: " + rule.getHead().getClass().getSimpleName());
 			}
-			headAtom = ((NormalHead) rule.getHead()).getAtom();
+			headAtom = ((NormalHeadImpl) rule.getHead()).getAtom();
 		}
-		return new NormalRule(headAtom != null ? new NormalHead(headAtom) : null, new ArrayList<>(rule.getBody()));
+		return new NormalRule(headAtom != null ? new NormalHeadImpl(headAtom) : null, new ArrayList<>(rule.getBody()));
 	}
 
 	public boolean isGround() {

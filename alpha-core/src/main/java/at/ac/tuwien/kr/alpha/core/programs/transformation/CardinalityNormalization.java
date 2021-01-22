@@ -18,18 +18,18 @@ import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.core.grounder.Unifier;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParser;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
  * Copyright (c) 2017-2020, the Alpha Team.
  */
-public class CardinalityNormalization extends ProgramTransformation<InputProgram, InputProgram> {
+public class CardinalityNormalization extends ProgramTransformation<InputProgramImpl, InputProgramImpl> {
 
 	private int aggregateCount;
-	private ProgramParser parser = new ProgramParser();
+	private ProgramParserImpl parser = new ProgramParserImpl();
 	private final boolean useSortingCircuitEncoding;
 
 	public CardinalityNormalization() {
@@ -40,16 +40,16 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 		this.useSortingCircuitEncoding = useSortingCircuitEncoding;
 	}
 
-	private InputProgram parse(String program) {
+	private InputProgramImpl parse(String program) {
 		return parser.parse(program);
 	}
 
 	@Override
-	public InputProgram apply(InputProgram inputProgram) {
+	public InputProgramImpl apply(InputProgramImpl inputProgram) {
 		if (!this.rewritingNecessary(inputProgram)) {
 			return inputProgram;
 		}
-		InputProgram.Builder programBuilder = InputProgram.builder();
+		InputProgramImpl.Builder programBuilder = InputProgramImpl.builder();
 		programBuilder.addFacts(inputProgram.getFacts());
 		programBuilder.addInlineDirectives(inputProgram.getInlineDirectives());
 		//@formatter:off
@@ -92,7 +92,7 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 		List<BasicRule> rewrittenRules = rewriteAggregates(inputProgram.getRules());
 
 		String usedCardinalityEncoding = useSortingCircuitEncoding ? cardinalitySortingCircuit : cardinalityCountingGrid;
-		InputProgram cardinalityEncoding = PredicateInternalizer.makePredicatesInternal(new ProgramParser().parse(usedCardinalityEncoding));
+		InputProgramImpl cardinalityEncoding = PredicateInternalizer.makePredicatesInternal(new ProgramParserImpl().parse(usedCardinalityEncoding));
 		programBuilder.addRules(rewrittenRules);
 
 		// Add enumeration rule that uses the special EnumerationAtom.
@@ -117,7 +117,7 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 	 * @param program the program.
 	 * @return true if count aggregates occur, false otherwise.
 	 */
-	private boolean rewritingNecessary(InputProgram program) {
+	private boolean rewritingNecessary(InputProgramImpl program) {
 		for (BasicRule rule : program.getRules()) {
 			for (CoreLiteral lit : rule.getBody()) {
 				if (lit instanceof AggregateLiteral) {
@@ -220,14 +220,14 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 				if (!globalVariables.isEmpty()) {
 					elementLiterals.addAll(rewrittenBody);
 				}
-				BasicRule inputRule = new BasicRule(new NormalHead(inputHeadAtom), elementLiterals);
+				BasicRule inputRule = new BasicRule(new NormalHeadImpl(inputHeadAtom), elementLiterals);
 				additionalRules.add(inputRule);
 			}
 
 			// Create lower bound for the aggregate.
 			BasicAtom lowerBoundHeadAtom = lowerBoundAtom.substitute(aggregateSubstitution);
 			List<CoreLiteral> lowerBoundBody = rewrittenBody; // Note: this is only correct if no other aggregate occurs in the rule.
-			additionalRules.add(new BasicRule(new NormalHead(lowerBoundHeadAtom), lowerBoundBody));
+			additionalRules.add(new BasicRule(new NormalHeadImpl(lowerBoundHeadAtom), lowerBoundBody));
 
 		}
 		rewrittenBody.addAll(aggregateOutputAtoms);

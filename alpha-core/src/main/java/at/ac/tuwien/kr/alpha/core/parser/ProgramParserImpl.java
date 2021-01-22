@@ -1,5 +1,11 @@
 package at.ac.tuwien.kr.alpha.core.parser;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Map;
+
 import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -9,27 +15,25 @@ import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
-
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.api.program.InputProgram;
+import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 
-public class ProgramParser {
+public class ProgramParserImpl implements ProgramParser {
 	private final Map<String, PredicateInterpretation> externals;
 
-	public ProgramParser(Map<String, PredicateInterpretation> externals) {
+	public ProgramParserImpl(Map<String, PredicateInterpretation> externals) {
 		this.externals = externals;
 	}
 
-	public ProgramParser() {
+	public ProgramParserImpl() {
 		this(Collections.emptyMap());
 	}
 
-	public InputProgram parse(String s) {
+	public InputProgramImpl parse(String s) {
 		try {
 			return parse(CharStreams.fromString(s));
 		} catch (IOException e) {
@@ -45,7 +49,7 @@ public class ProgramParser {
 		}
 	}
 
-	public InputProgram parse(CharStream stream) throws IOException {
+	public InputProgramImpl parse(CharStream stream) throws IOException {
 		//@formatter:off
 		/*
 		 * // In order to require less memory: use unbuffered streams and avoid constructing a full parse tree. 
@@ -106,5 +110,35 @@ public class ProgramParser {
 		// Construct internal program representation.
 		ParseTreeVisitor visitor = new ParseTreeVisitor(externals);
 		return visitor.translate(programContext);
+	}
+
+	@Override
+	public InputProgram parse(String programString, Map<String, PredicateInterpretation> externalPredicateDefinitions) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InputProgram parse(InputStream programSource, Map<String, PredicateInterpretation> externalPredicateDefinitions) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InputProgram parse(Path programPath, Map<String, PredicateInterpretation> externalPredicateDefinitions) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InputProgram parse(Map<String, PredicateInterpretation> externalPredicateDefinitions, Path... programSources) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public InputProgram parse(Iterable<Path> programSources, Map<String, PredicateInterpretation> externalPredicateDefinitions) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

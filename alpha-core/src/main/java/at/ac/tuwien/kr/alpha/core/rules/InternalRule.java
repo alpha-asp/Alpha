@@ -40,7 +40,7 @@ import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingOrders;
 import at.ac.tuwien.kr.alpha.core.grounder.Unifier;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
  * Represents a normal rule or a constraint for the semi-naive grounder.
@@ -56,7 +56,7 @@ public class InternalRule extends NormalRule {
 
 	private final RuleGroundingOrders groundingOrders;
 
-	public InternalRule(NormalHead head, List<CoreLiteral> body) {
+	public InternalRule(NormalHeadImpl head, List<CoreLiteral> body) {
 		super(head, body);
 		if (body.isEmpty()) {
 			throw new IllegalArgumentException(
@@ -90,7 +90,7 @@ public class InternalRule extends NormalRule {
 	}
 
 	public static InternalRule fromNormalRule(NormalRule rule) {
-		return new InternalRule(rule.isConstraint() ? null : new NormalHead(rule.getHeadAtom()), new ArrayList<>(rule.getBody()));
+		return new InternalRule(rule.isConstraint() ? null : new NormalHeadImpl(rule.getHeadAtom()), new ArrayList<>(rule.getBody()));
 	}
 
 	/**
@@ -117,7 +117,7 @@ public class InternalRule extends NormalRule {
 		for (CoreLiteral literal : this.getBody()) {
 			renamedBody.add(literal.substitute(variableReplacement));
 		}
-		return new InternalRule(new NormalHead(renamedHeadAtom), renamedBody);
+		return new InternalRule(new NormalHeadImpl(renamedHeadAtom), renamedBody);
 	}
 
 	/**

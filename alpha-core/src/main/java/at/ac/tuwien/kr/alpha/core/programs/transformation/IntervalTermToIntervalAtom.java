@@ -41,7 +41,7 @@ import at.ac.tuwien.kr.alpha.core.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
  * Rewrites all interval terms in a rule into a new variable and an IntervalAtom.
@@ -65,8 +65,8 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		for (CoreLiteral literal : rule.getBody()) {
 			rewrittenBody.add(rewriteLiteral(literal, intervalReplacements));
 		}
-		NormalHead rewrittenHead = rule.isConstraint() ? null :
-			new NormalHead(rewriteLiteral(rule.getHeadAtom().toLiteral(), intervalReplacements).getAtom());
+		NormalHeadImpl rewrittenHead = rule.isConstraint() ? null :
+			new NormalHeadImpl(rewriteLiteral(rule.getHeadAtom().toLiteral(), intervalReplacements).getAtom());
 
 		// If intervalReplacements is empty, no IntervalTerms have been found, keep rule as is.
 		if (intervalReplacements.isEmpty()) {

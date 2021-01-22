@@ -13,9 +13,9 @@ import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectives;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHead;
+import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
  * Rewrites the ordinary atom whose name is given in the input program by the enumeration directive #enum_atom_is into
@@ -23,10 +23,10 @@ import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHead;
  *
  * Copyright (c) 2017-2020, the Alpha Team.
  */
-public class EnumerationRewriting extends ProgramTransformation<InputProgram, InputProgram> {
+public class EnumerationRewriting extends ProgramTransformation<InputProgramImpl, InputProgramImpl> {
 
 	@Override
-	public InputProgram apply(InputProgram inputProgram) {
+	public InputProgramImpl apply(InputProgramImpl inputProgram) {
 		// Read enumeration predicate from directive.
 		String enumDirective = inputProgram.getInlineDirectives().getDirectiveValue(InlineDirectives.DIRECTIVE.enum_predicate_is);
 		if (enumDirective == null) {
@@ -35,7 +35,7 @@ public class EnumerationRewriting extends ProgramTransformation<InputProgram, In
 		}
 		CorePredicate enumPredicate = CorePredicate.getInstance(enumDirective, 3);
 
-		InputProgram.Builder programBuilder = InputProgram.builder().addInlineDirectives(inputProgram.getInlineDirectives());
+		InputProgramImpl.Builder programBuilder = InputProgramImpl.builder().addInlineDirectives(inputProgram.getInlineDirectives());
 
 		checkFactsAreEnumerationFree(inputProgram.getFacts(), enumPredicate);
 		programBuilder.addFacts(inputProgram.getFacts());
@@ -56,10 +56,10 @@ public class EnumerationRewriting extends ProgramTransformation<InputProgram, In
 	private List<BasicRule> rewriteRules(List<BasicRule> srcRules, CorePredicate enumPredicate) {
 		List<BasicRule> rewrittenRules = new ArrayList<>();
 		for (BasicRule rule : srcRules) {
-			if (rule.getHead() != null && !(rule.getHead() instanceof NormalHead)) {
+			if (rule.getHead() != null && !(rule.getHead() instanceof NormalHeadImpl)) {
 				throw oops("Encountered rule whose head is not normal: " + rule);
 			}
-			if (rule.getHead() != null && ((NormalHead) rule.getHead()).getAtom().getPredicate().equals(enumPredicate)) {
+			if (rule.getHead() != null && ((NormalHeadImpl) rule.getHead()).getAtom().getPredicate().equals(enumPredicate)) {
 				throw oops("Atom declared as enumeration atom by directive occurs in head of the rule: " + rule);
 			}
 			List<CoreLiteral> modifiedBodyLiterals = new ArrayList<>(rule.getBody());

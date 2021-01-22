@@ -9,34 +9,34 @@ import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpreta
 
 public interface ProgramParser {
 
-	default Program parse(String programString) {
+	default InputProgram parse(String programString) {
 		return parse(programString, Collections.emptyMap());
 	}
 
-	default Program parse(InputStream programSource) {
+	default InputProgram parse(InputStream programSource) {
 		return parse(programSource, Collections.emptyMap());
 	}
 
-	default Program parse(Path programPath) {
+	default InputProgram parse(Path programPath) {
 		return parse(programPath, Collections.emptyMap());
 	}
 
-	default Program parse(Path... programSources) {
+	default InputProgram parse(Path... programSources) {
 		return parse(Collections.emptyMap(), programSources);
 	}
 
-	default Program parse(Iterable<Path> programSources) {
+	default InputProgram parse(Iterable<Path> programSources) {
 		return parse(programSources, Collections.emptyMap());
 	}
 
-	Program parse(String programString, Map<String, PredicateInterpretation> externalPredicateDefinitions);
+	InputProgram parse(String programString, Map<String, PredicateInterpretation> externalPredicateDefinitions);
 
-	Program parse(InputStream programSource, Map<String, PredicateInterpretation> externalPredicateDefinitions);
+	InputProgram parse(InputStream programSource, Map<String, PredicateInterpretation> externalPredicateDefinitions);
 
-	Program parse(Path programPath, Map<String, PredicateInterpretation> externalPredicateDefinitions);
+	InputProgram parse(Path programPath, Map<String, PredicateInterpretation> externalPredicateDefinitions);
 
-	Program parse(Map<String, PredicateInterpretation> externalPredicateDefinitions, Path... programSources);
+	InputProgram parse(Map<String, PredicateInterpretation> externalPredicateDefinitions, Path... programSources);
 
-	Program parse(Iterable<Path> programSources, Map<String, PredicateInterpretation> externalPredicateDefinitions);
+	InputProgram parse(Iterable<Path> programSources, Map<String, PredicateInterpretation> externalPredicateDefinitions);
 
 }

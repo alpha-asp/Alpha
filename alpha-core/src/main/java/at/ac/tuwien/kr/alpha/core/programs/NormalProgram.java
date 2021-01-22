@@ -19,7 +19,7 @@ public class NormalProgram extends AbstractProgram<NormalRule> {
 		super(rules, facts, inlineDirectives);
 	}
 
-	public static NormalProgram fromInputProgram(InputProgram inputProgram) {
+	public static NormalProgram fromInputProgram(InputProgramImpl inputProgram) {
 		List<NormalRule> normalRules = new ArrayList<>();
 		for (BasicRule r : inputProgram.getRules()) {
 			normalRules.add(NormalRule.fromBasicRule(r));

@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.util.Map;
 
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.core.parser.ProgramParser;
+import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 
 public class Programs {
 
@@ -15,8 +15,8 @@ public class Programs {
 		throw new AssertionError("This is a pure utility class and should therefore not be instantiated!");
 	}
 
-	public static InputProgram fromInputStream(InputStream is, Map<String, PredicateInterpretation> externals) throws IOException {
-		ProgramParser parser = new ProgramParser(externals);
+	public static InputProgramImpl fromInputStream(InputStream is, Map<String, PredicateInterpretation> externals) throws IOException {
+		ProgramParserImpl parser = new ProgramParserImpl(externals);
 		return parser.parse(CharStreams.fromStream(is));
 	}
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2021, the Alpha Team.
  * All rights reserved.
  * <p>
  * Additional changes made by Siemens.
@@ -27,12 +27,32 @@
  */
 package at.ac.tuwien.kr.alpha.core.parser;
 
+import static java.util.Collections.emptyList;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import org.antlr.v4.runtime.RuleContext;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.program.*;
-import at.ac.tuwien.kr.alpha.api.terms.*;
+import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead;
+import at.ac.tuwien.kr.alpha.api.rules.Head;
+import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
+import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
@@ -52,28 +72,18 @@ import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.heads.ChoiceHead;
-import at.ac.tuwien.kr.alpha.core.rules.heads.Head;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHead;
-
-import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.tree.TerminalNode;
-
-import java.util.*;
-
-import static java.util.Collections.emptyList;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
+import at.ac.tuwien.kr.alpha.core.rules.Rules;
+import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
 /**
- * Copyright (c) 2016-2018, the Alpha Team.
+ * Copyright (c) 2016-2021, the Alpha Team.
  */
 public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	private final Map<String, PredicateInterpretation> externals;
 	private final boolean acceptVariables;
 
-	private InputProgram.Builder programBuilder;
+	private InputProgramImpl.Builder programBuilder;
 	private InlineDirectives inlineDirectives;
 
 	public ParseTreeVisitor(Map<String, PredicateInterpretation> externals) {
@@ -92,7 +102,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	/**
 	 * Translates a program context (referring to a node in an ATN specific to ANTLR) to the internal representation of Alpha.
 	 */
-	public InputProgram translate(ASPCore2Parser.ProgramContext input) {
+	public InputProgramImpl translate(ASPCore2Parser.ProgramContext input) {
 		return visitProgram(input);
 	}
 
@@ -142,19 +152,19 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public InputProgram visitProgram(ASPCore2Parser.ProgramContext ctx) {
+	public InputProgramImpl visitProgram(ASPCore2Parser.ProgramContext ctx) {
 		// program : statements? query?;
 		if (ctx.query() != null) {
 			throw notSupported(ctx.query());
 		}
 
 		if (ctx.statements() == null) {
-			return InputProgram.EMPTY;
+			return InputProgramImpl.EMPTY;
 		}
 		inlineDirectives = new InlineDirectives();
-		programBuilder = InputProgram.builder();
+		programBuilder = InputProgramImpl.builder();
 		visitStatements(ctx.statements());
-		programBuilder.addInlineDirectives(inlineDirectives);
+		programBuilder.addInlineDirectives(inlineDirectives); // TODO inline directives
 		return programBuilder.build();
 	}
 
@@ -170,27 +180,52 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Object visitStatement_fact(ASPCore2Parser.Statement_factContext ctx) {
 		// head DOT
-		Head head = visitHead(ctx.head());
-		if (head instanceof NormalHead) {
-			programBuilder.addFact(((NormalHead) head).getAtom());
+		if (ctx.head().disjunction() != null) {
+			if (ctx.head().disjunction().disjunction() != null) {
+				// more than one disjunctive element
+				notSupported(ctx);
+			} else {
+				programBuilder.addFact(visitClassical_literal(ctx.head().disjunction().classical_literal()));
+			}
 		} else {
-			// Treat facts with choice or disjunction in the head like a rule.
-			programBuilder.addRule(new BasicRule(head, emptyList()));
+			handleRule(ctx.head(), null);
 		}
 		return null;
+	}
+
+	private void handleRule(ASPCore2Parser.HeadContext headCtx, ASPCore2Parser.BodyContext bodyCtx) {
+		List<Literal> body = null; // TODO
+		if (headCtx == null) {
+			// constraint
+			programBuilder.addNormalRule(Rules.newConstraint(body));
+		} else if (headCtx.disjunction() != null) {
+			// normal or disjunctive rule
+			if (headCtx.disjunction().disjunction() != null) {
+				// more than one disjunctive element
+				notSupported(headCtx);
+			} else {
+				programBuilder.addNormalRule(Rules.newNormalRule(visitClassical_literal(headCtx.disjunction().classical_literal()), body));
+			}
+		} else if (headCtx.choice() != null) {
+			// choice rule
+			ChoiceHead head = visitChoice(headCtx.choice());
+			programBuilder.addChoiceRule(Rules.newChoiceRule(head, body));
+		} else {
+			notSupported(headCtx);
+		}
 	}
 
 	@Override
 	public Object visitStatement_constraint(ASPCore2Parser.Statement_constraintContext ctx) {
 		// CONS body DOT
-		programBuilder.addRule(new BasicRule(null, visitBody(ctx.body())));
+		handleRule(null, ctx.body());
 		return null;
 	}
 
 	@Override
 	public Object visitStatement_rule(ASPCore2Parser.Statement_ruleContext ctx) {
 		// head CONS body DOT
-		programBuilder.addRule(new BasicRule(visitHead(ctx.head()), visitBody(ctx.body())));
+		handleRule(ctx.head(), ctx.body());
 		return null;
 	}
 
@@ -209,25 +244,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public Head visitDisjunction(ASPCore2Parser.DisjunctionContext ctx) {
-		// disjunction : classical_literal (OR disjunction)?;
-		if (ctx.disjunction() != null) {
-			throw notSupported(ctx);
-		}
-		return new NormalHead(visitClassical_literal(ctx.classical_literal()));
-	}
-
-	@Override
-	public Head visitHead(ASPCore2Parser.HeadContext ctx) {
-		// head : disjunction | choice;
-		if (ctx.choice() != null) {
-			return visitChoice(ctx.choice());
-		}
-		return visitDisjunction(ctx.disjunction());
-	}
-
-	@Override
-	public Head visitChoice(ASPCore2Parser.ChoiceContext ctx) {
+	public ChoiceHead visitChoice(ASPCore2Parser.ChoiceContext ctx) {
 		// choice : (lt=term lop=binop)? CURLY_OPEN choice_elements? CURLY_CLOSE (uop=binop ut=term)?;
 		Term lt = null;
 		ComparisonOperator lop = null;
@@ -437,10 +454,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	public ComparisonAtom visitBuiltin_atom(ASPCore2Parser.Builtin_atomContext ctx) {
 		// builtin_atom : term binop term;
 		return new ComparisonAtom(
-			(CoreTerm) visit(ctx.term(0)),
-			(CoreTerm) visit(ctx.term(1)),
-			visitBinop(ctx.binop())
-		);
+				(CoreTerm) visit(ctx.term(0)),
+				(CoreTerm) visit(ctx.term(1)),
+				visitBinop(ctx.binop()));
 	}
 
 	@Override
@@ -546,11 +562,10 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		List<? extends CoreTerm> outputTerms = visitTerms(ctx.output);
 
 		return new ExternalAtom(
-			CorePredicate.getInstance(predicateName, outputTerms.size()),
-			interpretation,
-			visitTerms(ctx.input),
-			outputTerms
-		);
+				CorePredicate.getInstance(predicateName, outputTerms.size()),
+				interpretation,
+				visitTerms(ctx.input),
+				outputTerms);
 	}
 
 	@Override
@@ -559,8 +574,10 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		ASPCore2Parser.IntervalContext ictx = ctx.interval();
 		String lowerText = ictx.lower.getText();
 		String upperText = ictx.upper.getText();
-		CoreTerm lower = ictx.lower.getType() == ASPCore2Lexer.NUMBER ? CoreConstantTerm.getInstance(Integer.parseInt(lowerText)) : VariableTerm.getInstance(lowerText);
-		CoreTerm upper = ictx.upper.getType() == ASPCore2Lexer.NUMBER ? CoreConstantTerm.getInstance(Integer.parseInt(upperText)) : VariableTerm.getInstance(upperText);
+		CoreTerm lower = ictx.lower.getType() == ASPCore2Lexer.NUMBER ? CoreConstantTerm.getInstance(Integer.parseInt(lowerText))
+				: VariableTerm.getInstance(lowerText);
+		CoreTerm upper = ictx.upper.getType() == ASPCore2Lexer.NUMBER ? CoreConstantTerm.getInstance(Integer.parseInt(upperText))
+				: VariableTerm.getInstance(upperText);
 		return IntervalTerm.getInstance(lower, upper);
 	}
 
@@ -574,7 +591,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	public Object visitTerm_timesdivmodArithTerm(ASPCore2Parser.Term_timesdivmodArithTermContext ctx) {
 		// | term (TIMES | DIV | MODULO) term
 		ArithmeticTerm.ArithmeticOperator op = ctx.TIMES() != null ? ArithmeticTerm.ArithmeticOperator.TIMES
-			: ctx.DIV() != null ? ArithmeticTerm.ArithmeticOperator.DIV : ArithmeticTerm.ArithmeticOperator.MODULO;
+				: ctx.DIV() != null ? ArithmeticTerm.ArithmeticOperator.DIV : ArithmeticTerm.ArithmeticOperator.MODULO;
 		return ArithmeticTerm.getInstance((CoreTerm) visit(ctx.term(0)), op, (CoreTerm) visit(ctx.term(1)));
 	}
 
