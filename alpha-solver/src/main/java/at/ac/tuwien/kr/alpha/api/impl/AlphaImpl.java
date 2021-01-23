@@ -79,6 +79,7 @@ public class AlphaImpl implements Alpha {
 	public AlphaImpl() {
 	}
 
+	@Override
 	public InputProgramImpl readProgram(InputConfig cfg) throws IOException {
 		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder();
 		InputProgramImpl tmpProg;
@@ -93,10 +94,12 @@ public class AlphaImpl implements Alpha {
 		return prgBuilder.build();
 	}
 
+	@Override
 	public InputProgramImpl readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, List<String> paths) throws IOException {
 		return readProgramFiles(literate, externals, paths.stream().map(Paths::get).collect(Collectors.toList()).toArray(new Path[] {}));
 	}
 
+	@Override
 	public InputProgramImpl readProgramFiles(boolean literate, Map<String, PredicateInterpretation> externals, Path... paths) throws IOException {
 		ProgramParserImpl parser = new ProgramParserImpl(externals);
 		InputProgramImpl.Builder prgBuilder = InputProgramImpl.builder();
@@ -114,19 +117,23 @@ public class AlphaImpl implements Alpha {
 		return prgBuilder.build();
 	}
 
+	@Override
 	public InputProgramImpl readProgramString(String aspString, Map<String, PredicateInterpretation> externals) {
 		ProgramParserImpl parser = new ProgramParserImpl(externals);
 		return parser.parse(aspString);
 	}
 
+	@Override
 	public InputProgramImpl readProgramString(String aspString) {
 		return readProgramString(aspString, null);
 	}
 
+	// TODO make sure to adapt this without exposing internal imnplementation types
 	public NormalProgram normalizeProgram(InputProgramImpl program) {
 		return new NormalizeProgramTransformation(config.isUseNormalizationGrid()).apply(program);
 	}
 
+	// TODO make sure to adapt this without exposing internal imnplementation types
 	public InternalProgram performProgramPreprocessing(InternalProgram program) {
 		LOGGER.debug("Preprocessing InternalProgram!");
 		InternalProgram retVal = program;
@@ -137,6 +144,7 @@ public class AlphaImpl implements Alpha {
 		return retVal;
 	}
 
+	// TODO make sure to adapt this without exposing internal imnplementation types
 	public InternalProgram performProgramPreprocessing(AnalyzedProgram program) {
 		LOGGER.debug("Preprocessing AnalyzedProgram!");
 		InternalProgram retVal = program;

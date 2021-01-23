@@ -28,7 +28,7 @@ public class IntervalTerm extends CoreTerm {
 			throw new IllegalArgumentException();
 		}
 
-		this.ground = !((lowerBound instanceof VariableTerm) || (upperBound instanceof VariableTerm));
+		this.ground = !((lowerBound instanceof VariableTermImpl) || (upperBound instanceof VariableTermImpl));
 
 		this.lowerBoundTerm = lowerBound;
 		this.upperBoundTerm = upperBound;
@@ -66,13 +66,13 @@ public class IntervalTerm extends CoreTerm {
 	}
 
 	@Override
-	public List<VariableTerm> getOccurringVariables() {
-		LinkedList<VariableTerm> variables = new LinkedList<>();
-		if (lowerBoundTerm instanceof VariableTerm) {
-			variables.add((VariableTerm) lowerBoundTerm);
+	public List<VariableTermImpl> getOccurringVariables() {
+		LinkedList<VariableTermImpl> variables = new LinkedList<>();
+		if (lowerBoundTerm instanceof VariableTermImpl) {
+			variables.add((VariableTermImpl) lowerBoundTerm);
 		}
-		if (upperBoundTerm instanceof VariableTerm) {
-			variables.add((VariableTerm) upperBoundTerm);
+		if (upperBoundTerm instanceof VariableTermImpl) {
+			variables.add((VariableTermImpl) upperBoundTerm);
 		}
 		return variables;
 	}

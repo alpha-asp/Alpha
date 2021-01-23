@@ -57,8 +57,8 @@ public class FunctionTerm extends CoreTerm {
 	}
 
 	@Override
-	public List<VariableTerm> getOccurringVariables() {
-		LinkedList<VariableTerm> vars = new LinkedList<>();
+	public List<VariableTermImpl> getOccurringVariables() {
+		LinkedList<VariableTermImpl> vars = new LinkedList<>();
 		for (CoreTerm term : terms) {
 			vars.addAll(term.getOccurringVariables());
 		}

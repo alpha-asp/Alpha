@@ -68,8 +68,8 @@ public class ArithmeticTerm extends CoreTerm {
 	}
 
 	@Override
-	public List<VariableTerm> getOccurringVariables() {
-		LinkedHashSet<VariableTerm> occurringVariables = new LinkedHashSet<>(left.getOccurringVariables());
+	public List<VariableTermImpl> getOccurringVariables() {
+		LinkedHashSet<VariableTermImpl> occurringVariables = new LinkedHashSet<>(left.getOccurringVariables());
 		occurringVariables.addAll(right.getOccurringVariables());
 		return new ArrayList<>(occurringVariables);
 	}
@@ -222,7 +222,7 @@ public class ArithmeticTerm extends CoreTerm {
 		}
 
 		@Override
-		public List<VariableTerm> getOccurringVariables() {
+		public List<VariableTermImpl> getOccurringVariables() {
 			return left.getOccurringVariables();
 		}
 

@@ -39,7 +39,7 @@ import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 
 /**
@@ -166,7 +166,7 @@ public class RuleGroundingOrders {
 
 	private void computeGroundingOrder(CoreLiteral startingLiteral) {
 		Set<CoreLiteral> bodyLiterals = internalRule.getBody();
-		HashSet<VariableTerm> boundVariables = new HashSet<>();
+		HashSet<VariableTermImpl> boundVariables = new HashSet<>();
 		boundVariables.addAll(startingLiteral.getBindingVariables());
 		LinkedHashSet<CoreLiteral> remainingLiterals = new LinkedHashSet<>(bodyLiterals);
 		remainingLiterals.remove(startingLiteral);
@@ -199,7 +199,7 @@ public class RuleGroundingOrders {
 		groundingOrders.put(startingLiteral, new RuleGroundingOrder(startingLiteral, literalsOrder, positionLastVarBound, internalRule.isGround()));
 	}
 
-	private CoreLiteral selectNextGroundingLiteral(LinkedHashSet<CoreLiteral> remainingLiterals, Set<VariableTerm> boundVariables) {
+	private CoreLiteral selectNextGroundingLiteral(LinkedHashSet<CoreLiteral> remainingLiterals, Set<VariableTermImpl> boundVariables) {
 		Float bestSelectivity = Float.MAX_VALUE;
 		CoreLiteral bestLiteral = null;
 		boolean bestLiteralSharesVariables = false;
@@ -223,7 +223,7 @@ public class RuleGroundingOrders {
 		return bestLiteral;
 	}
 
-	private boolean sharesVariables(Collection<VariableTerm> set1, Collection<VariableTerm> set2part1, Collection<VariableTerm> set2part2) {
+	private boolean sharesVariables(Collection<VariableTermImpl> set1, Collection<VariableTermImpl> set2part1, Collection<VariableTermImpl> set2part2) {
 		return !Collections.disjoint(set1, set2part1) || !Collections.disjoint(set1, set2part2);
 	}
 }

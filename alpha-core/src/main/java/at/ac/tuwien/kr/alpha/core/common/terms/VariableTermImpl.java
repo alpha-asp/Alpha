@@ -1,32 +1,34 @@
-package at.ac.tuwien.kr.alpha.common.terms;
-
-import at.ac.tuwien.kr.alpha.common.Interner;
-import at.ac.tuwien.kr.alpha.grounder.IntIdGenerator;
-import at.ac.tuwien.kr.alpha.grounder.Substitution;
+package at.ac.tuwien.kr.alpha.core.common.terms;
 
 import java.util.Collections;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.terms.Term;
+import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.Interner;
+import at.ac.tuwien.kr.alpha.core.grounder.IntIdGenerator;
+import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
+
 /**
  * Copyright (c) 2016-2017, the Alpha Team.
  */
-public class VariableTerm extends CoreTerm {
-	private static final Interner<VariableTerm> INTERNER = new Interner<>();
+public class VariableTermImpl extends CoreTerm implements VariableTerm {
+	private static final Interner<VariableTermImpl> INTERNER = new Interner<>();
 
 	private static final String ANONYMOUS_VARIABLE_PREFIX = "_";
 	private static final IntIdGenerator ANONYMOUS_VARIABLE_COUNTER = new IntIdGenerator();
 
 	private final String variableName;
 
-	private VariableTerm(String variableName) {
+	private VariableTermImpl(String variableName) {
 		this.variableName = variableName;
 	}
 
-	public static VariableTerm getInstance(String variableName) {
-		return INTERNER.intern(new VariableTerm(variableName));
+	public static VariableTermImpl getInstance(String variableName) {
+		return INTERNER.intern(new VariableTermImpl(variableName));
 	}
 
-	public static VariableTerm getAnonymousInstance() {
+	public static VariableTermImpl getAnonymousInstance() {
 		return getInstance(ANONYMOUS_VARIABLE_PREFIX + ANONYMOUS_VARIABLE_COUNTER.getNextId());
 	}
 
@@ -36,7 +38,7 @@ public class VariableTerm extends CoreTerm {
 	}
 
 	@Override
-	public List<VariableTerm> getOccurringVariables() {
+	public List<VariableTermImpl> getOccurringVariables() {
 		return Collections.singletonList(this);
 	}
 
@@ -47,7 +49,7 @@ public class VariableTerm extends CoreTerm {
 			// If variable is not substituted, keep term as is.
 			return this;
 		}
-		return  groundTerm;
+		return groundTerm;
 	}
 
 	@Override
@@ -65,7 +67,7 @@ public class VariableTerm extends CoreTerm {
 			return false;
 		}
 
-		VariableTerm that = (VariableTerm) o;
+		VariableTermImpl that = (VariableTermImpl) o;
 
 		return variableName.equals(that.variableName);
 	}
@@ -75,32 +77,33 @@ public class VariableTerm extends CoreTerm {
 		return variableName.hashCode();
 	}
 
+	// TODO not sure if this makes sense (cast to VariableTerm interface instead?)
 	@Override
-	public int compareTo(CoreTerm o) {
+	public int compareTo(Term o) {
 		if (this == o) {
 			return 0;
 		}
 
-		if (!(o instanceof VariableTerm)) {
+		if (!(o instanceof VariableTermImpl)) {
 			return super.compareTo(o);
 		}
 
-		VariableTerm other = (VariableTerm)o;
+		VariableTermImpl other = (VariableTermImpl) o;
 		return variableName.compareTo(other.variableName);
 	}
 
 	@Override
 	public CoreTerm renameVariables(String renamePrefix) {
-		return VariableTerm.getInstance(renamePrefix + variableName);
+		return VariableTermImpl.getInstance(renamePrefix + variableName);
 	}
 
 	@Override
 	public CoreTerm normalizeVariables(String renamePrefix, RenameCounter counter) {
-		VariableTerm renamedThis = counter.renamedVariables.get(this);
+		VariableTermImpl renamedThis = counter.renamedVariables.get(this);
 		if (renamedThis != null) {
 			return renamedThis;
 		} else {
-			VariableTerm renamedVariable = VariableTerm.getInstance(renamePrefix + counter.counter++);
+			VariableTermImpl renamedVariable = VariableTermImpl.getInstance(renamePrefix + counter.counter++);
 			counter.renamedVariables.put(this, renamedVariable);
 			return renamedVariable;
 		}

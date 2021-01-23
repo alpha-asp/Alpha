@@ -8,7 +8,7 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 /**
@@ -31,7 +31,7 @@ public class EnumerationAtom extends BasicAtom {
 		if (terms.size() != 3) {
 			throw new RuntimeException("EnumerationAtom must have arity three. Given terms are of wrong size: " + terms);
 		}
-		if (!(getTerms().get(2) instanceof VariableTerm)) {
+		if (!(getTerms().get(2) instanceof VariableTermImpl)) {
 			throw new RuntimeException("Third parameter of EnumerationAtom must be a variable: " + terms);
 		}
 	}
@@ -70,7 +70,7 @@ public class EnumerationAtom extends BasicAtom {
 		}
 		Integer enumerationIndex = getEnumerationIndex(idTerm, enumerationTerm);
 		Substitution retVal = new Substitution(substitution);
-		retVal.put((VariableTerm) getTerms().get(2), CoreConstantTerm.getInstance(enumerationIndex));
+		retVal.put((VariableTermImpl) getTerms().get(2), CoreConstantTerm.getInstance(enumerationIndex));
 		return retVal;
 	}
 

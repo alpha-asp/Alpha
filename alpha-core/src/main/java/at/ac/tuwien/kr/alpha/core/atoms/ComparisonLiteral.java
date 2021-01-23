@@ -40,7 +40,7 @@ import at.ac.tuwien.kr.alpha.core.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.core.common.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 /**
@@ -82,11 +82,11 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 	}
 
 	private boolean assignable(CoreTerm term) {
-		return isNormalizedEquality && term instanceof VariableTerm;
+		return isNormalizedEquality && term instanceof VariableTermImpl;
 	}
 
 	@Override
-	public Set<VariableTerm> getBindingVariables() {
+	public Set<VariableTermImpl> getBindingVariables() {
 		final CoreTerm left = getTerms().get(0);
 		final CoreTerm right = getTerms().get(1);
 		if (assignable(left) && assignable(right)) {
@@ -95,21 +95,21 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 			throw new RuntimeException("Builtin equality with left and right side being variables encountered. Should not happen.");
 		}
 		if (assignable(left)) {
-			return Collections.singleton((VariableTerm) left);
+			return Collections.singleton((VariableTermImpl) left);
 		}
 		if (assignable(right)) {
-			return Collections.singleton((VariableTerm) right);
+			return Collections.singleton((VariableTermImpl) right);
 		}
 		return Collections.emptySet();
 	}
 
 	@Override
-	public Set<VariableTerm> getNonBindingVariables() {
+	public Set<VariableTermImpl> getNonBindingVariables() {
 		final CoreTerm left = getTerms().get(0);
 		final CoreTerm right = getTerms().get(1);
-		HashSet<VariableTerm> occurringVariables = new HashSet<>();
-		List<VariableTerm> leftOccurringVariables = new LinkedList<>(left.getOccurringVariables());
-		List<VariableTerm> rightOccurringVariables = new LinkedList<>(right.getOccurringVariables());
+		HashSet<VariableTermImpl> occurringVariables = new HashSet<>();
+		List<VariableTermImpl> leftOccurringVariables = new LinkedList<>(left.getOccurringVariables());
+		List<VariableTermImpl> rightOccurringVariables = new LinkedList<>(right.getOccurringVariables());
 		if (assignable(left)) {
 			leftOccurringVariables.remove(left);
 		}
@@ -149,14 +149,14 @@ public class ComparisonLiteral extends FixedInterpretationLiteral {
 			}
 		}
 		// Treat case that this is X = t or t = X.
-		VariableTerm variable = null;
+		VariableTermImpl variable = null;
 		CoreTerm expression = null;
 		if (leftAssigning) {
-			variable = (VariableTerm) left;
+			variable = (VariableTermImpl) left;
 			expression = right;
 		}
 		if (rightAssigning) {
-			variable = (VariableTerm) right;
+			variable = (VariableTermImpl) right;
 			expression = left;
 		}
 		CoreTerm groundTerm = expression.substitute(partialSubstitution);

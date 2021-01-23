@@ -38,7 +38,7 @@ import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.IntervalTerm;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
-import at.ac.tuwien.kr.alpha.core.rules.heads.ChoiceHead;
+import at.ac.tuwien.kr.alpha.core.rules.heads.ChoiceHeadImpl;
 import at.ac.tuwien.kr.alpha.core.rules.heads.Head;
 import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
@@ -63,7 +63,7 @@ public class ChoiceHeadToNormal extends ProgramTransformation<InputProgramImpl, 
 			BasicRule rule = ruleIterator.next();
 
 			Head ruleHead = rule.getHead();
-			if (!(ruleHead instanceof ChoiceHead)) {
+			if (!(ruleHead instanceof ChoiceHeadImpl)) {
 				// Rule is constraint or without choice in the head. Leave as is.
 				continue;
 			}
@@ -71,14 +71,14 @@ public class ChoiceHeadToNormal extends ProgramTransformation<InputProgramImpl, 
 			// Remove this rule, as it will be transformed.
 			ruleIterator.remove();
 
-			ChoiceHead choiceHead = (ChoiceHead) ruleHead;
+			ChoiceHeadImpl choiceHead = (ChoiceHeadImpl) ruleHead;
 			// Choice rules with boundaries are not yet supported.
 			if (choiceHead.getLowerBound() != null || choiceHead.getUpperBound() != null) {
 				throw new UnsupportedOperationException("Found choice rule with bounds, which are not yet supported. Rule is: " + rule);
 			}
 
 			// Only rewrite rules with a choice in their head.
-			for (ChoiceHead.ChoiceElement choiceElement : choiceHead.getChoiceElements()) {
+			for (ChoiceHeadImpl.ChoiceElement choiceElement : choiceHead.getChoiceElements()) {
 				// Create two guessing rules for each choiceElement.
 
 				// Construct common body to both rules.

@@ -41,7 +41,7 @@ import at.ac.tuwien.kr.alpha.core.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
@@ -65,7 +65,7 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 
 	private NormalRule findAndReplaceVariableEquality(NormalRule rule) {
 		// Collect all equal variables.
-		HashMap<VariableTerm, HashSet<VariableTerm>> variableToEqualVariables = new LinkedHashMap<>();
+		HashMap<VariableTermImpl, HashSet<VariableTermImpl>> variableToEqualVariables = new LinkedHashMap<>();
 		HashSet<CoreLiteral> equalitiesToRemove = new HashSet<>();
 		for (CoreLiteral bodyElement : rule.getBody()) {
 			if (!(bodyElement instanceof ComparisonLiteral)) {
@@ -75,13 +75,13 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 			if (!comparisonLiteral.isNormalizedEquality()) {
 				continue;
 			}
-			if (comparisonLiteral.getTerms().get(0) instanceof VariableTerm && comparisonLiteral.getTerms().get(1) instanceof VariableTerm) {
-				VariableTerm leftVariable = (VariableTerm) comparisonLiteral.getTerms().get(0);
-				VariableTerm rightVariable = (VariableTerm) comparisonLiteral.getTerms().get(1);
-				HashSet<VariableTerm> leftEqualVariables = variableToEqualVariables.get(leftVariable);
-				HashSet<VariableTerm> rightEqualVariables = variableToEqualVariables.get(rightVariable);
+			if (comparisonLiteral.getTerms().get(0) instanceof VariableTermImpl && comparisonLiteral.getTerms().get(1) instanceof VariableTermImpl) {
+				VariableTermImpl leftVariable = (VariableTermImpl) comparisonLiteral.getTerms().get(0);
+				VariableTermImpl rightVariable = (VariableTermImpl) comparisonLiteral.getTerms().get(1);
+				HashSet<VariableTermImpl> leftEqualVariables = variableToEqualVariables.get(leftVariable);
+				HashSet<VariableTermImpl> rightEqualVariables = variableToEqualVariables.get(rightVariable);
 				if (leftEqualVariables == null && rightEqualVariables == null) {
-					HashSet<VariableTerm> equalVariables = new LinkedHashSet<>(Arrays.asList(leftVariable, rightVariable));
+					HashSet<VariableTermImpl> equalVariables = new LinkedHashSet<>(Arrays.asList(leftVariable, rightVariable));
 					variableToEqualVariables.put(leftVariable, equalVariables);
 					variableToEqualVariables.put(rightVariable, equalVariables);
 				}
@@ -95,7 +95,7 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 				}
 				if (leftEqualVariables != null && rightEqualVariables != null) {
 					leftEqualVariables.addAll(rightEqualVariables);
-					for (VariableTerm rightEqualVariable : rightEqualVariables) {
+					for (VariableTermImpl rightEqualVariable : rightEqualVariables) {
 						variableToEqualVariables.put(rightEqualVariable, leftEqualVariables);
 					}
 				}
@@ -113,9 +113,9 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 		// Use substitution for actual replacement.
 		Unifier replacementSubstitution = new Unifier();
 		// For each set of equal variables, take the first variable and replace all others by it.
-		for (Map.Entry<VariableTerm, HashSet<VariableTerm>> variableEqualityEntry : variableToEqualVariables.entrySet()) {
-			VariableTerm variableToReplace = variableEqualityEntry.getKey();
-			VariableTerm replacementVariable = variableEqualityEntry.getValue().iterator().next();
+		for (Map.Entry<VariableTermImpl, HashSet<VariableTermImpl>> variableEqualityEntry : variableToEqualVariables.entrySet()) {
+			VariableTermImpl variableToReplace = variableEqualityEntry.getKey();
+			VariableTermImpl replacementVariable = variableEqualityEntry.getValue().iterator().next();
 			if (variableToReplace == replacementVariable) {
 				continue;
 			}

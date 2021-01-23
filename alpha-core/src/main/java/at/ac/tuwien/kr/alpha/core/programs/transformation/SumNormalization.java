@@ -15,7 +15,7 @@ import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
@@ -151,14 +151,14 @@ public class SumNormalization extends ProgramTransformation<InputProgramImpl, In
 			Unifier aggregateUnifier = new Unifier();
 			Collection<CoreTerm> globalVariables = CardinalityNormalization.getGlobalVariables(rewrittenBody, aggregateAtom);
 			if (globalVariables.isEmpty()) {
-				aggregateUnifier.put(VariableTerm.getInstance("AGGREGATE_ID"), CoreConstantTerm.getInstance(aggregateCount));
+				aggregateUnifier.put(VariableTermImpl.getInstance("AGGREGATE_ID"), CoreConstantTerm.getInstance(aggregateCount));
 			} else {
 				// In case some variables are not local to the aggregate, add them to the aggregate identifier
 				ArrayList<CoreTerm> globalVariableTermlist = new ArrayList<>(globalVariables);
 				globalVariableTermlist.add(CoreConstantTerm.getInstance(aggregateCount));
-				aggregateUnifier.put(VariableTerm.getInstance("AGGREGATE_ID"), FunctionTerm.getInstance("agg", globalVariableTermlist));
+				aggregateUnifier.put(VariableTermImpl.getInstance("AGGREGATE_ID"), FunctionTerm.getInstance("agg", globalVariableTermlist));
 			}
-			aggregateUnifier.put(VariableTerm.getInstance("LOWER_BOUND"), aggregateAtom.getLowerBoundTerm());
+			aggregateUnifier.put(VariableTermImpl.getInstance("LOWER_BOUND"), aggregateAtom.getLowerBoundTerm());
 
 			// Create new output atom for addition to rule body instead of the aggregate.
 			aggregateOutputAtoms.add(aggregateOutputAtom.substitute(aggregateUnifier).toLiteral());
@@ -169,8 +169,8 @@ public class SumNormalization extends ProgramTransformation<InputProgramImpl, In
 				List<CoreTerm> elementTerms = aggregateElement.getElementTerms();
 				FunctionTerm elementTuple = FunctionTerm.getInstance("element_tuple", elementTerms);
 				Unifier elementUnifier = new Unifier(aggregateUnifier);
-				elementUnifier.put(VariableTerm.getInstance("ELEMENT_TUPLE"), elementTuple);
-				elementUnifier.put(VariableTerm.getInstance("FIRST_VARIABLE"), elementTuple.getTerms().get(0));
+				elementUnifier.put(VariableTermImpl.getInstance("ELEMENT_TUPLE"), elementTuple);
+				elementUnifier.put(VariableTermImpl.getInstance("FIRST_VARIABLE"), elementTuple.getTerms().get(0));
 
 				// Create new rule for input.
 				BasicAtom inputHeadAtom = aggregateInputAtom.substitute(elementUnifier);

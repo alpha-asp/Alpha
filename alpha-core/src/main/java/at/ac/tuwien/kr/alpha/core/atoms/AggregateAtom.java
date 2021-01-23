@@ -37,7 +37,7 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 public class AggregateAtom extends CoreAtom {
@@ -100,8 +100,8 @@ public class AggregateAtom extends CoreAtom {
 	 * Returns all variables occurring inside the aggregate, between { ... }.
 	 * @return each variable occurring in some aggregate element.
 	 */
-	public List<VariableTerm> getAggregateVariables() {
-		List<VariableTerm> occurringVariables = new LinkedList<>();
+	public List<VariableTermImpl> getAggregateVariables() {
+		List<VariableTermImpl> occurringVariables = new LinkedList<>();
 		for (AggregateElement aggregateElement : aggregateElements) {
 			occurringVariables.addAll(aggregateElement.getOccurringVariables());
 		}
@@ -222,11 +222,11 @@ public class AggregateAtom extends CoreAtom {
 			return true;
 		}
 
-		public List<VariableTerm> getOccurringVariables() {
-			List<VariableTerm> occurringVariables = new LinkedList<>();
+		public List<VariableTermImpl> getOccurringVariables() {
+			List<VariableTermImpl> occurringVariables = new LinkedList<>();
 			for (CoreTerm term : elementTerms) {
-				if (term instanceof VariableTerm) {
-					occurringVariables.add((VariableTerm) term);
+				if (term instanceof VariableTermImpl) {
+					occurringVariables.add((VariableTermImpl) term);
 				}
 			}
 			for (CoreLiteral literal : elementLiterals) {

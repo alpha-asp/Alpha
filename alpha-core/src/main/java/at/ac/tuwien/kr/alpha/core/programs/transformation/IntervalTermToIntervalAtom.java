@@ -38,7 +38,7 @@ import at.ac.tuwien.kr.alpha.core.atoms.IntervalAtom;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.programs.NormalProgram;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
 import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
@@ -58,7 +58,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 	 */
 	private static NormalRule rewriteIntervalSpecifications(NormalRule rule) {
 		// Collect all intervals and replace them with variables.
-		Map<VariableTerm, IntervalTerm> intervalReplacements = new LinkedHashMap<>();
+		Map<VariableTermImpl, IntervalTerm> intervalReplacements = new LinkedHashMap<>();
 
 		List<CoreLiteral> rewrittenBody = new ArrayList<>();
 
@@ -74,7 +74,7 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		}
 
 		// Add new IntervalAtoms representing the interval specifications.
-		for (Map.Entry<VariableTerm, IntervalTerm> interval : intervalReplacements.entrySet()) {
+		for (Map.Entry<VariableTermImpl, IntervalTerm> interval : intervalReplacements.entrySet()) {
 			rewrittenBody.add(new IntervalAtom(interval.getValue(), interval.getKey()).toLiteral());
 		}
 		return new NormalRule(rewrittenHead, rewrittenBody);
@@ -83,14 +83,14 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 	/**
 	 * Replaces every IntervalTerm by a new variable and returns a mapping of the replaced VariableTerm -> IntervalTerm.
 	 */
-	private static CoreLiteral rewriteLiteral(CoreLiteral lit, Map<VariableTerm, IntervalTerm> intervalReplacement) {
+	private static CoreLiteral rewriteLiteral(CoreLiteral lit, Map<VariableTermImpl, IntervalTerm> intervalReplacement) {
 		CoreAtom atom = lit.getAtom();
 		List<CoreTerm> termList = new ArrayList<>(atom.getTerms());
 		boolean didChange = false;
 		for (int i = 0; i < termList.size(); i++) {
 			CoreTerm term = termList.get(i);
 			if (term instanceof IntervalTerm) {
-				VariableTerm replacementVariable = VariableTerm.getInstance(INTERVAL_VARIABLE_PREFIX + intervalReplacement.size());
+				VariableTermImpl replacementVariable = VariableTermImpl.getInstance(INTERVAL_VARIABLE_PREFIX + intervalReplacement.size());
 				intervalReplacement.put(replacementVariable, (IntervalTerm) term);
 				termList.set(i, replacementVariable);
 				didChange = true;
@@ -109,13 +109,13 @@ public class IntervalTermToIntervalAtom extends ProgramTransformation<NormalProg
 		return lit;
 	}
 
-	private static FunctionTerm rewriteFunctionTerm(FunctionTerm functionTerm, Map<VariableTerm, IntervalTerm> intervalReplacement) {
+	private static FunctionTerm rewriteFunctionTerm(FunctionTerm functionTerm, Map<VariableTermImpl, IntervalTerm> intervalReplacement) {
 		List<CoreTerm> termList = new ArrayList<>(functionTerm.getTerms());
 		boolean didChange = false;
 		for (int i = 0; i < termList.size(); i++) {
 			CoreTerm term = termList.get(i);
 			if (term instanceof IntervalTerm) {
-				VariableTerm replacementVariable = VariableTerm.getInstance("_Interval" + intervalReplacement.size());
+				VariableTermImpl replacementVariable = VariableTermImpl.getInstance("_Interval" + intervalReplacement.size());
 				intervalReplacement.put(replacementVariable, (IntervalTerm) term);
 				termList.set(i, replacementVariable);
 				didChange = true;

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
-import at.ac.tuwien.kr.alpha.core.parser.InlineDirectives;
+import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
 import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
 
@@ -15,7 +15,7 @@ import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
  */
 public class NormalProgram extends AbstractProgram<NormalRule> {
 
-	public NormalProgram(List<NormalRule> rules, List<CoreAtom> facts, InlineDirectives inlineDirectives) {
+	public NormalProgram(List<NormalRule> rules, List<CoreAtom> facts, InlineDirectivesImpl inlineDirectives) {
 		super(rules, facts, inlineDirectives);
 	}
 

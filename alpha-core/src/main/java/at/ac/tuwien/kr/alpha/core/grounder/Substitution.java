@@ -40,7 +40,7 @@ import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramPartParser;
 
 public class Substitution {
@@ -48,14 +48,14 @@ public class Substitution {
 	private static final ProgramPartParser PROGRAM_PART_PARSER = new ProgramPartParser();
 	public static final Substitution EMPTY_SUBSTITUTION = new Substitution() {
 		@Override
-		public <T extends Comparable<T>> CoreTerm put(VariableTerm variableTerm, CoreTerm groundTerm) {
+		public <T extends Comparable<T>> CoreTerm put(VariableTermImpl variableTerm, CoreTerm groundTerm) {
 			throw oops("Should not be called on EMPTY_SUBSTITUTION");
 		}
 	};
 
-	protected TreeMap<VariableTerm, CoreTerm> substitution;
+	protected TreeMap<VariableTermImpl, CoreTerm> substitution;
 
-	private Substitution(TreeMap<VariableTerm, CoreTerm> substitution) {
+	private Substitution(TreeMap<VariableTermImpl, CoreTerm> substitution) {
 		if (substitution == null) {
 			throw oops("Substitution is null.");
 		}
@@ -100,8 +100,8 @@ public class Substitution {
 			} else if (termNonGround instanceof CoreConstantTerm) {
 				// Since right term is ground, both terms differ
 				return false;
-			} else if (termNonGround instanceof VariableTerm) {
-				VariableTerm variableTerm = (VariableTerm) termNonGround;
+			} else if (termNonGround instanceof VariableTermImpl) {
+				VariableTermImpl variableTerm = (VariableTermImpl) termNonGround;
 				// Left term is variable, bind it to the right term. Use original substitution if it has
 				// not been cloned yet.
 				CoreTerm bound = (updatedSubstitution == null ? partialSubstitution : updatedSubstitution).eval(variableTerm); // Get variable binding, either from input substitution if it has not been updated yet, or from the cloned/updated substitution.
@@ -160,16 +160,16 @@ public class Substitution {
 	}
 
 	/**
-	 * This method should be used to obtain the {@link CoreTerm} to be used in place of a given {@link VariableTerm} under this substitution.
+	 * This method should be used to obtain the {@link CoreTerm} to be used in place of a given {@link VariableTermImpl} under this substitution.
 	 *
 	 * @param variableTerm the variable term to substitute, if possible
 	 * @return a constant term if the substitution contains the given variable, {@code null} otherwise.
 	 */
-	public CoreTerm eval(VariableTerm variableTerm) {
+	public CoreTerm eval(VariableTermImpl variableTerm) {
 		return this.substitution.get(variableTerm);
 	}
 
-	public <T extends Comparable<T>> CoreTerm put(VariableTerm variableTerm, CoreTerm groundTerm) {
+	public <T extends Comparable<T>> CoreTerm put(VariableTermImpl variableTerm, CoreTerm groundTerm) {
 		if (!groundTerm.isGround()) {
 			throw oops("Right-hand term is not ground.");
 		}
@@ -185,11 +185,11 @@ public class Substitution {
 		return substitution.isEmpty();
 	}
 
-	public boolean isVariableSet(VariableTerm variable) {
+	public boolean isVariableSet(VariableTermImpl variable) {
 		return substitution.get(variable) != null;
 	}
 
-	public Set<VariableTerm> getMappedVariables() {
+	public Set<VariableTermImpl> getMappedVariables() {
 		return substitution.keySet();
 	}
 
@@ -202,7 +202,7 @@ public class Substitution {
 	public String toString() {
 		final StringBuilder ret = new StringBuilder("{");
 		boolean isFirst = true;
-		for (Map.Entry<VariableTerm, CoreTerm> e : substitution.entrySet()) {
+		for (Map.Entry<VariableTermImpl, CoreTerm> e : substitution.entrySet()) {
 			if (isFirst) {
 				isFirst = false;
 			} else {
@@ -220,7 +220,7 @@ public class Substitution {
 		Substitution ret = new Substitution();
 		for (String assignment : assignments) {
 			String[] keyVal = assignment.split("->");
-			VariableTerm variable = VariableTerm.getInstance(keyVal[0]);
+			VariableTermImpl variable = VariableTermImpl.getInstance(keyVal[0]);
 			CoreTerm assignedTerm = PROGRAM_PART_PARSER.parseTerm(keyVal[1]);
 			ret.put(variable, assignedTerm);
 		}

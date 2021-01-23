@@ -5,7 +5,7 @@ import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperator;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 /**
@@ -35,28 +35,28 @@ public class AggregateLiteral extends CoreLiteral {
 	}
 
 	@Override
-	public Set<VariableTerm> getBindingVariables() {
-		Set<VariableTerm> bindingVariables = new HashSet<>();
+	public Set<VariableTermImpl> getBindingVariables() {
+		Set<VariableTermImpl> bindingVariables = new HashSet<>();
 		if (boundBindingVariable(getAtom().getLowerBoundOperator(), getAtom().getLowerBoundTerm(), positive) != null) {
-			bindingVariables.add((VariableTerm) getAtom().getLowerBoundTerm());
+			bindingVariables.add((VariableTermImpl) getAtom().getLowerBoundTerm());
 		}
 		if (boundBindingVariable(getAtom().getUpperBoundOperator(), getAtom().getUpperBoundTerm(), positive) != null) {
-			bindingVariables.add((VariableTerm) getAtom().getUpperBoundTerm());
+			bindingVariables.add((VariableTermImpl) getAtom().getUpperBoundTerm());
 		}
 		return bindingVariables;
 	}
 
 	@Override
-	public Set<VariableTerm> getNonBindingVariables() {
+	public Set<VariableTermImpl> getNonBindingVariables() {
 		// Note: every local variable that also occurs globally in the rule is a nonBindingVariable, hence an
 		// aggregate literal alone cannot detect its non-binding (i.e. global) variables.
 		throw new UnsupportedOperationException();
 	}
 
-	private static VariableTerm boundBindingVariable(ComparisonOperator op, CoreTerm bound, boolean positive) {
+	private static VariableTermImpl boundBindingVariable(ComparisonOperator op, CoreTerm bound, boolean positive) {
 		boolean isNormalizedEquality = op == ComparisonOperator.EQ && positive || op == ComparisonOperator.NE && !positive;
-		if (isNormalizedEquality &&  bound instanceof VariableTerm) {
-			return (VariableTerm) bound;
+		if (isNormalizedEquality &&  bound instanceof VariableTermImpl) {
+			return (VariableTermImpl) bound;
 		}
 		return null;
 	}

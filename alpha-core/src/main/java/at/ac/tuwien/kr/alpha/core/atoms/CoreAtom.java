@@ -33,7 +33,7 @@ import java.util.Set;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.core.grounder.Unifier;
 
@@ -53,7 +53,7 @@ public abstract class CoreAtom implements Atom, Comparable<CoreAtom> {
 	/**
 	 * Returns the set of all variables occurring in the Atom.
 	 */
-	public Set<VariableTerm> getOccurringVariables() {
+	public Set<VariableTermImpl> getOccurringVariables() {
 		return toLiteral().getOccurringVariables();
 	}
 
@@ -73,7 +73,7 @@ public abstract class CoreAtom implements Atom, Comparable<CoreAtom> {
 	/**
 	 * Returns whether this atom is ground, i.e., variable-free.
 	 *
-	 * @return true iff the terms of this atom contain no {@link VariableTerm}.
+	 * @return true iff the terms of this atom contain no {@link VariableTermImpl}.
 	 */
 	public abstract boolean isGround();
 
@@ -89,8 +89,8 @@ public abstract class CoreAtom implements Atom, Comparable<CoreAtom> {
 	public CoreAtom renameVariables(String newVariablePrefix) {
 		Unifier renamingSubstitution = new Unifier();
 		int counter = 0;
-		for (VariableTerm variable : getOccurringVariables()) {
-			renamingSubstitution.put(variable, VariableTerm.getInstance(newVariablePrefix + counter++));
+		for (VariableTermImpl variable : getOccurringVariables()) {
+			renamingSubstitution.put(variable, VariableTermImpl.getInstance(newVariablePrefix + counter++));
 		}
 		return this.substitute(renamingSubstitution);
 	}

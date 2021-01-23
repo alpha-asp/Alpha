@@ -63,7 +63,7 @@ import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.IntIterator;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.common.NoGoodInterface;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.bridges.Bridge;
 import at.ac.tuwien.kr.alpha.core.grounder.instantiation.AssignmentStatus;
 import at.ac.tuwien.kr.alpha.core.grounder.instantiation.BindingResult;
@@ -198,8 +198,8 @@ public class NaiveGrounder extends BridgedGrounder implements ProgramAnalyzingGr
 			}
 
 			// Collect head and body variables.
-			HashSet<VariableTerm> occurringVariablesHead = new HashSet<>(headAtom.toLiteral().getBindingVariables());
-			HashSet<VariableTerm> occurringVariablesBody = new HashSet<>();
+			HashSet<VariableTermImpl> occurringVariablesHead = new HashSet<>(headAtom.toLiteral().getBindingVariables());
+			HashSet<VariableTermImpl> occurringVariablesBody = new HashSet<>();
 			for (CoreLiteral lit : nonGroundRule.getPositiveBody()) {
 				occurringVariablesBody.addAll(lit.getBindingVariables());
 			}

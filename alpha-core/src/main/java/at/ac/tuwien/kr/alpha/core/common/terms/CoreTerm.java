@@ -35,7 +35,7 @@ import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 //@formatter:on
 public abstract class CoreTerm implements Term {
 
-	public abstract List<VariableTerm> getOccurringVariables();
+	public abstract List<VariableTermImpl> getOccurringVariables();
 
 	/**
 	 * Applies a substitution, result may be nonground.
@@ -45,13 +45,14 @@ public abstract class CoreTerm implements Term {
 	 */
 	public abstract CoreTerm substitute(Substitution substitution);
 
+	// TODO change this to work on interfaces and break out of this class
 	private static int priority(CoreTerm term) {
 		final Class<?> clazz = term.getClass();
 		if (clazz.equals(CoreConstantTerm.class)) {
 			return 1;
 		} else if (clazz.equals(FunctionTerm.class)) {
 			return 2;
-		} else if (clazz.equals(VariableTerm.class)) {
+		} else if (clazz.equals(VariableTermImpl.class)) {
 			return 3;
 		}
 		throw new UnsupportedOperationException("Can only compare constant term, function terms and variable terms among each other.");
@@ -76,7 +77,7 @@ public abstract class CoreTerm implements Term {
 
 	public static class RenameCounter {
 		int counter;
-		final HashMap<VariableTerm, VariableTerm> renamedVariables;
+		final HashMap<VariableTermImpl, VariableTermImpl> renamedVariables;
 
 		public RenameCounter(int startingValue) {
 			counter = startingValue;

@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 
 /**
  * A variable substitution allowing variables to occur on the right-hand side. Chains of variable substitutions are
@@ -19,9 +19,9 @@ import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
  */
 public class Unifier extends Substitution {
 
-	private final TreeMap<VariableTerm, List<VariableTerm>> rightHandVariableOccurrences;
+	private final TreeMap<VariableTermImpl, List<VariableTermImpl>> rightHandVariableOccurrences;
 
-	private Unifier(TreeMap<VariableTerm, CoreTerm> substitution, TreeMap<VariableTerm, List<VariableTerm>> rightHandVariableOccurrences) {
+	private Unifier(TreeMap<VariableTermImpl, CoreTerm> substitution, TreeMap<VariableTermImpl, List<VariableTermImpl>> rightHandVariableOccurrences) {
 		if (substitution == null) {
 			throw oops("Substitution is null.");
 		}
@@ -43,7 +43,7 @@ public class Unifier extends Substitution {
 
 
 	public Unifier extendWith(Substitution extension) {
-		for (Map.Entry<VariableTerm, CoreTerm> extensionVariable : extension.substitution.entrySet()) {
+		for (Map.Entry<VariableTermImpl, CoreTerm> extensionVariable : extension.substitution.entrySet()) {
 			this.put(extensionVariable.getKey(), extensionVariable.getValue());
 		}
 		return this;
@@ -54,9 +54,9 @@ public class Unifier extends Substitution {
 	 * @return the list of variables occurring somewhere in the unifier.
 	 */
 	@Override
-	public Set<VariableTerm> getMappedVariables() {
-		Set<VariableTerm> ret = new HashSet<>();
-		for (Map.Entry<VariableTerm, CoreTerm> substitution : substitution.entrySet()) {
+	public Set<VariableTermImpl> getMappedVariables() {
+		Set<VariableTermImpl> ret = new HashSet<>();
+		for (Map.Entry<VariableTermImpl, CoreTerm> substitution : substitution.entrySet()) {
 			ret.add(substitution.getKey());
 			ret.addAll(substitution.getValue().getOccurringVariables());
 		}
@@ -65,10 +65,10 @@ public class Unifier extends Substitution {
 
 
 	@Override
-	public <T extends Comparable<T>> CoreTerm put(VariableTerm variableTerm, CoreTerm term) {
+	public <T extends Comparable<T>> CoreTerm put(VariableTermImpl variableTerm, CoreTerm term) {
 		// If term is not ground, store it for right-hand side reverse-lookup.
 		if (!term.isGround()) {
-			for (VariableTerm rightHandVariable : term.getOccurringVariables()) {
+			for (VariableTermImpl rightHandVariable : term.getOccurringVariables()) {
 				rightHandVariableOccurrences.putIfAbsent(rightHandVariable, new ArrayList<>());
 				rightHandVariableOccurrences.get(rightHandVariable).add(variableTerm);
 			}
@@ -77,10 +77,10 @@ public class Unifier extends Substitution {
 		CoreTerm ret = substitution.put(variableTerm, term);
 
 		// Check if the just-assigned variable occurs somewhere in the right-hand side already.
-		List<VariableTerm> rightHandOccurrences = rightHandVariableOccurrences.get(variableTerm);
+		List<VariableTermImpl> rightHandOccurrences = rightHandVariableOccurrences.get(variableTerm);
 		if (rightHandOccurrences != null) {
 			// Replace all occurrences on the right-hand side with the just-assigned term.
-			for (VariableTerm rightHandOccurrence : rightHandOccurrences) {
+			for (VariableTermImpl rightHandOccurrence : rightHandOccurrences) {
 				// Substitute the right hand where this assigned variable occurs with the new value and store it.
 				CoreTerm previousRightHand = substitution.get(rightHandOccurrence);
 				if (previousRightHand == null) {
@@ -106,8 +106,8 @@ public class Unifier extends Substitution {
 	public static Unifier mergeIntoLeft(Unifier left, Unifier right) {
 		// Note: we assume both substitutions are free of chains, i.e., no A->B, B->C but A->C, B->C.
 		Unifier ret = new Unifier(left);
-		for (Map.Entry<VariableTerm, CoreTerm> mapping : right.substitution.entrySet()) {
-			VariableTerm variable = mapping.getKey();
+		for (Map.Entry<VariableTermImpl, CoreTerm> mapping : right.substitution.entrySet()) {
+			VariableTermImpl variable = mapping.getKey();
 			CoreTerm term = mapping.getValue();
 			// If variable is unset, simply add.
 			if (!ret.isVariableSet(variable)) {
@@ -116,10 +116,10 @@ public class Unifier extends Substitution {
 			}
 			// Variable is already set.
 			CoreTerm setTerm = ret.eval(variable);
-			if (setTerm instanceof VariableTerm) {
+			if (setTerm instanceof VariableTermImpl) {
 				// Variable maps to another variable in left.
 				// Add a new mapping of the setTerm variable into our right-assigned term.
-				ret.put((VariableTerm) setTerm, term);
+				ret.put((VariableTermImpl) setTerm, term);
 				// Note: Unifier.put takes care of resolving the chain variable->setTerm->term.
 				continue;
 			}

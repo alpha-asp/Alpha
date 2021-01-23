@@ -15,7 +15,7 @@ import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.core.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramParserImpl;
@@ -191,14 +191,14 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 			Substitution aggregateSubstitution = new Unifier();
 			Collection<CoreTerm> globalVariables = getGlobalVariables(rewrittenBody, aggregateAtom);
 			if (globalVariables.isEmpty()) {
-				aggregateSubstitution.put(VariableTerm.getInstance("AGGREGATE_ID"), CoreConstantTerm.getInstance(aggregateCount));
+				aggregateSubstitution.put(VariableTermImpl.getInstance("AGGREGATE_ID"), CoreConstantTerm.getInstance(aggregateCount));
 			} else {
 				// In case some variables are not local to the aggregate, add them to the aggregate identifier
 				ArrayList<CoreTerm> globalVariableTermlist = new ArrayList<>(globalVariables);
 				globalVariableTermlist.add(CoreConstantTerm.getInstance(aggregateCount));
-				aggregateSubstitution.put(VariableTerm.getInstance("AGGREGATE_ID"), FunctionTerm.getInstance("agg", globalVariableTermlist));
+				aggregateSubstitution.put(VariableTermImpl.getInstance("AGGREGATE_ID"), FunctionTerm.getInstance("agg", globalVariableTermlist));
 			}
-			aggregateSubstitution.put(VariableTerm.getInstance("LOWER_BOUND"), aggregateAtom.getLowerBoundTerm());
+			aggregateSubstitution.put(VariableTermImpl.getInstance("LOWER_BOUND"), aggregateAtom.getLowerBoundTerm());
 
 			// Create new output atom for addition to rule body instead of the aggregate.
 			aggregateOutputAtoms.add(aggregateOutputAtom.substitute(aggregateSubstitution).toLiteral());
@@ -209,7 +209,7 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 				List<CoreTerm> elementTerms = aggregateElement.getElementTerms();
 				FunctionTerm elementTuple = FunctionTerm.getInstance("element_tuple", elementTerms);
 				Substitution elementSubstitution = new Unifier(aggregateSubstitution);
-				elementSubstitution.put(VariableTerm.getInstance("ELEMENT_TUPLE"), elementTuple);
+				elementSubstitution.put(VariableTermImpl.getInstance("ELEMENT_TUPLE"), elementTuple);
 
 				// Create new rule for input.
 				BasicAtom inputHeadAtom = aggregateInputAtom.substitute(elementSubstitution);

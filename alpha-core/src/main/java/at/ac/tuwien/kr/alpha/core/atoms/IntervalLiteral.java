@@ -37,7 +37,7 @@ import com.google.common.collect.Sets;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.IntervalTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 /**
@@ -65,11 +65,11 @@ public class IntervalLiteral extends FixedInterpretationLiteral {
 		CoreTerm intervalRepresentingVariable = terms.get(1);
 		IntervalTerm intervalTerm = (IntervalTerm) terms.get(0);
 		// Check whether intervalRepresentingVariable is bound already.
-		if (intervalRepresentingVariable instanceof VariableTerm) {
+		if (intervalRepresentingVariable instanceof VariableTermImpl) {
 			// Still a variable, generate all elements in the interval.
 			for (int i = intervalTerm.getLowerBound(); i <= intervalTerm.getUpperBound(); i++) {
 				Substitution ith = new Substitution(partialSubstitution);
-				ith.put((VariableTerm) intervalRepresentingVariable, CoreConstantTerm.getInstance(i));
+				ith.put((VariableTermImpl) intervalRepresentingVariable, CoreConstantTerm.getInstance(i));
 				substitutions.add(ith);
 			}
 			return substitutions;
@@ -89,16 +89,16 @@ public class IntervalLiteral extends FixedInterpretationLiteral {
 	}
 
 	@Override
-	public Set<VariableTerm> getBindingVariables() {
+	public Set<VariableTermImpl> getBindingVariables() {
 		CoreTerm term = getTerms().get(1);
-		if (term instanceof VariableTerm) {
-			return Collections.singleton((VariableTerm) term);
+		if (term instanceof VariableTermImpl) {
+			return Collections.singleton((VariableTermImpl) term);
 		}
 		return Collections.emptySet();
 	}
 
 	@Override
-	public Set<VariableTerm> getNonBindingVariables() {
+	public Set<VariableTermImpl> getNonBindingVariables() {
 		return Sets.newHashSet(getTerms().get(0).getOccurringVariables());
 	}
 

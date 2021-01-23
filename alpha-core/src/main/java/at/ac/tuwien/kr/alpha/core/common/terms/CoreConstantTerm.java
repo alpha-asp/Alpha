@@ -36,7 +36,7 @@ public class CoreConstantTerm<T extends Comparable<T>> extends CoreTerm {
 	}
 
 	@Override
-	public List<VariableTerm> getOccurringVariables() {
+	public List<VariableTermImpl> getOccurringVariables() {
 		return Collections.emptyList();
 	}
 

@@ -29,7 +29,7 @@ package at.ac.tuwien.kr.alpha.core.atoms;
 
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 import java.util.Collections;
@@ -74,12 +74,12 @@ public class BasicLiteral extends CoreLiteral {
 	 * @return
 	 */
 	@Override
-	public Set<VariableTerm> getBindingVariables() {
+	public Set<VariableTermImpl> getBindingVariables() {
 		if (!positive) {
 			// Negative literal has no binding variables.
 			return Collections.emptySet();
 		}
-		Set<VariableTerm> bindingVariables = new HashSet<>();
+		Set<VariableTermImpl> bindingVariables = new HashSet<>();
 		for (CoreTerm term : atom.getTerms()) {
 			bindingVariables.addAll(term.getOccurringVariables());
 		}
@@ -92,12 +92,12 @@ public class BasicLiteral extends CoreLiteral {
 	 * @return
 	 */
 	@Override
-	public Set<VariableTerm> getNonBindingVariables() {
+	public Set<VariableTermImpl> getNonBindingVariables() {
 		if (positive) {
 			// Positive literal has only binding variables.
 			return Collections.emptySet();
 		}
-		Set<VariableTerm> nonbindingVariables = new HashSet<>();
+		Set<VariableTermImpl> nonbindingVariables = new HashSet<>();
 		for (CoreTerm term : atom.getTerms()) {
 			nonbindingVariables.addAll(term.getOccurringVariables());
 		}

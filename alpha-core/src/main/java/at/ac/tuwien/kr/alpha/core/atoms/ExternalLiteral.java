@@ -31,7 +31,7 @@ import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.*;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 import java.util.*;
@@ -68,7 +68,7 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 	}
 
 	@Override
-	public Set<VariableTerm> getBindingVariables() {
+	public Set<VariableTermImpl> getBindingVariables() {
 		// If the external atom is negative, then all variables of input and output are non-binding
 		// and there are no binding variables (like for ordinary atoms).
 		// If the external atom is positive, then variables of output are binding.
@@ -79,11 +79,11 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 
 		List<? extends CoreTerm> output = getAtom().getOutput();
 
-		Set<VariableTerm> binding = new HashSet<>(output.size());
+		Set<VariableTermImpl> binding = new HashSet<>(output.size());
 
 		for (CoreTerm out : output) {
-			if (out instanceof VariableTerm) {
-				binding.add((VariableTerm) out);
+			if (out instanceof VariableTermImpl) {
+				binding.add((VariableTermImpl) out);
 			}
 		}
 
@@ -91,13 +91,13 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 	}
 
 	@Override
-	public Set<VariableTerm> getNonBindingVariables() {
+	public Set<VariableTermImpl> getNonBindingVariables() {
 		List<? extends CoreTerm> input = getAtom().getInput();
 		List<? extends CoreTerm> output = getAtom().getOutput();
 
 		// External atoms have their input always non-binding, since they cannot
 		// be queried without some concrete input.
-		Set<VariableTerm> nonbindingVariables = new HashSet<>();
+		Set<VariableTermImpl> nonbindingVariables = new HashSet<>();
 		for (CoreTerm term : input) {
 			nonbindingVariables.addAll(term.getOccurringVariables());
 		}
@@ -106,8 +106,8 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 		// non-binding.
 		if (!positive) {
 			for (CoreTerm out : output) {
-				if (out instanceof VariableTerm) {
-					nonbindingVariables.add((VariableTerm) out);
+				if (out instanceof VariableTermImpl) {
+					nonbindingVariables.add((VariableTermImpl) out);
 				}
 			}
 		}
@@ -194,8 +194,8 @@ public class ExternalLiteral extends FixedInterpretationLiteral {
 			for (int i = 0; i < externalAtomOutputTerms.size(); i++) {
 				CoreTerm out = externalAtomOutputTerms.get(i);
 
-				if (out instanceof VariableTerm) {
-					ith.put((VariableTerm) out, bindings.get(i));
+				if (out instanceof VariableTermImpl) {
+					ith.put((VariableTermImpl) out, bindings.get(i));
 				} else {
 					if (!bindings.get(i).equals(out)) {
 						skip = true;

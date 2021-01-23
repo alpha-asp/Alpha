@@ -35,7 +35,7 @@ import org.apache.commons.collections4.SetUtils;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 /**
@@ -65,14 +65,14 @@ public abstract class CoreLiteral implements Literal {
 
 	public abstract CoreLiteral substitute(Substitution substitution);
 
-	public abstract Set<VariableTerm> getBindingVariables();
+	public abstract Set<VariableTermImpl> getBindingVariables();
 
-	public abstract Set<VariableTerm> getNonBindingVariables();
+	public abstract Set<VariableTermImpl> getNonBindingVariables();
 
 	/**
 	 * Union of {@link #getBindingVariables()} and {@link #getNonBindingVariables()}
 	 */
-	public Set<VariableTerm> getOccurringVariables() {
+	public Set<VariableTermImpl> getOccurringVariables() {
 		return SetUtils.union(getBindingVariables(), getNonBindingVariables());
 	}
 

@@ -4,6 +4,7 @@ import static at.ac.tuwien.kr.alpha.core.util.Util.join;
 
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperator;
@@ -14,7 +15,7 @@ import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
  * 
  * Copyright (c) 2017-2019, the Alpha Team.
  */
-public class ChoiceHead extends Head {
+public class ChoiceHeadImpl implements ChoiceHead {
 	private final List<ChoiceElement> choiceElements;
 
 	private final CoreTerm lowerBound;
@@ -64,7 +65,7 @@ public class ChoiceHead extends Head {
 		return upperBound;
 	}
 
-	public ChoiceHead(List<ChoiceElement> choiceElements, CoreTerm lowerBound, ComparisonOperator lowerOp, CoreTerm upperBound, ComparisonOperator upperOp) {
+	public ChoiceHeadImpl(List<ChoiceElement> choiceElements, CoreTerm lowerBound, ComparisonOperator lowerOp, CoreTerm upperBound, ComparisonOperator upperOp) {
 		this.choiceElements = choiceElements;
 		this.lowerBound = lowerBound;
 		this.lowerOp = lowerOp;
@@ -109,10 +110,10 @@ public class ChoiceHead extends Head {
 		if (obj == null) {
 			return false;
 		}
-		if (!(obj instanceof ChoiceHead)) {
+		if (!(obj instanceof ChoiceHeadImpl)) {
 			return false;
 		}
-		ChoiceHead other = (ChoiceHead) obj;
+		ChoiceHeadImpl other = (ChoiceHeadImpl) obj;
 		if (this.choiceElements == null) {
 			if (other.choiceElements != null) {
 				return false;

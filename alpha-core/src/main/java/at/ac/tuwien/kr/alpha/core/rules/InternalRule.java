@@ -36,7 +36,7 @@ import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingOrders;
 import at.ac.tuwien.kr.alpha.core.grounder.Unifier;
@@ -101,16 +101,16 @@ public class InternalRule extends NormalRule {
 	 * @return
 	 */
 	public InternalRule renameVariables(String newVariablePostfix) {
-		List<VariableTerm> occurringVariables = new ArrayList<>();
+		List<VariableTermImpl> occurringVariables = new ArrayList<>();
 		CoreAtom headAtom = this.getHeadAtom();
 		occurringVariables.addAll(headAtom.getOccurringVariables());
 		for (CoreLiteral literal : this.getBody()) {
 			occurringVariables.addAll(literal.getOccurringVariables());
 		}
 		Unifier variableReplacement = new Unifier();
-		for (VariableTerm occurringVariable : occurringVariables) {
+		for (VariableTermImpl occurringVariable : occurringVariables) {
 			final String newVariableName = occurringVariable.toString() + newVariablePostfix;
-			variableReplacement.put(occurringVariable, VariableTerm.getInstance(newVariableName));
+			variableReplacement.put(occurringVariable, VariableTermImpl.getInstance(newVariableName));
 		}
 		CoreAtom renamedHeadAtom = headAtom.substitute(variableReplacement);
 		ArrayList<CoreLiteral> renamedBody = new ArrayList<>(this.getBody().size());

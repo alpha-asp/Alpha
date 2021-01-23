@@ -34,7 +34,7 @@ import java.util.Set;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 
 /**
  * Copyright (c) 2017, the Alpha Team.
@@ -56,12 +56,12 @@ public class Unification {
 	}
 
 	private static Unifier unifyAtoms(CoreAtom left, CoreAtom right, boolean keepLeftAsIs) {
-		Set<VariableTerm> leftOccurringVariables = left.getOccurringVariables();
-		Set<VariableTerm> rightOccurringVaribles = right.getOccurringVariables();
+		Set<VariableTermImpl> leftOccurringVariables = left.getOccurringVariables();
+		Set<VariableTermImpl> rightOccurringVaribles = right.getOccurringVariables();
 		boolean leftSmaller = leftOccurringVariables.size() < rightOccurringVaribles.size();
-		Set<VariableTerm> smallerSet = leftSmaller ? leftOccurringVariables : rightOccurringVaribles;
-		Set<VariableTerm> largerSet = leftSmaller ? rightOccurringVaribles : leftOccurringVariables;
-		for (VariableTerm variableTerm : smallerSet) {
+		Set<VariableTermImpl> smallerSet = leftSmaller ? leftOccurringVariables : rightOccurringVaribles;
+		Set<VariableTermImpl> largerSet = leftSmaller ? rightOccurringVaribles : leftOccurringVariables;
+		for (VariableTermImpl variableTerm : smallerSet) {
 			if (largerSet.contains(variableTerm)) {
 				throw oops("Left and right atom share variables.");
 			}
@@ -86,12 +86,12 @@ public class Unification {
 		if (leftSubs == rightSubs) {
 			return true;
 		}
-		if (!keepLeftAsIs && leftSubs instanceof VariableTerm && !currentSubstitution.isVariableSet((VariableTerm) leftSubs)) {
-			currentSubstitution.put((VariableTerm) leftSubs, rightSubs);
+		if (!keepLeftAsIs && leftSubs instanceof VariableTermImpl && !currentSubstitution.isVariableSet((VariableTermImpl) leftSubs)) {
+			currentSubstitution.put((VariableTermImpl) leftSubs, rightSubs);
 			return true;
 		}
-		if (rightSubs instanceof VariableTerm && !currentSubstitution.isVariableSet((VariableTerm) rightSubs)) {
-			currentSubstitution.put((VariableTerm) rightSubs, leftSubs);
+		if (rightSubs instanceof VariableTermImpl && !currentSubstitution.isVariableSet((VariableTermImpl) rightSubs)) {
+			currentSubstitution.put((VariableTermImpl) rightSubs, leftSubs);
 			return true;
 		}
 		if (leftSubs instanceof FunctionTerm && rightSubs instanceof FunctionTerm) {

@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
-import at.ac.tuwien.kr.alpha.core.common.terms.VariableTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Substitution;
 
 /**
@@ -33,20 +33,20 @@ public class EnumerationLiteral extends BasicLiteral {
 	}
 
 	@Override
-	public Set<VariableTerm> getBindingVariables() {
-		return Collections.singleton((VariableTerm)getTerms().get(2));
+	public Set<VariableTermImpl> getBindingVariables() {
+		return Collections.singleton((VariableTermImpl)getTerms().get(2));
 	}
 
 	@Override
-	public Set<VariableTerm> getNonBindingVariables() {
-		Set<VariableTerm> ret = new HashSet<>(2);
+	public Set<VariableTermImpl> getNonBindingVariables() {
+		Set<VariableTermImpl> ret = new HashSet<>(2);
 		CoreTerm idTerm = getTerms().get(0);
 		CoreTerm enumTerm = getTerms().get(1);
-		if (idTerm instanceof VariableTerm) {
-			ret.add((VariableTerm) idTerm);
+		if (idTerm instanceof VariableTermImpl) {
+			ret.add((VariableTermImpl) idTerm);
 		}
-		if (enumTerm instanceof VariableTerm) {
-			ret.add((VariableTerm) enumTerm);
+		if (enumTerm instanceof VariableTermImpl) {
+			ret.add((VariableTermImpl) enumTerm);
 		}
 		return ret;
 

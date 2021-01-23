@@ -48,9 +48,6 @@ import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.ChoiceHead;
-import at.ac.tuwien.kr.alpha.api.rules.Head;
-import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
-import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateAtom;
@@ -72,9 +69,10 @@ import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.IntervalTerm;
+import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
 import at.ac.tuwien.kr.alpha.core.rules.Rules;
-import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
+import at.ac.tuwien.kr.alpha.core.rules.heads.ChoiceHeadImpl;
 
 /**
  * Copyright (c) 2016-2021, the Alpha Team.
@@ -84,7 +82,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	private final boolean acceptVariables;
 
 	private InputProgramImpl.Builder programBuilder;
-	private InlineDirectives inlineDirectives;
+	private InlineDirectivesImpl inlineDirectives;
 
 	public ParseTreeVisitor(Map<String, PredicateInterpretation> externals) {
 		this(externals, true);
@@ -161,7 +159,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		if (ctx.statements() == null) {
 			return InputProgramImpl.EMPTY;
 		}
-		inlineDirectives = new InlineDirectives();
+		inlineDirectives = new InlineDirectivesImpl();
 		programBuilder = InputProgramImpl.builder();
 		visitStatements(ctx.statements());
 		programBuilder.addInlineDirectives(inlineDirectives); // TODO inline directives
@@ -246,25 +244,25 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public ChoiceHead visitChoice(ASPCore2Parser.ChoiceContext ctx) {
 		// choice : (lt=term lop=binop)? CURLY_OPEN choice_elements? CURLY_CLOSE (uop=binop ut=term)?;
-		Term lt = null;
+		CoreTerm lt = null;
 		ComparisonOperator lop = null;
-		Term ut = null;
+		CoreTerm ut = null;
 		ComparisonOperator uop = null;
 		if (ctx.lt != null) {
-			lt = (Term) visit(ctx.lt);
+			lt = (CoreTerm) visit(ctx.lt);
 			lop = visitBinop(ctx.lop);
 		}
 		if (ctx.ut != null) {
-			ut = (Term) visit(ctx.ut);
+			ut = (CoreTerm) visit(ctx.ut);
 			uop = visitBinop(ctx.uop);
 		}
-		return new ChoiceHead(visitChoice_elements(ctx.choice_elements()), lt, lop, ut, uop);
+		return new ChoiceHeadImpl(visitChoice_elements(ctx.choice_elements()), lt, lop, ut, uop);
 	}
 
 	@Override
-	public List<ChoiceHead.ChoiceElement> visitChoice_elements(ASPCore2Parser.Choice_elementsContext ctx) {
+	public List<ChoiceHeadImpl.ChoiceElement> visitChoice_elements(ASPCore2Parser.Choice_elementsContext ctx) {
 		// choice_elements : choice_element (SEMICOLON choice_elements)?;
-		List<ChoiceHead.ChoiceElement> choiceElements;
+		List<ChoiceHeadImpl.ChoiceElement> choiceElements;
 		if (ctx.choice_elements() != null) {
 			choiceElements = visitChoice_elements(ctx.choice_elements());
 		} else {
@@ -275,13 +273,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public ChoiceHead.ChoiceElement visitChoice_element(ASPCore2Parser.Choice_elementContext ctx) {
+	public ChoiceHeadImpl.ChoiceElement visitChoice_element(ASPCore2Parser.Choice_elementContext ctx) {
 		// choice_element : classical_literal (COLON naf_literals?)?;
 		BasicAtom atom = (BasicAtom) visitClassical_literal(ctx.classical_literal());
 		if (ctx.naf_literals() != null) {
-			return new ChoiceHead.ChoiceElement(atom, visitNaf_literals(ctx.naf_literals()));
+			return new ChoiceHeadImpl.ChoiceElement(atom, visitNaf_literals(ctx.naf_literals()));
 		} else {
-			return new ChoiceHead.ChoiceElement(atom, Collections.emptyList());
+			return new ChoiceHeadImpl.ChoiceElement(atom, Collections.emptyList());
 		}
 	}
 
@@ -301,7 +299,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public Object visitDirective_enumeration(ASPCore2Parser.Directive_enumerationContext ctx) {
 		// directive_enumeration : SHARP 'enum_predicate_is' ID DOT;
-		inlineDirectives.addDirective(InlineDirectives.DIRECTIVE.enum_predicate_is, ctx.ID().getText());
+		inlineDirectives.addDirective(InlineDirectivesImpl.DIRECTIVE.enum_predicate_is, ctx.ID().getText());
 		return null;
 	}
 
@@ -331,14 +329,14 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 		boolean isPositive = ctx.NAF() == null;
 		CoreTerm lt = null;
 		ComparisonOperator lop = null;
-		Term ut = null;
+		CoreTerm ut = null;
 		ComparisonOperator uop = null;
 		if (ctx.lt != null) {
 			lt = (CoreTerm) visit(ctx.lt);
 			lop = visitBinop(ctx.lop);
 		}
 		if (ctx.ut != null) {
-			ut = (Term) visit(ctx.ut);
+			ut = (CoreTerm) visit(ctx.ut);
 			uop = visitBinop(ctx.uop);
 		}
 		AggregateAtom.AGGREGATEFUNCTION aggregateFunction = visitAggregate_function(ctx.aggregate_function());
@@ -360,7 +358,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	@Override
 	public AggregateAtom.AggregateElement visitAggregate_element(ASPCore2Parser.Aggregate_elementContext ctx) {
 		// aggregate_element : basic_terms? (COLON naf_literals?)?;
-		List<Term> basicTerms = ctx.basic_terms() != null ? visitBasic_terms(ctx.basic_terms()) : null;
+		List<CoreTerm> basicTerms = ctx.basic_terms() != null ? visitBasic_terms(ctx.basic_terms()) : null;
 		if (ctx.naf_literals() != null) {
 			return new AggregateAtom.AggregateElement(basicTerms, visitNaf_literals(ctx.naf_literals()));
 		}
@@ -368,9 +366,9 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public List<Term> visitBasic_terms(ASPCore2Parser.Basic_termsContext ctx) {
+	public List<CoreTerm> visitBasic_terms(ASPCore2Parser.Basic_termsContext ctx) {
 		// basic_terms : basic_term (COMMA basic_terms)? ;
-		List<Term> termList = new ArrayList<>();
+		List<CoreTerm> termList = new ArrayList<>();
 		do {
 			termList.add(visitBasic_term(ctx.basic_term()));
 		} while ((ctx = ctx.basic_terms()) != null);
@@ -378,7 +376,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public Term visitBasic_term(ASPCore2Parser.Basic_termContext ctx) {
+	public CoreTerm visitBasic_term(ASPCore2Parser.Basic_termContext ctx) {
 		// basic_term : ground_term | variable_term;
 		if (ctx.ground_term() != null) {
 			return visitGround_term(ctx.ground_term());
@@ -388,7 +386,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public Term visitGround_term(ASPCore2Parser.Ground_termContext ctx) {
+	public CoreTerm visitGround_term(ASPCore2Parser.Ground_termContext ctx) {
 		// ground_term : ID | QUOTED_STRING | MINUS? NUMBER;
 		if (ctx.ID() != null) {
 			return CoreConstantTerm.getSymbolicInstance(ctx.ID().getText());
@@ -405,12 +403,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public Term visitVariable_term(ASPCore2Parser.Variable_termContext ctx) {
+	// TODO proper "core" type
+	public CoreTerm visitVariable_term(ASPCore2Parser.Variable_termContext ctx) {
 		// variable_term : VARIABLE | ANONYMOUS_VARIABLE;
 		if (ctx.VARIABLE() != null) {
-			return VariableTerm.getInstance(ctx.VARIABLE().getText());
+			return VariableTermImpl.getInstance(ctx.VARIABLE().getText());
 		} else {
-			return VariableTerm.getAnonymousInstance();
+			return VariableTermImpl.getAnonymousInstance();
 		}
 	}
 
@@ -480,12 +479,12 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			throw notSupported(ctx);
 		}
 
-		final List<? extends CoreTerm> terms = visitTerms(ctx.terms());
+		final List<CoreTerm> terms = visitTerms(ctx.terms());
 		return new BasicAtom(CorePredicate.getInstance(ctx.ID().getText(), terms.size()), terms);
 	}
 
 	@Override
-	public List<? extends CoreTerm> visitTerms(ASPCore2Parser.TermsContext ctx) {
+	public List<CoreTerm> visitTerms(ASPCore2Parser.TermsContext ctx) {
 		// terms : term (COMMA terms)?;
 		if (ctx == null) {
 			return emptyList();
@@ -501,17 +500,17 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public ConstantTerm<?> visitTerm_number(ASPCore2Parser.Term_numberContext ctx) {
+	public CoreConstantTerm<?> visitTerm_number(ASPCore2Parser.Term_numberContext ctx) {
 		return CoreConstantTerm.getInstance(Integer.parseInt(ctx.NUMBER().getText()));
 	}
 
 	@Override
-	public ConstantTerm<?> visitTerm_const(ASPCore2Parser.Term_constContext ctx) {
+	public CoreConstantTerm<?> visitTerm_const(ASPCore2Parser.Term_constContext ctx) {
 		return CoreConstantTerm.getSymbolicInstance(ctx.ID().getText());
 	}
 
 	@Override
-	public ConstantTerm<?> visitTerm_string(ASPCore2Parser.Term_stringContext ctx) {
+	public CoreConstantTerm<?> visitTerm_string(ASPCore2Parser.Term_stringContext ctx) {
 		String quotedString = ctx.QUOTED_STRING().getText().replace("\\\"", "\"");
 		return CoreConstantTerm.getInstance(quotedString.substring(1, quotedString.length() - 1));
 	}
@@ -522,21 +521,23 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
+	// TODO proper "core" type
 	public VariableTerm visitTerm_anonymousVariable(ASPCore2Parser.Term_anonymousVariableContext ctx) {
 		if (!acceptVariables) {
 			throw notSupported(ctx);
 		}
 
-		return VariableTerm.getAnonymousInstance();
+		return VariableTermImpl.getAnonymousInstance();
 	}
 
 	@Override
+	// TODO proper "core" type
 	public VariableTerm visitTerm_variable(ASPCore2Parser.Term_variableContext ctx) {
 		if (!acceptVariables) {
 			throw notSupported(ctx);
 		}
 
-		return VariableTerm.getInstance(ctx.VARIABLE().getText());
+		return VariableTermImpl.getInstance(ctx.VARIABLE().getText());
 	}
 
 	@Override
@@ -559,7 +560,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 			throw new IllegalArgumentException("Unknown interpretation name encountered: " + predicateName);
 		}
 
-		List<? extends CoreTerm> outputTerms = visitTerms(ctx.output);
+		List<CoreTerm> outputTerms = visitTerms(ctx.output);
 
 		return new ExternalAtom(
 				CorePredicate.getInstance(predicateName, outputTerms.size()),
@@ -569,15 +570,16 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
+	// TODO proper "core" type
 	public IntervalTerm visitTerm_interval(ASPCore2Parser.Term_intervalContext ctx) {
 		// interval : lower = (NUMBER | VARIABLE) DOT DOT upper = (NUMBER | VARIABLE);
 		ASPCore2Parser.IntervalContext ictx = ctx.interval();
 		String lowerText = ictx.lower.getText();
 		String upperText = ictx.upper.getText();
 		CoreTerm lower = ictx.lower.getType() == ASPCore2Lexer.NUMBER ? CoreConstantTerm.getInstance(Integer.parseInt(lowerText))
-				: VariableTerm.getInstance(lowerText);
+				: VariableTermImpl.getInstance(lowerText);
 		CoreTerm upper = ictx.upper.getType() == ASPCore2Lexer.NUMBER ? CoreConstantTerm.getInstance(Integer.parseInt(upperText))
-				: VariableTerm.getInstance(upperText);
+				: VariableTermImpl.getInstance(upperText);
 		return IntervalTerm.getInstance(lower, upper);
 	}
 
