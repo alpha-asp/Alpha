@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Siemens AG
+ * Copyright (c) 2020-2021 Siemens AG
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -48,6 +48,8 @@ import static at.ac.tuwien.kr.alpha.Util.asSet;
  * by two new heuristic directives, one in which TMF is replaced by TM and one in which TMF is replaced by F.
  * Any-sign conditions in a negative heuristic condition can be eliminated by replacing the heuristic literal
  * by two new heuristic literals, one in which TMF is replaced by TM and one in which TMF is replaced by F.
+ *
+ * TODO: adapt naming and implementation to current state of paper (fissile sign sets)
  */
 public class HeuristicDirectiveEliminateAnySignConditions extends ProgramTransformation<InputProgram, InputProgram> {
 
