@@ -1,4 +1,0 @@
-a(1).
-a(2).
-a(3).
-b(X) :- a(_Interval0), _interval(1..X, _Interval0).
