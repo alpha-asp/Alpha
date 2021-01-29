@@ -25,15 +25,13 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 
+import java.util.List;
+import java.util.Random;
+
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.solver.ChoiceManager;
 import at.ac.tuwien.kr.alpha.core.solver.WritableAssignment;
 import at.ac.tuwien.kr.alpha.core.solver.heuristics.activity.BodyActivityProviderFactory.BodyActivityType;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.stream.Collectors;
 
 public final class BranchingHeuristicFactory {
 

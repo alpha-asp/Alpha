@@ -7,7 +7,6 @@ import java.util.function.Consumer;
 import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-import at.ac.tuwien.kr.alpha.core.common.CoreAnswerSet;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 
 /**

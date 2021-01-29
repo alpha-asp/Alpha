@@ -17,7 +17,7 @@ import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
  * 
  * Copyright (c) 2019, the Alpha Team.
  */
-public class NormalProgram extends AbstractProgram<Rule<NormalHead>> implements Program<Rule<NormalHead>>{
+public class NormalProgram extends AbstractProgram<Rule<NormalHead>> implements Program<Rule<NormalHead>> {
 
 	public NormalProgram(List<Rule<NormalHead>> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
 		super(rules, facts, inlineDirectives);

@@ -27,7 +27,7 @@ import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
  * <p>
  * Copyright (c) 2017-2020, the Alpha Team.
  */
-public class InternalProgram extends AbstractProgram<CompiledRule> implements CompiledProgram{
+public class InternalProgram extends AbstractProgram<CompiledRule> implements CompiledProgram {
 
 	private final Map<Predicate, LinkedHashSet<CompiledRule>> predicateDefiningRules = new LinkedHashMap<>();
 	private final Map<Predicate, LinkedHashSet<Instance>> factsByPredicate = new LinkedHashMap<>();

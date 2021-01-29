@@ -85,7 +85,7 @@ public abstract class CoreTerm implements Term {
 			renamedVariables = new HashMap<>();
 		}
 		
-		public Map<VariableTerm, VariableTerm> getRenamedVariables(){
+		public Map<VariableTerm, VariableTerm> getRenamedVariables() {
 			return renamedVariables;
 		}
 		

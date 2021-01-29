@@ -52,8 +52,6 @@ import at.ac.tuwien.kr.alpha.core.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
-import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 
 /**
  * Class to generate ground NoGoods out of non-ground rules and grounding substitutions.

@@ -13,10 +13,11 @@ import at.ac.tuwien.kr.alpha.api.rules.Rule;
 /**
  * The parent type for all kinds of programs. Defines a program's basic structure (facts + rules + inlineDirectives)
  *
- * @param <R> the type of rule a program permits. This needs to be determined by implementations based on which syntax constructs an implementation permits
+ * @param <R> the type of rule a program permits. This needs to be determined by implementations based on which syntax constructs an
+ *            implementation permits
  *            Copyright (c) 2019, the Alpha Team.
  */
-public abstract class AbstractProgram<R extends Rule<? extends Head>> implements Program<R>{
+public abstract class AbstractProgram<R extends Rule<? extends Head>> implements Program<R> {
 
 	private final List<R> rules;
 	private final List<Atom> facts;

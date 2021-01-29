@@ -20,7 +20,7 @@ import at.ac.tuwien.kr.alpha.api.rules.Rule;
  * 
  *            Copyright (c) 2017-2019, the Alpha Team.
  */
-public abstract class AbstractRule<H extends Head> implements Rule<H>{
+public abstract class AbstractRule<H extends Head> implements Rule<H> {
 
 	private final H head;
 	private final Set<Literal> bodyLiteralsPositive;
