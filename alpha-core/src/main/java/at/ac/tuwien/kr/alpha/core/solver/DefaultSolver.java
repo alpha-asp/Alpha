@@ -34,7 +34,7 @@ import static at.ac.tuwien.kr.alpha.core.solver.NoGoodStore.LBD_NO_VALUE;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.core.solver.heuristics.BranchingHeuristic.DEFAULT_CHOICE_LITERAL;
 import static at.ac.tuwien.kr.alpha.core.solver.learning.GroundConflictNoGoodLearner.ConflictAnalysisResult.UNSAT;
-import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
+import static at.ac.tuwien.kr.alpha.api.Util.oops;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -50,21 +50,21 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.config.SystemConfig;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.ComparisonAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-import at.ac.tuwien.kr.alpha.core.common.CoreAnswerSet;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
 import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 import at.ac.tuwien.kr.alpha.core.grounder.ProgramAnalyzingGrounder;
 import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.solver.heuristics.BranchingHeuristic;
 import at.ac.tuwien.kr.alpha.core.solver.heuristics.BranchingHeuristicFactory;
 import at.ac.tuwien.kr.alpha.core.solver.heuristics.ChainedBranchingHeuristics;
@@ -122,7 +122,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 	}
 
 	@Override
-	protected boolean tryAdvance(Consumer<? super CoreAnswerSet> action) {
+	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
 		boolean didChange = false;
 
 		// Initially, get NoGoods from grounder.
@@ -210,7 +210,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 				afterAllAtomsAssigned = true;
 			} else if (assignment.getMBTCount() == 0) {
 				// NOTE: If we would do optimization, we would now have a guaranteed upper bound.
-				CoreAnswerSet as = translate(assignment.getTrueAssignments());
+				AnswerSet as = translate(assignment.getTrueAssignments());
 				LOGGER.debug("Answer-Set found: {}", as);
 				action.accept(as);
 				logStats();
@@ -368,7 +368,7 @@ public class DefaultSolver extends AbstractSolver implements SolverMaintainingSt
 			// For RuleAtoms in toJustify the corresponding ground body contains BasicAtoms that have been assigned FALSE in the closing.
 			// First, translate RuleAtom back to NonGroundRule + Substitution.
 			String ruleId = (String) ((CoreConstantTerm<?>)atom.getTerms().get(0)).getObject();
-			InternalRule nonGroundRule = analyzingGrounder.getNonGroundRule(Integer.parseInt(ruleId));
+			CompiledRule nonGroundRule = analyzingGrounder.getNonGroundRule(Integer.parseInt(ruleId));
 			String substitution = (String) ((CoreConstantTerm<?>)atom.getTerms().get(1)).getObject();
 			SubstitutionImpl groundingSubstitution = SubstitutionImpl.fromString(substitution);
 			// Find ground literals in the body that have been assigned false and justify those.

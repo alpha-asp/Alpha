@@ -37,10 +37,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import at.ac.tuwien.kr.alpha.api.grounder.RuleGroundingInfo;
+import at.ac.tuwien.kr.alpha.api.grounder.RuleGroundingOrder;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreLiteral;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 
 /**
@@ -61,16 +62,16 @@ import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
  * Note that rules with self-joins (rules with p(X,Y), p(A,B) in their body) make it necessary that every positive
  * literal (whose interpretation is not fixed) is a starting literal, at least for the current grounding procedure.
  */
-public class RuleGroundingOrders {
+public class RuleGroundingInfoImpl implements RuleGroundingInfo {
 	private final InternalRule internalRule;
-	HashMap<Literal, RuleGroundingOrder> groundingOrders;
+	HashMap<Literal, RuleGroundingOrderImpl> groundingOrders;
 	private HashMap<Literal, Float> literalSelectivity;
 	private List<Literal> startingLiterals;
 
 	private final boolean fixedGroundingInstantiation;
-	private RuleGroundingOrder fixedGroundingOrder;
+	private RuleGroundingOrderImpl fixedGroundingOrder;
 
-	public RuleGroundingOrders(InternalRule internalRule) {
+	public RuleGroundingInfoImpl(InternalRule internalRule) {
 		this.internalRule = internalRule;
 		this.literalSelectivity = new HashMap<>();
 		resetLiteralSelectivity();
@@ -137,10 +138,11 @@ public class RuleGroundingOrders {
 		// TODO: add old selectivity (with a decay factor) and new selectivity.
 	}
 
-	public RuleGroundingOrder orderStartingFrom(Literal startingLiteral) {
+	public RuleGroundingOrderImpl orderStartingFrom(Literal startingLiteral) {
 		return groundingOrders.get(startingLiteral);
 	}
 
+	@Override
 	public RuleGroundingOrder getFixedGroundingOrder() {
 		return fixedGroundingOrder;
 	}
@@ -150,7 +152,8 @@ public class RuleGroundingOrders {
 	 * 
 	 * @return true if the rule has a (limited number of) fixed grounding instantiation(s).
 	 */
-	public boolean fixedInstantiation() {
+	@Override
+	public boolean hasFixedInstantiation() {
 		return fixedGroundingInstantiation;
 	}
 
@@ -197,9 +200,9 @@ public class RuleGroundingOrders {
 			position++;
 		}
 		if (fixedGroundingInstantiation) {
-			fixedGroundingOrder = new RuleGroundingOrder(null, literalsOrder, positionLastVarBound, internalRule.isGround());
+			fixedGroundingOrder = new RuleGroundingOrderImpl(null, literalsOrder, positionLastVarBound, internalRule.isGround());
 		}
-		groundingOrders.put(startingLiteral, new RuleGroundingOrder(startingLiteral, literalsOrder, positionLastVarBound, internalRule.isGround()));
+		groundingOrders.put(startingLiteral, new RuleGroundingOrderImpl(startingLiteral, literalsOrder, positionLastVarBound, internalRule.isGround()));
 	}
 
 	private Literal selectNextGroundingLiteral(LinkedHashSet<Literal> remainingLiterals, Set<VariableTerm> boundVariables) {

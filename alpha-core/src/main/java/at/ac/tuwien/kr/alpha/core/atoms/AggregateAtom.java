@@ -27,8 +27,8 @@
  */
 package at.ac.tuwien.kr.alpha.core.atoms;
 
-import static at.ac.tuwien.kr.alpha.core.util.Util.join;
-import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
+import static at.ac.tuwien.kr.alpha.api.Util.join;
+import static at.ac.tuwien.kr.alpha.api.Util.oops;
 
 import java.util.Collections;
 import java.util.LinkedList;

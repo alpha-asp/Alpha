@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.core.grounder.structure;
 
-import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
+import static at.ac.tuwien.kr.alpha.api.Util.oops;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,9 +16,12 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Instance;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.CompiledProgram;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
@@ -26,10 +29,8 @@ import at.ac.tuwien.kr.alpha.core.atoms.ComparisonLiteral;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.grounder.Instance;
 import at.ac.tuwien.kr.alpha.core.grounder.Unification;
 import at.ac.tuwien.kr.alpha.core.grounder.Unifier;
-import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
 
@@ -38,13 +39,13 @@ import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
  */
 public class AnalyzeUnjustified {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AnalyzeUnjustified.class);
-	private final InternalProgram programAnalysis;
+	private final CompiledProgram programAnalysis;
 	private final AtomStore atomStore;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
 	private int renamingCounter;
 	private int padDepth;
 
-	public AnalyzeUnjustified(InternalProgram programAnalysis, AtomStore atomStore, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram) {
+	public AnalyzeUnjustified(CompiledProgram programAnalysis, AtomStore atomStore, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram) {
 		this.programAnalysis = programAnalysis;
 		this.atomStore = atomStore;
 		this.factsFromProgram = factsFromProgram;
@@ -342,9 +343,9 @@ public class AnalyzeUnjustified {
 			}
 		}
 
-		HashSet<InternalRule> rulesDefiningPredicate = programAnalysis.getPredicateDefiningRules().get(predicate);
+		HashSet<CompiledRule> rulesDefiningPredicate = programAnalysis.getPredicateDefiningRules().get(predicate);
 		if (rulesDefiningPredicate != null) {
-			for (InternalRule nonGroundRule : rulesDefiningPredicate) {
+			for (CompiledRule nonGroundRule : rulesDefiningPredicate) {
 				definingRulesAndFacts.add(new FactOrNonGroundRule(nonGroundRule));
 			}
 		}
@@ -354,7 +355,7 @@ public class AnalyzeUnjustified {
 			Atom headAtom;
 			if (isNonGroundRule) {
 				// First rename all variables in the rule.
-				InternalRule rule = factOrNonGroundRule.nonGroundRule.renameVariables("_" + renamingCounter++);
+				CompiledRule rule = factOrNonGroundRule.nonGroundRule.renameVariables("_" + renamingCounter++);
 				renamedBody = rule.getBody();
 				headAtom = rule.getHeadAtom();
 			} else {
@@ -407,14 +408,14 @@ public class AnalyzeUnjustified {
 
 	private static class FactOrNonGroundRule {
 		final Instance factInstance;
-		final InternalRule nonGroundRule;
+		final CompiledRule nonGroundRule;
 
 		private FactOrNonGroundRule(Instance factInstance) {
 			this.factInstance = factInstance;
 			this.nonGroundRule = null;
 		}
 
-		private FactOrNonGroundRule(InternalRule nonGroundRule) {
+		private FactOrNonGroundRule(CompiledRule nonGroundRule) {
 			this.nonGroundRule = nonGroundRule;
 			this.factInstance = null;
 		}

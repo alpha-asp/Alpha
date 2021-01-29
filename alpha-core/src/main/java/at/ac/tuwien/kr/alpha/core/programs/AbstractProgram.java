@@ -3,11 +3,12 @@ package at.ac.tuwien.kr.alpha.core.programs;
 import java.util.Collections;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.InlineDirectives;
+import at.ac.tuwien.kr.alpha.api.program.Program;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
-import at.ac.tuwien.kr.alpha.core.rules.AbstractRule;
-import at.ac.tuwien.kr.alpha.core.util.Util;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
 
 /**
  * The parent type for all kinds of programs. Defines a program's basic structure (facts + rules + inlineDirectives)
@@ -15,7 +16,7 @@ import at.ac.tuwien.kr.alpha.core.util.Util;
  * @param <R> the type of rule a program permits. This needs to be determined by implementations based on which syntax constructs an implementation permits
  *            Copyright (c) 2019, the Alpha Team.
  */
-public abstract class AbstractProgram<R extends AbstractRule<? extends Head>> {
+public abstract class AbstractProgram<R extends Rule<? extends Head>> implements Program<R>{
 
 	private final List<R> rules;
 	private final List<Atom> facts;
@@ -27,14 +28,17 @@ public abstract class AbstractProgram<R extends AbstractRule<? extends Head>> {
 		this.inlineDirectives = inlineDirectives;
 	}
 
+	@Override
 	public List<R> getRules() {
 		return Collections.unmodifiableList(rules);
 	}
 
+	@Override
 	public List<Atom> getFacts() {
 		return Collections.unmodifiableList(facts);
 	}
 
+	@Override
 	public InlineDirectives getInlineDirectives() {
 		return inlineDirectives;
 	}

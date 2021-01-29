@@ -33,6 +33,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
+import at.ac.tuwien.kr.alpha.api.Util;
+import at.ac.tuwien.kr.alpha.api.grounder.Instance;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
@@ -43,7 +45,6 @@ import at.ac.tuwien.kr.alpha.core.common.terms.CoreTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.FunctionTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.parser.ProgramPartParser;
-import at.ac.tuwien.kr.alpha.core.util.Util;
 
 public class SubstitutionImpl implements at.ac.tuwien.kr.alpha.api.grounder.Substitution {
 

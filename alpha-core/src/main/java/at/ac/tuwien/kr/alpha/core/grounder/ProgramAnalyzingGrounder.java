@@ -4,8 +4,8 @@ import java.util.Set;
 
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 
 /**
  * Copyright (c) 2017, the Alpha Team.
@@ -32,5 +32,5 @@ public interface ProgramAnalyzingGrounder extends Grounder {
 	 * @param ruleId the id of the rule.
 	 * @return the corresponding NonGroundRule.
 	 */
-	InternalRule getNonGroundRule(Integer ruleId);
+	CompiledRule getNonGroundRule(Integer ruleId);
 }

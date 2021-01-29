@@ -1,7 +1,5 @@
 package at.ac.tuwien.kr.alpha.core.common.terms;
 
-import static at.ac.tuwien.kr.alpha.core.util.Util.join;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
@@ -87,7 +86,7 @@ public class FunctionTerm extends CoreTerm {
 			return symbol;
 		}
 
-		return join(symbol + "(", terms, ")");
+		return Util.join(symbol + "(", terms, ")");
 	}
 
 	@Override

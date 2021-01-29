@@ -35,7 +35,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static at.ac.tuwien.kr.alpha.core.common.Literals.atomOf;
-import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
+import static at.ac.tuwien.kr.alpha.api.Util.oops;
 
 /**
  * Extends {@code HeapOfActiveAtoms} by a mechanism that,

@@ -27,11 +27,10 @@
  */
 package at.ac.tuwien.kr.alpha.core.atoms;
 
-import static at.ac.tuwien.kr.alpha.core.util.Util.join;
-
 import java.util.Collections;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
@@ -92,7 +91,7 @@ public class ChoiceAtom extends CoreAtom {
 
 	@Override
 	public String toString() {
-		return join(predicate.getName() + "(", terms, ")");
+		return Util.join(predicate.getName() + "(", terms, ")");
 	}
 
 	@Override

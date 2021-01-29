@@ -28,13 +28,14 @@ package at.ac.tuwien.kr.alpha.core.grounder;
 import java.util.ArrayList;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.grounder.RuleGroundingOrder;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 
 /**
- * A grounding order computed by {@link RuleGroundingOrders} for a specific {@link InternalRule} and a specific starting literal.
+ * A grounding order computed by {@link RuleGroundingInfoImpl} for a specific {@link InternalRule} and a specific starting literal.
  */
-public class RuleGroundingOrder {
+public class RuleGroundingOrderImpl implements RuleGroundingOrder{
 
 	private Literal startingLiteral;
 	private List<Literal> otherLiterals;
@@ -42,7 +43,7 @@ public class RuleGroundingOrder {
 	private int stopBindingAtOrderPosition;
 	private final boolean ground;
 	
-	RuleGroundingOrder(Literal startingLiteral, List<Literal> otherLiterals, int positionLastVarBound, boolean isGround) {
+	RuleGroundingOrderImpl(Literal startingLiteral, List<Literal> otherLiterals, int positionLastVarBound, boolean isGround) {
 		super();
 		this.startingLiteral = startingLiteral;
 		this.otherLiterals = otherLiterals;
@@ -51,7 +52,7 @@ public class RuleGroundingOrder {
 		this.ground = isGround;
 	}
 	
-	private RuleGroundingOrder(RuleGroundingOrder otherRuleGroundingOrder) {
+	private RuleGroundingOrderImpl(RuleGroundingOrderImpl otherRuleGroundingOrder) {
 		this(otherRuleGroundingOrder.startingLiteral, new ArrayList<>(otherRuleGroundingOrder.otherLiterals), otherRuleGroundingOrder.positionLastVarBound, otherRuleGroundingOrder.ground);
 		this.stopBindingAtOrderPosition = otherRuleGroundingOrder.stopBindingAtOrderPosition;
 	}
@@ -112,11 +113,11 @@ public class RuleGroundingOrder {
 	 * @return a new grounding order in which the atom is pushed back,
 	 * or {@code null} if the position of the grounding order after which no new bindings can be found has been reached.
 	 */
-	public RuleGroundingOrder pushBack(int orderPosition) {
+	public RuleGroundingOrderImpl pushBack(int orderPosition) {
 		if (orderPosition >= stopBindingAtOrderPosition - 1) {
 			return null;
 		}
-		RuleGroundingOrder reorderedGroundingOrder = new RuleGroundingOrder(this);
+		RuleGroundingOrderImpl reorderedGroundingOrder = new RuleGroundingOrderImpl(this);
 		reorderedGroundingOrder.otherLiterals.add(otherLiterals.get(orderPosition));
 		return reorderedGroundingOrder;
 	}

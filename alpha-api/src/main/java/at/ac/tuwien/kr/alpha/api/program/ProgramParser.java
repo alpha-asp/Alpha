@@ -9,34 +9,34 @@ import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpreta
 
 public interface ProgramParser {
 
-	default InputProgram parse(String programString) {
+	default ASPCore2Program parse(String programString) {
 		return parse(programString, Collections.emptyMap());
 	}
 
-	default InputProgram parse(InputStream programSource) {
+	default ASPCore2Program parse(InputStream programSource) {
 		return parse(programSource, Collections.emptyMap());
 	}
 
-	default InputProgram parse(Path programPath) {
+	default ASPCore2Program parse(Path programPath) {
 		return parse(programPath, Collections.emptyMap());
 	}
 
-	default InputProgram parse(Path... programSources) {
+	default ASPCore2Program parse(Path... programSources) {
 		return parse(Collections.emptyMap(), programSources);
 	}
 
-	default InputProgram parse(Iterable<Path> programSources) {
+	default ASPCore2Program parse(Iterable<Path> programSources) {
 		return parse(programSources, Collections.emptyMap());
 	}
 
-	InputProgram parse(String programString, Map<String, PredicateInterpretation> externalPredicateDefinitions);
+	ASPCore2Program parse(String programString, Map<String, PredicateInterpretation> externalPredicateDefinitions);
 
-	InputProgram parse(InputStream programSource, Map<String, PredicateInterpretation> externalPredicateDefinitions);
+	ASPCore2Program parse(InputStream programSource, Map<String, PredicateInterpretation> externalPredicateDefinitions);
 
-	InputProgram parse(Path programPath, Map<String, PredicateInterpretation> externalPredicateDefinitions);
+	ASPCore2Program parse(Path programPath, Map<String, PredicateInterpretation> externalPredicateDefinitions);
 
-	InputProgram parse(Map<String, PredicateInterpretation> externalPredicateDefinitions, Path... programSources);
+	ASPCore2Program parse(Map<String, PredicateInterpretation> externalPredicateDefinitions, Path... programSources);
 
-	InputProgram parse(Iterable<Path> programSources, Map<String, PredicateInterpretation> externalPredicateDefinitions);
+	ASPCore2Program parse(Iterable<Path> programSources, Map<String, PredicateInterpretation> externalPredicateDefinitions);
 
 }

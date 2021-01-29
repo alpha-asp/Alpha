@@ -45,6 +45,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2BaseVisitor;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.InlineDirectives;
@@ -68,7 +69,6 @@ import at.ac.tuwien.kr.alpha.core.atoms.ExternalAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.ExternalLiteral;
 import at.ac.tuwien.kr.alpha.core.common.BasicAnswerSet;
 import at.ac.tuwien.kr.alpha.core.common.ComparisonOperator;
-import at.ac.tuwien.kr.alpha.core.common.CoreAnswerSet;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.common.terms.ArithmeticTerm;
 import at.ac.tuwien.kr.alpha.core.common.terms.CoreConstantTerm;
@@ -115,13 +115,13 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	/**
 	 * Translates a context for answer sets (referring to a node in an ATN specific to ANTLR) to the representation that Alpha uses.
 	 */
-	public Set<CoreAnswerSet> translate(ASPCore2Parser.Answer_setsContext input) {
+	public Set<AnswerSet> translate(ASPCore2Parser.Answer_setsContext input) {
 		return visitAnswer_sets(input);
 	}
 
 	@Override
-	public Set<CoreAnswerSet> visitAnswer_sets(ASPCore2Parser.Answer_setsContext ctx) {
-		Set<CoreAnswerSet> result = new TreeSet<>();
+	public Set<AnswerSet> visitAnswer_sets(ASPCore2Parser.Answer_setsContext ctx) {
+		Set<AnswerSet> result = new TreeSet<>();
 
 		for (ASPCore2Parser.Answer_setContext answerSetContext : ctx.answer_set()) {
 			result.add(visitAnswer_set(answerSetContext));
@@ -131,7 +131,7 @@ public class ParseTreeVisitor extends ASPCore2BaseVisitor<Object> {
 	}
 
 	@Override
-	public CoreAnswerSet visitAnswer_set(ASPCore2Parser.Answer_setContext ctx) {
+	public AnswerSet visitAnswer_set(ASPCore2Parser.Answer_setContext ctx) {
 		SortedSet<Predicate> predicates = new TreeSet<>();
 		Map<Predicate, SortedSet<Atom>> predicateInstances = new TreeMap<>();
 

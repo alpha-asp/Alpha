@@ -28,7 +28,7 @@ package at.ac.tuwien.kr.alpha.core.solver.heuristics;
 import static at.ac.tuwien.kr.alpha.core.common.Literals.atomOf;
 import static at.ac.tuwien.kr.alpha.core.common.Literals.atomToLiteral;
 import static at.ac.tuwien.kr.alpha.core.common.Literals.isPositive;
-import static at.ac.tuwien.kr.alpha.core.util.Util.arrayGrowthSize;
+import static at.ac.tuwien.kr.alpha.api.Util.arrayGrowthSize;
 
 import java.util.ArrayList;
 import java.util.Arrays;

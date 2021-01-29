@@ -27,21 +27,29 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-import at.ac.tuwien.kr.alpha.core.common.CoreAnswerSet;
-import at.ac.tuwien.kr.alpha.core.common.IntIterator;
-import at.ac.tuwien.kr.alpha.core.common.NoGood;
-import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
+import static at.ac.tuwien.kr.alpha.core.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.common.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.core.common.Literals.isPositive;
+import static java.lang.Math.abs;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+import java.util.function.Consumer;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.function.Consumer;
-
-import static at.ac.tuwien.kr.alpha.core.common.Literals.*;
-import static java.lang.Math.abs;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.IntIterator;
+import at.ac.tuwien.kr.alpha.core.common.NoGood;
+import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 
 /**
  * Copyright (c) 2016-2020, the Alpha Team.
@@ -78,7 +86,7 @@ public class NaiveSolver extends AbstractSolver {
 	}
 
 	@Override
-	protected boolean tryAdvance(Consumer<? super CoreAnswerSet> action) {
+	protected boolean tryAdvance(Consumer<? super AnswerSet> action) {
 		// Get basic rules and facts from grounder
 		if (doInit) {
 			obtainNoGoodsFromGrounder();
@@ -114,7 +122,7 @@ public class NaiveSolver extends AbstractSolver {
 				assignUnassignedToFalse();
 				didChange = true;
 			} else if (noMBTValuesReamining()) {
-				CoreAnswerSet as = getAnswerSetFromAssignment();
+				AnswerSet as = getAnswerSetFromAssignment();
 				LOGGER.debug("Answer-Set found: {}", as);
 				LOGGER.trace("Choice stack: {}", choiceStack);
 				action.accept(as);
@@ -193,7 +201,7 @@ public class NaiveSolver extends AbstractSolver {
 		return !changeCopy;
 	}
 
-	private CoreAnswerSet getAnswerSetFromAssignment() {
+	private AnswerSet getAnswerSetFromAssignment() {
 		ArrayList<Integer> trueAtoms = new ArrayList<>();
 		for (Map.Entry<Integer, Boolean> atomAssignment : truthAssignments.entrySet()) {
 			if (atomAssignment.getValue()) {

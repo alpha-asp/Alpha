@@ -39,7 +39,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import static at.ac.tuwien.kr.alpha.core.common.Literals.atomToLiteral;
-import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
+import static at.ac.tuwien.kr.alpha.api.Util.oops;
 
 /**
  * This class provides functionality for choice point management, detection of active choice points, etc.

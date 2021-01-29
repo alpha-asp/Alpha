@@ -28,6 +28,9 @@ package at.ac.tuwien.kr.alpha.core.grounder.instantiation;
 import java.util.LinkedHashSet;
 import java.util.Map;
 
+import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.api.Util;
+import at.ac.tuwien.kr.alpha.api.grounder.Instance;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
@@ -35,12 +38,9 @@ import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
 import at.ac.tuwien.kr.alpha.core.common.AtomStore;
 import at.ac.tuwien.kr.alpha.core.grounder.IndexedInstanceStorage;
-import at.ac.tuwien.kr.alpha.core.grounder.Instance;
 import at.ac.tuwien.kr.alpha.core.grounder.NaiveGrounder;
 import at.ac.tuwien.kr.alpha.core.grounder.WorkingMemory;
-import at.ac.tuwien.kr.alpha.core.solver.Solver;
 import at.ac.tuwien.kr.alpha.core.solver.ThriceTruth;
-import at.ac.tuwien.kr.alpha.core.util.Util;
 
 /**
  * Implementation of {@link AbstractLiteralInstantiationStrategy} designed for use in {@link NaiveGrounder}.

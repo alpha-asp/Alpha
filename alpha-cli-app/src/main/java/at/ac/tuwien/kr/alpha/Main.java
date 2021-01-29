@@ -44,22 +44,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import at.ac.tuwien.kr.alpha.api.Alpha;
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.Solver;
 import at.ac.tuwien.kr.alpha.api.config.AlphaConfig;
 import at.ac.tuwien.kr.alpha.api.config.InputConfig;
 import at.ac.tuwien.kr.alpha.api.impl.AlphaImpl;
-import at.ac.tuwien.kr.alpha.api.program.InputProgram;
+import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
+import at.ac.tuwien.kr.alpha.api.program.CompiledProgram;
+import at.ac.tuwien.kr.alpha.api.program.Program;
+import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.app.ComponentGraphWriter;
 import at.ac.tuwien.kr.alpha.app.DependencyGraphWriter;
 import at.ac.tuwien.kr.alpha.config.CommandLineParser;
 import at.ac.tuwien.kr.alpha.core.common.AnswerSetFormatter;
-import at.ac.tuwien.kr.alpha.core.common.CoreAnswerSet;
 import at.ac.tuwien.kr.alpha.core.common.SimpleAnswerSetFormatter;
 import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph;
 import at.ac.tuwien.kr.alpha.core.depgraph.DependencyGraph;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.programs.NormalProgram;
-import at.ac.tuwien.kr.alpha.core.solver.Solver;
 import at.ac.tuwien.kr.alpha.core.solver.SolverMaintainingStatistics;
 
 /**
@@ -83,7 +86,7 @@ public class Main {
 
 		Alpha alpha = new AlphaImpl(cfg.getSystemConfig());
 
-		InputProgram program = null;
+		ASPCore2Program program = null;
 		try {
 			program = alpha.readProgram(cfg.getInputConfig());
 		} catch (RecognitionException e) {
@@ -97,8 +100,8 @@ public class Main {
 			Main.bailOut("Failed to parse program.", e);
 		}
 
-		NormalProgram normalized = alpha.normalizeProgram(program);
-		InternalProgram preprocessed;
+		Program<Rule<NormalHead>> normalized = alpha.normalizeProgram(program);
+		CompiledProgram preprocessed;
 		InputConfig inputCfg = cfg.getInputConfig();
 		if (!(inputCfg.isWriteDependencyGraph() || inputCfg.isWriteComponentGraph())) {
 			LOGGER.debug("Not writing dependency or component graphs, starting preprocessing...");
@@ -157,7 +160,7 @@ public class Main {
 	 * @param prg  the program to write
 	 * @param path the path to write the program to
 	 */
-	private static void writeInternalProgram(InternalProgram prg, String path) {
+	private static void writeInternalProgram(CompiledProgram prg, String path) {
 		LOGGER.debug("Writing preprocessed program to {}", path);
 		PrintStream ps;
 		try {
@@ -173,9 +176,9 @@ public class Main {
 		}
 	}
 
-	private static void computeAndConsumeAnswerSets(AlphaImpl alpha, InputConfig inputCfg, InternalProgram program) {
+	private static void computeAndConsumeAnswerSets(Alpha alpha, InputConfig inputCfg, CompiledProgram program) {
 		Solver solver = alpha.prepareSolverFor(program, inputCfg.getFilter());
-		Stream<CoreAnswerSet> stream = solver.stream();
+		Stream<AnswerSet> stream = solver.stream();
 		if (alpha.getConfig().isSortAnswerSets()) {
 			stream = stream.sorted();
 		}
@@ -187,13 +190,13 @@ public class Main {
 
 		if (!alpha.getConfig().isQuiet()) {
 			AtomicInteger counter = new AtomicInteger(0);
-			final BiConsumer<Integer, CoreAnswerSet> answerSetHandler;
+			final BiConsumer<Integer, AnswerSet> answerSetHandler;
 			final AnswerSetFormatter<String> fmt = new SimpleAnswerSetFormatter(alpha.getConfig().getAtomSeparator());
-			BiConsumer<Integer, CoreAnswerSet> stdoutPrinter = (n, as) -> {
+			BiConsumer<Integer, AnswerSet> stdoutPrinter = (n, as) -> {
 				System.out.println("Answer set " + Integer.toString(n) + ":" + System.lineSeparator() + fmt.format(as));
 			};
 			if (inputCfg.isWriteAnswerSetsAsXlsx()) {
-				BiConsumer<Integer, CoreAnswerSet> xlsxWriter = new AnswerSetToXlsxWriter(inputCfg.getAnswerSetFileOutputPath());
+				BiConsumer<Integer, AnswerSet> xlsxWriter = new AnswerSetToXlsxWriter(inputCfg.getAnswerSetFileOutputPath());
 				answerSetHandler = stdoutPrinter.andThen(xlsxWriter);
 			} else {
 				answerSetHandler = stdoutPrinter;

@@ -8,9 +8,10 @@ import java.util.Set;
 
 import org.apache.commons.collections4.SetUtils;
 
+import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
-import at.ac.tuwien.kr.alpha.core.util.Util;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
 
 /**
  * An abstract representation of a rule with a specific type of @{link Head} (type parameter H)
@@ -19,7 +20,7 @@ import at.ac.tuwien.kr.alpha.core.util.Util;
  * 
  *            Copyright (c) 2017-2019, the Alpha Team.
  */
-public abstract class AbstractRule<H extends Head> {
+public abstract class AbstractRule<H extends Head> implements Rule<H>{
 
 	private final H head;
 	private final Set<Literal> bodyLiteralsPositive;
@@ -90,10 +91,12 @@ public abstract class AbstractRule<H extends Head> {
 		return Util.join((isConstraint() ? "" : head.toString() + " ") + ":- ", getBody(), ".");
 	}
 
+	@Override
 	public H getHead() {
 		return head;
 	}
 
+	@Override
 	public Set<Literal> getBody() {
 		return SetUtils.union(this.bodyLiteralsPositive, this.bodyLiteralsNegative);
 	}

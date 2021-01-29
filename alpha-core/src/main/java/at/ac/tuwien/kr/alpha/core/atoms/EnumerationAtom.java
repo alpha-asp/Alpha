@@ -1,10 +1,9 @@
 package at.ac.tuwien.kr.alpha.core.atoms;
 
-import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
-
 import java.util.HashMap;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
@@ -84,7 +83,7 @@ public class EnumerationAtom extends BasicAtom {
 	@Override
 	public EnumerationLiteral toLiteral(boolean positive) {
 		if (!positive) {
-			throw oops("IntervalLiteral cannot be negated");
+			throw Util.oops("IntervalLiteral cannot be negated");
 		}
 		return new EnumerationLiteral(this);
 	}

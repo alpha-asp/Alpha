@@ -9,12 +9,16 @@ import java.util.Map;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Instance;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.CompiledProgram;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.program.Program;
+import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
+import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.core.grounder.FactIntervalEvaluator;
-import at.ac.tuwien.kr.alpha.core.grounder.Instance;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
-import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
 
 /**
  * A program in the internal representation needed for grounder and solver, i.e.: rules must have normal heads, all
@@ -23,22 +27,23 @@ import at.ac.tuwien.kr.alpha.core.rules.NormalRule;
  * <p>
  * Copyright (c) 2017-2020, the Alpha Team.
  */
-public class InternalProgram extends AbstractProgram<InternalRule> {
+public class InternalProgram extends AbstractProgram<CompiledRule> implements CompiledProgram{
 
-	private final Map<Predicate, LinkedHashSet<InternalRule>> predicateDefiningRules = new LinkedHashMap<>();
+	private final Map<Predicate, LinkedHashSet<CompiledRule>> predicateDefiningRules = new LinkedHashMap<>();
 	private final Map<Predicate, LinkedHashSet<Instance>> factsByPredicate = new LinkedHashMap<>();
-	private final Map<Integer, InternalRule> rulesById = new LinkedHashMap<>();
+	private final Map<Integer, CompiledRule> rulesById = new LinkedHashMap<>();
 
-	public InternalProgram(List<InternalRule> rules, List<Atom> facts) {
+	// TODO constructor param internal rule
+	public InternalProgram(List<CompiledRule> rules, List<Atom> facts) {
 		super(rules, facts, null);
 		recordFacts(facts);
 		recordRules(rules);
 	}
 
-	static ImmutablePair<List<InternalRule>, List<Atom>> internalizeRulesAndFacts(NormalProgram normalProgram) {
-		List<InternalRule> internalRules = new ArrayList<>();
+	static ImmutablePair<List<CompiledRule>, List<Atom>> internalizeRulesAndFacts(Program<Rule<NormalHead>> normalProgram) {
+		List<CompiledRule> internalRules = new ArrayList<>();
 		List<Atom> facts = new ArrayList<>(normalProgram.getFacts());
-		for (NormalRule r : normalProgram.getRules()) {
+		for (Rule<NormalHead> r : normalProgram.getRules()) {
 			if (r.getBody().isEmpty()) {
 				if (!r.getHead().isGround()) {
 					throw new IllegalArgumentException("InternalProgram does not support non-ground rules with empty bodies! (Head = " + r.getHead().toString() + ")");
@@ -51,8 +56,8 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 		return new ImmutablePair<>(internalRules, facts);
 	}
 
-	public static InternalProgram fromNormalProgram(NormalProgram normalProgram) {
-		ImmutablePair<List<InternalRule>, List<Atom>> rulesAndFacts = InternalProgram.internalizeRulesAndFacts(normalProgram);
+	public static CompiledProgram fromNormalProgram(Program<Rule<NormalHead>> normalProgram) {
+		ImmutablePair<List<CompiledRule>, List<Atom>> rulesAndFacts = InternalProgram.internalizeRulesAndFacts(normalProgram);
 		return new InternalProgram(rulesAndFacts.left, rulesAndFacts.right);
 	}
 
@@ -65,8 +70,8 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 		}
 	}
 
-	private void recordRules(List<InternalRule> rules) {
-		for (InternalRule rule : rules) {
+	private void recordRules(List<CompiledRule> rules) {
+		for (CompiledRule rule : rules) {
 			rulesById.put(rule.getRuleId(), rule);
 			if (!rule.isConstraint()) {
 				recordDefiningRule(rule.getHeadAtom().getPredicate(), rule);
@@ -74,12 +79,12 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 		}
 	}
 
-	private void recordDefiningRule(Predicate headPredicate, InternalRule rule) {
+	private void recordDefiningRule(Predicate headPredicate, CompiledRule rule) {
 		predicateDefiningRules.putIfAbsent(headPredicate, new LinkedHashSet<>());
 		predicateDefiningRules.get(headPredicate).add(rule);
 	}
 
-	public Map<Predicate, LinkedHashSet<InternalRule>> getPredicateDefiningRules() {
+	public Map<Predicate, LinkedHashSet<CompiledRule>> getPredicateDefiningRules() {
 		return Collections.unmodifiableMap(predicateDefiningRules);
 	}
 
@@ -87,7 +92,7 @@ public class InternalProgram extends AbstractProgram<InternalRule> {
 		return Collections.unmodifiableMap(factsByPredicate);
 	}
 
-	public Map<Integer, InternalRule> getRulesById() {
+	public Map<Integer, CompiledRule> getRulesById() {
 		return Collections.unmodifiableMap(rulesById);
 	}
 

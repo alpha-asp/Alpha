@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
 
@@ -17,7 +18,7 @@ public class SimpleAnswerSetFormatter implements AnswerSetFormatter<String> {
 	}
 
 	@Override
-	public String format(CoreAnswerSet answerSet) {
+	public String format(AnswerSet answerSet) {
 		List<String> predicateInstanceStrings = new ArrayList<>();
 		for (Predicate p : answerSet.getPredicates()) {
 			SortedSet<Atom> instances;

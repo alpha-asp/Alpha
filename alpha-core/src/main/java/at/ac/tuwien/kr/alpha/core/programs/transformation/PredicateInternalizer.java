@@ -3,10 +3,12 @@ package at.ac.tuwien.kr.alpha.core.programs.transformation;
 import java.util.ArrayList;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
@@ -23,19 +25,19 @@ import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
  */
 public class PredicateInternalizer {
 
-	static InputProgram makePredicatesInternal(InputProgram program) {
+	static ASPCore2Program makePredicatesInternal(ASPCore2Program program) {
 		InputProgram.Builder prgBuilder = InputProgram.builder();
 		for (Atom atom : program.getFacts()) {
 			prgBuilder.addFact(PredicateInternalizer.makePredicateInternal(atom));
 		}
-		for (BasicRule rule : program.getRules()) {
+		for (Rule<Head> rule : program.getRules()) {
 			prgBuilder.addRule(PredicateInternalizer.makePredicateInternal(rule));
 		}
 		prgBuilder.addInlineDirectives(program.getInlineDirectives());
 		return prgBuilder.build();
 	}
 
-	private static BasicRule makePredicateInternal(BasicRule rule) {
+	private static Rule<Head> makePredicateInternal(Rule<Head> rule) {
 		Head newHead = null;
 		if (rule.getHead() != null) {
 			if (!(rule.getHead() instanceof NormalHeadImpl)) {

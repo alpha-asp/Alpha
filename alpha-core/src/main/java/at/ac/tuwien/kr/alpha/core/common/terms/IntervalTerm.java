@@ -1,10 +1,9 @@
 package at.ac.tuwien.kr.alpha.core.common.terms;
 
-import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
-
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
@@ -55,14 +54,14 @@ public class IntervalTerm extends CoreTerm {
 
 	public int getLowerBound() {
 		if (!isGround()) {
-			throw oops("Cannot get the lower bound of non-ground interval");
+			throw Util.oops("Cannot get the lower bound of non-ground interval");
 		}
 		return this.lowerBound;
 	}
 
 	public int getUpperBound() {
 		if (!isGround()) {
-			throw oops("Cannot get the upper bound of non-ground interval");
+			throw Util.oops("Cannot get the upper bound of non-ground interval");
 		}
 		return this.upperBound;
 	}

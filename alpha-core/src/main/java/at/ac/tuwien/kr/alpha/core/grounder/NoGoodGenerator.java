@@ -40,10 +40,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Instance;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
+import at.ac.tuwien.kr.alpha.api.program.CompiledProgram;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.atoms.EnumerationAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
@@ -60,10 +63,10 @@ public class NoGoodGenerator {
 	private final AtomStore atomStore;
 	private final ChoiceRecorder choiceRecorder;
 	private final Map<Predicate, LinkedHashSet<Instance>> factsFromProgram;
-	private final InternalProgram programAnalysis;
-	private final Set<InternalRule> uniqueGroundRulePerGroundHead;
+	private final CompiledProgram programAnalysis;
+	private final Set<CompiledRule> uniqueGroundRulePerGroundHead;
 
-	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, InternalProgram programAnalysis, Set<InternalRule> uniqueGroundRulePerGroundHead) {
+	NoGoodGenerator(AtomStore atomStore, ChoiceRecorder recorder, Map<Predicate, LinkedHashSet<Instance>> factsFromProgram, CompiledProgram programAnalysis, Set<CompiledRule> uniqueGroundRulePerGroundHead) {
 		this.atomStore = atomStore;
 		this.choiceRecorder = recorder;
 		this.factsFromProgram = factsFromProgram;
@@ -81,7 +84,7 @@ public class NoGoodGenerator {
 	 *          Assumption: atoms with fixed interpretation evaluate to true under the substitution.
 	 * @return a list of the NoGoods corresponding to the ground rule.
 	 */
-	List<NoGood> generateNoGoodsFromGroundSubstitution(final InternalRule nonGroundRule, final Substitution substitution) {
+	List<NoGood> generateNoGoodsFromGroundSubstitution(final CompiledRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> posLiterals = collectPosLiterals(nonGroundRule, substitution);
 		final List<Integer> negLiterals = collectNegLiterals(nonGroundRule, substitution);
 
@@ -139,7 +142,7 @@ public class NoGoodGenerator {
 		return result;
 	}
 
-	List<Integer> collectNegLiterals(final InternalRule nonGroundRule, final Substitution substitution) {
+	List<Integer> collectNegLiterals(final CompiledRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> bodyLiteralsNegative = new ArrayList<>();
 		for (Literal lit : nonGroundRule.getNegativeBody()) {
 			Atom groundAtom = lit.getAtom().substitute(substitution);
@@ -161,7 +164,7 @@ public class NoGoodGenerator {
 		return bodyLiteralsNegative;
 	}
 
-	private List<Integer> collectPosLiterals(final InternalRule nonGroundRule, final Substitution substitution) {
+	private List<Integer> collectPosLiterals(final CompiledRule nonGroundRule, final Substitution substitution) {
 		final List<Integer> bodyLiteralsPositive = new ArrayList<>();
 		for (Literal lit  : nonGroundRule.getPositiveBody()) {
 			if (lit instanceof FixedInterpretationLiteral) {
@@ -198,7 +201,7 @@ public class NoGoodGenerator {
 	}
 
 	private boolean existsRuleWithPredicateInHead(final Predicate predicate) {
-		final HashSet<InternalRule> definingRules = programAnalysis.getPredicateDefiningRules().get(predicate);
+		final HashSet<CompiledRule> definingRules = programAnalysis.getPredicateDefiningRules().get(predicate);
 		return definingRules != null && !definingRules.isEmpty();
 	}
 }

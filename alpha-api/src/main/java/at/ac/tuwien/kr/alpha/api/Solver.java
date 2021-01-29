@@ -1,4 +1,4 @@
-package at.ac.tuwien.kr.alpha.core.solver;
+package at.ac.tuwien.kr.alpha.api;
 
 import java.util.List;
 import java.util.Set;
@@ -7,21 +7,19 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import at.ac.tuwien.kr.alpha.core.common.CoreAnswerSet;
-
 @FunctionalInterface
 public interface Solver {
-	Spliterator<CoreAnswerSet> spliterator();
+	Spliterator<AnswerSet> spliterator();
 
-	default Stream<CoreAnswerSet> stream() {
+	default Stream<AnswerSet> stream() {
 		return StreamSupport.stream(spliterator(), false);
 	}
 
-	default Set<CoreAnswerSet> collectSet() {
+	default Set<AnswerSet> collectSet() {
 		return stream().collect(Collectors.toSet());
 	}
 
-	default List<CoreAnswerSet> collectList() {
+	default List<AnswerSet> collectList() {
 		return stream().collect(Collectors.toList());
 	}
 }

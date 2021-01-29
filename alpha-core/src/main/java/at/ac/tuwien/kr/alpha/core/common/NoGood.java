@@ -27,16 +27,23 @@
  */
 package at.ac.tuwien.kr.alpha.core.common;
 
+import static at.ac.tuwien.kr.alpha.core.common.Literals.atomOf;
+import static at.ac.tuwien.kr.alpha.core.common.Literals.isNegated;
+import static at.ac.tuwien.kr.alpha.core.common.Literals.isPositive;
+import static at.ac.tuwien.kr.alpha.core.common.Literals.negateLiteral;
+import static at.ac.tuwien.kr.alpha.core.common.Literals.positiveLiteral;
+import static at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type.INTERNAL;
+import static at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type.LEARNT;
+import static at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type.STATIC;
+import static at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type.SUPPORT;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.core.solver.Antecedent;
-
-import static at.ac.tuwien.kr.alpha.core.common.Literals.*;
-import static at.ac.tuwien.kr.alpha.core.common.NoGoodInterface.Type.*;
-import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
 
 public class NoGood implements NoGoodInterface, Comparable<NoGood> {
 	public static final int HEAD = 0;
@@ -58,7 +65,7 @@ public class NoGood implements NoGoodInterface, Comparable<NoGood> {
 		this.type = type;
 		this.head = head;
 		if (head && !isNegated(literals[0])) {
-			throw oops("Head is not negative");
+			throw Util.oops("Head is not negative");
 		}
 
 		// HINT: this might decrease performance if NoGoods are mostly small.

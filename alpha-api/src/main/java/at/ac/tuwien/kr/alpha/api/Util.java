@@ -25,7 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package at.ac.tuwien.kr.alpha.core.util;
+package at.ac.tuwien.kr.alpha.api;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -41,6 +41,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+// TODO shouldn't be public API
 public class Util {
 	private static final String LITERATE_INDENT = "    ";
 

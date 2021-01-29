@@ -31,21 +31,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.InlineDirectives;
+import at.ac.tuwien.kr.alpha.api.rules.Head;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.core.parser.InlineDirectivesImpl;
-import at.ac.tuwien.kr.alpha.core.rules.BasicRule;
 
 /**
  * Alpha-internal representation of an ASP program, i.e., a set of ASP rules.
  * <p>
  * Copyright (c) 2017-2019, the Alpha Team.
  */
-public class InputProgram extends AbstractProgram<BasicRule> {
+public class InputProgram extends AbstractProgram<Rule<Head>> implements ASPCore2Program{
 
 	public static final InputProgram EMPTY = new InputProgram(Collections.emptyList(), Collections.emptyList(), new InlineDirectivesImpl());
 
-	public InputProgram(List<BasicRule> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
+	public InputProgram(List<Rule<Head>> rules, List<Atom> facts, InlineDirectives inlineDirectives) {
 		super(rules, facts, inlineDirectives);
 	}
 
@@ -66,7 +68,7 @@ public class InputProgram extends AbstractProgram<BasicRule> {
 	 */
 	public static class Builder {
 
-		private List<BasicRule> rules = new ArrayList<>();
+		private List<Rule<Head>> rules = new ArrayList<>();
 		private List<Atom> facts = new ArrayList<>();
 		private InlineDirectives inlineDirectives = new InlineDirectivesImpl();
 
@@ -80,12 +82,12 @@ public class InputProgram extends AbstractProgram<BasicRule> {
 
 		}
 
-		public Builder addRules(List<BasicRule> rules) {
+		public Builder addRules(List<Rule<Head>> rules) {
 			this.rules.addAll(rules);
 			return this;
 		}
 
-		public Builder addRule(BasicRule r) {
+		public Builder addRule(Rule<Head> r) {
 			this.rules.add(r);
 			return this;
 		}
@@ -105,7 +107,7 @@ public class InputProgram extends AbstractProgram<BasicRule> {
 			return this;
 		}
 
-		public Builder accumulate(InputProgram prog) {
+		public Builder accumulate(ASPCore2Program prog) {
 			return this.addRules(prog.getRules()).addFacts(prog.getFacts()).addInlineDirectives(prog.getInlineDirectives());
 		}
 

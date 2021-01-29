@@ -1,19 +1,20 @@
-package at.ac.tuwien.kr.alpha.core.grounder;
+package at.ac.tuwien.kr.alpha.api.grounder;
 
-import static at.ac.tuwien.kr.alpha.core.util.Util.join;
+import static at.ac.tuwien.kr.alpha.api.Util.join;
 
 import java.util.Arrays;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
-import at.ac.tuwien.kr.alpha.core.util.Util;
 
 /**
  * An instance is a positional association of terms, e.g., representing a variable substitution, or a ground instance of
  * a predicate.
  * Copyright (c) 2016, the Alpha Team.
  */
+// TODO probably shouldn't be published API
 public class Instance {
 	public final List<Term> terms;
 

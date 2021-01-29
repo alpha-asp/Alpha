@@ -3,11 +3,13 @@ package at.ac.tuwien.kr.alpha.core.rules;
 import java.util.ArrayList;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
-import at.ac.tuwien.kr.alpha.core.util.Util;
 
 /**
  * A rule that has a normal head, i.e. just one head atom, no disjunction or choice heads allowed.
@@ -21,7 +23,7 @@ public class NormalRule extends AbstractRule<NormalHead> {
 		super(head, body);
 	}
 
-	public static NormalRule fromBasicRule(BasicRule rule) {
+	public static NormalRule fromBasicRule(Rule<Head> rule) {
 		Atom headAtom = null;
 		if (!rule.isConstraint()) {
 			if (!(rule.getHead() instanceof NormalHeadImpl)) {

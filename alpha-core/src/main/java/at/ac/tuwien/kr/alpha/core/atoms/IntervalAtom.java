@@ -27,12 +27,10 @@
  */
 package at.ac.tuwien.kr.alpha.core.atoms;
 
-import static at.ac.tuwien.kr.alpha.core.util.Util.join;
-import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
-
 import java.util.Arrays;
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
@@ -85,7 +83,7 @@ public class IntervalAtom extends CoreAtom implements VariableNormalizableAtom {
 	@Override
 	public IntervalLiteral toLiteral(boolean positive) {
 		if (!positive) {
-			throw oops("IntervalLiteral cannot be negated");
+			throw Util.oops("IntervalLiteral cannot be negated");
 		}
 		return new IntervalLiteral(this);
 	}
@@ -97,7 +95,7 @@ public class IntervalAtom extends CoreAtom implements VariableNormalizableAtom {
 
 	@Override
 	public String toString() {
-		return join(PREDICATE.getName() + "(", terms, ")");
+		return Util.join(PREDICATE.getName() + "(", terms, ")");
 	}
 
 	@Override

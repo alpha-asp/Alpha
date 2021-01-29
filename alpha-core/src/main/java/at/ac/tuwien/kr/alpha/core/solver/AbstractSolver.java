@@ -1,12 +1,14 @@
 package at.ac.tuwien.kr.alpha.core.solver;
 
-import at.ac.tuwien.kr.alpha.core.common.AtomStore;
-import at.ac.tuwien.kr.alpha.core.common.CoreAnswerSet;
-import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
-
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
+
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.Solver;
+import at.ac.tuwien.kr.alpha.core.common.AtomStore;
+import at.ac.tuwien.kr.alpha.core.common.CoreAnswerSet;
+import at.ac.tuwien.kr.alpha.core.grounder.Grounder;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
@@ -20,17 +22,17 @@ abstract class AbstractSolver implements Solver {
 		this.grounder = grounder;
 	}
 
-	protected CoreAnswerSet translate(Iterable<Integer> assignment) {
+	protected AnswerSet translate(Iterable<Integer> assignment) {
 		return grounder.assignmentToAnswerSet(assignment);
 	}
 
-	protected abstract boolean tryAdvance(Consumer<? super CoreAnswerSet> action);
+	protected abstract boolean tryAdvance(Consumer<? super AnswerSet> action);
 
 	@Override
-	public Spliterator<CoreAnswerSet> spliterator() {
-		return new Spliterators.AbstractSpliterator<CoreAnswerSet>(Long.MAX_VALUE, 0) {
+	public Spliterator<AnswerSet> spliterator() {
+		return new Spliterators.AbstractSpliterator<AnswerSet>(Long.MAX_VALUE, 0) {
 			@Override
-			public boolean tryAdvance(Consumer<? super CoreAnswerSet> action) {
+			public boolean tryAdvance(Consumer<? super AnswerSet> action) {
 				return AbstractSolver.this.tryAdvance(action);
 			}
 		};

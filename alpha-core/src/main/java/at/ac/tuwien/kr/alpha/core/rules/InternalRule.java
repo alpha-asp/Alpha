@@ -35,12 +35,14 @@ import com.google.common.annotations.VisibleForTesting;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
 import at.ac.tuwien.kr.alpha.core.common.terms.VariableTermImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.IntIdGenerator;
-import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingOrders;
+import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingInfoImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.Unifier;
 import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 
@@ -48,7 +50,7 @@ import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
  * Represents a normal rule or a constraint for the semi-naive grounder.
  * A normal rule has no head atom if it represents a constraint, otherwise it has one atom in its head.
  */
-public class InternalRule extends NormalRule {
+public class InternalRule extends NormalRule implements CompiledRule {
 
 	private static final IntIdGenerator ID_GENERATOR = new IntIdGenerator();
 
@@ -56,7 +58,7 @@ public class InternalRule extends NormalRule {
 
 	private final List<Predicate> occurringPredicates;
 
-	private final RuleGroundingOrders groundingOrders;
+	private final RuleGroundingInfoImpl groundingOrders;
 
 	public InternalRule(NormalHead head, List<Literal> body) {
 		super(head, body);
@@ -82,7 +84,7 @@ public class InternalRule extends NormalRule {
 		// proper place to put it
 		// this.checkSafety();
 
-		this.groundingOrders = new RuleGroundingOrders(this);
+		this.groundingOrders = new RuleGroundingInfoImpl(this);
 		this.groundingOrders.computeGroundingOrders();
 	}
 
@@ -91,7 +93,7 @@ public class InternalRule extends NormalRule {
 		InternalRule.ID_GENERATOR.resetGenerator();
 	}
 
-	public static InternalRule fromNormalRule(NormalRule rule) {
+	public static CompiledRule fromNormalRule(Rule<NormalHead> rule) {
 		return new InternalRule(rule.isConstraint() ? null : new NormalHeadImpl(rule.getHeadAtom()), new ArrayList<>(rule.getBody()));
 	}
 
@@ -130,10 +132,11 @@ public class InternalRule extends NormalRule {
 		return this.occurringPredicates;
 	}
 
-	public RuleGroundingOrders getGroundingOrders() {
+	public RuleGroundingInfoImpl getGroundingInfo() {
 		return this.groundingOrders;
 	}
 
+	@Override
 	public int getRuleId() {
 		return this.ruleId;
 	}

@@ -8,15 +8,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
+import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
-import at.ac.tuwien.kr.alpha.core.util.Util;
 
 /**
  * Copyright (c) 2016, the Alpha Team.
  */
 // TODO bring this into public non-core API by using something like an "answer-set-view"
-public class BasicAnswerSet implements CoreAnswerSet {
+public class BasicAnswerSet implements AnswerSet {
 	public static final BasicAnswerSet EMPTY = new BasicAnswerSet(emptySortedSet(), emptyMap());
 
 	private final SortedSet<Predicate> predicates;
@@ -97,7 +98,7 @@ public class BasicAnswerSet implements CoreAnswerSet {
 	}
 
 	@Override
-	public int compareTo(CoreAnswerSet other) {
+	public int compareTo(AnswerSet other) {
 		final SortedSet<Predicate> predicates = this.getPredicates();
 		int result = Util.compareSortedSets(predicates, other.getPredicates());
 

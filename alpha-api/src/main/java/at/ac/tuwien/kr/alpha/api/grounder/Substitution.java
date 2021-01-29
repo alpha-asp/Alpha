@@ -11,6 +11,6 @@ public interface Substitution {
 
 	TreeMap<VariableTerm, Term> getSubstitution();
 	
-	 <T extends Comparable<T>> Term put(VariableTerm variableTerm, Term groundTerm);
+	<T extends Comparable<T>> Term put(VariableTerm variableTerm, Term groundTerm);
 
 }

@@ -40,6 +40,7 @@ import java.util.Map;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.NormalHead;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.api.terms.VariableTerm;
 import at.ac.tuwien.kr.alpha.core.atoms.ComparisonLiteral;
@@ -57,14 +58,14 @@ public class VariableEqualityRemoval extends ProgramTransformation<NormalProgram
 
 	@Override
 	public NormalProgram apply(NormalProgram inputProgram) {
-		List<NormalRule> rewrittenRules = new ArrayList<>();
-		for (NormalRule rule : inputProgram.getRules()) {
+		List<Rule<NormalHead>> rewrittenRules = new ArrayList<>();
+		for (Rule<NormalHead> rule : inputProgram.getRules()) {
 			rewrittenRules.add(findAndReplaceVariableEquality(rule));
 		}
 		return new NormalProgram(rewrittenRules, inputProgram.getFacts(), inputProgram.getInlineDirectives());
 	}
 
-	private NormalRule findAndReplaceVariableEquality(NormalRule rule) {
+	private Rule<NormalHead> findAndReplaceVariableEquality(Rule<NormalHead> rule) {
 		// Collect all equal variables.
 		HashMap<VariableTerm, HashSet<VariableTerm>> variableToEqualVariables = new LinkedHashMap<>();
 		HashSet<Literal> equalitiesToRemove = new HashSet<>();

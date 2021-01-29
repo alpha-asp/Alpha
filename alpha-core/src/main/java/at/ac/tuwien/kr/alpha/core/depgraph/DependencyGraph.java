@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.atoms.FixedInterpretationLiteral;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
 import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
@@ -71,7 +72,7 @@ public final class DependencyGraph {
 		this.nodesByPredicate = nodesByPredicate;
 	}
 
-	public static DependencyGraph buildDependencyGraph(Map<Integer, InternalRule> nonGroundRules) {
+	public static DependencyGraph buildDependencyGraph(Map<Integer, CompiledRule> nonGroundRules) {
 		return new DependencyGraph.Builder(nonGroundRules.values()).build();
 	}
 
@@ -88,18 +89,18 @@ public final class DependencyGraph {
 		private static final String CONSTRAINT_PREDICATE_FORMAT = "[constr_%d]";
 
 		private int constraintNumber;
-		private Collection<InternalRule> rules;
+		private Collection<CompiledRule> rules;
 
 		private Map<Node, List<Edge>> adjacentNodesMap = new HashMap<>();
 		private Map<Predicate, Node> nodesByPredicate = new HashMap<>();
 
-		private Builder(Collection<InternalRule> rules) {
+		private Builder(Collection<CompiledRule> rules) {
 			this.rules = rules;
 			this.constraintNumber = 0;
 		}
 
 		private DependencyGraph build() {
-			for (InternalRule rule : rules) {
+			for (CompiledRule rule : rules) {
 				LOGGER.debug("Processing rule: {}", rule);
 				Node headNode = handleRuleHead(rule);
 				for (Literal literal : rule.getBody()) {
@@ -114,7 +115,7 @@ public final class DependencyGraph {
 			return new DependencyGraph(adjacentNodesMap, nodesByPredicate);
 		}
 
-		private Node handleRuleHead(InternalRule rule) {
+		private Node handleRuleHead(CompiledRule rule) {
 			LOGGER.trace("Processing head of rule: {}", rule);
 			Node headNode;
 			if (rule.isConstraint()) {

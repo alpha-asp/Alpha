@@ -8,7 +8,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
+import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
+import at.ac.tuwien.kr.alpha.api.rules.Head;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.AggregateLiteral;
@@ -26,7 +29,7 @@ import at.ac.tuwien.kr.alpha.core.rules.heads.NormalHeadImpl;
 /**
  * Copyright (c) 2017-2020, the Alpha Team.
  */
-public class CardinalityNormalization extends ProgramTransformation<InputProgram, InputProgram> {
+public class CardinalityNormalization extends ProgramTransformation<ASPCore2Program, ASPCore2Program> {
 
 	private int aggregateCount;
 	private ProgramParserImpl parser = new ProgramParserImpl();
@@ -40,12 +43,12 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 		this.useSortingCircuitEncoding = useSortingCircuitEncoding;
 	}
 
-	private InputProgram parse(String program) {
+	private ASPCore2Program parse(String program) {
 		return parser.parse(program);
 	}
 
 	@Override
-	public InputProgram apply(InputProgram inputProgram) {
+	public ASPCore2Program apply(ASPCore2Program inputProgram) {
 		if (!this.rewritingNecessary(inputProgram)) {
 			return inputProgram;
 		}
@@ -89,17 +92,17 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 		//@formatter:on
 
 		// Connect/Rewrite every aggregate in each rule.
-		List<BasicRule> rewrittenRules = rewriteAggregates(inputProgram.getRules());
+		List<Rule<Head>> rewrittenRules = rewriteAggregates(inputProgram.getRules());
 
 		String usedCardinalityEncoding = useSortingCircuitEncoding ? cardinalitySortingCircuit : cardinalityCountingGrid;
-		InputProgram cardinalityEncoding = PredicateInternalizer.makePredicatesInternal(new ProgramParserImpl().parse(usedCardinalityEncoding));
+		ASPCore2Program cardinalityEncoding = PredicateInternalizer.makePredicatesInternal(new ProgramParserImpl().parse(usedCardinalityEncoding));
 		programBuilder.addRules(rewrittenRules);
 
 		// Add enumeration rule that uses the special EnumerationAtom.
 		// The enumeration rule is: "sorting_network_input_number(A, I) :- sorting_network_input(A, X),
 		// sorting_network_index(A, X, I)."
-		BasicRule tmpEnumRule = PredicateInternalizer.makePredicatesInternal(parse(
-			"sorting_network_input_number(A, I) :- sorting_network_input(A, X).")).getRules().get(0);
+		Rule<Head> tmpEnumRule = PredicateInternalizer.makePredicatesInternal(parse(
+				"sorting_network_input_number(A, I) :- sorting_network_input(A, X).")).getRules().get(0);
 		EnumerationAtom enumerationAtom = new EnumerationAtom(parse("sorting_network_index(A, X, I).").getFacts().get(0).getTerms());
 		List<Literal> enumerationRuleBody = new ArrayList<>(tmpEnumRule.getBody());
 		enumerationRuleBody.add(enumerationAtom.toLiteral());
@@ -117,8 +120,8 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 	 * @param program the program.
 	 * @return true if count aggregates occur, false otherwise.
 	 */
-	private boolean rewritingNecessary(InputProgram program) {
-		for (BasicRule rule : program.getRules()) {
+	private boolean rewritingNecessary(ASPCore2Program program) {
+		for (Rule<Head> rule : program.getRules()) {
 			for (Literal lit : rule.getBody()) {
 				if (lit instanceof AggregateLiteral) {
 					AggregateAtom aggregateAtom = ((AggregateLiteral) lit).getAtom();
@@ -131,15 +134,15 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 		return false;
 	}
 
-	private List<BasicRule> rewriteAggregates(List<BasicRule> srcRules) {
-		List<BasicRule> retVal = new ArrayList<>();
-		for (BasicRule rule : srcRules) {
+	private List<Rule<Head>> rewriteAggregates(List<Rule<Head>> srcRules) {
+		List<Rule<Head>> retVal = new ArrayList<>();
+		for (Rule<Head> rule : srcRules) {
 			retVal.addAll(rewriteAggregatesInRule(rule));
 		}
 		return retVal;
 	}
 
-	private List<BasicRule> rewriteAggregatesInRule(BasicRule rule) {
+	private List<Rule<Head>> rewriteAggregatesInRule(Rule<Head> rule) {
 		// Example rewriting/connection:
 		// num(K) :- K <= #count {X,Y,Z : p(X,Y,Z) }, dom(K).
 		// is rewritten into:
@@ -157,7 +160,7 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 
 		ArrayList<Literal> aggregateOutputAtoms = new ArrayList<>();
 		int aggregatesInRule = 0; // Only needed for limited rewriting.
-		ArrayList<BasicRule> additionalRules = new ArrayList<>();
+		ArrayList<Rule<Head>> additionalRules = new ArrayList<>();
 
 		List<Literal> rewrittenBody = new ArrayList<>(rule.getBody());
 
@@ -231,7 +234,7 @@ public class CardinalityNormalization extends ProgramTransformation<InputProgram
 
 		}
 		rewrittenBody.addAll(aggregateOutputAtoms);
-		BasicRule rewrittenSrcRule = new BasicRule(rule.getHead(), rewrittenBody);
+		Rule<Head> rewrittenSrcRule = new BasicRule(rule.getHead(), rewrittenBody);
 		additionalRules.add(rewrittenSrcRule);
 		return additionalRules;
 	}

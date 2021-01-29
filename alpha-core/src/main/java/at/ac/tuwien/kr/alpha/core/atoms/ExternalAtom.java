@@ -27,12 +27,12 @@
  */
 package at.ac.tuwien.kr.alpha.core.atoms;
 
-import static at.ac.tuwien.kr.alpha.core.util.Util.join;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
@@ -124,10 +124,10 @@ public class ExternalAtom extends CoreAtom implements VariableNormalizableAtom {
 	public String toString() {
 		String result = "&" + predicate.getName();
 		if (!input.isEmpty()) {
-			result += join("[", input, "]");
+			result += Util.join("[", input, "]");
 		}
 		if (!output.isEmpty()) {
-			result += join("(", output, ")");
+			result += Util.join("(", output, ")");
 		}
 		return result;
 	}

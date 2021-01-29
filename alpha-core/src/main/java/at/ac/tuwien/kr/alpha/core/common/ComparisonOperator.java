@@ -1,6 +1,6 @@
 package at.ac.tuwien.kr.alpha.core.common;
 
-import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
+import at.ac.tuwien.kr.alpha.api.Util;
 
 public enum ComparisonOperator {
 	EQ("="),
@@ -30,7 +30,7 @@ public enum ComparisonOperator {
 			case LE: return GT;
 			case GE: return LT;
 		}
-		throw oops("Unknown binary operator encountered, cannot negate it");
+		throw Util.oops("Unknown binary operator encountered, cannot negate it");
 	}
 	
 	public CorePredicate predicate() {

@@ -51,8 +51,8 @@ import static at.ac.tuwien.kr.alpha.core.common.NoGood.HEAD;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.FALSE;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.MBT;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.TRUE;
-import static at.ac.tuwien.kr.alpha.core.util.Util.arrayGrowthSize;
-import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
+import static at.ac.tuwien.kr.alpha.api.Util.arrayGrowthSize;
+import static at.ac.tuwien.kr.alpha.api.Util.oops;
 
 /**
  * NoGoodStore using for each NoGood three watches, two ordinary ones and an alpha watch.

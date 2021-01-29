@@ -42,7 +42,7 @@ import java.util.stream.IntStream;
 
 import static at.ac.tuwien.kr.alpha.core.common.Literals.*;
 import static at.ac.tuwien.kr.alpha.core.solver.NoGoodStore.LBD_NO_VALUE;
-import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
+import static at.ac.tuwien.kr.alpha.api.Util.oops;
 
 /**
  * Conflict-driven learning on ground clauses.

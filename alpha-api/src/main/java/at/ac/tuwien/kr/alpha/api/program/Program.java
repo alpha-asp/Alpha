@@ -1,14 +1,16 @@
 package at.ac.tuwien.kr.alpha.api.program;
 
-import java.util.Set;
+import java.util.List;
 
 import at.ac.tuwien.kr.alpha.api.rules.Head;
 import at.ac.tuwien.kr.alpha.api.rules.Rule;
 
-public interface Program {
+public interface Program<R extends Rule<? extends Head>> {
 
-	Set<? extends Atom> getFacts();
+	List<Atom> getFacts();
 
-	Set<Rule<? extends Head>> getRules();
+	InlineDirectives getInlineDirectives();
+
+	List<R> getRules();
 
 }

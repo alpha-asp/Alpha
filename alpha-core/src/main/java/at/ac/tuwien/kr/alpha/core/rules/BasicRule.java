@@ -29,17 +29,27 @@ package at.ac.tuwien.kr.alpha.core.rules;
 
 import java.util.List;
 
+import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.rules.Head;
+import at.ac.tuwien.kr.alpha.api.rules.Rule;
 
 /**
- * Represents a non-ground rule or a constraint. A {@link BasicRule} has a general {@link Head}, meaning both choice heads and disjunctive heads are permissible.
- * This implementation represents a rule after being parsed from a given ASP program, but before being transformed into a {@link NormalRule}.
+ * Represents a non-ground rule or a constraint. A {@link BasicRule} has a general {@link Head}, meaning both choice heads and disjunctive
+ * heads are permissible.
+ * This implementation represents a rule after being parsed from a given ASP program, but before being transformed into a
+ * {@link NormalRule}.
  */
-public class BasicRule extends AbstractRule<Head> {
+public class BasicRule extends AbstractRule<Head> implements Rule<Head> {
 
 	public BasicRule(Head head, List<Literal> body) {
 		super(head, body);
+	}
+
+	@Override
+	public Atom getHeadAtom() {
+		// TODO this only makes sense for NormalRule
+		throw new UnsupportedOperationException("Only here for compatibility, this will be removed!");
 	}
 
 }

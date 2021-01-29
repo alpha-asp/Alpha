@@ -35,10 +35,10 @@ import java.util.List;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.api.terms.ConstantTerm;
 import at.ac.tuwien.kr.alpha.api.terms.Term;
 import at.ac.tuwien.kr.alpha.core.common.CorePredicate;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 
 /**
  * Atoms corresponding to rule bodies use this predicate, first term is rule number,
@@ -57,7 +57,7 @@ public class RuleAtom extends CoreAtom {
 		this.terms = terms;
 	}
 
-	public RuleAtom(InternalRule nonGroundRule, Substitution substitution) {
+	public RuleAtom(CompiledRule nonGroundRule, Substitution substitution) {
 		this(Arrays.asList(
 				getInstance(Integer.toString(nonGroundRule.getRuleId())), 
 				getInstance(substitution.toString())

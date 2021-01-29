@@ -27,15 +27,15 @@
  */
 package at.ac.tuwien.kr.alpha.core.common;
 
-import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import at.ac.tuwien.kr.alpha.api.Util;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
-import at.ac.tuwien.kr.alpha.core.atoms.CoreAtom;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.grounder.IntIdGenerator;
 import at.ac.tuwien.kr.alpha.core.solver.AtomCounter;
@@ -116,7 +116,7 @@ public class AtomStoreImpl implements AtomStore {
 		try {
 			return atomIdsToInternalBasicAtoms.get(atom);
 		} catch (IndexOutOfBoundsException e) {
-			throw oops("Unknown atom ID encountered: " + atom, e);
+			throw Util.oops("Unknown atom ID encountered: " + atom, e);
 		}
 	}
 

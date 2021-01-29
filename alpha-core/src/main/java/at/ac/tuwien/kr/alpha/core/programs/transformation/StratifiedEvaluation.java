@@ -16,19 +16,20 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import at.ac.tuwien.kr.alpha.api.grounder.Instance;
+import at.ac.tuwien.kr.alpha.api.grounder.RuleGroundingInfo;
+import at.ac.tuwien.kr.alpha.api.grounder.RuleGroundingOrder;
 import at.ac.tuwien.kr.alpha.api.grounder.Substitution;
 import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Literal;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
+import at.ac.tuwien.kr.alpha.api.rules.CompiledRule;
 import at.ac.tuwien.kr.alpha.core.atoms.BasicAtom;
 import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph;
 import at.ac.tuwien.kr.alpha.core.depgraph.ComponentGraph.SCComponent;
 import at.ac.tuwien.kr.alpha.core.depgraph.Node;
 import at.ac.tuwien.kr.alpha.core.depgraph.StratificationAlgorithm;
 import at.ac.tuwien.kr.alpha.core.grounder.IndexedInstanceStorage;
-import at.ac.tuwien.kr.alpha.core.grounder.Instance;
-import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingOrder;
-import at.ac.tuwien.kr.alpha.core.grounder.RuleGroundingOrders;
 import at.ac.tuwien.kr.alpha.core.grounder.SubstitutionImpl;
 import at.ac.tuwien.kr.alpha.core.grounder.WorkingMemory;
 import at.ac.tuwien.kr.alpha.core.grounder.instantiation.AssignmentStatus;
@@ -37,7 +38,6 @@ import at.ac.tuwien.kr.alpha.core.grounder.instantiation.LiteralInstantiator;
 import at.ac.tuwien.kr.alpha.core.grounder.instantiation.WorkingMemoryBasedInstantiationStrategy;
 import at.ac.tuwien.kr.alpha.core.programs.AnalyzedProgram;
 import at.ac.tuwien.kr.alpha.core.programs.InternalProgram;
-import at.ac.tuwien.kr.alpha.core.rules.InternalRule;
 
 /**
  * Evaluates the stratifiable part of a given (analyzed) ASP program.
@@ -49,7 +49,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	private static final Logger LOGGER = LoggerFactory.getLogger(StratifiedEvaluation.class);
 
 	private WorkingMemory workingMemory = new WorkingMemory();
-	private Map<Predicate, LinkedHashSet<InternalRule>> predicateDefiningRules;
+	private Map<Predicate, LinkedHashSet<CompiledRule>> predicateDefiningRules;
 
 	private Map<Predicate, Set<Instance>> modifiedInLastEvaluationRun = new HashMap<>();
 
@@ -75,7 +75,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		}
 
 		// Create working memories for all predicates occurring in each rule.
-		for (InternalRule nonGroundRule : inputProgram.getRulesById().values()) {
+		for (CompiledRule nonGroundRule : inputProgram.getRulesById().values()) {
 			for (Predicate predicate : nonGroundRule.getOccurringPredicates()) {
 				workingMemory.initialize(predicate);
 			}
@@ -93,7 +93,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 
 		// Build the program resulting from evaluating the stratified part.
 		additionalFacts.addAll(inputProgram.getFacts()); // Add original input facts to newly derived ones.
-		List<InternalRule> outputRules = new ArrayList<>();
+		List<CompiledRule> outputRules = new ArrayList<>();
 		inputProgram.getRulesById().entrySet().stream().filter((entry) -> !solvedRuleIds.contains(entry.getKey()))
 				.forEach((entry) -> outputRules.add(entry.getValue()));
 
@@ -150,10 +150,10 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 				.forEach((rule) -> solvedRuleIds.add(rule.getRuleId()));
 	}
 
-	private void evaluateRules(Set<InternalRule> rules, boolean isInitialRun) {
+	private void evaluateRules(Set<CompiledRule> rules, boolean isInitialRun) {
 		workingMemory.reset();
 		LOGGER.debug("Starting component evaluation run...");
-		for (InternalRule r : rules) {
+		for (CompiledRule r : rules) {
 			evaluateRule(r, !isInitialRun);
 		}
 	}
@@ -163,9 +163,9 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	 * of rules to the "modifiedInLastEvaluationRun" map in order to "bootstrap" incremental grounding, i.e. making sure
 	 * that those instances are taken into account for ground substitutions by evaluateRule.
 	 */
-	private void prepareInitialEvaluation(Set<InternalRule> rulesToEvaluate) {
+	private void prepareInitialEvaluation(Set<CompiledRule> rulesToEvaluate) {
 		modifiedInLastEvaluationRun = new HashMap<>();
-		for (InternalRule rule : rulesToEvaluate) {
+		for (CompiledRule rule : rulesToEvaluate) {
 			// Register rule head instances.
 			Predicate headPredicate = rule.getHeadAtom().getPredicate();
 			IndexedInstanceStorage headInstances = workingMemory.get(headPredicate, true);
@@ -185,7 +185,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		}
 	}
 
-	private void evaluateRule(InternalRule rule, boolean checkAllStartingLiterals) {
+	private void evaluateRule(CompiledRule rule, boolean checkAllStartingLiterals) {
 		LOGGER.debug("Evaluating rule {}", rule);
 		List<Substitution> satisfyingSubstitutions = calculateSatisfyingSubstitutionsForRule(rule, checkAllStartingLiterals);
 		for (Substitution subst : satisfyingSubstitutions) {
@@ -193,13 +193,13 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		}
 	}
 
-	private List<Substitution> calculateSatisfyingSubstitutionsForRule(InternalRule rule, boolean checkAllStartingLiterals) {
+	private List<Substitution> calculateSatisfyingSubstitutionsForRule(CompiledRule rule, boolean checkAllStartingLiterals) {
 		LOGGER.debug("Grounding rule {}", rule);
-		RuleGroundingOrders groundingOrders = rule.getGroundingOrders();
+		RuleGroundingInfo groundingOrders = rule.getGroundingInfo();
 
 		// Treat rules with fixed instantiation first.
-		LOGGER.debug("Is fixed rule? {}", rule.getGroundingOrders().fixedInstantiation());
-		if (groundingOrders.fixedInstantiation()) {
+		LOGGER.debug("Is fixed rule? {}", rule.getGroundingInfo().hasFixedInstantiation());
+		if (groundingOrders.hasFixedInstantiation()) {
 			RuleGroundingOrder fixedGroundingOrder = groundingOrders.getFixedGroundingOrder();
 			return calcSubstitutionsWithGroundingOrder(fixedGroundingOrder, Collections.singletonList(new SubstitutionImpl()));
 		}
@@ -297,7 +297,7 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		return fullSubstitutions;
 	}
 
-	private void fireRule(InternalRule rule, Substitution substitution) {
+	private void fireRule(CompiledRule rule, Substitution substitution) {
 		Atom newAtom = rule.getHeadAtom().substitute(substitution);
 		if (!newAtom.isGround()) {
 			throw new IllegalStateException("Trying to fire rule " + rule.toString() + " with incompatible substitution " + substitution.toString());
@@ -307,8 +307,8 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	}
 
 	private ComponentEvaluationInfo getRulesToEvaluate(SCComponent comp) {
-		Set<InternalRule> nonRecursiveRules = new HashSet<>();
-		Set<InternalRule> recursiveRules = new HashSet<>();
+		Set<CompiledRule> nonRecursiveRules = new HashSet<>();
+		Set<CompiledRule> recursiveRules = new HashSet<>();
 
 		// Collect all predicates occurring in heads of rules of the given component.
 		Set<Predicate> headPredicates = new HashSet<>();
@@ -318,13 +318,13 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 		// Check each predicate whether its defining rules depend on some of the head predicates, i.e., whether there is a
 		// cycle.
 		for (Predicate headPredicate : headPredicates) {
-			HashSet<InternalRule> definingRules = predicateDefiningRules.get(headPredicate);
+			HashSet<CompiledRule> definingRules = predicateDefiningRules.get(headPredicate);
 			if (definingRules == null) {
 				// Predicate only occurs in facts, skip.
 				continue;
 			}
 			// Note: here we assume that all rules defining a predicate belong to the same SC component.
-			for (InternalRule rule : definingRules) {
+			for (CompiledRule rule : definingRules) {
 				boolean isRuleRecursive = false;
 				for (Literal lit : rule.getPositiveBody()) {
 					if (headPredicates.contains(lit.getPredicate())) {
@@ -353,10 +353,10 @@ public class StratifiedEvaluation extends ProgramTransformation<AnalyzedProgram,
 	 * Copyright (c) 2020, the Alpha Team.
 	 */
 	private class ComponentEvaluationInfo {
-		final Set<InternalRule> nonRecursiveRules;
-		final Set<InternalRule> recursiveRules;
+		final Set<CompiledRule> nonRecursiveRules;
+		final Set<CompiledRule> recursiveRules;
 
-		ComponentEvaluationInfo(Set<InternalRule> nonRecursive, Set<InternalRule> recursive) {
+		ComponentEvaluationInfo(Set<CompiledRule> nonRecursive, Set<CompiledRule> recursive) {
 			nonRecursiveRules = Collections.unmodifiableSet(nonRecursive);
 			recursiveRules = Collections.unmodifiableSet(recursive);
 		}

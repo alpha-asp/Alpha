@@ -33,7 +33,7 @@ import at.ac.tuwien.kr.alpha.core.common.NoGood;
 import at.ac.tuwien.kr.alpha.core.common.NoGoodInterface;
 
 import static at.ac.tuwien.kr.alpha.core.common.Literals.literalToString;
-import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
+import static at.ac.tuwien.kr.alpha.api.Util.oops;
 
 public final class WatchedNoGood implements NoGoodInterface, Antecedent {
 	private int activity;

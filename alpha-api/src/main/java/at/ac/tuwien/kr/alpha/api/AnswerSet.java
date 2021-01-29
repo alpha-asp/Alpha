@@ -6,7 +6,8 @@ import at.ac.tuwien.kr.alpha.api.program.Atom;
 import at.ac.tuwien.kr.alpha.api.program.Predicate;
 
 public interface AnswerSet extends Comparable<AnswerSet> {
-	SortedSet<? extends Predicate> getPredicates();
+	
+	SortedSet<Predicate> getPredicates();
 
 	SortedSet<Atom> getPredicateInstances(Predicate predicate);
 

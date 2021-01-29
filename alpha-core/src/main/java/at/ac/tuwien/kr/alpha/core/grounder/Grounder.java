@@ -32,9 +32,9 @@ import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import at.ac.tuwien.kr.alpha.api.AnswerSet;
 import at.ac.tuwien.kr.alpha.core.atoms.RuleAtom;
 import at.ac.tuwien.kr.alpha.core.common.Assignment;
-import at.ac.tuwien.kr.alpha.core.common.CoreAnswerSet;
 import at.ac.tuwien.kr.alpha.core.common.IntIterator;
 import at.ac.tuwien.kr.alpha.core.common.NoGood;
 
@@ -44,7 +44,7 @@ public interface Grounder {
 	 * @param trueAtoms
 	 * @return
 	 */
-	CoreAnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms);
+	AnswerSet assignmentToAnswerSet(Iterable<Integer> trueAtoms);
 
 	/**
 	 * Applies lazy grounding and returns all newly derived (fully ground) NoGoods.

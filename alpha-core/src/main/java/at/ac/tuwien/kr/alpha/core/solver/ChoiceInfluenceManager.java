@@ -27,16 +27,20 @@
  */
 package at.ac.tuwien.kr.alpha.core.solver;
 
+import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.MBT;
+import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.TRUE;
+import static at.ac.tuwien.kr.alpha.api.Util.arrayGrowthSize;
+import static at.ac.tuwien.kr.alpha.api.Util.oops;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
-
-import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.MBT;
-import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.TRUE;
-import static at.ac.tuwien.kr.alpha.core.util.Util.arrayGrowthSize;
-import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
 
 /**
  * Manages influence of atoms on the activity of certain other atoms. Can be used for either choice points or heuristic atoms.

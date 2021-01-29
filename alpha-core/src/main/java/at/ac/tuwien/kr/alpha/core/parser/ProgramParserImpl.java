@@ -18,9 +18,9 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Lexer;
 import at.ac.tuwien.kr.alpha.antlr.ASPCore2Parser;
 import at.ac.tuwien.kr.alpha.api.common.fixedinterpretations.PredicateInterpretation;
-import at.ac.tuwien.kr.alpha.api.program.InputProgram;
+import at.ac.tuwien.kr.alpha.api.program.ASPCore2Program;
 import at.ac.tuwien.kr.alpha.api.program.ProgramParser;
-import at.ac.tuwien.kr.alpha.core.programs.InputProgramImpl;
+import at.ac.tuwien.kr.alpha.core.programs.InputProgram;
 
 public class ProgramParserImpl implements ProgramParser {
 	private final Map<String, PredicateInterpretation> externals;
@@ -33,7 +33,7 @@ public class ProgramParserImpl implements ProgramParser {
 		this(Collections.emptyMap());
 	}
 
-	public InputProgramImpl parse(String s) {
+	public ASPCore2Program parse(String s) {
 		try {
 			return parse(CharStreams.fromString(s));
 		} catch (IOException e) {
@@ -49,7 +49,7 @@ public class ProgramParserImpl implements ProgramParser {
 		}
 	}
 
-	public InputProgramImpl parse(CharStream stream) throws IOException {
+	public InputProgram parse(CharStream stream) throws IOException {
 		//@formatter:off
 		/*
 		 * // In order to require less memory: use unbuffered streams and avoid constructing a full parse tree. 

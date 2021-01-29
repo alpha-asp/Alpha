@@ -40,8 +40,8 @@ import java.util.*;
 import static at.ac.tuwien.kr.alpha.core.common.Literals.*;
 import static at.ac.tuwien.kr.alpha.core.solver.Atoms.isAtom;
 import static at.ac.tuwien.kr.alpha.core.solver.ThriceTruth.*;
-import static at.ac.tuwien.kr.alpha.core.util.Util.arrayGrowthSize;
-import static at.ac.tuwien.kr.alpha.core.util.Util.oops;
+import static at.ac.tuwien.kr.alpha.api.Util.arrayGrowthSize;
+import static at.ac.tuwien.kr.alpha.api.Util.oops;
 
 /**
  * An implementation of Assignment using a trail (of literals) and arrays as underlying structures for storing
